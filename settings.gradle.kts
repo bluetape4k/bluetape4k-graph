@@ -14,6 +14,9 @@ val baseProjectName = "bluetape4k"
 
 rootProject.name = "$baseProjectName-graph"
 
+include("bluetape4k-graph-bom")
+project(":bluetape4k-graph-bom").projectDir = file("bom")
+
 includeModules("graph", false, false)
 includeModules("examples", false, false)
 

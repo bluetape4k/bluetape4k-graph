@@ -48,6 +48,10 @@ val centralSnapshotsParallelism: Int = providers
     .get()
 
 allprojects {
+    group = providers.gradleProperty("projectGroup").get()
+    val snapshotSuffix = providers.gradleProperty("snapshotVersion").orElse("").get()
+    version = providers.gradleProperty("baseVersion").get() + snapshotSuffix
+
     repositories {
         mavenCentral()
         google()
@@ -89,6 +93,9 @@ subprojects {
         }
     }
 
+    // BOM 모듈은 java-platform 플러그인을 사용하므로 Java/Kotlin 설정을 건너뜁니다.
+    if (name == "bluetape4k-graph-bom") return@subprojects
+
     apply {
         plugin<JavaLibraryPlugin>()
 
@@ -109,12 +116,12 @@ subprojects {
 
     java {
         toolchain {
-            languageVersion.set(JavaLanguageVersion.of(25))
+            languageVersion.set(JavaLanguageVersion.of(21))
         }
     }
 
     kotlin {
-        jvmToolchain(25)
+        jvmToolchain(21)
         compilerOptions {
             languageVersion.set(KotlinVersion.KOTLIN_2_3)
             apiVersion.set(KotlinVersion.KOTLIN_2_3)
