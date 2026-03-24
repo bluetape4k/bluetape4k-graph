@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GradleMigrationSettings" migrationVersion="1" />
+  <component name="GradleSettings">
+    <option name="linkedExternalProjectsSettings">
+      <GradleProjectSettings>
+        <compositeConfiguration>
+          <compositeBuild compositeDefinitionSource="SCRIPT">
+            <builds>
+              <build path="$PROJECT_DIR$/buildSrc" name="buildSrc">
+                <projects>
+                  <project path="$PROJECT_DIR$/buildSrc" />
+                </projects>
+              </build>
+            </builds>
+          </compositeBuild>
+        </compositeConfiguration>
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/buildSrc" />
+            <option value="$PROJECT_DIR$/examples/code-graph-age" />
+            <option value="$PROJECT_DIR$/examples/code-graph-memgraph" />
+            <option value="$PROJECT_DIR$/examples/code-graph-neo4j" />
+            <option value="$PROJECT_DIR$/examples/code-graph-tinkerpop" />
+            <option value="$PROJECT_DIR$/examples/linkedin-graph-age" />
+            <option value="$PROJECT_DIR$/examples/linkedin-graph-memgraph" />
+            <option value="$PROJECT_DIR$/examples/linkedin-graph-neo4j" />
+            <option value="$PROJECT_DIR$/examples/linkedin-graph-tinkerpop" />
+            <option value="$PROJECT_DIR$/graph/graph-age" />
+            <option value="$PROJECT_DIR$/graph/graph-core" />
+            <option value="$PROJECT_DIR$/graph/graph-memgraph" />
+            <option value="$PROJECT_DIR$/graph/graph-neo4j" />
+            <option value="$PROJECT_DIR$/graph/graph-servers" />
+            <option value="$PROJECT_DIR$/graph/graph-tinkerpop" />
+          </set>
+        </option>
+      </GradleProjectSettings>
+    </option>
+    <option name="parallelModelFetch" value="true" />
+  </component>
+</project>
