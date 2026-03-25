@@ -21,14 +21,8 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/bom" />
             <option value="$PROJECT_DIR$/buildSrc" />
-            <option value="$PROJECT_DIR$/examples/code-graph-age" />
-            <option value="$PROJECT_DIR$/examples/code-graph-memgraph" />
-            <option value="$PROJECT_DIR$/examples/code-graph-neo4j" />
-            <option value="$PROJECT_DIR$/examples/code-graph-tinkerpop" />
-            <option value="$PROJECT_DIR$/examples/linkedin-graph-age" />
-            <option value="$PROJECT_DIR$/examples/linkedin-graph-memgraph" />
-            <option value="$PROJECT_DIR$/examples/linkedin-graph-neo4j" />
-            <option value="$PROJECT_DIR$/examples/linkedin-graph-tinkerpop" />
+            <option value="$PROJECT_DIR$/examples/code-graph-examples" />
+            <option value="$PROJECT_DIR$/examples/linkedin-graph-examples" />
             <option value="$PROJECT_DIR$/graph/graph-age" />
             <option value="$PROJECT_DIR$/graph/graph-core" />
             <option value="$PROJECT_DIR$/graph/graph-memgraph" />
