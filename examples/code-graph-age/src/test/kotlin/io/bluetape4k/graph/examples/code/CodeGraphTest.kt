@@ -21,6 +21,7 @@ class CodeGraphTest {
 
     companion object: KLogging() {
         private val server = PostgreSQLAgeServer.instance
+        private const val GRAPH_NAME = "code_test"
     }
 
     private lateinit var dataSource: HikariDataSource
@@ -40,8 +41,8 @@ class CodeGraphTest {
             maximumPoolSize = 5
         })
         database = Database.connect(dataSource)
-        ops = AgeGraphOperations(database, "code_test")
-        service = CodeGraphService(ops, "code_test")
+        ops = AgeGraphOperations(database, GRAPH_NAME)
+        service = CodeGraphService(ops, GRAPH_NAME)
     }
 
     @AfterAll
@@ -52,8 +53,8 @@ class CodeGraphTest {
 
     @BeforeEach
     fun setupGraph() {
-        if (ops.graphExists("code_test")) {
-            ops.dropGraph("code_test")
+        if (ops.graphExists(GRAPH_NAME)) {
+            ops.dropGraph(GRAPH_NAME)
         }
         service.initialize()
     }
