@@ -53,6 +53,34 @@ object KnowsLabel : EdgeLabel("KNOWS") {
 }
 ```
 
+## 의존성 추가
+
+### BOM (권장)
+
+```kotlin
+// build.gradle.kts
+dependencyManagement {
+    imports {
+        mavenBom("io.github.bluetape4k.graph:bluetape4k-graph-bom:0.0.1")
+    }
+}
+
+dependencies {
+    implementation("io.github.bluetape4k.graph:graph-neo4j")   // 버전 생략 가능
+    implementation("io.github.bluetape4k.graph:graph-age")
+}
+```
+
+### 개별 모듈
+
+```kotlin
+dependencies {
+    implementation("io.github.bluetape4k.graph:graph-core:0.0.1")
+    implementation("io.github.bluetape4k.graph:graph-neo4j:0.0.1")
+    // graph-age | graph-memgraph | graph-tinkerpop
+}
+```
+
 ## 빠른 시작
 
 ### Neo4j

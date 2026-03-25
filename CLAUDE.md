@@ -14,8 +14,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # 특정 모듈만 빌드
 ./gradlew :graph-neo4j:build
 
+# 예시 모듈 테스트
+./gradlew :code-graph-examples:test
+./gradlew :linkedin-graph-examples:test
+
 # 특정 테스트 클래스 실행
 ./gradlew :graph-neo4j:test --tests "io.bluetape4k.graph.neo4j.Neo4jGraphOperationsTest"
+./gradlew :code-graph-examples:test --tests "io.bluetape4k.graph.examples.code.Neo4jCodeGraphTest"
 
 # 특정 테스트 메서드 실행
 ./gradlew :graph-neo4j:test --tests "io.bluetape4k.graph.neo4j.Neo4jGraphOperationsTest.addVertex"
