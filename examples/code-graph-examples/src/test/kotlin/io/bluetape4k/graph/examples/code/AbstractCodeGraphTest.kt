@@ -55,7 +55,7 @@ abstract class AbstractCodeGraphTest {
 
         val path = service.findDependencyPath(top.id, core.id)
         path.shouldNotBeNull()
-        path.length shouldBeGreaterThan 0
+        path.vertices.size shouldBeGreaterThan 1
         path.vertices.forEach { log.debug { "vertex=$it" } }
     }
 
