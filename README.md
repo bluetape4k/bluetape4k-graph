@@ -13,8 +13,8 @@ graph/
   graph-tinkerpop  # Apache TinkerPop / TinkerGraph 인메모리 구현
   graph-servers    # 테스트용 Testcontainers 서버 팩토리
 examples/
-  code-graph-{age,neo4j,memgraph,tinkerpop}     # 코드 의존성 그래프 예시
-  linkedin-graph-{age,neo4j,memgraph,tinkerpop} # LinkedIn 소셜 그래프 예시
+  code-graph-examples     # 코드 의존성 그래프 예시 (AGE, Neo4j, Memgraph, TinkerGraph 통합)
+  linkedin-graph-examples # LinkedIn 소셜 그래프 예시 (AGE, Neo4j, Memgraph, TinkerGraph 통합)
 ```
 
 ## 핵심 추상화 (`graph-core`)
@@ -114,10 +114,25 @@ ops.close()
 # 특정 모듈 테스트
 ./gradlew :graph-neo4j:test
 ./gradlew :graph-age:test
+./gradlew :code-graph-examples:test
+./gradlew :linkedin-graph-examples:test
 
 # 특정 클래스
 ./gradlew :graph-neo4j:test --tests "io.bluetape4k.graph.neo4j.Neo4jGraphOperationsTest"
 ```
+
+## 예시 모듈 구조 (`examples/`)
+
+각 예시 모듈은 **추상 테스트 클래스 패턴**을 사용한다. 공통 테스트 로직은 한 곳에, 백엔드별 설정만 구체 클래스에서 오버라이드한다.
+
+| 추상 클래스 | 구체 클래스 (백엔드) |
+|------------|---------------------|
+| `AbstractCodeGraphTest` | `Neo4j/Memgraph/TinkerGraph/AgeCodeGraphTest` |
+| `AbstractCodeGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/AgeCodeGraphSuspendTest` |
+| `AbstractLinkedInGraphTest` | `Neo4j/Memgraph/TinkerGraph/AgeLinkedInGraphTest` |
+| `AbstractLinkedInGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/AgeLinkedInGraphSuspendTest` |
+
+구체 클래스는 `ops` (`GraphOperations` 또는 `GraphSuspendOperations`) 와 서버 라이프사이클(`@BeforeAll`/`@AfterAll`)만 구현하면 된다.
 
 ## 요구 사항
 

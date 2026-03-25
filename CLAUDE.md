@@ -41,9 +41,27 @@ graph/
   graph-tinkerpop/  # Apache TinkerPop/Gremlin 구현
   graph-servers/    # 테스트용 Testcontainers 서버 팩토리 (Neo4j, Memgraph, PostgreSQL+AGE)
 examples/
-  code-graph-{age,neo4j,memgraph,tinkerpop}/   # 코드 의존성 그래프 예시
-  linkedin-graph-{age,neo4j,memgraph,tinkerpop}/ # LinkedIn 소셜 그래프 예시
+  code-graph-examples/     # 코드 의존성 그래프 예시 (AGE, Neo4j, Memgraph, TinkerGraph 통합)
+  linkedin-graph-examples/ # LinkedIn 소셜 그래프 예시 (AGE, Neo4j, Memgraph, TinkerGraph 통합)
 ```
+
+### 예시 모듈 테스트 패턴
+
+`examples/` 모듈은 **추상 테스트 클래스 패턴**을 사용한다. 공통 테스트 로직은 `Abstract*Test`에, 백엔드별 `ops` 설정은 구체 클래스에서 오버라이드한다.
+
+```kotlin
+// 구체 클래스는 ops와 서버 라이프사이클만 구현
+class Neo4jCodeGraphTest : AbstractCodeGraphTest() {
+    override val ops = Neo4jGraphOperations(Neo4jServer.instance.driver)
+}
+```
+
+| 추상 클래스 | 구체 클래스 |
+|------------|------------|
+| `AbstractCodeGraphTest` | `Neo4j/Memgraph/TinkerGraph/AgeCodeGraphTest` |
+| `AbstractCodeGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/AgeCodeGraphSuspendTest` |
+| `AbstractLinkedInGraphTest` | `Neo4j/Memgraph/TinkerGraph/AgeLinkedInGraphTest` |
+| `AbstractLinkedInGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/AgeLinkedInGraphSuspendTest` |
 
 ## Architecture
 
