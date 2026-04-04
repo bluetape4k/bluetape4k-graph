@@ -18,8 +18,8 @@ object Plugins {
         const val shadow = "9.2.2"      // https://plugins.gradle.org/plugin/com.gradleup.shadow
         const val kotlinx_benchmark = "0.4.15" // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-benchmark-plugin
 
-        const val spring_boot3 = "3.5.11"  // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-dependencies
-        const val spring_boot4 = "4.0.3"  // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-dependencies
+        const val spring_boot3 = "3.5.13"  // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-dependencies
+        const val spring_boot4 = "4.0.5"  // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-dependencies
 
         const val docker_compose = "0.17.20"  // https://plugins.gradle.org/plugin/com.avast.gradle.docker-compose
 
@@ -72,7 +72,7 @@ object Plugins {
 object Versions {
 
     // Java 21, Kotlin 2.3 이상에서 사용하세요
-    const val bluetape4k = "1.5.0-Beta2"    // https://mvnrepository.com/artifact/io.github.bluetape4k/bluetape4k-bom
+    const val bluetape4k = "1.5.0-RC1"    // https://mvnrepository.com/artifact/io.github.bluetape4k/bluetape4k-bom
 
     const val kotlin = "2.3.20"                 // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib
     const val kotlinx_coroutines = "1.10.2"     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
@@ -148,9 +148,12 @@ object Versions {
     const val hibernate_validator = "9.1.0.Final" // https://mvnrepository.com/artifact/org.hibernate.validator/hibernate-validator
     const val querydsl = "5.1.0"                  // https://mvnrepository.com/artifact/com.querydsl/querydsl-jpa
 
-    const val exposed = "1.1.1"         // https://mvnrepository.com/artifact/org.jetbrains.exposed/exposed-core
+    const val exposed = "1.2.0"         // https://mvnrepository.com/artifact/org.jetbrains.exposed/exposed-core
     const val r2dbc = "1.0.0.RELEASE"   // https://mvnrepository.com/artifact/io.r2dbc/r2dbc-spi
     const val agroal = "2.8"            // https://mvnrepository.com/artifact/io.agroal/agroal-api
+
+    const val neo4j_java_driver = "6.0.4"        // https://mvnrepository.com/artifact/org.neo4j.driver/neo4j-java-driver
+    const val neo4j_bolt_connection = "11.0.0"   // https://mvnrepository.com/artifact/org.neo4j.bolt/neo4j-bolt-connection
 
     const val blaze_persistence = "3.29.4" // https://mvnrepository.com/artifact/com.blazebit/blaze-persistence-core-api
     const val javers = "7.10.0"             // https://mvnrepository.com/artifact/org.javers/javers-core
@@ -162,14 +165,14 @@ object Versions {
 
     const val prometheus = "0.16.0"     // https://mvnrepository.com/artifact/io.prometheus/simpleclient
 
-    const val micrometer = "1.16.3"         // https://mvnrepository.com/artifact/io.micrometer/micrometer-core
-    const val micrometerTracing = "1.6.3"   // https://mvnrepository.com/artifact/io.micrometer/micrometer-tracing
+    const val micrometer = "1.16.4"         // https://mvnrepository.com/artifact/io.micrometer/micrometer-core
+    const val micrometerTracing = "1.6.4"   // https://mvnrepository.com/artifact/io.micrometer/micrometer-tracing
     const val micrometerContextPropagation = "1.2.1" // https://mvnrepository.com/artifact/io.micrometer/context-propagation
 
-    const val opentelemetry = "1.59.0" // https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-bom
+    const val opentelemetry = "1.60.1" // https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-bom
     const val opentelemetryAlpha = "$opentelemetry-alpha" // https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-bom-alpha
 
-    const val opentelemetryJavaAgent = "2.25.0" // https://mvnrepository.com/artifact/io.opentelemetry.javaagent/opentelemetry-javaagent
+    const val opentelemetryJavaAgent = "2.26.1" // https://mvnrepository.com/artifact/io.opentelemetry.javaagent/opentelemetry-javaagent
     const val opentelemetryInstrumentationAlpha = "$opentelemetryJavaAgent-alpha" // https://mvnrepository.com/artifact/io.opentelemetry.instrumentation/opentelemetry-instrumentation-bom-alpha
 
     const val caffeine = "3.2.3"        // https://mvnrepository.com/artifact/com.github.ben-manes.caffeine/caffeine
@@ -186,7 +189,7 @@ object Versions {
     const val kafka = "4.2.0"           // https://mvnrepository.com/artifact/org.apache.kafka/kafka
     const val spring_kafka = "4.0.3"    // https://mvnrepository.com/artifact/org.springframework.kafka/spring-kafka
 
-    const val timefold_solver = "1.31.0" // https://mvnrepository.com/artifact/ai.timefold.solver/timefold-solver-core
+    const val timefold_solver = "1.32.0" // https://mvnrepository.com/artifact/ai.timefold.solver/timefold-solver-core
 
     const val eclipse_collections = "13.0.0"  // https://mvnrepository.com/artifact/org.eclipse.collections/eclipse-collections
 
@@ -200,7 +203,7 @@ object Versions {
     const val springmockk = "5.0.1"         // https://mvnrepository.com/artifact/com.ninja-squad/springmockk
     const val awaitility = "4.3.0"          // https://mvnrepository.com/artifact/org.awaitility/awaitility
     const val jmh = "1.37"                  // https://mvnrepository.com/artifact/org.openjdk.jmh/jmh-core
-    const val testcontainers = "2.0.3"      // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
+    const val testcontainers = "2.0.4"      // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
     const val jna = "5.18.1"                // https://mvnrepository.com/artifact/net.java.dev.jna/jna
     const val archunit = "1.4.1"           // https://mvnrepository.com/artifact/com.tngtech.archunit/archunit-junit5
     const val rest_assured = "6.0.0"        // https://mvnrepository.com/artifact/io.rest-assured/rest-assured
@@ -1355,11 +1358,17 @@ object Libs {
     val agroal_hikari = agroal("hikari")
     val agroal_spring_boot_starter = agroal("spring-boot-starter")
 
-    const val mysql_connector_j = "com.mysql:mysql-connector-j:9.5.0"  // https://mvnrepository.com/artifact/com.mysql/mysql-connector-j
-    const val mariadb_java_client = "org.mariadb.jdbc:mariadb-java-client:3.5.6"  // https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client
-    const val postgresql_driver = "org.postgresql:postgresql:42.7.8"  // https://mvnrepository.com/artifact/org.postgresql/postgresql
-    const val neo4j_java_driver = "org.neo4j.driver:neo4j-java-driver:5.28.4"  // https://mvnrepository.com/artifact/org.neo4j.driver/neo4j-java-driver
-    const val neo4j_bolt_connection_netty = "org.neo4j.bolt:neo4j-bolt-connection-netty:1.1.0"  // Netty transport for Neo4j Driver 5.x
+    const val mysql_connector_j = "com.mysql:mysql-connector-j:9.6.0"  // https://mvnrepository.com/artifact/com.mysql/mysql-connector-j
+    const val mariadb_java_client = "org.mariadb.jdbc:mariadb-java-client:3.5.8"  // https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client
+    const val postgresql_driver = "org.postgresql:postgresql:42.7.10"  // https://mvnrepository.com/artifact/org.postgresql/postgresql
+
+    const val neo4j_java_driver = "org.neo4j.driver:neo4j-java-driver:${Versions.neo4j_java_driver}"  // https://mvnrepository.com/artifact/org.neo4j.driver/neo4j-java-driver
+
+    const val neo4j_bolt_connection_bom = "org.neo4j.bolt:neo4j-bolt-connection-bom:${Versions.neo4j_bolt_connection}"
+    const val neo4j_bolt_connection = "org.neo4j.bolt:neo4j-bolt-connection:${Versions.neo4j_bolt_connection}"
+    const val neo4j_bolt_connection_netty = "org.neo4j.bolt:neo4j-bolt-connection-netty:${Versions.neo4j_bolt_connection}"
+    const val neo4j_bolt_connection_pooled = "org.neo4j.bolt:neo4j-bolt-connection-pooled:${Versions.neo4j_bolt_connection}"
+    const val neo4j_bolt_connection_routed = "org.neo4j.bolt:neo4j-bolt-connection-route:${Versions.neo4j_bolt_connection}"
 
     // Apache TinkerPop (Gremlin) - https://mvnrepository.com/artifact/org.apache.tinkerpop
     const val tinkerpop_gremlin_core = "org.apache.tinkerpop:gremlin-core:3.7.3"

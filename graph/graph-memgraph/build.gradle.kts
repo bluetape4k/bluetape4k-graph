@@ -1,12 +1,3 @@
-configurations.all {
-    resolutionStrategy.eachDependency {
-        if (requested.group == "org.neo4j.bolt") {
-            useVersion("1.1.0")
-            because("neo4j-java-driver:5.28.4 requires bolt 1.1.0 API (BootstrapFactory)")
-        }
-    }
-}
-
 dependencies {
     api(project(":graph-core"))
     api(project(":graph-neo4j"))
@@ -14,6 +5,7 @@ dependencies {
 
     api(Libs.neo4j_java_driver)
     runtimeOnly(Libs.neo4j_bolt_connection_netty)
+    runtimeOnly(Libs.neo4j_bolt_connection_pooled)
 
     api(Libs.bluetape4k_coroutines)
     api(Libs.kotlinx_coroutines_reactive)
