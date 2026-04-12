@@ -1,45 +1,47 @@
 # graph-memgraph
 
-Memgraph 그래프 데이터베이스를 위한 `GraphOperations` / `GraphSuspendOperations` 구현 모듈.
+`GraphOperations` / `GraphSuspendOperations` implementation for the Memgraph graph database.
 
-## 개요
+> 🇰🇷 [한국어 문서](README.ko.md)
 
-[Memgraph](https://memgraph.com/)는 Neo4j Bolt 프로토콜과 openCypher를 완전 호환하는 인메모리 그래프 DB다.
-`neo4j-java-driver`를 그대로 사용해 연결할 수 있다.
+## Overview
 
-## 주요 클래스
+[Memgraph](https://memgraph.com/) is an in-memory graph database that is fully compatible with the Neo4j Bolt protocol and openCypher.
+It can be connected to with `neo4j-java-driver` as-is.
 
-| 클래스 | 설명 |
-|--------|------|
-| `MemgraphGraphOperations` | 동기(blocking) 방식 그래프 연산 |
-| `MemgraphGraphSuspendOperations` | 코루틴(suspend/Flow) 방식 그래프 연산 |
+## Key Classes
 
-## 사용법
+| Class | Description |
+|-------|-------------|
+| `MemgraphGraphOperations` | Synchronous (blocking) graph operations |
+| `MemgraphGraphSuspendOperations` | Coroutine (suspend/Flow) graph operations |
+
+## Usage
 
 ```kotlin
 val driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.none())
 
-// 동기 방식
+// Synchronous
 val ops = MemgraphGraphOperations(driver)
 val vertex = ops.createVertex("Person", mapOf("name" to "Alice"))
 
-// 코루틴 방식
+// Coroutine
 val suspendOps = MemgraphGraphSuspendOperations(driver)
 val vertex = suspendOps.createVertex("Person", mapOf("name" to "Alice"))
 ```
 
-## Neo4j와의 차이점
+## Differences from Neo4j
 
-| 항목 | Neo4j | Memgraph |
+| Item | Neo4j | Memgraph |
 |------|-------|----------|
-| 기본 database 파라미터 | `"neo4j"` | `"memgraph"` |
-| `elementId()` 지원 | O (5.x) | O (2.x+) |
-| `shortestPath` | O | O |
-| 인증 | basic auth | 기본 없음 (AuthTokens.none()) |
+| Default database parameter | `"neo4j"` | `"memgraph"` |
+| `elementId()` support | Yes (5.x) | Yes (2.x+) |
+| `shortestPath` | Yes | Yes |
+| Authentication | Basic auth | None by default (`AuthTokens.none()`) |
 
-## 테스트
+## Testing
 
-Testcontainers를 통해 `memgraph/memgraph:latest` 이미지를 자동으로 실행한다.
+Testcontainers automatically launches the `memgraph/memgraph:latest` image.
 
 ```bash
 ./gradlew :graph-memgraph:test

@@ -1,38 +1,38 @@
 # bluetape4k-graph
 
-Graph database integration library for the bluetape4k ecosystem. Provides a unified abstract API over Apache AGE, Neo4j, Memgraph, and Apache TinkerPop.
+bluetape4k 생태계의 그래프 데이터베이스 통합 라이브러리. Apache AGE, Neo4j, Memgraph, Apache TinkerPop을 단일 추상 API로 사용할 수 있도록 한다.
 
-> 🇰🇷 [한국어 문서](README.ko.md)
+> 🇺🇸 [English](README.md)
 
-## Module Structure
+## 모듈 구조
 
 ```
 graph/
-  graph-core       # Backend-independent models and interfaces (foundation for all modules)
-  graph-age        # Apache AGE (PostgreSQL graph extension) implementation
-  graph-neo4j      # Neo4j Java Driver implementation
-  graph-memgraph   # Memgraph (Neo4j protocol compatible) implementation
-  graph-tinkerpop  # Apache TinkerPop / TinkerGraph in-memory implementation
-  graph-servers    # Testcontainers server factory for testing
+  graph-core       # 백엔드 독립 모델·인터페이스 (모든 모듈의 기반)
+  graph-age        # Apache AGE (PostgreSQL 그래프 확장) 구현
+  graph-neo4j      # Neo4j Java Driver 구현
+  graph-memgraph   # Memgraph (Neo4j 프로토콜 호환) 구현
+  graph-tinkerpop  # Apache TinkerPop / TinkerGraph 인메모리 구현
+  graph-servers    # 테스트용 Testcontainers 서버 팩토리
 examples/
-  code-graph-examples     # Code dependency graph examples (AGE, Neo4j, Memgraph, TinkerGraph integration)
-  linkedin-graph-examples # LinkedIn social graph examples (AGE, Neo4j, Memgraph, TinkerGraph integration)
+  code-graph-examples     # 코드 의존성 그래프 예시 (AGE, Neo4j, Memgraph, TinkerGraph 통합)
+  linkedin-graph-examples # LinkedIn 소셜 그래프 예시 (AGE, Neo4j, Memgraph, TinkerGraph 통합)
 ```
 
-## Core Abstraction (`graph-core`)
+## 핵심 추상화 (`graph-core`)
 
-The common interface layer that every backend implementation adheres to.
+모든 백엔드 구현이 공통으로 준수하는 인터페이스 계층.
 
-### Dual API Pattern
+### 이중 API 패턴
 
-Provides both synchronous (blocking) and coroutine (suspend/Flow) APIs.
+동기(blocking)와 코루틴(suspend/Flow) API를 함께 제공한다.
 
 ```
 GraphOperations        = GraphSession + GraphVertexRepository + GraphEdgeRepository + GraphTraversalRepository
-GraphSuspendOperations = GraphSuspendSession + ... (suspend function versions)
+GraphSuspendOperations = GraphSuspendSession + ... (suspend 함수 버전)
 ```
 
-### Domain Model
+### 도메인 모델
 
 ```kotlin
 data class GraphVertex(val id: GraphElementId, val label: String, val properties: Map<String, Any?>)
@@ -40,9 +40,9 @@ data class GraphEdge(val id: GraphElementId, val label: String, val startId: Gra
 data class GraphPath(val steps: List<PathStep>)   // VertexStep | EdgeStep
 ```
 
-### Schema DSL
+### 스키마 DSL
 
-Declarative schema definition in the Exposed Table style. Works backend-independently.
+Exposed Table 스타일의 선언적 스키마 정의. 백엔드에 무관하게 동작한다.
 
 ```kotlin
 object PersonLabel : VertexLabel("Person") {
@@ -55,9 +55,9 @@ object KnowsLabel : EdgeLabel("KNOWS") {
 }
 ```
 
-## Adding Dependencies
+## 의존성 추가
 
-### BOM (Recommended)
+### BOM (권장)
 
 ```kotlin
 // build.gradle.kts
@@ -68,12 +68,12 @@ dependencyManagement {
 }
 
 dependencies {
-    implementation("io.github.bluetape4k.graph:graph-neo4j")   // version can be omitted
+    implementation("io.github.bluetape4k.graph:graph-neo4j")   // 버전 생략 가능
     implementation("io.github.bluetape4k.graph:graph-age")
 }
 ```
 
-### Individual Modules
+### 개별 모듈
 
 ```kotlin
 dependencies {
@@ -83,7 +83,7 @@ dependencies {
 }
 ```
 
-## Quick Start
+## 빠른 시작
 
 ### Neo4j
 
@@ -112,7 +112,7 @@ ops.createGraph("my_graph")
 val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
 ```
 
-### TinkerPop (In-Memory, No External Server Required)
+### TinkerPop (인메모리, 외부 서버 불필요)
 
 ```kotlin
 val ops = TinkerGraphOperations()
@@ -124,61 +124,61 @@ val neighbors = ops.neighbors(alice.id, "KNOWS", Direction.OUTGOING, depth = 1)
 ops.close()
 ```
 
-## Backend Comparison
+## 백엔드 비교
 
-| Item | graph-age | graph-neo4j | graph-memgraph | graph-tinkerpop |
+| 항목 | graph-age | graph-neo4j | graph-memgraph | graph-tinkerpop |
 |------|-----------|-------------|----------------|-----------------|
-| Query Language | Cypher-over-SQL | Cypher | Cypher | Gremlin |
-| Infrastructure | PostgreSQL + AGE | Neo4j | Memgraph | JVM in-memory |
-| Driver | JDBC + Exposed | Neo4j Java Driver | Neo4j Java Driver (compatible) | TinkerPop |
-| Test Container | `apache/age:PG16_latest` | `neo4j:5` | `memgraph/memgraph:latest` | not required |
+| 쿼리 언어 | Cypher-over-SQL | Cypher | Cypher | Gremlin |
+| 인프라 | PostgreSQL + AGE | Neo4j | Memgraph | JVM 인메모리 |
+| 드라이버 | JDBC + Exposed | Neo4j Java Driver | Neo4j Java Driver (호환) | TinkerPop |
+| 테스트 컨테이너 | `apache/age:PG16_latest` | `neo4j:5` | `memgraph/memgraph:latest` | 불필요 |
 
-## Running Tests
+## 테스트 실행
 
-Tests automatically launch Docker containers via Testcontainers. Docker is required.
+테스트는 Testcontainers를 통해 Docker 컨테이너를 자동 실행한다. Docker가 필요하다.
 
 ```bash
-# All tests
+# 전체 테스트
 ./gradlew test
 
-# Specific module tests
+# 특정 모듈 테스트
 ./gradlew :graph-neo4j:test
 ./gradlew :graph-age:test
 ./gradlew :code-graph-examples:test
 ./gradlew :linkedin-graph-examples:test
 
-# Specific class
+# 특정 클래스
 ./gradlew :graph-neo4j:test --tests "io.bluetape4k.graph.neo4j.Neo4jGraphOperationsTest"
 ```
 
-## Example Module Structure (`examples/`)
+## 예시 모듈 구조 (`examples/`)
 
-Each example module uses the **abstract test class pattern**. Common test logic lives in one place, while each concrete class only overrides backend-specific setup.
+각 예시 모듈은 **추상 테스트 클래스 패턴**을 사용한다. 공통 테스트 로직은 한 곳에, 백엔드별 설정만 구체 클래스에서 오버라이드한다.
 
-| Abstract Class | Concrete Classes (Backend) |
-|----------------|---------------------------|
+| 추상 클래스 | 구체 클래스 (백엔드) |
+|------------|---------------------|
 | `AbstractCodeGraphTest` | `Neo4j/Memgraph/TinkerGraph/AgeCodeGraphTest` |
 | `AbstractCodeGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/AgeCodeGraphSuspendTest` |
 | `AbstractLinkedInGraphTest` | `Neo4j/Memgraph/TinkerGraph/AgeLinkedInGraphTest` |
 | `AbstractLinkedInGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/AgeLinkedInGraphSuspendTest` |
 
-Concrete classes only need to implement `ops` (`GraphOperations` or `GraphSuspendOperations`) and the server lifecycle (`@BeforeAll`/`@AfterAll`).
+구체 클래스는 `ops` (`GraphOperations` 또는 `GraphSuspendOperations`) 와 서버 라이프사이클(`@BeforeAll`/`@AfterAll`)만 구현하면 된다.
 
-## Requirements
+## 요구 사항
 
-- Java 25 (with preview features enabled)
+- Java 25 (preview 기능 활성화)
 - Kotlin 2.3
-- Docker (for integration tests)
+- Docker (통합 테스트용)
 
-## Tech Stack
+## 기술 스택
 
 - **Kotlin** 2.3 + Coroutines 1.10
 - **Neo4j Java Driver** 5.x
-- **JetBrains Exposed** (JDBC for Apache AGE)
+- **JetBrains Exposed** (Apache AGE용 JDBC)
 - **Apache TinkerPop** (Gremlin)
-- **Testcontainers** (integration tests)
-- **bluetape4k** 1.5.x (common utilities)
+- **Testcontainers** (통합 테스트)
+- **bluetape4k** 1.5.x (공통 유틸리티)
 
-## Documentation
+## 문서
 
-- [Graph Database Pros & Cons and Selection Guide](docs/graphdb-tradeoffs.md) — GraphDB trade-offs and backend selection guide for bluetape4k-graph (Neo4j, Memgraph, AGE, TinkerPop)
+- [Graph Database 장단점 및 선택 가이드](docs/graphdb-tradeoffs.md) — GraphDB의 장단점과 bluetape4k-graph 백엔드(Neo4j, Memgraph, AGE, TinkerPop) 선택 가이드
