@@ -1,29 +1,18 @@
 package io.bluetape4k.graph.age.sql
 
-import java.time.LocalDate
-import java.time.LocalDateTime
+import io.bluetape4k.graph.utils.GraphProperties
 
 /**
- * Kotlin 값을 Cypher 프로퍼티 문자열로 직렬화합니다.
+ * Kotlin 값을 Cypher 프로퍼티 문자열로 직렬화한다.
+ *
+ * 실제 직렬화 로직은 [GraphProperties] 에 있으며, 이 객체는 AGE 전용 별칭이다.
+ * 새 코드는 [GraphProperties] 를 직접 사용해도 된다.
  */
 object AgePropertySerializer {
 
-    fun toCypherProps(properties: Map<String, Any?>): String {
-        if (properties.isEmpty()) return ""
-        return properties.entries.joinToString(", ", "{", "}") { (key, value) ->
-            "$key: ${toCypherValue(value)}"
-        }
-    }
+    fun toCypherProps(properties: Map<String, Any?>): String =
+        GraphProperties.toCypherProps(properties)
 
-    fun toCypherValue(value: Any?): String = when (value) {
-        null -> "null"
-        is String -> "'${value.replace("'", "\\'")}'"
-        is Number -> value.toString()
-        is Boolean -> value.toString()
-        is LocalDate -> "'${value}'"
-        is LocalDateTime -> "'${value}'"
-        is List<*> -> value.joinToString(", ", "[", "]") { toCypherValue(it) }
-        is Map<*, *> -> value.entries.joinToString(", ", "{", "}") { (k, v) -> "$k: ${toCypherValue(v)}" }
-        else -> "'${value.toString().replace("'", "\\'")}'"
-    }
+    fun toCypherValue(value: Any?): String =
+        GraphProperties.toCypherValue(value)
 }

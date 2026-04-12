@@ -19,6 +19,10 @@ abstract class EdgeLabel(
     fun integer(name: String) = PropertyDef<Int>(name, Int::class).also { _properties.add(it) }
     fun long(name: String) = PropertyDef<Long>(name, Long::class).also { _properties.add(it) }
     fun boolean(name: String) = PropertyDef<Boolean>(name, Boolean::class).also { _properties.add(it) }
+    @Suppress("UNCHECKED_CAST")
+    fun stringList(name: String) = PropertyDef<List<String>>(name, List::class as KClass<out List<String>>).also { _properties.add(it) }
+    @Suppress("UNCHECKED_CAST")
+    fun json(name: String) = PropertyDef<Map<String, Any?>>(name, Map::class as KClass<out Map<String, Any?>>).also { _properties.add(it) }
     fun localDate(name: String) = PropertyDef<LocalDate>(name, LocalDate::class).also { _properties.add(it) }
     fun localDateTime(name: String) = PropertyDef<LocalDateTime>(name, LocalDateTime::class).also { _properties.add(it) }
     fun <E : Enum<E>> enum(name: String, type: KClass<E>) = PropertyDef<E>(name, type).also { _properties.add(it) }

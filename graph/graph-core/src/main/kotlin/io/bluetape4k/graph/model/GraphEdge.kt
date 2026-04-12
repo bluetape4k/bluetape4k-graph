@@ -13,6 +13,6 @@ data class GraphEdge(
     val properties: Map<String, Any?> = emptyMap(),
 ): Serializable {
     companion object {
-        const val serializableUID = 1L
+        private const val serialVersionUID: Long = 1L
     }
 }

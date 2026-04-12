@@ -26,7 +26,7 @@ data class GraphPath(
         get() = steps.isEmpty()
 
     companion object {
-        const val serializableUID = 1L
+        private const val serialVersionUID: Long = 1L
 
         val EMPTY = GraphPath(emptyList())
 

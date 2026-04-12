@@ -11,7 +11,7 @@ import java.io.Serializable
 @JvmInline
 value class GraphElementId(val value: String): Serializable {
     companion object {
-        const val serializableUID = 1L
+        private const val serialVersionUID: Long = 1L
 
         fun of(value: String) = GraphElementId(value)
         fun of(value: Long) = GraphElementId(value.toString())

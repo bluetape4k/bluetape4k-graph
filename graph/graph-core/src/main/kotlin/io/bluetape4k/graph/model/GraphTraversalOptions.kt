@@ -22,7 +22,7 @@ data class NeighborOptions(
     override val maxDepth: Int = 1,
 ): GraphTraversalOptions() {
     companion object {
-        const val serializableUID = 1L
+        private const val serialVersionUID: Long = 1L
         val Default = NeighborOptions()
     }
 }
@@ -38,7 +38,7 @@ data class PathOptions(
     override val maxDepth: Int = 10,
 ): GraphTraversalOptions() {
     companion object {
-        const val serializableUID = 1L
+        private const val serialVersionUID: Long = 1L
         val Default = PathOptions()
     }
 }
