@@ -72,12 +72,12 @@ object Plugins {
 object Versions {
 
     // Java 21, Kotlin 2.3 이상에서 사용하세요
-    const val bluetape4k = "1.5.0"    // https://mvnrepository.com/artifact/io.github.bluetape4k/bluetape4k-bom
+    const val bluetape4k = "1.6.0"    // https://mvnrepository.com/artifact/io.github.bluetape4k/bluetape4k-bom
 
     const val kotlin = "2.3.20"                 // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib
     const val kotlinx_coroutines = "1.10.2"     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
-    const val kotlinx_serialization = "1.9.0"   // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-serialization-json-jvm
-    const val kotlinx_atomicfu = "0.31.0"      // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/atomicfu
+    const val kotlinx_serialization = "1.11.0"   // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-serialization-json-jvm
+    const val kotlinx_atomicfu = "0.32.1"      // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/atomicfu
 
     const val kotlinx_benchmark = Plugins.Versions.kotlinx_benchmark
     const val chronicle_wire = "2.27ea8"       // https://mvnrepository.com/artifact/net.openhft/chronicle-wire
@@ -212,7 +212,7 @@ object Versions {
     const val snakeyaml = "2.6"            // https://mvnrepository.com/artifact/org.yaml/snakeyaml
     const val random_beans = "3.9.0"
 
-    const val scrimage = "4.3.8"  // https://mvnrepository.com/artifact/com.sksamuel.scrimage/scrimage-core
+    const val scrimage = "4.3.10"  // https://mvnrepository.com/artifact/com.sksamuel.scrimage/scrimage-core
 
     // Gatling
     const val gatling = "3.15.0" // https://mvnrepository.com/artifact/io.gatling/gatling-core
@@ -285,6 +285,7 @@ object Libs {
 
     val bluetape4k_exposed = bluetape4k("exposed")
     val bluetape4k_exposed_bigquery = bluetape4k("exposed-bigquery")
+    val bluetape4k_exposed_cache = bluetape4k("exposed-cache")
     val bluetape4k_exposed_core = bluetape4k("exposed-core")
     val bluetape4k_exposed_dao = bluetape4k("exposed-dao")
     val bluetape4k_exposed_duckdb = bluetape4k("exposed-duckdb")
@@ -293,6 +294,7 @@ object Libs {
     val bluetape4k_exposed_jackson2 = bluetape4k("exposed-jackson2")
     val bluetape4k_exposed_jackson3 = bluetape4k("exposed-jackson3")
     val bluetape4k_exposed_jasypt = bluetape4k("exposed-jasypt")
+    val bluetape4k_exposed_jdbc_caffeine = bluetape4k("exposed-jdbc-caffeine")
     val bluetape4k_exposed_jdbc_lettuce = bluetape4k("exposed-jdbc-lettuce")
     val bluetape4k_exposed_jdbc_redisson = bluetape4k("exposed-jdbc-redisson")
     val bluetape4k_exposed_jdbc_tests = bluetape4k("exposed-jdbc-tests")
@@ -300,6 +302,7 @@ object Libs {
     val bluetape4k_exposed_mysql8 = bluetape4k("exposed-mysql8")
     val bluetape4k_exposed_postgresql = bluetape4k("exposed-postgresql")
     val bluetape4k_exposed_r2dbc = bluetape4k("exposed-r2dbc")
+    val bluetape4k_exposed_r2dbc_caffeine = bluetape4k("exposed-r2dbc-caffeine")
     val bluetape4k_exposed_r2dbc_lettuce = bluetape4k("exposed-r2dbc-lettuce")
     val bluetape4k_exposed_r2dbc_redisson = bluetape4k("exposed-r2dbc-redisson")
     val bluetape4k_exposed_r2dbc_tests = bluetape4k("exposed-r2dbc-tests")
@@ -330,6 +333,7 @@ object Libs {
     val bluetape4k_resilience4j = bluetape4k("resilience4j")
 
     // Spring Boot 3
+    val bluetape4k_spring_boot3_batch_exposed = bluetape4k("spring-boot3-batch-exposed")
     val bluetape4k_spring_boot3_core = bluetape4k("spring-boot3-core")
     val bluetape4k_spring_boot3_cassandra = bluetape4k("spring-boot3-cassandra")
     val bluetape4k_spring_boot3_exposed_jdbc = bluetape4k("spring-boot3-exposed-jdbc")
@@ -340,6 +344,7 @@ object Libs {
     val bluetape4k_spring_boot3_redis = bluetape4k("spring-boot3-redis")
 
     // Spring Boot 4
+    val bluetape4k_spring_boot4_batch_exposed = bluetape4k("spring-boot4-batch-exposed")
     val bluetape4k_spring_boot4_core = bluetape4k("spring-boot4-core")
     val bluetape4k_spring_boot4_cassandra = bluetape4k("spring-boot4-cassandra")
     val bluetape4k_spring_boot4_exposed_jdbc = bluetape4k("spring-boot4-exposed-jdbc")
@@ -354,6 +359,7 @@ object Libs {
     val bluetape4k_aws_kotlin = bluetape4k("aws-kotlin")
 
     // UTILS
+    val bluetape4k_batch = bluetape4k("batch")
     val bluetape4k_geo = bluetape4k("geo")
     val bluetape4k_idgenerators = bluetape4k("idgenerators")
     val bluetape4k_images = bluetape4k("images")
