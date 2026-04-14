@@ -7,13 +7,13 @@ import io.bluetape4k.graph.servers.PostgreSQLAgeServer
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.TestInstance
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class AgeLinkedInGraphSuspendTest : AbstractLinkedInGraphSuspendTest() {
+class AgeLinkedInGraphSuspendTest: AbstractLinkedInGraphSuspendTest() {
     override val graphName = "linkedin_test_suspend"
     private lateinit var dataSource: HikariDataSource
+    private lateinit var database: Database
     override lateinit var ops: AgeGraphSuspendOperations
+
 
     @BeforeAll
     fun startServer() {
@@ -26,7 +26,8 @@ class AgeLinkedInGraphSuspendTest : AbstractLinkedInGraphSuspendTest() {
             connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
             maximumPoolSize = 5
         })
-        ops = AgeGraphSuspendOperations(Database.connect(dataSource), graphName)
+        database = Database.connect(dataSource)
+        ops = AgeGraphSuspendOperations(graphName)
     }
 
     @AfterAll

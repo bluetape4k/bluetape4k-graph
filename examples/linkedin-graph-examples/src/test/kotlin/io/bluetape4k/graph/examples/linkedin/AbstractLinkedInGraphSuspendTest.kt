@@ -4,11 +4,10 @@ import io.bluetape4k.graph.examples.linkedin.service.LinkedInGraphSuspendService
 import io.bluetape4k.graph.model.Direction
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.repository.GraphSuspendOperations
-import io.bluetape4k.logging.KLogging
+import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.runTest
 import org.amshove.kluent.shouldBeGreaterThan
 import org.amshove.kluent.shouldNotBeEmpty
 import org.amshove.kluent.shouldNotBeNull
@@ -19,20 +18,20 @@ import org.junit.jupiter.api.TestInstance
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AbstractLinkedInGraphSuspendTest {
 
-    companion object : KLogging()
+    companion object: KLoggingChannel()
 
     protected abstract val ops: GraphSuspendOperations
     protected open val graphName: String = "linkedin_test"
     protected val service: LinkedInGraphSuspendService by lazy { LinkedInGraphSuspendService(ops, graphName) }
 
     @BeforeEach
-    fun setup() = runBlocking {
+    fun setup() = runSuspendIO {
         if (ops.graphExists(graphName)) ops.dropGraph(graphName)
         service.initialize()
     }
 
     @Test
-    fun `사람 추가 및 인맥 연결`() = runTest {
+    fun `사람 추가 및 인맥 연결`() = runSuspendIO {
         val alice = service.addPerson("Alice", "Software Engineer", "TechCorp", "Seoul")
         val bob = service.addPerson("Bob", "Product Manager", "StartupXYZ", "Busan")
 
@@ -47,7 +46,7 @@ abstract class AbstractLinkedInGraphSuspendTest {
     }
 
     @Test
-    fun `최단 인맥 경로 탐색 - 6단계 분리`() = runTest {
+    fun `최단 인맥 경로 탐색 - 6단계 분리`() = runSuspendIO {
         val alice = service.addPerson("Alice", "Engineer", "A", "Seoul")
         val bob = service.addPerson("Bob", "Manager", "B", "Seoul")
         val carol = service.addPerson("Carol", "Designer", "C", "Seoul")
@@ -64,7 +63,7 @@ abstract class AbstractLinkedInGraphSuspendTest {
     }
 
     @Test
-    fun `2촌 인맥 탐색`() = runTest {
+    fun `2촌 인맥 탐색`() = runSuspendIO {
         val alice = service.addPerson("Alice", "Engineer", "A", "Seoul")
         val bob = service.addPerson("Bob", "Manager", "B", "Seoul")
         val carol = service.addPerson("Carol", "Designer", "C", "Seoul")
@@ -78,7 +77,7 @@ abstract class AbstractLinkedInGraphSuspendTest {
     }
 
     @Test
-    fun `회사 추가 및 재직자 조회`() = runTest {
+    fun `회사 추가 및 재직자 조회`() = runSuspendIO {
         val alice = service.addPerson("Alice", "Engineer", "TechCorp", "Seoul")
         val bob = service.addPerson("Bob", "Designer", "TechCorp", "Seoul")
         val techCorp = service.addCompany("TechCorp", "Technology", "Seoul")
@@ -92,7 +91,7 @@ abstract class AbstractLinkedInGraphSuspendTest {
     }
 
     @Test
-    fun `팔로우 관계 생성`() = runTest {
+    fun `팔로우 관계 생성`() = runSuspendIO {
         val alice = service.addPerson("Alice", "Influencer", "A", "Seoul")
         val bob = service.addPerson("Bob", "Fan", "B", "Seoul")
 

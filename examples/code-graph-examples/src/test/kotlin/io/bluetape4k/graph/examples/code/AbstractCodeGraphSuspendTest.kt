@@ -13,12 +13,10 @@ import org.amshove.kluent.shouldNotBeEmpty
 import org.amshove.kluent.shouldNotBeNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AbstractCodeGraphSuspendTest {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     protected abstract val ops: GraphSuspendOperations
     protected open val graphName: String = "code_graph"
