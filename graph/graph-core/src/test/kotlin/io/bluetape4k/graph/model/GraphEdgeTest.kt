@@ -1,6 +1,7 @@
 package io.bluetape4k.graph.model
 
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldNotBeEqualTo
 import org.junit.jupiter.api.Test
 
 class GraphEdgeTest {
@@ -42,13 +43,14 @@ class GraphEdgeTest {
     fun `동일한 필드로 만든 간선은 동등하다`() {
         val a = GraphEdge(edgeId, "KNOWS", startId, endId, mapOf("k" to "v"))
         val b = GraphEdge(edgeId, "KNOWS", startId, endId, mapOf("k" to "v"))
-        (a == b) shouldBeEqualTo true
+        b shouldBeEqualTo a
     }
 
     @Test
     fun `방향이 반대이면 다른 간선이다`() {
         val forward = GraphEdge(edgeId, "KNOWS", startId, endId)
         val reversed = GraphEdge(edgeId, "KNOWS", endId, startId)
-        (forward == reversed) shouldBeEqualTo false
+
+        reversed shouldNotBeEqualTo forward
     }
 }

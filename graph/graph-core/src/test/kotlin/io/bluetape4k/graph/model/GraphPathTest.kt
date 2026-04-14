@@ -3,6 +3,7 @@ package io.bluetape4k.graph.model
 import org.amshove.kluent.shouldBeEmpty
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeFalse
+import org.amshove.kluent.shouldBeInstanceOf
 import org.amshove.kluent.shouldBeTrue
 import org.amshove.kluent.shouldContainSame
 import org.amshove.kluent.shouldHaveSize
@@ -14,7 +15,12 @@ class GraphPathTest {
         GraphVertex(GraphElementId(id), label)
 
     private fun edge(id: String, start: String, end: String, label: String = "KNOWS") =
-        GraphEdge(GraphElementId(id), label, GraphElementId(start), GraphElementId(end))
+        GraphEdge(
+            GraphElementId(id),
+            label,
+            GraphElementId(start),
+            GraphElementId(end)
+        )
 
     @Test
     fun `EMPTY 경로는 비어있다`() {
@@ -82,7 +88,7 @@ class GraphPathTest {
         val vStep: PathStep = PathStep.VertexStep(vertex("1"))
         val eStep: PathStep = PathStep.EdgeStep(edge("e1", "1", "2"))
 
-        (vStep is PathStep.VertexStep).shouldBeTrue()
-        (eStep is PathStep.EdgeStep).shouldBeTrue()
+        vStep shouldBeInstanceOf PathStep.VertexStep::class
+        eStep shouldBeInstanceOf PathStep.EdgeStep::class
     }
 }

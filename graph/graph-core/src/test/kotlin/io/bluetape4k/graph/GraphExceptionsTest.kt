@@ -1,8 +1,8 @@
 package io.bluetape4k.graph
 
+import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeInstanceOf
-import org.amshove.kluent.shouldBeTrue
 import org.junit.jupiter.api.Test
 
 class GraphExceptionsTest {
@@ -18,7 +18,7 @@ class GraphExceptionsTest {
     fun `GraphException은 cause를 보존한다`() {
         val cause = IllegalStateException("root")
         val ex = GraphException("wrapped", cause)
-        (ex.cause === cause).shouldBeTrue()
+        ex.cause shouldBe cause
     }
 
     @Test
@@ -38,8 +38,9 @@ class GraphExceptionsTest {
     fun `GraphQueryException은 cause와 함께 생성할 수 있다`() {
         val cause = RuntimeException("sql error")
         val ex = GraphQueryException("query failed", cause)
+
         ex shouldBeInstanceOf GraphException::class
-        (ex.cause === cause).shouldBeTrue()
+        ex.cause shouldBe cause
     }
 
     @Test

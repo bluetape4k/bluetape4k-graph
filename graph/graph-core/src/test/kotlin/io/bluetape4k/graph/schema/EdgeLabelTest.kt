@@ -1,8 +1,9 @@
 package io.bluetape4k.graph.schema
 
+import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeTrue
 import org.amshove.kluent.shouldContain
+import org.amshove.kluent.shouldHaveSize
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -24,13 +25,16 @@ class EdgeLabelTest {
         val status = enum("status", Status::class)
     }
 
-    private enum class Status { ACTIVE, TERMINATED }
+    private enum class Status {
+        ACTIVE,
+        TERMINATED
+    }
 
     @Test
     fun `label과 양 끝 정점 라벨이 유지된다`() {
         WorksAtLabel.label shouldBeEqualTo "WORKS_AT"
-        (WorksAtLabel.from === PersonLabel).shouldBeTrue()
-        (WorksAtLabel.to === CompanyLabel).shouldBeTrue()
+        WorksAtLabel.from shouldBe PersonLabel
+        WorksAtLabel.to shouldBe CompanyLabel
     }
 
     @Test
@@ -62,12 +66,12 @@ class EdgeLabelTest {
 
         a.label shouldBeEqualTo "A"
         b.label shouldBeEqualTo "B"
-        (a.from === PersonLabel).shouldBeTrue()
+        a.from shouldBe PersonLabel
     }
 
     @Test
     fun `properties 리스트는 불변 스냅샷이다`() {
         WorksAtLabel.properties.map { it.name } shouldContain "role"
-        WorksAtLabel.properties.size shouldBeEqualTo 9
+        WorksAtLabel.properties shouldHaveSize 9
     }
 }

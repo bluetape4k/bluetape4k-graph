@@ -21,7 +21,10 @@ class VertexLabelTest {
         val status = enum("status", Status::class)
     }
 
-    private enum class Status { ACTIVE, INACTIVE }
+    private enum class Status {
+        ACTIVE,
+        INACTIVE
+    }
 
     @Test
     fun `label 이름이 보존된다`() {
@@ -69,7 +72,7 @@ class VertexLabelTest {
     fun `VertexLabel 서브클래스는 각각 독립된 properties 상태를 가진다`() {
         val companyProps = TestCompanyLabel.properties.map { it.name }
         companyProps shouldContain "industry"
-        companyProps.size shouldBeEqualTo 2
+        companyProps shouldHaveSize 2
     }
 
     private object TestCompanyLabel: VertexLabel("Company") {

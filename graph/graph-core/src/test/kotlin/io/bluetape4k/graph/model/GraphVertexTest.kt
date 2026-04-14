@@ -1,7 +1,10 @@
 package io.bluetape4k.graph.model
 
+import org.amshove.kluent.shouldBeEmpty
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeNull
 import org.amshove.kluent.shouldContain
+import org.amshove.kluent.shouldNotBeEqualTo
 import org.junit.jupiter.api.Test
 
 class GraphVertexTest {
@@ -25,7 +28,7 @@ class GraphVertexTest {
     @Test
     fun `properties 기본값은 빈 맵이다`() {
         val v = GraphVertex(id = id, label = "Person")
-        v.properties shouldBeEqualTo emptyMap()
+        v.properties.shouldBeEmpty()
     }
 
     @Test
@@ -34,8 +37,8 @@ class GraphVertexTest {
         val b = GraphVertex(id, "Person", mapOf("k" to 1))
         val c = GraphVertex(id, "Person", mapOf("k" to 2))
 
-        (a == b) shouldBeEqualTo true
-        (a == c) shouldBeEqualTo false
+        b shouldBeEqualTo a
+        c shouldNotBeEqualTo a
     }
 
     @Test
@@ -52,6 +55,6 @@ class GraphVertexTest {
     fun `null 값을 포함한 properties도 허용된다`() {
         val v = GraphVertex(id, "Person", mapOf("nickname" to null))
         v.properties.keys shouldContain "nickname"
-        v.properties["nickname"] shouldBeEqualTo null
+        v.properties["nickname"].shouldBeNull()
     }
 }

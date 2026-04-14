@@ -132,8 +132,7 @@ class GraphPropertiesTest {
             "age" to 30,
             "active" to true,
         )
-        GraphProperties.toCypherProps(props) shouldBeEqualTo
-                "{name: 'Alice', age: 30, active: true}"
+        GraphProperties.toCypherProps(props) shouldBeEqualTo "{name: 'Alice', age: 30, active: true}"
     }
 
     @Test
@@ -145,7 +144,6 @@ class GraphPropertiesTest {
     @Test
     fun `List 값을 가진 프로퍼티도 변환된다`() {
         val props = mapOf("tags" to listOf("kotlin", "graph"))
-        GraphProperties.toCypherProps(props) shouldBeEqualTo
-                "{tags: ['kotlin', 'graph']}"
+        GraphProperties.toCypherProps(props) shouldBeEqualTo "{tags: ['kotlin', 'graph']}"
     }
 }
