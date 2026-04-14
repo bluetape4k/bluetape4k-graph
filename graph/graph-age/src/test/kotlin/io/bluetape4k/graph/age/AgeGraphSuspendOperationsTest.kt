@@ -9,6 +9,7 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.servers.PostgreSQLAgeServer
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.KLogging
+import kotlinx.coroutines.flow.toList
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeFalse
 import org.amshove.kluent.shouldBeGreaterThan
@@ -20,19 +21,19 @@ import org.jetbrains.exposed.v1.jdbc.Database
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.MethodOrderer
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
 
-@TestMethodOrder(MethodOrderer.OrderAnnotation::class)
-class AgeGraphOperationsTest {
+@TestMethodOrder(OrderAnnotation::class)
+class AgeGraphSuspendOperationsTest {
 
     companion object: KLogging()
 
     private lateinit var dataSource: HikariDataSource
     private lateinit var database: Database
-    private lateinit var ops: AgeGraphOperations
+    private lateinit var ops: AgeGraphSuspendOperations
 
     private val graphName = "test_graph"
 
@@ -48,7 +49,7 @@ class AgeGraphOperationsTest {
             maximumPoolSize = 5
         })
         database = Database.connect(dataSource)
-        ops = AgeGraphOperations(graphName)
+        ops = AgeGraphSuspendOperations(graphName)
     }
 
     @AfterAll
@@ -122,7 +123,7 @@ class AgeGraphOperationsTest {
     fun `label로 정점 목록을 조회한다`() = runSuspendIO {
         ops.createVertex("Person", mapOf("name" to "Alice"))
         ops.createVertex("Person", mapOf("name" to "Bob"))
-        val vertices = ops.findVerticesByLabel("Person")
+        val vertices = ops.findVerticesByLabel("Person").toList()
         vertices.shouldNotBeEmpty()
         vertices.size shouldBeGreaterThan 1
     }
@@ -132,7 +133,7 @@ class AgeGraphOperationsTest {
     fun `filter 조건으로 정점을 조회한다`() = runSuspendIO {
         ops.createVertex("Person", mapOf("name" to "Alice", "city" to "Seoul"))
         ops.createVertex("Person", mapOf("name" to "Bob", "city" to "Busan"))
-        val vertices = ops.findVerticesByLabel("Person", mapOf("city" to "Seoul"))
+        val vertices = ops.findVerticesByLabel("Person", mapOf("city" to "Seoul")).toList()
         vertices.shouldNotBeEmpty()
         vertices.all { it.properties["city"] == "Seoul" }.shouldBeTrue()
     }
@@ -187,7 +188,7 @@ class AgeGraphOperationsTest {
         val carol = ops.createVertex("Person", mapOf("name" to "Carol"))
         ops.createEdge(alice.id, bob.id, "KNOWS")
         ops.createEdge(alice.id, carol.id, "KNOWS")
-        val edges = ops.findEdgesByLabel("KNOWS")
+        val edges = ops.findEdgesByLabel("KNOWS").toList()
         edges.shouldNotBeEmpty()
         edges.size shouldBeGreaterThan 1
     }
@@ -200,7 +201,7 @@ class AgeGraphOperationsTest {
         val edge = ops.createEdge(alice.id, bob.id, "KNOWS")
         val deleted = ops.deleteEdge("KNOWS", edge.id)
         deleted.shouldBeTrue()
-        val edges = ops.findEdgesByLabel("KNOWS")
+        val edges = ops.findEdgesByLabel("KNOWS").toList()
         edges.none { it.id == edge.id }.shouldBeTrue()
     }
 
@@ -215,7 +216,7 @@ class AgeGraphOperationsTest {
         val neighbors = ops.neighbors(
             alice.id,
             NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING, maxDepth = 1)
-        )
+        ).toList()
         neighbors.shouldNotBeEmpty()
         neighbors.any { it.properties["name"] == "Bob" }.shouldBeTrue()
     }
@@ -226,8 +227,9 @@ class AgeGraphOperationsTest {
         val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
         val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
         ops.createEdge(alice.id, bob.id, "KNOWS")
-        val neighbors =
-            ops.neighbors(bob.id, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.INCOMING, maxDepth = 1))
+        val neighbors = ops
+            .neighbors(bob.id, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.INCOMING, maxDepth = 1))
+            .toList()
         neighbors.shouldNotBeEmpty()
         neighbors.any { it.properties["name"] == "Alice" }.shouldBeTrue()
     }
@@ -240,8 +242,10 @@ class AgeGraphOperationsTest {
         val carol = ops.createVertex("Person", mapOf("name" to "Carol"))
         ops.createEdge(alice.id, bob.id, "KNOWS")
         ops.createEdge(carol.id, alice.id, "KNOWS")
-        val neighbors =
-            ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.BOTH, maxDepth = 1))
+        val neighbors = ops
+            .neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.BOTH, maxDepth = 1))
+            .toList()
+
         neighbors.shouldNotBeEmpty()
         neighbors.size shouldBeGreaterThan 1
     }
@@ -254,8 +258,9 @@ class AgeGraphOperationsTest {
         val carol = ops.createVertex("Person", mapOf("name" to "Carol"))
         ops.createEdge(alice.id, bob.id, "KNOWS")
         ops.createEdge(bob.id, carol.id, "KNOWS")
-        val neighbors =
-            ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING, maxDepth = 2))
+        val neighbors = ops
+            .neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING, maxDepth = 2))
+            .toList()
         neighbors.shouldNotBeEmpty()
         neighbors.any { it.properties["name"] == "Carol" }.shouldBeTrue()
     }
@@ -294,7 +299,9 @@ class AgeGraphOperationsTest {
         ops.createEdge(bob.id, carol.id, "KNOWS")
         // alice -> carol (우회 경로)
         ops.createEdge(alice.id, carol.id, "KNOWS")
-        val paths = ops.allPaths(alice.id, carol.id, PathOptions(edgeLabel = "KNOWS", maxDepth = 5))
+        val paths = ops
+            .allPaths(alice.id, carol.id, PathOptions(edgeLabel = "KNOWS", maxDepth = 5))
+            .toList()
         paths.shouldNotBeEmpty()
         paths.size shouldBeGreaterThan 1
     }

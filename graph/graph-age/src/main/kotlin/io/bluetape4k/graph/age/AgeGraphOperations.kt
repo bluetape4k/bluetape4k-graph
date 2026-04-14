@@ -12,7 +12,6 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.support.requireNotBlank
-import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 /**
@@ -22,24 +21,22 @@ import org.jetbrains.exposed.v1.jdbc.transactions.transaction
  * - `CREATE EXTENSION IF NOT EXISTS age`: PostgreSQLAgeServer 시작 시 1회 실행 (DB 수준)
  * - 매 connection: `LOAD 'age'` + `SET search_path` 는 HikariCP connectionInitSql로 처리
  *
- * @param database Exposed Database 인스턴스 (외부에서 주입, close 시 닫지 않음)
  * @param graphName AGE 그래프 이름
  */
 class AgeGraphOperations(
-    private val database: Database,
     private val graphName: String,
-) : GraphOperations {
+): GraphOperations {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     init {
         graphName.requireNotBlank("graphName")
     }
 
     override fun createGraph(name: String) {
-        transaction(database) {
-            exec(AgeSql.loadAge())
-            exec(AgeSql.setSearchPath())
+        transaction {
+            loadAgeAndSetSearchPath()
+
             try {
                 exec(AgeSql.createGraph(name))
             } catch (e: Exception) {
@@ -50,17 +47,16 @@ class AgeGraphOperations(
     }
 
     override fun dropGraph(name: String) {
-        transaction(database) {
-            exec(AgeSql.loadAge())
-            exec(AgeSql.setSearchPath())
+        transaction {
+            loadAgeAndSetSearchPath()
             exec(AgeSql.dropGraph(name))
         }
     }
 
     override fun graphExists(name: String): Boolean {
-        return transaction(database) {
-            exec(AgeSql.loadAge())
-            exec(AgeSql.setSearchPath())
+        return transaction {
+            loadAgeAndSetSearchPath()
+
             var count = 0L
             exec(AgeSql.graphExists(name)) { rs ->
                 if (rs.next()) count = rs.getLong(1)
@@ -75,9 +71,9 @@ class AgeGraphOperations(
 
     override fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex {
         label.requireNotBlank("label")
-        return transaction(database) {
-            exec(AgeSql.loadAge())
-            exec(AgeSql.setSearchPath())
+        return transaction {
+            loadAgeAndSetSearchPath()
+
             var vertex: GraphVertex? = null
             exec(AgeSql.createVertex(graphName, label, properties)) { rs ->
                 if (rs.next()) vertex = AgeTypeParser.parseVertex(rs.getString("v"))
@@ -88,9 +84,9 @@ class AgeGraphOperations(
 
     override fun findVertexById(label: String, id: GraphElementId): GraphVertex? {
         label.requireNotBlank("label")
-        return transaction(database) {
-            exec(AgeSql.loadAge())
-            exec(AgeSql.setSearchPath())
+        return transaction {
+            loadAgeAndSetSearchPath()
+
             val longId = id.value.toLongOrNull()
                 ?: throw GraphQueryException("AGE requires numeric ID, got: ${id.value}")
             var vertex: GraphVertex? = null
@@ -103,9 +99,9 @@ class AgeGraphOperations(
 
     override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> {
         label.requireNotBlank("label")
-        return transaction(database) {
-            exec(AgeSql.loadAge())
-            exec(AgeSql.setSearchPath())
+        return transaction {
+            loadAgeAndSetSearchPath()
+
             val vertices = mutableListOf<GraphVertex>()
             exec(AgeSql.matchVertices(graphName, label, filter)) { rs ->
                 while (rs.next()) vertices.add(AgeTypeParser.parseVertex(rs.getString("v")))
@@ -120,9 +116,9 @@ class AgeGraphOperations(
         properties: Map<String, Any?>,
     ): GraphVertex? {
         label.requireNotBlank("label")
-        return transaction(database) {
-            exec(AgeSql.loadAge())
-            exec(AgeSql.setSearchPath())
+        return transaction {
+            loadAgeAndSetSearchPath()
+
             val longId = id.value.toLongOrNull()
                 ?: throw GraphQueryException("AGE requires numeric ID, got: ${id.value}")
             var vertex: GraphVertex? = null
@@ -135,9 +131,9 @@ class AgeGraphOperations(
 
     override fun deleteVertex(label: String, id: GraphElementId): Boolean {
         label.requireNotBlank("label")
-        return transaction(database) {
-            exec(AgeSql.loadAge())
-            exec(AgeSql.setSearchPath())
+        return transaction {
+            loadAgeAndSetSearchPath()
+
             val longId = id.value.toLongOrNull()
                 ?: throw GraphQueryException("AGE requires numeric ID, got: ${id.value}")
             var deleted = false
@@ -150,9 +146,9 @@ class AgeGraphOperations(
 
     override fun countVertices(label: String): Long {
         label.requireNotBlank("label")
-        return transaction(database) {
-            exec(AgeSql.loadAge())
-            exec(AgeSql.setSearchPath())
+        return transaction {
+            loadAgeAndSetSearchPath()
+
             var count = 0L
             exec(AgeSql.countVertices(graphName, label)) { rs ->
                 if (rs.next()) count = rs.getString("count").trim().toLongOrNull() ?: 0L
@@ -168,9 +164,9 @@ class AgeGraphOperations(
         properties: Map<String, Any?>,
     ): GraphEdge {
         label.requireNotBlank("label")
-        return transaction(database) {
-            exec(AgeSql.loadAge())
-            exec(AgeSql.setSearchPath())
+        return transaction {
+            loadAgeAndSetSearchPath()
+
             val from = fromId.value.toLongOrNull()
                 ?: throw GraphQueryException("AGE requires numeric ID, got: ${fromId.value}")
             val to = toId.value.toLongOrNull()
@@ -185,12 +181,14 @@ class AgeGraphOperations(
 
     override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): List<GraphEdge> {
         label.requireNotBlank("label")
-        return transaction(database) {
-            exec(AgeSql.loadAge())
-            exec(AgeSql.setSearchPath())
+        return transaction {
+            loadAgeAndSetSearchPath()
+
             val edges = mutableListOf<GraphEdge>()
             exec(AgeSql.matchEdgesByLabel(graphName, label, filter)) { rs ->
-                while (rs.next()) edges.add(AgeTypeParser.parseEdge(rs.getString("e")))
+                while (rs.next()) {
+                    edges.add(AgeTypeParser.parseEdge(rs.getString("e")))
+                }
             }
             edges
         }
@@ -198,9 +196,9 @@ class AgeGraphOperations(
 
     override fun deleteEdge(label: String, id: GraphElementId): Boolean {
         label.requireNotBlank("label")
-        return transaction(database) {
-            exec(AgeSql.loadAge())
-            exec(AgeSql.setSearchPath())
+        return transaction {
+            loadAgeAndSetSearchPath()
+
             val longId = id.value.toLongOrNull()
                 ?: throw GraphQueryException("AGE requires numeric ID, got: ${id.value}")
             var deleted = false
@@ -215,14 +213,24 @@ class AgeGraphOperations(
         startId: GraphElementId,
         options: NeighborOptions,
     ): List<GraphVertex> {
-        return transaction(database) {
-            exec(AgeSql.loadAge())
-            exec(AgeSql.setSearchPath())
+        return transaction {
+            loadAgeAndSetSearchPath()
+
             val longId = startId.value.toLongOrNull()
                 ?: throw GraphQueryException("AGE requires numeric ID, got: ${startId.value}")
             val vertices = mutableListOf<GraphVertex>()
-            exec(AgeSql.neighbors(graphName, longId, options.edgeLabel, options.direction.name, options.maxDepth)) { rs ->
-                while (rs.next()) vertices.add(AgeTypeParser.parseVertex(rs.getString("neighbor")))
+
+            val stmt = AgeSql.neighbors(
+                graphName,
+                longId,
+                options.edgeLabel,
+                options.direction.name,
+                options.maxDepth
+            )
+            exec(stmt) { rs ->
+                while (rs.next()) {
+                    vertices.add(AgeTypeParser.parseVertex(rs.getString("neighbor")))
+                }
             }
             vertices
         }
@@ -233,9 +241,9 @@ class AgeGraphOperations(
         toId: GraphElementId,
         options: PathOptions,
     ): GraphPath? {
-        return transaction(database) {
-            exec(AgeSql.loadAge())
-            exec(AgeSql.setSearchPath())
+        return transaction {
+            loadAgeAndSetSearchPath()
+
             val from = fromId.value.toLongOrNull()
                 ?: throw GraphQueryException("AGE requires numeric ID, got: ${fromId.value}")
             val to = toId.value.toLongOrNull()
@@ -253,9 +261,9 @@ class AgeGraphOperations(
         toId: GraphElementId,
         options: PathOptions,
     ): List<GraphPath> {
-        return transaction(database) {
-            exec(AgeSql.loadAge())
-            exec(AgeSql.setSearchPath())
+        return transaction {
+            loadAgeAndSetSearchPath()
+
             val from = fromId.value.toLongOrNull()
                 ?: throw GraphQueryException("AGE requires numeric ID, got: ${fromId.value}")
             val to = toId.value.toLongOrNull()

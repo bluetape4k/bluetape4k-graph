@@ -11,7 +11,7 @@ package io.bluetape4k.graph.age.sql
 object AgeSql {
 
     fun loadAge(): String = "LOAD 'age'"
-    fun setSearchPath(): String = """SET search_path = ag_catalog, "${'$'}user", public"""
+    fun setSearchPath(): String = $$"""SET search_path = ag_catalog, "$user", public"""
     fun createExtension(): String = "CREATE EXTENSION IF NOT EXISTS age"
     fun createGraph(graphName: String): String = "SELECT create_graph('$graphName')"
     fun dropGraph(graphName: String, cascade: Boolean = true): String =
@@ -30,7 +30,7 @@ object AgeSql {
         columns: List<Pair<String, String>>,
     ): String {
         val colDef = columns.joinToString(", ") { (name, type) -> "$name $type" }
-        return """SELECT * FROM ag_catalog.cypher('$graphName', ${'$'}${'$'} $cypherQuery ${'$'}${'$'}) AS ($colDef)"""
+        return $$"""SELECT * FROM ag_catalog.cypher('$$graphName', $$ $$cypherQuery $$) AS ($$colDef)"""
     }
 
     fun createVertex(graphName: String, label: String, properties: Map<String, Any?>): String {
@@ -122,7 +122,7 @@ object AgeSql {
         depth: Int,
     ): String {
         val depthStr = if (depth == 1) "" else "*1..$depth"
-        val edgePart = if (edgeLabel != null) ":$edgeLabel$depthStr" else if (depthStr.isEmpty()) "" else depthStr
+        val edgePart = if (edgeLabel != null) ":$edgeLabel$depthStr" else depthStr.ifEmpty { "" }
         val pattern = when (direction) {
             "OUTGOING" -> "(start)-[$edgePart]->(neighbor)"
             "INCOMING" -> "(start)<-[$edgePart]-(neighbor)"
