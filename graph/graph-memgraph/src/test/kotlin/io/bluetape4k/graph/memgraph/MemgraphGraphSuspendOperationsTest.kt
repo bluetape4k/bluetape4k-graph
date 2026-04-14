@@ -6,7 +6,7 @@ import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.servers.MemgraphServer
 import io.bluetape4k.junit5.coroutines.runSuspendIO
-import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
 import kotlinx.coroutines.flow.toList
 import org.amshove.kluent.shouldBeEqualTo
@@ -28,7 +28,7 @@ import org.junit.jupiter.api.TestMethodOrder
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 class MemgraphGraphSuspendOperationsTest {
 
-    companion object: KLogging()
+    companion object: KLoggingChannel()
 
     private lateinit var ops: MemgraphGraphSuspendOperations
 
