@@ -1,6 +1,7 @@
 package io.bluetape4k.graph.servers
 
 import io.bluetape4k.graph.servers.Neo4jServer.neo4j
+import io.bluetape4k.utils.ShutdownQueue
 import org.testcontainers.neo4j.Neo4jContainer
 import org.testcontainers.utility.DockerImageName
 
@@ -22,7 +23,10 @@ object Neo4jServer {
     val neo4j: Neo4jContainer by lazy {
         Neo4jContainer(DockerImageName.parse("neo4j:5"))
             .withoutAuthentication()
-            .apply { start() }
+            .apply {
+                start()
+                ShutdownQueue.register(this)
+            }
     }
 
     /** [neo4j] 컨테이너의 alias — `Neo4jServer.instance` 패턴 하위 호환용 */

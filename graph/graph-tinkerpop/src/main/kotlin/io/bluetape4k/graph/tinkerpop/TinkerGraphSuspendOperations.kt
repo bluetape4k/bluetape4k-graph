@@ -22,9 +22,9 @@ import kotlinx.coroutines.withContext
  */
 class TinkerGraphSuspendOperations(
     private val delegate: TinkerGraphOperations = TinkerGraphOperations(),
-) : GraphSuspendOperations {
+): GraphSuspendOperations {
 
-    companion object : KLoggingChannel()
+    companion object: KLoggingChannel()
 
     override fun close() {
         delegate.close()

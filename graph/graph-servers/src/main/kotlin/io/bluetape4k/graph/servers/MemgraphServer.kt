@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.servers
 
+import io.bluetape4k.utils.ShutdownQueue
 import org.neo4j.driver.AuthTokens
 import org.neo4j.driver.Driver
 import org.neo4j.driver.GraphDatabase
@@ -23,7 +24,10 @@ object MemgraphServer {
     val memgraph: GenericContainer<*> by lazy {
         GenericContainer("memgraph/memgraph:latest")
             .withExposedPorts(7687)
-            .apply { start() }
+            .apply {
+                start()
+                ShutdownQueue.register(this)
+            }
     }
 
     val boltUrl: String

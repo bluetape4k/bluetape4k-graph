@@ -5,6 +5,7 @@ import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.logging.coroutines.KLoggingChannel
 import kotlinx.coroutines.flow.toList
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeGreaterOrEqualTo
@@ -19,12 +20,12 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestMethodOrder
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 class TinkerGraphSuspendOperationsTest {
+
+    companion object: KLoggingChannel()
 
     private val ops = TinkerGraphSuspendOperations()
 
@@ -208,7 +209,8 @@ class TinkerGraphSuspendOperationsTest {
         ops.createEdge(alice.id, bob.id, "KNOWS")
         ops.createEdge(alice.id, carol.id, "KNOWS")
 
-        val neighbors = ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING)).toList()
+        val neighbors =
+            ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING)).toList()
         neighbors.shouldHaveSize(2)
         val names = neighbors.map { it.properties["name"] }
         names shouldContain "Bob"
@@ -225,7 +227,8 @@ class TinkerGraphSuspendOperationsTest {
         ops.createEdge(bob.id, alice.id, "KNOWS")
         ops.createEdge(carol.id, alice.id, "KNOWS")
 
-        val neighbors = ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.INCOMING)).toList()
+        val neighbors =
+            ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.INCOMING)).toList()
         neighbors.shouldHaveSize(2)
         val names = neighbors.map { it.properties["name"] }
         names shouldContain "Bob"
@@ -242,7 +245,8 @@ class TinkerGraphSuspendOperationsTest {
         ops.createEdge(alice.id, bob.id, "KNOWS")
         ops.createEdge(carol.id, alice.id, "KNOWS")
 
-        val neighbors = ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.BOTH)).toList()
+        val neighbors =
+            ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.BOTH)).toList()
         neighbors.shouldHaveSize(2)
         val names = neighbors.map { it.properties["name"] }
         names shouldContain "Bob"
@@ -259,7 +263,9 @@ class TinkerGraphSuspendOperationsTest {
         ops.createEdge(a.id, b.id, "KNOWS")
         ops.createEdge(b.id, c.id, "KNOWS")
 
-        val neighbors = ops.neighbors(a.id, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING, maxDepth = 2)).toList()
+        val neighbors =
+            ops.neighbors(a.id, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING, maxDepth = 2))
+                .toList()
         neighbors.shouldNotBeEmpty()
         val names = neighbors.map { it.properties["name"] }
         names shouldContain "B"
