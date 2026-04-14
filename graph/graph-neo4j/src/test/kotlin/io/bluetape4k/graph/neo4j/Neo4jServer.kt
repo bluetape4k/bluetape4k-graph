@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.neo4j
 
+import io.bluetape4k.utils.ShutdownQueue
 import org.testcontainers.neo4j.Neo4jContainer
 
 /**
@@ -20,7 +21,10 @@ class Neo4jServer private constructor(): Neo4jContainer("neo4j:5") {
 
     companion object {
         val instance: Neo4jServer by lazy {
-            Neo4jServer().apply { start() }
+            Neo4jServer().apply {
+                start()
+                ShutdownQueue.register(this)
+            }
         }
     }
 

@@ -67,7 +67,6 @@ class Neo4jGraphOperationsTest {
         ops.countVertices("Person") shouldBeGreaterOrEqualTo 1L
 
         ops.dropGraph("default")
-
         ops.countVertices("Person") shouldBeEqualTo 0L
     }
 
@@ -77,9 +76,10 @@ class Neo4jGraphOperationsTest {
     @Order(20)
     fun `정점을 생성하면 elementId가 부여된다`() = runSuspendIO {
         val vertex = ops.createVertex("Person")
+
+        log.debug { "vertx=$vertex" }
         vertex.id.value.shouldNotBeEmpty()
         vertex.label shouldBeEqualTo "Person"
-        log.debug { "vertx=$vertex" }
     }
 
     @Test
@@ -100,10 +100,10 @@ class Neo4jGraphOperationsTest {
         val created = ops.createVertex("Person", mapOf("name" to "Bob"))
         val found = ops.findVertexById("Person", created.id)
 
+        log.debug { "found=$found" }
         found.shouldNotBeNull()
         found.id shouldBeEqualTo created.id
         found.properties["name"] shouldBeEqualTo "Bob"
-        log.debug { "found=$found" }
     }
 
     @Test
@@ -122,11 +122,12 @@ class Neo4jGraphOperationsTest {
         ops.createVertex("Car", mapOf("model" to "Tesla"))
 
         val persons = ops.findVerticesByLabel("Person")
-        persons.shouldHaveSize(2)
-        persons.all { it.label == "Person" }.shouldBeTrue()
+
         persons.forEach { person ->
             log.debug { "person=$person" }
         }
+        persons shouldHaveSize 2
+        persons.all { it.label == "Person" }.shouldBeTrue()
     }
 
     @Test
@@ -136,6 +137,7 @@ class Neo4jGraphOperationsTest {
         ops.createVertex("Person", mapOf("name" to "Bob", "city" to "Busan"))
 
         val result = ops.findVerticesByLabel("Person", mapOf("city" to "Seoul"))
+
         result shouldHaveSize 1
         result[0].properties["name"] shouldBeEqualTo "Alice"
         log.debug { "result[0]=${result[0]}" }
@@ -157,8 +159,8 @@ class Neo4jGraphOperationsTest {
     fun `정점을 삭제한다`() = runSuspendIO {
         val vertex = ops.createVertex("Person", mapOf("name" to "Dave"))
         val deleted = ops.deleteVertex("Person", vertex.id)
-        deleted.shouldBeTrue()
 
+        deleted.shouldBeTrue()
         ops.findVertexById("Person", vertex.id).shouldBeNull()
     }
 
@@ -201,7 +203,7 @@ class Neo4jGraphOperationsTest {
         ops.createEdge(a.id, c.id, "FOLLOWS")
 
         val knowsEdges = ops.findEdgesByLabel("KNOWS")
-        knowsEdges.shouldHaveSize(2)
+        knowsEdges shouldHaveSize 2
         knowsEdges.all { it.label == "KNOWS" }.shouldBeTrue()
         knowsEdges.forEach { edge ->
             log.debug { "edge=$edge" }
@@ -234,14 +236,15 @@ class Neo4jGraphOperationsTest {
         ops.createEdge(alice.id, carol.id, "KNOWS")
 
         val neighbors = ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING))
-        neighbors shouldHaveSize 2
-        val names = neighbors.map { it.properties["name"] }
-        names shouldContain "Bob"
-        names shouldContain "Carol"
 
         neighbors.forEach { vertex ->
             log.debug { "neighbor=$vertex" }
         }
+        neighbors shouldHaveSize 2
+
+        val names = neighbors.map { it.properties["name"] }
+        names shouldContain "Bob"
+        names shouldContain "Carol"
     }
 
     @Test
@@ -255,7 +258,12 @@ class Neo4jGraphOperationsTest {
         ops.createEdge(carol.id, alice.id, "KNOWS")
 
         val neighbors = ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.INCOMING))
+
+        neighbors.forEach { vertex ->
+            log.debug { "neighbor=$vertex" }
+        }
         neighbors shouldHaveSize 2
+
         val names = neighbors.map { it.properties["name"] }
         names shouldContain "Bob"
         names shouldContain "Carol"
@@ -275,10 +283,12 @@ class Neo4jGraphOperationsTest {
             alice.id,
             NeighborOptions(edgeLabel = "KNOWS", direction = Direction.BOTH)
         )
-        neighbors shouldHaveSize 2
+
         neighbors.forEach { vertex ->
             log.debug { "neighbor=$vertex" }
         }
+        neighbors shouldHaveSize 2
+
         val names = neighbors.map { it.properties["name"] }
         names shouldContain "Bob"
         names shouldContain "Carol"
@@ -302,6 +312,7 @@ class Neo4jGraphOperationsTest {
             log.debug { "neighbor=$neighbor" }
         }
         neighbors.shouldNotBeEmpty()
+
         val names = neighbors.map { it.properties["name"] }
         names shouldContain "B"
         names shouldContain "C"
@@ -317,13 +328,12 @@ class Neo4jGraphOperationsTest {
         ops.createEdge(a.id, b.id, "KNOWS")
         ops.createEdge(b.id, c.id, "KNOWS")
 
-        val path = ops.shortestPath(a.id, c.id, PathOptions(edgeLabel = "KNOWS"))
-        path.shouldNotBeNull()
-        path.vertices.shouldNotBeEmpty()
+        val path = ops.shortestPath(a.id, c.id, PathOptions(edgeLabel = "KNOWS")).shouldNotBeNull()
 
         path.vertices.forEach { vertex ->
             log.debug { "vertex=$vertex" }
         }
+        path.vertices.shouldNotBeEmpty()
     }
 
     @Test
@@ -349,10 +359,11 @@ class Neo4jGraphOperationsTest {
         ops.createEdge(a.id, c.id, "KNOWS")
 
         val paths = ops.allPaths(a.id, c.id, PathOptions(edgeLabel = "KNOWS"))
-        paths.shouldNotBeEmpty()
-        paths.size shouldBeGreaterOrEqualTo 2
+
         paths.forEach { path ->
             log.debug { "path=$path" }
         }
+        paths.shouldNotBeEmpty()
+        paths.size shouldBeGreaterOrEqualTo 2
     }
 }
