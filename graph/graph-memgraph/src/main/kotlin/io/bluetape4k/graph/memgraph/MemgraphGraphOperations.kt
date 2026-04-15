@@ -10,7 +10,7 @@ import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
-import io.bluetape4k.logging.debug
+import io.bluetape4k.logging.info
 import io.bluetape4k.logging.warn
 import io.bluetape4k.support.requireNotBlank
 import org.neo4j.driver.Driver
@@ -66,20 +66,29 @@ class MemgraphGraphOperations(
         cypher: String,
         params: Map<String, Any?> = emptyMap(),
         mapper: (Record) -> T,
-    ): List<T> =
-        session().use { s -> s.run(cypher, params).list(mapper) }
+    ): List<T> {
+        cypher.requireNotBlank("cypher")
+        return session().use { s ->
+            s.run(cypher, params).list(mapper)
+        }
+    }
 
     // -- GraphSession --
 
     override fun createGraph(name: String) {
-        log.debug { "Memgraph graph session initialized for database: $name" }
+        name.requireNotBlank("name")
+        log.info { "Memgraph graph session initialized for database: $name" }
     }
 
     override fun dropGraph(name: String) {
+        name.requireNotBlank("name")
+
         runQuery("MATCH (n) DETACH DELETE n") { it }
     }
 
     override fun graphExists(name: String): Boolean {
+        name.requireNotBlank("name")
+
         return try {
             session().use { s ->
                 s.run("RETURN 1")
@@ -103,9 +112,11 @@ class MemgraphGraphOperations(
 
     override fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex {
         label.requireNotBlank("label").requireSafeIdentifier("label")
+
         val propsClause = if (properties.isEmpty()) "" else $$" $props"
         val cypher = $$"CREATE (n:$$label$$propsClause) RETURN n"
         val params = if (properties.isEmpty()) emptyMap() else mapOf("props" to properties)
+
         return runQuery(cypher, params) {
             MemgraphRecordMapper.recordToVertex(it)
         }.firstOrNull() ?: throw GraphQueryException("Failed to create vertex: $label")
@@ -113,6 +124,7 @@ class MemgraphGraphOperations(
 
     override fun findVertexById(label: String, id: GraphElementId): GraphVertex? {
         label.requireNotBlank("label").requireSafeIdentifier("label")
+
         return runQuery(
             $$"MATCH (n:$$label) WHERE id(n) = toInteger($id) RETURN n",
             mapOf("id" to id.value),
@@ -125,6 +137,7 @@ class MemgraphGraphOperations(
         label.requireNotBlank("label").requireSafeIdentifier("label")
         val whereClause = if (filter.isEmpty()) "" else
             " WHERE " + filter.keys.joinToString(" AND ") { $$"n.$$it = $$$it" }
+
         return runQuery(
             $$"MATCH (n:$$label)$$whereClause RETURN n",
             filter,
@@ -138,6 +151,7 @@ class MemgraphGraphOperations(
         if (properties.isEmpty()) return findVertexById(label, id)
         val setClause = properties.keys.joinToString(", ") { $$"n.$$it = $$$it" }
         val params = properties + mapOf("id" to id.value)
+
         return runQuery(
             $$"MATCH (n:$$label) WHERE id(n) = toInteger($id) SET $$setClause RETURN n",
             params,
@@ -148,6 +162,7 @@ class MemgraphGraphOperations(
 
     override fun deleteVertex(label: String, id: GraphElementId): Boolean {
         label.requireNotBlank("label").requireSafeIdentifier("label")
+
         return session().use { s ->
             val result = s.run(
                 $$"MATCH (n:$$label) WHERE id(n) = toInteger($id) DETACH DELETE n",
@@ -159,6 +174,7 @@ class MemgraphGraphOperations(
 
     override fun countVertices(label: String): Long {
         label.requireNotBlank("label").requireSafeIdentifier("label")
+
         return session().use { s ->
             s.run($$"MATCH (n:$$label) RETURN count(n) AS cnt").single().get("cnt").asLong()
         }
@@ -173,9 +189,11 @@ class MemgraphGraphOperations(
         properties: Map<String, Any?>,
     ): GraphEdge {
         label.requireNotBlank("label").requireSafeIdentifier("label")
+
         val propsClause = if (properties.isEmpty()) "" else $$" $props"
         val params = mutableMapOf<String, Any?>("fromId" to fromId.value, "toId" to toId.value)
         if (properties.isNotEmpty()) params["props"] = properties
+
         return runQuery(
             $$"MATCH (a), (b) WHERE id(a) = toInteger($fromId) AND id(b) = toInteger($toId) " +
                     $$"CREATE (a)-[r:$$label$$propsClause]->(b) RETURN r",
@@ -187,8 +205,10 @@ class MemgraphGraphOperations(
 
     override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): List<GraphEdge> {
         label.requireNotBlank("label").requireSafeIdentifier("label")
+
         val whereClause = if (filter.isEmpty()) "" else
             " WHERE " + filter.keys.joinToString(" AND ") { $$"r.$$it = $$$it" }
+
         return runQuery(
             $$"MATCH ()-[r:$$label]->()$$whereClause RETURN r",
             filter,
@@ -197,6 +217,7 @@ class MemgraphGraphOperations(
 
     override fun deleteEdge(label: String, id: GraphElementId): Boolean {
         label.requireNotBlank("label").requireSafeIdentifier("label")
+
         return session().use { s ->
             val result = s.run(
                 $$"MATCH ()-[r:$$label]->() WHERE id(r) = toInteger($id) DELETE r",
@@ -212,9 +233,11 @@ class MemgraphGraphOperations(
         startId: GraphElementId,
         options: NeighborOptions,
     ): List<GraphVertex> {
+        startId.value.toLongOrNull() ?: throw GraphQueryException("Memgraph requires numeric ID, got: $startId")
         options.edgeLabel?.requireNotBlank("edgeLabel")
-        val depthStr = if (options.maxDepth == 1) "" else $$"*1..$${ options.maxDepth }"
-        val edgePart = if (options.edgeLabel != null) $$":$${ options.edgeLabel }$$depthStr" else depthStr
+
+        val depthStr = if (options.maxDepth == 1) "" else $$"*1..$${options.maxDepth}"
+        val edgePart = if (options.edgeLabel != null) $$":$${options.edgeLabel}$$depthStr" else depthStr
         val pattern = when (options.direction) {
             Direction.OUTGOING -> $$"(start)-[$$edgePart]->(neighbor)"
             Direction.INCOMING -> $$"(start)<-[$$edgePart]-(neighbor)"
@@ -233,11 +256,13 @@ class MemgraphGraphOperations(
         toId: GraphElementId,
         options: PathOptions,
     ): GraphPath? {
+        fromId.value.toLongOrNull() ?: throw GraphQueryException("Memgraph requires numeric ID, got: $fromId")
+        toId.value.toLongOrNull() ?: throw GraphQueryException("Memgraph requires numeric ID, got: $toId")
+
         // Memgraph는 shortestPath() 미지원 → depth-limited MATCH + ORDER BY length(p) LIMIT 1 사용
-        val relPattern = if (options.edgeLabel != null)
-            ":" + options.edgeLabel + "*1.." + options.maxDepth
-        else
-            "*1.." + options.maxDepth
+        val relPattern =
+            if (options.edgeLabel != null) ":" + options.edgeLabel + "*1.." + options.maxDepth
+            else "*1.." + options.maxDepth
         return runQuery(
             "MATCH p = (a)-[$relPattern]-(b) " +
                     "WHERE id(a) = toInteger(\$fromId) AND id(b) = toInteger(\$toId) " +
@@ -253,7 +278,13 @@ class MemgraphGraphOperations(
         toId: GraphElementId,
         options: PathOptions,
     ): List<GraphPath> {
-        val relPattern = if (options.edgeLabel != null) $$":$${ options.edgeLabel }*1..$${ options.maxDepth }" else $$"*1..$${ options.maxDepth }"
+        fromId.value.toLongOrNull() ?: throw GraphQueryException("Memgraph requires numeric ID, got: $fromId")
+        toId.value.toLongOrNull() ?: throw GraphQueryException("Memgraph requires numeric ID, got: $toId")
+
+        val relPattern =
+            if (options.edgeLabel != null) $$":$${options.edgeLabel}*1..$${options.maxDepth}"
+            else $$"*1..$${options.maxDepth}"
+
         return runQuery(
             $$"MATCH p = (a)-[$$relPattern]-(b) " +
                     $$"WHERE id(a) = toInteger($fromId) AND id(b) = toInteger($toId) RETURN p",

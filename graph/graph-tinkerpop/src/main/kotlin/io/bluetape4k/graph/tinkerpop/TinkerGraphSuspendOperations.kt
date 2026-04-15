@@ -8,6 +8,7 @@ import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.coroutines.KLoggingChannel
+import io.bluetape4k.support.requireNotBlank
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -50,16 +51,25 @@ class TinkerGraphSuspendOperations(
 
     // -- GraphSuspendSession --
 
-    override suspend fun createGraph(name: String) = withContext(Dispatchers.IO) {
-        delegate.createGraph(name)
+    override suspend fun createGraph(name: String) {
+        name.requireNotBlank("name")
+        withContext(Dispatchers.IO) {
+            delegate.createGraph(name)
+        }
     }
 
-    override suspend fun dropGraph(name: String) = withContext(Dispatchers.IO) {
-        delegate.dropGraph(name)
+    override suspend fun dropGraph(name: String) {
+        name.requireNotBlank("name")
+        withContext(Dispatchers.IO) {
+            delegate.dropGraph(name)
+        }
     }
 
-    override suspend fun graphExists(name: String): Boolean = withContext(Dispatchers.IO) {
-        delegate.graphExists(name)
+    override suspend fun graphExists(name: String): Boolean {
+        name.requireNotBlank("name")
+        return withContext(Dispatchers.IO) {
+            delegate.graphExists(name)
+        }
     }
 
     // -- GraphSuspendVertexRepository --

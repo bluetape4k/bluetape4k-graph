@@ -6,7 +6,6 @@ import org.amshove.kluent.shouldBeFalse
 import org.amshove.kluent.shouldBeNull
 import org.amshove.kluent.shouldBeTrue
 import org.amshove.kluent.shouldContain
-import org.amshove.kluent.shouldContainKey
 import org.amshove.kluent.shouldHaveSize
 import org.amshove.kluent.shouldNotBeEmpty
 import org.junit.jupiter.api.Test
@@ -127,7 +126,8 @@ class AgeTypeParserTest {
 
     @Test
     fun `parsePath - 정점-간선-정점 형태의 path를 파싱한다`() {
-        val agtype = """[{"id": 1, "label": "Person", "properties": {}}::vertex, {"id": 2, "label": "KNOWS", "start_id": 1, "end_id": 3, "properties": {}}::edge, {"id": 3, "label": "Person", "properties": {}}::vertex]::path"""
+        val agtype =
+            """[{"id": 1, "label": "Person", "properties": {}}::vertex, {"id": 2, "label": "KNOWS", "start_id": 1, "end_id": 3, "properties": {}}::edge, {"id": 3, "label": "Person", "properties": {}}::vertex]::path"""
         val path = AgeTypeParser.parsePath(agtype)
 
         path.steps shouldHaveSize 3
@@ -163,7 +163,7 @@ class AgeTypeParserTest {
         val json = """{"nickname": null}"""
         val result = AgeTypeParser.parseJsonObject(json)
 
-        result shouldContainKey "nickname"
+        result.keys shouldContain "nickname"
         result["nickname"].shouldBeNull()
     }
 

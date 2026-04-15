@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.model
 
+import io.bluetape4k.support.requireNotBlank
 import java.io.Serializable
 
 /**
@@ -34,7 +35,10 @@ value class GraphElementId(val value: String): Serializable {
          *
          * @param value ID 문자열 값.
          */
-        fun of(value: String) = GraphElementId(value)
+        fun of(value: String): GraphElementId {
+            value.requireNotBlank("value")
+            return GraphElementId(value)
+        }
 
         /**
          * Long 숫자 ID를 [GraphElementId]로 변환한다.
@@ -47,6 +51,8 @@ value class GraphElementId(val value: String): Serializable {
          *
          * @param value Long 형식의 숫자 ID.
          */
-        fun of(value: Long) = GraphElementId(value.toString())
+        fun of(value: Long): GraphElementId {
+            return GraphElementId(value.toString())
+        }
     }
 }

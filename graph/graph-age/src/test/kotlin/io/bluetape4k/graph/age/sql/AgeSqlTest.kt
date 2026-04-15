@@ -142,7 +142,7 @@ class AgeSqlTest {
     // ── createEdge ────────────────────────────────────────────────────────
 
     @Test
-    fun `createEdge - 간선 방향 패턴 a-e:LABEL-방향-b 을 포함한다`() {
+    fun `createEdge - 간선 방향 패턴 a-e-LABEL-방향-b 을 포함한다`() {
         val sql = AgeSql.createEdge(graph, 1L, 2L, "KNOWS", emptyMap())
         sql shouldContain "(a)-[e:KNOWS"
         sql shouldContain "]->(b)"

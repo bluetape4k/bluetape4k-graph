@@ -19,7 +19,7 @@ import org.jetbrains.exposed.v1.jdbc.JdbcTransaction
  * }
  * ```
  */
-inline fun JdbcTransaction.loadAgeAndSetSearchPath() {
+fun JdbcTransaction.loadAgeAndSetSearchPath() {
     exec(AgeSql.loadAge())
     exec(AgeSql.setSearchPath())
 }

@@ -6,6 +6,7 @@ import io.bluetape4k.graph.model.GraphPath
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.support.requireNotBlank
 import org.neo4j.driver.Record
 import org.neo4j.driver.types.Node
 import org.neo4j.driver.types.Path
@@ -25,7 +26,7 @@ import org.neo4j.driver.types.Relationship
  * val vertex = Neo4jRecordMapper.nodeToVertex(node)
  * ```
  */
-object Neo4jRecordMapper : KLogging() {
+object Neo4jRecordMapper: KLogging() {
 
     /**
      * Neo4j [Node]를 [GraphVertex]로 변환합니다.
@@ -106,8 +107,11 @@ object Neo4jRecordMapper : KLogging() {
      * @param key 레코드에서 노드를 추출할 키 (기본: "n").
      * @return 변환된 [GraphVertex].
      */
-    fun recordToVertex(record: Record, key: String = "n"): GraphVertex =
-        nodeToVertex(record[key].asNode())
+    fun recordToVertex(record: Record, key: String = "n"): GraphVertex {
+        key.requireNotBlank("key")
+        return nodeToVertex(record[key].asNode())
+    }
+
 
     /**
      * [Record]에서 [GraphEdge]를 추출합니다.
@@ -121,8 +125,10 @@ object Neo4jRecordMapper : KLogging() {
      * @param key 레코드에서 관계를 추출할 키 (기본: "r").
      * @return 변환된 [GraphEdge].
      */
-    fun recordToEdge(record: Record, key: String = "r"): GraphEdge =
-        relationshipToEdge(record[key].asRelationship())
+    fun recordToEdge(record: Record, key: String = "r"): GraphEdge {
+        key.requireNotBlank("key")
+        return relationshipToEdge(record[key].asRelationship())
+    }
 
     /**
      * [Record]에서 [GraphPath]를 추출합니다.
@@ -135,6 +141,8 @@ object Neo4jRecordMapper : KLogging() {
      * @param key 레코드에서 경로를 추출할 키 (기본: "p").
      * @return 변환된 [GraphPath].
      */
-    fun recordToPath(record: Record, key: String = "p"): GraphPath =
-        pathToGraphPath(record[key].asPath())
+    fun recordToPath(record: Record, key: String = "p"): GraphPath {
+        key.requireNotBlank("key")
+        return pathToGraphPath(record[key].asPath())
+    }
 }

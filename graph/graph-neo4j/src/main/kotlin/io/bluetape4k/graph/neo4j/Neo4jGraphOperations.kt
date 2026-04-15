@@ -59,14 +59,18 @@ class Neo4jGraphOperations(
     // -- GraphSession --
 
     override fun createGraph(name: String) {
+        name.requireNotBlank("name")
         log.debug { "Neo4j graph session initialized for database: $name" }
     }
 
     override fun dropGraph(name: String) {
+        name.requireNotBlank("name")
         runQuery("MATCH (n) DETACH DELETE n") { it }
     }
 
     override fun graphExists(name: String): Boolean {
+        name.requireNotBlank("name")
+
         return try {
             session().use { s ->
                 s.run("RETURN 1")
@@ -84,9 +88,11 @@ class Neo4jGraphOperations(
 
     override fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex {
         label.requireNotBlank("label")
+
         val propsClause = if (properties.isEmpty()) "" else $$" $props"
         val cypher = $$"CREATE (n:$$label$$propsClause) RETURN n"
         val params = if (properties.isEmpty()) emptyMap() else mapOf("props" to properties)
+
         return runQuery(cypher, params) {
             Neo4jRecordMapper.recordToVertex(it)
         }.firstOrNull() ?: throw GraphQueryException("Failed to create vertex: $label")
@@ -94,6 +100,7 @@ class Neo4jGraphOperations(
 
     override fun findVertexById(label: String, id: GraphElementId): GraphVertex? {
         label.requireNotBlank("label")
+
         return runQuery(
             $$"MATCH (n:$$label) WHERE elementId(n) = $id RETURN n",
             mapOf("id" to id.value),
@@ -104,8 +111,10 @@ class Neo4jGraphOperations(
 
     override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> {
         label.requireNotBlank("label")
+
         val whereClause = if (filter.isEmpty()) "" else
             " WHERE " + filter.keys.joinToString(" AND ") { $$"n.$$it = $$$it" }
+
         return runQuery(
             $$"MATCH (n:$$label)$$whereClause RETURN n",
             filter,
@@ -119,6 +128,7 @@ class Neo4jGraphOperations(
         if (properties.isEmpty()) return findVertexById(label, id)
         val setClause = properties.keys.joinToString(", ") { $$"n.$$it = $$$it" }
         val params = properties + mapOf("id" to id.value)
+
         return runQuery(
             $$"MATCH (n:$$label) WHERE elementId(n) = $id SET $$setClause RETURN n",
             params,
@@ -129,6 +139,7 @@ class Neo4jGraphOperations(
 
     override fun deleteVertex(label: String, id: GraphElementId): Boolean {
         label.requireNotBlank("label")
+
         return session().use { s ->
             val result = s.run(
                 $$"MATCH (n:$$label) WHERE elementId(n) = $id DETACH DELETE n",
@@ -140,6 +151,7 @@ class Neo4jGraphOperations(
 
     override fun countVertices(label: String): Long {
         label.requireNotBlank("label")
+
         return session().use { s ->
             s.run($$"MATCH (n:$$label) RETURN count(n) AS cnt").single().get("cnt").asLong()
         }
@@ -154,9 +166,11 @@ class Neo4jGraphOperations(
         properties: Map<String, Any?>,
     ): GraphEdge {
         label.requireNotBlank("label")
+
         val propsClause = if (properties.isEmpty()) "" else $$" $props"
         val params = mutableMapOf<String, Any?>("fromId" to fromId.value, "toId" to toId.value)
         if (properties.isNotEmpty()) params["props"] = properties
+
         return runQuery(
             $$"MATCH (a), (b) WHERE elementId(a) = $fromId AND elementId(b) = $toId " +
                     $$"CREATE (a)-[r:$$label$$propsClause]->(b) RETURN r",
@@ -168,8 +182,10 @@ class Neo4jGraphOperations(
 
     override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): List<GraphEdge> {
         label.requireNotBlank("label")
+
         val whereClause = if (filter.isEmpty()) "" else
             " WHERE " + filter.keys.joinToString(" AND ") { $$"r.$$it = $$$it" }
+
         return runQuery(
             $$"MATCH ()-[r:$$label]->()$$whereClause RETURN r",
             filter,
@@ -178,6 +194,8 @@ class Neo4jGraphOperations(
 
     override fun deleteEdge(label: String, id: GraphElementId): Boolean {
         label.requireNotBlank("label")
+        id.value.requireNotBlank("id.value")
+
         return session().use { s ->
             val result = s.run(
                 $$"MATCH ()-[r:$$label]->() WHERE elementId(r) = $id DELETE r",
@@ -193,9 +211,11 @@ class Neo4jGraphOperations(
         startId: GraphElementId,
         options: NeighborOptions,
     ): List<GraphVertex> {
+        startId.value.requireNotBlank("startId.value")
         options.edgeLabel?.requireNotBlank("edgeLabel")
-        val depthStr = if (options.maxDepth == 1) "" else $$"*1..$${ options.maxDepth }"
-        val edgePart = if (options.edgeLabel != null) $$":$${ options.edgeLabel }$$depthStr" else depthStr
+
+        val depthStr = if (options.maxDepth == 1) "" else $$"*1..$${options.maxDepth}"
+        val edgePart = if (options.edgeLabel != null) $$":$${options.edgeLabel}$$depthStr" else depthStr
         val pattern = when (options.direction) {
             Direction.OUTGOING -> $$"(start)-[$$edgePart]->(neighbor)"
             Direction.INCOMING -> $$"(start)<-[$$edgePart]-(neighbor)"
@@ -214,7 +234,13 @@ class Neo4jGraphOperations(
         toId: GraphElementId,
         options: PathOptions,
     ): GraphPath? {
-        val relPattern = if (options.edgeLabel != null) $$":$${ options.edgeLabel }*1..$${ options.maxDepth }" else $$"*1..$${ options.maxDepth }"
+        fromId.value.requireNotBlank("fromId.value")
+        toId.value.requireNotBlank("toId.value")
+
+        val relPattern =
+            if (options.edgeLabel != null) $$":$${options.edgeLabel}*1..$${options.maxDepth}"
+            else $$"*1..$${options.maxDepth}"
+
         return runQuery(
             $$"MATCH p = shortestPath((a)-[$$relPattern]-(b)) " +
                     $$"WHERE elementId(a) = $fromId AND elementId(b) = $toId RETURN p",
@@ -229,7 +255,13 @@ class Neo4jGraphOperations(
         toId: GraphElementId,
         options: PathOptions,
     ): List<GraphPath> {
-        val relPattern = if (options.edgeLabel != null) $$":$${ options.edgeLabel }*1..$${ options.maxDepth }" else $$"*1..$${ options.maxDepth }"
+        fromId.value.requireNotBlank("fromId.value")
+        toId.value.requireNotBlank("toId.value")
+
+        val relPattern =
+            if (options.edgeLabel != null) $$":$${options.edgeLabel}*1..$${options.maxDepth}"
+            else $$"*1..$${options.maxDepth}"
+        
         return runQuery(
             $$"MATCH p = (a)-[$$relPattern]-(b) " +
                     $$"WHERE elementId(a) = $fromId AND elementId(b) = $toId RETURN p",

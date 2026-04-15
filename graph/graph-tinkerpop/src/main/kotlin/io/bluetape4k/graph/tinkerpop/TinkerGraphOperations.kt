@@ -15,9 +15,9 @@ import io.bluetape4k.support.requireNotBlank
 import org.apache.tinkerpop.gremlin.process.traversal.P
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.`__` as AnonymousTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__ as AnonymousTraversal
 
 /**
  * Apache TinkerPop TinkerGraph 기반 [GraphOperations] 구현체 (동기 방식).
@@ -52,19 +52,25 @@ class TinkerGraphOperations : GraphOperations {
     // -- GraphSession --
 
     override fun createGraph(name: String) {
+        name.requireNotBlank("name")
         log.debug { "TinkerGraph session initialized for graph: $name" }
     }
 
     override fun dropGraph(name: String) {
+        name.requireNotBlank("name")
         g.V().drop().iterate()
     }
 
-    override fun graphExists(name: String): Boolean = true
+    override fun graphExists(name: String): Boolean {
+        name.requireNotBlank("name")
+        return true
+    }
 
     // -- GraphVertexRepository --
 
     override fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex {
         label.requireNotBlank("label")
+
         val traversal = g.addV(label)
         properties.forEach { (key, value) ->
             if (value != null) traversal.property(key, value)
@@ -75,6 +81,7 @@ class TinkerGraphOperations : GraphOperations {
 
     override fun findVertexById(label: String, id: GraphElementId): GraphVertex? {
         label.requireNotBlank("label")
+
         val idValue = id.value.toLongOrNull() ?: return null
         val optional = g.V(idValue).hasLabel(label).tryNext()
         return if (optional.isPresent) GremlinRecordMapper.vertexToGraphVertex(optional.get()) else null
@@ -82,6 +89,7 @@ class TinkerGraphOperations : GraphOperations {
 
     override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> {
         label.requireNotBlank("label")
+
         val traversal = g.V().hasLabel(label)
         filter.forEach { (key, value) ->
             traversal.has(key, value)
@@ -91,6 +99,7 @@ class TinkerGraphOperations : GraphOperations {
 
     override fun updateVertex(label: String, id: GraphElementId, properties: Map<String, Any?>): GraphVertex? {
         label.requireNotBlank("label")
+
         val idValue = id.value.toLongOrNull() ?: return null
         val optional = g.V(idValue).hasLabel(label).tryNext()
         if (!optional.isPresent) return null
@@ -106,10 +115,12 @@ class TinkerGraphOperations : GraphOperations {
 
     override fun deleteVertex(label: String, id: GraphElementId): Boolean {
         label.requireNotBlank("label")
+
         val idValue = id.value.toLongOrNull() ?: return false
         val optional = g.V(idValue).hasLabel(label).tryNext()
         if (!optional.isPresent) return false
         g.V(idValue).drop().iterate()
+
         return true
     }
 

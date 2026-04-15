@@ -1,6 +1,7 @@
 package io.bluetape4k.graph.neo4j
 
-import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.coroutines.KLoggingChannel
+import io.bluetape4k.support.requireNotBlank
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
@@ -40,9 +41,9 @@ import org.neo4j.driver.reactivestreams.ReactiveSession
 class Neo4jCoroutineSession(
     private val driver: Driver,
     private val database: String = "neo4j",
-) : AutoCloseable {
+): AutoCloseable {
 
-    companion object : KLogging()
+    companion object: KLoggingChannel()
 
     /**
      * 읽기 전용 트랜잭션 실행.
@@ -97,6 +98,8 @@ class Neo4jCoroutineSession(
      *
      */
     suspend fun runReadQuery(cypher: String, params: Map<String, Any?> = emptyMap()): List<Record> {
+        cypher.requireNotBlank("cypher")
+
         val session = driver.session(ReactiveSession::class.java, sessionConfig())
         return try {
             val result = session.run(Query(cypher, params)).awaitSingle()
@@ -117,8 +120,10 @@ class Neo4jCoroutineSession(
      * ```
      *
      */
-    suspend fun runWriteQuery(cypher: String, params: Map<String, Any?> = emptyMap()): List<Record> =
-        runReadQuery(cypher, params)
+    suspend fun runWriteQuery(cypher: String, params: Map<String, Any?> = emptyMap()): List<Record> {
+        cypher.requireNotBlank("cypher")
+        return runReadQuery(cypher, params)
+    }
 
     override fun close() {
         // driver는 외부 소유이므로 닫지 않음
