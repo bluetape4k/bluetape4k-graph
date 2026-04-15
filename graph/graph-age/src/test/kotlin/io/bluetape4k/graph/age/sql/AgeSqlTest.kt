@@ -142,7 +142,7 @@ class AgeSqlTest {
     // ── createEdge ────────────────────────────────────────────────────────
 
     @Test
-    fun `createEdge - 방향 패턴 (a)-[e:LABEL]->(b) 을 포함한다`() {
+    fun `createEdge - 간선 방향 패턴 a-e:LABEL-방향-b 을 포함한다`() {
         val sql = AgeSql.createEdge(graph, 1L, 2L, "KNOWS", emptyMap())
         sql shouldContain "(a)-[e:KNOWS"
         sql shouldContain "]->(b)"
@@ -194,14 +194,14 @@ class AgeSqlTest {
     // ── neighbors ─────────────────────────────────────────────────────────
 
     @Test
-    fun `neighbors - OUTGOING 방향이면 (start)-[...]->(neighbor) 패턴을 사용한다`() {
+    fun `neighbors - OUTGOING 방향이면 start에서 neighbor로 향하는 패턴을 사용한다`() {
         val sql = AgeSql.neighbors(graph, 1L, null, "OUTGOING", 1)
         sql shouldContain "(start)-["
         sql shouldContain "]->(neighbor)"
     }
 
     @Test
-    fun `neighbors - INCOMING 방향이면 (start)<-[...]-(neighbor) 패턴을 사용한다`() {
+    fun `neighbors - INCOMING 방향이면 neighbor에서 start로 들어오는 패턴을 사용한다`() {
         val sql = AgeSql.neighbors(graph, 1L, null, "INCOMING", 1)
         sql shouldContain "(start)<-["
         sql shouldContain "]-(neighbor)"
