@@ -59,7 +59,7 @@ class CodeGraphService(
         mapOf("name" to name, "path" to path, "version" to version, "language" to language)
     )
 
-    /** 클래스 추가 */
+    /** 클래스 정점을 추가한다. */
     fun addClass(
         name: String,
         qualifiedName: String,
@@ -77,7 +77,7 @@ class CodeGraphService(
         )
     )
 
-    /** 함수 추가 */
+    /** 함수 정점을 추가한다. */
     fun addFunction(
         name: String,
         signature: String,
@@ -115,17 +115,17 @@ class CodeGraphService(
         )
     }
 
-    /** 클래스 상속 */
+    /** 클래스 상속 간선을 추가한다. */
     fun addExtends(childId: GraphElementId, parentId: GraphElementId) {
         ops.createEdge(childId, parentId, "EXTENDS", emptyMap())
     }
 
-    /** 인터페이스 구현 */
+    /** 인터페이스 구현 간선을 추가한다. */
     fun addImplements(classId: GraphElementId, interfaceId: GraphElementId) {
         ops.createEdge(classId, interfaceId, "IMPLEMENTS", emptyMap())
     }
 
-    /** 함수 호출 관계 */
+    /** 함수 호출 관계 간선을 추가한다. */
     fun addCall(
         callerFunctionId: GraphElementId,
         calleeFunctionId: GraphElementId,
@@ -138,16 +138,16 @@ class CodeGraphService(
         )
     }
 
-    /** 클래스/함수가 모듈에 속함 */
+    /** 클래스/함수가 모듈에 속함을 나타내는 간선을 추가한다. */
     fun addBelongsTo(elementId: GraphElementId, moduleId: GraphElementId) {
         ops.createEdge(elementId, moduleId, "BELONGS_TO", emptyMap())
     }
 
-    /** 특정 모듈이 의존하는 모듈 목록 */
+    /** 특정 모듈이 의존하는 모듈 목록을 반환한다. */
     fun getDependencies(moduleId: GraphElementId): List<GraphVertex> =
         ops.neighbors(moduleId, NeighborOptions(edgeLabel = "DEPENDS_ON", direction = Direction.OUTGOING, maxDepth = 1))
 
-    /** 특정 모듈에 의존하는 모듈 목록 (역방향) */
+    /** 특정 모듈에 의존하는 모듈 목록(역방향)을 반환한다. */
     fun getDependents(moduleId: GraphElementId): List<GraphVertex> =
         ops.neighbors(moduleId, NeighborOptions(edgeLabel = "DEPENDS_ON", direction = Direction.INCOMING, maxDepth = 1))
 
@@ -180,23 +180,23 @@ class CodeGraphService(
     fun detectCircularDependency(moduleId: GraphElementId): List<GraphPath> =
         ops.allPaths(moduleId, moduleId, PathOptions(edgeLabel = "DEPENDS_ON", maxDepth = 5))
 
-    /** 클래스 상속 계층 탐색 */
+    /** 클래스 상속 계층을 반환한다. */
     fun getInheritanceChain(classId: GraphElementId, depth: Int = 5): List<GraphVertex> =
         ops.neighbors(classId, NeighborOptions(edgeLabel = "EXTENDS", direction = Direction.OUTGOING, maxDepth = depth))
 
-    /** 함수 호출 체인 탐색 */
+    /** 함수 호출 체인을 반환한다. */
     fun getCallChain(functionId: GraphElementId, maxDepth: Int = 5): List<GraphVertex> =
         ops.neighbors(functionId, NeighborOptions(edgeLabel = "CALLS", direction = Direction.OUTGOING, maxDepth = maxDepth))
 
-    /** 영향 범위 분석: 이 모듈이 변경되면 영향받는 모듈 */
+    /** 이 모듈이 변경될 때 영향받는 모듈 목록을 반환한다. */
     fun getImpactedModules(moduleId: GraphElementId, depth: Int = 3): List<GraphVertex> =
         ops.neighbors(moduleId, NeighborOptions(edgeLabel = "DEPENDS_ON", direction = Direction.INCOMING, maxDepth = depth))
 
-    /** 모듈 이름으로 검색 */
+    /** 모듈 이름으로 검색한다. */
     fun findModuleByName(name: String): List<GraphVertex> =
         ops.findVerticesByLabel("Module", mapOf("name" to name))
 
-    /** 클래스 이름으로 검색 */
+    /** 클래스 이름으로 검색한다. */
     fun findClassByName(name: String): List<GraphVertex> =
         ops.findVerticesByLabel("Class", mapOf("name" to name))
 }

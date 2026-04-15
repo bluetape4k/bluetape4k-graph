@@ -20,7 +20,7 @@ open class GraphException: RuntimeException {
     constructor(cause: Throwable): super(cause)
 }
 
-/** 정점 또는 간선을 찾을 수 없을 때 */
+/** 지정한 그래프를 찾을 수 없을 때 발생하는 예외. */
 class GraphNotFoundException: GraphException {
     constructor(): super()
     constructor(message: String): super(message)
@@ -28,7 +28,7 @@ class GraphNotFoundException: GraphException {
     constructor(cause: Throwable): super(cause)
 }
 
-/** 그래프가 이미 존재할 때 */
+/** 동일한 이름의 그래프가 이미 존재할 때 발생하는 예외. */
 class GraphAlreadyExistsException: GraphException {
     constructor(): super()
     constructor(message: String): super(message)
@@ -36,7 +36,7 @@ class GraphAlreadyExistsException: GraphException {
     constructor(cause: Throwable): super(cause)
 }
 
-/** Cypher/SQL 쿼리 실행 오류 */
+/** 그래프 쿼리 실행 실패 시 발생하는 예외. */
 class GraphQueryException: GraphException {
     constructor(): super()
     constructor(message: String): super(message)
@@ -44,7 +44,7 @@ class GraphQueryException: GraphException {
     constructor(cause: Throwable): super(cause)
 }
 
-/** 그래프가 존재하지 않을 때 */
+/** 그래프가 초기화되지 않은 상태에서 접근할 때 발생하는 예외. */
 class GraphNotInitializedException: GraphException {
     constructor(): super()
     constructor(message: String): super(message)

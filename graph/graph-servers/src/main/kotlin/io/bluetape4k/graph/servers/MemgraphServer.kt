@@ -21,6 +21,7 @@ import org.testcontainers.containers.GenericContainer
  */
 object MemgraphServer {
 
+    /** Memgraph Testcontainers 인스턴스. 최초 접근 시 컨테이너를 시작한다. */
     val memgraph: GenericContainer<*> by lazy {
         GenericContainer("memgraph/memgraph:latest")
             .withExposedPorts(7687)

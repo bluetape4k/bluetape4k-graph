@@ -18,9 +18,19 @@ import io.bluetape4k.graph.utils.GraphProperties
  */
 object AgePropertySerializer {
 
+    /**
+     * Map을 Cypher 속성 블록 문자열로 변환한다.
+     *
+     * @see GraphProperties.toCypherProps
+     */
     fun toCypherProps(properties: Map<String, Any?>): String =
         GraphProperties.toCypherProps(properties)
 
+    /**
+     * 단일 값을 Cypher 리터럴로 변환한다.
+     *
+     * @see GraphProperties.toCypherValue
+     */
     fun toCypherValue(value: Any?): String =
         GraphProperties.toCypherValue(value)
 }

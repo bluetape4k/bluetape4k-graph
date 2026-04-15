@@ -21,13 +21,28 @@ package io.bluetape4k.graph.age.sql
  */
 object AgeSql {
 
+    /** `LOAD 'age'` SQL 문자열을 반환한다. 매 트랜잭션 시작 시 실행해야 한다. */
     fun loadAge(): String = "LOAD 'age'"
+
+    /** AGE 함수 검색을 위한 `SET search_path` SQL 문자열을 반환한다. */
     fun setSearchPath(): String = $$"""SET search_path = ag_catalog, "$user", public"""
+
+    /** PostgreSQL에 AGE extension을 설치하는 SQL 문자열을 반환한다. DB 최초 초기화 시 1회만 실행한다. */
     fun createExtension(): String = "CREATE EXTENSION IF NOT EXISTS age"
+
+    /** 지정한 이름의 AGE 그래프를 생성하는 SQL 문자열을 반환한다. */
     fun createGraph(graphName: String): String = "SELECT create_graph('$graphName')"
+
+    /**
+     * 지정한 AGE 그래프를 삭제하는 SQL 문자열을 반환한다.
+     *
+     * @param graphName 삭제할 그래프 이름.
+     * @param cascade 의존 객체 포함 삭제 여부 (기본: true).
+     */
     fun dropGraph(graphName: String, cascade: Boolean = true): String =
         "SELECT drop_graph('$graphName', $cascade)"
 
+    /** 지정한 이름의 AGE 그래프 존재 여부를 확인하는 COUNT SQL 문자열을 반환한다. */
     fun graphExists(graphName: String): String =
         "SELECT count(*) FROM ag_catalog.ag_graph WHERE name = '$graphName'"
 
@@ -56,6 +71,7 @@ object AgeSql {
         return $$"""SELECT * FROM ag_catalog.cypher('$$graphName', $$ $$cypherQuery $$) AS ($$colDef)"""
     }
 
+    /** 정점 생성 Cypher를 AGE SQL로 래핑하여 반환한다. */
     fun createVertex(graphName: String, label: String, properties: Map<String, Any?>): String {
         val propsStr = AgePropertySerializer.toCypherProps(properties)
         return cypher(
@@ -65,6 +81,7 @@ object AgeSql {
         )
     }
 
+    /** 레이블과 필터로 정점을 조회하는 AGE SQL을 반환한다. */
     fun matchVertices(graphName: String, label: String, filter: Map<String, Any?> = emptyMap()): String {
         val filterStr = if (filter.isEmpty()) "" else AgePropertySerializer.toCypherProps(filter)
         return cypher(
@@ -74,6 +91,7 @@ object AgeSql {
         )
     }
 
+    /** ID로 단일 정점을 조회하는 AGE SQL을 반환한다. */
     fun matchVertexById(graphName: String, label: String, id: Long): String =
         cypher(
             graphName,
@@ -81,6 +99,7 @@ object AgeSql {
             listOf("v" to "agtype")
         )
 
+    /** 정점 속성을 갱신하는 AGE SQL을 반환한다. */
     fun updateVertex(graphName: String, label: String, id: Long, properties: Map<String, Any?>): String {
         val sets = properties.entries.joinToString(", ") { (k, v) ->
             "v.$k = ${AgePropertySerializer.toCypherValue(v)}"
@@ -92,6 +111,7 @@ object AgeSql {
         )
     }
 
+    /** 정점을 삭제하는 AGE SQL을 반환한다. */
     fun deleteVertex(graphName: String, label: String, id: Long): String =
         cypher(
             graphName,
@@ -99,6 +119,7 @@ object AgeSql {
             listOf("result" to "agtype")
         )
 
+    /** 레이블별 정점 수를 조회하는 AGE SQL을 반환한다. */
     fun countVertices(graphName: String, label: String): String =
         cypher(
             graphName,
@@ -106,6 +127,7 @@ object AgeSql {
             listOf("count" to "agtype")
         )
 
+    /** 간선 생성 Cypher를 AGE SQL로 래핑하여 반환한다. */
     fun createEdge(
         graphName: String,
         fromId: Long,
@@ -121,6 +143,7 @@ object AgeSql {
         )
     }
 
+    /** 레이블과 필터로 간선을 조회하는 AGE SQL을 반환한다. */
     fun matchEdgesByLabel(graphName: String, edgeLabel: String, filter: Map<String, Any?> = emptyMap()): String {
         val filterStr = if (filter.isEmpty()) "" else AgePropertySerializer.toCypherProps(filter)
         return cypher(
@@ -130,6 +153,7 @@ object AgeSql {
         )
     }
 
+    /** 간선을 삭제하는 AGE SQL을 반환한다. */
     fun deleteEdge(graphName: String, edgeLabel: String, id: Long): String =
         cypher(
             graphName,

@@ -36,6 +36,7 @@ class CodeGraphSuspendService(
 ) {
     companion object : KLoggingChannel()
 
+    /** 그래프를 초기화한다. 존재하지 않으면 생성한다. */
     suspend fun initialize() {
         if (!ops.graphExists(graphName)) {
             ops.createGraph(graphName)

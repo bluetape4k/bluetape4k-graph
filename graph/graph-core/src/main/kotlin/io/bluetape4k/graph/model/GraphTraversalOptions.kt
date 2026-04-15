@@ -15,6 +15,7 @@ import java.io.Serializable
  * ```
  */
 sealed class GraphTraversalOptions: Serializable {
+    /** 최대 탐색 깊이. 서브클래스별 기본값이 다르다 ([NeighborOptions]: 1, [PathOptions]: 10). */
     abstract val maxDepth: Int
 }
 

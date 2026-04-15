@@ -12,6 +12,12 @@ import io.bluetape4k.logging.KLogging
  */
 object AgeTypeParser : KLogging() {
 
+    /**
+     * AGE vertex agtype 문자열을 [GraphVertex]로 파싱한다.
+     *
+     * @param agtypeStr AGE가 반환하는 vertex agtype 문자열. 예: `{"id": 1, "label": "Person", "properties": {"name": "Alice"}}::vertex`
+     * @return 파싱된 [GraphVertex].
+     */
     fun parseVertex(agtype: String): GraphVertex {
         val json = agtype.removeSuffix("::vertex").trim()
         val map = parseJsonObject(json)
@@ -22,6 +28,12 @@ object AgeTypeParser : KLogging() {
         return GraphVertex(id, label, properties)
     }
 
+    /**
+     * AGE edge agtype 문자열을 [GraphEdge]로 파싱한다.
+     *
+     * @param agtypeStr AGE가 반환하는 edge agtype 문자열.
+     * @return 파싱된 [GraphEdge].
+     */
     fun parseEdge(agtype: String): GraphEdge {
         val json = agtype.removeSuffix("::edge").trim()
         val map = parseJsonObject(json)
@@ -34,6 +46,14 @@ object AgeTypeParser : KLogging() {
         return GraphEdge(id, label, startId, endId, properties)
     }
 
+    /**
+     * AGE path agtype 문자열을 [GraphPath]로 파싱한다.
+     *
+     * path는 vertex와 edge가 교대로 나열된 배열 형태로 표현된다.
+     *
+     * @param agtypeStr AGE가 반환하는 path agtype 문자열.
+     * @return 파싱된 [GraphPath].
+     */
     fun parsePath(agtype: String): GraphPath {
         val json = agtype.removeSuffix("::path").trim()
         // path는 [{...}::vertex, {...}::edge, ...] 형태의 agtype 배열
@@ -80,8 +100,13 @@ object AgeTypeParser : KLogging() {
         return elements.toList()
     }
 
+    /** [agtypeStr]이 AGE vertex 타입 문자열인지 판별한다. */
     fun isVertex(agtype: String): Boolean = agtype.trimEnd().endsWith("::vertex")
+
+    /** [agtypeStr]이 AGE edge 타입 문자열인지 판별한다. */
     fun isEdge(agtype: String): Boolean = agtype.trimEnd().endsWith("::edge")
+
+    /** [agtypeStr]이 AGE path 타입 문자열인지 판별한다. */
     fun isPath(agtype: String): Boolean = agtype.trimEnd().endsWith("::path")
 
     /**
@@ -147,6 +172,12 @@ object AgeTypeParser : KLogging() {
         }
     }
 
+    /**
+     * AGE JSON 배열 문자열을 List로 파싱한다.
+     *
+     * @param jsonArrayStr `[1, "str", null, true]` 형태의 JSON 배열 문자열.
+     * @return 파싱된 불변 [List].
+     */
     fun parseJsonArray(json: String): List<Any?> {
         val content = json.trim().removePrefix("[").removeSuffix("]").trim()
         if (content.isEmpty()) return emptyList()

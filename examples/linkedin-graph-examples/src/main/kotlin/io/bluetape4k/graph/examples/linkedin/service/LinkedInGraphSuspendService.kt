@@ -60,7 +60,7 @@ class LinkedInGraphSuspendService(
         mapOf("name" to name, "title" to title, "company" to company, "location" to location)
     )
 
-    /** 회사 추가 */
+    /** 회사 정점을 추가한다. */
     suspend fun addCompany(
         name: String,
         industry: String = "",
@@ -81,7 +81,7 @@ class LinkedInGraphSuspendService(
         ops.createEdge(personId2, personId1, "KNOWS", mapOf("since" to since, "strength" to strength))
     }
 
-    /** 재직 정보 추가 */
+    /** 재직 정보 간선을 추가한다. */
     suspend fun addWorkExperience(
         personId: GraphElementId,
         companyId: GraphElementId,
@@ -91,12 +91,12 @@ class LinkedInGraphSuspendService(
         ops.createEdge(personId, companyId, "WORKS_AT", mapOf("role" to role, "isCurrent" to isCurrent))
     }
 
-    /** 팔로우 */
+    /** 팔로우 관계 간선을 추가한다. */
     suspend fun follow(followerId: GraphElementId, targetId: GraphElementId) {
         ops.createEdge(followerId, targetId, "FOLLOWS", emptyMap())
     }
 
-    /** 1촌 인맥 목록 */
+    /** 1촌 인맥 목록을 [Flow]로 반환한다. */
     fun getDirectConnections(personId: GraphElementId): Flow<GraphVertex> =
         ops.neighbors(personId, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING, maxDepth = 1))
 
@@ -119,15 +119,15 @@ class LinkedInGraphSuspendService(
     suspend fun findConnectionPath(fromId: GraphElementId, toId: GraphElementId) =
         ops.shortestPath(fromId, toId, PathOptions(edgeLabel = "KNOWS", maxDepth = 6))
 
-    /** 모든 연결 경로 (최대 3단계) */
+    /** 두 사람 사이 모든 연결 경로를 [Flow]로 반환한다 (최대 3단계). */
     fun findAllConnectionPaths(fromId: GraphElementId, toId: GraphElementId) =
         ops.allPaths(fromId, toId, PathOptions(edgeLabel = "KNOWS", maxDepth = 3))
 
-    /** 특정 회사 재직자 검색 */
+    /** 특정 회사 재직자를 [Flow]로 반환한다. */
     fun findEmployees(companyId: GraphElementId): Flow<GraphVertex> =
         ops.neighbors(companyId, NeighborOptions(edgeLabel = "WORKS_AT", direction = Direction.INCOMING, maxDepth = 1))
 
-    /** 사람 검색 (이름으로) */
+    /** 사람 이름으로 검색한다. */
     fun findPersonByName(name: String): Flow<GraphVertex> =
         ops.findVerticesByLabel("Person", mapOf("name" to name))
 }

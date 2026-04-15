@@ -20,6 +20,7 @@ import org.testcontainers.utility.DockerImageName
  */
 object Neo4jServer {
 
+    /** Neo4j 5.x Testcontainers 인스턴스. 최초 접근 시 컨테이너를 시작한다. */
     val neo4j: Neo4jContainer by lazy {
         Neo4jContainer(DockerImageName.parse("neo4j:5"))
             .withoutAuthentication()
