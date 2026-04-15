@@ -7,6 +7,14 @@ import io.bluetape4k.graph.utils.GraphProperties
  *
  * 실제 직렬화 로직은 [GraphProperties] 에 있으며, 이 객체는 AGE 전용 별칭이다.
  * 새 코드는 [GraphProperties] 를 직접 사용해도 된다.
+ *
+ * ```kotlin
+ * AgePropertySerializer.toCypherProps(mapOf("name" to "Alice", "age" to 30))
+ * // → "{name: 'Alice', age: 30}"
+ *
+ * AgePropertySerializer.toCypherValue("hello") // → "'hello'"
+ * AgePropertySerializer.toCypherValue(42)      // → "42"
+ * ```
  */
 object AgePropertySerializer {
 

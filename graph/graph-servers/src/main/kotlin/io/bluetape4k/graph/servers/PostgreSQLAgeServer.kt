@@ -27,6 +27,7 @@ class PostgreSQLAgeServer private constructor():
     ) {
 
     companion object {
+        /** PostgreSQLAgeServer 싱글턴 인스턴스. 최초 접근 시 컨테이너를 시작한다. */
         val instance: PostgreSQLAgeServer by lazy {
             PostgreSQLAgeServer().apply {
                 start()

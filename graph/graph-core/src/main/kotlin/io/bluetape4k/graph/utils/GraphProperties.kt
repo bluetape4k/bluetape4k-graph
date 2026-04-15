@@ -24,6 +24,14 @@ object GraphProperties: KLogging() {
      * Map 을 Cypher 속성 블록 문자열로 변환한다. 예: `{name: 'Alice', age: 30}`.
      *
      * 입력이 비어 있으면 빈 문자열을 반환한다.
+     *
+     * ```kotlin
+     * GraphProperties.toCypherProps(mapOf("name" to "Alice", "age" to 30))
+     * // → "{name: 'Alice', age: 30}"
+     *
+     * GraphProperties.toCypherProps(emptyMap())
+     * // → ""
+     * ```
      */
     fun toCypherProps(properties: Map<String, Any?>): String {
         if (properties.isEmpty()) return ""
@@ -38,6 +46,14 @@ object GraphProperties: KLogging() {
      * - 문자열은 작은따옴표로 감싸지며, 백슬래시/작은따옴표/개행/탭은 escape 된다.
      * - `LocalDate`, `LocalDateTime` 은 ISO-8601 문자열 리터럴로 변환된다.
      * - `List`, `Map` 은 요소를 재귀 변환한다.
+     *
+     * ```kotlin
+     * GraphProperties.toCypherValue("Alice")          // → "'Alice'"
+     * GraphProperties.toCypherValue(42)               // → "42"
+     * GraphProperties.toCypherValue(true)             // → "true"
+     * GraphProperties.toCypherValue(null)             // → "null"
+     * GraphProperties.toCypherValue(listOf(1, 2, 3)) // → "[1, 2, 3]"
+     * ```
      */
     fun toCypherValue(value: Any?): String = when (value) {
         null -> "null"

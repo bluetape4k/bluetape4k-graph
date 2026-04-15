@@ -30,9 +30,11 @@ object MemgraphServer {
             }
     }
 
+    /** Memgraph bolt 접속 URL. 예: `bolt://localhost:52382` */
     val boltUrl: String
         get() = "bolt://${memgraph.host}:${memgraph.getMappedPort(7687)}"
 
+    /** [boltUrl]로 생성된 싱글턴 Neo4j Driver (Memgraph bolt 호환). */
     val driver: Driver by lazy {
         GraphDatabase.driver(boltUrl, AuthTokens.none())
     }

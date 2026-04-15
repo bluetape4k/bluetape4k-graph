@@ -32,5 +32,6 @@ object Neo4jServer {
     /** [neo4j] 컨테이너의 alias — `Neo4jServer.instance` 패턴 하위 호환용 */
     val instance get() = neo4j
 
+    /** Neo4j bolt 접속 URL. 예: `bolt://localhost:52381` */
     val boltUrl: String get() = neo4j.boltUrl
 }

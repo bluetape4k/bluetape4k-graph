@@ -20,6 +20,20 @@ import org.neo4j.driver.reactivestreams.ReactiveSession
  *
  * 소유권: 외부에서 주입된 [Driver]를 [close]에서 닫지 않습니다.
  *
+ * ```kotlin
+ * val session = Neo4jCoroutineSession(driver)
+ *
+ * // 쓰기 쿼리
+ * val records = session.runWriteQuery(
+ *     "CREATE (n:Person {name: $name}) RETURN n",
+ *     mapOf("name" to "Alice")
+ * )
+ *
+ * // 읽기 쿼리
+ * val results = session.runReadQuery("MATCH (n:Person) RETURN n")
+ * val vertices = results.map { Neo4jRecordMapper.recordToVertex(it) }
+ * ```
+ *
  * @param driver Neo4j Java Driver (외부 소유)
  * @param database Neo4j 데이터베이스 이름 (기본: "neo4j")
  */

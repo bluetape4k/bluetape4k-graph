@@ -7,6 +7,17 @@ package io.bluetape4k.graph.age.sql
  * ```sql
  * SELECT * FROM ag_catalog.cypher('graph_name', $$ MATCH (n) RETURN n $$) AS (v agtype)
  * ```
+ *
+ * ```kotlin
+ * // 정점 생성 SQL 생성
+ * val sql = AgeSql.createVertex("social", "Person", mapOf("name" to "Alice", "age" to 30))
+ *
+ * // 간선 조회 SQL 생성
+ * val edgeSql = AgeSql.matchEdgesByLabel("social", "KNOWS", mapOf("since" to 2024))
+ *
+ * // 최단 경로 SQL 생성
+ * val pathSql = AgeSql.shortestPath("social", 1L, 2L, edgeLabel = "KNOWS", maxDepth = 5)
+ * ```
  */
 object AgeSql {
 
@@ -22,6 +33,18 @@ object AgeSql {
 
     /**
      * Cypher 쿼리를 AGE SQL로 래핑합니다.
+     *
+     * ```kotlin
+     * AgeSql.cypher(
+     *     "social",
+     *     "MATCH (n:Person) RETURN n",
+     *     listOf("n" to "agtype")
+     * )
+     * // → "SELECT * FROM ag_catalog.cypher('social', $$ MATCH (n:Person) RETURN n $$) AS (n agtype)"
+     * ```
+     *
+     * @param graphName AGE 그래프 이름.
+     * @param cypherQuery 실행할 Cypher 쿼리 문자열.
      * @param columns 결과 컬럼 목록. 예: listOf("v" to "agtype", "e" to "agtype")
      */
     fun cypher(
@@ -114,6 +137,23 @@ object AgeSql {
             listOf("result" to "agtype")
         )
 
+    /**
+     * 인접 정점 탐색 SQL을 생성합니다.
+     *
+     * ```kotlin
+     * // 1단계 OUTGOING neighbors
+     * AgeSql.neighbors("social", 1L, edgeLabel = "KNOWS", direction = "OUTGOING", depth = 1)
+     *
+     * // 최대 3홉 양방향
+     * AgeSql.neighbors("social", 1L, edgeLabel = null, direction = "BOTH", depth = 3)
+     * ```
+     *
+     * @param graphName AGE 그래프 이름.
+     * @param startId 시작 정점의 AGE numeric ID.
+     * @param edgeLabel 필터링할 간선 레이블. null이면 모든 간선 포함.
+     * @param direction "OUTGOING", "INCOMING", "BOTH" 중 하나.
+     * @param depth 최대 탐색 깊이.
+     */
     fun neighbors(
         graphName: String,
         startId: Long,
@@ -135,6 +175,22 @@ object AgeSql {
         )
     }
 
+    /**
+     * 최단 경로 탐색 SQL을 생성합니다.
+     *
+     * AGE는 `shortestPath()` 내장 함수를 지원하지 않으므로
+     * 변수 길이 패스 매칭 + `LIMIT 1` 방식으로 구현합니다.
+     *
+     * ```kotlin
+     * AgeSql.shortestPath("social", fromId = 1L, toId = 5L, edgeLabel = "KNOWS", maxDepth = 5)
+     * ```
+     *
+     * @param graphName AGE 그래프 이름.
+     * @param fromId 출발 정점 ID.
+     * @param toId 도착 정점 ID.
+     * @param edgeLabel 필터링할 간선 레이블. null이면 모든 간선 포함.
+     * @param maxDepth 최대 탐색 깊이.
+     */
     fun shortestPath(
         graphName: String,
         fromId: Long,
@@ -151,6 +207,19 @@ object AgeSql {
         )
     }
 
+    /**
+     * 모든 경로 탐색 SQL을 생성합니다.
+     *
+     * ```kotlin
+     * AgeSql.allPaths("social", fromId = 1L, toId = 5L, edgeLabel = "KNOWS", maxDepth = 3)
+     * ```
+     *
+     * @param graphName AGE 그래프 이름.
+     * @param fromId 출발 정점 ID.
+     * @param toId 도착 정점 ID.
+     * @param edgeLabel 필터링할 간선 레이블. null이면 모든 간선 포함.
+     * @param maxDepth 최대 탐색 깊이.
+     */
     fun allPaths(
         graphName: String,
         fromId: Long,
