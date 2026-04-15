@@ -11,7 +11,22 @@ import kotlinx.coroutines.flow.Flow
 
 /**
  * LinkedIn 인맥 그래프 서비스 (코루틴 suspend 버전).
- * GraphSuspendOperations 를 사용해 소셜 네트워크 기능 구현.
+ * [GraphSuspendOperations]을 사용해 소셜 네트워크 기능 구현.
+ *
+ * ```kotlin
+ * val ops = TinkerGraphSuspendOperations()
+ * val service = LinkedInGraphSuspendService(ops)
+ *
+ * runBlocking {
+ *     service.initialize()
+ *     val alice = service.addPerson("Alice", title = "Engineer")
+ *     val bob   = service.addPerson("Bob",   title = "Manager")
+ *     service.connect(alice.id, bob.id, since = "2020-01-01")
+ *
+ *     val friends = service.getDirectConnections(alice.id).toList()  // [Bob]
+ *     val path    = service.findConnectionPath(alice.id, bob.id)
+ * }
+ * ```
  */
 class LinkedInGraphSuspendService(
     private val ops: GraphSuspendOperations,
@@ -26,7 +41,15 @@ class LinkedInGraphSuspendService(
         }
     }
 
-    /** 사람 추가 */
+    /**
+     * 사람 정점을 추가한다.
+     *
+     * @param name 이름.
+     * @param title 직함.
+     * @param company 현 소속 회사명.
+     * @param location 위치.
+     * @return 생성된 [GraphVertex].
+     */
     suspend fun addPerson(
         name: String,
         title: String = "",
@@ -77,11 +100,22 @@ class LinkedInGraphSuspendService(
     fun getDirectConnections(personId: GraphElementId): Flow<GraphVertex> =
         ops.neighbors(personId, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING, maxDepth = 1))
 
-    /** N촌 이내 인맥 목록 */
+    /**
+     * N촌 이내 인맥 목록을 [Flow]로 반환한다.
+     *
+     * @param personId 기준 사람 ID.
+     * @param degree 최대 촌수.
+     */
     fun getConnectionsWithinDegree(personId: GraphElementId, degree: Int): Flow<GraphVertex> =
         ops.neighbors(personId, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING, maxDepth = degree))
 
-    /** 두 사람 사이 최단 인맥 경로 */
+    /**
+     * 두 사람 사이 최단 인맥 경로를 탐색한다.
+     *
+     * @param fromId 출발 사람 ID.
+     * @param toId 도착 사람 ID.
+     * @return 최단 [GraphPath], 경로가 없으면 `null`.
+     */
     suspend fun findConnectionPath(fromId: GraphElementId, toId: GraphElementId) =
         ops.shortestPath(fromId, toId, PathOptions(edgeLabel = "KNOWS", maxDepth = 6))
 

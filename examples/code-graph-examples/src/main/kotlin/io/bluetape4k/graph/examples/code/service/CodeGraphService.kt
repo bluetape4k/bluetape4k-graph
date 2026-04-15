@@ -11,7 +11,20 @@ import io.bluetape4k.logging.KLogging
 
 /**
  * 소스 코드 의존성 그래프 서비스.
- * 모듈/클래스/함수 간 관계를 AGE 그래프로 관리.
+ * 모듈/클래스/함수 간 관계를 그래프로 관리한다.
+ *
+ * ```kotlin
+ * val ops = TinkerGraphOperations()
+ * val service = CodeGraphService(ops)
+ * service.initialize()
+ *
+ * val coreModule = service.addModule("graph-core", path = "graph/graph-core")
+ * val ageModule  = service.addModule("graph-age",  path = "graph/graph-age")
+ * service.addDependency(ageModule.id, coreModule.id, dependencyType = "compile")
+ *
+ * val deps = service.getDependencies(ageModule.id)  // [graph-core]
+ * val path = service.findDependencyPath(ageModule.id, coreModule.id)
+ * ```
  */
 class CodeGraphService(
     private val ops: GraphOperations,
@@ -27,7 +40,15 @@ class CodeGraphService(
         }
     }
 
-    /** 모듈 추가 */
+    /**
+     * 모듈 정점을 추가한다.
+     *
+     * @param name 모듈 이름.
+     * @param path 파일시스템 경로.
+     * @param version 버전 문자열.
+     * @param language 언어 (예: "kotlin", "java").
+     * @return 생성된 [GraphVertex].
+     */
     fun addModule(
         name: String,
         path: String = "",
@@ -74,7 +95,14 @@ class CodeGraphService(
         )
     )
 
-    /** 모듈 간 의존성 추가 */
+    /**
+     * 모듈 간 의존성 간선을 추가한다.
+     *
+     * @param fromModuleId 의존하는 모듈 ID.
+     * @param toModuleId 의존되는 모듈 ID.
+     * @param dependencyType 의존성 종류 ("compile", "runtime", "test").
+     * @param version 의존 버전 문자열.
+     */
     fun addDependency(
         fromModuleId: GraphElementId,
         toModuleId: GraphElementId,
@@ -123,15 +151,32 @@ class CodeGraphService(
     fun getDependents(moduleId: GraphElementId): List<GraphVertex> =
         ops.neighbors(moduleId, NeighborOptions(edgeLabel = "DEPENDS_ON", direction = Direction.INCOMING, maxDepth = 1))
 
-    /** 전이 의존성 (n단계) */
+    /**
+     * 전이 의존성 (n단계까지) 모듈 목록을 반환한다.
+     *
+     * @param moduleId 기준 모듈 ID.
+     * @param maxDepth 최대 탐색 깊이 (기본: 5).
+     * @return 전이 의존 [GraphVertex] 목록.
+     */
     fun getTransitiveDependencies(moduleId: GraphElementId, maxDepth: Int = 5): List<GraphVertex> =
         ops.neighbors(moduleId, NeighborOptions(edgeLabel = "DEPENDS_ON", direction = Direction.OUTGOING, maxDepth = maxDepth))
 
-    /** 두 모듈 간 의존성 경로 탐색 */
+    /**
+     * 두 모듈 간 최단 의존성 경로를 탐색한다.
+     *
+     * @param fromId 출발 모듈 ID.
+     * @param toId 도착 모듈 ID.
+     * @return 최단 [GraphPath], 경로가 없으면 `null`.
+     */
     fun findDependencyPath(fromId: GraphElementId, toId: GraphElementId): GraphPath? =
         ops.shortestPath(fromId, toId, PathOptions(edgeLabel = "DEPENDS_ON", maxDepth = 10))
 
-    /** 순환 의존성 탐지: A→B→C→A 패턴 (allPaths로 자기 자신으로 돌아오는 경로 탐색) */
+    /**
+     * 순환 의존성을 탐지한다. `A→B→C→A` 패턴 (모듈이 자기 자신으로 돌아오는 경로).
+     *
+     * @param moduleId 검사할 모듈 ID.
+     * @return 순환 경로 [GraphPath] 목록. 비어 있으면 순환 없음.
+     */
     fun detectCircularDependency(moduleId: GraphElementId): List<GraphPath> =
         ops.allPaths(moduleId, moduleId, PathOptions(edgeLabel = "DEPENDS_ON", maxDepth = 5))
 
