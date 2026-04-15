@@ -28,6 +28,10 @@ value class GraphElementId(val value: String): Serializable {
         /**
          * 문자열 값으로 [GraphElementId]를 생성한다.
          *
+         * ```kotlin
+         * val id = GraphElementId.of("node-abc")
+         * ```
+         *
          * @param value ID 문자열 값.
          */
         fun of(value: String) = GraphElementId(value)
@@ -36,6 +40,10 @@ value class GraphElementId(val value: String): Serializable {
          * Long 숫자 ID를 [GraphElementId]로 변환한다.
          *
          * Apache AGE처럼 내부 ID가 Long인 백엔드에서 사용한다.
+         *
+         * ```kotlin
+         * val id = GraphElementId.of(42L)  // AGE Long ID → "42"
+         * ```
          *
          * @param value Long 형식의 숫자 ID.
          */

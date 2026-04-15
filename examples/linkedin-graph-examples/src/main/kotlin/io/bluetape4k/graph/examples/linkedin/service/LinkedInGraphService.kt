@@ -31,7 +31,13 @@ class LinkedInGraphService(
 ) {
     companion object : KLogging()
 
-    /** 그래프 초기화 */
+    /**
+     * 그래프 초기화. 존재하지 않으면 생성한다.
+     *
+     * ```kotlin
+     * service.initialize()
+     * ```
+     */
     fun initialize() {
         if (!ops.graphExists(graphName)) {
             ops.createGraph(graphName)
@@ -41,6 +47,10 @@ class LinkedInGraphService(
 
     /**
      * 사람 정점을 추가한다.
+     *
+     * ```kotlin
+     * val alice = service.addPerson("Alice", title = "Engineer", company = "Bluetape4k")
+     * ```
      *
      * @param name 이름.
      * @param title 직함.
@@ -58,7 +68,13 @@ class LinkedInGraphService(
         mapOf("name" to name, "title" to title, "company" to company, "location" to location)
     )
 
-    /** 회사 정점을 추가한다. */
+    /**
+     * 회사 정점을 추가한다.
+     *
+     * ```kotlin
+     * val company = service.addCompany("Bluetape4k", industry = "Software")
+     * ```
+     */
     fun addCompany(
         name: String,
         industry: String = "",
@@ -70,6 +86,10 @@ class LinkedInGraphService(
 
     /**
      * 인맥 연결을 추가한다 (양방향: A KNOWS B, B KNOWS A).
+     *
+     * ```kotlin
+     * service.connect(alice.id, bob.id, since = "2022-01-01", strength = 8)
+     * ```
      *
      * @param personId1 첫 번째 사람 ID.
      * @param personId2 두 번째 사람 ID.
@@ -86,7 +106,13 @@ class LinkedInGraphService(
         ops.createEdge(personId2, personId1, "KNOWS", mapOf("since" to since, "strength" to strength))
     }
 
-    /** 재직 정보 간선을 추가한다. */
+    /**
+     * 재직 정보 간선을 추가한다.
+     *
+     * ```kotlin
+     * service.addWorkExperience(alice.id, company.id, role = "Engineer", isCurrent = true)
+     * ```
+     */
     fun addWorkExperience(
         personId: GraphElementId,
         companyId: GraphElementId,
@@ -96,17 +122,33 @@ class LinkedInGraphService(
         ops.createEdge(personId, companyId, "WORKS_AT", mapOf("role" to role, "isCurrent" to isCurrent))
     }
 
-    /** 팔로우 관계 간선을 추가한다. */
+    /**
+     * 팔로우 관계 간선을 추가한다.
+     *
+     * ```kotlin
+     * service.follow(alice.id, bob.id)
+     * ```
+     */
     fun follow(followerId: GraphElementId, targetId: GraphElementId) {
         ops.createEdge(followerId, targetId, "FOLLOWS", emptyMap())
     }
 
-    /** 1촌 인맥 목록을 반환한다. */
+    /**
+     * 1촌 인맥 목록을 반환한다.
+     *
+     * ```kotlin
+     * val friends = service.getDirectConnections(alice.id)
+     * ```
+     */
     fun getDirectConnections(personId: GraphElementId): List<GraphVertex> =
         ops.neighbors(personId, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING, maxDepth = 1))
 
     /**
      * N촌 이내 인맥 목록을 반환한다.
+     *
+     * ```kotlin
+     * val secondDegree = service.getConnectionsWithinDegree(alice.id, degree = 2)
+     * ```
      *
      * @param personId 기준 사람 ID.
      * @param degree 최대 촌수.
@@ -118,6 +160,10 @@ class LinkedInGraphService(
     /**
      * 두 사람 사이 최단 인맥 경로를 탐색한다.
      *
+     * ```kotlin
+     * val path = service.findConnectionPath(alice.id, carol.id)
+     * ```
+     *
      * @param fromId 출발 사람 ID.
      * @param toId 도착 사람 ID.
      * @return 최단 [GraphPath], 경로가 없으면 `null`.
@@ -127,6 +173,10 @@ class LinkedInGraphService(
 
     /**
      * 두 사람 사이 모든 연결 경로를 탐색한다 (최대 3단계).
+     *
+     * ```kotlin
+     * val paths = service.findAllConnectionPaths(alice.id, carol.id)
+     * ```
      *
      * @param fromId 출발 사람 ID.
      * @param toId 도착 사람 ID.
@@ -138,13 +188,23 @@ class LinkedInGraphService(
     /**
      * 특정 회사 재직자를 검색한다.
      *
+     * ```kotlin
+     * val employees = service.findEmployees(bluetape4k.id)
+     * ```
+     *
      * @param companyId 회사 정점 ID.
      * @return 재직자 [GraphVertex] 목록.
      */
     fun findEmployees(companyId: GraphElementId): List<GraphVertex> =
         ops.neighbors(companyId, NeighborOptions(edgeLabel = "WORKS_AT", direction = Direction.INCOMING, maxDepth = 1))
 
-    /** 사람 이름으로 검색한다. */
+    /**
+     * 사람 이름으로 검색한다.
+     *
+     * ```kotlin
+     * val persons = service.findPersonByName("Alice")
+     * ```
+     */
     fun findPersonByName(name: String): List<GraphVertex> =
         ops.findVerticesByLabel("Person", mapOf("name" to name))
 }

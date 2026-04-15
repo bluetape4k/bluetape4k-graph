@@ -59,28 +59,43 @@ class AgeGraphSuspendOperations(
         graphName.requireNotBlank("graphName")
     }
 
-    override suspend fun createGraph(name: String): Unit = newSuspendedTransaction {
-        loadAgeAndSetSearchPath()
-        try {
-            exec(AgeSql.createGraph(name))
-        } catch (e: Exception) {
-            // 이미 존재하는 경우 무시
-            log.debug("Graph '$name' may already exist: ${e.message}")
+    override suspend fun createGraph(name: String) {
+        name.requireNotBlank("name")
+
+        newSuspendedTransaction {
+            loadAgeAndSetSearchPath()
+            try {
+                exec(AgeSql.createGraph(name))
+            } catch (e: Exception) {
+                // 이미 존재하는 경우 무시
+                log.debug("Graph '$name' may already exist: ${e.message}")
+            }
         }
     }
 
-    override suspend fun dropGraph(name: String): Unit = newSuspendedTransaction {
-        loadAgeAndSetSearchPath()
-        exec(AgeSql.dropGraph(name))
+    override suspend fun dropGraph(name: String) {
+        name.requireNotBlank("name")
+        
+        newSuspendedTransaction {
+            loadAgeAndSetSearchPath()
+            exec(AgeSql.dropGraph(name))
+        }
     }
 
-    override suspend fun graphExists(name: String): Boolean = newSuspendedTransaction {
-        loadAgeAndSetSearchPath()
-        var count = 0L
-        exec(AgeSql.graphExists(name)) { rs ->
-            if (rs.next()) count = rs.getLong(1)
+    override suspend fun graphExists(name: String): Boolean {
+        name.requireNotBlank("name")
+
+        return newSuspendedTransaction {
+            loadAgeAndSetSearchPath()
+            var count = 0L
+            val stmt = AgeSql.graphExists(name)
+            exec(stmt) { rs ->
+                if (rs.next()) {
+                    count = rs.getLong(1)
+                }
+            }
+            count > 0
         }
-        count > 0
     }
 
     override fun close() {

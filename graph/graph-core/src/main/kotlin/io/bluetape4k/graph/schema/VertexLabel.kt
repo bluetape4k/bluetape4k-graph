@@ -30,32 +30,87 @@ abstract class VertexLabel(val label: String) {
      */
     val properties: List<PropertyDef<*>> get() = _properties.toList()
 
-    /** `String` 타입 속성을 선언한다. @param name 속성 이름. */
+    /**
+     * 문자열 속성 [PropertyDef]를 정의한다.
+     *
+     * ```kotlin
+     * object PersonLabel : VertexLabel("Person") {
+     *     val name = string("name")  // PropertyDef<String>
+     * }
+     * ```
+     */
     fun string(name: String) = PropertyDef<String>(name).also { _properties.add(it) }
 
-    /** `Int` 타입 속성을 선언한다. @param name 속성 이름. */
+    /**
+     * Int 속성 [PropertyDef]를 정의한다.
+     *
+     * ```kotlin
+     * val age = integer("age")  // PropertyDef<Int>
+     * ```
+     */
     fun integer(name: String) = PropertyDef<Int>(name).also { _properties.add(it) }
 
-    /** `Long` 타입 속성을 선언한다. @param name 속성 이름. */
+    /**
+     * Long 속성 [PropertyDef]를 정의한다.
+     *
+     * ```kotlin
+     * val count = long("count")  // PropertyDef<Long>
+     * ```
+     */
     fun long(name: String) = PropertyDef<Long>(name).also { _properties.add(it) }
 
-    /** `Boolean` 타입 속성을 선언한다. @param name 속성 이름. */
+    /**
+     * Boolean 속성 [PropertyDef]를 정의한다.
+     *
+     * ```kotlin
+     * val isActive = boolean("isActive")  // PropertyDef<Boolean>
+     * ```
+     */
     fun boolean(name: String) = PropertyDef<Boolean>(name).also { _properties.add(it) }
 
-    /** `List<String>` 타입 속성을 선언한다. @param name 속성 이름. */
+    /**
+     * List&lt;String&gt; 속성 [PropertyDef]를 정의한다.
+     *
+     * ```kotlin
+     * val tags = stringList("tags")  // PropertyDef<List<String>>
+     * ```
+     */
     fun stringList(name: String) = PropertyDef<List<String>>(name).also { _properties.add(it) }
 
-    /** `Map<String, Any?>` 타입의 JSON 속성을 선언한다. @param name 속성 이름. */
+    /**
+     * JSON Map 속성 [PropertyDef]를 정의한다.
+     *
+     * ```kotlin
+     * val meta = json("meta")  // PropertyDef<Map<String, Any?>>
+     * ```
+     */
     fun json(name: String) = PropertyDef<Map<String, Any?>>(name).also { _properties.add(it) }
 
-    /** [LocalDate] 타입 속성을 선언한다. @param name 속성 이름. */
+    /**
+     * LocalDate 속성 [PropertyDef]를 정의한다.
+     *
+     * ```kotlin
+     * val birthday = localDate("birthday")  // PropertyDef<LocalDate>
+     * ```
+     */
     fun localDate(name: String) = PropertyDef<LocalDate>(name).also { _properties.add(it) }
 
-    /** [LocalDateTime] 타입 속성을 선언한다. @param name 속성 이름. */
+    /**
+     * LocalDateTime 속성 [PropertyDef]를 정의한다.
+     *
+     * ```kotlin
+     * val createdAt = localDateTime("createdAt")  // PropertyDef<LocalDateTime>
+     * ```
+     */
     fun localDateTime(name: String) = PropertyDef<LocalDateTime>(name).also { _properties.add(it) }
 
     /**
      * Enum 타입 속성을 선언한다.
+     *
+     * ```kotlin
+     * enum class Status { ACTIVE, INACTIVE }
+     * val status = enum("status", Status::class)
+     * ```
      *
      * @param name 속성 이름.
      * @param type Enum 클래스의 [KClass].

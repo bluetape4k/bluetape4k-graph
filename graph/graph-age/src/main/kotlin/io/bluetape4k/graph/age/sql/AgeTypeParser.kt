@@ -9,11 +9,23 @@ import io.bluetape4k.logging.KLogging
 
 /**
  * Apache AGE의 agtype 결과를 파싱하여 Graph 모델로 변환합니다.
+ *
+ * ```kotlin
+ * val vertex = AgeTypeParser.parseVertex(rs.getString("v"))
+ * val edge   = AgeTypeParser.parseEdge(rs.getString("e"))
+ * val path   = AgeTypeParser.parsePath(rs.getString("p"))
+ * ```
  */
 object AgeTypeParser : KLogging() {
 
     /**
      * AGE vertex agtype 문자열을 [GraphVertex]로 파싱한다.
+     *
+     * ```kotlin
+     * val vertex = AgeTypeParser.parseVertex(rs.getString("v"))
+     * println(vertex.label)               // "Person"
+     * println(vertex.properties["name"])  // "Alice"
+     * ```
      *
      * @param agtypeStr AGE가 반환하는 vertex agtype 문자열. 예: `{"id": 1, "label": "Person", "properties": {"name": "Alice"}}::vertex`
      * @return 파싱된 [GraphVertex].
@@ -30,6 +42,11 @@ object AgeTypeParser : KLogging() {
 
     /**
      * AGE edge agtype 문자열을 [GraphEdge]로 파싱한다.
+     *
+     * ```kotlin
+     * val edge = AgeTypeParser.parseEdge(rs.getString("e"))
+     * println(edge.label)  // "KNOWS"
+     * ```
      *
      * @param agtypeStr AGE가 반환하는 edge agtype 문자열.
      * @return 파싱된 [GraphEdge].
@@ -50,6 +67,12 @@ object AgeTypeParser : KLogging() {
      * AGE path agtype 문자열을 [GraphPath]로 파싱한다.
      *
      * path는 vertex와 edge가 교대로 나열된 배열 형태로 표현된다.
+     *
+     * ```kotlin
+     * val path = AgeTypeParser.parsePath(rs.getString("p"))
+     * println(path.length)    // 경로 단계 수
+     * println(path.vertices)  // 경로 내 정점 목록
+     * ```
      *
      * @param agtypeStr AGE가 반환하는 path agtype 문자열.
      * @return 파싱된 [GraphPath].
@@ -100,18 +123,43 @@ object AgeTypeParser : KLogging() {
         return elements.toList()
     }
 
-    /** [agtypeStr]이 AGE vertex 타입 문자열인지 판별한다. */
+    /**
+     * [agtypeStr]이 AGE vertex 타입 문자열인지 판별한다.
+     *
+     * ```kotlin
+     * AgeTypeParser.isVertex("""{"id": 1, "label": "Person", ...}::vertex""")  // true
+     * AgeTypeParser.isVertex("""{"id": 2, ...}::edge""")                       // false
+     * ```
+     */
     fun isVertex(agtype: String): Boolean = agtype.trimEnd().endsWith("::vertex")
 
-    /** [agtypeStr]이 AGE edge 타입 문자열인지 판별한다. */
+    /**
+     * [agtypeStr]이 AGE edge 타입 문자열인지 판별한다.
+     *
+     * ```kotlin
+     * AgeTypeParser.isEdge("""{"id": 99, "label": "KNOWS", ...}::edge""")  // true
+     * ```
+     */
     fun isEdge(agtype: String): Boolean = agtype.trimEnd().endsWith("::edge")
 
-    /** [agtypeStr]이 AGE path 타입 문자열인지 판별한다. */
+    /**
+     * [agtypeStr]이 AGE path 타입 문자열인지 판별한다.
+     *
+     * ```kotlin
+     * AgeTypeParser.isPath("""[{...}::vertex, {...}::edge, {...}::vertex]""")  // true
+     * ```
+     */
     fun isPath(agtype: String): Boolean = agtype.trimEnd().endsWith("::path")
 
     /**
      * 단순 JSON 객체 파싱 (Jackson/Gson 의존성 없이 AGE agtype 처리용).
      * 복잡한 중첩 구조는 지원하지 않으므로, 필요 시 Jackson 도입 고려.
+     *
+     * ```kotlin
+     * AgeTypeParser.parseJsonObject("""{"name": "Alice", "age": 30}""")
+     * // → mapOf("name" to "Alice", "age" to 30)
+     * ```
+     *
      */
     fun parseJsonObject(json: String): Map<String, Any?> {
         val content = json.trim().removePrefix("{").removeSuffix("}").trim()
@@ -174,6 +222,11 @@ object AgeTypeParser : KLogging() {
 
     /**
      * AGE JSON 배열 문자열을 List로 파싱한다.
+     *
+     * ```kotlin
+     * AgeTypeParser.parseJsonArray("""[1, "str", null, true]""")
+     * // → listOf(1, "str", null, true)
+     * ```
      *
      * @param jsonArrayStr `[1, "str", null, true]` 형태의 JSON 배열 문자열.
      * @return 파싱된 불변 [List].

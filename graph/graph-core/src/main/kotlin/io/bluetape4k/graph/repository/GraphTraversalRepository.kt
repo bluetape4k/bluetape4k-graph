@@ -27,6 +27,11 @@ interface GraphTraversalRepository {
      * [NeighborOptions.direction]에 따라 나가는 방향, 들어오는 방향, 또는 양방향으로 탐색한다.
      * [NeighborOptions.maxDepth]가 2 이상이면 다단계 이웃까지 탐색한다.
      *
+     * ```kotlin
+     * val friends = ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS"))
+     * val all3hop = ops.neighbors(alice.id, NeighborOptions(maxDepth = 3))
+     * ```
+     *
      * @param startId 탐색을 시작할 정점 ID.
      * @param options 탐색 옵션 (레이블 필터, 방향, 최대 깊이).
      * @return 인접 [GraphVertex] 목록.
@@ -41,6 +46,11 @@ interface GraphTraversalRepository {
      *
      * [PathOptions.maxDepth]까지만 탐색한다.
      * 경로가 없거나 최대 깊이를 초과하면 `null`을 반환한다.
+     *
+     * ```kotlin
+     * val path = ops.shortestPath(alice.id, carol.id, PathOptions(edgeLabel = "KNOWS", maxDepth = 10))
+     * println(path?.length)  // 2 (alice→bob→carol)
+     * ```
      *
      * @param fromId 출발 정점 ID.
      * @param toId 도착 정점 ID.
@@ -58,6 +68,11 @@ interface GraphTraversalRepository {
      *
      * [PathOptions.maxDepth]까지의 모든 단순 경로를 반환한다.
      * 경로가 없으면 빈 목록을 반환한다.
+     *
+     * ```kotlin
+     * val paths = ops.allPaths(alice.id, carol.id, PathOptions(maxDepth = 5))
+     * println(paths.size)  // 경로 수
+     * ```
      *
      * @param fromId 출발 정점 ID.
      * @param toId 도착 정점 ID.

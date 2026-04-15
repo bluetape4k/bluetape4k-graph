@@ -29,6 +29,12 @@ object GremlinRecordMapper : KLogging() {
      *
      * 정점 ID는 `v.id().toString()`으로 변환하고, 모든 속성을 Map으로 수집합니다.
      *
+     * ```kotlin
+     * val v: Vertex = g.addV("Person").property("name", "Alice").next()
+     * val vertex = GremlinRecordMapper.vertexToGraphVertex(v)
+     * println(vertex.properties["name"])  // "Alice"
+     * ```
+     *
      * @param v TinkerPop Gremlin Vertex 객체.
      * @return 변환된 [GraphVertex].
      */
@@ -46,6 +52,12 @@ object GremlinRecordMapper : KLogging() {
      * Gremlin [Edge]를 [GraphEdge]로 변환합니다.
      *
      * 간선의 outVertex(시작 정점)와 inVertex(종료 정점) ID를 [GraphEdge.startId], [GraphEdge.endId]에 매핑합니다.
+     *
+     * ```kotlin
+     * val e: Edge = g.addE("KNOWS").from(aliceV).to(bobV).next()
+     * val edge = GremlinRecordMapper.edgeToGraphEdge(e)
+     * println(edge.label)  // "KNOWS"
+     * ```
      *
      * @param e TinkerPop Gremlin Edge 객체.
      * @return 변환된 [GraphEdge].
@@ -65,6 +77,12 @@ object GremlinRecordMapper : KLogging() {
      * Gremlin [GremlinPath]를 [GraphPath]로 변환합니다.
      *
      * 경로 객체의 각 요소를 순서대로 [PathStep.VertexStep] 또는 [PathStep.EdgeStep]으로 변환합니다.
+     *
+     * ```kotlin
+     * val gPath = g.V(aliceV).outE("KNOWS").inV().path().next()
+     * val path = GremlinRecordMapper.pathToGraphPath(gPath)
+     * println(path.length)  // 1 (edge 1개)
+     * ```
      *
      * @param p TinkerPop Gremlin Path 객체.
      * @return 변환된 [GraphPath].

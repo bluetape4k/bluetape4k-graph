@@ -15,12 +15,23 @@ import java.io.Serializable
  * ```
  */
 sealed class GraphTraversalOptions: Serializable {
-    /** 최대 탐색 깊이. 서브클래스별 기본값이 다르다 ([NeighborOptions]: 1, [PathOptions]: 10). */
+    /**
+     * 최대 탐색 깊이. 서브클래스별 기본값이 다르다 ([NeighborOptions]: 1, [PathOptions]: 10).
+     *
+     * ```kotlin
+     * val opts = NeighborOptions(maxDepth = 3)  // 3홉까지 탐색
+     * ```
+     */
     abstract val maxDepth: Int
 }
 
 /**
  * [GraphTraversalRepository.neighbors] 호출 옵션.
+ *
+ * ```kotlin
+ * val opts = NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING, maxDepth = 2)
+ * val friends = ops.neighbors(alice.id, opts)
+ * ```
  *
  * @param edgeLabel 탐색할 엣지 레이블. null이면 모든 레이블 탐색.
  * @param direction 탐색 방향 (OUTGOING, INCOMING, BOTH)
@@ -39,6 +50,11 @@ data class NeighborOptions(
 
 /**
  * [GraphTraversalRepository.shortestPath] / [GraphTraversalRepository.allPaths] 호출 옵션.
+ *
+ * ```kotlin
+ * val opts = PathOptions(edgeLabel = "KNOWS", maxDepth = 5)
+ * val path = ops.shortestPath(alice.id, carol.id, opts)
+ * ```
  *
  * @param edgeLabel 탐색할 엣지 레이블. null이면 모든 레이블 탐색.
  * @param maxDepth 최대 탐색 깊이 (기본값: 10)

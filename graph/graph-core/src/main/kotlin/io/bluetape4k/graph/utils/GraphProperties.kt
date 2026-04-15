@@ -17,6 +17,16 @@ import java.time.LocalDateTime
  * > 주의: 이 유틸리티는 **신뢰된 입력**을 대상으로 하는 리터럴 생성기이다.
  * > 사용자 입력을 그대로 Cypher 에 끼워 넣는 용도로 사용해서는 안 된다.
  * > 사용자 입력은 백엔드 드라이버의 파라미터 바인딩을 사용할 것.
+ *
+ * ```kotlin
+ * GraphProperties.toCypherProps(mapOf("name" to "Alice", "age" to 30))
+ * // → "{name: 'Alice', age: 30}"
+ *
+ * GraphProperties.toCypherValue("hello")  // → "'hello'"
+ * GraphProperties.toCypherValue(42)       // → "42"
+ * GraphProperties.toCypherValue(null)     // → "null"
+ * ```
+ *
  */
 object GraphProperties: KLogging() {
 

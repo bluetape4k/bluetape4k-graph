@@ -6,10 +6,21 @@ import java.io.Serializable
  * 그래프 경로의 단계 (정점 또는 간선).
  *
  * 경로는 `[VertexStep, EdgeStep, VertexStep, ...]` 형태로 교차 배치된다.
+ *
+ * ```kotlin
+ * val step: PathStep = PathStep.VertexStep(vertex)
+ * val edgeStep: PathStep = PathStep.EdgeStep(edge)
+ * ```
+ *
  */
 sealed class PathStep {
     /**
      * 경로 내 정점 단계.
+     *
+     * ```kotlin
+     * val step = PathStep.VertexStep(GraphVertex(GraphElementId.of("v1"), "Person", mapOf("name" to "Alice")))
+     * println(step.vertex.label)  // "Person"
+     * ```
      *
      * @property vertex 해당 단계의 정점.
      */
@@ -17,6 +28,11 @@ sealed class PathStep {
 
     /**
      * 경로 내 간선 단계.
+     *
+     * ```kotlin
+     * val step = PathStep.EdgeStep(edge)
+     * println(step.edge.label)  // "KNOWS"
+     * ```
      *
      * @property edge 해당 단계의 간선.
      */
@@ -74,6 +90,11 @@ data class GraphPath(
          * 정점들만으로 구성된 경로를 만든다 (간선 없음).
          *
          * 주로 단일 정점 경로 또는 인접 정점 목록을 경로로 표현할 때 사용한다.
+         *
+         * ```kotlin
+         * val path = GraphPath.of(alice, bob, carol)
+         * println(path.length)  // 3
+         * ```
          *
          * @param vertices 경로에 포함할 정점들.
          */

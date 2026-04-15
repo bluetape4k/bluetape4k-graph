@@ -8,6 +8,13 @@ import kotlin.reflect.KClass
  * [VertexLabel] 또는 [EdgeLabel]의 DSL 메서드가 반환하는 타입 안전 속성 메타데이터이다.
  * 컴파일 타임에 속성 이름과 Kotlin 타입을 함께 추적한다.
  *
+ * ```kotlin
+ * val nameDef = PropertyDef<String>("name")      // inline factory
+ * val ageDef  = PropertyDef("age", Int::class)   // 명시적
+ * println(nameDef.name)  // "name"
+ * println(nameDef.type)  // class kotlin.String
+ * ```
+ *
  * @property name 속성 이름 (그래프 백엔드에 저장되는 키).
  * @property type 속성 값의 Kotlin [KClass].
  */

@@ -46,6 +46,14 @@ class Neo4jCoroutineSession(
 
     /**
      * 읽기 전용 트랜잭션 실행.
+     *
+     * ```kotlin
+     * val vertices = session.read { s ->
+     *     s.run(Query("MATCH (n:Person) RETURN n")).awaitSingle()
+     *         .records().asFlow().map { Neo4jRecordMapper.recordToVertex(it) }
+     * }
+     * ```
+     *
      */
     suspend fun <T> read(block: suspend (ReactiveSession) -> Flow<T>): List<T> {
         val session = driver.session(ReactiveSession::class.java, sessionConfig())
@@ -58,6 +66,14 @@ class Neo4jCoroutineSession(
 
     /**
      * 쓰기 트랜잭션 실행.
+     *
+     * ```kotlin
+     * session.write { s ->
+     *     s.run(Query("CREATE (n:Person {name: 'Alice'}) RETURN n")).awaitSingle()
+     *         .records().asFlow()
+     * }
+     * ```
+     *
      */
     suspend fun <T> write(block: suspend (ReactiveSession) -> Flow<T>): List<T> {
         val session = driver.session(ReactiveSession::class.java, sessionConfig())
@@ -70,6 +86,15 @@ class Neo4jCoroutineSession(
 
     /**
      * 읽기 쿼리를 Flow로 실행하여 Record 목록을 반환합니다.
+     *
+     * ```kotlin
+     * val records = session.runReadQuery(
+     *     "MATCH (n:Person) WHERE n.name = $name RETURN n",
+     *     mapOf("name" to "Alice")
+     * )
+     * val vertices = records.map { Neo4jRecordMapper.recordToVertex(it) }
+     * ```
+     *
      */
     suspend fun runReadQuery(cypher: String, params: Map<String, Any?> = emptyMap()): List<Record> {
         val session = driver.session(ReactiveSession::class.java, sessionConfig())
@@ -83,6 +108,14 @@ class Neo4jCoroutineSession(
 
     /**
      * 쓰기 쿼리를 실행하고 Record 목록을 반환합니다.
+     *
+     * ```kotlin
+     * val records = session.runWriteQuery(
+     *     "CREATE (n:Person {name: $name}) RETURN n",
+     *     mapOf("name" to "Alice")
+     * )
+     * ```
+     *
      */
     suspend fun runWriteQuery(cypher: String, params: Map<String, Any?> = emptyMap()): List<Record> =
         runReadQuery(cypher, params)

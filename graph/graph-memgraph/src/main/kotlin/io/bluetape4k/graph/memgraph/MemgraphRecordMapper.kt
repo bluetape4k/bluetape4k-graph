@@ -31,6 +31,11 @@ object MemgraphRecordMapper : KLogging() {
      *
      * Memgraph는 `elementId()` 대신 정수형 `id()`를 사용하므로 `node.id().toString()`으로 ID를 추출합니다.
      *
+     * ```kotlin
+     * val vertex = MemgraphRecordMapper.nodeToVertex(node)
+     * println(vertex.id.value)  // 정수 ID의 문자열 표현
+     * ```
+     *
      * @param node Neo4j Driver Node 객체 (Memgraph에서 반환).
      * @return 변환된 [GraphVertex].
      */
@@ -44,6 +49,10 @@ object MemgraphRecordMapper : KLogging() {
     /**
      * Memgraph [Relationship]을 [GraphEdge]로 변환합니다.
      *
+     * ```kotlin
+     * val edge = MemgraphRecordMapper.relationshipToEdge(rel)
+     * ```
+     *
      * @param rel Neo4j Driver Relationship 객체 (Memgraph에서 반환).
      * @return 변환된 [GraphEdge].
      */
@@ -56,6 +65,10 @@ object MemgraphRecordMapper : KLogging() {
 
     /**
      * Neo4j Driver [Path]를 [GraphPath]로 변환합니다.
+     *
+     * ```kotlin
+     * val path = MemgraphRecordMapper.pathToGraphPath(path)
+     * ```
      *
      * @param path Neo4j Driver Path 객체.
      * @return 변환된 [GraphPath].
@@ -77,6 +90,11 @@ object MemgraphRecordMapper : KLogging() {
     /**
      * [Record]에서 [GraphVertex]를 추출합니다.
      *
+     * ```kotlin
+     * val vertex = MemgraphRecordMapper.recordToVertex(record)         // key="n"
+     * val vertex2 = MemgraphRecordMapper.recordToVertex(record, "neighbor")
+     * ```
+     *
      * @param record Cypher 쿼리 결과 레코드.
      * @param key 레코드에서 노드를 추출할 키 (기본: "n").
      * @return 변환된 [GraphVertex].
@@ -87,6 +105,10 @@ object MemgraphRecordMapper : KLogging() {
     /**
      * [Record]에서 [GraphEdge]를 추출합니다.
      *
+     * ```kotlin
+     * val edge = MemgraphRecordMapper.recordToEdge(record)        // key="r"
+     * ```
+     *
      * @param record Cypher 쿼리 결과 레코드.
      * @param key 레코드에서 관계를 추출할 키 (기본: "r").
      * @return 변환된 [GraphEdge].
@@ -96,6 +118,10 @@ object MemgraphRecordMapper : KLogging() {
 
     /**
      * [Record]에서 [GraphPath]를 추출합니다.
+     *
+     * ```kotlin
+     * val path = MemgraphRecordMapper.recordToPath(record)        // key="p"
+     * ```
      *
      * @param record Cypher 쿼리 결과 레코드.
      * @param key 레코드에서 경로를 추출할 키 (기본: "p").

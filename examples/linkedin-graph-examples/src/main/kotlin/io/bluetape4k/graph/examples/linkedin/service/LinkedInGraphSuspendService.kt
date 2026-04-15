@@ -34,7 +34,13 @@ class LinkedInGraphSuspendService(
 ) {
     companion object : KLoggingChannel()
 
-    /** 그래프 초기화 */
+    /**
+     * 그래프 초기화. 존재하지 않으면 생성한다.
+     *
+     * ```kotlin
+     * service.initialize()
+     * ```
+     */
     suspend fun initialize() {
         if (!ops.graphExists(graphName)) {
             ops.createGraph(graphName)
@@ -60,7 +66,13 @@ class LinkedInGraphSuspendService(
         mapOf("name" to name, "title" to title, "company" to company, "location" to location)
     )
 
-    /** 회사 정점을 추가한다. */
+    /**
+     * 회사 정점을 추가한다.
+     *
+     * ```kotlin
+     * val company = service.addCompany("Bluetape4k", industry = "Software")
+     * ```
+     */
     suspend fun addCompany(
         name: String,
         industry: String = "",
@@ -70,7 +82,13 @@ class LinkedInGraphSuspendService(
         mapOf("name" to name, "industry" to industry, "location" to location)
     )
 
-    /** 인맥 연결 (양방향: A KNOWS B, B KNOWS A) */
+    /**
+     * 인맥 연결 (양방향: A KNOWS B, B KNOWS A).
+     *
+     * ```kotlin
+     * service.connect(alice.id, bob.id, since = "2020-01-01")
+     * ```
+     */
     suspend fun connect(
         personId1: GraphElementId,
         personId2: GraphElementId,
@@ -81,7 +99,13 @@ class LinkedInGraphSuspendService(
         ops.createEdge(personId2, personId1, "KNOWS", mapOf("since" to since, "strength" to strength))
     }
 
-    /** 재직 정보 간선을 추가한다. */
+    /**
+     * 재직 정보 간선을 추가한다.
+     *
+     * ```kotlin
+     * service.addWorkExperience(alice.id, company.id, role = "Engineer", isCurrent = true)
+     * ```
+     */
     suspend fun addWorkExperience(
         personId: GraphElementId,
         companyId: GraphElementId,
@@ -91,17 +115,33 @@ class LinkedInGraphSuspendService(
         ops.createEdge(personId, companyId, "WORKS_AT", mapOf("role" to role, "isCurrent" to isCurrent))
     }
 
-    /** 팔로우 관계 간선을 추가한다. */
+    /**
+     * 팔로우 관계 간선을 추가한다.
+     *
+     * ```kotlin
+     * service.follow(alice.id, bob.id)
+     * ```
+     */
     suspend fun follow(followerId: GraphElementId, targetId: GraphElementId) {
         ops.createEdge(followerId, targetId, "FOLLOWS", emptyMap())
     }
 
-    /** 1촌 인맥 목록을 [Flow]로 반환한다. */
+    /**
+     * 1촌 인맥 목록을 [Flow]로 반환한다.
+     *
+     * ```kotlin
+     * val friends = service.getDirectConnections(alice.id).toList()
+     * ```
+     */
     fun getDirectConnections(personId: GraphElementId): Flow<GraphVertex> =
         ops.neighbors(personId, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING, maxDepth = 1))
 
     /**
      * N촌 이내 인맥 목록을 [Flow]로 반환한다.
+     *
+     * ```kotlin
+     * val secondDegree = service.getConnectionsWithinDegree(alice.id, degree = 2).toList()
+     * ```
      *
      * @param personId 기준 사람 ID.
      * @param degree 최대 촌수.
@@ -119,15 +159,33 @@ class LinkedInGraphSuspendService(
     suspend fun findConnectionPath(fromId: GraphElementId, toId: GraphElementId) =
         ops.shortestPath(fromId, toId, PathOptions(edgeLabel = "KNOWS", maxDepth = 6))
 
-    /** 두 사람 사이 모든 연결 경로를 [Flow]로 반환한다 (최대 3단계). */
+    /**
+     * 두 사람 사이 모든 연결 경로를 [Flow]로 반환한다 (최대 3단계).
+     *
+     * ```kotlin
+     * val paths = service.findAllConnectionPaths(alice.id, carol.id).toList()
+     * ```
+     */
     fun findAllConnectionPaths(fromId: GraphElementId, toId: GraphElementId) =
         ops.allPaths(fromId, toId, PathOptions(edgeLabel = "KNOWS", maxDepth = 3))
 
-    /** 특정 회사 재직자를 [Flow]로 반환한다. */
+    /**
+     * 특정 회사 재직자를 [Flow]로 반환한다.
+     *
+     * ```kotlin
+     * val employees = service.findEmployees(company.id).toList()
+     * ```
+     */
     fun findEmployees(companyId: GraphElementId): Flow<GraphVertex> =
         ops.neighbors(companyId, NeighborOptions(edgeLabel = "WORKS_AT", direction = Direction.INCOMING, maxDepth = 1))
 
-    /** 사람 이름으로 검색한다. */
+    /**
+     * 사람 이름으로 검색한다.
+     *
+     * ```kotlin
+     * val persons = service.findPersonByName("Alice").toList()
+     * ```
+     */
     fun findPersonByName(name: String): Flow<GraphVertex> =
         ops.findVerticesByLabel("Person", mapOf("name" to name))
 }

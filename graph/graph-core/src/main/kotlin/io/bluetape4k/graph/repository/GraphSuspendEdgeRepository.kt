@@ -9,11 +9,23 @@ import kotlinx.coroutines.flow.Flow
  *
  * 컬렉션 반환은 [Flow]로 제공하여 대량 데이터 스트리밍을 지원한다.
  *
+ * ```kotlin
+ * runBlocking {
+ *     val edge    = ops.createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to 2024))
+ *     val edges   = ops.findEdgesByLabel("KNOWS").toList()
+ *     val deleted = ops.deleteEdge("KNOWS", edge.id)  // true
+ * }
+ * ```
+ *
  * @see GraphEdgeRepository 동기(blocking) 방식
  */
 interface GraphSuspendEdgeRepository {
     /**
      * 두 정점 사이에 새 간선을 생성하고 반환한다.
+     *
+     * ```kotlin
+     * val edge = ops.createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to 2024))
+     * ```
      *
      * @param fromId 시작 정점 ID.
      * @param toId 종료 정점 ID.
@@ -33,6 +45,11 @@ interface GraphSuspendEdgeRepository {
      *
      * 대량 데이터에 적합한 [Flow] 기반 조회이다.
      *
+     * ```kotlin
+     * val edges = ops.findEdgesByLabel("KNOWS").toList()
+     * val filtered = ops.findEdgesByLabel("KNOWS", mapOf("since" to 2024)).toList()
+     * ```
+     *
      * @param label 조회할 간선 레이블.
      * @param filter 속성 이름→값 조건 맵. 빈 맵이면 레이블 전체를 반환.
      * @return 조건에 맞는 [GraphEdge] Flow.
@@ -41,6 +58,10 @@ interface GraphSuspendEdgeRepository {
 
     /**
      * 간선을 삭제한다.
+     *
+     * ```kotlin
+     * val deleted = ops.deleteEdge("KNOWS", edge.id)  // true
+     * ```
      *
      * @param label 간선 레이블.
      * @param id 삭제할 간선 ID.

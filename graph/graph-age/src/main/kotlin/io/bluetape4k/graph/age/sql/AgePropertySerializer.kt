@@ -21,6 +21,11 @@ object AgePropertySerializer {
     /**
      * Map을 Cypher 속성 블록 문자열로 변환한다.
      *
+     * ```kotlin
+     * AgePropertySerializer.toCypherProps(mapOf("name" to "Alice", "age" to 30))
+     * // → "{name: 'Alice', age: 30}"
+     * ```
+     *
      * @see GraphProperties.toCypherProps
      */
     fun toCypherProps(properties: Map<String, Any?>): String =
@@ -28,6 +33,11 @@ object AgePropertySerializer {
 
     /**
      * 단일 값을 Cypher 리터럴로 변환한다.
+     *
+     * ```kotlin
+     * AgePropertySerializer.toCypherValue("Alice")  // → "'Alice'"
+     * AgePropertySerializer.toCypherValue(42)       // → "42"
+     * ```
      *
      * @see GraphProperties.toCypherValue
      */
