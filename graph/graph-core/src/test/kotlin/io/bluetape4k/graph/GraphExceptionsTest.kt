@@ -48,4 +48,51 @@ class GraphExceptionsTest {
         val ex: Throwable = GraphNotInitializedException("graph missing")
         ex shouldBeInstanceOf GraphException::class
     }
+
+    @Test
+    fun `GraphException - cause가 없으면 null이다`() {
+        val ex = GraphException("no cause")
+        ex.cause shouldBe null
+    }
+
+    @Test
+    fun `GraphNotFoundException - message가 보존된다`() {
+        val ex = GraphNotFoundException("graph 'myGraph' not found")
+        ex.message shouldBeEqualTo "graph 'myGraph' not found"
+    }
+
+    @Test
+    fun `GraphAlreadyExistsException - message와 cause를 모두 가진다`() {
+        val cause = RuntimeException("constraint violation")
+        val ex = GraphAlreadyExistsException("graph 'x' already exists", cause)
+        ex.message shouldBeEqualTo "graph 'x' already exists"
+        ex.cause shouldBe cause
+    }
+
+    @Test
+    fun `GraphQueryException - message가 보존된다`() {
+        val ex = GraphQueryException("invalid cypher syntax")
+        ex.message shouldBeEqualTo "invalid cypher syntax"
+        ex.cause shouldBe null
+    }
+
+    @Test
+    fun `GraphNotInitializedException - cause와 함께 생성할 수 있다`() {
+        val cause = IllegalStateException("driver not ready")
+        val ex = GraphNotInitializedException("not initialized", cause)
+        ex.cause shouldBe cause
+    }
+
+    @Test
+    fun `모든 예외는 RuntimeException이므로 checked exception이 아니다`() {
+        listOf(
+            GraphException("e"),
+            GraphNotFoundException("e"),
+            GraphAlreadyExistsException("e"),
+            GraphQueryException("e"),
+            GraphNotInitializedException("e"),
+        ).forEach { ex ->
+            ex shouldBeInstanceOf RuntimeException::class
+        }
+    }
 }

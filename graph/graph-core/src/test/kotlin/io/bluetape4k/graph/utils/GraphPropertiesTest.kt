@@ -146,4 +146,36 @@ class GraphPropertiesTest {
         val props = mapOf("tags" to listOf("kotlin", "graph"))
         GraphProperties.toCypherProps(props) shouldBeEqualTo "{tags: ['kotlin', 'graph']}"
     }
+
+    @Test
+    fun `Float 값은 숫자 리터럴로 변환된다`() {
+        val result = GraphProperties.toCypherValue(1.5f)
+        result shouldBeEqualTo "1.5"
+    }
+
+    @Test
+    fun `Short 값은 숫자 리터럴로 변환된다`() {
+        val result = GraphProperties.toCypherValue(42.toShort())
+        result shouldBeEqualTo "42"
+    }
+
+    @Test
+    fun `Byte 값은 숫자 리터럴로 변환된다`() {
+        val result = GraphProperties.toCypherValue(7.toByte())
+        result shouldBeEqualTo "7"
+    }
+
+    @Test
+    fun `Enum 값은 toString으로 작은따옴표에 감싼다`() {
+        val result = GraphProperties.toCypherValue(TestEnum.ACTIVE)
+        result shouldBeEqualTo "'ACTIVE'"
+    }
+
+    @Test
+    fun `Map 키에 특수 문자가 있어도 변환된다`() {
+        val map = linkedMapOf<String, Any?>("my-key" to "val")
+        GraphProperties.toCypherValue(map) shouldBeEqualTo "{my-key: 'val'}"
+    }
+
+    private enum class TestEnum { ACTIVE, INACTIVE }
 }

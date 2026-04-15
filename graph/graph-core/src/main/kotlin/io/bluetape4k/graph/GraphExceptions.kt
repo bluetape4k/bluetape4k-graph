@@ -2,6 +2,16 @@ package io.bluetape4k.graph
 
 /**
  * Graph 모듈 최상위 예외.
+ *
+ * ```kotlin
+ * try {
+ *     ops.createGraph("existing")
+ * } catch (e: GraphAlreadyExistsException) {
+ *     // 이미 존재하는 그래프 처리
+ * } catch (e: GraphQueryException) {
+ *     // Cypher/SQL 실행 오류 처리
+ * }
+ * ```
  */
 open class GraphException: RuntimeException {
     constructor(): super()

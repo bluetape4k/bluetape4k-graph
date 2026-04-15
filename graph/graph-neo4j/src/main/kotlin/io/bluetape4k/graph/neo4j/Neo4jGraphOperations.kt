@@ -22,6 +22,20 @@ import org.neo4j.driver.SessionConfig
  *
  * blocking [Session]을 사용한다.
  *
+ *
+ * ```kotlin
+ * val driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.none())
+ * val ops = Neo4jGraphOperations(driver)
+ *
+ * val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
+ * val bob   = ops.createVertex("Person", mapOf("name" to "Bob"))
+ * ops.createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to 2024))
+ *
+ * val neighbors = ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS"))
+ * val path = ops.shortestPath(alice.id, bob.id, PathOptions(edgeLabel = "KNOWS"))
+ * driver.close()
+ * ```
+ *
  * @param driver Neo4j Java Driver (외부 소유)
  * @param database 데이터베이스 이름 (기본: "neo4j")
  */

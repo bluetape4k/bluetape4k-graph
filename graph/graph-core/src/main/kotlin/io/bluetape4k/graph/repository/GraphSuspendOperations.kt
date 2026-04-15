@@ -5,6 +5,20 @@ package io.bluetape4k.graph.repository
  * AGE, Neo4j 등 각 백엔드가 이 인터페이스를 구현한다.
  *
  * @see GraphOperations 동기(blocking) 방식
+ *
+ * ### 사용 예제
+ * ```kotlin
+ * // ops는 AgeGraphSuspendOperations, Neo4jGraphSuspendOperations 등
+ * val ops: GraphSuspendOperations = ...
+ *
+ * ops.createGraph("social")
+ *
+ * val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
+ * val bob   = ops.createVertex("Person", mapOf("name" to "Bob"))
+ * ops.createEdge(alice.id, bob.id, "FOLLOWS")
+ *
+ * val neighbors = ops.neighbors(alice.id).toList()  // Flow → List
+ * ```
  */
 interface GraphSuspendOperations :
     GraphSuspendSession,

@@ -21,6 +21,25 @@ import org.jetbrains.exposed.v1.jdbc.transactions.transaction
  * - `CREATE EXTENSION IF NOT EXISTS age`: PostgreSQLAgeServer 시작 시 1회 실행 (DB 수준)
  * - 매 connection: `LOAD 'age'` + `SET search_path` 는 HikariCP connectionInitSql로 처리
  *
+ *
+ * ```kotlin
+ * // HikariCP DataSource + Exposed Database 세팅 (Spring 외 환경)
+ * val dataSource = HikariDataSource(HikariConfig().apply {
+ *     jdbcUrl = "jdbc:postgresql://localhost:5432/postgres"
+ *     username = "postgres"
+ *     password = "password"
+ *     connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
+ * })
+ * val database = Database.connect(dataSource)
+ * val ops = AgeGraphOperations("social_graph")
+ *
+ * ops.createGraph("social_graph")
+ * val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
+ * val bob   = ops.createVertex("Person", mapOf("name" to "Bob"))
+ * ops.createEdge(alice.id, bob.id, "KNOWS")
+ * val path = ops.shortestPath(alice.id, bob.id, PathOptions(edgeLabel = "KNOWS"))
+ * ```
+ *
  * @param graphName AGE 그래프 이름
  */
 class AgeGraphOperations(

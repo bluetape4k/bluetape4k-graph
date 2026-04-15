@@ -91,4 +91,46 @@ class GraphPathTest {
         vStep shouldBeInstanceOf PathStep.VertexStep::class
         eStep shouldBeInstanceOf PathStep.EdgeStep::class
     }
+
+    @Test
+    fun `단일 정점 경로는 length가 0이고 비어있지 않다`() {
+        val path = GraphPath.of(vertex("1"))
+
+        path.length shouldBeEqualTo 0
+        path.isEmpty.shouldBeFalse()
+        path.vertices shouldHaveSize 1
+        path.edges.shouldBeEmpty()
+    }
+
+    @Test
+    fun `EMPTY는 싱글턴이다`() {
+        GraphPath.EMPTY shouldBeEqualTo GraphPath(emptyList())
+        GraphPath.EMPTY.isEmpty.shouldBeTrue()
+    }
+
+    @Test
+    fun `of(vararg) - 정점 없이 호출하면 빈 경로가 된다`() {
+        val path = GraphPath.of()
+        path.isEmpty.shouldBeTrue()
+        path shouldBeEqualTo GraphPath.EMPTY
+    }
+
+    @Test
+    fun `edges만 있는 steps에서 vertices는 비어있다`() {
+        val e = edge("e1", "1", "2")
+        val path = GraphPath(listOf(PathStep.EdgeStep(e)))
+
+        path.edges shouldHaveSize 1
+        path.vertices.shouldBeEmpty()
+        path.length shouldBeEqualTo 1
+    }
+
+    @Test
+    fun `copy로 steps를 교체한다`() {
+        val original = GraphPath.of(vertex("1"), vertex("2"))
+        val modified = original.copy(steps = emptyList())
+
+        modified.isEmpty.shouldBeTrue()
+        original.isEmpty.shouldBeFalse()
+    }
 }

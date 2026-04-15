@@ -29,6 +29,20 @@ import org.neo4j.driver.SessionConfig
  *
  * blocking [Session]을 사용한다.
  *
+ *
+ * ```kotlin
+ * // Memgraph는 bolt://localhost:7687 (기본 포트)
+ * val driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.none())
+ * val ops = MemgraphGraphOperations(driver)
+ *
+ * val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
+ * val bob   = ops.createVertex("Person", mapOf("name" to "Bob"))
+ * ops.createEdge(alice.id, bob.id, "FOLLOWS")
+ *
+ * val count = ops.countVertices("Person") // 2L
+ * driver.close()
+ * ```
+ *
  * @param driver Neo4j Java Driver (외부 소유, Memgraph bolt URL로 생성)
  * @param database 데이터베이스 이름 (기본: "memgraph")
  */

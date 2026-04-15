@@ -11,6 +11,7 @@ import org.amshove.kluent.shouldBeNull
 import org.amshove.kluent.shouldBeTrue
 import org.amshove.kluent.shouldContain
 import org.amshove.kluent.shouldHaveSize
+import org.amshove.kluent.shouldBeEmpty
 import org.amshove.kluent.shouldNotBeEmpty
 import org.amshove.kluent.shouldNotBeNull
 import org.junit.jupiter.api.AfterAll
@@ -306,5 +307,64 @@ class TinkerGraphOperationsTest {
         val paths = ops.allPaths(a.id, c.id, PathOptions(edgeLabel = "KNOWS"))
         paths.shouldNotBeEmpty()
         paths.size shouldBeGreaterOrEqualTo 2
+    }
+
+    @Test
+    @Order(53)
+    fun `연결되지 않은 경우 allPaths는 빈 리스트 반환`() {
+        val a = ops.createVertex("Person", mapOf("name" to "A"))
+        val b = ops.createVertex("Person", mapOf("name" to "B"))
+
+        // 간선 없음
+        val paths = ops.allPaths(a.id, b.id, PathOptions(edgeLabel = "KNOWS"))
+        paths.shouldBeEmpty()
+    }
+
+    @Test
+    @Order(60)
+    fun `간선 없는 정점의 이웃은 빈 리스트 반환`() {
+        val a = ops.createVertex("Person", mapOf("name" to "A"))
+
+        // 간선 없음 - 이웃이 없어야 함
+        val neighbors = ops.neighbors(a.id, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING))
+        neighbors.shouldBeEmpty()
+    }
+
+    @Test
+    @Order(61)
+    fun `존재하지 않는 label로 정점 조회 시 빈 리스트 반환`() {
+        ops.createVertex("Person", mapOf("name" to "Alice"))
+
+        val result = ops.findVerticesByLabel("NonExistentLabel")
+        result.shouldBeEmpty()
+    }
+
+    @Test
+    @Order(62)
+    fun `매칭되지 않는 filter로 조회하면 빈 리스트 반환`() {
+        ops.createVertex("Person", mapOf("name" to "Alice", "city" to "Seoul"))
+
+        val result = ops.findVerticesByLabel("Person", mapOf("city" to "Busan"))
+        result.shouldBeEmpty()
+    }
+
+    @Test
+    @Order(63)
+    fun `존재하지 않는 label로 countVertices 시 0 반환`() {
+        ops.createVertex("Person", mapOf("name" to "Alice"))
+
+        val count = ops.countVertices("NonExistentLabel")
+        count shouldBeEqualTo 0L
+    }
+
+    @Test
+    @Order(64)
+    fun `존재하지 않는 label로 간선 조회 시 빈 리스트 반환`() {
+        val a = ops.createVertex("Person", mapOf("name" to "A"))
+        val b = ops.createVertex("Person", mapOf("name" to "B"))
+        ops.createEdge(a.id, b.id, "KNOWS")
+
+        val result = ops.findEdgesByLabel("NON_EXISTENT_EDGE")
+        result.shouldBeEmpty()
     }
 }

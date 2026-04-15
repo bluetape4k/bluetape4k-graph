@@ -77,7 +77,7 @@ object AgeTypeParser : KLogging() {
                 i++
             }
         }
-        return elements
+        return elements.toList()
     }
 
     fun isVertex(agtype: String): Boolean = agtype.trimEnd().endsWith("::vertex")
@@ -89,10 +89,10 @@ object AgeTypeParser : KLogging() {
      * 복잡한 중첩 구조는 지원하지 않으므로, 필요 시 Jackson 도입 고려.
      */
     fun parseJsonObject(json: String): Map<String, Any?> {
-        val result = mutableMapOf<String, Any?>()
         val content = json.trim().removePrefix("{").removeSuffix("}").trim()
-        if (content.isEmpty()) return result
+        if (content.isEmpty()) return emptyMap()
 
+        val result = mutableMapOf<String, Any?>()
         var i = 0
         while (i < content.length) {
             // key 파싱
@@ -111,37 +111,36 @@ object AgeTypeParser : KLogging() {
                 i++
             }
         }
-        return result
+        return result.toMap()
     }
 
     private fun parseValue(content: String, start: Int): Pair<Any?, Int> {
-        var i = start
         return when {
-            content[i] == '"' -> {
-                val end = content.indexOf('"', i + 1)
-                content.substring(i + 1, end) to end + 1
+            content[start] == '"'              -> {
+                val end = content.indexOf('"', start + 1)
+                content.substring(start + 1, end) to end + 1
             }
-            content[i] == '{' -> {
-                val end = findClosing(content, i, '{', '}')
-                parseJsonObject(content.substring(i, end + 1)) to end + 1
+            content[start] == '{'              -> {
+                val end = findClosing(content, start, '{', '}')
+                parseJsonObject(content.substring(start, end + 1)) to end + 1
             }
-            content[i] == '[' -> {
-                val end = findClosing(content, i, '[', ']')
-                parseJsonArray(content.substring(i, end + 1)) to end + 1
+            content[start] == '['              -> {
+                val end = findClosing(content, start, '[', ']')
+                parseJsonArray(content.substring(start, end + 1)) to end + 1
             }
-            content.startsWith("null", i) -> null to i + 4
-            content.startsWith("true", i) -> true to i + 4
-            content.startsWith("false", i) -> false to i + 5
-            else -> {
-                val commaPos = content.indexOf(',', i)
-                val bracePos = content.indexOf('}', i)
+            content.startsWith("null", start)  -> null to start + 4
+            content.startsWith("true", start)  -> true to start + 4
+            content.startsWith("false", start) -> false to start + 5
+            else                               -> {
+                val commaPos = content.indexOf(',', start)
+                val bracePos = content.indexOf('}', start)
                 val end = when {
                     commaPos < 0 && bracePos < 0 -> content.length
                     commaPos < 0 -> bracePos
                     bracePos < 0 -> commaPos
                     else -> minOf(commaPos, bracePos)
                 }
-                val numStr = content.substring(i, end).trim()
+                val numStr = content.substring(start, end).trim()
                 val num = numStr.toLongOrNull() ?: numStr.toDoubleOrNull() ?: numStr
                 num to end
             }
@@ -159,7 +158,7 @@ object AgeTypeParser : KLogging() {
             i = nextIndex
             while (i < content.length && (content[i] == ',' || content[i] == ' ')) i++
         }
-        return result
+        return result.toList()
     }
 
     private fun findClosing(content: String, start: Int, open: Char, close: Char): Int {

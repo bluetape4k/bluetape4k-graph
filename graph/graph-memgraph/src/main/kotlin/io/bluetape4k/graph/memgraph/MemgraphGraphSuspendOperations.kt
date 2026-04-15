@@ -41,6 +41,23 @@ import org.neo4j.driver.reactivestreams.ReactiveSession
  *
  * [ReactiveSession] + [Flow]를 사용한다.
  *
+ * ```kotlin
+ * val driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.none())
+ * val ops = MemgraphGraphSuspendOperations(driver)
+ *
+ * runBlocking {
+ *     val alice = ops.createVertex("Person", mapOf("name" to "Alice", "age" to 30))
+ *     val bob   = ops.createVertex("Person", mapOf("name" to "Bob",   "age" to 25))
+ *     ops.createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to 2024))
+ *
+ *     val count   = ops.countVertices("Person")           // 2
+ *     val friends = ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS")).toList()
+ *     val path    = ops.shortestPath(alice.id, bob.id, PathOptions())
+ *
+ *     println(friends.map { it.properties["name"] }) // [Bob]
+ * }
+ * ```
+ *
  * @param driver Neo4j Java Driver (외부 소유, Memgraph bolt URL로 생성)
  * @param database 데이터베이스 이름 (기본: "memgraph")
  */

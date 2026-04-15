@@ -61,4 +61,46 @@ class GraphTraversalOptionsTest {
             Direction.BOTH,
         )
     }
+
+    @Test
+    fun `NeighborOptions - maxDepth 0도 설정 가능하다`() {
+        val opts = NeighborOptions(maxDepth = 0)
+        opts.maxDepth shouldBeEqualTo 0
+    }
+
+    @Test
+    fun `NeighborOptions - 모든 필드를 명시해서 생성할 수 있다`() {
+        val opts = NeighborOptions(
+            edgeLabel = "WORKS_AT",
+            direction = Direction.INCOMING,
+            maxDepth = 5,
+        )
+        opts.edgeLabel shouldBeEqualTo "WORKS_AT"
+        opts.direction shouldBeEqualTo Direction.INCOMING
+        opts.maxDepth shouldBeEqualTo 5
+    }
+
+    @Test
+    fun `PathOptions - edgeLabel 지정 시 필터링된다`() {
+        val opts = PathOptions(edgeLabel = "KNOWS", maxDepth = 3)
+        opts.edgeLabel shouldBeEqualTo "KNOWS"
+        opts.maxDepth shouldBeEqualTo 3
+    }
+
+    @Test
+    fun `PathOptions copy로 일부 필드만 변경한다`() {
+        val base = PathOptions()
+        val updated = base.copy(maxDepth = 20)
+        updated.maxDepth shouldBeEqualTo 20
+        updated.edgeLabel.shouldBeNull()
+    }
+
+    @Test
+    fun `NeighborOptions와 PathOptions는 Serializable이다`() {
+        val neighbor: java.io.Serializable = NeighborOptions()
+        val path: java.io.Serializable = PathOptions()
+
+        neighbor shouldBeInstanceOf java.io.Serializable::class
+        path shouldBeInstanceOf java.io.Serializable::class
+    }
 }

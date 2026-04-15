@@ -74,4 +74,27 @@ class EdgeLabelTest {
         WorksAtLabel.properties.map { it.name } shouldContain "role"
         WorksAtLabel.properties shouldHaveSize 9
     }
+
+    @Test
+    fun `프로퍼티가 없는 EdgeLabel도 허용된다`() {
+        val empty = object: EdgeLabel("RELATED", PersonLabel, CompanyLabel) {}
+        empty.label shouldBeEqualTo "RELATED"
+        empty.properties shouldHaveSize 0
+    }
+
+    @Test
+    fun `EdgeLabel 서브클래스는 각각 독립된 properties 상태를 가진다`() {
+        val otherLabel = object: EdgeLabel("OTHER", PersonLabel, PersonLabel) {
+            val score = integer("score")
+        }
+        otherLabel.properties shouldHaveSize 1
+        WorksAtLabel.properties shouldHaveSize 9
+    }
+
+    @Test
+    fun `from과 to가 같은 정점 타입이어도 허용된다`() {
+        val selfRelation = object: EdgeLabel("KNOWS", PersonLabel, PersonLabel) {}
+        selfRelation.from shouldBe PersonLabel
+        selfRelation.to shouldBe PersonLabel
+    }
 }

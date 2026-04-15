@@ -23,6 +23,20 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph
  * Apache TinkerPop TinkerGraph 기반 [GraphOperations] 구현체 (동기 방식).
  *
  * TinkerGraph는 in-memory JVM 그래프 데이터베이스이다.
+ *
+ * 테스트 및 임베디드 그래프 용도에 적합하다. 서버 프로세스 불필요.
+ *
+ * ```kotlin
+ * val ops = TinkerGraphOperations()
+ *
+ * val alice = ops.createVertex("Person", mapOf("name" to "Alice", "age" to 30L))
+ * val bob   = ops.createVertex("Person", mapOf("name" to "Bob",   "age" to 25L))
+ * ops.createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to 2020L))
+ *
+ * val persons = ops.findVerticesByLabel("Person") // 2개
+ * val friends = ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS"))
+ * ops.close()
+ * ```
  */
 class TinkerGraphOperations : GraphOperations {
 

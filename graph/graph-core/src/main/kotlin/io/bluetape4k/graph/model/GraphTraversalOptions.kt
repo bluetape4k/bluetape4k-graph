@@ -4,6 +4,15 @@ import java.io.Serializable
 
 /**
  * 그래프 순회 옵션의 기반 sealed class.
+ *
+ * ### 사용 예제
+ * ```kotlin
+ * // 1단계 OUTGOING 이웃 탐색
+ * val neighborOpts = NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING)
+ *
+ * // 최대 5홉의 최단/전체 경로 탐색
+ * val pathOpts = PathOptions(edgeLabel = "KNOWS", maxDepth = 5)
+ * ```
  */
 sealed class GraphTraversalOptions: Serializable {
     abstract val maxDepth: Int

@@ -57,4 +57,37 @@ class GraphVertexTest {
         v.properties.keys shouldContain "nickname"
         v.properties["nickname"].shouldBeNull()
     }
+
+    @Test
+    fun `중첩 맵을 포함한 properties도 허용된다`() {
+        val nested = mapOf("address" to mapOf("city" to "Seoul", "zip" to "04524"))
+        val v = GraphVertex(id, "Person", nested)
+        @Suppress("UNCHECKED_CAST")
+        val address = v.properties["address"] as Map<String, Any?>
+        address["city"] shouldBeEqualTo "Seoul"
+    }
+
+    @Test
+    fun `copy로 label만 변경한다`() {
+        val original = GraphVertex(id, "Person", mapOf("name" to "Alice"))
+        val renamed = original.copy(label = "Employee")
+
+        renamed.id shouldBeEqualTo original.id
+        renamed.label shouldBeEqualTo "Employee"
+        renamed.properties shouldBeEqualTo original.properties
+    }
+
+    @Test
+    fun `서로 다른 id를 가진 정점은 동등하지 않다`() {
+        val v1 = GraphVertex(GraphElementId("a"), "Person")
+        val v2 = GraphVertex(GraphElementId("b"), "Person")
+        v1 shouldNotBeEqualTo v2
+    }
+
+    @Test
+    fun `서로 다른 label을 가진 정점은 동등하지 않다`() {
+        val v1 = GraphVertex(id, "Person")
+        val v2 = GraphVertex(id, "Company")
+        v1 shouldNotBeEqualTo v2
+    }
 }

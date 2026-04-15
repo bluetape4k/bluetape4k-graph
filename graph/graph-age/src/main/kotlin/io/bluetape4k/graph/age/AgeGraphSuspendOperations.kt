@@ -28,6 +28,24 @@ import org.jetbrains.exposed.v1.jdbc.transactions.experimental.newSuspendedTrans
  * - 단일값 반환 `suspend fun`은 내부적으로 [Dispatchers.IO]에서 실행
  * - 컬렉션 반환 `fun ... : Flow<T>`는 `flow { }` 빌더 안에서 [Dispatchers.IO]로 감싸 실행
  *
+ * ```kotlin
+ * // HikariCP DataSource 생성 (connectionInitSql로 AGE 로드)
+ * val ops = AgeGraphSuspendOperations("social")
+ *
+ * runBlocking {
+ *     ops.createGraph("social")
+ *
+ *     val alice = ops.createVertex("Person", mapOf("name" to "Alice", "age" to 30))
+ *     val bob   = ops.createVertex("Person", mapOf("name" to "Bob",   "age" to 25))
+ *     ops.createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to 2024))
+ *
+ *     val friends = ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS")).toList()
+ *     val path    = ops.shortestPath(alice.id, bob.id, PathOptions())
+ *
+ *     ops.dropGraph("social")
+ * }
+ * ```
+ *
  * @param graphName AGE 그래프 이름
  */
 @Suppress("DEPRECATION")

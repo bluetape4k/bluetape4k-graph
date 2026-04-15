@@ -3,6 +3,7 @@ package io.bluetape4k.graph.schema
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldContain
 import org.amshove.kluent.shouldHaveSize
+import org.amshove.kluent.shouldNotBeEqualTo
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -73,6 +74,30 @@ class VertexLabelTest {
         val companyProps = TestCompanyLabel.properties.map { it.name }
         companyProps shouldContain "industry"
         companyProps shouldHaveSize 2
+    }
+
+    @Test
+    fun `프로퍼티가 없는 VertexLabel도 허용된다`() {
+        val emptyLabel = object: VertexLabel("Empty") {}
+        emptyLabel.label shouldBeEqualTo "Empty"
+        emptyLabel.properties shouldHaveSize 0
+    }
+
+    @Test
+    fun `inline PropertyDef 팩토리가 reified 타입을 올바르게 캡처한다`() {
+        val intDef = PropertyDef<Int>("score")
+        intDef.name shouldBeEqualTo "score"
+        intDef.type shouldBeEqualTo Int::class
+    }
+
+    @Test
+    fun `PropertyDef 동등성은 name과 type으로 결정된다`() {
+        val a = PropertyDef<String>("tag")
+        val b = PropertyDef<String>("tag")
+        val c = PropertyDef<Int>("tag")
+
+        a shouldBeEqualTo b
+        a shouldNotBeEqualTo c
     }
 
     private object TestCompanyLabel: VertexLabel("Company") {

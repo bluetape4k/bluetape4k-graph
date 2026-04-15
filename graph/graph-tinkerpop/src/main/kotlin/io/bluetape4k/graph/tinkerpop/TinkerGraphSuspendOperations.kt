@@ -17,6 +17,24 @@ import kotlinx.coroutines.withContext
  * Apache TinkerPop TinkerGraph 기반 [GraphSuspendOperations] 구현체 (코루틴 방식).
  *
  * TinkerGraph는 in-process이므로 [Dispatchers.IO]로 래핑한다.
+ * 동기 [TinkerGraphOperations]에 위임하고 suspend/Flow로 감싼다.
+ *
+ * ```kotlin
+ * val ops = TinkerGraphSuspendOperations()
+ *
+ * runBlocking {
+ *     val alice = ops.createVertex("Person", mapOf("name" to "Alice", "age" to 30L))
+ *     val bob   = ops.createVertex("Person", mapOf("name" to "Bob",   "age" to 25L))
+ *     ops.createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to 2020L))
+ *
+ *     val persons = ops.findVerticesByLabel("Person").toList()  // 2개
+ *     val friends = ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS")).toList()
+ *     val path    = ops.shortestPath(alice.id, bob.id, PathOptions())
+ *
+ *     println(friends.map { it.properties["name"] }) // [Bob]
+ *     ops.close()
+ * }
+ * ```
  *
  * @param delegate 동기 방식 [TinkerGraphOperations] (내부 위임)
  */

@@ -9,6 +9,7 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.servers.PostgreSQLAgeServer
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.KLogging
+import org.amshove.kluent.shouldBeEmpty
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeFalse
 import org.amshove.kluent.shouldBeGreaterThan
@@ -297,5 +298,47 @@ class AgeGraphOperationsTest {
         val paths = ops.allPaths(alice.id, carol.id, PathOptions(edgeLabel = "KNOWS", maxDepth = 5))
         paths.shouldNotBeEmpty()
         paths.size shouldBeGreaterThan 1
+    }
+
+    @Test
+    @Order(53)
+    fun `연결되지 않은 경우 allPaths는 빈 리스트 반환`() = runSuspendIO {
+        val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
+        val dave = ops.createVertex("Person", mapOf("name" to "Dave"))
+
+        // 간선 없음 - alice와 dave는 연결되지 않음
+        val paths = ops.allPaths(alice.id, dave.id, PathOptions(edgeLabel = "KNOWS", maxDepth = 5))
+        paths.shouldBeEmpty()
+    }
+
+    @Test
+    @Order(54)
+    fun `간선 없는 정점의 이웃은 빈 리스트 반환`() = runSuspendIO {
+        val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
+
+        // 간선 없음 - 이웃이 없어야 함
+        val neighbors = ops.neighbors(
+            alice.id,
+            NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING, maxDepth = 1)
+        )
+        neighbors.shouldBeEmpty()
+    }
+
+    @Test
+    @Order(55)
+    fun `존재하지 않는 label로 countVertices 시 0 반환`() = runSuspendIO {
+        ops.createVertex("Person", mapOf("name" to "Alice"))
+
+        val count = ops.countVertices("NonExistentLabel")
+        count shouldBeEqualTo 0L
+    }
+
+    @Test
+    @Order(56)
+    fun `매칭되지 않는 filter로 조회하면 빈 리스트 반환`() = runSuspendIO {
+        ops.createVertex("Person", mapOf("name" to "Alice", "city" to "Seoul"))
+
+        val result = ops.findVerticesByLabel("Person", mapOf("city" to "Busan"))
+        result.shouldBeEmpty()
     }
 }
