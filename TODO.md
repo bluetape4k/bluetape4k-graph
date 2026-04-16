@@ -6,7 +6,7 @@
 
 ## 1순위 — 핵심 기능 확장
 
-### [ ] 그래프 알고리즘 확장 (`graph-core` + 각 백엔드)
+### [x] 그래프 알고리즘 확장 (`graph-core` + 각 백엔드) — 2026-04-16 완료
 
 현재 `GraphTraversalRepository`는 `neighbors`, `shortestPath`, `allPaths` 3개뿐.
 
@@ -100,6 +100,7 @@ ops.transaction {
 
 ## 완료
 
+- [x] 그래프 알고리즘 확장 — 6 알고리즘 × 4 백엔드 + VT bridge (2026-04-16)
 - [x] 0.1.0 Maven Central 배포 (2026-04-16)
 - [x] GitHub Release v0.1.0 작성
 - [x] 전체 public API KDoc 커버리지 (199개 예제)
