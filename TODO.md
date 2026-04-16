@@ -77,6 +77,20 @@ ops.transaction {
 - 정점 삽입 1만건, 최단경로 100쌍, 이웃 탐색 1홉/3홉 — 백엔드별 비교
 - `docs/graphdb-tradeoffs.md` 실측 수치 보강
 
+### [ ] 동기 / Virtual Threads / Coroutines API 벤치마크
+
+알고리즘 확장으로 추가된 3가지 실행 모델의 처리량·지연 시간 비교 (JMH, TinkerGraph 인메모리 기준).
+
+| 측정 항목 | 설명 |
+|-----------|------|
+| `pageRank` throughput | 동기 vs `asVirtualThread()` vs `Flow` 수집 |
+| `bfs` latency (depth=5) | 3가지 API 왕복 시간 |
+| 동시 요청 처리량 | VT 100-way 병렬 vs 코루틴 `async` 100-way |
+| 스레드/메모리 사용량 | Virtual Thread 생성 비용 측정 |
+
+- 측정 대상: `TinkerGraphOperations` (Docker 불필요)
+- 결과 기록: `docs/graphdb-tradeoffs.md` API 모델 비교 섹션 추가
+
 ---
 
 ## 3순위 — 생태계 확장
