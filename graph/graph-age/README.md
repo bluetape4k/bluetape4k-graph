@@ -117,6 +117,35 @@ Integration tests use Testcontainers with the `apache/age:PG16_latest` image.
 ./gradlew :graph-age:test
 ```
 
+## Graph Algorithms
+
+### Algorithm Support Matrix
+
+| Algorithm | Implementation | Notes |
+|-----------|---------------|-------|
+| `degreeCentrality` | Cypher-over-SQL native (`AgeSql.degreeCypher`) | |
+| `bfs` / `dfs` | JVM fallback (`BfsDfsRunner`) | AGE lacks native BFS/DFS functions |
+| `detectCycles` | JVM fallback (`CycleDetector`) | |
+| `connectedComponents` | JVM fallback (`UnionFind`) | |
+| `pageRank` | JVM fallback (`PageRankCalculator`) | |
+
+### Usage Example
+
+```kotlin
+val ops = AgeGraphOperations(database, graphName = "social")
+
+// Degree centrality (native Cypher-over-SQL)
+val degree = ops.degreeCentrality(alice.id, DegreeOptions(edgeLabel = "KNOWS"))
+println("in=${degree.inDegree} out=${degree.outDegree}")
+
+// BFS (JVM fallback)
+val visits = ops.bfs(alice.id, BfsDfsOptions(edgeLabel = "KNOWS", maxDepth = 3))
+
+// PageRank (JVM fallback)
+val top10 = ops.pageRank(PageRankOptions(vertexLabel = "Person", topK = 10))
+top10.forEach { println("${it.vertex.properties["name"]}: ${it.score}") }
+```
+
 ## References
 
 - [Apache AGE](https://age.apache.org/)

@@ -964,6 +964,35 @@ PROFILE MATCH p = shortestPath((a)-[:KNOWS*..10]-(b))
 WHERE elementId(a) = $fromId AND elementId(b) = $toId RETURN p
 ```
 
+## 그래프 알고리즘 지원 매트릭스
+
+| 알고리즘 | 구현 방식 |
+|----------|-----------|
+| `degreeCentrality` | Cypher native (`OPTIONAL MATCH ... count`) |
+| `bfs` / `dfs` | JVM fallback (`BfsDfsRunner`) |
+| `detectCycles` | Cypher native (variable-length path) |
+| `connectedComponents` | JVM fallback (`UnionFind`) |
+| `pageRank` | JVM fallback (`PageRankCalculator`) — GDS 옵션 모듈은 Phase 7 |
+
+### 사용 예제
+
+```kotlin
+val driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.none())
+val ops = Neo4jGraphOperations(driver)
+
+// Degree centrality (Cypher native)
+val degree = ops.degreeCentrality(alice.id, DegreeOptions(edgeLabel = "KNOWS"))
+println("in=${degree.inDegree} out=${degree.outDegree}")
+
+// 사이클 탐지 (Cypher native)
+val cycles = ops.detectCycles(CycleOptions(edgeLabel = "KNOWS", maxDepth = 5))
+println("사이클 수: ${cycles.size}")
+
+// PageRank 상위 10 (JVM fallback)
+val top10 = ops.pageRank(PageRankOptions(vertexLabel = "Person", topK = 10))
+top10.forEach { println("${it.vertex.properties["name"]}: ${it.score}") }
+```
+
 ## 라이선스
 
 bluetape4k-experimental는 실험적 프로토타입 저장소입니다.

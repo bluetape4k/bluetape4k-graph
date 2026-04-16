@@ -39,6 +39,31 @@ val vertex = suspendOps.createVertex("Person", mapOf("name" to "Alice"))
 | `shortestPath` | Yes | Yes |
 | Authentication | Basic auth | None by default (`AuthTokens.none()`) |
 
+## Graph Algorithms
+
+Memgraph shares the same Cypher-based algorithm implementations as `graph-neo4j` (both use the Neo4j Bolt protocol).
+
+### Algorithm Support Matrix
+
+| Algorithm | Implementation | Notes |
+|-----------|---------------|-------|
+| `degreeCentrality` | Cypher native (`OPTIONAL MATCH ... count`) | |
+| `bfs` / `dfs` | JVM fallback (`BfsDfsRunner`) | |
+| `detectCycles` | Cypher native (variable-length path) | |
+| `connectedComponents` | JVM fallback (`UnionFind`) | |
+| `pageRank` | JVM fallback (`PageRankCalculator`) | Memgraph MAGE optional module planned |
+
+### Usage Example
+
+```kotlin
+val driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.none())
+val ops = MemgraphGraphOperations(driver)
+
+val degree = ops.degreeCentrality(alice.id, DegreeOptions(edgeLabel = "KNOWS"))
+val cycles = ops.detectCycles(CycleOptions(edgeLabel = "KNOWS", maxDepth = 5))
+val top10  = ops.pageRank(PageRankOptions(vertexLabel = "Person", topK = 10))
+```
+
 ## Testing
 
 Testcontainers automatically launches the `memgraph/memgraph:latest` image.

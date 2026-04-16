@@ -39,6 +39,31 @@ val vertex = suspendOps.createVertex("Person", mapOf("name" to "Alice"))
 | `shortestPath` | O | O |
 | 인증 | basic auth | 기본 없음 (AuthTokens.none()) |
 
+## 그래프 알고리즘
+
+Memgraph는 Neo4j Bolt 프로토콜을 공유하므로 `graph-neo4j`와 동일한 Cypher 기반 알고리즘 구현을 사용한다.
+
+### 알고리즘 지원 매트릭스
+
+| 알고리즘 | 구현 방식 |
+|----------|-----------|
+| `degreeCentrality` | Cypher native (`OPTIONAL MATCH ... count`) |
+| `bfs` / `dfs` | JVM fallback (`BfsDfsRunner`) |
+| `detectCycles` | Cypher native (variable-length path) |
+| `connectedComponents` | JVM fallback (`UnionFind`) |
+| `pageRank` | JVM fallback (`PageRankCalculator`) — Memgraph MAGE 모듈은 별도 계획 |
+
+### 사용 예제
+
+```kotlin
+val driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.none())
+val ops = MemgraphGraphOperations(driver)
+
+val degree = ops.degreeCentrality(alice.id, DegreeOptions(edgeLabel = "KNOWS"))
+val cycles = ops.detectCycles(CycleOptions(edgeLabel = "KNOWS", maxDepth = 5))
+val top10  = ops.pageRank(PageRankOptions(vertexLabel = "Person", topK = 10))
+```
+
 ## 테스트
 
 Testcontainers를 통해 `memgraph/memgraph:latest` 이미지를 자동으로 실행한다.

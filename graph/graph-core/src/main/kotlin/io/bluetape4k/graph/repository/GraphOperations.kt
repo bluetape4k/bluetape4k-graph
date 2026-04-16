@@ -25,4 +25,4 @@ interface GraphOperations :
     GraphSession,
     GraphVertexRepository,
     GraphEdgeRepository,
-    GraphTraversalRepository
+    GraphGenericRepository

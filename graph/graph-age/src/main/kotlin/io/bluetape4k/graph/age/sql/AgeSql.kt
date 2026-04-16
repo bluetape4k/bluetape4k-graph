@@ -350,4 +350,67 @@ object AgeSql {
             listOf("p" to "agtype")
         )
     }
+
+    /**
+     * 단일 정점의 in/out degree 카운트 SQL 을 생성한다.
+     *
+     * AGE Cypher-over-SQL: `OPTIONAL MATCH ... RETURN count(*)` 패턴.
+     *
+     * ```kotlin
+     * val sql = AgeSql.degreeCentrality("social", 42L, edgeLabel = "KNOWS")
+     * // SELECT * FROM cypher('social', $$ MATCH (n) WHERE id(n) = 42 ... $$) AS (in_d agtype, out_d agtype)
+     * ```
+     *
+     * @param graphName 그래프 이름.
+     * @param vertexId 정점의 AGE 내부 Long ID.
+     * @param edgeLabel `null` 이면 모든 간선.
+     */
+    fun degreeCentrality(graphName: String, vertexId: Long, edgeLabel: String? = null): String {
+        val edgeClause = edgeLabel?.let { ":${sanitizeLabel(it)}" } ?: ""
+        return """
+            SELECT in_d, out_d FROM ag_catalog.cypher('$graphName', $$
+                MATCH (n) WHERE id(n) = $vertexId
+                OPTIONAL MATCH (n)-[r_out$edgeClause]->()
+                WITH n, count(r_out) AS out_d
+                OPTIONAL MATCH ()-[r_in$edgeClause]->(n)
+                RETURN count(r_in) AS in_d, out_d
+            $$) AS (in_d agtype, out_d agtype)
+        """.trimIndent()
+    }
+
+    private fun sanitizeLabel(label: String): String {
+        require(label.matches(Regex("^[A-Za-z_][A-Za-z0-9_]*$"))) { "Invalid label: $label" }
+        return label
+    }
+
+    /**
+     * 그래프 내 모든 정점을 반환하는 AGE Cypher-over-SQL 을 생성한다.
+     *
+     * 라벨 무관 전체 fetch (`MATCH (n) RETURN n`).
+     *
+     * ```kotlin
+     * val sql = AgeSql.matchAllVertices("social")
+     * // SELECT * FROM ag_catalog.cypher('social', $$ MATCH (n) RETURN n $$) AS (v agtype)
+     * ```
+     */
+    fun matchAllVertices(graphName: String): String =
+        cypher(
+            graphName,
+            "MATCH (n) RETURN n",
+            listOf("v" to "agtype"),
+        )
+
+    /**
+     * 그래프 내 모든 간선을 반환하는 AGE Cypher-over-SQL 을 생성한다.
+     *
+     * ```kotlin
+     * val sql = AgeSql.matchAllEdges("social")
+     * ```
+     */
+    fun matchAllEdges(graphName: String): String =
+        cypher(
+            graphName,
+            "MATCH ()-[e]->() RETURN e",
+            listOf("e" to "agtype"),
+        )
 }

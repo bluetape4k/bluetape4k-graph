@@ -68,3 +68,52 @@ data class PathOptions(
         val Default = PathOptions()
     }
 }
+
+/**
+ * [GraphTraversalRepository.bfs] / [GraphTraversalRepository.dfs] 호출 옵션.
+ *
+ * ### 사용 예제
+ * ```kotlin
+ * val opts = BfsDfsOptions(edgeLabel = "KNOWS", maxDepth = 3, maxVertices = 1_000)
+ * val visits = ops.bfs(alice.id, opts)
+ * ```
+ */
+data class BfsDfsOptions(
+    val edgeLabel: String? = null,
+    val direction: Direction = Direction.OUTGOING,
+    override val maxDepth: Int = 5,
+    val maxVertices: Int = 10_000,
+): GraphTraversalOptions() {
+    init {
+        require(maxDepth >= 0) { "maxDepth must be >= 0, was $maxDepth" }
+        require(maxVertices > 0) { "maxVertices must be > 0, was $maxVertices" }
+    }
+    companion object {
+        private const val serialVersionUID: Long = 1L
+        val Default = BfsDfsOptions()
+    }
+}
+
+/**
+ * [GraphTraversalRepository.detectCycles] 호출 옵션.
+ *
+ * @param vertexLabel 탐색할 정점 레이블. null이면 모든 레이블 탐색.
+ * @param edgeLabel 탐색할 엣지 레이블. null이면 모든 레이블 탐색.
+ * @param maxDepth 최대 탐색 깊이 (기본값: 10)
+ * @param maxCycles 반환할 최대 순환 개수 (기본값: 100)
+ */
+data class CycleOptions(
+    val vertexLabel: String? = null,
+    val edgeLabel: String? = null,
+    override val maxDepth: Int = 10,
+    val maxCycles: Int = 100,
+): GraphTraversalOptions() {
+    init {
+        require(maxDepth >= 0) { "maxDepth must be >= 0, was $maxDepth" }
+        require(maxCycles > 0) { "maxCycles must be > 0, was $maxCycles" }
+    }
+    companion object {
+        private const val serialVersionUID: Long = 1L
+        val Default = CycleOptions()
+    }
+}

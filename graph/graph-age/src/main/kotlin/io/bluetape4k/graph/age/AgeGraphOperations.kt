@@ -3,14 +3,31 @@ package io.bluetape4k.graph.age
 import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.age.sql.AgeSql
 import io.bluetape4k.graph.age.sql.AgeTypeParser
+import io.bluetape4k.graph.algo.internal.BfsDfsRunner
+import io.bluetape4k.graph.algo.internal.CycleDetector
+import io.bluetape4k.graph.algo.internal.PageRankCalculator
+import io.bluetape4k.graph.algo.internal.UnionFind
+import io.bluetape4k.graph.model.BfsDfsOptions
+import io.bluetape4k.graph.model.ComponentOptions
+import io.bluetape4k.graph.model.CycleOptions
+import io.bluetape4k.graph.model.DegreeOptions
+import io.bluetape4k.graph.model.DegreeResult
+import io.bluetape4k.graph.model.Direction
+import io.bluetape4k.graph.model.GraphComponent
+import io.bluetape4k.graph.model.GraphCycle
 import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphPath
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.NeighborOptions
+import io.bluetape4k.graph.model.PageRankOptions
+import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
+import io.bluetape4k.graph.model.PathStep
+import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.warn
 import io.bluetape4k.support.requireNotBlank
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
@@ -322,5 +339,188 @@ class AgeGraphOperations(
             }
             paths
         }
+    }
+
+    // -- GraphAlgorithmRepository --
+
+    override fun degreeCentrality(
+        vertexId: GraphElementId,
+        options: DegreeOptions,
+    ): DegreeResult {
+        options.edgeLabel?.requireNotBlank("edgeLabel")
+        val idLong = vertexId.value.toLongOrNull() ?: return DegreeResult(vertexId, 0, 0)
+
+        var inDeg = 0
+        var outDeg = 0
+        transaction {
+            loadAgeAndSetSearchPath()
+
+            exec(AgeSql.degreeCentrality(graphName, idLong, options.edgeLabel)) { rs ->
+                if (rs.next()) {
+                    inDeg = rs.getString("in_d")?.trim()?.toIntOrNull() ?: 0
+                    outDeg = rs.getString("out_d")?.trim()?.toIntOrNull() ?: 0
+                }
+            }
+        }
+        return when (options.direction) {
+            Direction.OUTGOING -> DegreeResult(vertexId, 0, outDeg)
+            Direction.INCOMING -> DegreeResult(vertexId, inDeg, 0)
+            Direction.BOTH     -> DegreeResult(vertexId, inDeg, outDeg)
+        }
+    }
+
+    override fun bfs(startId: GraphElementId, options: BfsDfsOptions): List<TraversalVisit> {
+        options.edgeLabel?.requireNotBlank("edgeLabel")
+        val (adjacency, vertexById) = loadAdjacencyForFallback(options.edgeLabel, options.direction)
+        return BfsDfsRunner.bfs(
+            startId = startId,
+            adjacency = adjacency,
+            maxDepth = options.maxDepth,
+            maxVertices = options.maxVertices,
+            vertexResolver = { vertexById[it] ?: GraphVertex(it, "", emptyMap()) },
+        )
+    }
+
+    override fun dfs(startId: GraphElementId, options: BfsDfsOptions): List<TraversalVisit> {
+        options.edgeLabel?.requireNotBlank("edgeLabel")
+        val (adjacency, vertexById) = loadAdjacencyForFallback(options.edgeLabel, options.direction)
+        return BfsDfsRunner.dfs(
+            startId = startId,
+            adjacency = adjacency,
+            maxDepth = options.maxDepth,
+            maxVertices = options.maxVertices,
+            vertexResolver = { vertexById[it] ?: GraphVertex(it, "", emptyMap()) },
+        )
+    }
+
+    override fun detectCycles(options: CycleOptions): List<GraphCycle> {
+        options.vertexLabel?.requireNotBlank("vertexLabel")
+        options.edgeLabel?.requireNotBlank("edgeLabel")
+
+        val (adjacency, vertexById) = loadAdjacencyForFallback(options.edgeLabel, Direction.OUTGOING)
+        val filteredAdjacency = if (options.vertexLabel == null) {
+            adjacency
+        } else {
+            val allowed = vertexById.filterValues { it.label == options.vertexLabel }.keys
+            adjacency.filterKeys { it in allowed }
+                .mapValues { (_, dsts) -> dsts.filter { it in allowed } }
+        }
+        val cycles = CycleDetector.findCycles(filteredAdjacency, options.maxDepth, options.maxCycles)
+        return cycles.map { ids ->
+            val steps = ArrayList<PathStep>(ids.size * 2)
+            ids.forEachIndexed { i, vid ->
+                val gv = vertexById[vid] ?: GraphVertex(vid, options.vertexLabel ?: "", emptyMap())
+                steps.add(PathStep.VertexStep(gv))
+                if (i < ids.size - 1) {
+                    steps.add(
+                        PathStep.EdgeStep(
+                            GraphEdge(
+                                id = GraphElementId.of("${vid.value}->${ids[i + 1].value}"),
+                                label = options.edgeLabel ?: "",
+                                startId = vid,
+                                endId = ids[i + 1],
+                            )
+                        )
+                    )
+                }
+            }
+            GraphCycle(GraphPath(steps))
+        }
+    }
+
+    override fun connectedComponents(options: ComponentOptions): List<GraphComponent> {
+        options.vertexLabel?.requireNotBlank("vertexLabel")
+        options.edgeLabel?.requireNotBlank("edgeLabel")
+
+        val (adjacency, vertexById) = loadAdjacencyForFallback(options.edgeLabel, Direction.BOTH)
+        val filtered = if (options.vertexLabel == null) {
+            vertexById
+        } else {
+            vertexById.filterValues { it.label == options.vertexLabel }
+        }
+        val ids = filtered.keys
+        val uf = UnionFind(ids)
+        adjacency.forEach { (s, dsts) ->
+            if (s in ids) {
+                dsts.forEach { d -> if (d in ids) uf.union(s, d) }
+            }
+        }
+        return uf.groups()
+            .filter { it.value.size >= options.minSize }
+            .toSortedMap(compareBy { it.value })
+            .map { (rep, members) ->
+                GraphComponent(rep.value, members.mapNotNull { filtered[it] })
+            }
+    }
+
+    override fun pageRank(options: PageRankOptions): List<PageRankScore> {
+        options.vertexLabel?.requireNotBlank("vertexLabel")
+        options.edgeLabel?.requireNotBlank("edgeLabel")
+        log.warn { "pageRank: AGE JVM fallback in use. Use topK to limit large fetches." }
+
+        val (adjacency, vertexById) = loadAdjacencyForFallback(options.edgeLabel, Direction.OUTGOING)
+        val filtered = if (options.vertexLabel == null) {
+            vertexById
+        } else {
+            vertexById.filterValues { it.label == options.vertexLabel }
+        }
+        val ids = filtered.keys
+        val scores = PageRankCalculator.compute(
+            vertices = ids,
+            outAdjacency = adjacency.filterKeys { it in ids }.mapValues { (_, v) -> v.filter { it in ids } },
+            iterations = options.iterations,
+            dampingFactor = options.dampingFactor,
+            tolerance = options.tolerance,
+        )
+        val sorted = scores.entries.sortedByDescending { it.value }
+            .mapNotNull { e -> filtered[e.key]?.let { PageRankScore(it, e.value) } }
+        return if (options.topK == Int.MAX_VALUE) sorted else sorted.take(options.topK)
+    }
+
+    /**
+     * AGE 그래프 전체 정점 + 간선을 fetch 해 인접 리스트와 정점 맵을 만든다.
+     * JVM 폴백 알고리즘에서 공통으로 사용된다.
+     */
+    private fun loadAdjacencyForFallback(
+        edgeLabel: String?,
+        direction: Direction,
+    ): Pair<Map<GraphElementId, List<GraphElementId>>, Map<GraphElementId, GraphVertex>> {
+        val vertexById = HashMap<GraphElementId, GraphVertex>()
+        val adjacency = HashMap<GraphElementId, MutableList<GraphElementId>>()
+
+        transaction {
+            loadAgeAndSetSearchPath()
+
+            // Fetch ALL vertices via MATCH (n) RETURN n
+            exec(AgeSql.matchAllVertices(graphName)) { rs ->
+                while (rs.next()) {
+                    val v = AgeTypeParser.parseVertex(rs.getString("v"))
+                    vertexById[v.id] = v
+                }
+            }
+
+            // Fetch edges (labeled or all)
+            val edgeSql = if (edgeLabel != null) {
+                AgeSql.matchEdgesByLabel(graphName, edgeLabel, emptyMap())
+            } else {
+                AgeSql.matchAllEdges(graphName)
+            }
+            exec(edgeSql) { rs ->
+                while (rs.next()) {
+                    val ed = AgeTypeParser.parseEdge(rs.getString("e"))
+                    if (ed.startId !in vertexById) vertexById[ed.startId] = GraphVertex(ed.startId, "", emptyMap())
+                    if (ed.endId !in vertexById) vertexById[ed.endId] = GraphVertex(ed.endId, "", emptyMap())
+                    when (direction) {
+                        Direction.OUTGOING -> adjacency.getOrPut(ed.startId) { ArrayList() }.add(ed.endId)
+                        Direction.INCOMING -> adjacency.getOrPut(ed.endId) { ArrayList() }.add(ed.startId)
+                        Direction.BOTH     -> {
+                            adjacency.getOrPut(ed.startId) { ArrayList() }.add(ed.endId)
+                            adjacency.getOrPut(ed.endId) { ArrayList() }.add(ed.startId)
+                        }
+                    }
+                }
+            }
+        }
+        return adjacency to vertexById
     }
 }

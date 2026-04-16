@@ -854,6 +854,35 @@ testImplementation(Libs.hikaricp)
 testImplementation(Libs.kotlinx_coroutines_test)
 ```
 
+## 그래프 알고리즘
+
+### 알고리즘 지원 매트릭스
+
+| 알고리즘 | 구현 방식 |
+|----------|-----------|
+| `degreeCentrality` | Cypher-over-SQL native (`AgeSql.degreeCypher`) |
+| `bfs` / `dfs` | JVM fallback (`BfsDfsRunner`) — AGE 네이티브 BFS/DFS 없음 |
+| `detectCycles` | JVM fallback (`CycleDetector`) |
+| `connectedComponents` | JVM fallback (`UnionFind`) |
+| `pageRank` | JVM fallback (`PageRankCalculator`) |
+
+### 사용 예제
+
+```kotlin
+val ops = AgeGraphOperations(database, graphName = "social")
+
+// Degree centrality (Cypher-over-SQL native)
+val degree = ops.degreeCentrality(alice.id, DegreeOptions(edgeLabel = "KNOWS"))
+println("in=${degree.inDegree} out=${degree.outDegree}")
+
+// BFS (JVM fallback)
+val visits = ops.bfs(alice.id, BfsDfsOptions(edgeLabel = "KNOWS", maxDepth = 3))
+
+// PageRank (JVM fallback)
+val top10 = ops.pageRank(PageRankOptions(vertexLabel = "Person", topK = 10))
+top10.forEach { println("${it.vertex.properties["name"]}: ${it.score}") }
+```
+
 ## 참고
 
 - **Apache AGE 공식 문서**: https://age.apache.org/

@@ -3,18 +3,30 @@ package io.bluetape4k.graph.age
 import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.age.sql.AgeSql
 import io.bluetape4k.graph.age.sql.AgeTypeParser
+import io.bluetape4k.graph.model.BfsDfsOptions
+import io.bluetape4k.graph.model.ComponentOptions
+import io.bluetape4k.graph.model.CycleOptions
+import io.bluetape4k.graph.model.DegreeOptions
+import io.bluetape4k.graph.model.DegreeResult
+import io.bluetape4k.graph.model.GraphComponent
+import io.bluetape4k.graph.model.GraphCycle
 import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphPath
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.NeighborOptions
+import io.bluetape4k.graph.model.PageRankOptions
+import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
+import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.support.requireNotBlank
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.v1.jdbc.transactions.experimental.newSuspendedTransaction
 
 /**
@@ -343,5 +355,41 @@ class AgeGraphSuspendOperations(
             }
             paths.forEach { send(it) }
         }
+    }
+
+    // -- GraphSuspendAlgorithmRepository --
+
+    private val syncDelegate by lazy { AgeGraphOperations(graphName) }
+
+    override suspend fun degreeCentrality(
+        vertexId: GraphElementId,
+        options: DegreeOptions,
+    ): DegreeResult = withContext(Dispatchers.IO) {
+        syncDelegate.degreeCentrality(vertexId, options)
+    }
+
+    override fun bfs(startId: GraphElementId, options: BfsDfsOptions): Flow<TraversalVisit> = flow {
+        val list = withContext(Dispatchers.IO) { syncDelegate.bfs(startId, options) }
+        list.forEach { emit(it) }
+    }
+
+    override fun dfs(startId: GraphElementId, options: BfsDfsOptions): Flow<TraversalVisit> = flow {
+        val list = withContext(Dispatchers.IO) { syncDelegate.dfs(startId, options) }
+        list.forEach { emit(it) }
+    }
+
+    override fun detectCycles(options: CycleOptions): Flow<GraphCycle> = flow {
+        val list = withContext(Dispatchers.IO) { syncDelegate.detectCycles(options) }
+        list.forEach { emit(it) }
+    }
+
+    override fun connectedComponents(options: ComponentOptions): Flow<GraphComponent> = flow {
+        val list = withContext(Dispatchers.IO) { syncDelegate.connectedComponents(options) }
+        list.forEach { emit(it) }
+    }
+
+    override fun pageRank(options: PageRankOptions): Flow<PageRankScore> = flow {
+        val list = withContext(Dispatchers.IO) { syncDelegate.pageRank(options) }
+        list.forEach { emit(it) }
     }
 }

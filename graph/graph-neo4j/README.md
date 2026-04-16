@@ -204,6 +204,42 @@ WHERE elementId(a) = $fromId AND elementId(b) = $toId
 RETURN p
 ```
 
+## Graph Algorithms
+
+### Algorithm Support Matrix
+
+| Algorithm | Implementation | Notes |
+|-----------|---------------|-------|
+| `degreeCentrality` | Cypher native (`OPTIONAL MATCH ... count`) | |
+| `bfs` / `dfs` | JVM fallback (`BfsDfsRunner`) | |
+| `detectCycles` | Cypher native (variable-length path) | |
+| `connectedComponents` | JVM fallback (`UnionFind`) | |
+| `pageRank` | JVM fallback (`PageRankCalculator`) | GDS optional module planned for Phase 7 |
+
+### Usage Example
+
+```kotlin
+val driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.none())
+val ops = Neo4jGraphOperations(driver)
+
+// Degree centrality (Cypher native)
+val degree = ops.degreeCentrality(alice.id, DegreeOptions(edgeLabel = "KNOWS"))
+println("in=${degree.inDegree} out=${degree.outDegree} total=${degree.totalDegree}")
+
+// Cycle detection (Cypher native)
+val cycles = ops.detectCycles(CycleOptions(edgeLabel = "KNOWS", maxDepth = 5))
+println("Found ${cycles.size} cycles")
+
+// PageRank top 10 (JVM fallback)
+val top10 = ops.pageRank(PageRankOptions(vertexLabel = "Person", topK = 10))
+top10.forEach { println("${it.vertex.properties["name"]}: ${it.score}") }
+
+// Coroutine variant
+val suspendOps = Neo4jGraphSuspendOperations(driver)
+val scores: Flow<PageRankScore> = suspendOps.pageRankFlow(PageRankOptions(topK = 10))
+scores.collect { println(it) }
+```
+
 ## License
 
 Apache License 2.0

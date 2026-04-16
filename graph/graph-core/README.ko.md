@@ -1303,3 +1303,76 @@ dependencies {
 - **AutoCloseable**: `GraphOperations`는 `GraphSession`을 상속하며 `AutoCloseable`을 구현. 외부 리소스(Database/Driver)의 생명주기는 호출자가 관리.
 - **트랜잭션**: 구현체에서 트랜잭션 관리 (graph-core에는 명시적인 트랜잭션 API 없음).
 - **백엔드 차이**: AGE는 SQL 기반이므로 쿼리 최적화, Neo4j는 Cypher 쿼리 최적화에 따라 성능이 달라질 수 있음.
+
+## 그래프 알고리즘
+
+`graph-core`는 `GraphAlgorithmRepository` / `GraphSuspendAlgorithmRepository` 인터페이스를 정의하고, 네이티브 쿼리가 없는 백엔드를 위한 JVM 폴백 구현체(`UnionFind`, `BfsDfsRunner`, `CycleDetector`, `PageRankCalculator`)를 제공한다.
+
+### 알고리즘 지원 매트릭스
+
+| 알고리즘 | 인터페이스 메서드 | 옵션 타입 | 결과 타입 |
+|----------|-----------------|-----------|-----------|
+| PageRank | `pageRank(options)` | `PageRankOptions` | `List<PageRankScore>` |
+| Degree Centrality | `degreeCentrality(vertexId, options)` | `DegreeOptions` | `DegreeResult` |
+| Connected Components | `connectedComponents(options)` | `ComponentOptions` | `List<GraphComponent>` |
+| BFS | `bfs(startId, options)` | `BfsDfsOptions` | `List<TraversalVisit>` |
+| DFS | `dfs(startId, options)` | `BfsDfsOptions` | `List<TraversalVisit>` |
+| Cycle Detection | `detectCycles(options)` | `CycleOptions` | `List<GraphCycle>` |
+
+### 복합 인터페이스 구조
+
+```
+GraphOperations = GraphSession
+                + GraphVertexRepository
+                + GraphEdgeRepository
+                + GraphGenericRepository      // 순회 + 알고리즘
+                + GraphVirtualThreadAlgorithmRepository
+
+GraphSuspendOperations = GraphSuspendSession
+                       + GraphSuspendVertexRepository
+                       + GraphSuspendEdgeRepository
+                       + GraphSuspendGenericRepository
+```
+
+### 사용 예제
+
+```kotlin
+val ops: GraphOperations = Neo4jGraphOperations(driver)
+
+// PageRank — 상위 10명
+val top10 = ops.pageRank(PageRankOptions(vertexLabel = "Person", topK = 10))
+top10.forEach { println("${it.vertex.label}: ${it.score}") }
+
+// Degree centrality
+val degree = ops.degreeCentrality(alice.id, DegreeOptions(edgeLabel = "KNOWS"))
+println("in=${degree.inDegree} out=${degree.outDegree}")
+
+// BFS 탐색
+val visits = ops.bfs(alice.id, BfsDfsOptions(edgeLabel = "KNOWS", maxDepth = 3))
+
+// 사이클 탐지
+val cycles = ops.detectCycles(CycleOptions(edgeLabel = "KNOWS", maxDepth = 5))
+```
+
+## Virtual Threads
+
+`GraphAlgorithmRepository`를 Virtual Thread 어댑터로 감싸면 Java 상호운용을 위한 `CompletableFuture` 기반 비동기 API를 사용할 수 있다.
+
+```kotlin
+import io.bluetape4k.graph.algo.asVirtualThread
+
+val ops: GraphOperations = TinkerGraphOperations()
+
+// Virtual Thread executor 로 감싸기
+val vtOps = ops.asVirtualThread()
+
+// CompletableFuture<List<PageRankScore>> 반환
+val future = vtOps.pageRankAsync(PageRankOptions(topK = 5))
+val scores = future.join()
+
+// 파이프라인 조합
+val pipeline = vtOps.pageRankAsync()
+    .thenApply { list -> list.take(3) }
+    .thenAccept { top -> top.forEach { println(it) } }
+pipeline.join()
+```

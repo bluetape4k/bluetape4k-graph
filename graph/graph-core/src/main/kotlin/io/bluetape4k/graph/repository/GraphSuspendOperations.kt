@@ -24,4 +24,4 @@ interface GraphSuspendOperations :
     GraphSuspendSession,
     GraphSuspendVertexRepository,
     GraphSuspendEdgeRepository,
-    GraphSuspendTraversalRepository
+    GraphSuspendGenericRepository
