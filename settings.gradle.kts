@@ -19,6 +19,8 @@ project(":bluetape4k-graph-bom").projectDir = file("bom")
 
 includeModules("graph", false, false)
 includeModules("examples", false, false)
+includeModules("spring-boot3", false, false)
+includeModules("spring-boot4", false, false)
 
 fun includeModules(baseDir: String, withProjectName: Boolean = true, withBaseDir: Boolean = true) {
     files("$rootDir/$baseDir").files
