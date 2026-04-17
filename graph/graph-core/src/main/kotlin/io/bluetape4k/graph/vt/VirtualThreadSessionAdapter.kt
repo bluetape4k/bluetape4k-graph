@@ -10,8 +10,8 @@ import java.util.concurrent.CompletableFuture
 /**
  * [GraphSession] 의 lifecycle 조작을 Virtual Thread 위에서 실행하는 어댑터.
  *
- * 단일 작업에는 `virtualFutureOf { }` / `VirtualThreadExecutor` 를 사용한다.
- * `StructuredTaskScopes` 는 여러 작업을 병렬 실행할 때 쓰인다.
+ * Unit 반환에는 `CompletableFuture.runAsync(block, VirtualThreadExecutor)`,
+ * 값 반환에는 `virtualFutureOf { }` / `virtualFutureOfNullable { }` 를 사용한다.
  *
  * @param delegate 위임할 동기 [GraphSession].
  */

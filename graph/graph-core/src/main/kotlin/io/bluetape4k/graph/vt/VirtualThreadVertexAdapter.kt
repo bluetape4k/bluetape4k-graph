@@ -1,7 +1,7 @@
 package io.bluetape4k.graph.vt
 
-import io.bluetape4k.concurrent.virtualthread.VirtualThreadExecutor
 import io.bluetape4k.concurrent.virtualthread.virtualFutureOf
+import io.bluetape4k.concurrent.virtualthread.virtualFutureOfNullable
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.repository.GraphVertexRepository
@@ -32,7 +32,7 @@ class VirtualThreadVertexAdapter(
         label: String,
         id: GraphElementId,
     ): CompletableFuture<GraphVertex?> =
-        CompletableFuture.supplyAsync({ delegate.findVertexById(label, id) }, VirtualThreadExecutor)
+        virtualFutureOfNullable { delegate.findVertexById(label, id) }
 
     override fun findVerticesByLabelAsync(
         label: String,
@@ -45,7 +45,7 @@ class VirtualThreadVertexAdapter(
         id: GraphElementId,
         properties: Map<String, Any?>,
     ): CompletableFuture<GraphVertex?> =
-        CompletableFuture.supplyAsync({ delegate.updateVertex(label, id, properties) }, VirtualThreadExecutor)
+        virtualFutureOfNullable { delegate.updateVertex(label, id, properties) }
 
     override fun deleteVertexAsync(
         label: String,

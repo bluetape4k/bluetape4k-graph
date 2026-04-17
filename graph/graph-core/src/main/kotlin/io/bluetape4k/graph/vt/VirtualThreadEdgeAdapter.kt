@@ -1,6 +1,5 @@
 package io.bluetape4k.graph.vt
 
-import io.bluetape4k.concurrent.virtualthread.VirtualThreadExecutor
 import io.bluetape4k.concurrent.virtualthread.virtualFutureOf
 import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphElementId
@@ -12,7 +11,7 @@ import java.util.concurrent.CompletableFuture
 /**
  * [GraphEdgeRepository] 의 모든 메서드를 Virtual Thread 위에서 실행하는 어댑터.
  *
- * 단일 작업에는 `virtualFutureOf { }` / `VirtualThreadExecutor` 를 사용한다.
+ * 단일 작업에는 `virtualFutureOf { }` 를 사용한다.
  *
  * @param delegate 위임할 동기 [GraphEdgeRepository].
  */

@@ -1,7 +1,7 @@
 package io.bluetape4k.graph.vt
 
-import io.bluetape4k.concurrent.virtualthread.VirtualThreadExecutor
 import io.bluetape4k.concurrent.virtualthread.virtualFutureOf
+import io.bluetape4k.concurrent.virtualthread.virtualFutureOfNullable
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphPath
 import io.bluetape4k.graph.model.GraphVertex
@@ -36,7 +36,7 @@ class VirtualThreadTraversalAdapter(
         toId: GraphElementId,
         options: PathOptions,
     ): CompletableFuture<GraphPath?> =
-        CompletableFuture.supplyAsync({ delegate.shortestPath(fromId, toId, options) }, VirtualThreadExecutor)
+        virtualFutureOfNullable { delegate.shortestPath(fromId, toId, options) }
 
     override fun allPathsAsync(
         fromId: GraphElementId,
