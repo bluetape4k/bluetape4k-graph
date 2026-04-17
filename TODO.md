@@ -21,10 +21,47 @@
 
 ### [ ] `graph-spring-boot-starter` 신규 모듈
 
-- `application.yml` 프로퍼티 바인딩 (`bluetape4k.graph.neo4j.*` 등)
-- `GraphOperations`, `GraphSuspendOperations` 빈 자동 등록
-- Spring Boot 3.x + Kotlin AutoConfiguration (bluetape4k-spring-boot3-* 참고)
-- Spring Boot 4.x + Kotlin AutoConfiguration (bluetape4k-spring-boot4-* 참고)
+설계 문서:
+
+- `docs/superpowers/specs/2026-04-17-spring-boot-starter-design.md`
+- `docs/superpowers/plans/2026-04-17-spring-boot-starter-plan.md`
+
+구현 범위:
+
+- `spring-boot3/graph-spring-boot3-starter`
+- `spring-boot4/graph-spring-boot4-starter`
+- `settings.gradle.kts`에 `includeModules("spring-boot3", false, false)`,
+  `includeModules("spring-boot4", false, false)` 추가
+
+자동 구성 원칙:
+
+- `bluetape4k.graph.backend` 단일 프로퍼티로 백엔드 선택 (`tinkergraph`, `neo4j`, `memgraph`, `age`)
+- backend별 `enabled` 플래그는 만들지 않는다.
+- `GraphOperations`, `GraphSuspendOperations`, `GraphVirtualThreadOperations` 빈은 타입 스코프
+  `@ConditionalOnMissingBean`으로 등록한다.
+- `@Primary`, alias/wrapper 빈, `ApplicationContext.getBean(...)` 기반 라우팅은 사용하지 않는다.
+- `GraphAutoConfiguration`은 공통 `GraphProperties` 바인딩만 담당하고, backend별 AutoConfiguration은
+  `AutoConfiguration.imports`에 개별 등록한다.
+- backend 클래스는 starter에서 `compileOnly`; 단 `graph-core`는 공개 API 타입 노출을 위해 `api(project(":graph-core"))`로 둔다.
+
+백엔드별 구현:
+
+- TinkerGraph: `TinkerGraphOperations`, `TinkerGraphSuspendOperations`, `ops.asVirtualThread()` 자동 등록
+- Neo4j: 기존 `Driver` 빈 재사용, 없으면 `GraphDatabase.driver(...)` 생성
+- Memgraph: Neo4j Driver 기반, `MemgraphGraphOperations`, `MemgraphGraphSuspendOperations` 등록
+- AGE: Spring Boot 단일 `DataSource` + Exposed `Database.connect(dataSource)` 초기화,
+  `AgeGraphOperations.createGraph(graphName)`로 graph 자동 생성
+- Actuator HealthIndicator는 nested `HealthConfig` + string-based `@ConditionalOnClass(name = [...])` + FQN 참조로 격리
+
+검증:
+
+- `ApplicationContextRunner` 테스트는
+  `AutoConfigurations.of(GraphAutoConfiguration::class.java, <BackendAutoConfiguration>::class.java)`로 root + 대상 backend를 함께 로드
+- Spring Web MVC 테스트는 `RANDOM_PORT + TestRestTemplate`로 Virtual Thread 실행 여부 검증
+- WebFlux 테스트는 `WebTestClient`와 suspend controller로 `GraphSuspendOperations` 검증
+- Neo4j/Memgraph/AGE는 `graph-servers` Testcontainers 싱글턴 재사용
+- `dependencyInsight`로 Boot 3 starter가 Spring Boot 3.5.x를 참조하는지 확인
+- `wiki/testlogs/2026-04.md`, README/README.ko.md, `docs/superpowers/index/2026-04.md` 갱신
 
 ### [ ] Streaming API — `Flow<T>` 반환
 
@@ -40,7 +77,7 @@ fun streamEdgesByLabel(label: String): Flow<GraphEdge>
 
 ## 1순위 (추가) — Virtual Threads 전체 확장
 
-### [ ] Vertex/Edge/Traversal 전체에 Virtual Threads API 적용
+### [x] Vertex/Edge/Traversal 전체에 Virtual Threads API 적용 — 2026-04-17 완료
 
 **배경**: 그래프 알고리즘 확장(1순위)에서 `GraphVirtualThreadAlgorithmRepository` 브릿지 어댑터를 도입.
 동일 패턴을 `GraphVertexRepository`, `GraphEdgeRepository`, `GraphTraversalRepository` 전체로 확대.
@@ -54,6 +91,18 @@ fun streamEdgesByLabel(label: String): Flow<GraphEdge>
 ---
 
 ## 2순위 — 생산성 향상
+
+### [ ] 문서 / 예제 API 정합성 정리
+
+현재 코드와 일부 README 예제가 어긋난다. 신규 starter 문서화 전에 먼저 정리한다.
+
+- `AgeGraphOperations(database, graphName = "...")` 예제를 현재 생성자 `AgeGraphOperations(graphName)` +
+  `Database.connect(dataSource)` 선행 호출 패턴으로 수정
+- `AgeGraphSuspendOperations` 예제도 동일하게 `AgeGraphSuspendOperations(graphName)` 기준으로 정리
+- `asVirtualThread` import 예제를 실제 패키지 `io.bluetape4k.graph.vt.asVirtualThread` 기준으로 정리
+- 루트 `README.md`, `README.ko.md`, `graph-age/README*.md`, `graph-servers/README*.md`,
+  `graph-core/README*.md`에서 오래된 코드 조각 검색 후 수정
+- README 코드 조각과 실제 테스트 코드가 컴파일 가능한 형태인지 샘플 테스트 또는 문서 스니펫 점검으로 확인
 
 ### [ ] `graph-io` 모듈 — 벌크 임포트/익스포트
 
@@ -116,6 +165,7 @@ ops.transaction {
 ## 완료
 
 - [x] 그래프 알고리즘 확장 — 6 알고리즘 × 4 백엔드 + VT bridge (2026-04-16)
+- [x] Virtual Threads 전체 확장 — Vertex/Edge/Traversal/Operations 어댑터 + 테스트 (2026-04-17)
 - [x] 0.1.0 Maven Central 배포 (2026-04-16)
 - [x] GitHub Release v0.1.0 작성
 - [x] 전체 public API KDoc 커버리지 (199개 예제)
