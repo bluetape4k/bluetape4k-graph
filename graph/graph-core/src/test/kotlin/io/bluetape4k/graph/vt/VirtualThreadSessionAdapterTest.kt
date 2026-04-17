@@ -32,7 +32,7 @@ class VirtualThreadSessionAdapterTest {
     @Test
     fun `createGraphAsync delegates and completes`() {
         val result = adapter.createGraphAsync("social").join()
-        result shouldBeEqualTo null  // CompletableFuture<Void> 결과
+        result shouldBeEqualTo Unit
         // 실제 위임 결과 확인: 그래프 존재 여부는 TinkerGraph에서 항상 true 반환
         delegate.graphExists("social").shouldNotBeNull()
     }
@@ -40,7 +40,7 @@ class VirtualThreadSessionAdapterTest {
     @Test
     fun `dropGraphAsync delegates and completes`() {
         val result = adapter.dropGraphAsync("social").join()
-        result shouldBeEqualTo null  // CompletableFuture<Void> 결과
+        result shouldBeEqualTo Unit
     }
 
     @Test

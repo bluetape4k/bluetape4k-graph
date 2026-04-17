@@ -1,6 +1,5 @@
 package io.bluetape4k.graph.vt
 
-import io.bluetape4k.concurrent.virtualthread.VirtualThreadExecutor
 import io.bluetape4k.concurrent.virtualthread.virtualFutureOf
 import io.bluetape4k.graph.repository.GraphSession
 import io.bluetape4k.graph.repository.GraphVirtualThreadSession
@@ -10,8 +9,7 @@ import java.util.concurrent.CompletableFuture
 /**
  * [GraphSession] 의 lifecycle 조작을 Virtual Thread 위에서 실행하는 어댑터.
  *
- * Unit 반환에는 `CompletableFuture.runAsync(block, VirtualThreadExecutor)`,
- * 값 반환에는 `virtualFutureOf { }` / `virtualFutureOfNullable { }` 를 사용한다.
+ * 모든 작업에 `virtualFutureOf { }` 를 사용한다.
  *
  * @param delegate 위임할 동기 [GraphSession].
  */
@@ -21,11 +19,11 @@ class VirtualThreadSessionAdapter(
 
     companion object : KLogging()
 
-    override fun createGraphAsync(name: String): CompletableFuture<Void> =
-        CompletableFuture.runAsync({ delegate.createGraph(name) }, VirtualThreadExecutor)
+    override fun createGraphAsync(name: String): CompletableFuture<Unit> =
+        virtualFutureOf { delegate.createGraph(name) }
 
-    override fun dropGraphAsync(name: String): CompletableFuture<Void> =
-        CompletableFuture.runAsync({ delegate.dropGraph(name) }, VirtualThreadExecutor)
+    override fun dropGraphAsync(name: String): CompletableFuture<Unit> =
+        virtualFutureOf { delegate.dropGraph(name) }
 
     override fun graphExistsAsync(name: String): CompletableFuture<Boolean> =
         virtualFutureOf { delegate.graphExists(name) }

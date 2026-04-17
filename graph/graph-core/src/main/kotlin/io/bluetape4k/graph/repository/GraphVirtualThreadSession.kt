@@ -7,10 +7,9 @@ import java.util.concurrent.CompletableFuture
  *
  * 모든 메서드는 `CompletableFuture<T>` 를 반환하며,
  * 동기 [GraphSession] 을 Virtual Thread 위에서 실행한 결과를 담는다.
- * Java interop 목적이므로 `Unit` 대신 `Void` 를 사용한다.
  */
 interface GraphVirtualThreadSession {
-    fun createGraphAsync(name: String): CompletableFuture<Void>
-    fun dropGraphAsync(name: String): CompletableFuture<Void>
+    fun createGraphAsync(name: String): CompletableFuture<Unit>
+    fun dropGraphAsync(name: String): CompletableFuture<Unit>
     fun graphExistsAsync(name: String): CompletableFuture<Boolean>
 }
