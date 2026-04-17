@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.algo
 
+import io.bluetape4k.concurrent.virtualthread.virtualFutureOf
 import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
@@ -15,56 +16,54 @@ import io.bluetape4k.graph.repository.GraphAlgorithmRepository
 import io.bluetape4k.graph.repository.GraphVirtualThreadAlgorithmRepository
 import io.bluetape4k.logging.KLogging
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 
 /**
  * [GraphAlgorithmRepository] 의 모든 메서드를 Virtual Thread 위에서 실행하는 어댑터.
+ *
+ * 단일 작업에는 `virtualFutureOf { }` 를 사용한다.
+ * 여러 작업을 병렬 실행할 때는 `StructuredTaskScopes.all { }` 을 사용한다.
  *
  * ### 사용 예제
  * ```kotlin
  * val ops: GraphOperations = Neo4jGraphOperations(driver)
  * val vtOps = ops.asVirtualThread()
- * val future = vtOps.pageRankAsync()
- * val scores = future.join()
+ * val scores = vtOps.pageRankAsync().join()
  * ```
  *
  * @param delegate 위임할 동기 [GraphAlgorithmRepository].
- * @param executor Virtual Thread executor. 기본값은 `Executors.newVirtualThreadPerTaskExecutor()`.
  */
 class VirtualThreadAlgorithmAdapter(
     private val delegate: GraphAlgorithmRepository,
-    private val executor: ExecutorService = Executors.newVirtualThreadPerTaskExecutor(),
-): GraphVirtualThreadAlgorithmRepository {
+) : GraphVirtualThreadAlgorithmRepository {
 
-    companion object: KLogging()
+    companion object : KLogging()
 
     override fun pageRankAsync(options: PageRankOptions): CompletableFuture<List<PageRankScore>> =
-        CompletableFuture.supplyAsync({ delegate.pageRank(options) }, executor)
+        virtualFutureOf { delegate.pageRank(options) }
 
     override fun degreeCentralityAsync(
         vertexId: GraphElementId,
         options: DegreeOptions,
     ): CompletableFuture<DegreeResult> =
-        CompletableFuture.supplyAsync({ delegate.degreeCentrality(vertexId, options) }, executor)
+        virtualFutureOf { delegate.degreeCentrality(vertexId, options) }
 
     override fun connectedComponentsAsync(options: ComponentOptions): CompletableFuture<List<GraphComponent>> =
-        CompletableFuture.supplyAsync({ delegate.connectedComponents(options) }, executor)
+        virtualFutureOf { delegate.connectedComponents(options) }
 
     override fun bfsAsync(
         startId: GraphElementId,
         options: BfsDfsOptions,
     ): CompletableFuture<List<TraversalVisit>> =
-        CompletableFuture.supplyAsync({ delegate.bfs(startId, options) }, executor)
+        virtualFutureOf { delegate.bfs(startId, options) }
 
     override fun dfsAsync(
         startId: GraphElementId,
         options: BfsDfsOptions,
     ): CompletableFuture<List<TraversalVisit>> =
-        CompletableFuture.supplyAsync({ delegate.dfs(startId, options) }, executor)
+        virtualFutureOf { delegate.dfs(startId, options) }
 
     override fun detectCyclesAsync(options: CycleOptions): CompletableFuture<List<GraphCycle>> =
-        CompletableFuture.supplyAsync({ delegate.detectCycles(options) }, executor)
+        virtualFutureOf { delegate.detectCycles(options) }
 }
 
 /**
@@ -72,11 +71,8 @@ class VirtualThreadAlgorithmAdapter(
  *
  * ```kotlin
  * val vtOps = ops.asVirtualThread()
- * val future = vtOps.pageRankAsync()
+ * val scores = vtOps.pageRankAsync().join()
  * ```
- *
- * @param executor 사용할 Virtual Thread executor.
  */
-fun GraphAlgorithmRepository.asVirtualThread(
-    executor: ExecutorService = Executors.newVirtualThreadPerTaskExecutor(),
-): GraphVirtualThreadAlgorithmRepository = VirtualThreadAlgorithmAdapter(this, executor)
+fun GraphAlgorithmRepository.asVirtualThread(): GraphVirtualThreadAlgorithmRepository =
+    VirtualThreadAlgorithmAdapter(this)
