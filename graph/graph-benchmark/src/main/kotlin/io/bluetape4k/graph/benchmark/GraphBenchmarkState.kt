@@ -19,10 +19,10 @@ open class GraphBenchmarkState {
     lateinit var syncOps: GraphOperations
     lateinit var vtOps: VirtualThreadOperationsAdapter
 
-    var aliceId: GraphElementId = GraphElementId.of("")
-    var bobId: GraphElementId = GraphElementId.of("")
-    var charlieId: GraphElementId = GraphElementId.of("")
-    var daveId: GraphElementId = GraphElementId.of("")
+    var aliceId: GraphElementId = GraphElementId("0")
+    var bobId: GraphElementId = GraphElementId("0")
+    var charlieId: GraphElementId = GraphElementId("0")
+    var daveId: GraphElementId = GraphElementId("0")
 
     @Setup
     fun setup() {

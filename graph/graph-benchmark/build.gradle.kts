@@ -16,6 +16,7 @@ benchmark {
             warmups = 3
             iterations = 5
             iterationTime = 3
+            iterationTimeUnit = "s"
         }
     }
 }
