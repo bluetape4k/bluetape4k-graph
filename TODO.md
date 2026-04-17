@@ -23,7 +23,8 @@
 
 - `application.yml` 프로퍼티 바인딩 (`bluetape4k.graph.neo4j.*` 등)
 - `GraphOperations`, `GraphSuspendOperations` 빈 자동 등록
-- Spring Boot 3.x + Kotlin AutoConfiguration
+- Spring Boot 3.x + Kotlin AutoConfiguration (bluetape4k-spring-boot3-* 참고)
+- Spring Boot 4.x + Kotlin AutoConfiguration (bluetape4k-spring-boot4-* 참고)
 
 ### [ ] Streaming API — `Flow<T>` 반환
 
