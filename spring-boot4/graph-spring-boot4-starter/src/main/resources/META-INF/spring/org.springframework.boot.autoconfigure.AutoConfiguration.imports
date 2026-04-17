@@ -1,0 +1,5 @@
+io.bluetape4k.graph.spring.boot4.autoconfigure.GraphAutoConfiguration
+io.bluetape4k.graph.spring.boot4.autoconfigure.GraphTinkerGraphAutoConfiguration
+io.bluetape4k.graph.spring.boot4.autoconfigure.GraphNeo4jAutoConfiguration
+io.bluetape4k.graph.spring.boot4.autoconfigure.GraphMemgraphAutoConfiguration
+io.bluetape4k.graph.spring.boot4.autoconfigure.GraphAgeAutoConfiguration

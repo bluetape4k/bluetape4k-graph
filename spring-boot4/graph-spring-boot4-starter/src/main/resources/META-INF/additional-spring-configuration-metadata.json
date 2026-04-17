@@ -1,0 +1,10 @@
+{
+  "properties": [
+    {
+      "name": "bluetape4k.graph.backend",
+      "type": "java.lang.String",
+      "description": "Active graph backend: tinkergraph | neo4j | memgraph | age.",
+      "defaultValue": "tinkergraph"
+    }
+  ]
+}

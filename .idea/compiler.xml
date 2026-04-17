@@ -3,6 +3,20 @@
   <component name="CompilerConfiguration">
     <annotationProcessing>
       <profile default="true" name="Default" enabled="true" />
+      <profile name="Gradle Imported" enabled="true">
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="/Volumes/SS980/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-configuration-processor/3.5.13/214294667fd47cfedb6bbffa6738942bf5328d40/spring-boot-configuration-processor-3.5.13.jar" />
+        </processorPath>
+        <module name="bluetape4k-graph.graph-spring-boot3-starter.main" />
+      </profile>
+      <profile name="Gradle Imported" enabled="true">
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="/Volumes/SS980/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-configuration-processor/4.0.5/849e09be885ee701718892d695e35f0d94d35444/spring-boot-configuration-processor-4.0.5.jar" />
+        </processorPath>
+        <module name="bluetape4k-graph.graph-spring-boot4-starter.main" />
+      </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="25" />
   </component>

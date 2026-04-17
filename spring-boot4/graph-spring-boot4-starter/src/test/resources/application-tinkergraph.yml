@@ -1,0 +1,8 @@
+bluetape4k:
+  graph:
+    backend: tinkergraph
+
+spring:
+  threads:
+    virtual:
+      enabled: true

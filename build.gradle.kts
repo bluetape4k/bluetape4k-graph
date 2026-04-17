@@ -26,7 +26,6 @@ plugins {
     id(Plugins.detekt) version Plugins.Versions.detekt
 
     id(Plugins.dependency_management) version Plugins.Versions.dependency_management
-    id(Plugins.spring_boot) version Plugins.Versions.spring_boot4 apply false
 
     id(Plugins.dokka) version Plugins.Versions.dokka
     id(Plugins.testLogger) version Plugins.Versions.testLogger
@@ -266,7 +265,6 @@ subprojects {
 
         imports {
             mavenBom(Libs.bluetape4k_bom)
-            mavenBom(Libs.spring_boot4_dependencies)
 
             mavenBom(Libs.feign_bom)
             mavenBom(Libs.micrometer_bom)
@@ -393,7 +391,6 @@ subprojects {
         val testRuntimeOnly by configurations
 
         compileOnly(platform(Libs.bluetape4k_bom))
-        compileOnly(platform(Libs.spring_boot4_dependencies))
         compileOnly(platform(Libs.jackson_bom))
         compileOnly(platform(Libs.kotlinx_coroutines_bom))
 
