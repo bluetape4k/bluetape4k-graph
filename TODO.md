@@ -19,7 +19,7 @@
 | `dfs(startId, depth)` | 깊이 우선 탐색 | 모든 백엔드 |
 | `cycles(label)` | 순환 탐지 — 의존성 분석에 필요 | Cypher/Gremlin 직접 구현 |
 
-### [ ] `graph-spring-boot-starter` 신규 모듈
+### [x] `graph-spring-boot-starter` 신규 모듈 — 2026-04-17 완료
 
 설계 문서:
 
@@ -28,40 +28,17 @@
 
 구현 범위:
 
-- `spring-boot3/graph-spring-boot3-starter`
-- `spring-boot4/graph-spring-boot4-starter`
-- `settings.gradle.kts`에 `includeModules("spring-boot3", false, false)`,
-  `includeModules("spring-boot4", false, false)` 추가
+- `spring-boot3/graph-spring-boot3-starter` — Spring Boot 3.5.x
+- `spring-boot4/graph-spring-boot4-starter` — Spring Boot 4.0.x (분리된 모듈 패키지 대응)
 
-자동 구성 원칙:
+Spring Boot 4 패키지 변경 사항:
 
-- `bluetape4k.graph.backend` 단일 프로퍼티로 백엔드 선택 (`tinkergraph`, `neo4j`, `memgraph`, `age`)
-- backend별 `enabled` 플래그는 만들지 않는다.
-- `GraphOperations`, `GraphSuspendOperations`, `GraphVirtualThreadOperations` 빈은 타입 스코프
-  `@ConditionalOnMissingBean`으로 등록한다.
-- `@Primary`, alias/wrapper 빈, `ApplicationContext.getBean(...)` 기반 라우팅은 사용하지 않는다.
-- `GraphAutoConfiguration`은 공통 `GraphProperties` 바인딩만 담당하고, backend별 AutoConfiguration은
-  `AutoConfiguration.imports`에 개별 등록한다.
-- backend 클래스는 starter에서 `compileOnly`; 단 `graph-core`는 공개 API 타입 노출을 위해 `api(project(":graph-core"))`로 둔다.
+- `DataSourceAutoConfiguration`: `boot.autoconfigure.jdbc` → `boot.jdbc.autoconfigure` (`spring-boot-jdbc`)
+- `HealthIndicator`/`Health`: `boot.actuate.health` → `boot.health.contributor` (`spring-boot-health`)
+- `TestRestTemplate`: `boot.test.web.client` → `boot.resttestclient` + `@AutoConfigureTestRestTemplate` 필수
+- `WebTestClient`: `@AutoConfigureWebTestClient` 필수 (`spring-boot-webtestclient`)
 
-백엔드별 구현:
-
-- TinkerGraph: `TinkerGraphOperations`, `TinkerGraphSuspendOperations`, `ops.asVirtualThread()` 자동 등록
-- Neo4j: 기존 `Driver` 빈 재사용, 없으면 `GraphDatabase.driver(...)` 생성
-- Memgraph: Neo4j Driver 기반, `MemgraphGraphOperations`, `MemgraphGraphSuspendOperations` 등록
-- AGE: Spring Boot 단일 `DataSource` + Exposed `Database.connect(dataSource)` 초기화,
-  `AgeGraphOperations.createGraph(graphName)`로 graph 자동 생성
-- Actuator HealthIndicator는 nested `HealthConfig` + string-based `@ConditionalOnClass(name = [...])` + FQN 참조로 격리
-
-검증:
-
-- `ApplicationContextRunner` 테스트는
-  `AutoConfigurations.of(GraphAutoConfiguration::class.java, <BackendAutoConfiguration>::class.java)`로 root + 대상 backend를 함께 로드
-- Spring Web MVC 테스트는 `RANDOM_PORT + TestRestTemplate`로 Virtual Thread 실행 여부 검증
-- WebFlux 테스트는 `WebTestClient`와 suspend controller로 `GraphSuspendOperations` 검증
-- Neo4j/Memgraph/AGE는 `graph-servers` Testcontainers 싱글턴 재사용
-- `dependencyInsight`로 Boot 3 starter가 Spring Boot 3.5.x를 참조하는지 확인
-- `wiki/testlogs/2026-04.md`, README/README.ko.md, `docs/superpowers/index/2026-04.md` 갱신
+테스트 결과: boot3 16 passing, boot4 16 passing
 
 ### [ ] Streaming API — `Flow<T>` 반환
 
@@ -143,6 +120,60 @@ ops.transaction {
 
 ---
 
+## 2순위 (추가) — 빌드 / CI 개선
+
+### [x] GitHub Actions CI 파이프라인 구성 — 2026-04-18 완료
+
+`.github/workflows/` 아래에 워크플로우 파일 추가.
+
+| 워크플로우 파일 | 트리거 | 역할 |
+|----------------|--------|------|
+| `ci.yml` | `push` / `pull_request` → `main`, `develop` | 전체 빌드 + 단위 테스트 (Docker 없는 모듈만) |
+| `integration.yml` | `push` → `main`, 수동 `workflow_dispatch` | Testcontainers 통합 테스트 (Neo4j·Memgraph·AGE) |
+| `release.yml` | `push` → `v*` 태그 | Maven Central 배포 (`publishAggregationToCentralPortal`) |
+| `benchmark.yml` | 수동 `workflow_dispatch` | JMH 벤치마크 실행 + 결과 아티팩트 업로드 |
+
+**공통 설정:**
+
+- JDK: `temurin` 25 (preview 기능 포함)
+- Gradle: `gradle/wrapper/gradle-wrapper.properties` 버전 고정 + `--build-cache` 활용
+- Testcontainers: `testcontainers.reuse.enable=true` + Docker Layer Caching
+- Gradle 캐시: `actions/cache` → `~/.gradle/caches`, `~/.gradle/wrapper`
+- 실패 시 `--continue` 옵션으로 모듈별 결과 분리 리포트
+
+**시크릿 관리 (GitHub Secrets):**
+
+| 시크릿 키 | 용도 |
+|-----------|------|
+| `MAVEN_CENTRAL_USERNAME` | Sonatype OSSRH 계정 |
+| `MAVEN_CENTRAL_PASSWORD` | Sonatype OSSRH 비밀번호 |
+| `GPG_SIGNING_KEY` | 배포 서명용 GPG 키 |
+| `GPG_SIGNING_PASSPHRASE` | GPG 키 패스프레이즈 |
+
+### [ ] 빌드 캐시 최적화
+
+- `gradle.properties`에 `org.gradle.caching=true` 활성화
+- `buildSrc` 결과물 캐시 구성 (`--build-cache` CI 플래그)
+- 모듈별 `test` 태스크에 `outputs.upToDateWhen { false }` 제거 → 점진적 빌드 활용
+- Testcontainers 이미지 pull을 CI 캐시 레이어로 분리 (Docker layer cache)
+
+### [ ] 코드 품질 게이트 CI 연동
+
+| 도구 | 역할 | CI 단계 |
+|------|------|---------|
+| `detekt` | 정적 분석 (코틀린 코드 스멜) | `ci.yml` — PR 블로킹 |
+| `ktlint` | 코드 스타일 검사 | `ci.yml` — PR 블로킹 |
+| Codecov / JaCoCo | 테스트 커버리지 리포트 | `ci.yml` — 80% 미만 시 경고 |
+| `dependency-check` (OWASP) | 취약 의존성 스캔 | `release.yml` — 배포 전 필수 통과 |
+
+### [ ] Dependabot / Renovate 자동 의존성 업데이트
+
+- `.github/dependabot.yml` 추가 — Gradle 의존성 주간 업데이트 PR 자동 생성
+- `buildSrc/Libs.kt` 버전 상수와 연동되도록 Renovate `customManagers` 설정 검토
+- `spring-boot3` / `spring-boot4` BOM 업데이트 PR 분리 관리
+
+---
+
 ## 3순위 — 생태계 확장
 
 ### [ ] 추가 예시 모듈
@@ -164,6 +195,8 @@ ops.transaction {
 
 ## 완료
 
+- [x] GitHub Actions CI (`ci.yml` + `publish-snapshot.yml`) — push마다 전체 테스트, nightly SNAPSHOT 배포 (2026-04-18)
+- [x] Spring Boot 3/4 AutoConfiguration 스타터 — boot3 16 passing, boot4 16 passing (2026-04-17)
 - [x] 그래프 알고리즘 확장 — 6 알고리즘 × 4 백엔드 + VT bridge (2026-04-16)
 - [x] Virtual Threads 전체 확장 — Vertex/Edge/Traversal/Operations 어댑터 + 테스트 (2026-04-17)
 - [x] 0.1.0 Maven Central 배포 (2026-04-16)
