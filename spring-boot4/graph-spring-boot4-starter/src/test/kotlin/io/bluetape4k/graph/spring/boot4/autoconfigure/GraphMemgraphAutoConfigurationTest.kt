@@ -3,7 +3,7 @@ package io.bluetape4k.graph.spring.boot4.autoconfigure
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
-import io.bluetape4k.graph.servers.MemgraphServer
+import io.bluetape4k.testcontainers.graphdb.MemgraphServer
 import io.bluetape4k.logging.KLogging
 import org.amshove.kluent.shouldNotBeNull
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -29,7 +29,7 @@ class GraphMemgraphAutoConfigurationTest {
     private val memgraphProperties
         get() = arrayOf(
             "bluetape4k.graph.backend=memgraph",
-            "bluetape4k.graph.memgraph.uri=${MemgraphServer.boltUrl}",
+            "bluetape4k.graph.memgraph.uri=${MemgraphServer.Launcher.memgraph.boltUrl}",
             "bluetape4k.graph.memgraph.username=",
             "bluetape4k.graph.memgraph.password=",
         )

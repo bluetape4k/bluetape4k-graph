@@ -3,7 +3,7 @@ package io.bluetape4k.graph.spring.boot4.autoconfigure
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
-import io.bluetape4k.graph.servers.Neo4jServer
+import io.bluetape4k.testcontainers.graphdb.Neo4jServer
 import io.bluetape4k.logging.KLogging
 import org.amshove.kluent.shouldNotBeNull
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -29,7 +29,7 @@ class GraphNeo4jAutoConfigurationTest {
     private val neo4jProperties
         get() = arrayOf(
             "bluetape4k.graph.backend=neo4j",
-            "bluetape4k.graph.neo4j.uri=${Neo4jServer.boltUrl}",
+            "bluetape4k.graph.neo4j.uri=${Neo4jServer.Launcher.neo4j.boltUrl}",
             "bluetape4k.graph.neo4j.password=",
         )
 
