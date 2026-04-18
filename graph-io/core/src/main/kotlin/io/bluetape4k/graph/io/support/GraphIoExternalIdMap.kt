@@ -7,7 +7,7 @@ import io.bluetape4k.graph.model.GraphElementId
  * 외부 ID와 백엔드가 발급한 GraphElementId 간의 매핑.
  * `DuplicateVertexPolicy`에 따라 중복 정책을 강제한다.
  */
-internal class GraphIoExternalIdMap(
+class GraphIoExternalIdMap(
     private val duplicatePolicy: DuplicateVertexPolicy,
 ) {
     private val mapping = HashMap<String, GraphElementId>()
