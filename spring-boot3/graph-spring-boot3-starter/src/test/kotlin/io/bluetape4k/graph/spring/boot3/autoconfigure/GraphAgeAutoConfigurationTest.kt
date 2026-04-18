@@ -5,7 +5,7 @@ import com.zaxxer.hikari.HikariDataSource
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
-import io.bluetape4k.graph.servers.PostgreSQLAgeServer
+import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
 import io.bluetape4k.logging.KLogging
 import org.amshove.kluent.shouldNotBeNull
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -28,9 +28,9 @@ class GraphAgeAutoConfigurationTest {
         @Bean(destroyMethod = "close")
         fun dataSource(): DataSource {
             val cfg = HikariConfig().apply {
-                jdbcUrl = PostgreSQLAgeServer.instance.jdbcUrl
-                username = PostgreSQLAgeServer.instance.username
-                password = PostgreSQLAgeServer.instance.password
+                jdbcUrl = PostgreSQLAgeServer.Launcher.postgresqlAge.jdbcUrl
+                username = PostgreSQLAgeServer.Launcher.postgresqlAge.username
+                password = PostgreSQLAgeServer.Launcher.postgresqlAge.password
                 maximumPoolSize = 2
                 connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
             }
