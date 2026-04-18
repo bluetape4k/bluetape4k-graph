@@ -68,7 +68,7 @@ val database = Database.connect(dataSource)
 ## Usage Example
 
 ```kotlin
-val ops = AgeGraphOperations(database, graphName = "my_graph")
+val ops = AgeGraphOperations("my_graph")
 
 // Create graph
 ops.createGraph("my_graph")
@@ -132,7 +132,7 @@ Integration tests use Testcontainers with the `apache/age:PG16_latest` image.
 ### Usage Example
 
 ```kotlin
-val ops = AgeGraphOperations(database, graphName = "social")
+val ops = AgeGraphOperations("social")
 
 // Degree centrality (native Cypher-over-SQL)
 val degree = ops.degreeCentrality(alice.id, DegreeOptions(edgeLabel = "KNOWS"))

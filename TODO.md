@@ -40,15 +40,10 @@ Spring Boot 4 패키지 변경 사항:
 
 테스트 결과: boot3 16 passing, boot4 16 passing
 
-### [ ] Streaming API — `Flow<T>` 반환
+### [x] Streaming API — `Flow<T>` 반환 — 완료
 
-현재 `findVerticesByLabel`이 `List<T>` 반환 → 대용량 그래프에서 메모리 문제.
-
-```kotlin
-// GraphSuspendVertexRepository에 추가
-fun streamVerticesByLabel(label: String): Flow<GraphVertex>
-fun streamEdgesByLabel(label: String): Flow<GraphEdge>
-```
+`findVerticesByLabel` / `findEdgesByLabel`이 이미 `Flow<T>`를 반환한다.
+별도 `stream*` 메서드 추가 불필요.
 
 ---
 
@@ -69,7 +64,7 @@ fun streamEdgesByLabel(label: String): Flow<GraphEdge>
 
 ## 2순위 — 생산성 향상
 
-### [ ] 문서 / 예제 API 정합성 정리
+### [x] 문서 / 예제 API 정합성 정리 — 2026-04-18 완료
 
 현재 코드와 일부 README 예제가 어긋난다. 신규 starter 문서화 전에 먼저 정리한다.
 
@@ -195,6 +190,7 @@ ops.transaction {
 
 ## 완료
 
+- [x] 문서/예제 API 정합성 정리 — AgeGraphOperations 생성자 패턴 + asVirtualThread import 수정 (2026-04-18)
 - [x] GitHub Actions CI (`ci.yml` + `publish-snapshot.yml`) — push마다 전체 테스트, nightly SNAPSHOT 배포 (2026-04-18)
 - [x] Spring Boot 3/4 AutoConfiguration 스타터 — boot3 16 passing, boot4 16 passing (2026-04-17)
 - [x] 그래프 알고리즘 확장 — 6 알고리즘 × 4 백엔드 + VT bridge (2026-04-16)

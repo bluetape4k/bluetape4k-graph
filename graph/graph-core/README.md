@@ -214,7 +214,7 @@ val cycles = ops.detectCycles(CycleOptions(edgeLabel = "KNOWS", maxDepth = 5))
 `GraphAlgorithmRepository` can be wrapped with a Virtual Thread adapter to expose `CompletableFuture`-based async APIs for Java interop.
 
 ```kotlin
-import io.bluetape4k.graph.algo.asVirtualThread
+import io.bluetape4k.graph.vt.asVirtualThread
 
 val ops: GraphOperations = TinkerGraphOperations()
 

@@ -106,7 +106,7 @@ val hikariConfig = HikariConfig().apply {
     connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"${'$'}user\", public"
 }
 val db = Database.connect(HikariDataSource(hikariConfig))
-val ops = AgeGraphOperations(db, graphName = "my_graph")
+val ops = AgeGraphOperations("my_graph")
 
 ops.createGraph("my_graph")
 val alice = ops.createVertex("Person", mapOf("name" to "Alice"))

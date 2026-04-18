@@ -107,7 +107,6 @@ classDiagram
     }
 
     class AgeGraphOperations {
-        -database: Database
         -graphName: String
         +createGraph(String) Unit
         +dropGraph(String) Unit
@@ -505,10 +504,7 @@ val datasource = HikariDataSource(hikariConfig)
 val database = Database.connect(datasource)
 
 // AgeGraphOperations 인스턴스
-val graphOps = AgeGraphOperations(
-    database = database,
-    graphName = "my_graph"
-)
+val graphOps = AgeGraphOperations("my_graph")
 ```
 
 ### 그래프 초기화
@@ -869,7 +865,7 @@ testImplementation(Libs.kotlinx_coroutines_test)
 ### 사용 예제
 
 ```kotlin
-val ops = AgeGraphOperations(database, graphName = "social")
+val ops = AgeGraphOperations("social")
 
 // Degree centrality (Cypher-over-SQL native)
 val degree = ops.degreeCentrality(alice.id, DegreeOptions(edgeLabel = "KNOWS"))

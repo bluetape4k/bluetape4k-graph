@@ -1359,7 +1359,7 @@ val cycles = ops.detectCycles(CycleOptions(edgeLabel = "KNOWS", maxDepth = 5))
 `GraphAlgorithmRepository`를 Virtual Thread 어댑터로 감싸면 Java 상호운용을 위한 `CompletableFuture` 기반 비동기 API를 사용할 수 있다.
 
 ```kotlin
-import io.bluetape4k.graph.algo.asVirtualThread
+import io.bluetape4k.graph.vt.asVirtualThread
 
 val ops: GraphOperations = TinkerGraphOperations()
 
