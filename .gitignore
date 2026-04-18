@@ -1,6 +1,9 @@
 # Compiled class file
 *.class
 
+# Third-party source files accidentally extracted to project root
+/com/
+
 # Log file
 *.log
 

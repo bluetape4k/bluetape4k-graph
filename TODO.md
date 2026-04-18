@@ -76,13 +76,45 @@ Spring Boot 4 패키지 변경 사항:
   오래된 코드 조각 검색 후 수정
 - README 코드 조각과 실제 테스트 코드가 컴파일 가능한 형태인지 샘플 테스트 또는 문서 스니펫 점검으로 확인
 
-### [ ] `graph-io` 모듈 — 벌크 임포트/익스포트
+### [x] `graph-io` 모듈 — 벌크 임포트/익스포트 — 2026-04-18 완료
 
-| 포맷 | 방향 |
-|------|------|
-| CSV (정점/엣지 분리 파일) | import / export |
-| JSON Lines (NDJSON) | import / export |
-| GraphML | import / export |
+| 포맷 | 방향 | 모듈 |
+|------|------|------|
+| CSV (정점/엣지 분리 파일) | import / export | `graph-io-csv` |
+| JSON Lines (NDJSON, Jackson 2.x) | import / export | `graph-io-jackson2` |
+| JSON Lines (NDJSON, Jackson 3.x) | import / export | `graph-io-jackson3` |
+| GraphML (XML/StAX) | import / export | `graph-io-graphml` |
+
+각 포맷은 Sync / VirtualThread / Coroutine 3가지 실행 모델 지원.
+벤치마크: `docs/benchmark/2026-04-18-graph-io-bulk-results.md`
+
+### [ ] `graph-io` — `bluetape4k-okio` / `bluetape4k-io` 활용
+
+현재 `graph-io-core`의 `GraphIoPaths`는 `java.io` / `java.nio.file` 기반이다.
+`bluetape4k-okio`(OkIO Source/Sink)와 `bluetape4k-io`(bluetape4k IO 유틸리티)를 활용하여 다음을 개선한다.
+
+| 항목 | 현재 | 개선 방향 |
+|------|------|-----------|
+| `openInputStream` | `BufferedInputStream(Files.newInputStream(...))` | OkIO `Source` / `BufferedSource` |
+| `openOutputStream` | `BufferedOutputStream(Files.newOutputStream(...))` | OkIO `Sink` / `BufferedSink` |
+| 압축 지원 | 없음 | OkIO GzipSource/GzipSink 래핑으로 `.csv.gz`, `.ndjson.gz` 투명 지원 |
+| 스트리밍 읽기 | `BufferedReader` 라인 단위 | OkIO `BufferedSource.readUtf8Line()` — 버퍼 튜닝 용이 |
+| Flow 기반 I/O | 없음 | `bluetape4k-io` Flow 확장 함수로 `Flow<GraphIoVertexRecord>` 직접 소비 |
+
+**구현 범위:**
+
+- `graph-io-core`에 OkIO 기반 `GraphIoOkioPaths` 헬퍼 추가 (기존 `GraphIoPaths` 대체 가능)
+- `graph-io-csv` / `graph-io-jackson2/3` / `graph-io-graphml` 각 익스포터/임포터에 OkIO 오버로드 추가
+- 압축 싱크/소스: `GraphExportSink.GzipPathSink`, `GraphImportSource.GzipPathSource` 추가
+- 기존 `java.io` 경로는 유지 (하위 호환)
+
+**선행 조건:** `bluetape4k-projects`에서 `bluetape4k-okio`, `bluetape4k-io` 버전 확인 후 `buildSrc/Libs.kt` 추가
+
+### [ ] 모든 public API KDoc에 가능한 한 예제 추가
+
+- `graph-core`, 백엔드 모듈, `graph-io`, Spring Boot starter의 public 타입/함수/확장 함수에 사용 예제를 최대한 추가
+- 단순 설명보다 호출 가능한 짧은 Kotlin snippet 우선
+- README 예제와 KDoc 예제가 서로 다른 API 형태를 안내하지 않도록 정합성 점검
 
 ### [ ] 트랜잭션 DSL
 
@@ -190,6 +222,7 @@ ops.transaction {
 
 ## 완료
 
+- [x] graph-io 벌크 임포트/익스포트 — CSV/NDJSON(Jackson2/3)/GraphML × Sync/VT/Coroutine, JMH 벤치마크, README 4종 (2026-04-18)
 - [x] 문서/예제 API 정합성 정리 — AgeGraphOperations 생성자 패턴 + asVirtualThread import 수정 (2026-04-18)
 - [x] GitHub Actions CI (`ci.yml` + `publish-snapshot.yml`) — push마다 전체 테스트, nightly SNAPSHOT 배포 (2026-04-18)
 - [x] Spring Boot 3/4 AutoConfiguration 스타터 — boot3 16 passing, boot4 16 passing (2026-04-17)

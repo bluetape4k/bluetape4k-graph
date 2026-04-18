@@ -13,6 +13,19 @@ graph/
   graph-neo4j      # Neo4j Java Driver implementation
   graph-memgraph   # Memgraph (Neo4j protocol compatible) implementation
   graph-tinkerpop  # Apache TinkerPop / TinkerGraph in-memory implementation
+graph-io/
+  core             # Shared contracts, models, options, and helpers for bulk I/O
+  csv              # CSV bulk import/export (Sync / VirtualThread / Coroutine)
+  jackson2         # Jackson 2.x NDJSON bulk import/export
+  jackson3         # Jackson 3.x NDJSON bulk import/export
+  graphml          # GraphML (XML/StAX) bulk import/export
+benchmark/
+  graph-benchmark     # JMH benchmarks — Sync vs VirtualThread graph operations
+  graph-io-benchmark  # JMH benchmarks — CSV / NDJSON / GraphML bulk I/O performance
+spring-boot3/
+  graph-spring-boot3-starter  # Spring Boot 3.x AutoConfiguration
+spring-boot4/
+  graph-spring-boot4-starter  # Spring Boot 4.x AutoConfiguration
 examples/
   code-graph-examples     # Code dependency graph examples (AGE, Neo4j, Memgraph, TinkerGraph integration)
   linkedin-graph-examples # LinkedIn social graph examples (AGE, Neo4j, Memgraph, TinkerGraph integration)
@@ -53,6 +66,43 @@ object KnowsLabel : EdgeLabel("KNOWS") {
     val since = localDate("since")
 }
 ```
+
+## Bulk Import / Export (`graph-io`)
+
+The `graph-io` family provides format-independent bulk I/O with three execution models (Sync, VirtualThread, Coroutine).
+
+```kotlin
+// CSV export — sync
+val sink = CsvGraphExportSink(
+    GraphExportSink.PathSink(Path.of("vertices.csv")),
+    GraphExportSink.PathSink(Path.of("edges.csv"))
+)
+CsvGraphBulkExporter().exportGraph(sink, ops, GraphExportOptions(
+    vertexLabels = setOf("Person"),
+    edgeLabels   = setOf("KNOWS")
+))
+
+// Jackson2 NDJSON export — virtual thread
+Jackson2NdJsonVirtualThreadBulkExporter()
+    .exportGraphAsync(GraphExportSink.PathSink(Path.of("graph.ndjson")), ops, options)
+    .get()
+
+// GraphML export — coroutine suspend
+SuspendGraphMlBulkExporter().exportGraphSuspending(
+    GraphExportSink.PathSink(Path.of("graph.graphml")), suspendOps, options
+)
+```
+
+| Module | Format | Docs |
+|--------|--------|------|
+| `graph-io-csv` | CSV (split vertex/edge files) | [README](graph-io/csv/README.md) |
+| `graph-io-jackson2` | NDJSON (Jackson 2.x) | [README](graph-io/jackson2/README.md) |
+| `graph-io-jackson3` | NDJSON (Jackson 3.x) | [README](graph-io/jackson3/README.md) |
+| `graph-io-graphml` | GraphML XML (StAX) | [README](graph-io/graphml/README.md) |
+
+> **Benchmark results**: [2026-04-18 graph-io bulk I/O results](docs/benchmark/2026-04-18-graph-io-bulk-results.md)
+
+---
 
 ## Adding Dependencies
 

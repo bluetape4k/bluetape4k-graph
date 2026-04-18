@@ -2,9 +2,11 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Ship `graph-io` common module plus four format modules (CSV, Jackson2 NDJSON, Jackson3 NDJSON, GraphML) on top of `GraphOperations`/`GraphSuspendOperations`, with Sync / Virtual-Thread / Coroutine APIs and a full benchmark suite under `graph-io-benchmark`.
+> **코드 스니펫 규칙:** 이 플랜의 코드 블록은 **의사코드(pseudocode)** 입니다. 실제 구현 시 인터페이스 시그니처, 패키지명, API 호출 방식은 반드시 실제 소스코드를 참조하여 확인하십시오. 단, `build.gradle.kts` 내용 및 import 경로는 **실제 구현 코드**입니다.
 
-**Architecture:** `graph-io` holds common data model, Source/Sink, Options, Reports, and the Sync/VT/Coroutine contracts plus the VT adapter built on `virtualFutureOf`. Each format module provides its own importer/exporter trio (Sync, VT, Suspend). NDJSON uses single-pass read with bounded edge buffering; CSV uses per-label Union-header pre-scan; GraphML uses JDK StAX. Coroutine export consumes `GraphSuspendVertexRepository.findVerticesByLabel()` / `findEdgesByLabel()` Flows directly.
+**Goal:** Ship `graph-io-core` common module plus four format modules (CSV, Jackson2 NDJSON, Jackson3 NDJSON, GraphML) on top of `GraphOperations`/`GraphSuspendOperations`, with Sync / Virtual-Thread / Coroutine APIs and a full benchmark suite under `graph-io-benchmark`.
+
+**Architecture:** `graph-io-core` holds common data model, Source/Sink, Options, Reports, and the Sync/VT/Coroutine contracts plus the VT adapter built on `virtualFutureOf`. Each format module provides its own importer/exporter trio (Sync, VT, Suspend). NDJSON uses single-pass read with bounded edge buffering; CSV uses per-label Union-header pre-scan; GraphML uses JDK StAX. Coroutine export consumes `GraphSuspendVertexRepository.findVerticesByLabel()` / `findEdgesByLabel()` Flows directly.
 
 **Tech Stack:** Kotlin 2.3, Java 25 (preview), Gradle multi-module, `bluetape4k-io`, `bluetape4k-csv`, `bluetape4k-jackson2`, `bluetape4k-jackson3`, `bluetape4k-virtualthread-api/jdk25`, `bluetape4k-coroutines`, JDK StAX (`javax.xml.stream`), JUnit 5 + Kluent + MockK + kotlinx-coroutines-test, TinkerGraph (test backend).
 
@@ -16,7 +18,7 @@
 
 | Module | Tasks | Purpose |
 |--------|-------|---------|
-| `graph-io` | 1-9 | Common data model, options, reports, contracts, source/sink, VT adapter |
+| `graph-io-core` | 1-9 | Common data model, options, reports, contracts, source/sink, VT adapter |
 | `graph-io-csv` | 10-15 | CSV Sync + VT + Suspend importer/exporter (Union header, prefixed/raw-JSON/none modes) |
 | `graph-io-jackson2` | 16-18 | Jackson2 NDJSON importer/exporter (single-pass + edge buffering) |
 | `graph-io-jackson3` | 19-21 | Jackson3 NDJSON importer/exporter (same shape, `tools.jackson.*`) |
@@ -31,7 +33,7 @@
 ## File Structure
 
 ```
-graph-io/
+graph-io/core/
   build.gradle.kts
   README.md, README.ko.md
   src/main/kotlin/io/bluetape4k/graph/io/
@@ -127,7 +129,7 @@ graph-io/graphml/
       StaxGraphMlReader.kt
       StaxGraphMlWriter.kt
 
-graph-io-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/io/
+benchmark/graph-io-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/io/
   BulkGraphIoBenchmarkState.kt
   BulkGraphIoBenchmark.kt
 
@@ -188,39 +190,27 @@ Complexity rubric:
 
 **Files:**
 - Modify: `settings.gradle.kts` — `graph-io/` 모듈들은 루트 레벨이므로 `includeModules("graph", ...)` 스캔 대상이 아님. `include()` + `projectDir` 명시 필요.
-- Create: `graph-io/build.gradle.kts`
+- Create: `graph-io/core/build.gradle.kts`
 - Create: `graph-io/csv/build.gradle.kts`
 - Create: `graph-io/jackson2/build.gradle.kts`
 - Create: `graph-io/jackson3/build.gradle.kts`
 - Create: `graph-io/graphml/build.gradle.kts`
-- Create: `graph-io-benchmark/build.gradle.kts`
+- Create: `benchmark/graph-io-benchmark/build.gradle.kts`
 
 Complexity: low. Dependencies: none. Module: settings + all new modules.
 
-- [ ] **Step 0: `settings.gradle.kts`에 루트 레벨 모듈 명시 등록**
+- [x] **Step 0: `settings.gradle.kts` 모듈 등록** — 사용자가 이미 완료
 
 ```kotlin
-// settings.gradle.kts 하단에 추가
-include(":graph-io")
-project(":graph-io").projectDir = file("graph-io")
-
-include(":graph-io-csv")
-project(":graph-io-csv").projectDir = file("graph-io/csv")
-
-include(":graph-io-jackson2")
-project(":graph-io-jackson2").projectDir = file("graph-io/jackson2")
-
-include(":graph-io-jackson3")
-project(":graph-io-jackson3").projectDir = file("graph-io/jackson3")
-
-include(":graph-io-graphml")
-project(":graph-io-graphml").projectDir = file("graph-io/graphml")
-
-include(":graph-io-benchmark")
-project(":graph-io-benchmark").projectDir = file("graph-io-benchmark")
+// settings.gradle.kts — 사용자가 이미 추가한 내용
+includeModules("graph-io", false, true)   // graph-io/core → :graph-io-core, graph-io/csv → :graph-io-csv, ...
+includeModules("benchmark", false, false) // benchmark/graph-io-benchmark → :graph-io-benchmark
 ```
 
-- [ ] **Step 1: Write `graph-io/build.gradle.kts`**
+> ℹ️ `includeModules("graph-io", false, true)` 함수가 `graph-io/` 하위 디렉토리를 자동 스캔해
+> `graph-io-{dirname}` 패턴으로 프로젝트를 등록한다. 별도 `include()` 호출 불필요.
+
+- [ ] **Step 1: Write `graph-io/core/build.gradle.kts`**
 
 ```kotlin
 dependencies {
@@ -242,7 +232,7 @@ dependencies {
 
 ```kotlin
 dependencies {
-    api(project(":graph-io"))
+    api(project(":graph-io-core"))
     api(Libs.bluetape4k_csv)
     implementation(Libs.bluetape4k_coroutines)
     implementation(Libs.bluetape4k_virtualthread_api)
@@ -258,7 +248,7 @@ dependencies {
 
 ```kotlin
 dependencies {
-    api(project(":graph-io"))
+    api(project(":graph-io-core"))
     api(Libs.bluetape4k_jackson2)
     implementation(Libs.bluetape4k_coroutines)
     implementation(Libs.bluetape4k_virtualthread_api)
@@ -274,7 +264,7 @@ dependencies {
 
 ```kotlin
 dependencies {
-    api(project(":graph-io"))
+    api(project(":graph-io-core"))
     api(Libs.bluetape4k_jackson3)
     implementation(Libs.bluetape4k_coroutines)
     implementation(Libs.bluetape4k_virtualthread_api)
@@ -290,7 +280,7 @@ dependencies {
 
 ```kotlin
 dependencies {
-    api(project(":graph-io"))
+    api(project(":graph-io-core"))
     implementation(Libs.bluetape4k_coroutines)
     implementation(Libs.bluetape4k_virtualthread_api)
     implementation(Libs.bluetape4k_virtualthread_jdk25)
@@ -301,21 +291,32 @@ dependencies {
 }
 ```
 
-- [ ] **Step 5a: Write `graph-io-benchmark/build.gradle.kts`**
+- [ ] **Step 5a: Write `benchmark/graph-io-benchmark/build.gradle.kts`**
 
 ```kotlin
 plugins {
-    kotlin("jvm")
+    id(Plugins.kotlinx_benchmark) version Plugins.Versions.kotlinx_benchmark
     kotlin("plugin.allopen")
-    id("me.champeau.jmh")
 }
 
 allOpen {
     annotation("org.openjdk.jmh.annotations.State")
 }
 
+benchmark {
+    targets { register("main") }
+    configurations {
+        named("main") {
+            warmups = 3
+            iterations = 5
+            iterationTime = 3
+            iterationTimeUnit = "s"
+        }
+    }
+}
+
 dependencies {
-    implementation(project(":graph-io"))
+    implementation(project(":graph-io-core"))
     implementation(project(":graph-io-csv"))
     implementation(project(":graph-io-jackson2"))
     implementation(project(":graph-io-jackson3"))
@@ -324,21 +325,22 @@ dependencies {
     implementation(Libs.bluetape4k_coroutines)
     implementation(Libs.bluetape4k_virtualthread_api)
     implementation(Libs.bluetape4k_virtualthread_jdk25)
-    implementation(Libs.jmh_core)
-    annotationProcessor(Libs.jmh_generator_annprocess)
+    implementation(Libs.kotlinx_benchmark_runtime)
+
+    testImplementation(Libs.bluetape4k_junit5)
 }
 ```
 
 - [ ] **Step 6: Verify Gradle picks up all modules**
 
 Run: `./gradlew projects`
-Expected: output lists `:graph-io`, `:graph-io-csv`, `:graph-io-jackson2`, `:graph-io-jackson3`, `:graph-io-graphml`.
+Expected: output lists `:graph-io-core`, `:graph-io-csv`, `:graph-io-jackson2`, `:graph-io-jackson3`, `:graph-io-graphml`.
 
 - [ ] **Step 7: Commit**
 
 ```bash
 git add settings.gradle.kts graph-io/ graph-io-benchmark/
-git commit -m "chore: add graph-io module skeletons (graph-io, csv, jackson2, jackson3, graphml, benchmark)"
+git commit -m "chore: graph-io 모듈 스켈레톤 추가 (graph-io, csv, jackson2, jackson3, graphml, benchmark)"
 ```
 
 ---
@@ -346,9 +348,9 @@ git commit -m "chore: add graph-io module skeletons (graph-io, csv, jackson2, ja
 ### Task 2: `graph-io` records + validation
 
 **Files:**
-- Create: `graph-io/src/main/kotlin/io/bluetape4k/graph/io/model/GraphIoVertexRecord.kt`
-- Create: `graph-io/src/main/kotlin/io/bluetape4k/graph/io/model/GraphIoEdgeRecord.kt`
-- Test: `graph-io/src/test/kotlin/io/bluetape4k/graph/io/model/GraphIoRecordTest.kt`
+- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/model/GraphIoVertexRecord.kt`
+- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/model/GraphIoEdgeRecord.kt`
+- Test: `graph-io/core/src/test/kotlin/io/bluetape4k/graph/io/model/GraphIoRecordTest.kt`
 
 Complexity: low. Dependencies: 1. Module: `graph-io`.
 
@@ -449,7 +451,7 @@ Expected: PASS.
 
 ```bash
 git add graph-io/src
-git commit -m "feat(graph-io): add GraphIoVertexRecord and GraphIoEdgeRecord with blank-safe validation"
+git commit -m "feat(graph-io): GraphIoVertexRecord, GraphIoEdgeRecord 추가 (빈값 검증 포함)"
 ```
 
 ---
@@ -457,10 +459,10 @@ git commit -m "feat(graph-io): add GraphIoVertexRecord and GraphIoEdgeRecord wit
 ### Task 3: `graph-io` Source/Sink sealed hierarchy
 
 **Files:**
-- Create: `graph-io/src/main/kotlin/io/bluetape4k/graph/io/source/GraphImportSource.kt`
-- Create: `graph-io/src/main/kotlin/io/bluetape4k/graph/io/source/GraphExportSink.kt`
-- Test: `graph-io/src/test/kotlin/io/bluetape4k/graph/io/source/GraphImportSourceTest.kt`
-- Test: `graph-io/src/test/kotlin/io/bluetape4k/graph/io/source/GraphExportSinkTest.kt`
+- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/source/GraphImportSource.kt`
+- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/source/GraphExportSink.kt`
+- Test: `graph-io/core/src/test/kotlin/io/bluetape4k/graph/io/source/GraphImportSourceTest.kt`
+- Test: `graph-io/core/src/test/kotlin/io/bluetape4k/graph/io/source/GraphExportSinkTest.kt`
 
 Complexity: low. Dependencies: 1. Module: `graph-io`.
 
@@ -590,7 +592,7 @@ Run: `./gradlew :graph-io:test --tests "io.bluetape4k.graph.io.source.*"`
 
 ```bash
 git add graph-io/src
-git commit -m "feat(graph-io): add GraphImportSource and GraphExportSink sealed hierarchies"
+git commit -m "feat(graph-io): GraphImportSource, GraphExportSink sealed 계층 추가"
 ```
 
 ---
@@ -598,12 +600,12 @@ git commit -m "feat(graph-io): add GraphImportSource and GraphExportSink sealed 
 ### Task 4: `graph-io` Options + policy enums
 
 **Files:**
-- Create: `graph-io/src/main/kotlin/io/bluetape4k/graph/io/options/DuplicateVertexPolicy.kt`
-- Create: `graph-io/src/main/kotlin/io/bluetape4k/graph/io/options/MissingEndpointPolicy.kt`
-- Create: `graph-io/src/main/kotlin/io/bluetape4k/graph/io/options/GraphImportOptions.kt`
-- Create: `graph-io/src/main/kotlin/io/bluetape4k/graph/io/options/GraphExportOptions.kt`
-- Test: `graph-io/src/test/kotlin/io/bluetape4k/graph/io/options/GraphImportOptionsTest.kt`
-- Test: `graph-io/src/test/kotlin/io/bluetape4k/graph/io/options/GraphExportOptionsTest.kt`
+- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/options/DuplicateVertexPolicy.kt`
+- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/options/MissingEndpointPolicy.kt`
+- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/options/GraphImportOptions.kt`
+- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/options/GraphExportOptions.kt`
+- Test: `graph-io/core/src/test/kotlin/io/bluetape4k/graph/io/options/GraphImportOptionsTest.kt`
+- Test: `graph-io/core/src/test/kotlin/io/bluetape4k/graph/io/options/GraphExportOptionsTest.kt`
 
 Complexity: low. Dependencies: 1. Module: `graph-io`.
 
@@ -757,7 +759,7 @@ Run: `./gradlew :graph-io:test --tests "io.bluetape4k.graph.io.options.*"`
 
 ```bash
 git add graph-io/src
-git commit -m "feat(graph-io): add GraphImportOptions, GraphExportOptions and policy enums"
+git commit -m "feat(graph-io): GraphImportOptions, GraphExportOptions 및 정책 enum 추가"
 ```
 
 ---
@@ -765,16 +767,16 @@ git commit -m "feat(graph-io): add GraphImportOptions, GraphExportOptions and po
 ### Task 5: `graph-io` Report + Failure + enums
 
 **Files:**
-- Create: `graph-io/src/main/kotlin/io/bluetape4k/graph/io/report/GraphIoStatus.kt`
-- Create: `graph-io/src/main/kotlin/io/bluetape4k/graph/io/report/GraphIoFormat.kt`
-- Create: `graph-io/src/main/kotlin/io/bluetape4k/graph/io/report/GraphIoPhase.kt`
-- Create: `graph-io/src/main/kotlin/io/bluetape4k/graph/io/report/GraphIoFailureSeverity.kt`
-- Create: `graph-io/src/main/kotlin/io/bluetape4k/graph/io/report/GraphIoFileRole.kt`
-- Create: `graph-io/src/main/kotlin/io/bluetape4k/graph/io/report/GraphIoFailure.kt`
-- Create: `graph-io/src/main/kotlin/io/bluetape4k/graph/io/report/GraphImportReport.kt`
-- Create: `graph-io/src/main/kotlin/io/bluetape4k/graph/io/report/GraphExportReport.kt`
-- Test: `graph-io/src/test/kotlin/io/bluetape4k/graph/io/report/GraphIoReportTest.kt`
-- Test: `graph-io/src/test/kotlin/io/bluetape4k/graph/io/report/GraphIoSerializationTest.kt`
+- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/report/GraphIoStatus.kt`
+- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/report/GraphIoFormat.kt`
+- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/report/GraphIoPhase.kt`
+- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/report/GraphIoFailureSeverity.kt`
+- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/report/GraphIoFileRole.kt`
+- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/report/GraphIoFailure.kt`
+- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/report/GraphImportReport.kt`
+- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/report/GraphExportReport.kt`
+- Test: `graph-io/core/src/test/kotlin/io/bluetape4k/graph/io/report/GraphIoReportTest.kt`
+- Test: `graph-io/core/src/test/kotlin/io/bluetape4k/graph/io/report/GraphIoSerializationTest.kt`
 
 Complexity: low. Dependencies: 1. Module: `graph-io`.
 
@@ -940,7 +942,7 @@ Run: `./gradlew :graph-io:test --tests "io.bluetape4k.graph.io.report.*"`
 
 ```bash
 git add graph-io/src
-git commit -m "feat(graph-io): add GraphImportReport, GraphExportReport, GraphIoFailure with Serializable support"
+git commit -m "feat(graph-io): GraphImportReport, GraphExportReport, GraphIoFailure 추가 (Serializable 포함)"
 ```
 
 ---
@@ -948,13 +950,13 @@ git commit -m "feat(graph-io): add GraphImportReport, GraphExportReport, GraphIo
 ### Task 6: `graph-io` Sync/VT/Suspend contracts + `GraphRecordFlowReader`
 
 **Files:**
-- Create: `graph-io/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphBulkImporter.kt`
-- Create: `graph-io/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphBulkExporter.kt`
-- Create: `graph-io/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphVirtualThreadBulkImporter.kt`
-- Create: `graph-io/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphVirtualThreadBulkExporter.kt`
-- Create: `graph-io/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphSuspendBulkImporter.kt`
-- Create: `graph-io/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphSuspendBulkExporter.kt`
-- Create: `graph-io/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphRecordFlowReader.kt`
+- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphBulkImporter.kt`
+- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphBulkExporter.kt`
+- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphVirtualThreadBulkImporter.kt`
+- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphVirtualThreadBulkExporter.kt`
+- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphSuspendBulkImporter.kt`
+- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphSuspendBulkExporter.kt`
+- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphRecordFlowReader.kt`
 
 Complexity: high. Dependencies: 2,3,4,5. Module: `graph-io`.
 
@@ -966,7 +968,7 @@ Rationale: these are the load-bearing public interfaces used by every format mod
 // GraphBulkImporter.kt
 package io.bluetape4k.graph.io.contract
 
-import io.bluetape4k.graph.core.GraphOperations
+import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphImportReport
 
@@ -987,7 +989,7 @@ fun interface GraphBulkImporter<S : Any> {
 // GraphBulkExporter.kt
 package io.bluetape4k.graph.io.contract
 
-import io.bluetape4k.graph.core.GraphOperations
+import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.report.GraphExportReport
 
@@ -1006,7 +1008,7 @@ fun interface GraphBulkExporter<T : Any> {
 // GraphVirtualThreadBulkImporter.kt
 package io.bluetape4k.graph.io.contract
 
-import io.bluetape4k.graph.core.GraphOperations
+import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphImportReport
 import java.util.concurrent.CompletableFuture
@@ -1024,7 +1026,7 @@ fun interface GraphVirtualThreadBulkImporter<S : Any> {
 // GraphVirtualThreadBulkExporter.kt
 package io.bluetape4k.graph.io.contract
 
-import io.bluetape4k.graph.core.GraphOperations
+import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.report.GraphExportReport
 import java.util.concurrent.CompletableFuture
@@ -1044,7 +1046,7 @@ fun interface GraphVirtualThreadBulkExporter<T : Any> {
 // GraphSuspendBulkImporter.kt
 package io.bluetape4k.graph.io.contract
 
-import io.bluetape4k.graph.core.GraphSuspendOperations
+import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphImportReport
 
@@ -1061,7 +1063,7 @@ fun interface GraphSuspendBulkImporter<S : Any> {
 // GraphSuspendBulkExporter.kt
 package io.bluetape4k.graph.io.contract
 
-import io.bluetape4k.graph.core.GraphSuspendOperations
+import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.report.GraphExportReport
 
@@ -1103,7 +1105,7 @@ Expected: BUILD SUCCESSFUL.
 
 ```bash
 git add graph-io/src
-git commit -m "feat(graph-io): add Sync/VT/Suspend bulk I/O contracts and GraphRecordFlowReader"
+git commit -m "feat(graph-io): Sync/VT/Suspend 벌크 I/O 계약 및 GraphRecordFlowReader 추가"
 ```
 
 ---
@@ -1111,9 +1113,9 @@ git commit -m "feat(graph-io): add Sync/VT/Suspend bulk I/O contracts and GraphR
 ### Task 7: `graph-io` GraphIoPaths + GraphIoStopwatch helpers
 
 **Files:**
-- Create: `graph-io/src/main/kotlin/io/bluetape4k/graph/io/support/GraphIoPaths.kt`
-- Create: `graph-io/src/main/kotlin/io/bluetape4k/graph/io/support/GraphIoStopwatch.kt`
-- Test: `graph-io/src/test/kotlin/io/bluetape4k/graph/io/support/GraphIoPathsTest.kt`
+- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/support/GraphIoPaths.kt`
+- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/support/GraphIoStopwatch.kt`
+- Test: `graph-io/core/src/test/kotlin/io/bluetape4k/graph/io/support/GraphIoPathsTest.kt`
 
 Complexity: low. Dependencies: 3. Module: `graph-io`.
 
@@ -1217,7 +1219,7 @@ Run: `./gradlew :graph-io:test --tests "io.bluetape4k.graph.io.support.GraphIoPa
 
 ```bash
 git add graph-io/src
-git commit -m "feat(graph-io): add GraphIoPaths and GraphIoStopwatch internal helpers"
+git commit -m "feat(graph-io): GraphIoPaths, GraphIoStopwatch 내부 헬퍼 추가"
 ```
 
 ---
@@ -1225,8 +1227,8 @@ git commit -m "feat(graph-io): add GraphIoPaths and GraphIoStopwatch internal he
 ### Task 8: `graph-io` GraphIoExternalIdMap + tests
 
 **Files:**
-- Create: `graph-io/src/main/kotlin/io/bluetape4k/graph/io/support/GraphIoExternalIdMap.kt`
-- Test: `graph-io/src/test/kotlin/io/bluetape4k/graph/io/support/GraphIoExternalIdMapTest.kt`
+- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/support/GraphIoExternalIdMap.kt`
+- Test: `graph-io/core/src/test/kotlin/io/bluetape4k/graph/io/support/GraphIoExternalIdMapTest.kt`
 
 Complexity: medium. Dependencies: 2. Module: `graph-io`.
 
@@ -1235,7 +1237,7 @@ Complexity: medium. Dependencies: 2. Module: `graph-io`.
 ```kotlin
 package io.bluetape4k.graph.io.support
 
-import io.bluetape4k.graph.core.GraphElementId
+import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.io.options.DuplicateVertexPolicy
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldThrow
@@ -1276,7 +1278,7 @@ class GraphIoExternalIdMapTest {
 ```kotlin
 package io.bluetape4k.graph.io.support
 
-import io.bluetape4k.graph.core.GraphElementId
+import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.io.options.DuplicateVertexPolicy
 
 /**
@@ -1288,6 +1290,12 @@ internal class GraphIoExternalIdMap(
     private val mapping = HashMap<String, GraphElementId>()
 
     enum class PutResult { CREATED, SKIPPED }
+
+    fun contains(externalId: String): Boolean = mapping.containsKey(externalId)
+
+    fun put(externalId: String, backendId: GraphElementId) {
+        mapping[externalId] = backendId
+    }
 
     fun putFirstOrFail(externalId: String, backendId: GraphElementId): PutResult {
         val existing = mapping[externalId]
@@ -1312,7 +1320,7 @@ internal class GraphIoExternalIdMap(
 
 ```bash
 git add graph-io/src
-git commit -m "feat(graph-io): add GraphIoExternalIdMap for external ID resolution"
+git commit -m "feat(graph-io): 외부 ID 매핑용 GraphIoExternalIdMap 추가"
 ```
 
 ---
@@ -1320,8 +1328,8 @@ git commit -m "feat(graph-io): add GraphIoExternalIdMap for external ID resoluti
 ### Task 9: `graph-io` VirtualThreadGraphBulkAdapter
 
 **Files:**
-- Create: `graph-io/src/main/kotlin/io/bluetape4k/graph/io/support/VirtualThreadGraphBulkAdapter.kt`
-- Test: `graph-io/src/test/kotlin/io/bluetape4k/graph/io/support/VirtualThreadGraphBulkAdapterTest.kt`
+- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/support/VirtualThreadGraphBulkAdapter.kt`
+- Test: `graph-io/core/src/test/kotlin/io/bluetape4k/graph/io/support/VirtualThreadGraphBulkAdapterTest.kt`
 
 Complexity: high. Dependencies: 6. Module: `graph-io`.
 
@@ -1367,7 +1375,7 @@ class VirtualThreadGraphBulkAdapterTest {
 }
 ```
 
-`FakeGraphOperations` is a minimal no-op `GraphOperations` implementation under `graph-io/src/test/kotlin/io/bluetape4k/graph/io/testsupport/FakeGraphOperations.kt` stubbing every method with `error("not used in this test")`.
+`FakeGraphOperations` is a minimal no-op `GraphOperations` implementation under `graph-io/core/src/test/kotlin/io/bluetape4k/graph/io/testsupport/FakeGraphOperations.kt` stubbing every method with `error("not used in this test")`.
 
 - [ ] **Step 2: Run test (expect FAIL)**
 
@@ -1406,7 +1414,7 @@ object VirtualThreadGraphBulkAdapter {
 
 ```bash
 git add graph-io/src
-git commit -m "feat(graph-io): add VirtualThreadGraphBulkAdapter wrapping Sync contracts with CompletableFuture"
+git commit -m "feat(graph-io): CompletableFuture 기반 VirtualThreadGraphBulkAdapter 추가"
 ```
 
 ---
@@ -1509,7 +1517,7 @@ Run: `./gradlew :graph-io-csv:test --tests "io.bluetape4k.graph.io.csv.CsvGraphI
 
 ```bash
 git add graph-io/csv/src
-git commit -m "feat(graph-io-csv): add CsvGraphImportSource/ExportSink and CsvGraphIoOptions with property modes"
+git commit -m "feat(graph-io-csv): CsvGraphImportSource/ExportSink 및 CsvGraphIoOptions 추가"
 ```
 
 ---
@@ -1611,7 +1619,7 @@ internal class CsvRecordCodec(private val mode: CsvPropertyMode) {
 
 ```bash
 git add graph-io/csv/src
-git commit -m "feat(graph-io-csv): add CsvRecordCodec for reserved columns, union header, collision detection"
+git commit -m "feat(graph-io-csv): 예약 컬럼·유니온 헤더·충돌 탐지용 CsvRecordCodec 추가"
 ```
 
 ---
@@ -1686,7 +1694,7 @@ class CsvRoundTripTest {
 package io.bluetape4k.graph.io.csv
 
 import io.bluetape4k.csv.CsvRecordReader
-import io.bluetape4k.graph.core.GraphOperations
+import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.io.contract.GraphBulkImporter
 import io.bluetape4k.graph.io.csv.internal.CsvRecordCodec
 import io.bluetape4k.graph.io.model.GraphIoEdgeRecord
@@ -1742,7 +1750,7 @@ class CsvGraphBulkImporter : GraphBulkImporter<CsvGraphImportSource> {
                 val props = codec.extractProperties(row.toMap())
                 // spec §6.1: check duplicate BEFORE creating in backend
                 if (idMap.contains(external)) {
-                    when (options.duplicateVertexPolicy) {
+                    when (options.onDuplicateVertexId) {
                         DuplicateVertexPolicy.SKIP -> {
                             skippedVertices++
                             status = GraphIoStatus.PARTIAL
@@ -1826,7 +1834,7 @@ class CsvGraphBulkImporter : GraphBulkImporter<CsvGraphImportSource> {
 package io.bluetape4k.graph.io.csv
 
 import io.bluetape4k.csv.CsvRecordWriter
-import io.bluetape4k.graph.core.GraphOperations
+import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.io.contract.GraphBulkExporter
 import io.bluetape4k.graph.io.csv.internal.CsvRecordCodec
 import io.bluetape4k.graph.io.model.GraphIoEdgeRecord
@@ -1925,7 +1933,7 @@ Run: `./gradlew :graph-io-csv:test --tests "io.bluetape4k.graph.io.csv.CsvRoundT
 
 ```bash
 git add graph-io/csv/src
-git commit -m "feat(graph-io-csv): add Sync CsvGraphBulkImporter and CsvGraphBulkExporter with union header"
+git commit -m "feat(graph-io-csv): 유니온 헤더 기반 CsvGraphBulkImporter/Exporter(Sync) 추가"
 ```
 
 ---
@@ -1946,7 +1954,7 @@ Complexity: medium. Dependencies: 12, 9. Module: `graph-io-csv`.
 ```kotlin
 package io.bluetape4k.graph.io.csv
 
-import io.bluetape4k.graph.core.GraphOperations
+import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.io.contract.GraphVirtualThreadBulkImporter
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphImportReport
@@ -1985,7 +1993,7 @@ The exporter follows the same pattern against `CsvGraphBulkExporter`.
 
 ```bash
 git add graph-io/csv/src
-git commit -m "feat(graph-io-csv): add Virtual Thread CSV importer/exporter delegating to Sync via adapter"
+git commit -m "feat(graph-io-csv): 어댑터 위임 방식 CSV Virtual Thread importer/exporter 추가"
 ```
 
 ---
@@ -2009,7 +2017,7 @@ Use `TinkerGraphSuspendOperations`, `runTest { ... }`. Use `importGraphSuspendin
 package io.bluetape4k.graph.io.csv
 
 import io.bluetape4k.coroutines.support.runSuspendIO
-import io.bluetape4k.graph.core.GraphSuspendOperations
+import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.io.contract.GraphSuspendBulkImporter
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphImportReport
@@ -2018,7 +2026,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * `SuspendCsvRecordReader`로 정점 파일을 스트림 수집한 뒤 `createVertexAsync(...)`로 정점을
+ * `SuspendCsvRecordReader`로 정점 파일을 스트림 수집한 뒤 `createVertex(...)`로 정점을
  * 생성하고, 엣지 파일도 스트림으로 처리한다. CSV 특성상 정점 전수 읽기가 먼저 필요하다.
  */
 class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSource> {
@@ -2036,7 +2044,7 @@ class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSourc
         csvOptions: CsvGraphIoOptions = CsvGraphIoOptions(),
     ): GraphImportReport = withContext(Dispatchers.IO) {
         val stopwatch = GraphIoStopwatch()
-        val idMap = GraphIoExternalIdMap(options.duplicateVertexPolicy)
+        val idMap = GraphIoExternalIdMap(options.onDuplicateVertexId)
         val failures = mutableListOf<GraphIoFailure>()
         var importedVertices = 0L
         var skippedVertices = 0L
@@ -2044,51 +2052,62 @@ class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSourc
         var skippedEdges = 0L
 
         // --- Vertex pass ---
-        GraphIoPaths.openReader(source.vertexSource).use { reader ->
-            SuspendCsvRecordReader.builder()
-                .header(true)
-                .build(reader)
-                .readAll()
-                .collect { record ->
-                    val extId = record["__id"] ?: return@collect
-                    val label = record["__label"] ?: options.defaultVertexLabel
+        GraphIoPaths.openInputStream(source.vertexSource).use { inputStream ->
+            SuspendCsvRecordReader().read(inputStream, skipHeaders = true) { record ->
+                record
+            }.collect { record ->
+                    val extId = record.getString("__id") ?: return@collect
+                    if (idMap.contains(extId)) {
+                        when (options.onDuplicateVertexId) {
+                            DuplicateVertexPolicy.SKIP -> { skippedVertices++; return@collect }
+                            DuplicateVertexPolicy.FAIL -> error("Duplicate vertex externalId: $extId")
+                        }
+                    }
+                    val label = record.getString("__label") ?: options.defaultVertexLabel
                     val props = CsvRecordCodec.decodeProperties(record, csvOptions.propertyMode)
                     runCatching {
-                        val vertex = operations.createVertexAsync(label, props)
+                        val vertex = operations.createVertex(label, props)
                         idMap.put(extId, vertex.id)
                         importedVertices++
                     }.onFailure { e ->
-                        failures += GraphIoFailure(e.message ?: "vertex error", GraphIoFailureSeverity.ERROR, GraphIoPhase.IMPORT, record.lineNumber.toLong())
+                        failures += GraphIoFailure(
+                            phase = GraphIoPhase.CREATE_VERTEX,
+                            severity = GraphIoFailureSeverity.ERROR,
+                            fileRole = GraphIoFileRole.VERTICES,
+                            message = e.message ?: "vertex error"
+                        )
                         skippedVertices++
                     }
                 }
         }
 
         // --- Edge pass ---
-        GraphIoPaths.openReader(source.edgeSource).use { reader ->
-            SuspendCsvRecordReader.builder()
-                .header(true)
-                .build(reader)
-                .readAll()
-                .collect { record ->
-                    val label = record["__label"] ?: options.defaultEdgeLabel
-                    val fromExtId = record["__from"] ?: return@collect
-                    val toExtId = record["__to"] ?: return@collect
-                    val fromId = idMap[fromExtId]
-                    val toId = idMap[toExtId]
+        GraphIoPaths.openInputStream(source.edgeSource).use { inputStream ->
+            SuspendCsvRecordReader().read(inputStream, skipHeaders = true) { record ->
+                record
+            }.collect { record ->
+                    val label = record.getString("__label") ?: options.defaultEdgeLabel
+                    val fromExtId = record.getString("__from") ?: return@collect
+                    val toExtId = record.getString("__to") ?: return@collect
+                    val fromId = idMap.resolve(fromExtId)
+                    val toId = idMap.resolve(toExtId)
                     if (fromId == null || toId == null) {
-                        when (options.missingEndpointPolicy) {
+                        when (options.onMissingEdgeEndpoint) {
                             MissingEndpointPolicy.FAIL -> error("Missing endpoint for edge: $fromExtId -> $toExtId")
-                            MissingEndpointPolicy.SKIP -> { skippedEdges++; return@collect }
-                            MissingEndpointPolicy.WARN -> failures += GraphIoFailure("Missing endpoint: $fromExtId->$toExtId", GraphIoFailureSeverity.WARN, GraphIoPhase.IMPORT, record.lineNumber.toLong())
+                            MissingEndpointPolicy.SKIP_EDGE -> { skippedEdges++; return@collect }
                         }
                     }
                     val props = CsvRecordCodec.decodeProperties(record, csvOptions.propertyMode)
                     runCatching {
-                        operations.createEdgeAsync(fromId!!, toId!!, label, props)
+                        operations.createEdge(fromId!!, toId!!, label, props)
                         importedEdges++
                     }.onFailure { e ->
-                        failures += GraphIoFailure(e.message ?: "edge error", GraphIoFailureSeverity.ERROR, GraphIoPhase.IMPORT, record.lineNumber.toLong())
+                        failures += GraphIoFailure(
+                            phase = GraphIoPhase.CREATE_EDGE,
+                            severity = GraphIoFailureSeverity.ERROR,
+                            fileRole = GraphIoFileRole.EDGES,
+                            message = e.message ?: "edge error"
+                        )
                         skippedEdges++
                     }
                 }
@@ -2123,7 +2142,7 @@ Note for the engineer: "copy body verbatim" is a deliberate DRY trade-off for cl
 package io.bluetape4k.graph.io.csv
 
 import io.bluetape4k.csv.coroutines.SuspendCsvRecordWriter
-import io.bluetape4k.graph.core.GraphSuspendOperations
+import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.io.contract.GraphSuspendBulkExporter
 import io.bluetape4k.graph.io.csv.internal.CsvRecordCodec
 import io.bluetape4k.graph.io.model.GraphIoEdgeRecord
@@ -2218,7 +2237,7 @@ Run: `./gradlew :graph-io-csv:test --tests "*CsvSuspendRoundTripTest"`
 
 ```bash
 git add graph-io/csv/src
-git commit -m "feat(graph-io-csv): add SuspendCsvGraphBulkImporter and Exporter using Flow-based repositories"
+git commit -m "feat(graph-io-csv): Flow 기반 SuspendCsvGraphBulkImporter/Exporter 추가"
 ```
 
 ---
@@ -2246,7 +2265,7 @@ Tests must cover:
 
 ```bash
 git add graph-io/csv/src
-git commit -m "test(graph-io-csv): cover format-specific CsvGraphIoOptions overloads across Sync/VT/Suspend"
+git commit -m "test(graph-io-csv): CsvGraphIoOptions 오버로드 Sync/VT/Suspend 전체 테스트 추가"
 ```
 
 ---
@@ -2338,7 +2357,7 @@ internal class Jackson2EnvelopeCodec(
 - [ ] **Step 5: Commit**
 
 ```bash
-git commit -m "feat(graph-io-jackson2): add NDJSON envelope and Jackson2 codec"
+git commit -m "feat(graph-io-jackson2): NDJSON 봉투 및 Jackson2 코덱 추가"
 ```
 
 ---
@@ -2366,7 +2385,7 @@ Importer algorithm (spec §9 NDJSON branch):
 ```kotlin
 package io.bluetape4k.graph.io.jackson2
 
-import io.bluetape4k.graph.core.GraphOperations
+import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.io.contract.GraphBulkImporter
 import io.bluetape4k.graph.io.jackson2.internal.Jackson2EnvelopeCodec
 import io.bluetape4k.graph.io.jackson2.internal.NdJsonEnvelope
@@ -2482,7 +2501,7 @@ Use `GraphExportSink` directly (not CSV wrapper). Pre-collects `ops.findVertices
 - [ ] **Step 6: Commit**
 
 ```bash
-git commit -m "feat(graph-io-jackson2): add Sync NDJSON importer/exporter with edge buffering and overflow handling"
+git commit -m "feat(graph-io-jackson2): 엣지 버퍼링 포함 Sync NDJSON importer/exporter 추가"
 ```
 
 ---
@@ -2500,13 +2519,13 @@ git commit -m "feat(graph-io-jackson2): add Sync NDJSON importer/exporter with e
 Complexity: medium. Dependencies: 17, 9. Module: `graph-io-jackson2`.
 
 - [ ] **Step 1: VT classes mirror CSV VT classes (delegate to `VirtualThreadGraphBulkAdapter.wrapImporter(sync)`)**
-- [ ] **Step 2: Suspend classes wrap sync with `withContext(Dispatchers.IO)` and use `createVertexAsync`/`createEdgeAsync` suspend APIs on `GraphSuspendOperations`**
+- [ ] **Step 2: Suspend classes wrap sync with `withContext(Dispatchers.IO)` and use `createVertex`/`createEdge` suspend APIs on `GraphSuspendOperations`**
 - [ ] **Step 3: Write failing VT and suspend round-trip tests**
 - [ ] **Step 4: Run tests (expect PASS)**
 - [ ] **Step 5: Commit**
 
 ```bash
-git commit -m "feat(graph-io-jackson2): add Virtual Thread and Suspend NDJSON importers/exporters"
+git commit -m "feat(graph-io-jackson2): Virtual Thread 및 Suspend NDJSON importer/exporter 추가"
 ```
 
 ---
@@ -2544,7 +2563,7 @@ internal class Jackson3EnvelopeCodec(
 - [ ] **Step 5: Commit**
 
 ```bash
-git commit -m "feat(graph-io-jackson3): add NDJSON envelope and Jackson3 codec (tools.jackson.* imports)"
+git commit -m "feat(graph-io-jackson3): NDJSON 봉투 및 Jackson3 코덱 추가 (tools.jackson.* 패키지)"
 ```
 
 ---
@@ -2564,7 +2583,7 @@ Complexity: medium. Dependencies: 19, 8. Module: `graph-io-jackson3`.
 - [ ] **Step 3: Commit**
 
 ```bash
-git commit -m "feat(graph-io-jackson3): add Sync NDJSON importer/exporter using tools.jackson"
+git commit -m "feat(graph-io-jackson3): tools.jackson 기반 Sync NDJSON importer/exporter 추가"
 ```
 
 ---
@@ -2585,7 +2604,7 @@ Complexity: medium. Dependencies: 20, 9. Module: `graph-io-jackson3`. Mirror of 
 - [ ] **Step 6: Commit**
 
 ```bash
-git commit -m "feat(graph-io-jackson3): add Virtual Thread and Suspend NDJSON importers/exporters"
+git commit -m "feat(graph-io-jackson3): Virtual Thread 및 Suspend NDJSON importer/exporter 추가"
 ```
 
 ---
@@ -2712,7 +2731,7 @@ internal object GraphMlAttrType {
 - [ ] **Step 4: Commit**
 
 ```bash
-git commit -m "feat(graph-io-graphml): add options and GraphMlAttrType coercion table"
+git commit -m "feat(graph-io-graphml): 옵션 및 GraphMlAttrType 타입 변환 테이블 추가"
 ```
 
 ---
@@ -2904,7 +2923,7 @@ internal class StaxGraphMlReader(
 - [ ] **Step 4: Commit**
 
 ```bash
-git commit -m "feat(graph-io-graphml): add StAX streaming reader for GraphML subset"
+git commit -m "feat(graph-io-graphml): GraphML 부분집합용 StAX 스트리밍 리더 추가"
 ```
 
 ---
@@ -3026,7 +3045,7 @@ class GraphMlBulkImporter : GraphBulkImporter<GraphImportSource> {
 - [ ] **Step 6: Commit**
 
 ```bash
-git commit -m "feat(graph-io-graphml): add StAX writer plus Sync GraphML importer and exporter"
+git commit -m "feat(graph-io-graphml): StAX 라이터 및 Sync GraphML importer/exporter 추가"
 ```
 
 ---
@@ -3047,7 +3066,7 @@ Complexity: medium. Dependencies: 24, 9. Module: `graph-io-graphml`. Same patter
 - [ ] **Step 6: Commit**
 
 ```bash
-git commit -m "feat(graph-io-graphml): add Virtual Thread and Suspend GraphML importers and exporters"
+git commit -m "feat(graph-io-graphml): Virtual Thread 및 Suspend GraphML importer/exporter 추가"
 ```
 
 ---
@@ -3075,7 +3094,7 @@ Each test:
 - [ ] **Step 3: Commit**
 
 ```bash
-git commit -m "test(graph-io): add cross-format TinkerGraph round-trip test suites"
+git commit -m "test(graph-io): TinkerGraph 크로스-포맷 왕복 테스트 스위트 추가"
 ```
 
 ---
@@ -3097,7 +3116,7 @@ Complexity: medium. Dependencies: 18, 21. Modules: jackson2 + jackson3.
 - [ ] **Step 5: Commit**
 
 ```bash
-git commit -m "test(graph-io-jackson2,graph-io-jackson3): assert Jackson 2/3 NDJSON logical compatibility"
+git commit -m "test(graph-io-jackson2,graph-io-jackson3): Jackson2/3 NDJSON 논리적 호환성 검증 테스트 추가"
 ```
 
 ---
@@ -3105,7 +3124,7 @@ git commit -m "test(graph-io-jackson2,graph-io-jackson3): assert Jackson 2/3 NDJ
 ### Task 28: `graph-io-benchmark` dependencies for graph-io modules
 
 **Files:**
-- Modify: `graph-io-benchmark/build.gradle.kts`
+- Modify: `benchmark/graph-io-benchmark/build.gradle.kts`
 
 Complexity: low. Dependencies: 15, 18, 21, 25. Module: `graph-io-benchmark`.
 
@@ -3115,7 +3134,7 @@ Complexity: low. Dependencies: 15, 18, 21, 25. Module: `graph-io-benchmark`.
 dependencies {
     implementation(project(":graph-core"))
     implementation(project(":graph-tinkerpop"))
-    implementation(project(":graph-io"))
+    implementation(project(":graph-io-core"))
     implementation(project(":graph-io-csv"))
     implementation(project(":graph-io-jackson2"))
     implementation(project(":graph-io-jackson3"))
@@ -3139,8 +3158,8 @@ Expected: BUILD SUCCESSFUL.
 - [ ] **Step 3: Commit**
 
 ```bash
-git add graph-io-benchmark/build.gradle.kts
-git commit -m "chore(graph-io-benchmark): add dependencies for all graph-io format modules"
+git add benchmark/graph-io-benchmark/build.gradle.kts
+git commit -m "chore(graph-io-benchmark): 전체 graph-io 포맷 모듈 의존성 추가"
 ```
 
 ---
@@ -3148,8 +3167,8 @@ git commit -m "chore(graph-io-benchmark): add dependencies for all graph-io form
 ### Task 29: `graph-io-benchmark` BulkGraphIoBenchmark
 
 **Files:**
-- Create: `graph-io-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/io/BulkGraphIoBenchmarkState.kt`
-- Create: `graph-io-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/io/BulkGraphIoBenchmark.kt`
+- Create: `benchmark/graph-io-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/io/BulkGraphIoBenchmarkState.kt`
+- Create: `benchmark/graph-io-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/io/BulkGraphIoBenchmark.kt`
 
 Complexity: high. Dependencies: 28. Module: `graph-io-benchmark`.
 
@@ -3158,7 +3177,7 @@ Complexity: high. Dependencies: 28. Module: `graph-io-benchmark`.
 ```kotlin
 package io.bluetape4k.graph.benchmark.io
 
-import io.bluetape4k.graph.core.GraphOperations
+import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import org.openjdk.jmh.annotations.*
 import java.nio.file.Files
@@ -3181,7 +3200,7 @@ open class BulkGraphIoBenchmarkState {
             "medium" -> 10_000 to 50_000
             else     -> 100_000 to 500_000
         }
-        val vertexIds = ArrayList<io.bluetape4k.graph.core.GraphElementId>(vCount)
+        val vertexIds = ArrayList<io.bluetape4k.graph.model.GraphElementId>(vCount)
         for (i in 0 until vCount) {
             vertexIds += ops.createVertex("Person", mapOf("i" to i, "name" to "n$i")).id
         }
@@ -3248,8 +3267,8 @@ Expected: BUILD SUCCESSFUL.
 - [ ] **Step 4: Commit**
 
 ```bash
-git add graph-io-benchmark/src
-git commit -m "feat(graph-io-benchmark): add BulkGraphIoBenchmark covering all formats, operations, execution models"
+git add benchmark/graph-io-benchmark/src
+git commit -m "feat(graph-io-benchmark): 전체 포맷×실행 모델 BulkGraphIoBenchmark 추가"
 ```
 
 ---
@@ -3281,7 +3300,7 @@ Write `docs/benchmark/2026-04-18-graph-io-bulk-results.md` with:
 
 ```bash
 git add docs/benchmark/2026-04-18-graph-io-bulk-results.md
-git commit -m "docs(benchmark): record graph-io bulk import/export JMH results for 2026-04-18"
+git commit -m "docs(benchmark): 2026-04-18 graph-io 벌크 I/O 벤치마크 결과 기록"
 ```
 
 ---

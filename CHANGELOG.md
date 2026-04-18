@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`graph-io` 벌크 임포트/익스포트** (`graph-io/` 4개 모듈): 포맷별 대용량 I/O (Sync / VirtualThread / Coroutine)
+  - `graph-io-core`: 공유 계약(`GraphBulkExporter`, `GraphBulkImporter`), 모델(`GraphIoVertexRecord`, `GraphIoEdgeRecord`), 옵션, 헬퍼(`GraphIoPaths`) — `BufferedOutputStream/InputStream` 래핑으로 StAX 성능 확보
+  - `graph-io-csv`: CSV 임포터/익스포터 (univocity-parsers 기반) × Sync/VT/Suspend
+  - `graph-io-jackson2`: Jackson 2.x NDJSON 임포터/익스포터 × Sync/VT/Suspend — 간선 버퍼링(`maxEdgeBufferSize`) 지원
+  - `graph-io-jackson3`: Jackson 3.x NDJSON 임포터/익스포터 × Sync/VT/Suspend — Jackson2 NDJSON 호환
+  - `graph-io-graphml`: GraphML (XML/StAX) 임포터/익스포터 × Sync/VT/Suspend — `XMLInputFactory`/`XMLOutputFactory` 싱글턴 캐싱
+  - 크로스-포맷 round-trip 테스트: CSV ↔ Jackson2 ↔ Jackson3 ↔ GraphML
+- **`graph-io-benchmark`** (`benchmark/graph-io-benchmark`): JMH 벤치마크 36개 메서드 (4 포맷 × 3 API × 3 연산)
+  - 결과: CSV export 1.0ms, GraphML export 2.6ms, import 18–22ms (TinkerGraph in-memory 기준)
+  - 결과 리포트: `docs/benchmark/2026-04-18-graph-io-bulk-results.md`
+
 - **`graph-spring-boot3-starter`** (`spring-boot3/graph-spring-boot3-starter`): Spring Boot 3.5.x AutoConfiguration 스타터 신규 추가
   - `GraphAutoConfiguration`: 루트 자동 설정 (공통 프로퍼티 바인딩)
   - `GraphNeo4jAutoConfiguration`: `@ConditionalOnClass(Neo4jGraphOperations::class)` 기반 Neo4j 빈 자동 등록 + HealthIndicator

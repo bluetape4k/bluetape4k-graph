@@ -2,10 +2,13 @@ package io.bluetape4k.graph.io.support
 
 import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.io.source.GraphImportSource
+import java.io.BufferedInputStream
+import java.io.BufferedOutputStream
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.InputStream
 import java.io.InputStreamReader
+import java.io.OutputStream
 import java.io.OutputStreamWriter
 import java.nio.file.Files
 import java.nio.file.StandardOpenOption
@@ -44,8 +47,28 @@ object GraphIoPaths {
     }
 
     fun openInputStream(source: GraphImportSource): InputStream = when (source) {
-        is GraphImportSource.PathSource -> Files.newInputStream(source.path)
+        is GraphImportSource.PathSource -> BufferedInputStream(Files.newInputStream(source.path))
         is GraphImportSource.InputStreamSource -> source.input
+    }
+
+    fun openOutputStream(sink: GraphExportSink): OutputStream = when (sink) {
+        is GraphExportSink.PathSink -> {
+            sink.path.parent?.let { Files.createDirectories(it) }
+            val opts = if (sink.append)
+                arrayOf(StandardOpenOption.CREATE, StandardOpenOption.APPEND)
+            else
+                arrayOf(StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)
+            BufferedOutputStream(Files.newOutputStream(sink.path, *opts))
+        }
+        is GraphExportSink.OutputStreamSink -> {
+            if (sink.closeOutput) sink.output
+            else object : OutputStream() {
+                override fun write(b: Int) = sink.output.write(b)
+                override fun write(b: ByteArray, off: Int, len: Int) = sink.output.write(b, off, len)
+                override fun flush() = sink.output.flush()
+                override fun close() { flush() /* caller owns the stream */ }
+            }
+        }
     }
 
     fun describeSource(source: GraphImportSource): String? = when (source) {

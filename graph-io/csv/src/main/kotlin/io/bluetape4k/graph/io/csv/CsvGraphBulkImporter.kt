@@ -17,6 +17,8 @@ import io.bluetape4k.graph.io.support.GraphIoPaths
 import io.bluetape4k.graph.io.support.GraphIoStopwatch
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
+import io.bluetape4k.logging.warn
 
 /**
  * CSV 동기 벌크 임포터.
@@ -36,6 +38,7 @@ class CsvGraphBulkImporter : GraphBulkImporter<CsvGraphImportSource> {
         options: GraphImportOptions = GraphImportOptions(),
         csvOptions: CsvGraphIoOptions = CsvGraphIoOptions(),
     ): GraphImportReport {
+        log.debug { "Starting CSV import: defaultVertexLabel=${options.defaultVertexLabel}, defaultEdgeLabel=${options.defaultEdgeLabel}" }
         val watch = GraphIoStopwatch()
         val codec = CsvRecordCodec(csvOptions.propertyMode)
         val idMap = GraphIoExternalIdMap(options.onDuplicateVertexId)
@@ -94,6 +97,7 @@ class CsvGraphBulkImporter : GraphBulkImporter<CsvGraphImportSource> {
         }
 
         if (status == GraphIoStatus.FAILED) {
+            log.warn { "CSV import failed during vertex pass: vertices=$verticesCreated/$verticesRead, elapsed=${watch.elapsed()}" }
             return buildReport(
                 watch, failures, GraphIoStatus.FAILED,
                 verticesRead, verticesCreated, edgesRead, edgesCreated, skippedVertices, skippedEdges
@@ -152,7 +156,9 @@ class CsvGraphBulkImporter : GraphBulkImporter<CsvGraphImportSource> {
         return buildReport(
             watch, failures, status,
             verticesRead, verticesCreated, edgesRead, edgesCreated, skippedVertices, skippedEdges
-        )
+        ).also {
+            log.debug { "CSV import completed: vertices=$verticesCreated/$verticesRead, edges=$edgesCreated/$edgesRead, skipped=$skippedVertices/$skippedEdges, status=$status, elapsed=${watch.elapsed()}" }
+        }
     }
 
     private fun buildReport(

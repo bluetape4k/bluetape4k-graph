@@ -13,6 +13,19 @@ graph/
   graph-neo4j      # Neo4j Java Driver 구현
   graph-memgraph   # Memgraph (Neo4j 프로토콜 호환) 구현
   graph-tinkerpop  # Apache TinkerPop / TinkerGraph 인메모리 구현
+graph-io/
+  core             # 공유 계약·모델·옵션·헬퍼
+  csv              # CSV 벌크 임포트/익스포트 (Sync / VirtualThread / Coroutine)
+  jackson2         # Jackson 2.x NDJSON 벌크 임포트/익스포트
+  jackson3         # Jackson 3.x NDJSON 벌크 임포트/익스포트
+  graphml          # GraphML (XML/StAX) 벌크 임포트/익스포트
+benchmark/
+  graph-benchmark     # JMH 벤치마크 — Sync vs VirtualThread 그래프 연산
+  graph-io-benchmark  # JMH 벤치마크 — CSV / NDJSON / GraphML 벌크 I/O 성능
+spring-boot3/
+  graph-spring-boot3-starter  # Spring Boot 3.x AutoConfiguration
+spring-boot4/
+  graph-spring-boot4-starter  # Spring Boot 4.x AutoConfiguration
 examples/
   code-graph-examples     # 코드 의존성 그래프 예시 (AGE, Neo4j, Memgraph, TinkerGraph 통합)
   linkedin-graph-examples # LinkedIn 소셜 그래프 예시 (AGE, Neo4j, Memgraph, TinkerGraph 통합)
@@ -53,6 +66,43 @@ object KnowsLabel : EdgeLabel("KNOWS") {
     val since = localDate("since")
 }
 ```
+
+## 벌크 임포트/익스포트 (`graph-io`)
+
+`graph-io` 패밀리는 포맷 독립적인 대용량 I/O를 세 가지 실행 모델(Sync, VirtualThread, Coroutine)로 제공한다.
+
+```kotlin
+// CSV 익스포트 — 동기
+val sink = CsvGraphExportSink(
+    GraphExportSink.PathSink(Path.of("vertices.csv")),
+    GraphExportSink.PathSink(Path.of("edges.csv"))
+)
+CsvGraphBulkExporter().exportGraph(sink, ops, GraphExportOptions(
+    vertexLabels = setOf("Person"),
+    edgeLabels   = setOf("KNOWS")
+))
+
+// Jackson2 NDJSON 익스포트 — Virtual Thread
+Jackson2NdJsonVirtualThreadBulkExporter()
+    .exportGraphAsync(GraphExportSink.PathSink(Path.of("graph.ndjson")), ops, options)
+    .get()
+
+// GraphML 익스포트 — 코루틴 suspend
+SuspendGraphMlBulkExporter().exportGraphSuspending(
+    GraphExportSink.PathSink(Path.of("graph.graphml")), suspendOps, options
+)
+```
+
+| 모듈 | 포맷 | 문서 |
+|------|------|------|
+| `graph-io-csv` | CSV (정점/간선 분리 파일) | [README](graph-io/csv/README.ko.md) |
+| `graph-io-jackson2` | NDJSON (Jackson 2.x) | [README](graph-io/jackson2/README.ko.md) |
+| `graph-io-jackson3` | NDJSON (Jackson 3.x) | [README](graph-io/jackson3/README.ko.md) |
+| `graph-io-graphml` | GraphML XML (StAX) | [README](graph-io/graphml/README.ko.md) |
+
+> **벤치마크 결과**: [2026-04-18 graph-io 벌크 I/O 결과](docs/benchmark/2026-04-18-graph-io-bulk-results.md)
+
+---
 
 ## 의존성 추가
 

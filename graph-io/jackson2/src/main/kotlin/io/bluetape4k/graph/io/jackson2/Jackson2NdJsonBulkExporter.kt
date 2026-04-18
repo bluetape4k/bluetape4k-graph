@@ -14,6 +14,7 @@ import io.bluetape4k.graph.io.support.GraphIoPaths
 import io.bluetape4k.graph.io.support.GraphIoStopwatch
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 
 /**
  * Jackson2 기반 NDJSON 동기 벌크 익스포터.
@@ -28,6 +29,7 @@ class Jackson2NdJsonBulkExporter : GraphBulkExporter<GraphExportSink> {
         operations: GraphOperations,
         options: GraphExportOptions,
     ): GraphExportReport {
+        log.debug { "Starting NDJSON_JACKSON2 export: vertexLabels=${options.vertexLabels}, edgeLabels=${options.edgeLabels}" }
         val watch = GraphIoStopwatch()
         val failures = mutableListOf<GraphIoFailure>()
         var vWritten = 0L; var eWritten = 0L
@@ -53,14 +55,17 @@ class Jackson2NdJsonBulkExporter : GraphBulkExporter<GraphExportSink> {
             }
         }
 
+        val status = if (failures.isEmpty()) GraphIoStatus.COMPLETED else GraphIoStatus.PARTIAL
         return GraphExportReport(
-            status = if (failures.isEmpty()) GraphIoStatus.COMPLETED else GraphIoStatus.PARTIAL,
+            status = status,
             format = GraphIoFormat.NDJSON_JACKSON2,
             verticesWritten = vWritten,
             edgesWritten = eWritten,
             elapsed = watch.elapsed(),
             failures = failures,
-        )
+        ).also {
+            log.debug { "NDJSON_JACKSON2 export completed: verticesWritten=$vWritten, edgesWritten=$eWritten, status=$status, elapsed=${watch.elapsed()}" }
+        }
     }
 
     companion object : KLogging()

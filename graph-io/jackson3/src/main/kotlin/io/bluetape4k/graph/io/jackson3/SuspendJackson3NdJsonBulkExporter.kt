@@ -14,6 +14,7 @@ import io.bluetape4k.graph.io.support.GraphIoPaths
 import io.bluetape4k.graph.io.support.GraphIoStopwatch
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.coroutines.KLoggingChannel
+import io.bluetape4k.logging.debug
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withContext
@@ -27,6 +28,7 @@ class SuspendJackson3NdJsonBulkExporter : GraphSuspendBulkExporter<GraphExportSi
         operations: GraphSuspendOperations,
         options: GraphExportOptions,
     ): GraphExportReport = withContext(Dispatchers.IO) {
+        log.debug { "Starting NDJSON_JACKSON3 export (suspend): vertexLabels=${options.vertexLabels}, edgeLabels=${options.edgeLabels}" }
         val watch = GraphIoStopwatch()
         val failures = mutableListOf<GraphIoFailure>()
         var vWritten = 0L; var eWritten = 0L
@@ -50,14 +52,17 @@ class SuspendJackson3NdJsonBulkExporter : GraphSuspendBulkExporter<GraphExportSi
             }
         }
 
+        val status = if (failures.isEmpty()) GraphIoStatus.COMPLETED else GraphIoStatus.PARTIAL
         GraphExportReport(
-            status = if (failures.isEmpty()) GraphIoStatus.COMPLETED else GraphIoStatus.PARTIAL,
+            status = status,
             format = GraphIoFormat.NDJSON_JACKSON3,
             verticesWritten = vWritten,
             edgesWritten = eWritten,
             elapsed = watch.elapsed(),
             failures = failures,
-        )
+        ).also {
+            log.debug { "NDJSON_JACKSON3 export (suspend) completed: verticesWritten=$vWritten, edgesWritten=$eWritten, status=$status, elapsed=${watch.elapsed()}" }
+        }
     }
 
     companion object : KLoggingChannel()

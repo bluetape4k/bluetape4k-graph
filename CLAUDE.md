@@ -44,6 +44,19 @@ graph/
   graph-neo4j/      # Neo4j Java Driver 기반 구현
   graph-memgraph/   # Memgraph (Neo4j 프로토콜 호환) 구현
   graph-tinkerpop/  # Apache TinkerPop/Gremlin 구현
+graph-io/
+  core/             # 공유 계약·모델·옵션·헬퍼 (GraphIoPaths: Buffered I/O)
+  csv/              # CSV 벌크 임포트/익스포트 × Sync/VT/Suspend
+  jackson2/         # Jackson 2.x NDJSON × Sync/VT/Suspend
+  jackson3/         # Jackson 3.x NDJSON × Sync/VT/Suspend (Jackson2 호환)
+  graphml/          # GraphML XML/StAX × Sync/VT/Suspend (XMLFactory 싱글턴 캐싱)
+benchmark/
+  graph-benchmark/    # JMH — Sync vs VirtualThread 그래프 연산
+  graph-io-benchmark/ # JMH — CSV/NDJSON/GraphML 벌크 I/O (36 벤치마크)
+spring-boot3/
+  graph-spring-boot3-starter/ # Spring Boot 3.5.x AutoConfiguration
+spring-boot4/
+  graph-spring-boot4-starter/ # Spring Boot 4.0.x AutoConfiguration
 examples/
   code-graph-examples/     # 코드 의존성 그래프 예시 (AGE, Neo4j, Memgraph, TinkerGraph 통합)
   linkedin-graph-examples/ # LinkedIn 소셜 그래프 예시 (AGE, Neo4j, Memgraph, TinkerGraph 통합)
