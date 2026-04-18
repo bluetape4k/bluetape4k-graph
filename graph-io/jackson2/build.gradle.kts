@@ -1,6 +1,9 @@
 dependencies {
     api(project(":graph-io-core"))
     api(Libs.bluetape4k_jackson2)
+    api(Libs.jackson_module_kotlin)
+    api(Libs.jackson_module_blackbird)
+    
     implementation(Libs.bluetape4k_coroutines)
     implementation(Libs.bluetape4k_virtualthread_api)
     implementation(Libs.bluetape4k_virtualthread_jdk25)
