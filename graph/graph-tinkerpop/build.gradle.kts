@@ -1,7 +1,6 @@
 dependencies {
     api(project(":graph-core"))
-    testImplementation(project(":graph-servers"))
-    
+
     api(Libs.tinkerpop_gremlin_core)
     api(Libs.tinkergraph_gremlin)
 
