@@ -8,7 +8,7 @@ import io.bluetape4k.graph.model.CycleOptions
 import io.bluetape4k.graph.model.DegreeOptions
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.PageRankOptions
-import io.bluetape4k.graph.servers.PostgreSQLAgeServer
+import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.KLogging
 import org.amshove.kluent.shouldBeEqualTo
@@ -35,7 +35,7 @@ class AgeAlgorithmTest {
 
     @BeforeAll
     fun setup() {
-        val server = PostgreSQLAgeServer.instance
+        val server = PostgreSQLAgeServer.Launcher.postgresqlAge
         dataSource = HikariDataSource(HikariConfig().apply {
             jdbcUrl = server.jdbcUrl
             username = server.username

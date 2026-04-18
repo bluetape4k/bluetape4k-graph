@@ -13,7 +13,6 @@ graph/
   graph-neo4j      # Neo4j Java Driver 구현
   graph-memgraph   # Memgraph (Neo4j 프로토콜 호환) 구현
   graph-tinkerpop  # Apache TinkerPop / TinkerGraph 인메모리 구현
-  graph-servers    # 테스트용 Testcontainers 서버 팩토리
 graph-io/
   core             # 공유 계약·모델·옵션·헬퍼
   csv              # CSV 벌크 임포트/익스포트 (Sync / VirtualThread / Coroutine)
@@ -138,7 +137,7 @@ dependencies {
 ### Neo4j
 
 ```kotlin
-val driver = GraphDatabase.driver(Neo4jServer.boltUrl, AuthTokens.none())
+val driver = GraphDatabase.driver(Neo4jServer.Launcher.neo4j.boltUrl, AuthTokens.none())
 val ops = Neo4jGraphOperations(driver)
 
 val alice = ops.createVertex("Person", mapOf("name" to "Alice", "age" to 30))

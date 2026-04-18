@@ -44,7 +44,6 @@ graph/
   graph-neo4j/      # Neo4j Java Driver 기반 구현
   graph-memgraph/   # Memgraph (Neo4j 프로토콜 호환) 구현
   graph-tinkerpop/  # Apache TinkerPop/Gremlin 구현
-  graph-servers/    # 테스트용 Testcontainers 서버 팩토리 (Neo4j, Memgraph, PostgreSQL+AGE)
 graph-io/
   core/             # 공유 계약·모델·옵션·헬퍼 (GraphIoPaths: Buffered I/O)
   csv/              # CSV 벌크 임포트/익스포트 × Sync/VT/Suspend
@@ -70,7 +69,10 @@ examples/
 ```kotlin
 // 구체 클래스는 ops와 서버 라이프사이클만 구현
 class Neo4jCodeGraphTest : AbstractCodeGraphTest() {
-    override val ops = Neo4jGraphOperations(Neo4jServer.instance.driver)
+    private val driver = GraphDatabase.driver(Neo4jServer.Launcher.neo4j.boltUrl, AuthTokens.none())
+    override val ops = Neo4jGraphOperations(driver)
+
+    @AfterAll fun teardown() { driver.close() }
 }
 ```
 
@@ -118,15 +120,17 @@ object PersonLabel : VertexLabel("Person") {
 
 ### 테스트 패턴
 
-모든 통합 테스트는 `graph-servers`의 Testcontainers 싱글턴을 사용한다.
+모든 통합 테스트는 `bluetape4k-testcontainers`의 `io.bluetape4k.testcontainers.graphdb` 패키지 Testcontainers 싱글턴(`Launcher` 서브 오브젝트)을 사용한다.
 
 ```kotlin
 // 공유 컨테이너 (테스트 간 재사용)
-val driver = GraphDatabase.driver(Neo4jServer.boltUrl, AuthTokens.none())
+import io.bluetape4k.testcontainers.graphdb.Neo4jServer
+
+val driver = GraphDatabase.driver(Neo4jServer.Launcher.neo4j.boltUrl, AuthTokens.none())
 val ops = Neo4jGraphOperations(driver)
 ```
 
-테스트는 `@TestInstance(PER_CLASS)` + `@BeforeAll`/`@AfterAll`로 컨테이너 라이프사이클을 관리한다.
+테스트는 `@TestInstance(PER_CLASS)` + `@BeforeAll`/`@AfterAll`로 컨테이너 라이프사이클을 관리한다. Memgraph의 경우 각 테스트 클래스가 직접 `Driver`를 생성하고 `@AfterAll`에서 닫아준다.
 
 ## Key Conventions
 

@@ -1,7 +1,6 @@
 dependencies {
     api(project(":graph-core"))
-    testImplementation(project(":graph-servers"))
-    
+
     api(Libs.exposed_core)
     api(Libs.exposed_dao)
     api(Libs.exposed_jdbc)
