@@ -4,8 +4,8 @@ import io.bluetape4k.graph.model.Direction
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
-import io.bluetape4k.graph.servers.MemgraphServer
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.testcontainers.graphdb.MemgraphServer
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeGreaterOrEqualTo
 import org.amshove.kluent.shouldBeNull
@@ -22,21 +22,26 @@ import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestMethodOrder
+import org.neo4j.driver.AuthTokens
+import org.neo4j.driver.Driver
+import org.neo4j.driver.GraphDatabase
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 class MemgraphGraphOperationsTest {
 
+    private lateinit var driver: Driver
     private lateinit var ops: MemgraphGraphOperations
 
     @BeforeAll
     fun setup() {
-        ops = MemgraphGraphOperations(MemgraphServer.driver)
+        driver = GraphDatabase.driver(MemgraphServer.Launcher.memgraph.boltUrl, AuthTokens.none())
+        ops = MemgraphGraphOperations(driver)
     }
 
     @AfterAll
     fun teardown() {
-        // driver는 MemgraphServer 싱글턴이 소유 — 닫지 않음
+        driver.close()
     }
 
     @BeforeEach
