@@ -4,7 +4,7 @@ import io.bluetape4k.graph.model.Direction
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
-import io.bluetape4k.graph.servers.Neo4jServer
+import io.bluetape4k.testcontainers.graphdb.Neo4jServer
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
@@ -38,7 +38,7 @@ class Neo4jGraphOperationsTest {
 
     @BeforeAll
     fun setup() {
-        val server = Neo4jServer.instance
+        val server = Neo4jServer.Launcher.neo4j
         driver = GraphDatabase.driver(server.boltUrl, AuthTokens.none())
         ops = Neo4jGraphOperations(driver)
     }
