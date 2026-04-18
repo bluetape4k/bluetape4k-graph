@@ -14,6 +14,7 @@ import io.bluetape4k.graph.io.support.GraphIoPaths
 import io.bluetape4k.graph.io.support.GraphIoStopwatch
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.coroutines.KLoggingChannel
+import io.bluetape4k.logging.debug
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withContext
@@ -36,6 +37,7 @@ class SuspendCsvGraphBulkExporter : GraphSuspendBulkExporter<CsvGraphExportSink>
         options: GraphExportOptions = GraphExportOptions(),
         csvOptions: CsvGraphIoOptions = CsvGraphIoOptions(),
     ): GraphExportReport = withContext(Dispatchers.IO) {
+        log.debug { "Starting CSV export (suspend): vertexLabels=${options.vertexLabels}, edgeLabels=${options.edgeLabels}" }
         val watch = GraphIoStopwatch()
         val codec = CsvRecordCodec(csvOptions.propertyMode)
         val failures = mutableListOf<GraphIoFailure>()
@@ -95,14 +97,17 @@ class SuspendCsvGraphBulkExporter : GraphSuspendBulkExporter<CsvGraphExportSink>
             csv.close()
         }
 
+        val status = if (failures.isEmpty()) GraphIoStatus.COMPLETED else GraphIoStatus.PARTIAL
         GraphExportReport(
-            status = if (failures.isEmpty()) GraphIoStatus.COMPLETED else GraphIoStatus.PARTIAL,
+            status = status,
             format = GraphIoFormat.CSV,
             verticesWritten = vWritten,
             edgesWritten = eWritten,
             elapsed = watch.elapsed(),
             failures = failures,
-        )
+        ).also {
+            log.debug { "CSV export (suspend) completed: verticesWritten=$vWritten, edgesWritten=$eWritten, status=$status, elapsed=${watch.elapsed()}" }
+        }
     }
 
     companion object : KLoggingChannel()

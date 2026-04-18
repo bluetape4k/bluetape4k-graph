@@ -18,6 +18,8 @@ import io.bluetape4k.graph.io.support.GraphIoStopwatch
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.coroutines.KLoggingChannel
+import io.bluetape4k.logging.debug
+import io.bluetape4k.logging.warn
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.withContext
@@ -40,6 +42,7 @@ class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSourc
         options: GraphImportOptions = GraphImportOptions(),
         csvOptions: CsvGraphIoOptions = CsvGraphIoOptions(),
     ): GraphImportReport = withContext(Dispatchers.IO) {
+        log.debug { "Starting CSV import (suspend): defaultVertexLabel=${options.defaultVertexLabel}, defaultEdgeLabel=${options.defaultEdgeLabel}" }
         val watch = GraphIoStopwatch()
         val codec = CsvRecordCodec(csvOptions.propertyMode)
         val idMap = GraphIoExternalIdMap(options.onDuplicateVertexId)
@@ -94,6 +97,7 @@ class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSourc
         }
 
         if (status == GraphIoStatus.FAILED) {
+            log.warn { "CSV import (suspend) failed during vertex pass: vertices=$verticesCreated/$verticesRead, elapsed=${watch.elapsed()}" }
             return@withContext buildReport(
                 watch, failures, GraphIoStatus.FAILED,
                 verticesRead, verticesCreated, edgesRead, edgesCreated, skippedVertices, skippedEdges
@@ -151,7 +155,9 @@ class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSourc
         buildReport(
             watch, failures, status,
             verticesRead, verticesCreated, edgesRead, edgesCreated, skippedVertices, skippedEdges
-        )
+        ).also {
+            log.debug { "CSV import (suspend) completed: vertices=$verticesCreated/$verticesRead, edges=$edgesCreated/$edgesRead, skipped=$skippedVertices/$skippedEdges, status=$status, elapsed=${watch.elapsed()}" }
+        }
     }
 
     private fun buildReport(

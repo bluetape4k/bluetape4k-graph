@@ -6,6 +6,7 @@ import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
+import io.bluetape4k.logging.coroutines.KLoggingChannel
 import kotlinx.coroutines.test.runTest
 import org.amshove.kluent.shouldBeEqualTo
 import org.junit.jupiter.api.Test
@@ -13,6 +14,8 @@ import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
 
 class CsvSuspendRoundTripTest {
+
+    companion object: KLoggingChannel()
 
     @Test
     fun `suspend round trip two vertices and one edge`(@TempDir dir: Path) = runTest {

@@ -8,6 +8,7 @@ import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
+import io.bluetape4k.logging.KLogging
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeGreaterThan
 import org.junit.jupiter.api.Test
@@ -16,6 +17,8 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 class CsvRoundTripTest {
+
+    companion object: KLogging()
 
     @Test
     fun `round trip two vertices and one edge`(@TempDir dir: Path) {

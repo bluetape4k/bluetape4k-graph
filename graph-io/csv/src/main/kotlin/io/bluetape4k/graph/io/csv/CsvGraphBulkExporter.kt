@@ -14,6 +14,7 @@ import io.bluetape4k.graph.io.support.GraphIoPaths
 import io.bluetape4k.graph.io.support.GraphIoStopwatch
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 
 /**
  * CSV 동기 벌크 익스포터.
@@ -33,6 +34,7 @@ class CsvGraphBulkExporter : GraphBulkExporter<CsvGraphExportSink> {
         options: GraphExportOptions = GraphExportOptions(),
         csvOptions: CsvGraphIoOptions = CsvGraphIoOptions(),
     ): GraphExportReport {
+        log.debug { "Starting CSV export: vertexLabels=${options.vertexLabels}, edgeLabels=${options.edgeLabels}" }
         val watch = GraphIoStopwatch()
         val codec = CsvRecordCodec(csvOptions.propertyMode)
         val failures = mutableListOf<GraphIoFailure>()
@@ -92,14 +94,17 @@ class CsvGraphBulkExporter : GraphBulkExporter<CsvGraphExportSink> {
             csv.close()
         }
 
+        val status = if (failures.isEmpty()) GraphIoStatus.COMPLETED else GraphIoStatus.PARTIAL
         return GraphExportReport(
-            status = if (failures.isEmpty()) GraphIoStatus.COMPLETED else GraphIoStatus.PARTIAL,
+            status = status,
             format = GraphIoFormat.CSV,
             verticesWritten = vWritten,
             edgesWritten = eWritten,
             elapsed = watch.elapsed(),
             failures = failures,
-        )
+        ).also {
+            log.debug { "CSV export completed: verticesWritten=$vWritten, edgesWritten=$eWritten, status=$status, elapsed=${watch.elapsed()}" }
+        }
     }
 
     companion object : KLogging()

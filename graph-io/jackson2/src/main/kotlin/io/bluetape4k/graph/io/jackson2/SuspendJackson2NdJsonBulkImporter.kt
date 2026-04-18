@@ -19,6 +19,8 @@ import io.bluetape4k.graph.io.support.GraphIoPaths
 import io.bluetape4k.graph.io.support.GraphIoStopwatch
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.coroutines.KLoggingChannel
+import io.bluetape4k.logging.debug
+import io.bluetape4k.logging.warn
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -31,6 +33,7 @@ class SuspendJackson2NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
         operations: GraphSuspendOperations,
         options: GraphImportOptions,
     ): GraphImportReport = withContext(Dispatchers.IO) {
+        log.debug { "Starting NDJSON_JACKSON2 import (suspend): defaultVertexLabel=${options.defaultVertexLabel}, defaultEdgeLabel=${options.defaultEdgeLabel}" }
         val watch = GraphIoStopwatch()
         val idMap = GraphIoExternalIdMap(options.onDuplicateVertexId)
         val failures = mutableListOf<GraphIoFailure>()
@@ -45,6 +48,7 @@ class SuspendJackson2NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
                 lineNo++
                 val line = raw.trim().ifBlank { return@forEachLine }
                 val env = runCatching { codec.parseLine(line) }.getOrElse { e ->
+                    log.warn(e) { "Malformed JSON at line $lineNo: ${e.message}" }
                     failures += GraphIoFailure(
                         phase = GraphIoPhase.READ_VERTEX,
                         fileRole = GraphIoFileRole.UNIFIED,
@@ -90,6 +94,7 @@ class SuspendJackson2NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
         }
 
         if (status == GraphIoStatus.FAILED) {
+            log.warn { "NDJSON_JACKSON2 import (suspend) failed: vertices=$vc/$vr, edges=$ec/$er, elapsed=${watch.elapsed()}" }
             return@withContext GraphImportReport(
                 status, GraphIoFormat.NDJSON_JACKSON2, vr, vc, er, ec, sv, se, watch.elapsed(), failures
             )
@@ -124,7 +129,9 @@ class SuspendJackson2NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
             ec++
         }
 
-        GraphImportReport(status, GraphIoFormat.NDJSON_JACKSON2, vr, vc, er, ec, sv, se, watch.elapsed(), failures)
+        GraphImportReport(status, GraphIoFormat.NDJSON_JACKSON2, vr, vc, er, ec, sv, se, watch.elapsed(), failures).also {
+            log.debug { "NDJSON_JACKSON2 import (suspend) completed: vertices=$vc/$vr, edges=$ec/$er, skipped=$sv/$se, status=$status, elapsed=${watch.elapsed()}" }
+        }
     }
 
     companion object : KLoggingChannel()

@@ -2,11 +2,14 @@ package io.bluetape4k.graph.io.csv.internal
 
 import io.bluetape4k.graph.io.csv.CsvPropertyMode
 import io.bluetape4k.graph.io.model.GraphIoVertexRecord
+import io.bluetape4k.logging.KLogging
 import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldThrow
 import org.junit.jupiter.api.Test
+import kotlin.test.assertFailsWith
 
 class CsvRecordCodecTest {
+
+    companion object: KLogging()
 
     @Test
     fun `union header sorts property keys after reserved columns`() {
@@ -24,7 +27,9 @@ class CsvRecordCodecTest {
         // Use CsvPropertyMode.None so the property key "id" maps directly to column "id" causing collision.
         val codec = CsvRecordCodec(CsvPropertyMode.None)
         val recs = listOf(GraphIoVertexRecord("v1", "L", mapOf("id" to "x")))
-        val action = { codec.unionVertexHeader(recs) }
-        action shouldThrow IllegalStateException::class
+
+        assertFailsWith<IllegalStateException> {
+            codec.unionVertexHeader(recs)
+        }
     }
 }

@@ -19,6 +19,8 @@ import io.bluetape4k.graph.io.support.GraphIoPaths
 import io.bluetape4k.graph.io.support.GraphIoStopwatch
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
+import io.bluetape4k.logging.warn
 
 /**
  * Jackson3 기반 NDJSON 동기 벌크 임포터.
@@ -33,6 +35,7 @@ class Jackson3NdJsonBulkImporter : GraphBulkImporter<GraphImportSource> {
         operations: GraphOperations,
         options: GraphImportOptions,
     ): GraphImportReport {
+        log.debug { "Starting NDJSON_JACKSON3 import: defaultVertexLabel=${options.defaultVertexLabel}, defaultEdgeLabel=${options.defaultEdgeLabel}" }
         val watch = GraphIoStopwatch()
         val idMap = GraphIoExternalIdMap(options.onDuplicateVertexId)
         val failures = mutableListOf<GraphIoFailure>()
@@ -47,6 +50,7 @@ class Jackson3NdJsonBulkImporter : GraphBulkImporter<GraphImportSource> {
                 lineNo++
                 val line = raw.trim().ifBlank { return@forEachLine }
                 val env = runCatching { codec.parseLine(line) }.getOrElse { e ->
+                    log.warn(e) { "Malformed JSON at line $lineNo: ${e.message}" }
                     failures += GraphIoFailure(
                         phase = GraphIoPhase.READ_VERTEX,
                         fileRole = GraphIoFileRole.UNIFIED,
@@ -97,6 +101,7 @@ class Jackson3NdJsonBulkImporter : GraphBulkImporter<GraphImportSource> {
         }
 
         if (status == GraphIoStatus.FAILED) {
+            log.warn { "NDJSON_JACKSON3 import failed: vertices=$vc/$vr, edges=$ec/$er, elapsed=${watch.elapsed()}" }
             return GraphImportReport(status, GraphIoFormat.NDJSON_JACKSON3, vr, vc, er, ec, sv, se, watch.elapsed(), failures)
         }
 
@@ -137,7 +142,9 @@ class Jackson3NdJsonBulkImporter : GraphBulkImporter<GraphImportSource> {
             ec++
         }
 
-        return GraphImportReport(status, GraphIoFormat.NDJSON_JACKSON3, vr, vc, er, ec, sv, se, watch.elapsed(), failures)
+        return GraphImportReport(status, GraphIoFormat.NDJSON_JACKSON3, vr, vc, er, ec, sv, se, watch.elapsed(), failures).also {
+            log.debug { "NDJSON_JACKSON3 import completed: vertices=$vc/$vr, edges=$ec/$er, skipped=$sv/$se, status=$status, elapsed=${watch.elapsed()}" }
+        }
     }
 
     companion object : KLogging()
