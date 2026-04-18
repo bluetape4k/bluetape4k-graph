@@ -13,7 +13,6 @@ graph/
   graph-neo4j      # Neo4j Java Driver implementation
   graph-memgraph   # Memgraph (Neo4j protocol compatible) implementation
   graph-tinkerpop  # Apache TinkerPop / TinkerGraph in-memory implementation
-  graph-servers    # Testcontainers server factory for testing
 examples/
   code-graph-examples     # Code dependency graph examples (AGE, Neo4j, Memgraph, TinkerGraph integration)
   linkedin-graph-examples # LinkedIn social graph examples (AGE, Neo4j, Memgraph, TinkerGraph integration)
@@ -88,7 +87,7 @@ dependencies {
 ### Neo4j
 
 ```kotlin
-val driver = GraphDatabase.driver(Neo4jServer.boltUrl, AuthTokens.none())
+val driver = GraphDatabase.driver(Neo4jServer.Launcher.neo4j.boltUrl, AuthTokens.none())
 val ops = Neo4jGraphOperations(driver)
 
 val alice = ops.createVertex("Person", mapOf("name" to "Alice", "age" to 30))

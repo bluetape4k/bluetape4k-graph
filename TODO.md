@@ -72,8 +72,8 @@ Spring Boot 4 패키지 변경 사항:
   `Database.connect(dataSource)` 선행 호출 패턴으로 수정
 - `AgeGraphSuspendOperations` 예제도 동일하게 `AgeGraphSuspendOperations(graphName)` 기준으로 정리
 - `asVirtualThread` import 예제를 실제 패키지 `io.bluetape4k.graph.vt.asVirtualThread` 기준으로 정리
-- 루트 `README.md`, `README.ko.md`, `graph-age/README*.md`, `graph-servers/README*.md`,
-  `graph-core/README*.md`에서 오래된 코드 조각 검색 후 수정
+- 루트 `README.md`, `README.ko.md`, `graph-age/README*.md`, `graph-core/README*.md`에서
+  오래된 코드 조각 검색 후 수정
 - README 코드 조각과 실제 테스트 코드가 컴파일 가능한 형태인지 샘플 테스트 또는 문서 스니펫 점검으로 확인
 
 ### [ ] `graph-io` 모듈 — 벌크 임포트/익스포트
