@@ -1,0 +1,3 @@
+package io.bluetape4k.graph.io.report
+
+enum class GraphIoFailureSeverity { INFO, WARN, ERROR }
