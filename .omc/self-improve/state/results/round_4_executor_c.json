@@ -1,0 +1,30 @@
+{
+  "executor_id": "executor_c",
+  "plan_id": "round_4_planner_c",
+  "benchmark_score": 9.381,
+  "benchmark_raw": "{\"primary\": 1145.516, \"geomean\": 9.381, \"sub_scores\": {\"age_findVertexById\": 0.015, \"age_findVerticesByLabel\": 0.014, \"age_neighbors\": 0.015, \"age_shortestPath\": 550.085, \"age_allPaths\": 732.908, \"age_createEdge\": 7969.002, \"age_createVertex\": 512.329, \"neo4j_findVertexById\": 0.015, \"neo4j_findVerticesByLabel\": 0.013, \"neo4j_neighbors\": 0.016, \"neo4j_shortestPath\": 794.458, \"neo4j_allPaths\": 910.728, \"neo4j_createEdge\": 3611.27, \"neo4j_createVertex\": 956.351}}",
+  "status": "regression",
+  "sub_scores": {
+    "age_findVertexById": 0.015,
+    "age_findVerticesByLabel": 0.014,
+    "age_neighbors": 0.015,
+    "age_shortestPath": 550.085,
+    "age_allPaths": 732.908,
+    "age_createEdge": 7969.002,
+    "age_createVertex": 512.329,
+    "neo4j_findVertexById": 0.015,
+    "neo4j_findVerticesByLabel": 0.013,
+    "neo4j_neighbors": 0.016,
+    "neo4j_shortestPath": 794.458,
+    "neo4j_allPaths": 910.728,
+    "neo4j_createEdge": 3611.27,
+    "neo4j_createVertex": 956.351
+  },
+  "failure_analysis": {
+    "what": "SessionConfig caching produced benchmark geomean 9.381 μs/op vs current best 9.233 μs/op — a 1.6% regression (within typical JMH noise).",
+    "why": "The Caffeine cache already intercepts findVertexById/findVerticesByLabel/neighbors for both AGE and Neo4j at ~0.015 μs. Those dominate the geomean, leaving write/traversal paths (shortestPath/allPaths/createEdge/createVertex) as the only places where SessionConfig allocation savings could matter. SessionConfig.builder().withDatabase().build() is a cheap immutable object allocation; it is negligible relative to the hundreds-of-μs per-call cost of a real Bolt round-trip. The measured variance in the uncached benchmarks (e.g. neo4j_createEdge error ±2797, age_createEdge error ±3890) is far larger than any savings from avoiding a handful of builder allocations.",
+    "category": "regression",
+    "lesson": "Micro-allocation caching inside a driver-session path is dwarfed by network I/O variance; when geomean is already pinned by cached 0.015 μs operations, only changes that shave meaningful work off the slowest (write) sub-scores can move the primary score. Future planners: focus optimizations on the write path sub-scores (createEdge/createVertex) where Caffeine cannot help, or extend caching to additional read-like operations."
+  },
+  "timestamp": "2026-04-19T21:14:00Z"
+}

@@ -1,0 +1,58 @@
+{
+  "plan_id": "round_4_planner_c",
+  "planner_id": "planner_c",
+  "round": 4,
+  "hypothesis": "Caching SessionConfig as a private val in Neo4jGraphOperations eliminates per-call builder allocation (currently SessionConfig.builder().withDatabase(database).build() runs on every session() invocation) and is expected to reduce Neo4j op overhead by 3-8% on hot paths (createVertex, matchVertexById, neighbors). No AccessMode tuning, no algorithm method changes, no AGE SQL parameterization.",
+  "approach_family": "optimization",
+  "critic_approved": true,
+  "target_files": [
+    "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "file": "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt",
+      "change": "Inside class Neo4jGraphOperations, introduce a private immutable field cached at construction time: private val sessionConfig: SessionConfig = SessionConfig.builder().withDatabase(database).build(). Place it immediately before the existing private fun session() (currently lines 65-66). Then modify session() (line 65-66) to: private fun session(): Session = driver.session(sessionConfig). Do NOT call withDefaultAccessMode(...) (that caused the round-2 regression). Do NOT touch runQuery(). Do NOT touch any algorithm/traversal methods (connectedComponents, pageRank, detectCycles, shortestPath, bfs, dfs). Imports remain unchanged; SessionConfig is already imported on line 34."
+    },
+    {
+      "step": 2,
+      "file": "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt",
+      "change": "Verify: (a) class still compiles; SessionConfig is immutable and thread-safe per the Neo4j Java driver, so a single shared instance is safe across all sessions; (b) the database constructor param continues to be used in the field initializer; (c) no other class in graph-neo4j references session() beyond this file (private scope)."
+    },
+    {
+      "step": 3,
+      "file": "N/A (verification only)",
+      "change": "Run the JMH benchmark suite used by the self-improve loop and compare against the 9.233 microsecond per op baseline. Expected: Neo4j-backed ops measurably lower (3-8%); no sub-score should regress beyond the noise band. If AGE or TinkerGraph sub-scores change materially that is noise, since this change touches only Neo4jGraphOperations."
+    }
+  ],
+  "expected_outcome": {
+    "metric": "avg_latency_us",
+    "estimated_impact": "3-8% on Neo4j ops",
+    "rationale": "SessionConfig.builder().withDatabase(name).build() currently allocates a Builder plus an immutable SessionConfig on every session() call. Hot paths (createVertex, matchVertexById, neighbors) each invoke runQuery then session() exactly once, so the allocation savings apply per operation. SessionConfig is immutable and safe to share across threads per the Neo4j Java driver, so caching is a pure win. This is the narrow, isolated portion of round-3 executor_c's change that had a real rationale; the regression there came from bundled algorithm refactors on non-benchmarked paths plus variance, not from the cache itself.",
+    "sub_score_expectations": {
+      "neo4j_ops": "3-8% reduction (primary)",
+      "memgraph_ops": "no change (different operations class)",
+      "age_ops": "no change (different backend)",
+      "tinkerpop_ops": "no change (different backend)",
+      "algorithm_ops": "no change (not benchmarked; unchanged code path)"
+    }
+  },
+  "history_reference": {
+    "builds_on": "none",
+    "avoids": "round_3_executor_c (SessionConfig caching + algorithm collapse for connectedComponents/pageRank/detectCycles: regression because (a) algorithm methods are not measured by the benchmark so the combined-query change contributed zero signal, and (b) the observed regression was benchmark variance; also round_2 which additionally set withDefaultAccessMode(AccessMode.READ) causing a measurable regression on write paths). This plan ONLY caches the SessionConfig object field, does NOT change AccessMode, does NOT change session() semantics beyond removing the per-call allocation, and does NOT touch any algorithm methods. AGE parameterization was considered and rejected: the outer SELECT * FROM ag_catalog.cypher('graph', $$ ... $$) AS (v agtype) wrapper's column-definition clause varies per query shape, so Exposed exec() cannot be meaningfully parameterized to hit PostgreSQL's plan cache. Including it would be speculative and violate the planner discipline of focused, implementable changes."
+  },
+  "critic_review": {
+    "h001_hypothesis_count": "pass",
+    "h002_family_streak": "pass",
+    "h003_intra_round_diversity": "pass",
+    "schema_valid": "pass",
+    "history_aware": "pass",
+    "verdict": "approved",
+    "rejection_reason": null
+  },
+  "architect_review": {
+    "verdict": "approve",
+    "feedback": "Minimal surgical single-class change. SessionConfig is documented as immutable and thread-safe in the Neo4j Java driver 5.x, so hoisting it to a field is idiomatic and safe. Scope is strictly narrower than round-3 executor_c: algorithm methods are explicitly excluded. The benchmark-observable surface (createVertex, matchVertexById, neighbors all funnel through session()) aligns with the hypothesis. AGE parameterization correctly deferred due to the per-query-shape column-definition clause in the cypher() wrapper.",
+    "structural_concerns": []
+  }
+}

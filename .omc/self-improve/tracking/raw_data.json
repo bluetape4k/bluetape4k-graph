@@ -54,5 +54,26 @@
     "approach_family": "optimization",
     "score": 1468.902,
     "status": "regression"
+  },
+  {
+    "round": 4,
+    "executor_id": "executor_a",
+    "approach_family": "infrastructure",
+    "score": 0.453,
+    "status": "success"
+  },
+  {
+    "round": 4,
+    "executor_id": "executor_b",
+    "approach_family": "architecture",
+    "score": 8.821,
+    "status": "success"
+  },
+  {
+    "round": 4,
+    "executor_id": "executor_c",
+    "approach_family": "optimization",
+    "score": 9.381,
+    "status": "regression"
   }
 ]

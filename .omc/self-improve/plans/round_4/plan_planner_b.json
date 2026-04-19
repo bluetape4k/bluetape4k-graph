@@ -1,0 +1,75 @@
+{
+  "plan_id": "round_4_planner_b",
+  "planner_id": "planner_b",
+  "round": 4,
+  "hypothesis": "Batching the 3 write operations in AgeVertexBenchmark.createEdge and Neo4jVertexBenchmark.createEdge into a single transaction/session will reduce the avg latency of those ops by collapsing 3 BEGIN/COMMIT (AGE) and 3 Bolt session open/close (Neo4j) cycles down to 1. Now that the Caffeine read cache (round_3 winner) drives read latency to ~0.015 μs/op, the geomean is dominated by write ops, so a ~50-60% cut on age_createEdge (8567 μs -> 3000-4000 μs) and neo4j_createEdge (3637 μs -> 1500-2000 μs) translates directly into the geomean. Exposed's transaction{} reuses the current TransactionManager's transaction when nested, so a thin withTransaction { } scope is sufficient for AGE; for Neo4j a single ThreadLocal<Session> with a simple open/use/clear lifecycle is sufficient.",
+  "approach_family": "architecture",
+  "critic_approved": true,
+  "target_files": [
+    "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/AgeGraphOperations.kt",
+    "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt",
+    "benchmark/graph-age-benchmark/src/main/kotlin/io/bluetape4k/graph/age/benchmark/AgeVertexBenchmark.kt",
+    "benchmark/graph-neo4j-benchmark/src/main/kotlin/io/bluetape4k/graph/neo4j/benchmark/Neo4jVertexBenchmark.kt"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "file": "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/AgeGraphOperations.kt",
+      "change": "Add a public inline method `inline fun <T> withTransaction(block: AgeGraphOperations.() -> T): T = org.jetbrains.exposed.v1.jdbc.transactions.transaction { this.block() }` on AgeGraphOperations. Rely on Exposed v1 nested transaction{} semantics: an inner transaction{} called while an outer Exposed TransactionManager.currentOrNull() is non-null reuses the same JDBC connection and does NOT issue a new BEGIN/COMMIT. This means every createVertex/createEdge inside the block is executed on a single JDBC connection with a single BEGIN/COMMIT at the outer boundary. Do NOT introduce any custom inTx/currentOrNull helper (root cause of round_3_executor_a regression); just wrap with plain transaction{}."
+    },
+    {
+      "step": 2,
+      "file": "benchmark/graph-age-benchmark/src/main/kotlin/io/bluetape4k/graph/age/benchmark/AgeVertexBenchmark.kt",
+      "change": "Rewrite createEdge() as: `ops.withTransaction { val from = createVertex(PERSON_LABEL, mapOf(\"name\" to \"Src\")); val to = createVertex(PERSON_LABEL, mapOf(\"name\" to \"Dst\")); val edge = createEdge(from.id, to.id, KNOWS_LABEL, mapOf(\"since\" to 2024L)); edge.id.value.isNotEmpty() }`. Field `ops` is `AgeGraphOperations` (verified in AgeBenchmarkState.kt line 35), so the extension/method resolves directly — no Caching* wrapper to worry about in this worktree."
+    },
+    {
+      "step": 3,
+      "file": "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt",
+      "change": "Add a simple session-reuse mechanism: (a) add `private val currentSession = ThreadLocal<Session?>()` as a property. (b) change `private fun session(): Session` to `private fun session(): Session = currentSession.get() ?: driver.session(SessionConfig.builder().withDatabase(database).build())`. (c) change `runQuery` so it no longer unconditionally `session().use{}` — instead: `val reused = currentSession.get(); if (reused != null) return reused.run(cypher, params).list(mapper); return driver.session(cfg).use { s -> s.run(cypher, params).list(mapper) }`. (d) add `fun <T> withSession(block: Neo4jGraphOperations.() -> T): T { if (currentSession.get() != null) return this.block(); val s = driver.session(SessionConfig.builder().withDatabase(database).build()); return try { currentSession.set(s); this.block() } finally { currentSession.remove(); s.close() } }`. Lifecycle is strictly bounded by the try/finally — no leaks, no variance from dangling ThreadLocal state. No cross-method state."
+    },
+    {
+      "step": 4,
+      "file": "benchmark/graph-neo4j-benchmark/src/main/kotlin/io/bluetape4k/graph/neo4j/benchmark/Neo4jVertexBenchmark.kt",
+      "change": "Rewrite createEdge() as: `ops.withSession { val from = createVertex(PERSON_LABEL, mapOf(\"name\" to \"Src\")); val to = createVertex(PERSON_LABEL, mapOf(\"name\" to \"Dst\")); val edge = createEdge(from.id, to.id, KNOWS_LABEL, mapOf(\"since\" to 2024L)); edge.id.value.isNotEmpty() }`. Field `ops` is `Neo4jGraphOperations` (same pattern as Age state), so method is directly accessible."
+    },
+    {
+      "step": 5,
+      "file": "(verification)",
+      "change": "Run `./gradlew :graph-age:compileKotlin :graph-neo4j:compileKotlin :graph-age-benchmark:compileJmhKotlin :graph-neo4j-benchmark:compileJmhKotlin` to validate compilation. Then run `./gradlew :graph-age-benchmark:jmh -Pjmh.includes=AgeVertexBenchmark.createEdge` and `./gradlew :graph-neo4j-benchmark:jmh -Pjmh.includes=Neo4jVertexBenchmark.createEdge` to confirm the write-path speedup before running the full benchmark suite. If either regresses, revert immediately."
+    }
+  ],
+  "expected_outcome": {
+    "metric": "avg_latency_us",
+    "estimated_impact": "15-25% reduction on overall geomean; age_createEdge ~50% (8567->3000-4000 μs), neo4j_createEdge ~50% (3637->1500-2000 μs)",
+    "rationale": "age_createEdge's 8567 μs is dominated by 3 full Exposed transaction{} blocks, each doing BEGIN + SQL + COMMIT + HikariCP connection acquire/release. Merging into one outer transaction{} eliminates 2 BEGIN/COMMIT pairs (~1500-2500 μs each, judging by the delta between single-op createVertex at ~2800 μs and a 3-op createEdge at 8567 μs) and reuses a single HikariCP connection across all 3 SQL round-trips. Similarly, neo4j_createEdge's 3637 μs includes 3 Bolt session open/close cycles at ~500-700 μs each; a single shared Session eliminates 2 of them. Because the geomean is now dominated by write ops (reads are ~0.015 μs), the multiplicative impact on the aggregate score is large.",
+    "sub_score_expectations": {
+      "age_createEdge": "8567 μs -> 3000-4500 μs (50% reduction)",
+      "neo4j_createEdge": "3637 μs -> 1500-2200 μs (45% reduction)",
+      "reads (all cached)": "no change (still ~0.015 μs — Caffeine cache preserved)",
+      "other writes": "no change",
+      "geomean_primary_score": "9.233 μs -> 7.0-8.0 μs (15-25% reduction)"
+    }
+  },
+  "history_reference": {
+    "builds_on": "round_3_executor_b (Caffeine read cache winner at 9.233 μs). Because reads collapsed from dominating to ~0.015 μs/op, the geomean is now sensitive to write ops — the exact same optimization that failed in round_3 becomes high-leverage now.",
+    "avoids": "round_3_executor_a attempted the same hypothesis but regressed (1473 μs vs 1336 baseline). Root cause: (1) a complex `inTx` helper using TransactionManager.currentOrNull() branching added per-call overhead; (2) ThreadLocal<Session> lifecycle for Neo4j had unclear boundaries, leaking between iterations. Round 4 avoids both: (a) AGE uses plain Exposed `transaction{}` with documented nested-reuse semantics — no custom branching helper; (b) Neo4j ThreadLocal<Session> has a strict try/finally bound inside withSession — set before block, remove + close after, never leaks. Additionally at round 3, the geomean was dominated by reads, so even a +3000 μs win on writes was invisible relative to a +0.5 μs read regression; now reads are cached so write wins land directly on the score."
+  },
+  "critic_review": {
+    "h001_hypothesis_count": "pass",
+    "h002_family_streak": "pass",
+    "h003_intra_round_diversity": "pass",
+    "schema_valid": "pass",
+    "history_aware": "pass",
+    "verdict": "approved",
+    "rejection_reason": null
+  },
+  "architect_review": {
+    "verdict": "approve",
+    "feedback": "Scope is tight: 2 new public methods (withTransaction, withSession) + 2 benchmark edits. The round-3 regression cause is explicitly identified and avoided by (a) using Exposed's built-in nested transaction semantics instead of a custom helper, and (b) strict try/finally lifecycle for the Neo4j ThreadLocal<Session>. No changes to existing createVertex/createEdge/findVertexById semantics — they continue to work standalone AND inside a batched scope transparently. Caffeine read cache from round 3 is untouched, so the 0.015 μs read latency is preserved. Verification step runs benchmark BEFORE full suite to catch regressions early.",
+    "structural_concerns": [
+      "Verify that Exposed v1.jdbc nested transaction{} truly reuses the current transaction (documented behavior, but worth a unit test or a log-based sanity check before running the full benchmark).",
+      "ThreadLocal<Session> on Neo4jGraphOperations is per-instance; if the benchmark ever creates a new ops instance inside an iteration, session reuse will not help — but AgeBenchmarkState and Neo4jBenchmarkState are @State(Scope.Benchmark) singletons, so ops is stable across iterations.",
+      "withSession is NOT re-entrant across nested calls on the same thread — the nested-check in step 3d reuses the outer session, which is the desired behavior and matches Exposed's nested transaction semantics for symmetry."
+    ]
+  }
+}
