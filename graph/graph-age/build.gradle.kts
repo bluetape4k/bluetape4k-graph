@@ -6,6 +6,7 @@ dependencies {
     api(Libs.exposed_jdbc)
     api(Libs.exposed_java_time)
     api(Libs.postgresql_driver)
+    api(Libs.caffeine)
 
     implementation(Libs.bluetape4k_coroutines)
     implementation(Libs.kotlinx_coroutines_core)

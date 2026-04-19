@@ -3,7 +3,9 @@ package io.bluetape4k.graph.age.benchmark
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.bluetape4k.graph.age.AgeGraphOperations
+import io.bluetape4k.graph.age.CachingAgeGraphOperations
 import io.bluetape4k.graph.model.GraphElementId
+import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
 import org.jetbrains.exposed.v1.jdbc.Database
@@ -32,7 +34,7 @@ open class AgeBenchmarkState {
     private lateinit var dataSource: HikariDataSource
     private lateinit var database: Database
 
-    lateinit var ops: AgeGraphOperations
+    lateinit var ops: GraphOperations
 
     var aliceId: GraphElementId = GraphElementId("0")
     var bobId: GraphElementId = GraphElementId("0")
@@ -51,7 +53,8 @@ open class AgeBenchmarkState {
             maximumPoolSize = 4
         })
         database = Database.connect(dataSource)
-        ops = AgeGraphOperations(GRAPH_NAME)
+        val raw = AgeGraphOperations(GRAPH_NAME)
+        ops = CachingAgeGraphOperations(raw)
 
         if (ops.graphExists(GRAPH_NAME)) {
             ops.dropGraph(GRAPH_NAME)
