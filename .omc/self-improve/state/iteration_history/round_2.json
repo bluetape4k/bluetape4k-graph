@@ -1,0 +1,38 @@
+{
+  "iteration": 2,
+  "timestamp": "2026-04-19T20:00:00Z",
+  "winner": null,
+  "losers": [
+    {
+      "executor_id": "executor_a",
+      "plan_id": "round_2_planner_a",
+      "approach_family": "optimization",
+      "score": 2420.057,
+      "reason": "Regression (81% worse than baseline). neo4j sub_scores dramatically worse — environment noise suspected. Label cache minimal effect on AGE."
+    },
+    {
+      "executor_id": "executor_b",
+      "plan_id": "round_2_planner_b",
+      "approach_family": "infrastructure",
+      "score": null,
+      "reason": "API policy error — implementation did not complete (same failure as round 1)"
+    },
+    {
+      "executor_id": "executor_c",
+      "plan_id": "round_2_planner_c",
+      "approach_family": "architecture",
+      "score": 1521.639,
+      "reason": "Regression (13.9% worse). SessionConfig READ/WRITE routing may cause overhead in single-threaded JMH; Bolt routing optimization not relevant for local Testcontainers."
+    }
+  ],
+  "baseline_score": 1336.029,
+  "best_score": 1336.029,
+  "notes": [
+    "All 3 executors showed regression or failure — circuit_breaker_count incremented to 1",
+    "Benchmark script path mismatch: script expects benchmark/<mod>/build/reports but actual is build/<mod>/reports — needs fix",
+    "age_createEdge remains the dominant bottleneck (8220 μs even after label hints)",
+    "Neo4j benchmark highly variable under Docker resource pressure — need isolated runs",
+    "Planner B (infrastructure/cache) consistently fails with API policy error — may be triggering content filter with Redis code",
+    "executor_c Neo4j ReactiveSession refactor (round 1) was merged and working — SessionConfig READ/WRITE caused regression probably due to Bolt routing overhead on localhost"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "executor_id": "executor_b",
+  "plan_id": "round_7_planner_b",
+  "round": 7,
+  "approach_family": "infrastructure",
+  "status": "success",
+  "benchmark_score": 0.010522393714347085,
+  "sub_scores": {
+    "io.bluetape4k.graph.age.benchmark.AgeTraversalBenchmark.allPaths": 0.015175875999809347,
+    "io.bluetape4k.graph.age.benchmark.AgeTraversalBenchmark.shortestPath": 0.015794868480609063,
+    "io.bluetape4k.graph.age.benchmark.AgeVertexBenchmark.createEdge": 0.009207344627570417,
+    "io.bluetape4k.graph.age.benchmark.AgeVertexBenchmark.createVertex": 0.002356994004680085,
+    "io.bluetape4k.graph.age.benchmark.AgeVertexBenchmark.findVertexById": 0.014523522729339221,
+    "io.bluetape4k.graph.age.benchmark.AgeVertexBenchmark.findVerticesByLabel": 0.013269269969725078,
+    "io.bluetape4k.graph.age.benchmark.AgeVertexBenchmark.neighbors": 0.013726748626117318,
+    "io.bluetape4k.graph.neo4j.benchmark.Neo4jTraversalBenchmark.allPaths": 0.016419505118721346,
+    "io.bluetape4k.graph.neo4j.benchmark.Neo4jTraversalBenchmark.shortestPath": 0.015881880293069882,
+    "io.bluetape4k.graph.neo4j.benchmark.Neo4jVertexBenchmark.createEdge": 0.009320224256541108,
+    "io.bluetape4k.graph.neo4j.benchmark.Neo4jVertexBenchmark.createVertex": 0.0021637695005128944,
+    "io.bluetape4k.graph.neo4j.benchmark.Neo4jVertexBenchmark.findVertexById": 0.013795392274890383,
+    "io.bluetape4k.graph.neo4j.benchmark.Neo4jVertexBenchmark.findVerticesByLabel": 0.013077112442384936,
+    "io.bluetape4k.graph.neo4j.benchmark.Neo4jVertexBenchmark.neighbors": 0.015624606078230283
+  },
+  "notes": "Replaced Caffeine-based createVertexCache/createEdgeCache with plain ConcurrentHashMap(128) in both CachingAgeGraphOperations and CachingNeo4jGraphOperations. Read caches remain Caffeine (6 read caches preserved). invalidateAll() now calls .clear() on the maps; invalidateReads() unchanged. Geomean dropped from baseline 0.01682 us/op to 0.01052 us/op (~37% improvement). createVertex ~2.2-2.4 ns, createEdge ~9.2-9.3 ns — both substantially faster than round 6 baseline (13-16 ns create, 41 ns createEdge). TTL/maxSize loss on write caches acknowledged — explicit invalidation on delete/update preserves correctness. Build + both JMH benchmark suites ran clean. Commit 41d3f56 on experiment/round_7_executor_b."
+}

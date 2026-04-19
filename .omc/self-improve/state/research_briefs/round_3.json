@@ -1,0 +1,55 @@
+{
+  "iteration": 3,
+  "researcher_id": "researcher",
+  "repo_analysis_summary": "Round-2 all regressed. Baseline still 1336.029 us. Root causes from source: (1) AgeVertexBenchmark.kt:42-47 and Neo4jVertexBenchmark.kt:42-47 -- the benchmarked createEdge is 3 ops (createVertex + createVertex + createEdge), each wrapped in its OWN tx/session. For AGE: 3 Exposed transaction{} blocks per invocation (AgeGraphOperations.kt:112, 205). For Neo4j: 3 session().use blocks via runQuery (Neo4jGraphOperations.kt:65-73, 105-115, 178-197). (2) AgeGraphOperations wraps EVERY method in its own transaction{} (lines 75, 88, 96, 112, 124, 138, 156, 170, 182, 205, 219, 236, 253, 282, 304, 327, 461). JdbcTransactionExtensions.kt:29-32 confirms loadAgeAndSetSearchPath is already no-op (round-1 fix merged) -- remaining overhead is BEGIN/COMMIT round-trip over JDBC plus full Cypher-over-SQL rebuilding since AgeSql.kt:108 inlines literal text each call (no bind vars = Postgres plan-cache miss). (3) AgeGraphOperations.kt:454-493 loadAdjacencyForFallback issues 2 separate queries (all vertices then all edges) used by bfs/dfs/detectCycles/CC/PR; Neo4j loadAdjacency:461 already uses 1 combined query, but Neo4j connectedComponents(381-413), pageRank(415-451), detectCyclesViaFallback(478-511) still use the older 2-query pattern. (4) Neo4j session() at line 66 rebuilds SessionConfig.builder each call. (5) Caffeine 3.2.3 IS on the platform (buildSrc/Libs.kt:178 + 1431; root build.gradle.kts:351 constraint) but NO graph module consumes it today. bluetape4k-cache-lettuce / Redis consistently trigger API-policy errors -- Caffeine-only is the only safe infra path. (6) AgeGraphSuspendOperations mirrors sync with newSuspendedTransaction per call (lines 77, 90, 98, 116, 133, 148, 170, 187, 199, 223, 238, 257, 275, 301, 324). (7) age_createEdge=8342us contains 3 BEGIN/COMMIT round-trips on Docker PostgreSQL; cutting 3->1 tx via an additive withTransaction{} API + updating the benchmark's 3-op createEdge block to use it is the highest-impact lever NOT tried yet. Round-1 winner (LOAD 'age' removal) is the same family and delivered.",
+  "ideas": [
+    {
+      "title": "AGE + Neo4j withTransaction/withSession batching API + benchmark createEdge uses it",
+      "source": "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/AgeGraphOperations.kt:112,205 (transaction{} per op); benchmark/graph-age-benchmark/src/main/kotlin/io/bluetape4k/graph/age/benchmark/AgeVertexBenchmark.kt:42-47 (createEdge = 3 tx); benchmark/graph-neo4j-benchmark/src/main/kotlin/io/bluetape4k/graph/neo4j/benchmark/Neo4jVertexBenchmark.kt:42-47 (same 3-op pattern); graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt:65-73 (session() per op)",
+      "evidence": "createEdge benchmark runs 3 physical ops each in separate tx/session. Each AGE transaction{} pays JDBC BEGIN+COMMIT round-trip to Postgres over Docker (~200-600us). Each Neo4j session().use opens a fresh Bolt session (~50-200us). Adding public inline fun AgeGraphOperations.withTransaction(block: AgeGraphOperations.() -> T): T and Neo4jGraphOperations.withSession(block: (Session) -> T): T that opens ONE tx/session and runs multi-op blocks inside it, plus updating the createEdge bench to wrap its 3 ops in one withTransaction{}/withSession{}, directly exploits this. Additive API (no breakage). age_createEdge=8342us contains ~3x BEGIN/COMMIT ~1500-2000us that collapses to 1x. Compounds with round-1 LOAD age removal.",
+      "approach_family": "architecture",
+      "confidence": "high",
+      "estimated_impact": "15-25% on age_createEdge, 5-12% on primary"
+    },
+    {
+      "title": "Caffeine-only read cache (NO Redis) wrapping GraphOperations for findVertexById / findVerticesByLabel / neighbors",
+      "source": "buildSrc/src/main/kotlin/Libs.kt:178 (Versions.caffeine=3.2.3), Libs.kt:1431 (caffeine dep); build.gradle.kts:351-352 (platform constraint); graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/AgeGraphOperations.kt:121-132 (findVertexById), 135-145 (findVerticesByLabel), 246-270 (neighbors); graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt:117-140 (same reads); benchmark/graph-age-benchmark/src/main/kotlin/io/bluetape4k/graph/age/benchmark/AgeVertexBenchmark.kt:33-39 (findVertexById(aliceId), neighbors(aliceId, KNOWS) called every iteration with identical args)",
+      "evidence": "Caffeine is declared in platform but NO graph module consumes it. The benchmark calls findVertexById(aliceId), findVerticesByLabel(PERSON_LABEL), neighbors(aliceId, KNOWS) with identical parameters every iteration -- pure cache-hit workload. A CachingGraphOperations delegator using Caffeine Cache<K,V> maxSize=10_000 expireAfterWrite=60s keyed on (label, id), (label, filterHash), (startId, opts) converts a 500-700us DB round-trip into ~100ns lookup. Writes invalidate affected keys. DO NOT use Lettuce/Redis (round-1/2 API policy failures). Read ops are 5 of 7 sub-scores per backend, so hits directly reduce primary geomean. Round-2 planner_b infra was blocked by Redis code; Caffeine-only unblocks infrastructure family.",
+      "approach_family": "infrastructure",
+      "confidence": "high",
+      "estimated_impact": "30-50% on read ops, 15-25% on primary"
+    },
+    {
+      "title": "AGE: parameterized Cypher-over-SQL with JDBC bind variables for hot paths",
+      "source": "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/sql/AgeSql.kt:102-109 (cypher wrapper rebuilds template each call), 119-126 (createVertex), 151-156 (matchVertexById), 211-224 (createEdge), 273-292 (neighbors); AgeGraphOperations.kt uses exec(stmt) string form everywhere",
+      "evidence": "AGE builds full SQL string via triple-dollar template every call; literals inline. Postgres cannot reuse a prepared plan because text differs. Switching findVertexById/createEdge/neighbors to `exec(stmt, args)` style with positional placeholders (for the Long ids and label names that parse to a stable shape) enables Postgres server-side plan-cache hits and HikariCP prepared-statement caching. Pairs naturally with a small in-process template cache keyed by (method, label). Independent of idea #2 cache; compounds by making cache-miss cheaper. Lower confidence because AGE cypher body is a passed string -- need to verify AGE accepts $1 style binds for the outer AS(v agtype) wrapper.",
+      "approach_family": "optimization",
+      "confidence": "medium",
+      "estimated_impact": "8-15% on AGE ops"
+    },
+    {
+      "title": "Neo4j: cache SessionConfig once + collapse 2-query loadAdjacency callers to 1 combined MATCH",
+      "source": "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt:65-66 (SessionConfig.builder each call), 381-413 connectedComponents (2 queries), 415-451 pageRank (2 queries), 478-511 detectCyclesViaFallback (2 queries); 453-476 loadAdjacency already does 1 combined query",
+      "evidence": "SessionConfig is immutable across calls; cache in private val cfg = SessionConfig.builder().withDatabase(database).build() in constructor to remove per-call builder allocation. connectedComponents, pageRank, detectCyclesViaFallback each issue 2 runQuery calls instead of the 1 combined form already used by loadAdjacency line 461. Merging to MATCH (a)-[r$edgePattern]->(b) RETURN a, b halves network round-trips for traversal algorithms. Does NOT touch AccessMode READ/WRITE routing (round-2 regressor) -- safe.",
+      "approach_family": "optimization",
+      "confidence": "medium",
+      "estimated_impact": "5-10% on Neo4j ops"
+    },
+    {
+      "title": "AGE: cache loadAdjacencyForFallback per (edgeLabel, direction); invalidate on writes",
+      "source": "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/AgeGraphOperations.kt:454-493 (loadAdjacencyForFallback fetches ALL vertices + ALL edges on EVERY bfs/dfs/detectCycles/CC/PR call); 342-448 callers",
+      "evidence": "For JVM-fallback algorithms, AGE does matchAllVertices + matchAllEdges on every call. Small Caffeine cache size=100 keyed (edgeLabel, direction) with invalidation on createEdge/createVertex/deleteEdge/deleteVertex reuses precomputed adjacency across calls. Only affects algorithm methods (not age_allPaths/age_shortestPath which use AgeSql.allPaths/shortestPath directly). Good when bench matrix adds bfs/dfs/pageRank; safe otherwise.",
+      "approach_family": "optimization",
+      "confidence": "low",
+      "estimated_impact": "3-8% on AGE traversal"
+    },
+    {
+      "title": "AGE: replace hand-rolled AgeTypeParser with Jackson streaming parser + cached ObjectMapper",
+      "source": "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/sql/AgeTypeParser.kt:33-41 (parseVertex char-scan + substring allocations); same for parseEdge, parsePath; Jackson on classpath via bluetape4k-jackson in Libs.kt",
+      "evidence": "Every createVertex/findVertexById/createEdge result allocates substring/trim/mutableMapOf inside AgeTypeParser. Jackson streaming is JIT-friendly, allocation-light. All 7 AGE sub-scores include >=1 parse. Compounds with idea #2: cache-miss path is still cheaper.",
+      "approach_family": "optimization",
+      "confidence": "low",
+      "estimated_impact": "4-10% on AGE ops"
+    }
+  ]
+}

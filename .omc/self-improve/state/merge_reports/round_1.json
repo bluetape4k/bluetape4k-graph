@@ -1,0 +1,16 @@
+{
+  "round": 1,
+  "timestamp": "2026-04-19T17:30:00Z",
+  "winner": "executor_a",
+  "winner_branch": "experiment/round_1_executor_a",
+  "merged_into": "improve/neo4j_age_latency_improvement",
+  "merge_commit": "see git log",
+  "score_before": null,
+  "score_after": 1336.029,
+  "improvement_pct": null,
+  "losers_archived": [
+    {"branch": "experiment/round_1_executor_b", "tag": "archive/round_1_executor_b"},
+    {"branch": "experiment/round_1_executor_c", "tag": "archive/round_1_executor_c"}
+  ],
+  "auto_pushed": false
+}

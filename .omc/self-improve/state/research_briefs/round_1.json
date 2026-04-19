@@ -1,0 +1,87 @@
+{
+  "iteration": 1,
+  "researcher_id": "researcher",
+  "repo_analysis_summary": "Neo4j(graph-neo4j) and Apache AGE(graph-age) backends both open a fresh session/transaction per operation and close it on completion. Benchmarks (AverageTime, MICROSECONDS) drive single ops (createVertex/findVertexById/neighbors/shortestPath). Common hot paths: (1) session create/close, (2) transaction begin/commit overhead, (3) AGE additionally invokes LOAD 'age' + SET search_path twice per transaction, (4) AGE agtype JSON is decoded via a hand-rolled parser, (5) AGE Cypher SQL is built via string templates without parameter binding, (6) Neo4j never sets AccessMode.READ so read paths go through the write route, (7) Neo4j coroutine impl creates a new session per flowQuery. shortestPath/allPaths/neighbors use variable-length *1..maxDepth patterns that get no Cypher plan caching when text varies. HikariCP pool size is 4 in benchmarks. Round-trip reduction (drop redundant LOAD 'age', enable Neo4j READ mode, enable prepared statement reuse), session/transaction reuse, and parser acceleration are the most promising levers for the -30 percent goal.",
+  "ideas": [
+    {
+      "title": "AGE: remove per-transaction LOAD 'age' + SET search_path (already handled by HikariCP connectionInitSql)",
+      "source": "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/JdbcTransactionExtensions.kt:22-25; graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/AgeGraphOperations.kt:76,91,100,118,132,147,168,183,198,223,238,258,275,306,330,355,491; benchmark/graph-age-benchmark/src/main/kotlin/io/bluetape4k/graph/age/benchmark/AgeBenchmarkState.kt:50",
+      "evidence": "Every transaction {} block in AgeGraphOperations.kt calls loadAgeAndSetSearchPath() which runs 2 statements (JdbcTransactionExtensions.kt:23-24). But the HikariCP DataSource already performs the same work on connection init (AgeBenchmarkState.kt:50, AgeGraphOperationsTest.kt:48), so every transaction issues two redundant round-trips. A single-vertex op therefore does 3 SQL round-trips instead of 1, roughly 3x the minimal cost.",
+      "approach_family": "optimization",
+      "confidence": "high",
+      "estimated_impact": "25-40%"
+    },
+    {
+      "title": "Neo4j: reuse sessions and set explicit READ/WRITE AccessMode on SessionConfig",
+      "source": "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt:65-73; graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphSuspendOperations.kt:73-77,89-96,110-118",
+      "evidence": "Neo4jGraphOperations.kt:65-67 uses SessionConfig.builder().withDatabase(database).build() only; it never calls withDefaultAccessMode(AccessMode.READ). Bolt can skip leader routing and optimistic lock paths for READ sessions. Additionally every runQuery call creates and closes a new session; session creation+close alone is tens-to-hundreds of microseconds on a single-threaded benchmark. findVertexById/findVerticesByLabel/neighbors/shortestPath are all reads but are processed as writes today.",
+      "approach_family": "optimization",
+      "confidence": "high",
+      "estimated_impact": "15-25%"
+    },
+    {
+      "title": "AGE: switch AgeSql string templates to PreparedStatement parameter binding",
+      "source": "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/sql/AgeSql.kt:102-109,119-126,151-156,211-223; graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/sql/AgePropertySerializer.kt; graph/graph-core/src/main/kotlin/io/bluetape4k/graph/utils/GraphProperties.kt:46-51",
+      "evidence": "All AGE SQL interpolates values directly into the SQL text via GraphProperties.toCypherProps (AgeSql.kt:119-126,151-156,211-223). Every request therefore has distinct SQL text, so PostgreSQL server-side plan cache / prepared statements never hit. For repeated patterns (findVertexById, createVertex) parse/plan cost is paid every call, and AGE re-runs its Cypher parser too. Switching to bind variables via Exposed exec with args or positional placeholders would enable server-side prepared statement caching.",
+      "approach_family": "architecture",
+      "confidence": "medium",
+      "estimated_impact": "15-30%"
+    },
+    {
+      "title": "AGE: replace hand-rolled AgeTypeParser with a cached Jackson ObjectMapper",
+      "source": "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/sql/AgeTypeParser.kt:99-123,164-246",
+      "evidence": "AgeTypeParser.parseJsonObject linearly scans each character and calls substring repeatedly (164-188). parseValue calls startsWith/indexOf in a loop (190-221) and findClosing walks characters to track depth (248-260). Every createVertex/findVertexById result allocates many substring/trim/mutableMapOf instances. Jackson streaming is a proven JIT-friendly alternative, and jackson 2.21.2 is already on the classpath (buildSrc/src/main/kotlin/Libs.kt:129).",
+      "approach_family": "optimization",
+      "confidence": "medium",
+      "estimated_impact": "8-15%"
+    },
+    {
+      "title": "Neo4j Suspend: replace ReactiveSession-per-call with blocking session wrapped in Dispatchers.IO for single-value ops",
+      "source": "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphSuspendOperations.kt:73-77,82-96,103-119,354-386",
+      "evidence": "Every suspend call creates a ReactiveSession, converts a Publisher to a Flow, and collects with toList() (runQuery 82-96). The reactive->flow->list pipeline adds mutex, Channel, and allocation overhead. Single-value ops (createVertex/findVertexById/deleteVertex/countVertices) get no reactive benefit. The algorithm methods already use syncDelegate + withContext(Dispatchers.IO) (354-386); the same pattern can eliminate reactive bridge cost for the rest.",
+      "approach_family": "architecture",
+      "confidence": "high",
+      "estimated_impact": "20-35%"
+    },
+    {
+      "title": "Common: collapse the two-query vertex+edge fetch in PageRank/CC/BFS/DFS into a single query",
+      "source": "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt:381-413,415-451,453-476; graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/AgeGraphOperations.kt:484-525",
+      "evidence": "connectedComponents/pageRank/BFS/DFS run vertex-fetch and edge-fetch as two separate queries (Neo4jGraphOperations.kt:388-400 and AgeGraphOperations.kt:495-508) with the same label filter. A single MATCH (a)-[r]->(b) RETURN a,b,r query halves round-trips. AGE benefits even more, since each exec today also pays the redundant LOAD 'age' cost (compounds with idea #1).",
+      "approach_family": "optimization",
+      "confidence": "medium",
+      "estimated_impact": "10-20%"
+    },
+    {
+      "title": "Neo4j: avoid the extra ArrayList copy in runQuery.list and presize mapping collections",
+      "source": "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt:68-73,128-140; graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jRecordMapper.kt:45-49",
+      "evidence": "runQuery calls Session#run(...).list(mapper) (line 72); list() materializes into an ArrayList and each mapping calls Neo4jRecordMapper which rebuilds the property map. Default ArrayList capacity (10) causes growth reallocations for small queries. Using iteration with a preallocated target (or presizing via resultSummary.counters where available) reduces per-call allocations.",
+      "approach_family": "optimization",
+      "confidence": "low",
+      "estimated_impact": "3-8%"
+    },
+    {
+      "title": "Common: add a Caffeine-based read-through cache for hot ops (findVertexById, neighbors, countVertices)",
+      "source": "buildSrc/src/main/kotlin/Libs.kt:178; graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt:117-140; graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/AgeGraphOperations.kt:128-156,194-208",
+      "evidence": "Benchmarks (Neo4jVertexBenchmark.kt:34-35, AgeVertexBenchmark.kt:34-35) invoke findVertexById(aliceId) on every iteration, a read-heavy workload with identical params. Current code has no in-memory cache and does one DB round-trip per call. A TTL-backed Caffeine cache in front of GraphOperations turns cache hits from microseconds to nanoseconds, matching the -30 percent goal for read-heavy benchmarks.",
+      "approach_family": "infrastructure",
+      "confidence": "high",
+      "estimated_impact": "20-50%"
+    },
+    {
+      "title": "AGE: tune HikariCP maximumPoolSize and connection validation/keepalive defaults",
+      "source": "benchmark/graph-age-benchmark/src/main/kotlin/io/bluetape4k/graph/age/benchmark/AgeBenchmarkState.kt:45-52",
+      "evidence": "Benchmark is single-threaded so pool size is not the contention point, but default HikariCP connectionTimeout=30s, validationTimeout=5s, idleTimeout=10min settings add isValid checks and lock overhead on every checkout. Explicitly setting minimumIdle=maximumPoolSize, a short connectionTestQuery like SELECT 1, and disabling isolateInternalQueries can shave microseconds per op.",
+      "approach_family": "infrastructure",
+      "confidence": "low",
+      "estimated_impact": "3-10%"
+    },
+    {
+      "title": "Common: tighten shortestPath/allPaths patterns; use smaller default maxDepth or Neo4j GDS shortest path procedure",
+      "source": "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt:248-267; graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/sql/AgeSql.kt:310-324",
+      "evidence": "AGE lacks a native shortestPath, so AgeSql.shortestPath uses variable-length match with LIMIT 1 (AgeSql.kt:317-321). Path cost grows exponentially with maxDepth; benchmarks currently run maxDepth=4 (AgeTraversalBenchmark.kt:23). For Neo4j a call to apoc.algo.dijkstra or gds.shortestPath.dijkstra.stream could replace the Cypher shortestPath path expansion.",
+      "approach_family": "optimization",
+      "confidence": "low",
+      "estimated_impact": "5-15%"
+    }
+  ]
+}

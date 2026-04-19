@@ -1,0 +1,30 @@
+{
+  "executor_id": "executor_a",
+  "plan_id": "round_2_planner_a",
+  "benchmark_score": 2420.057,
+  "benchmark_raw": "{\"primary\": 2420.057, \"sub_scores\": {\"age_createEdge\": 8220.574, \"neo4j_createEdge\": 10136.066, \"neo4j_shortestPath\": 5644.987}}",
+  "status": "regression",
+  "sub_scores": {
+    "age_allPaths": 601.02,
+    "age_shortestPath": 596.144,
+    "age_createEdge": 8220.574,
+    "age_createVertex": 559.649,
+    "age_findVertexById": 533.418,
+    "age_findVerticesByLabel": 528.168,
+    "age_neighbors": 677.135,
+    "neo4j_allPaths": 2639.309,
+    "neo4j_shortestPath": 5644.987,
+    "neo4j_createEdge": 10136.066,
+    "neo4j_createVertex": 1118.217,
+    "neo4j_findVertexById": 830.871,
+    "neo4j_findVerticesByLabel": 837.641,
+    "neo4j_neighbors": 957.591
+  },
+  "failure_analysis": {
+    "what": "Benchmark score 2420.057 vs baseline 1336.029 — 81% regression",
+    "why": "Neo4j sub_scores dramatically worse (neo4j_createEdge: 2876→10136, neo4j_shortestPath: 724→5644). Likely causes: (1) environment noise from concurrent Docker containers in earlier executors, (2) label cache ConcurrentHashMap overhead, (3) benchmark ran after other executors exhausted Docker resources",
+    "category": "regression",
+    "lesson": "Label cache approach minimal effect on AGE createEdge (8342→8220, <2%). Neo4j results highly variable under Docker resource pressure — need isolated benchmark runs. age_createEdge bottleneck requires deeper investigation (possibly AGE tx BEGIN/COMMIT cost, not MATCH cost)"
+  },
+  "timestamp": "2026-04-19T20:00:00Z"
+}

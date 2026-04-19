@@ -1,0 +1,82 @@
+{
+  "plan_id": "round_1_planner_c",
+  "planner_id": "planner_c",
+  "round": 1,
+  "hypothesis": "Replacing the ReactiveSession-per-call pattern in Neo4jGraphSuspendOperations with blocking session + withContext(Dispatchers.IO) for single-value ops should reduce avg_latency_us by 20-35% because the reactive->flow->list pipeline adds mutex, Channel, and allocation overhead with no benefit for these ops.",
+  "approach_family": "architecture",
+  "critic_approved": true,
+  "target_files": [
+    "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphSuspendOperations.kt"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "file": "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphSuspendOperations.kt",
+      "change": "Promote the existing `syncDelegate` lazy property (currently only used by algorithm methods at lines 354-386) to be the primary delegate for all single-value suspend ops. Keep its lazy initialization pattern: `private val syncDelegate by lazy { Neo4jGraphOperations(driver, database) }`. This eliminates the need for ReactiveSession in single-value paths while still sharing the same Driver."
+    },
+    {
+      "step": 2,
+      "file": "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphSuspendOperations.kt",
+      "change": "Rewrite `runQuery` helper (lines 82-96) to a blocking-IO variant: `private suspend fun <T> runQueryIo(cypher: String, params: Map<String, Any?> = emptyMap(), mapper: (Record) -> T): List<T> = withContext(Dispatchers.IO) { driver.session(SessionConfig.builder().withDatabase(database).build()).use { s -> s.run(cypher, params).list(mapper) } }`. Keep the old reactive `runQuery` for any callers that truly need streaming, OR rename the blocking version and remove the reactive one if unused after step 3-5."
+    },
+    {
+      "step": 3,
+      "file": "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphSuspendOperations.kt",
+      "change": "Convert all single-value suspend ops to delegate to syncDelegate + withContext(Dispatchers.IO), matching the algorithm pattern at lines 354-386. Specifically rewrite: `createVertex` (lines 152-162), `findVertexById` (lines 164-173), `updateVertex` (lines 189-200), `deleteVertex` (lines 202-216), `countVertices` (lines 218-229), `createEdge` (lines 233-254), `deleteEdge` (lines 270-283), `shortestPath` (lines 310-329), `dropGraph` (lines 128-131), `graphExists` (lines 133-145). Each becomes e.g. `override suspend fun findVertexById(label: String, id: GraphElementId): GraphVertex? = withContext(Dispatchers.IO) { syncDelegate.findVertexById(label, id) }`. This removes ReactiveSession allocation, Publisher->Flow conversion, asFlow/toList Channel overhead, and awaitSingle/awaitFirstOrNull continuation hops per call."
+    },
+    {
+      "step": 4,
+      "file": "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphSuspendOperations.kt",
+      "change": "Keep Flow-returning ops (`findVerticesByLabel`, `findEdgesByLabel`, `neighbors`, `allPaths`) using the existing `flowQuery` reactive helper, since streaming benefits from ReactiveSession backpressure. Do NOT change these methods. This preserves reactive semantics where they actually matter."
+    },
+    {
+      "step": 5,
+      "file": "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphSuspendOperations.kt",
+      "change": "Remove now-unused imports if the reactive `runQuery` helper is fully removed: `kotlinx.coroutines.NonCancellable`, `kotlinx.coroutines.reactive.asFlow`, `kotlinx.coroutines.reactive.awaitFirstOrNull`, `kotlinx.coroutines.reactive.awaitSingle`, `kotlinx.coroutines.flow.toList`, and remove the private `session()` factory + reactive `runQuery` if only `flowQuery` still uses `session()`. Keep the session() helper if flowQuery still uses it. Update the class KDoc (lines 42-65) to note that single-value ops use blocking+IO delegation while Flow ops use ReactiveSession streaming."
+    },
+    {
+      "step": 6,
+      "file": "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphSuspendOperations.kt",
+      "change": "Verify coroutine semantics: (a) `withContext(Dispatchers.IO)` preserves structured concurrency and cancellation propagation (unlike the current `NonCancellable`-wrapped close). (b) Blocking JDBC Driver session is safe on Dispatchers.IO (documented intended use). (c) No behavioral change for callers: return types (GraphVertex/GraphEdge/Boolean/Long/GraphPath?) remain identical. Run `./gradlew :graph-neo4j:test` to confirm existing Neo4jGraphSuspendOperationsTest passes unchanged."
+    }
+  ],
+  "expected_outcome": {
+    "metric": "avg_latency_us",
+    "estimated_impact": "20-35% reduction on single-value suspend ops (createVertex/findVertexById/deleteVertex/countVertices/createEdge/deleteEdge/shortestPath)",
+    "rationale": "Current per-call cost includes: (1) ReactiveSession allocation via reflective session(class, config), (2) Publisher<ReactiveResult> -> awaitSingle continuation, (3) Publisher<Record> -> Flow via asFlow (Channel allocation + mutex), (4) Flow.toList collection, (5) NonCancellable withContext for close + awaitFirstOrNull. Replacing with syncDelegate + withContext(Dispatchers.IO) collapses this to: (1) blocking Session via session().use, (2) direct Result.list(mapper), (3) one Dispatchers.IO context switch. Removes ~4 allocation sites and 2-3 continuation hops per call. The algorithm methods already prove this pattern works (lines 354-386) - this hypothesis extends it to CRUD paths.",
+    "sub_score_expectations": {
+      "allocation_rate": "significant reduction (no Channel, no Flow builder)",
+      "context_switches": "reduced from 3-4 per call to 1 per call",
+      "throughput_ops_sec": "20-35% increase on single-value ops",
+      "flow_ops_latency": "unchanged (Flow ops preserved)"
+    }
+  },
+  "history_reference": {
+    "builds_on": "none",
+    "avoids": "none"
+  },
+  "critic_review": {
+    "h001_hypothesis_count": "pass",
+    "h002_family_streak": "pass",
+    "h003_intra_round_diversity": "pass",
+    "schema_valid": "pass",
+    "history_aware": "pass",
+    "verdict": "approved",
+    "rejection_reason": null,
+    "evidence_verified": {
+      "target_file_exists": true,
+      "line_references_accurate": "All cited line ranges (42-65, 82-96, 128-131, 133-145, 152-162, 164-173, 189-200, 202-216, 218-229, 233-254, 270-283, 310-329, 354-386) match actual source.",
+      "precedent_confirmed": "syncDelegate lazy pattern + withContext(Dispatchers.IO) already used for pageRank/degreeCentrality/connectedComponents/bfs/dfs/detectCycles at lines 354-386.",
+      "h001_count": 1,
+      "h003_families_in_round": "planner_a=optimization, planner_b=infrastructure, planner_c=architecture (distinct)"
+    }
+  },
+  "architect_review": {
+    "verdict": "approve",
+    "feedback": "Architecture change is sound: the syncDelegate + withContext(Dispatchers.IO) pattern is already proven in algorithm methods (lines 354-386) and the plan correctly extends it only to single-value ops while preserving ReactiveSession for Flow-returning streaming ops. 6-point checklist: (1) Testability PASS - existing Neo4jGraphSuspendOperationsTest covers impacted methods. (2) Novelty PASS - first iteration, distinct family. (3) Scope PASS - single file, 10 methods, bounded. (4) Target files PASS - file verified to exist with matching line numbers. (5) Implementation clarity PASS - every method listed with before/after pattern. (6) Expected outcome PASS - 20-35% is plausible given removal of 4 allocations + 2-3 continuation hops per call.",
+    "structural_concerns": [
+      "Minor: step 6 notes `withContext(Dispatchers.IO)` restores cancellation semantics that the current NonCancellable close pattern breaks - this is a subtle behavior change. Callers that rely on close-on-cancel-suppression could see different lifecycle behavior, but the plan states return types are unchanged and existing tests must pass, which gates this risk.",
+      "Minor: step 2 describes both `runQueryIo` AND potentially renaming/removing the reactive runQuery - executor should pick one path. Recommend: introduce `runQueryIo` then remove reactive `runQuery` in step 5 cleanup once Flow ops are confirmed to only use `flowQuery`."
+    ]
+  }
+}

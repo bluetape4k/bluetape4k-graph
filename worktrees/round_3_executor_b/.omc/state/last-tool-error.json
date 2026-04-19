@@ -1,0 +1,7 @@
+{
+  "tool_name": "Read",
+  "tool_input_preview": "{\"file_path\":\"/Users/debop/work/bluetape4k/bluetape4k-graph/worktrees/round_3_executor_b/graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt\",\"offset\":1,\"limit\":90}",
+  "error": "File does not exist. Note: your current working directory is /Users/debop/work/bluetape4k/bluetape4k-graph/worktrees/round_3_executor_b.",
+  "timestamp": "2026-04-19T11:57:19.113Z",
+  "retry_count": 3
+}

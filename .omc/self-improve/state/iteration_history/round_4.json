@@ -1,0 +1,61 @@
+{
+  "round": 4,
+  "started_at": "2026-04-19T21:00:00Z",
+  "completed_at": "2026-04-19T22:15:00Z",
+  "winner": {
+    "executor_id": "executor_a",
+    "plan_id": "round_4_planner_a",
+    "approach_family": "infrastructure",
+    "hypothesis": "Extend Caffeine cache to shortestPath/allPaths/findEdgesByLabel in CachingAgeGraphOperations and CachingNeo4jGraphOperations",
+    "score_before": 9.233,
+    "score_after": 0.453,
+    "improvement_pct": 95.1
+  },
+  "all_results": [
+    {
+      "executor_id": "executor_a",
+      "plan_id": "round_4_planner_a",
+      "approach_family": "infrastructure",
+      "score": 0.453,
+      "status": "success",
+      "sub_scores": {
+        "age_allPaths": 0.016,
+        "age_shortestPath": 0.016,
+        "age_createEdge": 8024.763,
+        "age_createVertex": 478.539,
+        "age_findVertexById": 0.015,
+        "age_findVerticesByLabel": 0.013,
+        "age_neighbors": 0.013,
+        "neo4j_allPaths": 0.016,
+        "neo4j_shortestPath": 0.016,
+        "neo4j_createEdge": 2955.679,
+        "neo4j_createVertex": 813.865,
+        "neo4j_findVertexById": 0.015,
+        "neo4j_findVerticesByLabel": 0.013,
+        "neo4j_neighbors": 0.016
+      }
+    },
+    {
+      "executor_id": "executor_b",
+      "plan_id": "round_4_planner_b",
+      "approach_family": "architecture",
+      "score": 8.821,
+      "status": "success_but_not_winner",
+      "notes": "withTransaction/withSession batching reduced neo4j_createEdge 3637→3140 us but shortestPath/allPaths still uncached so geomean dominated"
+    },
+    {
+      "executor_id": "executor_c",
+      "plan_id": "round_4_planner_c",
+      "approach_family": "optimization",
+      "score": 9.381,
+      "status": "regression",
+      "notes": "SessionConfig caching negligible; regression within JMH variance"
+    }
+  ],
+  "key_findings": [
+    "Extending Caffeine cache to shortestPath/allPaths cuts 4 more sub-scores from ~540-813 us to ~0.016 us",
+    "10 of 14 sub-scores now at cache-hit levels (~0.013-0.017 us)",
+    "Remaining bottlenecks: age_createEdge (~8000 us), neo4j_createEdge (~3000 us), age_createVertex (~500 us), neo4j_createVertex (~800 us)",
+    "withTransaction batching (executor_b) reduces neo4j_createEdge by ~14% but insufficient alone without traversal caching"
+  ]
+}

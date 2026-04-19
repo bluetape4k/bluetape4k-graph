@@ -1,0 +1,30 @@
+{
+  "executor_id": "executor_a",
+  "plan_id": "round_3_planner_a",
+  "benchmark_score": 1473.206,
+  "benchmark_raw": "{\"primary\": 1473.206, \"sub_scores\": {\"age_allPaths\": 535.695, \"age_shortestPath\": 536.247, \"age_createEdge\": 8372.231, \"age_createVertex\": 596.954, \"age_findVertexById\": 603.733, \"age_findVerticesByLabel\": 478.792, \"age_neighbors\": 573.833, \"neo4j_allPaths\": 788.84, \"neo4j_shortestPath\": 786.26, \"neo4j_createEdge\": 4296.258, \"neo4j_createVertex\": 942.039, \"neo4j_findVertexById\": 739.256, \"neo4j_findVerticesByLabel\": 698.684, \"neo4j_neighbors\": 676.056}}",
+  "status": "regression",
+  "sub_scores": {
+    "age_allPaths": 535.695,
+    "age_shortestPath": 536.247,
+    "age_createEdge": 8372.231,
+    "age_createVertex": 596.954,
+    "age_findVertexById": 603.733,
+    "age_findVerticesByLabel": 478.792,
+    "age_neighbors": 573.833,
+    "neo4j_allPaths": 788.84,
+    "neo4j_shortestPath": 786.26,
+    "neo4j_createEdge": 4296.258,
+    "neo4j_createVertex": 942.039,
+    "neo4j_findVertexById": 739.256,
+    "neo4j_findVerticesByLabel": 698.684,
+    "neo4j_neighbors": 676.056
+  },
+  "failure_analysis": {
+    "what": "Combined primary 1473.206 us/op > baseline 1336.029 us/op (+10.3%). age_createEdge=8372.231 us/op and neo4j_createEdge=4296.258 us/op (with large error bars +/-8992) both regressed; other sub-scores are in normal range.",
+    "why": "Transaction/session batching did not remove round-trips. In AGE, the outer Exposed transaction still issues each createVertex/createEdge as a separate SQL exec() call; holding the connection longer increased variance against HikariCP connectionInitSql overhead. In Neo4j, the shared Session via ThreadLocal did not reduce Bolt round-trips because each s.run() is still one server trip; session open/close is inexpensive relative to query RTT, so reusing it yielded no speedup while introducing warmup variance.",
+    "category": "regression",
+    "lesson": "Transaction/session-level batching only helps when the driver actually pipelines or batches statements. Both Exposed JDBC and the Neo4j Bolt driver execute each statement as its own round-trip. To cut createEdge latency, future planners should merge the 3 ops into a SINGLE statement (e.g., one Cypher MERGE/CREATE that creates both nodes and the edge in a single query, or a single AGE SQL with multiple Cypher clauses). Do not target tx/session lifecycle grouping for latency wins."
+  },
+  "timestamp": "2026-04-19T22:00:00Z"
+}

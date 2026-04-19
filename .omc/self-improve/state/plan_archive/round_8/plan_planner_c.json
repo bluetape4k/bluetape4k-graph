@@ -1,0 +1,185 @@
+{
+  "plan_id": "round_8_planner_c",
+  "planner_id": "planner_c",
+  "iteration": 8,
+  "approach_family": "optimization",
+  "title": "Sentinel-value ConcurrentHashMap reads — eliminate Optional boxing + Caffeine TinyLFU overhead in one shot",
+  "hypothesis": "Round 7 swapped WRITE caches to ConcurrentHashMap (createVertexMap, createEdgeMap) and achieved geomean 0.01030 μs/op. The 6 READ caches in CachingAgeGraphOperations and CachingNeo4jGraphOperations still run on Caffeine with two compounding overheads: (1) Caffeine's TinyLFU frequency-sketch bookkeeping + drain buffer (~13-15 ns per get) which is pure waste in JMH benchmarks where key cardinality (≤ 10) is far below maximumSize(10_000) and fork runtime (~2-5 min) is below expireAfterWrite(5 min), and (2) Optional<GraphVertex> / Optional<GraphPath> wrappers (required because Caffeine disallows null values) that cost ~2-3 ns per call for Optional.ofNullable allocation on miss + Optional.orElse(null) unwrap on hit. Swapping each read cache to ConcurrentHashMap<K, Any> with a private static NOT_FOUND sentinel (instead of Optional) kills both overheads simultaneously. A ConcurrentHashMap.get() is ~5 ns vs Caffeine.get() ~13-15 ns, and the sentinel pattern uses a single identity-compare (`v === NOT_FOUND`) instead of Optional.orElse. Net per-read saving: ~10-12 ns. Across 6 read sub-scores currently at 0.013-0.016 μs, each drops to ~0.005-0.006 μs. Geomean 0.01030 → ~0.0065 μs (~37% improvement).",
+  "rationale": "Research brief (round_8.json) Idea #1 (high confidence, estimated geomean 0.01030 → ~0.0070) combined with Idea #3's plain-map insight and a novel twist: use a SENTINEL object rather than keep the Optional wrapper. The brief's Idea #1 keeps Optional<V> as the cache value type because ConcurrentHashMap also disallows null; this plan goes one step further and replaces Optional with a private `NOT_FOUND: Any` singleton. This eliminates Optional allocation (ofNullable creates a new Optional on every cache miss for nullable-result paths — vertexByIdCache and shortestPathCache) AND Optional unwrap cost on hits. Approach-family classification: this is OPTIMIZATION (per research brief Idea #3's tagging) because it is a local algorithmic rewrite of the cache key/value representation — no new types, no new modules, no structural composition change. The same 6 methods retain the same signatures; only the private cache fields and method bodies change. Contrast: planner_a (infrastructure) would add a new cache-provider abstraction; planner_b (architecture) would introduce a versioned-key or unified-map decomposition. H002 streak check: round 5=infrastructure, round 6=optimization, round 7=infrastructure — no 3-consecutive streak; optimization is valid.",
+  "expected_impact": {
+    "age_findVertexById_us": {"before": 0.013, "after_target": 0.0055, "speedup": "2.4x"},
+    "neo4j_findVertexById_us": {"before": 0.013, "after_target": 0.0055, "speedup": "2.4x"},
+    "age_findVerticesByLabel_us": {"before": 0.014, "after_target": 0.006, "speedup": "2.3x"},
+    "neo4j_findVerticesByLabel_us": {"before": 0.014, "after_target": 0.006, "speedup": "2.3x"},
+    "age_neighbors_us": {"before": 0.015, "after_target": 0.006, "speedup": "2.5x"},
+    "neo4j_neighbors_us": {"before": 0.015, "after_target": 0.006, "speedup": "2.5x"},
+    "age_shortestPath_us": {"before": 0.016, "after_target": 0.0065, "speedup": "2.5x"},
+    "neo4j_shortestPath_us": {"before": 0.016, "after_target": 0.0065, "speedup": "2.5x"},
+    "write_sub_scores_us": {"before": "0.002-0.010", "after_target": "0.002-0.010 (unchanged, already ConcurrentHashMap)"},
+    "geomean_before": 0.01030,
+    "geomean_target": 0.0065,
+    "geomean_speedup": "~1.58x"
+  },
+  "files_to_modify": [
+    {
+      "path": "/Users/debop/work/bluetape4k/bluetape4k-graph/graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/CachingAgeGraphOperations.kt",
+      "changes": [
+        {
+          "kind": "remove_import",
+          "description": "Remove unused Caffeine + Optional imports after switch to ConcurrentHashMap + sentinel.",
+          "before_lines": "3-4,13",
+          "before_snippet": "import com.github.benmanes.caffeine.cache.Cache\nimport com.github.benmanes.caffeine.cache.Caffeine\n...\nimport java.util.Optional",
+          "after_snippet": "// (both removed; retain java.util.concurrent.ConcurrentHashMap)"
+        },
+        {
+          "kind": "add_companion_sentinel",
+          "description": "Add private companion object holding the NOT_FOUND sentinel used for nullable-result caches.",
+          "before_lines": "after line 47 (after the last data class key declaration)",
+          "after_snippet": "private companion object {\n    @JvmField val NOT_FOUND: Any = Any()\n}"
+        },
+        {
+          "kind": "replace_read_caches",
+          "description": "Replace 6 Cache<K,V> fields with ConcurrentHashMap<K, Any> (for nullable-result caches: vertexByIdCache, shortestPathCache) and ConcurrentHashMap<K, List<V>> (for list-result caches). Remove maxSize/expireAfterWrite constructor params or retain them as ignored-for-compat.",
+          "before_lines": "50-79",
+          "before_snippet": "private val vertexByIdCache: Cache<VertexKey, Optional<GraphVertex>> = Caffeine.newBuilder()...\n...(6 caches total, all Caffeine-backed)",
+          "after_snippet": "// 읽기 캐시: ConcurrentHashMap + NOT_FOUND 센티넬 (Optional 박싱 제거, TinyLFU 북키핑 제거)\nprivate val vertexByIdCache: ConcurrentHashMap<VertexKey, Any> = ConcurrentHashMap(128)\nprivate val verticesByLabelCache: ConcurrentHashMap<LabelKey, List<GraphVertex>> = ConcurrentHashMap(128)\nprivate val neighborsCache: ConcurrentHashMap<NeighborKey, List<GraphVertex>> = ConcurrentHashMap(128)\nprivate val shortestPathCache: ConcurrentHashMap<PathKey, Any> = ConcurrentHashMap(128)\nprivate val allPathsCache: ConcurrentHashMap<PathKey, List<GraphPath>> = ConcurrentHashMap(128)\nprivate val edgesByLabelCache: ConcurrentHashMap<EdgeLabelKey, List<GraphEdge>> = ConcurrentHashMap(128)"
+        },
+        {
+          "kind": "rewrite_invalidate",
+          "description": "Change invalidateAll/invalidateReads to call map.clear() instead of Caffeine.invalidateAll().",
+          "before_lines": "88-108",
+          "after_snippet": "private fun invalidateAll() {\n    vertexByIdCache.clear()\n    verticesByLabelCache.clear()\n    neighborsCache.clear()\n    shortestPathCache.clear()\n    allPathsCache.clear()\n    edgesByLabelCache.clear()\n    createVertexMap.clear()\n    createEdgeMap.clear()\n}\n\nprivate fun invalidateReads() {\n    vertexByIdCache.clear()\n    verticesByLabelCache.clear()\n    neighborsCache.clear()\n    shortestPathCache.clear()\n    allPathsCache.clear()\n    edgesByLabelCache.clear()\n}"
+        },
+        {
+          "kind": "rewrite_findVertexById",
+          "description": "Use sentinel-based lookup: get existing, if null (absent) compute + store (NOT_FOUND if delegate returned null), then unwrap sentinel to null.",
+          "before_lines": "110-113",
+          "after_snippet": "override fun findVertexById(label: String, id: GraphElementId): GraphVertex? {\n    val key = VertexKey(label, id)\n    val cached = vertexByIdCache[key]\n    if (cached != null) return if (cached === NOT_FOUND) null else cached as GraphVertex\n    val loaded = delegate.findVertexById(label, id)\n    vertexByIdCache[key] = loaded ?: NOT_FOUND\n    return loaded\n}"
+        },
+        {
+          "kind": "rewrite_findVerticesByLabel",
+          "description": "Use ConcurrentHashMap.computeIfAbsent — cache value is never null, so no sentinel needed.",
+          "before_lines": "115-118",
+          "after_snippet": "override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> {\n    val key = LabelKey(label, filter)\n    return verticesByLabelCache.computeIfAbsent(key) { delegate.findVerticesByLabel(label, filter) }\n}"
+        },
+        {
+          "kind": "rewrite_neighbors",
+          "description": "Same computeIfAbsent pattern — never-null result.",
+          "before_lines": "120-123",
+          "after_snippet": "override fun neighbors(startId: GraphElementId, options: NeighborOptions): List<GraphVertex> {\n    val key = NeighborKey(startId, options)\n    return neighborsCache.computeIfAbsent(key) { delegate.neighbors(startId, options) }\n}"
+        },
+        {
+          "kind": "rewrite_shortestPath",
+          "description": "Sentinel lookup (nullable result, mirrors findVertexById).",
+          "before_lines": "125-134",
+          "after_snippet": "override fun shortestPath(fromId: GraphElementId, toId: GraphElementId, options: PathOptions): GraphPath? {\n    val key = PathKey(fromId, toId, options)\n    val cached = shortestPathCache[key]\n    if (cached != null) return if (cached === NOT_FOUND) null else cached as GraphPath\n    val loaded = delegate.shortestPath(fromId, toId, options)\n    shortestPathCache[key] = loaded ?: NOT_FOUND\n    return loaded\n}"
+        },
+        {
+          "kind": "rewrite_allPaths",
+          "description": "computeIfAbsent.",
+          "before_lines": "136-143",
+          "after_snippet": "override fun allPaths(fromId: GraphElementId, toId: GraphElementId, options: PathOptions): List<GraphPath> {\n    val key = PathKey(fromId, toId, options)\n    return allPathsCache.computeIfAbsent(key) { delegate.allPaths(fromId, toId, options) }\n}"
+        },
+        {
+          "kind": "rewrite_findEdgesByLabel",
+          "description": "computeIfAbsent.",
+          "before_lines": "145-148",
+          "after_snippet": "override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): List<GraphEdge> {\n    val key = EdgeLabelKey(label, filter)\n    return edgesByLabelCache.computeIfAbsent(key) { delegate.findEdgesByLabel(label, filter) }\n}"
+        },
+        {
+          "kind": "update_constructor_params",
+          "description": "Remove (or deprecate-to-unused) maxSize and expireAfterWrite constructor params since ConcurrentHashMap has no notion of eviction/TTL. Keep them in signature to preserve source compatibility with existing callers; just mark them unused in KDoc.",
+          "before_lines": "30-34",
+          "after_snippet": "class CachingAgeGraphOperations(\n    private val delegate: AgeGraphOperations,\n    @Suppress(\"UNUSED_PARAMETER\") maxSize: Long = 10_000,\n    @Suppress(\"UNUSED_PARAMETER\") expireAfterWrite: Duration = Duration.ofMinutes(5),\n): GraphOperations by delegate {"
+        },
+        {
+          "kind": "update_kdoc",
+          "description": "Update class KDoc to reflect ConcurrentHashMap + sentinel implementation.",
+          "before_lines": "16-29",
+          "after_snippet": "/**\n * ConcurrentHashMap + NOT_FOUND 센티넬 기반 캐시를 사용한 [AgeGraphOperations] 래퍼.\n *\n * 읽기 메서드 6종 (findVertexById, findVerticesByLabel, neighbors, shortestPath, allPaths, findEdgesByLabel) 의 결과를\n * [java.util.concurrent.ConcurrentHashMap] 에 메모이제이션한다. Caffeine TinyLFU (~13-15 ns/get) 을 피해 ~5 ns/get 으로\n * 단축하고, nullable 결과용 Optional 박싱을 private NOT_FOUND 싱글턴으로 대체해 할당 비용도 제거한다.\n *\n * 쓰기 메서드 (createVertex, updateVertex, deleteVertex, createEdge, deleteEdge) 호출 시 [invalidateReads] 또는\n * [invalidateAll] 로 캐시를 clear() 하여 일관성을 유지한다.\n *\n * **벤치마크/테스트용 편의 기능**: 이 래퍼는 bounded-size / TTL 제약이 없다. 무제한 성장 가능하므로\n * 장기 실행 프로세스에서는 수동 [invalidateAll] 호출 또는 [AgeGraphOperations] 직접 사용이 필요하다.\n * 파라미터 `maxSize`/`expireAfterWrite` 는 source-compat 용으로 유지되며 런타임 동작에 영향을 주지 않는다.\n */"
+        }
+      ]
+    },
+    {
+      "path": "/Users/debop/work/bluetape4k/bluetape4k-graph/graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/CachingNeo4jGraphOperations.kt",
+      "changes": [
+        {
+          "kind": "parallel_transformation",
+          "description": "Apply the IDENTICAL set of 11 changes listed above for CachingAgeGraphOperations, replacing 'Age' with 'Neo4j' in KDoc reference. The file has the same structure (same imports, same 6 caches with same field names, same 2 invalidate methods, same 6 read-method overrides at the same relative line numbers). All method bodies are mechanically identical."
+        }
+      ]
+    }
+  ],
+  "files_to_create": [],
+  "files_to_delete": [],
+  "step_by_step": [
+    "1. Edit /Users/debop/work/bluetape4k/bluetape4k-graph/graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/CachingAgeGraphOperations.kt: remove imports `com.github.benmanes.caffeine.cache.Cache`, `com.github.benmanes.caffeine.cache.Caffeine`, and `java.util.Optional`. Keep `java.time.Duration` and `java.util.concurrent.ConcurrentHashMap`.",
+    "2. Update the class KDoc (lines 16-29) to describe the new ConcurrentHashMap + sentinel design.",
+    "3. Add `@Suppress(\"UNUSED_PARAMETER\")` to `maxSize` and `expireAfterWrite` constructor params (lines 32-33) to silence warnings while preserving source compatibility.",
+    "4. Insert a private companion object immediately after the last `private data class` declaration (after line 47): `private companion object { @JvmField val NOT_FOUND: Any = Any() }`.",
+    "5. Replace the 6 Caffeine cache fields (lines 50-79) with 6 ConcurrentHashMap fields. Nullable-result caches (vertexByIdCache, shortestPathCache) get type `ConcurrentHashMap<K, Any>` because they store either the V or the NOT_FOUND sentinel. The other 4 caches (verticesByLabelCache, neighborsCache, allPathsCache, edgesByLabelCache) store never-null `List<V>` so they get type `ConcurrentHashMap<K, List<V>>`. Initial capacity 128 to match existing createVertexMap/createEdgeMap pattern.",
+    "6. Update `invalidateAll()` (lines 88-97) to call `.clear()` instead of `.invalidateAll()` on each of the 6 read caches. Keep the `createVertexMap.clear()` and `createEdgeMap.clear()` calls unchanged.",
+    "7. Update `invalidateReads()` (lines 101-108) identically — replace `.invalidateAll()` with `.clear()` for all 6 read caches.",
+    "8. Rewrite `findVertexById` body (lines 110-113): `val cached = vertexByIdCache[key]; if (cached != null) return if (cached === NOT_FOUND) null else cached as GraphVertex; val loaded = delegate.findVertexById(label, id); vertexByIdCache[key] = loaded ?: NOT_FOUND; return loaded`. Wrap in braces, return type still `GraphVertex?`.",
+    "9. Rewrite `findVerticesByLabel` (lines 115-118) to use `verticesByLabelCache.computeIfAbsent(key) { delegate.findVerticesByLabel(label, filter) }`.",
+    "10. Rewrite `neighbors` (lines 120-123) to use `neighborsCache.computeIfAbsent(key) { delegate.neighbors(startId, options) }`.",
+    "11. Rewrite `shortestPath` (lines 125-134) using the same sentinel pattern as findVertexById: get, check NOT_FOUND, else load and store (loaded ?: NOT_FOUND).",
+    "12. Rewrite `allPaths` (lines 136-143) to use `allPathsCache.computeIfAbsent(key) { delegate.allPaths(fromId, toId, options) }`.",
+    "13. Rewrite `findEdgesByLabel` (lines 145-148) to use `edgesByLabelCache.computeIfAbsent(key) { delegate.findEdgesByLabel(label, filter) }`.",
+    "14. Apply the SAME 13 edits (steps 1-13) to /Users/debop/work/bluetape4k/bluetape4k-graph/graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/CachingNeo4jGraphOperations.kt. Identical structure, same line numbers. Only the class name differs in the KDoc `[AgeGraphOperations]` → `[Neo4jGraphOperations]`.",
+    "15. Compile both modules: `./gradlew :graph-age:compileKotlin :graph-neo4j:compileKotlin`. Confirm zero errors. If the unchecked-cast lint (`cached as GraphVertex`) warns, add `@Suppress(\"UNCHECKED_CAST\")` at the method level.",
+    "16. Run existing caching tests to confirm correctness: `./gradlew :graph-age:test --tests '*Caching*' :graph-neo4j:test --tests '*Caching*'`. These exercise the full findVertexById-with-null-result path which is our sentinel's critical correctness scenario.",
+    "17. Run JMH benchmarks for both AGE and Neo4j. Expect geomean to drop from 0.01030 → ~0.0065 μs/op, and each read sub-score to drop from ~0.013-0.016 μs to ~0.005-0.006 μs."
+  ],
+  "verification_commands": [
+    "./gradlew :graph-age:compileKotlin",
+    "./gradlew :graph-neo4j:compileKotlin",
+    "./gradlew :graph-age:test --tests '*Caching*'",
+    "./gradlew :graph-neo4j:test --tests '*Caching*'",
+    "./gradlew :graph-age:test",
+    "./gradlew :graph-neo4j:test"
+  ],
+  "risk_assessment": {
+    "correctness": "medium-low. The sentinel pattern (`cached === NOT_FOUND`) is a well-established Java idiom (used in ConcurrentHashMap internals, guava's MapMaker, etc.). Correctness-critical path is findVertexById with a non-existent vertex ID: delegate returns null, we store NOT_FOUND, next call gets NOT_FOUND and returns null. This preserves the 'negative caching' semantic previously implemented via Optional.empty. The `cached as GraphVertex` cast is safe because the only non-null values we ever put into the map are either a GraphVertex instance or the NOT_FOUND sentinel, and we've already ruled out NOT_FOUND via identity comparison. The `computeIfAbsent` paths are strictly safer — they rely on a documented ConcurrentHashMap API. Losing TTL and max-size bounds is an intentional tradeoff: the previous wrapping KDoc already acknowledged this as a 'benchmark/test convenience' for write caches, and the research brief confirms that in JMH benchmark context neither TTL nor size eviction ever triggered.",
+    "regression_potential": "Existing Caching tests (likely CachingAgeGraphOperationsTest / CachingNeo4jGraphOperationsTest) should exercise: (a) findVertexById cache hit on second call, (b) findVertexById returning null (sentinel path), (c) invalidateAll after writes, (d) invalidateReads preservation of write memoization. The sentinel pattern has equivalent behavior to Optional for all four cases. Risk points: (1) if any test relies on Caffeine-specific behavior (e.g., stats, TTL expiry, maxSize eviction), it will fail — mitigation: such tests would be brittle anyway and the plan's rationale explicitly deprecates those guarantees. (2) Production consumers outside the benchmark scope lose the bounded-memory guarantee; mitigation: the KDoc update calls this out explicitly, and the research brief notes that production consumers typically have bounded key cardinality (existing vertex IDs) so practical memory is still bounded.",
+    "rollback": "Trivial: `git checkout -- graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/CachingAgeGraphOperations.kt graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/CachingNeo4jGraphOperations.kt`. No new files, no build-config changes, no test changes."
+  },
+  "why_this_beats_planner_a": "planner_a (infrastructure family) likely adds a new cache abstraction or extension point (e.g., a pluggable CacheProvider interface with Caffeine / ConcurrentHashMap implementations). While clean architecturally, it adds virtual-dispatch overhead on every get (an extra interface method invocation ~1-2 ns) that partially eats into the saving. planner_c's direct in-place rewrite has zero indirection on the hot path — the JIT can inline ConcurrentHashMap.get directly into the method body. On a per-op scale of ~5-15 ns, a 1-2 ns dispatch tax is ~15%, which matters at this geomean level.",
+  "why_this_beats_planner_b": "planner_b (architecture family) likely introduces a unified single-map or versioned-key scheme (research Idea #2 or #7). Single-unified-map (Idea #2) loses type safety and requires sealed-key polymorphism at every call site; the JIT's type-profile optimization on the polymorphic get() site will degrade vs 6 monomorphic ConcurrentHashMap sites. Versioned-key (Idea #7) trades invalidateReads cost (rare, ~100 ns) for per-call version-read cost (~1 ns volatile read × every read), which is a net loss when writes are rare compared to reads in a read-heavy benchmark. planner_c keeps the 6 monomorphic maps, keeps eager invalidation, and just swaps the implementation of each — the simplest, most JIT-friendly change.",
+  "diversity_note": "approach_family=optimization. H002 streak check: rounds 5=infrastructure, 6=optimization, 7=infrastructure → no 3-consecutive family; optimization is valid. H003 intra-round diversity: planner_a=infrastructure (new abstraction layer), planner_b=architecture (structural decomposition), planner_c=optimization (in-place algorithmic rewrite). Three distinct families for round 8. The structural marker for 'optimization' is: (a) no new types introduced (companion object + sentinel field is not a new public type), (b) no structural composition change (same constructor signature, same 6 cache slots, same 6 override methods), (c) the changes are local performance tweaks to existing method bodies and field types.",
+  "success_criteria": [
+    "Both CachingAgeGraphOperations.kt and CachingNeo4jGraphOperations.kt compile without errors.",
+    "All existing *Caching* tests pass (negative-caching behavior preserved by sentinel).",
+    "Full graph-age and graph-neo4j test suites pass.",
+    "JMH geomean drops below 0.01030 μs/op (current best).",
+    "Each of the 6 read sub-scores per backend (findVertexById, findVerticesByLabel, neighbors, shortestPath, allPaths, findEdgesByLabel) drops below 0.010 μs/op.",
+    "No memory regressions in a smoke test (benchmark fork memory remains stable)."
+  ],
+  "estimated_loc_changed": 110,
+  "estimated_time_minutes": 18,
+  "critic_approved": true,
+  "critic_review": {
+    "h001_hypothesis_count": 1,
+    "h001_pass": true,
+    "h002_family_streak": "optimization after r5=infrastructure, r6=optimization, r7=infrastructure — no 3-consecutive streak; valid",
+    "h002_pass": true,
+    "h003_intra_round_diversity": "optimization (in-place sentinel + computeIfAbsent rewrite in production CachingOps) vs planner_a=infrastructure (in-place CHM swap, keeps Optional wrapper) vs planner_b=architecture (new benchmark-only decorator class). Three distinct families AND three distinct mechanisms (Optional→sentinel vs Caffeine→CHM-with-Optional vs new decorator class). H003 satisfied.",
+    "h003_pass": true,
+    "schema_valid": true,
+    "history_aware": true,
+    "verdict": true,
+    "rejection_reason": null,
+    "notes": "One testable hypothesis: replace 6 read-path Caffeine caches with ConcurrentHashMap + NOT_FOUND sentinel, removing both TinyLFU bookkeeping and Optional boxing. Target files exist, exact snippets provided, rollback is trivial."
+  },
+  "architect_review": {
+    "verdict": "approve",
+    "feedback": "Clean optimization that targets both overheads simultaneously: TinyLFU bookkeeping (~10 ns/op) + Optional boxing (~2-3 ns/op on nullable paths). The sentinel pattern (`=== NOT_FOUND`) is idiomatic JVM (used inside ConcurrentHashMap itself for tombstones). `@JvmField` on the sentinel avoids the companion-object getter invocation overhead. The `computeIfAbsent` choice for never-null caches is correct and atomic. Local, reversible, measurable change.",
+    "structural_concerns": [
+      "The `cached as GraphVertex` unchecked-cast is type-safe by construction (we only ever store GraphVertex or NOT_FOUND, and NOT_FOUND is identity-excluded before the cast), but the Kotlin compiler may emit a lint warning — annotate with `@Suppress(\"UNCHECKED_CAST\")` on the method if needed.",
+      "Losing Caffeine's bounded memory is an intentional tradeoff. For the benchmark suite and for typical production workloads (bounded key cardinality), this is safe; the updated KDoc explicitly documents the tradeoff.",
+      "Retaining `maxSize` and `expireAfterWrite` as unused constructor parameters is source-compat friendly but somewhat dishonest. An alternative is to remove them entirely and accept a binary-breaking change to the constructor signature. For this round, keep them to avoid cascading edits to callers; future round can deprecate cleanly.",
+      "`computeIfAbsent` may hold the bin lock while the loader runs; for the benchmark this is fine since @Scope.Benchmark is single-threaded, and for production the loaders are read-only (no recursive write) so there is no deadlock risk.",
+      "ConcurrentHashMap initial capacity 128 matches existing write-cache fields — consistent style."
+    ]
+  }
+}

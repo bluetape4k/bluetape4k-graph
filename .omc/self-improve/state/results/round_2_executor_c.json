@@ -1,0 +1,25 @@
+{
+  "executor_id": "executor_c",
+  "plan_id": "round_2_planner_c",
+  "benchmark_score": 1521.639,
+  "benchmark_raw": "{\"primary\": 1521.639, \"sub_scores\": {\"age_shortestPath\": 615.119, \"age_createEdge\": 8238.148, \"age_createVertex\": 534.69, \"age_findVertexById\": 474.342, \"age_findVerticesByLabel\": 469.935, \"age_neighbors\": 526.162, \"neo4j_allPaths\": 800.168, \"neo4j_shortestPath\": 779.473, \"neo4j_createEdge\": 3325.492, \"neo4j_createVertex\": 1561.595, \"neo4j_findVertexById\": 797.07, \"neo4j_findVerticesByLabel\": 806.213, \"neo4j_neighbors\": 852.906}}",
+  "status": "success",
+  "sub_scores": {
+    "age_shortestPath": 615.119,
+    "age_createEdge": 8238.148,
+    "age_createVertex": 534.69,
+    "age_findVertexById": 474.342,
+    "age_findVerticesByLabel": 469.935,
+    "age_neighbors": 526.162,
+    "neo4j_allPaths": 800.168,
+    "neo4j_shortestPath": 779.473,
+    "neo4j_createEdge": 3325.492,
+    "neo4j_createVertex": 1561.595,
+    "neo4j_findVertexById": 797.07,
+    "neo4j_findVerticesByLabel": 806.213,
+    "neo4j_neighbors": 852.906
+  },
+  "failure_analysis": null,
+  "timestamp": "2026-04-19T17:50:00Z",
+  "notes": "benchmark-neo4j-age.sh wrapper script exits non-zero because it looks for reports under benchmark/<module>/build/reports/... but this project redirects build dir to build/<module>/reports/... . JMH output was produced successfully and parsed with the same python reducer logic embedded in the script. All 30 :graph-neo4j:test cases passed. AccessMode.READ/WRITE routing + cached SessionConfig applied to both Neo4jGraphOperations (sync) and Neo4jGraphSuspendOperations (reactive)."
+}
