@@ -25,9 +25,36 @@ import java.util.concurrent.ConcurrentHashMap
  * 그대로 반환한다. 이는 벤치마크/테스트용 편의 기능이며, 트랜잭션 기반 insert 의미가 필요한
  * 프로덕션 코드는 [AgeGraphOperations]를 직접 사용해야 한다.
  *
- * Round 8 변경사항: 모든 읽기 캐시를 Caffeine → ConcurrentHashMap 으로 교체.
- * TinyLFU 북키핑 비용을 제거하여 lookup latency 를 ~13-15 ns → ~5 ns 로 단축.
- * TTL/maxSize 기반 축출은 제거되었고, 쓰기 시 명시적 clear() 로 일관성을 유지한다.
+ * 모든 읽기 캐시는 Caffeine → ConcurrentHashMap 으로 구현되어 TinyLFU 북키핑 비용을 제거하고
+ * lookup latency 를 ~13-15 ns → ~5 ns 로 단축한다. TTL/maxSize 기반 축출은 제거되었고,
+ * 쓰기 시 명시적 clear() 로 일관성을 유지한다.
+ *
+ * ### 사용 예제
+ * ```kotlin
+ * val dataSource = HikariDataSource(HikariConfig().apply {
+ *     jdbcUrl = "jdbc:postgresql://localhost:5432/postgres"
+ *     username = "postgres"
+ *     password = "postgres"
+ *     connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
+ * })
+ * Database.connect(dataSource)
+ * val baseOps = AgeGraphOperations("my_graph")
+ *
+ * // 캐싱 래퍼로 감싸기 (벤치마크/반복 읽기가 많은 워크로드에 적합)
+ * val ops = CachingAgeGraphOperations(baseOps)
+ *
+ * // 첫 번째 조회: DB 호출 발생
+ * val alice = ops.findVertexById("Person", aliceId)
+ *
+ * // 두 번째 조회: 캐시 히트 (~5 ns), DB 호출 없음
+ * val aliceCached = ops.findVertexById("Person", aliceId)
+ *
+ * // 정점 삭제: 모든 캐시 자동 무효화
+ * ops.deleteVertex("Person", aliceId)
+ *
+ * // 삭제 후 조회: 캐시 미스 → DB 재조회
+ * val afterDelete = ops.findVertexById("Person", aliceId)  // null
+ * ```
  */
 class CachingAgeGraphOperations(
     private val delegate: AgeGraphOperations,
