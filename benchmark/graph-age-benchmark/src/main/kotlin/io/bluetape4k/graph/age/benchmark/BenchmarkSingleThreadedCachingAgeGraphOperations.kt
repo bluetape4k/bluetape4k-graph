@@ -8,7 +8,6 @@ import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.repository.GraphOperations
-import java.util.Optional
 
 /**
  * Benchmark-only single-threaded cache wrapper over [AgeGraphOperations].
@@ -35,10 +34,14 @@ class BenchmarkSingleThreadedCachingAgeGraphOperations(
         val propertiesHash: Int,
     )
 
-    private val vertexByIdMap: HashMap<VertexKey, Optional<GraphVertex>> = HashMap(128)
+    companion object {
+        private val ABSENT: Any = Any()
+    }
+
+    private val vertexByIdMap: HashMap<VertexKey, Any> = HashMap(128)
     private val verticesByLabelMap: HashMap<LabelKey, List<GraphVertex>> = HashMap(128)
     private val neighborsMap: HashMap<NeighborKey, List<GraphVertex>> = HashMap(128)
-    private val shortestPathMap: HashMap<PathKey, Optional<GraphPath>> = HashMap(128)
+    private val shortestPathMap: HashMap<PathKey, Any> = HashMap(128)
     private val allPathsMap: HashMap<PathKey, List<GraphPath>> = HashMap(128)
     private val edgesByLabelMap: HashMap<EdgeLabelKey, List<GraphEdge>> = HashMap(128)
     private val createVertexMap: HashMap<WriteVertexKey, GraphVertex> = HashMap(128)
@@ -58,10 +61,12 @@ class BenchmarkSingleThreadedCachingAgeGraphOperations(
     override fun findVertexById(label: String, id: GraphElementId): GraphVertex? {
         val key = VertexKey(label, id)
         val cached = vertexByIdMap[key]
-        if (cached != null) return cached.orElse(null)
-        val value = Optional.ofNullable(delegate.findVertexById(label, id))
-        vertexByIdMap[key] = value
-        return value.orElse(null)
+        if (cached != null) {
+            return if (cached === ABSENT) null else cached as GraphVertex
+        }
+        val value = delegate.findVertexById(label, id)
+        vertexByIdMap[key] = value ?: ABSENT
+        return value
     }
 
     override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> {
@@ -85,10 +90,12 @@ class BenchmarkSingleThreadedCachingAgeGraphOperations(
     override fun shortestPath(fromId: GraphElementId, toId: GraphElementId, options: PathOptions): GraphPath? {
         val key = PathKey(fromId, toId, options)
         val cached = shortestPathMap[key]
-        if (cached != null) return cached.orElse(null)
-        val value = Optional.ofNullable(delegate.shortestPath(fromId, toId, options))
-        shortestPathMap[key] = value
-        return value.orElse(null)
+        if (cached != null) {
+            return if (cached === ABSENT) null else cached as GraphPath
+        }
+        val value = delegate.shortestPath(fromId, toId, options)
+        shortestPathMap[key] = value ?: ABSENT
+        return value
     }
 
     override fun allPaths(fromId: GraphElementId, toId: GraphElementId, options: PathOptions): List<GraphPath> {
