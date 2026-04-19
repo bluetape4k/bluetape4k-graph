@@ -1,1 +1,58 @@
-[]
+[
+  {
+    "round": 1,
+    "executor_id": "executor_a",
+    "approach_family": "optimization",
+    "score": 1336.029,
+    "status": "success"
+  },
+  {
+    "round": 1,
+    "executor_id": "executor_c",
+    "approach_family": "architecture",
+    "score": null,
+    "status": "merged_working"
+  },
+  {
+    "round": 2,
+    "executor_id": "executor_a",
+    "approach_family": "optimization",
+    "score": 2420.057,
+    "status": "regression"
+  },
+  {
+    "round": 2,
+    "executor_id": "executor_b",
+    "approach_family": "infrastructure",
+    "score": null,
+    "status": "error"
+  },
+  {
+    "round": 2,
+    "executor_id": "executor_c",
+    "approach_family": "architecture",
+    "score": 1521.639,
+    "status": "regression"
+  },
+  {
+    "round": 3,
+    "executor_id": "executor_a",
+    "approach_family": "architecture",
+    "score": 1473.206,
+    "status": "regression"
+  },
+  {
+    "round": 3,
+    "executor_id": "executor_b",
+    "approach_family": "infrastructure",
+    "score": 9.233,
+    "status": "success"
+  },
+  {
+    "round": 3,
+    "executor_id": "executor_c",
+    "approach_family": "optimization",
+    "score": 1468.902,
+    "status": "regression"
+  }
+]

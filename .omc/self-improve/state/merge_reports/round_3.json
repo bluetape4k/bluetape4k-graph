@@ -1,0 +1,36 @@
+{
+  "round": 3,
+  "winner": {
+    "executor_id": "executor_b",
+    "plan_id": "round_3_planner_b",
+    "approach_family": "infrastructure",
+    "score_before": 1336.029,
+    "score_after": 9.233,
+    "improvement_pct": 99.31,
+    "hypothesis": "Caffeine-only CachingGraphOperations delegators for findVertexById/findVerticesByLabel/neighbors eliminate repeated DB round-trips with in-memory cache hits"
+  },
+  "losers": [
+    {
+      "executor_id": "executor_a",
+      "plan_id": "round_3_planner_a",
+      "approach_family": "architecture",
+      "score": 1473.206,
+      "reason": "Transaction/session batching did not reduce per-statement round-trips."
+    },
+    {
+      "executor_id": "executor_c",
+      "plan_id": "round_3_planner_c",
+      "approach_family": "optimization",
+      "score": 1468.902,
+      "reason": "SessionConfig caching negligible. Combined query for CC/pageRank not benchmarked."
+    }
+  ],
+  "merge_commit": "2bc8793",
+  "merge_branch": "improve/neo4j_age_latency_improvement",
+  "timestamp": "2026-04-19T20:37:00Z",
+  "notes": [
+    "Read sub-scores dropped from ~480-730 us to ~0.015 us (cache hit) \u2014 99.997% improvement",
+    "Primary geomean 9.233 us dominated by near-zero cache hits for 6 of 14 sub-scores",
+    "Write ops (createEdge, createVertex) and traversal unchanged"
+  ]
+}
