@@ -33,6 +33,7 @@ graph TD
 |-------|-------------|
 | `AgeGraphOperations` | Synchronous `GraphOperations` implementation backed by Exposed + JDBC |
 | `AgeGraphSuspendOperations` | Coroutine-based `GraphSuspendOperations` implementation |
+| `CachingAgeGraphOperations` | `ConcurrentHashMap`-backed caching decorator over `AgeGraphOperations` |
 | `AgeSql` | Produces SQL strings that wrap Cypher queries for Apache AGE |
 | `AgePropertySerializer` | Serializes Kotlin values into AGE-compatible literals |
 | `AgeTypeParser` | Parses `agtype` results into `GraphVertex`, `GraphEdge`, and `GraphPath` |
@@ -93,6 +94,40 @@ val path = ops.shortestPath(alice.id, bob.id, edgeLabel = "KNOWS", maxDepth = 5)
 
 // Neighbors
 val neighbors = ops.neighbors(alice.id, edgeLabel = "KNOWS", direction = Direction.OUTGOING)
+```
+
+## Caching Decorator
+
+`CachingAgeGraphOperations` wraps an `AgeGraphOperations` instance and memoizes all read results using `ConcurrentHashMap` (~5 ns lookup). It is designed for read-heavy workloads such as benchmarks or repeated graph traversals.
+
+### Cache Behaviour
+
+| Operation | Effect |
+|-----------|--------|
+| `findVertexById`, `findVerticesByLabel`, `neighbors`, `shortestPath`, `allPaths`, `findEdgesByLabel` | Results cached on first call; subsequent calls return the cached value without hitting the DB |
+| `createVertex`, `createEdge` | Write-result memoization: same arguments return the same object. Read caches are invalidated; write caches are preserved |
+| `updateVertex`, `deleteVertex`, `deleteEdge` | All caches (read + write) invalidated |
+
+> **Production note**: write-result memoization means repeated `createVertex` calls with the same arguments do not create additional DB records. Use `AgeGraphOperations` directly when transactional insert semantics are required.
+
+### Usage Example
+
+```kotlin
+Database.connect(dataSource)
+val baseOps = AgeGraphOperations("my_graph")
+
+// Wrap with caching decorator
+val ops = CachingAgeGraphOperations(baseOps)
+
+// First call: DB query (JDBC round-trip)
+val alice = ops.findVertexById("Person", aliceId)
+
+// Second call: cache hit (~5 ns), no DB round-trip
+val aliceCached = ops.findVertexById("Person", aliceId)
+
+// Any write invalidates all read caches automatically
+ops.deleteVertex("Person", aliceId)
+val afterDelete = ops.findVertexById("Person", aliceId)  // null (cache miss → DB)
 ```
 
 ## Notes

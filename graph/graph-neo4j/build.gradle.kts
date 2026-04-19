@@ -12,4 +12,5 @@ dependencies {
     testImplementation(Libs.bluetape4k_testcontainers)
     testImplementation(Libs.testcontainers_neo4j)
     testImplementation(Libs.kotlinx_coroutines_test)
+    testImplementation(Libs.mockk)
 }

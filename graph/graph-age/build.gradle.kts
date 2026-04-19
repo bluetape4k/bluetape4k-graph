@@ -16,4 +16,5 @@ dependencies {
     testImplementation(Libs.bluetape4k_testcontainers)
     testImplementation(Libs.testcontainers_postgresql)
     testImplementation(Libs.hikaricp)
+    testImplementation(Libs.mockk)
 }

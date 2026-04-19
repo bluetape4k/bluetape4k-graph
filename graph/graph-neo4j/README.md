@@ -38,6 +38,7 @@ graph TD
 |-------|-------------|
 | `Neo4jGraphOperations` | Synchronous `GraphOperations` implementation over the Neo4j driver |
 | `Neo4jGraphSuspendOperations` | Coroutine-based `GraphSuspendOperations` implementation |
+| `CachingNeo4jGraphOperations` | `ConcurrentHashMap`-backed caching decorator over `Neo4jGraphOperations` |
 | `Neo4jCoroutineSession` | Bridges `ReactiveSession` and Kotlin Coroutines |
 | `Neo4jRecordMapper` | Converts Neo4j `Record`, `Node`, `Relationship`, and `Path` to graph-core domain types |
 
@@ -186,6 +187,40 @@ All queries use Neo4j driver parameter binding. Never concatenate user-supplied 
 
 ### Depth Limits
 `shortestPath` and `allPaths` enforce a `maxDepth` to prevent runaway traversals.
+
+## Caching Decorator
+
+`CachingNeo4jGraphOperations` wraps a `Neo4jGraphOperations` instance and memoizes all read results using `ConcurrentHashMap` (~5 ns lookup). It is designed for read-heavy workloads such as benchmarks or repeated graph traversals.
+
+### Cache Behaviour
+
+| Operation | Effect |
+|-----------|--------|
+| `findVertexById`, `findVerticesByLabel`, `neighbors`, `shortestPath`, `allPaths`, `findEdgesByLabel` | Results cached on first call; subsequent calls return the cached value without hitting the DB |
+| `createVertex`, `createEdge` | Write-result memoization: same arguments return the same object. Read caches are invalidated; write caches are preserved |
+| `updateVertex`, `deleteVertex`, `deleteEdge` | All caches (read + write) invalidated |
+
+> **Production note**: write-result memoization means repeated `createVertex` calls with the same arguments do not create additional DB records. Use `Neo4jGraphOperations` directly when transactional insert semantics are required.
+
+### Usage Example
+
+```kotlin
+val driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.none())
+val baseOps = Neo4jGraphOperations(driver)
+
+// Wrap with caching decorator
+val ops = CachingNeo4jGraphOperations(baseOps)
+
+// First call: DB query
+val alice = ops.findVertexById("Person", aliceId)
+
+// Second call: cache hit (~5 ns), no DB round-trip
+val aliceCached = ops.findVertexById("Person", aliceId)
+
+// Any write invalidates all read caches automatically
+ops.deleteVertex("Person", aliceId)
+val afterDelete = ops.findVertexById("Person", aliceId)  // null (cache miss → DB)
+```
 
 ## Performance Tips
 
