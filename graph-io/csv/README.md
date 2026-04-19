@@ -38,23 +38,24 @@ Export a graph to CSV files using blocking I/O:
 import io.bluetape4k.graph.io.csv.CsvGraphBulkExporter
 import io.bluetape4k.graph.io.csv.CsvGraphExportSink
 import io.bluetape4k.graph.io.options.GraphExportOptions
+import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.repository.GraphOperations
 import java.nio.file.Paths
 
 val exporter = CsvGraphBulkExporter()
 
 val sink = CsvGraphExportSink(
-    vertexFile = Paths.get("vertices.csv"),
-    edgeFile = Paths.get("edges.csv")
+    vertices = GraphExportSink.PathSink(Paths.get("vertices.csv")),
+    edges = GraphExportSink.PathSink(Paths.get("edges.csv")),
 )
 
 val options = GraphExportOptions(
-    vertexLabels = listOf("Person", "Company"),
-    edgeLabels = listOf("works_for", "knows")
+    vertexLabels = setOf("Person", "Company"),
+    edgeLabels = setOf("works_for", "knows"),
 )
 
 val report = exporter.exportGraph(sink, graphOps, options)
-println("Exported ${report.vertexCount} vertices and ${report.edgeCount} edges in ${report.elapsedMs}ms")
+println("Exported ${report.verticesWritten} vertices and ${report.edgesWritten} edges in ${report.elapsed.toMillis()}ms")
 ```
 
 ### Virtual Thread-Based Export
@@ -65,23 +66,24 @@ Export asynchronously using Java virtual threads:
 import io.bluetape4k.graph.io.csv.CsvGraphVirtualThreadBulkExporter
 import io.bluetape4k.graph.io.csv.CsvGraphExportSink
 import io.bluetape4k.graph.io.options.GraphExportOptions
+import io.bluetape4k.graph.io.source.GraphExportSink
 import java.nio.file.Paths
 
 val exporter = CsvGraphVirtualThreadBulkExporter()
 
 val sink = CsvGraphExportSink(
-    vertexFile = Paths.get("vertices.csv"),
-    edgeFile = Paths.get("edges.csv")
+    vertices = GraphExportSink.PathSink(Paths.get("vertices.csv")),
+    edges = GraphExportSink.PathSink(Paths.get("edges.csv")),
 )
 
 val options = GraphExportOptions(
-    vertexLabels = listOf("Person"),
-    edgeLabels = listOf("knows")
+    vertexLabels = setOf("Person"),
+    edgeLabels = setOf("knows"),
 )
 
 val future = exporter.exportGraphAsync(sink, graphOps, options)
 val report = future.join()  // Wait for completion
-println("Exported ${report.vertexCount} vertices")
+println("Exported ${report.verticesWritten} vertices")
 ```
 
 ### Coroutine-Based Export (Suspend)
@@ -94,29 +96,30 @@ import io.bluetape4k.graph.io.csv.CsvGraphExportSink
 import io.bluetape4k.graph.io.csv.CsvGraphIoOptions
 import io.bluetape4k.graph.io.csv.CsvPropertyMode
 import io.bluetape4k.graph.io.options.GraphExportOptions
+import io.bluetape4k.graph.io.source.GraphExportSink
 import kotlinx.coroutines.runBlocking
 import java.nio.file.Paths
 
 val exporter = SuspendCsvGraphBulkExporter()
 
 val sink = CsvGraphExportSink(
-    vertexFile = Paths.get("vertices.csv"),
-    edgeFile = Paths.get("edges.csv")
+    vertices = GraphExportSink.PathSink(Paths.get("vertices.csv")),
+    edges = GraphExportSink.PathSink(Paths.get("edges.csv")),
 )
 
 val options = GraphExportOptions(
-    vertexLabels = listOf("Person", "Company"),
-    edgeLabels = listOf("works_for")
+    vertexLabels = setOf("Person", "Company"),
+    edgeLabels = setOf("works_for"),
 )
 
 val csvOptions = CsvGraphIoOptions(
-    propertyMode = CsvPropertyMode.PrefixedColumns(prefix = "attr.")
+    propertyMode = CsvPropertyMode.PrefixedColumns(prefix = "attr."),
 )
 
 val report = runBlocking {
     exporter.exportGraphSuspending(sink, suspendGraphOps, options, csvOptions)
 }
-println("Exported ${report.vertexCount} vertices and ${report.edgeCount} edges")
+println("Exported ${report.verticesWritten} vertices and ${report.edgesWritten} edges")
 ```
 
 ## Configuration
@@ -165,14 +168,14 @@ After exporting, inspect the report for summary statistics and error details:
 ```kotlin
 val report = exporter.exportGraph(sink, graphOps, options)
 
-println("Status: ${report.status}")  // SUCCESS, PARTIAL, FAILED
-println("Vertices: ${report.vertexCount}")
-println("Edges: ${report.edgeCount}")
-println("Duration: ${report.elapsedMs}ms")
+println("Status: ${report.status}")  // COMPLETED, PARTIAL, FAILED
+println("Vertices: ${report.verticesWritten}")
+println("Edges: ${report.edgesWritten}")
+println("Duration: ${report.elapsed.toMillis()}ms")
 
 if (report.failures.isNotEmpty()) {
     report.failures.forEach { failure ->
-        println("Error: ${failure.message}")
+        println("Error[${failure.phase}]: ${failure.message}")
     }
 }
 ```

@@ -61,17 +61,18 @@ The module offers three distinct execution models to fit different runtime envir
 import io.bluetape4k.graph.io.jackson3.Jackson3NdJsonBulkExporter
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.source.GraphExportSink
+import java.nio.file.Paths
 
 val exporter = Jackson3NdJsonBulkExporter()
 val options = GraphExportOptions(
-    vertexLabels = listOf("Person", "Organization"),
-    edgeLabels = listOf("WORKS_FOR", "KNOWS")
+    vertexLabels = setOf("Person", "Organization"),
+    edgeLabels = setOf("WORKS_FOR", "KNOWS"),
 )
 
 val report = exporter.exportGraph(
-    sink = GraphExportSink.file("export.ndjson"),
+    sink = GraphExportSink.PathSink(Paths.get("export.ndjson")),
     operations = graphOps,
-    options = options
+    options = options,
 )
 
 println("Exported ${report.verticesWritten} vertices and ${report.edgesWritten} edges")
@@ -84,23 +85,25 @@ println("Status: ${report.status}, Elapsed: ${report.elapsed}")
 import io.bluetape4k.graph.io.jackson3.Jackson3NdJsonBulkImporter
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.options.MissingEndpointPolicy
+import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.source.GraphImportSource
+import java.nio.file.Paths
 
 val importer = Jackson3NdJsonBulkImporter()
 val options = GraphImportOptions(
     defaultVertexLabel = "Entity",
     defaultEdgeLabel = "RELATED_TO",
-    onMissingEdgeEndpoint = MissingEndpointPolicy.SKIP_EDGE
+    onMissingEdgeEndpoint = MissingEndpointPolicy.SKIP_EDGE,
 )
 
 val report = importer.importGraph(
-    source = GraphImportSource.file("export.ndjson"),
+    source = GraphImportSource.PathSource(Paths.get("export.ndjson")),
     operations = graphOps,
-    options = options
+    options = options,
 )
 
 println("Imported ${report.verticesCreated} vertices and ${report.edgesCreated} edges")
-if (report.status.isFailed()) {
+if (report.status == GraphIoStatus.FAILED) {
     println("Failures: ${report.failures.size}")
     report.failures.forEach { failure ->
         println("  ${failure.phase}: ${failure.message}")
@@ -112,17 +115,21 @@ if (report.status.isFailed()) {
 
 ```kotlin
 import io.bluetape4k.graph.io.jackson3.SuspendJackson3NdJsonBulkExporter
+import io.bluetape4k.graph.io.options.GraphExportOptions
+import io.bluetape4k.graph.io.source.GraphExportSink
 import kotlinx.coroutines.runBlocking
+import java.nio.file.Paths
 
 val exporter = SuspendJackson3NdJsonBulkExporter()
-val options = GraphExportOptions(vertexLabels = listOf("Person"))
+val options = GraphExportOptions(vertexLabels = setOf("Person"))
 
 runBlocking {
-    val report = exporter.exportGraph(
-        sink = GraphExportSink.file("export.ndjson"),
-        operations = graphOps,
-        options = options
+    val report = exporter.exportGraphSuspending(
+        sink = GraphExportSink.PathSink(Paths.get("export.ndjson")),
+        operations = suspendGraphOps,
+        options = options,
     )
+    println("Exported ${report.verticesWritten} vertices")
 }
 ```
 
@@ -130,15 +137,19 @@ runBlocking {
 
 ```kotlin
 import io.bluetape4k.graph.io.jackson3.Jackson3NdJsonVirtualThreadBulkExporter
+import io.bluetape4k.graph.io.options.GraphExportOptions
+import io.bluetape4k.graph.io.source.GraphExportSink
+import java.nio.file.Paths
 
 val exporter = Jackson3NdJsonVirtualThreadBulkExporter()
-val options = GraphExportOptions(vertexLabels = listOf("Person"))
+val options = GraphExportOptions(vertexLabels = setOf("Person"))
 
-val report = exporter.exportGraph(
-    sink = GraphExportSink.file("export.ndjson"),
+val future = exporter.exportGraphAsync(
+    sink = GraphExportSink.PathSink(Paths.get("export.ndjson")),
     operations = graphOps,
-    options = options
+    options = options,
 )
+val report = future.join()
 ```
 
 ## NDJSON Format Specification
@@ -167,15 +178,17 @@ val report = exporter.exportGraph(
 
 - `defaultVertexLabel: String` - Applied when vertex has no explicit label
 - `defaultEdgeLabel: String` - Applied when edge has no explicit label
-- `onDuplicateVertexId: DuplicatePolicy` - Handle ID collisions (ERROR, OVERWRITE, IGNORE)
+- `onDuplicateVertexId: DuplicateVertexPolicy` - Handle ID collisions (FAIL, SKIP)
 - `onMissingEdgeEndpoint: MissingEndpointPolicy` - Handle dangling edges (FAIL, SKIP_EDGE)
-- `preserveExternalIdProperty: String?` - Store original external ID in properties (key name)
-- `maxEdgeBufferSize: Int` - Memory limit for buffered edges before flushing
+- `preserveExternalIdProperty: String?` - Store original external ID in properties (key name). `null` disables
+- `maxEdgeBufferSize: Int` - Memory limit for buffered edges before flushing (default `100_000`)
+- `batchSize: Int` - Progress-reporting/flush interval (default `1_000`)
 
 ### GraphExportOptions
 
-- `vertexLabels: List<String>` - Specific labels to export (empty = all)
-- `edgeLabels: List<String>` - Specific labels to export (empty = all)
+- `vertexLabels: Set<String>` - Specific labels to export (empty = all)
+- `edgeLabels: Set<String>` - Specific labels to export (empty = all)
+- `includeEmptyProperties: Boolean` - Emit records even when properties are empty (default `true`)
 
 ## Dependencies
 
@@ -204,8 +217,8 @@ data class GraphImportReport(
     val verticesCreated: Long,
     val edgesRead: Long,
     val edgesCreated: Long,
-    val verticesSkipped: Long,
-    val edgesSkipped: Long,
+    val skippedVertices: Long,
+    val skippedEdges: Long,
     val elapsed: Duration,
     val failures: List<GraphIoFailure>         // Detailed per-failure diagnostics
 )

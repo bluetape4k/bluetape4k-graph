@@ -41,9 +41,10 @@ import io.bluetape4k.graph.io.graphml.GraphMlImportOptions
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.graph.repository.GraphOperations
+import java.nio.file.Paths
 
 val importer = GraphMlBulkImporter()
-val source = GraphImportSource.fromFile("data.graphml")
+val source = GraphImportSource.PathSource(Paths.get("data.graphml"))
 val ops: GraphOperations = /* your graph operations instance */
 
 val report = importer.importGraph(
@@ -70,17 +71,21 @@ import io.bluetape4k.graph.io.graphml.GraphMlImportOptions
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.graph.repository.GraphSuspendOperations
+import kotlinx.coroutines.runBlocking
+import java.nio.file.Paths
 
 val importer = SuspendGraphMlBulkImporter()
-val source = GraphImportSource.fromFile("data.graphml")
+val source = GraphImportSource.PathSource(Paths.get("data.graphml"))
 val ops: GraphSuspendOperations = /* your graph operations instance */
 
-val report = importer.importGraphSuspending(
-    source = source,
-    operations = ops,
-    options = GraphImportOptions(),
-    graphMlOptions = GraphMlImportOptions()
-)
+val report = runBlocking {
+    importer.importGraphSuspending(
+        source = source,
+        operations = ops,
+        options = GraphImportOptions(),
+        graphMlOptions = GraphMlImportOptions()
+    )
+}
 
 println("Import status: ${report.status}")
 if (report.failures.isNotEmpty()) {
@@ -98,20 +103,22 @@ import io.bluetape4k.graph.io.graphml.GraphMlExportOptions
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.repository.GraphOperations
+import java.nio.file.Paths
 
 val exporter = GraphMlVirtualThreadBulkExporter()
-val sink = GraphExportSink.toFile("output.graphml")
+val sink = GraphExportSink.PathSink(Paths.get("output.graphml"))
 val ops: GraphOperations = /* your graph operations instance */
 
-val report = exporter.exportGraph(
+val future = exporter.exportGraphAsync(
     sink = sink,
     operations = ops,
     options = GraphExportOptions(
-        vertexLabels = listOf("Person", "Company"),
-        edgeLabels = listOf("KNOWS", "WORKS_AT")
+        vertexLabels = setOf("Person", "Company"),
+        edgeLabels = setOf("KNOWS", "WORKS_AT")
     ),
     graphMlOptions = GraphMlExportOptions()
 )
+val report = future.join()
 
 println("Exported ${report.verticesWritten} vertices and ${report.edgesWritten} edges")
 ```
@@ -120,14 +127,17 @@ println("Exported ${report.verticesWritten} vertices and ${report.edgesWritten} 
 
 ```kotlin
 import io.bluetape4k.graph.io.graphml.GraphMlBulkExporter
+import io.bluetape4k.graph.io.options.GraphExportOptions
+import io.bluetape4k.graph.io.source.GraphExportSink
+import java.nio.file.Paths
 
 val exporter = GraphMlBulkExporter()
 val report = exporter.exportGraph(
-    sink = GraphExportSink.toFile("graph.graphml"),
+    sink = GraphExportSink.PathSink(Paths.get("graph.graphml")),
     operations = ops,
     options = GraphExportOptions(
-        vertexLabels = listOf("Person"),
-        edgeLabels = listOf("KNOWS")
+        vertexLabels = setOf("Person"),
+        edgeLabels = setOf("KNOWS")
     )
 )
 ```
