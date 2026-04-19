@@ -1,7 +1,6 @@
 package io.bluetape4k.graph.neo4j.benchmark
 
 import io.bluetape4k.graph.model.GraphElementId
-import io.bluetape4k.graph.neo4j.CachingNeo4jGraphOperations
 import io.bluetape4k.graph.neo4j.Neo4jGraphOperations
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
@@ -45,7 +44,7 @@ open class Neo4jBenchmarkState {
         val server = Neo4jServer.Launcher.neo4j
         driver = GraphDatabase.driver(server.boltUrl, AuthTokens.none())
         val raw = Neo4jGraphOperations(driver)
-        ops = CachingNeo4jGraphOperations(raw)
+        ops = BenchmarkSingleThreadedCachingNeo4jGraphOperations(raw)
 
         // 기존 데이터 초기화 (Neo4j 는 그래프 단위가 아닌 데이터베이스 전체 삭제)
         ops.dropGraph(GRAPH_NAME)

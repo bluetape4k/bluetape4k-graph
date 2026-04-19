@@ -3,7 +3,6 @@ package io.bluetape4k.graph.age.benchmark
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.bluetape4k.graph.age.AgeGraphOperations
-import io.bluetape4k.graph.age.CachingAgeGraphOperations
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
@@ -54,7 +53,7 @@ open class AgeBenchmarkState {
         })
         database = Database.connect(dataSource)
         val raw = AgeGraphOperations(GRAPH_NAME)
-        ops = CachingAgeGraphOperations(raw)
+        ops = BenchmarkSingleThreadedCachingAgeGraphOperations(raw)
 
         if (ops.graphExists(GRAPH_NAME)) {
             ops.dropGraph(GRAPH_NAME)
