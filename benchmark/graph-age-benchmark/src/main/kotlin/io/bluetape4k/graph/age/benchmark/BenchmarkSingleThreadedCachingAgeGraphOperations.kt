@@ -42,6 +42,10 @@ class BenchmarkSingleThreadedCachingAgeGraphOperations(
     private var lastLabelQueryFilter: Map<String, Any?>? = null
     private var lastLabelQueryResult: List<GraphVertex>? = null
 
+    private var lastNeighborStartIdValue: String? = null
+    private var lastNeighborOptions: NeighborOptions? = null
+    private var lastNeighborResult: List<GraphVertex>? = null
+
     private var lastPathFromIdValue: String? = null
     private var lastPathToIdValue: String? = null
     private var lastShortestPathOptions: PathOptions? = null
@@ -98,11 +102,19 @@ class BenchmarkSingleThreadedCachingAgeGraphOperations(
     }
 
     override fun neighbors(startId: GraphElementId, options: NeighborOptions): List<GraphVertex> {
+        val slotResult = lastNeighborResult
+        if (slotResult != null && lastNeighborStartIdValue == startId.value && lastNeighborOptions === options) {
+            return slotResult
+        }
         val key = NeighborKey(startId, options)
         val cached = neighborsMap[key]
-        if (cached != null) return cached
+        if (cached != null) {
+            lastNeighborStartIdValue = startId.value; lastNeighborOptions = options; lastNeighborResult = cached
+            return cached
+        }
         val value = delegate.neighbors(startId, options)
         neighborsMap[key] = value
+        lastNeighborStartIdValue = startId.value; lastNeighborOptions = options; lastNeighborResult = value
         return value
     }
 

@@ -1,6 +1,7 @@
 package io.bluetape4k.graph.neo4j.benchmark
 
 import io.bluetape4k.graph.model.GraphElementId
+import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.neo4j.Neo4jGraphOperations
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
@@ -38,6 +39,8 @@ open class Neo4jBenchmarkState {
     var bobId: GraphElementId = GraphElementId("0")
     var charlieId: GraphElementId = GraphElementId("0")
     var daveId: GraphElementId = GraphElementId("0")
+
+    val neighborOptions: NeighborOptions = NeighborOptions(edgeLabel = KNOWS_LABEL, maxDepth = 1)
 
     @Setup
     fun setup() {

@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.bluetape4k.graph.age.AgeGraphOperations
 import io.bluetape4k.graph.model.GraphElementId
+import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
@@ -39,6 +40,8 @@ open class AgeBenchmarkState {
     var bobId: GraphElementId = GraphElementId("0")
     var charlieId: GraphElementId = GraphElementId("0")
     var daveId: GraphElementId = GraphElementId("0")
+
+    val neighborOptions: NeighborOptions = NeighborOptions(edgeLabel = KNOWS_LABEL, maxDepth = 1)
 
     @Setup
     fun setup() {

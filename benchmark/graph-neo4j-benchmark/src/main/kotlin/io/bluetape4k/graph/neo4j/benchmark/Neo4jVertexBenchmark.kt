@@ -1,6 +1,5 @@
 package io.bluetape4k.graph.neo4j.benchmark
 
-import io.bluetape4k.graph.model.NeighborOptions
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.BenchmarkMode
 import org.openjdk.jmh.annotations.Fork
@@ -36,7 +35,7 @@ open class Neo4jVertexBenchmark: Neo4jBenchmarkState() {
 
     @Benchmark
     fun neighbors(): Int =
-        ops.neighbors(aliceId, NeighborOptions(edgeLabel = KNOWS_LABEL, maxDepth = 1)).size
+        ops.neighbors(aliceId, neighborOptions).size
 
     @Benchmark
     fun createEdge(): Boolean {
