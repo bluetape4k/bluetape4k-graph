@@ -1,0 +1,59 @@
+{
+  "plan_id": "round_1_planner_b",
+  "planner_id": "planner_b",
+  "round": 1,
+  "hypothesis": "Adding a Caffeine-based read-through cache in front of Neo4j and AGE GraphOperations for hot read ops (findVertexById, findVerticesByLabel, neighbors) should reduce avg_latency_us by 20-50% because benchmarks repeatedly call these with identical params and currently pay a full DB round-trip every time.",
+  "approach_family": "infrastructure",
+  "critic_approved": true,
+  "target_files": [
+    "graph/graph-core/src/main/kotlin/io/bluetape4k/graph/cache/CachingGraphOperations.kt",
+    "graph/graph-core/src/main/kotlin/io/bluetape4k/graph/cache/GraphCacheConfig.kt",
+    "graph/graph-core/build.gradle.kts",
+    "benchmark/graph-neo4j-benchmark/src/main/kotlin/io/bluetape4k/graph/neo4j/benchmark/Neo4jBenchmarkState.kt",
+    "benchmark/graph-age-benchmark/src/main/kotlin/io/bluetape4k/graph/age/benchmark/AgeBenchmarkState.kt",
+    "benchmark/graph-neo4j-benchmark/build.gradle.kts",
+    "benchmark/graph-age-benchmark/build.gradle.kts",
+    "graph/graph-core/src/test/kotlin/io/bluetape4k/graph/cache/CachingGraphOperationsTest.kt"
+  ],
+  "steps": [
+    {"step": 1, "file": "graph/graph-core/build.gradle.kts", "change": "Add Caffeine dependency: `implementation(Libs.caffeine)` (reference buildSrc/src/main/kotlin/Libs.kt:1431 `val caffeine = caffeine(\"caffeine\")`). This makes com.github.ben-manes.caffeine:caffeine:3.2.3 available to graph-core so the cache decorator can live in the shared module."},
+    {"step": 2, "file": "graph/graph-core/src/main/kotlin/io/bluetape4k/graph/cache/GraphCacheConfig.kt", "change": "Create new data class `GraphCacheConfig(val maxSize: Long = 10_000L, val expireAfterWriteMs: Long = 60_000L, val expireAfterAccessMs: Long = 30_000L, val recordStats: Boolean = false)` with a companion `Default` instance. This is the single knob that CachingGraphOperations consumes so callers (benchmarks, Spring Boot starter) can tune hit windows without touching internals."},
+    {"step": 3, "file": "graph/graph-core/src/main/kotlin/io/bluetape4k/graph/cache/CachingGraphOperations.kt", "change": "Create a thin decorator `class CachingGraphOperations(private val delegate: GraphOperations, private val config: GraphCacheConfig = GraphCacheConfig.Default) : GraphOperations by delegate, AutoCloseable`. Build three Caffeine caches via `Caffeine.newBuilder().maximumSize(config.maxSize).expireAfterWrite(config.expireAfterWriteMs, MILLISECONDS).expireAfterAccess(config.expireAfterAccessMs, MILLISECONDS).build<Key, Value>()`: (a) `vertexByIdCache: Cache<Pair<String, GraphElementId>, Optional<GraphVertex>>`, (b) `verticesByLabelCache: Cache<Triple<String, Map<String, Any?>, Unit>, List<GraphVertex>>`, (c) `neighborsCache: Cache<Pair<GraphElementId, NeighborOptions>, List<GraphVertex>>`. Override `findVertexById`, `findVerticesByLabel`, and `neighbors` to call `cache.get(key) { delegate.<method>(...) }` and wrap nullable results in `Optional` so Caffeine never stores null. Override all mutating ops (`createVertex`, `updateVertex`, `deleteVertex`, `createEdge`, `updateEdge`, `deleteEdge`, `dropGraph`) to invalidate the 3 caches via `invalidateAll()` — keep consistency simple rather than surgical. Override `close()` to call `delegate.close()` then invalidate all. Add companion helper `fun GraphOperations.cached(config: GraphCacheConfig = GraphCacheConfig.Default): CachingGraphOperations = CachingGraphOperations(this, config)`."},
+    {"step": 4, "file": "benchmark/graph-neo4j-benchmark/build.gradle.kts", "change": "Ensure `implementation(project(\":graph-core\"))` transitively brings Caffeine (already does). Verify no extra dependency is needed; if graph-core exposes Caffeine via `api` vs `implementation`, switch graph-core's Caffeine declaration in step 1 to `api(Libs.caffeine)` so benchmark code can construct GraphCacheConfig without adding a direct dependency."},
+    {"step": 5, "file": "benchmark/graph-neo4j-benchmark/src/main/kotlin/io/bluetape4k/graph/neo4j/benchmark/Neo4jBenchmarkState.kt", "change": "In `@Setup`, after constructing `Neo4jGraphOperations(driver)`, wrap it with the cache: change `ops = Neo4jGraphOperations(driver)` to `val raw = Neo4jGraphOperations(driver); ops = CachingGraphOperations(raw, GraphCacheConfig(maxSize = 1_000, expireAfterWriteMs = 60_000, expireAfterAccessMs = 60_000))`. Change the `ops` field type from `Neo4jGraphOperations` to `GraphOperations` (the common interface) since all benchmark callsites (findVertexById, findVerticesByLabel, neighbors, createVertex, createEdge, dropGraph) are defined on GraphOperations. Keep the four vertex IDs unchanged so benchmarks repeatedly hit the same cache key."},
+    {"step": 6, "file": "benchmark/graph-age-benchmark/src/main/kotlin/io/bluetape4k/graph/age/benchmark/AgeBenchmarkState.kt", "change": "Mirror step 5: change `ops = AgeGraphOperations(GRAPH_NAME)` to `val raw = AgeGraphOperations(GRAPH_NAME); ops = CachingGraphOperations(raw, GraphCacheConfig(maxSize = 1_000, expireAfterWriteMs = 60_000, expireAfterAccessMs = 60_000))` and change `ops` field type to `GraphOperations`. Make sure createVertex/createEdge are called through `raw` (not cached `ops`) during setup so setup invalidation does not churn the cache; alternatively call through `ops` and accept the invalidations (measurement still benefits because @Benchmark methods run after @Setup)."},
+    {"step": 7, "file": "graph/graph-core/src/test/kotlin/io/bluetape4k/graph/cache/CachingGraphOperationsTest.kt", "change": "Add unit tests using a fake `GraphOperations` that counts delegate calls: (a) `findVertexById cached on second call` — two invocations of same (label, id) produce only one delegate call; (b) `findVerticesByLabel cached per filter` — different filters produce separate delegate calls but repeated identical filter hits cache; (c) `neighbors cached per NeighborOptions` — verifies Pair<id, options> key; (d) `createVertex invalidates all caches` — mutation resets hit counters; (e) `null vertex is cached as Optional.empty` — repeated misses do not re-query. Use Kluent/assertk style matching existing graph-core tests."}
+  ],
+  "expected_outcome": {
+    "metric": "avg_latency_us",
+    "estimated_impact": "20-50% reduction on findVertexById / findVerticesByLabel / neighbors benchmarks",
+    "rationale": "JMH @Benchmark methods call ops.findVertexById(aliceId) with the same (label, id) pair every iteration (Neo4jVertexBenchmark.kt:34-35, AgeVertexBenchmark.kt:34-35). First iteration populates Caffeine in ~microseconds; subsequent iterations return a pre-parsed GraphVertex in tens of nanoseconds, bypassing the Bolt round-trip (Neo4j) or JDBC+AGE parse (Postgres). AGE benefit is larger because loadAgeAndSetSearchPath + Exposed transaction overhead is heavier than a driver query. Caffeine's Window-TinyLFU admission also protects hot keys under mixed workloads.",
+    "sub_score_expectations": {
+      "neo4j_findVertexById_us": "30-50% reduction",
+      "age_findVertexById_us": "40-60% reduction",
+      "neo4j_findVerticesByLabel_us": "20-40% reduction",
+      "age_findVerticesByLabel_us": "30-50% reduction",
+      "neo4j_neighbors_us": "15-30% reduction",
+      "age_neighbors_us": "25-45% reduction",
+      "createVertex_us": "no change or +2-5% overhead (cache invalidation cost)",
+      "updateVertex_us": "no change or +2-5% overhead"
+    }
+  },
+  "history_reference": {"builds_on": "none", "avoids": "none"},
+  "critic_review": {
+    "h001_hypothesis_count": "pass",
+    "h002_family_streak": "pass",
+    "h003_intra_round_diversity": "pass",
+    "schema_valid": "pass",
+    "history_aware": "pass",
+    "verdict": "approved",
+    "rejection_reason": null,
+    "notes": "Single hypothesis (infrastructure caching). Iteration 1 exempts H002. Family 'infrastructure' distinct from planner_a 'optimization' and planner_c 'architecture'. All referenced files/modules verified: Libs.kt:1431 has Caffeine; graph-neo4j-benchmark and graph-age-benchmark modules exist."
+  },
+  "architect_review": {
+    "verdict": "approve",
+    "feedback": "Decorator via Kotlin `by delegate` keeps cache optional and non-invasive. Caffeine present on classpath (Libs.kt:1431). Placing decorator in graph-core benefits all 4 backends. Testability: 7 concrete steps, unit tests spec'd, JMH benchmarks as empirical measure. Novelty: cache decorator is orthogonal to planner_a (optimization) and planner_c (architecture). Scope: bounded to graph-core + 2 benchmark states + 1 test — single iteration sized. Target files exist. Expected outcome plausible given hot-key JMH pattern. Reservations: (1) step 4 hedges on `api` vs `implementation` — executor should just use `api(Libs.caffeine)` in graph-core to avoid a 2nd edit pass; (2) invalidate-all on any mutation is coarse but correct — acceptable for baseline, finer invalidation can follow if results warrant; (3) wrapping `ops` as common `GraphOperations` interface may break benchmarks that call backend-specific methods — executor must grep callsites before the type narrowing change.",
+    "structural_concerns": ["step_4_api_vs_impl_ambiguity", "type_narrowing_may_break_backend_specific_callsites"],
+    "advisory_only": true
+  }
+}

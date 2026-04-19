@@ -1,0 +1,8 @@
+{
+  "benchmark_command": "scripts/benchmark-age.sh",
+  "primary_metric": "primary",
+  "direction": "lower_is_better",
+  "baseline_score": null,
+  "baseline_recorded": false,
+  "notes": "Baseline pending manual run. The wrapper script requires Docker + Testcontainers to start PostgreSQL+AGE. Execute `scripts/benchmark-age.sh` on a host with Docker available; the last stdout line is the JSON summary — copy `primary` here and set `baseline_recorded` to true."
+}

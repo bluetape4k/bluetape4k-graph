@@ -1,0 +1,7 @@
+{
+  "iteration": 1,
+  "status": "in_progress",
+  "current_step": "research",
+  "started_at": "2026-04-19T00:00:00Z",
+  "completed_steps": ["cleanup", "refresh", "stop_check", "ideas_check"]
+}

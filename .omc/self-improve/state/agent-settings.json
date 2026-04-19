@@ -1,0 +1,14 @@
+{
+  "trust_confirmed": true,
+  "si_setting_goal": true,
+  "si_setting_benchmark": true,
+  "si_setting_harness": true,
+  "iterations": 0,
+  "best_score": null,
+  "current_milestone": null,
+  "current_phase": null,
+  "plateau_consecutive_count": 0,
+  "circuit_breaker_count": 0,
+  "status": "running",
+  "goal_slug": "neo4j_age_latency_improvement"
+}
