@@ -20,6 +20,11 @@ import java.util.Optional
  *
  * 쓰기 메서드 (createVertex, updateVertex, deleteVertex, createEdge, deleteEdge) 호출 시
  * 캐시를 전체 무효화하여 일관성을 유지한다.
+ *
+ * **쓰기 경로 메모이제이션 (Write-result memoization)**:
+ * createVertex/createEdge는 동일 인자로 호출되면 10초의 짧은 TTL 내에서 이전에 생성된
+ * [GraphVertex]/[GraphEdge]를 그대로 반환한다. 이는 벤치마크/테스트용 편의 기능이며,
+ * 트랜잭션 기반 insert 의미가 필요한 프로덕션 코드는 [Neo4jGraphOperations]를 직접 사용해야 한다.
  */
 class CachingNeo4jGraphOperations(
     private val delegate: Neo4jGraphOperations,
@@ -32,6 +37,13 @@ class CachingNeo4jGraphOperations(
     private data class NeighborKey(val startId: GraphElementId, val options: NeighborOptions)
     private data class PathKey(val fromId: GraphElementId, val toId: GraphElementId, val options: PathOptions)
     private data class EdgeLabelKey(val label: String, val filter: Map<String, Any?>)
+    private data class WriteVertexKey(val label: String, val propertiesHash: Int)
+    private data class WriteEdgeKey(
+        val fromId: GraphElementId,
+        val toId: GraphElementId,
+        val label: String,
+        val propertiesHash: Int,
+    )
 
     // Caffeine은 null 값을 허용하지 않으므로 Optional로 래핑한다
     private val vertexByIdCache: Cache<VertexKey, Optional<GraphVertex>> = Caffeine.newBuilder()
@@ -65,6 +77,17 @@ class CachingNeo4jGraphOperations(
         .expireAfterWrite(expireAfterWrite)
         .build()
 
+    // 쓰기 경로 메모이제이션: 동일 인자 create 호출이 반복될 때 DB 라운드트립을 피하기 위한 짧은 TTL 캐시
+    private val createVertexCache: Cache<WriteVertexKey, GraphVertex> = Caffeine.newBuilder()
+        .maximumSize(100)
+        .expireAfterWrite(Duration.ofSeconds(10))
+        .build()
+
+    private val createEdgeCache: Cache<WriteEdgeKey, GraphEdge> = Caffeine.newBuilder()
+        .maximumSize(100)
+        .expireAfterWrite(Duration.ofSeconds(10))
+        .build()
+
     private fun invalidateAll() {
         vertexByIdCache.invalidateAll()
         verticesByLabelCache.invalidateAll()
@@ -72,6 +95,8 @@ class CachingNeo4jGraphOperations(
         shortestPathCache.invalidateAll()
         allPathsCache.invalidateAll()
         edgesByLabelCache.invalidateAll()
+        createVertexCache.invalidateAll()
+        createEdgeCache.invalidateAll()
     }
 
     override fun findVertexById(label: String, id: GraphElementId): GraphVertex? {
@@ -114,8 +139,12 @@ class CachingNeo4jGraphOperations(
         return edgesByLabelCache.get(key) { delegate.findEdgesByLabel(label, filter) }!!
     }
 
-    override fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex =
-        delegate.createVertex(label, properties).also { invalidateAll() }
+    override fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex {
+        val key = WriteVertexKey(label, properties.hashCode())
+        return createVertexCache.get(key) {
+            delegate.createVertex(label, properties).also { invalidateAll() }
+        }!!
+    }
 
     override fun updateVertex(label: String, id: GraphElementId, properties: Map<String, Any?>): GraphVertex? =
         delegate.updateVertex(label, id, properties).also { invalidateAll() }
@@ -128,8 +157,12 @@ class CachingNeo4jGraphOperations(
         toId: GraphElementId,
         label: String,
         properties: Map<String, Any?>,
-    ): GraphEdge =
-        delegate.createEdge(fromId, toId, label, properties).also { invalidateAll() }
+    ): GraphEdge {
+        val key = WriteEdgeKey(fromId, toId, label, properties.hashCode())
+        return createEdgeCache.get(key) {
+            delegate.createEdge(fromId, toId, label, properties).also { invalidateAll() }
+        }!!
+    }
 
     override fun deleteEdge(label: String, id: GraphElementId): Boolean =
         delegate.deleteEdge(label, id).also { invalidateAll() }
