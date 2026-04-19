@@ -55,13 +55,19 @@ Edges are buffered during import to ensure all referenced vertices are created f
 ### Synchronous Import
 
 ```kotlin
+import io.bluetape4k.graph.io.jackson2.Jackson2NdJsonBulkImporter
+import io.bluetape4k.graph.io.options.DuplicateVertexPolicy
+import io.bluetape4k.graph.io.options.GraphImportOptions
+import io.bluetape4k.graph.io.source.GraphImportSource
+import java.nio.file.Paths
+
 val importer = Jackson2NdJsonBulkImporter()
-val source = GraphImportSource.fromFile(Path("graph-data.ndjson"))
+val source = GraphImportSource.PathSource(Paths.get("graph-data.ndjson"))
 val options = GraphImportOptions(
     defaultVertexLabel = "Node",
     defaultEdgeLabel = "Link",
-    maxEdgeBufferSize = 10000,
-    onDuplicateVertexId = DuplicatePolicy.SKIP
+    maxEdgeBufferSize = 10_000,
+    onDuplicateVertexId = DuplicateVertexPolicy.SKIP,
 )
 
 val report = importer.importGraph(source, operations, options)
@@ -72,11 +78,16 @@ println("Status: ${report.status}")
 ### Synchronous Export
 
 ```kotlin
+import io.bluetape4k.graph.io.jackson2.Jackson2NdJsonBulkExporter
+import io.bluetape4k.graph.io.options.GraphExportOptions
+import io.bluetape4k.graph.io.source.GraphExportSink
+import java.nio.file.Paths
+
 val exporter = Jackson2NdJsonBulkExporter()
-val sink = GraphExportSink.toFile(Path("output.ndjson"))
+val sink = GraphExportSink.PathSink(Paths.get("output.ndjson"))
 val options = GraphExportOptions(
-    vertexLabels = listOf("Person", "Company"),
-    edgeLabels = listOf("KNOWS", "WORKS_AT")
+    vertexLabels = setOf("Person", "Company"),
+    edgeLabels = setOf("KNOWS", "WORKS_AT"),
 )
 
 val report = exporter.exportGraph(sink, operations, options)
@@ -86,19 +97,28 @@ println("Exported ${report.verticesWritten} vertices, ${report.edgesWritten} edg
 ### Coroutine-Based Import
 
 ```kotlin
-val importer = SuspendJackson2NdJsonBulkImporter()
-val source = GraphImportSource.fromFile(Path("graph-data.ndjson"))
+import io.bluetape4k.graph.io.jackson2.SuspendJackson2NdJsonBulkImporter
+import io.bluetape4k.graph.io.source.GraphImportSource
+import kotlinx.coroutines.runBlocking
+import java.nio.file.Paths
 
-val report = importer.importGraphSuspend(source, operations, options)
+val importer = SuspendJackson2NdJsonBulkImporter()
+val source = GraphImportSource.PathSource(Paths.get("graph-data.ndjson"))
+
+val report = runBlocking {
+    importer.importGraphSuspending(source, suspendOperations, options)
+}
 println("Import completed: ${report.status}")
 ```
 
 ### Virtual Thread Import
 
 ```kotlin
+import io.bluetape4k.graph.io.jackson2.Jackson2NdJsonVirtualThreadBulkImporter
+
 val importer = Jackson2NdJsonVirtualThreadBulkImporter()
-val report = importer.importGraph(source, operations, options)
-// Leverages Virtual Threads for efficient concurrent I/O
+val future = importer.importGraphAsync(source, operations, options)
+val report = future.join()  // Leverages Virtual Threads for efficient concurrent I/O
 ```
 
 ## Error Handling

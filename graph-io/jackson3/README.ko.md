@@ -61,17 +61,18 @@ Bluetape4k 그래프 연산을 위한 Jackson 3.x 기반 NDJSON 벌크 임포터
 import io.bluetape4k.graph.io.jackson3.Jackson3NdJsonBulkExporter
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.source.GraphExportSink
+import java.nio.file.Paths
 
 val exporter = Jackson3NdJsonBulkExporter()
 val options = GraphExportOptions(
-    vertexLabels = listOf("Person", "Organization"),
-    edgeLabels = listOf("WORKS_FOR", "KNOWS")
+    vertexLabels = setOf("Person", "Organization"),
+    edgeLabels = setOf("WORKS_FOR", "KNOWS"),
 )
 
 val report = exporter.exportGraph(
-    sink = GraphExportSink.file("export.ndjson"),
+    sink = GraphExportSink.PathSink(Paths.get("export.ndjson")),
     operations = graphOps,
-    options = options
+    options = options,
 )
 
 println("${report.verticesWritten}개 정점과 ${report.edgesWritten}개 간선 익스포트됨")
@@ -84,23 +85,25 @@ println("상태: ${report.status}, 소요시간: ${report.elapsed}")
 import io.bluetape4k.graph.io.jackson3.Jackson3NdJsonBulkImporter
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.options.MissingEndpointPolicy
+import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.source.GraphImportSource
+import java.nio.file.Paths
 
 val importer = Jackson3NdJsonBulkImporter()
 val options = GraphImportOptions(
     defaultVertexLabel = "Entity",
     defaultEdgeLabel = "RELATED_TO",
-    onMissingEdgeEndpoint = MissingEndpointPolicy.SKIP_EDGE
+    onMissingEdgeEndpoint = MissingEndpointPolicy.SKIP_EDGE,
 )
 
 val report = importer.importGraph(
-    source = GraphImportSource.file("export.ndjson"),
+    source = GraphImportSource.PathSource(Paths.get("export.ndjson")),
     operations = graphOps,
-    options = options
+    options = options,
 )
 
 println("${report.verticesCreated}개 정점과 ${report.edgesCreated}개 간선 임포트됨")
-if (report.status.isFailed()) {
+if (report.status == GraphIoStatus.FAILED) {
     println("실패: ${report.failures.size}개")
     report.failures.forEach { failure ->
         println("  ${failure.phase}: ${failure.message}")
@@ -112,17 +115,21 @@ if (report.status.isFailed()) {
 
 ```kotlin
 import io.bluetape4k.graph.io.jackson3.SuspendJackson3NdJsonBulkExporter
+import io.bluetape4k.graph.io.options.GraphExportOptions
+import io.bluetape4k.graph.io.source.GraphExportSink
 import kotlinx.coroutines.runBlocking
+import java.nio.file.Paths
 
 val exporter = SuspendJackson3NdJsonBulkExporter()
-val options = GraphExportOptions(vertexLabels = listOf("Person"))
+val options = GraphExportOptions(vertexLabels = setOf("Person"))
 
 runBlocking {
-    val report = exporter.exportGraph(
-        sink = GraphExportSink.file("export.ndjson"),
-        operations = graphOps,
-        options = options
+    val report = exporter.exportGraphSuspending(
+        sink = GraphExportSink.PathSink(Paths.get("export.ndjson")),
+        operations = suspendGraphOps,
+        options = options,
     )
+    println("${report.verticesWritten}개 정점 익스포트 완료")
 }
 ```
 
@@ -130,15 +137,19 @@ runBlocking {
 
 ```kotlin
 import io.bluetape4k.graph.io.jackson3.Jackson3NdJsonVirtualThreadBulkExporter
+import io.bluetape4k.graph.io.options.GraphExportOptions
+import io.bluetape4k.graph.io.source.GraphExportSink
+import java.nio.file.Paths
 
 val exporter = Jackson3NdJsonVirtualThreadBulkExporter()
-val options = GraphExportOptions(vertexLabels = listOf("Person"))
+val options = GraphExportOptions(vertexLabels = setOf("Person"))
 
-val report = exporter.exportGraph(
-    sink = GraphExportSink.file("export.ndjson"),
+val future = exporter.exportGraphAsync(
+    sink = GraphExportSink.PathSink(Paths.get("export.ndjson")),
     operations = graphOps,
-    options = options
+    options = options,
 )
+val report = future.join()
 ```
 
 ## NDJSON 형식 사양
@@ -167,15 +178,17 @@ val report = exporter.exportGraph(
 
 - `defaultVertexLabel: String` - 명시적 라벨이 없을 때 적용할 기본값
 - `defaultEdgeLabel: String` - 명시적 라벨이 없을 때 적용할 기본값
-- `onDuplicateVertexId: DuplicatePolicy` - ID 충돌 처리 (ERROR, OVERWRITE, IGNORE)
+- `onDuplicateVertexId: DuplicateVertexPolicy` - ID 충돌 처리 (FAIL, SKIP)
 - `onMissingEdgeEndpoint: MissingEndpointPolicy` - 매달린 간선 처리 (FAIL, SKIP_EDGE)
-- `preserveExternalIdProperty: String?` - 원본 외부 ID를 속성에 저장 (키 이름)
-- `maxEdgeBufferSize: Int` - 플러시 전 버퍼된 간선의 메모리 제한
+- `preserveExternalIdProperty: String?` - 원본 외부 ID를 속성에 저장 (키 이름). `null`이면 비활성화
+- `maxEdgeBufferSize: Int` - 플러시 전 버퍼된 간선의 메모리 제한 (기본 `100_000`)
+- `batchSize: Int` - 진행 보고/플러시 주기 (기본 `1_000`)
 
 ### GraphExportOptions
 
-- `vertexLabels: List<String>` - 익스포트할 특정 라벨 (비어있으면 모두)
-- `edgeLabels: List<String>` - 익스포트할 특정 라벨 (비어있으면 모두)
+- `vertexLabels: Set<String>` - 익스포트할 특정 라벨 (비어있으면 모두)
+- `edgeLabels: Set<String>` - 익스포트할 특정 라벨 (비어있으면 모두)
+- `includeEmptyProperties: Boolean` - 속성이 비어있어도 레코드 방출 (기본 `true`)
 
 ## 의존성
 
@@ -204,8 +217,8 @@ data class GraphImportReport(
     val verticesCreated: Long,
     val edgesRead: Long,
     val edgesCreated: Long,
-    val verticesSkipped: Long,
-    val edgesSkipped: Long,
+    val skippedVertices: Long,
+    val skippedEdges: Long,
     val elapsed: Duration,
     val failures: List<GraphIoFailure>         // 레코드별 실패 진단
 )

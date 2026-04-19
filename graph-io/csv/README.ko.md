@@ -38,23 +38,24 @@ dependencies {
 import io.bluetape4k.graph.io.csv.CsvGraphBulkExporter
 import io.bluetape4k.graph.io.csv.CsvGraphExportSink
 import io.bluetape4k.graph.io.options.GraphExportOptions
+import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.repository.GraphOperations
 import java.nio.file.Paths
 
 val exporter = CsvGraphBulkExporter()
 
 val sink = CsvGraphExportSink(
-    vertexFile = Paths.get("vertices.csv"),
-    edgeFile = Paths.get("edges.csv")
+    vertices = GraphExportSink.PathSink(Paths.get("vertices.csv")),
+    edges = GraphExportSink.PathSink(Paths.get("edges.csv")),
 )
 
 val options = GraphExportOptions(
-    vertexLabels = listOf("Person", "Company"),
-    edgeLabels = listOf("works_for", "knows")
+    vertexLabels = setOf("Person", "Company"),
+    edgeLabels = setOf("works_for", "knows"),
 )
 
 val report = exporter.exportGraph(sink, graphOps, options)
-println("${report.vertexCount}개의 정점과 ${report.edgeCount}개의 간선을 ${report.elapsedMs}ms에 익스포트했습니다")
+println("${report.verticesWritten}개의 정점과 ${report.edgesWritten}개의 간선을 ${report.elapsed.toMillis()}ms에 익스포트했습니다")
 ```
 
 ### 가상 스레드 기반 익스포트
@@ -65,23 +66,24 @@ Java 가상 스레드를 사용하여 비동기로 익스포트:
 import io.bluetape4k.graph.io.csv.CsvGraphVirtualThreadBulkExporter
 import io.bluetape4k.graph.io.csv.CsvGraphExportSink
 import io.bluetape4k.graph.io.options.GraphExportOptions
+import io.bluetape4k.graph.io.source.GraphExportSink
 import java.nio.file.Paths
 
 val exporter = CsvGraphVirtualThreadBulkExporter()
 
 val sink = CsvGraphExportSink(
-    vertexFile = Paths.get("vertices.csv"),
-    edgeFile = Paths.get("edges.csv")
+    vertices = GraphExportSink.PathSink(Paths.get("vertices.csv")),
+    edges = GraphExportSink.PathSink(Paths.get("edges.csv")),
 )
 
 val options = GraphExportOptions(
-    vertexLabels = listOf("Person"),
-    edgeLabels = listOf("knows")
+    vertexLabels = setOf("Person"),
+    edgeLabels = setOf("knows"),
 )
 
 val future = exporter.exportGraphAsync(sink, graphOps, options)
 val report = future.join()  // 완료 대기
-println("${report.vertexCount}개의 정점을 익스포트했습니다")
+println("${report.verticesWritten}개의 정점을 익스포트했습니다")
 ```
 
 ### 코루틴 기반 익스포트 (Suspend)
@@ -94,29 +96,30 @@ import io.bluetape4k.graph.io.csv.CsvGraphExportSink
 import io.bluetape4k.graph.io.csv.CsvGraphIoOptions
 import io.bluetape4k.graph.io.csv.CsvPropertyMode
 import io.bluetape4k.graph.io.options.GraphExportOptions
+import io.bluetape4k.graph.io.source.GraphExportSink
 import kotlinx.coroutines.runBlocking
 import java.nio.file.Paths
 
 val exporter = SuspendCsvGraphBulkExporter()
 
 val sink = CsvGraphExportSink(
-    vertexFile = Paths.get("vertices.csv"),
-    edgeFile = Paths.get("edges.csv")
+    vertices = GraphExportSink.PathSink(Paths.get("vertices.csv")),
+    edges = GraphExportSink.PathSink(Paths.get("edges.csv")),
 )
 
 val options = GraphExportOptions(
-    vertexLabels = listOf("Person", "Company"),
-    edgeLabels = listOf("works_for")
+    vertexLabels = setOf("Person", "Company"),
+    edgeLabels = setOf("works_for"),
 )
 
 val csvOptions = CsvGraphIoOptions(
-    propertyMode = CsvPropertyMode.PrefixedColumns(prefix = "attr.")
+    propertyMode = CsvPropertyMode.PrefixedColumns(prefix = "attr."),
 )
 
 val report = runBlocking {
     exporter.exportGraphSuspending(sink, suspendGraphOps, options, csvOptions)
 }
-println("${report.vertexCount}개의 정점과 ${report.edgeCount}개의 간선을 익스포트했습니다")
+println("${report.verticesWritten}개의 정점과 ${report.edgesWritten}개의 간선을 익스포트했습니다")
 ```
 
 ## 설정
@@ -165,14 +168,14 @@ val options = CsvGraphIoOptions(
 ```kotlin
 val report = exporter.exportGraph(sink, graphOps, options)
 
-println("상태: ${report.status}")  // SUCCESS, PARTIAL, FAILED
-println("정점: ${report.vertexCount}")
-println("간선: ${report.edgeCount}")
-println("소요 시간: ${report.elapsedMs}ms")
+println("상태: ${report.status}")  // COMPLETED, PARTIAL, FAILED
+println("정점: ${report.verticesWritten}")
+println("간선: ${report.edgesWritten}")
+println("소요 시간: ${report.elapsed.toMillis()}ms")
 
 if (report.failures.isNotEmpty()) {
     report.failures.forEach { failure ->
-        println("오류: ${failure.message}")
+        println("오류[${failure.phase}]: ${failure.message}")
     }
 }
 ```
