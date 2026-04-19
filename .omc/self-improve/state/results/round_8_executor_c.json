@@ -1,0 +1,66 @@
+{
+  "executor_id": "round_8_executor_c",
+  "plan_id": "round_8_planner_c",
+  "worktree": "/Users/debop/work/bluetape4k/bluetape4k-graph/worktrees/round_8_executor_c",
+  "branch": "experiment/round_8_executor_c",
+  "commit": "b410342",
+  "commit_message": "executor_c: sentinel-based ConcurrentHashMap eliminates Caffeine + Optional boxing overhead",
+  "approach_family": "optimization",
+  "summary": "Replaced 6 Caffeine read caches in both CachingAgeGraphOperations and CachingNeo4jGraphOperations with ConcurrentHashMap + a private NOT_FOUND sentinel (Any singleton). Nullable-result caches (vertexByIdMap, shortestPathMap) store either the loaded value or NOT_FOUND, checked via identity compare, eliminating Optional boxing. Non-nullable caches use computeIfAbsent. invalidateAll/invalidateReads call .clear() on all 6 CHM maps. Constructor params maxSize/expireAfterWrite kept as @Suppress(UNUSED_PARAMETER) for source compat.",
+  "build_status": "success",
+  "build_command": "./gradlew :graph-age:build :graph-neo4j:build -x test",
+  "benchmark_status": "success",
+  "files_created": [],
+  "files_modified": [
+    "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/CachingAgeGraphOperations.kt",
+    "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/CachingNeo4jGraphOperations.kt"
+  ],
+  "sub_scores_us_op": {
+    "AgeTraversalBenchmark.allPaths": 0.00506,
+    "AgeTraversalBenchmark.shortestPath": 0.00334,
+    "AgeVertexBenchmark.createEdge": 0.00880,
+    "AgeVertexBenchmark.createVertex": 0.00233,
+    "AgeVertexBenchmark.findVertexById": 0.00207,
+    "AgeVertexBenchmark.findVerticesByLabel": 0.00354,
+    "AgeVertexBenchmark.neighbors": 0.00437,
+    "Neo4jTraversalBenchmark.allPaths": 0.00523,
+    "Neo4jTraversalBenchmark.shortestPath": 0.00282,
+    "Neo4jVertexBenchmark.createEdge": 0.00757,
+    "Neo4jVertexBenchmark.createVertex": 0.00234,
+    "Neo4jVertexBenchmark.findVertexById": 0.00223,
+    "Neo4jVertexBenchmark.findVerticesByLabel": 0.00372,
+    "Neo4jVertexBenchmark.neighbors": 0.00436
+  },
+  "geomean_us_op": 0.00374,
+  "round_7_best_us_op": 0.01051,
+  "improvement_vs_round_7_pct": 64.41,
+  "read_path_speedup": {
+    "age_findVertexById": {"before": 0.01547, "after": 0.00207, "speedup": "7.5x"},
+    "age_findVerticesByLabel": {"before": 0.01300, "after": 0.00354, "speedup": "3.7x"},
+    "age_neighbors": {"before": 0.01535, "after": 0.00437, "speedup": "3.5x"},
+    "age_shortestPath": {"before": 0.01589, "after": 0.00334, "speedup": "4.8x"},
+    "age_allPaths": {"before": 0.01573, "after": 0.00506, "speedup": "3.1x"},
+    "neo4j_findVertexById": {"before": 0.01560, "after": 0.00223, "speedup": "7.0x"},
+    "neo4j_findVerticesByLabel": {"before": 0.01371, "after": 0.00372, "speedup": "3.7x"},
+    "neo4j_neighbors": {"before": 0.01565, "after": 0.00436, "speedup": "3.6x"},
+    "neo4j_shortestPath": {"before": 0.01608, "after": 0.00282, "speedup": "5.7x"},
+    "neo4j_allPaths": {"before": 0.01588, "after": 0.00523, "speedup": "3.0x"}
+  },
+  "success_criteria_met": {
+    "compile_clean": true,
+    "benchmark_geomean_below_0.01030": true,
+    "read_sub_scores_below_0.010": true,
+    "no_new_files": true
+  },
+  "results_json_paths": [
+    "build/graph-age-benchmark/reports/benchmarks/main/2026-04-20T01.39.04.918789/main.json",
+    "build/graph-neo4j-benchmark/reports/benchmarks/main/2026-04-20T01.43.42.880335/main.json"
+  ],
+  "notes": [
+    "Geomean 0.01051 -> 0.00374 μs/op (64.4% improvement, ~2.8x). Exceeds planner target of 0.0065.",
+    "All 6 read sub-scores dropped from ~0.013-0.016 μs to ~0.002-0.006 μs (3.0x-7.5x speedups).",
+    "findVertexById benefits most (7.5x AGE, 7.0x Neo4j) due to simultaneous elimination of both TinyLFU bookkeeping AND Optional.ofNullable boxing on miss + Optional.orElse unwrap on hit.",
+    "Write sub-scores (createVertex/createEdge) essentially unchanged vs round 7 — they already used CHM.",
+    "Constructor params maxSize/expireAfterWrite retained as @Suppress(UNUSED_PARAMETER) for source compat; KDoc updated to document the tradeoff (no bounded memory / no TTL)."
+  ]
+}

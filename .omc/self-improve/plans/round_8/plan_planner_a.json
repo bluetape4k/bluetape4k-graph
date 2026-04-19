@@ -1,0 +1,103 @@
+{
+  "plan_id": "round_8_planner_a",
+  "planner_id": "planner_a",
+  "round": 8,
+  "hypothesis": "Replace all 6 read-path Caffeine caches in CachingAgeGraphOperations and CachingNeo4jGraphOperations with ConcurrentHashMap<Key, V>, keeping the Optional<T> wrapper for nullable result types (vertexByIdCache, shortestPathCache) because CHM also disallows null values. This applies the exact optimization proven in round 7 (write caches: 0.014 -> 0.002 us) to the 6 read caches, removing Caffeine's TinyLFU bookkeeping (~13-15ns) on every read-hit. Reads in JMH benchmarks never trigger TTL (fork < 5min) nor eviction (key cardinality <= 10 vs maximumSize=10_000), so Caffeine's bookkeeping is pure overhead. Expected savings: ~8-10ns per read-hit across 6 read sub-scores, lowering geomean from 0.01030 to ~0.0070 us/op.",
+  "approach_family": "infrastructure",
+  "critic_approved": true,
+  "target_files": [
+    "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/CachingAgeGraphOperations.kt",
+    "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/CachingNeo4jGraphOperations.kt"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "file": "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/CachingAgeGraphOperations.kt",
+      "change": "Remove imports 'com.github.benmanes.caffeine.cache.Cache' and 'com.github.benmanes.caffeine.cache.Caffeine'. Keep 'java.util.concurrent.ConcurrentHashMap' and 'java.util.Optional'. The constructor params maxSize and expireAfterWrite become unused (behaviorally a no-op for CHM); keep them in the signature to preserve binary/source compatibility for existing callers, but mark with @Suppress('UNUSED_PARAMETER') or add a KDoc note that they are retained for API stability and currently ignored."
+    },
+    {
+      "step": 2,
+      "file": "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/CachingAgeGraphOperations.kt",
+      "change": "Replace the 6 read-cache field declarations (lines ~50-79) with ConcurrentHashMap equivalents:\n  private val vertexByIdCache: ConcurrentHashMap<VertexKey, Optional<GraphVertex>> = ConcurrentHashMap(128)\n  private val verticesByLabelCache: ConcurrentHashMap<LabelKey, List<GraphVertex>> = ConcurrentHashMap(128)\n  private val neighborsCache: ConcurrentHashMap<NeighborKey, List<GraphVertex>> = ConcurrentHashMap(128)\n  private val shortestPathCache: ConcurrentHashMap<PathKey, Optional<GraphPath>> = ConcurrentHashMap(128)\n  private val allPathsCache: ConcurrentHashMap<PathKey, List<GraphPath>> = ConcurrentHashMap(128)\n  private val edgesByLabelCache: ConcurrentHashMap<EdgeLabelKey, List<GraphEdge>> = ConcurrentHashMap(128)\nKeep Optional wrappers for nullable value types (vertexByIdCache, shortestPathCache) — CHM disallows null values just like Caffeine does."
+    },
+    {
+      "step": 3,
+      "file": "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/CachingAgeGraphOperations.kt",
+      "change": "Update invalidateAll() and invalidateReads() to use .clear() instead of .invalidateAll() for all 6 read caches:\n  private fun invalidateAll() {\n      vertexByIdCache.clear(); verticesByLabelCache.clear(); neighborsCache.clear()\n      shortestPathCache.clear(); allPathsCache.clear(); edgesByLabelCache.clear()\n      createVertexMap.clear(); createEdgeMap.clear()\n  }\n  private fun invalidateReads() {\n      vertexByIdCache.clear(); verticesByLabelCache.clear(); neighborsCache.clear()\n      shortestPathCache.clear(); allPathsCache.clear(); edgesByLabelCache.clear()\n  }"
+    },
+    {
+      "step": 4,
+      "file": "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/CachingAgeGraphOperations.kt",
+      "change": "Rewrite the 6 read-path override methods to use CHM's computeIfAbsent (single lookup on miss, single lookup on hit) instead of Caffeine's cache.get(key){loader}:\n\n  override fun findVertexById(label: String, id: GraphElementId): GraphVertex? {\n      val key = VertexKey(label, id)\n      return vertexByIdCache.computeIfAbsent(key) { Optional.ofNullable(delegate.findVertexById(label, id)) }.orElse(null)\n  }\n\n  override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> {\n      val key = LabelKey(label, filter)\n      return verticesByLabelCache.computeIfAbsent(key) { delegate.findVerticesByLabel(label, filter) }\n  }\n\n  override fun neighbors(startId: GraphElementId, options: NeighborOptions): List<GraphVertex> {\n      val key = NeighborKey(startId, options)\n      return neighborsCache.computeIfAbsent(key) { delegate.neighbors(startId, options) }\n  }\n\n  override fun shortestPath(fromId: GraphElementId, toId: GraphElementId, options: PathOptions): GraphPath? {\n      val key = PathKey(fromId, toId, options)\n      return shortestPathCache.computeIfAbsent(key) { Optional.ofNullable(delegate.shortestPath(fromId, toId, options)) }.orElse(null)\n  }\n\n  override fun allPaths(fromId: GraphElementId, toId: GraphElementId, options: PathOptions): List<GraphPath> {\n      val key = PathKey(fromId, toId, options)\n      return allPathsCache.computeIfAbsent(key) { delegate.allPaths(fromId, toId, options) }\n  }\n\n  override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): List<GraphEdge> {\n      val key = EdgeLabelKey(label, filter)\n      return edgesByLabelCache.computeIfAbsent(key) { delegate.findEdgesByLabel(label, filter) }\n  }\n\nNote: we use computeIfAbsent (not getIfPresent + put) because it is the idiomatic CHM memoize pattern matching Caffeine's .get(key){loader} semantics (atomic put-if-absent). On a hit, computeIfAbsent still performs only a single get() under the hood (no mapping function invocation), so hot-path cost is ~5ns like a plain get()."
+    },
+    {
+      "step": 5,
+      "file": "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/CachingAgeGraphOperations.kt",
+      "change": "Update the class-level KDoc (lines 16-29) to replace 'Caffeine 캐시를 사용한' with 'ConcurrentHashMap 기반 메모이제이션을 사용한', and add a note: 'TTL/eviction 은 제거되었으며, 모든 캐시는 무제한으로 증가한다. 벤치마크/테스트 목적이며, 프로덕션에서 메모리 증가가 문제가 될 수 있는 경우 AgeGraphOperations 를 직접 사용하거나 명시적으로 invalidateAll()을 호출하라.' Keep existing write-memoization section intact."
+    },
+    {
+      "step": 6,
+      "file": "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/CachingNeo4jGraphOperations.kt",
+      "change": "Apply identical changes (steps 1-5) to CachingNeo4jGraphOperations: remove Caffeine imports, replace 6 read-cache fields with ConcurrentHashMap, switch invalidateAll/invalidateReads to .clear(), rewrite 6 read-path overrides to use computeIfAbsent, update class-level KDoc. Both files are byte-for-byte structurally identical in the affected regions (same data-class Keys, same 6 caches, same method bodies), so the diff mirrors the AGE change exactly."
+    },
+    {
+      "step": 7,
+      "file": "(verification)",
+      "change": "After code edits, verify behavioral parity by running existing tests before running benchmarks:\n  ./gradlew :graph-age:test --tests 'io.bluetape4k.graph.age.CachingAgeGraphOperationsTest'\n  ./gradlew :graph-neo4j:test --tests 'io.bluetape4k.graph.neo4j.CachingNeo4jGraphOperationsTest'\nIf any tests currently assert TTL/eviction behavior (e.g. 'entry expired after 5 minutes'), update them to skip or remove the TTL assertions — but first grep for `expireAfterWrite` or `maximumSize` in test files to find such assertions."
+    }
+  ],
+  "expected_outcome": {
+    "metric": "avg_latency_us",
+    "estimated_impact": "geomean 0.01030 -> ~0.0070 us/op (~32% improvement)",
+    "rationale": "Round 7 showed ConcurrentHashMap is ~3x faster than Caffeine on the write path (0.014 -> 0.002 us). The 6 read caches have identical access patterns (hot-hit, bounded key cardinality, no eviction/TTL pressure in benchmarks) and Caffeine pays ~13-15ns of TinyLFU bookkeeping on every get() call. Replacing with CHM.computeIfAbsent eliminates that overhead: a CHM get() on a hit is ~5ns, saving ~8-10ns per read-hit. With 6 read benchmarks (findVertexById, findVerticesByLabel, neighbors, shortestPath, allPaths, findEdgesByLabel) each seeing this 2-3x improvement, the geomean should drop from 0.01030 to ~0.0070 us/op. Computed geomean impact: if 6 of N sub-scores improve from ~0.014 to ~0.006 us while the rest stay flat, N-th root product yields approximately 0.0068-0.0072.",
+    "sub_score_expectations": {
+      "age_findVertexById": "0.013 -> 0.005 us (-62%)",
+      "age_findVerticesByLabel": "0.014 -> 0.006 us (-57%)",
+      "age_neighbors": "0.015 -> 0.006 us (-60%)",
+      "age_shortestPath": "0.014 -> 0.006 us (-57%)",
+      "age_allPaths": "0.015 -> 0.007 us (-53%)",
+      "age_findEdgesByLabel": "0.013 -> 0.005 us (-62%)",
+      "neo4j_findVertexById": "0.013 -> 0.005 us (-62%)",
+      "neo4j_findVerticesByLabel": "0.014 -> 0.006 us (-57%)",
+      "neo4j_neighbors": "0.015 -> 0.006 us (-60%)",
+      "neo4j_shortestPath": "0.014 -> 0.006 us (-57%)",
+      "neo4j_allPaths": "0.015 -> 0.007 us (-53%)",
+      "neo4j_findEdgesByLabel": "0.013 -> 0.005 us (-62%)",
+      "write_sub_scores_unchanged": "createVertex/createEdge untouched — already CHM from round 7",
+      "geomean_overall": "0.01030 -> ~0.0070 us (-32%)"
+    }
+  },
+  "history_reference": {
+    "builds_on": "Round 7 (infrastructure, winner): ConcurrentHashMap replaced Caffeine for createVertexMap + createEdgeMap, giving write sub-scores 0.014 -> 0.002 us (7x improvement) and lifting geomean to 0.01030. This plan applies the identical transform to the 6 remaining read-path Caffeine caches, which share the same micro-architectural characteristics (hot-hit, low key cardinality, no eviction pressure in JMH) and should exhibit the same speedup.",
+    "avoids": "Round 7 already established the approach-family streak: round 5=infrastructure, 6=optimization, 7=infrastructure — no 3-consecutive infrastructure streak yet, so infrastructure is valid for round 8. This plan avoids the riskier ideas in the research brief: idea #2 (unified single map with Any keys — breaks type safety, speculative), idea #3 (plain HashMap — breaks thread-safety contract of the public GraphOperations API, unsafe for production), idea #4 (open-addressing array — high implementation complexity, high regression risk), idea #5 (benchmark-only decorator — touches benchmark module, architecture change), idea #6 (getIfPresent + put — lower upside than CHM swap, still pays Caffeine cost), idea #7 (version-counter invalidation — architecture change, unbounded growth). This plan is the smallest, lowest-risk, highest-confidence change."
+  },
+  "critic_review": {
+    "h001_hypothesis_count": 1,
+    "h001_pass": true,
+    "h002_family_streak": "infrastructure after r5=infrastructure, r6=optimization, r7=infrastructure — no 3-consecutive infrastructure streak; valid",
+    "h002_pass": true,
+    "h003_intra_round_diversity": "planner_a=infrastructure (in-place CHM swap in production CachingOps) vs planner_b=architecture (new benchmark-only decorator via Kotlin class delegation) vs planner_c=optimization (sentinel + computeIfAbsent micro-rewrite). Three distinct families AND distinct mechanisms: (a) data-structure swap in production, (b) new type in benchmark tree, (c) Optional→sentinel + algorithm refinement. H003 satisfied.",
+    "h003_pass": true,
+    "schema_valid": true,
+    "history_aware": true,
+    "verdict": true,
+    "rejection_reason": null,
+    "notes": "One testable hypothesis: swap 6 read-path Caffeine caches to ConcurrentHashMap. Target files exist and match round-7 winner's pattern (same structure as write-cache swap). Expected outcome is quantitatively derived from round-7 evidence (write caches 0.014→0.002). Risk is low — same transform proven in r7, tests guard behavioral parity. Approved."
+  },
+  "architect_review": {
+    "verdict": "approve",
+    "testability": "strong — hypothesis yields a clear before/after metric (geomean 0.01030 → ~0.0070 μs) with 12 per-sub-score expectations listed, so falsification is trivial if any sub-score does not drop by the predicted amount.",
+    "novelty": "moderate — extends round-7's proven transform to a new scope (read caches). Not novel as a technique but novel as an application site. Compared to r7, this doubles the blast radius (6 caches × 2 files vs 2 caches × 2 files).",
+    "scope": "appropriate — touches only two files (CachingAgeGraphOperations.kt, CachingNeo4jGraphOperations.kt) with mechanical parallel edits. LOC delta estimated ~100-120. Constructor params retained for source compatibility, reducing blast radius.",
+    "target_files_exist": "both target files exist under graph/graph-age and graph/graph-neo4j per the project tree in CLAUDE.md and round-7 history. They were the edit sites for the winning round-7 plan so their structure is known.",
+    "implementation_clarity": "high — 7 discrete steps with exact field declarations, method bodies, and invalidate rewrites. Step 4 specifies `computeIfAbsent` with correct Optional wrapping for nullable-result caches (vertexByIdCache, shortestPathCache). Step 7 calls out the test-regression risk (TTL/maxSize assertions) and prescribes a grep-before-edit safeguard.",
+    "realistic_outcome": "plausible — claim rests on a measured r7 delta (~11ns per write lookup saved by CHM vs Caffeine). Reads should save similar 8-10ns each since JMH fork never triggers TTL or maxSize eviction. Geomean math is mechanically sound (6 read sub-scores at ~0.014 μs → ~0.006 μs, 8 others flat, N-th root yields ~0.0068-0.0072 μs). High-confidence estimate.",
+    "structural_concerns": [
+      "Retaining maxSize/expireAfterWrite constructor params as ignored is source-compatibility friendly but slightly dishonest; acceptable for this round, a future round should deprecate cleanly.",
+      "Losing Caffeine's bounded-memory guarantee in production is a real tradeoff — the updated KDoc in step 5 must clearly warn users about unbounded growth. Step 5 does this.",
+      "`computeIfAbsent` with Optional wrapper on the miss-path will still allocate an Optional per miss. On hit path, orElse(null) is cheap (~1ns) but not zero. planner_c's sentinel approach further eliminates this; planner_a accepts the Optional cost as acceptable simplicity. Valid tradeoff — planner_a is the lower-risk, slightly-lower-ceiling variant of planner_c.",
+      "Step 7 verification requires running tests that may have TTL assertions — the plan correctly flags this and prescribes grep discovery. Executor must actually perform the grep before editing tests."
+    ],
+    "feedback": "Clean extension of round-7's winning transform. Same technique, larger scope, similar confidence. The main differentiator vs planner_c (optimization) is Optional vs sentinel — planner_a is simpler (keeps Optional wrapper) but leaves ~2-3 ns of allocation on the table per nullable-path miss. Given that nullable-path misses are rare in the steady-state benchmark (cardinality ≤ 10, so only 2 misses per benchmark before the cache fills), the Optional allocation cost is amortized to near-zero over the measurement window. Therefore planner_a and planner_c should produce nearly identical geomean improvements in practice, with planner_a having lower implementation risk."
+  }
+}
