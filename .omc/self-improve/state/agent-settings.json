@@ -3,12 +3,12 @@
   "si_setting_goal": true,
   "si_setting_benchmark": true,
   "si_setting_harness": true,
-  "iterations": 1,
+  "iterations": 2,
   "best_score": 1336.029,
   "current_milestone": "M1",
   "current_phase": "optimization",
   "plateau_consecutive_count": 0,
-  "circuit_breaker_count": 0,
+  "circuit_breaker_count": 1,
   "status": "running",
   "goal_slug": "neo4j_age_latency_improvement"
 }
