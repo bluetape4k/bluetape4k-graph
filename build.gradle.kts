@@ -111,6 +111,11 @@ subprojects {
         plugin(Plugins.dokka)
         plugin(Plugins.testLogger)
         plugin(Plugins.kosogor)
+        plugin("jacoco")
+    }
+
+    configure<JacocoPluginExtension> {
+        toolVersion = Plugins.Versions.jacoco
     }
 
     java {
@@ -248,6 +253,15 @@ subprojects {
                 dokkaPublications.html {
                     outputDirectory.set(project.file("docs/api"))
                 }
+            }
+        }
+
+        withType<JacocoReport>().configureEach {
+            dependsOn(test)
+            reports {
+                xml.required.set(true)
+                csv.required.set(true)
+                html.required.set(true)
             }
         }
 

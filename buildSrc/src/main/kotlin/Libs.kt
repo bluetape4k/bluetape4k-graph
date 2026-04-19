@@ -12,7 +12,7 @@ object Plugins {
         const val protobuf = "0.9.5"    // https://mvnrepository.com/artifact/com.google.protobuf/protobuf-gradle-plugin
         const val avro = "1.9.1"  // https://mvnrepository.com/artifact/com.github.davidmc24.gradle.plugin.avro/com.github.davidmc24.gradle.plugin.avro.gradle.plugin
 
-        const val jacoco = "0.8.11"
+        const val jacoco = "0.8.13"
         const val jarTest = "1.0.1"
         const val testLogger = "4.0.0"
         const val shadow = "9.2.2"      // https://plugins.gradle.org/plugin/com.gradleup.shadow
