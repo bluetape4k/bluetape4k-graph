@@ -35,10 +35,13 @@ build/
 .claude/settings.local.json
 .cluade/worktrees/
 
+.omc/
 .omc/sessions/
 .omc/state/
 .omc/logs/
 .omc/project-memory.json
+
+worktrees/
 
 .omx/logs/
 .omx/metrics.json
