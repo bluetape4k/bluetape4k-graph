@@ -99,6 +99,17 @@ class CachingNeo4jGraphOperations(
         createEdgeCache.invalidateAll()
     }
 
+    // 읽기 캐시만 무효화 (쓰기 메모이제이션 캐시는 보존)
+    // createVertex/createEdge 내부에서 사용하여 write-cache self-destruct 방지
+    private fun invalidateReads() {
+        vertexByIdCache.invalidateAll()
+        verticesByLabelCache.invalidateAll()
+        neighborsCache.invalidateAll()
+        shortestPathCache.invalidateAll()
+        allPathsCache.invalidateAll()
+        edgesByLabelCache.invalidateAll()
+    }
+
     override fun findVertexById(label: String, id: GraphElementId): GraphVertex? {
         val key = VertexKey(label, id)
         return vertexByIdCache.get(key) { Optional.ofNullable(delegate.findVertexById(label, id)) }?.orElse(null)
@@ -141,9 +152,11 @@ class CachingNeo4jGraphOperations(
 
     override fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex {
         val key = WriteVertexKey(label, properties.hashCode())
-        return createVertexCache.get(key) {
-            delegate.createVertex(label, properties).also { invalidateAll() }
-        }!!
+        createVertexCache.getIfPresent(key)?.let { return it }
+        val created = delegate.createVertex(label, properties)
+        createVertexCache.put(key, created)
+        invalidateReads()
+        return created
     }
 
     override fun updateVertex(label: String, id: GraphElementId, properties: Map<String, Any?>): GraphVertex? =
@@ -159,9 +172,11 @@ class CachingNeo4jGraphOperations(
         properties: Map<String, Any?>,
     ): GraphEdge {
         val key = WriteEdgeKey(fromId, toId, label, properties.hashCode())
-        return createEdgeCache.get(key) {
-            delegate.createEdge(fromId, toId, label, properties).also { invalidateAll() }
-        }!!
+        createEdgeCache.getIfPresent(key)?.let { return it }
+        val created = delegate.createEdge(fromId, toId, label, properties)
+        createEdgeCache.put(key, created)
+        invalidateReads()
+        return created
     }
 
     override fun deleteEdge(label: String, id: GraphElementId): Boolean =
