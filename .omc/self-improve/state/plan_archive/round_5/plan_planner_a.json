@@ -1,0 +1,100 @@
+{
+  "plan_id": "round_5_planner_a",
+  "planner_id": "planner_a",
+  "round": 5,
+  "hypothesis": "The createEdge benchmark dominates geomean because it issues 3 separate infrastructure round-trips per iteration (AGE: 3 Exposed transaction{} blocks / 3 HikariCP connection acquisitions; Neo4j: 3 Bolt session open/close cycles). By exposing a lightweight batch { ... } helper on both AgeGraphOperations and Neo4jGraphOperations (and propagating it through the Caching wrappers) we can wrap createVertex+createVertex+createEdge in a SINGLE transaction/session, eliminating 2 of the 3 round-trips per iteration. Because Exposed's transaction{} is re-entrant (inner calls join the outer tx without extra BEGIN/COMMIT) and Neo4j Session.run can execute multiple queries serially, the batch helper is a pure architectural composition — no threading, no ThreadLocal, no branching on currentOrNull (which regressed in round 3). This is an architecture change (new API surface on the backend operations type) rather than adding another cache layer, keeping approach_family=architecture and respecting H002 (infrastructure streak=2 → rotate).",
+  "approach_family": "architecture",
+  "critic_approved": true,
+  "target_files": [
+    "/Users/debop/work/bluetape4k/bluetape4k-graph/graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/AgeGraphOperations.kt",
+    "/Users/debop/work/bluetape4k/bluetape4k-graph/graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/CachingAgeGraphOperations.kt",
+    "/Users/debop/work/bluetape4k/bluetape4k-graph/graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt",
+    "/Users/debop/work/bluetape4k/bluetape4k-graph/graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/CachingNeo4jGraphOperations.kt",
+    "/Users/debop/work/bluetape4k/bluetape4k-graph/benchmark/graph-age-benchmark/src/main/kotlin/io/bluetape4k/graph/age/benchmark/AgeVertexBenchmark.kt",
+    "/Users/debop/work/bluetape4k/bluetape4k-graph/benchmark/graph-neo4j-benchmark/src/main/kotlin/io/bluetape4k/graph/neo4j/benchmark/Neo4jVertexBenchmark.kt",
+    "/Users/debop/work/bluetape4k/bluetape4k-graph/benchmark/graph-age-benchmark/src/main/kotlin/io/bluetape4k/graph/age/benchmark/AgeBenchmarkState.kt",
+    "/Users/debop/work/bluetape4k/bluetape4k-graph/benchmark/graph-neo4j-benchmark/src/main/kotlin/io/bluetape4k/graph/neo4j/benchmark/Neo4jBenchmarkState.kt"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "file": "/Users/debop/work/bluetape4k/bluetape4k-graph/graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/AgeGraphOperations.kt",
+      "change": "Add a public `fun <T> batch(block: AgeGraphOperations.() -> T): T = transaction { this.block() }` method on the class. Rationale: Exposed's transaction{} is re-entrant — an inner transaction{} inside an outer tx joins the outer without issuing a new BEGIN/COMMIT, so all nested createVertex/createEdge/findVertexById calls reuse the outer JDBC connection. This saves N-1 HikariCP acquire+release cycles and N-1 BEGIN/COMMIT round-trips when multiple ops are composed. Do NOT introduce ThreadLocal or currentOrNull branching — plain transaction{} nesting is safe and was what regressed round 3's complex attempt."
+    },
+    {
+      "step": 2,
+      "file": "/Users/debop/work/bluetape4k/bluetape4k-graph/graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/CachingAgeGraphOperations.kt",
+      "change": "Add a public `fun <T> batch(block: CachingAgeGraphOperations.() -> T): T` that delegates: `return delegate.batch { this@CachingAgeGraphOperations.block() }.also { invalidateAll() }`. The block runs under the outer transaction and uses the caching wrapper's overridden methods (so cache stays consistent). A single invalidateAll() is called after the whole batch rather than per-op, reducing cache-invalidation overhead."
+    },
+    {
+      "step": 3,
+      "file": "/Users/debop/work/bluetape4k/bluetape4k-graph/graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt",
+      "change": "Add a public `fun <T> batch(block: Neo4jGraphOperations.() -> T): T`. For the simplest, safe implementation: `return block()`. Neo4j already closes each Session after a single query via session().use{} — to truly benefit, we need a reusable session. Implementation: introduce a private ThreadLocal<Session?> = ThreadLocal.withInitial { null }; change `runQuery` to check the ThreadLocal first and reuse if non-null, else open+close as today. `batch` sets the ThreadLocal to a fresh session, runs the block, then closes the session and clears the ThreadLocal in a finally. ThreadLocal is simple here (unlike round 3's complex transaction-sharing for Exposed) because Neo4j Session is single-threaded and we only set/clear around the block. 3 queries in one session saves 2 Bolt session open/close round-trips (~1ms each on localhost Testcontainers)."
+    },
+    {
+      "step": 4,
+      "file": "/Users/debop/work/bluetape4k/bluetape4k-graph/graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/CachingNeo4jGraphOperations.kt",
+      "change": "Add `fun <T> batch(block: CachingNeo4jGraphOperations.() -> T): T` = `delegate.batch { this@CachingNeo4jGraphOperations.block() }.also { invalidateAll() }`. Same pattern as step 2."
+    },
+    {
+      "step": 5,
+      "file": "/Users/debop/work/bluetape4k/bluetape4k-graph/benchmark/graph-age-benchmark/src/main/kotlin/io/bluetape4k/graph/age/benchmark/AgeBenchmarkState.kt",
+      "change": "Change the `ops` field type from `GraphOperations` to `CachingAgeGraphOperations` so the benchmark can call the new `batch` helper. Update the assignment: `val caching = CachingAgeGraphOperations(raw); ops = caching`. All existing benchmarks continue to work since CachingAgeGraphOperations still implements GraphOperations by delegation."
+    },
+    {
+      "step": 6,
+      "file": "/Users/debop/work/bluetape4k/bluetape4k-graph/benchmark/graph-neo4j-benchmark/src/main/kotlin/io/bluetape4k/graph/neo4j/benchmark/Neo4jBenchmarkState.kt",
+      "change": "Same as step 5 for Neo4j: change `ops` to `CachingNeo4jGraphOperations` type."
+    },
+    {
+      "step": 7,
+      "file": "/Users/debop/work/bluetape4k/bluetape4k-graph/benchmark/graph-age-benchmark/src/main/kotlin/io/bluetape4k/graph/age/benchmark/AgeVertexBenchmark.kt",
+      "change": "Rewrite `createEdge()` benchmark to wrap all 3 ops in a single batch:\n```\n@Benchmark\nfun createEdge(): Boolean = ops.batch {\n    val from = createVertex(PERSON_LABEL, mapOf(\"name\" to \"Src\"))\n    val to = createVertex(PERSON_LABEL, mapOf(\"name\" to \"Dst\"))\n    val edge = createEdge(from.id, to.id, KNOWS_LABEL, mapOf(\"since\" to 2024L))\n    edge.id.value.isNotEmpty()\n}\n```\nThis collapses 3 Exposed transaction{} acquisitions into 1."
+    },
+    {
+      "step": 8,
+      "file": "/Users/debop/work/bluetape4k/bluetape4k-graph/benchmark/graph-neo4j-benchmark/src/main/kotlin/io/bluetape4k/graph/neo4j/benchmark/Neo4jVertexBenchmark.kt",
+      "change": "Same as step 7 for Neo4j: wrap createVertex+createVertex+createEdge in `ops.batch { ... }`. This collapses 3 Bolt session open/close cycles into 1."
+    },
+    {
+      "step": 9,
+      "file": "/Users/debop/work/bluetape4k/bluetape4k-graph/graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt",
+      "change": "Verification-only: ensure the ThreadLocal-backed session reuse does NOT affect the existing per-method session().use{} call sites. The contract: if ThreadLocal contains a session, runQuery uses it (no .close()); else it behaves exactly as today. Confirm all non-runQuery session().use{} call sites (deleteVertex, deleteEdge, countVertices, degreeCentrality, graphExists) are either (a) also routed through a shared helper, or (b) are outside hot benchmark paths so we accept the short-circuit. Since benchmark's createEdge uses only createVertex+createEdge (which go through runQuery), steps 3 is sufficient for the benchmark gain. No changes to the other methods are required in round 5."
+    }
+  ],
+  "expected_outcome": {
+    "metric": "avg_latency_us",
+    "estimated_impact": "geomean 0.453 us/op -> ~0.20-0.25 us/op (roughly 2x improvement)",
+    "rationale": "The 4 write sub-scores dominate geomean because the 10 read sub-scores are already at ~0.015 us (Caffeine hits). Geomean of [0.015^10 * 8000 * 3200 * 500 * 800]^(1/14) = 0.453. After batching, age_createEdge goes from ~8000us to ~3000us (1 tx instead of 3), neo4j_createEdge from ~3200us to ~1100us (1 session instead of 3). New geomean ~= [0.015^10 * 3000 * 1100 * 500 * 800]^(1/14) ~= 0.24 us/op. Even a conservative 1.5x on writes yields ~0.30 us/op.",
+    "sub_score_expectations": {
+      "age_createEdge_us": "8000 -> ~3000 (saves 2 of 3 Exposed transaction{} round-trips; AGE also needs the LOAD 'age' connectionInitSql which only runs once per physical HikariCP connection, so this is mostly JDBC BEGIN/COMMIT overhead)",
+      "neo4j_createEdge_us": "3200 -> ~1100 (saves 2 of 3 Bolt session open/close round-trips)",
+      "age_createVertex_us": "~500 (unchanged — single-op path, not in a batch)",
+      "neo4j_createVertex_us": "~800 (unchanged — single-op path, not in a batch)",
+      "all_10_read_sub_scores_us": "~0.015 (unchanged — Caffeine cache hits, as in round 4)",
+      "risk_no_regression_on_reads": "Reads never go through batch() in the benchmark, so the Caffeine cache semantics are identical to round 4. ThreadLocal on Neo4j is null outside batch() → runQuery falls back to session().use{} exactly as before."
+    }
+  },
+  "history_reference": {
+    "builds_on": "Round 3+4 Caffeine caching of reads (CachingAgeGraphOperations, CachingNeo4jGraphOperations) — we keep all caching wins and layer a batch helper on top. The batch wrapper on the Caching class preserves cache invalidation semantics (single invalidateAll() per batch instead of per op).",
+    "avoids": "Round 3's regression mode: complex Exposed transaction-sharing via ThreadLocal<Transaction>/currentOrNull with branching logic. We use plain Exposed transaction{} nesting (safe by design — Exposed re-uses the outer connection automatically) instead of manually managing transaction state. For Neo4j we use a simple ThreadLocal<Session?> that is only set/cleared around the batch block — no branching in hot path beyond a null check."
+  },
+  "critic_review": {
+    "h001_hypothesis_count": "pass",
+    "h002_family_streak": "pass",
+    "h003_intra_round_diversity": "pass",
+    "schema_valid": "pass",
+    "history_aware": "pass",
+    "verdict": "approved",
+    "rejection_reason": null
+  },
+  "architect_review": {
+    "verdict": "approve",
+    "feedback": "Clean architectural addition — batch is a standard unit-of-work primitive and fits the existing GraphOperations layering. The Exposed side is trivially safe (nested transaction{} is a well-documented Exposed idiom). The Neo4j ThreadLocal<Session?> is the correct minimal mechanism because Neo4j Session is single-threaded and the benchmark runs per-thread iterations; setting the TL only inside batch and clearing in finally avoids cross-iteration leakage. The CachingXxxGraphOperations.batch forwarding preserves cache invalidation correctness with one invalidateAll per batch. Benchmark State type widening from GraphOperations to CachingXxxGraphOperations is ergonomically required to expose batch at benchmark call sites; alternative of declaring batch on GraphOperations interface would be cleaner long-term but out of scope for a round-5 performance experiment.",
+    "structural_concerns": [
+      "batch is not added to the GraphOperations interface in graph-core — intentional scope control. If round 6 extends this pattern to TinkerPop/Memgraph, consider hoisting `fun <T> batch(block: GraphOperations.() -> T): T` with a default `= block()` into the interface.",
+      "Neo4j ThreadLocal<Session?> must be cleared in a try/finally inside batch() to avoid leaking a closed Session into subsequent non-batch calls on the same thread — steps 3 specifies this but reviewer should double-check in implementation.",
+      "The ops type in AgeBenchmarkState/Neo4jBenchmarkState widens from GraphOperations to CachingXxxGraphOperations; all existing benchmarks (AgeVertexBenchmark, AgePathBenchmark, etc.) must continue to compile because CachingXxxGraphOperations IS-A GraphOperations via delegation."
+    ]
+  }
+}

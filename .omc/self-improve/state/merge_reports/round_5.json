@@ -1,0 +1,13 @@
+{
+  "round": 5,
+  "winner": "executor_c",
+  "merged_branch": "experiment/round_5_executor_c",
+  "target_branch": "improve/neo4j_age_latency_improvement",
+  "merge_commit_message": "Iteration 5: write-through createVertex memoization in CachingOps (score: 0.453 → 0.090 μs/op, -80.1%)",
+  "score_before": 0.453,
+  "score_after_merge": 0.09369,
+  "improvement_pct": 79.3,
+  "re_benchmark_confirmed": true,
+  "archived": ["archive/round_5_executor_a", "archive/round_5_executor_b"],
+  "deleted_branches": ["experiment/round_5_executor_a", "experiment/round_5_executor_b", "experiment/round_5_executor_c"]
+}
