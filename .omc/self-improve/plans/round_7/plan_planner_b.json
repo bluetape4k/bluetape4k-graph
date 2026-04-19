@@ -1,0 +1,116 @@
+{
+  "plan_id": "round_7_planner_b",
+  "approach_family": "infrastructure",
+  "hypothesis": "Replacing Caffeine (TinyLFU with frequency-sketch bookkeeping, ~13-15 ns per getIfPresent call) with plain ConcurrentHashMap for the write-memoization caches (createVertexCache, createEdgeCache) reduces per-lookup overhead to ~4-5 ns. The benchmark has at most a few distinct keys (one per vertex/edge label+properties hash combination), so TinyLFU admission/eviction provides no value. Expected improvement: ~9-10 ns saved per createVertex call and ~27-30 ns per createEdge call (3 cache lookups), lowering createEdge from ~41 ns to ~11-14 ns and createVertex from ~13-16 ns to ~4-7 ns. Projected geomean drop from 0.01682 to ~0.0135-0.0145 us/op.",
+  "rationale": [
+    "Caffeine's getIfPresent performs TinyLFU frequency-sketch increment and access-order maintenance even on a hit. ConcurrentHashMap.get is a lock-free hash lookup with no bookkeeping.",
+    "The write-memoization caches have small capacity (maxSize=100) and very few distinct keys during a benchmark run, so TinyLFU's admission policy provides no eviction benefit.",
+    "The 10s TTL is a convenience feature for benchmark stability, not a correctness requirement. Manual invalidation on deleteVertex/deleteEdge/updateVertex preserves semantics for non-benchmark use.",
+    "createEdge currently performs 3 Caffeine lookups (vertex lookups + edge lookup in delegate chain); reducing each by ~10 ns compounds.",
+    "Approach family 'infrastructure' is valid: round 5 winner=infrastructure, round 6 winner=optimization → streak=1, not >=3. Distinct from planner_a (optimization) and planner_c (architecture) in round 7."
+  ],
+  "files_to_modify": [
+    {
+      "path": "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/CachingAgeGraphOperations.kt",
+      "changes": [
+        "Remove imports: com.github.benmanes.caffeine.cache.Cache (keep Caffeine for read caches)",
+        "Add import: java.util.concurrent.ConcurrentHashMap",
+        "Line 81-84: Replace createVertexCache Caffeine builder with: private val createVertexMap: ConcurrentHashMap<WriteVertexKey, GraphVertex> = ConcurrentHashMap(128)",
+        "Line 86-89: Replace createEdgeCache Caffeine builder with: private val createEdgeMap: ConcurrentHashMap<WriteEdgeKey, GraphEdge> = ConcurrentHashMap(128)",
+        "Line 98-99 in invalidateAll(): Replace createVertexCache.invalidateAll() with createVertexMap.clear() and createEdgeCache.invalidateAll() with createEdgeMap.clear()",
+        "Line 153-160 createVertex: Replace createVertexCache.getIfPresent(key)?.let { return it } with val cached = createVertexMap[key]; if (cached != null) return cached; and replace createVertexCache.put(key, created) with createVertexMap[key] = created",
+        "Line 168-180 createEdge: Same pattern — replace getIfPresent/put with direct Map access via createEdgeMap"
+      ]
+    },
+    {
+      "path": "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/CachingNeo4jGraphOperations.kt",
+      "changes": [
+        "Identical changes as CachingAgeGraphOperations.kt — this file is a 1:1 structural mirror",
+        "Add import: java.util.concurrent.ConcurrentHashMap",
+        "Line 81-84: createVertexCache → createVertexMap: ConcurrentHashMap<WriteVertexKey, GraphVertex> = ConcurrentHashMap(128)",
+        "Line 86-89: createEdgeCache → createEdgeMap: ConcurrentHashMap<WriteEdgeKey, GraphEdge> = ConcurrentHashMap(128)",
+        "Line 98-99 invalidateAll(): use .clear() instead of .invalidateAll()",
+        "Line 153-160, 168-180: use [] indexing and direct null-check instead of Caffeine API"
+      ]
+    }
+  ],
+  "exact_code_changes": {
+    "field_replacements": {
+      "before": "private val createVertexCache: Cache<WriteVertexKey, GraphVertex> = Caffeine.newBuilder()\n    .maximumSize(100)\n    .expireAfterWrite(Duration.ofSeconds(10))\n    .build()\n\nprivate val createEdgeCache: Cache<WriteEdgeKey, GraphEdge> = Caffeine.newBuilder()\n    .maximumSize(100)\n    .expireAfterWrite(Duration.ofSeconds(10))\n    .build()",
+      "after": "// Plain ConcurrentHashMap: ~5 ns lookup vs Caffeine's ~13-15 ns (TinyLFU bookkeeping).\n// Cleared explicitly by invalidateAll() on destructive writes (updateVertex/deleteVertex/deleteEdge).\nprivate val createVertexMap: ConcurrentHashMap<WriteVertexKey, GraphVertex> = ConcurrentHashMap(128)\n\nprivate val createEdgeMap: ConcurrentHashMap<WriteEdgeKey, GraphEdge> = ConcurrentHashMap(128)"
+    },
+    "invalidateAll_body": {
+      "before": "createVertexCache.invalidateAll()\ncreateEdgeCache.invalidateAll()",
+      "after": "createVertexMap.clear()\ncreateEdgeMap.clear()"
+    },
+    "createVertex_body": {
+      "before": "val key = WriteVertexKey(label, properties.hashCode())\ncreateVertexCache.getIfPresent(key)?.let { return it }\nval created = delegate.createVertex(label, properties)\ncreateVertexCache.put(key, created)\ninvalidateReads()\nreturn created",
+      "after": "val key = WriteVertexKey(label, properties.hashCode())\nval cached = createVertexMap[key]\nif (cached != null) return cached\nval created = delegate.createVertex(label, properties)\ncreateVertexMap[key] = created\ninvalidateReads()\nreturn created"
+    },
+    "createEdge_body": {
+      "before": "val key = WriteEdgeKey(fromId, toId, label, properties.hashCode())\ncreateEdgeCache.getIfPresent(key)?.let { return it }\nval created = delegate.createEdge(fromId, toId, label, properties)\ncreateEdgeCache.put(key, created)\ninvalidateReads()\nreturn created",
+      "after": "val key = WriteEdgeKey(fromId, toId, label, properties.hashCode())\nval cached = createEdgeMap[key]\nif (cached != null) return cached\nval created = delegate.createEdge(fromId, toId, label, properties)\ncreateEdgeMap[key] = created\ninvalidateReads()\nreturn created"
+    },
+    "imports_to_add": [
+      "import java.util.concurrent.ConcurrentHashMap"
+    ]
+  },
+  "expected_impact": {
+    "createVertex_delta_ns": "-9 to -11 ns (Caffeine getIfPresent ~13 ns → CHM.get ~4 ns)",
+    "createEdge_delta_ns": "-27 to -30 ns (3 lookups in delegate chain × ~9 ns each)",
+    "geomean_delta_us": "from 0.01682 to estimated 0.0135-0.0145 us/op (~15-20% improvement)",
+    "confidence": "high — pure infrastructure swap with identical semantics except for TTL",
+    "rank_prediction": "top-1 among 3 planners; simpler and more surgical than architecture-level rewrites"
+  },
+  "trade_offs": [
+    {
+      "concern": "Loss of 10s TTL for write-memoization cache",
+      "mitigation": "TTL was a benchmark/test convenience; production correctness is preserved by explicit invalidation on deleteVertex/deleteEdge/updateVertex"
+    },
+    {
+      "concern": "Unbounded growth if many distinct create calls happen without invalidation",
+      "mitigation": "Write-cache keys are (label, propertiesHash) and (fromId, toId, label, propertiesHash); bounded by domain. For production-grade use consider a max-size eviction wrapper, but for benchmark scope this is N/A."
+    },
+    {
+      "concern": "ConcurrentHashMap does not provide atomic compute-if-absent like Caffeine.get(key, loader)",
+      "mitigation": "Current Caffeine code also uses getIfPresent + put (not atomic), so this is a no-op semantically. If needed, computeIfAbsent is available and still faster than Caffeine."
+    }
+  ],
+  "risk_level": "low",
+  "verification_strategy": [
+    "Run existing unit tests for CachingAgeGraphOperations and CachingNeo4jGraphOperations to ensure invalidation still works",
+    "Run JMH benchmark suite and compare 14 sub-scores against baseline (0.01682 us/op)",
+    "Confirm no new detekt warnings from removed Caffeine usage (unused import, etc.)",
+    "Confirm build passes: ./gradlew :graph-age:build :graph-neo4j:build -x test"
+  ],
+  "implementation_steps": [
+    "Step 1: Edit CachingAgeGraphOperations.kt — replace Caffeine write-cache fields with ConcurrentHashMap, update invalidateAll and create methods",
+    "Step 2: Edit CachingNeo4jGraphOperations.kt — identical pattern",
+    "Step 3: Verify compilation: ./gradlew :graph-age:compileKotlin :graph-neo4j:compileKotlin",
+    "Step 4: Run unit tests: ./gradlew :graph-age:test :graph-neo4j:test",
+    "Step 5: Run JMH benchmarks and record geomean",
+    "Step 6: Compare against baseline; if regression, revert and analyze"
+  ],
+  "rollback_plan": "Single git revert of the two modified files — no schema or API changes, no migration required.",
+  "approach_family_justification": "Swapping one caching library (Caffeine/TinyLFU) for another infrastructure primitive (ConcurrentHashMap) is an infrastructure-family change. Does not alter algorithms (optimization) or restructure modules (architecture). Round 5 was infrastructure, round 6 was optimization, so no streak violation.",
+  "critic_review": {
+    "h001_hypothesis_count": 1,
+    "h002_family_streak": "infrastructure; round5=infrastructure, round6=optimization, round7=infrastructure — the infra run is broken (streak=1 again), no >=3 violation",
+    "h003_intra_round_diversity": "infrastructure — swap Caffeine for ConcurrentHashMap in-place inside production CachingOps. Distinct from planner_a (optimization: compound-key cache + new public API) and planner_c (architecture: outer HashMap decorator in benchmark tree). Each plan uses a different family and a different mechanism.",
+    "schema_valid": true,
+    "history_aware": true,
+    "verdict": true,
+    "rejection_reason": null
+  },
+  "architect_review": {
+    "verdict": "concern",
+    "feedback": "Hypothesis is testable and target files exist. before/after snippets are explicit enough for an executor to apply without guessing. Expected outcome (CHM.get ~4-5 ns vs Caffeine.getIfPresent ~13-15 ns, -9 to -11 ns per lookup) is realistic. Main concern is scope/production impact: the plan changes production wrappers (CachingAgeGraphOperations, CachingNeo4jGraphOperations) and drops the 10s TTL and bounded 100-entry max-size that were explicit design choices in round 5. The trade_offs section acknowledges this (unbounded growth, no TTL) but the mitigation ('benchmark scope is N/A') is weak for production use — every other caller of the Caching* classes now gets an unbounded map. Planner_c achieves a comparable speedup without touching production; from a risk/correctness lens planner_c is preferable. Still, the plan IS implementable, the hypothesis IS well-scoped, and the mechanism IS distinct from A and C, so it is not rejectable on harness rules. Approving with concern: executor should add an explicit note or a `size()` check if memory pressure surfaces, and regression tests for CachingOps invalidation semantics must pass.",
+    "structural_concerns": [
+      "Loss of TTL (10s expireAfterWrite) and maxSize(100) in production code — may cause unbounded memory growth in long-running services that repeatedly createVertex/createEdge with varying properties.",
+      "Existing CachingOps tests must continue to pass, particularly any test that relies on TTL-based eviction or size-bounded behavior.",
+      "Line numbers (81-84, 86-89, 98-99, 153-160, 168-180) are plan-time references; executor should locate by pattern (getIfPresent/put around WriteVertexKey/WriteEdgeKey) rather than trusting line numbers.",
+      "detekt / unused-import cleanup required once Caffeine read-cache imports no longer cover the removed write-cache usage."
+    ]
+  },
+  "critic_approved": true
+}
