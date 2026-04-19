@@ -38,6 +38,17 @@ class BenchmarkSingleThreadedCachingNeo4jGraphOperations(
         private val ABSENT: Any = Any()
     }
 
+    private var lastLabelQueryLabel: String? = null
+    private var lastLabelQueryFilter: Map<String, Any?>? = null
+    private var lastLabelQueryResult: List<GraphVertex>? = null
+
+    private var lastPathFromIdValue: String? = null
+    private var lastPathToIdValue: String? = null
+    private var lastShortestPathOptions: PathOptions? = null
+    private var lastShortestPathResult: Any? = null
+    private var lastAllPathsOptions: PathOptions? = null
+    private var lastAllPathsResult: List<GraphPath>? = null
+
     private val vertexByIdMap: HashMap<VertexKey, Any> = HashMap(128)
     private val verticesByLabelMap: HashMap<LabelKey, List<GraphVertex>> = HashMap(128)
     private val neighborsMap: HashMap<NeighborKey, List<GraphVertex>> = HashMap(128)
@@ -70,11 +81,19 @@ class BenchmarkSingleThreadedCachingNeo4jGraphOperations(
     }
 
     override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> {
+        val slotResult = lastLabelQueryResult
+        if (slotResult != null && lastLabelQueryLabel === label && lastLabelQueryFilter === filter) {
+            return slotResult
+        }
         val key = LabelKey(label, filter)
         val cached = verticesByLabelMap[key]
-        if (cached != null) return cached
+        if (cached != null) {
+            lastLabelQueryLabel = label; lastLabelQueryFilter = filter; lastLabelQueryResult = cached
+            return cached
+        }
         val value = delegate.findVerticesByLabel(label, filter)
         verticesByLabelMap[key] = value
+        lastLabelQueryLabel = label; lastLabelQueryFilter = filter; lastLabelQueryResult = value
         return value
     }
 
@@ -88,22 +107,39 @@ class BenchmarkSingleThreadedCachingNeo4jGraphOperations(
     }
 
     override fun shortestPath(fromId: GraphElementId, toId: GraphElementId, options: PathOptions): GraphPath? {
+        val fromVal = fromId.value; val toVal = toId.value
+        val slotResult = lastShortestPathResult
+        if (slotResult != null && lastPathFromIdValue == fromVal && lastPathToIdValue == toVal && lastShortestPathOptions === options) {
+            return if (slotResult === ABSENT) null else slotResult as GraphPath
+        }
         val key = PathKey(fromId, toId, options)
         val cached = shortestPathMap[key]
         if (cached != null) {
+            lastPathFromIdValue = fromVal; lastPathToIdValue = toVal; lastShortestPathOptions = options; lastShortestPathResult = cached
             return if (cached === ABSENT) null else cached as GraphPath
         }
         val value = delegate.shortestPath(fromId, toId, options)
         shortestPathMap[key] = value ?: ABSENT
+        lastPathFromIdValue = fromVal; lastPathToIdValue = toVal; lastShortestPathOptions = options
+        lastShortestPathResult = value ?: ABSENT
         return value
     }
 
     override fun allPaths(fromId: GraphElementId, toId: GraphElementId, options: PathOptions): List<GraphPath> {
+        val fromVal = fromId.value; val toVal = toId.value
+        val slotResult = lastAllPathsResult
+        if (slotResult != null && lastPathFromIdValue == fromVal && lastPathToIdValue == toVal && lastAllPathsOptions === options) {
+            return slotResult
+        }
         val key = PathKey(fromId, toId, options)
         val cached = allPathsMap[key]
-        if (cached != null) return cached
+        if (cached != null) {
+            lastPathFromIdValue = fromVal; lastPathToIdValue = toVal; lastAllPathsOptions = options; lastAllPathsResult = cached
+            return cached
+        }
         val value = delegate.allPaths(fromId, toId, options)
         allPathsMap[key] = value
+        lastPathFromIdValue = fromVal; lastPathToIdValue = toVal; lastAllPathsOptions = options; lastAllPathsResult = value
         return value
     }
 
