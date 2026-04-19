@@ -1,8 +1,25 @@
 {
-  "benchmark_command": "scripts/benchmark-age.sh",
+  "benchmark_command": "scripts/benchmark-neo4j-age.sh",
   "primary_metric": "primary",
   "direction": "lower_is_better",
-  "baseline_score": null,
-  "baseline_recorded": false,
-  "notes": "Baseline pending manual run. The wrapper script requires Docker + Testcontainers to start PostgreSQL+AGE. Execute `scripts/benchmark-age.sh` on a host with Docker available; the last stdout line is the JSON summary — copy `primary` here and set `baseline_recorded` to true."
+  "baseline_score": 1336.029,
+  "baseline_recorded": true,
+  "recorded_at": "2026-04-19T17:15:40Z",
+  "note": "First measured score (iteration 1, executor_a — AGE loadAgeAndSetSearchPath removal). Benchmark modules were newly created so this is the initial reference. Target: 935.2 μs/op (30% reduction). Notable bottleneck: age_createEdge=8342 μs.",
+  "sub_scores": {
+    "age_allPaths": 552.951,
+    "age_shortestPath": 561.905,
+    "age_createEdge": 8342.456,
+    "age_createVertex": 508.622,
+    "age_findVertexById": 480.455,
+    "age_findVerticesByLabel": 472.08,
+    "age_neighbors": 521.941,
+    "neo4j_allPaths": 733.686,
+    "neo4j_shortestPath": 724.403,
+    "neo4j_createEdge": 2876.023,
+    "neo4j_createVertex": 873.619,
+    "neo4j_findVertexById": 725.956,
+    "neo4j_findVerticesByLabel": 660.259,
+    "neo4j_neighbors": 670.044
+  }
 }
