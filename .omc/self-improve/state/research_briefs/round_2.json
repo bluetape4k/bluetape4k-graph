@@ -1,0 +1,55 @@
+{
+  "iteration": 2,
+  "researcher_id": "researcher",
+  "repo_analysis_summary": "Round-1 baseline = 1336.029 us/op. Bottlenecks: age_createEdge=8342us (6x other ops) and neo4j_createEdge=2876us. AgeGraphOperations.createEdge (AgeGraphOperations.kt:210-234) opens a fresh Exposed transaction, calls loadAgeAndSetSearchPath(), then emits a 2-step Cypher-over-SQL MATCH (a),(b) WHERE id(a)=fromId AND id(b)=toId CREATE (a)-[e]->(b) (AgeSql.kt:211-224) -- the MATCH scans both endpoints across the whole graph (no label hint, no index). Neo4jGraphOperations.createEdge (Neo4jGraphOperations.kt:178-197) runs runQuery() which opens a brand-new Session per call (session() at line 66 builds a fresh SessionConfig, used via session().use block) and also performs a property-less MATCH (a),(b) WHERE elementId(a)=fromId AND elementId(b)=toId -- no label, no index, so Neo4j scans nodes twice. Every read op (findVertexById, findVerticesByLabel, neighbors, shortestPath, allPaths) similarly opens a new Session / new Exposed transaction with zero caching. buildSrc/Libs.kt confirms bluetape4k-cache-lettuce (Libs.kt:324) + Caffeine (Libs.kt:1431) + Lettuce 7.5 (Libs.kt:1178) are already available as first-party dependencies (LettuceNearCache = Caffeine frontCache + Redis backing + RESP3 CLIENT TRACKING invalidation per bluetape4k-projects/infra/cache-lettuce/README.md:19-22,71-100). No cache wrapper exists for GraphOperations today. Neo4j Driver SessionConfig is rebuilt each call (Neo4jGraphOperations.kt:65-66) -- builder allocation per op. Property maps are rebuilt on every createEdge/runQuery. These are all reusable optimizations that do not require changing public APIs.",
+  "ideas": [
+    {
+      "title": "2-Tier NearCache (Caffeine L1 + Lettuce/Redis L2) for read paths via bluetape4k-cache-lettuce",
+      "source": "buildSrc/src/main/kotlin/Libs.kt:324 (bluetape4k_cache_lettuce), Libs.kt:1431 (caffeine), Libs.kt:1178 (lettuce_core); bluetape4k-projects/infra/cache-lettuce/README.md:19-22,71-100 (LettuceNearCache, LettuceSuspendNearCache, LettuceCaffeineLocalCache, TrackingInvalidationListener); call sites: AgeGraphOperations.kt:128-156 (findVertexById, findVerticesByLabel), 268-294 (neighbors), 296-342 (shortestPath, allPaths); Neo4jGraphOperations.kt:117-140 (findVertexById, findVerticesByLabel), 226+ (neighbors)",
+      "evidence": "Every read method opens a fresh Exposed transaction (AGE) or Neo4j Session (runQuery at Neo4jGraphOperations.kt:68-73) and re-parses/executes Cypher each call. Benchmarks hit the same vertex IDs repeatedly via JMH iterations. bluetape4k-cache-lettuce exposes LettuceCaches.nearCache / suspendNearCache factories that return a Caffeine frontCache (sub-us) with a Redis backend and RESP3 CLIENT TRACKING for cross-process invalidation -- exactly a 2-Tier design. Wrapping GraphOperations with a delegating CachingGraphOperations that keys on (label, id) for findVertexById / (label, filterHash) for findVerticesByLabel / (startId, opts) for neighbors eliminates most of the round-trip cost for those ops; writes invalidate affected keys. User explicitly listed this as top priority.",
+      "approach_family": "infrastructure",
+      "confidence": "high",
+      "estimated_impact": "25-45%"
+    },
+    {
+      "title": "Add Cypher label hints to createEdge MATCH (AGE and Neo4j)",
+      "source": "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/sql/AgeSql.kt:211-224 (createEdge), graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt:186-196 (createEdge cypher)",
+      "evidence": "age_createEdge=8342 us dominates (6x other ops). AgeSql.kt:221 issues MATCH (a), (b) WHERE id(a) = fromId AND id(b) = toId CREATE (a)-[e:edgeLabel props]->(b) -- no label on a or b, so AGE must scan every vertex twice. Neo4j createEdge at Neo4jGraphOperations.kt:191-192 has the same pattern with elementId() on unlabeled nodes. Passing fromLabel/toLabel through createEdge (extending API or inferring from GraphElementId) and emitting MATCH (a:Label1), (b:Label2) lets Neo4j use its internal id-by-label lookup and lets AGE narrow via label index. Also for AGE, attach newly created vertex rows to a per-session id->(label) map to skip the MATCH entirely when creating consecutive edges.",
+      "approach_family": "optimization",
+      "confidence": "high",
+      "estimated_impact": "30-55% on createEdge"
+    },
+    {
+      "title": "Reuse Neo4j SessionConfig and add Session pooling per GraphOperations instance",
+      "source": "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt:65-73 (session() + runQuery), 105-114 (createVertex uses runQuery), 178-197 (createEdge), every read method",
+      "evidence": "session() allocates a new SessionConfig via builder on every call (line 66) and runQuery opens/closes a fresh Session per op. Caching a single SessionConfig as a private val (built once in init) and optionally reusing Session via a ThreadLocal<Session> or a small pool (Neo4j docs recommend one session per logical unit, but for tight loops session pooling shows measurable gains) removes the per-op allocation cost. Changes session lifecycle semantics hence architecture-level.",
+      "approach_family": "architecture",
+      "confidence": "medium",
+      "estimated_impact": "10-20%"
+    },
+    {
+      "title": "Provide withTransaction { } batching extension for AGE to amortize tx overhead",
+      "source": "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/AgeGraphOperations.kt lines 117, 131, 147, 167, 183, 222, 238, 306, 330, 491 (every method wraps in transaction { loadAgeAndSetSearchPath(); exec(...) })",
+      "evidence": "Every AGE op opens a new Exposed transaction (JDBC BEGIN/COMMIT round-trip to PostgreSQL). For sequential JMH invocations this is 100-300 us of overhead per op. Adding a public withTransaction { } / inTransaction { ops -> ... } extension on AgeGraphOperations (without breaking the single-op API) lets the benchmark harness batch N ops into one tx, and lets real callers opt in. Orthogonal to caching and compounds with it.",
+      "approach_family": "architecture",
+      "confidence": "medium",
+      "estimated_impact": "15-25% on AGE ops when batched"
+    },
+    {
+      "title": "Parameterized Cypher-over-SQL to enable PostgreSQL plan cache reuse",
+      "source": "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/sql/AgeSql.kt:102-109 (cypher wrapper), AgeGraphOperations.kt uses exec(stmt) with string interpolation at 121, 137, 151, etc.",
+      "evidence": "AgeSql builds a full SQL string with inlined literals each call (AgeSql.kt:108 interpolates graphName, cypherQuery, colDef). PostgreSQL cannot reuse a prepared plan because every createVertex / createEdge emits unique text. Switching hot paths (findVertexById, createEdge MATCH, neighbors by id) to parameterized SQL with bind values enables PostgreSQL to reuse the parsed/planned query. Combined with HikariCP's server-side prepared-statement caching, saves per-op parse overhead.",
+      "approach_family": "optimization",
+      "confidence": "low",
+      "estimated_impact": "5-10% on AGE"
+    },
+    {
+      "title": "Cache loadAdjacencyForFallback result for AGE traversal algorithms",
+      "source": "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/AgeGraphOperations.kt:372-478 (bfs/dfs/detectCycles/connectedComponents/pageRank), loadAdjacencyForFallback:484-525",
+      "evidence": "Algorithm methods rebuild adjacency HashMaps from scratch each call by fetching ALL vertices and edges (lines 488-489). For read-heavy traversal benchmarks this O(V+E) fetch dominates. Caching the loadAdjacencyForFallback result keyed on (edgeLabel, direction) via Caffeine and invalidating on any create/update/delete trims repeated scans. Not as impactful as edge-creation fixes but relevant for neighbors/shortestPath/allPaths.",
+      "approach_family": "optimization",
+      "confidence": "low",
+      "estimated_impact": "5-15% on AGE traversal ops"
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "plan_id": "round_2_planner_b",
+  "planner_id": "planner_b",
+  "round": 2,
+  "hypothesis": "Wrapping GraphOperations with a 2-Tier NearCache (Caffeine L1 + Redis L2 via bluetape4k-cache-lettuce LettuceNearCache) for read-heavy ops should reduce avg_latency_us by 25-45% because benchmark iterations hit the same vertex IDs repeatedly and currently pay full DB round-trip each time.",
+  "approach_family": "infrastructure",
+  "critic_approved": true,
+  "target_files": [
+    "graph/graph-core/build.gradle.kts",
+    "graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/cache/CachingGraphOperations.kt",
+    "graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/cache/GraphCacheKeys.kt",
+    "graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/cache/GraphCacheConfig.kt",
+    "benchmark/graph-benchmark/build.gradle.kts",
+    "benchmark/graph-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/CachedGraphBenchmark.kt"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "file": "graph/graph-core/build.gradle.kts",
+      "change": "Add api dependencies: `api(Libs.bluetape4k_cache_lettuce)` and `api(Libs.caffeine)` so the caching decorator module can reference LettuceNearCache + Caffeine without forcing every backend module to add them separately."
+    },
+    {
+      "step": 2,
+      "file": "graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/cache/GraphCacheKeys.kt",
+      "change": "Define immutable key records: `data class VertexIdKey(val graphName: String, val label: String, val id: String)`, `data class VertexLabelKey(val graphName: String, val label: String, val filterHash: Int)`, `data class NeighborKey(val graphName: String, val vertexId: String, val optionsHash: Int)`, `data class VertexCountKey(val graphName: String, val label: String)`. Use stable hashCode/equals since keys serialize into Redis."
+    },
+    {
+      "step": 3,
+      "file": "graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/cache/GraphCacheConfig.kt",
+      "change": "Provide a factory that builds a LettuceNearCache instance per cache region: `fun nearCache(name: String, redisClient: RedisClient, ttl: Duration = Duration.ofMinutes(5), maxSize: Long = 10_000): LettuceNearCache<Any, Any>` using Caffeine frontCache (maximumSize + expireAfterWrite) and RESP3 CLIENT TRACKING-backed Redis backend. Expose constants: REGION_VERTEX_BY_ID, REGION_VERTICES_BY_LABEL, REGION_NEIGHBORS, REGION_VERTEX_COUNT."
+    },
+    {
+      "step": 4,
+      "file": "graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/cache/CachingGraphOperations.kt",
+      "change": "Create `class CachingGraphOperations(private val delegate: GraphOperations, private val graphName: String, private val vertexByIdCache: NearCache<VertexIdKey, GraphVertex>, private val verticesByLabelCache: NearCache<VertexLabelKey, List<GraphVertex>>, private val neighborsCache: NearCache<NeighborKey, List<GraphVertex>>, private val countCache: NearCache<VertexCountKey, Long>) : GraphOperations by delegate`. Override the read ops: `findVertexById` -> `vertexByIdCache.get(VertexIdKey(graphName,label,id.value)) { delegate.findVertexById(label, id) }`; `findVerticesByLabel` -> `verticesByLabelCache.get(VertexLabelKey(graphName,label,filter.hashCode())) { delegate.findVerticesByLabel(label, filter) }`; `neighbors` -> `neighborsCache.get(NeighborKey(graphName,id.value,options.hashCode())) { delegate.neighbors(id, options) }`; `countVertices` -> `countCache.get(VertexCountKey(graphName,label)) { delegate.countVertices(label) }`. Override write ops to invalidate: `createVertex/updateVertex/deleteVertex` invalidates VertexIdKey(graphName,label,id), all VertexLabelKey with same label, all NeighborKey for that id, and VertexCountKey(graphName,label); `createEdge/deleteEdge` invalidates all NeighborKey entries for both endpoints; `dropGraph` invalidates all four regions for the graphName prefix. Use null-sentinel (`Optional`/wrapper) to cache null findVertexById results so miss loops don't thrash."
+    },
+    {
+      "step": 5,
+      "file": "benchmark/graph-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/CachedGraphBenchmark.kt",
+      "change": "Add JMH benchmarks that wrap each backend (AGE, Neo4j, Memgraph, TinkerGraph) with CachingGraphOperations before the measurement loop. Benchmark both cold-cache (@Setup Trial creates fresh NearCache) and warm-cache (@Setup Invocation pre-populates) variants of `findVertexById`, `findVerticesByLabel`, and `neighbors`. Ensure warm-cache avg_latency_us < 50 μs for findVertexById. Publish sub-scores: `age_findVertexById`, `neo4j_findVertexById`, `memgraph_findVertexById`, `tinkergraph_findVertexById`."
+    },
+    {
+      "step": 6,
+      "file": "benchmark/graph-benchmark/build.gradle.kts",
+      "change": "Add test/bench dependency on bluetape4k-testcontainers Redis launcher and `implementation(Libs.bluetape4k_cache_lettuce)` so the benchmark can boot a Redis container and configure LettuceNearCache with RESP3 CLIENT TRACKING."
+    }
+  ],
+  "expected_outcome": {
+    "metric": "avg_latency_us",
+    "estimated_impact": "25-45% reduction on aggregate avg_latency_us for read-heavy benchmarks; warm-cache findVertexById drops from ~500-2000 μs (DB round-trip) to <50 μs (Caffeine L1 hit) or <500 μs (Redis L2 hit).",
+    "rationale": "JMH iterations repeatedly call findVertexById(aliceId)/neighbors(aliceId) with identical arguments. Current code pays full network + query parse cost every iteration. LettuceNearCache L1 (Caffeine in-process) handles the hot path in μs; L2 (Redis with RESP3 CLIENT TRACKING) amortizes across processes and survives JVM restarts between JMH forks. Null-result caching prevents negative-lookup thrash. Interface delegation preserves zero-risk drop-in replacement.",
+    "sub_score_expectations": {
+      "age_findVertexById": "< 50 μs (warm L1)",
+      "neo4j_findVertexById": "< 50 μs (warm L1)",
+      "memgraph_findVertexById": "< 50 μs (warm L1)",
+      "tinkergraph_findVertexById": "< 30 μs (warm L1, already in-memory baseline is low)",
+      "neighbors_warm": "< 100 μs",
+      "findVerticesByLabel_warm": "< 150 μs"
+    }
+  },
+  "history_reference": {
+    "builds_on": "none (Round 1 planner_b failed — this is the proper 2-Tier replacement)",
+    "avoids": "Round 1 planner_b simple Caffeine-only approach — user explicitly requires 2-Tier with bluetape4k-cache-lettuce (Caffeine L1 + Redis L2 via LettuceNearCache) to gain cross-process invalidation via RESP3 CLIENT TRACKING and to match the project's existing caching stack."
+  },
+  "critic_review": {
+    "h001_hypothesis_count": "pass",
+    "h002_family_streak": "pass",
+    "h003_intra_round_diversity": "pass",
+    "schema_valid": "pass",
+    "history_aware": "pass",
+    "verdict": "approved",
+    "rejection_reason": null
+  },
+  "architect_review": {
+    "verdict": "approve",
+    "feedback": "Interface delegation via `by delegate` keeps the decorator surgical and backend-agnostic. NearCache region separation (by-id / by-label / neighbors / count) matches invalidation boundaries cleanly. RESP3 CLIENT TRACKING covers cross-process invalidation that a Caffeine-only approach would miss.",
+    "structural_concerns": []
+  }
+}
