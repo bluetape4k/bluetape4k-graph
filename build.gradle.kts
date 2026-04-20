@@ -35,6 +35,9 @@ plugins {
     id(Plugins.kosogor) version Plugins.Versions.kosogor
     id(Plugins.nmcp_aggregation) version Plugins.Versions.nmcp
     id(Plugins.nmcp) version Plugins.Versions.nmcp apply false
+
+    // 테스트 커버리지 (Kotlin inline/suspend 정확 지원)
+    id(Plugins.kover) version Plugins.Versions.kover
 }
 
 val centralPublishing = resolveCentralPublishingConfig()
@@ -111,11 +114,11 @@ subprojects {
         plugin(Plugins.dokka)
         plugin(Plugins.testLogger)
         plugin(Plugins.kosogor)
-        plugin("jacoco")
-    }
 
-    configure<JacocoPluginExtension> {
-        toolVersion = Plugins.Versions.jacoco
+        // Kover — Kotlin 코드 커버리지 (bom/benchmark/examples 는 커버리지 대상에서 제외)
+        if (!path.contains("examples") && !path.contains("benchmark") && name != "bluetape4k-graph-bom") {
+            plugin(Plugins.kover)
+        }
     }
 
     java {
@@ -253,15 +256,6 @@ subprojects {
                 dokkaPublications.html {
                     outputDirectory.set(project.file("docs/api"))
                 }
-            }
-        }
-
-        withType<JacocoReport>().configureEach {
-            dependsOn(test)
-            reports {
-                xml.required.set(true)
-                csv.required.set(true)
-                html.required.set(true)
             }
         }
 
@@ -520,4 +514,17 @@ dependencies {
     publishableProjects.forEach { publishableProject ->
         add("nmcpAggregation", project(publishableProject.path))
     }
+}
+
+// ─── Kover 집계 설정 ────────────────────────────────────────────────────
+// 루트에서 커버리지 측정 대상 서브모듈을 `kover` 의존성으로 등록하면
+// `./gradlew koverXmlReport` / `koverHtmlReport` 실행 시 집계 리포트를 생성한다.
+dependencies {
+    subprojects
+        .filter { sub ->
+            sub.name != "bluetape4k-graph-bom" &&
+                !sub.path.contains("examples") &&
+                !sub.path.contains("benchmark")
+        }
+        .forEach { sub -> kover(project(sub.path)) }
 }

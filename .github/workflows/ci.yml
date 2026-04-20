@@ -74,7 +74,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: detekt-report
-          path: '**/build/reports/detekt/*.xml'
+          path: 'build/reports/detekt/*.xml'
           retention-days: 7
 
   # ── 3. Core + TinkerGraph 테스트 (Docker 불필요) ──────────────────────────
@@ -104,12 +104,12 @@ jobs:
         env:
           GRADLE_OPTS: "-Dorg.gradle.daemon=false"
 
-      - name: Generate JaCoCo report
+      - name: Generate Kover XML report
         if: always()
         run: |
           ./gradlew \
-            :graph-core:jacocoTestReport \
-            :graph-tinkerpop:jacocoTestReport \
+            :graph-core:koverXmlReport \
+            :graph-tinkerpop:koverXmlReport \
             --no-daemon
         continue-on-error: true
 
@@ -118,7 +118,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results-core
-          path: '**/build/test-results/test/*.xml'
+          path: 'build/*/test-results/test/*.xml'
           retention-days: 7
 
       - name: Upload coverage report
@@ -126,7 +126,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-core
-          path: '**/build/reports/jacoco/test/'
+          path: 'build/*/reports/kover/'
           retention-days: 7
 
   # ── 4. Spring Boot Starter 테스트 (TinkerGraph 프로파일, Docker 불필요) ──
@@ -157,12 +157,12 @@ jobs:
           GRADLE_OPTS: "-Dorg.gradle.daemon=false"
           SPRING_PROFILES_ACTIVE: tinkergraph
 
-      - name: Generate JaCoCo report
+      - name: Generate Kover XML report
         if: always()
         run: |
           ./gradlew \
-            :graph-spring-boot3-starter:jacocoTestReport \
-            :graph-spring-boot4-starter:jacocoTestReport \
+            :graph-spring-boot3-starter:koverXmlReport \
+            :graph-spring-boot4-starter:koverXmlReport \
             --no-daemon
         continue-on-error: true
 
@@ -171,7 +171,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results-spring-starters
-          path: '**/build/test-results/test/*.xml'
+          path: 'build/*/test-results/test/*.xml'
           retention-days: 7
 
       - name: Upload coverage report
@@ -179,7 +179,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-spring-starters
-          path: '**/build/reports/jacoco/test/'
+          path: 'build/*/reports/kover/'
           retention-days: 7
 
   # ── 5. Neo4j 통합 테스트 (Testcontainers) ────────────────────────────────
@@ -207,9 +207,9 @@ jobs:
           TESTCONTAINERS_RYUK_DISABLED: "true"
           DOCKER_HOST: "unix:///var/run/docker.sock"
 
-      - name: Generate JaCoCo report
+      - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :graph-neo4j:jacocoTestReport --no-daemon
+        run: ./gradlew :graph-neo4j:koverXmlReport --no-daemon
         continue-on-error: true
 
       - name: Upload test results
@@ -217,7 +217,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results-neo4j
-          path: '**/build/test-results/test/*.xml'
+          path: 'build/*/test-results/test/*.xml'
           retention-days: 7
 
       - name: Upload coverage report
@@ -225,7 +225,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-neo4j
-          path: '**/build/reports/jacoco/test/'
+          path: 'build/*/reports/kover/'
           retention-days: 7
 
   # ── 6. Memgraph 통합 테스트 (Testcontainers) ─────────────────────────────
@@ -253,9 +253,9 @@ jobs:
           TESTCONTAINERS_RYUK_DISABLED: "true"
           DOCKER_HOST: "unix:///var/run/docker.sock"
 
-      - name: Generate JaCoCo report
+      - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :graph-memgraph:jacocoTestReport --no-daemon
+        run: ./gradlew :graph-memgraph:koverXmlReport --no-daemon
         continue-on-error: true
 
       - name: Upload test results
@@ -263,7 +263,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results-memgraph
-          path: '**/build/test-results/test/*.xml'
+          path: 'build/*/test-results/test/*.xml'
           retention-days: 7
 
       - name: Upload coverage report
@@ -271,7 +271,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-memgraph
-          path: '**/build/reports/jacoco/test/'
+          path: 'build/*/reports/kover/'
           retention-days: 7
 
   # ── 7. Apache AGE 통합 테스트 (Testcontainers) ───────────────────────────
@@ -299,9 +299,9 @@ jobs:
           TESTCONTAINERS_RYUK_DISABLED: "true"
           DOCKER_HOST: "unix:///var/run/docker.sock"
 
-      - name: Generate JaCoCo report
+      - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :graph-age:jacocoTestReport --no-daemon
+        run: ./gradlew :graph-age:koverXmlReport --no-daemon
         continue-on-error: true
 
       - name: Upload test results
@@ -309,7 +309,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results-age
-          path: '**/build/test-results/test/*.xml'
+          path: 'build/*/test-results/test/*.xml'
           retention-days: 7
 
       - name: Upload coverage report
@@ -317,7 +317,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-age
-          path: '**/build/reports/jacoco/test/'
+          path: 'build/*/reports/kover/'
           retention-days: 7
 
   # ── 8. Examples 통합 테스트 (Testcontainers) ─────────────────────────────
@@ -354,7 +354,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results-examples
-          path: '**/build/test-results/test/*.xml'
+          path: 'build/*/test-results/test/*.xml'
           retention-days: 7
 
   # ── 9. 커버리지 집계 ─────────────────────────────────────────────────────
@@ -376,48 +376,29 @@ jobs:
           gradle-version: wrapper
           cache-read-only: true
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
       - name: Download all coverage artifacts
         uses: actions/download-artifact@v4
         with:
           pattern: coverage-*
-          merge-multiple: true
-
-      - name: Generate aggregated JaCoCo reports
-        run: |
-          ./gradlew \
-            :graph-core:jacocoTestReport \
-            :graph-tinkerpop:jacocoTestReport \
-            :graph-neo4j:jacocoTestReport \
-            :graph-memgraph:jacocoTestReport \
-            :graph-age:jacocoTestReport \
-            --no-daemon
+          path: coverage-artifacts
+          merge-multiple: false
         continue-on-error: true
+
+      - name: Aggregate Kover coverage summary
+        if: always()
+        run: python3 .github/scripts/aggregate-kover-coverage.py coverage-artifacts
 
       - name: Upload aggregated coverage
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: coverage-all
-          path: '**/build/reports/jacoco/'
+          path: coverage-artifacts/
           retention-days: 14
-
-      - name: Coverage summary
-        if: always()
-        run: |
-          echo "## Coverage Summary" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          for module in graph/graph-core graph/graph-tinkerpop graph/graph-neo4j graph/graph-memgraph graph/graph-age; do
-            CSV="${module}/build/reports/jacoco/test/jacocoTestReport.csv"
-            if [ -f "$CSV" ]; then
-              MISSED=$(awk -F',' 'NR>1 {sum += $4} END {print sum+0}' "$CSV")
-              COVERED=$(awk -F',' 'NR>1 {sum += $5} END {print sum+0}' "$CSV")
-              TOTAL=$((MISSED + COVERED))
-              if [ "$TOTAL" -gt 0 ]; then
-                PCT=$(( COVERED * 100 / TOTAL ))
-                echo "- **${module}**: ${PCT}% (${COVERED}/${TOTAL} branches)" >> "$GITHUB_STEP_SUMMARY"
-              fi
-            fi
-          done
 
   # ── 10. 결과 집계 ─────────────────────────────────────────────────────────
   ci-status:

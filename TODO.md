@@ -190,7 +190,7 @@ ops.transaction {
 |------|------|---------|
 | `detekt` | 정적 분석 (코틀린 코드 스멜) | `ci.yml` — PR 블로킹 |
 | `ktlint` | 코드 스타일 검사 | `ci.yml` — PR 블로킹 |
-| Codecov / JaCoCo | 테스트 커버리지 리포트 | `ci.yml` — 80% 미만 시 경고 |
+| Kover | 테스트 커버리지 리포트 (Kotlin inline/suspend 정확 지원) | `ci.yml` — 80% 미만 시 경고 |
 | `dependency-check` (OWASP) | 취약 의존성 스캔 | `release.yml` — 배포 전 필수 통과 |
 
 ### [ ] Dependabot / Renovate 자동 의존성 업데이트
