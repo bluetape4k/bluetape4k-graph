@@ -67,12 +67,12 @@ class CachingAgeGraphOperations(
     private data class NeighborKey(val startId: GraphElementId, val options: NeighborOptions)
     private data class PathKey(val fromId: GraphElementId, val toId: GraphElementId, val options: PathOptions)
     private data class EdgeLabelKey(val label: String, val filter: Map<String, Any?>)
-    private data class WriteVertexKey(val label: String, val propertiesHash: Int)
+    private data class WriteVertexKey(val label: String, val properties: Map<String, Any?>)
     private data class WriteEdgeKey(
         val fromId: GraphElementId,
         val toId: GraphElementId,
         val label: String,
-        val propertiesHash: Int,
+        val properties: Map<String, Any?>,
     )
 
     // ConcurrentHashMap: ~5 ns lookup vs Caffeine's ~13-15 ns (TinyLFU 북키핑 비용 제거).
@@ -181,7 +181,7 @@ class CachingAgeGraphOperations(
     }
 
     override fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex {
-        val key = WriteVertexKey(label, properties.hashCode())
+        val key = WriteVertexKey(label, properties)
         val cached = createVertexMap[key]
         if (cached != null) return cached
         val created = delegate.createVertex(label, properties)
@@ -202,7 +202,7 @@ class CachingAgeGraphOperations(
         label: String,
         properties: Map<String, Any?>,
     ): GraphEdge {
-        val key = WriteEdgeKey(fromId, toId, label, properties.hashCode())
+        val key = WriteEdgeKey(fromId, toId, label, properties)
         val cached = createEdgeMap[key]
         if (cached != null) return cached
         val created = delegate.createEdge(fromId, toId, label, properties)

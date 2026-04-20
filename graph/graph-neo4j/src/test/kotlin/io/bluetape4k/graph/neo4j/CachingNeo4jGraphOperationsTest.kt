@@ -279,4 +279,35 @@ class CachingNeo4jGraphOperationsTest {
         deleted.shouldBeTrue()
         verify(exactly = 2) { delegate.createVertex("Person", props) }
     }
+
+    @Test
+    fun `createVertex는 다른 속성 맵으로 호출 시 delegate를 각각 호출한다`() {
+        val propsAlice = mapOf("name" to "Alice")
+        val propsBob = mapOf("name" to "Bob")
+        every { delegate.createVertex("Person", propsAlice) } returns alice
+        every { delegate.createVertex("Person", propsBob) } returns bob
+
+        val r1 = caching.createVertex("Person", propsAlice)
+        val r2 = caching.createVertex("Person", propsBob)
+
+        r1 shouldBeEqualTo alice
+        r2 shouldBeEqualTo bob
+        verify(exactly = 1) { delegate.createVertex("Person", propsAlice) }
+        verify(exactly = 1) { delegate.createVertex("Person", propsBob) }
+    }
+
+    @Test
+    fun `createEdge는 다른 속성 맵으로 호출 시 delegate를 각각 호출한다`() {
+        val edge2 = GraphEdge(GraphElementId.of("edge-2"), "KNOWS", aliceId, bobId, mapOf("since" to 2025))
+        every { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) } returns edge
+        every { delegate.createEdge(aliceId, bobId, "KNOWS", mapOf("since" to 2025)) } returns edge2
+
+        val r1 = caching.createEdge(aliceId, bobId, "KNOWS", emptyMap())
+        val r2 = caching.createEdge(aliceId, bobId, "KNOWS", mapOf("since" to 2025))
+
+        r1 shouldBeEqualTo edge
+        r2 shouldBeEqualTo edge2
+        verify(exactly = 1) { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) }
+        verify(exactly = 1) { delegate.createEdge(aliceId, bobId, "KNOWS", mapOf("since" to 2025)) }
+    }
 }
