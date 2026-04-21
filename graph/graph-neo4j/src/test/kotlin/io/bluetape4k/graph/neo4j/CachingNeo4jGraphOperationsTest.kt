@@ -179,6 +179,20 @@ class CachingNeo4jGraphOperationsTest {
         verify(exactly = 1) { delegate.findEdgesByLabel("KNOWS", emptyMap()) }
     }
 
+    @Test
+    fun `findEdgesByLabel는 filter 포함 캐시 히트 시 delegate를 1회만 호출한다`() {
+        val filter = mapOf("since" to 2020)
+        val filteredEdge = GraphEdge(edgeId, "KNOWS", aliceId, bobId, filter)
+        every { delegate.findEdgesByLabel("KNOWS", filter) } returns listOf(filteredEdge)
+
+        val first = caching.findEdgesByLabel("KNOWS", filter)
+        val second = caching.findEdgesByLabel("KNOWS", filter)
+
+        first shouldBeEqualTo listOf(filteredEdge)
+        second shouldBeEqualTo listOf(filteredEdge)
+        verify(exactly = 1) { delegate.findEdgesByLabel("KNOWS", filter) }
+    }
+
     // ───── 쓰기 시 읽기 캐시 무효화 ─────
 
     @Test
@@ -249,6 +263,23 @@ class CachingNeo4jGraphOperationsTest {
     }
 
     @Test
+    fun `createEdge는 읽기 캐시만 무효화하고 쓰기 메모이제이션 캐시는 보존한다`() {
+        every { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) } returns edge
+        every { delegate.findEdgesByLabel("KNOWS", emptyMap()) } returns listOf(edge)
+
+        caching.findEdgesByLabel("KNOWS")              // 읽기 캐시 적재
+        caching.createEdge(aliceId, bobId, "KNOWS")    // 읽기 캐시만 무효화, 쓰기 캐시는 유지
+        caching.findEdgesByLabel("KNOWS")              // 읽기 캐시 미스 → delegate 재호출
+
+        verify(exactly = 1) { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) }
+        verify(exactly = 2) { delegate.findEdgesByLabel("KNOWS", emptyMap()) }
+
+        // 두 번째 createEdge 호출 → 메모이제이션 캐시 히트
+        caching.createEdge(aliceId, bobId, "KNOWS")
+        verify(exactly = 1) { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) }  // delegate 추가 호출 없음
+    }
+
+    @Test
     fun `createVertex는 읽기 캐시만 무효화하고 쓰기 메모이제이션 캐시는 보존한다`() {
         val props = mapOf("name" to "Alice")
         every { delegate.createVertex("Person", props) } returns alice
@@ -294,6 +325,20 @@ class CachingNeo4jGraphOperationsTest {
         r2 shouldBeEqualTo bob
         verify(exactly = 1) { delegate.createVertex("Person", propsAlice) }
         verify(exactly = 1) { delegate.createVertex("Person", propsBob) }
+    }
+
+    @Test
+    fun `deleteEdge 후 쓰기 메모이제이션 캐시도 무효화된다`() {
+        every { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) } returns edge andThen
+            GraphEdge(GraphElementId.of("edge-2"), "KNOWS", aliceId, bobId)
+        every { delegate.deleteEdge("KNOWS", edgeId) } returns true
+
+        caching.createEdge(aliceId, bobId, "KNOWS")    // 쓰기 캐시 적재
+        val deleted = caching.deleteEdge("KNOWS", edgeId)  // 전체 캐시 무효화
+        caching.createEdge(aliceId, bobId, "KNOWS")    // 쓰기 캐시 미스 → delegate 재호출
+
+        deleted.shouldBeTrue()
+        verify(exactly = 2) { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) }
     }
 
     @Test
