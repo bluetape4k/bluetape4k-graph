@@ -50,6 +50,11 @@ import java.util.concurrent.ConcurrentHashMap
  * val afterDelete = ops.findVertexById("Person", aliceId)  // null
  * ```
  */
+/**
+ * @param delegate 실제 DB 호출을 위임할 [Neo4jGraphOperations] 인스턴스.
+ * @param maxSize API 호환성 유지용 파라미터 — 현재 사용되지 않음 (Caffeine → ConcurrentHashMap 전환 후 제거됨).
+ * @param expireAfterWrite API 호환성 유지용 파라미터 — 현재 사용되지 않음 (쓰기 시 명시적 clear() 로 무효화).
+ */
 class CachingNeo4jGraphOperations(
     private val delegate: Neo4jGraphOperations,
     @Suppress("UNUSED_PARAMETER") maxSize: Long = 10_000,
@@ -112,6 +117,16 @@ class CachingNeo4jGraphOperations(
         edgesByLabelCache.clear()
     }
 
+    /**
+     * ID로 단일 정점을 조회한다. `null` 결과도 [Optional.empty] 로 캐시하여 다음 동일 호출에서 DB 를 재조회하지 않는다.
+     *
+     * ```kotlin
+     * val first  = ops.findVertexById("Person", id)  // DB 조회
+     * val second = ops.findVertexById("Person", id)  // 캐시 히트 (~5 ns), DB 호출 없음
+     * val absent = ops.findVertexById("Person", unknownId)  // DB 조회 → null 캐시
+     * val again  = ops.findVertexById("Person", unknownId)  // 캐시 히트 → null (DB 재조회 없음)
+     * ```
+     */
     override fun findVertexById(label: String, id: GraphElementId): GraphVertex? {
         val key = VertexKey(label, id)
         val cached = vertexByIdCache[key]
@@ -121,6 +136,16 @@ class CachingNeo4jGraphOperations(
         return value.orElse(null)
     }
 
+    /**
+     * 레이블과 속성 필터로 정점 목록을 조회한다. `(label, filter)` 쌍을 캐시 키로 사용하므로
+     * 빈 필터와 특정 필터 조합은 각각 독립적으로 캐시된다.
+     *
+     * ```kotlin
+     * val all   = ops.findVerticesByLabel("Person")                      // DB 조회 후 캐시
+     * val all2  = ops.findVerticesByLabel("Person")                      // 캐시 히트
+     * val alice = ops.findVerticesByLabel("Person", mapOf("name" to "Alice"))  // 별도 캐시 엔트리
+     * ```
+     */
     override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> {
         val key = LabelKey(label, filter)
         val cached = verticesByLabelCache[key]
@@ -130,6 +155,14 @@ class CachingNeo4jGraphOperations(
         return value
     }
 
+    /**
+     * 이웃 정점 목록을 조회한다. `(startId, options)` 쌍을 캐시 키로 사용한다.
+     *
+     * ```kotlin
+     * val first  = ops.neighbors(aliceId, NeighborOptions.Default)  // DB 조회
+     * val second = ops.neighbors(aliceId, NeighborOptions.Default)  // 캐시 히트
+     * ```
+     */
     override fun neighbors(startId: GraphElementId, options: NeighborOptions): List<GraphVertex> {
         val key = NeighborKey(startId, options)
         val cached = neighborsCache[key]
@@ -139,6 +172,14 @@ class CachingNeo4jGraphOperations(
         return value
     }
 
+    /**
+     * 두 정점 사이의 최단 경로를 조회한다. `null` 결과도 캐시하여 경로가 없는 쌍에 대한 반복 쿼리를 방지한다.
+     *
+     * ```kotlin
+     * val path  = ops.shortestPath(aId, bId, PathOptions.Default)  // DB 조회
+     * val path2 = ops.shortestPath(aId, bId, PathOptions.Default)  // 캐시 히트 (null 포함)
+     * ```
+     */
     override fun shortestPath(
         fromId: GraphElementId,
         toId: GraphElementId,
@@ -152,6 +193,14 @@ class CachingNeo4jGraphOperations(
         return value.orElse(null)
     }
 
+    /**
+     * 두 정점 사이의 모든 경로를 조회한다. `(fromId, toId, options)` 쌍을 캐시 키로 사용한다.
+     *
+     * ```kotlin
+     * val paths  = ops.allPaths(aId, bId, PathOptions.Default)  // DB 조회
+     * val paths2 = ops.allPaths(aId, bId, PathOptions.Default)  // 캐시 히트
+     * ```
+     */
     override fun allPaths(
         fromId: GraphElementId,
         toId: GraphElementId,
@@ -165,6 +214,15 @@ class CachingNeo4jGraphOperations(
         return value
     }
 
+    /**
+     * 레이블과 속성 필터로 간선 목록을 조회한다. `(label, filter)` 쌍을 캐시 키로 사용한다.
+     *
+     * ```kotlin
+     * val all      = ops.findEdgesByLabel("KNOWS")                             // DB 조회 후 캐시
+     * val filtered = ops.findEdgesByLabel("KNOWS", mapOf("since" to 2020))     // 별도 캐시 엔트리
+     * val cached   = ops.findEdgesByLabel("KNOWS")                             // 캐시 히트
+     * ```
+     */
     override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): List<GraphEdge> {
         val key = EdgeLabelKey(label, filter)
         val cached = edgesByLabelCache[key]
@@ -174,6 +232,18 @@ class CachingNeo4jGraphOperations(
         return value
     }
 
+    /**
+     * 새 정점을 생성하고 결과를 **쓰기 메모이제이션** 캐시에 저장한다.
+     * 동일 `(label, properties)` 인자로 재호출 시 DB 를 거치지 않고 캐시된 [GraphVertex] 를 반환한다.
+     * 읽기 캐시([findVertexById] 등)는 무효화하지만 쓰기 메모이제이션 캐시는 유지된다.
+     *
+     * ```kotlin
+     * val a = ops.createVertex("Person", props)  // DB write, 읽기 캐시 무효화
+     * val b = ops.createVertex("Person", props)  // 메모이제이션 히트 — a 와 동일한 객체 반환
+     * ```
+     *
+     * > **주의**: 트랜잭션 기반 insert 의미가 필요하다면 [Neo4jGraphOperations] 를 직접 사용한다.
+     */
     override fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex {
         val key = WriteVertexKey(label, properties)
         val cached = createVertexMap[key]
@@ -184,12 +254,41 @@ class CachingNeo4jGraphOperations(
         return created
     }
 
+    /**
+     * 기존 정점의 속성을 갱신한다. 갱신 후 **읽기·쓰기 캐시 전체**를 무효화하여 이후 조회가 DB 에서 최신 데이터를 가져온다.
+     *
+     * ```kotlin
+     * ops.updateVertex("Person", id, mapOf("age" to 31))
+     * // 이후 findVertexById, findVerticesByLabel 등 모두 캐시 미스 → DB 재조회
+     * ```
+     */
     override fun updateVertex(label: String, id: GraphElementId, properties: Map<String, Any?>): GraphVertex? =
         delegate.updateVertex(label, id, properties).also { invalidateAll() }
 
+    /**
+     * 정점을 삭제하고 **읽기·쓰기 캐시 전체**를 무효화한다.
+     * `createVertex` 의 쓰기 메모이제이션 캐시도 함께 지워지므로 삭제 후 동일 인자로 재생성하면 DB 에 새 레코드가 생긴다.
+     *
+     * ```kotlin
+     * ops.deleteVertex("Person", id)
+     * // createVertex("Person", sameProps) → 쓰기 캐시 미스 → 새 DB 레코드 생성
+     * ```
+     */
     override fun deleteVertex(label: String, id: GraphElementId): Boolean =
         delegate.deleteVertex(label, id).also { invalidateAll() }
 
+    /**
+     * 새 간선을 생성하고 결과를 **쓰기 메모이제이션** 캐시에 저장한다.
+     * 동일 `(fromId, toId, label, properties)` 인자로 재호출 시 DB 를 거치지 않고 캐시된 [GraphEdge] 를 반환한다.
+     * 읽기 캐시([findEdgesByLabel] 등)는 무효화하지만 쓰기 메모이제이션 캐시는 유지된다.
+     *
+     * ```kotlin
+     * val e1 = ops.createEdge(aId, bId, "KNOWS")  // DB write, 읽기 캐시 무효화
+     * val e2 = ops.createEdge(aId, bId, "KNOWS")  // 메모이제이션 히트 — e1 과 동일한 객체 반환
+     * ```
+     *
+     * > **주의**: 트랜잭션 기반 insert 의미가 필요하다면 [Neo4jGraphOperations] 를 직접 사용한다.
+     */
     override fun createEdge(
         fromId: GraphElementId,
         toId: GraphElementId,
@@ -205,6 +304,15 @@ class CachingNeo4jGraphOperations(
         return created
     }
 
+    /**
+     * 간선을 삭제하고 **읽기·쓰기 캐시 전체**를 무효화한다.
+     * `createEdge` 의 쓰기 메모이제이션 캐시도 함께 지워지므로 삭제 후 동일 인자로 재생성하면 DB 에 새 레코드가 생긴다.
+     *
+     * ```kotlin
+     * ops.deleteEdge("KNOWS", edgeId)
+     * // createEdge(aId, bId, "KNOWS") → 쓰기 캐시 미스 → 새 DB 레코드 생성
+     * ```
+     */
     override fun deleteEdge(label: String, id: GraphElementId): Boolean =
         delegate.deleteEdge(label, id).also { invalidateAll() }
 }
