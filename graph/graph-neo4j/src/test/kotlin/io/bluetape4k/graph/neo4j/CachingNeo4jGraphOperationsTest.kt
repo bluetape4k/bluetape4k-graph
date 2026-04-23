@@ -312,6 +312,19 @@ class CachingNeo4jGraphOperationsTest {
     }
 
     @Test
+    fun `updateVertex 후 쓰기 메모이제이션 캐시도 무효화된다`() {
+        val props = mapOf("name" to "Alice")
+        every { delegate.createVertex("Person", props) } returns alice andThen alice.copy(id = GraphElementId.of("alice-2"))
+        every { delegate.updateVertex("Person", aliceId, any()) } returns alice.copy(properties = mapOf("name" to "Alice Updated"))
+
+        caching.createVertex("Person", props)       // 쓰기 캐시 적재
+        caching.updateVertex("Person", aliceId, mapOf("name" to "Alice Updated"))  // 전체 캐시 무효화
+        caching.createVertex("Person", props)       // 쓰기 캐시 미스 → delegate 재호출
+
+        verify(exactly = 2) { delegate.createVertex("Person", props) }
+    }
+
+    @Test
     fun `createVertex는 다른 속성 맵으로 호출 시 delegate를 각각 호출한다`() {
         val propsAlice = mapOf("name" to "Alice")
         val propsBob = mapOf("name" to "Bob")
