@@ -3,8 +3,28 @@ name: CI
 on:
   push:
     branches: [develop, main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+      - '.editorconfig'
+      - '.gitleaks.toml'
+      - 'CHANGELOG.md'
+      - 'LICENSE'
+      - '.omc/**'
+      - '.claude/**'
   pull_request:
     branches: [develop, main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+      - '.editorconfig'
+      - '.gitleaks.toml'
+      - 'CHANGELOG.md'
+      - 'LICENSE'
+      - '.omc/**'
+      - '.claude/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -201,7 +221,7 @@ jobs:
           cache-read-only: true
 
       - name: Test graph-neo4j
-        run: ./gradlew :graph-neo4j:test --no-daemon --no-configuration-cache
+        run: ./gradlew :graph-neo4j:test --no-daemon
         env:
           GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
           TESTCONTAINERS_RYUK_DISABLED: "true"
@@ -247,7 +267,7 @@ jobs:
           cache-read-only: true
 
       - name: Test graph-memgraph
-        run: ./gradlew :graph-memgraph:test --no-daemon --no-configuration-cache
+        run: ./gradlew :graph-memgraph:test --no-daemon
         env:
           GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
           TESTCONTAINERS_RYUK_DISABLED: "true"
@@ -293,7 +313,7 @@ jobs:
           cache-read-only: true
 
       - name: Test graph-age
-        run: ./gradlew :graph-age:test --no-daemon --no-configuration-cache
+        run: ./gradlew :graph-age:test --no-daemon
         env:
           GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
           TESTCONTAINERS_RYUK_DISABLED: "true"
@@ -343,7 +363,7 @@ jobs:
           ./gradlew \
             :code-graph-examples:test \
             :linkedin-graph-examples:test \
-            --no-daemon --no-configuration-cache
+            --no-daemon
         env:
           GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
           TESTCONTAINERS_RYUK_DISABLED: "true"
