@@ -137,11 +137,13 @@ class FalkorDBGraphOperations(
 
         // FalkorDB는 $props map 파라미터 확장을 지원하지 않으므로 각 속성을 개별 파라미터로 전달한다.
         val propsClause = if (properties.isEmpty()) "" else
-            " {" + properties.keys.joinToString(", ") { "$it: \$$it" } + "}"
+            " {" + properties.keys.joinToString(", ") { key ->
+                "${key.requireSafeIdentifier("property key")}: \$$key"
+            } + "}"
         val cypher = "CREATE (n:$label$propsClause) RETURN n"
 
         return queryList(cypher, properties) {
-            FalkorDBRecordMapper.recordToVertex(it)
+            it.toVertex()
         }.firstOrNull() ?: throw GraphQueryException("Failed to create vertex: $label")
     }
 
@@ -152,7 +154,7 @@ class FalkorDBGraphOperations(
             $$"MATCH (n:$$label) WHERE id(n) = toInteger($id) RETURN n",
             mapOf("id" to id.value),
         ) {
-            FalkorDBRecordMapper.recordToVertex(it)
+            it.toVertex()
         }.firstOrNull()
     }
 
@@ -160,13 +162,15 @@ class FalkorDBGraphOperations(
         label.requireNotBlank("label").requireSafeIdentifier("label")
         val whereClause =
             if (filter.isEmpty()) ""
-            else " WHERE " + filter.keys.joinToString(" AND ") { $$"n.$$it = $$$it" }
+            else " WHERE " + filter.keys.joinToString(" AND ") { key ->
+                "n.${key.requireSafeIdentifier("property key")} = \$$key"
+            }
 
         return queryList(
             $$"MATCH (n:$$label)$$whereClause RETURN n",
             filter,
         ) {
-            FalkorDBRecordMapper.recordToVertex(it)
+            it.toVertex()
         }
     }
 
@@ -178,14 +182,16 @@ class FalkorDBGraphOperations(
         label.requireNotBlank("label").requireSafeIdentifier("label")
         if (properties.isEmpty()) return findVertexById(label, id)
 
-        val setClause = properties.keys.joinToString(", ") { $$"n.$$it = $$$it" }
+        val setClause = properties.keys.joinToString(", ") { key ->
+            "n.${key.requireSafeIdentifier("property key")} = \$$key"
+        }
         val params = properties + mapOf("id" to id.value)
 
         return queryList(
             $$"MATCH (n:$$label) WHERE id(n) = toInteger($id) SET $$setClause RETURN n",
             params,
         ) {
-            FalkorDBRecordMapper.recordToVertex(it)
+            it.toVertex()
         }.firstOrNull()
     }
 
@@ -226,7 +232,9 @@ class FalkorDBGraphOperations(
 
         // FalkorDB는 $props map 파라미터 확장을 지원하지 않으므로 각 속성을 개별 파라미터로 전달한다.
         val propsClause = if (properties.isEmpty()) "" else
-            " {" + properties.keys.joinToString(", ") { "$it: \$$it" } + "}"
+            " {" + properties.keys.joinToString(", ") { key ->
+                "${key.requireSafeIdentifier("property key")}: \$$key"
+            } + "}"
         val params = mutableMapOf<String, Any?>(
             "fromId" to fromId.value,
             "toId" to toId.value,
@@ -238,7 +246,7 @@ class FalkorDBGraphOperations(
                 "CREATE (a)-[r:$label$propsClause]->(b) RETURN r",
             params,
         ) {
-            FalkorDBRecordMapper.recordToEdge(it)
+            it.toEdge()
         }.firstOrNull() ?: throw GraphQueryException("Failed to create edge: $label")
     }
 
@@ -247,13 +255,15 @@ class FalkorDBGraphOperations(
 
         val whereClause =
             if (filter.isEmpty()) ""
-            else " WHERE " + filter.keys.joinToString(" AND ") { $$"r.$$it = $$$it" }
+            else " WHERE " + filter.keys.joinToString(" AND ") { key ->
+                "r.${key.requireSafeIdentifier("property key")} = \$$key"
+            }
 
         return queryList(
             $$"MATCH ()-[r:$$label]->()$$whereClause RETURN r",
             filter,
         ) {
-            FalkorDBRecordMapper.recordToEdge(it)
+            it.toEdge()
         }
     }
 
@@ -291,7 +301,7 @@ class FalkorDBGraphOperations(
             $$"MATCH $$pattern WHERE id(start) = toInteger($startId) RETURN DISTINCT neighbor",
             mapOf("startId" to startId.value),
         ) {
-            FalkorDBRecordMapper.recordToVertex(it, "neighbor")
+            it.toVertex("neighbor")
         }
     }
 
@@ -316,7 +326,7 @@ class FalkorDBGraphOperations(
                 "RETURN p ORDER BY length(p) LIMIT 1",
             mapOf("fromId" to fromId.value, "toId" to toId.value),
         ) {
-            FalkorDBRecordMapper.recordToPath(it)
+            it.toPath()
         }.firstOrNull()
     }
 
@@ -340,7 +350,7 @@ class FalkorDBGraphOperations(
                 $$"WHERE id(a) = toInteger($fromId) AND id(b) = toInteger($toId) RETURN p",
             mapOf("fromId" to fromId.value, "toId" to toId.value),
         ) {
-            FalkorDBRecordMapper.recordToPath(it)
+            it.toPath()
         }
     }
 
@@ -419,7 +429,7 @@ class FalkorDBGraphOperations(
 
         return try {
             queryList(cypher) { rec ->
-                GraphCycle(FalkorDBRecordMapper.recordToPath(rec))
+                GraphCycle(rec.toPath())
             }
         } catch (e: Exception) {
             log.debug(e) { "detectCycles via Cypher failed; using JVM fallback" }
@@ -435,7 +445,7 @@ class FalkorDBGraphOperations(
         val edgePattern = options.edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
 
         val vertices = queryList("MATCH (n$labelClause) RETURN n") {
-            FalkorDBRecordMapper.recordToVertex(it)
+            it.toVertex()
         }
         val vertexById = vertices.associateBy { it.id }
         val ids = vertexById.keys
@@ -471,7 +481,7 @@ class FalkorDBGraphOperations(
         val edgePattern = options.edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
 
         val vertices = queryList("MATCH (n$labelClause) RETURN n") {
-            FalkorDBRecordMapper.recordToVertex(it)
+            it.toVertex()
         }
         val vertexById = vertices.associateBy { it.id }
         val ids = vertexById.keys
@@ -515,8 +525,8 @@ class FalkorDBGraphOperations(
         val adjacency = HashMap<GraphElementId, MutableList<GraphElementId>>()
 
         queryList("MATCH (a)-[r$edgePattern]->(b) RETURN a, b") { rec ->
-            val av = FalkorDBRecordMapper.recordToVertex(rec, "a")
-            val bv = FalkorDBRecordMapper.recordToVertex(rec, "b")
+            val av = rec.toVertex("a")
+            val bv = rec.toVertex("b")
             vertexById[av.id] = av
             vertexById[bv.id] = bv
             when (direction) {
@@ -539,7 +549,7 @@ class FalkorDBGraphOperations(
         val edgePattern = options.edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
 
         val vertices = queryList("MATCH (n$labelClause) RETURN n") {
-            FalkorDBRecordMapper.recordToVertex(it)
+            it.toVertex()
         }
         val vertexById = vertices.associateBy { it.id }
         val adjacency = HashMap<GraphElementId, MutableList<GraphElementId>>()

@@ -175,11 +175,13 @@ class FalkorDBGraphSuspendOperations(
 
         // FalkorDB는 $props map 파라미터 확장을 지원하지 않으므로 각 속성을 개별 파라미터로 전달한다.
         val propsClause = if (properties.isEmpty()) "" else
-            " {" + properties.keys.joinToString(", ") { "$it: \$$it" } + "}"
+            " {" + properties.keys.joinToString(", ") { key ->
+                "${key.requireSafeIdentifier("property key")}: \$$key"
+            } + "}"
         val cypher = "CREATE (n:$label$propsClause) RETURN n"
 
         return queryListIO(cypher, properties) {
-            FalkorDBRecordMapper.recordToVertex(it)
+            it.toVertex()
         }.firstOrNull() ?: throw GraphQueryException("Failed to create vertex: $label")
     }
 
@@ -190,7 +192,7 @@ class FalkorDBGraphSuspendOperations(
             $$"MATCH (n:$$label) WHERE id(n) = toInteger($id) RETURN n",
             mapOf("id" to id.value),
         ) {
-            FalkorDBRecordMapper.recordToVertex(it)
+            it.toVertex()
         }.firstOrNull()
     }
 
@@ -199,13 +201,15 @@ class FalkorDBGraphSuspendOperations(
 
         val whereClause =
             if (filter.isEmpty()) ""
-            else " WHERE " + filter.keys.joinToString(" AND ") { $$"n.$$it = $$$it" }
+            else " WHERE " + filter.keys.joinToString(" AND ") { key ->
+                "n.${key.requireSafeIdentifier("property key")} = \$$key"
+            }
 
         return flowQuery(
             $$"MATCH (n:$$label)$$whereClause RETURN n",
             filter,
         ) {
-            FalkorDBRecordMapper.recordToVertex(it)
+            it.toVertex()
         }
     }
 
@@ -217,14 +221,16 @@ class FalkorDBGraphSuspendOperations(
         label.requireNotBlank("label").requireSafeIdentifier("label")
         if (properties.isEmpty()) return findVertexById(label, id)
 
-        val setClause = properties.keys.joinToString(", ") { $$"n.$$it = $$$it" }
+        val setClause = properties.keys.joinToString(", ") { key ->
+            "n.${key.requireSafeIdentifier("property key")} = \$$key"
+        }
         val params = properties + mapOf("id" to id.value)
 
         return queryListIO(
             $$"MATCH (n:$$label) WHERE id(n) = toInteger($id) SET $$setClause RETURN n",
             params,
         ) {
-            FalkorDBRecordMapper.recordToVertex(it)
+            it.toVertex()
         }.firstOrNull()
     }
 
@@ -263,7 +269,9 @@ class FalkorDBGraphSuspendOperations(
 
         // FalkorDB는 $props map 파라미터 확장을 지원하지 않으므로 각 속성을 개별 파라미터로 전달한다.
         val propsClause = if (properties.isEmpty()) "" else
-            " {" + properties.keys.joinToString(", ") { "$it: \$$it" } + "}"
+            " {" + properties.keys.joinToString(", ") { key ->
+                "${key.requireSafeIdentifier("property key")}: \$$key"
+            } + "}"
         val params = mutableMapOf<String, Any?>(
             "fromId" to fromId.value,
             "toId" to toId.value,
@@ -275,7 +283,7 @@ class FalkorDBGraphSuspendOperations(
                 "CREATE (a)-[r:$label$propsClause]->(b) RETURN r",
             params,
         ) {
-            FalkorDBRecordMapper.recordToEdge(it)
+            it.toEdge()
         }.firstOrNull() ?: throw GraphQueryException("Failed to create edge: $label")
     }
 
@@ -284,13 +292,15 @@ class FalkorDBGraphSuspendOperations(
 
         val whereClause =
             if (filter.isEmpty()) ""
-            else " WHERE " + filter.keys.joinToString(" AND ") { $$"r.$$it = $$$it" }
+            else " WHERE " + filter.keys.joinToString(" AND ") { key ->
+                "r.${key.requireSafeIdentifier("property key")} = \$$key"
+            }
 
         return flowQuery(
             $$"MATCH ()-[r:$$label]->()$$whereClause RETURN r",
             filter,
         ) {
-            FalkorDBRecordMapper.recordToEdge(it)
+            it.toEdge()
         }
     }
 
@@ -329,7 +339,7 @@ class FalkorDBGraphSuspendOperations(
             $$"MATCH $$pattern WHERE id(start) = toInteger($startId) RETURN DISTINCT neighbor",
             mapOf("startId" to startId.value),
         ) {
-            FalkorDBRecordMapper.recordToVertex(it, "neighbor")
+            it.toVertex("neighbor")
         }
     }
 
@@ -354,7 +364,7 @@ class FalkorDBGraphSuspendOperations(
                 "RETURN p ORDER BY length(p) LIMIT 1",
             mapOf("fromId" to fromId.value, "toId" to toId.value),
         ) {
-            FalkorDBRecordMapper.recordToPath(it)
+            it.toPath()
         }.firstOrNull()
     }
 
@@ -378,7 +388,7 @@ class FalkorDBGraphSuspendOperations(
                 $$"WHERE id(a) = toInteger($fromId) AND id(b) = toInteger($toId) RETURN p",
             mapOf("fromId" to fromId.value, "toId" to toId.value),
         ) {
-            FalkorDBRecordMapper.recordToPath(it)
+            it.toPath()
         }
     }
 
@@ -388,11 +398,12 @@ class FalkorDBGraphSuspendOperations(
         vertexId: GraphElementId,
         options: DegreeOptions,
     ): DegreeResult {
+        // edgeLabel injection 검증을 numeric ID 체크 이전에 수행한다.
+        options.edgeLabel?.requireNotBlank("edgeLabel")
+        val edgePattern = options.edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
+
         vertexId.value.toLongOrNull()
             ?: throw GraphQueryException("FalkorDB requires numeric ID, got: $vertexId")
-        options.edgeLabel?.requireNotBlank("edgeLabel")
-
-        val edgePattern = options.edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
 
         val cypher = """
             MATCH (n) WHERE id(n) = toInteger(${'$'}id)
@@ -462,7 +473,7 @@ class FalkorDBGraphSuspendOperations(
 
         val cycles = try {
             queryListIO(cypher) { rec ->
-                GraphCycle(FalkorDBRecordMapper.recordToPath(rec))
+                GraphCycle(rec.toPath())
             }
         } catch (e: Exception) {
             log.debug(e) { "detectCycles via Cypher failed; using JVM fallback" }
@@ -480,7 +491,7 @@ class FalkorDBGraphSuspendOperations(
 
         val components = withContext(Dispatchers.IO) {
             val vertices = queryListIO("MATCH (n$labelClause) RETURN n") {
-                FalkorDBRecordMapper.recordToVertex(it)
+                it.toVertex()
             }
             val vertexById = vertices.associateBy { it.id }
             val ids = vertexById.keys
@@ -519,7 +530,7 @@ class FalkorDBGraphSuspendOperations(
 
         val ranked = withContext(Dispatchers.IO) {
             val vertices = queryListIO("MATCH (n$labelClause) RETURN n") {
-                FalkorDBRecordMapper.recordToVertex(it)
+                it.toVertex()
             }
             val vertexById = vertices.associateBy { it.id }
             val ids = vertexById.keys
@@ -566,8 +577,8 @@ class FalkorDBGraphSuspendOperations(
         val adjacency = HashMap<GraphElementId, MutableList<GraphElementId>>()
 
         queryListIO("MATCH (a)-[r$edgePattern]->(b) RETURN a, b") { rec ->
-            val av = FalkorDBRecordMapper.recordToVertex(rec, "a")
-            val bv = FalkorDBRecordMapper.recordToVertex(rec, "b")
+            val av = rec.toVertex("a")
+            val bv = rec.toVertex("b")
             vertexById[av.id] = av
             vertexById[bv.id] = bv
             when (direction) {
@@ -592,7 +603,7 @@ class FalkorDBGraphSuspendOperations(
         val edgePattern = options.edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
 
         val vertices = queryListIO("MATCH (n$labelClause) RETURN n") {
-            FalkorDBRecordMapper.recordToVertex(it)
+            it.toVertex()
         }
         val vertexById = vertices.associateBy { it.id }
         val adjacency = HashMap<GraphElementId, MutableList<GraphElementId>>()
