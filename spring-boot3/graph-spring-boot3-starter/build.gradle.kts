@@ -16,6 +16,7 @@ dependencies {
     compileOnly(project(":graph-memgraph"))
     compileOnly(project(":graph-age"))
     compileOnly(project(":graph-tinkerpop"))
+    compileOnly(project(":graph-falkordb"))
 
     // Spring Boot 3.x (위 BOM override 적용됨)
     api("org.springframework.boot:spring-boot-autoconfigure")
@@ -30,6 +31,8 @@ dependencies {
     testImplementation(project(":graph-neo4j"))
     testImplementation(project(":graph-memgraph"))
     testImplementation(project(":graph-age"))
+    testImplementation(project(":graph-falkordb"))
+    testImplementation(testFixtures(project(":graph-falkordb")))
     testImplementation(Libs.bluetape4k_testcontainers)
     testImplementation(Libs.testcontainers_neo4j)
     testImplementation(Libs.testcontainers_postgresql)

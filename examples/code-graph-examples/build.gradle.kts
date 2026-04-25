@@ -4,6 +4,7 @@ dependencies {
     implementation(project(":graph-neo4j"))
     implementation(project(":graph-memgraph"))
     implementation(project(":graph-tinkerpop"))
+    implementation(project(":graph-falkordb"))
 
     implementation(Libs.bluetape4k_coroutines)
     implementation(Libs.kotlinx_coroutines_core)
@@ -17,4 +18,6 @@ dependencies {
     testRuntimeOnly(Libs.postgresql_driver)           // bluetape4k-testcontainers는 compileOnly로 선언
     testImplementation(Libs.hikaricp)
     testImplementation(Libs.kotlinx_coroutines_test)
+    testImplementation(project(":graph-falkordb"))
+    testImplementation(testFixtures(project(":graph-falkordb")))
 }

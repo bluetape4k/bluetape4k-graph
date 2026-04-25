@@ -1399,6 +1399,9 @@ object Libs {
     const val neo4j_bolt_connection_pooled = "org.neo4j.bolt:neo4j-bolt-connection-pooled:${Versions.neo4j_bolt_connection}"
     const val neo4j_bolt_connection_routed = "org.neo4j.bolt:neo4j-bolt-connection-route:${Versions.neo4j_bolt_connection}"
 
+    // FalkorDB - https://mvnrepository.com/artifact/com.falkordb/jfalkordb
+    const val jfalkordb = "com.falkordb:jfalkordb:0.7.0"
+
     // Apache TinkerPop (Gremlin) - https://mvnrepository.com/artifact/org.apache.tinkerpop
     const val tinkerpop_gremlin_core = "org.apache.tinkerpop:gremlin-core:3.7.3"
     const val tinkergraph_gremlin = "org.apache.tinkerpop:tinkergraph-gremlin:3.7.3"
