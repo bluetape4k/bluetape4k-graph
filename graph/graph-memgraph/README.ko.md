@@ -15,6 +15,7 @@ Memgraph 그래프 데이터베이스를 위한 `GraphOperations` / `GraphSuspen
 |--------|------|
 | `MemgraphGraphOperations` | 동기(blocking) 방식 그래프 연산 |
 | `MemgraphGraphSuspendOperations` | 코루틴(suspend/Flow) 방식 그래프 연산 |
+| `CachingMemgraphGraphOperations` | `ConcurrentHashMap` 기반 캐싱 데코레이터 |
 
 ## 사용법
 
@@ -62,6 +63,43 @@ val ops = MemgraphGraphOperations(driver)
 val degree = ops.degreeCentrality(alice.id, DegreeOptions(edgeLabel = "KNOWS"))
 val cycles = ops.detectCycles(CycleOptions(edgeLabel = "KNOWS", maxDepth = 5))
 val top10  = ops.pageRank(PageRankOptions(vertexLabel = "Person", topK = 10))
+```
+
+## 캐싱 데코레이터
+
+`CachingMemgraphGraphOperations`는 `MemgraphGraphOperations`를 `ConcurrentHashMap` 기반 캐시로 감싸는 데코레이터다.
+읽기 결과를 메모이제이션하여 캐시 히트 시 DB 호출을 ~5 ns 조회로 대체한다.
+반복 읽기가 많은 벤치마크 및 워크로드에 적합하다.
+
+### 캐시 동작
+
+| 연산 | 효과 |
+|------|------|
+| `findVertexById`, `findVerticesByLabel`, `neighbors`, `shortestPath`, `allPaths`, `findEdgesByLabel` | 첫 번째 호출 시 DB 조회 후 캐시 저장, 이후 호출은 캐시 히트 |
+| `createVertex`, `createEdge` | 동일 인자 반복 호출 시 이전 결과 반환 (쓰기 메모이제이션). 읽기 캐시는 무효화, 쓰기 캐시는 보존 |
+| `updateVertex`, `deleteVertex`, `deleteEdge` | 읽기·쓰기 캐시 전체 무효화 |
+
+> **프로덕션 주의**: 쓰기 메모이제이션으로 인해 동일 인자로 `createVertex`를 반복 호출해도 DB 레코드가 추가 생성되지 않는다.
+> 트랜잭션 기반 insert 의미가 필요한 경우 `MemgraphGraphOperations`를 직접 사용한다.
+
+### 사용 예제
+
+```kotlin
+val driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.none())
+val baseOps = MemgraphGraphOperations(driver)
+
+// 캐싱 데코레이터로 감싸기
+val ops = CachingMemgraphGraphOperations(baseOps)
+
+// 첫 번째 조회: DB 호출
+val alice = ops.findVertexById("Person", aliceId)
+
+// 두 번째 조회: 캐시 히트 (~5 ns)
+val aliceCached = ops.findVertexById("Person", aliceId)
+
+// 쓰기 후 자동 캐시 무효화
+ops.deleteVertex("Person", aliceId)
+val afterDelete = ops.findVertexById("Person", aliceId)  // null (캐시 미스 → DB 재조회)
 ```
 
 ## 테스트
