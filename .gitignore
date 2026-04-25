@@ -45,6 +45,8 @@ build/
 .omc/project-memory.json
 
 .omx/
+worktrees/
+
 .omx/logs/
 .omx/metrics.json
 .omx/state/
