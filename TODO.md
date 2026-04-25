@@ -189,8 +189,7 @@ ops.transaction {
 | 도구 | 역할 | CI 단계 |
 |------|------|---------|
 | `detekt` | 정적 분석 (코틀린 코드 스멜) | `ci.yml` — PR 블로킹 |
-| `ktlint` | 코드 스타일 검사 | `ci.yml` — PR 블로킹 |
-| Kover | 테스트 커버리지 리포트 (Kotlin inline/suspend 정확 지원) | `ci.yml` — 80% 미만 시 경고 |
+| Kover | 테스트 커버리지 리포트 (Kotlin inline/suspend 정확 지원) | `ci.yml` — 70% 미만 시 경고 |
 | `dependency-check` (OWASP) | 취약 의존성 스캔 | `release.yml` — 배포 전 필수 통과 |
 
 ### [ ] Dependabot / Renovate 자동 의존성 업데이트
@@ -213,15 +212,45 @@ ops.transaction {
 
 ### [ ] 추가 백엔드
 
-| 백엔드 | 이유 |
-|--------|------|
-| Amazon Neptune | AWS 환경, Bolt 호환으로 구현 비용 낮음 |
-| FalkorDB (구 RedisGraph) | Redis 기반 인메모리, Bolt 지원 |
+| 백엔드 | 이유 | 이슈 |
+|--------|------|------|
+| Amazon Neptune | AWS 환경, Bolt 호환으로 구현 비용 낮음 | #30 |
+| ~~FalkorDB (구 RedisGraph)~~ | ~~Redis 기반 인메모리, Bolt 지원~~ | ~~완료~~ |
+
+### [ ] 가중치 그래프 + Dijkstra / A* 최단경로 (#31)
+
+- `PathOptions`에 `weightProperty` 추가, `GraphPath`에 `totalWeight` 반환
+- Neo4j/Memgraph: GDS Dijkstra 활용, 나머지: JVM fallback
+- `aStarPath(fromId, toId, heuristic)` 추가
+
+### [ ] Schema / Index 관리 API — `GraphSchemaManager` (#32)
+
+- `createIndex`, `createUniqueConstraint`, `dropIndex`, `listIndexes` 인터페이스
+- 백엔드별 `CREATE INDEX FOR (n:Label) ON (n.prop)` 매핑
+- `GraphOperations.schemaManager()` 접근자 추가
+
+### [ ] Batch insert — 정점/간선 대량 생성 (#33)
+
+- `createVertices(label, list)` / `createEdges(label, list)` API 추가
+- Neo4j/Memgraph: `UNWIND $batch AS row CREATE ...` 패턴
+- 1만 건 기준 단건 대비 처리량 벤치마크 포함
+
+### [ ] MERGE (upsert) 정점/간선 — `mergeVertex` / `mergeEdge` (#34)
+
+- `mergeVertex(label, matchProps, setProps)` / `mergeEdge(...)` 추가
+- `MERGE ... ON CREATE SET ... ON MATCH SET ...` 패턴
+- 멱등성 통합 테스트 (각 백엔드)
+
+### [ ] FalkorDBServer를 bluetape4k-testcontainers에 등록 (#35)
+
+- `bluetape4k-testcontainers`의 `io.bluetape4k.testcontainers.graphdb` 패키지에 추가
+- `graph-falkordb` testFixtures 버전 교체
 
 ---
 
 ## 완료
 
+- [x] FalkorDB 백엔드 — jfalkordb 0.7.0 + Cypher, Spring Boot 3/4 AutoConfiguration, examples 통합 (2026-04-25)
 - [x] graph-io 벌크 임포트/익스포트 — CSV/NDJSON(Jackson2/3)/GraphML × Sync/VT/Coroutine, JMH 벤치마크, README 4종 (2026-04-18)
 - [x] 문서/예제 API 정합성 정리 — AgeGraphOperations 생성자 패턴 + asVirtualThread import 수정 (2026-04-18)
 - [x] GitHub Actions CI (`ci.yml` + `publish-snapshot.yml`) — push마다 전체 테스트, nightly SNAPSHOT 배포 (2026-04-18)
