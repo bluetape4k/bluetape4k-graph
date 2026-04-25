@@ -44,6 +44,7 @@ graph/
   graph-neo4j/      # Neo4j Java Driver 기반 구현
   graph-memgraph/   # Memgraph (Neo4j 프로토콜 호환) 구현
   graph-tinkerpop/  # Apache TinkerPop/Gremlin 구현
+  graph-falkordb/   # FalkorDB (Redis 기반) 구현 — jfalkordb 0.7.0
 graph-io/
   core/             # 공유 계약·모델·옵션·헬퍼 (GraphIoPaths: Buffered I/O)
   csv/              # CSV 벌크 임포트/익스포트 × Sync/VT/Suspend
@@ -78,10 +79,10 @@ class Neo4jCodeGraphTest : AbstractCodeGraphTest() {
 
 | 추상 클래스 | 구체 클래스 |
 |------------|------------|
-| `AbstractCodeGraphTest` | `Neo4j/Memgraph/TinkerGraph/AgeCodeGraphTest` |
-| `AbstractCodeGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/AgeCodeGraphSuspendTest` |
-| `AbstractLinkedInGraphTest` | `Neo4j/Memgraph/TinkerGraph/AgeLinkedInGraphTest` |
-| `AbstractLinkedInGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/AgeLinkedInGraphSuspendTest` |
+| `AbstractCodeGraphTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBCodeGraphTest` |
+| `AbstractCodeGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBCodeGraphSuspendTest` |
+| `AbstractLinkedInGraphTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBLinkedInGraphTest` |
+| `AbstractLinkedInGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBLinkedInGraphSuspendTest` |
 
 ## Architecture
 
@@ -117,6 +118,7 @@ object PersonLabel : VertexLabel("Person") {
 | `graph-memgraph` | Neo4j Java Driver (호환) | Cypher |
 | `graph-age` | PostgreSQL JDBC + Exposed | Cypher-over-SQL (AGE) |
 | `graph-tinkerpop` | TinkerGraph (인메모리) | Gremlin |
+| `graph-falkordb` | jfalkordb 0.7.0 (Jedis 기반) | openCypher (FalkorDB 부분집합) |
 
 ### 테스트 패턴
 
