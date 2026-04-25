@@ -86,7 +86,7 @@ class CsvGraphBulkImporter : GraphBulkImporter<CsvGraphImportSource> {
                 )
                 continue
             }
-            val rowMap: Map<String, String?> = record.headers?.zip(record.values)?.toMap() ?: emptyMap()
+            val rowMap: Map<String, String?> = record.toColumnMap()
             val props = buildMap<String, Any?> {
                 putAll(codec.extractProperties(rowMap))
                 options.preserveExternalIdProperty?.let { key -> put(key, externalId) }
@@ -141,7 +141,7 @@ class CsvGraphBulkImporter : GraphBulkImporter<CsvGraphImportSource> {
                     }
                 }
             }
-            val rowMap: Map<String, String?> = record.headers?.zip(record.values)?.toMap() ?: emptyMap()
+            val rowMap: Map<String, String?> = record.toColumnMap()
             val props = buildMap<String, Any?> {
                 putAll(codec.extractProperties(rowMap))
                 val externalEdgeId = record.getString("id")?.takeIf { it.isNotBlank() }
