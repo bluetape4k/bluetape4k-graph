@@ -75,9 +75,9 @@ object Plugins {
 object Versions {
 
     // Java 21, Kotlin 2.3 이상에서 사용하세요
-    const val bluetape4k = "1.6.2"    // https://mvnrepository.com/artifact/io.github.bluetape4k/bluetape4k-bom
+    const val bluetape4k = "1.7.0"    // https://mvnrepository.com/artifact/io.github.bluetape4k/bluetape4k-bom
 
-    const val kotlin = "2.3.20"                 // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib
+    const val kotlin = "2.3.21"                 // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib
     const val kotlinx_coroutines = "1.10.2"     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
     const val kotlinx_serialization = "1.11.0"   // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-serialization-json-jvm
     const val kotlinx_atomicfu = "0.32.1"      // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/atomicfu
@@ -90,37 +90,37 @@ object Versions {
     const val spring_boot4 = Plugins.Versions.spring_boot4
     const val spring_cloud = "2025.1.0"     // https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-dependencies
     const val spring_integration = "7.0.1"  // https://mvnrepository.com/artifact/org.springframework.integration/spring-integration-core
-    const val reactor_bom = "2025.0.1"      // https://mvnrepository.com/artifact/io.projectreactor/reactor-bom
+    const val reactor_bom = "2025.0.5"      // https://mvnrepository.com/artifact/io.projectreactor/reactor-bom
     const val spring_statemachine = "4.0.1" // https://mvnrepository.com/artifact/org.springframework.statemachine/spring-statemachine-core
     const val spring_modulith = "2.0.3"     // https://mvnrepository.com/artifact/org.springframework.modulith/spring-modulith-bom
 
     const val chaos_monkey = "4.0.0"        // https://mvnrepository.com/artifact/de.codecentric/chaos-monkey-spring-boot
-    const val blockhound = "1.0.14.RELEASE"  // https://mvnrepository.com/artifact/io.projectreactor.tools/blockhound
+    const val blockhound = "1.0.16.RELEASE"  // https://mvnrepository.com/artifact/io.projectreactor.tools/blockhound
 
     const val vertx = "5.0.8"               // https://mvnrepository.com/artifact/io.vertx/vertx-core
 
-    const val swagger = "2.2.37"              // https://mvnrepository.com/artifact/io.swagger.core.v3/swagger-annotations
+    const val swagger = "2.2.43"              // https://mvnrepository.com/artifact/io.swagger.core.v3/swagger-annotations
     const val springdoc_openapi = "3.0.0"    // https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-starter-webmvc-ui
 
-    const val bucket4j = "8.16.1"       // https://mvnrepository.com/artifact/com.bucket4j/bucket4j_jdk17-core
-    const val resilience4j = "2.3.0"   // https://mvnrepository.com/artifact/io.github.resilience4j/resilience4j-bom
-    const val netty = "4.2.10.Final"  // https://mvnrepository.com/artifact/io.netty/netty-all
+    const val bucket4j = "8.18.0"       // https://mvnrepository.com/artifact/com.bucket4j/bucket4j_jdk17-core
+    const val resilience4j = "2.4.0"   // https://mvnrepository.com/artifact/io.github.resilience4j/resilience4j-bom
+    const val netty = "4.2.12.Final"  // https://mvnrepository.com/artifact/io.netty/netty-all
 
-    const val aws2 = "2.42.4"           // https://mvnrepository.com/artifact/software.amazon.awssdk/aws-sdk-java
-    const val aws2_crt = "0.43.4"      // https://mvnrepository.com/artifact/software.amazon.awssdk.crt/aws-crt
-    const val aws_kotlin = "1.6.27"     // https://mvnrepository.com/artifact/aws.sdk.kotlin/aws-http-jvm
-    const val aws_smithy_kotlin = "1.6.5" // https://mvnrepository.com/artifact/aws.smithy.kotlin/http-client-engine-crt-jvm
+    const val aws2 = "2.42.37"          // https://mvnrepository.com/artifact/software.amazon.awssdk/aws-sdk-java
+    const val aws2_crt = "0.45.1"      // https://mvnrepository.com/artifact/software.amazon.awssdk.crt/aws-crt
+    const val aws_kotlin = "1.6.59"     // https://mvnrepository.com/artifact/aws.sdk.kotlin/aws-http-jvm
+    const val aws_smithy_kotlin = "1.6.11" // https://mvnrepository.com/artifact/aws.smithy.kotlin/http-client-engine-crt-jvm
 
     const val aws_spring_cloud = "4.0.0"  // https://mvnrepository.com/artifact/io.awspring.cloud/spring-cloud-aws-starter
 
-    const val grpc = "1.76.0"       // https://mvnrepository.com/artifact/io.grpc/grpc-stub
+    const val grpc = "1.80.0"       // https://mvnrepository.com/artifact/io.grpc/grpc-stub
     const val grpc_kotlin = "1.5.0" // https://mvnrepository.com/artifact/io.grpc/grpc-kotlin-stub
-    const val protobuf = "4.33.0"   // https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java
-    const val grpc_google_common_protos = "2.62.0" // https://mvnrepository.com/artifact/com.google.api.grpc/proto-google-common-protos
+    const val protobuf = "4.34.0"   // https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java
+    const val grpc_google_common_protos = "2.67.0" // https://mvnrepository.com/artifact/com.google.api.grpc/proto-google-common-protos
     const val avro = "1.12.1"       // https://mvnrepository.com/artifact/org.apache.avro/avro
     const val avrok = "2.10.0"      // https://mvnrepository.com/artifact/com.github.avro-kotlin.avro4k/avro4k-core
 
-    const val feign = "13.6"         // https://mvnrepository.com/artifact/io.github.openfeign/feign-core
+    const val feign = "13.11"        // https://mvnrepository.com/artifact/io.github.openfeign/feign-core
     const val httpclient5 = "5.6"  // https://mvnrepository.com/artifact/org.apache.httpcomponents.client5/httpclient5
     const val httpcore5 = "5.4"    // https://mvnrepository.com/artifact/org.apache.httpcomponents.core5/httpcore5
     const val retrofit2 = "3.0.0"   // https://mvnrepository.com/artifact/com.squareup.retrofit2/retrofit
@@ -139,7 +139,7 @@ object Versions {
 
     const val mongo_driver = "5.6.4"   // https://mvnrepository.com/artifact/org.mongodb/mongodb-driver-sync
     const val lettuce = "7.5.0.RELEASE" // https://mvnrepository.com/artifact/io.lettuce/lettuce-core
-    const val redisson = "4.3.0"       // https://mvnrepository.com/artifact/org.redisson/redisson
+    const val redisson = "4.3.1"       // https://mvnrepository.com/artifact/org.redisson/redisson
 
     // NOTE: Hibernate 는 jakarta 버전인 경우 orm, validator 등이 group 에 포함됩니다.
     // NOTE: 이 경우 기존 javax 를 사용하는 버전과 충돌이 생길 수 있으니 조심하세요
