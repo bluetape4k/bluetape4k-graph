@@ -75,7 +75,6 @@ class AgeGraphSuspendOperations(
         name.requireNotBlank("name")
 
         newSuspendedTransaction {
-            loadAgeAndSetSearchPath()
             try {
                 exec(AgeSql.createGraph(name))
             } catch (e: Exception) {
@@ -89,7 +88,6 @@ class AgeGraphSuspendOperations(
         name.requireNotBlank("name")
 
         newSuspendedTransaction {
-            loadAgeAndSetSearchPath()
             exec(AgeSql.dropGraph(name))
         }
     }
@@ -98,7 +96,6 @@ class AgeGraphSuspendOperations(
         name.requireNotBlank("name")
 
         return newSuspendedTransaction {
-            loadAgeAndSetSearchPath()
             var count = 0L
             val stmt = AgeSql.graphExists(name)
             exec(stmt) { rs ->
@@ -117,8 +114,6 @@ class AgeGraphSuspendOperations(
     override suspend fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex {
         label.requireNotBlank("label")
         return newSuspendedTransaction {
-            loadAgeAndSetSearchPath()
-
             var vertex: GraphVertex? = null
             val stmt = AgeSql.createVertex(graphName, label, properties)
             exec(stmt) { rs ->
@@ -136,8 +131,6 @@ class AgeGraphSuspendOperations(
             ?: throw GraphQueryException("AGE requires numeric ID, got: ${id.value}")
 
         return newSuspendedTransaction {
-            loadAgeAndSetSearchPath()
-
             var vertex: GraphVertex? = null
             val stmt = AgeSql.matchVertexById(graphName, label, longId)
             exec(stmt) { rs ->
@@ -153,7 +146,6 @@ class AgeGraphSuspendOperations(
         label.requireNotBlank("label")
         return channelFlow {
             val vertices = newSuspendedTransaction {
-                loadAgeAndSetSearchPath()
                 val list = mutableListOf<GraphVertex>()
                 val stmt = AgeSql.matchVertices(graphName, label, filter)
                 exec(stmt) { rs ->
@@ -176,8 +168,6 @@ class AgeGraphSuspendOperations(
         val longId = id.value.toLongOrNull() ?: throw GraphQueryException("AGE requires numeric ID, got: ${id.value}")
 
         return newSuspendedTransaction {
-            loadAgeAndSetSearchPath()
-
             var vertex: GraphVertex? = null
             val stmt = AgeSql.updateVertex(graphName, label, longId, properties)
             exec(stmt) { rs ->
@@ -195,8 +185,6 @@ class AgeGraphSuspendOperations(
             id.value.toLongOrNull() ?: throw GraphQueryException("AGE requires numeric ID, got: ${id.value}")
 
         return newSuspendedTransaction {
-            loadAgeAndSetSearchPath()
-
             var deleted = false
             val stmt = AgeSql.deleteVertex(graphName, label, longId)
             exec(stmt) { rs ->
@@ -209,7 +197,6 @@ class AgeGraphSuspendOperations(
     override suspend fun countVertices(label: String): Long {
         label.requireNotBlank("label")
         return newSuspendedTransaction {
-            loadAgeAndSetSearchPath()
             var count = 0L
             val stmt = AgeSql.countVertices(graphName, label)
             exec(stmt) { rs ->
@@ -234,8 +221,6 @@ class AgeGraphSuspendOperations(
             ?: throw GraphQueryException("AGE requires numeric ID, got: ${toId.value}")
 
         return newSuspendedTransaction {
-            loadAgeAndSetSearchPath()
-
             var edge: GraphEdge? = null
             val stmt = AgeSql.createEdge(graphName, from, to, label, properties)
             exec(stmt) { rs ->
@@ -251,7 +236,6 @@ class AgeGraphSuspendOperations(
         label.requireNotBlank("label")
         return channelFlow {
             val edges = newSuspendedTransaction {
-                loadAgeAndSetSearchPath()
                 val list = mutableListOf<GraphEdge>()
                 val stmt = AgeSql.matchEdgesByLabel(graphName, label, filter)
                 exec(stmt) { rs ->
@@ -271,8 +255,6 @@ class AgeGraphSuspendOperations(
             ?: throw GraphQueryException("AGE requires numeric ID, got: ${id.value}")
 
         return newSuspendedTransaction {
-            loadAgeAndSetSearchPath()
-
             var deleted = false
             val stmt = AgeSql.deleteEdge(graphName, label, longId)
             exec(stmt) { rs ->
@@ -291,8 +273,6 @@ class AgeGraphSuspendOperations(
 
         return channelFlow {
             val vertices = newSuspendedTransaction {
-                loadAgeAndSetSearchPath()
-
                 val list = mutableListOf<GraphVertex>()
                 val stmt = AgeSql.neighbors(
                     graphName, longId, options.edgeLabel, options.direction.name, options.maxDepth
@@ -319,7 +299,6 @@ class AgeGraphSuspendOperations(
             toId.value.toLongOrNull() ?: throw GraphQueryException("AGE requires numeric ID, got: ${toId.value}")
 
         return newSuspendedTransaction {
-            loadAgeAndSetSearchPath()
             var path: GraphPath? = null
             val stmt = AgeSql.shortestPath(graphName, from, to, options.edgeLabel, options.maxDepth)
             exec(stmt) { rs ->
@@ -343,7 +322,6 @@ class AgeGraphSuspendOperations(
 
         return channelFlow {
             val paths = newSuspendedTransaction {
-                loadAgeAndSetSearchPath()
                 val list = mutableListOf<GraphPath>()
                 val stmt = AgeSql.allPaths(graphName, from, to, options.edgeLabel, options.maxDepth)
                 exec(stmt) { rs ->

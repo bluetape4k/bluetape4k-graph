@@ -1,0 +1,30 @@
+{
+  "executor_id": "executor_c",
+  "plan_id": "round_3_planner_c",
+  "benchmark_score": 1468.902,
+  "benchmark_raw": "{\"primary\": 1468.902, \"sub_scores\": {\"age_allPaths\": 556.588, \"age_shortestPath\": 609.67, \"age_createEdge\": 8605.3, \"age_createVertex\": 623.531, \"age_findVertexById\": 510.055, \"age_findVerticesByLabel\": 490.859, \"age_neighbors\": 541.383, \"neo4j_allPaths\": 931.14, \"neo4j_shortestPath\": 864.722, \"neo4j_createEdge\": 3090.315, \"neo4j_createVertex\": 1303.418, \"neo4j_findVertexById\": 762.028, \"neo4j_findVerticesByLabel\": 836.027, \"neo4j_neighbors\": 839.599}}",
+  "status": "regression",
+  "sub_scores": {
+    "age_allPaths": 556.588,
+    "age_shortestPath": 609.67,
+    "age_createEdge": 8605.3,
+    "age_createVertex": 623.531,
+    "age_findVertexById": 510.055,
+    "age_findVerticesByLabel": 490.859,
+    "age_neighbors": 541.383,
+    "neo4j_allPaths": 931.14,
+    "neo4j_shortestPath": 864.722,
+    "neo4j_createEdge": 3090.315,
+    "neo4j_createVertex": 1303.418,
+    "neo4j_findVertexById": 762.028,
+    "neo4j_findVerticesByLabel": 836.027,
+    "neo4j_neighbors": 839.599
+  },
+  "failure_analysis": {
+    "what": "Primary score 1468.902 μs/op vs baseline 1336.029 μs/op (+9.94% regression). Changes: (1) cached SessionConfig as private val built once in constructor, (2) collapsed 2-query pattern in connectedComponents/pageRank/detectCyclesViaFallback to single combined MATCH (a)-[r]->(b) RETURN a, b (with conditional isolated-vertex query only when needed).",
+    "why": "The measured benchmarks (createVertex, createEdge, findVertexById, findVerticesByLabel, neighbors, shortestPath, allPaths) do NOT exercise connectedComponents/pageRank/detectCyclesViaFallback, so the collapsed-query optimization has zero measurable impact on the primary metric. The SessionConfig caching is a trivial micro-optimization: the original object construction cost (~100ns per session) is negligible compared to Bolt round-trip latency (~100 μs). Variance in AGE+Neo4j benchmarks on local Testcontainers (std dev up to ±2531 μs on neo4j_createVertex) dwarfs any optimization signal, and some benchmarks drifted upward (e.g. neo4j_createEdge 3090.315 vs round-2 baseline territory). The large variance explains the 9.94% swing despite hot-path code remaining effectively identical for benchmarked methods.",
+    "category": "regression",
+    "lesson": "Round 3 confirms Round 2 lesson: micro-optimizations to Neo4j driver session setup (SessionConfig caching) yield no measurable gain because benchmark primary is dominated by Bolt network I/O + Testcontainers variance. Additionally, collapsing 2-query patterns in algorithm methods (CC, pageRank, cycles) is invisible to this benchmark suite because those methods are not measured. Future rounds must either (a) target a code path that is actually exercised by benchmarks (createVertex, createEdge, findVertexById, shortestPath, allPaths, neighbors, findVerticesByLabel), or (b) expand the benchmark suite to cover algorithm methods before attempting their optimization. High-variance benchmarks (std dev > primary score) make sub-1% gains unmeasurable; only interventions with expected impact >>10% are statistically detectable here."
+  },
+  "timestamp": "2026-04-19T22:00:00Z"
+}

@@ -6,7 +6,7 @@ import io.bluetape4k.graph.model.CycleOptions
 import io.bluetape4k.graph.model.DegreeOptions
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.PageRankOptions
-import io.bluetape4k.graph.servers.MemgraphServer
+import io.bluetape4k.testcontainers.graphdb.MemgraphServer
 import io.bluetape4k.logging.KLogging
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeGreaterOrEqualTo
@@ -26,7 +26,7 @@ class MemgraphAlgorithmTest {
 
     companion object: KLogging()
 
-    private val driver = GraphDatabase.driver(MemgraphServer.boltUrl, AuthTokens.none())
+    private val driver = GraphDatabase.driver(MemgraphServer.Launcher.memgraph.boltUrl, AuthTokens.none())
     private val ops = MemgraphGraphOperations(driver)
 
     @AfterAll

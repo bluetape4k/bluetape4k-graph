@@ -1,0 +1,79 @@
+{
+  "plan_id": "round_3_planner_c",
+  "planner_id": "planner_c",
+  "round": 3,
+  "hypothesis": "Caching the immutable SessionConfig as a private val (built once in the class body, not rebuilt per session() call) AND collapsing the 2-query vertices+edges pattern in connectedComponents, pageRank, and detectCyclesViaFallback into a single combined MATCH (a)-[r]->(b) traversal (mirroring the already-optimal loadAdjacency pattern) will reduce per-op allocation and Neo4j round-trip overhead by 5-10% without changing access mode or session semantics.",
+  "approach_family": "optimization",
+  "critic_approved": true,
+  "target_files": [
+    "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "file": "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt",
+      "change": "Add a private val sessionConfig at class-member level (immediately before the session() function at line 65): `private val sessionConfig: SessionConfig = SessionConfig.builder().withDatabase(database).build()`. SessionConfig is immutable and thread-safe, so building it once per Neo4jGraphOperations instance is safe. Do NOT call .withDefaultAccessMode() — keep the default access mode to avoid the round_2_executor_c regression."
+    },
+    {
+      "step": 2,
+      "file": "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt",
+      "change": "Replace the session() function body (lines 65-66) with the cached config call: `private fun session(): Session = driver.session(sessionConfig)`. This removes the per-call SessionConfig.builder() allocation + .withDatabase() call + .build() call on every single Neo4j operation (every createVertex, findVertexById, neighbors, etc.)."
+    },
+    {
+      "step": 3,
+      "file": "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt",
+      "change": "Rewrite connectedComponents (lines 381-413) to use a SINGLE combined MATCH query instead of two separate runQuery() calls. Replace the separate `MATCH (n$labelClause) RETURN n` + `MATCH (a$labelClause)-[r$edgePattern]->(b$labelClause) RETURN elementId(a) AS sa, elementId(b) AS sb` pattern with a single traversal that returns nodes a and b: `MATCH (a$labelClause)-[r$edgePattern]->(b$labelClause) RETURN a, b`. Inside the mapper, call Neo4jRecordMapper.nodeToVertex for both a and b, populate vertexById HashMap, and collect edges as elementId pairs. Note: this will miss vertices with zero edges — to preserve correctness for isolated-vertex components, also keep a fallback pass using `MATCH (n$labelClause) WHERE NOT (n)--() RETURN n` ONLY when options.minSize <= 1 (isolated vertices qualify as components of size 1). If options.minSize >= 2, isolated vertices are discarded anyway so the combined query alone suffices."
+    },
+    {
+      "step": 4,
+      "file": "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt",
+      "change": "Rewrite pageRank (lines 415-451) using the same combined-query pattern. Replace the separate vertex-fetch + edge-fetch with a single `MATCH (a$labelClause)-[r$edgePattern]->(b$labelClause) RETURN a, b` call. In the mapper, populate vertexById (put a and b), then build outAdjacency[av.id].add(bv.id). Because PageRank scores rely only on vertices with connections (isolated vertices get damping-only scores that are typically topK-filtered out), and the result is sorted+taken by topK, the combined query is semantically equivalent for the sorted-topK result set. If options.topK == Int.MAX_VALUE we must still include isolated vertices — add a conditional second query `MATCH (n$labelClause) WHERE NOT (n)--() RETURN n` only when topK == Int.MAX_VALUE to preserve correctness."
+    },
+    {
+      "step": 5,
+      "file": "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt",
+      "change": "Rewrite detectCyclesViaFallback (lines 478-518) using the same combined-query pattern. Replace the separate vertex + edge queries with a single `MATCH (a$labelClause)-[r$edgePattern]->(b$labelClause) RETURN a, b` call. Populate vertexById (put a and b) and adjacency (a.id -> b.id) in the mapper. Isolated vertices cannot participate in cycles, so dropping them is semantically safe — no fallback query needed. Keep CycleDetector.findCycles and the existing result construction unchanged."
+    },
+    {
+      "step": 6,
+      "file": "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt",
+      "change": "Verify compilation via `./gradlew :graph-neo4j:compileKotlin`. Run the full Neo4j test suite via `./gradlew :graph-neo4j:test` to confirm no regressions in connectedComponents/pageRank/detectCycles correctness. Run `./gradlew :code-graph-examples:test --tests '*Neo4j*'` and `./gradlew :linkedin-graph-examples:test --tests '*Neo4j*'` to confirm example integration tests still pass."
+    }
+  ],
+  "expected_outcome": {
+    "metric": "avg_latency_us",
+    "estimated_impact": "5-10% reduction on Neo4j ops; 3-6% reduction on combined Neo4j+AGE avg (AGE is unaffected)",
+    "rationale": "Two sources of savings: (1) SessionConfig caching eliminates 3 allocations (builder, config, string ref) + 2 method calls per Neo4j op — every single Neo4j operation in the benchmark calls session() at least once, so the saving compounds across neighbors/allPaths/shortestPath/createVertex/findVertexById/etc. (2) Combined-query pattern for 3 algorithms cuts Bolt round-trips in half for connectedComponents/pageRank/detectCyclesViaFallback, each of which currently incurs 2 network round-trips + 2 query-plan lookups. On Testcontainers Bolt (localhost), each round-trip is ~200-500 μs of RTT+serialization, so halving the round-trip count saves ~200-500 μs per algorithm call. The loadAdjacency function already uses this single-query pattern, proving the approach is tested and correct.",
+    "sub_score_expectations": {
+      "neo4j_allPaths": "reduction from ~734 to ~660 us (SessionConfig caching only, no algorithm change)",
+      "neo4j_neighbors": "reduction from ~670 to ~600 us (SessionConfig caching only)",
+      "neo4j_shortestPath": "reduction from baseline to ~93% of baseline (SessionConfig caching only)",
+      "neo4j_connectedComponents": "reduction from baseline to ~75-85% of baseline (combined query + SessionConfig cache)",
+      "neo4j_pageRank": "reduction from baseline to ~75-85% of baseline (combined query + SessionConfig cache)",
+      "neo4j_detectCycles": "reduction from baseline to ~85-90% of baseline (combined query in fallback path + SessionConfig cache)",
+      "age_operations": "no change expected (AGE module untouched)"
+    }
+  },
+  "history_reference": {
+    "builds_on": "round_1_executor_a (optimization/remove-loadAgeAndSetSearchPath WINNER 1336.029). Continues the optimization approach family with a different, safer optimization target.",
+    "avoids": "round_2_executor_c (architecture/SessionConfig AccessMode READ/WRITE routing caused 13.9% regression — this plan ONLY caches the SessionConfig OBJECT, does NOT call .withDefaultAccessMode() and does NOT change AccessMode at all). Also avoids round_2_executor_a label-hints-cache scope (no label-hint caching attempted here — purely session-object caching + query consolidation)."
+  },
+  "critic_review": {
+    "h001_hypothesis_count": "pass",
+    "h002_family_streak": "pass",
+    "h003_intra_round_diversity": "pass",
+    "schema_valid": "pass",
+    "history_aware": "pass",
+    "verdict": "approved",
+    "rejection_reason": null
+  },
+  "architect_review": {
+    "verdict": "approve",
+    "feedback": "SessionConfig is documented as immutable and thread-safe in the Neo4j Java Driver — caching as a class-level val is idiomatic and matches the driver's design intent. The combined-query pattern is already battle-tested in loadAdjacency (line 461), so extending it to 3 more methods is low-risk structural duplication removal. The conditional fallback for isolated vertices in connectedComponents (minSize <= 1) and pageRank (topK == MAX_VALUE) preserves API contract correctness. Do NOT touch AccessMode per the round_2_executor_c lesson.",
+    "structural_concerns": [
+      "Ensure isolated-vertex fallback is ONLY issued when the API contract requires it (minSize<=1 for components, topK==MAX_VALUE for pageRank) — otherwise we reintroduce the second query and lose the win.",
+      "detectCyclesViaFallback is the fallback path for detectCycles — if the Cypher-native path succeeds, this code isn't hit; verify test coverage actually exercises the fallback (it does, when Cypher variable-length cycle query throws).",
+      "Keep session().use { ... } block structure unchanged — only the SessionConfig source changes."
+    ]
+  }
+}

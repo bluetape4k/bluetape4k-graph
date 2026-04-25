@@ -18,6 +18,8 @@ include("bluetape4k-graph-bom")
 project(":bluetape4k-graph-bom").projectDir = file("bom")
 
 includeModules("graph", false, false)
+includeModules("graph-io", false, true)
+includeModules("benchmark", false, false)
 includeModules("examples", false, false)
 includeModules("spring-boot3", false, false)
 includeModules("spring-boot4", false, false)

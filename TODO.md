@@ -40,15 +40,10 @@ Spring Boot 4 패키지 변경 사항:
 
 테스트 결과: boot3 16 passing, boot4 16 passing
 
-### [ ] Streaming API — `Flow<T>` 반환
+### [x] Streaming API — `Flow<T>` 반환 — 완료
 
-현재 `findVerticesByLabel`이 `List<T>` 반환 → 대용량 그래프에서 메모리 문제.
-
-```kotlin
-// GraphSuspendVertexRepository에 추가
-fun streamVerticesByLabel(label: String): Flow<GraphVertex>
-fun streamEdgesByLabel(label: String): Flow<GraphEdge>
-```
+`findVerticesByLabel` / `findEdgesByLabel`이 이미 `Flow<T>`를 반환한다.
+별도 `stream*` 메서드 추가 불필요.
 
 ---
 
@@ -69,7 +64,7 @@ fun streamEdgesByLabel(label: String): Flow<GraphEdge>
 
 ## 2순위 — 생산성 향상
 
-### [ ] 문서 / 예제 API 정합성 정리
+### [x] 문서 / 예제 API 정합성 정리 — 2026-04-18 완료
 
 현재 코드와 일부 README 예제가 어긋난다. 신규 starter 문서화 전에 먼저 정리한다.
 
@@ -77,17 +72,49 @@ fun streamEdgesByLabel(label: String): Flow<GraphEdge>
   `Database.connect(dataSource)` 선행 호출 패턴으로 수정
 - `AgeGraphSuspendOperations` 예제도 동일하게 `AgeGraphSuspendOperations(graphName)` 기준으로 정리
 - `asVirtualThread` import 예제를 실제 패키지 `io.bluetape4k.graph.vt.asVirtualThread` 기준으로 정리
-- 루트 `README.md`, `README.ko.md`, `graph-age/README*.md`, `graph-servers/README*.md`,
-  `graph-core/README*.md`에서 오래된 코드 조각 검색 후 수정
+- 루트 `README.md`, `README.ko.md`, `graph-age/README*.md`, `graph-core/README*.md`에서
+  오래된 코드 조각 검색 후 수정
 - README 코드 조각과 실제 테스트 코드가 컴파일 가능한 형태인지 샘플 테스트 또는 문서 스니펫 점검으로 확인
 
-### [ ] `graph-io` 모듈 — 벌크 임포트/익스포트
+### [x] `graph-io` 모듈 — 벌크 임포트/익스포트 — 2026-04-18 완료
 
-| 포맷 | 방향 |
-|------|------|
-| CSV (정점/엣지 분리 파일) | import / export |
-| JSON Lines (NDJSON) | import / export |
-| GraphML | import / export |
+| 포맷 | 방향 | 모듈 |
+|------|------|------|
+| CSV (정점/엣지 분리 파일) | import / export | `graph-io-csv` |
+| JSON Lines (NDJSON, Jackson 2.x) | import / export | `graph-io-jackson2` |
+| JSON Lines (NDJSON, Jackson 3.x) | import / export | `graph-io-jackson3` |
+| GraphML (XML/StAX) | import / export | `graph-io-graphml` |
+
+각 포맷은 Sync / VirtualThread / Coroutine 3가지 실행 모델 지원.
+벤치마크: `docs/benchmark/2026-04-18-graph-io-bulk-results.md`
+
+### [ ] `graph-io` — `bluetape4k-okio` / `bluetape4k-io` 활용
+
+현재 `graph-io-core`의 `GraphIoPaths`는 `java.io` / `java.nio.file` 기반이다.
+`bluetape4k-okio`(OkIO Source/Sink)와 `bluetape4k-io`(bluetape4k IO 유틸리티)를 활용하여 다음을 개선한다.
+
+| 항목 | 현재 | 개선 방향 |
+|------|------|-----------|
+| `openInputStream` | `BufferedInputStream(Files.newInputStream(...))` | OkIO `Source` / `BufferedSource` |
+| `openOutputStream` | `BufferedOutputStream(Files.newOutputStream(...))` | OkIO `Sink` / `BufferedSink` |
+| 압축 지원 | 없음 | OkIO GzipSource/GzipSink 래핑으로 `.csv.gz`, `.ndjson.gz` 투명 지원 |
+| 스트리밍 읽기 | `BufferedReader` 라인 단위 | OkIO `BufferedSource.readUtf8Line()` — 버퍼 튜닝 용이 |
+| Flow 기반 I/O | 없음 | `bluetape4k-io` Flow 확장 함수로 `Flow<GraphIoVertexRecord>` 직접 소비 |
+
+**구현 범위:**
+
+- `graph-io-core`에 OkIO 기반 `GraphIoOkioPaths` 헬퍼 추가 (기존 `GraphIoPaths` 대체 가능)
+- `graph-io-csv` / `graph-io-jackson2/3` / `graph-io-graphml` 각 익스포터/임포터에 OkIO 오버로드 추가
+- 압축 싱크/소스: `GraphExportSink.GzipPathSink`, `GraphImportSource.GzipPathSource` 추가
+- 기존 `java.io` 경로는 유지 (하위 호환)
+
+**선행 조건:** `bluetape4k-projects`에서 `bluetape4k-okio`, `bluetape4k-io` 버전 확인 후 `buildSrc/Libs.kt` 추가
+
+### [ ] 모든 public API KDoc에 가능한 한 예제 추가
+
+- `graph-core`, 백엔드 모듈, `graph-io`, Spring Boot starter의 public 타입/함수/확장 함수에 사용 예제를 최대한 추가
+- 단순 설명보다 호출 가능한 짧은 Kotlin snippet 우선
+- README 예제와 KDoc 예제가 서로 다른 API 형태를 안내하지 않도록 정합성 점검
 
 ### [ ] 트랜잭션 DSL
 
@@ -163,7 +190,7 @@ ops.transaction {
 |------|------|---------|
 | `detekt` | 정적 분석 (코틀린 코드 스멜) | `ci.yml` — PR 블로킹 |
 | `ktlint` | 코드 스타일 검사 | `ci.yml` — PR 블로킹 |
-| Codecov / JaCoCo | 테스트 커버리지 리포트 | `ci.yml` — 80% 미만 시 경고 |
+| Kover | 테스트 커버리지 리포트 (Kotlin inline/suspend 정확 지원) | `ci.yml` — 80% 미만 시 경고 |
 | `dependency-check` (OWASP) | 취약 의존성 스캔 | `release.yml` — 배포 전 필수 통과 |
 
 ### [ ] Dependabot / Renovate 자동 의존성 업데이트
@@ -195,6 +222,8 @@ ops.transaction {
 
 ## 완료
 
+- [x] graph-io 벌크 임포트/익스포트 — CSV/NDJSON(Jackson2/3)/GraphML × Sync/VT/Coroutine, JMH 벤치마크, README 4종 (2026-04-18)
+- [x] 문서/예제 API 정합성 정리 — AgeGraphOperations 생성자 패턴 + asVirtualThread import 수정 (2026-04-18)
 - [x] GitHub Actions CI (`ci.yml` + `publish-snapshot.yml`) — push마다 전체 테스트, nightly SNAPSHOT 배포 (2026-04-18)
 - [x] Spring Boot 3/4 AutoConfiguration 스타터 — boot3 16 passing, boot4 16 passing (2026-04-17)
 - [x] 그래프 알고리즘 확장 — 6 알고리즘 × 4 백엔드 + VT bridge (2026-04-16)

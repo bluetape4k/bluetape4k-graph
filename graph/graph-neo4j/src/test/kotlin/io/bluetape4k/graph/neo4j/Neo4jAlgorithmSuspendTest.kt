@@ -2,7 +2,7 @@ package io.bluetape4k.graph.neo4j
 
 import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.PageRankOptions
-import io.bluetape4k.graph.servers.Neo4jServer
+import io.bluetape4k.testcontainers.graphdb.Neo4jServer
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import kotlinx.coroutines.flow.toList
@@ -21,7 +21,7 @@ class Neo4jAlgorithmSuspendTest {
 
     companion object: KLoggingChannel()
 
-    private val driver = GraphDatabase.driver(Neo4jServer.boltUrl, AuthTokens.none())
+    private val driver = GraphDatabase.driver(Neo4jServer.Launcher.neo4j.boltUrl, AuthTokens.none())
     private val ops = Neo4jGraphSuspendOperations(driver)
 
     @AfterAll

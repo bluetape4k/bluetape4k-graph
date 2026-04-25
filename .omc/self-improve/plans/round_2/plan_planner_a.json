@@ -1,0 +1,73 @@
+{
+  "plan_id": "round_2_planner_a",
+  "planner_id": "planner_a",
+  "round": 2,
+  "hypothesis": "Adding vertex label hints to createEdge MATCH queries in AGE and Neo4j should reduce age_createEdge latency by 30-55% because the current unlabeled MATCH scans the entire graph for both endpoints on every call.",
+  "approach_family": "optimization",
+  "critic_approved": true,
+  "target_files": [
+    "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/sql/AgeSql.kt",
+    "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/AgeGraphOperations.kt",
+    "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "file": "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/sql/AgeSql.kt",
+      "change": "Modify AgeSql.createEdge(...) to accept optional `fromLabel: String? = null` and `toLabel: String? = null` parameters. Emit the label hints directly into the Cypher MATCH. Replace the existing query string with: `val fromLbl = if (fromLabel != null) \":$fromLabel\" else \"\"`, `val toLbl = if (toLabel != null) \":$toLabel\" else \"\"`, then `MATCH (a$fromLbl), (b$toLbl) WHERE id(a) = $fromId AND id(b) = $toId CREATE (a)-[e:$edgeLabel $propsStr]->(b) RETURN e`. Keep behavior backward-compatible when both are null."
+    },
+    {
+      "step": 2,
+      "file": "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/AgeGraphOperations.kt",
+      "change": "Add a private thread-safe label cache: `private val vertexLabelCache = java.util.concurrent.ConcurrentHashMap<String, String>()`. In the existing `createVertex(label, properties)` method (find via ide_find_definition), after the vertex is created, store `vertexLabelCache[createdVertex.id.value] = label`. Also populate inside `findVertexById` results when a lookup succeeds. In `createEdge(fromId, toId, label, properties)`, look up `val fromLbl = vertexLabelCache[fromId.value]` and `val toLbl = vertexLabelCache[toId.value]`, then pass them to `AgeSql.createEdge(graphName, from, to, label, properties, fromLbl, toLbl)`. Cache miss (null) falls back to current unlabeled MATCH — no regression."
+    },
+    {
+      "step": 3,
+      "file": "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt",
+      "change": "Add identical private label cache: `private val vertexLabelCache = java.util.concurrent.ConcurrentHashMap<String, String>()`. Populate it inside `createVertex(...)` after the returned GraphVertex id is known, and inside `findVertexById(...)` on hit. In `createEdge(...)`, build label hints: `val fromLbl = vertexLabelCache[fromId.value]?.let { \":$it\" } ?: \"\"`, `val toLbl = vertexLabelCache[toId.value]?.let { \":$it\" } ?: \"\"`. Change the Cypher to: `$$\"MATCH (a$$fromLbl), (b$$toLbl) WHERE elementId(a) = $fromId AND elementId(b) = $toId \" + $$\"CREATE (a)-[r:$$label$$propsClause]->(b) RETURN r\"`. Validate the label string is a safe identifier (alphanumeric + underscore) before interpolation to prevent Cypher injection; reject or fall back to unlabeled MATCH if invalid."
+    },
+    {
+      "step": 4,
+      "file": "graph/graph-age/src/test/kotlin/io/bluetape4k/graph/age/AgeGraphOperationsTest.kt",
+      "change": "Verify existing createEdge tests still pass (cache hit path). Add one test `createEdge_withCacheMiss_fallsBackToUnlabeledMatch` that constructs a GraphElementId pointing to a pre-existing vertex (bypassing createVertex so the cache is empty) and asserts the edge still gets created correctly. This guards the backward-compatible fallback."
+    },
+    {
+      "step": 5,
+      "file": "graph/graph-neo4j/src/test/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperationsTest.kt",
+      "change": "Mirror step 4: verify existing tests pass and add `createEdge_withCacheMiss_fallsBackToUnlabeledMatch`. Also add `createEdge_rejectsInjectionInCachedLabel` — manually poison the cache with a label like `Foo) CREATE (x:Hacked) MATCH (a:Foo` and assert the code sanitizes/falls back instead of executing the injected Cypher."
+    },
+    {
+      "step": 6,
+      "file": "benchmark/graph-benchmark/src/jmh/kotlin",
+      "change": "Run the existing graph benchmark suite after implementation (./gradlew :graph-benchmark:jmh) and confirm age_createEdge and neo4j_createEdge latency drops. Record before/after results in the round_2 artifacts directory alongside this plan."
+    }
+  ],
+  "expected_outcome": {
+    "metric": "avg_latency_us",
+    "estimated_impact": "30-55% reduction on createEdge ops",
+    "rationale": "Current MATCH (a), (b) performs a full vertex scan for each endpoint — O(V) per createEdge call. Adding :Label hints lets the planner use the label index (Neo4j) or label-filtered scan (AGE), reducing cost to O(|label partition|) or O(log V) when an id-based seek on the labeled subset is available. Neo4j in particular has native label indexing and will rewrite the plan to a NodeByElementIdSeek scoped to the labeled partition, eliminating the AllNodesScan currently observed in EXPLAIN. AGE benefits from filtering the agtype vertex set by label before id() evaluation. The label cache is O(1) lookup and populated on the hot path (createVertex / findVertexById) — memory cost is bounded because tests/benchmarks use a finite vertex set.",
+    "sub_score_expectations": {
+      "age_createEdge": "< 4000 μs (from 8342 μs baseline, target ~52% reduction)",
+      "neo4j_createEdge": "< 1500 μs (from 2876 μs baseline, target ~48% reduction)",
+      "other_ops": "no regression (cache lookup is O(1), cache miss falls back to original query)"
+    }
+  },
+  "history_reference": {
+    "builds_on": "Round 1 winner removed redundant LOAD 'age' calls (optimization family). This round continues the optimization family by targeting the next-largest bottleneck identified in the baseline: createEdge dominates at 8342 μs (AGE) vs ~1400 μs for the next-highest operation, making it a 6x bottleneck. Round 1 addressed transaction-level overhead; round 2 addresses query-plan overhead.",
+    "avoids": "Avoids changing the public GraphEdgeRepository.createEdge interface (Option A in the design) — zero breaking changes for downstream consumers (spring-boot3/spring-boot4 starters, examples modules). Avoids wrapper objects (Option C) which would force GraphVertex allocation at call sites."
+  },
+  "critic_review": {
+    "h001_hypothesis_count": "pass",
+    "h002_family_streak": "pass",
+    "h003_intra_round_diversity": "pass",
+    "schema_valid": "pass",
+    "history_aware": "pass",
+    "verdict": "approved",
+    "rejection_reason": null
+  },
+  "architect_review": {
+    "verdict": "approve",
+    "feedback": "Option B (local label cache) is the least invasive choice. Interface stays stable, cache miss gracefully falls back to original behavior, and label injection is guarded by a sanitizer. Concurrent map is safe for the benchmark's multi-threaded harness.",
+    "structural_concerns": []
+  }
+}

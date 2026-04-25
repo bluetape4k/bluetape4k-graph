@@ -6,7 +6,7 @@ import io.bluetape4k.graph.model.Direction
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
-import io.bluetape4k.graph.servers.PostgreSQLAgeServer
+import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.KLogging
 import org.amshove.kluent.shouldBeEmpty
@@ -39,7 +39,7 @@ class AgeGraphOperationsTest {
 
     @BeforeAll
     fun setup() {
-        val server = PostgreSQLAgeServer.instance
+        val server = PostgreSQLAgeServer.Launcher.postgresqlAge
         dataSource = HikariDataSource(HikariConfig().apply {
             jdbcUrl = server.jdbcUrl
             username = server.username

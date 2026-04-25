@@ -46,7 +46,10 @@ abstract class AbstractCodeGraphTest {
 
 // Neo4j 구현
 class Neo4jCodeGraphTest : AbstractCodeGraphTest() {
-    override val ops = Neo4jGraphOperations(Neo4jServer.instance.driver)
+    private val driver = GraphDatabase.driver(Neo4jServer.Launcher.neo4j.boltUrl, AuthTokens.none())
+    override val ops = Neo4jGraphOperations(driver)
+
+    @AfterAll fun teardown() { driver.close() }
 }
 
 // Memgraph / Apache AGE / TinkerGraph 테스트 클래스도 동일한 패턴

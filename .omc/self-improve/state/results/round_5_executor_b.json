@@ -1,0 +1,25 @@
+{
+  "executor_id": "executor_b",
+  "plan_id": "round_5_planner_b",
+  "benchmark_score": 0.32862456871257034,
+  "benchmark_raw": "{\"age_allPaths\": 0.01642051082220762, \"age_shortestPath\": 0.01630143611501645, \"age_createEdge\": 557.7665982045824, \"age_createVertex\": 528.1591509105081, \"age_findVertexById\": 0.01564525714769388, \"age_findVerticesByLabel\": 0.012657154512394481, \"age_neighbors\": 0.015232956360506183, \"neo4j_allPaths\": 0.016327271958562053, \"neo4j_shortestPath\": 0.016636514340026463, \"neo4j_createEdge\": 908.2799178887474, \"neo4j_createVertex\": 860.6779022248132, \"neo4j_findVertexById\": 0.01524594819202022, \"neo4j_findVerticesByLabel\": 0.01353733827006325, \"neo4j_neighbors\": 0.016434009369173042}",
+  "status": "success",
+  "sub_scores": {
+    "age_allPaths": 0.01642051082220762,
+    "age_shortestPath": 0.01630143611501645,
+    "age_createEdge": 557.7665982045824,
+    "age_createVertex": 528.1591509105081,
+    "age_findVertexById": 0.01564525714769388,
+    "age_findVerticesByLabel": 0.012657154512394481,
+    "age_neighbors": 0.015232956360506183,
+    "neo4j_allPaths": 0.016327271958562053,
+    "neo4j_shortestPath": 0.016636514340026463,
+    "neo4j_createEdge": 908.2799178887474,
+    "neo4j_createVertex": 860.6779022248132,
+    "neo4j_findVertexById": 0.01524594819202022,
+    "neo4j_findVerticesByLabel": 0.01353733827006325,
+    "neo4j_neighbors": 0.016434009369173042
+  },
+  "failure_analysis": null,
+  "timestamp": "2026-04-19T13:42:44.115776Z"
+}

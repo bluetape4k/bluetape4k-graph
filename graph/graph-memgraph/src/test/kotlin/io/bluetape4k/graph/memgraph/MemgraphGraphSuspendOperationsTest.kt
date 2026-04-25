@@ -4,10 +4,10 @@ import io.bluetape4k.graph.model.Direction
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
-import io.bluetape4k.graph.servers.MemgraphServer
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
+import io.bluetape4k.testcontainers.graphdb.MemgraphServer
 import kotlinx.coroutines.flow.toList
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeGreaterOrEqualTo
@@ -24,22 +24,27 @@ import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
+import org.neo4j.driver.AuthTokens
+import org.neo4j.driver.Driver
+import org.neo4j.driver.GraphDatabase
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 class MemgraphGraphSuspendOperationsTest {
 
     companion object: KLoggingChannel()
 
+    private lateinit var driver: Driver
     private lateinit var ops: MemgraphGraphSuspendOperations
 
     @BeforeAll
     fun setup() {
-        ops = MemgraphGraphSuspendOperations(MemgraphServer.driver)
+        driver = GraphDatabase.driver(MemgraphServer.Launcher.memgraph.boltUrl, AuthTokens.none())
+        ops = MemgraphGraphSuspendOperations(driver)
     }
 
     @AfterAll
     fun teardown() {
-        // driver는 MemgraphServer 싱글턴이 소유 — 닫지 않음
+        driver.close()
     }
 
     @BeforeEach

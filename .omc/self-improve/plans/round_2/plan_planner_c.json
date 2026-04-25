@@ -1,0 +1,68 @@
+{
+  "plan_id": "round_2_planner_c",
+  "planner_id": "planner_c",
+  "round": 2,
+  "hypothesis": "Caching the Neo4j SessionConfig as a private val (built once at init) and using explicit READ/WRITE AccessMode should reduce avg_latency_us by 10-20% by eliminating per-call SessionConfig builder allocation and enabling Bolt routing optimization for read ops.",
+  "approach_family": "architecture",
+  "critic_approved": true,
+  "target_files": [
+    "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt",
+    "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphSuspendOperations.kt"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "file": "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt",
+      "change": "Import org.neo4j.driver.AccessMode. Replace the per-call session() helper with two cached SessionConfig fields built once at class init: `private val readSessionConfig = SessionConfig.builder().withDatabase(database).withDefaultAccessMode(AccessMode.READ).build()` and `private val writeSessionConfig = SessionConfig.builder().withDatabase(database).withDefaultAccessMode(AccessMode.WRITE).build()`. Add two helpers: `private fun readSession(): Session = driver.session(readSessionConfig)` and `private fun writeSession(): Session = driver.session(writeSessionConfig)`."
+    },
+    {
+      "step": 2,
+      "file": "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt",
+      "change": "Split `runQuery` into `runReadQuery` (uses readSession()) and `runWriteQuery` (uses writeSession()). Route read-only methods (findVertexById, findVerticesByLabel, findEdgesByLabel, countVertices, graphExists, neighbors, shortestPath, traversal BFS/DFS, pageRank, components, cycles, degrees) through readSession/runReadQuery. Route mutating methods (createVertex, updateVertex, deleteVertex, createEdge, deleteEdge, dropGraph) through writeSession/runWriteQuery. Keep the public API unchanged."
+    },
+    {
+      "step": 3,
+      "file": "graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphSuspendOperations.kt",
+      "change": "Apply the same refactor to the Suspend variant. Cache `readSessionConfig` and `writeSessionConfig` as private vals with `AccessMode.READ` and `AccessMode.WRITE` respectively. Provide `readSession()` and `writeSession()` factory helpers returning ReactiveSession. Split runQuery/flowQuery into read/write variants and route each override accordingly. Preserve the existing NonCancellable close semantics."
+    },
+    {
+      "step": 4,
+      "file": "graph/graph-neo4j/src/test/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperationsTest.kt",
+      "change": "Run the existing Neo4j sync and suspend test suites (and LinkedIn/code-graph example tests that target Neo4j) to confirm the read/write session routing does not alter observable behavior. No test changes are expected; this step only verifies correctness of the refactor via `./gradlew :graph-neo4j:test` and `./gradlew :code-graph-examples:test --tests '*Neo4j*'`."
+    },
+    {
+      "step": 5,
+      "file": "benchmark/graph-benchmark/src/jmh/kotlin/io/bluetape4k/graph/benchmark/Neo4jOperationsBenchmark.kt",
+      "change": "Run the existing Neo4j JMH benchmarks (Sync + VirtualThread + Suspend) before and after the change with the same dataset size to capture avg_latency_us. Record baseline vs optimized numbers in the round_2 results artifact. No code changes to the benchmark class unless a new benchmark method is needed to isolate read-heavy workloads."
+    }
+  ],
+  "expected_outcome": {
+    "metric": "avg_latency_us",
+    "estimated_impact": "10-20% reduction",
+    "rationale": "Every session() call currently allocates a fresh SessionConfig via the builder (object allocation + immutable copy). Moving to two cached SessionConfig instances removes this per-operation allocation. More importantly, setting AccessMode.READ on read sessions allows the Bolt driver to skip leader routing and use a reader server directly (in clustered deployments) and also enables Neo4j server-side to route queries to read replicas, lowering latency. On a single-instance test container the gain comes primarily from builder allocation removal and reduced GC pressure during benchmark hot loops; the routing benefit is latent but becomes significant in production topologies.",
+    "sub_score_expectations": {
+      "avg_latency_us": "reduce by 10-20% across findVertexById / findVerticesByLabel / neighbors",
+      "allocation_rate": "reduced due to elimination of per-call SessionConfig builder + immutable config object",
+      "throughput_ops_per_sec": "small increase (3-8%) proportional to latency reduction",
+      "correctness": "unchanged — all existing tests must pass"
+    }
+  },
+  "history_reference": {
+    "builds_on": "Round 1 planner_c (Neo4j ReactiveSession refactor) passed all tests — this is a complementary optimization that reuses the session-lifecycle pattern already validated and layers SessionConfig caching + AccessMode routing on top of it.",
+    "avoids": "none"
+  },
+  "critic_review": {
+    "h001_hypothesis_count": "pass",
+    "h002_family_streak": "pass",
+    "h003_intra_round_diversity": "pass",
+    "schema_valid": "pass",
+    "history_aware": "pass",
+    "verdict": "approved",
+    "rejection_reason": null
+  },
+  "architect_review": {
+    "verdict": "approve",
+    "feedback": "Cached SessionConfig + explicit AccessMode is a well-known Neo4j driver optimization. Refactor is local to two files, preserves the public GraphOperations/GraphSuspendOperations contract, and keeps session lifecycle semantics intact. Low structural risk.",
+    "structural_concerns": []
+  }
+}

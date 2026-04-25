@@ -12,7 +12,7 @@ object Plugins {
         const val protobuf = "0.9.5"    // https://mvnrepository.com/artifact/com.google.protobuf/protobuf-gradle-plugin
         const val avro = "1.9.1"  // https://mvnrepository.com/artifact/com.github.davidmc24.gradle.plugin.avro/com.github.davidmc24.gradle.plugin.avro.gradle.plugin
 
-        const val jacoco = "0.8.11"
+        const val kover = "0.9.8"   // https://github.com/Kotlin/kotlinx-kover/releases
         const val jarTest = "1.0.1"
         const val testLogger = "4.0.0"
         const val shadow = "9.2.2"      // https://plugins.gradle.org/plugin/com.gradleup.shadow
@@ -67,6 +67,9 @@ object Plugins {
     const val kosogor = "tanvd.kosogor" // https://plugins.gradle.org/plugin/tanvd.kosogor
     const val nmcp = "com.gradleup.nmcp"  // https://mvnrepository.com/artifact/com.gradleup.nmcp/nmcp
     const val nmcp_aggregation = "com.gradleup.nmcp.aggregation"
+
+    // https://github.com/Kotlin/kotlinx-kover — Kotlin code coverage (inline/suspend 정확 지원)
+    const val kover = "org.jetbrains.kotlinx.kover"
 }
 
 object Versions {
@@ -1395,6 +1398,9 @@ object Libs {
     const val neo4j_bolt_connection_netty = "org.neo4j.bolt:neo4j-bolt-connection-netty:${Versions.neo4j_bolt_connection}"
     const val neo4j_bolt_connection_pooled = "org.neo4j.bolt:neo4j-bolt-connection-pooled:${Versions.neo4j_bolt_connection}"
     const val neo4j_bolt_connection_routed = "org.neo4j.bolt:neo4j-bolt-connection-route:${Versions.neo4j_bolt_connection}"
+
+    // FalkorDB - https://mvnrepository.com/artifact/com.falkordb/jfalkordb
+    const val jfalkordb = "com.falkordb:jfalkordb:0.7.0"
 
     // Apache TinkerPop (Gremlin) - https://mvnrepository.com/artifact/org.apache.tinkerpop
     const val tinkerpop_gremlin_core = "org.apache.tinkerpop:gremlin-core:3.7.3"

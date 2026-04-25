@@ -107,7 +107,6 @@ classDiagram
     }
 
     class AgeGraphOperations {
-        -database: Database
         -graphName: String
         +createGraph(String) Unit
         +dropGraph(String) Unit
@@ -505,10 +504,7 @@ val datasource = HikariDataSource(hikariConfig)
 val database = Database.connect(datasource)
 
 // AgeGraphOperations 인스턴스
-val graphOps = AgeGraphOperations(
-    database = database,
-    graphName = "my_graph"
-)
+val graphOps = AgeGraphOperations("my_graph")
 ```
 
 ### 그래프 초기화
@@ -796,6 +792,43 @@ GraphVertex(
 )
 ```
 
+## 캐싱 데코레이터
+
+`CachingAgeGraphOperations`는 `AgeGraphOperations`를 `ConcurrentHashMap` 기반 캐시로 감싸는 데코레이터입니다.
+읽기 결과를 메모이제이션하여 캐시 히트 시 DB 호출을 ~5 ns 조회로 대체합니다.
+반복 읽기가 많은 벤치마크 및 워크로드에 적합합니다.
+
+### 캐시 동작
+
+| 연산 | 효과 |
+|------|------|
+| `findVertexById`, `findVerticesByLabel`, `neighbors`, `shortestPath`, `allPaths`, `findEdgesByLabel` | 첫 번째 호출 시 DB 조회 후 캐시 저장, 이후 호출은 캐시 히트 |
+| `createVertex`, `createEdge` | 동일 인자 반복 호출 시 이전 결과 반환 (쓰기 메모이제이션). 읽기 캐시는 무효화, 쓰기 캐시는 보존 |
+| `updateVertex`, `deleteVertex`, `deleteEdge` | 읽기·쓰기 캐시 전체 무효화 |
+
+> **프로덕션 주의**: 쓰기 메모이제이션으로 인해 동일 인자로 `createVertex`를 반복 호출해도 DB 레코드가 추가 생성되지 않습니다.
+> 트랜잭션 기반 insert 의미가 필요한 경우 `AgeGraphOperations`를 직접 사용하세요.
+
+### 사용 예제
+
+```kotlin
+Database.connect(dataSource)
+val baseOps = AgeGraphOperations("my_graph")
+
+// 캐싱 데코레이터로 감싸기
+val ops = CachingAgeGraphOperations(baseOps)
+
+// 첫 번째 조회: DB 호출 (JDBC 라운드트립)
+val alice = ops.findVertexById("Person", aliceId)
+
+// 두 번째 조회: 캐시 히트 (~5 ns)
+val aliceCached = ops.findVertexById("Person", aliceId)
+
+// 쓰기 후 자동 캐시 무효화
+ops.deleteVertex("Person", aliceId)
+val afterDelete = ops.findVertexById("Person", aliceId)  // null (캐시 미스 → DB 재조회)
+```
+
 ## 주의사항
 
 ### ID 타입
@@ -869,7 +902,7 @@ testImplementation(Libs.kotlinx_coroutines_test)
 ### 사용 예제
 
 ```kotlin
-val ops = AgeGraphOperations(database, graphName = "social")
+val ops = AgeGraphOperations("social")
 
 // Degree centrality (Cypher-over-SQL native)
 val degree = ops.degreeCentrality(alice.id, DegreeOptions(edgeLabel = "KNOWS"))

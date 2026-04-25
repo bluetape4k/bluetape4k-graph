@@ -1,0 +1,70 @@
+{
+  "plan_id": "round_1_planner_a",
+  "planner_id": "planner_a",
+  "round": 1,
+  "hypothesis": "Removing the redundant LOAD 'age' + SET search_path calls from every AGE transaction should reduce avg_latency_us by 25-40% because these 2 SQL round-trips are already handled by HikariCP connectionInitSql.",
+  "approach_family": "optimization",
+  "critic_approved": true,
+  "target_files": [
+    "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/JdbcTransactionExtensions.kt",
+    "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/AgeGraphOperations.kt",
+    "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/AgeGraphSuspendOperations.kt"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "file": "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/JdbcTransactionExtensions.kt",
+      "change": "Make `fun JdbcTransaction.loadAgeAndSetSearchPath()` a no-op. Keep the function signature for ABI/source compatibility but remove the two statement invocations `AgeSql.loadAge()` and `AgeSql.setSearchPath()` from the body so the function body becomes empty. Annotate it with `@Deprecated(message = \"No-op: AGE load and search_path are handled by HikariCP connectionInitSql. Remove calls to this function.\", level = DeprecationLevel.WARNING)` and update the KDoc to state that the connection already has AGE loaded + search_path set via HikariCP connectionInitSql, so calling this per-transaction was duplicating work. Do NOT delete the function — callers in AgeGraphOperations / AgeGraphSuspendOperations still invoke it, and external user code may too. Remove the now-unused `AgeSql` import if it is no longer referenced in the file."
+    },
+    {
+      "step": 2,
+      "file": "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/AgeGraphOperations.kt",
+      "change": "Remove every `loadAgeAndSetSearchPath()` invocation inside each `transaction { ... }` block throughout the file. Use Grep to enumerate all occurrences (expected in createGraph, dropGraph, graphExists, createVertex, getVertex, updateVertex, deleteVertex, createEdge, getEdge, updateEdge, deleteEdge, findVerticesByLabel, findEdgesByLabel, neighbors, degree, shortestPath, allPaths, bfs, dfs, connectedComponents, detectCycles, pageRank, executeCypher, and any other transaction blocks). Delete only the single-line call; leave the surrounding `transaction { ... }` body structure and all other SQL untouched. Update the class-level KDoc to state that AGE initialization MUST be provided by HikariCP connectionInitSql = \"LOAD 'age'; SET search_path = ag_catalog, \\\"$user\\\", public;\" — this is now a hard prerequisite, not optional."
+    },
+    {
+      "step": 3,
+      "file": "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/AgeGraphSuspendOperations.kt",
+      "change": "Mirror step 2 for the suspend variant: remove every `loadAgeAndSetSearchPath()` invocation inside each `newSuspendedTransaction { ... }` block across all suspend/Flow methods (createGraph, dropGraph, graphExists, createVertex, getVertex, updateVertex, deleteVertex, createEdge, getEdge, updateEdge, deleteEdge, and all Flow-returning query/traversal methods). Leave the `newSuspendedTransaction` block structure unchanged. Update the class-level KDoc identically to step 2 to document that HikariCP connectionInitSql is now the required initialization path."
+    },
+    {
+      "step": 4,
+      "file": "graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/JdbcTransactionExtensions.kt",
+      "change": "Final verification pass: confirm that the no-op function still compiles cleanly and has no remaining invocation of AgeSql.loadAge() or AgeSql.setSearchPath(). Ensure imports in the file are cleaned up. Run `./gradlew :graph-age:compileKotlin :graph-age:test --tests '*' -x detekt` to validate compilation and that the existing graph-age integration tests still pass against the Testcontainers PostgreSQLAgeServer (which uses HikariCP connectionInitSql)."
+    }
+  ],
+  "expected_outcome": {
+    "metric": "avg_latency_us",
+    "estimated_impact": "25-40% reduction",
+    "rationale": "Each AGE graph operation previously issued 3 JDBC round-trips per transaction: (1) LOAD 'age', (2) SET search_path, (3) the actual Cypher/SQL statement. HikariCP's connectionInitSql already performs (1) and (2) once per physical connection at pool init time. Removing the redundant per-transaction calls drops the round-trip count from 3 to 1 for single-statement operations — a 66 percent reduction in JDBC network round-trips per op. Observed end-to-end latency reduction should land in the 25-40 percent range (not 66 percent) because server-side query execution time, result parsing, and Exposed framework overhead are unchanged; only the JDBC-layer round-trip wait time shrinks.",
+    "sub_score_expectations": {
+      "age_single_vertex_create_latency_us": "30-40% reduction (most round-trip-dominated)",
+      "age_bulk_query_latency_us": "15-25% reduction (server-side execution dominates)",
+      "age_throughput_ops_per_sec": "20-35% increase",
+      "neo4j_latency_us": "no change (unaffected baseline)",
+      "memgraph_latency_us": "no change (unaffected baseline)",
+      "tinkergraph_latency_us": "no change (unaffected baseline)"
+    }
+  },
+  "history_reference": {
+    "builds_on": "none",
+    "avoids": "none"
+  },
+  "critic_review": {
+    "h001_hypothesis_count": "pass",
+    "h002_family_streak": "pass",
+    "h003_intra_round_diversity": "pass",
+    "schema_valid": "pass",
+    "history_aware": "pass",
+    "verdict": "approved",
+    "rejection_reason": null
+  },
+  "architect_review": {
+    "verdict": "approve",
+    "feedback": "Surgical optimization with clear round-trip math. Risk surface is bounded because HikariCP connectionInitSql is already the documented setup path (AgeGraphOperations.kt KDoc lines 39 and 48, and AgeBenchmarkState.kt:50). Keeping loadAgeAndSetSearchPath as a deprecated no-op preserves source compatibility for any external callers. Executor should verify via integration tests (Testcontainers PostgreSQLAgeServer) that Cypher queries still succeed after removal.",
+    "structural_concerns": [
+      "Verify AgeBenchmarkState actually sets HikariCP connectionInitSql before measuring — if not, the hypothesis math collapses.",
+      "Any test or user fixture that uses raw Exposed Database.connect() WITHOUT HikariCP connectionInitSql will break. Audit test setup to confirm all test fixtures use the HikariCP path, or add connectionInitSql to raw JDBC test fixtures.",
+      "Keep loadAgeAndSetSearchPath as a callable no-op rather than deleting it to avoid breaking downstream consumers of the graph-age artifact."
+    ]
+  }
+}

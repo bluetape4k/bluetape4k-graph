@@ -44,7 +44,20 @@ graph/
   graph-neo4j/      # Neo4j Java Driver 기반 구현
   graph-memgraph/   # Memgraph (Neo4j 프로토콜 호환) 구현
   graph-tinkerpop/  # Apache TinkerPop/Gremlin 구현
-  graph-servers/    # 테스트용 Testcontainers 서버 팩토리 (Neo4j, Memgraph, PostgreSQL+AGE)
+  graph-falkordb/   # FalkorDB (Redis 기반) 구현 — jfalkordb 0.7.0
+graph-io/
+  core/             # 공유 계약·모델·옵션·헬퍼 (GraphIoPaths: Buffered I/O)
+  csv/              # CSV 벌크 임포트/익스포트 × Sync/VT/Suspend
+  jackson2/         # Jackson 2.x NDJSON × Sync/VT/Suspend
+  jackson3/         # Jackson 3.x NDJSON × Sync/VT/Suspend (Jackson2 호환)
+  graphml/          # GraphML XML/StAX × Sync/VT/Suspend (XMLFactory 싱글턴 캐싱)
+benchmark/
+  graph-benchmark/    # JMH — Sync vs VirtualThread 그래프 연산
+  graph-io-benchmark/ # JMH — CSV/NDJSON/GraphML 벌크 I/O (36 벤치마크)
+spring-boot3/
+  graph-spring-boot3-starter/ # Spring Boot 3.5.x AutoConfiguration
+spring-boot4/
+  graph-spring-boot4-starter/ # Spring Boot 4.0.x AutoConfiguration
 examples/
   code-graph-examples/     # 코드 의존성 그래프 예시 (AGE, Neo4j, Memgraph, TinkerGraph 통합)
   linkedin-graph-examples/ # LinkedIn 소셜 그래프 예시 (AGE, Neo4j, Memgraph, TinkerGraph 통합)
@@ -57,16 +70,19 @@ examples/
 ```kotlin
 // 구체 클래스는 ops와 서버 라이프사이클만 구현
 class Neo4jCodeGraphTest : AbstractCodeGraphTest() {
-    override val ops = Neo4jGraphOperations(Neo4jServer.instance.driver)
+    private val driver = GraphDatabase.driver(Neo4jServer.Launcher.neo4j.boltUrl, AuthTokens.none())
+    override val ops = Neo4jGraphOperations(driver)
+
+    @AfterAll fun teardown() { driver.close() }
 }
 ```
 
 | 추상 클래스 | 구체 클래스 |
 |------------|------------|
-| `AbstractCodeGraphTest` | `Neo4j/Memgraph/TinkerGraph/AgeCodeGraphTest` |
-| `AbstractCodeGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/AgeCodeGraphSuspendTest` |
-| `AbstractLinkedInGraphTest` | `Neo4j/Memgraph/TinkerGraph/AgeLinkedInGraphTest` |
-| `AbstractLinkedInGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/AgeLinkedInGraphSuspendTest` |
+| `AbstractCodeGraphTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBCodeGraphTest` |
+| `AbstractCodeGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBCodeGraphSuspendTest` |
+| `AbstractLinkedInGraphTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBLinkedInGraphTest` |
+| `AbstractLinkedInGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBLinkedInGraphSuspendTest` |
 
 ## Architecture
 
@@ -102,18 +118,21 @@ object PersonLabel : VertexLabel("Person") {
 | `graph-memgraph` | Neo4j Java Driver (호환) | Cypher |
 | `graph-age` | PostgreSQL JDBC + Exposed | Cypher-over-SQL (AGE) |
 | `graph-tinkerpop` | TinkerGraph (인메모리) | Gremlin |
+| `graph-falkordb` | jfalkordb 0.7.0 (Jedis 기반) | openCypher (FalkorDB 부분집합) |
 
 ### 테스트 패턴
 
-모든 통합 테스트는 `graph-servers`의 Testcontainers 싱글턴을 사용한다.
+모든 통합 테스트는 `bluetape4k-testcontainers`의 `io.bluetape4k.testcontainers.graphdb` 패키지 Testcontainers 싱글턴(`Launcher` 서브 오브젝트)을 사용한다.
 
 ```kotlin
 // 공유 컨테이너 (테스트 간 재사용)
-val driver = GraphDatabase.driver(Neo4jServer.boltUrl, AuthTokens.none())
+import io.bluetape4k.testcontainers.graphdb.Neo4jServer
+
+val driver = GraphDatabase.driver(Neo4jServer.Launcher.neo4j.boltUrl, AuthTokens.none())
 val ops = Neo4jGraphOperations(driver)
 ```
 
-테스트는 `@TestInstance(PER_CLASS)` + `@BeforeAll`/`@AfterAll`로 컨테이너 라이프사이클을 관리한다.
+테스트는 `@TestInstance(PER_CLASS)` + `@BeforeAll`/`@AfterAll`로 컨테이너 라이프사이클을 관리한다. Memgraph의 경우 각 테스트 클래스가 직접 `Driver`를 생성하고 `@AfterAll`에서 닫아준다.
 
 ## Key Conventions
 

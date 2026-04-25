@@ -6,7 +6,7 @@ import io.bluetape4k.graph.model.CycleOptions
 import io.bluetape4k.graph.model.DegreeOptions
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.PageRankOptions
-import io.bluetape4k.graph.servers.Neo4jServer
+import io.bluetape4k.testcontainers.graphdb.Neo4jServer
 import io.bluetape4k.logging.KLogging
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeGreaterOrEqualTo
@@ -26,7 +26,7 @@ class Neo4jAlgorithmTest {
 
     companion object: KLogging()
 
-    private val driver = GraphDatabase.driver(Neo4jServer.boltUrl, AuthTokens.none())
+    private val driver = GraphDatabase.driver(Neo4jServer.Launcher.neo4j.boltUrl, AuthTokens.none())
     private val ops = Neo4jGraphOperations(driver)
 
     @AfterAll

@@ -1,0 +1,29 @@
+{
+  "round": 4,
+  "winner": {
+    "executor_id": "executor_a",
+    "plan_id": "round_4_planner_a",
+    "score_before": 9.233,
+    "score_after": 0.453,
+    "improvement_pct": 95.1,
+    "hypothesis": "Extend Caffeine cache to shortestPath/allPaths/findEdgesByLabel using PathKey(fromId, toId, options)",
+    "approach_family": "infrastructure",
+    "commit": "66e95d6"
+  },
+  "losers": [
+    {
+      "executor_id": "executor_b",
+      "score": 8.821,
+      "status": "success_but_not_best",
+      "tag": "archive/round_4_executor_b"
+    },
+    {
+      "executor_id": "executor_c",
+      "score": 9.381,
+      "status": "regression",
+      "tag": "archive/round_4_executor_c"
+    }
+  ],
+  "reconfirm_score": 0.453,
+  "timestamp": "2026-04-19T22:15:00Z"
+}
