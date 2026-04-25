@@ -2,7 +2,7 @@ name: Nightly
 
 on:
   schedule:
-    - cron: '0 2 * * *'   # 매일 UTC 02:00 (KST 11:00)
+    - cron: '0 19 * * *'  # 매일 UTC 19:00 (KST 04:00)
   workflow_dispatch:       # 수동 실행 가능
 
 env:
