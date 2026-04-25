@@ -257,6 +257,8 @@ object Libs {
     val bluetape4k_logging = bluetape4k("logging")
     val bluetape4k_junit5 = bluetape4k("junit5")
     val bluetape4k_testcontainers = bluetape4k("testcontainers")
+    val bluetape4k_mock_web_server = bluetape4k("mock-web-server")
+    val bluetape4k_mock_webflux_server = bluetape4k("mock-webflux-server")
 
     // Virtual Thread
     val bluetape4k_virtualthread_api = bluetape4k("virtualthread-api")
@@ -265,7 +267,6 @@ object Libs {
 
     // IO
     val bluetape4k_avro = bluetape4k("avro")
-    val bluetape4k_crypto = bluetape4k("crypto")
     val bluetape4k_csv = bluetape4k("csv")
     val bluetape4k_fastjson2 = bluetape4k("fastjson2")
     val bluetape4k_feign = bluetape4k("feign")
@@ -295,7 +296,6 @@ object Libs {
     val bluetape4k_exposed_fastjson2 = bluetape4k("exposed-fastjson2")
     val bluetape4k_exposed_jackson2 = bluetape4k("exposed-jackson2")
     val bluetape4k_exposed_jackson3 = bluetape4k("exposed-jackson3")
-    val bluetape4k_exposed_jasypt = bluetape4k("exposed-jasypt")
     val bluetape4k_exposed_jdbc_caffeine = bluetape4k("exposed-jdbc-caffeine")
     val bluetape4k_exposed_jdbc_lettuce = bluetape4k("exposed-jdbc-lettuce")
     val bluetape4k_exposed_jdbc_redisson = bluetape4k("exposed-jdbc-redisson")
@@ -368,6 +368,7 @@ object Libs {
     val bluetape4k_javatimes = bluetape4k("javatimes")
     val bluetape4k_jwt = bluetape4k("jwt")
     val bluetape4k_leader = bluetape4k("leader")
+    val bluetape4k_lingua = bluetape4k("lingua")
     val bluetape4k_math = bluetape4k("math")
     val bluetape4k_measured = bluetape4k("measured")
     val bluetape4k_money = bluetape4k("money")
