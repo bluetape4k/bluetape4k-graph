@@ -3,10 +3,18 @@ package io.bluetape4k.graph.io.csv
 import io.bluetape4k.support.requireNotBlank
 import java.io.Serializable
 
-/** CSV 속성 컬럼 표현 방식을 지정하는 sealed 인터페이스. */
+/**
+ * CSV 속성 컬럼 표현 방식을 지정하는 sealed 인터페이스.
+ *
+ * | 구현체 | 컬럼 구조 예시 |
+ * |---|---|
+ * | [PrefixedColumns] | `id, label, prop.name, prop.age` |
+ * | [RawJsonColumn] | `id, label, properties` (JSON 문자열) |
+ * | [None] | `id, label` (속성 없음) |
+ */
 sealed interface CsvPropertyMode {
 
-    /** 속성 컬럼을 아예 포함하지 않는다. */
+    /** 속성 컬럼을 아예 포함하지 않는다. `id, label` 컬럼만 생성된다. */
     data object None : CsvPropertyMode, Serializable {
         private const val serialVersionUID: Long = 1L
     }

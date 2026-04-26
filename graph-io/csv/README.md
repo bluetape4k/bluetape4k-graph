@@ -122,6 +122,102 @@ val report = runBlocking {
 println("Exported ${report.verticesWritten} vertices and ${report.edgesWritten} edges")
 ```
 
+## Import
+
+CSV 파일에서 그래프를 임포트합니다. 정점과 간선 CSV 파일은 각각 별도의 파일로 제공해야 합니다.
+
+### Synchronous Import
+
+```kotlin
+import io.bluetape4k.graph.io.csv.CsvGraphBulkImporter
+import io.bluetape4k.graph.io.csv.CsvGraphImportSource
+import io.bluetape4k.graph.io.options.DuplicateVertexPolicy
+import io.bluetape4k.graph.io.options.GraphImportOptions
+import io.bluetape4k.graph.io.options.MissingEndpointPolicy
+import io.bluetape4k.graph.io.source.GraphImportSource
+import java.nio.file.Paths
+
+val importer = CsvGraphBulkImporter()
+
+val source = CsvGraphImportSource(
+    vertices = GraphImportSource.PathSource(Paths.get("vertices.csv")),
+    edges    = GraphImportSource.PathSource(Paths.get("edges.csv")),
+)
+
+val options = GraphImportOptions(
+    defaultVertexLabel    = "Node",
+    onDuplicateVertexId   = DuplicateVertexPolicy.SKIP,   // 중복 정점 건너뜀
+    onMissingEdgeEndpoint = MissingEndpointPolicy.SKIP_EDGE, // 끝점 없는 간선 건너뜀
+)
+
+val report = importer.importGraph(source, graphOps, options)
+println("Imported ${report.verticesCreated}/${report.verticesRead} vertices, " +
+        "${report.edgesCreated}/${report.edgesRead} edges — ${report.status}")
+```
+
+### Import CSV File Format
+
+정점 CSV 파일:
+
+```csv
+id,label,prop.name,prop.age
+v1,Person,Alice,30
+v2,Person,Bob,25
+```
+
+간선 CSV 파일:
+
+```csv
+id,label,from,to,prop.since
+,KNOWS,v1,v2,2024
+```
+
+### Import Options
+
+| 옵션 | 타입 | 기본값 | 설명 |
+|------|------|--------|------|
+| `defaultVertexLabel` | `String` | `"Vertex"` | `label` 컬럼이 비어있을 때 사용하는 기본 레이블 |
+| `defaultEdgeLabel` | `String` | `"Edge"` | `label` 컬럼이 비어있을 때 사용하는 기본 레이블 |
+| `onDuplicateVertexId` | `DuplicateVertexPolicy` | `FAIL` | 중복 정점 ID 처리: `FAIL` (즉시 실패) 또는 `SKIP` (건너뜀) |
+| `onMissingEdgeEndpoint` | `MissingEndpointPolicy` | `FAIL` | 끝점 없는 간선 처리: `FAIL` (즉시 실패) 또는 `SKIP_EDGE` (건너뜀) |
+| `preserveExternalIdProperty` | `String?` | `null` | 외부 ID를 속성으로 보존할 키 이름 (예: `"_externalId"`) |
+
+### Import Report
+
+임포트 결과에서 통계와 실패 목록을 확인할 수 있습니다:
+
+```kotlin
+val report = importer.importGraph(source, graphOps, options)
+
+println("Status: ${report.status}")              // COMPLETED, PARTIAL, FAILED
+println("Vertices: ${report.verticesCreated}/${report.verticesRead}")
+println("Edges: ${report.edgesCreated}/${report.edgesRead}")
+println("Skipped vertices: ${report.skippedVertices}")
+println("Skipped edges: ${report.skippedEdges}")
+println("Duration: ${report.elapsed.toMillis()}ms")
+
+report.failures.forEach { failure ->
+    println("[${failure.severity}][${failure.phase}] ${failure.message}")
+}
+```
+
+### Virtual Thread Import
+
+```kotlin
+val importer = CsvGraphVirtualThreadBulkImporter()
+val future = importer.importGraphAsync(source, graphOps, options)
+val report = future.get()
+```
+
+### Coroutine-Based Import (Suspend)
+
+```kotlin
+val importer = SuspendCsvGraphBulkImporter()
+val report = coroutineScope {
+    importer.importGraphSuspending(source, suspendGraphOps, options)
+}
+```
+
 ## Configuration
 
 ### Property Modes

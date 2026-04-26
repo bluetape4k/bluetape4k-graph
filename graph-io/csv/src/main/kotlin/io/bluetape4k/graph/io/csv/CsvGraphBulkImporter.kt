@@ -22,7 +22,23 @@ import io.bluetape4k.logging.warn
 
 /**
  * CSV 동기 벌크 임포터.
- * 정점 파일을 모두 읽어 외부ID-백엔드ID 맵을 구축한 뒤, 엣지 파일을 처리한다.
+ *
+ * 정점 CSV 파일을 전부 읽어 외부ID→백엔드ID 맵을 구축한 뒤, 간선 CSV 파일을 처리하는 2-패스 방식으로 동작한다.
+ * 중복 정점 ID 및 누락된 간선 끝점 처리 정책은 [GraphImportOptions]로 제어한다.
+ *
+ * ```kotlin
+ * val importer = CsvGraphBulkImporter()
+ * val source = CsvGraphImportSource(
+ *     vertices = GraphImportSource.PathSource(Paths.get("vertices.csv")),
+ *     edges    = GraphImportSource.PathSource(Paths.get("edges.csv")),
+ * )
+ * val options = GraphImportOptions(
+ *     onDuplicateVertexId   = DuplicateVertexPolicy.SKIP,
+ *     onMissingEdgeEndpoint = MissingEndpointPolicy.SKIP_EDGE,
+ * )
+ * val report = importer.importGraph(source, graphOps, options)
+ * println("imported ${report.verticesCreated} vertices, ${report.edgesCreated} edges — ${report.status}")
+ * ```
  */
 class CsvGraphBulkImporter : GraphBulkImporter<CsvGraphImportSource> {
 

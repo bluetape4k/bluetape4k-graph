@@ -21,7 +21,21 @@ import kotlinx.coroutines.withContext
 
 /**
  * CSV 코루틴(suspend) 벌크 익스포터.
+ *
  * suspend 방식으로 정점과 간선을 Flow로 수집하여 CSV 파일로 저장한다.
+ * `Dispatchers.IO`에서 실행되며 Kotlin 코루틴 구조적 동시성을 활용한다.
+ *
+ * ```kotlin
+ * val exporter = SuspendCsvGraphBulkExporter()
+ * val sink = CsvGraphExportSink(
+ *     vertices = GraphExportSink.PathSink(Paths.get("vertices.csv")),
+ *     edges    = GraphExportSink.PathSink(Paths.get("edges.csv")),
+ * )
+ * val report = coroutineScope {
+ *     exporter.exportGraphSuspending(sink, suspendOps, GraphExportOptions(vertexLabels = setOf("Person")))
+ * }
+ * println("exported ${report.verticesWritten} vertices — ${report.status}")
+ * ```
  */
 class SuspendCsvGraphBulkExporter : GraphSuspendBulkExporter<CsvGraphExportSink> {
 

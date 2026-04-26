@@ -9,7 +9,23 @@ import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
 import java.util.concurrent.CompletableFuture
 
-/** CSV Virtual Thread 기반 익스포터. Sync 익스포터를 VT Future로 감싼다. */
+/**
+ * CSV Virtual Thread 기반 익스포터.
+ *
+ * [CsvGraphBulkExporter]를 Java Virtual Thread 위에서 비동기로 실행한다.
+ * `CompletableFuture`를 통해 논블로킹 방식으로 결과를 받을 수 있다.
+ *
+ * ```kotlin
+ * val exporter = CsvGraphVirtualThreadBulkExporter()
+ * val sink = CsvGraphExportSink(
+ *     vertices = GraphExportSink.PathSink(Paths.get("vertices.csv")),
+ *     edges    = GraphExportSink.PathSink(Paths.get("edges.csv")),
+ * )
+ * val future = exporter.exportGraphAsync(sink, graphOps, GraphExportOptions(vertexLabels = setOf("Person")))
+ * val report = future.get()  // 완료 대기
+ * println("exported ${report.verticesWritten} vertices — ${report.status}")
+ * ```
+ */
 class CsvGraphVirtualThreadBulkExporter(
     private val sync: CsvGraphBulkExporter = CsvGraphBulkExporter(),
 ) : GraphVirtualThreadBulkExporter<CsvGraphExportSink> {
