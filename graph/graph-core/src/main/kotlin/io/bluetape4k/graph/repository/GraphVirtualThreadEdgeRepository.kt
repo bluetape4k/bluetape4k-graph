@@ -24,5 +24,15 @@ interface GraphVirtualThreadEdgeRepository {
         filter: Map<String, Any?> = emptyMap(),
     ): CompletableFuture<List<GraphEdge>>
 
+    fun findEdgesByStartIdAsync(
+        startId: GraphElementId,
+        edgeLabel: String? = null,
+    ): CompletableFuture<List<GraphEdge>>
+
+    fun findEdgesByEndIdAsync(
+        endId: GraphElementId,
+        edgeLabel: String? = null,
+    ): CompletableFuture<List<GraphEdge>>
+
     fun deleteEdgeAsync(label: String, id: GraphElementId): CompletableFuture<Boolean>
 }

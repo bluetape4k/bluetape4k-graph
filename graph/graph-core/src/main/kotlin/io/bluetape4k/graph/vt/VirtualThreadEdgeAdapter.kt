@@ -35,6 +35,18 @@ class VirtualThreadEdgeAdapter(
     ): CompletableFuture<List<GraphEdge>> =
         virtualFutureOf { delegate.findEdgesByLabel(label, filter) }
 
+    override fun findEdgesByStartIdAsync(
+        startId: GraphElementId,
+        edgeLabel: String?,
+    ): CompletableFuture<List<GraphEdge>> =
+        virtualFutureOf { delegate.findEdgesByStartId(startId, edgeLabel) }
+
+    override fun findEdgesByEndIdAsync(
+        endId: GraphElementId,
+        edgeLabel: String?,
+    ): CompletableFuture<List<GraphEdge>> =
+        virtualFutureOf { delegate.findEdgesByEndId(endId, edgeLabel) }
+
     override fun deleteEdgeAsync(label: String, id: GraphElementId): CompletableFuture<Boolean> =
         virtualFutureOf { delegate.deleteEdge(label, id) }
 }

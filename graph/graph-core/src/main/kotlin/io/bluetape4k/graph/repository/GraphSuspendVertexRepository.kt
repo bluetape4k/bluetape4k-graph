@@ -49,6 +49,18 @@ interface GraphSuspendVertexRepository {
     suspend fun findVertexById(label: String, id: GraphElementId): GraphVertex?
 
     /**
+     * 레이블 없이 ID로 단일 정점을 조회한다.
+     *
+     * ```kotlin
+     * val found = ops.findVertexById(vertex.id)
+     * ```
+     *
+     * @param id 조회할 정점 ID.
+     * @return 존재하면 [GraphVertex], 없으면 `null`.
+     */
+    suspend fun findVertexById(id: GraphElementId): GraphVertex?
+
+    /**
      * 레이블과 속성 필터로 정점 목록을 스트림으로 조회한다.
      *
      * 대량 데이터에 적합한 [Flow] 기반 조회이다.

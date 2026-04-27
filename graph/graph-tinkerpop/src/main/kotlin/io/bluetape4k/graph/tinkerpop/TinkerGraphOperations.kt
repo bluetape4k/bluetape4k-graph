@@ -1,6 +1,7 @@
 package io.bluetape4k.graph.tinkerpop
 
 import io.bluetape4k.graph.GraphQueryException
+import io.bluetape4k.graph.algo.ShortestPathFallback
 import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
@@ -99,6 +100,12 @@ class TinkerGraphOperations : GraphOperations, GraphAlgorithmRepository {
         return if (optional.isPresent) GremlinRecordMapper.vertexToGraphVertex(optional.get()) else null
     }
 
+    override fun findVertexById(id: GraphElementId): GraphVertex? {
+        val idValue = id.value.toLongOrNull() ?: return null
+        val optional = g.V(idValue).tryNext()
+        return if (optional.isPresent) GremlinRecordMapper.vertexToGraphVertex(optional.get()) else null
+    }
+
     override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> {
         label.requireNotBlank("label")
 
@@ -172,6 +179,20 @@ class TinkerGraphOperations : GraphOperations, GraphAlgorithmRepository {
         return traversal.toList().map { GremlinRecordMapper.edgeToGraphEdge(it) }
     }
 
+    override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
+        edgeLabel?.requireNotBlank("edgeLabel")
+        val idValue = startId.value.toLongOrNull() ?: return emptyList()
+        val traversal = if (edgeLabel != null) g.V(idValue).outE(edgeLabel) else g.V(idValue).outE()
+        return traversal.toList().map { GremlinRecordMapper.edgeToGraphEdge(it) }
+    }
+
+    override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
+        edgeLabel?.requireNotBlank("edgeLabel")
+        val idValue = endId.value.toLongOrNull() ?: return emptyList()
+        val traversal = if (edgeLabel != null) g.V(idValue).inE(edgeLabel) else g.V(idValue).inE()
+        return traversal.toList().map { GremlinRecordMapper.edgeToGraphEdge(it) }
+    }
+
     override fun deleteEdge(label: String, id: GraphElementId): Boolean {
         label.requireNotBlank("label")
         val idValue = id.value.toLongOrNull() ?: return false
@@ -220,6 +241,10 @@ class TinkerGraphOperations : GraphOperations, GraphAlgorithmRepository {
         toId: GraphElementId,
         options: PathOptions,
     ): GraphPath? {
+        if (options.weightProperty != null) {
+            return ShortestPathFallback.dijkstra(this, fromId, toId, options)
+        }
+
         val fromIdValue = fromId.value.toLongOrNull() ?: return null
         val toIdValue = toId.value.toLongOrNull() ?: return null
 
@@ -247,6 +272,13 @@ class TinkerGraphOperations : GraphOperations, GraphAlgorithmRepository {
 
         return paths.firstOrNull()?.let { GremlinRecordMapper.pathToGraphPath(it) }
     }
+
+    override fun aStarPath(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        options: PathOptions,
+        heuristic: (GraphVertex) -> Double,
+    ): GraphPath? = ShortestPathFallback.aStar(this, fromId, toId, options, heuristic)
 
     override fun allPaths(
         fromId: GraphElementId,

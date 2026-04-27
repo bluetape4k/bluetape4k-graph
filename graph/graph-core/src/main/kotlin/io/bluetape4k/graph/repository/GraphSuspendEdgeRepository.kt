@@ -57,6 +57,32 @@ interface GraphSuspendEdgeRepository {
     fun findEdgesByLabel(label: String, filter: Map<String, Any?> = emptyMap()): Flow<GraphEdge>
 
     /**
+     * 특정 정점에서 출발하는 간선 목록을 스트림으로 조회한다.
+     *
+     * ```kotlin
+     * val outEdges = ops.findEdgesByStartId(alice.id).toList()
+     * ```
+     *
+     * @param startId 시작 정점 ID.
+     * @param edgeLabel 간선 레이블 필터. null이면 모든 레이블 반환.
+     * @return 해당 정점에서 출발하는 [GraphEdge] Flow.
+     */
+    fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String? = null): Flow<GraphEdge>
+
+    /**
+     * 특정 정점으로 도착하는 간선 목록을 스트림으로 조회한다.
+     *
+     * ```kotlin
+     * val inEdges = ops.findEdgesByEndId(alice.id).toList()
+     * ```
+     *
+     * @param endId 종료 정점 ID.
+     * @param edgeLabel 간선 레이블 필터. null이면 모든 레이블 반환.
+     * @return 해당 정점으로 도착하는 [GraphEdge] Flow.
+     */
+    fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String? = null): Flow<GraphEdge>
+
+    /**
      * 간선을 삭제한다.
      *
      * ```kotlin

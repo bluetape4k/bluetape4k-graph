@@ -65,4 +65,20 @@ interface GraphVirtualThreadTraversalRepository {
         toId: GraphElementId,
         options: PathOptions = PathOptions.Default,
     ): CompletableFuture<List<GraphPath>>
+
+    /**
+     * A* 알고리즘으로 가중치 최단 경로를 Virtual Thread 에서 찾는다.
+     *
+     * @param fromId 출발 정점 ID.
+     * @param toId 도착 정점 ID.
+     * @param options 탐색 옵션 ([PathOptions.weightProperty] 필수).
+     * @param heuristic 목표까지의 예상 비용 함수 (동기).
+     * @return 가중치 최단 [GraphPath] 를 담은 [CompletableFuture]. 경로가 없으면 `null`.
+     */
+    fun aStarPathAsync(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        options: PathOptions,
+        heuristic: (GraphVertex) -> Double,
+    ): CompletableFuture<GraphPath?>
 }
