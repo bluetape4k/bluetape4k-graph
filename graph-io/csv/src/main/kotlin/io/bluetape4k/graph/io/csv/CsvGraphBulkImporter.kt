@@ -15,6 +15,7 @@ import io.bluetape4k.graph.io.report.GraphImportReport
 import io.bluetape4k.graph.io.support.GraphIoExternalIdMap
 import io.bluetape4k.graph.io.support.GraphIoPaths
 import io.bluetape4k.graph.io.support.GraphIoStopwatch
+import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
@@ -88,7 +89,7 @@ class CsvGraphBulkImporter : GraphBulkImporter<CsvGraphImportSource> {
             }
             val putResult = idMap.putFirstOrFail(
                 externalId,
-                io.bluetape4k.graph.model.GraphElementId(externalId)
+                GraphElementId(externalId)
             )
             if (putResult == GraphIoExternalIdMap.PutResult.SKIPPED) {
                 skippedVertices++
@@ -165,7 +166,7 @@ class CsvGraphBulkImporter : GraphBulkImporter<CsvGraphImportSource> {
                     options.preserveExternalIdProperty?.let { key -> put(key, eid) }
                 }
             }
-            operations.createEdge(fromId ?: continue, toId ?: continue, label, props)
+            operations.createEdge(fromId, toId, label, props)
             edgesCreated++
         }
 
@@ -187,7 +188,7 @@ class CsvGraphBulkImporter : GraphBulkImporter<CsvGraphImportSource> {
         ec: Long,
         sv: Long,
         se: Long,
-    ) = GraphImportReport(status, GraphIoFormat.CSV, vr, vc, er, ec, sv, se, watch.elapsed(), failures)
+    ) = GraphImportReport(status, GraphIoFormat.CSV, vr, vc, er, ec, sv, se, watch.elapsed(), failures.toList())
 
     companion object : KLogging()
 }

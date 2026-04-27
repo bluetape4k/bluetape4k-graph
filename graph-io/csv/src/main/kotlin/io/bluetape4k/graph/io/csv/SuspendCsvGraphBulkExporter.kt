@@ -81,7 +81,6 @@ class SuspendCsvGraphBulkExporter : GraphSuspendBulkExporter<CsvGraphExportSink>
                 csv.writeRow(row)
                 vWritten++
             }
-            csv.close()
         }
 
         // --- 간선 익스포트 ---
@@ -108,7 +107,6 @@ class SuspendCsvGraphBulkExporter : GraphSuspendBulkExporter<CsvGraphExportSink>
                 csv.writeRow(row)
                 eWritten++
             }
-            csv.close()
         }
 
         val status = if (failures.isEmpty()) GraphIoStatus.COMPLETED else GraphIoStatus.PARTIAL
