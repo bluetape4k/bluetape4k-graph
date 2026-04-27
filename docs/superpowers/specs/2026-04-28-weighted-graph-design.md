@@ -525,8 +525,8 @@ internal object ShortestPathFallback {
         options: PathOptions,
     ): GraphPath? {
         val weightKey = requireNotNull(options.weightProperty) { "weightProperty must be set for Dijkstra" }
-        // label 없이 ID 만으로 조회 — GraphVertexRepository 의 findById(id) API 사용
-        // (label+id 2-파라미터 API 가 아니라 ID-only lookup 이 필요하면 backend가 구현해야 함)
+        // label 없이 ID 만으로 조회 — GraphVertexRepository.findVertexById(id) (ID-only overload)
+        // label+id 2-파라미터 overload 와 구분됨; 이번 task 에서 신규 추가
         val start = ops.findVertexById(fromId) ?: return null
         ops.findVertexById(toId) ?: return null
 
@@ -660,6 +660,8 @@ internal object ShortestPathFallback {
 |------|------|
 | `graph-core/.../model/GraphPath.kt` | `totalWeight: Double` 필드 추가, `EMPTY`/`of(...)` 갱신 |
 | `graph-core/.../model/GraphTraversalOptions.kt` | `PathOptions` 에 `weightProperty`, `missingWeightPolicy`, `direction`, `maxVisited` |
+| `graph-core/.../repository/GraphVertexRepository.kt` | `findVertexById(id: GraphElementId): GraphVertex?` (label-only overload) 추가 |
+| `graph-core/.../repository/GraphSuspendVertexRepository.kt` | 동일 suspend 버전 |
 | `graph-core/.../repository/GraphEdgeRepository.kt` | `findEdgesByStartId(id, edgeLabel?)` + `findEdgesByEndId(id, edgeLabel?)` 추가 |
 | `graph-core/.../repository/GraphSuspendEdgeRepository.kt` | 동일 suspend 버전 |
 | `graph-core/.../repository/GraphTraversalRepository.kt` | `aStarPath` 시그니처 추가 (default 구현 없음) |
