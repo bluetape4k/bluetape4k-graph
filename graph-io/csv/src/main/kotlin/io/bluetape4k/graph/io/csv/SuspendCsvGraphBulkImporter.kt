@@ -21,7 +21,6 @@ import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.warn
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.withContext
 
 /**
@@ -160,7 +159,7 @@ class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSourc
                     options.preserveExternalIdProperty?.let { key -> put(key, eid) }
                 }
             }
-            operations.createEdge(fromId ?: return@collect, toId ?: return@collect, label, props)
+            operations.createEdge(fromId, toId, label, props)
             edgesCreated++
         }
 
@@ -182,7 +181,7 @@ class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSourc
         ec: Long,
         sv: Long,
         se: Long,
-    ) = GraphImportReport(status, GraphIoFormat.CSV, vr, vc, er, ec, sv, se, watch.elapsed(), failures)
+    ) = GraphImportReport(status, GraphIoFormat.CSV, vr, vc, er, ec, sv, se, watch.elapsed(), failures.toList())
 
     companion object : KLoggingChannel()
 }
