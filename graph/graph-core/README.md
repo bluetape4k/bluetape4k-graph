@@ -159,6 +159,70 @@ dependencies {
 - [Memgraph](https://memgraph.com/) — in-memory graph database
 - [Apache TinkerPop](https://tinkerpop.apache.org/) — graph computing framework
 
+## Weighted Shortest Path
+
+`graph-core` ships pure-JVM `DijkstraRunner` and `AStarRunner` used by all backends via `ShortestPathFallback`. Both algorithms read `PathOptions.weightProperty` from edge properties and delegate fetching to backend-specific lambdas.
+
+### PathOptions
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| `weightProperty` | `null` | Edge property name for weight. Required for weighted traversal. |
+| `edgeLabel` | `null` | Filter edges by label (`null` = all labels). |
+| `missingWeightPolicy` | `Fail` | What to do when an edge lacks the weight property. |
+| `direction` | `OUTGOING` | Edge direction to follow. |
+| `maxVisited` | `Int.MAX_VALUE` | Abort if more vertices are visited. |
+
+### MissingWeightPolicy
+
+```kotlin
+sealed class MissingWeightPolicy {
+    object Fail    : MissingWeightPolicy()   // throws MissingWeightException (default)
+    object Skip    : MissingWeightPolicy()   // treats edge as absent (returns null path)
+    data class UseDefault(val weight: Double) : MissingWeightPolicy()  // substitutes value
+}
+```
+
+### Usage Example
+
+```kotlin
+val ops: GraphOperations = Neo4jGraphOperations(driver)
+
+// Dijkstra — weighted shortest path
+val path = ops.shortestPath(
+    fromId = alice.id,
+    toId   = charlie.id,
+    options = PathOptions(
+        weightProperty      = "cost",
+        edgeLabel           = "ROAD",
+        missingWeightPolicy = MissingWeightPolicy.UseDefault(1.0),
+    ),
+)
+println("total cost: ${path?.totalWeight}")
+
+// A* — with Euclidean heuristic
+val aStarPath = ops.aStarPath(
+    fromId  = alice.id,
+    toId    = charlie.id,
+    options = PathOptions(weightProperty = "cost", edgeLabel = "ROAD"),
+) { v ->
+    val vx = v.properties["x"] as? Double ?: 0.0
+    val vy = v.properties["y"] as? Double ?: 0.0
+    sqrt((vx - goalX) * (vx - goalX) + (vy - goalY) * (vy - goalY))
+}
+```
+
+### GraphPath fields
+
+```kotlin
+data class GraphPath(
+    val vertices : List<GraphVertex>,
+    val edges    : List<GraphEdge>,
+    val steps    : List<PathStep>,          // interleaved VertexStep / EdgeStep
+    val totalWeight: Double = 0.0,          // sum of edge weights (0.0 for unweighted)
+)
+```
+
 ## Graph Algorithms
 
 `graph-core` defines the `GraphAlgorithmRepository` / `GraphSuspendAlgorithmRepository` interfaces and ships JVM fallback implementations (`UnionFind`, `BfsDfsRunner`, `CycleDetector`, `PageRankCalculator`) used by backends that do not have a native query for a given algorithm.
@@ -167,6 +231,8 @@ dependencies {
 
 | Algorithm | Interface method | Options type | Result type |
 |-----------|-----------------|--------------|-------------|
+| Dijkstra (weighted) | `shortestPath(from, to, options)` | `PathOptions` | `GraphPath?` |
+| A* (weighted) | `aStarPath(from, to, options, heuristic)` | `PathOptions` | `GraphPath?` |
 | PageRank | `pageRank(options)` | `PageRankOptions` | `List<PageRankScore>` |
 | Degree Centrality | `degreeCentrality(vertexId, options)` | `DegreeOptions` | `DegreeResult` |
 | Connected Components | `connectedComponents(options)` | `ComponentOptions` | `List<GraphComponent>` |
