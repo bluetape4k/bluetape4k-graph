@@ -201,7 +201,6 @@ class Neo4jGraphSuspendOperations(
 
     override suspend fun deleteVertex(label: String, id: GraphElementId): Boolean {
         label.requireNotBlank("label")
-        id.value.toLongOrNull() ?: throw GraphQueryException("Invalid vertex id: $id")
 
         val s = session()
 
