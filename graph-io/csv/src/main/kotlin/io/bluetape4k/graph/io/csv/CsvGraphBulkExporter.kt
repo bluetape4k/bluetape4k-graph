@@ -18,7 +18,23 @@ import io.bluetape4k.logging.debug
 
 /**
  * CSV 동기 벌크 익스포터.
- * 정점 파일과 간선 파일을 별도로 작성한다. 정점 헤더는 전체 레코드를 스캔하여 유니온 헤더를 생성한다.
+ *
+ * 정점 파일과 간선 파일을 별도로 작성한다.
+ * 정점 헤더는 전체 레코드를 스캔하여 모든 속성 키의 유니온 헤더를 자동 생성한다.
+ *
+ * ```kotlin
+ * val exporter = CsvGraphBulkExporter()
+ * val sink = CsvGraphExportSink(
+ *     vertices = GraphExportSink.PathSink(Paths.get("vertices.csv")),
+ *     edges    = GraphExportSink.PathSink(Paths.get("edges.csv")),
+ * )
+ * val options = GraphExportOptions(
+ *     vertexLabels = setOf("Person", "Company"),
+ *     edgeLabels   = setOf("KNOWS", "WORKS_FOR"),
+ * )
+ * val report = exporter.exportGraph(sink, graphOps, options)
+ * println("exported ${report.verticesWritten} vertices in ${report.elapsed.toMillis()}ms")
+ * ```
  */
 class CsvGraphBulkExporter : GraphBulkExporter<CsvGraphExportSink> {
 

@@ -26,7 +26,19 @@ import kotlinx.coroutines.withContext
 
 /**
  * CSV 코루틴(suspend) 벌크 임포터.
- * SuspendCsvRecordReader로 정점과 엣지를 Flow로 스트리밍하여 처리한다.
+ *
+ * [SuspendCsvRecordReader]로 정점과 간선을 Flow로 스트리밍하여 처리하는 2-패스 방식이다.
+ * Kotlin 코루틴 구조적 동시성을 활용하며 `Dispatchers.IO`에서 실행된다.
+ *
+ * ```kotlin
+ * val importer = SuspendCsvGraphBulkImporter()
+ * val source = CsvGraphImportSource(
+ *     vertices = GraphImportSource.PathSource(Paths.get("vertices.csv")),
+ *     edges    = GraphImportSource.PathSource(Paths.get("edges.csv")),
+ * )
+ * val report = importer.importGraphSuspending(source, suspendOps, GraphImportOptions())
+ * println("imported ${report.verticesCreated} vertices — ${report.status}")
+ * ```
  */
 class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSource> {
 
