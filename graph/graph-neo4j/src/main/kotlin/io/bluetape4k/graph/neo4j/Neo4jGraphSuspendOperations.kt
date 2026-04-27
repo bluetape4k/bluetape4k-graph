@@ -1,6 +1,7 @@
 package io.bluetape4k.graph.neo4j
 
 import io.bluetape4k.graph.GraphQueryException
+import io.bluetape4k.graph.algo.ShortestPathFallback
 import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
@@ -172,6 +173,15 @@ class Neo4jGraphSuspendOperations(
         }.firstOrNull()
     }
 
+    override suspend fun findVertexById(id: GraphElementId): GraphVertex? {
+        return runQuery(
+            $$"MATCH (n) WHERE elementId(n) = $id RETURN n",
+            mapOf("id" to id.value),
+        ) {
+            Neo4jRecordMapper.recordToVertex(it)
+        }.firstOrNull()
+    }
+
     override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphVertex> {
         label.requireNotBlank("label")
 
@@ -267,6 +277,22 @@ class Neo4jGraphSuspendOperations(
         }
     }
 
+    override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): Flow<GraphEdge> {
+        val labelPart = if (edgeLabel != null) $$":$$edgeLabel" else ""
+        return flowQuery(
+            $$"MATCH (n)-[r$$labelPart]->(m) WHERE elementId(n) = $startId RETURN r",
+            mapOf("startId" to startId.value),
+        ) { Neo4jRecordMapper.recordToEdge(it) }
+    }
+
+    override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): Flow<GraphEdge> {
+        val labelPart = if (edgeLabel != null) $$":$$edgeLabel" else ""
+        return flowQuery(
+            $$"MATCH (n)-[r$$labelPart]->(m) WHERE elementId(m) = $endId RETURN r",
+            mapOf("endId" to endId.value),
+        ) { Neo4jRecordMapper.recordToEdge(it) }
+    }
+
     override suspend fun deleteEdge(label: String, id: GraphElementId): Boolean {
         label.requireNotBlank("label")
 
@@ -315,6 +341,10 @@ class Neo4jGraphSuspendOperations(
         fromId.value.requireNotBlank("fromId.value")
         toId.value.requireNotBlank("toId.value")
 
+        if (options.weightProperty != null) {
+            return withContext(Dispatchers.IO) { ShortestPathFallback.dijkstra(syncDelegate, fromId, toId, options) }
+        }
+
         val relPattern =
             if (options.edgeLabel != null) $$":$${options.edgeLabel}*1..$${options.maxDepth}"
             else $$"*1..$${options.maxDepth}"
@@ -326,6 +356,17 @@ class Neo4jGraphSuspendOperations(
         ) {
             Neo4jRecordMapper.recordToPath(it)
         }.firstOrNull()
+    }
+
+    override suspend fun aStarPath(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        options: PathOptions,
+        heuristic: (GraphVertex) -> Double,
+    ): GraphPath? {
+        fromId.value.requireNotBlank("fromId.value")
+        toId.value.requireNotBlank("toId.value")
+        return withContext(Dispatchers.IO) { ShortestPathFallback.aStar(syncDelegate, fromId, toId, options, heuristic) }
     }
 
     override fun allPaths(

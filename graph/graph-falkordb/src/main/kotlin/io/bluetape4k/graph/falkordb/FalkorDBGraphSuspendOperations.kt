@@ -4,6 +4,7 @@ import com.falkordb.Driver
 import com.falkordb.Record
 import com.falkordb.ResultSet
 import io.bluetape4k.graph.GraphQueryException
+import io.bluetape4k.graph.algo.ShortestPathFallback
 import io.bluetape4k.graph.algo.internal.BfsDfsRunner
 import io.bluetape4k.graph.algo.internal.CycleDetector
 import io.bluetape4k.graph.algo.internal.PageRankCalculator
@@ -77,6 +78,8 @@ class FalkorDBGraphSuspendOperations(
     init {
         graphName.requireNotBlank("graphName")
     }
+
+    private val syncDelegate by lazy { FalkorDBGraphOperations(driver, graphName) }
 
     /**
      * [graphName]에 해당하는 그래프 컨텍스트를 열고 [block]을 실행한 뒤 자동으로 닫습니다.
@@ -196,6 +199,14 @@ class FalkorDBGraphSuspendOperations(
         }.firstOrNull()
     }
 
+    override suspend fun findVertexById(id: GraphElementId): GraphVertex? =
+        queryListIO(
+            "MATCH (n) WHERE id(n) = toInteger(\$id) RETURN n",
+            mapOf("id" to id.value),
+        ) {
+            it.toVertex()
+        }.firstOrNull()
+
     override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphVertex> {
         label.requireNotBlank("label").requireSafeIdentifier("label")
 
@@ -304,6 +315,30 @@ class FalkorDBGraphSuspendOperations(
         }
     }
 
+    override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): Flow<GraphEdge> {
+        edgeLabel?.requireNotBlank("edgeLabel")
+        val edgePattern = edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
+
+        return flowQuery(
+            "MATCH (a)-[r$edgePattern]->(b) WHERE id(a) = toInteger(\$startId) RETURN r",
+            mapOf("startId" to startId.value),
+        ) {
+            it.toEdge()
+        }
+    }
+
+    override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): Flow<GraphEdge> {
+        edgeLabel?.requireNotBlank("edgeLabel")
+        val edgePattern = edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
+
+        return flowQuery(
+            "MATCH (a)-[r$edgePattern]->(b) WHERE id(b) = toInteger(\$endId) RETURN r",
+            mapOf("endId" to endId.value),
+        ) {
+            it.toEdge()
+        }
+    }
+
     override suspend fun deleteEdge(label: String, id: GraphElementId): Boolean {
         label.requireNotBlank("label").requireSafeIdentifier("label")
 
@@ -348,11 +383,17 @@ class FalkorDBGraphSuspendOperations(
         toId: GraphElementId,
         options: PathOptions,
     ): GraphPath? {
+        options.edgeLabel?.requireNotBlank("edgeLabel")
         fromId.value.toLongOrNull()
             ?: throw GraphQueryException("FalkorDB requires numeric ID, got: $fromId")
         toId.value.toLongOrNull()
             ?: throw GraphQueryException("FalkorDB requires numeric ID, got: $toId")
-        options.edgeLabel?.requireNotBlank("edgeLabel")
+
+        if (options.weightProperty != null) {
+            return withContext(Dispatchers.IO) {
+                ShortestPathFallback.dijkstra(syncDelegate, fromId, toId, options)
+            }
+        }
 
         val relPattern =
             if (options.edgeLabel != null) ":" + options.edgeLabel + "*1.." + options.maxDepth
@@ -366,6 +407,23 @@ class FalkorDBGraphSuspendOperations(
         ) {
             it.toPath()
         }.firstOrNull()
+    }
+
+    override suspend fun aStarPath(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        options: PathOptions,
+        heuristic: (GraphVertex) -> Double,
+    ): GraphPath? {
+        options.edgeLabel?.requireNotBlank("edgeLabel")
+        fromId.value.toLongOrNull()
+            ?: throw GraphQueryException("FalkorDB requires numeric ID, got: $fromId")
+        toId.value.toLongOrNull()
+            ?: throw GraphQueryException("FalkorDB requires numeric ID, got: $toId")
+
+        return withContext(Dispatchers.IO) {
+            ShortestPathFallback.aStar(syncDelegate, fromId, toId, options, heuristic)
+        }
     }
 
     override fun allPaths(
