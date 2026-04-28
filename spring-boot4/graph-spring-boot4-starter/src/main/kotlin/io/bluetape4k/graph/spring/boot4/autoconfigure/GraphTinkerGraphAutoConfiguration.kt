@@ -43,7 +43,7 @@ class GraphTinkerGraphAutoConfiguration {
      */
     @Bean(destroyMethod = "close")
     @ConditionalOnMissingBean(GraphOperations::class)
-    fun graphOperations(): GraphOperations {
+    fun graphOperations(): TinkerGraphOperations {
         log.info { "Registering TinkerGraphOperations (in-memory backend)" }
         return TinkerGraphOperations()
     }
