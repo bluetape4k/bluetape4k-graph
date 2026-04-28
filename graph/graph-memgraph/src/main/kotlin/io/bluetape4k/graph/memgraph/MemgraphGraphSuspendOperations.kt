@@ -19,6 +19,7 @@ import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.repository.GraphSuspendOperations
+import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.warn
@@ -76,13 +77,7 @@ class MemgraphGraphSuspendOperations(
     private val database: String = "memgraph",
 ): GraphSuspendOperations {
 
-    companion object: KLoggingChannel() {
-        private val SAFE_IDENTIFIER = Regex("^[A-Za-z_][A-Za-z0-9_]*$")
-    }
-
-    private fun String.requireSafeIdentifier(paramName: String): String = apply {
-        require(SAFE_IDENTIFIER.matches(this)) { "$paramName must be a valid identifier (alphanumeric/_): $this" }
-    }
+    companion object: KLoggingChannel()
 
     private fun session(): ReactiveSession =
         driver.session(

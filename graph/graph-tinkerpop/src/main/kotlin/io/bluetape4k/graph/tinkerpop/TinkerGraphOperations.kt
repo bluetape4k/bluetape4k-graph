@@ -23,6 +23,7 @@ import io.bluetape4k.graph.repository.GraphAlgorithmRepository
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
+import io.bluetape4k.logging.warn
 import io.bluetape4k.support.requireNotBlank
 import org.apache.tinkerpop.gremlin.process.traversal.P
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
@@ -241,7 +242,7 @@ class TinkerGraphOperations : GraphOperations, GraphAlgorithmRepository {
                 .limit(1)
                 .toList()
         } catch (e: Exception) {
-            log.debug(e) { "shortestPath traversal failed: from=$fromId to=$toId options=$options" }
+            log.warn(e) { "shortestPath traversal failed: from=$fromId to=$toId options=$options" }
             emptyList()
         }
 
@@ -273,7 +274,7 @@ class TinkerGraphOperations : GraphOperations, GraphAlgorithmRepository {
                 .path()
                 .toList()
         } catch (e: Exception) {
-            log.debug(e) { "allPaths traversal failed: from=$fromId to=$toId options=$options" }
+            log.warn(e) { "allPaths traversal failed: from=$fromId to=$toId options=$options" }
             emptyList()
         }
 
@@ -345,7 +346,10 @@ class TinkerGraphOperations : GraphOperations, GraphAlgorithmRepository {
 
         // Use JVM fallback via UnionFind to ensure consistent behavior across TinkerPop versions
         val vertices = (if (options.vertexLabel != null) g.V().hasLabel(options.vertexLabel) else g.V()).toList()
-        val vertexMap = vertices.associate { GremlinRecordMapper.vertexToGraphVertex(it).id to GremlinRecordMapper.vertexToGraphVertex(it) }
+        val vertexMap = vertices.associate { v ->
+            val gv = GremlinRecordMapper.vertexToGraphVertex(v)
+            gv.id to gv
+        }
         val ids = vertexMap.keys
 
         val uf = io.bluetape4k.graph.algo.internal.UnionFind(ids)

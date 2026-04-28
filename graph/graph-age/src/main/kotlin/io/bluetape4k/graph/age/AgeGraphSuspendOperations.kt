@@ -20,6 +20,7 @@ import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.repository.GraphSuspendOperations
+import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.support.requireNotBlank
 import kotlinx.coroutines.Dispatchers
@@ -68,7 +69,7 @@ class AgeGraphSuspendOperations(
     companion object: KLoggingChannel()
 
     init {
-        graphName.requireNotBlank("graphName")
+        graphName.requireNotBlank("graphName").requireSafeIdentifier("graphName")
     }
 
     override suspend fun createGraph(name: String) {

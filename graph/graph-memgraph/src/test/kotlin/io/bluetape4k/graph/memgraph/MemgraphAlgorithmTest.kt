@@ -47,7 +47,7 @@ class MemgraphAlgorithmTest {
                 DegreeOptions(edgeLabel = "Person'; DROP TABLE foo--"),
             )
         }
-        ex.message?.shouldContain("Invalid label")
+        ex.message?.shouldContain("valid identifier")
     }
 
     @Test
