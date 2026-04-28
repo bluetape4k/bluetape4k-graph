@@ -18,6 +18,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
         GraphNeo4jAutoConfiguration::class,
         GraphMemgraphAutoConfiguration::class,
         GraphAgeAutoConfiguration::class,
+        GraphFalkorDBAutoConfiguration::class,
     ],
 )
 @EnableConfigurationProperties(GraphProperties::class)

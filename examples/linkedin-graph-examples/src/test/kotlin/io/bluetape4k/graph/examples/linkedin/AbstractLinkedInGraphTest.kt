@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test
 
 abstract class AbstractLinkedInGraphTest {
 
-    companion object: KLogging()
+    companion object : KLogging()
 
     protected abstract val ops: GraphOperations
     protected open val graphName: String = "linkedin_test"

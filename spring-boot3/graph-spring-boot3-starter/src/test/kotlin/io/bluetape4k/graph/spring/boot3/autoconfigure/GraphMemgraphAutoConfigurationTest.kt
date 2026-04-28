@@ -1,11 +1,14 @@
 package io.bluetape4k.graph.spring.boot3.autoconfigure
 
+import io.bluetape4k.graph.memgraph.MemgraphGraphOperations
+import io.bluetape4k.graph.memgraph.MemgraphGraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
+import io.bluetape4k.graph.vt.VirtualThreadOperationsAdapter
 import io.bluetape4k.testcontainers.graphdb.MemgraphServer
 import io.bluetape4k.logging.KLogging
-import org.amshove.kluent.shouldNotBeNull
+import org.amshove.kluent.shouldBeInstanceOf
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -38,9 +41,19 @@ class GraphMemgraphAutoConfigurationTest {
     fun `backend=memgraph 이면 GraphOperations 빈 등록`() {
         runner.withPropertyValues(*memgraphProperties)
             .run { ctx ->
-                ctx.getBean(GraphOperations::class.java).shouldNotBeNull()
-                ctx.getBean(GraphSuspendOperations::class.java).shouldNotBeNull()
-                ctx.getBean(GraphVirtualThreadOperations::class.java).shouldNotBeNull()
+                ctx.getBean(GraphOperations::class.java).shouldBeInstanceOf<MemgraphGraphOperations>()
+                ctx.getBean(GraphSuspendOperations::class.java).shouldBeInstanceOf<MemgraphGraphSuspendOperations>()
+                ctx.getBean(GraphVirtualThreadOperations::class.java).shouldBeInstanceOf<VirtualThreadOperationsAdapter>()
+            }
+    }
+
+    @Test
+    fun `memgraph backend not selected — no GraphOperations bean registered`() {
+        runner
+            .withPropertyValues("bluetape4k.graph.backend=tinkergraph")
+            .run { ctx ->
+                assertThatThrownBy { ctx.getBean(GraphOperations::class.java) }
+                    .isInstanceOf(NoSuchBeanDefinitionException::class.java)
             }
     }
 

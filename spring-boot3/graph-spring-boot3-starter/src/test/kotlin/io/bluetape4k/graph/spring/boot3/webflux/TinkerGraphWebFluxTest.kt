@@ -19,6 +19,9 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
+// NOTE: @WebFluxTest slice is not used here because the controller under test is defined as an inner
+// class of this test (TestApp.SuspendController). Extracting it to a standalone class would add
+// production scope just for testing; @SpringBootTest with RANDOM_PORT keeps the setup self-contained.
 @SpringBootTest(
     classes = [TinkerGraphWebFluxTest.TestApp::class],
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -62,5 +65,21 @@ class TinkerGraphWebFluxTest {
                 val body = r.responseBody.shouldNotBeNull()
                 body.containsKey("id").shouldBeTrue()
             }
+    }
+
+    @Test
+    fun `존재하지 않는 경로 요청 시 404 반환`() = runBlocking<Unit> {
+        // Error path: POST to an unmapped path returns 404
+        webClient.post().uri("/test/suspend/nonexistent/path")
+            .exchange()
+            .expectStatus().isNotFound
+    }
+
+    @Test
+    fun `GET 요청으로 POST 전용 엔드포인트 접근 시 405 반환`() = runBlocking<Unit> {
+        // Error path: wrong HTTP method on the suspend vertices endpoint returns 405
+        webClient.get().uri("/test/suspend/vertices/User")
+            .exchange()
+            .expectStatus().isEqualTo(405)
     }
 }

@@ -7,6 +7,8 @@ import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.coroutines.KLoggingChannel
+import io.bluetape4k.logging.info
+import io.bluetape4k.support.requireNotBlank
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -44,6 +46,7 @@ class LinkedInGraphSuspendService(
     suspend fun initialize() {
         if (!ops.graphExists(graphName)) {
             ops.createGraph(graphName)
+            log.info { "LinkedIn graph '$graphName' created" }
         }
     }
 
@@ -61,10 +64,13 @@ class LinkedInGraphSuspendService(
         title: String = "",
         company: String = "",
         location: String = "",
-    ): GraphVertex = ops.createVertex(
-        "Person",
-        mapOf("name" to name, "title" to title, "company" to company, "location" to location)
-    )
+    ): GraphVertex {
+        name.requireNotBlank("name")
+        return ops.createVertex(
+            "Person",
+            mapOf("name" to name, "title" to title, "company" to company, "location" to location)
+        )
+    }
 
     /**
      * 회사 정점을 추가한다.
@@ -77,10 +83,13 @@ class LinkedInGraphSuspendService(
         name: String,
         industry: String = "",
         location: String = "",
-    ): GraphVertex = ops.createVertex(
-        "Company",
-        mapOf("name" to name, "industry" to industry, "location" to location)
-    )
+    ): GraphVertex {
+        name.requireNotBlank("name")
+        return ops.createVertex(
+            "Company",
+            mapOf("name" to name, "industry" to industry, "location" to location)
+        )
+    }
 
     /**
      * 인맥 연결 (양방향: A KNOWS B, B KNOWS A).
@@ -186,6 +195,8 @@ class LinkedInGraphSuspendService(
      * val persons = service.findPersonByName("Alice").toList()
      * ```
      */
-    fun findPersonByName(name: String): Flow<GraphVertex> =
-        ops.findVerticesByLabel("Person", mapOf("name" to name))
+    fun findPersonByName(name: String): Flow<GraphVertex> {
+        name.requireNotBlank("name")
+        return ops.findVerticesByLabel("Person", mapOf("name" to name))
+    }
 }

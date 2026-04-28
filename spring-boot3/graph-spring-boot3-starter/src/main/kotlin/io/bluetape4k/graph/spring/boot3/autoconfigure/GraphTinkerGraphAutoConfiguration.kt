@@ -43,7 +43,7 @@ class GraphTinkerGraphAutoConfiguration {
      */
     @Bean(destroyMethod = "close")
     @ConditionalOnMissingBean(GraphOperations::class)
-    fun graphOperations(): GraphOperations {
+    fun graphOperations(): TinkerGraphOperations {
         log.info { "Registering TinkerGraphOperations (in-memory backend)" }
         return TinkerGraphOperations()
     }
@@ -59,12 +59,8 @@ class GraphTinkerGraphAutoConfiguration {
         havingValue = "true",
         matchIfMissing = true,
     )
-    fun graphSuspendOperations(ops: GraphOperations): GraphSuspendOperations {
-        val tinkerOps = checkNotNull(ops as? TinkerGraphOperations) {
-            "Expected TinkerGraphOperations but got ${ops::class.simpleName}"
-        }
-        return TinkerGraphSuspendOperations(tinkerOps)
-    }
+    fun graphSuspendOperations(ops: TinkerGraphOperations): GraphSuspendOperations =
+        TinkerGraphSuspendOperations(ops)
 
     /**
      * Virtual Thread 기반 `GraphVirtualThreadOperations` 빈.
@@ -87,6 +83,9 @@ class GraphTinkerGraphAutoConfiguration {
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(name = ["org.springframework.boot.actuate.health.HealthIndicator"])
     class HealthConfig {
+
+        companion object : KLogging()
+
         @Bean
         @ConditionalOnMissingBean
         fun tinkerGraphHealthIndicator(): org.springframework.boot.actuate.health.HealthIndicator =

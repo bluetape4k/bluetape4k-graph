@@ -11,9 +11,7 @@ import org.junit.jupiter.api.BeforeAll
 class AgeLinkedInGraphSuspendTest: AbstractLinkedInGraphSuspendTest() {
     override val graphName = "linkedin_test_suspend"
     private lateinit var dataSource: HikariDataSource
-    private lateinit var database: Database
     override lateinit var ops: AgeGraphSuspendOperations
-
 
     @BeforeAll
     fun startServer() {
@@ -26,7 +24,8 @@ class AgeLinkedInGraphSuspendTest: AbstractLinkedInGraphSuspendTest() {
             connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
             maximumPoolSize = 5
         })
-        database = Database.connect(dataSource)
+        // Registers the DataSource globally in Exposed — required side-effect
+        Database.connect(dataSource)
         ops = AgeGraphSuspendOperations(graphName)
     }
 

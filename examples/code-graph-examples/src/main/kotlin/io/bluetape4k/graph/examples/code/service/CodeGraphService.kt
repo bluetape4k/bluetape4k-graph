@@ -8,6 +8,8 @@ import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.info
+import io.bluetape4k.support.requireNotBlank
 
 /**
  * 소스 코드 의존성 그래프 서비스.
@@ -42,7 +44,7 @@ class CodeGraphService(
     fun initialize() {
         if (!ops.graphExists(graphName)) {
             ops.createGraph(graphName)
-            log.info("Code graph '$graphName' created")
+            log.info { "Code graph '$graphName' created" }
         }
     }
 
@@ -64,10 +66,13 @@ class CodeGraphService(
         path: String = "",
         version: String = "",
         language: String = "kotlin",
-    ): GraphVertex = ops.createVertex(
-        "Module",
-        mapOf("name" to name, "path" to path, "version" to version, "language" to language)
-    )
+    ): GraphVertex {
+        name.requireNotBlank("name")
+        return ops.createVertex(
+            "Module",
+            mapOf("name" to name, "path" to path, "version" to version, "language" to language)
+        )
+    }
 
     /**
      * 클래스 정점을 추가한다.
@@ -82,16 +87,20 @@ class CodeGraphService(
         module: String = "",
         isAbstract: Boolean = false,
         isInterface: Boolean = false,
-    ): GraphVertex = ops.createVertex(
-        "Class",
-        mapOf(
-            "name" to name,
-            "qualifiedName" to qualifiedName,
-            "module" to module,
-            "isAbstract" to isAbstract,
-            "isInterface" to isInterface,
+    ): GraphVertex {
+        name.requireNotBlank("name")
+        qualifiedName.requireNotBlank("qualifiedName")
+        return ops.createVertex(
+            "Class",
+            mapOf(
+                "name" to name,
+                "qualifiedName" to qualifiedName,
+                "module" to module,
+                "isAbstract" to isAbstract,
+                "isInterface" to isInterface,
+            )
         )
-    )
+    }
 
     /**
      * 함수 정점을 추가한다.
@@ -106,16 +115,20 @@ class CodeGraphService(
         className: String = "",
         module: String = "",
         lineCount: Int = 0,
-    ): GraphVertex = ops.createVertex(
-        "Function",
-        mapOf(
-            "name" to name,
-            "signature" to signature,
-            "className" to className,
-            "module" to module,
-            "lineCount" to lineCount,
+    ): GraphVertex {
+        name.requireNotBlank("name")
+        signature.requireNotBlank("signature")
+        return ops.createVertex(
+            "Function",
+            mapOf(
+                "name" to name,
+                "signature" to signature,
+                "className" to className,
+                "module" to module,
+                "lineCount" to lineCount,
+            )
         )
-    )
+    }
 
     /**
      * 모듈 간 의존성 간선을 추가한다.
@@ -292,8 +305,10 @@ class CodeGraphService(
      * val modules = service.findModuleByName("graph-core")
      * ```
      */
-    fun findModuleByName(name: String): List<GraphVertex> =
-        ops.findVerticesByLabel("Module", mapOf("name" to name))
+    fun findModuleByName(name: String): List<GraphVertex> {
+        name.requireNotBlank("name")
+        return ops.findVerticesByLabel("Module", mapOf("name" to name))
+    }
 
     /**
      * 클래스 이름으로 검색한다.
@@ -302,6 +317,8 @@ class CodeGraphService(
      * val classes = service.findClassByName("GraphOperations")
      * ```
      */
-    fun findClassByName(name: String): List<GraphVertex> =
-        ops.findVerticesByLabel("Class", mapOf("name" to name))
+    fun findClassByName(name: String): List<GraphVertex> {
+        name.requireNotBlank("name")
+        return ops.findVerticesByLabel("Class", mapOf("name" to name))
+    }
 }

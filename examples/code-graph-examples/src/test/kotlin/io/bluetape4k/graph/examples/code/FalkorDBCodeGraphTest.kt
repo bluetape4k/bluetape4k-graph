@@ -3,6 +3,7 @@ package io.bluetape4k.graph.examples.code
 import com.falkordb.FalkorDB
 import io.bluetape4k.graph.falkordb.FalkorDBGraphOperations
 import io.bluetape4k.graph.falkordb.FalkorDBServer
+import io.bluetape4k.logging.warn
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import java.util.UUID
@@ -21,6 +22,8 @@ class FalkorDBCodeGraphTest : AbstractCodeGraphTest() {
 
     @AfterAll
     fun stopServer() {
+        runCatching { ops.dropGraph(graphName) }
+            .onFailure { log.warn(it) { "Failed to drop graph $graphName" } }
         driver.close()
     }
 }

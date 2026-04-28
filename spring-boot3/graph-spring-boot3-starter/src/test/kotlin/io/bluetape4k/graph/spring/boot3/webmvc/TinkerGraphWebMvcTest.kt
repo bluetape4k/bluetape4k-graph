@@ -6,6 +6,7 @@ import io.bluetape4k.logging.KLogging
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeTrue
 import org.amshove.kluent.shouldNotBeNull
+import org.springframework.http.HttpStatus
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.SpringBootConfiguration
@@ -19,6 +20,9 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
+// NOTE: @WebMvcTest slice is not used here because the controller under test is defined as an inner
+// class of this test (TestApp.GraphController). Extracting it to a standalone class would add
+// production scope just for testing; @SpringBootTest with RANDOM_PORT keeps the setup self-contained.
 @SpringBootTest(
     classes = [TinkerGraphWebMvcTest.TestApp::class],
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -64,5 +68,23 @@ class TinkerGraphWebMvcTest {
         val body = (resp.body.shouldNotBeNull()) as Map<String, String>
         body["virtual"].shouldBeEqualTo("true")
         body["id"].shouldNotBeNull()
+    }
+
+    @Test
+    fun `존재하지 않는 경로 요청 시 404 반환`() {
+        // Error path: POST to an unmapped sub-path returns 404
+        val resp = restTemplate.postForEntity(
+            "/test/graph/nonexistent/path", null, String::class.java,
+        )
+        resp.statusCode.shouldBeEqualTo(HttpStatus.NOT_FOUND)
+    }
+
+    @Test
+    fun `GET 요청으로 POST 전용 엔드포인트 접근 시 405 반환`() {
+        // Error path: wrong HTTP method on the vertices endpoint returns 405
+        val resp = restTemplate.getForEntity(
+            "/test/graph/vertices/Person", String::class.java,
+        )
+        resp.statusCode.shouldBeEqualTo(HttpStatus.METHOD_NOT_ALLOWED)
     }
 }

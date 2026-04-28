@@ -7,6 +7,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties
  */
 @ConfigurationProperties(prefix = "bluetape4k.graph.tinkergraph")
 data class TinkerGraphGraphProperties(
-    var registerSuspend: Boolean = true,
-    var registerVirtualThread: Boolean = true,
+    val registerSuspend: Boolean = true,
+    val registerVirtualThread: Boolean = true,
 )

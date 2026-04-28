@@ -2,12 +2,15 @@ package io.bluetape4k.graph.spring.boot3.autoconfigure
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import io.bluetape4k.graph.age.AgeGraphOperations
+import io.bluetape4k.graph.age.AgeGraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
+import io.bluetape4k.graph.vt.VirtualThreadOperationsAdapter
 import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
 import io.bluetape4k.logging.KLogging
-import org.amshove.kluent.shouldNotBeNull
+import org.amshove.kluent.shouldBeInstanceOf
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -57,9 +60,19 @@ class GraphAgeAutoConfigurationTest {
     fun `backend=age 이면 GraphOperations 빈 등록`() {
         runner.withPropertyValues(*ageProperties)
             .run { ctx ->
-                ctx.getBean(GraphOperations::class.java).shouldNotBeNull()
-                ctx.getBean(GraphSuspendOperations::class.java).shouldNotBeNull()
-                ctx.getBean(GraphVirtualThreadOperations::class.java).shouldNotBeNull()
+                ctx.getBean(GraphOperations::class.java).shouldBeInstanceOf<AgeGraphOperations>()
+                ctx.getBean(GraphSuspendOperations::class.java).shouldBeInstanceOf<AgeGraphSuspendOperations>()
+                ctx.getBean(GraphVirtualThreadOperations::class.java).shouldBeInstanceOf<VirtualThreadOperationsAdapter>()
+            }
+    }
+
+    @Test
+    fun `age backend not selected — no GraphOperations bean registered`() {
+        runner
+            .withPropertyValues("bluetape4k.graph.backend=tinkergraph")
+            .run { ctx ->
+                assertThatThrownBy { ctx.getBean(GraphOperations::class.java) }
+                    .isInstanceOf(NoSuchBeanDefinitionException::class.java)
             }
     }
 

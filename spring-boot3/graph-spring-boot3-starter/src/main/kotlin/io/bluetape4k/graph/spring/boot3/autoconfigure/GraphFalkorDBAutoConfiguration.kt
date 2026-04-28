@@ -91,6 +91,9 @@ class GraphFalkorDBAutoConfiguration {
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(name = ["org.springframework.boot.actuate.health.HealthIndicator"])
     class HealthConfig {
+
+        companion object : KLogging()
+
         /**
          * FalkorDB 연결 상태를 확인하는 HealthIndicator 빈.
          *

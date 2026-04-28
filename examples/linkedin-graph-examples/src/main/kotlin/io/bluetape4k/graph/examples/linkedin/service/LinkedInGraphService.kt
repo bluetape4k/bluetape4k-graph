@@ -7,6 +7,8 @@ import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.info
+import io.bluetape4k.support.requireNotBlank
 
 /**
  * LinkedIn 인맥 그래프 서비스.
@@ -41,7 +43,7 @@ class LinkedInGraphService(
     fun initialize() {
         if (!ops.graphExists(graphName)) {
             ops.createGraph(graphName)
-            log.info("LinkedIn graph '{}' created", graphName)
+            log.info { "LinkedIn graph '$graphName' created" }
         }
     }
 
@@ -63,10 +65,13 @@ class LinkedInGraphService(
         title: String = "",
         company: String = "",
         location: String = "",
-    ): GraphVertex = ops.createVertex(
-        "Person",
-        mapOf("name" to name, "title" to title, "company" to company, "location" to location)
-    )
+    ): GraphVertex {
+        name.requireNotBlank("name")
+        return ops.createVertex(
+            "Person",
+            mapOf("name" to name, "title" to title, "company" to company, "location" to location)
+        )
+    }
 
     /**
      * 회사 정점을 추가한다.
@@ -79,10 +84,13 @@ class LinkedInGraphService(
         name: String,
         industry: String = "",
         location: String = "",
-    ): GraphVertex = ops.createVertex(
-        "Company",
-        mapOf("name" to name, "industry" to industry, "location" to location)
-    )
+    ): GraphVertex {
+        name.requireNotBlank("name")
+        return ops.createVertex(
+            "Company",
+            mapOf("name" to name, "industry" to industry, "location" to location)
+        )
+    }
 
     /**
      * 인맥 연결을 추가한다 (양방향: A KNOWS B, B KNOWS A).
@@ -205,6 +213,8 @@ class LinkedInGraphService(
      * val persons = service.findPersonByName("Alice")
      * ```
      */
-    fun findPersonByName(name: String): List<GraphVertex> =
-        ops.findVerticesByLabel("Person", mapOf("name" to name))
+    fun findPersonByName(name: String): List<GraphVertex> {
+        name.requireNotBlank("name")
+        return ops.findVerticesByLabel("Person", mapOf("name" to name))
+    }
 }

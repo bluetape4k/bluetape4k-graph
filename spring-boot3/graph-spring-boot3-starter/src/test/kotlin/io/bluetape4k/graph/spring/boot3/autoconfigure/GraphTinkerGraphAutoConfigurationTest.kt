@@ -3,9 +3,12 @@ package io.bluetape4k.graph.spring.boot3.autoconfigure
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
+import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
+import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
+import io.bluetape4k.graph.vt.VirtualThreadOperationsAdapter
 import io.bluetape4k.logging.KLogging
 import org.amshove.kluent.shouldBeFalse
-import org.amshove.kluent.shouldNotBeNull
+import org.amshove.kluent.shouldBeInstanceOf
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
@@ -28,16 +31,16 @@ class GraphTinkerGraphAutoConfigurationTest {
     fun `backend=tinkergraph 이면 GraphOperations 빈 등록`() {
         runner.withPropertyValues("bluetape4k.graph.backend=tinkergraph")
             .run { ctx ->
-                ctx.getBean(GraphOperations::class.java).shouldNotBeNull()
-                ctx.getBean(GraphSuspendOperations::class.java).shouldNotBeNull()
-                ctx.getBean(GraphVirtualThreadOperations::class.java).shouldNotBeNull()
+                ctx.getBean(GraphOperations::class.java).shouldBeInstanceOf<TinkerGraphOperations>()
+                ctx.getBean(GraphSuspendOperations::class.java).shouldBeInstanceOf<TinkerGraphSuspendOperations>()
+                ctx.getBean(GraphVirtualThreadOperations::class.java).shouldBeInstanceOf<VirtualThreadOperationsAdapter>()
             }
     }
 
     @Test
     fun `backend 미설정 시 tinkergraph matchIfMissing 으로 빈 등록`() {
         runner.run { ctx ->
-            ctx.getBean(GraphOperations::class.java).shouldNotBeNull()
+            ctx.getBean(GraphOperations::class.java).shouldBeInstanceOf<TinkerGraphOperations>()
         }
     }
 
