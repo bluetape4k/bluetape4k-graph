@@ -83,4 +83,29 @@ interface GraphSuspendTraversalRepository {
         toId: GraphElementId,
         options: PathOptions = PathOptions.Default,
     ): Flow<GraphPath>
+
+    /**
+     * A* 알고리즘으로 가중치 최단 경로를 찾는다 (코루틴 방식).
+     *
+     * [options.weightProperty]가 반드시 설정되어야 한다.
+     * [heuristic]은 동기 함수여야 한다 (`suspend` 함수 불가).
+     *
+     * ```kotlin
+     * val path = ops.aStarPath(a.id, b.id, PathOptions(weightProperty = "cost")) { vertex ->
+     *     estimatedCostToGoal(vertex)
+     * }
+     * ```
+     *
+     * @param fromId 출발 정점 ID.
+     * @param toId 도착 정점 ID.
+     * @param options 탐색 옵션 ([PathOptions.weightProperty] 필수).
+     * @param heuristic 목표까지의 예상 비용 함수. 허용 가능(admissible)해야 한다.
+     * @return 가중치 최단 [GraphPath], 경로가 없으면 `null`.
+     */
+    suspend fun aStarPath(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        options: PathOptions,
+        heuristic: (GraphVertex) -> Double,
+    ): GraphPath?
 }

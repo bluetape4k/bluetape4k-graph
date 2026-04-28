@@ -5,6 +5,7 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.junit5.concurrency.StructuredTaskScopeTester
 import io.bluetape4k.logging.KLogging
+import io.mockk.clearMocks
 import io.mockk.spyk
 import io.mockk.verify
 import org.amshove.kluent.shouldBeEqualTo
@@ -31,6 +32,7 @@ class VirtualThreadTraversalAdapterTest {
 
     @AfterEach
     fun tearDown() {
+        clearMocks(delegate)
         delegate.close()
     }
 

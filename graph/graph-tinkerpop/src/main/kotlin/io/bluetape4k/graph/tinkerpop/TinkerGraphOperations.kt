@@ -1,6 +1,7 @@
 package io.bluetape4k.graph.tinkerpop
 
 import io.bluetape4k.graph.GraphQueryException
+import io.bluetape4k.graph.algo.ShortestPathFallback
 import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
@@ -23,6 +24,7 @@ import io.bluetape4k.graph.repository.GraphAlgorithmRepository
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
+import io.bluetape4k.logging.warn
 import io.bluetape4k.support.requireNotBlank
 import org.apache.tinkerpop.gremlin.process.traversal.P
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
@@ -99,6 +101,12 @@ class TinkerGraphOperations : GraphOperations, GraphAlgorithmRepository {
         return if (optional.isPresent) GremlinRecordMapper.vertexToGraphVertex(optional.get()) else null
     }
 
+    override fun findVertexById(id: GraphElementId): GraphVertex? {
+        val idValue = id.value.toLongOrNull() ?: return null
+        val optional = g.V(idValue).tryNext()
+        return if (optional.isPresent) GremlinRecordMapper.vertexToGraphVertex(optional.get()) else null
+    }
+
     override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> {
         label.requireNotBlank("label")
 
@@ -172,6 +180,20 @@ class TinkerGraphOperations : GraphOperations, GraphAlgorithmRepository {
         return traversal.toList().map { GremlinRecordMapper.edgeToGraphEdge(it) }
     }
 
+    override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
+        edgeLabel?.requireNotBlank("edgeLabel")
+        val idValue = startId.value.toLongOrNull() ?: return emptyList()
+        val traversal = if (edgeLabel != null) g.V(idValue).outE(edgeLabel) else g.V(idValue).outE()
+        return traversal.toList().map { GremlinRecordMapper.edgeToGraphEdge(it) }
+    }
+
+    override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
+        edgeLabel?.requireNotBlank("edgeLabel")
+        val idValue = endId.value.toLongOrNull() ?: return emptyList()
+        val traversal = if (edgeLabel != null) g.V(idValue).inE(edgeLabel) else g.V(idValue).inE()
+        return traversal.toList().map { GremlinRecordMapper.edgeToGraphEdge(it) }
+    }
+
     override fun deleteEdge(label: String, id: GraphElementId): Boolean {
         label.requireNotBlank("label")
         val idValue = id.value.toLongOrNull() ?: return false
@@ -220,6 +242,10 @@ class TinkerGraphOperations : GraphOperations, GraphAlgorithmRepository {
         toId: GraphElementId,
         options: PathOptions,
     ): GraphPath? {
+        if (options.weightProperty != null) {
+            return ShortestPathFallback.dijkstra(this, fromId, toId, options)
+        }
+
         val fromIdValue = fromId.value.toLongOrNull() ?: return null
         val toIdValue = toId.value.toLongOrNull() ?: return null
 
@@ -241,12 +267,19 @@ class TinkerGraphOperations : GraphOperations, GraphAlgorithmRepository {
                 .limit(1)
                 .toList()
         } catch (e: Exception) {
-            log.debug(e) { "shortestPath traversal failed: from=$fromId to=$toId options=$options" }
+            log.warn(e) { "shortestPath traversal failed: from=$fromId to=$toId options=$options" }
             emptyList()
         }
 
         return paths.firstOrNull()?.let { GremlinRecordMapper.pathToGraphPath(it) }
     }
+
+    override fun aStarPath(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        options: PathOptions,
+        heuristic: (GraphVertex) -> Double,
+    ): GraphPath? = ShortestPathFallback.aStar(this, fromId, toId, options, heuristic)
 
     override fun allPaths(
         fromId: GraphElementId,
@@ -273,7 +306,7 @@ class TinkerGraphOperations : GraphOperations, GraphAlgorithmRepository {
                 .path()
                 .toList()
         } catch (e: Exception) {
-            log.debug(e) { "allPaths traversal failed: from=$fromId to=$toId options=$options" }
+            log.warn(e) { "allPaths traversal failed: from=$fromId to=$toId options=$options" }
             emptyList()
         }
 
@@ -345,7 +378,10 @@ class TinkerGraphOperations : GraphOperations, GraphAlgorithmRepository {
 
         // Use JVM fallback via UnionFind to ensure consistent behavior across TinkerPop versions
         val vertices = (if (options.vertexLabel != null) g.V().hasLabel(options.vertexLabel) else g.V()).toList()
-        val vertexMap = vertices.associate { GremlinRecordMapper.vertexToGraphVertex(it).id to GremlinRecordMapper.vertexToGraphVertex(it) }
+        val vertexMap = vertices.associate { v ->
+            val gv = GremlinRecordMapper.vertexToGraphVertex(v)
+            gv.id to gv
+        }
         val ids = vertexMap.keys
 
         val uf = io.bluetape4k.graph.algo.internal.UnionFind(ids)

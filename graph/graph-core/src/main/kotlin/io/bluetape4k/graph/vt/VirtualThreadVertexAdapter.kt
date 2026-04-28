@@ -34,6 +34,9 @@ class VirtualThreadVertexAdapter(
     ): CompletableFuture<GraphVertex?> =
         virtualFutureOfNullable { delegate.findVertexById(label, id) }
 
+    override fun findVertexByIdAsync(id: GraphElementId): CompletableFuture<GraphVertex?> =
+        virtualFutureOfNullable { delegate.findVertexById(id) }
+
     override fun findVerticesByLabelAsync(
         label: String,
         filter: Map<String, Any?>,

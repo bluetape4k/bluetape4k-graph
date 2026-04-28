@@ -4,11 +4,12 @@ import com.falkordb.Driver
 import com.falkordb.Record
 import com.falkordb.ResultSet
 import io.bluetape4k.graph.GraphQueryException
+import io.bluetape4k.graph.algo.ShortestPathFallback
 import io.bluetape4k.graph.algo.internal.BfsDfsRunner
 import io.bluetape4k.graph.algo.internal.CycleDetector
 import io.bluetape4k.graph.algo.internal.PageRankCalculator
 import io.bluetape4k.graph.algo.internal.UnionFind
-import io.bluetape4k.graph.falkordb.internal.requireSafeIdentifier
+import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
@@ -158,6 +159,14 @@ class FalkorDBGraphOperations(
         }.firstOrNull()
     }
 
+    override fun findVertexById(id: GraphElementId): GraphVertex? =
+        queryList(
+            "MATCH (n) WHERE id(n) = toInteger(\$id) RETURN n",
+            mapOf("id" to id.value),
+        ) {
+            it.toVertex()
+        }.firstOrNull()
+
     override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> {
         label.requireNotBlank("label").requireSafeIdentifier("label")
         val whereClause =
@@ -267,6 +276,30 @@ class FalkorDBGraphOperations(
         }
     }
 
+    override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
+        edgeLabel?.requireNotBlank("edgeLabel")
+        val edgePattern = edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
+
+        return queryList(
+            "MATCH (a)-[r$edgePattern]->(b) WHERE id(a) = toInteger(\$startId) RETURN r",
+            mapOf("startId" to startId.value),
+        ) {
+            it.toEdge()
+        }
+    }
+
+    override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
+        edgeLabel?.requireNotBlank("edgeLabel")
+        val edgePattern = edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
+
+        return queryList(
+            "MATCH (a)-[r$edgePattern]->(b) WHERE id(b) = toInteger(\$endId) RETURN r",
+            mapOf("endId" to endId.value),
+        ) {
+            it.toEdge()
+        }
+    }
+
     override fun deleteEdge(label: String, id: GraphElementId): Boolean {
         label.requireNotBlank("label").requireSafeIdentifier("label")
 
@@ -310,11 +343,15 @@ class FalkorDBGraphOperations(
         toId: GraphElementId,
         options: PathOptions,
     ): GraphPath? {
+        options.edgeLabel?.requireNotBlank("edgeLabel")
         fromId.value.toLongOrNull()
             ?: throw GraphQueryException("FalkorDB requires numeric ID, got: $fromId")
         toId.value.toLongOrNull()
             ?: throw GraphQueryException("FalkorDB requires numeric ID, got: $toId")
-        options.edgeLabel?.requireNotBlank("edgeLabel")
+
+        if (options.weightProperty != null) {
+            return ShortestPathFallback.dijkstra(this, fromId, toId, options)
+        }
 
         val relPattern =
             if (options.edgeLabel != null) ":" + options.edgeLabel + "*1.." + options.maxDepth
@@ -328,6 +365,21 @@ class FalkorDBGraphOperations(
         ) {
             it.toPath()
         }.firstOrNull()
+    }
+
+    override fun aStarPath(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        options: PathOptions,
+        heuristic: (GraphVertex) -> Double,
+    ): GraphPath? {
+        options.edgeLabel?.requireNotBlank("edgeLabel")
+        fromId.value.toLongOrNull()
+            ?: throw GraphQueryException("FalkorDB requires numeric ID, got: $fromId")
+        toId.value.toLongOrNull()
+            ?: throw GraphQueryException("FalkorDB requires numeric ID, got: $toId")
+
+        return ShortestPathFallback.aStar(this, fromId, toId, options, heuristic)
     }
 
     override fun allPaths(

@@ -3,6 +3,7 @@ package io.bluetape4k.graph.age
 import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.age.sql.AgeSql
 import io.bluetape4k.graph.age.sql.AgeTypeParser
+import io.bluetape4k.graph.algo.ShortestPathFallback
 import io.bluetape4k.graph.algo.internal.BfsDfsRunner
 import io.bluetape4k.graph.algo.internal.CycleDetector
 import io.bluetape4k.graph.algo.internal.PageRankCalculator
@@ -26,6 +27,7 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.repository.GraphOperations
+import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.warn
 import io.bluetape4k.support.requireNotBlank
@@ -66,7 +68,7 @@ class AgeGraphOperations(
     companion object: KLogging()
 
     init {
-        graphName.requireNotBlank("graphName")
+        graphName.requireNotBlank("graphName").requireSafeIdentifier("graphName")
     }
 
     override fun createGraph(name: String) {
@@ -126,6 +128,18 @@ class AgeGraphOperations(
                 ?: throw GraphQueryException("AGE requires numeric ID, got: ${id.value}")
             var vertex: GraphVertex? = null
             exec(AgeSql.matchVertexById(graphName, label, longId)) { rs ->
+                if (rs.next()) vertex = AgeTypeParser.parseVertex(rs.getString("v"))
+            }
+            vertex
+        }
+    }
+
+    override fun findVertexById(id: GraphElementId): GraphVertex? {
+        return transaction {
+            val longId = id.value.toLongOrNull()
+                ?: throw GraphQueryException("AGE requires numeric ID, got: ${id.value}")
+            var vertex: GraphVertex? = null
+            exec(AgeSql.matchVertexById(graphName, longId)) { rs ->
                 if (rs.next()) vertex = AgeTypeParser.parseVertex(rs.getString("v"))
             }
             vertex
@@ -228,6 +242,36 @@ class AgeGraphOperations(
         }
     }
 
+    override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
+        val longId = startId.value.toLongOrNull()
+            ?: throw GraphQueryException("AGE requires numeric ID, got: ${startId.value}")
+        return transaction {
+            val edges = mutableListOf<GraphEdge>()
+            val stmt = AgeSql.matchEdgesByStartId(graphName, longId, edgeLabel)
+            exec(stmt) { rs ->
+                while (rs.next()) {
+                    edges.add(AgeTypeParser.parseEdge(rs.getString("e")))
+                }
+            }
+            edges
+        }
+    }
+
+    override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
+        val longId = endId.value.toLongOrNull()
+            ?: throw GraphQueryException("AGE requires numeric ID, got: ${endId.value}")
+        return transaction {
+            val edges = mutableListOf<GraphEdge>()
+            val stmt = AgeSql.matchEdgesByEndId(graphName, longId, edgeLabel)
+            exec(stmt) { rs ->
+                while (rs.next()) {
+                    edges.add(AgeTypeParser.parseEdge(rs.getString("e")))
+                }
+            }
+            edges
+        }
+    }
+
     override fun deleteEdge(label: String, id: GraphElementId): Boolean {
         label.requireNotBlank("label")
         val longId = id.value.toLongOrNull()
@@ -274,6 +318,10 @@ class AgeGraphOperations(
         toId: GraphElementId,
         options: PathOptions,
     ): GraphPath? {
+        if (options.weightProperty != null) {
+            return ShortestPathFallback.dijkstra(this, fromId, toId, options)
+        }
+
         val from = fromId.value.toLongOrNull()
             ?: throw GraphQueryException("AGE requires numeric ID, got: ${fromId.value}")
         val to = toId.value.toLongOrNull()
@@ -290,6 +338,13 @@ class AgeGraphOperations(
             path
         }
     }
+
+    override fun aStarPath(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        options: PathOptions,
+        heuristic: (GraphVertex) -> Double,
+    ): GraphPath? = ShortestPathFallback.aStar(this, fromId, toId, options, heuristic)
 
     override fun allPaths(
         fromId: GraphElementId,

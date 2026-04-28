@@ -8,12 +8,14 @@ import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.logging.KLogging
+import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeNull
 import org.amshove.kluent.shouldBeTrue
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -51,6 +53,11 @@ class CachingMemgraphGraphOperationsTest {
     fun setup() {
         delegate = mockk(relaxed = true)
         caching = CachingMemgraphGraphOperations(delegate)
+    }
+
+    @AfterEach
+    fun tearDown() {
+        clearMocks(delegate)
     }
 
     // ───── findVertexById 캐싱 ─────

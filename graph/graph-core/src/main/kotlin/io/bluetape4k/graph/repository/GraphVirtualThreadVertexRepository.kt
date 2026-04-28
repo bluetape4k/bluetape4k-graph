@@ -22,6 +22,8 @@ interface GraphVirtualThreadVertexRepository {
         id: GraphElementId,
     ): CompletableFuture<GraphVertex?>
 
+    fun findVertexByIdAsync(id: GraphElementId): CompletableFuture<GraphVertex?>
+
     fun findVerticesByLabelAsync(
         label: String,
         filter: Map<String, Any?> = emptyMap(),

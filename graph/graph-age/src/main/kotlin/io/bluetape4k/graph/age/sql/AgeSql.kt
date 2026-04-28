@@ -1,5 +1,7 @@
 package io.bluetape4k.graph.age.sql
 
+import io.bluetape4k.graph.support.requireSafeIdentifier
+
 /**
  * Apache AGE Cypher-over-SQL 쿼리 문자열 빌더.
  *
@@ -80,8 +82,10 @@ object AgeSql {
      * // → "SELECT count(*) FROM ag_catalog.ag_graph WHERE name = 'social'"
      * ```
      */
-    fun graphExists(graphName: String): String =
-        "SELECT count(*) FROM ag_catalog.ag_graph WHERE name = '$graphName'"
+    fun graphExists(graphName: String): String {
+        graphName.requireSafeIdentifier("graphName")
+        return "SELECT count(*) FROM ag_catalog.ag_graph WHERE name = '$graphName'"
+    }
 
     /**
      * Cypher 쿼리를 AGE SQL로 래핑합니다.
@@ -366,7 +370,7 @@ object AgeSql {
      * @param edgeLabel `null` 이면 모든 간선.
      */
     fun degreeCentrality(graphName: String, vertexId: Long, edgeLabel: String? = null): String {
-        val edgeClause = edgeLabel?.let { ":${sanitizeLabel(it)}" } ?: ""
+        val edgeClause = edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
         return """
             SELECT in_d, out_d FROM ag_catalog.cypher('$graphName', $$
                 MATCH (n) WHERE id(n) = $vertexId
@@ -378,9 +382,62 @@ object AgeSql {
         """.trimIndent()
     }
 
-    private fun sanitizeLabel(label: String): String {
-        require(label.matches(Regex("^[A-Za-z_][A-Za-z0-9_]*$"))) { "Invalid label: $label" }
-        return label
+    /**
+     * 레이블 없이 ID로 단일 정점을 조회하는 AGE SQL을 반환한다.
+     *
+     * Dijkstra/A* 알고리즘에서 레이블 불명 ID를 조회할 때 사용한다.
+     *
+     * ```kotlin
+     * AgeSql.matchVertexById("social", 42L)
+     * ```
+     */
+    fun matchVertexById(graphName: String, id: Long): String =
+        cypher(
+            graphName,
+            "MATCH (v) WHERE id(v) = $id RETURN v",
+            listOf("v" to "agtype")
+        )
+
+    /**
+     * 시작 정점 ID로 출발 간선 목록을 조회하는 AGE SQL을 반환한다.
+     *
+     * ```kotlin
+     * AgeSql.matchEdgesByStartId("social", 1L, "KNOWS")
+     * AgeSql.matchEdgesByStartId("social", 1L, null)  // 모든 레이블
+     * ```
+     *
+     * @param graphName AGE 그래프 이름.
+     * @param startId 시작 정점의 AGE numeric ID.
+     * @param edgeLabel 간선 레이블 필터. null이면 모든 레이블 반환.
+     */
+    fun matchEdgesByStartId(graphName: String, startId: Long, edgeLabel: String?): String {
+        val rel = if (edgeLabel != null) ":${sanitizeLabel(edgeLabel)}" else ""
+        return cypher(
+            graphName,
+            "MATCH (a)-[e$rel]->(b) WHERE id(a) = $startId RETURN e",
+            listOf("e" to "agtype")
+        )
+    }
+
+    /**
+     * 종료 정점 ID로 도착 간선 목록을 조회하는 AGE SQL을 반환한다.
+     *
+     * ```kotlin
+     * AgeSql.matchEdgesByEndId("social", 2L, "KNOWS")
+     * AgeSql.matchEdgesByEndId("social", 2L, null)  // 모든 레이블
+     * ```
+     *
+     * @param graphName AGE 그래프 이름.
+     * @param endId 종료 정점의 AGE numeric ID.
+     * @param edgeLabel 간선 레이블 필터. null이면 모든 레이블 반환.
+     */
+    fun matchEdgesByEndId(graphName: String, endId: Long, edgeLabel: String?): String {
+        val rel = if (edgeLabel != null) ":${sanitizeLabel(edgeLabel)}" else ""
+        return cypher(
+            graphName,
+            "MATCH (a)-[e$rel]->(b) WHERE id(b) = $endId RETURN e",
+            listOf("e" to "agtype")
+        )
     }
 
     /**

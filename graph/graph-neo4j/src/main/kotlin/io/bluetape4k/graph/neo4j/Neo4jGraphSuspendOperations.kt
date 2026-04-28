@@ -1,6 +1,7 @@
 package io.bluetape4k.graph.neo4j
 
 import io.bluetape4k.graph.GraphQueryException
+import io.bluetape4k.graph.algo.ShortestPathFallback
 import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
@@ -19,6 +20,7 @@ import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.repository.GraphSuspendOperations
+import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
 import io.bluetape4k.support.requireNotBlank
@@ -150,7 +152,7 @@ class Neo4jGraphSuspendOperations(
     // -- GraphSuspendVertexRepository --
 
     override suspend fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex {
-        label.requireNotBlank("label")
+        label.requireNotBlank("label").requireSafeIdentifier("label")
 
         val propsClause = if (properties.isEmpty()) "" else $$" $props"
         val cypher = $$"CREATE (n:$$label$$propsClause) RETURN n"
@@ -162,7 +164,7 @@ class Neo4jGraphSuspendOperations(
     }
 
     override suspend fun findVertexById(label: String, id: GraphElementId): GraphVertex? {
-        label.requireNotBlank("label")
+        label.requireNotBlank("label").requireSafeIdentifier("label")
 
         return runQuery(
             $$"MATCH (n:$$label) WHERE elementId(n) = $id RETURN n",
@@ -172,8 +174,17 @@ class Neo4jGraphSuspendOperations(
         }.firstOrNull()
     }
 
+    override suspend fun findVertexById(id: GraphElementId): GraphVertex? {
+        return runQuery(
+            $$"MATCH (n) WHERE elementId(n) = $id RETURN n",
+            mapOf("id" to id.value),
+        ) {
+            Neo4jRecordMapper.recordToVertex(it)
+        }.firstOrNull()
+    }
+
     override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphVertex> {
-        label.requireNotBlank("label")
+        label.requireNotBlank("label").requireSafeIdentifier("label")
 
         val whereClause = if (filter.isEmpty()) "" else
             " WHERE " + filter.keys.joinToString(" AND ") { $$"n.$$it = $$$it" }
@@ -187,7 +198,7 @@ class Neo4jGraphSuspendOperations(
     }
 
     override suspend fun updateVertex(label: String, id: GraphElementId, properties: Map<String, Any?>): GraphVertex? {
-        label.requireNotBlank("label")
+        label.requireNotBlank("label").requireSafeIdentifier("label")
 
         if (properties.isEmpty()) return findVertexById(label, id)
         val setClause = properties.keys.joinToString(", ") { $$"n.$$it = $$$it" }
@@ -200,8 +211,7 @@ class Neo4jGraphSuspendOperations(
     }
 
     override suspend fun deleteVertex(label: String, id: GraphElementId): Boolean {
-        label.requireNotBlank("label")
-        id.value.toLongOrNull() ?: throw GraphQueryException("Invalid vertex id: $id")
+        label.requireNotBlank("label").requireSafeIdentifier("label")
 
         val s = session()
 
@@ -216,7 +226,7 @@ class Neo4jGraphSuspendOperations(
     }
 
     override suspend fun countVertices(label: String): Long {
-        label.requireNotBlank("label")
+        label.requireNotBlank("label").requireSafeIdentifier("label")
 
         val s = session()
 
@@ -238,7 +248,7 @@ class Neo4jGraphSuspendOperations(
     ): GraphEdge {
         fromId.value.requireNotBlank("fromId.value")
         toId.value.requireNotBlank("toId.value")
-        label.requireNotBlank("label")
+        label.requireNotBlank("label").requireSafeIdentifier("label")
 
         val propsClause = if (properties.isEmpty()) "" else $$" $props"
         val params = mutableMapOf<String, Any?>("fromId" to fromId.value, "toId" to toId.value)
@@ -254,7 +264,7 @@ class Neo4jGraphSuspendOperations(
     }
 
     override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphEdge> {
-        label.requireNotBlank("label")
+        label.requireNotBlank("label").requireSafeIdentifier("label")
 
         val whereClause = if (filter.isEmpty()) "" else
             " WHERE " + filter.keys.joinToString(" AND ") { $$"r.$$it = $$$it" }
@@ -267,8 +277,24 @@ class Neo4jGraphSuspendOperations(
         }
     }
 
+    override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): Flow<GraphEdge> {
+        val labelPart = if (edgeLabel != null) $$":$$edgeLabel" else ""
+        return flowQuery(
+            $$"MATCH (n)-[r$$labelPart]->(m) WHERE elementId(n) = $startId RETURN r",
+            mapOf("startId" to startId.value),
+        ) { Neo4jRecordMapper.recordToEdge(it) }
+    }
+
+    override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): Flow<GraphEdge> {
+        val labelPart = if (edgeLabel != null) $$":$$edgeLabel" else ""
+        return flowQuery(
+            $$"MATCH (n)-[r$$labelPart]->(m) WHERE elementId(m) = $endId RETURN r",
+            mapOf("endId" to endId.value),
+        ) { Neo4jRecordMapper.recordToEdge(it) }
+    }
+
     override suspend fun deleteEdge(label: String, id: GraphElementId): Boolean {
-        label.requireNotBlank("label")
+        label.requireNotBlank("label").requireSafeIdentifier("label")
 
         val s = session()
 
@@ -315,6 +341,10 @@ class Neo4jGraphSuspendOperations(
         fromId.value.requireNotBlank("fromId.value")
         toId.value.requireNotBlank("toId.value")
 
+        if (options.weightProperty != null) {
+            return withContext(Dispatchers.IO) { ShortestPathFallback.dijkstra(syncDelegate, fromId, toId, options) }
+        }
+
         val relPattern =
             if (options.edgeLabel != null) $$":$${options.edgeLabel}*1..$${options.maxDepth}"
             else $$"*1..$${options.maxDepth}"
@@ -326,6 +356,17 @@ class Neo4jGraphSuspendOperations(
         ) {
             Neo4jRecordMapper.recordToPath(it)
         }.firstOrNull()
+    }
+
+    override suspend fun aStarPath(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        options: PathOptions,
+        heuristic: (GraphVertex) -> Double,
+    ): GraphPath? {
+        fromId.value.requireNotBlank("fromId.value")
+        toId.value.requireNotBlank("toId.value")
+        return withContext(Dispatchers.IO) { ShortestPathFallback.aStar(syncDelegate, fromId, toId, options, heuristic) }
     }
 
     override fun allPaths(

@@ -1,6 +1,7 @@
 package io.bluetape4k.graph.memgraph
 
 import io.bluetape4k.graph.GraphQueryException
+import io.bluetape4k.graph.algo.ShortestPathFallback
 import io.bluetape4k.graph.algo.internal.BfsDfsRunner
 import io.bluetape4k.graph.algo.internal.CycleDetector
 import io.bluetape4k.graph.algo.internal.PageRankCalculator
@@ -24,6 +25,7 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.repository.GraphOperations
+import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.info
@@ -67,13 +69,7 @@ class MemgraphGraphOperations(
     private val database: String = "memgraph",
 ): GraphOperations {
 
-    companion object: KLogging() {
-        private val SAFE_IDENTIFIER = Regex("^[A-Za-z_][A-Za-z0-9_]*$")
-    }
-
-    private fun String.requireSafeIdentifier(paramName: String): String = apply {
-        require(SAFE_IDENTIFIER.matches(this)) { "$paramName must be a valid identifier (alphanumeric/_): $this" }
-    }
+    companion object: KLogging()
 
     private fun session(): Session =
         driver.session(SessionConfig.builder().withDatabase(database).build())
@@ -147,6 +143,13 @@ class MemgraphGraphOperations(
         ) {
             MemgraphRecordMapper.recordToVertex(it)
         }.firstOrNull()
+    }
+
+    override fun findVertexById(id: GraphElementId): GraphVertex? {
+        return runQuery(
+            "MATCH (n) WHERE id(n) = toInteger(\$id) RETURN n",
+            mapOf("id" to id.value),
+        ) { MemgraphRecordMapper.recordToVertex(it) }.firstOrNull()
     }
 
     override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> {
@@ -231,6 +234,22 @@ class MemgraphGraphOperations(
         ) { MemgraphRecordMapper.recordToEdge(it) }
     }
 
+    override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
+        val labelPart = if (edgeLabel != null) ":$edgeLabel" else ""
+        return runQuery(
+            "MATCH (n)-[r$labelPart]->(m) WHERE id(n) = toInteger(\$startId) RETURN r",
+            mapOf("startId" to startId.value),
+        ) { MemgraphRecordMapper.recordToEdge(it) }
+    }
+
+    override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
+        val labelPart = if (edgeLabel != null) ":$edgeLabel" else ""
+        return runQuery(
+            "MATCH (n)-[r$labelPart]->(m) WHERE id(m) = toInteger(\$endId) RETURN r",
+            mapOf("endId" to endId.value),
+        ) { MemgraphRecordMapper.recordToEdge(it) }
+    }
+
     override fun deleteEdge(label: String, id: GraphElementId): Boolean {
         label.requireNotBlank("label").requireSafeIdentifier("label")
 
@@ -275,6 +294,10 @@ class MemgraphGraphOperations(
         fromId.value.toLongOrNull() ?: throw GraphQueryException("Memgraph requires numeric ID, got: $fromId")
         toId.value.toLongOrNull() ?: throw GraphQueryException("Memgraph requires numeric ID, got: $toId")
 
+        if (options.weightProperty != null) {
+            return ShortestPathFallback.dijkstra(this, fromId, toId, options)
+        }
+
         // Memgraph는 shortestPath() 미지원 → depth-limited MATCH + ORDER BY length(p) LIMIT 1 사용
         val relPattern =
             if (options.edgeLabel != null) ":" + options.edgeLabel + "*1.." + options.maxDepth
@@ -287,6 +310,17 @@ class MemgraphGraphOperations(
         ) {
             MemgraphRecordMapper.recordToPath(it)
         }.firstOrNull()
+    }
+
+    override fun aStarPath(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        options: PathOptions,
+        heuristic: (GraphVertex) -> Double,
+    ): GraphPath? {
+        fromId.value.requireNotBlank("fromId.value")
+        toId.value.requireNotBlank("toId.value")
+        return ShortestPathFallback.aStar(this, fromId, toId, options, heuristic)
     }
 
     override fun allPaths(
@@ -312,17 +346,12 @@ class MemgraphGraphOperations(
 
     // -- GraphAlgorithmRepository --
 
-    private fun sanitizeLabel(label: String): String {
-        require(label.matches(Regex("^[A-Za-z_][A-Za-z0-9_]*$"))) { "Invalid label: $label" }
-        return label
-    }
-
     override fun degreeCentrality(
         vertexId: GraphElementId,
         options: DegreeOptions,
     ): DegreeResult {
         options.edgeLabel?.requireNotBlank("edgeLabel")
-        val edgePattern = options.edgeLabel?.let { ":${sanitizeLabel(it)}" } ?: ""
+        val edgePattern = options.edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
 
         val cypher = """
             MATCH (n) WHERE id(n) = toInteger(${'$'}id)
@@ -372,8 +401,8 @@ class MemgraphGraphOperations(
         options.vertexLabel?.requireNotBlank("vertexLabel")
         options.edgeLabel?.requireNotBlank("edgeLabel")
 
-        val labelClause = options.vertexLabel?.let { ":${sanitizeLabel(it)}" } ?: ""
-        val edgePattern = options.edgeLabel?.let { ":${sanitizeLabel(it)}" } ?: ""
+        val labelClause = options.vertexLabel?.let { ":${it.requireSafeIdentifier("vertexLabel")}" } ?: ""
+        val edgePattern = options.edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
         val pathPattern = "(a$labelClause)-[r$edgePattern*1..${options.maxDepth}]->(a)"
 
         val cypher = """
@@ -405,8 +434,8 @@ class MemgraphGraphOperations(
         options.vertexLabel?.requireNotBlank("vertexLabel")
         options.edgeLabel?.requireNotBlank("edgeLabel")
 
-        val labelClause = options.vertexLabel?.let { ":${sanitizeLabel(it)}" } ?: ""
-        val edgePattern = options.edgeLabel?.let { ":${sanitizeLabel(it)}" } ?: ""
+        val labelClause = options.vertexLabel?.let { ":${it.requireSafeIdentifier("vertexLabel")}" } ?: ""
+        val edgePattern = options.edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
 
         val vertices = runQuery("MATCH (n$labelClause) RETURN n", emptyMap<String, Any>()) {
             MemgraphRecordMapper.nodeToVertex(it["n"].asNode())
@@ -440,8 +469,8 @@ class MemgraphGraphOperations(
         options.edgeLabel?.requireNotBlank("edgeLabel")
         log.warn { "pageRank: Memgraph JVM fallback in use (no MAGE). Consider topK to limit results." }
 
-        val labelClause = options.vertexLabel?.let { ":${sanitizeLabel(it)}" } ?: ""
-        val edgePattern = options.edgeLabel?.let { ":${sanitizeLabel(it)}" } ?: ""
+        val labelClause = options.vertexLabel?.let { ":${it.requireSafeIdentifier("vertexLabel")}" } ?: ""
+        val edgePattern = options.edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
 
         val vertices = runQuery("MATCH (n$labelClause) RETURN n", emptyMap<String, Any>()) {
             MemgraphRecordMapper.nodeToVertex(it["n"].asNode())
@@ -477,7 +506,7 @@ class MemgraphGraphOperations(
         edgeLabel: String?,
         direction: Direction,
     ): Pair<Map<GraphElementId, List<GraphElementId>>, Map<GraphElementId, GraphVertex>> {
-        val edgePattern = edgeLabel?.let { ":${sanitizeLabel(it)}" } ?: ""
+        val edgePattern = edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
         val vertexById = HashMap<GraphElementId, GraphVertex>()
         val adjacency = HashMap<GraphElementId, MutableList<GraphElementId>>()
 
@@ -499,8 +528,8 @@ class MemgraphGraphOperations(
     }
 
     private fun detectCyclesViaFallback(options: CycleOptions): List<GraphCycle> {
-        val labelClause = options.vertexLabel?.let { ":${sanitizeLabel(it)}" } ?: ""
-        val edgePattern = options.edgeLabel?.let { ":${sanitizeLabel(it)}" } ?: ""
+        val labelClause = options.vertexLabel?.let { ":${it.requireSafeIdentifier("vertexLabel")}" } ?: ""
+        val edgePattern = options.edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
 
         val vertices = runQuery("MATCH (n$labelClause) RETURN n", emptyMap<String, Any>()) {
             MemgraphRecordMapper.nodeToVertex(it["n"].asNode())

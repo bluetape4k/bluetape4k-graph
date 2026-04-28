@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.tinkerpop
 
+import io.bluetape4k.graph.algo.ShortestPathFallback
 import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
@@ -94,6 +95,11 @@ class TinkerGraphSuspendOperations(
             delegate.findVertexById(label, id)
         }
 
+    override suspend fun findVertexById(id: GraphElementId): GraphVertex? =
+        withContext(Dispatchers.IO) {
+            delegate.findVertexById(id)
+        }
+
     override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphVertex> = flow {
         val list = withContext(Dispatchers.IO) {
             delegate.findVerticesByLabel(label, filter)
@@ -134,6 +140,20 @@ class TinkerGraphSuspendOperations(
         list.forEach { emit(it) }
     }
 
+    override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): Flow<GraphEdge> = flow {
+        val list = withContext(Dispatchers.IO) {
+            delegate.findEdgesByStartId(startId, edgeLabel)
+        }
+        list.forEach { emit(it) }
+    }
+
+    override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): Flow<GraphEdge> = flow {
+        val list = withContext(Dispatchers.IO) {
+            delegate.findEdgesByEndId(endId, edgeLabel)
+        }
+        list.forEach { emit(it) }
+    }
+
     override suspend fun deleteEdge(label: String, id: GraphElementId): Boolean =
         withContext(Dispatchers.IO) {
             delegate.deleteEdge(label, id)
@@ -156,7 +176,20 @@ class TinkerGraphSuspendOperations(
         toId: GraphElementId,
         options: PathOptions,
     ): GraphPath? = withContext(Dispatchers.IO) {
-        delegate.shortestPath(fromId, toId, options)
+        if (options.weightProperty != null) {
+            ShortestPathFallback.dijkstra(delegate, fromId, toId, options)
+        } else {
+            delegate.shortestPath(fromId, toId, options)
+        }
+    }
+
+    override suspend fun aStarPath(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        options: PathOptions,
+        heuristic: (GraphVertex) -> Double,
+    ): GraphPath? = withContext(Dispatchers.IO) {
+        ShortestPathFallback.aStar(delegate, fromId, toId, options, heuristic)
     }
 
     override fun allPaths(
@@ -173,34 +206,34 @@ class TinkerGraphSuspendOperations(
     // -- GraphSuspendAlgorithmRepository --
 
     override fun pageRank(options: PageRankOptions): Flow<PageRankScore> = flow {
-        val list = withContext(Dispatchers.IO) { delegate.pageRank(options) }
+        val list = withContext(Dispatchers.Default) { delegate.pageRank(options) }
         list.forEach { emit(it) }
     }
 
     override suspend fun degreeCentrality(
         vertexId: GraphElementId,
         options: DegreeOptions,
-    ): DegreeResult = withContext(Dispatchers.IO) {
+    ): DegreeResult = withContext(Dispatchers.Default) {
         delegate.degreeCentrality(vertexId, options)
     }
 
     override fun connectedComponents(options: ComponentOptions): Flow<GraphComponent> = flow {
-        val list = withContext(Dispatchers.IO) { delegate.connectedComponents(options) }
+        val list = withContext(Dispatchers.Default) { delegate.connectedComponents(options) }
         list.forEach { emit(it) }
     }
 
     override fun bfs(startId: GraphElementId, options: BfsDfsOptions): Flow<TraversalVisit> = flow {
-        val list = withContext(Dispatchers.IO) { delegate.bfs(startId, options) }
+        val list = withContext(Dispatchers.Default) { delegate.bfs(startId, options) }
         list.forEach { emit(it) }
     }
 
     override fun dfs(startId: GraphElementId, options: BfsDfsOptions): Flow<TraversalVisit> = flow {
-        val list = withContext(Dispatchers.IO) { delegate.dfs(startId, options) }
+        val list = withContext(Dispatchers.Default) { delegate.dfs(startId, options) }
         list.forEach { emit(it) }
     }
 
     override fun detectCycles(options: CycleOptions): Flow<GraphCycle> = flow {
-        val list = withContext(Dispatchers.IO) { delegate.detectCycles(options) }
+        val list = withContext(Dispatchers.Default) { delegate.detectCycles(options) }
         list.forEach { emit(it) }
     }
 }

@@ -51,10 +51,10 @@ class VirtualThreadSessionAdapterTest {
     }
 
     @Test
-    fun `graphExistsAsync returns false for nonexistent graph`() {
-        // TinkerGraph는 단일 그래프 인메모리 구현이므로 항상 false 반환
+    fun `graphExistsAsync returns true for any name in TinkerGraph`() {
+        // TinkerGraph는 단일 인메모리 그래프 — 이름과 무관하게 항상 true 반환
         val exists = adapter.graphExistsAsync("nonexistent-graph-xyz").join()
-        exists.shouldNotBeNull()
+        exists.shouldBeTrue()
     }
 
     @Test
