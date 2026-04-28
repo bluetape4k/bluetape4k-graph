@@ -1,6 +1,6 @@
 # bluetape4k-graph
 
-Graph database integration library for the bluetape4k ecosystem. Provides a unified abstract API over Apache AGE, Neo4j, Memgraph, and Apache TinkerPop.
+Graph database integration library for the bluetape4k ecosystem. Provides a unified abstract API over Apache AGE, Neo4j, Memgraph, Apache TinkerPop, and FalkorDB.
 
 > 🇰🇷 [한국어 문서](README.ko.md)
 
@@ -13,6 +13,7 @@ graph/
   graph-neo4j      # Neo4j Java Driver implementation
   graph-memgraph   # Memgraph (Neo4j protocol compatible) implementation
   graph-tinkerpop  # Apache TinkerPop / TinkerGraph in-memory implementation
+  graph-falkordb   # FalkorDB (Redis-based) implementation — jfalkordb 0.7.0
 graph-io/
   core             # Shared contracts, models, options, and helpers for bulk I/O
   csv              # CSV bulk import/export (Sync / VirtualThread / Coroutine)
@@ -27,8 +28,8 @@ spring-boot3/
 spring-boot4/
   graph-spring-boot4-starter  # Spring Boot 4.x AutoConfiguration
 examples/
-  code-graph-examples     # Code dependency graph examples (AGE, Neo4j, Memgraph, TinkerGraph integration)
-  linkedin-graph-examples # LinkedIn social graph examples (AGE, Neo4j, Memgraph, TinkerGraph integration)
+  code-graph-examples     # Code dependency graph examples (AGE, Neo4j, Memgraph, TinkerGraph, FalkorDB integration)
+  linkedin-graph-examples # LinkedIn social graph examples (AGE, Neo4j, Memgraph, TinkerGraph, FalkorDB integration)
 ```
 
 ## Core Abstraction (`graph-core`)
@@ -112,7 +113,7 @@ SuspendGraphMlBulkExporter().exportGraphSuspending(
 // build.gradle.kts
 dependencyManagement {
     imports {
-        mavenBom("io.github.bluetape4k.graph:bluetape4k-graph-bom:0.0.1")
+        mavenBom("io.github.bluetape4k.graph:bluetape4k-graph-bom:0.2.0")
     }
 }
 
@@ -126,8 +127,8 @@ dependencies {
 
 ```kotlin
 dependencies {
-    implementation("io.github.bluetape4k.graph:graph-core:0.0.1")
-    implementation("io.github.bluetape4k.graph:graph-neo4j:0.0.1")
+    implementation("io.github.bluetape4k.graph:graph-core:0.2.0")
+    implementation("io.github.bluetape4k.graph:graph-neo4j:0.2.0")
     // graph-age | graph-memgraph | graph-tinkerpop
 }
 ```
@@ -173,14 +174,31 @@ val neighbors = ops.neighbors(alice.id, "KNOWS", Direction.OUTGOING, depth = 1)
 ops.close()
 ```
 
+### FalkorDB (Redis-based)
+
+```kotlin
+import com.falkordb.FalkorDB
+import io.bluetape4k.graph.falkordb.FalkorDBGraphOperations
+
+val driver = FalkorDB.driver("localhost", 6379)
+val ops = FalkorDBGraphOperations(driver, graphName = "social")
+
+val alice = ops.createVertex("Person", mapOf("name" to "Alice", "age" to 30))
+val bob   = ops.createVertex("Person", mapOf("name" to "Bob",   "age" to 25))
+ops.createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to 2024))
+
+val path = ops.shortestPath(alice.id, bob.id, "KNOWS", maxDepth = 5)
+driver.close()
+```
+
 ## Backend Comparison
 
-| Item | graph-age | graph-neo4j | graph-memgraph | graph-tinkerpop |
-|------|-----------|-------------|----------------|-----------------|
-| Query Language | Cypher-over-SQL | Cypher | Cypher | Gremlin |
-| Infrastructure | PostgreSQL + AGE | Neo4j | Memgraph | JVM in-memory |
-| Driver | JDBC + Exposed | Neo4j Java Driver | Neo4j Java Driver (compatible) | TinkerPop |
-| Test Container | `apache/age:PG16_latest` | `neo4j:5` | `memgraph/memgraph:latest` | not required |
+| Item | graph-age | graph-neo4j | graph-memgraph | graph-tinkerpop | graph-falkordb |
+|------|-----------|-------------|----------------|-----------------|----------------|
+| Query Language | Cypher-over-SQL | Cypher | Cypher | Gremlin | openCypher (subset) |
+| Infrastructure | PostgreSQL + AGE | Neo4j | Memgraph | JVM in-memory | Redis module |
+| Driver | JDBC + Exposed | Neo4j Java Driver | Neo4j Java Driver (compatible) | TinkerPop | jfalkordb 0.7.0 |
+| Test Container | `apache/age:PG16_latest` | `neo4j:5` | `memgraph/memgraph:latest` | not required | `falkordb/falkordb:v4.18.1` |
 
 ## Running Tests
 
@@ -206,10 +224,10 @@ Each example module uses the **abstract test class pattern**. Common test logic 
 
 | Abstract Class | Concrete Classes (Backend) |
 |----------------|---------------------------|
-| `AbstractCodeGraphTest` | `Neo4j/Memgraph/TinkerGraph/AgeCodeGraphTest` |
-| `AbstractCodeGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/AgeCodeGraphSuspendTest` |
-| `AbstractLinkedInGraphTest` | `Neo4j/Memgraph/TinkerGraph/AgeLinkedInGraphTest` |
-| `AbstractLinkedInGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/AgeLinkedInGraphSuspendTest` |
+| `AbstractCodeGraphTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBCodeGraphTest` |
+| `AbstractCodeGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBCodeGraphSuspendTest` |
+| `AbstractLinkedInGraphTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBLinkedInGraphTest` |
+| `AbstractLinkedInGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBLinkedInGraphSuspendTest` |
 
 Concrete classes only need to implement `ops` (`GraphOperations` or `GraphSuspendOperations`) and the server lifecycle (`@BeforeAll`/`@AfterAll`).
 
@@ -225,8 +243,9 @@ Concrete classes only need to implement `ops` (`GraphOperations` or `GraphSuspen
 - **Neo4j Java Driver** 5.x
 - **JetBrains Exposed** (JDBC for Apache AGE)
 - **Apache TinkerPop** (Gremlin)
+- **jfalkordb** 0.7.0 (FalkorDB / Redis-module graph)
 - **Testcontainers** (integration tests)
-- **bluetape4k** 1.5.x (common utilities)
+- **bluetape4k** 1.7.x (common utilities)
 
 ## Documentation
 

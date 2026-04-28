@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.2.0] - 2026-04-28
+
 ### Added
 
 - **`graph-io` 벌크 임포트/익스포트** (`graph-io/` 4개 모듈): 포맷별 대용량 I/O (Sync / VirtualThread / Coroutine)
@@ -42,6 +46,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`graph-servers` 모듈 삭제**: `bluetape4k-testcontainers`의 `io.bluetape4k.testcontainers.graphdb` 패키지(`Neo4jServer.Launcher.neo4j`, `MemgraphServer.Launcher.memgraph`, `PostgreSQLAgeServer.Launcher.postgresqlAge`)로 대체. 모든 백엔드 테스트(`graph-neo4j`, `graph-memgraph`, `graph-age`, `examples`, `spring-boot3/4 starter`)가 새 API로 마이그레이션됨.
 
 ### Fixed
+
+- **TinkerGraph `graphOperations()` 반환 타입**: `GraphOperations` → `TinkerGraphOperations` — `graphSuspendOperations(ops: TinkerGraphOperations)` 주입 불가 버그 수정
+- **Spring Boot AutoConfig 테스트 `withBean(Supplier)` 패턴 제거**: AGE AutoConfig 테스트에서 `HikariDataSource` 공유 인스턴스가 컨텍스트 소멸 시 자동 close되는 문제를 `withUserConfiguration(DataSourceConfig::class.java)` 패턴으로 수정
 
 ---
 

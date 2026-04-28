@@ -8,6 +8,32 @@ FalkorDB graph database backend for bluetape4k-graph.
 This module provides sync and coroutine implementations of `GraphOperations` / `GraphSuspendOperations`
 using the [jfalkordb](https://github.com/FalkorDB/jfalkordb) 0.7.0 Java driver.
 
+```mermaid
+graph TD
+    App["Application"]
+    OpsIface["GraphOperations<br/>(graph-core)"]
+    SuspendIface["GraphSuspendOperations<br/>(graph-core)"]
+    Impl["FalkorDBGraphOperations"]
+    SuspendImpl["FalkorDBGraphSuspendOperations"]
+    Mapper["FalkorDBRecordMapper"]
+    Session["FalkorDBSessionSupport"]
+    Driver["FalkorDB Driver<br/>(jfalkordb)"]
+    Cypher["openCypher Engine"]
+    DB["FalkorDB<br/>(Redis module)"]
+
+    App --> OpsIface
+    App --> SuspendIface
+    OpsIface <|.. Impl
+    SuspendIface <|.. SuspendImpl
+    Impl --> Mapper
+    Impl --> Session
+    SuspendImpl --> Mapper
+    SuspendImpl --> Session
+    Session --> Driver
+    Driver --> Cypher
+    Cypher --> DB
+```
+
 ## Dependencies
 
 ```kotlin
