@@ -7,8 +7,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties
  */
 @ConfigurationProperties(prefix = "bluetape4k.graph.age")
 data class AgeGraphProperties(
-    var graphName: String = "bluetape4k_graph",
-    var autoCreateGraph: Boolean = true,
-    var registerSuspend: Boolean = true,
-    var registerVirtualThread: Boolean = true,
+    val graphName: String = "bluetape4k_graph",
+    val autoCreateGraph: Boolean = true,
+    val registerSuspend: Boolean = true,
+    val registerVirtualThread: Boolean = true,
 )

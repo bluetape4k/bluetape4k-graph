@@ -5,7 +5,6 @@ import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.amshove.kluent.shouldBeGreaterThan
 import org.amshove.kluent.shouldBeNull
@@ -16,14 +15,14 @@ import org.junit.jupiter.api.Test
 
 abstract class AbstractCodeGraphSuspendTest {
 
-    companion object: KLogging()
+    companion object : KLogging()
 
     protected abstract val ops: GraphSuspendOperations
     protected open val graphName: String = "code_graph"
     protected val service: CodeGraphSuspendService by lazy { CodeGraphSuspendService(ops, graphName) }
 
     @BeforeEach
-    fun cleanGraph() = runBlocking {
+    fun cleanGraph() = runTest {
         if (ops.graphExists(graphName)) ops.dropGraph(graphName)
         service.initialize()
     }

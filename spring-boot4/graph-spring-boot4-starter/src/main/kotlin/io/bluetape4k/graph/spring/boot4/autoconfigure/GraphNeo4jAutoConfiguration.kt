@@ -10,6 +10,7 @@ import io.bluetape4k.graph.vt.asVirtualThread
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.info
 import org.neo4j.driver.AuthTokens
+import org.neo4j.driver.Config
 import org.neo4j.driver.Driver
 import org.neo4j.driver.GraphDatabase
 import org.springframework.boot.autoconfigure.AutoConfiguration
@@ -19,6 +20,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import java.util.concurrent.TimeUnit
 
 /**
  * Neo4j 백엔드 AutoConfiguration.
@@ -40,10 +42,15 @@ class GraphNeo4jAutoConfiguration {
     @Bean(name = ["neo4jDriver"], destroyMethod = "close")
     @ConditionalOnMissingBean(Driver::class)
     fun neo4jDriver(props: Neo4jGraphProperties): Driver {
-        val auth = if (props.password.isBlank()) AuthTokens.none()
+        val auth = if (props.username.isBlank() || props.password.isBlank()) AuthTokens.none()
                    else AuthTokens.basic(props.username, props.password)
-        log.info { "Creating Neo4j Driver: uri=${props.uri}, database=${props.database}" }
-        return GraphDatabase.driver(props.uri, auth)
+        val safeUri = props.uri.replace(Regex("//[^@]+@"), "//***@")
+        log.info { "Creating Neo4j Driver: uri=$safeUri, database=${props.database}" }
+        val config = Config.builder()
+            .withConnectionTimeout(props.connectionTimeoutMillis, TimeUnit.MILLISECONDS)
+            .withMaxConnectionLifetime(props.maxConnectionLifetimeMillis, TimeUnit.MILLISECONDS)
+            .build()
+        return GraphDatabase.driver(props.uri, auth, config)
     }
 
     /**
@@ -89,6 +96,9 @@ class GraphNeo4jAutoConfiguration {
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(name = ["org.springframework.boot.health.contributor.HealthIndicator"])
     class HealthConfig {
+
+        companion object : KLogging()
+
         @Bean
         @ConditionalOnMissingBean
         fun neo4jHealthIndicator(driver: Driver): org.springframework.boot.health.contributor.HealthIndicator =

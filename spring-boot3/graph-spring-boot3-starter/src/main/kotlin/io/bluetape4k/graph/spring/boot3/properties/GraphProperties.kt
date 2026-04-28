@@ -12,5 +12,5 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 @ConfigurationProperties(prefix = "bluetape4k.graph")
 data class GraphProperties(
     /** 활성 백엔드: `tinkergraph` | `neo4j` | `memgraph` | `age` */
-    var backend: String? = null,
+    val backend: String? = null,
 )

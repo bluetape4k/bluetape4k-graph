@@ -88,8 +88,14 @@ class GraphAgeAutoConfiguration {
     fun ageGraphInitializer(ops: AgeGraphOperations, props: AgeGraphProperties): InitializingBean =
         InitializingBean {
             runCatching { ops.createGraph(props.graphName) }
-                .onSuccess { log.info { "AGE graph '${props.graphName}' created / verified" } }
-                .onFailure { log.debug { "AGE graph '${props.graphName}' already exists: ${it.message}" } }
+                .onSuccess { log.info { "AGE graph '${props.graphName}' created" } }
+                .onFailure { ex ->
+                    if (ex.message?.contains("already exists", ignoreCase = true) == true) {
+                        log.debug { "AGE graph '${props.graphName}' already exists — skipping" }
+                    } else {
+                        throw ex
+                    }
+                }
         }
 
     /**
@@ -131,14 +137,23 @@ class GraphAgeAutoConfiguration {
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(name = ["org.springframework.boot.health.contributor.HealthIndicator"])
     class HealthConfig {
+
+        companion object : KLogging()
+
         @Bean
         @ConditionalOnMissingBean
-        fun ageHealthIndicator(props: AgeGraphProperties): org.springframework.boot.health.contributor.HealthIndicator =
+        fun ageHealthIndicator(dataSource: DataSource): org.springframework.boot.health.contributor.HealthIndicator =
             org.springframework.boot.health.contributor.HealthIndicator {
-                org.springframework.boot.health.contributor.Health.up()
-                    .withDetail("backend", "age")
-                    .withDetail("graphName", props.graphName)
-                    .build()
+                try {
+                    dataSource.connection.use { conn ->
+                        conn.createStatement().execute("SELECT 1")
+                    }
+                    org.springframework.boot.health.contributor.Health.up()
+                        .withDetail("backend", "age")
+                        .build()
+                } catch (ex: Exception) {
+                    org.springframework.boot.health.contributor.Health.down(ex).build()
+                }
             }
     }
 }

@@ -8,6 +8,8 @@ import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.coroutines.KLoggingChannel
+import io.bluetape4k.logging.info
+import io.bluetape4k.support.requireNotBlank
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -46,7 +48,7 @@ class CodeGraphSuspendService(
     suspend fun initialize() {
         if (!ops.graphExists(graphName)) {
             ops.createGraph(graphName)
-            log.info("Code graph '$graphName' created")
+            log.info { "Code graph '$graphName' created" }
         }
     }
 
@@ -57,8 +59,18 @@ class CodeGraphSuspendService(
      * val module = service.addModule("graph-core", path = "graph/graph-core")
      * ```
      */
-    suspend fun addModule(name: String, path: String = "", version: String = "", language: String = "kotlin"): GraphVertex =
-        ops.createVertex("Module", mapOf("name" to name, "path" to path, "version" to version, "language" to language))
+    suspend fun addModule(
+        name: String,
+        path: String = "",
+        version: String = "",
+        language: String = "kotlin",
+    ): GraphVertex {
+        name.requireNotBlank("name")
+        return ops.createVertex(
+            "Module",
+            mapOf("name" to name, "path" to path, "version" to version, "language" to language)
+        )
+    }
 
     /**
      * 클래스 정점을 추가한다.
@@ -67,8 +79,26 @@ class CodeGraphSuspendService(
      * val cls = service.addClass("MyClass", "com.example.MyClass", module = "core")
      * ```
      */
-    suspend fun addClass(name: String, qualifiedName: String, module: String = "", isAbstract: Boolean = false, isInterface: Boolean = false): GraphVertex =
-        ops.createVertex("Class", mapOf("name" to name, "qualifiedName" to qualifiedName, "module" to module, "isAbstract" to isAbstract, "isInterface" to isInterface))
+    suspend fun addClass(
+        name: String,
+        qualifiedName: String,
+        module: String = "",
+        isAbstract: Boolean = false,
+        isInterface: Boolean = false,
+    ): GraphVertex {
+        name.requireNotBlank("name")
+        qualifiedName.requireNotBlank("qualifiedName")
+        return ops.createVertex(
+            "Class",
+            mapOf(
+                "name" to name,
+                "qualifiedName" to qualifiedName,
+                "module" to module,
+                "isAbstract" to isAbstract,
+                "isInterface" to isInterface,
+            )
+        )
+    }
 
     /**
      * 함수 정점을 추가한다.
@@ -77,8 +107,26 @@ class CodeGraphSuspendService(
      * val fn = service.addFunction("doSomething", "fun doSomething(): Unit", className = "MyClass")
      * ```
      */
-    suspend fun addFunction(name: String, signature: String, className: String = "", module: String = "", lineCount: Int = 0): GraphVertex =
-        ops.createVertex("Function", mapOf("name" to name, "signature" to signature, "className" to className, "module" to module, "lineCount" to lineCount))
+    suspend fun addFunction(
+        name: String,
+        signature: String,
+        className: String = "",
+        module: String = "",
+        lineCount: Int = 0,
+    ): GraphVertex {
+        name.requireNotBlank("name")
+        signature.requireNotBlank("signature")
+        return ops.createVertex(
+            "Function",
+            mapOf(
+                "name" to name,
+                "signature" to signature,
+                "className" to className,
+                "module" to module,
+                "lineCount" to lineCount,
+            )
+        )
+    }
 
     /**
      * 모듈 간 의존성 간선을 추가한다.
@@ -87,8 +135,16 @@ class CodeGraphSuspendService(
      * service.addDependency(ageModule.id, coreModule.id, dependencyType = "compile")
      * ```
      */
-    suspend fun addDependency(fromModuleId: GraphElementId, toModuleId: GraphElementId, dependencyType: String = "compile", version: String = "") {
-        ops.createEdge(fromModuleId, toModuleId, "DEPENDS_ON", mapOf("dependencyType" to dependencyType, "version" to version))
+    suspend fun addDependency(
+        fromModuleId: GraphElementId,
+        toModuleId: GraphElementId,
+        dependencyType: String = "compile",
+        version: String = "",
+    ) {
+        ops.createEdge(
+            fromModuleId, toModuleId, "DEPENDS_ON",
+            mapOf("dependencyType" to dependencyType, "version" to version)
+        )
     }
 
     /**
@@ -120,8 +176,16 @@ class CodeGraphSuspendService(
      * service.addCall(callerFn.id, calleeFn.id, callCount = 3)
      * ```
      */
-    suspend fun addCall(callerFunctionId: GraphElementId, calleeFunctionId: GraphElementId, callCount: Int = 1, isRecursive: Boolean = false) {
-        ops.createEdge(callerFunctionId, calleeFunctionId, "CALLS", mapOf("callCount" to callCount, "isRecursive" to isRecursive))
+    suspend fun addCall(
+        callerFunctionId: GraphElementId,
+        calleeFunctionId: GraphElementId,
+        callCount: Int = 1,
+        isRecursive: Boolean = false,
+    ) {
+        ops.createEdge(
+            callerFunctionId, calleeFunctionId, "CALLS",
+            mapOf("callCount" to callCount, "isRecursive" to isRecursive)
+        )
     }
 
     /**
@@ -222,8 +286,10 @@ class CodeGraphSuspendService(
      * val modules = service.findModuleByName("graph-core").toList()
      * ```
      */
-    fun findModuleByName(name: String): Flow<GraphVertex> =
-        ops.findVerticesByLabel("Module", mapOf("name" to name))
+    fun findModuleByName(name: String): Flow<GraphVertex> {
+        name.requireNotBlank("name")
+        return ops.findVerticesByLabel("Module", mapOf("name" to name))
+    }
 
     /**
      * 클래스 이름으로 검색한다.
@@ -232,6 +298,8 @@ class CodeGraphSuspendService(
      * val classes = service.findClassByName("GraphOperations").toList()
      * ```
      */
-    fun findClassByName(name: String): Flow<GraphVertex> =
-        ops.findVerticesByLabel("Class", mapOf("name" to name))
+    fun findClassByName(name: String): Flow<GraphVertex> {
+        name.requireNotBlank("name")
+        return ops.findVerticesByLabel("Class", mapOf("name" to name))
+    }
 }

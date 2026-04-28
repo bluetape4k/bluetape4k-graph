@@ -11,17 +11,17 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 @ConfigurationProperties(prefix = "bluetape4k.graph.falkordb")
 data class FalkorDBGraphProperties(
     /** FalkorDB 호스트 주소 */
-    var host: String = "localhost",
+    val host: String = "localhost",
     /** FalkorDB Redis 포트 번호 */
-    var port: Int = 6379,
+    val port: Int = 6379,
     /** 인증 사용자명 (비어있으면 인증 없음) */
-    var username: String = "",
+    val username: String = "",
     /** 인증 비밀번호 (비어있으면 인증 없음) */
-    var password: String = "",
+    val password: String = "",
     /** 대상 그래프 이름 */
-    var graphName: String = "bluetape4k",
+    val graphName: String = "bluetape4k",
     /** 코루틴 suspend 기반 [io.bluetape4k.graph.repository.GraphSuspendOperations] 빈 등록 여부 */
-    var registerSuspend: Boolean = true,
+    val registerSuspend: Boolean = true,
     /** Virtual Thread 기반 [io.bluetape4k.graph.repository.GraphVirtualThreadOperations] 빈 등록 여부 */
-    var registerVirtualThread: Boolean = true,
+    val registerVirtualThread: Boolean = true,
 )

@@ -1,11 +1,14 @@
 package io.bluetape4k.graph.spring.boot3.autoconfigure
 
+import io.bluetape4k.graph.falkordb.FalkorDBGraphOperations
+import io.bluetape4k.graph.falkordb.FalkorDBGraphSuspendOperations
 import io.bluetape4k.graph.falkordb.FalkorDBServer
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
+import io.bluetape4k.graph.vt.VirtualThreadOperationsAdapter
 import io.bluetape4k.logging.KLogging
-import org.amshove.kluent.shouldNotBeNull
+import org.amshove.kluent.shouldBeInstanceOf
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -42,9 +45,9 @@ class GraphFalkorDBAutoConfigurationTest {
     fun `backend=falkordb 이면 GraphOperations 빈 등록`() {
         runner.withPropertyValues(*falkordbProperties)
             .run { ctx ->
-                ctx.getBean(GraphOperations::class.java).shouldNotBeNull()
-                ctx.getBean(GraphSuspendOperations::class.java).shouldNotBeNull()
-                ctx.getBean(GraphVirtualThreadOperations::class.java).shouldNotBeNull()
+                ctx.getBean(GraphOperations::class.java).shouldBeInstanceOf<FalkorDBGraphOperations>()
+                ctx.getBean(GraphSuspendOperations::class.java).shouldBeInstanceOf<FalkorDBGraphSuspendOperations>()
+                ctx.getBean(GraphVirtualThreadOperations::class.java).shouldBeInstanceOf<VirtualThreadOperationsAdapter>()
             }
     }
 

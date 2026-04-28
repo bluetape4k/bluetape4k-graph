@@ -7,10 +7,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties
  */
 @ConfigurationProperties(prefix = "bluetape4k.graph.neo4j")
 data class Neo4jGraphProperties(
-    var uri: String = "bolt://localhost:7687",
-    var username: String = "neo4j",
-    var password: String = "",
-    var database: String = "neo4j",
-    var registerSuspend: Boolean = true,
-    var registerVirtualThread: Boolean = true,
+    val uri: String = "bolt://localhost:7687",
+    val username: String = "neo4j",
+    val password: String = "",
+    val database: String = "neo4j",
+    val registerSuspend: Boolean = true,
+    val registerVirtualThread: Boolean = true,
+    val connectionTimeoutMillis: Long = 5000L,
+    val maxConnectionLifetimeMillis: Long = 3600000L,
 )
