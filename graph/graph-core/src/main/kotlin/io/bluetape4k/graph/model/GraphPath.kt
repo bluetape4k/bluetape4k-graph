@@ -106,29 +106,74 @@ data class GraphPath(
     }
 }
 
+/**
+ * [PathStep] 목록으로 경로를 생성한다.
+ *
+ * ```kotlin
+ * val path = graphPathOf(PathStep.VertexStep(v1), PathStep.EdgeStep(e1), PathStep.VertexStep(v2))
+ * ```
+ */
 @JvmName("graphPathOfPathSteps")
 fun graphPathOf(vararg steps: PathStep): GraphPath = GraphPath(steps.toList())
 
+/**
+ * [PathStep] 리스트로 경로를 생성한다.
+ *
+ * ```kotlin
+ * val path = graphPathOf(listOf(PathStep.VertexStep(v1), PathStep.EdgeStep(e1)))
+ * ```
+ */
 @JvmName("graphPathOfPathStepsList")
 fun graphPathOf(steps: List<PathStep>): GraphPath = GraphPath(steps)
 
+/**
+ * 정점 목록으로 정점만 있는 경로를 생성한다 (간선 없음).
+ *
+ * ```kotlin
+ * val path = graphPathOf(v1, v2, v3)
+ * println(path.length) // 0 (간선 없음)
+ * ```
+ */
 @JvmName("graphPathOfGraphVertices")
 fun graphPathOf(vararg vertices: GraphVertex): GraphPath = GraphPath(vertices.map { PathStep.VertexStep(it) })
 
+/**
+ * 정점 리스트로 정점만 있는 경로를 생성한다 (간선 없음).
+ *
+ * ```kotlin
+ * val path = graphPathOf(listOf(v1, v2, v3))
+ * ```
+ */
 @JvmName("graphPathOfGraphVertexList")
 fun graphPathOf(vertices: List<GraphVertex>): GraphPath = GraphPath(vertices.map { PathStep.VertexStep(it) })
 
+/**
+ * 간선 목록으로 간선만 있는 경로를 생성한다 (정점 없음).
+ *
+ * ```kotlin
+ * val path = graphPathOf(e1, e2)
+ * println(path.length) // 2
+ * ```
+ */
 @JvmName("graphPathOfGraphEdges")
 fun graphPathOf(vararg edges: GraphEdge): GraphPath = GraphPath(edges.map { PathStep.EdgeStep(it) })
 
+/**
+ * 간선 리스트로 간선만 있는 경로를 생성한다 (정점 없음).
+ *
+ * ```kotlin
+ * val path = graphPathOf(listOf(e1, e2))
+ * ```
+ */
 @JvmName("graphPathOfGraphEdgeList")
 fun graphPathOf(edges: List<GraphEdge>): GraphPath = GraphPath(edges.map { PathStep.EdgeStep(it) })
 
-@JvmName("graphPathOfGraphVertex")
-fun graphPathOf(vertex: GraphVertex): GraphPath = GraphPath(listOf(PathStep.VertexStep(vertex)))
-
-@JvmName("graphPathOfGraphEdge")
-fun graphPathOf(edge: GraphEdge): GraphPath = GraphPath(listOf(PathStep.EdgeStep(edge)))
-
-@JvmName("emptyGraphPathOf")
-fun emptyGraphPathOf(): GraphPath = GraphPath.EMPTY
+/**
+ * 빈 경로 ([GraphPath.EMPTY])를 반환한다.
+ *
+ * ```kotlin
+ * val path = emptyGraphPath()
+ * path.isEmpty // true
+ * ```
+ */
+fun emptyGraphPath(): GraphPath = GraphPath.EMPTY

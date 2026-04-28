@@ -133,4 +133,85 @@ class GraphPathTest {
         modified.isEmpty.shouldBeTrue()
         original.isEmpty.shouldBeFalse()
     }
+
+    // --- graphPathOf 유틸 함수 테스트 ---
+
+    @Test
+    fun `graphPathOf PathStep vararg로 혼합 경로를 만든다`() {
+        val v1 = vertex("1")
+        val v2 = vertex("2")
+        val e1 = edge("e1", "1", "2")
+        val path = graphPathOf(PathStep.VertexStep(v1), PathStep.EdgeStep(e1), PathStep.VertexStep(v2))
+        path.vertices shouldHaveSize 2
+        path.edges shouldHaveSize 1
+        path.length shouldBeEqualTo 1
+    }
+
+    @Test
+    fun `graphPathOf PathStep List로 경로를 만든다`() {
+        val v1 = vertex("1")
+        val steps = listOf(PathStep.VertexStep(v1))
+        val path = graphPathOf(steps)
+        path.vertices shouldHaveSize 1
+        path.isEmpty.shouldBeFalse()
+    }
+
+    @Test
+    fun `graphPathOf GraphVertex vararg로 정점만 있는 경로를 만든다`() {
+        val v1 = vertex("1")
+        val v2 = vertex("2")
+        val path = graphPathOf(v1, v2)
+        path.vertices shouldContainSame listOf(v1, v2)
+        path.edges.shouldBeEmpty()
+        path.length shouldBeEqualTo 0
+    }
+
+    @Test
+    fun `graphPathOf GraphVertex List로 경로를 만든다`() {
+        val vertices = listOf(vertex("1"), vertex("2"))
+        val path = graphPathOf(vertices)
+        path.vertices shouldContainSame vertices
+        path.edges.shouldBeEmpty()
+    }
+
+    @Test
+    fun `graphPathOf GraphEdge vararg로 간선만 있는 경로를 만든다`() {
+        val e1 = edge("e1", "1", "2")
+        val e2 = edge("e2", "2", "3")
+        val path = graphPathOf(e1, e2)
+        path.edges shouldContainSame listOf(e1, e2)
+        path.vertices.shouldBeEmpty()
+        path.length shouldBeEqualTo 2
+    }
+
+    @Test
+    fun `graphPathOf GraphEdge List로 경로를 만든다`() {
+        val edges = listOf(edge("e1", "1", "2"))
+        val path = graphPathOf(edges)
+        path.edges shouldContainSame edges
+        path.vertices.shouldBeEmpty()
+    }
+
+    @Test
+    fun `emptyGraphPath는 GraphPath EMPTY와 동일하다`() {
+        val path = emptyGraphPath()
+        path.isEmpty.shouldBeTrue()
+        path shouldBeEqualTo GraphPath.EMPTY
+    }
+
+    @Test
+    fun `graphPathOf vararg 단일 정점으로 경로를 만든다`() {
+        val v = vertex("1")
+        val path = graphPathOf(v)
+        path.vertices shouldHaveSize 1
+        path.edges.shouldBeEmpty()
+    }
+
+    @Test
+    fun `graphPathOf vararg 단일 간선으로 경로를 만든다`() {
+        val e = edge("e1", "1", "2")
+        val path = graphPathOf(e)
+        path.edges shouldHaveSize 1
+        path.vertices.shouldBeEmpty()
+    }
 }

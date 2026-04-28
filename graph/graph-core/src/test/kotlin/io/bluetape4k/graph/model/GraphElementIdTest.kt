@@ -69,4 +69,34 @@ class GraphElementIdTest {
         val id = GraphElementId("test-123")
         id.toString() shouldBeEqualTo "GraphElementId(value=test-123)"
     }
+
+    // --- graphElementIdOf 유틸 함수 테스트 ---
+
+    @Test
+    fun `graphElementIdOf - String을 GraphElementId로 변환한다`() {
+        val id = graphElementIdOf("node-1")
+        id.value shouldBeEqualTo "node-1"
+        id shouldBeEqualTo GraphElementId("node-1")
+    }
+
+    @Test
+    fun `graphElementIdOf - Long을 GraphElementId로 변환한다`() {
+        val id = graphElementIdOf(42L)
+        id.value shouldBeEqualTo "42"
+    }
+
+    @Test
+    fun `graphElementIdOf - GraphElementId를 전달하면 이중 변환 없이 반환한다`() {
+        val original = GraphElementId("v-1")
+        val result = graphElementIdOf(original)
+        result shouldBeEqualTo original
+        // toString()이 "GraphElementId(value=v-1)"이므로 이중 변환 시 값이 오염된다
+        result.value shouldBeEqualTo "v-1"
+    }
+
+    @Test
+    fun `graphElementIdOf - 정수 타입을 String으로 변환한다`() {
+        val id = graphElementIdOf(100)
+        id.value shouldBeEqualTo "100"
+    }
 }

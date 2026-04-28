@@ -1274,6 +1274,32 @@ coroutineScope {
 }
 ```
 
+## 모델 빌더 유틸리티
+
+생성자를 직접 호출하지 않고 편리하게 모델 객체를 만들 수 있는 최상위 함수들.
+
+```kotlin
+// GraphElementId
+val id1 = graphElementIdOf("node-abc")          // String → GraphElementId
+val id2 = graphElementIdOf(42L)                  // Long → GraphElementId("42")
+val id3 = graphElementIdOf(existingId)           // GraphElementId 그대로 반환 (이중 변환 없음)
+
+// GraphVertex
+val v1 = graphVertexOf(GraphElementId.of("v1"), "Person", mapOf("name" to "Alice"))
+val v2 = graphVertexOf("v2", "Person")           // Any 타입 id 오버로드
+val v3 = graphVertexOf(42L, "Item", mapOf("weight" to 10.0))
+
+// GraphPath — vararg 오버로드
+val pathFromSteps    = graphPathOf(PathStep.VertexStep(v1), PathStep.EdgeStep(e1), PathStep.VertexStep(v2))
+val pathFromVertices = graphPathOf(v1, v2, v3)   // 정점만 있는 경로
+val pathFromEdges    = graphPathOf(e1, e2)        // 간선만 있는 경로
+val empty            = emptyGraphPath()           // GraphPath.EMPTY
+
+// GraphCycle
+val cycle = detectedPath.toCycle()               // GraphPath → GraphCycle
+println("cycle length = ${cycle.length}")
+```
+
 ## 의존성
 
 ```kotlin
