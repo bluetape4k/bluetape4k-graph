@@ -39,6 +39,9 @@ class FakeGraphOperations: GraphOperations {
     override fun findVertexById(label: String, id: GraphElementId): GraphVertex? =
         error("not used in this test")
 
+    override fun findVertexById(id: GraphElementId): GraphVertex? =
+        error("not used in this test")
+
     override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> =
         error("not used in this test")
 
@@ -64,6 +67,12 @@ class FakeGraphOperations: GraphOperations {
     override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): List<GraphEdge> =
         error("not used in this test")
 
+    override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): List<GraphEdge> =
+        error("not used in this test")
+
+    override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): List<GraphEdge> =
+        error("not used in this test")
+
     override fun deleteEdge(label: String, id: GraphElementId): Boolean =
         error("not used in this test")
 
@@ -82,6 +91,13 @@ class FakeGraphOperations: GraphOperations {
         toId: GraphElementId,
         options: PathOptions,
     ): List<GraphPath> = error("not used in this test")
+
+    override fun aStarPath(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        options: PathOptions,
+        heuristic: (GraphVertex) -> Double,
+    ): GraphPath? = error("not used in this test")
 
     // --- GraphAlgorithmRepository ---
     override fun pageRank(options: PageRankOptions): List<PageRankScore> =
