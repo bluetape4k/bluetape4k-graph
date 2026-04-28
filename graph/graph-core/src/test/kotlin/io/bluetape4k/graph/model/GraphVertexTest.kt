@@ -90,4 +90,51 @@ class GraphVertexTest {
         val v2 = GraphVertex(id, "Company")
         v1 shouldNotBeEqualTo v2
     }
+
+    // --- graphVertexOf 유틸 함수 테스트 ---
+
+    @Test
+    fun `graphVertexOf - GraphElementId로 정점을 생성한다`() {
+        val v = graphVertexOf(id, "Person", mapOf("name" to "Alice"))
+        v.id shouldBeEqualTo id
+        v.label shouldBeEqualTo "Person"
+        v.properties["name"] shouldBeEqualTo "Alice"
+    }
+
+    @Test
+    fun `graphVertexOf - GraphElementId + label만으로 빈 properties 정점을 생성한다`() {
+        val v = graphVertexOf(id, "Person")
+        v.id shouldBeEqualTo id
+        v.label shouldBeEqualTo "Person"
+        v.properties.shouldBeEmpty()
+    }
+
+    @Test
+    fun `graphVertexOf - Any id String으로 정점을 생성한다`() {
+        val v = graphVertexOf("v-2", "Company")
+        v.id shouldBeEqualTo GraphElementId("v-2")
+        v.label shouldBeEqualTo "Company"
+    }
+
+    @Test
+    fun `graphVertexOf - Any id Long으로 정점을 생성한다`() {
+        val v = graphVertexOf(42L, "Item")
+        v.id.value shouldBeEqualTo "42"
+        v.label shouldBeEqualTo "Item"
+    }
+
+    @Test
+    fun `graphVertexOf - Any id GraphElementId 전달 시 이중 변환 없다`() {
+        val existing = GraphElementId("original")
+        val v = graphVertexOf(existing, "Node")
+        // 이중 toString 변환 시 "GraphElementId(value=original)" 이 됨을 방지
+        v.id.value shouldBeEqualTo "original"
+    }
+
+    @Test
+    fun `graphVertexOf - Any id에 properties도 전달할 수 있다`() {
+        val v = graphVertexOf("v-3", "Person", mapOf("age" to 30))
+        v.id.value shouldBeEqualTo "v-3"
+        v.properties["age"] shouldBeEqualTo 30
+    }
 }

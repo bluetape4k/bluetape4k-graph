@@ -99,6 +99,32 @@ object KnowsLabel : EdgeLabel("KNOWS") {
 }
 ```
 
+## Model Builder Utilities
+
+Convenience top-level functions for constructing model objects without verbose constructors.
+
+```kotlin
+// GraphElementId
+val id1 = graphElementIdOf("node-abc")          // from String
+val id2 = graphElementIdOf(42L)                  // from Long → "42"
+val id3 = graphElementIdOf(existingId)           // GraphElementId pass-through (no double-wrap)
+
+// GraphVertex
+val v1 = graphVertexOf(GraphElementId.of("v1"), "Person", mapOf("name" to "Alice"))
+val v2 = graphVertexOf("v2", "Person")           // Any id overload
+val v3 = graphVertexOf(42L, "Item", mapOf("weight" to 10.0))
+
+// GraphPath — vararg overloads
+val pathFromSteps    = graphPathOf(PathStep.VertexStep(v1), PathStep.EdgeStep(e1), PathStep.VertexStep(v2))
+val pathFromVertices = graphPathOf(v1, v2, v3)   // vertex-only path
+val pathFromEdges    = graphPathOf(e1, e2)        // edge-only path
+val empty            = emptyGraphPath()           // GraphPath.EMPTY
+
+// GraphCycle
+val cycle = detectedPath.toCycle()               // GraphPath → GraphCycle
+println("cycle length = ${cycle.length}")
+```
+
 ## Usage Example
 
 ```kotlin

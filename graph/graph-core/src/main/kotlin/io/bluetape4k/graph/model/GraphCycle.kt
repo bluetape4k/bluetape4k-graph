@@ -27,4 +27,15 @@ data class GraphCycle(
     }
 }
 
+/**
+ * 이 경로를 [GraphCycle]로 변환한다.
+ *
+ * 경로의 첫 번째 정점과 마지막 정점이 동일한 순환 경로를 표현할 때 사용한다.
+ * 호출 전에 순환 여부를 직접 검증해야 한다 — 이 함수는 단순 래핑만 수행한다.
+ *
+ * ```kotlin
+ * val cycle = detectedPath.toCycle()
+ * println("cycle length = ${cycle.length}")
+ * ```
+ */
 fun GraphPath.toCycle() = GraphCycle(this)

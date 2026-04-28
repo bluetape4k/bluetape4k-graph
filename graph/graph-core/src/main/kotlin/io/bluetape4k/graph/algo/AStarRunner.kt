@@ -27,7 +27,7 @@ class AStarRunner(
     private val fetchVertex: (GraphElementId) -> GraphVertex?,
     private val heuristic: (GraphVertex) -> Double,
 ) {
-    companion object: KLogging()
+    companion object : KLogging()
 
     /**
      * A* 알고리즘으로 [fromId] → [toId] 최단 경로를 계산한다.

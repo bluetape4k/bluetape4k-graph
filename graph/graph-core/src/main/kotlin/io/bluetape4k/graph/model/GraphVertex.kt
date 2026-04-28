@@ -32,8 +32,33 @@ data class GraphVertex(
     }
 }
 
+/**
+ * [GraphElementId]와 레이블로 정점을 생성한다.
+ *
+ * ```kotlin
+ * val v = graphVertexOf(GraphElementId.of("v-1"), "Person", mapOf("name" to "Alice"))
+ * ```
+ *
+ * @param id 정점 ID.
+ * @param label 정점 레이블.
+ * @param properties 정점 속성 맵. 기본값은 빈 맵.
+ */
 fun graphVertexOf(id: GraphElementId, label: String, properties: Map<String, Any?> = emptyMap()) =
     GraphVertex(id, label, properties)
 
-fun graphVertexOf(id: Any, label: String): GraphVertex =
-    graphVertexOf(graphElementIdOf(id.toString()), label)
+/**
+ * 임의 타입의 ID 값으로 정점을 생성한다.
+ *
+ * ID 변환에 [graphElementIdOf]를 사용하므로 [GraphElementId]를 그대로 전달해도 이중 변환이 발생하지 않는다.
+ *
+ * ```kotlin
+ * val v = graphVertexOf("v-1", "Person")
+ * val v2 = graphVertexOf(42L, "Item", mapOf("name" to "Foo"))
+ * ```
+ *
+ * @param id 정점 ID. [GraphElementId], [Long], 또는 `toString()` 결과를 사용하는 임의 타입.
+ * @param label 정점 레이블.
+ * @param properties 정점 속성 맵. 기본값은 빈 맵.
+ */
+fun graphVertexOf(id: Any, label: String, properties: Map<String, Any?> = emptyMap()): GraphVertex =
+    graphVertexOf(graphElementIdOf(id), label, properties)

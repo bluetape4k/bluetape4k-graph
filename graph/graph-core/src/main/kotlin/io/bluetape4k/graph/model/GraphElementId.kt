@@ -57,4 +57,23 @@ value class GraphElementId(val value: String): Serializable {
     }
 }
 
-fun graphElementIdOf(value: Any): GraphElementId = GraphElementId.of(value.toString())
+/**
+ * 임의 타입의 값을 [GraphElementId]로 변환한다.
+ *
+ * - [GraphElementId]를 그대로 전달하면 새 인스턴스를 만들지 않고 반환한다.
+ * - [Long]은 [GraphElementId.of] Long 오버로드로 위임한다.
+ * - 그 외 타입은 `toString()` 결과를 ID 값으로 사용한다.
+ *
+ * ```kotlin
+ * graphElementIdOf("node-1")           // GraphElementId("node-1")
+ * graphElementIdOf(42L)                // GraphElementId("42")
+ * graphElementIdOf(GraphElementId("x")) // GraphElementId("x") — 이중 변환 없음
+ * ```
+ *
+ * @param value ID로 변환할 값. `Any` 타입이지만 `toString()` 결과가 비어있어선 안 된다.
+ */
+fun graphElementIdOf(value: Any): GraphElementId = when (value) {
+    is GraphElementId -> value
+    is Long -> GraphElementId.of(value)
+    else -> GraphElementId.of(value.toString())
+}
