@@ -27,6 +27,7 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.repository.GraphOperations
+import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.warn
 import io.bluetape4k.support.requireNotBlank
@@ -67,7 +68,7 @@ class AgeGraphOperations(
     companion object: KLogging()
 
     init {
-        graphName.requireNotBlank("graphName")
+        graphName.requireNotBlank("graphName").requireSafeIdentifier("graphName")
     }
 
     override fun createGraph(name: String) {

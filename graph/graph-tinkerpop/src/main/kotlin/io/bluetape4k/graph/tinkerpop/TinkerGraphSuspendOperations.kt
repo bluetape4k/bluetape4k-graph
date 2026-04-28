@@ -206,34 +206,34 @@ class TinkerGraphSuspendOperations(
     // -- GraphSuspendAlgorithmRepository --
 
     override fun pageRank(options: PageRankOptions): Flow<PageRankScore> = flow {
-        val list = withContext(Dispatchers.IO) { delegate.pageRank(options) }
+        val list = withContext(Dispatchers.Default) { delegate.pageRank(options) }
         list.forEach { emit(it) }
     }
 
     override suspend fun degreeCentrality(
         vertexId: GraphElementId,
         options: DegreeOptions,
-    ): DegreeResult = withContext(Dispatchers.IO) {
+    ): DegreeResult = withContext(Dispatchers.Default) {
         delegate.degreeCentrality(vertexId, options)
     }
 
     override fun connectedComponents(options: ComponentOptions): Flow<GraphComponent> = flow {
-        val list = withContext(Dispatchers.IO) { delegate.connectedComponents(options) }
+        val list = withContext(Dispatchers.Default) { delegate.connectedComponents(options) }
         list.forEach { emit(it) }
     }
 
     override fun bfs(startId: GraphElementId, options: BfsDfsOptions): Flow<TraversalVisit> = flow {
-        val list = withContext(Dispatchers.IO) { delegate.bfs(startId, options) }
+        val list = withContext(Dispatchers.Default) { delegate.bfs(startId, options) }
         list.forEach { emit(it) }
     }
 
     override fun dfs(startId: GraphElementId, options: BfsDfsOptions): Flow<TraversalVisit> = flow {
-        val list = withContext(Dispatchers.IO) { delegate.dfs(startId, options) }
+        val list = withContext(Dispatchers.Default) { delegate.dfs(startId, options) }
         list.forEach { emit(it) }
     }
 
     override fun detectCycles(options: CycleOptions): Flow<GraphCycle> = flow {
-        val list = withContext(Dispatchers.IO) { delegate.detectCycles(options) }
+        val list = withContext(Dispatchers.Default) { delegate.detectCycles(options) }
         list.forEach { emit(it) }
     }
 }

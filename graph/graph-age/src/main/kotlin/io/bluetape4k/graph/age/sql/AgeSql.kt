@@ -1,5 +1,7 @@
 package io.bluetape4k.graph.age.sql
 
+import io.bluetape4k.graph.support.requireSafeIdentifier
+
 /**
  * Apache AGE Cypher-over-SQL 쿼리 문자열 빌더.
  *
@@ -80,8 +82,10 @@ object AgeSql {
      * // → "SELECT count(*) FROM ag_catalog.ag_graph WHERE name = 'social'"
      * ```
      */
-    fun graphExists(graphName: String): String =
-        "SELECT count(*) FROM ag_catalog.ag_graph WHERE name = '$graphName'"
+    fun graphExists(graphName: String): String {
+        graphName.requireSafeIdentifier("graphName")
+        return "SELECT count(*) FROM ag_catalog.ag_graph WHERE name = '$graphName'"
+    }
 
     /**
      * Cypher 쿼리를 AGE SQL로 래핑합니다.
@@ -366,7 +370,7 @@ object AgeSql {
      * @param edgeLabel `null` 이면 모든 간선.
      */
     fun degreeCentrality(graphName: String, vertexId: Long, edgeLabel: String? = null): String {
-        val edgeClause = edgeLabel?.let { ":${sanitizeLabel(it)}" } ?: ""
+        val edgeClause = edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
         return """
             SELECT in_d, out_d FROM ag_catalog.cypher('$graphName', $$
                 MATCH (n) WHERE id(n) = $vertexId
@@ -376,11 +380,6 @@ object AgeSql {
                 RETURN count(r_in) AS in_d, out_d
             $$) AS (in_d agtype, out_d agtype)
         """.trimIndent()
-    }
-
-    private fun sanitizeLabel(label: String): String {
-        require(label.matches(Regex("^[A-Za-z_][A-Za-z0-9_]*$"))) { "Invalid label: $label" }
-        return label
     }
 
     /**

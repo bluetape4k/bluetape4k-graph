@@ -20,6 +20,7 @@ import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.repository.GraphSuspendOperations
+import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
 import io.bluetape4k.support.requireNotBlank
@@ -151,7 +152,7 @@ class Neo4jGraphSuspendOperations(
     // -- GraphSuspendVertexRepository --
 
     override suspend fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex {
-        label.requireNotBlank("label")
+        label.requireNotBlank("label").requireSafeIdentifier("label")
 
         val propsClause = if (properties.isEmpty()) "" else $$" $props"
         val cypher = $$"CREATE (n:$$label$$propsClause) RETURN n"
@@ -163,7 +164,7 @@ class Neo4jGraphSuspendOperations(
     }
 
     override suspend fun findVertexById(label: String, id: GraphElementId): GraphVertex? {
-        label.requireNotBlank("label")
+        label.requireNotBlank("label").requireSafeIdentifier("label")
 
         return runQuery(
             $$"MATCH (n:$$label) WHERE elementId(n) = $id RETURN n",
@@ -183,7 +184,7 @@ class Neo4jGraphSuspendOperations(
     }
 
     override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphVertex> {
-        label.requireNotBlank("label")
+        label.requireNotBlank("label").requireSafeIdentifier("label")
 
         val whereClause = if (filter.isEmpty()) "" else
             " WHERE " + filter.keys.joinToString(" AND ") { $$"n.$$it = $$$it" }
@@ -197,7 +198,7 @@ class Neo4jGraphSuspendOperations(
     }
 
     override suspend fun updateVertex(label: String, id: GraphElementId, properties: Map<String, Any?>): GraphVertex? {
-        label.requireNotBlank("label")
+        label.requireNotBlank("label").requireSafeIdentifier("label")
 
         if (properties.isEmpty()) return findVertexById(label, id)
         val setClause = properties.keys.joinToString(", ") { $$"n.$$it = $$$it" }
@@ -210,7 +211,7 @@ class Neo4jGraphSuspendOperations(
     }
 
     override suspend fun deleteVertex(label: String, id: GraphElementId): Boolean {
-        label.requireNotBlank("label")
+        label.requireNotBlank("label").requireSafeIdentifier("label")
 
         val s = session()
 
@@ -225,7 +226,7 @@ class Neo4jGraphSuspendOperations(
     }
 
     override suspend fun countVertices(label: String): Long {
-        label.requireNotBlank("label")
+        label.requireNotBlank("label").requireSafeIdentifier("label")
 
         val s = session()
 
@@ -247,7 +248,7 @@ class Neo4jGraphSuspendOperations(
     ): GraphEdge {
         fromId.value.requireNotBlank("fromId.value")
         toId.value.requireNotBlank("toId.value")
-        label.requireNotBlank("label")
+        label.requireNotBlank("label").requireSafeIdentifier("label")
 
         val propsClause = if (properties.isEmpty()) "" else $$" $props"
         val params = mutableMapOf<String, Any?>("fromId" to fromId.value, "toId" to toId.value)
@@ -263,7 +264,7 @@ class Neo4jGraphSuspendOperations(
     }
 
     override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphEdge> {
-        label.requireNotBlank("label")
+        label.requireNotBlank("label").requireSafeIdentifier("label")
 
         val whereClause = if (filter.isEmpty()) "" else
             " WHERE " + filter.keys.joinToString(" AND ") { $$"r.$$it = $$$it" }
@@ -293,7 +294,7 @@ class Neo4jGraphSuspendOperations(
     }
 
     override suspend fun deleteEdge(label: String, id: GraphElementId): Boolean {
-        label.requireNotBlank("label")
+        label.requireNotBlank("label").requireSafeIdentifier("label")
 
         val s = session()
 

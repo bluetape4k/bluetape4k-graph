@@ -32,7 +32,7 @@ class SuspendJackson3NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
         source: GraphImportSource,
         operations: GraphSuspendOperations,
         options: GraphImportOptions,
-    ): GraphImportReport = withContext(Dispatchers.IO) {
+    ): GraphImportReport {
         log.debug { "Starting NDJSON_JACKSON3 import (suspend): defaultVertexLabel=${options.defaultVertexLabel}, defaultEdgeLabel=${options.defaultEdgeLabel}" }
         val watch = GraphIoStopwatch()
         val idMap = GraphIoExternalIdMap(options.onDuplicateVertexId)
@@ -41,60 +41,60 @@ class SuspendJackson3NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
         var vr = 0L; var vc = 0L; var er = 0L; var ec = 0L; var sv = 0L; var se = 0L
         var status = GraphIoStatus.COMPLETED
 
-        GraphIoPaths.openReader(source).use { reader ->
-            var lineNo = 0
-            reader.forEachLine { raw ->
-                if (status == GraphIoStatus.FAILED) return@forEachLine
-                lineNo++
-                val line = raw.trim().ifBlank { return@forEachLine }
-                val env = runCatching { codec.parseLine(line) }.getOrElse { e ->
-                    log.warn(e) { "Malformed JSON at line $lineNo: ${e.message}" }
-                    failures += GraphIoFailure(
-                        phase = GraphIoPhase.READ_VERTEX,
-                        fileRole = GraphIoFileRole.UNIFIED,
-                        location = "line:$lineNo",
-                        message = "Malformed JSON: ${e.message}",
-                    )
-                    status = GraphIoStatus.FAILED
-                    return@forEachLine
-                }
-                when (env.type) {
-                    NdJsonEnvelope.TYPE_VERTEX -> {
-                        vr++
-                        val rec = codec.toVertex(env, options.defaultVertexLabel)
-                        val props = options.preserveExternalIdProperty
-                            ?.let { rec.properties + (it to rec.externalId) } ?: rec.properties
-                        // Note: operations.createVertex is suspend — use runBlocking since forEachLine is a blocking lambda
-                        val created = kotlinx.coroutines.runBlocking { operations.createVertex(rec.label, props) }
-                        when (idMap.putFirstOrFail(rec.externalId, created.id)) {
-                            GraphIoExternalIdMap.PutResult.CREATED -> vc++
-                            GraphIoExternalIdMap.PutResult.SKIPPED -> {
-                                sv++
-                                status = GraphIoStatus.PARTIAL
-                            }
+        val lines = withContext(Dispatchers.IO) {
+            GraphIoPaths.openReader(source).use { it.readLines() }
+        }
+
+        for ((index, raw) in lines.withIndex()) {
+            if (status == GraphIoStatus.FAILED) break
+            val lineNo = index + 1
+            val line = raw.trim().ifBlank { continue }
+            val env = runCatching { codec.parseLine(line) }.getOrElse { e ->
+                log.warn(e) { "Malformed JSON at line $lineNo: ${e.message}" }
+                failures += GraphIoFailure(
+                    phase = GraphIoPhase.READ_VERTEX,
+                    fileRole = GraphIoFileRole.UNIFIED,
+                    location = "line:$lineNo",
+                    message = "Malformed JSON: ${e.message}",
+                )
+                status = GraphIoStatus.FAILED
+                break
+            }
+            when (env.type) {
+                NdJsonEnvelope.TYPE_VERTEX -> {
+                    vr++
+                    val rec = codec.toVertex(env, options.defaultVertexLabel)
+                    val props = options.preserveExternalIdProperty
+                        ?.let { rec.properties + (it to rec.externalId) } ?: rec.properties
+                    val created = operations.createVertex(rec.label, props)
+                    when (idMap.putFirstOrFail(rec.externalId, created.id)) {
+                        GraphIoExternalIdMap.PutResult.CREATED -> vc++
+                        GraphIoExternalIdMap.PutResult.SKIPPED -> {
+                            sv++
+                            status = GraphIoStatus.PARTIAL
                         }
                     }
-                    NdJsonEnvelope.TYPE_EDGE -> {
-                        er++
-                        bufferedEdges += codec.toEdge(env, options.defaultEdgeLabel)
-                        if (bufferedEdges.size > options.maxEdgeBufferSize) {
-                            failures += GraphIoFailure(
-                                phase = GraphIoPhase.READ_EDGE,
-                                fileRole = GraphIoFileRole.UNIFIED,
-                                location = "line:$lineNo",
-                                message = "Edge buffer exceeded maxEdgeBufferSize=${options.maxEdgeBufferSize}",
-                            )
-                            status = GraphIoStatus.FAILED
-                        }
-                    }
-                    else -> {}
                 }
+                NdJsonEnvelope.TYPE_EDGE -> {
+                    er++
+                    bufferedEdges += codec.toEdge(env, options.defaultEdgeLabel)
+                    if (bufferedEdges.size > options.maxEdgeBufferSize) {
+                        failures += GraphIoFailure(
+                            phase = GraphIoPhase.READ_EDGE,
+                            fileRole = GraphIoFileRole.UNIFIED,
+                            location = "line:$lineNo",
+                            message = "Edge buffer exceeded maxEdgeBufferSize=${options.maxEdgeBufferSize}",
+                        )
+                        status = GraphIoStatus.FAILED
+                    }
+                }
+                else -> {}
             }
         }
 
         if (status == GraphIoStatus.FAILED) {
             log.warn { "NDJSON_JACKSON3 import (suspend) failed: vertices=$vc/$vr, edges=$ec/$er, elapsed=${watch.elapsed()}" }
-            return@withContext GraphImportReport(
+            return GraphImportReport(
                 status, GraphIoFormat.NDJSON_JACKSON3, vr, vc, er, ec, sv, se, watch.elapsed(), failures
             )
         }
@@ -128,7 +128,7 @@ class SuspendJackson3NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
             ec++
         }
 
-        GraphImportReport(status, GraphIoFormat.NDJSON_JACKSON3, vr, vc, er, ec, sv, se, watch.elapsed(), failures).also {
+        return GraphImportReport(status, GraphIoFormat.NDJSON_JACKSON3, vr, vc, er, ec, sv, se, watch.elapsed(), failures).also {
             log.debug { "NDJSON_JACKSON3 import (suspend) completed: vertices=$vc/$vr, edges=$ec/$er, skipped=$sv/$se, status=$status, elapsed=${watch.elapsed()}" }
         }
     }

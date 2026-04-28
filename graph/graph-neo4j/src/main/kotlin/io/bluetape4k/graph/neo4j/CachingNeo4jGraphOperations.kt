@@ -7,6 +7,7 @@ import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.repository.GraphOperations
+import io.bluetape4k.logging.KLogging
 import java.time.Duration
 import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
@@ -60,6 +61,8 @@ class CachingNeo4jGraphOperations(
     @Suppress("UNUSED_PARAMETER") maxSize: Long = 10_000,
     @Suppress("UNUSED_PARAMETER") expireAfterWrite: Duration = Duration.ofMinutes(5),
 ): GraphOperations by delegate {
+
+    companion object : KLogging()
 
     private data class VertexKey(val label: String, val id: GraphElementId)
     private data class LabelKey(val label: String, val filter: Map<String, Any?>)

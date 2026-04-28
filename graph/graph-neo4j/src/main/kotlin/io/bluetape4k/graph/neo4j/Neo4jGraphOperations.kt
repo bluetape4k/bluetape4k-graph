@@ -25,6 +25,7 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.repository.GraphOperations
+import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.warn
@@ -93,7 +94,14 @@ class Neo4jGraphOperations(
                 s.run("RETURN 1")
                 true
             }
+        } catch (e: org.neo4j.driver.exceptions.ServiceUnavailableException) {
+            log.warn(e) { "Neo4j service unavailable for database: $name" }
+            false
+        } catch (e: org.neo4j.driver.exceptions.DatabaseException) {
+            log.warn(e) { "Neo4j database error checking graphExists for: $name" }
+            false
         } catch (e: Exception) {
+            log.warn(e) { "Unexpected error checking graphExists for: $name" }
             false
         }
     }
@@ -104,7 +112,7 @@ class Neo4jGraphOperations(
     // -- GraphVertexRepository --
 
     override fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex {
-        label.requireNotBlank("label")
+        label.requireNotBlank("label").requireSafeIdentifier("label")
 
         val propsClause = if (properties.isEmpty()) "" else $$" $props"
         val cypher = $$"CREATE (n:$$label$$propsClause) RETURN n"
@@ -116,7 +124,7 @@ class Neo4jGraphOperations(
     }
 
     override fun findVertexById(label: String, id: GraphElementId): GraphVertex? {
-        label.requireNotBlank("label")
+        label.requireNotBlank("label").requireSafeIdentifier("label")
 
         return runQuery(
             $$"MATCH (n:$$label) WHERE elementId(n) = $id RETURN n",
@@ -136,7 +144,7 @@ class Neo4jGraphOperations(
     }
 
     override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> {
-        label.requireNotBlank("label")
+        label.requireNotBlank("label").requireSafeIdentifier("label")
 
         val whereClause = if (filter.isEmpty()) "" else
             " WHERE " + filter.keys.joinToString(" AND ") { $$"n.$$it = $$$it" }
@@ -150,7 +158,7 @@ class Neo4jGraphOperations(
     }
 
     override fun updateVertex(label: String, id: GraphElementId, properties: Map<String, Any?>): GraphVertex? {
-        label.requireNotBlank("label")
+        label.requireNotBlank("label").requireSafeIdentifier("label")
         if (properties.isEmpty()) return findVertexById(label, id)
         val setClause = properties.keys.joinToString(", ") { $$"n.$$it = $$$it" }
         val params = properties + mapOf("id" to id.value)
@@ -164,7 +172,7 @@ class Neo4jGraphOperations(
     }
 
     override fun deleteVertex(label: String, id: GraphElementId): Boolean {
-        label.requireNotBlank("label")
+        label.requireNotBlank("label").requireSafeIdentifier("label")
 
         return session().use { s ->
             val result = s.run(
@@ -176,7 +184,7 @@ class Neo4jGraphOperations(
     }
 
     override fun countVertices(label: String): Long {
-        label.requireNotBlank("label")
+        label.requireNotBlank("label").requireSafeIdentifier("label")
 
         return session().use { s ->
             s.run($$"MATCH (n:$$label) RETURN count(n) AS cnt").single().get("cnt").asLong()
@@ -191,7 +199,7 @@ class Neo4jGraphOperations(
         label: String,
         properties: Map<String, Any?>,
     ): GraphEdge {
-        label.requireNotBlank("label")
+        label.requireNotBlank("label").requireSafeIdentifier("label")
 
         val propsClause = if (properties.isEmpty()) "" else $$" $props"
         val params = mutableMapOf<String, Any?>("fromId" to fromId.value, "toId" to toId.value)
@@ -207,7 +215,7 @@ class Neo4jGraphOperations(
     }
 
     override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): List<GraphEdge> {
-        label.requireNotBlank("label")
+        label.requireNotBlank("label").requireSafeIdentifier("label")
 
         val whereClause = if (filter.isEmpty()) "" else
             " WHERE " + filter.keys.joinToString(" AND ") { $$"r.$$it = $$$it" }
@@ -235,7 +243,7 @@ class Neo4jGraphOperations(
     }
 
     override fun deleteEdge(label: String, id: GraphElementId): Boolean {
-        label.requireNotBlank("label")
+        label.requireNotBlank("label").requireSafeIdentifier("label")
         id.value.requireNotBlank("id.value")
 
         return session().use { s ->
@@ -330,17 +338,12 @@ class Neo4jGraphOperations(
 
     // -- GraphAlgorithmRepository --
 
-    private fun sanitizeLabel(label: String): String {
-        require(label.matches(Regex("^[A-Za-z_][A-Za-z0-9_]*$"))) { "Invalid label: $label" }
-        return label
-    }
-
     override fun degreeCentrality(
         vertexId: GraphElementId,
         options: DegreeOptions,
     ): DegreeResult {
         options.edgeLabel?.requireNotBlank("edgeLabel")
-        val edgePattern = options.edgeLabel?.let { ":${sanitizeLabel(it)}" } ?: ""
+        val edgePattern = options.edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
 
         val cypher = """
             MATCH (n) WHERE elementId(n) = ${'$'}id
@@ -390,8 +393,8 @@ class Neo4jGraphOperations(
         options.vertexLabel?.requireNotBlank("vertexLabel")
         options.edgeLabel?.requireNotBlank("edgeLabel")
 
-        val labelClause = options.vertexLabel?.let { ":${sanitizeLabel(it)}" } ?: ""
-        val edgePattern = options.edgeLabel?.let { ":${sanitizeLabel(it)}" } ?: ""
+        val labelClause = options.vertexLabel?.let { ":${it.requireSafeIdentifier("vertexLabel")}" } ?: ""
+        val edgePattern = options.edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
         val pathPattern = "(a$labelClause)-[r$edgePattern*1..${options.maxDepth}]->(a)"
 
         val cypher = """
@@ -423,8 +426,8 @@ class Neo4jGraphOperations(
         options.vertexLabel?.requireNotBlank("vertexLabel")
         options.edgeLabel?.requireNotBlank("edgeLabel")
 
-        val labelClause = options.vertexLabel?.let { ":${sanitizeLabel(it)}" } ?: ""
-        val edgePattern = options.edgeLabel?.let { ":${sanitizeLabel(it)}" } ?: ""
+        val labelClause = options.vertexLabel?.let { ":${it.requireSafeIdentifier("vertexLabel")}" } ?: ""
+        val edgePattern = options.edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
 
         val vertices = runQuery("MATCH (n$labelClause) RETURN n", emptyMap<String, Any>()) {
             Neo4jRecordMapper.nodeToVertex(it["n"].asNode())
@@ -458,8 +461,8 @@ class Neo4jGraphOperations(
         options.edgeLabel?.requireNotBlank("edgeLabel")
         log.warn { "pageRank: Neo4j Cypher fallback in use (no GDS). Consider topK to limit results." }
 
-        val labelClause = options.vertexLabel?.let { ":${sanitizeLabel(it)}" } ?: ""
-        val edgePattern = options.edgeLabel?.let { ":${sanitizeLabel(it)}" } ?: ""
+        val labelClause = options.vertexLabel?.let { ":${it.requireSafeIdentifier("vertexLabel")}" } ?: ""
+        val edgePattern = options.edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
 
         val vertices = runQuery("MATCH (n$labelClause) RETURN n", emptyMap<String, Any>()) {
             Neo4jRecordMapper.nodeToVertex(it["n"].asNode())
@@ -495,7 +498,7 @@ class Neo4jGraphOperations(
         edgeLabel: String?,
         direction: Direction,
     ): Pair<Map<GraphElementId, List<GraphElementId>>, Map<GraphElementId, GraphVertex>> {
-        val edgePattern = edgeLabel?.let { ":${sanitizeLabel(it)}" } ?: ""
+        val edgePattern = edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
         val vertexById = HashMap<GraphElementId, GraphVertex>()
         val adjacency = HashMap<GraphElementId, MutableList<GraphElementId>>()
 
@@ -517,8 +520,8 @@ class Neo4jGraphOperations(
     }
 
     private fun detectCyclesViaFallback(options: CycleOptions): List<GraphCycle> {
-        val labelClause = options.vertexLabel?.let { ":${sanitizeLabel(it)}" } ?: ""
-        val edgePattern = options.edgeLabel?.let { ":${sanitizeLabel(it)}" } ?: ""
+        val labelClause = options.vertexLabel?.let { ":${it.requireSafeIdentifier("vertexLabel")}" } ?: ""
+        val edgePattern = options.edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
 
         val vertices = runQuery("MATCH (n$labelClause) RETURN n", emptyMap<String, Any>()) {
             Neo4jRecordMapper.nodeToVertex(it["n"].asNode())

@@ -47,7 +47,7 @@ class Neo4jAlgorithmTest {
                 DegreeOptions(edgeLabel = "Person'; DROP TABLE foo--"),
             )
         }
-        ex.message?.shouldContain("Invalid label")
+        ex.message?.shouldContain("valid identifier")
     }
 
     @Test
