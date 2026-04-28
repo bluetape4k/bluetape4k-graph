@@ -1,6 +1,7 @@
 package io.bluetape4k.graph.neo4j
 
 import io.bluetape4k.graph.GraphQueryException
+import io.bluetape4k.graph.algo.ShortestPathFallback
 import io.bluetape4k.graph.algo.internal.BfsDfsRunner
 import io.bluetape4k.graph.algo.internal.CycleDetector
 import io.bluetape4k.graph.algo.internal.PageRankCalculator
@@ -133,6 +134,15 @@ class Neo4jGraphOperations(
         }.firstOrNull()
     }
 
+    override fun findVertexById(id: GraphElementId): GraphVertex? {
+        return runQuery(
+            $$"MATCH (n) WHERE elementId(n) = $id RETURN n",
+            mapOf("id" to id.value),
+        ) {
+            Neo4jRecordMapper.recordToVertex(it)
+        }.firstOrNull()
+    }
+
     override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> {
         label.requireNotBlank("label").requireSafeIdentifier("label")
 
@@ -216,6 +226,22 @@ class Neo4jGraphOperations(
         ) { Neo4jRecordMapper.recordToEdge(it) }
     }
 
+    override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
+        val labelPart = if (edgeLabel != null) $$":$$edgeLabel" else ""
+        return runQuery(
+            $$"MATCH (n)-[r$$labelPart]->(m) WHERE elementId(n) = $startId RETURN r",
+            mapOf("startId" to startId.value),
+        ) { Neo4jRecordMapper.recordToEdge(it) }
+    }
+
+    override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
+        val labelPart = if (edgeLabel != null) $$":$$edgeLabel" else ""
+        return runQuery(
+            $$"MATCH (n)-[r$$labelPart]->(m) WHERE elementId(m) = $endId RETURN r",
+            mapOf("endId" to endId.value),
+        ) { Neo4jRecordMapper.recordToEdge(it) }
+    }
+
     override fun deleteEdge(label: String, id: GraphElementId): Boolean {
         label.requireNotBlank("label").requireSafeIdentifier("label")
         id.value.requireNotBlank("id.value")
@@ -261,6 +287,10 @@ class Neo4jGraphOperations(
         fromId.value.requireNotBlank("fromId.value")
         toId.value.requireNotBlank("toId.value")
 
+        if (options.weightProperty != null) {
+            return ShortestPathFallback.dijkstra(this, fromId, toId, options)
+        }
+
         val relPattern =
             if (options.edgeLabel != null) $$":$${options.edgeLabel}*1..$${options.maxDepth}"
             else $$"*1..$${options.maxDepth}"
@@ -272,6 +302,17 @@ class Neo4jGraphOperations(
         ) {
             Neo4jRecordMapper.recordToPath(it)
         }.firstOrNull()
+    }
+
+    override fun aStarPath(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        options: PathOptions,
+        heuristic: (GraphVertex) -> Double,
+    ): GraphPath? {
+        fromId.value.requireNotBlank("fromId.value")
+        toId.value.requireNotBlank("toId.value")
+        return ShortestPathFallback.aStar(this, fromId, toId, options, heuristic)
     }
 
     override fun allPaths(

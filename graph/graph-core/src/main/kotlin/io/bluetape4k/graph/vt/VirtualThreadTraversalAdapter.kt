@@ -44,6 +44,14 @@ class VirtualThreadTraversalAdapter(
         options: PathOptions,
     ): CompletableFuture<List<GraphPath>> =
         virtualFutureOf { delegate.allPaths(fromId, toId, options) }
+
+    override fun aStarPathAsync(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        options: PathOptions,
+        heuristic: (GraphVertex) -> Double,
+    ): CompletableFuture<GraphPath?> =
+        virtualFutureOfNullable { delegate.aStarPath(fromId, toId, options, heuristic) }
 }
 
 /**

@@ -48,6 +48,37 @@ interface GraphEdgeRepository {
     fun findEdgesByLabel(label: String, filter: Map<String, Any?> = emptyMap()): List<GraphEdge>
 
     /**
+     * 특정 정점에서 출발하는 간선 목록을 조회한다.
+     *
+     * Dijkstra/A* 알고리즘의 인접 간선 수집에 사용된다.
+     *
+     * ```kotlin
+     * val outEdges = ops.findEdgesByStartId(alice.id)
+     * val typed    = ops.findEdgesByStartId(alice.id, edgeLabel = "KNOWS")
+     * ```
+     *
+     * @param startId 시작 정점 ID.
+     * @param edgeLabel 간선 레이블 필터. null이면 모든 레이블 반환.
+     * @return 해당 정점에서 출발하는 [GraphEdge] 목록.
+     */
+    fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String? = null): List<GraphEdge>
+
+    /**
+     * 특정 정점으로 도착하는 간선 목록을 조회한다.
+     *
+     * `Direction.INCOMING` / `Direction.BOTH` 탐색에 사용된다.
+     *
+     * ```kotlin
+     * val inEdges = ops.findEdgesByEndId(alice.id)
+     * ```
+     *
+     * @param endId 종료 정점 ID.
+     * @param edgeLabel 간선 레이블 필터. null이면 모든 레이블 반환.
+     * @return 해당 정점으로 도착하는 [GraphEdge] 목록.
+     */
+    fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String? = null): List<GraphEdge>
+
+    /**
      * 간선을 삭제한다.
      *
      * ```kotlin

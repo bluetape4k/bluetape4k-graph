@@ -46,6 +46,8 @@ sealed class PathStep {
  * 교차 순서를 따른다. 두 정점 사이의 최단 경로 또는 모든 경로 탐색 결과를 표현한다.
  *
  * @property steps 경로를 구성하는 단계 목록.
+ * @property totalWeight 경로의 총 가중치. 비가중치 탐색 결과는 간선 수(hop count)가 기본값.
+ *   Dijkstra/A* 결과에는 실제 누적 비용이 설정된다.
  *
  * ### 사용 예제
  * ```kotlin
@@ -58,11 +60,12 @@ sealed class PathStep {
  *     PathStep.EdgeStep(e),
  *     PathStep.VertexStep(v2),
  * ))
- * // path.length == 1, path.vertices.size == 2
+ * // path.length == 1, path.vertices.size == 2, path.totalWeight == 1.0
  * ```
  */
 data class GraphPath(
     val steps: List<PathStep>,
+    val totalWeight: Double = steps.filterIsInstance<PathStep.EdgeStep>().size.toDouble(),
 ): Serializable {
     /** 경로 내 모든 정점을 순서대로 반환한다. */
     val vertices: List<GraphVertex>

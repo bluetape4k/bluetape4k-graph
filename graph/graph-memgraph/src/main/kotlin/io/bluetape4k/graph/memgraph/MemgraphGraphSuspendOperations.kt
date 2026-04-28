@@ -1,6 +1,7 @@
 package io.bluetape4k.graph.memgraph
 
 import io.bluetape4k.graph.GraphQueryException
+import io.bluetape4k.graph.algo.ShortestPathFallback
 import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
@@ -185,6 +186,13 @@ class MemgraphGraphSuspendOperations(
         }.firstOrNull()
     }
 
+    override suspend fun findVertexById(id: GraphElementId): GraphVertex? {
+        return runQuery(
+            "MATCH (n) WHERE id(n) = toInteger(\$id) RETURN n",
+            mapOf("id" to id.value),
+        ) { MemgraphRecordMapper.recordToVertex(it) }.firstOrNull()
+    }
+
     override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphVertex> {
         label.requireNotBlank("label").requireSafeIdentifier("label")
 
@@ -277,6 +285,22 @@ class MemgraphGraphSuspendOperations(
         }
     }
 
+    override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): Flow<GraphEdge> {
+        val labelPart = if (edgeLabel != null) ":$edgeLabel" else ""
+        return flowQuery(
+            "MATCH (n)-[r$labelPart]->(m) WHERE id(n) = toInteger(\$startId) RETURN r",
+            mapOf("startId" to startId.value),
+        ) { MemgraphRecordMapper.recordToEdge(it) }
+    }
+
+    override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): Flow<GraphEdge> {
+        val labelPart = if (edgeLabel != null) ":$edgeLabel" else ""
+        return flowQuery(
+            "MATCH (n)-[r$labelPart]->(m) WHERE id(m) = toInteger(\$endId) RETURN r",
+            mapOf("endId" to endId.value),
+        ) { MemgraphRecordMapper.recordToEdge(it) }
+    }
+
     override suspend fun deleteEdge(label: String, id: GraphElementId): Boolean {
         label.requireNotBlank("label").requireSafeIdentifier("label")
 
@@ -324,7 +348,11 @@ class MemgraphGraphSuspendOperations(
     ): GraphPath? {
         fromId.value.toLongOrNull() ?: throw GraphQueryException("Memgraph requires numeric ID, got: $fromId")
         toId.value.toLongOrNull() ?: throw GraphQueryException("Memgraph requires numeric ID, got: $toId")
-        
+
+        if (options.weightProperty != null) {
+            return withContext(Dispatchers.IO) { ShortestPathFallback.dijkstra(syncDelegate, fromId, toId, options) }
+        }
+
         // Memgraph는 shortestPath() 미지원 → depth-limited MATCH + ORDER BY length(p) LIMIT 1 사용
         val relPattern =
             if (options.edgeLabel != null) ":" + options.edgeLabel + "*1.." + options.maxDepth
@@ -338,6 +366,17 @@ class MemgraphGraphSuspendOperations(
         ) {
             MemgraphRecordMapper.recordToPath(it)
         }.firstOrNull()
+    }
+
+    override suspend fun aStarPath(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        options: PathOptions,
+        heuristic: (GraphVertex) -> Double,
+    ): GraphPath? {
+        fromId.value.requireNotBlank("fromId.value")
+        toId.value.requireNotBlank("toId.value")
+        return withContext(Dispatchers.IO) { ShortestPathFallback.aStar(syncDelegate, fromId, toId, options, heuristic) }
     }
 
     override fun allPaths(

@@ -46,6 +46,21 @@ interface GraphVertexRepository {
     fun findVertexById(label: String, id: GraphElementId): GraphVertex?
 
     /**
+     * 레이블 없이 ID로 단일 정점을 조회한다.
+     *
+     * 백엔드가 ID로만 정점을 조회할 수 있는 경우에 사용한다.
+     * Dijkstra/A* 알고리즘에서 레이블 없이 ID만 알고 있을 때 필요하다.
+     *
+     * ```kotlin
+     * val found = ops.findVertexById(vertex.id)  // 레이블 불필요
+     * ```
+     *
+     * @param id 조회할 정점 ID.
+     * @return 존재하면 [GraphVertex], 없으면 `null`.
+     */
+    fun findVertexById(id: GraphElementId): GraphVertex?
+
+    /**
      * 레이블과 속성 필터로 정점 목록을 조회한다.
      *
      * ```kotlin

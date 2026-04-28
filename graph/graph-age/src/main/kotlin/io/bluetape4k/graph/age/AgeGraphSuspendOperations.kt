@@ -1,6 +1,7 @@
 package io.bluetape4k.graph.age
 
 import io.bluetape4k.graph.GraphQueryException
+import io.bluetape4k.graph.algo.ShortestPathFallback
 import io.bluetape4k.graph.age.sql.AgeSql
 import io.bluetape4k.graph.age.sql.AgeTypeParser
 import io.bluetape4k.graph.model.BfsDfsOptions
@@ -143,6 +144,22 @@ class AgeGraphSuspendOperations(
         }
     }
 
+    override suspend fun findVertexById(id: GraphElementId): GraphVertex? {
+        val longId = id.value.toLongOrNull()
+            ?: throw GraphQueryException("AGE requires numeric ID, got: ${id.value}")
+
+        return newSuspendedTransaction {
+            var vertex: GraphVertex? = null
+            val stmt = AgeSql.matchVertexById(graphName, longId)
+            exec(stmt) { rs ->
+                if (rs.next()) {
+                    vertex = AgeTypeParser.parseVertex(rs.getString("v"))
+                }
+            }
+            vertex
+        }
+    }
+
     override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphVertex> {
         label.requireNotBlank("label")
         return channelFlow {
@@ -250,6 +267,42 @@ class AgeGraphSuspendOperations(
         }
     }
 
+    override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): Flow<GraphEdge> {
+        val longId = startId.value.toLongOrNull()
+            ?: throw GraphQueryException("AGE requires numeric ID, got: ${startId.value}")
+        return channelFlow {
+            val edges = newSuspendedTransaction {
+                val list = mutableListOf<GraphEdge>()
+                val stmt = AgeSql.matchEdgesByStartId(graphName, longId, edgeLabel)
+                exec(stmt) { rs ->
+                    while (rs.next()) {
+                        list.add(AgeTypeParser.parseEdge(rs.getString("e")))
+                    }
+                }
+                list
+            }
+            edges.forEach { send(it) }
+        }
+    }
+
+    override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): Flow<GraphEdge> {
+        val longId = endId.value.toLongOrNull()
+            ?: throw GraphQueryException("AGE requires numeric ID, got: ${endId.value}")
+        return channelFlow {
+            val edges = newSuspendedTransaction {
+                val list = mutableListOf<GraphEdge>()
+                val stmt = AgeSql.matchEdgesByEndId(graphName, longId, edgeLabel)
+                exec(stmt) { rs ->
+                    while (rs.next()) {
+                        list.add(AgeTypeParser.parseEdge(rs.getString("e")))
+                    }
+                }
+                list
+            }
+            edges.forEach { send(it) }
+        }
+    }
+
     override suspend fun deleteEdge(label: String, id: GraphElementId): Boolean {
         label.requireNotBlank("label")
         val longId = id.value.toLongOrNull()
@@ -294,6 +347,12 @@ class AgeGraphSuspendOperations(
         toId: GraphElementId,
         options: PathOptions,
     ): GraphPath? {
+        if (options.weightProperty != null) {
+            return withContext(Dispatchers.IO) {
+                ShortestPathFallback.dijkstra(syncDelegate, fromId, toId, options)
+            }
+        }
+
         val from = fromId.value.toLongOrNull()
             ?: throw GraphQueryException("AGE requires numeric ID, got: ${fromId.value}")
         val to =
@@ -309,6 +368,15 @@ class AgeGraphSuspendOperations(
             }
             path
         }
+    }
+
+    override suspend fun aStarPath(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        options: PathOptions,
+        heuristic: (GraphVertex) -> Double,
+    ): GraphPath? = withContext(Dispatchers.IO) {
+        syncDelegate.aStarPath(fromId, toId, options, heuristic)
     }
 
     override fun allPaths(
