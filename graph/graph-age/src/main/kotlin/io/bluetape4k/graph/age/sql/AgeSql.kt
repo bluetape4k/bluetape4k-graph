@@ -411,7 +411,7 @@ object AgeSql {
      * @param edgeLabel 간선 레이블 필터. null이면 모든 레이블 반환.
      */
     fun matchEdgesByStartId(graphName: String, startId: Long, edgeLabel: String?): String {
-        val rel = if (edgeLabel != null) ":${sanitizeLabel(edgeLabel)}" else ""
+        val rel = if (edgeLabel != null) ":${edgeLabel.requireSafeIdentifier("edgeLabel")}" else ""
         return cypher(
             graphName,
             "MATCH (a)-[e$rel]->(b) WHERE id(a) = $startId RETURN e",
@@ -432,7 +432,7 @@ object AgeSql {
      * @param edgeLabel 간선 레이블 필터. null이면 모든 레이블 반환.
      */
     fun matchEdgesByEndId(graphName: String, endId: Long, edgeLabel: String?): String {
-        val rel = if (edgeLabel != null) ":${sanitizeLabel(edgeLabel)}" else ""
+        val rel = if (edgeLabel != null) ":${edgeLabel.requireSafeIdentifier("edgeLabel")}" else ""
         return cypher(
             graphName,
             "MATCH (a)-[e$rel]->(b) WHERE id(b) = $endId RETURN e",

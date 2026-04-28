@@ -128,6 +128,7 @@ class Neo4jWeightedPathTest {
 
     // ─── A* ─────────────────────────────────────────────────────────────────────
 
+    @Suppress("DANGEROUS_CHARACTERS")
     @Test
     fun `A* 경로 A에서 C까지는 A-B-C이다`() {
         val a = ops.createVertex("City", mapOf("name" to "A", "x" to 0.0, "y" to 0.0))
@@ -152,6 +153,7 @@ class Neo4jWeightedPathTest {
         path.totalWeight.shouldBeNear(3.0, 0.001)
     }
 
+    @Suppress("DANGEROUS_CHARACTERS")
     @Test
     fun `A* 연결 없으면 null 반환`() {
         val a = ops.createVertex("City", mapOf("name" to "A"))
