@@ -332,6 +332,6 @@ class FalkorDBGraphSuspendOperationsTest : AbstractFalkorDBTest() {
             async { ops.createVertex("Person", mapOf("name" to "user$i")) }
         }.awaitAll()
         results shouldHaveSize 10
-        results.all { it != null } shouldBeEqualTo true
+        results.forEach { it.shouldNotBeNull() }
     }
 }

@@ -2,6 +2,7 @@ package io.bluetape4k.graph.algo
 
 import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.PageRankOptions
+import io.bluetape4k.graph.model.graphElementIdOf
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.logging.KLogging
 import org.amshove.kluent.shouldBeEqualTo
@@ -67,7 +68,7 @@ class VirtualThreadAlgorithmAdapterTest {
     fun `GraphOperations as virtual thread returns adapter`() {
         val opsAsAlgo: io.bluetape4k.graph.repository.GraphAlgorithmRepository = ops
         val vt = opsAsAlgo.asVirtualThread()
-        val future = vt.degreeCentralityAsync(io.bluetape4k.graph.model.GraphElementId.of("0"))
+        val future = vt.degreeCentralityAsync(graphElementIdOf("0"))
         future.join() // should not throw even when vertex absent — returns 0/0
     }
 }

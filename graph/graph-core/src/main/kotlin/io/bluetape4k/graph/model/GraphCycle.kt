@@ -26,3 +26,5 @@ data class GraphCycle(
         private const val serialVersionUID: Long = 1L
     }
 }
+
+fun GraphPath.toCycle() = GraphCycle(this)

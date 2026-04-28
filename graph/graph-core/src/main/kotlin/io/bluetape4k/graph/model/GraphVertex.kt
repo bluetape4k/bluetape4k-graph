@@ -31,3 +31,9 @@ data class GraphVertex(
         private const val serialVersionUID: Long = 1L
     }
 }
+
+fun graphVertexOf(id: GraphElementId, label: String, properties: Map<String, Any?> = emptyMap()) =
+    GraphVertex(id, label, properties)
+
+fun graphVertexOf(id: Any, label: String): GraphVertex =
+    graphVertexOf(graphElementIdOf(id.toString()), label)

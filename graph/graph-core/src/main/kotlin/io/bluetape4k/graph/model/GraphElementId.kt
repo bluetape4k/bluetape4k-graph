@@ -56,3 +56,5 @@ value class GraphElementId(val value: String): Serializable {
         }
     }
 }
+
+fun graphElementIdOf(value: Any): GraphElementId = GraphElementId.of(value.toString())

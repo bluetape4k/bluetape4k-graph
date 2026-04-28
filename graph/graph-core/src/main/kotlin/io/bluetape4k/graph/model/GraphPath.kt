@@ -105,3 +105,30 @@ data class GraphPath(
             GraphPath(vertices.map { PathStep.VertexStep(it) })
     }
 }
+
+@JvmName("graphPathOfPathSteps")
+fun graphPathOf(vararg steps: PathStep): GraphPath = GraphPath(steps.toList())
+
+@JvmName("graphPathOfPathStepsList")
+fun graphPathOf(steps: List<PathStep>): GraphPath = GraphPath(steps)
+
+@JvmName("graphPathOfGraphVertices")
+fun graphPathOf(vararg vertices: GraphVertex): GraphPath = GraphPath(vertices.map { PathStep.VertexStep(it) })
+
+@JvmName("graphPathOfGraphVertexList")
+fun graphPathOf(vertices: List<GraphVertex>): GraphPath = GraphPath(vertices.map { PathStep.VertexStep(it) })
+
+@JvmName("graphPathOfGraphEdges")
+fun graphPathOf(vararg edges: GraphEdge): GraphPath = GraphPath(edges.map { PathStep.EdgeStep(it) })
+
+@JvmName("graphPathOfGraphEdgeList")
+fun graphPathOf(edges: List<GraphEdge>): GraphPath = GraphPath(edges.map { PathStep.EdgeStep(it) })
+
+@JvmName("graphPathOfGraphVertex")
+fun graphPathOf(vertex: GraphVertex): GraphPath = GraphPath(listOf(PathStep.VertexStep(vertex)))
+
+@JvmName("graphPathOfGraphEdge")
+fun graphPathOf(edge: GraphEdge): GraphPath = GraphPath(listOf(PathStep.EdgeStep(edge)))
+
+@JvmName("emptyGraphPathOf")
+fun emptyGraphPathOf(): GraphPath = GraphPath.EMPTY

@@ -8,7 +8,7 @@ import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
-import java.util.PriorityQueue
+import java.util.*
 
 /**
  * A* 알고리즘으로 휴리스틱 유도 최단 경로를 계산한다.
@@ -27,7 +27,7 @@ class AStarRunner(
     private val fetchVertex: (GraphElementId) -> GraphVertex?,
     private val heuristic: (GraphVertex) -> Double,
 ) {
-    companion object : KLogging()
+    companion object: KLogging()
 
     /**
      * A* 알고리즘으로 [fromId] → [toId] 최단 경로를 계산한다.
@@ -48,7 +48,7 @@ class AStarRunner(
         val extractor = WeightExtractor(weightProperty, options.missingWeightPolicy)
 
         // f = g + h; tie-break: vertexId 사전순
-        val pq = PriorityQueue<Triple<Double, Double, GraphElementId>>(
+        val pq = PriorityQueue(
             compareBy<Triple<Double, Double, GraphElementId>> { it.first }
                 .thenComparing { a, b -> a.third.value.compareTo(b.third.value) }
         )
@@ -108,7 +108,7 @@ class AStarRunner(
         Direction.BOTH -> when (currentId) {
             edge.startId -> edge.endId
             edge.endId -> edge.startId
-            else -> null
+            else       -> null
         }
     }
 }

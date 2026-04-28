@@ -85,7 +85,7 @@ class MemgraphWeightedPathTest {
     }
 
     @Test
-    fun `A* 경로 A에서 C까지는 A-B-C이다`() {
+    fun `AStar 경로 A에서 C까지는 A-B-C이다`() {
         val a = ops.createVertex("City", mapOf("name" to "A", "x" to 0.0, "y" to 0.0))
         val b = ops.createVertex("City", mapOf("name" to "B", "x" to 1.0, "y" to 0.0))
         val c = ops.createVertex("City", mapOf("name" to "C", "x" to 2.0, "y" to 0.0))

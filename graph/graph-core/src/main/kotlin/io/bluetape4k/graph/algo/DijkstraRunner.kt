@@ -8,7 +8,7 @@ import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
-import java.util.PriorityQueue
+import java.util.*
 
 /**
  * Dijkstra 알고리즘으로 단일 출발지 최단 경로를 계산한다.
@@ -47,7 +47,7 @@ class DijkstraRunner(
         val extractor = WeightExtractor(weightProperty, options.missingWeightPolicy)
 
         // (cost, vertexId) — tie-break은 vertexId 사전순
-        val pq = PriorityQueue<Pair<Double, GraphElementId>>(
+        val pq = PriorityQueue(
             compareBy<Pair<Double, GraphElementId>> { it.first }
                 .thenComparing { a, b -> a.second.value.compareTo(b.second.value) }
         )
