@@ -116,6 +116,9 @@ Spring Boot 4 패키지 변경 사항:
 - 단순 설명보다 호출 가능한 짧은 Kotlin snippet 우선
 - README 예제와 KDoc 예제가 서로 다른 API 형태를 안내하지 않도록 정합성 점검
 
+> **진행 현황 (2026-04-29)**: `graph-core` 모델 빌더 유틸(`graphElementIdOf`, `graphVertexOf`, `graphPathOf`, `emptyGraphPath`)에 KDoc + 코드 예제 추가 완료.
+> 백엔드 모듈, `graph-io`, Spring Boot starter는 미완.
+
 ### [ ] 트랜잭션 DSL
 
 ```kotlin
