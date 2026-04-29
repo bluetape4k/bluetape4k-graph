@@ -134,15 +134,23 @@ object GraphIoOkioPaths {
      * GZip 압축 체이닝 편의 함수.
      *
      * 내부적으로 [Compressors.Streaming.GZip]을 사용한다.
+     * 압축 초기화 실패 시 underlying sink를 닫고 예외를 재던진다.
      */
     @Throws(IOException::class)
     fun openGzipSink(sink: OkioGraphExportSink): BufferedSink {
         val bs = openSink(sink)
-        return openCompressedSink(bs, Compressor.GZIP)
+        return try {
+            openCompressedSink(bs, Compressor.GZIP)
+        } catch (e: Throwable) {
+            try { bs.close() } catch (_: Throwable) {}
+            throw e
+        }
     }
 
     /**
      * GZip 압축 해제 체이닝 편의 함수.
+     *
+     * 압축 초기화 실패 시 underlying source를 닫고 예외를 재던진다.
      *
      * @param maxDecompressedBytes decompression bomb 방지 한계 (기본 512 MiB)
      */
@@ -152,7 +160,12 @@ object GraphIoOkioPaths {
         maxDecompressedBytes: Long = DEFAULT_MAX_DECOMPRESSED_BYTES,
     ): BufferedSource {
         val bs = openSource(source)
-        return openDecompressedSource(bs, Compressor.GZIP, maxDecompressedBytes)
+        return try {
+            openDecompressedSource(bs, Compressor.GZIP, maxDecompressedBytes)
+        } catch (e: Throwable) {
+            try { bs.close() } catch (_: Throwable) {}
+            throw e
+        }
     }
 
     // ─── 내부 헬퍼 ─────────────────────────────────────────────────────────────
@@ -244,7 +257,9 @@ object GraphIoOkioPaths {
         override fun close() {
             try {
                 super.close()
-                if (!failed) {
+                if (failed) {
+                    try { fs.delete(tmpPath) } catch (_: IOException) {}
+                } else {
                     fs.atomicMove(tmpPath, targetPath)
                 }
             } catch (e: Exception) {

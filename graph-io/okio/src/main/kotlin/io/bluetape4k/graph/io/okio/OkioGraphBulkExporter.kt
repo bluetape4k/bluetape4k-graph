@@ -14,6 +14,7 @@ import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
+import okio.FileSystem
 import java.io.IOException
 
 /**
@@ -98,6 +99,11 @@ class OkioGraphBulkExporter(
     ): GraphExportReport {
         return when (sink) {
             is OkioGraphExportSink.PathSink -> {
+                require(sink.fileSystem == FileSystem.SYSTEM) {
+                    "CSV export은 시스템 파일시스템(FileSystem.SYSTEM)만 지원합니다. " +
+                        "커스텀 FileSystem(FakeFileSystem 등)을 사용하려면 CsvGraphBulkExporter를 직접 사용하세요. " +
+                        "제공된 FileSystem: ${sink.fileSystem}"
+                }
                 val stem = sink.path.toString().removeSuffix(".csv")
                 val verticesSink = GraphExportSink.PathSink(java.nio.file.Paths.get("${stem}_vertices.csv"))
                 val edgesSink = GraphExportSink.PathSink(java.nio.file.Paths.get("${stem}_edges.csv"))

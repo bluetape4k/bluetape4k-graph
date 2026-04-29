@@ -9,11 +9,11 @@ import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphIoFormat
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
+import kotlin.test.assertFailsWith
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
 import org.amshove.kluent.shouldBeEqualTo
@@ -125,7 +125,7 @@ class SuspendAdapterTest {
     fun `exportGraphAwait throws CancellationException when coroutine is pre-cancelled`() = runTest {
         val cancelledJob = Job().apply { cancel() }
 
-        val result = runCatching {
+        assertFailsWith<kotlinx.coroutines.CancellationException> {
             withContext(cancelledJob) {
                 adapter.exportGraphAwait(
                     OkioGraphExportSink.PathSink("/nope-export.ndjson".toPath(), fakeFs),
@@ -135,9 +135,6 @@ class SuspendAdapterTest {
                 )
             }
         }
-
-        result.isFailure shouldBeEqualTo true
-        (result.exceptionOrNull() is CancellationException) shouldBeEqualTo true
         // fakeFs.checkNoOpenFiles() in @AfterEach verifies no resource leak
     }
 
@@ -153,7 +150,7 @@ class SuspendAdapterTest {
 
         val cancelledJob = Job().apply { cancel() }
 
-        val result = runCatching {
+        assertFailsWith<kotlinx.coroutines.CancellationException> {
             withContext(cancelledJob) {
                 adapter.importGraphAwait(
                     OkioGraphImportSource.PathSource(path, fakeFs),
@@ -163,8 +160,5 @@ class SuspendAdapterTest {
                 )
             }
         }
-
-        result.isFailure shouldBeEqualTo true
-        (result.exceptionOrNull() is CancellationException) shouldBeEqualTo true
     }
 }

@@ -14,6 +14,7 @@ import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
+import okio.FileSystem
 import okio.Path.Companion.toPath
 import java.io.IOException
 
@@ -107,6 +108,11 @@ class OkioGraphBulkImporter(
     ): GraphImportReport {
         return when (source) {
             is OkioGraphImportSource.PathSource -> {
+                require(source.fileSystem == FileSystem.SYSTEM) {
+                    "CSV import은 시스템 파일시스템(FileSystem.SYSTEM)만 지원합니다. " +
+                        "커스텀 FileSystem(FakeFileSystem 등)을 사용하려면 CsvGraphBulkImporter를 직접 사용하세요. " +
+                        "제공된 FileSystem: ${source.fileSystem}"
+                }
                 val stem = source.path.toString().removeSuffix(".csv")
                 val verticesPath = "${stem}_vertices.csv".toPath()
                 val edgesPath = "${stem}_edges.csv".toPath()

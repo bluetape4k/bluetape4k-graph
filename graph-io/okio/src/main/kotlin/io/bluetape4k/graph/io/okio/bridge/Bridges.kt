@@ -45,7 +45,8 @@ fun BufferedSink.asClosingOutputStream(): OutputStream = object : OutputStream()
 /**
  * OkIO [BufferedSource]를 [Reader]로 변환한다. [charset] 기본값은 UTF-8.
  *
- * underlying [BufferedSource]는 닫지 않는다 (호출자 소유).
+ * 반환된 [Reader]를 닫으면 underlying [BufferedSource]도 함께 닫힌다.
+ * underlying source를 닫지 않으려면 [toInputStream]을 사용하거나 non-closing 래퍼를 적용하라.
  */
 fun BufferedSource.toReader(charset: Charset = Charsets.UTF_8): Reader =
     inputStream().reader(charset)
@@ -53,7 +54,8 @@ fun BufferedSource.toReader(charset: Charset = Charsets.UTF_8): Reader =
 /**
  * OkIO [BufferedSink]를 [Writer]로 변환한다. [charset] 기본값은 UTF-8.
  *
- * underlying [BufferedSink]는 닫지 않는다 (호출자 소유).
+ * 반환된 [Writer]를 닫으면 underlying [BufferedSink]도 함께 닫힌다.
+ * underlying sink를 닫지 않으려면 [toOutputStream]을 사용하거나 non-closing 래퍼를 적용하라.
  */
 fun BufferedSink.toWriter(charset: Charset = Charsets.UTF_8): Writer =
     outputStream().writer(charset)
