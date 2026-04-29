@@ -5,7 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [Unreleased] — 0.3.0-SNAPSHOT
+
+### Added
+
+- **`graph-core` 모델 빌더 유틸리티** (`graph/graph-core/src/main/kotlin/io/bluetape4k/graph/model/`)
+  - `graphElementIdOf(Any)`: 임의 타입에서 `GraphElementId` 생성 — `String`, `Long`, `Int`, `GraphElementId` 모두 안전하게 변환
+  - `graphVertexOf(Any, label, properties)`: id·label·프로퍼티 맵으로 `GraphVertex` 생성 유틸
+  - `graphPathOf(vertices, edges)` / `graphPathOf(vertices)`: `GraphPath` 빌더 오버로드
+  - `emptyGraphPath()`: 빈 경로 생성 (기존 `emptyGraphPathOf()` 대체)
+  - `GraphPath.toCycle()`: 경로를 `GraphCycle`로 변환하는 확장 메서드
+- **`graph-core` 모델 테스트 클래스 신규 추가** (`graph/graph-core/src/test/`)
+  - `GraphElementIdTest`: `graphElementIdOf` 4개 케이스 (이중 변환 방어 포함)
+  - `GraphVertexTest`: `graphVertexOf` 6개 케이스
+  - `GraphPathTest`: `graphPathOf` 8개 케이스 + `emptyGraphPath`
+  - `GraphCycleTest`: `toCycle()`, `length`, 동등 비교 7개 케이스
+- **`graph-core` README 모델 빌더 유틸리티 섹션** (`graph/graph-core/README.md`, `README.ko.md`)
+
+### Fixed
+
+- **`graphElementIdOf(Any)` 이중 `toString()` 변환 버그**: `GraphElementId` 값을 다시 `graphElementIdOf`에 전달하면 `"GraphElementId(value=x)"` 문자열로 오염되던 문제 수정 — `is GraphElementId` 타입 체크로 조기 반환
+
+### Changed
+
+- `emptyGraphPathOf()` → `emptyGraphPath()` 이름 변경 (Kotlin 팩토리 함수 관례 준수)
+- `graphVertexOf(Any, label)` → `graphVertexOf(Any, label, properties)`: `properties` 파라미터 추가 및 `graphElementIdOf` 경유로 이중 변환 제거
+- `graphPathOf` 단일-arg 중복 오버로드 제거, 명시적 파라미터 오버로드만 유지
+- `AStarRunner` companion object 콜론 앞 공백 추가 (ktlint 규칙 준수)
 
 ---
 
