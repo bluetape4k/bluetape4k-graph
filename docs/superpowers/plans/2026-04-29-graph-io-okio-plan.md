@@ -38,13 +38,19 @@
 
 ### T2. Compressor enum
 - **complexity**: low
-- **파일** (신규): `graph-io/okio/src/main/kotlin/io/bluetape4k/graph/io/okio/Compressor.kt`
+- **파일** (신규):
+  - `graph-io/okio/src/main/kotlin/io/bluetape4k/graph/io/okio/Compressor.kt`
+  - `graph-io/okio/src/test/kotlin/io/bluetape4k/graph/io/okio/CompressorTest.kt` (신규)
 - **의존**: T1
 - **체크포인트**:
-  - `enum class Compressor { NONE, GZIP, LZ4, SNAPPY, ZSTD, BZIP2, DEFLATE }`
-  - 각 enum 멤버에 필요 클래스명(`requiredClassName: String?`) 메타 부여 → `requireOnClasspath` 호출 단일 지점화
-  - 확장자 추론 헬퍼 `fromExtension(path: String): Compressor`(읽기 자동 감지용, 옵션)
-  - KDoc로 v1 미지원 항목(암호화) 명시
+  - `enum class Compressor { GZIP, LZ4, SNAPPY, ZSTD, BZIP2, DEFLATE }` — **NONE 미포함** (스펙 §3.2.1 6값과 일치). 압축 미사용은 `GraphIoOkioPaths.openSource/openSink` 직접 호출로 표현 (체이닝 생략).
+  - 각 enum 멤버에 필요 클래스명(`requiredClassName: String`) 메타 부여:
+    - GZIP/DEFLATE → `null` (JDK 내장, 항상 사용 가능)
+    - LZ4 → `"net.jpountz.lz4.LZ4Factory"`, SNAPPY → `"org.xerial.snappy.Snappy"`, ZSTD → `"com.github.luben.zstd.ZstdInputStream"`, BZIP2 → `"org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream"`
+  - `requireOnClasspath(compressor)` 단일 함수: `compressor.requiredClassName?.let { requireOnClasspath(it) { "..." } }` — LZ4/Snappy/Zstd/Bzip2 4종 모두 이 함수 경유로 가드. T5에서 재호출 없이 Compressor 메타만 사용.
+  - 확장자 추론 헬퍼 `Compressor.fromExtension(path: String): Compressor?` (옵션)
+  - KDoc: v1 미지원 항목(암호화) 및 NONE 미포함 이유 명시
+  - **CompressorTest.kt**: GZIP/DEFLATE round-trip 항상 통과, LZ4/SNAPPY/ZSTD/BZIP2는 `@EnabledIfSystemProperty` 또는 try-catch 분기로 classpath 부재 시 skip
 
 ### T3. OkIO ↔ java.io 브리지 (Bridges.kt)
 - **complexity**: high
@@ -52,14 +58,14 @@
 - **의존**: T1
 - **체크포인트**:
   - 확장 함수: `BufferedSource.toInputStream()`, `BufferedSink.toOutputStream()`,
-    `BufferedSink.toOwningOutputStream()` (close 시 sink도 close), `BufferedSource.toReader(charset=UTF_8)`,
+    `BufferedSink.toOwningOutputStream()` (close 시 sink도 함께 close), `BufferedSource.toReader(charset=UTF_8)`,
     `BufferedSink.toWriter(charset=UTF_8)`
   - 고수준 헬퍼:
-    - `inline fun BufferedSink.writeAsOutputStream(block: (OutputStream) -> Unit)` — block 종료 시 OutputStream `close()` → flush → sink는 호출자가 try-with-resources로 처리
-    - `inline fun BufferedSource.readAsInputStream(block: (InputStream) -> Unit)`
-  - close 체인 정확성: sink는 호출자 책임, OutputStream wrapper close 시 underlying buffer flush 보장.
-  - 단위 테스트는 T11에서 다룸.
-  - KDoc에 "owning vs non-owning" 차이 명시.
+    - `inline fun writeAsOutputStream(sink: OkioGraphExportSink, block: (OutputStream) -> Unit)` — top-level 함수, `GraphIoOkioPaths.openSink(sink).use { bs -> bs.toOwningOutputStream().use { os -> block(os) } }`
+    - `inline fun readAsInputStream(source: OkioGraphImportSource, block: (InputStream) -> Unit)` — 대응 top-level 함수
+  - **공통 헬퍼 `okioWriteTo` / `okioReadFrom`**: 4개 포맷 확장 함수(T9)가 재사용할 close-chain 헬퍼를 `bridge/` 패키지에 추출 → DRY (close 체인 패턴 12개 확장 함수에서 반복 방지)
+  - **close 체인 정책 (모든 포맷 통일)**: 어떤 포맷이든 `BufferedSink.use { … }` 단일 close로 압축 스트림·OutputStream 전이 보장. Jackson NDJSON·GraphML 모두 `toOwningOutputStream()` 경유 — `JsonGenerator.close()` / `XMLStreamWriter.close()` 호출 후 BufferedSink까지 연쇄.
+  - KDoc에 "owning vs non-owning" 차이 명시, `@param ownsSource`/`@param ownsSink` 책임 표기.
 
 ### T4. OkioGraphImportSource / OkioGraphExportSink sealed 인터페이스
 - **complexity**: high
@@ -73,7 +79,7 @@
     - `data class SourceBased(val source: Source, val ownsSource: Boolean = true)`
     - `data class InputStreamBased(val inputStream: InputStream, val ownsStream: Boolean = true)`
   - `sealed interface OkioGraphExportSink`(대칭 3 variants: `PathSink`, `SinkBased`, `OutputStreamBased`)
-    - `data class PathSink(val path: Path, val fileSystem: FileSystem = FileSystem.SYSTEM, val createParentDirectories: Boolean = true)`
+    - `data class PathSink(val path: Path, val fileSystem: FileSystem = FileSystem.SYSTEM, val mustCreate: Boolean = false, val mustExist: Boolean = false, val createParentDirectories: Boolean = true)` — `mustCreate`/`mustExist` 스펙 §3.1.2 일치
     - `data class SinkBased(val sink: Sink, val ownsSink: Boolean = true)`
     - `data class OutputStreamBased(val outputStream: OutputStream, val ownsStream: Boolean = true)`
   - 각 변형에 `companion object` 팩토리 (`fromPath`, `fromSource`, `fromInputStream` 등) — Kotlin idiom
@@ -86,16 +92,19 @@
 - **의존**: T2, T4
 - **체크포인트**:
   - `object GraphIoOkioPaths`
-  - 핵심 API:
-    - `openBufferedSource(import: OkioGraphImportSource): BufferedSource`
-    - `openBufferedSink(export: OkioGraphExportSink): BufferedSink`
-  - 내부에서 `Compressor` 매핑 → `Compressable.Sources.gzip / lz4 / snappy / zstd / bzip2 / deflate` 호출
-  - `requireOnClasspath` 가드: 선택 압축기 사용 시 명확한 에러 메시지 (`"LZ4 compression requires lz4-java on classpath"`)
-  - GZIP 단축 헬퍼: `gzipSource(path)`, `gzipSink(path)` — 일반적인 케이스 노출
-  - PathSource 일 경우 `FileSystem.source(path).buffer()` 사용 후 압축 체이닝
-  - InputStreamBased 일 경우 `input.source().buffer()`로 변환
-  - SourceBased 는 그대로 buffer 적용
-  - **close 책임 문서화**: 반환된 BufferedSource/Sink는 호출자가 close — 내부 분기 일관성 유지
+  - **핵심 API (스펙 §3.2 기준 명명)**:
+    - `openSource(source: OkioGraphImportSource): BufferedSource`
+    - `openSink(sink: OkioGraphExportSink): BufferedSink`
+    - `openCompressedSink(sink: BufferedSink, compressor: Compressor): BufferedSink`
+    - `openDecompressedSource(source: BufferedSource, compressor: Compressor): BufferedSource`
+    - `openGzipSink(sink: OkioGraphExportSink): BufferedSink` (Gzip 단축형)
+    - `openGzipSource(source: OkioGraphImportSource): BufferedSource`
+  - 내부 압축 분기: `Compressor.requireOnClasspath(compressor)` 검사 후 `Compressable.Sources.gzip / lz4 / snappy / zstd / bzip2 / deflate` 위임 — T2에서 정의한 `requiredClassName` 메타 활용, T5에서 재구현 없음
+  - PathSource: `fileSystem.source(path).buffer()` → 압축 체이닝
+  - InputStreamBased(`ownsStream=false`): close 위임 차단 래퍼(`ForwardingSource` 서브클래스, close 무력화) 사용 — underlying InputStream이 닫히지 않도록 보장
+  - SourceBased: 그대로 `.buffer()` 적용
+  - **KDoc**: close 책임(호출자가 반환된 BufferedSource/Sink를 닫아야 함), v2 암호화 예정 안내(`bluetape4k-projects #240`), 한국어 KDoc 작성
+  - 파라미터 검증: `require(path.toString().isNotBlank())` 등 공개 진입점 전체에 적용
 
 ### T6. OkioGraphBulkImporter / OkioGraphBulkExporter (Sync API)
 - **complexity**: high
@@ -118,39 +127,40 @@
 - **파일** (신규): `graph-io/okio/src/main/kotlin/io/bluetape4k/graph/io/okio/virtualthread/VirtualThreadGraphIoOkioBulkAdapter.kt`
 - **의존**: T6
 - **체크포인트**:
+  - `companion object: KLogging()` — VT 컨텍스트 로깅 (Sync와 동일 패턴)
   - 내부에 `Executors.newVirtualThreadPerTaskExecutor()` 사용 (close on adapter close)
-  - 동기 API(T6) 위에 얇은 어댑터: import/export 를 VT 작업으로 wrapping
-  - VT 작업 내에서 IO 블로킹 발생해도 OS 쓰레드 차단되지 않도록 stream IO 만 사용 (synchronized 블록 회피)
+  - 동기 API(T6) 위에 얇은 어댑터: import/export를 VT 작업으로 wrapping
   - `AutoCloseable` 구현, 어댑터 close 시 executor shutdown
-  - 기존 Csv VT 어댑터 패턴(`CsvGraphVirtualThreadBulkImporter`) 그대로 차용
+  - 파라미터 검증: 공개 진입점에 `require(...)` 적용
+  - 한국어 KDoc 작성 (close 책임, VT 동작 설명)
+  - 기존 Csv VT 어댑터 패턴(`CsvGraphVirtualThreadBulkImporter`) 참조
 
 ### T8. SuspendGraphIoOkioBulkAdapter (Coroutines)
 - **complexity**: medium
 - **파일** (신규): `graph-io/okio/src/main/kotlin/io/bluetape4k/graph/io/okio/coroutines/SuspendGraphIoOkioBulkAdapter.kt`
 - **의존**: T6
 - **체크포인트**:
+  - `companion object: KLoggingChannel()` — suspend 컨텍스트 로깅 (MEMORY 가이드)
   - `suspend fun import(...)` / `suspend fun export(...)`
-  - 내부에서 `withContext(Dispatchers.IO)` 로 동기 어댑터 위임
-  - 로깅: `KLoggingChannel` 사용 (suspend 컨텍스트, MEMORY 가이드)
-  - 취소 안전성: `runInterruptible` 또는 IO 디스패처 + 외부 close 시점 보장. close 패턴은 `use { }` 블록 권장.
-  - Flow 변형은 v1 범위 외 (옵션) — KDoc 만 명시.
+  - **취소 안전성**: `runInterruptible(Dispatchers.IO) { … }` 사용 — OkIO `BufferedSource.read()` blocking 호출에 `Thread.interrupt()`가 전달되도록 보장. `withContext(Dispatchers.IO)`는 비차단 영역에만 사용.
+  - `NonCancellable` 블록에서 sink/source `.close()` 보장 (`finally { source.close() }` 패턴)
+  - Flow 변형은 v1 범위 외 — KDoc에 "v2 예정" 명시만
+  - 파라미터 검증, 한국어 KDoc 작성
 
 ### T9. CSV/Jackson/GraphML 확장 함수 (extension/*Extensions.kt)
 - **complexity**: medium
 - **파일** (신규):
-  - `extension/CsvOkioExtensions.kt`
-  - `extension/JacksonOkioExtensions.kt`
-  - `extension/GraphMLOkioExtensions.kt`
+  - `extension/CsvOkioExtensions.kt` (Sync + VT + Suspend)
+  - `extension/JacksonOkioExtensions.kt` (Jackson2/Jackson3 × Sync + VT + Suspend)
+  - `extension/GraphMLOkioExtensions.kt` (Sync + VT + Suspend)
 - **의존**: T3, T4, T5, T6
 - **체크포인트**:
-  - 각 포맷의 기존 importer/exporter 에 OkIO 어댑터 확장:
-    - `CsvGraphBulkExporter.exportGraph(sink: BufferedSink, options)` — 내부에서 `toOutputStream()`
-    - `CsvGraphBulkImporter.importGraph(source: BufferedSource, options)`
-    - GraphML 의 경우 `writeAsOutputStream` 으로 StAX writer close 체인 보장
-    - Jackson NDJSON 은 `toOwningOutputStream` + JsonGenerator.close → underlying sink close
-  - Sync, VT, Suspend 변형마다 확장(총 12개)
-  - JacksonOkioExtensions 는 jackson2/jackson3 모두 커버 (각각 패키지 내 별도 객체)
-  - 압축 변형 단축형 (`exportGzipNdjson(path: Path, ...)`) 옵션, 핵심은 sink 받는 형태
+  - **총 24개 확장 함수**: 4 포맷(CSV/Jackson2/Jackson3/GraphML) × 3 변형(Sync/VT/Suspend) × 2 방향(import/export)
+  - 로깅 패턴: Sync/VT 확장 = `private val log = KotlinLogging.logger { }` (파일 단위), Suspend 확장 = 로깅 위임(호출측 어댑터로)
+  - **close 체인 정책 통일**: 모든 포맷에서 T3 공통 헬퍼 `writeAsOutputStream(sink, block)` / `readAsInputStream(source, block)` 경유 — CSV/Jackson/GraphML 동일 패턴 적용, `toOwningOutputStream()` 사용으로 `JsonGenerator.close()` / `XMLStreamWriter.close()` 후 BufferedSink 전이 보장
+  - JacksonOkioExtensions는 jackson2/jackson3 패키지 각각에 별도 파일로 분리
+  - 압축 Gzip 단축형 (`exportGraph` + `exportGraphGzip`) 노출
+  - 파라미터 검증, 한국어 KDoc 작성
 
 ### T10. OkIO 단위 테스트 (FakeFileSystem 기반)
 - **complexity**: medium
@@ -177,14 +187,16 @@
   - `extension/GraphMLOkioExtensionsTest.kt`
 - **의존**: T6, T9, T10
 - **체크포인트**:
-  - **DoD 16 round-trip 매트릭스** — 스펙 §4.1.1 기준 (4 포맷 × {plain, gzip 단축형} 최소 8케이스 필수):
-    - CSV: `import`, `importGzip`, `export`, `exportGzip` (GZIP 단축형 검증 필수)
-    - Jackson2 NDJSON: 동일 패턴
-    - Jackson3 NDJSON: 동일 패턴
-    - GraphML: 동일 패턴 (StAX close 체인 특히 검증)
-    - 보충: DEFLATE, LZ4/SNAPPY/ZSTD/BZIP2 는 classpath 존재 시 추가 케이스로 검증
-  - 각 round-trip: 정점/간선/속성 동등성 (`shouldBeEqualTo`)
+  - `@TestInstance(PER_CLASS)` + `@BeforeAll/@AfterAll` fakeFileSystem 라이프사이클 관리
   - `@AfterAll fakeFileSystem.checkNoOpenFiles()` — 파일 핸들 누수 검증 필수
+  - **DoD 16 round-trip 매트릭스** — 스펙 §4.1.1 기준 (4 포맷 × {import, importGzip, export, exportGzip} = 16 셀):
+    - CSV: `import` ✓, `importGzip` ✓, `export` ✓, `exportGzip` ✓
+    - Jackson2 NDJSON: 동일 4 셀
+    - Jackson3 NDJSON: 동일 4 셀
+    - GraphML: 동일 4 셀 (StAX close 체인 특히 검증)
+    - *(1 round-trip 테스트 = import + export를 함께 검증 — 총 16 셀을 8 round-trip으로 커버)*
+    - 보충: DEFLATE, LZ4/SNAPPY/ZSTD/BZIP2는 classpath 존재 시 추가 케이스
+  - 각 round-trip: 정점/간선/속성 동등성 (`shouldBeEqualTo`)
   - InputStreamBased / SourceBased / PathSource 세 진입점 모두 검증
   - close 누수 검증: BufferedSink mock 으로 close 호출 횟수 확인 (특히 GraphML/Jackson owning 케이스)
   - FakeFileSystem 기반 (실제 파일은 1개 sanity 케이스만)
@@ -234,6 +246,7 @@
   - BOM 자동 등록 검증: `./gradlew :bluetape4k-graph-bom:dependencies | grep graph-io-okio` 결과에 신규 모듈 표시 (§4.4)
   - Maven Central 발행 대상에 포함되었는지 확인 (graph-io 모듈 관례 일치)
   - CI workflow 수정 확인: `test-core` + `nightly` 잡에 `:graph-io-okio:test` 포함
+  - **기존 5개 graph-io 모듈(`core/csv/jackson2/jackson3/graphml`)이 `test-core` 잡에 포함되어 있는지 확인, 누락 시 함께 추가** (스펙 §4.4.1)
   - CLAUDE.md 의 graph-io 디렉토리 트리에 `okio/` 줄 추가
 
 ### T15. JMH 벤치마크 추가 (신규 모듈 완료 기준)
@@ -248,6 +261,7 @@
     - `graphmlExportJavaIo`, `graphmlExportOkio`
     - `vtSyncOkioExport`, `vtVirtualThreadOkioExport` (VT vs Sync)
   - JMH `@BenchmarkMode(Mode.Throughput)` + `-prof gc` 가능 설정 (heap allocation 비교)
+  - **워크플로우 파일 수정**: `.github/workflows/`의 JMH 전용 `workflow_dispatch` 잡 확인 → OkIO 벤치마크 클래스 패턴(`*OkioBenchmark*`) 등록. 미존재 시 `benchmark.yml` 신설.
   - `workflow_dispatch` 트리거로만 CI 실행 (PR/nightly 자동 실행 제외 — §4.4.1)
   - 결과(BPS + GC allocation rate)를 README.ko.md "성능" 섹션에 표로 문서화 (MEMORY: 신규 모듈 완료 기준)
 
