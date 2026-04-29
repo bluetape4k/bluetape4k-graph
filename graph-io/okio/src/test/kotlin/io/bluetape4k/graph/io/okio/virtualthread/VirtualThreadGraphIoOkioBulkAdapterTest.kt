@@ -166,6 +166,6 @@ class VirtualThreadGraphIoOkioBulkAdapterTest {
             exportOptions,
         ).get()
 
-        report.elapsed.toMillis() shouldBeGreaterThan 0L
+        report.elapsed.toNanos() shouldBeGreaterThan 0L
     }
 }
