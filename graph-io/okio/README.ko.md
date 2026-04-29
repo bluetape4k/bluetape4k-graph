@@ -228,20 +228,48 @@ class MyGraphIoTest {
 }
 ```
 
-## 성능 (JMH, `small` 파라미터 — 1K 정점 / 2K 간선)
+## 성능 (JMH — `small`: 1K 정점 / 2K 간선 | `medium`: 10K 정점 / 20K 간선)
 
-> 벤치마크는 `./gradlew :graph-io-benchmark:benchmark` 로 실행한다.
-> `-prof gc` 옵션을 추가하면 GC 할당량도 확인할 수 있다.
+> `./gradlew :graph-io-benchmark:benchmark` 으로 실행한다.
+> 환경: Java 25, Apple M3 Pro, 1 warmup / 3 iterations / 2 s each (빠른 측정용).
+> 프로덕션 기준 측정은 기본값(3 warmup / 5 iterations / 3 s)으로 재실행한다.
 
-| 벤치마크 | 평균 시간 (ms) | 참고 |
-|---------|-------------|------|
-| `jackson3OkioRoundTrip` (plain) | — | 실행 후 업데이트 예정 |
-| `jackson3OkioGzipRoundTrip` (gzip) | — | GZIP 압축 포함 |
-| `graphMlOkioRoundTrip` | — | StAX 기반 |
-| `jackson3VtOkioRoundTrip` (VT) | — | Virtual Thread |
-| `jackson3SyncRoundTrip` (java.io baseline) | — | 기존 방식 비교 기준 |
+### NDJSON (Jackson3) — Export (AverageTime, ms/op, 낮을수록 좋음)
 
-*실제 수치는 JMH 실행 후 위 표를 업데이트한다.*
+| 시나리오 | small | medium |
+|---------|------:|-------:|
+| `jackson3JavaIoExport` (baseline) | 1.23 | 18.06 |
+| `jackson3OkioExport` | 1.53 | 19.69 |
+| `jackson3OkioGzipExport` | 3.09 | 39.87 |
+| `jackson3VtOkioExport` (VirtualThread) | 1.47 | 19.34 |
+
+### NDJSON (Jackson3) — Import / RoundTrip
+
+| 시나리오 | small | medium |
+|---------|------:|-------:|
+| `jackson3JavaIoImport` (baseline) | 17.26 | 183.93 |
+| `jackson3OkioImport` | 17.40 | 184.61 |
+| `jackson3OkioGzipImport` | 20.06 | 226.40 |
+| `jackson3OkioRoundTrip` | 17.34 | 192.44 |
+| `jackson3OkioGzipRoundTrip` | 20.04 | 212.96 |
+| `jackson3VtOkioImport` (VirtualThread) | 16.99 | 184.68 |
+| `jackson3VtOkioRoundTrip` | 17.27 | 191.34 |
+
+### GraphML (StAX) — Export / Import / RoundTrip
+
+| 시나리오 | small | medium |
+|---------|------:|-------:|
+| `graphMlJavaIoExport` (baseline) | 2.37 | 33.88 |
+| `graphMlOkioExport` | 3.70 | 39.36 |
+| `graphMlJavaIoImport` (baseline) | 18.74 | 215.44 |
+| `graphMlOkioImport` | 19.93 | 220.84 |
+| `graphMlOkioRoundTrip` | 20.75 | 215.05 |
+
+**관찰:**
+- NDJSON OkIO는 java.io 대비 Export +25% (small), +9% (medium), Import는 동일 수준
+- VirtualThread 오버헤드는 사실상 없음 (sync OkIO와 동일)
+- GZIP Export는 plain 대비 2× 느리지만 Import는 +15% 수준
+- GraphML OkIO는 StAX→InputStream 변환 오버헤드로 +10~15% 차이 발생
 
 ## 보안
 
