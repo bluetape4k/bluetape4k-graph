@@ -3,7 +3,7 @@
 - **Issue**: #12 — graph-io에 OkIO 기반 Source/Sink 지원 추가
 - **작성일**: 2026-04-29
 - **작성자**: bluetape4k-graph 팀
-- **상태**: Approved (Step 2-R 리뷰 반영 완료; 2026-04-29 최종 수정)
+- **상태**: 검토 중 (암호화 범위 조정 반영 완료 — 사용자 최종 승인 대기)
 - **연관 모듈**: `graph-io/core`, `graph-io/csv`, `graph-io/jackson2`, `graph-io/jackson3`, `graph-io/graphml`, `bluetape4k-okio`
 - **관련 문서**:
   - `docs/superpowers/specs/2026-04-18-graph-io-bulk-import-export-design.md` (기존 graph-io 아키텍처)
@@ -80,23 +80,20 @@ OkIO segment 풀의 heap 이점은 **모든 포맷에 동일하게 적용되지 
 
 > **참고 — bluetape4k-csv 구조**: `CsvRecordReader` → `input.reader(encoding)` → `CsvLexer(reader: Reader)` → 내부 `BufferedReader` → char-by-char 상태 기계. `InputStream` 기반이므로 OkIO `source.inputStream()`을 브리지로 쓸 수 있지만, 파싱 코어는 Reader 레벨에서 동작한다.
 
-**결론**: CSV 경로에서 OkIO를 채택하는 1차 동기는 **압축/암호화 체이닝의 편의성 및 FileSystem 추상화**이지, segment 풀 자체의 heap 절약은 아니다. 사용자 KDoc/README에 이 사실을 명시한다.
+**결론**: CSV 경로에서 OkIO를 채택하는 1차 동기는 **압축 체이닝의 편의성 및 FileSystem 추상화**이지, segment 풀 자체의 heap 절약은 아니다. 사용자 KDoc/README에 이 사실을 명시한다.
 
-#### 1.3.2 DAEAD 청크형 스트리밍 암호화의 heap 영향
+#### 1.3.2 암호화 레이어 heap 영향 — 현재 버전 미포함
 
-§3.6에서 다루는 암호화 레이어는 **DAEAD(AES-SIV) 기반 청크형 스트리밍**으로 구현된다.
+현재 `bluetape4k-okio`의 `TinkDecryptSource`는 **전체 파일을 메모리에 적재 후 일괄 복호화**하는 구조로, 대용량 파일에서 OOM 위험이 있다. 이를 해결하는 DAEAD 청크형 스트리밍(`DaeadChunkEncryptSink` / `DaeadChunkDecryptSource`)은 **`bluetape4k-projects` #240**으로 추적한다.
 
-- **쓰기(encrypt)**: OkIO `write(source, byteCount)` 호출당 `chunkSize` 단위로 DAEAD 암호화 → 각 청크는 `[8-byte 길이][N-byte 암호문]` 포맷으로 Sink에 기록. 전체 plaintext를 메모리에 적재하지 않음.
-- **읽기(decrypt)**: 청크 헤더 → 헤더 길이만큼 암호문 읽기 → DAEAD 복호화 → 반복. 청크 단위 lazy pull 유지.
-
-결론: **압축 체인(Gzip 등)과 마찬가지로, DAEAD 청크 암호화는 segment 수준 lazy pull과 호환된다.** 기존 Tink AEAD의 "전체 파일 메모리 로드" 문제는 이 설계로 해소된다.
+**현재 버전에서는 암호화 레이어를 포함하지 않는다.** 압축 체이닝(Gzip/LZ4/Snappy/Zstd 등)만 제공한다. 암호화 지원은 #240 완료 후 다음 버전에 추가된다.
 
 ### 1.4 비목표 (Non-Goals)
 
 - 기존 4개 포맷 모듈의 Java I/O 경로를 OkIO로 **대체**하지 않는다. 호환성 유지가 최우선.
-- AEAD (비결정적 암호화) 지원: **DAEAD(결정적) 청크 스트리밍만** 지원. AEAD는 포함하지 않는다.
-- AES-GCM / AES-CTR 자체 스트림 암호화 구현은 본 issue 범위 밖이다 (별도 이슈로 추적).
-- Tink `StreamingAead` (AesGcmHkdfStreaming) 지원: `bluetape4k-okio`에 Streaming AEAD 래퍼가 추가된 후 swap 가능하도록 설계하되, 본 spec에서는 구현하지 않는다.
+- **암호화 미지원** (현재 버전): AEAD/DAEAD 체이닝은 `bluetape4k-projects` #240 완료 후 다음 버전에서 추가된다.
+- AES-GCM / AES-CTR 자체 스트림 암호화 구현은 본 issue 범위 밖이다.
+- Tink `StreamingAead` (AesGcmHkdfStreaming) 지원은 `bluetape4k-okio`에 래퍼가 추가된 후 후속 버전에서 지원.
 - Async I/O (Netty / NIO 채널) 어댑터는 본 모듈에서 제공하지 않는다.
 
 ---
@@ -111,7 +108,7 @@ graph-io/
     src/main/kotlin/io/bluetape4k/graph/io/okio/
       OkioGraphImportSource.kt          # sealed interface
       OkioGraphExportSink.kt            # sealed interface
-      GraphIoOkioPaths.kt               # 헬퍼: open Source/Sink, 압축/암호화 체이닝
+      GraphIoOkioPaths.kt               # 헬퍼: open Source/Sink, 압축 체이닝
       OkioGraphBulkImporter.kt          # Sync GraphBulkImporter<OkioGraphImportSource> 구현
       OkioGraphBulkExporter.kt          # Sync GraphBulkExporter<OkioGraphExportSink> 구현
       bridge/
@@ -143,10 +140,10 @@ graph-io/
 
 - OkIO 기반 Source/Sink 열기 (Path, InputStream, OutputStream, OkIO Source, OkIO Sink 입력)
 - 압축 체이닝 (Gzip 우선, LZ4/Snappy/Zstd/Bzip2/Deflate은 `bluetape4k-okio` 위임)
-- Tink 기반 암호화 체이닝 (단, 메모리 제약 명시)
 - OkIO ↔ java.io 브리지 (기존 StAX, Jackson, CSV 파서/리더 호환)
 - VirtualThread / Coroutine 변형 어댑터
 - 기존 포맷 모듈에 OkIO 오버로드 확장 함수 (별도 모듈에서 제공, 기존 모듈 비침습)
+- **암호화 체이닝은 제외** (후속 버전 — `bluetape4k-projects` #240 완료 후 추가)
 
 ### 2.3 제외
 
@@ -231,10 +228,10 @@ sealed interface OkioGraphExportSink {
 
 | 옵션 | 장점 | 단점 |
 |------|------|------|
-| Sealed에 포함 (`PathSource(path, compression = Gzip)`) | 호출 1번으로 끝, 가독성↑ | enum이 sealed의 모든 variant에 분기로 박힘. 압축 옵션이 늘어날 때 (LZ4 level 등) 폭발. 암호화까지 더하면 cartesian product. |
-| 별도 헬퍼 (`openGzipSource(openSource(...))`) | 직교성↑, 체이닝 자유 (Gzip+Tink, Zstd+Tink 등). 새로운 압축 추가 시 sealed 손대지 않음. | 호출이 2~3 단계로 길어짐. |
+| Sealed에 포함 (`PathSource(path, compression = Gzip)`) | 호출 1번으로 끝, 가독성↑ | enum이 sealed의 모든 variant에 분기로 박힘. 압축 옵션이 늘어날 때 (LZ4 level 등) 폭발. 향후 암호화까지 더하면 cartesian product. |
+| 별도 헬퍼 (`openGzipSource(openSource(...))`) | 직교성↑, 체이닝 자유 (Gzip+Zstd 등, 향후 암호화도 추가 용이). 새로운 압축 추가 시 sealed 손대지 않음. | 호출이 2~3 단계로 길어짐. |
 
-graph-io는 압축/암호화 조합이 늘어날 가능성이 높으므로(향후 Zstd + AES-GCM 등) **체이닝 모델**이 안전하다. 단축형 (`openGzipSink(sink)`)을 제공해 호출 길이는 보완한다.
+압축/암호화(후속 버전) 조합이 늘어날 가능성이 높으므로 **체이닝 모델**이 안전하다. 단축형 (`openGzipSink(sink)`)을 제공해 호출 길이는 보완한다.
 
 ### 3.2 `GraphIoOkioPaths` 헬퍼
 
@@ -283,11 +280,11 @@ enum class Compressor { GZIP, LZ4, SNAPPY, ZSTD, BZIP2, DEFLATE }
 
 #### 3.2.2 처리 순서
 
-저장 시: `plaintext bytes → [optional Gzip] → [optional Tink encrypt] → file`
+저장 시: `plaintext bytes → [optional compression: Gzip/LZ4/Snappy/Zstd/...] → file`
 
-읽을 때 역순: `file → [Tink decrypt] → [Gzip decompress] → plaintext bytes`
+읽을 때 역순: `file → [optional decompression] → plaintext bytes`
 
-이 순서는 표준 관행을 따른다 (압축 후 암호화 → 암호문은 엔트로피가 높아 더 이상 압축되지 않음을 활용).
+> **암호화 (후속 버전)**: 현재 버전에서는 암호화 레이어 없음. #240 완료 후 `compress → encrypt` 순서로 추가 예정 (압축 후 암호화 — 암호문은 엔트로피가 높아 더 이상 압축되지 않음을 활용).
 
 ### 3.3 OkIO ↔ java.io 브리지
 
@@ -421,33 +418,35 @@ fun GraphCsvBulkExporter.exportGraphGzip(
 
 - 기존 모듈의 시그니처 / API 변경 없음.
 - 사용자는 `graph-io-okio` 모듈만 추가하면 OkIO 변형이 즉시 사용 가능.
-- 압축/암호화 변형도 자연스럽게 노출 (`exportGraphGzipEncrypted`, `importGraphGzip` 등).
+- 압축 변형도 자연스럽게 노출 (`exportGraphGzip`, `importGraphGzip` 등).
 
 #### 3.4.1 어떤 확장 함수를 노출할지
 
 | 모듈 | 함수 |
 |------|------|
-| CSV | `GraphCsvBulkImporter.importGraph(OkioGraphImportSource)`, `importGraphGzip`, `importGraphGzipEncrypted` |
-| CSV | `GraphCsvBulkExporter.exportGraph(OkioGraphExportSink)`, `exportGraphGzip`, `exportGraphGzipEncrypted` |
+| CSV | `GraphCsvBulkImporter.importGraph(OkioGraphImportSource)`, `importGraphGzip` |
+| CSV | `GraphCsvBulkExporter.exportGraph(OkioGraphExportSink)`, `exportGraphGzip` |
 | Jackson2/3 NDJSON | 동일 패턴 (`importGraph` / `exportGraph` 명명) |
 | GraphML | 동일 패턴 (단, StAX와의 BufferedSink flush 타이밍 검증 필요 — §5 참조) |
+
+> **암호화 변형** (`importGraphGzipEncrypted` / `exportGraphGzipEncrypted`): `bluetape4k-projects` #240 완료 후 다음 버전에서 추가.
 
 ### 3.5 VirtualThread / Suspend 변형
 
 기존 `graph-io-bulk-import-export-design.md` 패턴을 그대로 따른다.
 
-> **압축/암호화 옵션 비노출 정책**: 어댑터(VT/Suspend)는 **압축 알고리즘이나 Tink encryptor를 직접 파라미터로 받지 않는다**. 대신 호출자가 압축/암호화를 미리 체이닝해 만든 `Source`/`Sink`를 `OkioGraphImportSource.SourceBased` / `OkioGraphExportSink.SinkBased`로 감싸서 어댑터에 전달한다. 이렇게 하면 (a) 어댑터 시그니처가 단순해지고, (b) 사용자가 임의의 체이닝(예: Zstd → Tink → tee → multi-sink)을 자유롭게 구성할 수 있다.
+> **압축 옵션 비노출 정책**: 어댑터(VT/Suspend)는 **압축 알고리즘을 직접 파라미터로 받지 않는다**. 대신 호출자가 압축을 미리 체이닝해 만든 `Source`/`Sink`를 `OkioGraphImportSource.SourceBased` / `OkioGraphExportSink.SinkBased`로 감싸서 어댑터에 전달한다. 이렇게 하면 (a) 어댑터 시그니처가 단순해지고, (b) 사용자가 임의의 체이닝(예: Gzip → Zstd 등)을 자유롭게 구성할 수 있다.
 
 ```kotlin
-// 사용 예 — 호출자가 체이닝을 외부에서 구성
-val chained = GraphIoOkioPaths.openGzipEncryptedSink(
-    OkioGraphExportSink.PathSink("/tmp/secret.graphml.gz.enc".toPath()),
-    encryptor,
+// 사용 예 — 호출자가 압축 체이닝을 외부에서 구성
+val compressed = GraphIoOkioPaths.openGzipSink(
+    OkioGraphExportSink.PathSink("/tmp/graph.graphml.gz".toPath()),
 )
 adapter.exportGraph(
-    sink = OkioGraphExportSink.SinkBased(chained, ownsSink = true),
+    sink = OkioGraphExportSink.SinkBased(compressed, ownsSink = true),
     format = GraphIoFormat.GRAPHML,
 )
+// 암호화 체이닝은 bluetape4k-projects #240 완료 후 추가 예정
 ```
 
 #### 3.5.1 VirtualThread 변형
@@ -485,7 +484,7 @@ class SuspendGraphIoOkioBulkAdapter(
 
 - `Flow`로 진행 상황 emit.
 - I/O는 `Dispatchers.IO`에서 수행.
-- segment 단위 backpressure가 자연스럽게 작동 (suspend pull 모델 + OkIO lazy pull). DAEAD 청크 암호화도 청크 단위 lazy pull 유지 (§1.3.2, §3.6 참조).
+- segment 단위 backpressure가 자연스럽게 작동 (suspend pull 모델 + OkIO lazy pull). 압축 체이닝도 동일하게 lazy pull 유지.
 - 로깅은 `KLoggingChannel` 사용 (suspend 컨텍스트에서 안전한 채널 기반 logger).
 
 ### 3.6 암호화 — 현재 버전 범위 외 (후속 버전 예정)
