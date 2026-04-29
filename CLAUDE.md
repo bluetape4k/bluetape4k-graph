@@ -51,6 +51,7 @@ graph-io/
   jackson2/         # Jackson 2.x NDJSON × Sync/VT/Suspend
   jackson3/         # Jackson 3.x NDJSON × Sync/VT/Suspend (Jackson2 호환)
   graphml/          # GraphML XML/StAX × Sync/VT/Suspend (XMLFactory 싱글턴 캐싱)
+  okio/             # OkIO 기반 통합 어댑터 — 세그먼트 스트리밍, 압축 체이닝, FakeFileSystem 지원
 benchmark/
   graph-benchmark/    # JMH — Sync vs VirtualThread 그래프 연산
   graph-io-benchmark/ # JMH — CSV/NDJSON/GraphML 벌크 I/O (36 벤치마크)

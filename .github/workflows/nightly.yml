@@ -70,11 +70,17 @@ jobs:
           gradle-version: wrapper
           cache-read-only: true
 
-      - name: Test graph-core & graph-tinkerpop
+      - name: Test graph-core & graph-tinkerpop & graph-io
         run: |
           ./gradlew \
             :graph-core:test \
             :graph-tinkerpop:test \
+            :graph-io-core:test \
+            :graph-io-csv:test \
+            :graph-io-jackson2:test \
+            :graph-io-jackson3:test \
+            :graph-io-graphml:test \
+            :graph-io-okio:test \
             --no-daemon
         env:
           GRADLE_OPTS: "-Dorg.gradle.daemon=false"
@@ -85,6 +91,7 @@ jobs:
           ./gradlew \
             :graph-core:koverXmlReport \
             :graph-tinkerpop:koverXmlReport \
+            :graph-io-okio:koverXmlReport \
             --no-daemon
         continue-on-error: true
 
