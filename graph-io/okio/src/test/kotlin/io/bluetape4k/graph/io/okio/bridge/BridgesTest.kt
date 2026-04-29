@@ -82,6 +82,28 @@ class BridgesTest {
     }
 
     @Test
+    fun `toReader uses provided charset for non-UTF8 decoding`() {
+        val text = "Hello charset"
+        val bytes = text.toByteArray(Charsets.ISO_8859_1)
+        val bs = Buffer().also { it.write(bytes) }.buffer()
+        val result = bs.toReader(Charsets.ISO_8859_1).use { it.readText() }
+        result shouldBeEqualTo text
+    }
+
+    @Test
+    fun `toWriter writes bytes encoded with provided non-UTF8 charset`() {
+        val baos = ByteArrayOutputStream()
+        val bs = baos.sink().buffer()
+        val writer = bs.toWriter(Charsets.ISO_8859_1)
+        writer.write("Latin text")
+        writer.flush()
+        bs.flush()
+        writer.close()
+        val result = String(baos.toByteArray(), Charsets.ISO_8859_1)
+        result shouldBeEqualTo "Latin text"
+    }
+
+    @Test
     fun `writeAsOutputStream writes bytes through OkIO sink`() {
         val path = "/write-as-os.bin".toPath()
         val expected = "writeAsOutputStream test".toByteArray()

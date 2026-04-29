@@ -40,6 +40,17 @@ sealed interface OkioGraphExportSink {
         val atomicWrite: Boolean = true,
     ) : OkioGraphExportSink {
         companion object {
+            /**
+             * [PathSink]를 생성하는 팩토리 함수.
+             *
+             * @param path 쓰기 대상 OkIO [Path]
+             * @param fileSystem 파일 시스템 (기본값: [FileSystem.SYSTEM])
+             * @param mustCreate `true`이면 파일 이미 존재 시 예외
+             * @param mustExist `true`이면 파일 없을 시 예외
+             * @param createParentDirectories `true`(기본)이면 부모 디렉토리 자동 생성
+             * @param atomicWrite `true`(기본)이면 임시 파일에 쓰고 성공 시 atomic move
+             * @return 설정된 [PathSink] 인스턴스
+             */
             fun from(
                 path: Path,
                 fileSystem: FileSystem = FileSystem.SYSTEM,
@@ -62,6 +73,13 @@ sealed interface OkioGraphExportSink {
         val ownsSink: Boolean = false,
     ) : OkioGraphExportSink {
         companion object {
+            /**
+             * [SinkBased]를 생성하는 팩토리 함수.
+             *
+             * @param sink OkIO [Sink]
+             * @param ownsSink `true`이면 완료 후 [sink] 닫음 (기본: `false`)
+             * @return 설정된 [SinkBased] 인스턴스
+             */
             fun from(sink: Sink, ownsSink: Boolean = false): SinkBased =
                 SinkBased(sink, ownsSink)
         }
@@ -78,6 +96,13 @@ sealed interface OkioGraphExportSink {
         val ownsStream: Boolean = false,
     ) : OkioGraphExportSink {
         companion object {
+            /**
+             * [OutputStreamBased]를 생성하는 팩토리 함수.
+             *
+             * @param outputStream 대상 [OutputStream]
+             * @param ownsStream `true`이면 완료 후 [outputStream] 닫음 (기본: `false`)
+             * @return 설정된 [OutputStreamBased] 인스턴스
+             */
             fun from(outputStream: OutputStream, ownsStream: Boolean = false): OutputStreamBased =
                 OutputStreamBased(outputStream, ownsStream)
         }

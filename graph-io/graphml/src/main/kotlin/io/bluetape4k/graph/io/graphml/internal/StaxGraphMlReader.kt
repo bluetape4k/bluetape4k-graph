@@ -170,6 +170,7 @@ internal class StaxGraphMlReader {
             setProperty(XMLInputFactory.IS_COALESCING, true)
             setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, false)
             setProperty(XMLInputFactory.SUPPORT_DTD, false)
+            setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false)
         }
     }
 }

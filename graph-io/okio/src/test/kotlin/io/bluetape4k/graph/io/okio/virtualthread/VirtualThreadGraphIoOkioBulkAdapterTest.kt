@@ -157,6 +157,30 @@ class VirtualThreadGraphIoOkioBulkAdapterTest {
     }
 
     @Test
+    fun `jackson2 round trip via virtual thread`() {
+        val path = "/vt-graph-j2.ndjson".toPath()
+        val src = buildSourceGraph()
+
+        adapter.exportGraphAsync(
+            OkioGraphExportSink.PathSink(path, fakeFs),
+            GraphIoFormat.NDJSON_JACKSON2,
+            src,
+            exportOptions,
+        ).get()
+
+        val report = adapter.importGraphAsync(
+            OkioGraphImportSource.PathSource(path, fakeFs),
+            GraphIoFormat.NDJSON_JACKSON2,
+            TinkerGraphOperations(),
+            GraphImportOptions(),
+        ).get()
+
+        report.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        report.verticesCreated shouldBeEqualTo 2L
+        report.edgesCreated shouldBeEqualTo 1L
+    }
+
+    @Test
     fun `export duration is positive`() {
         val path = "/vt-dur.ndjson".toPath()
         val report = adapter.exportGraphAsync(

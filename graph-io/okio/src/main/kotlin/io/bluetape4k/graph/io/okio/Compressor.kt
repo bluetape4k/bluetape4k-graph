@@ -15,17 +15,28 @@ import io.bluetape4k.io.compressor.StreamingCompressor
  * - 암호화: bluetape4k-projects #240 완료 후 v2에서 추가 예정
  */
 enum class Compressor(
+    /** 클래스패스 가드용 클래스 이름. JDK 내장 압축기는 null. */
     val requiredClassName: String?,
+    /** 해당 의존성 추가 방법 안내. 항상 사용 가능한 압축기는 빈 문자열. */
     val installHint: String,
 ) {
+    /** JDK 내장 GZip 압축. 항상 사용 가능. */
     GZIP(
         requiredClassName = null,
         installHint = "",
     ),
+    /** JDK 내장 Deflate 압축. 항상 사용 가능. */
     DEFLATE(
         requiredClassName = null,
         installHint = "",
     ),
+    /**
+     * LZ4 고속 압축. `lz4-java` 의존성 필요.
+     *
+     * ```kotlin
+     * implementation("org.lz4:lz4-java:<version>")
+     * ```
+     */
     LZ4(
         requiredClassName = "net.jpountz.lz4.LZ4Factory",
         installHint = """
@@ -34,6 +45,13 @@ enum class Compressor(
               implementation("org.lz4:lz4-java:<version>")
         """.trimIndent(),
     ),
+    /**
+     * Snappy 고속 압축. `snappy-java` 의존성 필요.
+     *
+     * ```kotlin
+     * implementation("org.xerial.snappy:snappy-java:<version>")
+     * ```
+     */
     SNAPPY(
         requiredClassName = "org.xerial.snappy.Snappy",
         installHint = """
@@ -42,6 +60,13 @@ enum class Compressor(
               implementation("org.xerial.snappy:snappy-java:<version>")
         """.trimIndent(),
     ),
+    /**
+     * Zstd 고압축률 압축. `zstd-jni` 의존성 필요.
+     *
+     * ```kotlin
+     * implementation("com.github.luben:zstd-jni:<version>")
+     * ```
+     */
     ZSTD(
         requiredClassName = "com.github.luben.zstd.ZstdInputStream",
         installHint = """
@@ -50,6 +75,13 @@ enum class Compressor(
               implementation("com.github.luben:zstd-jni:<version>")
         """.trimIndent(),
     ),
+    /**
+     * BZip2 압축. `commons-compress` 의존성 필요.
+     *
+     * ```kotlin
+     * implementation("org.apache.commons:commons-compress:<version>")
+     * ```
+     */
     BZIP2(
         requiredClassName = "org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream",
         installHint = """

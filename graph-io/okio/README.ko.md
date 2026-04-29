@@ -273,10 +273,11 @@ class MyGraphIoTest {
 
 ## 보안
 
-- **XXE 방지**: GraphML StAX 파서에 `IS_SUPPORTING_EXTERNAL_ENTITIES=false`, `SUPPORT_DTD=false` 적용 (기존 구현 위임)
+- **XXE 방지**: GraphML StAX 파서에 `SUPPORT_DTD=false`, `IS_SUPPORTING_EXTERNAL_ENTITIES=false` 적용 (기존 구현 위임)
 - **Decompression bomb 방지**: `BombGuardSource`가 해제 바이트를 추적하여 `maxDecompressedBytes` 초과 시 `IOException` 발생
   - 기본 한계: 512 MiB (`DEFAULT_MAX_DECOMPRESSED_BYTES`)
   - 커스텀 한계: `openDecompressedSource(source, compressor, maxDecompressedBytes = 1L * 1024 * 1024 * 1024)` (1 GiB)
+- **CSV Gzip 스트리밍**: `importGraphGzip` / `exportGraphGzip` 모두 단일 패스 스트리밍 — 중간 버퍼링 없음
 
 ## Gradle 의존성
 
