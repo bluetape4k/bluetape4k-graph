@@ -3,7 +3,7 @@
 - **Issue**: #12 — graph-io에 OkIO 기반 Source/Sink 지원 추가
 - **작성일**: 2026-04-29
 - **작성자**: bluetape4k-graph 팀
-- **상태**: 검토 중 (암호화 범위 조정 반영 완료 — 사용자 최종 승인 대기)
+- **상태**: Step 2-R 리뷰 반영 완료 — 사용자 최종 승인 대기 (HIGH×11 + MEDIUM×8 적용)
 - **연관 모듈**: `graph-io/core`, `graph-io/csv`, `graph-io/jackson2`, `graph-io/jackson3`, `graph-io/graphml`, `bluetape4k-okio`
 - **관련 문서**:
   - `docs/superpowers/specs/2026-04-18-graph-io-bulk-import-export-design.md` (기존 graph-io 아키텍처)
@@ -95,6 +95,10 @@ OkIO segment 풀의 heap 이점은 **모든 포맷에 동일하게 적용되지 
 - AES-GCM / AES-CTR 자체 스트림 암호화 구현은 본 issue 범위 밖이다.
 - Tink `StreamingAead` (AesGcmHkdfStreaming) 지원은 `bluetape4k-okio`에 래퍼가 추가된 후 후속 버전에서 지원.
 - Async I/O (Netty / NIO 채널) 어댑터는 본 모듈에서 제공하지 않는다.
+- **I/O 메트릭 / Micrometer 계측**: bytes-transferred, record-count 메트릭은 별도 이슈로 추적.
+- **Spring Boot Actuator 헬스 체크 통합**: HealthIndicator 연동은 별도 이슈.
+- **감사 로깅 (Audit Logging)**: PII 포함 그래프의 감사 추적은 애플리케이션 레이어 책임.
+- **파일 경로 검증 / 경로 주입 방지**: `PathSource`/`PathSink`의 `Path`가 외부 입력에서 왔을 때 경로 순회(path traversal) 검증은 **호출자 책임**이다. graph-io-okio는 경로를 sanitize하지 않는다.
 
 ---
 
@@ -172,14 +176,24 @@ sealed interface OkioGraphImportSource {
     /** OkIO Source 기반 (이미 구성된 Source 재사용) */
     data class SourceBased(
         val source: Source,
-        /** 호출자가 닫지 않도록 위임 여부 */
-        val ownsSource: Boolean = true,
+        /**
+         * `true`이면 라이브러리가 Source를 닫는다. `false`(기본값)이면 호출자가 닫는다.
+         *
+         * 기존 `GraphImportSource.InputStreamSource.closeInput = false` 관례와 일치시킨다.
+         * 라이브러리는 호출자 공급 스트림을 임의로 닫지 않는다.
+         */
+        val ownsSource: Boolean = false,
     ): OkioGraphImportSource
 
     /** java.io.InputStream을 OkIO Source로 어댑팅 */
     data class InputStreamBased(
         val inputStream: InputStream,
-        val ownsStream: Boolean = true,
+        /**
+         * `true`이면 라이브러리가 InputStream을 닫는다. `false`(기본값)이면 호출자가 닫는다.
+         *
+         * 기존 `GraphImportSource.InputStreamSource.closeInput = false` 관례와 일치.
+         */
+        val ownsStream: Boolean = false,
     ): OkioGraphImportSource
 }
 ```
@@ -187,7 +201,7 @@ sealed interface OkioGraphImportSource {
 **설계 근거**:
 
 - `okio.FileSystem`을 파라미터화 → 테스트에서 `FakeFileSystem`을 그대로 주입할 수 있다.
-- `ownsSource` / `ownsStream` 플래그로 close 책임을 명시한다 — 외부에서 만든 stream을 헬퍼가 임의로 닫지 않도록 한다.
+- `ownsSource` / `ownsStream` 기본값을 **`false`**로 지정 — 기존 `GraphImportSource.InputStreamSource.closeInput = false` 관례와 일치. **라이브러리는 호출자가 공급한 스트림을 임의로 닫지 않는다.** `PathSource`는 라이브러리가 항상 소유(내부에서 열고 닫음).
 - `SourceBased`는 사용자가 이미 다른 OkIO 파이프라인(예: HTTP body)을 graph-io로 흘려보낼 때 사용.
 
 #### 3.1.2 `OkioGraphExportSink`
@@ -212,12 +226,20 @@ sealed interface OkioGraphExportSink {
 
     data class SinkBased(
         val sink: Sink,
-        val ownsSink: Boolean = true,
+        /**
+         * `true`이면 라이브러리가 Sink를 닫는다. `false`(기본값)이면 호출자가 닫는다.
+         *
+         * 기존 `GraphExportSink.OutputStreamSink` 관례와 일치. `PathSink`는 라이브러리 소유.
+         */
+        val ownsSink: Boolean = false,
     ): OkioGraphExportSink
 
     data class OutputStreamBased(
         val outputStream: OutputStream,
-        val ownsStream: Boolean = true,
+        /**
+         * `true`이면 라이브러리가 OutputStream을 닫는다. `false`(기본값)이면 호출자가 닫는다.
+         */
+        val ownsStream: Boolean = false,
     ): OkioGraphExportSink
 }
 ```
@@ -252,22 +274,61 @@ object GraphIoOkioPaths {
 
     /**
      * 기존 Sink를 주어진 Compressor로 감싼 BufferedSink를 반환.
-     * @param compressor 압축 알고리즘 (Gzip, Lz4, Snappy, Zstd, Bzip2, Deflate)
+     * 내부적으로 [Compressors.Streaming] 변형(StreamingCompressSink)을 사용해 스트리밍 압축한다.
+     * @param compressor 압축 알고리즘 (GZIP, LZ4, SNAPPY, ZSTD, BZIP2, DEFLATE)
      */
     fun openCompressedSink(sink: BufferedSink, compressor: Compressor): BufferedSink
 
-    /** 기존 Source를 주어진 Decompressor로 감싼 BufferedSource를 반환. */
-    fun openDecompressedSource(source: BufferedSource, decompressor: Compressor): BufferedSource
+    /**
+     * 기존 Source를 주어진 Decompressor로 감싼 BufferedSource를 반환.
+     * 내부적으로 [Compressors.Streaming] 변형(StreamingDecompressSource)을 사용해 스트리밍 압축 해제한다.
+     *
+     * @param maxDecompressedBytes 압축 해제 허용 최대 바이트 (기본 512MB). 이를 초과하면
+     *   [java.io.IOException]("decompression budget exceeded")을 던진다.
+     *   압축 폭탄(decompression bomb) 방어를 위해 반드시 설정한다.
+     */
+    fun openDecompressedSource(
+        source: BufferedSource,
+        decompressor: Compressor,
+        maxDecompressedBytes: Long = 512L * 1024 * 1024,
+    ): BufferedSource
 
     // ------------ Gzip 단축형 (가장 흔한 케이스) ------------
 
     fun openGzipSink(sink: OkioGraphExportSink): BufferedSink
-    fun openGzipSource(source: OkioGraphImportSource): BufferedSource
+
+    /**
+     * @param maxDecompressedBytes 압축 폭탄 방어 한도 (기본 512MB).
+     */
+    fun openGzipSource(source: OkioGraphImportSource, maxDecompressedBytes: Long = 512L * 1024 * 1024): BufferedSource
 
     // ------------ 조합 단축형 ------------
     // 암호화 API는 현재 버전 범위 외 (§3.6, §6 참조).
     // bluetape4k-projects #240 해결 후 다음 버전에 openDaeadEncryptedSink / openDaeadDecryptedSource 추가 예정.
 }
+```
+
+#### 3.2.3 원자적 쓰기 전략 (PathSink)
+
+`PathSink` 기반 export 실패 시 대상 파일이 부분 기록된 채로 남는 문제를 방지하기 위해 **원자적 쓰기** 전략을 기본으로 적용한다.
+
+1. 실제 파일(`path`) 대신 임시 파일(`path.parent / "${path.name}.tmp.${random}"`)을 연다.
+2. 성공 시 `FileSystem.atomicMove(tmp, path)`로 원자적으로 이동 (덮어쓰기).
+3. 실패 시 임시 파일을 삭제한다.
+
+```kotlin
+data class PathSink(
+    val path: okio.Path,
+    val fileSystem: FileSystem = FileSystem.SYSTEM,
+    val mustCreate: Boolean = false,
+    val mustExist: Boolean = false,
+    val createParentDirectories: Boolean = true,
+    /**
+     * `true`(기본값)이면 임시 파일에 먼저 기록 후 atomicMove로 원자적 배치.
+     * FakeFileSystem 및 SYSTEM FileSystem에서 지원.
+     */
+    val atomicWrite: Boolean = true,
+): OkioGraphExportSink
 ```
 
 #### 3.2.1 `Compressor` enum
@@ -276,7 +337,19 @@ object GraphIoOkioPaths {
 enum class Compressor { GZIP, LZ4, SNAPPY, ZSTD, BZIP2, DEFLATE }
 ```
 
-내부적으로 `bluetape4k-okio`의 `Compressable.Sinks/Sources` 함수에 위임.
+내부적으로 `bluetape4k-okio`의 `Compressable.Sinks/Sources`에 위임한다.
+
+> **⚠️ 스트리밍 vs 배치 주의**: `bluetape4k-okio`의 `Compressable.Sinks.gzip()` 등 숏핸드 함수는 **배치 방식**(close 시점에 전체 데이터를 압축) `CompressableSink`를 반환한다. 대용량 파일에서 OOM이 발생한다. graph-io-okio는 반드시 **스트리밍 변형** (`Compressors.Streaming.*`)을 사용한다.
+>
+> ```kotlin
+> // ❌ 금지 — 배치: 전체 데이터를 plainBuffer에 누적 후 close 시점에 일괄 압축
+> Compressable.Sinks.gzip(sink)         // CompressableSink (batch)
+>
+> // ✅ 올바름 — 스트리밍: write() 호출마다 압축 청크를 즉시 delegate에 기록
+> Compressable.Sinks.compressableSink(sink, Compressors.Streaming.GZip)  // StreamingCompressSink
+> ```
+>
+> `openCompressedSink` / `openDecompressedSource`는 모두 `Compressors.Streaming.*`을 사용한다.
 
 #### 3.2.2 처리 순서
 
@@ -346,7 +419,7 @@ inline fun writeAsOutputStream(
     block: (OutputStream) -> Unit,
 ) {
     GraphIoOkioPaths.openSink(sink).use { bs ->
-        bs.toOwningOutputStream().use { os -> block(os) }
+        bs.asClosingOutputStream().use { os -> block(os) }
     }
 }
 
@@ -360,30 +433,67 @@ inline fun readAsInputStream(
 }
 ```
 
-##### `toOwningOutputStream()` 래퍼
+##### `asClosingOutputStream()` 래퍼
 
-기본 `BufferedSink.outputStream()`이 sink를 닫지 않는 문제를 해결하기 위해, `bridge/Bridges.kt`에 `toOwningOutputStream()` 확장을 둔다.
+기본 `BufferedSink.outputStream()`은 OutputStream.close() 시 underlying sink를 닫지 않는다.
+`asClosingOutputStream()`은 이 문제를 해결한다 — "Closing"은 "반환된 OutputStream을 close하면 sink도 함께 닫힘"을 의미한다.
 
 ```kotlin
 /**
- * BufferedSink → OutputStream 래퍼. 일반 [outputStream]과 달리,
- * 반환된 OutputStream의 close()가 underlying BufferedSink를 명시적으로 close한다.
- * 외부 라이브러리(StAX/Jackson 등)가 OutputStream만 받는 경우, 단일 try-with-resources로
- * sink까지 안전하게 닫을 수 있도록 한다.
+ * BufferedSink를 감싸는 OutputStream을 반환한다. 일반 [outputStream]과 달리,
+ * 반환된 OutputStream의 `close()`가 underlying BufferedSink도 명시적으로 닫는다.
+ *
+ * 이름 이유: "Closing"은 반환된 OutputStream을 close하면 underlying sink가 함께 닫힘을 의미.
+ * StAX/Jackson 등 외부 라이브러리가 OutputStream만 받는 경우 단일 try-with-resources로
+ * sink까지 안전하게 닫을 수 있다.
+ *
+ * 호출자가 OutputStream을 닫지 않으면 sink도 닫히지 않음 — 반드시 `use { }` 사용.
  */
-fun BufferedSink.toOwningOutputStream(): OutputStream =
+fun BufferedSink.asClosingOutputStream(): OutputStream =
     object: OutputStream() {
-        private val delegate = this@toOwningOutputStream.outputStream()
+        private val delegate = this@asClosingOutputStream.outputStream()
         override fun write(b: Int) = delegate.write(b)
         override fun write(b: ByteArray, off: Int, len: Int) = delegate.write(b, off, len)
         override fun flush() { delegate.flush() }
         override fun close() {
-            try { delegate.close() } finally { this@toOwningOutputStream.close() }
+            try { delegate.close() } finally { this@asClosingOutputStream.close() }
         }
     }
 ```
 
 이 래퍼와 헬퍼는 §5.2 위험 (마지막 segment 손실)에 대한 1차 방어선이다.
+
+#### 3.3.4 `OkioGraphBulkImporter` / `OkioGraphBulkExporter` 포맷 디스패치
+
+`OkioGraphBulkImporter`는 `GraphBulkImporter<OkioGraphImportSource>` 계약을 구현하고, **`format: GraphIoFormat` 파라미터로 포맷을 명시적으로 선택**한다.
+
+```kotlin
+enum class GraphIoFormat { CSV, NDJSON_JACKSON2, NDJSON_JACKSON3, GRAPHML }
+
+class OkioGraphBulkImporter(
+    private val ops: GraphOperations,
+) : GraphBulkImporter<OkioGraphImportSource> {
+
+    override fun importGraph(
+        source: OkioGraphImportSource,
+        format: GraphIoFormat,
+        options: GraphImportOptions,
+    ): GraphImportReport {
+        return GraphIoOkioPaths.openSource(source).use { bs ->
+            when (format) {
+                GraphIoFormat.CSV         -> importCsv(bs, ops, options)
+                GraphIoFormat.NDJSON_JACKSON2 -> importNdjsonJackson2(bs, ops, options)
+                GraphIoFormat.NDJSON_JACKSON3 -> importNdjsonJackson3(bs, ops, options)
+                GraphIoFormat.GRAPHML     -> importGraphML(bs, ops, options)
+            }
+        }
+    }
+}
+```
+
+> **설계 결정**: 파일 확장자 기반 자동 포맷 스니핑을 **금지**한다. 확장자는 신뢰할 수 없으며 보안 취약점(Sec-MEDIUM-2)을 유발한다. 포맷은 항상 호출자가 명시적으로 지정한다. 알 수 없는 포맷 → `IllegalArgumentException` 즉시 던짐.
+
+`OkioGraphBulkExporter`도 동일한 `format: GraphIoFormat` 패턴을 따른다.
 
 ### 3.4 기존 포맷 모듈의 OkIO 오버로드 확장 함수
 
@@ -407,7 +517,7 @@ fun GraphCsvBulkExporter.exportGraphGzip(
     options: CsvBulkExportOptions = CsvBulkExportOptions(),
 ) {
     GraphIoOkioPaths.openGzipSink(sink).use { bs ->
-        bs.toOwningOutputStream().use { os ->
+        bs.asClosingOutputStream().use { os ->
             this.exportGraph(os, options)
         }
     }
@@ -430,6 +540,35 @@ fun GraphCsvBulkExporter.exportGraphGzip(
 | GraphML | 동일 패턴 (단, StAX와의 BufferedSink flush 타이밍 검증 필요 — §5 참조) |
 
 > **암호화 변형** (`importGraphGzipEncrypted` / `exportGraphGzipEncrypted`): `bluetape4k-projects` #240 완료 후 다음 버전에서 추가.
+
+#### 3.4.2 GraphML XXE 강화 (보안 필수)
+
+GraphML import 경로에서 사용하는 StAX `XMLInputFactory`는 **반드시** 다음 두 속성을 설정해야 한다.
+
+```kotlin
+// GraphML OkIO import 경로의 StAX 팩토리 설정
+val factory = XMLInputFactory.newInstance().apply {
+    setProperty(XMLInputFactory.SUPPORT_DTD, false)
+    setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false)
+    // 추가 방어 (JDK 버전에 따라 지원 여부 다름)
+    runCatching {
+        setProperty("javax.xml.stream.isSupportingExternalEntities", false)
+    }
+}
+```
+
+`SUPPORT_DTD = false`만으로는 일부 JDK 버전에서 external entity injection이 가능하므로, `IS_SUPPORTING_EXTERNAL_ENTITIES = false`를 함께 설정한다.
+
+> **주의**: 기존 `graph-io-graphml`의 `StaxGraphMlReader`도 동일한 설정이 필요하다 — 별도 이슈로 추적.
+
+**필수 음성 테스트** (§4.2.2): XXE payload가 포함된 GraphML 입력 시 외부 파일이 읽히지 않음을 검증한다.
+
+```xml
+<!-- XXE 페이로드 예시 — 테스트 픽스처 -->
+<?xml version="1.0"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+<graphml><graph><node id="&xxe;"/></graph></graphml>
+```
 
 ### 3.5 VirtualThread / Suspend 변형
 
@@ -466,26 +605,78 @@ class VirtualThreadGraphIoOkioBulkAdapter(
 
 #### 3.5.2 Suspend 변형
 
+##### `GraphImportProgress` / `GraphExportProgress` 타입 정의 (신규 — `graph-io/core`)
+
+`Flow` 기반 어댑터에서 방출하는 진행 상황 타입. `graph-io/core` 모듈에 추가한다.
+
+```kotlin
+// graph-io/core — io.bluetape4k.graph.io.contract
+data class GraphImportProgress(
+    val processed: Long,
+    val total: Long?,
+    val currentLabel: String?,
+    val throughputPerSec: Double?,
+)
+
+data class GraphExportProgress(
+    val exported: Long,
+    val total: Long?,
+    val currentLabel: String?,
+    val throughputPerSec: Double?,
+)
+```
+
+> **기존 타입 구분**: `GraphImportReport` / `GraphExportReport`는 완료 후 결과를 나타내고, `*Progress`는 진행 중 스냅샷을 나타낸다. 두 타입은 목적이 다르므로 병존한다.
+
+##### `SuspendGraphIoOkioBulkAdapter` 선언
+
 ```kotlin
 class SuspendGraphIoOkioBulkAdapter(
     private val ops: GraphSuspendOperations,
 ) {
-    /** 진행 상황 Flow — 함수 자체는 cold Flow를 반환하므로 suspend 아님 */
-    fun importGraph(source: OkioGraphImportSource, ...): Flow<GraphImportProgress>
-    fun exportGraph(sink: OkioGraphExportSink, ...): Flow<GraphExportProgress>
+    /**
+     * 진행 상황을 emit하는 cold Flow. collect 시점에 I/O가 시작된다.
+     * 반환 Flow는 cold이며 복수 collect 시 각각 독립적인 I/O가 발생함.
+     */
+    fun importGraph(source: OkioGraphImportSource, format: GraphIoFormat, ...): Flow<GraphImportProgress>
+    fun exportGraph(sink: OkioGraphExportSink, format: GraphIoFormat, ...): Flow<GraphExportProgress>
 
-    /** 또는 진행 상황을 buffer하지 않는 단순 호출 — 결과만 반환 */
-    suspend fun importGraphAwait(source: OkioGraphImportSource, ...): GraphImportReport
-    suspend fun exportGraphAwait(sink: OkioGraphExportSink, ...): GraphExportReport
+    /** 진행 상황 없이 결과만 반환. */
+    suspend fun importGraphAwait(source: OkioGraphImportSource, format: GraphIoFormat, ...): GraphImportReport
+    suspend fun exportGraphAwait(sink: OkioGraphExportSink, format: GraphIoFormat, ...): GraphExportReport
 }
 ```
 
-> **suspend + Flow 문법 정정**: Kotlin에서 `Flow<T>`를 반환하는 함수는 일반적으로 `suspend` 가 **아니다** (cold Flow 자체가 collect 시점에 suspend된다). 따라서 `fun importGraph(...): Flow<...>` 형태로 선언하고, 결과만 받고 싶은 경우는 별도 `suspend fun ...Await(...): GraphImportReport`로 분리한다 (기존 graph-io-csv/jackson 모듈의 관례 준수).
+##### 코루틴 취소 안전성 (필수)
 
+OkIO `BufferedSink.flush()` / `close()`는 코루틴 취소에 안전하지 않다. 취소 시 마지막 segment가 flush 없이 유실될 수 있다.
+
+**필수**: suspend 어댑터는 terminal `flush()` + `close()` 를 반드시 `withContext(NonCancellable)` 로 감싼다.
+
+```kotlin
+// SuspendGraphIoOkioBulkAdapter 내부 — 필수 패턴
+try {
+    // I/O 작업 (취소 가능)
+    runInterruptible(Dispatchers.IO) { /* ... */ }
+} finally {
+    withContext(NonCancellable) {
+        sink.flush()
+        sink.close()
+    }
+}
+```
+
+> **추가 고려**: `PathSink` + `atomicWrite = true`(§3.2.3)를 사용하면 취소 시 임시 파일이 삭제되어 부분 기록 파일이 남지 않는다.
+
+기타:
 - `Flow`로 진행 상황 emit.
-- I/O는 `Dispatchers.IO`에서 수행.
+- I/O는 `runInterruptible(Dispatchers.IO)` 사용 — 스레드 인터럽트로 취소 신호 전달.
 - segment 단위 backpressure가 자연스럽게 작동 (suspend pull 모델 + OkIO lazy pull). 압축 체이닝도 동일하게 lazy pull 유지.
 - 로깅은 `KLoggingChannel` 사용 (suspend 컨텍스트에서 안전한 채널 기반 logger).
+
+##### I/O 타임아웃 (MEDIUM)
+
+OkIO `Source`/`Sink`는 `Timeout`을 통한 타임아웃을 지원한다. suspend 어댑터는 직접 타임아웃을 내장하지 않고, 호출자가 `withTimeout { adapter.importGraphAwait(...) }` 또는 OkIO `source.timeout().deadline(n, TimeUnit.SECONDS)` 로 설정하도록 KDoc에 안내한다.
 
 ### 3.6 암호화 — 현재 버전 범위 외 (후속 버전 예정)
 
@@ -545,33 +736,39 @@ Wire format 설계 (참고):
 
 ```kotlin
 fun openCompressedSink(sink: BufferedSink, compressor: Compressor): BufferedSink {
+    // ⚠️ 중요: 모두 Compressors.Streaming.* 사용 — 배치(Compressors.GZip 등)는 OOM 위험.
     return when (compressor) {
-        GZIP -> Compressable.Sinks.gzip(sink).buffer()
+        // GZIP, DEFLATE: JDK 내장 — 추가 의존성 없음. Streaming 변형 사용.
+        GZIP    -> Compressable.Sinks.compressableSink(sink, Compressors.Streaming.GZip).buffer()
+        DEFLATE -> Compressable.Sinks.compressableSink(sink, Compressors.Streaming.Deflate).buffer()
         LZ4 -> {
             requireOnClasspath("net.jpountz.lz4.LZ4Factory") {
-                "LZ4 압축을 사용하려면 build.gradle.kts에 'org.lz4:lz4-java' 의존성을 추가하세요."
+                """LZ4 압축을 사용하려면 build.gradle.kts에 다음을 추가하세요:
+                   |  implementation("org.lz4:lz4-java:${'$'}{Libs.lz4_java}")""".trimMargin()
             }
-            Compressable.Sinks.lz4(sink).buffer()
+            Compressable.Sinks.compressableSink(sink, Compressors.Streaming.LZ4).buffer()
         }
         SNAPPY -> {
             requireOnClasspath("org.xerial.snappy.Snappy") {
-                "Snappy 압축을 사용하려면 'org.xerial.snappy:snappy-java' 의존성을 추가하세요."
+                """Snappy 압축을 사용하려면 build.gradle.kts에 다음을 추가하세요:
+                   |  implementation("org.xerial.snappy:snappy-java:${'$'}{Libs.snappy_java}")""".trimMargin()
             }
-            Compressable.Sinks.snappy(sink).buffer()
+            Compressable.Sinks.compressableSink(sink, Compressors.Streaming.Snappy).buffer()
         }
         ZSTD -> {
             requireOnClasspath("com.github.luben.zstd.ZstdInputStream") {
-                "Zstd 압축을 사용하려면 'com.github.luben:zstd-jni' 의존성을 추가하세요."
+                """Zstd 압축을 사용하려면 build.gradle.kts에 다음을 추가하세요:
+                   |  implementation("com.github.luben:zstd-jni:${'$'}{Libs.zstd_jni}")""".trimMargin()
             }
-            Compressable.Sinks.zstd(sink).buffer()
+            Compressable.Sinks.compressableSink(sink, Compressors.Streaming.Zstd).buffer()
         }
         BZIP2 -> {
             requireOnClasspath("org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream") {
-                "Bzip2 압축을 사용하려면 'org.apache.commons:commons-compress' 의존성을 추가하세요."
+                """Bzip2 압축을 사용하려면 build.gradle.kts에 다음을 추가하세요:
+                   |  implementation("org.apache.commons:commons-compress:${'$'}{Libs.commons_compress}")""".trimMargin()
             }
-            Compressable.Sinks.bzip2(sink).buffer()
+            Compressable.Sinks.compressableSink(sink, Compressors.Streaming.BZip2).buffer()
         }
-        // ...
     }
 }
 
@@ -582,15 +779,59 @@ private inline fun requireOnClasspath(className: String, lazyMessage: () -> Stri
 }
 ```
 
+#### 3.7.1 선택적 압축 라이브러리 의존성 추가 가이드 (빌드 스니펫)
+
+graph-io-okio의 `build.gradle.kts`에는 LZ4/Snappy/Zstd/Bzip2가 `compileOnly`로 선언된다. 사용자가 해당 압축을 쓰려면 자신의 프로젝트 `build.gradle.kts`에 **명시적으로** 추가해야 한다.
+
+```kotlin
+// 선택적 압축 라이브러리 — 필요한 것만 추가
+dependencies {
+    // LZ4: 빠른 압축/해제, 일반 목적 권장
+    implementation("org.lz4:lz4-java:${Libs.lz4_java}")
+
+    // Snappy: 낮은 지연 시간이 중요한 경우
+    implementation("org.xerial.snappy:snappy-java:${Libs.snappy_java}")
+
+    // Zstd: 높은 압축률이 필요한 경우
+    implementation("com.github.luben:zstd-jni:${Libs.zstd_jni}")
+
+    // Bzip2: 표준 호환성이 필요한 경우 (commons-compress 기반)
+    implementation("org.apache.commons:commons-compress:${Libs.commons_compress}")
+}
+```
+
+> 버전값(`Libs.lz4_java` 등)은 `buildSrc/src/main/kotlin/Libs.kt`에서 관리한다.
+
+### 3.8 예외 계약 (Exception Contract)
+
+graph-io-okio의 공개 API는 다음 예외 계층을 따른다.
+
+| 실패 시나리오 | 던지는 예외 | 비고 |
+|---------------|------------|------|
+| 압축 해제 폭탄 (maxDecompressedBytes 초과) | `java.io.IOException("decompression budget exceeded")` | §3.2 `openDecompressedSource` 참조 |
+| 손상된 gzip/zstd/snappy 스트림 | `java.io.IOException` (또는 래퍼 `UncheckedIOException`) | 손실 없이 surface 보장 — 조용한 실패 금지 |
+| UTF-8 인코딩 오류 (MalformedInput) | `java.nio.charset.MalformedInputException` | Reader 브리지에서 발생 |
+| GraphML 파싱 오류 (mid-stream) | `javax.xml.stream.XMLStreamException` | StAX 예외 래핑 없이 전파 |
+| 선택적 compressor classpath 미추가 | `java.lang.IllegalStateException` | 가이드 메시지 포함 — §3.7 참조 |
+| FileSystem I/O 오류 (권한, 디스크 풀) | `java.io.IOException` | OkIO FileSystem에서 전파 |
+| 원자적 쓰기 실패 (atomicMove) | `java.io.IOException` | 임시 파일 삭제 후 원본 예외 전파 |
+| 코루틴 취소 | `kotlinx.coroutines.CancellationException` | **반드시 재던짐** — 내부에서 잡아서 삼키지 않음 |
+| `format` 파라미터 미지원 값 | `java.lang.IllegalArgumentException` | `when` exhaustive 처리 |
+
+> **규칙**: `CancellationException`은 `catch (e: Exception)` 블록에서 포착되더라도 반드시 `throw e`로 재던진다 (Kotlin 코루틴 불변 조건).
+
+**Java 호출자 대비**: 공개 동기 API에는 `@Throws(IOException::class)` 어노테이션을 추가한다.
+
 ---
 
 ## 4. 완료 기준 (Definition of Done)
 
 ### 4.1 기능 요구사항
 
+- [ ] **`GraphImportProgress` / `GraphExportProgress` data class** 를 `graph-io/core` 의 `io.bluetape4k.graph.io.contract` 패키지에 추가 (§3.5.2 참조).
 - [ ] `OkioGraphImportSource` / `OkioGraphExportSink` sealed interface 구현 (3 variants × 2 = 6 case).
 - [ ] `GraphIoOkioPaths` 헬퍼 함수 구현 (open, 압축 체이닝, 단축형). **암호화 함수는 후속 버전 대상.**
-- [ ] OkIO ↔ java.io 브리지 함수 (`toInputStream`, `toOutputStream`, `toOwningOutputStream`, `toReader`, `toWriter`, `writeAsOutputStream`, `readAsInputStream`).
+- [ ] OkIO ↔ java.io 브리지 함수 (`toInputStream`, `toOutputStream`, `asClosingOutputStream`, `toReader`, `toWriter`, `writeAsOutputStream`, `readAsInputStream`).
 - [ ] **Sync API**: `OkioGraphBulkImporter` / `OkioGraphBulkExporter` — `GraphBulkImporter<OkioGraphImportSource>` / `GraphBulkExporter<OkioGraphExportSink>` 구현 (기존 graph-io 관례 준수).
 - [ ] 기존 4개 포맷 모듈에 OkIO 확장 함수 (CSV, Jackson2/3, GraphML) — 명명: `importGraph` / `exportGraph` (기존 API와 일치). 암호화 변형(`importGraphGzipEncrypted` 등)은 후속 버전.
 - [ ] VirtualThread 변형 (`VirtualThreadGraphIoOkioBulkAdapter`).
@@ -633,21 +874,35 @@ private inline fun requireOnClasspath(className: String, lazyMessage: () -> Stri
 - [ ] **Truncated/corrupt gzip stream** → `java.io.IOException`이 명확하게 surface (UncheckedIOException 등으로 wrapping된 채 lost되지 않음)
 - [ ] **compileOnly 미추가 상태에서 LZ4/Snappy/Zstd/Bzip2 호출** → `IllegalStateException` + 가이드 메시지 (build.gradle.kts 추가 안내 포함)
 - [ ] **깨진 charset (예: UTF-8 stream을 ISO-8859-1로 디코딩 시 illegal byte)** → `java.nio.charset.MalformedInputException`
-- [ ] **마지막 segment 손실 검증 (round-trip)**: 8KB 미만으로 끝나는 데이터(예: 7KB 한 줄짜리)를 export 후 import해서 byte 손실 없는지 확인 — `toOwningOutputStream()` 패턴 검증의 핵심 케이스
+- [ ] **마지막 segment 손실 검증 (round-trip)**: 8KB 미만으로 끝나는 데이터(예: 7KB 한 줄짜리)를 export 후 import해서 byte 손실 없는지 확인 — `asClosingOutputStream()` 패턴 검증의 핵심 케이스
+- [ ] **XXE 방어 테스트** (`GraphMLOkioExtensionsTest`): XXE payload 포함 GraphML 파일 import 시 로컬 파일이 읽히지 않음을 검증 (§3.4.2 픽스처 사용). `XMLStreamException`이 던져지거나 entity가 확장되지 않아야 함.
+- [ ] **압축 폭탄 방어 테스트**: 1KB 내 압축 파일이 maxDecompressedBytes(512MB) 초과 시 `IOException("decompression budget exceeded")` 발생 검증.
+- [ ] **원자적 쓰기 검증**: PathSink + `atomicWrite = true` 상태에서 export 도중 예외를 시뮬레이션하면 대상 파일이 오염되지 않음(부분 기록 없음) 검증. FakeFileSystem 사용.
+- [ ] **ownsSource/ownsSink 기본값 검증**: `SourceBased(ownsSource = false)` 로 import 후 Source가 닫히지 않음을 확인 (`FakeFileSystem.checkNoOpenFiles()` 비보고 방식으로 검증).
+- [ ] **포맷 디스패치 — 미지원 포맷**: `GraphIoFormat`에 없는 포맷 전달 시 `IllegalArgumentException` 발생 검증 (when exhaustive 처리 확인).
+- [ ] **취소 안전성**: suspend 어댑터 export 도중 코루틴 취소 시 `CancellationException`이 재던져지고, `atomicWrite = true`면 임시 파일이 삭제됨을 검증.
 - **암호화 관련 Negative 테스트**: `bluetape4k-projects` #240 해결 후 추가 (key mismatch, REJECT 정책 등).
 
 ### 4.3 문서
 
 - [ ] 모든 public API에 한국어 KDoc.
   - 압축 체이닝 시 처리 순서 명시.
-  - close 책임 명시 (`@param ownsSource`, `@param ownsSink`).
+  - close 책임 명시 (`@param ownsSource`, `@param ownsSink`, `@param atomicWrite`).
   - CSV의 OkIO heap 이점 제약 명시 (§1.3.1).
-- [ ] `graph-io/okio/README.md` (영문)
-- [ ] `graph-io/okio/README.ko.md` (한국어)
-  - 사용 예시 5개 이상 (PathSink, Gzip export/import, VT/Suspend 어댑터 등)
-  - 압축 의존성 추가 가이드 (LZ4/Snappy/Zstd/Bzip2 compileOnly 전략)
+  - 예외 계약 명시 (§3.8 표 참조).
+  - `@Throws(IOException::class)` — 공개 동기 API 전체.
+- [ ] `graph-io/okio/README.md` (영문), `graph-io/okio/README.ko.md` (한국어)
+  - 사용 예시 6개 이상 (§8 코드 블록 기반)
+  - 압축 의존성 추가 가이드 (§3.7.1 스니펫 기반)
   - 암호화: "다음 버전 예정 — `bluetape4k-projects` #240" 명시
   - java.io vs OkIO 경로 선택 가이드
+  - 기존 `graph-io-csv/README.ko.md` 구조를 템플릿으로 사용
+- [ ] **bluetape4k 패턴 준수** (구현 시 검증):
+  - 입력 검증: `requireNotBlank`, `requireInRange` (bluetape4k-support)
+  - 로깅: `KLogging` (동기), `KLoggingChannel` (suspend 컨텍스트)
+  - value class 후보: 없음 (현재 버전 — 향후 `GraphElementId` 재사용)
+  - companion factory에 `@JvmStatic` (Java 호환)
+  - `@Throws(IOException::class)` 동기 공개 API 전체
 
 ### 4.4 빌드 / 통합
 
@@ -741,6 +996,34 @@ private inline fun requireOnClasspath(className: String, lazyMessage: () -> Stri
 - **영향**: 낮음 (`bluetape4k-okio`가 absorb).
 - **완화**: 직접 OkIO API를 노출하지 않고 `bluetape4k-okio` 함수만 호출 (이미 §3.2에서 채택).
 
+### 5.8 XXE (XML External Entity Injection) — GraphML
+
+- **위험**: 신뢰할 수 없는 GraphML 파일에 XXE payload가 삽입되면 로컬 파일(`/etc/passwd` 등)이 유출될 수 있음.
+- **확률**: 낮음 (그래프 I/O 서버 측 처리 시 높아짐).
+- **영향**: 높음 (보안 취약점).
+- **완화**: §3.4.2 — `IS_SUPPORTING_EXTERNAL_ENTITIES = false` + `SUPPORT_DTD = false` 강제 설정. 음성 테스트 필수.
+
+### 5.9 압축 해제 폭탄 (Decompression Bomb)
+
+- **위험**: 1KB 압축 파일이 수십 GB로 팽창 → OOM / 디스크 소진.
+- **확률**: 낮음 (내부 시스템 한정) ~ 높음 (외부 파일 수신 시).
+- **영향**: 높음 (DoS).
+- **완화**: §3.2 `openDecompressedSource`의 `maxDecompressedBytes` 파라미터 (기본 512MB). 초과 시 즉시 `IOException`.
+
+### 5.10 코루틴 취소 시 데이터 손실
+
+- **위험**: suspend 어댑터 export 도중 코루틴이 취소되면 `flush()`/`close()` 미호출 → 마지막 segment 손실.
+- **확률**: 중간 (timeout 설정 있는 환경).
+- **영향**: 높음 (조용한 데이터 손실 — 파일은 존재하지만 불완전).
+- **완화**: §3.5.2 `NonCancellable` 블록으로 close 보장 + `atomicWrite = true`로 불완전 파일이 원본 경로에 도달하지 않도록 차단.
+
+### 5.11 원자적 쓰기 없는 export 실패 시 파일 오염
+
+- **위험**: export 도중 예외 시 대상 파일이 부분 기록된 채 남음 → 후속 import에서 손상 데이터 파싱.
+- **확률**: 낮음.
+- **영향**: 높음 (데이터 오염 — 오류와 구분 불가).
+- **완화**: §3.2.3 `atomicWrite = true` (기본) — 임시 파일에 기록 후 `FileSystem.atomicMove`.
+
 ---
 
 ## 6. 후속 작업 (Out of Scope)
@@ -773,6 +1056,13 @@ private inline fun requireOnClasspath(className: String, lazyMessage: () -> Stri
 | `OkioGraphImportSource` / `OkioGraphExportSink` `Serializable` 구현 | **비채택** (Serializable 미구현) | Serializable 구현 | `okio.Path`, `okio.FileSystem`이 Serializable 미구현. in-process 데이터 파이프라인 전용임을 KDoc에 명시. 직렬화가 필요한 분산 처리는 `java.nio.file.Path` 기반 기존 `GraphImportSource`/`GraphExportSink` 사용 |
 | `okio.Path` vs `java.nio.file.Path` | `okio.Path` 채택 | `java.nio.file.Path` | `FakeFileSystem` 호환성, OkIO native API 일관성. 변환 헬퍼(`toOkioPath()`)는 OkIO 표준 제공 |
 | BOM 등록 방식 | settings.gradle.kts 자동 탐색에 의존 | 수동 BOM 등록 | 기존 graph-io 모듈들과 동일 — 자동화로 누락 방지 |
+| 압축 구현 방식 — 배치 vs 스트리밍 | `Compressors.Streaming.*` 사용 (`StreamingCompressSink`) | `Compressable.Sinks.gzip()` (배치 `CompressableSink`) | `CompressableSink`는 close 시 전체 메모리 적재 → OOM. `Compressors.Streaming.GZip`은 `GZIPOutputStream` 기반 진짜 스트리밍. |
+| `ownsStream`/`ownsSource`/`ownsSink` 기본값 | `false` (호출자 소유) | `true` (라이브러리 소유) | 기존 `GraphImportSource.InputStreamSource.closeInput = false` 관례와 일치. `PathSource`/`PathSink`는 라이브러리가 항상 소유. |
+| 포맷 선택 방식 | 명시적 `GraphIoFormat` 파라미터 | 파일 확장자 스니핑 | 확장자 스니핑은 보안 위험(확장자 스푸핑) + 모호성. 명시적 선택이 안전하고 예측 가능. |
+| 원자적 쓰기 | `atomicWrite = true` 기본값 | 직접 덮어쓰기 | export 실패 시 부분 파일 오염 방지. `FakeFileSystem.atomicMove` 지원. opt-out 가능. |
+| `maxDecompressedBytes` 기본값 | 512MB | 무제한 | 압축 폭탄 방어. 운영 환경에서 명시적 override 가능. |
+| Progress 타입 위치 | `graph-io/core` 신규 타입 | `graph-io-okio` 내부 정의 | 재사용성 — 다른 포맷 모듈도 동일 타입 사용 가능. |
+| XXE 방어 범위 | `SUPPORT_DTD + IS_SUPPORTING_EXTERNAL_ENTITIES = false` | DTD만 비활성화 | JDK 버전에 따라 DTD만으론 XXE 차단 불완전. 양쪽 모두 비활성화가 방어 심층화. |
 
 ---
 
@@ -784,32 +1074,45 @@ import io.bluetape4k.graph.io.okio.OkioGraphExportSink
 import io.bluetape4k.graph.io.okio.GraphIoOkioPaths
 import io.bluetape4k.graph.io.okio.bridge.writeAsOutputStream
 
+// PathSink: 라이브러리가 소유 — 자동 close. atomicWrite=true(기본)로 실패 시 원본 보호.
 val sink = OkioGraphExportSink.PathSink("/tmp/graph.csv".toPath())
 writeAsOutputStream(sink) { os ->
     csvExporter.exportGraph(os)
 }
 
-// (2) Gzip 압축 export — close 체인 명시
+// (2) Gzip 스트리밍 압축 export — Compressors.Streaming.GZip 사용 (배치 아님)
+// close 체인: asClosingOutputStream()이 BufferedSink까지 함께 닫음.
 GraphIoOkioPaths.openGzipSink(sink).use { bs ->
-    bs.toOwningOutputStream().use { os ->
+    bs.asClosingOutputStream().use { os ->
         csvExporter.exportGraph(os)
     }
 }
 
-// (3) Suspend 변형 — 진행 Flow 구독 (suspend 키워드 없음 — cold Flow 반환)
+// (3) Suspend 변형 — 진행 Flow 구독 (cold Flow — collect 시 I/O 시작)
 val adapter = SuspendGraphIoOkioBulkAdapter(suspendOps)
-adapter.exportGraph(sink, GraphIoFormat.CSV).collect { progress ->
-    log.info { "${progress.processed}/${progress.total}" }
+// GraphExportProgress: exported, total, currentLabel, throughputPerSec
+adapter.exportGraph(sink, GraphIoFormat.CSV).collect { progress: GraphExportProgress ->
+    log.info { "${progress.exported}/${progress.total}" }
 }
 
-// (4) 외부 체이닝 Source를 어댑터에 전달 — 어댑터는 압축 옵션을 직접 받지 않음
-val gzipSink = GraphIoOkioPaths.openGzipSink(OkioGraphExportSink.PathSink("/tmp/graph.graphml.gz".toPath()))
+// (4) 호출자가 Gzip 체이닝 후 SinkBased로 전달 — 어댑터는 압축 옵션을 직접 받지 않음
+val gzipSink = GraphIoOkioPaths.openGzipSink(
+    OkioGraphExportSink.PathSink("/tmp/graph.graphml.gz".toPath())
+)
 adapter.exportGraph(
     OkioGraphExportSink.SinkBased(gzipSink, ownsSink = true),
     GraphIoFormat.GRAPHML,
 ).collect { /* ... */ }
 
-// (5) 암호화 예시 — 후속 버전 예정 (bluetape4k-projects #240 해결 후)
+// (5) SourceBased — ownsSource=false(기본): 호출자가 Source를 닫음
+val mySource: BufferedSource = ...
+adapter.importGraph(
+    OkioGraphImportSource.SourceBased(mySource, ownsSource = false),
+    GraphIoFormat.CSV,
+).collect { progress: GraphImportProgress -> /* ... */ }
+// mySource는 여기서 호출자가 직접 닫는다
+
+// (6) 암호화 예시 — 후속 버전 예정 (bluetape4k-projects #240 해결 후)
 // GraphIoOkioPaths.openGzipDaeadEncryptedSink(sink, daead) // 미구현
 ```
 
