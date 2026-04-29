@@ -1,5 +1,7 @@
 package io.bluetape4k.graph.io.okio
 
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.warn
 import io.bluetape4k.okio.compress.Compressable
 import okio.Buffer
 import okio.BufferedSink
@@ -39,7 +41,7 @@ import java.util.UUID
  * ### v2 예정
  * 암호화 지원 (bluetape4k-projects #240 완료 후) — `TinkEncryptSink` / `TinkDecryptSource` 체이닝 추가 예정.
  */
-object GraphIoOkioPaths {
+object GraphIoOkioPaths : KLogging() {
 
     /** 압축 해제 기본 최대 크기 (512 MiB). decompression bomb 방지. */
     const val DEFAULT_MAX_DECOMPRESSED_BYTES: Long = 512L * 1024 * 1024
@@ -142,7 +144,7 @@ object GraphIoOkioPaths {
         return try {
             openCompressedSink(bs, Compressor.GZIP)
         } catch (e: Throwable) {
-            try { bs.close() } catch (_: Throwable) {}
+            try { bs.close() } catch (ce: Throwable) { log.warn(ce) { "Failed to close sink after gzip init failure" } }
             throw e
         }
     }
@@ -163,7 +165,7 @@ object GraphIoOkioPaths {
         return try {
             openDecompressedSource(bs, Compressor.GZIP, maxDecompressedBytes)
         } catch (e: Throwable) {
-            try { bs.close() } catch (_: Throwable) {}
+            try { bs.close() } catch (ce: Throwable) { log.warn(ce) { "Failed to close source after gzip init failure" } }
             throw e
         }
     }
@@ -212,12 +214,13 @@ object GraphIoOkioPaths {
     /**
      * decompression bomb 방지용 Source 래퍼.
      *
-     * [maxBytes]를 초과하면 [IOException]을 던진다.
+     * [maxBytes]를 초과하면 [IOException]을 던진다. 단일 스레드 전용.
      */
     private class BombGuardSource(
         delegate: Source,
         private val maxBytes: Long,
     ) : ForwardingSource(delegate) {
+        @Volatile
         private var totalRead: Long = 0L
 
         override fun read(sink: Buffer, byteCount: Long): Long {
@@ -243,6 +246,7 @@ object GraphIoOkioPaths {
         private val targetPath: Path,
         private val fs: FileSystem,
     ) : ForwardingSink(delegate) {
+        @Volatile
         private var failed = false
 
         override fun write(source: Buffer, byteCount: Long) {
@@ -258,13 +262,17 @@ object GraphIoOkioPaths {
             try {
                 super.close()
                 if (failed) {
-                    try { fs.delete(tmpPath) } catch (_: IOException) {}
+                    try { fs.delete(tmpPath) } catch (e: IOException) {
+                        GraphIoOkioPaths.log.warn(e) { "Failed to delete temp file after write failure: $tmpPath" }
+                    }
                 } else {
                     fs.atomicMove(tmpPath, targetPath)
                 }
             } catch (e: Exception) {
                 failed = true
-                try { fs.delete(tmpPath) } catch (_: IOException) {}
+                try { fs.delete(tmpPath) } catch (de: IOException) {
+                    GraphIoOkioPaths.log.warn(de) { "Failed to delete temp file after close failure: $tmpPath" }
+                }
                 throw e
             }
         }

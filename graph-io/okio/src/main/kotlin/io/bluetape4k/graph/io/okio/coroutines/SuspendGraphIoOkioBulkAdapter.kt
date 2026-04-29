@@ -12,14 +12,12 @@ import io.bluetape4k.graph.io.report.GraphImportProgress
 import io.bluetape4k.graph.io.report.GraphImportReport
 import io.bluetape4k.graph.io.report.GraphIoFormat
 import io.bluetape4k.graph.repository.GraphOperations
-import io.bluetape4k.logging.coroutines.KLoggingChannel
+import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runInterruptible
-import kotlinx.coroutines.withContext
 import java.io.IOException
 
 /**
@@ -33,8 +31,9 @@ import java.io.IOException
  * [importGraphAwait] / [exportGraphAwait]: 완료 보고서를 직접 반환한다.
  *
  * ### 취소 안전성
- * - 모든 blocking I/O는 [runInterruptible] 로 래핑하여 코루틴 취소 시 `Thread.interrupt()` 가 전달된다.
- * - finally 블록의 `flush()` / `close()` 는 [NonCancellable] 로 보호하여 취소 도중에도 반드시 실행된다.
+ * 모든 blocking I/O는 [runInterruptible] 로 래핑하여 코루틴 취소 시 `Thread.interrupt()` 가 전달된다.
+ * 리소스 정리(close)는 [OkioGraphBulkImporter] / [OkioGraphBulkExporter] 내부에서 처리하며,
+ * 각 호출이 독립적으로 소스/싱크를 열고 닫으므로 어댑터 레벨 cleanup 은 불필요하다.
  *
  * ### close 책임
  * 이 어댑터 자체는 [AutoCloseable]이 아니다. 내부 [OkioGraphBulkImporter] / [OkioGraphBulkExporter]가
@@ -45,7 +44,7 @@ class SuspendGraphIoOkioBulkAdapter(
     private val exporter: OkioGraphBulkExporter = OkioGraphBulkExporter(),
 ) {
 
-    companion object : KLoggingChannel()
+    companion object : KLogging()
 
     // ─── Flow (진행 상태 스트림) ────────────────────────────────────────────────
 
@@ -141,15 +140,8 @@ class SuspendGraphIoOkioBulkAdapter(
         options: GraphImportOptions,
     ): GraphImportReport {
         log.debug { "Starting OkIO import (suspend): format=$format" }
-        return try {
-            runInterruptible(Dispatchers.IO) {
-                importer.importGraph(source, format, operations, options)
-            }
-        } finally {
-            withContext(NonCancellable) {
-                // OkioGraphBulkImporter 는 자체적으로 openSource/openSink 내에서 close를 처리한다.
-                // source 객체 자체를 닫지 않는다 (ownsSource=false 기본).
-            }
+        return runInterruptible(Dispatchers.IO) {
+            importer.importGraph(source, format, operations, options)
         }
     }
 
@@ -161,14 +153,8 @@ class SuspendGraphIoOkioBulkAdapter(
         options: GraphExportOptions,
     ): GraphExportReport {
         log.debug { "Starting OkIO export (suspend): format=$format" }
-        return try {
-            runInterruptible(Dispatchers.IO) {
-                exporter.exportGraph(sink, format, operations, options)
-            }
-        } finally {
-            withContext(NonCancellable) {
-                // exporter 내부에서 sink close 처리. 별도 자원 없음.
-            }
+        return runInterruptible(Dispatchers.IO) {
+            exporter.exportGraph(sink, format, operations, options)
         }
     }
 }

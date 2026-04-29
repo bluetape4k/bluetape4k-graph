@@ -94,6 +94,25 @@ class GraphIoOkioPathsTest {
         invoking { GraphIoOkioPaths.openSink(sink) } shouldThrow IllegalStateException::class
     }
 
+    @Test
+    fun `openSink PathSink createParentDirectories=true creates missing parent`() {
+        val target = "/new/nested/dir/out.txt".toPath()
+        val sink = OkioGraphExportSink.PathSink(target, fakeFs, createParentDirectories = true)
+
+        GraphIoOkioPaths.openSink(sink).use { bs -> bs.writeUtf8("nested write") }
+
+        val result = fakeFs.read(target) { readUtf8() }
+        result shouldBeEqualTo "nested write"
+    }
+
+    @Test
+    fun `openSink PathSink createParentDirectories=false throws when parent missing`() {
+        val target = "/nonexistent/out.txt".toPath()
+        val sink = OkioGraphExportSink.PathSink(target, fakeFs, createParentDirectories = false)
+
+        invoking { GraphIoOkioPaths.openSink(sink) } shouldThrow Exception::class
+    }
+
     // ─── openGzipSink / openGzipSource ────────────────────────────────────────
 
     @Test
@@ -132,5 +151,25 @@ class GraphIoOkioPathsTest {
                 maxDecompressedBytes = 100L,
             ).use { it.readUtf8() }
         } shouldThrow IOException::class
+    }
+
+    @Test
+    fun `BombGuardSource allows reads up to maxBytes exactly without throwing`() {
+        ensureTmpDir()
+        val data = "x".repeat(500)  // exactly 500 bytes
+        val path = "/tmp/exact.gz".toPath()
+
+        GraphIoOkioPaths.openGzipSink(
+            OkioGraphExportSink.PathSink(path, fakeFs)
+        ).use { bs -> bs.writeUtf8(data) }
+
+        // Should succeed with limit == data size
+        val result = GraphIoOkioPaths.openDecompressedSource(
+            source = GraphIoOkioPaths.openSource(OkioGraphImportSource.PathSource(path, fakeFs)),
+            compressor = Compressor.GZIP,
+            maxDecompressedBytes = 500L,
+        ).use { it.readUtf8() }
+
+        result shouldBeEqualTo data
     }
 }

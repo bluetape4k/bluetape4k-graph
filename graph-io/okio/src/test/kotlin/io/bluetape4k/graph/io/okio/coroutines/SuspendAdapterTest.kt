@@ -119,6 +119,58 @@ class SuspendAdapterTest {
         events.last().exported shouldBeEqualTo 3L  // 2 vertices + 1 edge
     }
 
+    // ─── 다중 포맷 커버리지 ───────────────────────────────────────────────────────
+
+    @Test
+    fun `importGraphAwait with NDJSON_JACKSON2 format returns correct counts`() = runTest {
+        val path = "/await-j2.ndjson".toPath()
+        val src = buildSourceGraph()
+        adapter.exportGraphAwait(OkioGraphExportSink.PathSink(path, fakeFs), GraphIoFormat.NDJSON_JACKSON2, src, exportOptions)
+
+        val report = adapter.importGraphAwait(
+            OkioGraphImportSource.PathSource(path, fakeFs),
+            GraphIoFormat.NDJSON_JACKSON2,
+            TinkerGraphOperations(),
+            GraphImportOptions(),
+        )
+        report.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        report.verticesCreated shouldBeEqualTo 2L
+        report.edgesCreated shouldBeEqualTo 1L
+    }
+
+    @Test
+    fun `importGraphAwait with GRAPHML format returns correct counts`() = runTest {
+        val path = "/await-graphml.xml".toPath()
+        val src = buildSourceGraph()
+        adapter.exportGraphAwait(OkioGraphExportSink.PathSink(path, fakeFs), GraphIoFormat.GRAPHML, src, exportOptions)
+
+        val report = adapter.importGraphAwait(
+            OkioGraphImportSource.PathSource(path, fakeFs),
+            GraphIoFormat.GRAPHML,
+            TinkerGraphOperations(),
+            GraphImportOptions(),
+        )
+        report.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        report.verticesCreated shouldBeEqualTo 2L
+        report.edgesCreated shouldBeEqualTo 1L
+    }
+
+    @Test
+    fun `exportGraphAwait with GRAPHML format returns completed report`() = runTest {
+        val path = "/await-export-graphml.xml".toPath()
+        val src = buildSourceGraph()
+
+        val report = adapter.exportGraphAwait(
+            OkioGraphExportSink.PathSink(path, fakeFs),
+            GraphIoFormat.GRAPHML,
+            src,
+            exportOptions,
+        )
+        report.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        report.verticesWritten shouldBeEqualTo 2L
+        report.edgesWritten shouldBeEqualTo 1L
+    }
+
     // ─── 취소 전파 ────────────────────────────────────────────────────────────
 
     @Test

@@ -24,10 +24,9 @@ import io.bluetape4k.graph.repository.GraphOperations
 import kotlinx.coroutines.flow.Flow
 import java.util.concurrent.CompletableFuture
 
-private val jackson2VtAdapter = VirtualThreadGraphIoOkioBulkAdapter()
-private val jackson2SuspendAdapter = SuspendGraphIoOkioBulkAdapter()
-private val jackson3VtAdapter = VirtualThreadGraphIoOkioBulkAdapter()
-private val jackson3SuspendAdapter = SuspendGraphIoOkioBulkAdapter()
+// 두 어댑터 모두 상태 없는 싱글턴 — Jackson2/3가 공유해도 무관
+private val jacksonVtAdapter = VirtualThreadGraphIoOkioBulkAdapter()
+private val jacksonSuspendAdapter = SuspendGraphIoOkioBulkAdapter()
 
 // ─── Jackson 2 — Sync ─────────────────────────────────────────────────────────
 
@@ -103,7 +102,7 @@ fun Jackson2NdJsonBulkImporter.importGraphAsync(
     operations: GraphOperations,
     options: GraphImportOptions = GraphImportOptions(),
 ): CompletableFuture<GraphImportReport> =
-    jackson2VtAdapter.importGraphAsync(source, GraphIoFormat.NDJSON_JACKSON2, operations, options)
+    jacksonVtAdapter.importGraphAsync(source, GraphIoFormat.NDJSON_JACKSON2, operations, options)
 
 /** Jackson 2 NDJSON OkIO Virtual Thread 비동기 익스포트 */
 fun Jackson2NdJsonBulkExporter.exportGraphAsync(
@@ -111,7 +110,7 @@ fun Jackson2NdJsonBulkExporter.exportGraphAsync(
     operations: GraphOperations,
     options: GraphExportOptions = GraphExportOptions(),
 ): CompletableFuture<GraphExportReport> =
-    jackson2VtAdapter.exportGraphAsync(sink, GraphIoFormat.NDJSON_JACKSON2, operations, options)
+    jacksonVtAdapter.exportGraphAsync(sink, GraphIoFormat.NDJSON_JACKSON2, operations, options)
 
 // ─── Jackson 2 — Suspend ─────────────────────────────────────────────────────
 
@@ -121,7 +120,7 @@ fun Jackson2NdJsonBulkImporter.importGraphFlow(
     operations: GraphOperations,
     options: GraphImportOptions = GraphImportOptions(),
 ): Flow<GraphImportProgress> =
-    jackson2SuspendAdapter.importGraph(source, GraphIoFormat.NDJSON_JACKSON2, operations, options)
+    jacksonSuspendAdapter.importGraph(source, GraphIoFormat.NDJSON_JACKSON2, operations, options)
 
 /** Jackson 2 NDJSON OkIO 코루틴 await 임포트 (완료 보고서) */
 suspend fun Jackson2NdJsonBulkImporter.importGraphAwait(
@@ -129,7 +128,7 @@ suspend fun Jackson2NdJsonBulkImporter.importGraphAwait(
     operations: GraphOperations,
     options: GraphImportOptions = GraphImportOptions(),
 ): GraphImportReport =
-    jackson2SuspendAdapter.importGraphAwait(source, GraphIoFormat.NDJSON_JACKSON2, operations, options)
+    jacksonSuspendAdapter.importGraphAwait(source, GraphIoFormat.NDJSON_JACKSON2, operations, options)
 
 /** Jackson 2 NDJSON OkIO 코루틴 진행 상태 Flow 익스포트 */
 fun Jackson2NdJsonBulkExporter.exportGraphFlow(
@@ -137,7 +136,7 @@ fun Jackson2NdJsonBulkExporter.exportGraphFlow(
     operations: GraphOperations,
     options: GraphExportOptions = GraphExportOptions(),
 ): Flow<GraphExportProgress> =
-    jackson2SuspendAdapter.exportGraph(sink, GraphIoFormat.NDJSON_JACKSON2, operations, options)
+    jacksonSuspendAdapter.exportGraph(sink, GraphIoFormat.NDJSON_JACKSON2, operations, options)
 
 /** Jackson 2 NDJSON OkIO 코루틴 await 익스포트 (완료 보고서) */
 suspend fun Jackson2NdJsonBulkExporter.exportGraphAwait(
@@ -145,7 +144,7 @@ suspend fun Jackson2NdJsonBulkExporter.exportGraphAwait(
     operations: GraphOperations,
     options: GraphExportOptions = GraphExportOptions(),
 ): GraphExportReport =
-    jackson2SuspendAdapter.exportGraphAwait(sink, GraphIoFormat.NDJSON_JACKSON2, operations, options)
+    jacksonSuspendAdapter.exportGraphAwait(sink, GraphIoFormat.NDJSON_JACKSON2, operations, options)
 
 // ─── Jackson 3 — Sync ─────────────────────────────────────────────────────────
 
@@ -211,7 +210,7 @@ fun Jackson3NdJsonBulkImporter.importGraphAsync(
     operations: GraphOperations,
     options: GraphImportOptions = GraphImportOptions(),
 ): CompletableFuture<GraphImportReport> =
-    jackson3VtAdapter.importGraphAsync(source, GraphIoFormat.NDJSON_JACKSON3, operations, options)
+    jacksonVtAdapter.importGraphAsync(source, GraphIoFormat.NDJSON_JACKSON3, operations, options)
 
 /** Jackson 3 NDJSON OkIO Virtual Thread 비동기 익스포트 */
 fun Jackson3NdJsonBulkExporter.exportGraphAsync(
@@ -219,7 +218,7 @@ fun Jackson3NdJsonBulkExporter.exportGraphAsync(
     operations: GraphOperations,
     options: GraphExportOptions = GraphExportOptions(),
 ): CompletableFuture<GraphExportReport> =
-    jackson3VtAdapter.exportGraphAsync(sink, GraphIoFormat.NDJSON_JACKSON3, operations, options)
+    jacksonVtAdapter.exportGraphAsync(sink, GraphIoFormat.NDJSON_JACKSON3, operations, options)
 
 // ─── Jackson 3 — Suspend ─────────────────────────────────────────────────────
 
@@ -229,7 +228,7 @@ fun Jackson3NdJsonBulkImporter.importGraphFlow(
     operations: GraphOperations,
     options: GraphImportOptions = GraphImportOptions(),
 ): Flow<GraphImportProgress> =
-    jackson3SuspendAdapter.importGraph(source, GraphIoFormat.NDJSON_JACKSON3, operations, options)
+    jacksonSuspendAdapter.importGraph(source, GraphIoFormat.NDJSON_JACKSON3, operations, options)
 
 /** Jackson 3 NDJSON OkIO 코루틴 await 임포트 */
 suspend fun Jackson3NdJsonBulkImporter.importGraphAwait(
@@ -237,7 +236,7 @@ suspend fun Jackson3NdJsonBulkImporter.importGraphAwait(
     operations: GraphOperations,
     options: GraphImportOptions = GraphImportOptions(),
 ): GraphImportReport =
-    jackson3SuspendAdapter.importGraphAwait(source, GraphIoFormat.NDJSON_JACKSON3, operations, options)
+    jacksonSuspendAdapter.importGraphAwait(source, GraphIoFormat.NDJSON_JACKSON3, operations, options)
 
 /** Jackson 3 NDJSON OkIO 코루틴 진행 상태 Flow 익스포트 */
 fun Jackson3NdJsonBulkExporter.exportGraphFlow(
@@ -245,7 +244,7 @@ fun Jackson3NdJsonBulkExporter.exportGraphFlow(
     operations: GraphOperations,
     options: GraphExportOptions = GraphExportOptions(),
 ): Flow<GraphExportProgress> =
-    jackson3SuspendAdapter.exportGraph(sink, GraphIoFormat.NDJSON_JACKSON3, operations, options)
+    jacksonSuspendAdapter.exportGraph(sink, GraphIoFormat.NDJSON_JACKSON3, operations, options)
 
 /** Jackson 3 NDJSON OkIO 코루틴 await 익스포트 */
 suspend fun Jackson3NdJsonBulkExporter.exportGraphAwait(
@@ -253,4 +252,4 @@ suspend fun Jackson3NdJsonBulkExporter.exportGraphAwait(
     operations: GraphOperations,
     options: GraphExportOptions = GraphExportOptions(),
 ): GraphExportReport =
-    jackson3SuspendAdapter.exportGraphAwait(sink, GraphIoFormat.NDJSON_JACKSON3, operations, options)
+    jacksonSuspendAdapter.exportGraphAwait(sink, GraphIoFormat.NDJSON_JACKSON3, operations, options)

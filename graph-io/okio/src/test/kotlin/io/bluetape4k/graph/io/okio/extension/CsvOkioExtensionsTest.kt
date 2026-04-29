@@ -72,8 +72,10 @@ class CsvOkioExtensionsTest {
             tempDir.resolve("graph.csv.gz").toString().toPath(),
             FileSystem.SYSTEM,
         )
-        exporter.exportGraphGzip(gzSink, buildSourceGraph(), exportOptions)
-            .status shouldBeEqualTo GraphIoStatus.COMPLETED
+        val exportReport = exporter.exportGraphGzip(gzSink, buildSourceGraph(), exportOptions)
+        exportReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        exportReport.verticesWritten shouldBeEqualTo 2L
+        exportReport.edgesWritten shouldBeEqualTo 1L
 
         val gzSource = OkioGraphImportSource.PathSource(
             tempDir.resolve("graph.csv.gz").toString().toPath(),
