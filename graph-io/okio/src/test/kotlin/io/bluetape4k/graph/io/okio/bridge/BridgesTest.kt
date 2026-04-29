@@ -1,14 +1,26 @@
 package io.bluetape4k.graph.io.okio.bridge
 
+import io.bluetape4k.graph.io.okio.OkioGraphExportSink
+import io.bluetape4k.graph.io.okio.OkioGraphImportSource
 import okio.Buffer
 import okio.buffer
+import okio.fakefilesystem.FakeFileSystem
+import okio.Path.Companion.toPath
 import okio.sink
 import okio.source
 import org.amshove.kluent.shouldBeEqualTo
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayOutputStream
 
 class BridgesTest {
+
+    private val fakeFs = FakeFileSystem()
+
+    @AfterEach
+    fun cleanup() {
+        fakeFs.checkNoOpenFiles()
+    }
 
     @Test
     fun `toInputStream reads all bytes`() {
@@ -67,5 +79,51 @@ class BridgesTest {
         writer.close()
         val result = String(baos.toByteArray(), Charsets.UTF_8)
         result shouldBeEqualTo "테스트"
+    }
+
+    @Test
+    fun `writeAsOutputStream writes bytes through OkIO sink`() {
+        val path = "/write-as-os.bin".toPath()
+        val expected = "writeAsOutputStream test".toByteArray()
+        writeAsOutputStream(OkioGraphExportSink.PathSink(path, fakeFs)) { os ->
+            os.write(expected)
+        }
+        fakeFs.read(path) { readByteArray() } shouldBeEqualTo expected
+    }
+
+    @Test
+    fun `readAsInputStream reads bytes through OkIO source`() {
+        val path = "/read-as-is.bin".toPath()
+        val expected = "readAsInputStream test".toByteArray()
+        fakeFs.write(path) { write(expected) }
+
+        var read: ByteArray = byteArrayOf()
+        readAsInputStream(OkioGraphImportSource.PathSource(path, fakeFs)) { is_ ->
+            read = is_.readBytes()
+        }
+        read shouldBeEqualTo expected
+    }
+
+    @Test
+    fun `okioWriteTo provides both BufferedSink and OutputStream`() {
+        val path = "/okio-write.bin".toPath()
+        val expected = "okioWriteTo".toByteArray()
+        okioWriteTo(OkioGraphExportSink.PathSink(path, fakeFs)) { _, os ->
+            os.write(expected)
+        }
+        fakeFs.read(path) { readByteArray() } shouldBeEqualTo expected
+    }
+
+    @Test
+    fun `okioReadFrom provides both BufferedSource and InputStream`() {
+        val path = "/okio-read.bin".toPath()
+        val expected = "okioReadFrom".toByteArray()
+        fakeFs.write(path) { write(expected) }
+
+        var read: ByteArray = byteArrayOf()
+        okioReadFrom(OkioGraphImportSource.PathSource(path, fakeFs)) { _, is_ ->
+            read = is_.readBytes()
+        }
+        read shouldBeEqualTo expected
     }
 }

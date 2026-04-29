@@ -8,9 +8,12 @@ import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.test.runTest
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldHaveSize
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 
@@ -70,5 +73,79 @@ class GraphMLOkioExtensionsTest {
         )
         report.verticesCreated shouldBeEqualTo 2L
         report.edgesCreated shouldBeEqualTo 1L
+    }
+
+    // ─── VirtualThread ────────────────────────────────────────────────────────
+
+    @Test
+    fun `GraphML exportGraphAsync returns completed report`() {
+        val path = "/graph-vt.graphml".toPath()
+        val report = GraphMlBulkExporter().exportGraphAsync(
+            OkioGraphExportSink.PathSink(path, fakeFs), buildSourceGraph(), exportOptions,
+        ).get()
+        report.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        report.verticesWritten shouldBeEqualTo 2L
+    }
+
+    @Test
+    fun `GraphML importGraphAsync returns completed report`() {
+        val path = "/graph-vt-import.graphml".toPath()
+        GraphMlBulkExporter().exportGraph(
+            OkioGraphExportSink.PathSink(path, fakeFs), buildSourceGraph(), exportOptions,
+        )
+        val report = GraphMlBulkImporter().importGraphAsync(
+            OkioGraphImportSource.PathSource(path, fakeFs),
+            TinkerGraphOperations(), GraphImportOptions(),
+        ).get()
+        report.verticesCreated shouldBeEqualTo 2L
+        report.edgesCreated shouldBeEqualTo 1L
+    }
+
+    // ─── Suspend ─────────────────────────────────────────────────────────────
+
+    @Test
+    fun `GraphML exportGraphAwait returns completed report`() = runTest {
+        val path = "/graph-await.graphml".toPath()
+        val report = GraphMlBulkExporter().exportGraphAwait(
+            OkioGraphExportSink.PathSink(path, fakeFs), buildSourceGraph(), exportOptions,
+        )
+        report.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        report.verticesWritten shouldBeEqualTo 2L
+    }
+
+    @Test
+    fun `GraphML importGraphAwait returns completed report`() = runTest {
+        val path = "/graph-await-import.graphml".toPath()
+        GraphMlBulkExporter().exportGraph(
+            OkioGraphExportSink.PathSink(path, fakeFs), buildSourceGraph(), exportOptions,
+        )
+        val report = GraphMlBulkImporter().importGraphAwait(
+            OkioGraphImportSource.PathSource(path, fakeFs),
+            TinkerGraphOperations(), GraphImportOptions(),
+        )
+        report.verticesCreated shouldBeEqualTo 2L
+        report.edgesCreated shouldBeEqualTo 1L
+    }
+
+    @Test
+    fun `GraphML exportGraphFlow emits progress`() = runTest {
+        val path = "/graph-flow-export.graphml".toPath()
+        val events = GraphMlBulkExporter().exportGraphFlow(
+            OkioGraphExportSink.PathSink(path, fakeFs), buildSourceGraph(), exportOptions,
+        ).toList()
+        events shouldHaveSize 2
+    }
+
+    @Test
+    fun `GraphML importGraphFlow emits progress`() = runTest {
+        val path = "/graph-flow-import.graphml".toPath()
+        GraphMlBulkExporter().exportGraph(
+            OkioGraphExportSink.PathSink(path, fakeFs), buildSourceGraph(), exportOptions,
+        )
+        val events = GraphMlBulkImporter().importGraphFlow(
+            OkioGraphImportSource.PathSource(path, fakeFs),
+            TinkerGraphOperations(), GraphImportOptions(),
+        ).toList()
+        events shouldHaveSize 2
     }
 }
