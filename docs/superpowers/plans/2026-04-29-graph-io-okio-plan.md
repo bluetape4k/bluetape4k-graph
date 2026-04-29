@@ -162,6 +162,7 @@
 - **의존**: T2, T3, T4, T5
 - **체크포인트**:
   - 모든 `Compressor` 변형에 대한 round-trip 테스트 (FakeFileSystem `Path` 기반)
+  - `@TestInstance(PER_CLASS)` + `@BeforeAll/@AfterAll` + `@AfterAll fakeFileSystem.checkNoOpenFiles()` 필수
   - Bridges: write/read 일관성, owning OutputStream close 시 sink close 검증, 비-owning 케이스에서는 sink 미-close 검증
   - GraphIoOkioPaths: 선택 압축기 미존재 시 명확한 에러 메시지 검증 (`requireOnClasspath` 위반)
   - GZIP/DEFLATE 항상 통과, LZ4/SNAPPY/ZSTD/BZIP2 는 `@EnabledIfClassPresent` 또는 try/catch 분기
@@ -176,15 +177,23 @@
   - `extension/GraphMLOkioExtensionsTest.kt`
 - **의존**: T6, T9, T10
 - **체크포인트**:
-  - **DoD 16 round-trip 매트릭스** (4 포맷 × 4 압축: NONE/GZIP/DEFLATE/Selected) 검증:
-    - CSV × {NONE, GZIP, DEFLATE, ZSTD-or-skip}
-    - Jackson2 NDJSON × {NONE, GZIP, DEFLATE, LZ4-or-skip}
-    - Jackson3 NDJSON × {NONE, GZIP, DEFLATE, SNAPPY-or-skip}
-    - GraphML × {NONE, GZIP, DEFLATE, BZIP2-or-skip}
+  - **DoD 16 round-trip 매트릭스** — 스펙 §4.1.1 기준 (4 포맷 × {plain, gzip 단축형} 최소 8케이스 필수):
+    - CSV: `import`, `importGzip`, `export`, `exportGzip` (GZIP 단축형 검증 필수)
+    - Jackson2 NDJSON: 동일 패턴
+    - Jackson3 NDJSON: 동일 패턴
+    - GraphML: 동일 패턴 (StAX close 체인 특히 검증)
+    - 보충: DEFLATE, LZ4/SNAPPY/ZSTD/BZIP2 는 classpath 존재 시 추가 케이스로 검증
   - 각 round-trip: 정점/간선/속성 동등성 (`shouldBeEqualTo`)
+  - `@AfterAll fakeFileSystem.checkNoOpenFiles()` — 파일 핸들 누수 검증 필수
   - InputStreamBased / SourceBased / PathSource 세 진입점 모두 검증
   - close 누수 검증: BufferedSink mock 으로 close 호출 횟수 확인 (특히 GraphML/Jackson owning 케이스)
   - FakeFileSystem 기반 (실제 파일은 1개 sanity 케이스만)
+  - **Negative-path 5케이스 (스펙 §4.2.2 필수)**:
+    - 빈 source(0바이트) → vertex/edge count = 0
+    - truncated gzip stream → `IOException` surface
+    - compileOnly 미추가 LZ4/Snappy/Zstd/Bzip2 호출 → `IllegalStateException` + 가이드 메시지
+    - 깨진 charset → `MalformedInputException`
+    - 7KB 데이터 export/import round-trip → byte 손실 없음 (`toOwningOutputStream` 검증)
 
 ### T12. VirtualThread / Suspend 어댑터 테스트
 - **complexity**: medium
@@ -195,7 +204,7 @@
 - **체크포인트**:
   - VT: 동시 import/export 100회 round-trip, executor shutdown 검증, close 누수 없음
   - Suspend: `runTest` 기반 round-trip, 취소 시 close 보장 (Job.cancelAndJoin 후 임시 파일 close 상태 확인)
-  - JUnit `@TestInstance(PER_CLASS)`, 컨테이너 미사용
+  - JUnit `@TestInstance(PER_CLASS)` + `@AfterAll fakeFileSystem.checkNoOpenFiles()`
   - `KLoggingChannel` 동작 확인 (로그가 suspend 컨텍스트에서 정상 발행)
 
 ### T13. README.md + README.ko.md
@@ -209,19 +218,38 @@
   - 섹션: Overview / Why OkIO / Quick Start (PathSource/Sink + GZIP) / Compressor 매트릭스 (필수 vs optional 의존성) / API 트리플 (Sync/VT/Suspend) / 확장 함수 사용 예 (4 포맷) / FakeFileSystem 테스트 패턴 / Roadmap (암호화 v2)
   - 코드 스니펫은 실제 컴파일 가능한 형태로 작성, KDoc 와 일치
 
-### T14. graph-io-core / graph-io 모듈 정합성 점검
+### T14. 빌드/CI/BOM 정합성 점검
 - **complexity**: low
-- **파일** (수정 가능):
-  - `graph-io/okio/build.gradle.kts` (의존 정리)
+- **파일** (수정):
+  - `.github/workflows/ci.yml` — `test-core` 잡에 `:graph-io-okio:test` 추가 (§4.4.1)
+  - `.github/workflows/nightly.yml` — 동일하게 `:graph-io-okio:test` 추가 (§4.4.1)
+  - `graph-io/okio/build.gradle.kts` (최종 의존 정리)
   - 필요 시 `aggregation` 또는 `publishing` 설정 (예시 모듈 제외)
   - (settings.gradle.kts 수정 불필요 — 자동 탐색)
 - **의존**: T1, T13
 - **체크포인트**:
   - `./gradlew :graph-io-okio:build` 성공
   - `./gradlew :graph-io-okio:test` 성공
-  - `./gradlew build -x test` 영향 모듈 없음 확인
+  - `./gradlew build -x test` 영향 모듈 없음 (회귀 zero)
+  - BOM 자동 등록 검증: `./gradlew :bluetape4k-graph-bom:dependencies | grep graph-io-okio` 결과에 신규 모듈 표시 (§4.4)
   - Maven Central 발행 대상에 포함되었는지 확인 (graph-io 모듈 관례 일치)
-  - CLAUDE.md 의 graph-io 디렉토리 트리에 `okio/` 줄 추가 (선택, 별도 PR 가능)
+  - CI workflow 수정 확인: `test-core` + `nightly` 잡에 `:graph-io-okio:test` 포함
+  - CLAUDE.md 의 graph-io 디렉토리 트리에 `okio/` 줄 추가
+
+### T15. JMH 벤치마크 추가 (신규 모듈 완료 기준)
+- **complexity**: medium
+- **파일** (수정):
+  - `benchmark/graph-io-benchmark/src/jmh/kotlin/io/bluetape4k/graph/io/benchmark/OkioBenchmark.kt` (신규)
+- **의존**: T6, T9, T14
+- **체크포인트**:
+  - 4개 JMH 벤치 (스펙 §4.5):
+    - `csvExportJavaIo`, `csvExportOkio`, `csvExportOkioGzip` — 100K vertex
+    - `csvImportJavaIo`, `csvImportOkio`, `csvImportOkioGzip`
+    - `graphmlExportJavaIo`, `graphmlExportOkio`
+    - `vtSyncOkioExport`, `vtVirtualThreadOkioExport` (VT vs Sync)
+  - JMH `@BenchmarkMode(Mode.Throughput)` + `-prof gc` 가능 설정 (heap allocation 비교)
+  - `workflow_dispatch` 트리거로만 CI 실행 (PR/nightly 자동 실행 제외 — §4.4.1)
+  - 결과(BPS + GC allocation rate)를 README.ko.md "성능" 섹션에 표로 문서화 (MEMORY: 신규 모듈 완료 기준)
 
 ---
 
@@ -253,19 +281,24 @@
 - T11 (Importer/Exporter + 확장 통합) — T6, T9 후
 - T12 (VT/Suspend 테스트) — T7, T8, T11 후
 
-**Phase 6 — 문서 & 정합성**
+**Phase 6 — 문서 & 정합성 & 벤치마크**
 - T13 (README) — T1~T12 후
-- T14 (정합성 점검 + 빌드/테스트 그린) — T13 후 (최종 게이트)
+- T14 (CI/BOM 정합성 점검 + 빌드/테스트 그린) — T13 후
+- T15 (JMH 벤치마크 추가) — T6, T9, T14 후 (최종 게이트)
 
 ---
 
 ## DoD (Definition of Done)
 
 - [ ] `./gradlew :graph-io-okio:build` 성공 (빌드 + 테스트 + linting)
-- [ ] 16개 round-trip 매트릭스 테스트 모두 통과 (또는 missing classpath 시 명시적 skip)
-- [ ] VT/Suspend 어댑터 close 누수 없음
+- [ ] `./gradlew build -x test` 전체 회귀 zero
+- [ ] BOM 자동 등록 확인 (`./gradlew :bluetape4k-graph-bom:dependencies | grep graph-io-okio`)
+- [ ] 16 round-trip 매트릭스 (4 포맷 × plain+gzip) 통과, negative-path 5케이스 통과
+- [ ] VT/Suspend 어댑터 close 누수 없음, `fakeFileSystem.checkNoOpenFiles()` green
 - [ ] GZIP/DEFLATE 는 항상 통과, LZ4/SNAPPY/ZSTD/BZIP2 는 classpath 가드 동작
-- [ ] README.md, README.ko.md 작성 완료, 코드 스니펫 컴파일 가능
+- [ ] README.md, README.ko.md 작성 완료 (성능 표 포함 — §4.5)
 - [ ] CLAUDE.md graph-io 트리 업데이트 (`okio/`)
+- [ ] CI workflow 수정 완료 (test-core + nightly에 `:graph-io-okio:test` 추가)
+- [ ] JMH 벤치마크 4개 추가 + 결과 문서화 (MEMORY: 신규 모듈 완료 기준)
 - [ ] code-reviewer 리뷰 통과 (CRITICAL/HIGH 이슈 zero)
 - [ ] 80%+ 라인 커버리지 (graph-io-core 관례)
