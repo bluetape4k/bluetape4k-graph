@@ -9,8 +9,11 @@ import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphIoFormat
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
 import org.amshove.kluent.shouldBeEqualTo
@@ -114,5 +117,54 @@ class SuspendAdapterTest {
         events shouldHaveSize 2
         events.first().exported shouldBeEqualTo 0L
         events.last().exported shouldBeEqualTo 3L  // 2 vertices + 1 edge
+    }
+
+    // ─── 취소 전파 ────────────────────────────────────────────────────────────
+
+    @Test
+    fun `exportGraphAwait throws CancellationException when coroutine is pre-cancelled`() = runTest {
+        val cancelledJob = Job().apply { cancel() }
+
+        val result = runCatching {
+            withContext(cancelledJob) {
+                adapter.exportGraphAwait(
+                    OkioGraphExportSink.PathSink("/nope-export.ndjson".toPath(), fakeFs),
+                    GraphIoFormat.NDJSON_JACKSON3,
+                    buildSourceGraph(),
+                    exportOptions,
+                )
+            }
+        }
+
+        result.isFailure shouldBeEqualTo true
+        (result.exceptionOrNull() is CancellationException) shouldBeEqualTo true
+        // fakeFs.checkNoOpenFiles() in @AfterEach verifies no resource leak
+    }
+
+    @Test
+    fun `importGraphAwait throws CancellationException when coroutine is pre-cancelled`() = runTest {
+        val path = "/cancel-import.ndjson".toPath()
+        adapter.exportGraphAwait(
+            OkioGraphExportSink.PathSink(path, fakeFs),
+            GraphIoFormat.NDJSON_JACKSON3,
+            buildSourceGraph(),
+            exportOptions,
+        )
+
+        val cancelledJob = Job().apply { cancel() }
+
+        val result = runCatching {
+            withContext(cancelledJob) {
+                adapter.importGraphAwait(
+                    OkioGraphImportSource.PathSource(path, fakeFs),
+                    GraphIoFormat.NDJSON_JACKSON3,
+                    TinkerGraphOperations(),
+                    GraphImportOptions(),
+                )
+            }
+        }
+
+        result.isFailure shouldBeEqualTo true
+        (result.exceptionOrNull() is CancellationException) shouldBeEqualTo true
     }
 }

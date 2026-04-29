@@ -6,9 +6,15 @@ import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphIoFormat
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import okio.Buffer
+import okio.FileSystem
+import okio.ForwardingFileSystem
+import okio.ForwardingSink
+import okio.Path
 import okio.Path.Companion.toPath
+import okio.Sink
 import okio.fakefilesystem.FakeFileSystem
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldNotBe
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import java.io.IOException
@@ -214,5 +220,48 @@ class NegativePathTest {
         val outFiles = fakeFs.list("/out".toPath())
         outFiles.size shouldBeEqualTo 1
         outFiles.first() shouldBeEqualTo targetPath
+    }
+
+    @Test
+    fun `atomicWrite - write failure leaves target file unchanged and deletes tmp`() {
+        fakeFs.createDirectories("/atomic-fail".toPath())
+        val target = "/atomic-fail/graph.ndjson".toPath()
+        fakeFs.write(target) { writeUtf8("ORIGINAL") }
+
+        val failingFs = FailOnWriteFileSystem(fakeFs)
+        var caught: Exception? = null
+        try {
+            exporter.exportGraph(
+                OkioGraphExportSink.PathSink(target, failingFs, atomicWrite = true),
+                GraphIoFormat.NDJSON_JACKSON3,
+                TinkerGraphOperations().also { it.createVertex("Person", mapOf("name" to "Alice")) },
+                GraphExportOptions(vertexLabels = setOf("Person"), edgeLabels = emptySet()),
+            )
+        } catch (e: Exception) {
+            caught = e
+        }
+
+        caught shouldNotBe null
+        // Target must still contain original content — tmp write failure must not corrupt it
+        fakeFs.read(target) { readUtf8() } shouldBeEqualTo "ORIGINAL"
+        // No tmp files must remain — AtomicMoveSink must clean up on failure
+        val files = fakeFs.list("/atomic-fail".toPath())
+        files.size shouldBeEqualTo 1
+        files.first() shouldBeEqualTo target
+    }
+}
+
+/**
+ * FileSystem wrapper that injects an [IOException] on every [sink] write operation.
+ * Used to simulate write failures for atomicWrite cleanup testing.
+ */
+private class FailOnWriteFileSystem(delegate: FileSystem) : ForwardingFileSystem(delegate) {
+    override fun sink(file: Path, mustCreate: Boolean): Sink {
+        val delegateSink = super.sink(file, mustCreate)
+        return object : ForwardingSink(delegateSink) {
+            override fun write(source: Buffer, byteCount: Long) {
+                throw IOException("Injected write failure for test")
+            }
+        }
     }
 }
