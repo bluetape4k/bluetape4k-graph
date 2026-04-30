@@ -20,9 +20,9 @@ object GraphIoPaths {
         is GraphImportSource.PathSource ->
             Files.newBufferedReader(source.path, source.charset)
         is GraphImportSource.InputStreamSource -> {
-            val reader = BufferedReader(InputStreamReader(source.input, source.charset))
-            if (source.closeInput) reader
-            else object : BufferedReader(reader) {
+            val isr = InputStreamReader(source.input, source.charset)
+            if (source.closeInput) BufferedReader(isr)
+            else object : BufferedReader(isr) {
                 override fun close() { /* caller owns the stream */ }
             }
         }
@@ -38,9 +38,9 @@ object GraphIoPaths {
             Files.newBufferedWriter(sink.path, sink.charset, *opts)
         }
         is GraphExportSink.OutputStreamSink -> {
-            val writer = BufferedWriter(OutputStreamWriter(sink.output, sink.charset))
-            if (sink.closeOutput) writer
-            else object : BufferedWriter(writer) {
+            val osw = OutputStreamWriter(sink.output, sink.charset)
+            if (sink.closeOutput) BufferedWriter(osw)
+            else object : BufferedWriter(osw) {
                 override fun close() { flush() /* caller owns the stream */ }
             }
         }

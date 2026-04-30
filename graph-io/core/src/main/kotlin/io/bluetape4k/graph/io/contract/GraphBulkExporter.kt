@@ -37,7 +37,10 @@ import io.bluetape4k.graph.io.report.GraphExportReport
  * @see GraphSuspendBulkExporter 코루틴 suspend 변형
  * @see GraphVirtualThreadBulkExporter Virtual Thread 비동기 변형
  */
-interface GraphBulkExporter<T : Any> {
+interface GraphBulkExporter<T : Any> : AutoCloseable {
+
+    override fun close() {}
+
 
     /**
      * 주어진 [sink]로 그래프 데이터를 동기 방식으로 익스포트한다.

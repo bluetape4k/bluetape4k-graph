@@ -51,6 +51,39 @@ class GraphIoReportTest {
     }
 
     @Test
+    fun `GraphImportReport rejects negative counts`() {
+        { GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, -1L, 0L, 0L, 0L, elapsed = Duration.ZERO) } shouldThrow IllegalArgumentException::class
+        { GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, -1L, 0L, 0L, elapsed = Duration.ZERO) } shouldThrow IllegalArgumentException::class
+        { GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, -1L, 0L, elapsed = Duration.ZERO) } shouldThrow IllegalArgumentException::class
+        { GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, 0L, -1L, elapsed = Duration.ZERO) } shouldThrow IllegalArgumentException::class
+        { GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, 0L, 0L, skippedVertices = -1L, elapsed = Duration.ZERO) } shouldThrow IllegalArgumentException::class
+        { GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, 0L, 0L, skippedEdges = -1L, elapsed = Duration.ZERO) } shouldThrow IllegalArgumentException::class
+    }
+
+    @Test
+    fun `GraphExportReport rejects negative counts`() {
+        { GraphExportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, -1L, 0L, elapsed = Duration.ZERO) } shouldThrow IllegalArgumentException::class
+        { GraphExportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, -1L, elapsed = Duration.ZERO) } shouldThrow IllegalArgumentException::class
+        { GraphExportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, skippedVertices = -1L, elapsed = Duration.ZERO) } shouldThrow IllegalArgumentException::class
+        { GraphExportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, skippedEdges = -1L, elapsed = Duration.ZERO) } shouldThrow IllegalArgumentException::class
+    }
+
+    @Test
+    fun `GraphImportReport defaults skipped counts to zero`() {
+        val report = GraphImportReport(
+            status = GraphIoStatus.COMPLETED,
+            format = GraphIoFormat.CSV,
+            verticesRead = 10L,
+            verticesCreated = 10L,
+            edgesRead = 5L,
+            edgesCreated = 5L,
+            elapsed = Duration.ofMillis(100),
+        )
+        report.skippedVertices shouldBeEqualTo 0L
+        report.skippedEdges shouldBeEqualTo 0L
+    }
+
+    @Test
     fun `GraphImportReport with failures reflects PARTIAL status`() {
         val failure = GraphIoFailure(
             phase = GraphIoPhase.READ_EDGE,

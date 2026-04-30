@@ -36,7 +36,10 @@ import java.util.concurrent.CompletableFuture
  * @see GraphBulkExporter 동기 변형
  * @see GraphSuspendBulkExporter 코루틴 suspend 변형
  */
-interface GraphVirtualThreadBulkExporter<T : Any> {
+interface GraphVirtualThreadBulkExporter<T : Any> : AutoCloseable {
+
+    override fun close() {}
+
 
     /**
      * 주어진 [sink]로 그래프 데이터를 Virtual Thread에서 비동기로 익스포트한다.

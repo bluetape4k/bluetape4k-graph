@@ -30,7 +30,7 @@ class FakeGraphOperations: GraphOperations {
     override fun createGraph(name: String): Unit = error("not used in this test")
     override fun dropGraph(name: String): Unit = error("not used in this test")
     override fun graphExists(name: String): Boolean = error("not used in this test")
-    override fun close(): Unit = error("not used in this test")
+    override fun close(): Unit = Unit
 
     // --- GraphVertexRepository ---
     override fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex =

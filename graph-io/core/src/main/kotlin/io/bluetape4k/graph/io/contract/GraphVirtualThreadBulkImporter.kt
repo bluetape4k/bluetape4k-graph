@@ -35,7 +35,10 @@ import java.util.concurrent.CompletableFuture
  * @see GraphBulkImporter 동기 변형
  * @see GraphSuspendBulkImporter 코루틴 suspend 변형
  */
-interface GraphVirtualThreadBulkImporter<S : Any> {
+interface GraphVirtualThreadBulkImporter<S : Any> : AutoCloseable {
+
+    override fun close() {}
+
 
     /**
      * 주어진 [source]로부터 그래프 데이터를 Virtual Thread에서 비동기로 임포트한다.
