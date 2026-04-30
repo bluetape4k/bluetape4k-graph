@@ -32,13 +32,18 @@ def parse_report(path: str) -> tuple[int, int]:
 
 def module_from_path(root_dir: str, path: str) -> str:
     # Layout after artifact download (merge-multiple=false):
-    #   <root>/coverage-<area>/<module>/build/reports/kover/report.xml
-    # Module name is the directory immediately before `build/`.
+    #   <root>/coverage-<area>/<base-dir>/<module-dir>/build/reports/kover/report.xml
+    # For most modules, module-dir IS the Gradle project name (e.g. graph-core).
+    # For graph-io/* modules (withBaseDir=true in settings.gradle.kts), the leaf dir
+    # is a short name (core, csv, …) and the module name is graph-io-<leaf>.
     rel = os.path.relpath(path, root_dir)
     parts = rel.split(os.sep)
     for i in range(len(parts) - 1, -1, -1):
         if parts[i] == "build" and i >= 1:
-            return parts[i - 1]
+            leaf = parts[i - 1]
+            if i >= 2 and parts[i - 2] == "graph-io":
+                return "graph-io-" + leaf
+            return leaf
     return os.path.basename(os.path.dirname(os.path.dirname(path)))
 
 
