@@ -89,10 +89,12 @@ class VirtualThreadGraphIoOkioBulkAdapterTest {
 
     @Test
     fun `concurrent exports do not interfere`() {
+        // FakeFileSystem is not thread-safe: each concurrent operation uses its own instance
         val futures = (0 until 10).map { i ->
+            val fs = FakeFileSystem()
             val path = "/concurrent-$i.ndjson".toPath()
             adapter.exportGraphAsync(
-                OkioGraphExportSink.PathSink(path, fakeFs),
+                OkioGraphExportSink.PathSink(path, fs),
                 GraphIoFormat.NDJSON_JACKSON3,
                 buildSourceGraph(),
                 exportOptions,
@@ -107,16 +109,18 @@ class VirtualThreadGraphIoOkioBulkAdapterTest {
 
     @Test
     fun `concurrent round trips produce correct results`() {
+        // FakeFileSystem is not thread-safe: each concurrent round trip uses its own instance
         val futures = (0 until 5).map { i ->
+            val fs = FakeFileSystem()
             val exportPath = "/rt-$i.ndjson".toPath()
             adapter.exportGraphAsync(
-                OkioGraphExportSink.PathSink(exportPath, fakeFs),
+                OkioGraphExportSink.PathSink(exportPath, fs),
                 GraphIoFormat.NDJSON_JACKSON3,
                 buildSourceGraph(),
                 exportOptions,
             ).thenCompose { _ ->
                 adapter.importGraphAsync(
-                    OkioGraphImportSource.PathSource(exportPath, fakeFs),
+                    OkioGraphImportSource.PathSource(exportPath, fs),
                     GraphIoFormat.NDJSON_JACKSON3,
                     TinkerGraphOperations(),
                     GraphImportOptions(),
