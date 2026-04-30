@@ -34,7 +34,10 @@ import io.bluetape4k.graph.io.report.GraphImportReport
  * @see GraphBulkImporter 동기 변형
  * @see GraphVirtualThreadBulkImporter Virtual Thread 비동기 변형
  */
-interface GraphSuspendBulkImporter<S : Any> {
+interface GraphSuspendBulkImporter<S : Any> : AutoCloseable {
+
+    override fun close() {}
+
 
     /**
      * 주어진 [source]로부터 그래프 데이터를 코루틴 방식으로 임포트한다.

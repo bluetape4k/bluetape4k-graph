@@ -16,6 +16,15 @@ class GraphIoExternalIdMap(
 
     fun contains(externalId: String): Boolean = mapping.containsKey(externalId)
 
+    /**
+     * 이미 [putFirstOrFail]로 등록된 외부 ID의 백엔드 ID를 덮어쓴다.
+     *
+     * 임포터의 2단계 패턴에서 사용된다:
+     * 1. [putFirstOrFail] — 중복 정책 게이트 통과 후 임시 ID를 등록한다.
+     * 2. [put] — 백엔드가 실제 ID를 발급한 뒤 최종 ID로 교체한다.
+     *
+     * 이 메서드는 [putFirstOrFail] 이후에만 호출해야 하며, 신규 삽입용으로 사용하면 안 된다.
+     */
     fun put(externalId: String, backendId: GraphElementId) {
         mapping[externalId] = backendId
     }

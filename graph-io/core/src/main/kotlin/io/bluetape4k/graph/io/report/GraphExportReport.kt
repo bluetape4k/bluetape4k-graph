@@ -15,6 +15,13 @@ data class GraphExportReport(
     val elapsed: Duration,
     val failures: List<GraphIoFailure> = emptyList(),
 ) : Serializable {
+    init {
+        require(verticesWritten >= 0) { "verticesWritten must be >= 0" }
+        require(edgesWritten >= 0) { "edgesWritten must be >= 0" }
+        require(skippedVertices >= 0) { "skippedVertices must be >= 0" }
+        require(skippedEdges >= 0) { "skippedEdges must be >= 0" }
+    }
+
     companion object : KLogging() {
         private const val serialVersionUID: Long = 1L
     }
