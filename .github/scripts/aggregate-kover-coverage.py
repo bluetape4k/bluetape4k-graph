@@ -31,14 +31,13 @@ def parse_report(path: str) -> tuple[int, int]:
 
 
 def module_from_path(root_dir: str, path: str) -> str:
-    # Expected layout after artifact download:
-    #   <root>/coverage-<area>/<module>/reports/kover/report.xml
-    # kosogor plugin redirects every subproject build dir to rootProject/build/<module>/,
-    # so the module dir is the parent of `reports/`.
+    # Layout after artifact download (merge-multiple=false):
+    #   <root>/coverage-<area>/<module>/build/reports/kover/report.xml
+    # Module name is the directory immediately before `build/`.
     rel = os.path.relpath(path, root_dir)
     parts = rel.split(os.sep)
     for i in range(len(parts) - 1, -1, -1):
-        if parts[i] == "reports" and i >= 1:
+        if parts[i] == "build" and i >= 1:
             return parts[i - 1]
     return os.path.basename(os.path.dirname(os.path.dirname(path)))
 

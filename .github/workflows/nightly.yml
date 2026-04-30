@@ -100,7 +100,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results-core
-          path: 'build/*/test-results/test/*.xml'
+          path: '**/build/test-results/test/*.xml'
           retention-days: 14
 
       - name: Upload coverage report
@@ -108,7 +108,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-core
-          path: 'build/*/reports/kover/'
+          path: '**/build/reports/kover/'
           retention-days: 14
 
   # ── 3. Spring Boot Starters (TinkerGraph, in-memory) ─────────────────────
@@ -153,7 +153,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results-spring-starters
-          path: 'build/*/test-results/test/*.xml'
+          path: '**/build/test-results/test/*.xml'
           retention-days: 14
 
       - name: Upload coverage report
@@ -161,7 +161,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-spring-starters
-          path: 'build/*/reports/kover/'
+          path: '**/build/reports/kover/'
           retention-days: 14
 
   # ── 4. Neo4j (Testcontainers) ─────────────────────────────────────────────
@@ -199,7 +199,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results-neo4j
-          path: 'build/*/test-results/test/*.xml'
+          path: '**/build/test-results/test/*.xml'
           retention-days: 14
 
       - name: Upload coverage report
@@ -207,7 +207,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-neo4j
-          path: 'build/*/reports/kover/'
+          path: '**/build/reports/kover/'
           retention-days: 14
 
   # ── 5. Memgraph (Testcontainers) ──────────────────────────────────────────
@@ -245,7 +245,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results-memgraph
-          path: 'build/*/test-results/test/*.xml'
+          path: '**/build/test-results/test/*.xml'
           retention-days: 14
 
       - name: Upload coverage report
@@ -253,7 +253,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-memgraph
-          path: 'build/*/reports/kover/'
+          path: '**/build/reports/kover/'
           retention-days: 14
 
   # ── 6. Apache AGE (Testcontainers) ────────────────────────────────────────
@@ -291,7 +291,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results-age
-          path: 'build/*/test-results/test/*.xml'
+          path: '**/build/test-results/test/*.xml'
           retention-days: 14
 
       - name: Upload coverage report
@@ -299,7 +299,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-age
-          path: 'build/*/reports/kover/'
+          path: '**/build/reports/kover/'
           retention-days: 14
 
   # ── 7. FalkorDB (Testcontainers) ──────────────────────────────────────────
@@ -337,7 +337,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results-falkordb
-          path: 'build/*/test-results/test/*.xml'
+          path: '**/build/test-results/test/*.xml'
           retention-days: 14
 
       - name: Upload coverage report
@@ -345,7 +345,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-falkordb
-          path: 'build/*/reports/kover/'
+          path: '**/build/reports/kover/'
           retention-days: 14
 
   # ── 8. Examples (Testcontainers) ──────────────────────────────────────────
@@ -382,7 +382,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results-examples
-          path: 'build/*/test-results/test/*.xml'
+          path: '**/build/test-results/test/*.xml'
           retention-days: 14
 
   # ── 9. 커버리지 집계 ──────────────────────────────────────────────────────
