@@ -2,7 +2,7 @@ package io.bluetape4k.graph.algo.internal
 
 import io.bluetape4k.graph.model.GraphElementId
 import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeGreaterThan
+import org.amshove.kluent.shouldBeLessThan
 import org.junit.jupiter.api.Test
 import kotlin.math.abs
 
@@ -20,7 +20,7 @@ class PageRankCalculatorTest {
             tolerance = 1e-4,
         )
         scores.size shouldBeEqualTo 1
-        abs(scores.getValue(id("a")) - 1.0) shouldBeGreaterThan -0.001
+        abs(scores.getValue(id("a")) - 1.0) shouldBeLessThan 0.001
     }
 
     @Test

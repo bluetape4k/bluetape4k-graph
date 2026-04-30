@@ -92,8 +92,10 @@ class Neo4jCodeGraphTest : AbstractCodeGraphTest() {
 **이중 API 패턴**: 모든 주요 인터페이스가 동기(`Graph*`) + 코루틴(`GraphSuspend*`) 쌍으로 존재한다.
 
 ```
-GraphOperations = GraphSession + GraphVertexRepository + GraphEdgeRepository + GraphTraversalRepository
-GraphSuspendOperations = GraphSuspendSession + GraphSuspendVertexRepository + ...
+GraphOperations = GraphSession + GraphVertexRepository + GraphEdgeRepository + GraphGenericRepository
+                  (GraphGenericRepository = GraphTraversalRepository + GraphAlgorithmRepository)
+GraphSuspendOperations = GraphSuspendSession + GraphSuspendVertexRepository + GraphSuspendEdgeRepository + GraphSuspendGenericRepository
+                         (GraphSuspendGenericRepository = GraphSuspendTraversalRepository + GraphSuspendAlgorithmRepository)
 ```
 
 **모델 타입:**

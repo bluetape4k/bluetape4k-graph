@@ -1,7 +1,10 @@
 package io.bluetape4k.graph.algo.internal
 
 import io.bluetape4k.graph.model.GraphElementId
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.warn
 import kotlin.math.abs
+
 
 /**
  * 정규화된 PageRank 반복 계산기 (JVM 폴백).
@@ -20,7 +23,7 @@ import kotlin.math.abs
  * )
  * ```
  */
-object PageRankCalculator {
+object PageRankCalculator : KLogging() {
 
     /**
      * @param vertices 전체 정점 ID 집합.
@@ -36,6 +39,10 @@ object PageRankCalculator {
         dampingFactor: Double,
         tolerance: Double,
     ): Map<GraphElementId, Double> {
+        require(iterations > 0) { "iterations must be > 0, was $iterations" }
+        require(dampingFactor in 0.0..1.0) { "dampingFactor must be in [0, 1], was $dampingFactor" }
+        require(tolerance > 0.0) { "tolerance must be > 0.0, was $tolerance" }
+
         if (vertices.isEmpty()) return emptyMap()
 
         val n = vertices.size
@@ -43,14 +50,15 @@ object PageRankCalculator {
         var ranks = HashMap<GraphElementId, Double>(n)
         vertices.forEach { ranks[it] = initial }
 
+        // dangling node 집합은 그래프 구조가 고정되므로 루프 밖에서 1회 계산
+        val danglingNodes = vertices.filter { outAdjacency[it].isNullOrEmpty() }
+
         repeat(iterations) {
             val newRanks = HashMap<GraphElementId, Double>(n)
             // base teleport probability
             val baseRank = (1.0 - dampingFactor) / n
 
-            // dangling mass — sum of ranks for vertices with no outgoing edges
-            val danglingMass = vertices.filter { outAdjacency[it].isNullOrEmpty() }
-                .sumOf { ranks.getOrDefault(it, 0.0) }
+            val danglingMass = danglingNodes.sumOf { ranks.getOrDefault(it, 0.0) }
             val danglingShare = dampingFactor * danglingMass / n
 
             vertices.forEach { v -> newRanks[v] = baseRank + danglingShare }
@@ -69,6 +77,8 @@ object PageRankCalculator {
             ranks = newRanks
             if (delta < tolerance) return ranks
         }
+
+        log.warn { "PageRank did not converge after $iterations iterations (vertices=${vertices.size})" }
         return ranks
     }
 }

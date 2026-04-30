@@ -5,6 +5,10 @@ import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphPath
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.PathStep
+import io.bluetape4k.logging.KotlinLogging
+import io.bluetape4k.logging.warn
+
+private val log = KotlinLogging.logger {}
 
 /**
  * 탐색 완료 후 predecessor 맵에서 [GraphPath]를 역추적하여 재구성한다.
@@ -30,13 +34,20 @@ internal fun reconstructPath(
     while (true) {
         val entry = cameFrom[currentId] ?: break
         val (parentVertex, edge) = entry
-        steps.add(PathStep.VertexStep(vertexLookup(currentId) ?: return null))
+        val currentVertex = vertexLookup(currentId) ?: run {
+            log.warn { "PathReconstructor: vertex $currentId not found during reconstruction (target=$targetId)" }
+            return null
+        }
+        steps.add(PathStep.VertexStep(currentVertex))
         steps.add(PathStep.EdgeStep(edge))
         currentId = parentVertex.id
     }
 
     // 출발 정점 추가
-    val startVertex = vertexLookup(currentId) ?: return null
+    val startVertex = vertexLookup(currentId) ?: run {
+        log.warn { "PathReconstructor: start vertex $currentId not found during reconstruction" }
+        return null
+    }
     steps.add(PathStep.VertexStep(startVertex))
 
     steps.reverse()

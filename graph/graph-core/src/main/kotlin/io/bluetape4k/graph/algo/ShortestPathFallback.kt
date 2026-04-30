@@ -85,6 +85,7 @@ object ShortestPathFallback {
         Direction.OUTGOING -> ops.findEdgesByStartId(id, edgeLabel)
         Direction.INCOMING -> ops.findEdgesByEndId(id, edgeLabel)
         Direction.BOTH -> (ops.findEdgesByStartId(id, edgeLabel) + ops.findEdgesByEndId(id, edgeLabel))
+            .distinctBy { it.id }
             .sortedBy { it.id.value }
     }
 }

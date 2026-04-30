@@ -21,7 +21,6 @@ import java.util.concurrent.CompletableFuture
  * [GraphAlgorithmRepository] 의 모든 메서드를 Virtual Thread 위에서 실행하는 어댑터.
  *
  * 단일 작업에는 `virtualFutureOf { }` 를 사용한다.
- * 여러 작업을 병렬 실행할 때는 `StructuredTaskScopes.all { }` 을 사용한다.
  *
  * ### 사용 예제
  * ```kotlin
