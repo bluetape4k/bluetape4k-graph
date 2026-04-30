@@ -139,7 +139,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results-core
-          path: 'build/*/test-results/test/*.xml'
+          path: '**/build/test-results/test/*.xml'
           retention-days: 7
 
       - name: Upload coverage report
@@ -147,7 +147,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-core
-          path: 'build/*/reports/kover/report.xml'
+          path: '**/build/reports/kover/report.xml'
           retention-days: 7
 
   # ── 4. Spring Boot Starter 테스트 (TinkerGraph 프로파일, Docker 불필요) ──
@@ -192,7 +192,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results-spring-starters
-          path: 'build/*/test-results/test/*.xml'
+          path: '**/build/test-results/test/*.xml'
           retention-days: 7
 
       - name: Upload coverage report
@@ -200,7 +200,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-spring-starters
-          path: 'build/*/reports/kover/report.xml'
+          path: '**/build/reports/kover/report.xml'
           retention-days: 7
 
   # ── 5. 커버리지 집계 ─────────────────────────────────────────────────────
