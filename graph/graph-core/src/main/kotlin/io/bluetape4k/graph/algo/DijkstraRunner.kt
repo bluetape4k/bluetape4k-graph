@@ -35,6 +35,7 @@ class DijkstraRunner(
      * @param toId 도착 정점 ID.
      * @param options 탐색 옵션 (weightProperty, missingWeightPolicy, maxVisited).
      * @return 최단 [GraphPath], 경로가 없으면 `null`.
+     * @throws IllegalArgumentException [PathOptions.weightProperty]가 null인 경우.
      */
     fun run(
         fromId: GraphElementId,
@@ -79,7 +80,7 @@ class DijkstraRunner(
             }
             val edges = fetchEdges(currentId)
 
-            for (edge in edges.sortedBy { it.id.value }) {
+            for (edge in edges) {
                 val neighborId = neighbourId(currentId, edge, options.direction) ?: continue
                 val w = extractor.extract(edge) ?: continue // Skip 정책
 
