@@ -46,15 +46,17 @@ object PageRankCalculator : KLogging() {
         if (vertices.isEmpty()) return emptyMap()
 
         val n = vertices.size
+        // HashMap rehash 방지: loadFactor(0.75) 기준으로 초기 용량 설정
+        val mapCapacity = ((n / 0.75f) + 1).toInt()
         val initial = 1.0 / n
-        var ranks = HashMap<GraphElementId, Double>(n)
+        var ranks = HashMap<GraphElementId, Double>(mapCapacity)
         vertices.forEach { ranks[it] = initial }
 
         // dangling node 집합은 그래프 구조가 고정되므로 루프 밖에서 1회 계산
         val danglingNodes = vertices.filter { outAdjacency[it].isNullOrEmpty() }
 
         repeat(iterations) {
-            val newRanks = HashMap<GraphElementId, Double>(n)
+            val newRanks = HashMap<GraphElementId, Double>(mapCapacity)
             // base teleport probability
             val baseRank = (1.0 - dampingFactor) / n
 
@@ -68,7 +70,8 @@ object PageRankCalculator : KLogging() {
                 if (outs.isNotEmpty()) {
                     val share = dampingFactor * ranks.getOrDefault(src, 0.0) / outs.size
                     outs.forEach { dst ->
-                        newRanks[dst] = (newRanks[dst] ?: 0.0) + share
+                        // merge로 단일 해시 탐색으로 읽기+쓰기 처리 (이중 맵 조회 방지)
+                        newRanks.merge(dst, share, Double::plus)
                     }
                 }
             }

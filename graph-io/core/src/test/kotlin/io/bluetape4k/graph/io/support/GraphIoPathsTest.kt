@@ -102,12 +102,27 @@ class GraphIoPathsTest {
     }
 
     @Test
-    fun `openInputStream returns underlying stream for inputStream source`() {
+    fun `openInputStream returns underlying stream for inputStream source closeInput=true`() {
         val data = byteArrayOf(10, 20, 30)
-        val src = GraphImportSource.InputStreamSource(ByteArrayInputStream(data))
+        val src = GraphImportSource.InputStreamSource(ByteArrayInputStream(data), closeInput = true)
         GraphIoPaths.openInputStream(src).use { s ->
             s.readBytes() shouldBeEqualTo data
         }
+    }
+
+    @Test
+    fun `openInputStream with closeInput=false does not close underlying stream`() {
+        var closed = false
+        val underlying = object : ByteArrayInputStream(byteArrayOf(7, 8, 9)) {
+            override fun close() { closed = true; super.close() }
+        }
+        val src = GraphImportSource.InputStreamSource(underlying, closeInput = false)
+        val stream = GraphIoPaths.openInputStream(src)
+        stream.read() // 7 읽기
+        stream.close()
+        closed shouldBeEqualTo false
+        // underlying stream에 여전히 접근 가능
+        underlying.read() shouldBeEqualTo 8
     }
 
     // ── openOutputStream ─────────────────────────────────────────────────────

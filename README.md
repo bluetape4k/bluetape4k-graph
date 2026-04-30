@@ -96,10 +96,12 @@ SuspendGraphMlBulkExporter().exportGraphSuspending(
 
 | Module | Format | Docs |
 |--------|--------|------|
+| `graph-io-core` | Shared contracts, models, options, and helpers (`GraphBulkImporter`, `GraphBulkExporter`, `GraphIoPaths`, `GraphIoExternalIdMap`) | [README](graph-io/core/README.md) |
 | `graph-io-csv` | CSV (split vertex/edge files) | [README](graph-io/csv/README.md) |
 | `graph-io-jackson2` | NDJSON (Jackson 2.x) | [README](graph-io/jackson2/README.md) |
 | `graph-io-jackson3` | NDJSON (Jackson 3.x) | [README](graph-io/jackson3/README.md) |
 | `graph-io-graphml` | GraphML XML (StAX) | [README](graph-io/graphml/README.md) |
+| `graph-io-okio` | OkIO-based adapter — segment streaming, compression chaining, FakeFileSystem support | [README](graph-io/okio/README.md) |
 
 > **Benchmark results**: [2026-04-18 graph-io bulk I/O results](docs/benchmark/2026-04-18-graph-io-bulk-results.md)
 

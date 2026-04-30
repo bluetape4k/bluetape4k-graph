@@ -13,6 +13,7 @@ import org.amshove.kluent.shouldBeNull
 import org.amshove.kluent.shouldContainAll
 import org.amshove.kluent.shouldHaveSize
 import org.amshove.kluent.shouldNotBeNull
+import org.amshove.kluent.shouldThrow
 import org.junit.jupiter.api.Test
 
 /**
@@ -163,6 +164,34 @@ class DijkstraRunnerTest {
         val path = runner(defaultGraph).run(id("A"), id("C"), opts).shouldNotBeNull()
 
         path.totalWeight.shouldBeNear(3.0, 0.001)
+    }
+
+    // ─── weightProperty 필수 ─────────────────────────────────────────────────────
+
+    @Test
+    fun `weightProperty가 null이면 IllegalArgumentException을 던진다`() {
+        val block: () -> Unit = { runner().run(id("A"), id("C"), PathOptions()) }
+        block shouldThrow IllegalArgumentException::class
+    }
+
+    // ─── fetchVertex mid-traversal null ──────────────────────────────────────────
+
+    @Test
+    fun `탐색 중 정점을 찾을 수 없으면 해당 이웃을 건너뛰고 null을 반환한다`() {
+        // A → B (fetchVertex("B") = null) → C: B를 건너뛰므로 A→C 경로 없음
+        val eAB2 = edge("eAB2", "A", "B", 1.0)
+        val eBC2 = edge("eBC2", "B", "C", 1.0)
+        val nullVertexRunner = DijkstraRunner(
+            fetchEdges = { id ->
+                when (id.value) {
+                    "A" -> listOf(eAB2)
+                    "B" -> listOf(eBC2)
+                    else -> emptyList()
+                }
+            },
+            fetchVertex = { id -> if (id.value == "B") null else GraphVertex(id, "V", emptyMap()) },
+        )
+        nullVertexRunner.run(id("A"), id("C"), PathOptions(weightProperty = "cost")).shouldBeNull()
     }
 
     // ─── totalWeight 검증 ────────────────────────────────────────────────────────
