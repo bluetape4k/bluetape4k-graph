@@ -32,7 +32,6 @@ plugins {
     id(Plugins.shadow) version Plugins.Versions.shadow apply false
     id(Plugins.gatling) version Plugins.Versions.gatling apply false
 
-    id(Plugins.kosogor) version Plugins.Versions.kosogor
     id(Plugins.nmcp_aggregation) version Plugins.Versions.nmcp
     id(Plugins.nmcp) version Plugins.Versions.nmcp apply false
 
@@ -113,7 +112,6 @@ subprojects {
 
         plugin(Plugins.dokka)
         plugin(Plugins.testLogger)
-        plugin(Plugins.kosogor)
 
         // Kover — Kotlin 코드 커버리지 (bom/benchmark/examples 는 커버리지 대상에서 제외)
         if (!path.contains("examples") && !path.contains("benchmark") && name != "bluetape4k-graph-bom") {
