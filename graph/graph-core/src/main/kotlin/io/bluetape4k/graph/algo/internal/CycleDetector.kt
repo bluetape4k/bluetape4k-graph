@@ -29,59 +29,72 @@ object CycleDetector {
         maxDepth: Int,
         maxCycles: Int,
     ): List<List<GraphElementId>> {
+        require(maxDepth > 0) { "maxDepth must be > 0, was $maxDepth" }
+        require(maxCycles > 0) { "maxCycles must be > 0, was $maxCycles" }
+
         val result = ArrayList<List<GraphElementId>>()
         val seenSignatures = HashSet<List<GraphElementId>>()
 
         for (start in adjacency.keys) {
             if (result.size >= maxCycles) break
-            dfs(
-                current = start,
-                start = start,
-                stack = ArrayList<GraphElementId>().apply { add(start) },
-                onStack = HashSet<GraphElementId>().apply { add(start) },
-                adjacency = adjacency,
-                maxDepth = maxDepth,
-                maxCycles = maxCycles,
-                result = result,
-                seenSignatures = seenSignatures,
-            )
+            dfsIterative(start, adjacency, maxDepth, maxCycles, result, seenSignatures)
         }
         return result
     }
 
-    @Suppress("LongParameterList")
-    private fun dfs(
-        current: GraphElementId,
+    private fun dfsIterative(
         start: GraphElementId,
-        stack: MutableList<GraphElementId>,
-        onStack: MutableSet<GraphElementId>,
         adjacency: Map<GraphElementId, List<GraphElementId>>,
         maxDepth: Int,
         maxCycles: Int,
         result: MutableList<List<GraphElementId>>,
         seenSignatures: MutableSet<List<GraphElementId>>,
     ) {
-        if (stack.size - 1 >= maxDepth) return
-        if (result.size >= maxCycles) return
+        // Frame: (정점, 아직 방문하지 않은 이웃 목록)
+        data class Frame(val vertex: GraphElementId, val remaining: ArrayDeque<GraphElementId>)
 
-        for (next in adjacency[current].orEmpty()) {
-            if (result.size >= maxCycles) return
+        val path = ArrayList<GraphElementId>()  // 현재 탐색 경로 (= 원래 recursive dfs의 stack)
+        val onPath = HashSet<GraphElementId>()  // 경로 내 정점 집합 (빠른 조회용)
+
+        path.add(start)
+        onPath.add(start)
+        val callStack = ArrayDeque<Frame>()
+        callStack.addLast(Frame(start, ArrayDeque(adjacency[start].orEmpty())))
+
+        while (callStack.isNotEmpty()) {
+            if (result.size >= maxCycles) break
+
+            val frame = callStack.last()
+            // 경로 깊이(간선 수) = callStack.size - 1
+            val depth = callStack.size - 1
+
+            if (depth >= maxDepth || frame.remaining.isEmpty()) {
+                // 이 프레임 종료 — path/onPath에서 현재 정점 제거
+                callStack.removeLast()
+                val popped = path.removeAt(path.size - 1)
+                onPath.remove(popped)
+                continue
+            }
+
+            val next = frame.remaining.removeFirst()
+
+            if (result.size >= maxCycles) break
 
             if (next == start) {
-                val cycle = ArrayList(stack).apply { add(start) }
+                val cycle = ArrayList(path).apply { add(start) }
                 val signature = canonicalSignature(cycle)
                 if (seenSignatures.add(signature)) {
                     result.add(cycle)
                 }
                 continue
             }
-            if (next in onStack) continue
 
-            stack.add(next)
-            onStack.add(next)
-            dfs(next, start, stack, onStack, adjacency, maxDepth, maxCycles, result, seenSignatures)
-            stack.removeAt(stack.size - 1)
-            onStack.remove(next)
+            if (next in onPath) continue
+
+            // 새 프레임 push
+            path.add(next)
+            onPath.add(next)
+            callStack.addLast(Frame(next, ArrayDeque(adjacency[next].orEmpty())))
         }
     }
 

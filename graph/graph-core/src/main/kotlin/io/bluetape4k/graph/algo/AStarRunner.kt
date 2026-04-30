@@ -1,6 +1,5 @@
 package io.bluetape4k.graph.algo
 
-import io.bluetape4k.graph.model.Direction
 import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphPath
@@ -8,6 +7,7 @@ import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
+import io.bluetape4k.logging.warn
 import java.util.*
 
 /**
@@ -61,7 +61,7 @@ class AStarRunner(
         pq.add(Triple(h0, 0.0, fromId))
         var visited = 0
 
-        while (pq.isNotEmpty()) {
+        outer@ while (pq.isNotEmpty()) {
             val (_, g, currentId) = pq.poll()
 
             if (g > (gScore[currentId] ?: Double.MAX_VALUE)) continue // stale
@@ -72,10 +72,14 @@ class AStarRunner(
             }
 
             if (++visited > options.maxVisited) {
-                log.debug { "A* maxVisited=${options.maxVisited} reached; no path found" }
+                log.warn { "A* maxVisited=${options.maxVisited} reached; no path found from $fromId → $toId" }
                 break
             }
 
+            val currentVertex = fetchVertex(currentId) ?: run {
+                log.warn { "A*: fetchVertex($currentId) returned null mid-traversal — skipping neighbors" }
+                continue@outer
+            }
             val edges = fetchEdges(currentId)
 
             for (edge in edges.sortedBy { it.id.value }) {
@@ -85,7 +89,6 @@ class AStarRunner(
                 val tentativeG = g + w
                 if (tentativeG < (gScore[neighborId] ?: Double.MAX_VALUE)) {
                     gScore[neighborId] = tentativeG
-                    val currentVertex = fetchVertex(currentId) ?: continue
                     cameFrom[neighborId] = currentVertex to edge
 
                     val neighbor = fetchVertex(neighborId) ?: continue
@@ -96,19 +99,5 @@ class AStarRunner(
         }
 
         return null
-    }
-
-    private fun neighbourId(
-        currentId: GraphElementId,
-        edge: GraphEdge,
-        direction: Direction,
-    ): GraphElementId? = when (direction) {
-        Direction.OUTGOING -> if (edge.startId == currentId) edge.endId else null
-        Direction.INCOMING -> if (edge.endId == currentId) edge.startId else null
-        Direction.BOTH -> when (currentId) {
-            edge.startId -> edge.endId
-            edge.endId -> edge.startId
-            else       -> null
-        }
     }
 }
