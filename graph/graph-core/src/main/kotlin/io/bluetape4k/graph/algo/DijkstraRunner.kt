@@ -26,7 +26,12 @@ class DijkstraRunner(
     private val fetchEdges: (GraphElementId) -> List<GraphEdge>,
     private val fetchVertex: (GraphElementId) -> GraphVertex?,
 ) {
-    companion object : KLogging()
+    companion object : KLogging() {
+        /** (cost, vertexId) PriorityQueue 비교자 — run() 호출마다 재생성 방지 */
+        private val NODE_ORDER: Comparator<Pair<Double, GraphElementId>> =
+            compareBy<Pair<Double, GraphElementId>> { it.first }
+                .thenComparing { a, b -> a.second.value.compareTo(b.second.value) }
+    }
 
     /**
      * Dijkstra 알고리즘으로 [fromId] → [toId] 최단 경로를 계산한다.
@@ -48,10 +53,7 @@ class DijkstraRunner(
         val extractor = WeightExtractor(weightProperty, options.missingWeightPolicy)
 
         // (cost, vertexId) — tie-break은 vertexId 사전순
-        val pq = PriorityQueue(
-            compareBy<Pair<Double, GraphElementId>> { it.first }
-                .thenComparing { a, b -> a.second.value.compareTo(b.second.value) }
-        )
+        val pq = PriorityQueue(NODE_ORDER)
         val dist = mutableMapOf<GraphElementId, Double>()
         val cameFrom = mutableMapOf<GraphElementId, Pair<GraphVertex, GraphEdge>>()
 

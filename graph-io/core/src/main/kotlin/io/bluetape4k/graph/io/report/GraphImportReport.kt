@@ -1,6 +1,5 @@
 package io.bluetape4k.graph.io.report
 
-import io.bluetape4k.logging.KLogging
 import java.io.Serializable
 import java.time.Duration
 
@@ -45,9 +44,15 @@ data class GraphImportReport(
         require(edgesCreated >= 0) { "edgesCreated must be >= 0" }
         require(skippedVertices >= 0) { "skippedVertices must be >= 0" }
         require(skippedEdges >= 0) { "skippedEdges must be >= 0" }
+        require(verticesCreated <= verticesRead) {
+            "verticesCreated ($verticesCreated) must be <= verticesRead ($verticesRead)"
+        }
+        require(edgesCreated <= edgesRead) {
+            "edgesCreated ($edgesCreated) must be <= edgesRead ($edgesRead)"
+        }
     }
 
-    companion object : KLogging() {
+    companion object {
         private const val serialVersionUID: Long = 1L
     }
 }

@@ -29,6 +29,14 @@ class AStarRunner(
 ) {
     companion object : KLogging()
 
+    /** PriorityQueue 엔트리 — Triple 대비 박싱 2회 절감 */
+    private data class AStarNode(val f: Double, val g: Double, val id: GraphElementId) : Comparable<AStarNode> {
+        override fun compareTo(other: AStarNode): Int {
+            val cmp = f.compareTo(other.f)
+            return if (cmp != 0) cmp else id.value.compareTo(other.id.value)
+        }
+    }
+
     /**
      * A* 알고리즘으로 [fromId] → [toId] 최단 경로를 계산한다.
      *
@@ -48,18 +56,15 @@ class AStarRunner(
         }
         val extractor = WeightExtractor(weightProperty, options.missingWeightPolicy)
 
-        // f = g + h; tie-break: vertexId 사전순
-        val pq = PriorityQueue(
-            compareBy<Triple<Double, Double, GraphElementId>> { it.first }
-                .thenComparing { a, b -> a.third.value.compareTo(b.third.value) }
-        )
+        // f = g + h; AStarNode: Comparable — Comparator 불필요
+        val pq = PriorityQueue<AStarNode>()
         val gScore = mutableMapOf<GraphElementId, Double>()
         val cameFrom = mutableMapOf<GraphElementId, Pair<GraphVertex, GraphEdge>>()
 
         gScore[fromId] = 0.0
         val startVertex = fetchVertex(fromId) ?: return null
         val h0 = heuristic(startVertex)
-        pq.add(Triple(h0, 0.0, fromId))
+        pq.add(AStarNode(h0, 0.0, fromId))
         var visited = 0
 
         outer@ while (pq.isNotEmpty()) {
@@ -92,9 +97,12 @@ class AStarRunner(
                     gScore[neighborId] = tentativeG
                     cameFrom[neighborId] = currentVertex to edge
 
-                    val neighbor = fetchVertex(neighborId) ?: continue
+                    val neighbor = fetchVertex(neighborId) ?: run {
+                        log.warn { "A*: fetchVertex($neighborId) returned null — neighbor dropped from frontier" }
+                        continue
+                    }
                     val f = tentativeG + heuristic(neighbor)
-                    pq.add(Triple(f, tentativeG, neighborId))
+                    pq.add(AStarNode(f, tentativeG, neighborId))
                 }
             }
         }

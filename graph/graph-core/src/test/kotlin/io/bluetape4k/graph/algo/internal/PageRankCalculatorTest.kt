@@ -114,4 +114,19 @@ class PageRankCalculatorTest {
         val scores = compute(vertices = outAdj.keys, outAdjacency = outAdj)
         scores.getValue(id("b")) shouldBeGreaterThan scores.getValue(id("a"))
     }
+
+    // ─── 비수렴 경계 케이스 ────────────────────────────────────────────────────────
+
+    @Test
+    fun `반복 횟수 소진 시 부분 결과를 반환한다`() {
+        val verts = setOf(id("a"), id("b"))
+        val outAdj = mapOf(id("a") to listOf(id("b")), id("b") to listOf(id("a")))
+        // iterations=1, tolerance=극소 → 1회 반복으로 수렴 불가
+        val scores = compute(vertices = verts, outAdjacency = outAdj, iterations = 1, tolerance = 1e-12)
+
+        // 수렴 없어도 결과 맵은 반환됨
+        scores.size shouldBeEqualTo 2
+        val sum = scores.values.sum()
+        abs(sum - 1.0) shouldBeLessThan 0.01 // 아직 완전 정규화 전이라도 합≈1
+    }
 }

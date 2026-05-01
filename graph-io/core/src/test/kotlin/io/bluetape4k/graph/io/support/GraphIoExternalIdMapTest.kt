@@ -52,12 +52,12 @@ class GraphIoExternalIdMapTest {
     @Test
     fun `size reflects number of distinct entries`() {
         val map = GraphIoExternalIdMap(DuplicateVertexPolicy.FAIL)
-        map.size() shouldBeEqualTo 0
+        map.size shouldBeEqualTo 0
         map.putFirstOrFail("v1", GraphElementId("a"))
         map.putFirstOrFail("v2", GraphElementId("b"))
-        map.size() shouldBeEqualTo 2
+        map.size shouldBeEqualTo 2
         map.put("v1", GraphElementId("a2"))
-        map.size() shouldBeEqualTo 2
+        map.size shouldBeEqualTo 2
     }
 
     @Test

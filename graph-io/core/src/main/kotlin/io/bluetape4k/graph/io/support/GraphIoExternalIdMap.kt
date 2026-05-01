@@ -43,6 +43,18 @@ class GraphIoExternalIdMap(
         mapping[externalId] = backendId
     }
 
+    /**
+     * 외부 ID를 처음 등록하거나 중복 정책을 적용한다.
+     *
+     * - 신규 ID: 맵에 삽입하고 [PutResult.CREATED]를 반환한다.
+     * - 중복 ID + [DuplicateVertexPolicy.SKIP]: [PutResult.SKIPPED]를 반환한다.
+     * - 중복 ID + [DuplicateVertexPolicy.FAIL]: 예외를 던진다.
+     *
+     * @param externalId 등록할 외부 ID.
+     * @param backendId 백엔드가 발급한 초기 ID.
+     * @return [PutResult.CREATED] (신규 삽입) 또는 [PutResult.SKIPPED] (중복, Skip 정책).
+     * @throws IllegalStateException [DuplicateVertexPolicy.FAIL]이고 동일 [externalId]가 이미 등록된 경우.
+     */
     fun putFirstOrFail(externalId: String, backendId: GraphElementId): PutResult {
         val existing = mapping[externalId]
         if (existing == null) {
@@ -64,9 +76,7 @@ class GraphIoExternalIdMap(
     fun resolve(externalId: String): GraphElementId? = mapping[externalId]
 
     /**
-     * 현재 등록된 외부 ID 수를 반환한다.
-     *
-     * @return 외부 ID 기준 매핑 항목 수.
+     * 현재 등록된 외부 ID 수.
      */
-    fun size(): Int = mapping.size
+    val size: Int get() = mapping.size
 }
