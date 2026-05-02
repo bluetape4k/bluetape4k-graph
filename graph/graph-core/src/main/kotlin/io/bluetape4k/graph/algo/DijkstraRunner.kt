@@ -19,6 +19,27 @@ import java.util.*
  * - **maxVisited 보호**: 무한 그래프에서의 무한 확장을 방지한다.
  * - **Direction 지원**: OUTGOING, INCOMING, BOTH 모두 지원한다.
  *
+ * ### 사용 예제
+ *
+ * ```kotlin
+ * val runner = DijkstraRunner(
+ *     fetchEdges = { id -> ops.outgoingEdges(id) },
+ *     fetchVertex = { id -> ops.findVertex(id) },
+ * )
+ *
+ * val path: GraphPath? = runner.run(
+ *     fromId = GraphElementId("A"),
+ *     toId = GraphElementId("Z"),
+ *     options = PathOptions(
+ *         weightProperty = "cost",
+ *         missingWeightPolicy = MissingWeightPolicy.UseDefault(1.0),
+ *         maxVisited = 100_000,
+ *     ),
+ * )
+ *
+ * path?.let { println("총 비용=${it.totalWeight}, 경로 길이=${it.steps.size}") }
+ * ```
+ *
  * @param fetchEdges 정점 ID → 인접 간선 목록 조회 함수. [Direction]은 호출 전 적용되어야 한다.
  * @param fetchVertex 정점 ID → [GraphVertex] 조회 함수.
  */

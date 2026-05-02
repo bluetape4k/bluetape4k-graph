@@ -65,4 +65,22 @@ class GraphIoExternalIdMapTest {
         val map = GraphIoExternalIdMap(DuplicateVertexPolicy.FAIL)
         map.resolve("nonexistent") shouldBeEqualTo null
     }
+
+    @Test
+    fun `put without putFirstOrFail throws IllegalStateException`() {
+        val map = GraphIoExternalIdMap(DuplicateVertexPolicy.FAIL)
+        val action = { map.put("never-registered", GraphElementId("real")) }
+        action shouldThrow IllegalStateException::class
+    }
+
+    @Test
+    fun `put after SKIPPED entry still allowed because mapping retains the first id`() {
+        val map = GraphIoExternalIdMap(DuplicateVertexPolicy.SKIP)
+        map.putFirstOrFail("v1", GraphElementId("first"))
+        // SKIPPED 호출은 매핑을 변경하지 않지만 v1은 putFirstOrFail로 이미 등록됨
+        map.putFirstOrFail("v1", GraphElementId("ignored")) shouldBeEqualTo GraphIoExternalIdMap.PutResult.SKIPPED
+        // put은 v1이 등록되어 있으므로 안전
+        map.put("v1", GraphElementId("backend"))
+        map.resolve("v1") shouldBeEqualTo GraphElementId("backend")
+    }
 }
