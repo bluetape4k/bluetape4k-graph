@@ -25,12 +25,17 @@ import kotlin.math.abs
  */
 object PageRankCalculator : KLogging() {
 
+    private const val HASH_LOAD_FACTOR = 0.75
+
     /**
+     * 정규화된 PageRank 점수를 계산한다.
+     *
      * @param vertices 전체 정점 ID 집합.
-     * @param outAdjacency out-edge 인접 리스트.
-     * @param iterations 최대 반복 횟수.
-     * @param dampingFactor 감쇠 계수 (보통 0.85).
-     * @param tolerance L1-norm 수렴 허용치.
+     * @param outAdjacency out-edge 인접 리스트. 집합에 없는 정점을 참조해서는 안 된다.
+     * @param iterations 최대 반복 횟수. 양수여야 한다.
+     * @param dampingFactor 감쇠 계수. [0.0, 1.0] 범위. 보통 0.85.
+     * @param tolerance 조기 종료 L1-norm 허용치. 양수여야 한다.
+     * @return 정점별 PageRank 점수 맵. 합계 ≈ 1.0.
      */
     fun compute(
         vertices: Set<GraphElementId>,
@@ -46,8 +51,8 @@ object PageRankCalculator : KLogging() {
         if (vertices.isEmpty()) return emptyMap()
 
         val n = vertices.size
-        // HashMap rehash 방지: loadFactor(0.75) 기준으로 초기 용량 설정
-        val mapCapacity = ((n / 0.75f) + 1).toInt()
+        // HashMap rehash 방지: Double 나눗셈으로 정밀도 확보 (0.75f 는 n≥25M 에서 under-provision)
+        val mapCapacity = ((n / HASH_LOAD_FACTOR) + 1).toInt()
         val initial = 1.0 / n
         var ranks = HashMap<GraphElementId, Double>(mapCapacity)
         vertices.forEach { ranks[it] = initial }

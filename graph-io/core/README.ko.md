@@ -81,9 +81,9 @@ data class GraphImportReport(
     val status: GraphIoStatus,                // COMPLETED | PARTIAL | FAILED
     val format: GraphIoFormat,                // CSV | NDJSON_JACKSON2 | NDJSON_JACKSON3 | GRAPHML
     val verticesRead: Long,
-    val verticesCreated: Long,
+    val verticesCreated: Long,                // invariant: verticesCreated <= verticesRead
     val edgesRead: Long,
-    val edgesCreated: Long,
+    val edgesCreated: Long,                   // invariant: edgesCreated <= edgesRead
     val skippedVertices: Long,
     val skippedEdges: Long,
     val elapsed: Duration,

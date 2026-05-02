@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.algo
 
+import io.bluetape4k.graph.model.Direction
 import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphVertex
@@ -162,12 +163,50 @@ class AStarRunnerTest {
         path.totalWeight.shouldBeNear(2.0, 0.001)
     }
 
-    // ─── weightProperty 필수 ─────────────────────────────────────────────────────
+    // ─── weightProperty 필수 ──────────────────────────────────────────────────���──
 
     @Test
     fun `weightProperty 없으면 IllegalArgumentException 발생`() {
         val block: () -> Unit = { runner().run(id("A"), id("C"), PathOptions()) }
         block shouldThrow IllegalArgumentException::class
+    }
+
+    // ─── Direction.BOTH ───────────────────────────────────────────────────────────
+
+    @Test
+    fun `Direction BOTH에서 역방향 경로 탐색`() {
+        // C→A 방향으로 탐색: 단방향 그래프이므로 역방향 간선을 제공
+        val bothRunner = AStarRunner(
+            fetchEdges = { id ->
+                val outgoing = mainGraph[id.value] ?: emptyList()
+                val incoming = mainGraph.values.flatten().filter { it.endId == id }
+                (outgoing + incoming).distinctBy { it.id }
+            },
+            fetchVertex = { vid -> vertices[vid.value] },
+            heuristic = { v -> euclidean(v, "A") },
+        )
+        val opts = PathOptions(weightProperty = "cost", direction = Direction.BOTH)
+        // C에서 A로 역방향: BOTH 모드에서는 B→A 역방향 간선을 활용
+        val path = bothRunner.run(id("C"), id("A"), opts).shouldNotBeNull()
+
+        path.totalWeight.shouldBeNear(2.0, 0.001)
+    }
+
+    // ─── null neighbor mid-traversal ───────────────────────────────────────────
+
+    @Test
+    fun `이웃 정점이 없으면 해당 이웃을 건너뛰고 대체 경로 탐색`() {
+        // B를 fetchVertex에서 제외 → A→B 경로 사용 불가, A→C(직선)만 사용
+        val partialVertices = mapOf("A" to vertex("A"), "C" to vertex("C"))
+        val partialRunner = AStarRunner(
+            fetchEdges = { vid -> mainGraph[vid.value] ?: emptyList() },
+            fetchVertex = { vid -> partialVertices[vid.value] },
+            heuristic = { v -> euclidean(v, "C") },
+        )
+        val path = partialRunner.run(id("A"), id("C"), options()).shouldNotBeNull()
+
+        // A→B 경로에서 B 정점을 찾지 못하므로 A→C 직선 경로(cost=3.0)만 유효
+        path.totalWeight.shouldBeNear(3.0, 0.001)
     }
 
     // ─── 헬퍼 ────────────────────────────────────────────────────────────────────

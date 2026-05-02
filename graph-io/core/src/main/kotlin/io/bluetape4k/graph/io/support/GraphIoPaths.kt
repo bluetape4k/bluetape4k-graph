@@ -6,6 +6,7 @@ import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.BufferedReader
 import java.io.BufferedWriter
+import java.io.FilterInputStream
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.io.OutputStream
@@ -83,10 +84,9 @@ object GraphIoPaths {
         is GraphImportSource.PathSource -> BufferedInputStream(Files.newInputStream(source.path))
         is GraphImportSource.InputStreamSource ->
             if (source.closeInput) source.input
-            else object : InputStream() {
-                override fun read(): Int = source.input.read()
-                override fun read(b: ByteArray, off: Int, len: Int) = source.input.read(b, off, len)
-                override fun available() = source.input.available()
+            // FilterInputStream이 skip/mark/reset/available 등을 자동 위임하므로
+            // close()만 억제하면 된다.
+            else object : FilterInputStream(source.input) {
                 override fun close() { /* caller owns the stream */ }
             }
     }

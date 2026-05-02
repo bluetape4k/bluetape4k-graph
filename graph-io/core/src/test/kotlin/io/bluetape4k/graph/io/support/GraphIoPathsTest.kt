@@ -128,6 +128,15 @@ class GraphIoPathsTest {
     // ── openOutputStream ─────────────────────────────────────────────────────
 
     @Test
+    fun `openOutputStream creates parent directory for path sink`(@TempDir dir: Path) {
+        val nested = dir.resolve("sub/dir/out.bin")
+        GraphIoPaths.openOutputStream(GraphExportSink.PathSink(nested, append = false)).use { s ->
+            s.write(byteArrayOf(1))
+        }
+        Files.exists(nested) shouldBeEqualTo true
+    }
+
+    @Test
     fun `openOutputStream writes to path sink append=false`(@TempDir dir: Path) {
         val file = dir.resolve("out.bin").also { Files.write(it, byteArrayOf(99)) }
         GraphIoPaths.openOutputStream(GraphExportSink.PathSink(file, append = false)).use { s ->
