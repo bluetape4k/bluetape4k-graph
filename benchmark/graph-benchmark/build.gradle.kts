@@ -1,6 +1,6 @@
 plugins {
-    id(Plugins.kotlinx_benchmark) version Plugins.Versions.kotlinx_benchmark
-    kotlin("plugin.allopen") version Versions.kotlin
+    alias(libs.plugins.kotlinx.benchmark)
+    kotlin("plugin.allopen")
 }
 
 allOpen {
@@ -25,11 +25,11 @@ dependencies {
     implementation(project(":graph-core"))
     implementation(project(":graph-tinkerpop"))
 
-    implementation(Libs.kotlinx_benchmark_runtime)
-    implementation(Libs.bluetape4k_core)
-    implementation(Libs.bluetape4k_virtualthread_api)
-    implementation(Libs.bluetape4k_coroutines)
-    implementation(Libs.kotlinx_coroutines_core)
+    implementation(libs.kotlinx.benchmark.runtime)
+    implementation(libs.bluetape4k.core)
+    implementation(libs.bluetape4k.virtualthread.api)
+    implementation(libs.bluetape4k.coroutines)
+    implementation(libs.kotlinx.coroutines.core.lib)
 
-    testImplementation(Libs.bluetape4k_junit5)
+    testImplementation(libs.bluetape4k.junit5)
 }

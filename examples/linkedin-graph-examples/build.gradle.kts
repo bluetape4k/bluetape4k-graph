@@ -6,18 +6,18 @@ dependencies {
     implementation(project(":graph-tinkerpop"))
     implementation(project(":graph-falkordb"))
 
-    implementation(Libs.bluetape4k_coroutines)
-    implementation(Libs.kotlinx_coroutines_core)
+    implementation(libs.bluetape4k.coroutines)
+    implementation(libs.kotlinx.coroutines.core.lib)
 
-    testImplementation(Libs.bluetape4k_junit5)
-    testImplementation(Libs.bluetape4k_testcontainers)
-    testImplementation(Libs.testcontainers)
-    testImplementation(Libs.testcontainers_neo4j)
-    testImplementation(Libs.testcontainers_postgresql)
-    testImplementation(Libs.neo4j_java_driver)       // bluetape4k-testcontainers는 compileOnly로 선언
-    testRuntimeOnly(Libs.postgresql_driver)           // bluetape4k-testcontainers는 compileOnly로 선언
-    testImplementation(Libs.hikaricp)
-    testImplementation(Libs.kotlinx_coroutines_test)
+    testImplementation(libs.bluetape4k.junit5)
+    testImplementation(libs.bluetape4k.testcontainers)
+    testImplementation(libs.testcontainers.core)
+    testImplementation(libs.testcontainers.neo4j)
+    testImplementation(libs.testcontainers.postgresql)
+    testImplementation(libs.neo4j.java.driver)       // bluetape4k-testcontainers는 compileOnly로 선언
+    testRuntimeOnly(libs.postgresql.driver)           // bluetape4k-testcontainers는 compileOnly로 선언
+    testImplementation(libs.hikaricp)
+    testImplementation(libs.kotlinx.coroutines.test.lib)
     testImplementation(project(":graph-falkordb"))
     testImplementation(testFixtures(project(":graph-falkordb")))
 }

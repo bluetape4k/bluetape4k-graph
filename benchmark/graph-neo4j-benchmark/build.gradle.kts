@@ -1,6 +1,6 @@
 plugins {
-    id(Plugins.kotlinx_benchmark) version Plugins.Versions.kotlinx_benchmark
-    kotlin("plugin.allopen") version Versions.kotlin
+    alias(libs.plugins.kotlinx.benchmark)
+    kotlin("plugin.allopen")
 }
 
 allOpen {
@@ -27,20 +27,20 @@ dependencies {
     implementation(project(":graph-core"))
     implementation(project(":graph-neo4j"))
 
-    implementation(Libs.kotlinx_benchmark_runtime)
-    implementation(Libs.bluetape4k_core)
-    implementation(Libs.bluetape4k_logging)
-    implementation(Libs.bluetape4k_coroutines)
-    implementation(Libs.kotlinx_coroutines_core)
+    implementation(libs.kotlinx.benchmark.runtime)
+    implementation(libs.bluetape4k.core)
+    implementation(libs.bluetape4k.logging)
+    implementation(libs.bluetape4k.coroutines)
+    implementation(libs.kotlinx.coroutines.core.lib)
 
-    implementation(Libs.neo4j_java_driver)
-    runtimeOnly(Libs.neo4j_bolt_connection_netty)
-    runtimeOnly(Libs.neo4j_bolt_connection_pooled)
+    implementation(libs.neo4j.java.driver)
+    runtimeOnly(libs.neo4j.bolt.connection.netty)
+    runtimeOnly(libs.neo4j.bolt.connection.pooled)
 
     // Testcontainers 를 main 에서 사용 (벤치마크 라이프사이클이 JMH @Setup 에서 기동)
-    implementation(Libs.bluetape4k_testcontainers)
-    implementation(Libs.testcontainers)
-    implementation(Libs.testcontainers_neo4j)
+    implementation(libs.bluetape4k.testcontainers)
+    implementation(libs.testcontainers.core)
+    implementation(libs.testcontainers.neo4j)
 
-    testImplementation(Libs.bluetape4k_junit5)
+    testImplementation(libs.bluetape4k.junit5)
 }

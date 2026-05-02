@@ -2,12 +2,12 @@ plugins {
     kotlin("jvm")
     kotlin("plugin.spring")
     kotlin("plugin.serialization")
-    id(Plugins.spring_boot) version Plugins.Versions.spring_boot4 apply false
+    alias(libs.plugins.spring.boot4) apply false
     id("io.spring.dependency-management")
 }
 
 dependencies {
-    implementation(platform(Libs.spring_boot4_dependencies))
+    implementation(platform(libs.spring.boot4.dependencies))
 
     // graph-core는 api로 전이 노출 — GraphOperations 등 공개 API 타입이 전이 노출 필요
     api(project(":graph-core"))
@@ -28,7 +28,7 @@ dependencies {
     compileOnly("org.springframework.boot:spring-boot-actuator-autoconfigure")
 
     // Annotation processor
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:${Versions.spring_boot4}")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:${libs.versions.spring.boot4.get()}")
 
     // Test
     testImplementation(project(":graph-tinkerpop"))
@@ -37,12 +37,12 @@ dependencies {
     testImplementation(project(":graph-age"))
     testImplementation(project(":graph-falkordb"))
     testImplementation(testFixtures(project(":graph-falkordb")))
-    testImplementation(Libs.bluetape4k_testcontainers)
-    testImplementation(Libs.testcontainers_neo4j)
-    testImplementation(Libs.testcontainers_postgresql)
-    testImplementation(Libs.neo4j_java_driver)
-    testRuntimeOnly(Libs.postgresql_driver)
-    testImplementation(Libs.hikaricp)
+    testImplementation(libs.bluetape4k.testcontainers)
+    testImplementation(libs.testcontainers.neo4j)
+    testImplementation(libs.testcontainers.postgresql)
+    testImplementation(libs.neo4j.java.driver)
+    testRuntimeOnly(libs.postgresql.driver)
+    testImplementation(libs.hikaricp)
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-starter-web")
     testImplementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -50,6 +50,6 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-restclient")
     testImplementation("org.springframework.boot:spring-boot-resttestclient")
     testImplementation("org.springframework.boot:spring-boot-webtestclient")
-    testImplementation(Libs.kotlinx_coroutines_test)
-    testImplementation(Libs.kotlinx_coroutines_reactor)
+    testImplementation(libs.kotlinx.coroutines.test.lib)
+    testImplementation(libs.kotlinx.coroutines.reactor)
 }

@@ -1,14 +1,14 @@
 dependencies {
     api(project(":graph-io-core"))
-    api(Libs.bluetape4k_jackson2)
-    api(Libs.jackson_module_kotlin)
-    api(Libs.jackson_module_blackbird)
-    
-    implementation(Libs.bluetape4k_coroutines)
-    implementation(Libs.bluetape4k_virtualthread_api)
-    implementation(Libs.bluetape4k_virtualthread_jdk25)
+    api(libs.bluetape4k.jackson2)
+    api(libs.jackson.module.kotlin)
+    api(libs.jackson.module.blackbird)
 
-    testImplementation(Libs.bluetape4k_junit5)
-    testImplementation(Libs.kotlinx_coroutines_test)
+    implementation(libs.bluetape4k.coroutines)
+    implementation(libs.bluetape4k.virtualthread.api)
+    implementation(libs.bluetape4k.virtualthread.jdk25)
+
+    testImplementation(libs.bluetape4k.junit5)
+    testImplementation(libs.kotlinx.coroutines.test.lib)
     testImplementation(project(":graph-tinkerpop"))
 }
