@@ -1,12 +1,12 @@
 dependencies {
     api(project(":graph-core"))
 
-    api(Libs.tinkerpop_gremlin_core)
-    api(Libs.tinkergraph_gremlin)
+    api(libs.tinkerpop.gremlin.core)
+    api(libs.tinkergraph.gremlin)
 
-    implementation(Libs.bluetape4k_coroutines)
-    implementation(Libs.kotlinx_coroutines_core)
-    testImplementation(Libs.kotlinx_coroutines_test)
+    implementation(libs.bluetape4k.coroutines)
+    implementation(libs.kotlinx.coroutines.core.lib)
+    testImplementation(libs.kotlinx.coroutines.test.lib)
 
-    testImplementation(Libs.bluetape4k_junit5)
+    testImplementation(libs.bluetape4k.junit5)
 }

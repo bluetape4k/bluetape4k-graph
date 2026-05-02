@@ -2,15 +2,15 @@ dependencies {
     api(project(":graph-core"))
     api(project(":graph-neo4j"))
 
-    api(Libs.neo4j_java_driver)
-    runtimeOnly(Libs.neo4j_bolt_connection_netty)
-    runtimeOnly(Libs.neo4j_bolt_connection_pooled)
+    api(libs.neo4j.java.driver)
+    runtimeOnly(libs.neo4j.bolt.connection.netty)
+    runtimeOnly(libs.neo4j.bolt.connection.pooled)
 
-    api(Libs.bluetape4k_coroutines)
-    api(Libs.kotlinx_coroutines_reactive)
+    api(libs.bluetape4k.coroutines)
+    api(libs.kotlinx.coroutines.reactive)
 
-    testImplementation(Libs.bluetape4k_junit5)
-    testImplementation(Libs.bluetape4k_testcontainers)
-    testImplementation(Libs.testcontainers)
-    testImplementation(Libs.kotlinx_coroutines_test)
+    testImplementation(libs.bluetape4k.junit5)
+    testImplementation(libs.bluetape4k.testcontainers)
+    testImplementation(libs.testcontainers.core)
+    testImplementation(libs.kotlinx.coroutines.test.lib)
 }

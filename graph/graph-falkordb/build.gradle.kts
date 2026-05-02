@@ -5,14 +5,14 @@ plugins {
 dependencies {
     api(project(":graph-core"))
 
-    api(Libs.jfalkordb)
-    api(Libs.bluetape4k_coroutines)
+    api(libs.jfalkordb)
+    api(libs.bluetape4k.coroutines)
 
-    testFixturesApi(Libs.bluetape4k_testcontainers)
-    testFixturesApi(Libs.testcontainers)
+    testFixturesApi(libs.bluetape4k.testcontainers)
+    testFixturesApi(libs.testcontainers.core)
 
-    testImplementation(Libs.bluetape4k_junit5)
-    testImplementation(Libs.bluetape4k_testcontainers)
-    testImplementation(Libs.testcontainers)
-    testImplementation(Libs.kotlinx_coroutines_test)
+    testImplementation(libs.bluetape4k.junit5)
+    testImplementation(libs.bluetape4k.testcontainers)
+    testImplementation(libs.testcontainers.core)
+    testImplementation(libs.kotlinx.coroutines.test.lib)
 }

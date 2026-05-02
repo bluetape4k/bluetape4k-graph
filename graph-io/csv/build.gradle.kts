@@ -1,11 +1,11 @@
 dependencies {
     api(project(":graph-io-core"))
-    api(Libs.bluetape4k_csv)
-    implementation(Libs.bluetape4k_coroutines)
-    implementation(Libs.bluetape4k_virtualthread_api)
-    implementation(Libs.bluetape4k_virtualthread_jdk25)
+    api(libs.bluetape4k.csv)
+    implementation(libs.bluetape4k.coroutines)
+    implementation(libs.bluetape4k.virtualthread.api)
+    implementation(libs.bluetape4k.virtualthread.jdk25)
 
-    testImplementation(Libs.bluetape4k_junit5)
-    testImplementation(Libs.kotlinx_coroutines_test)
+    testImplementation(libs.bluetape4k.junit5)
+    testImplementation(libs.kotlinx.coroutines.test.lib)
     testImplementation(project(":graph-tinkerpop"))
 }

@@ -1,6 +1,6 @@
 plugins {
-    id(Plugins.kotlinx_benchmark) version Plugins.Versions.kotlinx_benchmark
-    kotlin("plugin.allopen") version Versions.kotlin
+    alias(libs.plugins.kotlinx.benchmark)
+    kotlin("plugin.allopen")
 }
 
 allOpen {
@@ -27,21 +27,21 @@ dependencies {
     implementation(project(":graph-core"))
     implementation(project(":graph-age"))
 
-    implementation(Libs.kotlinx_benchmark_runtime)
-    implementation(Libs.bluetape4k_core)
-    implementation(Libs.bluetape4k_logging)
-    implementation(Libs.bluetape4k_coroutines)
-    implementation(Libs.kotlinx_coroutines_core)
+    implementation(libs.kotlinx.benchmark.runtime)
+    implementation(libs.bluetape4k.core)
+    implementation(libs.bluetape4k.logging)
+    implementation(libs.bluetape4k.coroutines)
+    implementation(libs.kotlinx.coroutines.core.lib)
 
-    implementation(Libs.exposed_core)
-    implementation(Libs.exposed_jdbc)
-    implementation(Libs.postgresql_driver)
-    implementation(Libs.hikaricp)
+    implementation(libs.exposed.core)
+    implementation(libs.exposed.jdbc)
+    implementation(libs.postgresql.driver)
+    implementation(libs.hikaricp)
 
     // Testcontainers 를 main 에서 사용 (벤치마크 라이프사이클이 JMH @Setup 에서 기동)
-    implementation(Libs.bluetape4k_testcontainers)
-    implementation(Libs.testcontainers)
-    implementation(Libs.testcontainers_postgresql)
+    implementation(libs.bluetape4k.testcontainers)
+    implementation(libs.testcontainers.core)
+    implementation(libs.testcontainers.postgresql)
 
-    testImplementation(Libs.bluetape4k_junit5)
+    testImplementation(libs.bluetape4k.junit5)
 }

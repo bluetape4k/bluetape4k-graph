@@ -1,12 +1,12 @@
 dependencies {
-    api(Libs.bluetape4k_core)
-    implementation(Libs.bluetape4k_virtualthread_api)
-    implementation(Libs.bluetape4k_virtualthread_jdk25)
-    implementation(Libs.bluetape4k_coroutines)
-    implementation(Libs.kotlinx_coroutines_core)
+    api(libs.bluetape4k.core)
+    implementation(libs.bluetape4k.virtualthread.api)
+    implementation(libs.bluetape4k.virtualthread.jdk25)
+    implementation(libs.bluetape4k.coroutines)
+    implementation(libs.kotlinx.coroutines.core.lib)
 
-    testImplementation(Libs.bluetape4k_junit5)
-    testImplementation(Libs.bluetape4k_testcontainers)
-    testImplementation(Libs.kotlinx_coroutines_test)
+    testImplementation(libs.bluetape4k.junit5)
+    testImplementation(libs.bluetape4k.testcontainers)
+    testImplementation(libs.kotlinx.coroutines.test.lib)
     testImplementation(project(":graph-tinkerpop"))
 }
