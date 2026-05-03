@@ -117,7 +117,7 @@ data class GraphIoFailure(
 ### Support Helpers (`io.bluetape4k.graph.io.support`)
 
 - **`GraphIoPaths`** — opens `BufferedReader`/`BufferedWriter`/`InputStream`/`OutputStream` for any `GraphImportSource`/`GraphExportSink`, auto-creates parent directories for `PathSink`, honours the `closeInput`/`closeOutput` flag for caller-owned streams.
-- **`GraphIoExternalIdMap`** — tracks external ID → backend `GraphElementId` mappings during import and enforces `DuplicateVertexPolicy` (`FAIL` or `SKIP`).
+- **`GraphIoExternalIdMap`** — tracks external ID → backend `GraphElementId` mappings during import and enforces `DuplicateVertexPolicy` (`FAIL` or `SKIP`). Importers follow a 2-step pattern: `putFirstOrFail()` gates the duplicate policy with a temporary ID, then `put()` overwrites with the backend-issued ID. Calling `put()` before `putFirstOrFail()` throws `IllegalStateException` to surface duplicate-policy bypass at the caller site.
 - **`GraphIoStopwatch`** — millisecond-precision timer used by format importers/exporters to populate `report.elapsed`.
 - **`VirtualThreadGraphBulkAdapter`** — wraps a sync `GraphBulkImporter`/`GraphBulkExporter` as a Virtual-Thread-backed async variant via `CompletableFuture`.
 

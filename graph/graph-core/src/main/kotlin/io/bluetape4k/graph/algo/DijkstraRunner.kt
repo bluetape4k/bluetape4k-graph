@@ -23,8 +23,8 @@ import java.util.*
  *
  * ```kotlin
  * val runner = DijkstraRunner(
- *     fetchEdges = { id -> ops.outgoingEdges(id) },
- *     fetchVertex = { id -> ops.findVertex(id) },
+ *     fetchEdges = { id -> ops.findEdgesByStartId(id) },
+ *     fetchVertex = { id -> ops.findVertexById(id) },
  * )
  *
  * val path: GraphPath? = runner.run(
