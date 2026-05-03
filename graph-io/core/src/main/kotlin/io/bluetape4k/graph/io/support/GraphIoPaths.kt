@@ -20,6 +20,30 @@ import java.nio.file.StandardOpenOption
  *
  * 모든 `close*` 플래그가 `false`인 경우, 반환된 스트림/리더/라이터를 닫아도
  * underlying 스트림이 닫히지 않는다. 스트림 소유권은 호출자가 유지한다.
+ *
+ * ### 사용 예제
+ *
+ * ```kotlin
+ * // PathSource 읽기 — Files.newBufferedReader 위임 + 호출자가 close 책임
+ * val source = GraphImportSource.PathSource(Path.of("vertices.csv"))
+ * GraphIoPaths.openReader(source).use { reader ->
+ *     reader.lineSequence().forEach { println(it) }
+ * }
+ *
+ * // PathSink 쓰기 — 부모 디렉터리 자동 생성, append 모드 지원
+ * val sink = GraphExportSink.PathSink(
+ *     path = Path.of("out/2026/data.ndjson"),  // out/2026 자동 생성
+ *     append = false,
+ * )
+ * GraphIoPaths.openOutputStream(sink).use { os ->
+ *     os.write(payload)
+ * }
+ *
+ * // OutputStreamSink with closeOutput=false — 호출자가 스트림 소유권 유지
+ * val external = ByteArrayOutputStream()
+ * val sink2 = GraphExportSink.OutputStreamSink(external, closeOutput = false)
+ * GraphIoPaths.openWriter(sink2).use { it.write("data") }  // flush only, external 미닫음
+ * ```
  */
 object GraphIoPaths {
 

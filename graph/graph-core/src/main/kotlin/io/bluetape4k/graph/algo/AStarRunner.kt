@@ -18,6 +18,30 @@ import java.util.*
  * - 허용 가능(admissible) 휴리스틱: `h(n) <= 실제_비용(n, goal)`. 위반 시 최적성 보장 불가.
  * - tie-break은 DijkstraRunner와 동일하게 vertexId 사전순.
  *
+ * ### 사용 예제
+ *
+ * ```kotlin
+ * // 좌표 기반 유클리드 휴리스틱 — 2D 격자에서 admissible
+ * val coords: Map<String, Pair<Double, Double>> = ...
+ * val goalId = "C"
+ *
+ * val runner = AStarRunner(
+ *     fetchEdges = { id -> ops.outgoingEdges(id) },
+ *     fetchVertex = { id -> ops.findVertex(id) },
+ *     heuristic = { v ->
+ *         val (vx, vy) = coords[v.id.value] ?: (0.0 to 0.0)
+ *         val (gx, gy) = coords[goalId] ?: (0.0 to 0.0)
+ *         sqrt((vx - gx).pow(2) + (vy - gy).pow(2))
+ *     },
+ * )
+ *
+ * val path: GraphPath? = runner.run(
+ *     fromId = GraphElementId("A"),
+ *     toId = GraphElementId(goalId),
+ *     options = PathOptions(weightProperty = "cost", maxVisited = 100_000),
+ * )
+ * ```
+ *
  * @param fetchEdges 정점 ID → 인접 간선 목록 조회 함수.
  * @param fetchVertex 정점 ID → [GraphVertex] 조회 함수.
  * @param heuristic 목표 정점까지의 예상 비용 함수. 반드시 허용 가능해야 한다.
