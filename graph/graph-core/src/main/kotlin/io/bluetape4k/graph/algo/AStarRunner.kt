@@ -26,8 +26,8 @@ import java.util.*
  * val goalId = "C"
  *
  * val runner = AStarRunner(
- *     fetchEdges = { id -> ops.outgoingEdges(id) },
- *     fetchVertex = { id -> ops.findVertex(id) },
+ *     fetchEdges = { id -> ops.findEdgesByStartId(id) },
+ *     fetchVertex = { id -> ops.findVertexById(id) },
  *     heuristic = { v ->
  *         val (vx, vy) = coords[v.id.value] ?: (0.0 to 0.0)
  *         val (gx, gy) = coords[goalId] ?: (0.0 to 0.0)
