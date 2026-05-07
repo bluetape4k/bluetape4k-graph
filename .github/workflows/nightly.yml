@@ -15,6 +15,7 @@ jobs:
   validate-wrapper:
     name: Validate Gradle Wrapper
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: gradle/actions/wrapper-validation@v4
@@ -23,6 +24,7 @@ jobs:
   build:
     name: Build & Detekt
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: validate-wrapper
     steps:
       - uses: actions/checkout@v4
@@ -56,6 +58,7 @@ jobs:
   test-core:
     name: Test / Core & TinkerGraph
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: build
     steps:
       - uses: actions/checkout@v4
@@ -115,6 +118,7 @@ jobs:
   test-spring-starters:
     name: Test / Spring Boot Starters (TinkerGraph)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: build
     steps:
       - uses: actions/checkout@v4
@@ -168,6 +172,7 @@ jobs:
   test-graph-neo4j:
     name: Test / Neo4j (Testcontainers)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: build
     steps:
       - uses: actions/checkout@v4
@@ -214,6 +219,7 @@ jobs:
   test-graph-memgraph:
     name: Test / Memgraph (Testcontainers)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: build
     steps:
       - uses: actions/checkout@v4
@@ -260,6 +266,7 @@ jobs:
   test-graph-age:
     name: Test / Apache AGE (Testcontainers)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: build
     steps:
       - uses: actions/checkout@v4
@@ -306,6 +313,7 @@ jobs:
   test-graph-falkordb:
     name: Test / FalkorDB (Testcontainers)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: build
     steps:
       - uses: actions/checkout@v4
@@ -352,6 +360,7 @@ jobs:
   test-examples:
     name: Test / Examples (Testcontainers)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: build
     steps:
       - uses: actions/checkout@v4
@@ -389,6 +398,7 @@ jobs:
   coverage-report:
     name: Coverage Report
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs:
       - test-core
       - test-spring-starters
@@ -438,6 +448,7 @@ jobs:
   nightly-status:
     name: Nightly Status
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs:
       - build
       - test-core
