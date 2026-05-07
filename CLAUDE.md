@@ -1,110 +1,65 @@
-# CLAUDE.md
+# CLAUDE.md — bluetape4k-graph
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+그래프 DB 라이브러리. Neo4j·Memgraph·AGE(PostgreSQL)·TinkerPop·FalkorDB 지원.
+동기/코루틴 이중 API 패턴. Spring Boot 3.5 + 4.0 AutoConfiguration 포함.
+
+- **Kotlin**: 2.3 · **Java**: 25 (preview 활성화 — `--enable-preview`)
+- **의존성 버전**: `buildSrc/src/main/kotlin/Libs.kt`
+
+## Project Structure
+
+```
+graph/
+  graph-core/       # 추상 모델 & 인터페이스
+  graph-age/        # Apache AGE (PostgreSQL extension)
+  graph-neo4j/      # Neo4j Java Driver
+  graph-memgraph/   # Memgraph (Neo4j 프로토콜 호환)
+  graph-tinkerpop/  # Apache TinkerPop/Gremlin
+  graph-falkordb/   # FalkorDB (Redis 기반) — jfalkordb 0.7.0
+graph-io/
+  core/             # 공유 계약·모델·옵션 (GraphIoPaths: Buffered I/O)
+  csv/              # CSV 벌크 임포트/익스포트 × Sync/VT/Suspend
+  jackson2/         # Jackson 2.x NDJSON
+  jackson3/         # Jackson 3.x NDJSON
+  graphml/          # GraphML XML/StAX × Sync/VT/Suspend
+benchmark/
+  graph-benchmark/    # JMH — Sync vs VirtualThread
+  graph-io-benchmark/ # JMH — CSV/NDJSON/GraphML 벌크 I/O
+spring-boot3/
+  graph-spring-boot3-starter/
+spring-boot4/
+  graph-spring-boot4-starter/
+examples/
+  code-graph-examples/     # 코드 의존성 그래프 예시
+  linkedin-graph-examples/ # LinkedIn 소셜 그래프 예시
+```
 
 ## Build Commands
 
 ```bash
-# 전체 빌드 (테스트 제외)
 ./gradlew build -x test
-
-# 전체 테스트 실행
 ./gradlew test
-
-# 특정 모듈만 빌드
 ./gradlew :graph-neo4j:build
-
-# 예시 모듈 테스트
 ./gradlew :code-graph-examples:test
-./gradlew :linkedin-graph-examples:test
-
-# 특정 테스트 클래스 실행
 ./gradlew :graph-neo4j:test --tests "io.bluetape4k.graph.neo4j.Neo4jGraphOperationsTest"
-./gradlew :code-graph-examples:test --tests "io.bluetape4k.graph.examples.code.Neo4jCodeGraphTest"
-
-# 특정 테스트 메서드 실행
-./gradlew :graph-neo4j:test --tests "io.bluetape4k.graph.neo4j.Neo4jGraphOperationsTest.addVertex"
-
-# 로컬 Maven 저장소에 배포
-./gradlew publishBluetapeGraphPublicationToMavenLocalRepository
-
-# Maven Central 배포
-./gradlew clean build
-./gradlew publishAggregationToCentralPortal
+./gradlew publishBluetapeGraphPublicationToMavenLocalRepository   # local
+./gradlew publishAggregationToCentralPortal                       # Maven Central
 ```
-
-## Project Structure
-
-멀티모듈 Gradle 프로젝트. `graph/`는 라이브러리 모듈, `examples/`는 사용 예시.
-
-```
-graph/
-  graph-core/       # 추상 모델 & 인터페이스 (다른 모듈의 기반)
-  graph-age/        # Apache AGE (PostgreSQL extension) 구현
-  graph-neo4j/      # Neo4j Java Driver 기반 구현
-  graph-memgraph/   # Memgraph (Neo4j 프로토콜 호환) 구현
-  graph-tinkerpop/  # Apache TinkerPop/Gremlin 구현
-  graph-falkordb/   # FalkorDB (Redis 기반) 구현 — jfalkordb 0.7.0
-graph-io/
-  core/             # 공유 계약·모델·옵션·헬퍼 (GraphIoPaths: Buffered I/O)
-  csv/              # CSV 벌크 임포트/익스포트 × Sync/VT/Suspend
-  jackson2/         # Jackson 2.x NDJSON × Sync/VT/Suspend
-  jackson3/         # Jackson 3.x NDJSON × Sync/VT/Suspend (Jackson2 호환)
-  graphml/          # GraphML XML/StAX × Sync/VT/Suspend (XMLFactory 싱글턴 캐싱)
-  okio/             # OkIO 기반 통합 어댑터 — 세그먼트 스트리밍, 압축 체이닝, FakeFileSystem 지원
-benchmark/
-  graph-benchmark/    # JMH — Sync vs VirtualThread 그래프 연산
-  graph-io-benchmark/ # JMH — CSV/NDJSON/GraphML 벌크 I/O (36 벤치마크)
-spring-boot3/
-  graph-spring-boot3-starter/ # Spring Boot 3.5.x AutoConfiguration
-spring-boot4/
-  graph-spring-boot4-starter/ # Spring Boot 4.0.x AutoConfiguration
-examples/
-  code-graph-examples/     # 코드 의존성 그래프 예시 (AGE, Neo4j, Memgraph, TinkerGraph 통합)
-  linkedin-graph-examples/ # LinkedIn 소셜 그래프 예시 (AGE, Neo4j, Memgraph, TinkerGraph 통합)
-```
-
-### 예시 모듈 테스트 패턴
-
-`examples/` 모듈은 **추상 테스트 클래스 패턴**을 사용한다. 공통 테스트 로직은 `Abstract*Test`에, 백엔드별 `ops` 설정은 구체 클래스에서 오버라이드한다.
-
-```kotlin
-// 구체 클래스는 ops와 서버 라이프사이클만 구현
-class Neo4jCodeGraphTest : AbstractCodeGraphTest() {
-    private val driver = GraphDatabase.driver(Neo4jServer.Launcher.neo4j.boltUrl, AuthTokens.none())
-    override val ops = Neo4jGraphOperations(driver)
-
-    @AfterAll fun teardown() { driver.close() }
-}
-```
-
-| 추상 클래스 | 구체 클래스 |
-|------------|------------|
-| `AbstractCodeGraphTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBCodeGraphTest` |
-| `AbstractCodeGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBCodeGraphSuspendTest` |
-| `AbstractLinkedInGraphTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBLinkedInGraphTest` |
-| `AbstractLinkedInGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBLinkedInGraphSuspendTest` |
 
 ## Architecture
 
 ### 핵심 추상화 (`graph-core`)
 
-**이중 API 패턴**: 모든 주요 인터페이스가 동기(`Graph*`) + 코루틴(`GraphSuspend*`) 쌍으로 존재한다.
+**이중 API 패턴**: 동기(`Graph*`) + 코루틴(`GraphSuspend*`) 쌍.
 
 ```
-GraphOperations = GraphSession + GraphVertexRepository + GraphEdgeRepository + GraphGenericRepository
-                  (GraphGenericRepository = GraphTraversalRepository + GraphAlgorithmRepository)
-GraphSuspendOperations = GraphSuspendSession + GraphSuspendVertexRepository + GraphSuspendEdgeRepository + GraphSuspendGenericRepository
-                         (GraphSuspendGenericRepository = GraphSuspendTraversalRepository + GraphSuspendAlgorithmRepository)
+GraphOperations = GraphSession + GraphVertexRepository + GraphEdgeRepository + GraphTraversalRepository
+GraphSuspendOperations = GraphSuspendSession + GraphSuspendVertexRepository + ...
 ```
 
-**모델 타입:**
-- `GraphVertex(id, label, properties)` — 정점
-- `GraphEdge(id, label, startId, endId, properties)` — 간선
-- `GraphPath` — 경로 (정점 + 간선 리스트)
-- `GraphElementId` — 백엔드 독립적 ID (`String` 기반)
+**모델 타입**: `GraphVertex(id, label, properties)`, `GraphEdge(id, label, startId, endId, properties)`, `GraphPath`, `GraphElementId`
 
-**스키마 DSL** (`VertexLabel`, `EdgeLabel`): Exposed Table 스타일로 스키마를 선언하고 각 백엔드에서 활용.
+**스키마 DSL** (`VertexLabel`, `EdgeLabel`) — Exposed Table 스타일 선언:
 
 ```kotlin
 object PersonLabel : VertexLabel("Person") {
@@ -113,7 +68,7 @@ object PersonLabel : VertexLabel("Person") {
 }
 ```
 
-### 백엔드 구현
+### 백엔드
 
 | 모듈 | 드라이버 | 쿼리 언어 |
 |------|---------|---------|
@@ -121,27 +76,26 @@ object PersonLabel : VertexLabel("Person") {
 | `graph-memgraph` | Neo4j Java Driver (호환) | Cypher |
 | `graph-age` | PostgreSQL JDBC + Exposed | Cypher-over-SQL (AGE) |
 | `graph-tinkerpop` | TinkerGraph (인메모리) | Gremlin |
-| `graph-falkordb` | jfalkordb 0.7.0 (Jedis 기반) | openCypher (FalkorDB 부분집합) |
+| `graph-falkordb` | jfalkordb 0.7.0 (Jedis 기반) | openCypher (부분집합) |
 
-### 테스트 패턴
+## 테스트 패턴
 
-모든 통합 테스트는 `bluetape4k-testcontainers`의 `io.bluetape4k.testcontainers.graphdb` 패키지 Testcontainers 싱글턴(`Launcher` 서브 오브젝트)을 사용한다.
+Testcontainers: `io.bluetape4k.testcontainers.graphdb` 패키지 singleton 사용:
 
 ```kotlin
-// 공유 컨테이너 (테스트 간 재사용)
 import io.bluetape4k.testcontainers.graphdb.Neo4jServer
-
 val driver = GraphDatabase.driver(Neo4jServer.Launcher.neo4j.boltUrl, AuthTokens.none())
-val ops = Neo4jGraphOperations(driver)
 ```
 
-테스트는 `@TestInstance(PER_CLASS)` + `@BeforeAll`/`@AfterAll`로 컨테이너 라이프사이클을 관리한다. Memgraph의 경우 각 테스트 클래스가 직접 `Driver`를 생성하고 `@AfterAll`에서 닫아준다.
+**examples 추상 테스트 패턴**: 공통 로직은 `Abstract*Test`, 백엔드별 `ops` 는 구체 클래스 오버라이드:
 
-## Key Conventions
+```kotlin
+class Neo4jCodeGraphTest : AbstractCodeGraphTest() {
+    private val driver = GraphDatabase.driver(Neo4jServer.Launcher.neo4j.boltUrl, AuthTokens.none())
+    override val ops = Neo4jGraphOperations(driver)
+    @AfterAll fun teardown() { driver.close() }
+}
+```
 
-- **Kotlin 2.3 + Java 25** (preview 기능 활성화 — `--enable-preview`)
-- **코루틴 기본**: suspend 함수와 Flow 우선 설계; 동기 API는 호환성용
-- **로깅**: `KLogging` companion object (`bluetape4k-logging` 패턴)
-- **의존성 버전**: `buildSrc/src/main/kotlin/Libs.kt`에서 관리
-- `examples/` 모듈은 Maven Central 배포 대상에서 제외됨
-- 테스트 병렬 실행 시 `testMutex` BuildService로 순차 실행 강제 (컨테이너 충돌 방지)
+테스트 병렬 실행 시 `testMutex` BuildService 로 순차 실행 강제 (컨테이너 충돌 방지).
+`examples/` 모듈은 Maven Central 배포 제외.
