@@ -8,6 +8,7 @@ import io.gitlab.arturbosch.detekt.report.ReportMergeTask
 import nmcp.NmcpAggregationExtension
 import nmcp.NmcpExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import java.util.concurrent.TimeUnit
 
 plugins {
     base
@@ -66,7 +67,7 @@ allprojects {
     }
     // bluetape4k snapshot 버전 사용 시만 사용하세요.
     configurations.all {
-        resolutionStrategy.cacheChangingModulesFor(1, TimeUnit.DAYS)
+        resolutionStrategy.cacheChangingModulesFor(0, TimeUnit.SECONDS)
     }
 }
 
