@@ -1,7 +1,7 @@
 package io.bluetape4k.graph.io.options
 
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldThrow
+import io.bluetape4k.assertions.invoking
+import io.bluetape4k.assertions.shouldBeEqualTo
 import org.junit.jupiter.api.Test
 
 class GraphImportOptionsTest {
@@ -20,23 +20,23 @@ class GraphImportOptionsTest {
 
     @Test
     fun `batchSize must be positive`() {
-        { GraphImportOptions(batchSize = 0) } shouldThrow IllegalArgumentException::class
-        { GraphImportOptions(batchSize = -1) } shouldThrow IllegalArgumentException::class
+        invoking { GraphImportOptions(batchSize = 0) } shouldThrow IllegalArgumentException::class
+        invoking { GraphImportOptions(batchSize = -1) } shouldThrow IllegalArgumentException::class
     }
 
     @Test
     fun `maxEdgeBufferSize must be positive`() {
-        { GraphImportOptions(maxEdgeBufferSize = 0) } shouldThrow IllegalArgumentException::class
+        invoking { GraphImportOptions(maxEdgeBufferSize = 0) } shouldThrow IllegalArgumentException::class
     }
 
     @Test
     fun `defaultVertexLabel must not be blank`() {
-        { GraphImportOptions(defaultVertexLabel = " ") } shouldThrow IllegalArgumentException::class
+        invoking { GraphImportOptions(defaultVertexLabel = " ") } shouldThrow IllegalArgumentException::class
     }
 
     @Test
     fun `defaultEdgeLabel must not be blank`() {
-        { GraphImportOptions(defaultEdgeLabel = " ") } shouldThrow IllegalArgumentException::class
+        invoking { GraphImportOptions(defaultEdgeLabel = " ") } shouldThrow IllegalArgumentException::class
     }
 
     @Test
@@ -47,6 +47,6 @@ class GraphImportOptionsTest {
 
     @Test
     fun `preserveExternalIdProperty must not be blank when set`() {
-        { GraphImportOptions(preserveExternalIdProperty = " ") } shouldThrow IllegalArgumentException::class
+        invoking { GraphImportOptions(preserveExternalIdProperty = " ") } shouldThrow IllegalArgumentException::class
     }
 }

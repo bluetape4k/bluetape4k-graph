@@ -2,7 +2,7 @@ package io.bluetape4k.graph.io.jackson3.internal
 
 import io.bluetape4k.graph.io.model.GraphIoEdgeRecord
 import io.bluetape4k.graph.io.model.GraphIoVertexRecord
-import org.amshove.kluent.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeEqualTo
 import org.junit.jupiter.api.Test
 
 class Jackson3EnvelopeCodecTest {

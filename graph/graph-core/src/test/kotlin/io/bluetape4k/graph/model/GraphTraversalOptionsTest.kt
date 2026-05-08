@@ -1,8 +1,8 @@
 package io.bluetape4k.graph.model
 
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeInstanceOf
-import org.amshove.kluent.shouldBeNull
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeInstanceOf
+import io.bluetape4k.assertions.shouldBeNull
 import org.junit.jupiter.api.Test
 
 class GraphTraversalOptionsTest {

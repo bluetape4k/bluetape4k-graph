@@ -8,7 +8,7 @@ import okio.fakefilesystem.FakeFileSystem
 import okio.Path.Companion.toPath
 import okio.sink
 import okio.source
-import org.amshove.kluent.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeEqualTo
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayOutputStream

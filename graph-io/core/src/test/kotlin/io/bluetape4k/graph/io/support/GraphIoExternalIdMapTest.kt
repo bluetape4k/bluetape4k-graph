@@ -2,8 +2,8 @@ package io.bluetape4k.graph.io.support
 
 import io.bluetape4k.graph.io.options.DuplicateVertexPolicy
 import io.bluetape4k.graph.model.GraphElementId
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldThrow
+import io.bluetape4k.assertions.invoking
+import io.bluetape4k.assertions.shouldBeEqualTo
 import org.junit.jupiter.api.Test
 
 class GraphIoExternalIdMapTest {
@@ -20,8 +20,7 @@ class GraphIoExternalIdMapTest {
     fun `duplicate under FAIL policy throws`() {
         val map = GraphIoExternalIdMap(DuplicateVertexPolicy.FAIL)
         map.putFirstOrFail("v1", GraphElementId("a"))
-        val action = { map.putFirstOrFail("v1", GraphElementId("b")) }
-        action shouldThrow IllegalStateException::class
+        invoking { map.putFirstOrFail("v1", GraphElementId("b")) } shouldThrow IllegalStateException::class
     }
 
     @Test
@@ -69,8 +68,7 @@ class GraphIoExternalIdMapTest {
     @Test
     fun `put without putFirstOrFail throws IllegalStateException`() {
         val map = GraphIoExternalIdMap(DuplicateVertexPolicy.FAIL)
-        val action = { map.put("never-registered", GraphElementId("real")) }
-        action shouldThrow IllegalStateException::class
+        invoking { map.put("never-registered", GraphElementId("real")) } shouldThrow IllegalStateException::class
     }
 
     @Test

@@ -1,10 +1,10 @@
 package io.bluetape4k.graph.algo.internal
 
 import io.bluetape4k.graph.model.GraphElementId
-import org.amshove.kluent.shouldBeEmpty
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldHaveSize
-import org.amshove.kluent.shouldThrow
+import io.bluetape4k.assertions.invoking
+import io.bluetape4k.assertions.shouldBeEmpty
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldHaveSize
 import org.junit.jupiter.api.Test
 
 class CycleDetectorTest {
@@ -88,13 +88,11 @@ class CycleDetectorTest {
 
     @Test
     fun `maxDepth가 0 이하이면 IllegalArgumentException을 던진다`() {
-        val action = { CycleDetector.findCycles(emptyMap(), maxDepth = 0, maxCycles = 1) }
-        action shouldThrow IllegalArgumentException::class
+        invoking { CycleDetector.findCycles(emptyMap(), maxDepth = 0, maxCycles = 1) } shouldThrow IllegalArgumentException::class
     }
 
     @Test
     fun `maxCycles가 0 이하이면 IllegalArgumentException을 던진다`() {
-        val action = { CycleDetector.findCycles(emptyMap(), maxDepth = 1, maxCycles = 0) }
-        action shouldThrow IllegalArgumentException::class
+        invoking { CycleDetector.findCycles(emptyMap(), maxDepth = 1, maxCycles = 0) } shouldThrow IllegalArgumentException::class
     }
 }

@@ -1,7 +1,7 @@
 package io.bluetape4k.graph.age.sql
 
-import org.amshove.kluent.shouldContain
-import org.amshove.kluent.shouldNotContain
+import io.bluetape4k.assertions.shouldContain
+import io.bluetape4k.assertions.shouldNotContain
 import org.junit.jupiter.api.Test
 
 class AgeSqlTest {

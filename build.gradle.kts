@@ -376,7 +376,7 @@ subprojects {
             dependency(rootLibs.junit.platform.launcher.get().toString())
             dependency(rootLibs.junit.platform.runner.get().toString())
 
-            dependency(rootLibs.kluent.get().toString())
+            dependency(rootLibs.bluetape4k.assertions.get().toString())
             dependency(rootLibs.assertj.core.get().toString())
 
             dependency(rootLibs.mockk.get().toString())
@@ -423,7 +423,7 @@ subprojects {
         testImplementation(rootLibs.junit.jupiter.all)
         testRuntimeOnly(rootLibs.junit.platform.engine)
 
-        testImplementation(rootLibs.kluent)
+        testImplementation(rootLibs.bluetape4k.assertions)
         testImplementation(rootLibs.mockk)
         testImplementation(rootLibs.awaitility.kotlin)
 

@@ -1,7 +1,7 @@
 package io.bluetape4k.graph.io.options
 
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldThrow
+import io.bluetape4k.assertions.invoking
+import io.bluetape4k.assertions.shouldBeEqualTo
 import org.junit.jupiter.api.Test
 
 class GraphExportOptionsTest {
@@ -16,12 +16,12 @@ class GraphExportOptionsTest {
 
     @Test
     fun `vertexLabels must not contain blank strings`() {
-        { GraphExportOptions(vertexLabels = setOf("Person", " ")) } shouldThrow IllegalArgumentException::class
+        invoking { GraphExportOptions(vertexLabels = setOf("Person", " ")) } shouldThrow IllegalArgumentException::class
     }
 
     @Test
     fun `edgeLabels must not contain blank strings`() {
-        { GraphExportOptions(edgeLabels = setOf("KNOWS", "")) } shouldThrow IllegalArgumentException::class
+        invoking { GraphExportOptions(edgeLabels = setOf("KNOWS", "")) } shouldThrow IllegalArgumentException::class
     }
 
     @Test

@@ -8,12 +8,12 @@ import io.bluetape4k.graph.model.MissingWeightPolicy
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.logging.KLogging
-import org.amshove.kluent.shouldBeNear
-import org.amshove.kluent.shouldBeNull
-import org.amshove.kluent.shouldContainAll
-import org.amshove.kluent.shouldHaveSize
-import org.amshove.kluent.shouldNotBeNull
-import org.amshove.kluent.shouldThrow
+import io.bluetape4k.assertions.shouldBeNear
+import io.bluetape4k.assertions.shouldBeNull
+import io.bluetape4k.assertions.invoking
+import io.bluetape4k.assertions.shouldContainAll
+import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.assertions.shouldNotBeNull
 import org.junit.jupiter.api.Test
 
 /**
@@ -170,8 +170,7 @@ class DijkstraRunnerTest {
 
     @Test
     fun `weightProperty가 null이면 IllegalArgumentException을 던진다`() {
-        val block: () -> Unit = { runner().run(id("A"), id("C"), PathOptions()) }
-        block shouldThrow IllegalArgumentException::class
+        invoking { runner().run(id("A"), id("C"), PathOptions()) } shouldThrow IllegalArgumentException::class
     }
 
     // ─── fetchVertex mid-traversal null ──────────────────────────────────────────

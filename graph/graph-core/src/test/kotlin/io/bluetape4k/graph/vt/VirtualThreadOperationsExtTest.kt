@@ -6,8 +6,8 @@ import io.bluetape4k.graph.repository.GraphVirtualThreadAlgorithmRepository
 import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.logging.KLogging
-import org.amshove.kluent.shouldBeInstanceOf
-import org.amshove.kluent.shouldNotBeNull
+import io.bluetape4k.assertions.shouldBeInstanceOf
+import io.bluetape4k.assertions.shouldNotBeNull
 import org.junit.jupiter.api.Test
 
 class VirtualThreadOperationsExtTest {

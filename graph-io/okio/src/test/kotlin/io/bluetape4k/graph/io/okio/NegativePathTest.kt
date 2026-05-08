@@ -13,8 +13,8 @@ import okio.Path
 import okio.Path.Companion.toPath
 import okio.Sink
 import okio.fakefilesystem.FakeFileSystem
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldNotBe
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldNotBe
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import java.io.IOException

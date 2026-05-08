@@ -1,11 +1,11 @@
 package io.bluetape4k.graph.algo.internal
 
 import io.bluetape4k.graph.model.GraphElementId
-import org.amshove.kluent.shouldBeEmpty
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeGreaterThan
-import org.amshove.kluent.shouldBeLessThan
-import org.amshove.kluent.shouldThrow
+import io.bluetape4k.assertions.invoking
+import io.bluetape4k.assertions.shouldBeEmpty
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeGreaterThan
+import io.bluetape4k.assertions.shouldBeLessThan
 import org.junit.jupiter.api.Test
 import kotlin.math.abs
 
@@ -72,34 +72,30 @@ class PageRankCalculatorTest {
 
     @Test
     fun `iterations가 0 이하이면 IllegalArgumentException을 던진다`() {
-        val action = {
+        invoking {
             compute(vertices = setOf(id("a")), outAdjacency = emptyMap(), iterations = 0)
-        }
-        action shouldThrow IllegalArgumentException::class
+        } shouldThrow IllegalArgumentException::class
     }
 
     @Test
     fun `dampingFactor가 1 초과이면 IllegalArgumentException을 던진다`() {
-        val action = {
+        invoking {
             compute(vertices = setOf(id("a")), outAdjacency = emptyMap(), dampingFactor = 1.5)
-        }
-        action shouldThrow IllegalArgumentException::class
+        } shouldThrow IllegalArgumentException::class
     }
 
     @Test
     fun `dampingFactor가 음수이면 IllegalArgumentException을 던진다`() {
-        val action = {
+        invoking {
             compute(vertices = setOf(id("a")), outAdjacency = emptyMap(), dampingFactor = -0.1)
-        }
-        action shouldThrow IllegalArgumentException::class
+        } shouldThrow IllegalArgumentException::class
     }
 
     @Test
     fun `tolerance가 0 이하이면 IllegalArgumentException을 던진다`() {
-        val action = {
+        invoking {
             compute(vertices = setOf(id("a")), outAdjacency = emptyMap(), tolerance = 0.0)
-        }
-        action shouldThrow IllegalArgumentException::class
+        } shouldThrow IllegalArgumentException::class
     }
 
     // ─── dangling node ────────────────────────────────────────────────────────────

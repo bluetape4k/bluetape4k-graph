@@ -1,9 +1,9 @@
 package io.bluetape4k.graph.utils
 
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldContain
-import org.amshove.kluent.shouldEndWith
-import org.amshove.kluent.shouldStartWith
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldContain
+import io.bluetape4k.assertions.shouldEndWith
+import io.bluetape4k.assertions.shouldStartWith
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
