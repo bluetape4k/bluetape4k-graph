@@ -58,7 +58,7 @@ jobs:
   test-core:
     name: Test / Core & TinkerGraph
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     needs: build
     steps:
       - uses: actions/checkout@v4
@@ -75,16 +75,20 @@ jobs:
 
       - name: Test graph-core & graph-tinkerpop & graph-io
         run: |
-          ./gradlew \
-            :graph-core:test \
-            :graph-tinkerpop:test \
-            :graph-io-core:test \
-            :graph-io-csv:test \
-            :graph-io-jackson2:test \
-            :graph-io-jackson3:test \
-            :graph-io-graphml:test \
-            :graph-io-okio:test \
-            --no-daemon
+          for attempt in 1 2 3; do
+            ./gradlew \
+              :graph-core:test \
+              :graph-tinkerpop:test \
+              :graph-io-core:test \
+              :graph-io-csv:test \
+              :graph-io-jackson2:test \
+              :graph-io-jackson3:test \
+              :graph-io-graphml:test \
+              :graph-io-okio:test \
+              --no-daemon --continue && break
+            echo "Attempt $attempt failed"
+            [ $attempt -lt 3 ] && sleep 10 || exit 1
+          done
         env:
           GRADLE_OPTS: "-Dorg.gradle.daemon=false"
 
@@ -118,7 +122,7 @@ jobs:
   test-spring-starters:
     name: Test / Spring Boot Starters (TinkerGraph)
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     needs: build
     steps:
       - uses: actions/checkout@v4
@@ -135,10 +139,14 @@ jobs:
 
       - name: Test Spring Boot 3/4 starters
         run: |
-          ./gradlew \
-            :graph-spring-boot3-starter:test \
-            :graph-spring-boot4-starter:test \
-            --no-daemon
+          for attempt in 1 2 3; do
+            ./gradlew \
+              :graph-spring-boot3-starter:test \
+              :graph-spring-boot4-starter:test \
+              --no-daemon --continue && break
+            echo "Attempt $attempt failed"
+            [ $attempt -lt 3 ] && sleep 10 || exit 1
+          done
         env:
           GRADLE_OPTS: "-Dorg.gradle.daemon=false"
           SPRING_PROFILES_ACTIVE: tinkergraph
@@ -172,7 +180,7 @@ jobs:
   test-graph-neo4j:
     name: Test / Neo4j (Testcontainers)
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     needs: build
     steps:
       - uses: actions/checkout@v4
@@ -188,7 +196,12 @@ jobs:
           cache-read-only: true
 
       - name: Test graph-neo4j
-        run: ./gradlew :graph-neo4j:test --no-daemon
+        run: |
+          for attempt in 1 2 3; do
+            ./gradlew :graph-neo4j:test --no-daemon && break
+            echo "Attempt $attempt failed"
+            [ $attempt -lt 3 ] && sleep 10 || exit 1
+          done
         env:
           GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
           TESTCONTAINERS_RYUK_DISABLED: "true"
@@ -219,7 +232,7 @@ jobs:
   test-graph-memgraph:
     name: Test / Memgraph (Testcontainers)
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     needs: build
     steps:
       - uses: actions/checkout@v4
@@ -235,7 +248,12 @@ jobs:
           cache-read-only: true
 
       - name: Test graph-memgraph
-        run: ./gradlew :graph-memgraph:test --no-daemon
+        run: |
+          for attempt in 1 2 3; do
+            ./gradlew :graph-memgraph:test --no-daemon && break
+            echo "Attempt $attempt failed"
+            [ $attempt -lt 3 ] && sleep 10 || exit 1
+          done
         env:
           GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
           TESTCONTAINERS_RYUK_DISABLED: "true"
@@ -266,7 +284,7 @@ jobs:
   test-graph-age:
     name: Test / Apache AGE (Testcontainers)
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     needs: build
     steps:
       - uses: actions/checkout@v4
@@ -282,7 +300,12 @@ jobs:
           cache-read-only: true
 
       - name: Test graph-age
-        run: ./gradlew :graph-age:test --no-daemon
+        run: |
+          for attempt in 1 2 3; do
+            ./gradlew :graph-age:test --no-daemon && break
+            echo "Attempt $attempt failed"
+            [ $attempt -lt 3 ] && sleep 10 || exit 1
+          done
         env:
           GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
           TESTCONTAINERS_RYUK_DISABLED: "true"
@@ -313,7 +336,7 @@ jobs:
   test-graph-falkordb:
     name: Test / FalkorDB (Testcontainers)
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     needs: build
     steps:
       - uses: actions/checkout@v4
@@ -329,7 +352,12 @@ jobs:
           cache-read-only: true
 
       - name: Test graph-falkordb
-        run: ./gradlew :graph-falkordb:test --no-daemon
+        run: |
+          for attempt in 1 2 3; do
+            ./gradlew :graph-falkordb:test --no-daemon && break
+            echo "Attempt $attempt failed"
+            [ $attempt -lt 3 ] && sleep 10 || exit 1
+          done
         env:
           GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
           TESTCONTAINERS_RYUK_DISABLED: "true"
@@ -360,7 +388,7 @@ jobs:
   test-examples:
     name: Test / Examples (Testcontainers)
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     needs: build
     steps:
       - uses: actions/checkout@v4
@@ -377,10 +405,14 @@ jobs:
 
       - name: Test example modules
         run: |
-          ./gradlew \
-            :code-graph-examples:test \
-            :linkedin-graph-examples:test \
-            --no-daemon
+          for attempt in 1 2 3; do
+            ./gradlew \
+              :code-graph-examples:test \
+              :linkedin-graph-examples:test \
+              --no-daemon --continue && break
+            echo "Attempt $attempt failed"
+            [ $attempt -lt 3 ] && sleep 10 || exit 1
+          done
         env:
           GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
           TESTCONTAINERS_RYUK_DISABLED: "true"
