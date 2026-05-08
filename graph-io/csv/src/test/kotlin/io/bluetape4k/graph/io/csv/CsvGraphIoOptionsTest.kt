@@ -1,8 +1,8 @@
 package io.bluetape4k.graph.io.csv
 
 import io.bluetape4k.logging.KLogging
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldThrow
+import io.bluetape4k.assertions.invoking
+import io.bluetape4k.assertions.shouldBeEqualTo
 import org.junit.jupiter.api.Test
 
 class CsvGraphIoOptionsTest {
@@ -18,13 +18,11 @@ class CsvGraphIoOptionsTest {
 
     @Test
     fun `prefixed prefix must not be blank`() {
-        val action = { CsvPropertyMode.PrefixedColumns(" ") }
-        action shouldThrow IllegalArgumentException::class
+        invoking { CsvPropertyMode.PrefixedColumns(" ") } shouldThrow IllegalArgumentException::class
     }
 
     @Test
     fun `raw json column name must not be blank`() {
-        val action = { CsvPropertyMode.RawJsonColumn(" ") }
-        action shouldThrow IllegalArgumentException::class
+        invoking { CsvPropertyMode.RawJsonColumn(" ") } shouldThrow IllegalArgumentException::class
     }
 }

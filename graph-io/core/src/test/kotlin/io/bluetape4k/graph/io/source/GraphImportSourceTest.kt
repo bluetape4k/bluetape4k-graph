@@ -1,6 +1,6 @@
 package io.bluetape4k.graph.io.source
 
-import org.amshove.kluent.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeEqualTo
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
 import java.nio.file.Path

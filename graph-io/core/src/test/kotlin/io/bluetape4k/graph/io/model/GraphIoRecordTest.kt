@@ -1,21 +1,21 @@
 package io.bluetape4k.graph.io.model
 
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldThrow
+import io.bluetape4k.assertions.invoking
+import io.bluetape4k.assertions.shouldBeEqualTo
 import org.junit.jupiter.api.Test
 
 class GraphIoRecordTest {
 
     @Test
     fun `vertex record requires non-blank externalId`() {
-        { GraphIoVertexRecord(externalId = " ", label = "Person") } shouldThrow IllegalArgumentException::class
+        invoking { GraphIoVertexRecord(externalId = " ", label = "Person") } shouldThrow IllegalArgumentException::class
     }
 
     @Test
     fun `edge record requires non-blank label and endpoints`() {
-        { GraphIoEdgeRecord(label = " ", fromExternalId = "v1", toExternalId = "v2") } shouldThrow IllegalArgumentException::class
-        { GraphIoEdgeRecord(label = "KNOWS", fromExternalId = " ", toExternalId = "v2") } shouldThrow IllegalArgumentException::class
-        { GraphIoEdgeRecord(label = "KNOWS", fromExternalId = "v1", toExternalId = " ") } shouldThrow IllegalArgumentException::class
+        invoking { GraphIoEdgeRecord(label = " ", fromExternalId = "v1", toExternalId = "v2") } shouldThrow IllegalArgumentException::class
+        invoking { GraphIoEdgeRecord(label = "KNOWS", fromExternalId = " ", toExternalId = "v2") } shouldThrow IllegalArgumentException::class
+        invoking { GraphIoEdgeRecord(label = "KNOWS", fromExternalId = "v1", toExternalId = " ") } shouldThrow IllegalArgumentException::class
     }
 
     @Test

@@ -5,10 +5,10 @@ import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.MissingWeightException
 import io.bluetape4k.graph.model.MissingWeightPolicy
 import io.bluetape4k.logging.KLogging
-import org.amshove.kluent.shouldBeNear
-import org.amshove.kluent.shouldBeNull
-import org.amshove.kluent.shouldNotBeNull
-import org.amshove.kluent.shouldThrow
+import io.bluetape4k.assertions.invoking
+import io.bluetape4k.assertions.shouldBeNear
+import io.bluetape4k.assertions.shouldBeNull
+import io.bluetape4k.assertions.shouldNotBeNull
 import org.junit.jupiter.api.Test
 
 class WeightExtractorTest {
@@ -23,8 +23,7 @@ class WeightExtractorTest {
     @Test
     fun `Fail 정책 - 속성 없으면 MissingWeightException 발생`() {
         val extractor = WeightExtractor("cost", MissingWeightPolicy.Fail)
-        val block = { extractor.extract(edge()) }
-        block shouldThrow MissingWeightException::class
+        invoking { extractor.extract(edge()) } shouldThrow MissingWeightException::class
     }
 
     @Test
@@ -98,55 +97,47 @@ class WeightExtractorTest {
     @Test
     fun `NaN weight은 IllegalArgumentException 발생`() {
         val extractor = WeightExtractor("w", MissingWeightPolicy.Fail)
-        val block = { extractor.extract(edge("w" to Double.NaN)) }
-        block shouldThrow IllegalArgumentException::class
+        invoking { extractor.extract(edge("w" to Double.NaN)) } shouldThrow IllegalArgumentException::class
     }
 
     @Test
     fun `양의 무한대 weight은 IllegalArgumentException 발생`() {
         val extractor = WeightExtractor("w", MissingWeightPolicy.Fail)
-        val block = { extractor.extract(edge("w" to Double.POSITIVE_INFINITY)) }
-        block shouldThrow IllegalArgumentException::class
+        invoking { extractor.extract(edge("w" to Double.POSITIVE_INFINITY)) } shouldThrow IllegalArgumentException::class
     }
 
     @Test
     fun `음수 weight은 IllegalArgumentException 발생`() {
         val extractor = WeightExtractor("w", MissingWeightPolicy.Fail)
-        val block = { extractor.extract(edge("w" to -1.0)) }
-        block shouldThrow IllegalArgumentException::class
+        invoking { extractor.extract(edge("w" to -1.0)) } shouldThrow IllegalArgumentException::class
     }
 
     @Test
     fun `0 weight은 IllegalArgumentException 발생`() {
         val extractor = WeightExtractor("w", MissingWeightPolicy.Fail)
-        val block = { extractor.extract(edge("w" to 0.0)) }
-        block shouldThrow IllegalArgumentException::class
+        invoking { extractor.extract(edge("w" to 0.0)) } shouldThrow IllegalArgumentException::class
     }
 
     @Test
     fun `String 비숫자 속성은 IllegalArgumentException 발생`() {
         val extractor = WeightExtractor("w", MissingWeightPolicy.Fail)
-        val block = { extractor.extract(edge("w" to "abc")) }
-        block shouldThrow IllegalArgumentException::class
+        invoking { extractor.extract(edge("w" to "abc")) } shouldThrow IllegalArgumentException::class
     }
 
     // ─── MissingWeightPolicy 생성 ─────────────────────────────────────────────
 
     @Test
     fun `UseDefault value 0은 IllegalArgumentException`() {
-        val block = { MissingWeightPolicy.UseDefault(0.0) }
-        block shouldThrow IllegalArgumentException::class
+        invoking { MissingWeightPolicy.UseDefault(0.0) } shouldThrow IllegalArgumentException::class
     }
 
     @Test
     fun `UseDefault value 음수는 IllegalArgumentException`() {
-        val block = { MissingWeightPolicy.UseDefault(-1.0) }
-        block shouldThrow IllegalArgumentException::class
+        invoking { MissingWeightPolicy.UseDefault(-1.0) } shouldThrow IllegalArgumentException::class
     }
 
     @Test
     fun `UseDefault Infinity는 IllegalArgumentException`() {
-        val block = { MissingWeightPolicy.UseDefault(Double.POSITIVE_INFINITY) }
-        block shouldThrow IllegalArgumentException::class
+        invoking { MissingWeightPolicy.UseDefault(Double.POSITIVE_INFINITY) } shouldThrow IllegalArgumentException::class
     }
 }

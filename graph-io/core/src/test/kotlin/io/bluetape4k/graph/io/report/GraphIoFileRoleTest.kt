@@ -1,7 +1,7 @@
 package io.bluetape4k.graph.io.report
 
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldContain
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldContain
 import org.junit.jupiter.api.Test
 
 class GraphIoFileRoleTest {
