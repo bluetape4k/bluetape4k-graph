@@ -31,9 +31,9 @@ docs/superpowers/plans/{YYYY-MM-DD}-{기능명}-plan.md     ← Plan
 | 상태      | 건수 |
 |---------|----|
 | ✅ 완료    | 5 |
-| 🔄 진행 중 | 0  |
+| 🔄 진행 중 | 1  |
 | ⏳ 구현 대기 | 0  |
-| 합계      | 5 |
+| 합계      | 6 |
 
 ---
 
@@ -49,4 +49,4 @@ docs/superpowers/plans/{YYYY-MM-DD}-{기능명}-plan.md     ← Plan
 | 월 | 파일 | 항목 수 |
 |----|------|--------|
 | 2026-04 | [index/2026-04.md](index/2026-04.md) | 3 |
-| 2026-05 | [index/2026-05.md](index/2026-05.md) | 2 |
+| 2026-05 | [index/2026-05.md](index/2026-05.md) | 3 |
