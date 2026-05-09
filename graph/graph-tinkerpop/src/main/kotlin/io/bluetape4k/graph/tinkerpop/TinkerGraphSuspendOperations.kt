@@ -17,6 +17,7 @@ import io.bluetape4k.graph.model.PageRankOptions
 import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.TraversalVisit
+import io.bluetape4k.graph.repository.GraphSuspendMergeOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphSuspendTransactionScope
 import io.bluetape4k.graph.repository.GraphSuspendTransactionalOperations
@@ -59,7 +60,10 @@ import kotlinx.coroutines.withContext
  */
 class TinkerGraphSuspendOperations(
     private val delegate: TinkerGraphOperations = TinkerGraphOperations(),
-): GraphSuspendOperations, GraphSuspendTransactionalOperations, GraphSuspendSchemaManagementOperations {
+): GraphSuspendOperations,
+   GraphSuspendTransactionalOperations,
+   GraphSuspendSchemaManagementOperations,
+   GraphSuspendMergeOperations {
 
     companion object: KLoggingChannel()
 
@@ -76,6 +80,26 @@ class TinkerGraphSuspendOperations(
                 val scope = asSuspendTransactionScope()
                 runBlocking { scope.block() }
             }
+        }
+
+    override suspend fun mergeVertex(
+        label: String,
+        matchProperties: Map<String, Any?>,
+        setProperties: Map<String, Any?>,
+    ): GraphVertex =
+        withContext(Dispatchers.IO) {
+            delegate.mergeVertex(label, matchProperties, setProperties)
+        }
+
+    override suspend fun mergeEdge(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        label: String,
+        matchProperties: Map<String, Any?>,
+        setProperties: Map<String, Any?>,
+    ): GraphEdge =
+        withContext(Dispatchers.IO) {
+            delegate.mergeEdge(fromId, toId, label, matchProperties, setProperties)
         }
 
     // -- GraphSuspendSession --

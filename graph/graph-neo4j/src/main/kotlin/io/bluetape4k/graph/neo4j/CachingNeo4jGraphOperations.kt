@@ -6,6 +6,7 @@ import io.bluetape4k.graph.model.GraphPath
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
+import io.bluetape4k.graph.repository.GraphMergeOperations
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.schema.GraphSchemaManagementOperations
 import io.bluetape4k.graph.schema.GraphSchemaManager
@@ -62,7 +63,7 @@ class CachingNeo4jGraphOperations(
     private val delegate: Neo4jGraphOperations,
     @Suppress("UNUSED_PARAMETER") maxSize: Long = 10_000,
     @Suppress("UNUSED_PARAMETER") expireAfterWrite: Duration = Duration.ofMinutes(5),
-): GraphOperations by delegate, GraphSchemaManagementOperations {
+): GraphOperations by delegate, GraphSchemaManagementOperations, GraphMergeOperations {
 
     companion object : KLogging()
 
@@ -323,4 +324,20 @@ class CachingNeo4jGraphOperations(
      */
     override fun deleteEdge(label: String, id: GraphElementId): Boolean =
         delegate.deleteEdge(label, id).also { invalidateAll() }
+
+    override fun mergeVertex(
+        label: String,
+        matchProperties: Map<String, Any?>,
+        setProperties: Map<String, Any?>,
+    ): GraphVertex =
+        delegate.mergeVertex(label, matchProperties, setProperties).also { invalidateAll() }
+
+    override fun mergeEdge(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        label: String,
+        matchProperties: Map<String, Any?>,
+        setProperties: Map<String, Any?>,
+    ): GraphEdge =
+        delegate.mergeEdge(fromId, toId, label, matchProperties, setProperties).also { invalidateAll() }
 }

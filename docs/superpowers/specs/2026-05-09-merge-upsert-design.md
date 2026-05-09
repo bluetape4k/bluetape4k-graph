@@ -184,7 +184,10 @@ Use Cypher `MERGE` because FalkorDB lists `MERGE` as a supported clause. Validat
 
 ### AGE
 
-Add `AgeSql.mergeVertex` and `AgeSql.mergeEdge`, then execute through existing AGE JDBC paths. AGE serializes property maps into Cypher literals, so validation must happen before serialization.
+The current AGE Testcontainer image rejects `MERGE ... ON CREATE SET ... ON MATCH SET ...`. AGE should therefore use a
+transactional `MATCH -> UPDATE/CREATE` fallback in `AgeGraphOperations`, with small `AgeSql` helpers for matching an edge
+between two endpoints and updating edge properties. AGE serializes property maps into Cypher literals, so validation must
+happen before serialization.
 
 ### TinkerGraph
 
@@ -203,7 +206,7 @@ If the Java traversal API makes `mergeV()` / `mergeE()` simpler and tests prove 
 | Empty vertex match | Can match many vertices and update arbitrary first result | Require non-empty vertex match properties |
 | Null match values | Backend-specific MERGE errors or non-matches | Reject null match values in common validation |
 | Cypher injection through property keys or labels | Security issue | Validate every identifier before string interpolation |
-| Non-atomic fallback | Duplicate data under concurrency | Prefer native MERGE; do not provide generic default fallback |
+| Non-atomic fallback | Duplicate data under concurrency | Prefer native MERGE; AGE fallback is backend-local and documented |
 | Edge merge without edge update API | Incomplete behavior | Implement backend-native relationship MERGE returning updated edge |
 | TinkerGraph traversal creates duplicate edges | Idempotency failure | Dedicated repeated-call tests for vertex and edge merge |
 | Caching wrappers return stale reads | Wrong post-merge query results | Treat merge as write and invalidate caches |

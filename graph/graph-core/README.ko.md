@@ -1355,6 +1355,41 @@ val edge = suspendOps.suspendTransaction {
 이번 1차 구현은 Neo4j, Memgraph, AGE, TinkerGraph의 동기/코루틴 트랜잭션을 지원한다.
 FalkorDB는 Redis `MULTI`에서 그래프 쿼리 결과가 `EXEC`까지 지연되어, 생성한 정점 ID를 같은 DSL 블록의 다음 호출에서 즉시 사용해야 하는 repository DSL과 맞지 않으므로 명시적으로 미지원한다.
 
+### Merge / Upsert
+
+`GraphMergeOperations`를 구현한 백엔드는 정점/간선 upsert를 `mergeVertex`, `mergeEdge` 확장 함수로 제공한다.
+`matchProperties`는 안정적인 식별자이며, 정점 merge에서는 비어 있을 수 없다. `setProperties`는 생성된 요소와
+기존 요소 모두에 적용되며, match key를 덮어쓸 수 없다.
+
+```kotlin
+import io.bluetape4k.graph.repository.mergeEdge
+import io.bluetape4k.graph.repository.mergeVertex
+
+val alice = ops.mergeVertex(
+    label = "Person",
+    matchProperties = mapOf("email" to "alice@example.com"),
+    setProperties = mapOf("name" to "Alice", "age" to 31),
+)
+
+val edge = ops.mergeEdge(
+    fromId = alice.id,
+    toId = bob.id,
+    label = "KNOWS",
+    setProperties = mapOf("since" to 2024),
+)
+```
+
+코루틴 백엔드는 같은 API를 suspend 함수로 제공한다. 레이블과 속성 이름은 쿼리 생성 전에 검증되므로
+안전하지 않은 식별자는 백엔드에 도달하기 전에 실패한다.
+
+| 백엔드 | 정점 merge | 간선 merge | 비고 |
+|--------|------------|------------|------|
+| Neo4j | 네이티브 `MERGE` | 네이티브 relationship `MERGE` | endpoint 조회에 `elementId()` 사용 |
+| Memgraph | 네이티브 `MERGE` | 네이티브 relationship `MERGE` | endpoint 조회에 정수 `id()` 사용 |
+| FalkorDB | 네이티브 `MERGE` | 네이티브 relationship `MERGE` | 속성별 파라미터 사용 |
+| AGE | 트랜잭션 기반 match/update/create fallback | 트랜잭션 기반 match/update/create fallback | 현재 AGE 이미지가 `ON CREATE SET` / `ON MATCH SET` 미지원 |
+| TinkerGraph | Gremlin get-or-create/update | Gremlin get-or-create/update | in-memory semantics |
+
 ## 그래프 알고리즘
 
 `graph-core`는 `GraphAlgorithmRepository` / `GraphSuspendAlgorithmRepository` 인터페이스를 정의하고, 네이티브 쿼리가 없는 백엔드를 위한 JVM 폴백 구현체(`UnionFind`, `BfsDfsRunner`, `CycleDetector`, `PageRankCalculator`)를 제공한다.

@@ -84,6 +84,8 @@ GraphSuspendOperations = GraphSuspendSession
 | `GraphSuspendTransactionalOperations` | Optional coroutine transaction capability used by `ops.suspendTransaction { }` |
 | `GraphSchemaManagementOperations` | Optional sync schema/index capability used by `ops.schemaManager()` |
 | `GraphSuspendSchemaManagementOperations` | Optional coroutine schema/index capability used by `suspendOps.schemaManager()` |
+| `GraphMergeOperations` | Optional sync merge/upsert capability used by `ops.mergeVertex()` and `ops.mergeEdge()` |
+| `GraphSuspendMergeOperations` | Optional coroutine merge/upsert capability used by suspend merge extensions |
 
 ### Transaction DSL
 
@@ -147,6 +149,43 @@ Support matrix:
 | TinkerGraph | In-memory recorded no-op | Unsupported | Constraints cannot be enforced by TinkerGraph |
 | AGE | Unsupported | Unsupported | PostgreSQL-side AGE indexes are not portable yet |
 | FalkorDB | Create / list / drop | Unsupported | Unique constraints require raw `GRAPH.CONSTRAINT CREATE` support |
+
+### Merge / Upsert
+
+Backends that implement `GraphMergeOperations` expose idempotent vertex and edge upserts through extension functions.
+`matchProperties` are stable identity keys and cannot be empty for vertices. `setProperties` are applied to both the
+create and match branches and cannot overwrite match keys.
+
+```kotlin
+import io.bluetape4k.graph.repository.mergeEdge
+import io.bluetape4k.graph.repository.mergeVertex
+
+val alice = ops.mergeVertex(
+    label = "Person",
+    matchProperties = mapOf("email" to "alice@example.com"),
+    setProperties = mapOf("name" to "Alice", "age" to 31),
+)
+
+val edge = ops.mergeEdge(
+    fromId = alice.id,
+    toId = bob.id,
+    label = "KNOWS",
+    setProperties = mapOf("since" to 2024),
+)
+```
+
+Coroutine backends expose the same API as suspend functions. Merge keys are validated before query construction, so
+unsafe labels and property names fail before reaching the backend.
+
+Support matrix:
+
+| Backend | Vertex merge | Edge merge | Notes |
+|---------|--------------|------------|-------|
+| Neo4j | Native `MERGE` | Native relationship `MERGE` | Uses `elementId()` for endpoints |
+| Memgraph | Native `MERGE` | Native relationship `MERGE` | Uses integer `id()` endpoint lookup |
+| FalkorDB | Native `MERGE` | Native relationship `MERGE` | Uses per-property parameters |
+| AGE | Transactional match/update/create fallback | Transactional match/update/create fallback | AGE image does not support `ON CREATE SET` / `ON MATCH SET` |
+| TinkerGraph | Gremlin get-or-create/update | Gremlin get-or-create/update | In-memory semantics |
 
 ### Schema DSL
 

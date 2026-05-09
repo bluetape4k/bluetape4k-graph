@@ -20,6 +20,7 @@ import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.repository.GraphSuspendOperations
+import io.bluetape4k.graph.repository.GraphSuspendMergeOperations
 import io.bluetape4k.graph.repository.GraphSuspendTransactionScope
 import io.bluetape4k.graph.repository.GraphSuspendTransactionalOperations
 import io.bluetape4k.graph.repository.asSuspendTransactionScope
@@ -75,7 +76,10 @@ import org.neo4j.driver.reactivestreams.ReactiveSession
 class Neo4jGraphSuspendOperations(
     private val driver: Driver,
     private val database: String = "neo4j",
-): GraphSuspendOperations, GraphSuspendTransactionalOperations, GraphSuspendSchemaManagementOperations {
+): GraphSuspendOperations,
+   GraphSuspendTransactionalOperations,
+   GraphSuspendSchemaManagementOperations,
+   GraphSuspendMergeOperations {
 
     companion object: KLoggingChannel()
 
@@ -94,6 +98,26 @@ class Neo4jGraphSuspendOperations(
                 val scope = asSuspendTransactionScope()
                 runBlocking { scope.block() }
             }
+        }
+
+    override suspend fun mergeVertex(
+        label: String,
+        matchProperties: Map<String, Any?>,
+        setProperties: Map<String, Any?>,
+    ): GraphVertex =
+        withContext(Dispatchers.IO) {
+            Neo4jGraphOperations(driver, database).mergeVertex(label, matchProperties, setProperties)
+        }
+
+    override suspend fun mergeEdge(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        label: String,
+        matchProperties: Map<String, Any?>,
+        setProperties: Map<String, Any?>,
+    ): GraphEdge =
+        withContext(Dispatchers.IO) {
+            Neo4jGraphOperations(driver, database).mergeEdge(fromId, toId, label, matchProperties, setProperties)
         }
 
     /**

@@ -15,7 +15,7 @@
 | T3 | high | `graph-neo4j` | Implement native vertex/edge `MERGE` for sync and suspend operations; wire caching wrapper invalidation | `./gradlew :graph-neo4j:test --tests '*Merge*' --no-daemon` |
 | T4 | high | `graph-memgraph` | Implement native Cypher merge and verify Memgraph-specific parameter behavior | `./gradlew :graph-memgraph:test --tests '*Merge*' --no-daemon` |
 | T5 | high | `graph-falkordb` | Implement FalkorDB merge with per-property parameters and Testcontainer validation | `./gradlew :graph-falkordb:test --tests '*Merge*' --no-daemon` |
-| T6 | high | `graph-age`, `graph-age/src/main/kotlin/.../sql/AgeSql.kt` | Add AGE SQL builders and operations using AGE `MERGE` | `./gradlew :graph-age:test --tests '*Merge*' --no-daemon` |
+| T6 | high | `graph-age`, `graph-age/src/main/kotlin/.../sql/AgeSql.kt` | Add AGE transactional match/update/create fallback because current AGE rejects `ON CREATE SET` / `ON MATCH SET` | `./gradlew :graph-age:test --tests '*Merge*' --no-daemon` |
 | T7 | high | `graph-tinkerpop` | Implement TinkerGraph upsert via Gremlin traversal and delegate suspend methods | `./gradlew :graph-tinkerpop:test --tests '*Merge*' --no-daemon` |
 | T8 | high | backend tests | Add create-branch, match/update-branch, duplicate-prevention, edge idempotency, invalid input, and suspend tests | Targeted backend test commands |
 | T9 | medium | `README.md`, `README.ko.md`, module READMEs | Document merge/upsert API and capability notes in English and Korean | README review + compile unaffected |
@@ -61,6 +61,8 @@ FalkorDB uses `id(a) = toInteger($fromId)` instead of `elementId`.
 ### AGE
 
 Generate Cypher literals through `AgePropertySerializer` after validation and wrap with `AgeSql.cypher`.
+Use one Exposed transaction for `MATCH -> UPDATE/CREATE` because the tested AGE image does not accept
+`MERGE ... ON CREATE SET ... ON MATCH SET`.
 
 ### TinkerGraph
 
@@ -85,7 +87,7 @@ Use traversal get-or-create, then apply `setProperties` outside the `coalesce` b
 - Security: core validation tests plus backend invalid-identifier tests.
 - Reliability: repeated merge calls assert counts and returned IDs/properties.
 - Compatibility: capability extension pattern avoids direct facade interface changes.
-- Concurrency: backend-native MERGE is preferred; no generic read-then-write fallback in core.
+- Concurrency: backend-native MERGE is preferred; no generic read-then-write fallback in core. AGE keeps a backend-local transactional fallback because native update branches are unavailable.
 - Performance: schema/index support from #32 should be documented as the recommended companion for high-cardinality merge keys.
 
 ## Step 3-R Review Notes

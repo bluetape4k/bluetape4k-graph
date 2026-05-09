@@ -25,6 +25,9 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.repository.GraphEdgeRepository
+import io.bluetape4k.graph.repository.GraphMergeOperations
+import io.bluetape4k.graph.repository.GraphMergeProperties
+import io.bluetape4k.graph.repository.GraphMergeValidation
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphTransactionScope
 import io.bluetape4k.graph.repository.GraphTransactionalOperations
@@ -67,7 +70,7 @@ import org.neo4j.driver.Transaction
 class Neo4jGraphOperations(
     private val driver: Driver,
     private val database: String = "neo4j",
-): GraphOperations, GraphTransactionalOperations, GraphSchemaManagementOperations {
+): GraphOperations, GraphTransactionalOperations, GraphSchemaManagementOperations, GraphMergeOperations {
 
     companion object: KLogging()
 
@@ -234,6 +237,47 @@ class Neo4jGraphOperations(
         }
     }
 
+    // -- GraphMergeOperations --
+
+    override fun mergeVertex(
+        label: String,
+        matchProperties: Map<String, Any?>,
+        setProperties: Map<String, Any?>,
+    ): GraphVertex {
+        val properties = GraphMergeValidation.validateVertex(label, matchProperties, setProperties)
+        val matchClause = mergePropertyMap("match", properties.matchProperties)
+        val setClause = mergeSetClause("n", properties)
+        val params = mergeParams(properties)
+
+        return runQuery(
+            $$"MERGE (n:$$label$$matchClause)$$setClause RETURN n",
+            params,
+        ) {
+            Neo4jRecordMapper.recordToVertex(it)
+        }.firstOrNull() ?: throw GraphQueryException("Failed to merge vertex: $label")
+    }
+
+    override fun mergeEdge(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        label: String,
+        matchProperties: Map<String, Any?>,
+        setProperties: Map<String, Any?>,
+    ): GraphEdge {
+        val properties = GraphMergeValidation.validateEdge(fromId, toId, label, matchProperties, setProperties)
+        val matchClause = mergePropertyMap("match", properties.matchProperties)
+        val setClause = mergeSetClause("r", properties)
+        val params = mergeParams(properties) + mapOf("fromId" to fromId.value, "toId" to toId.value)
+
+        return runQuery(
+            "MATCH (a), (b) WHERE elementId(a) = \$fromId AND elementId(b) = \$toId " +
+                    $$"MERGE (a)-[r:$$label$$matchClause]->(b)$$setClause RETURN r",
+            params,
+        ) {
+            Neo4jRecordMapper.recordToEdge(it)
+        }.firstOrNull() ?: throw GraphQueryException("Failed to merge edge: $label")
+    }
+
     // -- GraphEdgeRepository --
 
     override fun createEdge(
@@ -300,6 +344,22 @@ class Neo4jGraphOperations(
             result.consume().counters().relationshipsDeleted() > 0
         }
     }
+
+    private fun mergePropertyMap(prefix: String, properties: Map<String, Any?>): String =
+        if (properties.isEmpty()) "" else
+            " {" + properties.keys.joinToString(", ") { key -> "$key: \$${prefix}_$key" } + "}"
+
+    private fun mergeSetClause(variable: String, properties: GraphMergeProperties): String {
+        if (properties.setProperties.isEmpty()) return ""
+        val assignments = properties.setProperties.keys.joinToString(", ") { key ->
+            "$variable.$key = \$set_$key"
+        }
+        return " ON CREATE SET $assignments ON MATCH SET $assignments"
+    }
+
+    private fun mergeParams(properties: GraphMergeProperties): Map<String, Any?> =
+        properties.matchProperties.mapKeys { (key, _) -> "match_$key" } +
+                properties.setProperties.mapKeys { (key, _) -> "set_$key" }
 
     // -- GraphTraversalRepository --
 

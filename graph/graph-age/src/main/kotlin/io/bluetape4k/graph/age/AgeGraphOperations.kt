@@ -27,6 +27,8 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.repository.GraphEdgeRepository
+import io.bluetape4k.graph.repository.GraphMergeOperations
+import io.bluetape4k.graph.repository.GraphMergeValidation
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphTransactionScope
 import io.bluetape4k.graph.repository.GraphTransactionalOperations
@@ -69,7 +71,7 @@ import org.jetbrains.exposed.v1.jdbc.transactions.transaction as exposedTransact
  */
 class AgeGraphOperations(
     private val graphName: String,
-): GraphOperations, GraphTransactionalOperations, GraphSchemaManagementOperations {
+): GraphOperations, GraphTransactionalOperations, GraphSchemaManagementOperations, GraphMergeOperations {
 
     companion object: KLogging()
 
@@ -217,6 +219,84 @@ class AgeGraphOperations(
                 }
             }
             count
+        }
+    }
+
+    // -- GraphMergeOperations --
+
+    override fun mergeVertex(
+        label: String,
+        matchProperties: Map<String, Any?>,
+        setProperties: Map<String, Any?>,
+    ): GraphVertex {
+        val properties = GraphMergeValidation.validateVertex(label, matchProperties, setProperties)
+
+        return exposedTransaction {
+            var matched: GraphVertex? = null
+            exec(AgeSql.matchVertices(graphName, label, properties.matchProperties)) { rs ->
+                if (rs.next()) matched = AgeTypeParser.parseVertex(rs.getString("v"))
+            }
+            if (matched != null) {
+                if (properties.setProperties.isEmpty()) {
+                    matched
+                } else {
+                    var updated: GraphVertex? = null
+                    val id = matched.id.value.toLongOrNull()
+                        ?: throw GraphQueryException("AGE requires numeric ID, got: ${matched.id.value}")
+                    exec(AgeSql.updateVertex(graphName, label, id, properties.setProperties)) { rs ->
+                        if (rs.next()) updated = AgeTypeParser.parseVertex(rs.getString("v"))
+                    }
+                    updated ?: throw GraphQueryException("Failed to update merged vertex with label=$label")
+                }
+            } else {
+                var created: GraphVertex? = null
+                exec(AgeSql.createVertex(graphName, label, properties.matchProperties + properties.setProperties)) { rs ->
+                    if (rs.next()) created = AgeTypeParser.parseVertex(rs.getString("v"))
+                }
+                created ?: throw GraphQueryException("Failed to merge vertex with label=$label")
+            }
+        }
+    }
+
+    override fun mergeEdge(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        label: String,
+        matchProperties: Map<String, Any?>,
+        setProperties: Map<String, Any?>,
+    ): GraphEdge {
+        val properties = GraphMergeValidation.validateEdge(fromId, toId, label, matchProperties, setProperties)
+        val from = fromId.value.toLongOrNull()
+            ?: throw GraphQueryException("AGE requires numeric ID, got: ${fromId.value}")
+        val to = toId.value.toLongOrNull()
+            ?: throw GraphQueryException("AGE requires numeric ID, got: ${toId.value}")
+
+        return exposedTransaction {
+            var matched: GraphEdge? = null
+            val matchStmt = AgeSql.matchEdgeBetween(graphName, from, to, label, properties.matchProperties)
+            exec(matchStmt) { rs ->
+                if (rs.next()) matched = AgeTypeParser.parseEdge(rs.getString("e"))
+            }
+            if (matched != null) {
+                if (properties.setProperties.isEmpty()) {
+                    matched
+                } else {
+                    var updated: GraphEdge? = null
+                    val id = matched.id.value.toLongOrNull()
+                        ?: throw GraphQueryException("AGE requires numeric ID, got: ${matched.id.value}")
+                    exec(AgeSql.updateEdge(graphName, label, id, properties.setProperties)) { rs ->
+                        if (rs.next()) updated = AgeTypeParser.parseEdge(rs.getString("e"))
+                    }
+                    updated ?: throw GraphQueryException("Failed to update merged edge: $label ($fromId -> $toId)")
+                }
+            } else {
+                var created: GraphEdge? = null
+                val stmt = AgeSql.createEdge(graphName, from, to, label, properties.matchProperties + properties.setProperties)
+                exec(stmt) { rs ->
+                    if (rs.next()) created = AgeTypeParser.parseEdge(rs.getString("e"))
+                }
+                created ?: throw GraphQueryException("Failed to merge edge: $label ($fromId -> $toId)")
+            }
         }
     }
 

@@ -244,6 +244,38 @@ object AgeSql {
     }
 
     /**
+     * 두 정점 사이의 지정한 간선을 조회하는 AGE SQL을 반환한다.
+     */
+    fun matchEdgeBetween(
+        graphName: String,
+        fromId: Long,
+        toId: Long,
+        edgeLabel: String,
+        filter: Map<String, Any?> = emptyMap(),
+    ): String {
+        val filterStr = if (filter.isEmpty()) "" else AgePropertySerializer.toCypherProps(filter)
+        return cypher(
+            graphName,
+            "MATCH (a)-[e:$edgeLabel $filterStr]->(b) WHERE id(a) = $fromId AND id(b) = $toId RETURN e",
+            listOf("e" to "agtype")
+        )
+    }
+
+    /**
+     * 간선 속성을 갱신하는 AGE SQL을 반환한다.
+     */
+    fun updateEdge(graphName: String, edgeLabel: String, id: Long, properties: Map<String, Any?>): String {
+        val sets = properties.entries.joinToString(", ") { (k, v) ->
+            "e.$k = ${AgePropertySerializer.toCypherValue(v)}"
+        }
+        return cypher(
+            graphName,
+            "MATCH ()-[e:$edgeLabel]->() WHERE id(e) = $id SET $sets RETURN e",
+            listOf("e" to "agtype")
+        )
+    }
+
+    /**
      * 간선을 삭제하는 AGE SQL을 반환한다.
      *
      * ```kotlin
