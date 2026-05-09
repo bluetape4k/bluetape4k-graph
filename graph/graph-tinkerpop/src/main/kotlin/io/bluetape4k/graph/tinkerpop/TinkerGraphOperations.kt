@@ -21,7 +21,11 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.repository.GraphAlgorithmRepository
+import io.bluetape4k.graph.repository.GraphEdgeRepository
 import io.bluetape4k.graph.repository.GraphOperations
+import io.bluetape4k.graph.repository.GraphTransactionScope
+import io.bluetape4k.graph.repository.GraphTransactionalOperations
+import io.bluetape4k.graph.repository.GraphVertexRepository
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.warn
@@ -29,6 +33,7 @@ import io.bluetape4k.support.requireNotBlank
 import org.apache.tinkerpop.gremlin.process.traversal.P
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
+import org.apache.tinkerpop.gremlin.structure.T
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__ as AnonymousTraversal
@@ -52,7 +57,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__ as AnonymousT
  * ops.close()
  * ```
  */
-class TinkerGraphOperations : GraphOperations, GraphAlgorithmRepository {
+class TinkerGraphOperations : GraphOperations, GraphAlgorithmRepository, GraphTransactionalOperations {
 
     companion object : KLogging()
 
@@ -79,6 +84,23 @@ class TinkerGraphOperations : GraphOperations, GraphAlgorithmRepository {
         name.requireNotBlank("name")
         return true
     }
+
+    // -- GraphTransactionalOperations --
+
+    override fun <T> transaction(block: GraphTransactionScope.() -> T): T =
+        synchronized(graph) {
+            val snapshot = snapshot()
+            try {
+                block(TinkerGraphTransactionScope(this))
+            } catch (e: Throwable) {
+                try {
+                    restore(snapshot)
+                } catch (restoreFailure: Throwable) {
+                    e.addSuppressed(restoreFailure)
+                }
+                throw e
+            }
+        }
 
     // -- GraphVertexRepository --
 
@@ -515,4 +537,72 @@ class TinkerGraphOperations : GraphOperations, GraphAlgorithmRepository {
             GraphCycle(GraphPath(steps))
         }
     }
+
+    private fun snapshot(): TinkerGraphSnapshot {
+        val vertices = g.V().toList().map { vertex ->
+            TinkerGraphVertexSnapshot(
+                id = vertex.id(),
+                label = vertex.label(),
+                properties = vertex.properties<Any>().asSequence().associate { it.key() to it.value() },
+            )
+        }
+        val edges = g.E().toList().map { edge ->
+            TinkerGraphEdgeSnapshot(
+                id = edge.id(),
+                label = edge.label(),
+                startId = edge.outVertex().id(),
+                endId = edge.inVertex().id(),
+                properties = edge.properties<Any>().asSequence().associate { it.key() to it.value() },
+            )
+        }
+        return TinkerGraphSnapshot(vertices, edges)
+    }
+
+    private fun restore(snapshot: TinkerGraphSnapshot) {
+        g.V().drop().iterate()
+
+        snapshot.vertices.forEach { vertex ->
+            val traversal = g.addV(vertex.label).property(T.id, vertex.id)
+            vertex.properties.forEach { (key, value) ->
+                if (value != null) traversal.property(key, value)
+            }
+            traversal.next()
+        }
+
+        snapshot.edges.forEach { edge ->
+            val traversal = g.V(edge.startId)
+                .addE(edge.label)
+                .to(AnonymousTraversal.V<Vertex>(edge.endId))
+                .property(T.id, edge.id)
+            edge.properties.forEach { (key, value) ->
+                if (value != null) traversal.property(key, value)
+            }
+            traversal.next()
+        }
+    }
+
+    private class TinkerGraphTransactionScope(
+        private val delegate: TinkerGraphOperations,
+    ): GraphTransactionScope,
+        GraphVertexRepository by delegate,
+        GraphEdgeRepository by delegate
+
+    private data class TinkerGraphSnapshot(
+        val vertices: List<TinkerGraphVertexSnapshot>,
+        val edges: List<TinkerGraphEdgeSnapshot>,
+    )
+
+    private data class TinkerGraphVertexSnapshot(
+        val id: Any,
+        val label: String,
+        val properties: Map<String, Any?>,
+    )
+
+    private data class TinkerGraphEdgeSnapshot(
+        val id: Any,
+        val label: String,
+        val startId: Any,
+        val endId: Any,
+        val properties: Map<String, Any?>,
+    )
 }

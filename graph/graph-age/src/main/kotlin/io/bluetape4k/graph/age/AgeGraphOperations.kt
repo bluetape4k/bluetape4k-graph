@@ -26,12 +26,16 @@ import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.TraversalVisit
+import io.bluetape4k.graph.repository.GraphEdgeRepository
 import io.bluetape4k.graph.repository.GraphOperations
+import io.bluetape4k.graph.repository.GraphTransactionScope
+import io.bluetape4k.graph.repository.GraphTransactionalOperations
+import io.bluetape4k.graph.repository.GraphVertexRepository
 import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.warn
 import io.bluetape4k.support.requireNotBlank
-import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction as exposedTransaction
 
 /**
  * Apache AGE + PostgreSQL 기반 [GraphOperations] 구현체 (동기(blocking) 방식).
@@ -63,7 +67,7 @@ import org.jetbrains.exposed.v1.jdbc.transactions.transaction
  */
 class AgeGraphOperations(
     private val graphName: String,
-): GraphOperations {
+): GraphOperations, GraphTransactionalOperations {
 
     companion object: KLogging()
 
@@ -74,7 +78,7 @@ class AgeGraphOperations(
     override fun createGraph(name: String) {
         name.requireNotBlank("name")
 
-        transaction {
+        exposedTransaction {
             try {
                 exec(AgeSql.createGraph(name))
             } catch (e: Exception) {
@@ -87,7 +91,7 @@ class AgeGraphOperations(
     override fun dropGraph(name: String) {
         name.requireNotBlank("name")
 
-        transaction {
+        exposedTransaction {
             exec(AgeSql.dropGraph(name))
         }
     }
@@ -95,7 +99,7 @@ class AgeGraphOperations(
     override fun graphExists(name: String): Boolean {
         name.requireNotBlank("name")
 
-        return transaction {
+        return exposedTransaction {
             var count = 0L
             exec(AgeSql.graphExists(name)) { rs ->
                 if (rs.next()) count = rs.getLong(1)
@@ -108,10 +112,17 @@ class AgeGraphOperations(
         // database는 외부 소유이므로 닫지 않음
     }
 
+    // -- GraphTransactionalOperations --
+
+    override fun <T> transaction(block: GraphTransactionScope.() -> T): T =
+        exposedTransaction {
+            block(AgeGraphTransactionScope(this@AgeGraphOperations))
+        }
+
     override fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex {
         label.requireNotBlank("label")
 
-        return transaction {
+        return exposedTransaction {
             var vertex: GraphVertex? = null
             exec(AgeSql.createVertex(graphName, label, properties)) { rs ->
                 if (rs.next()) vertex = AgeTypeParser.parseVertex(rs.getString("v"))
@@ -123,7 +134,7 @@ class AgeGraphOperations(
     override fun findVertexById(label: String, id: GraphElementId): GraphVertex? {
         label.requireNotBlank("label")
 
-        return transaction {
+        return exposedTransaction {
             val longId = id.value.toLongOrNull()
                 ?: throw GraphQueryException("AGE requires numeric ID, got: ${id.value}")
             var vertex: GraphVertex? = null
@@ -135,7 +146,7 @@ class AgeGraphOperations(
     }
 
     override fun findVertexById(id: GraphElementId): GraphVertex? {
-        return transaction {
+        return exposedTransaction {
             val longId = id.value.toLongOrNull()
                 ?: throw GraphQueryException("AGE requires numeric ID, got: ${id.value}")
             var vertex: GraphVertex? = null
@@ -149,7 +160,7 @@ class AgeGraphOperations(
     override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> {
         label.requireNotBlank("label")
 
-        return transaction {
+        return exposedTransaction {
             val vertices = mutableListOf<GraphVertex>()
             exec(AgeSql.matchVertices(graphName, label, filter)) { rs ->
                 while (rs.next()) vertices.add(AgeTypeParser.parseVertex(rs.getString("v")))
@@ -167,7 +178,7 @@ class AgeGraphOperations(
         val longId = id.value.toLongOrNull()
             ?: throw GraphQueryException("AGE requires numeric ID, got: ${id.value}")
 
-        return transaction {
+        return exposedTransaction {
             var vertex: GraphVertex? = null
             exec(AgeSql.updateVertex(graphName, label, longId, properties)) { rs ->
                 if (rs.next()) vertex = AgeTypeParser.parseVertex(rs.getString("v"))
@@ -181,7 +192,7 @@ class AgeGraphOperations(
         val longId = id.value.toLongOrNull()
             ?: throw GraphQueryException("AGE requires numeric ID, got: ${id.value}")
 
-        return transaction {
+        return exposedTransaction {
             var deleted = false
             exec(AgeSql.deleteVertex(graphName, label, longId)) { rs ->
                 deleted = rs.next()
@@ -193,7 +204,7 @@ class AgeGraphOperations(
     override fun countVertices(label: String): Long {
         label.requireNotBlank("label")
 
-        return transaction {
+        return exposedTransaction {
             var count = 0L
             exec(AgeSql.countVertices(graphName, label)) { rs ->
                 if (rs.next()) {
@@ -216,7 +227,7 @@ class AgeGraphOperations(
         val to = toId.value.toLongOrNull()
             ?: throw GraphQueryException("AGE requires numeric ID, got: ${toId.value}")
 
-        return transaction {
+        return exposedTransaction {
             var edge: GraphEdge? = null
             val stmt = AgeSql.createEdge(graphName, from, to, label, properties)
             exec(stmt) { rs ->
@@ -230,7 +241,7 @@ class AgeGraphOperations(
 
     override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): List<GraphEdge> {
         label.requireNotBlank("label")
-        return transaction {
+        return exposedTransaction {
             val edges = mutableListOf<GraphEdge>()
             val stmt = AgeSql.matchEdgesByLabel(graphName, label, filter)
             exec(stmt) { rs ->
@@ -245,7 +256,7 @@ class AgeGraphOperations(
     override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
         val longId = startId.value.toLongOrNull()
             ?: throw GraphQueryException("AGE requires numeric ID, got: ${startId.value}")
-        return transaction {
+        return exposedTransaction {
             val edges = mutableListOf<GraphEdge>()
             val stmt = AgeSql.matchEdgesByStartId(graphName, longId, edgeLabel)
             exec(stmt) { rs ->
@@ -260,7 +271,7 @@ class AgeGraphOperations(
     override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
         val longId = endId.value.toLongOrNull()
             ?: throw GraphQueryException("AGE requires numeric ID, got: ${endId.value}")
-        return transaction {
+        return exposedTransaction {
             val edges = mutableListOf<GraphEdge>()
             val stmt = AgeSql.matchEdgesByEndId(graphName, longId, edgeLabel)
             exec(stmt) { rs ->
@@ -277,7 +288,7 @@ class AgeGraphOperations(
         val longId = id.value.toLongOrNull()
             ?: throw GraphQueryException("AGE requires numeric ID, got: ${id.value}")
 
-        return transaction {
+        return exposedTransaction {
             var deleted = false
             val stmt = AgeSql.deleteEdge(graphName, label, longId)
             exec(stmt) { rs ->
@@ -294,7 +305,7 @@ class AgeGraphOperations(
         val longId = startId.value.toLongOrNull()
             ?: throw GraphQueryException("AGE requires numeric ID, got: ${startId.value}")
 
-        return transaction {
+        return exposedTransaction {
             val vertices = mutableListOf<GraphVertex>()
 
             val stmt = AgeSql.neighbors(
@@ -327,7 +338,7 @@ class AgeGraphOperations(
         val to = toId.value.toLongOrNull()
             ?: throw GraphQueryException("AGE requires numeric ID, got: ${toId.value}")
 
-        return transaction {
+        return exposedTransaction {
             var path: GraphPath? = null
             val stmt = AgeSql.shortestPath(graphName, from, to, options.edgeLabel, options.maxDepth)
             exec(stmt) { rs ->
@@ -356,7 +367,7 @@ class AgeGraphOperations(
         val to = toId.value.toLongOrNull()
             ?: throw GraphQueryException("AGE requires numeric ID, got: ${toId.value}")
 
-        return transaction {
+        return exposedTransaction {
             val paths = mutableListOf<GraphPath>()
             val stmt = AgeSql.allPaths(graphName, from, to, options.edgeLabel, options.maxDepth)
             exec(stmt) { rs ->
@@ -379,7 +390,7 @@ class AgeGraphOperations(
 
         var inDeg = 0
         var outDeg = 0
-        transaction {
+        exposedTransaction {
             exec(AgeSql.degreeCentrality(graphName, idLong, options.edgeLabel)) { rs ->
                 if (rs.next()) {
                     inDeg = rs.getString("in_d")?.trim()?.toIntOrNull() ?: 0
@@ -513,7 +524,7 @@ class AgeGraphOperations(
         val vertexById = HashMap<GraphElementId, GraphVertex>()
         val adjacency = HashMap<GraphElementId, MutableList<GraphElementId>>()
 
-        transaction {
+        exposedTransaction {
             // Fetch ALL vertices via MATCH (n) RETURN n
             exec(AgeSql.matchAllVertices(graphName)) { rs ->
                 while (rs.next()) {
@@ -546,4 +557,10 @@ class AgeGraphOperations(
         }
         return adjacency to vertexById
     }
+
+    private class AgeGraphTransactionScope(
+        private val delegate: AgeGraphOperations,
+    ): GraphTransactionScope,
+        GraphVertexRepository by delegate,
+        GraphEdgeRepository by delegate
 }

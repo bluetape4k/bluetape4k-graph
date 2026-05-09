@@ -76,10 +76,29 @@ GraphSuspendOperations = GraphSuspendSession
 
 | Interface | Responsibility |
 |-----------|----------------|
-| `GraphSession` / `GraphSuspendSession` | Session / transaction lifecycle |
+| `GraphSession` / `GraphSuspendSession` | Graph lifecycle and connection-facing session operations |
 | `GraphVertexRepository` | Vertex CRUD (create / find / update / delete / count) |
 | `GraphEdgeRepository` | Edge CRUD and relationship queries |
 | `GraphTraversalRepository` | `neighbors`, `shortestPath`, `allPaths`, etc. |
+| `GraphTransactionalOperations` | Optional sync transaction capability used by `ops.transaction { }` |
+
+### Transaction DSL
+
+Backends that implement `GraphTransactionalOperations` can expose a sync transaction block through the
+`transaction` extension. Unsupported backends fail explicitly instead of silently falling back to auto-commit.
+
+```kotlin
+import io.bluetape4k.graph.repository.transaction
+
+val edge = ops.transaction {
+    val alice = createVertex("Person", mapOf("name" to "Alice"))
+    val bob = createVertex("Person", mapOf("name" to "Bob"))
+    createEdge(alice.id, bob.id, "KNOWS")
+}
+```
+
+This first slice adds sync transaction support for Neo4j, Memgraph, AGE, and TinkerGraph. FalkorDB and concrete
+`suspendTransaction` backend implementations are follow-up work.
 
 ### Schema DSL
 

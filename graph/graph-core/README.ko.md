@@ -1327,8 +1327,23 @@ dependencies {
 ## 참고
 
 - **AutoCloseable**: `GraphOperations`는 `GraphSession`을 상속하며 `AutoCloseable`을 구현. 외부 리소스(Database/Driver)의 생명주기는 호출자가 관리.
-- **트랜잭션**: 구현체에서 트랜잭션 관리 (graph-core에는 명시적인 트랜잭션 API 없음).
+- **트랜잭션**: `GraphTransactionalOperations`를 구현한 백엔드는 `ops.transaction { }` DSL을 제공한다. 미지원 백엔드는 auto-commit fallback 없이 명시적으로 실패한다.
 - **백엔드 차이**: AGE는 SQL 기반이므로 쿼리 최적화, Neo4j는 Cypher 쿼리 최적화에 따라 성능이 달라질 수 있음.
+
+### 트랜잭션 DSL
+
+```kotlin
+import io.bluetape4k.graph.repository.transaction
+
+val edge = ops.transaction {
+    val alice = createVertex("Person", mapOf("name" to "Alice"))
+    val bob = createVertex("Person", mapOf("name" to "Bob"))
+    createEdge(alice.id, bob.id, "KNOWS")
+}
+```
+
+이번 1차 구현은 Neo4j, Memgraph, AGE, TinkerGraph의 동기 트랜잭션을 지원한다.
+FalkorDB와 실제 `suspendTransaction` 백엔드 구현은 후속 작업이다.
 
 ## 그래프 알고리즘
 
