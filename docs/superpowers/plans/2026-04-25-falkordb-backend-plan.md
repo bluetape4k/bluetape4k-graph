@@ -239,7 +239,7 @@
   - `AbstractFalkorDBTest`: `@TestInstance(PER_CLASS)`, `protected val driver = FalkorDB.driver(Launcher.falkordb.host, Launcher.falkordb.port)`, `protected val graphName = "test_${UUID.randomUUID().toString().replace("-","").take(12)}"`.
   - `@AfterAll`: `runCatching { (driver.graph(graphName) as GraphImpl).use { it.deleteGraph() } }; driver.close()`.
   - 테스트 시나리오: 정점 CRUD, 라벨 인덱스 조회, 간선 생성/삭제, neighbors, paths, count 쿼리, 트랜잭션 격리(가능 범위).
-  - JUnit5 + Kotest assertion + Kluent 혼용 (CLAUDE.md 컨벤션).
+  - JUnit5 + Kotest assertion + bluetape4k-assertions 혼용 (CLAUDE.md 컨벤션).
 - **Verification**:
   - `./gradlew :graph-falkordb:test --tests "*FalkorDBGraphOperationsTest"` 통과.
 

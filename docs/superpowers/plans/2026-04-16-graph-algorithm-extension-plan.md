@@ -6,7 +6,7 @@
 
 **Architecture:** Approach B + `GraphGenericRepository` intermediate composition. New `GraphAlgorithmRepository` / `GraphSuspendAlgorithmRepository` interfaces; new `GraphAlgorithmOptions` sealed class for non-traversal options; `BfsDfsOptions` and `CycleOptions` extend existing `GraphTraversalOptions`. Backends use native query language where supported (Cypher / Gremlin) and fall back to JVM in-memory implementations (`UnionFind`, `BfsDfsRunner`, `CycleDetector`, `PageRankCalculator`) when not. A `VirtualThreadAlgorithmAdapter` bridges sync to Java 25 Virtual Threads via `CompletableFuture`.
 
-**Tech Stack:** Kotlin 2.3, Java 25 (--enable-preview), Gradle 8.x, kotlinx.coroutines (Flow/suspend), JUnit 5 + Kotest assertions + Kluent + Testcontainers, Neo4j Java Driver, Apache TinkerPop Gremlin, Apache AGE (PostgreSQL extension), Exposed JDBC, KLogging.
+**Tech Stack:** Kotlin 2.3, Java 25 (--enable-preview), Gradle 8.x, kotlinx.coroutines (Flow/suspend), JUnit 5 + Kotest assertions + bluetape4k-assertions + Testcontainers, Neo4j Java Driver, Apache TinkerPop Gremlin, Apache AGE (PostgreSQL extension), Exposed JDBC, KLogging.
 
 ---
 
@@ -866,7 +866,7 @@ git commit -m "refactor: GraphOperations composes GraphGenericRepository (traver
 ```kotlin
 package io.bluetape4k.graph.algo.internal
 
-import org.amshove.kluent.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeEqualTo
 import org.junit.jupiter.api.Test
 
 class UnionFindTest {
@@ -1020,9 +1020,9 @@ git commit -m "feat: add UnionFind JVM fallback for Connected Components"
 package io.bluetape4k.graph.algo.internal
 
 import io.bluetape4k.graph.model.GraphElementId
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldContainAll
-import org.amshove.kluent.shouldHaveSize
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldContainAll
+import io.bluetape4k.assertions.shouldHaveSize
 import org.junit.jupiter.api.Test
 
 class BfsDfsRunnerTest {
@@ -1200,8 +1200,8 @@ git commit -m "feat: add BfsDfsRunner JVM fallback (BFS/DFS on adjacency map)"
 package io.bluetape4k.graph.algo.internal
 
 import io.bluetape4k.graph.model.GraphElementId
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldHaveSize
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldHaveSize
 import org.junit.jupiter.api.Test
 
 class CycleDetectorTest {
@@ -1400,9 +1400,9 @@ git commit -m "feat: add CycleDetector JVM fallback (DFS-based simple cycle find
 package io.bluetape4k.graph.algo.internal
 
 import io.bluetape4k.graph.model.GraphElementId
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeGreaterThan
-import org.amshove.kluent.shouldHaveSize
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeGreaterThan
+import io.bluetape4k.assertions.shouldHaveSize
 import org.junit.jupiter.api.Test
 import kotlin.math.abs
 
@@ -1890,12 +1890,12 @@ import io.bluetape4k.graph.model.CycleOptions
 import io.bluetape4k.graph.model.DegreeOptions
 import io.bluetape4k.graph.model.PageRankOptions
 import io.bluetape4k.logging.KLogging
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeGreaterOrEqualTo
-import org.amshove.kluent.shouldBeIn
-import org.amshove.kluent.shouldBeTrue
-import org.amshove.kluent.shouldContain
-import org.amshove.kluent.shouldNotBeEmpty
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
+import io.bluetape4k.assertions.shouldBeIn
+import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldContain
+import io.bluetape4k.assertions.shouldNotBeEmpty
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -2035,9 +2035,9 @@ import io.bluetape4k.graph.model.PageRankOptions
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeGreaterOrEqualTo
-import org.amshove.kluent.shouldNotBeEmpty
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
+import io.bluetape4k.assertions.shouldNotBeEmpty
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -2395,7 +2395,7 @@ Required imports:
 import io.bluetape4k.graph.model.DegreeOptions
 import io.bluetape4k.graph.model.GraphElementId
 import io.kotest.assertions.throwables.shouldThrow
-import org.amshove.kluent.shouldContain
+import io.bluetape4k.assertions.shouldContain
 ```
 
 - [ ] **Step 2: Run the test**
@@ -2524,10 +2524,10 @@ import io.bluetape4k.graph.model.DegreeOptions
 import io.bluetape4k.graph.model.PageRankOptions
 import io.bluetape4k.graph.servers.Neo4jServer
 import io.bluetape4k.logging.KLogging
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeGreaterOrEqualTo
-import org.amshove.kluent.shouldBeTrue
-import org.amshove.kluent.shouldNotBeEmpty
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
+import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldNotBeEmpty
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -2663,9 +2663,9 @@ import io.bluetape4k.graph.servers.Neo4jServer
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeGreaterOrEqualTo
-import org.amshove.kluent.shouldNotBeEmpty
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
+import io.bluetape4k.assertions.shouldNotBeEmpty
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -3771,9 +3771,9 @@ import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.PageRankOptions
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.logging.KLogging
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeGreaterOrEqualTo
-import org.amshove.kluent.shouldNotBeEmpty
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
+import io.bluetape4k.assertions.shouldNotBeEmpty
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

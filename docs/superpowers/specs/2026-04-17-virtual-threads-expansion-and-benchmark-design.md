@@ -248,7 +248,7 @@ fun GraphOperations.asVirtualThread(): GraphVirtualThreadOperations =
 
 **테스트 기반**
 - `TinkerGraphOperations` 를 실제 delegate 로 사용 (graph-tinkerpop 가 테스트 의존성).
-- `kotlin.test` + `kluent` (기존 관례) + `bluetape4k-junit5`.
+- `kotlin.test` + `bluetape4k-assertions` (기존 관례) + `bluetape4k-junit5`.
 - **동시성 스트레스 테스트** — `StructuredTaskScopeTester` (`io.bluetape4k.junit5.concurrency`):
 
 ```kotlin

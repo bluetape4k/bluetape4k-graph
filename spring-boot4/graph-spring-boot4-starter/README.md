@@ -5,8 +5,7 @@ Spring Boot 4 Auto-configuration starter for [bluetape4k-graph](../../README.md)
 Registers `GraphOperations`, `GraphSuspendOperations`, and `GraphVirtualThreadOperations` beans
 for the selected backend via a single property.
 
-> **Spring Boot 4 note:** This module targets Spring Boot 4.x. For Spring Boot 3.x use
-> [`graph-spring-boot3-starter`](../../spring-boot3/graph-spring-boot3-starter/README.md).
+> **Spring Boot 4 note:** This module targets Spring Boot 4.x. Spring Boot 3.x support has been removed.
 
 ## Supported Backends
 
@@ -151,7 +150,7 @@ Same properties as Neo4j with prefix `bluetape4k.graph.memgraph`. Default databa
 | `GraphMemgraphAutoConfiguration` | `backend=memgraph` |
 | `GraphAgeAutoConfiguration` | `backend=age` |
 
-## Differences from Spring Boot 3
+## Spring Boot 4 Notes
 
 Spring Boot 4 splits several previously bundled modules. Add them explicitly if needed:
 

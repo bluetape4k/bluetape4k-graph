@@ -6,7 +6,7 @@
 
 **Architecture:** 각 통합 모듈은 공통 Service/Schema를 `main`에, `AbstractXxxTest`(동기) + `AbstractXxxSuspendTest`(코루틴)를 `test`에 둔다. 백엔드별 구체 클래스는 `ops`(GraphOperations / GraphSuspendOperations)와 서버 setup만 오버라이드한다.
 
-**Tech Stack:** Kotlin 2.3, JUnit 5 (`@TestInstance(PER_CLASS)`), Kotest Kluent assertions, kotlinx-coroutines-test (`runTest`), Testcontainers (Neo4j, Memgraph, PostgreSQL+AGE)
+**Tech Stack:** Kotlin 2.3, JUnit 5 (`@TestInstance(PER_CLASS)`), Kotest bluetape4k-assertions assertions, kotlinx-coroutines-test (`runTest`), Testcontainers (Neo4j, Memgraph, PostgreSQL+AGE)
 
 ---
 
@@ -141,10 +141,10 @@ import io.bluetape4k.graph.examples.code.service.CodeGraphService
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
-import org.amshove.kluent.shouldBeGreaterThan
-import org.amshove.kluent.shouldBeNull
-import org.amshove.kluent.shouldNotBeEmpty
-import org.amshove.kluent.shouldNotBeNull
+import io.bluetape4k.assertions.shouldBeGreaterThan
+import io.bluetape4k.assertions.shouldBeNull
+import io.bluetape4k.assertions.shouldNotBeEmpty
+import io.bluetape4k.assertions.shouldNotBeNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -378,10 +378,10 @@ import io.bluetape4k.logging.debug
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
-import org.amshove.kluent.shouldBeGreaterThan
-import org.amshove.kluent.shouldBeNull
-import org.amshove.kluent.shouldNotBeEmpty
-import org.amshove.kluent.shouldNotBeNull
+import io.bluetape4k.assertions.shouldBeGreaterThan
+import io.bluetape4k.assertions.shouldBeNull
+import io.bluetape4k.assertions.shouldNotBeEmpty
+import io.bluetape4k.assertions.shouldNotBeNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -743,9 +743,9 @@ import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
-import org.amshove.kluent.shouldBeGreaterThan
-import org.amshove.kluent.shouldNotBeEmpty
-import org.amshove.kluent.shouldNotBeNull
+import io.bluetape4k.assertions.shouldBeGreaterThan
+import io.bluetape4k.assertions.shouldNotBeEmpty
+import io.bluetape4k.assertions.shouldNotBeNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -944,9 +944,9 @@ import io.bluetape4k.logging.debug
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
-import org.amshove.kluent.shouldBeGreaterThan
-import org.amshove.kluent.shouldNotBeEmpty
-import org.amshove.kluent.shouldNotBeNull
+import io.bluetape4k.assertions.shouldBeGreaterThan
+import io.bluetape4k.assertions.shouldNotBeEmpty
+import io.bluetape4k.assertions.shouldNotBeNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
