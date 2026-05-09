@@ -187,7 +187,7 @@
 
 - **complexity**: medium
 - **scope**: 5 test files
-- **설명**: T1, T7, T8, T9, T10 에서 작성한 테스트를 한 곳에 모아 누락된 시나리오 보강 — `DijkstraRunnerTest`, `AStarRunnerTest`, `WeightExtractorTest`, `GraphPathSerializationTest`, `PathReconstructorTest`. `PathReconstructorTest` 는 T8 완료 기준에 나온 1-hop / multi-hop / self path 시나리오. 각 테스트는 AAA 패턴 + 결정성 (vertex id lexicographic tie-break) 검증 포함. `kluent` + JUnit 5 사용.
+- **설명**: T1, T7, T8, T9, T10 에서 작성한 테스트를 한 곳에 모아 누락된 시나리오 보강 — `DijkstraRunnerTest`, `AStarRunnerTest`, `WeightExtractorTest`, `GraphPathSerializationTest`, `PathReconstructorTest`. `PathReconstructorTest` 는 T8 완료 기준에 나온 1-hop / multi-hop / self path 시나리오. 각 테스트는 AAA 패턴 + 결정성 (vertex id lexicographic tie-break) 검증 포함. `bluetape4k-assertions` + JUnit 5 사용.
 - **완료 기준**: graph-core test 커버리지 신규 코드 95%+. 모든 시나리오(Spec 6.1) 커버.
 
 ### T18 — `Abstract*WeightedShortestPathTest` 추상 베이스 + 백엔드별 구체 테스트 5종 (sync)

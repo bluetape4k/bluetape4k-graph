@@ -43,7 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `graphVertexOf(Any, label)` → `graphVertexOf(Any, label, properties)`: `properties` 파라미터 추가 및 `graphElementIdOf` 경유로 이중 변환 제거
 - `graphPathOf` 단일-arg 중복 오버로드 제거, 명시적 파라미터 오버로드만 유지
 - `AStarRunner` companion object 콜론 앞 공백 추가 (ktlint 규칙 준수)
-- 테스트 코드의 Kluent 의존성을 `bluetape4k-assertions`로 마이그레이션하고 Gradle 테스트 의존성을 교체했습니다. PR #69에서 `./gradlew compileTestKotlin --no-daemon` 성공으로 검증했으며, issue #66은 완료 처리했습니다.
+- 테스트 코드의 bluetape4k-assertions 의존성을 `bluetape4k-assertions`로 마이그레이션하고 Gradle 테스트 의존성을 교체했습니다. PR #69에서 `./gradlew compileTestKotlin --no-daemon` 성공으로 검증했으며, issue #66은 완료 처리했습니다.
 
 ---
 
@@ -53,7 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **그래프 알고리즘 확장** (`graph-core` + 백엔드 구현): `pageRank`, `degreeCentrality`, `connectedComponents`, `bfs`, `dfs`, `cycles` API를 추가하고 Neo4j/Memgraph/AGE/TinkerPop 계열 구현을 정리했습니다.
 - **Virtual Threads API 확장**: Vertex/Edge/Traversal repository 전체에 virtual-thread bridge adapter와 `GraphVirtualThreadOperations` 합성 API를 적용했습니다.
-- **FalkorDB 백엔드**: `jfalkordb` 기반 `graph-falkordb` 구현, Spring Boot 3/4 auto-configuration, examples 통합을 추가했습니다.
+- **FalkorDB 백엔드**: `jfalkordb` 기반 `graph-falkordb` 구현, Spring Boot 4 auto-configuration, examples 통합을 추가했습니다.
 - **`graph-io` 벌크 임포트/익스포트** (`graph-io/` 4개 모듈): 포맷별 대용량 I/O (Sync / VirtualThread / Coroutine)
   - `graph-io-core`: 공유 계약(`GraphBulkExporter`, `GraphBulkImporter`), 모델(`GraphIoVertexRecord`, `GraphIoEdgeRecord`), 옵션, 헬퍼(`GraphIoPaths`) — `BufferedOutputStream/InputStream` 래핑으로 StAX 성능 확보
   - `graph-io-csv`: CSV 임포터/익스포터 (univocity-parsers 기반) × Sync/VT/Suspend
@@ -65,7 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 결과: CSV export 1.0ms, GraphML export 2.6ms, import 18–22ms (TinkerGraph in-memory 기준)
   - 결과 리포트: `docs/benchmark/2026-04-18-graph-io-bulk-results.md`
 
-- **`graph-spring-boot3-starter`** (`spring-boot3/graph-spring-boot3-starter`): Spring Boot 3.5.x AutoConfiguration 스타터 신규 추가
+- **`graph-spring-boot3-starter` 제거**: Spring Boot 4 전용으로 정리하면서 Spring Boot 3 starter 모듈을 제거했습니다.
   - `GraphAutoConfiguration`: 루트 자동 설정 (공통 프로퍼티 바인딩)
   - `GraphNeo4jAutoConfiguration`: `@ConditionalOnClass(Neo4jGraphOperations::class)` 기반 Neo4j 빈 자동 등록 + HealthIndicator
   - `GraphMemgraphAutoConfiguration`: Memgraph 빈 자동 등록 + HealthIndicator
@@ -79,13 +79,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `HealthIndicator`/`Health`: `boot.actuate.health` → `boot.health.contributor` (`spring-boot-health` 모듈)
     - `TestRestTemplate`: `boot.test.web.client` → `boot.resttestclient` + `@AutoConfigureTestRestTemplate` 필수 (`spring-boot-resttestclient` 모듈)
     - `WebTestClient`: `@AutoConfigureWebTestClient` 필수 (`spring-boot-webtestclient` 모듈)
-  - boot3와 동일한 5종 AutoConfiguration + 5종 Properties 클래스 (패키지: `boot4`)
+  - Spring Boot 4 전용 5종 AutoConfiguration + 5종 Properties 클래스 (패키지: `boot4`)
   - 테스트: `ApplicationContextRunner` 기반 단위 테스트 4종 + `TinkerGraphWebMvcTest` + `TinkerGraphWebFluxTest` — 총 16 passing
 - **GitHub Actions CI 파이프라인**: CI, integration, release, benchmark 워크플로우를 추가하고 Java 25 preview, Gradle cache, Testcontainers 기반 통합 테스트 경로를 구성했습니다.
 
 ### Changed
 
-- **`graph-servers` 모듈 삭제**: `bluetape4k-testcontainers`의 `io.bluetape4k.testcontainers.graphdb` 패키지(`Neo4jServer.Launcher.neo4j`, `MemgraphServer.Launcher.memgraph`, `PostgreSQLAgeServer.Launcher.postgresqlAge`)로 대체. 모든 백엔드 테스트(`graph-neo4j`, `graph-memgraph`, `graph-age`, `examples`, `spring-boot3/4 starter`)가 새 API로 마이그레이션됨.
+- **`graph-servers` 모듈 삭제**: `bluetape4k-testcontainers`의 `io.bluetape4k.testcontainers.graphdb` 패키지(`Neo4jServer.Launcher.neo4j`, `MemgraphServer.Launcher.memgraph`, `PostgreSQLAgeServer.Launcher.postgresqlAge`)로 대체. 모든 백엔드 테스트(`graph-neo4j`, `graph-memgraph`, `graph-age`, `examples`, `spring-boot4 starter`)가 새 API로 마이그레이션됨.
 - **문서 / 예제 API 정합성 정리**: `AgeGraphOperations(graphName)` 생성자 패턴, `Database.connect(dataSource)` 선행 호출, `asVirtualThread` 실제 패키지 import 기준으로 README/KDoc 예제를 정리했습니다.
 
 ### Fixed

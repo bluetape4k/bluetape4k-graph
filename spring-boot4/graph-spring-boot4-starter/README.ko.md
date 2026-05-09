@@ -5,8 +5,7 @@
 단일 설정 프로퍼티로 원하는 그래프 백엔드를 선택하면, `GraphOperations`, `GraphSuspendOperations`,
 `GraphVirtualThreadOperations` 빈이 자동으로 등록된다.
 
-> **Spring Boot 4 전용:** 이 모듈은 Spring Boot 4.x를 대상으로 한다. Spring Boot 3.x 사용자는
-> [`graph-spring-boot3-starter`](../../spring-boot3/graph-spring-boot3-starter/README.ko.md)를 사용하라.
+> **Spring Boot 4 전용:** 이 모듈은 Spring Boot 4.x를 대상으로 한다. Spring Boot 3.x 지원은 제거되었다.
 
 ## 지원 백엔드
 
@@ -151,7 +150,7 @@ Neo4j와 동일한 프로퍼티 구조, 프리픽스는 `bluetape4k.graph.memgra
 | `GraphMemgraphAutoConfiguration` | `backend=memgraph` |
 | `GraphAgeAutoConfiguration` | `backend=age` |
 
-## Spring Boot 3과의 차이점
+## Spring Boot 4 참고 사항
 
 Spring Boot 4에서는 일부 모듈이 분리되어 명시적으로 추가해야 한다.
 

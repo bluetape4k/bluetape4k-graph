@@ -572,7 +572,7 @@ class FalkorDBCodeGraphTest : AbstractCodeGraphTest() {
 | T5 | `FalkorDBGraphOperations` 알고리즘 메서드 (degree/bfs/dfs/cycle/components/pageRank) — graph-core fallback 클래스 가시성 확인 후 재활용 | medium | T4 |
 | T6 | `FalkorDBGraphSuspendOperations` 구현 (suspend + `channelFlow` IO 래퍼, collector backpressure 제공. `graph.query()` ResultSet은 이미 materialized — 대용량 보호는 `LIMIT/SKIP`/`RESULTSET_SIZE`/paged contract로 처리) | medium | T4 |
 | T7 | `FalkorDBServer` Testcontainers 래퍼 (`src/testFixtures/kotlin/...`) — `WaitAllStrategy` 헬스체크 포함. **`TAG = "latest"` 금지 — FalkorDB 최신 안정 버전을 확인해 `TAG` 상수에 고정 후 PR 머지** | small | T2 |
-| T8 | `FalkorDBGraphOperationsTest` 통합 테스트 작성 (Kluent + JUnit5) | medium | T4, T7 |
+| T8 | `FalkorDBGraphOperationsTest` 통합 테스트 작성 (bluetape4k-assertions + JUnit5) | medium | T4, T7 |
 | T9 | `FalkorDBGraphSuspendOperationsTest` 통합 테스트 (kotlinx-coroutines-test) | medium | T6, T7 |
 | T10 | `FalkorDBAlgorithmTest` (PageRank/BFS/DFS/Cycle/Components) | small | T5, T7 |
 | T11 | `bom/build.gradle.kts` — 자동 등록 확인 (수동 수정 불필요, 단 BOM 빌드 후 artifact 포함 여부 검증) | trivial | T2 |

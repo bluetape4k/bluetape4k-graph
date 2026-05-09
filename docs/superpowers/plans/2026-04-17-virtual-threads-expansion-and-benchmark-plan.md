@@ -46,8 +46,8 @@ Session 3개 메서드(`createGraph` / `dropGraph` / `graphExists`) 의 VT 변�
    import io.bluetape4k.junit5.concurrency.StructuredTaskScopeTester
    import io.mockk.spyk
    import io.mockk.verify
-   import org.amshove.kluent.shouldBeEqualTo
-   import org.amshove.kluent.shouldNotBeNull
+   import io.bluetape4k.assertions.shouldBeEqualTo
+   import io.bluetape4k.assertions.shouldNotBeNull
    import org.junit.jupiter.api.AfterEach
    import org.junit.jupiter.api.BeforeEach
    import org.junit.jupiter.api.Test
@@ -213,8 +213,8 @@ Session 3개 메서드(`createGraph` / `dropGraph` / `graphExists`) 의 VT 변�
    import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
    import io.mockk.spyk
    import io.mockk.verify
-   import org.amshove.kluent.shouldBeEqualTo
-   import org.amshove.kluent.shouldNotBeNull
+   import io.bluetape4k.assertions.shouldBeEqualTo
+   import io.bluetape4k.assertions.shouldNotBeNull
    import org.junit.jupiter.api.AfterEach
    import org.junit.jupiter.api.BeforeEach
    import io.bluetape4k.junit5.concurrency.StructuredTaskScopeTester
@@ -432,8 +432,8 @@ Session 3개 메서드(`createGraph` / `dropGraph` / `graphExists`) 의 VT 변�
    import io.bluetape4k.junit5.concurrency.StructuredTaskScopeTester
    import io.mockk.spyk
    import io.mockk.verify
-   import org.amshove.kluent.shouldBeEqualTo
-   import org.amshove.kluent.shouldNotBeNull
+   import io.bluetape4k.assertions.shouldBeEqualTo
+   import io.bluetape4k.assertions.shouldNotBeNull
    import org.junit.jupiter.api.AfterEach
    import org.junit.jupiter.api.BeforeEach
    import org.junit.jupiter.api.Test
@@ -609,9 +609,9 @@ Session 3개 메서드(`createGraph` / `dropGraph` / `graphExists`) 의 VT 변�
    import io.bluetape4k.junit5.concurrency.StructuredTaskScopeTester
    import io.mockk.spyk
    import io.mockk.verify
-   import org.amshove.kluent.shouldBeEqualTo
-   import org.amshove.kluent.shouldBeGreaterThan
-   import org.amshove.kluent.shouldNotBeNull
+   import io.bluetape4k.assertions.shouldBeEqualTo
+   import io.bluetape4k.assertions.shouldBeGreaterThan
+   import io.bluetape4k.assertions.shouldNotBeNull
    import org.junit.jupiter.api.AfterEach
    import org.junit.jupiter.api.BeforeEach
    import org.junit.jupiter.api.Test
@@ -805,7 +805,7 @@ Session 3개 메서드(`createGraph` / `dropGraph` / `graphExists`) 의 VT 변�
    import io.bluetape4k.junit5.concurrency.StructuredTaskScopeTester
    import io.mockk.spyk
    import io.mockk.verify
-   import org.amshove.kluent.shouldNotBeNull
+   import io.bluetape4k.assertions.shouldNotBeNull
    import org.junit.jupiter.api.AfterEach
    import org.junit.jupiter.api.BeforeEach
    import org.junit.jupiter.api.Test
@@ -885,7 +885,7 @@ Session 3개 메서드(`createGraph` / `dropGraph` / `graphExists`) 의 VT 변�
    import io.bluetape4k.graph.repository.GraphVirtualThreadAlgorithmRepository
    import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
    import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
-   import org.amshove.kluent.shouldBeInstanceOf
+   import io.bluetape4k.assertions.shouldBeInstanceOf
    import org.junit.jupiter.api.AfterEach
    import org.junit.jupiter.api.BeforeEach
    import org.junit.jupiter.api.Test

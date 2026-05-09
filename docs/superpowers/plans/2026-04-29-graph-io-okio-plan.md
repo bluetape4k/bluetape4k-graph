@@ -48,7 +48,7 @@
   - `implementation(project(":graph-io-csv"))`, `:graph-io-jackson2`, `:graph-io-jackson3`, `:graph-io-graphml`
   - `implementation(Libs.bluetape4k_virtualthread_jdk25)` — 명시적 추가 (CI 실패 방지, MEMORY 가이드)
   - `compileOnly` + `testImplementation`: `lz4-java`, `snappy-java`, `zstd-jni`, `commons-compress` (BZIP2)
-  - `testImplementation(Libs.okio_fakefilesystem)`, `bluetape4k-junit5`, `bluetape4k-testcontainers`, `kluent`, `mockk`
+  - `testImplementation(Libs.okio_fakefilesystem)`, `bluetape4k-junit5`, `bluetape4k-testcontainers`, `bluetape4k-assertions`, `mockk`
   - Java 25 + `--enable-preview` 컴파일/테스트 옵션
   - `./gradlew :graph-io-okio:compileKotlin` 통과
 

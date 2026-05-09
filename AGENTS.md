@@ -1,8 +1,8 @@
 # AGENTS.md - bluetape4k-graph
 
 Graph database library for Neo4j, Memgraph, Apache AGE, TinkerPop, and
-FalkorDB. Provides paired synchronous and coroutine APIs plus Spring Boot 3.5
-and 4.0 auto-configuration.
+FalkorDB. Provides paired synchronous and coroutine APIs plus Spring Boot 4
+auto-configuration.
 
 - Kotlin: 2.3
 - Java: 25 with preview enabled
@@ -25,7 +25,6 @@ graph-io/
   jackson3/
   graphml/
 benchmark/
-spring-boot3/
 spring-boot4/
 examples/
 ```

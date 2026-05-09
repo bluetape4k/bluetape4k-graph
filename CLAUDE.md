@@ -1,7 +1,7 @@
 # CLAUDE.md — bluetape4k-graph
 
 그래프 DB 라이브러리. Neo4j·Memgraph·AGE(PostgreSQL)·TinkerPop·FalkorDB 지원.
-동기/코루틴 이중 API 패턴. Spring Boot 3.5 + 4.0 AutoConfiguration 포함.
+동기/코루틴 이중 API 패턴. Spring Boot 4 AutoConfiguration 포함.
 
 - **Kotlin**: 2.3 · **Java**: 25 (preview 활성화 — `--enable-preview`)
 - **의존성 버전**: `buildSrc/src/main/kotlin/Libs.kt`
@@ -25,8 +25,6 @@ graph-io/
 benchmark/
   graph-benchmark/    # JMH — Sync vs VirtualThread
   graph-io-benchmark/ # JMH — CSV/NDJSON/GraphML 벌크 I/O
-spring-boot3/
-  graph-spring-boot3-starter/
 spring-boot4/
   graph-spring-boot4-starter/
 examples/

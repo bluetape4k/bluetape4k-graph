@@ -8,7 +8,7 @@
 
 **Architecture:** `graph-io-core` holds common data model, Source/Sink, Options, Reports, and the Sync/VT/Coroutine contracts plus the VT adapter built on `virtualFutureOf`. Each format module provides its own importer/exporter trio (Sync, VT, Suspend). NDJSON uses single-pass read with bounded edge buffering; CSV uses per-label Union-header pre-scan; GraphML uses JDK StAX. Coroutine export consumes `GraphSuspendVertexRepository.findVerticesByLabel()` / `findEdgesByLabel()` Flows directly.
 
-**Tech Stack:** Kotlin 2.3, Java 25 (preview), Gradle multi-module, `bluetape4k-io`, `bluetape4k-csv`, `bluetape4k-jackson2`, `bluetape4k-jackson3`, `bluetape4k-virtualthread-api/jdk25`, `bluetape4k-coroutines`, JDK StAX (`javax.xml.stream`), JUnit 5 + Kluent + MockK + kotlinx-coroutines-test, TinkerGraph (test backend).
+**Tech Stack:** Kotlin 2.3, Java 25 (preview), Gradle multi-module, `bluetape4k-io`, `bluetape4k-csv`, `bluetape4k-jackson2`, `bluetape4k-jackson3`, `bluetape4k-virtualthread-api/jdk25`, `bluetape4k-coroutines`, JDK StAX (`javax.xml.stream`), JUnit 5 + bluetape4k-assertions + MockK + kotlinx-coroutines-test, TinkerGraph (test backend).
 
 **Spec Reference:** `docs/superpowers/specs/2026-04-18-graph-io-bulk-import-export-design.md`
 
@@ -359,9 +359,9 @@ Complexity: low. Dependencies: 1. Module: `graph-io`.
 ```kotlin
 package io.bluetape4k.graph.io.model
 
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldThrow
-import org.amshove.kluent.withMessage
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldThrow
+import io.bluetape4k.assertions.withMessage
 import org.junit.jupiter.api.Test
 
 class GraphIoRecordTest {
@@ -471,7 +471,7 @@ Complexity: low. Dependencies: 1. Module: `graph-io`.
 ```kotlin
 package io.bluetape4k.graph.io.source
 
-import org.amshove.kluent.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeEqualTo
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
 import java.nio.file.Path
@@ -563,7 +563,7 @@ sealed interface GraphExportSink {
 ```kotlin
 package io.bluetape4k.graph.io.source
 
-import org.amshove.kluent.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeEqualTo
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayOutputStream
 import java.nio.file.Path
@@ -614,8 +614,8 @@ Complexity: low. Dependencies: 1. Module: `graph-io`.
 ```kotlin
 package io.bluetape4k.graph.io.options
 
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldThrow
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldThrow
 import org.junit.jupiter.api.Test
 
 class GraphImportOptionsTest {
@@ -660,7 +660,7 @@ class GraphImportOptionsTest {
 ```kotlin
 package io.bluetape4k.graph.io.options
 
-import org.amshove.kluent.shouldThrow
+import io.bluetape4k.assertions.shouldThrow
 import org.junit.jupiter.api.Test
 
 class GraphExportOptionsTest {
@@ -785,8 +785,8 @@ Complexity: low. Dependencies: 1. Module: `graph-io`.
 ```kotlin
 package io.bluetape4k.graph.io.report
 
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldThrow
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldThrow
 import org.junit.jupiter.api.Test
 import java.time.Duration
 
@@ -913,7 +913,7 @@ data class GraphExportReport(
 ```kotlin
 package io.bluetape4k.graph.io.report
 
-import org.amshove.kluent.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeEqualTo
 import org.junit.jupiter.api.Test
 import java.io.*
 import java.time.Duration
@@ -1126,7 +1126,7 @@ package io.bluetape4k.graph.io.support
 
 import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.io.source.GraphImportSource
-import org.amshove.kluent.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeEqualTo
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
@@ -1239,8 +1239,8 @@ package io.bluetape4k.graph.io.support
 
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.io.options.DuplicateVertexPolicy
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldThrow
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldThrow
 import org.junit.jupiter.api.Test
 
 class GraphIoExternalIdMapTest {
@@ -1343,9 +1343,9 @@ import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphImportReport
 import io.bluetape4k.graph.io.report.GraphIoFormat
 import io.bluetape4k.graph.io.report.GraphIoStatus
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeInstanceOf
-import org.amshove.kluent.shouldThrow
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeInstanceOf
+import io.bluetape4k.assertions.shouldThrow
 import org.junit.jupiter.api.Test
 import java.time.Duration
 import java.util.concurrent.ExecutionException
@@ -1434,8 +1434,8 @@ Complexity: low. Dependencies: 1, 6. Module: `graph-io-csv`.
 ```kotlin
 package io.bluetape4k.graph.io.csv
 
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldThrow
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldThrow
 import org.junit.jupiter.api.Test
 
 class CsvGraphIoOptionsTest {
@@ -1537,8 +1537,8 @@ package io.bluetape4k.graph.io.csv.internal
 
 import io.bluetape4k.graph.io.csv.CsvPropertyMode
 import io.bluetape4k.graph.io.model.GraphIoVertexRecord
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldThrow
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldThrow
 import org.junit.jupiter.api.Test
 
 class CsvRecordCodecTest {
@@ -1646,8 +1646,8 @@ import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeGreaterThan
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeGreaterThan
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
@@ -2626,7 +2626,7 @@ Complexity: low. Dependencies: 6. Module: `graph-io-graphml`.
 ```kotlin
 package io.bluetape4k.graph.io.graphml.internal
 
-import org.amshove.kluent.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeEqualTo
 import org.junit.jupiter.api.Test
 
 class GraphMlAttrTypeTest {

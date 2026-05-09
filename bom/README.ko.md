@@ -31,7 +31,6 @@ graph TB
     end
 
     subgraph "Spring Boot starter"
-      SB3[graph-spring-boot3-starter]
       SB4[graph-spring-boot4-starter]
     end
 
@@ -39,7 +38,7 @@ graph TB
     BOM -.->|버전 constraint| Core
     BOM -.->|버전 constraint| Neo4j
     BOM -.->|버전 constraint| IoCore
-    BOM -.->|버전 constraint| SB3
+    BOM -.->|버전 constraint| SB4
 ```
 
 BOM은 Gradle `java-platform` 으로 `<dependencyManagement>` constraint 만 게시한다.
@@ -56,7 +55,6 @@ BOM은 Gradle `java-platform` 으로 `<dependencyManagement>` constraint 만 게
 |------|------|
 | `graph/*` | `graph-core`, `graph-neo4j`, `graph-memgraph`, `graph-age`, `graph-tinkerpop`, `graph-falkordb` |
 | `graph-io/*` | `graph-io-core`, `graph-io-csv`, `graph-io-graphml`, `graph-io-jackson2`, `graph-io-jackson3`, `graph-io-okio` |
-| `spring-boot3/*` | `graph-spring-boot3-starter` |
 | `spring-boot4/*` | `graph-spring-boot4-starter` |
 
 > 참고: `examples/*` 및 `benchmark/*` 모듈은 BOM constraint 에서 제외된다.
