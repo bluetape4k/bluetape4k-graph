@@ -15,6 +15,7 @@ It runs standalone without an external server, making it well suited for testing
 |-------|-------------|
 | `TinkerGraphOperations` | Synchronous (blocking) implementation |
 | `TinkerGraphSuspendOperations` | Coroutine (suspend + Flow) implementation |
+| `TinkerGraphSchemaManager` | In-memory schema/index manager for test-friendly index metadata |
 | `GremlinRecordMapper` | Converts TinkerPop Vertex/Edge/Path into GraphVertex/GraphEdge/GraphPath |
 
 ## Dependencies
@@ -43,6 +44,20 @@ ops.createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to 2024L))
 val neighbors = ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS"))
 
 ops.close()
+```
+
+## Schema / Index Management
+
+TinkerGraph has no durable schema DDL. `schemaManager().createIndex(label, property)` records index metadata in the
+current operations instance so tests can assert expected schema setup. Unique constraints fail explicitly because
+TinkerGraph cannot enforce them.
+
+```kotlin
+import io.bluetape4k.graph.schema.schemaManager
+
+val schema = ops.schemaManager()
+schema.createIndex("Person", "email")
+schema.listIndexes()
 ```
 
 ## Graph Algorithms

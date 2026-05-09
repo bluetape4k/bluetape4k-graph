@@ -28,7 +28,11 @@ import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.TraversalVisit
+import io.bluetape4k.graph.repository.GraphSuspendMergeOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
+import io.bluetape4k.graph.schema.GraphSuspendSchemaManagementOperations
+import io.bluetape4k.graph.schema.GraphSuspendSchemaManager
+import io.bluetape4k.graph.schema.asSuspendSchemaManager
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.info
@@ -71,7 +75,7 @@ import kotlinx.coroutines.withContext
 class FalkorDBGraphSuspendOperations(
     private val driver: Driver,
     val graphName: String = FalkorDBGraphOperations.DEFAULT_GRAPH_NAME,
-): GraphSuspendOperations {
+): GraphSuspendOperations, GraphSuspendSchemaManagementOperations, GraphSuspendMergeOperations {
 
     companion object: KLoggingChannel()
 
@@ -80,6 +84,29 @@ class FalkorDBGraphSuspendOperations(
     }
 
     private val syncDelegate by lazy { FalkorDBGraphOperations(driver, graphName) }
+
+    override fun schemaManager(): GraphSuspendSchemaManager =
+        syncDelegate.schemaManager().asSuspendSchemaManager()
+
+    override suspend fun mergeVertex(
+        label: String,
+        matchProperties: Map<String, Any?>,
+        setProperties: Map<String, Any?>,
+    ): GraphVertex =
+        withContext(Dispatchers.IO) {
+            syncDelegate.mergeVertex(label, matchProperties, setProperties)
+        }
+
+    override suspend fun mergeEdge(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        label: String,
+        matchProperties: Map<String, Any?>,
+        setProperties: Map<String, Any?>,
+    ): GraphEdge =
+        withContext(Dispatchers.IO) {
+            syncDelegate.mergeEdge(fromId, toId, label, matchProperties, setProperties)
+        }
 
     /**
      * [graphName]에 해당하는 그래프 컨텍스트를 열고 [block]을 실행한 뒤 자동으로 닫습니다.

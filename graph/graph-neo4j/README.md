@@ -39,6 +39,7 @@ graph TD
 | `Neo4jGraphOperations` | Synchronous `GraphOperations` implementation over the Neo4j driver |
 | `Neo4jGraphSuspendOperations` | Coroutine-based `GraphSuspendOperations` implementation |
 | `CachingNeo4jGraphOperations` | `ConcurrentHashMap`-backed caching decorator over `Neo4jGraphOperations` |
+| `Neo4jGraphSchemaManager` | Schema/index manager for Neo4j indexes and unique constraints |
 | `Neo4jCoroutineSession` | Bridges `ReactiveSession` and Kotlin Coroutines |
 | `Neo4jRecordMapper` | Converts Neo4j `Record`, `Node`, `Relationship`, and `Path` to graph-core domain types |
 
@@ -60,6 +61,12 @@ graph TD
 - `neighbors(vertexId, edgeLabel, direction, depth)` — Fetch neighboring nodes
 - `shortestPath(fromId, toId, edgeLabel, maxDepth)` — Find shortest path
 - `allPaths(fromId, toId, edgeLabel, maxDepth)` — Enumerate all paths
+
+### Schema / Index Management
+- `ops.schemaManager().createIndex(label, property)` — Create a node property index
+- `ops.schemaManager().createUniqueConstraint(label, property)` — Create a node property uniqueness constraint
+- `ops.schemaManager().listIndexes()` / `listConstraints()` — Inspect schema metadata
+- `ops.schemaManager().dropIndex(label, property)` — Drop the generated property index
 
 ## Usage Example
 

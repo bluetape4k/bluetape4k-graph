@@ -60,6 +60,21 @@ val count = ops.countVertices("Person")  // 2
 driver.close()
 ```
 
+## Schema / Index Management
+
+FalkorDB supports range indexes through Cypher. Unique constraints require the raw Redis
+`GRAPH.CONSTRAINT CREATE` command, so this manager fails explicitly for unique constraints until that command path is
+added.
+
+```kotlin
+import io.bluetape4k.graph.schema.schemaManager
+
+val schema = ops.schemaManager()
+schema.createIndex("Person", "email")
+val indexes = schema.listIndexes()
+schema.dropIndex("Person", "email")
+```
+
 ### Coroutine (Suspend) API
 
 ```kotlin

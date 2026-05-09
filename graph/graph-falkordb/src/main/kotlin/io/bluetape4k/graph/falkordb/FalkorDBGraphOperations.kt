@@ -28,7 +28,12 @@ import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.TraversalVisit
+import io.bluetape4k.graph.repository.GraphMergeOperations
+import io.bluetape4k.graph.repository.GraphMergeProperties
+import io.bluetape4k.graph.repository.GraphMergeValidation
 import io.bluetape4k.graph.repository.GraphOperations
+import io.bluetape4k.graph.schema.GraphSchemaManagementOperations
+import io.bluetape4k.graph.schema.GraphSchemaManager
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.info
@@ -63,7 +68,7 @@ import io.bluetape4k.support.requireNotBlank
 class FalkorDBGraphOperations(
     private val driver: Driver,
     val graphName: String = DEFAULT_GRAPH_NAME,
-): GraphOperations {
+): GraphOperations, GraphSchemaManagementOperations, GraphMergeOperations {
 
     companion object: KLogging() {
         /** 기본 그래프 이름. */
@@ -73,6 +78,9 @@ class FalkorDBGraphOperations(
     init {
         graphName.requireNotBlank("graphName")
     }
+
+    override fun schemaManager(): GraphSchemaManager =
+        FalkorDBGraphSchemaManager(driver, graphName)
 
     /**
      * [graphName]에 해당하는 그래프 컨텍스트를 열고 블록을 실행한 뒤 자동으로 닫습니다.
@@ -229,6 +237,46 @@ class FalkorDBGraphOperations(
         return (v as Number).toLong()
     }
 
+    // -- GraphMergeOperations --
+
+    override fun mergeVertex(
+        label: String,
+        matchProperties: Map<String, Any?>,
+        setProperties: Map<String, Any?>,
+    ): GraphVertex {
+        val properties = GraphMergeValidation.validateVertex(label, matchProperties, setProperties)
+        val matchClause = mergePropertyMap("match", properties.matchProperties)
+        val setClause = mergeSetClause("n", properties)
+
+        return queryList(
+            $$"MERGE (n:$$label$$matchClause)$$setClause RETURN n",
+            mergeParams(properties),
+        ) {
+            it.toVertex()
+        }.firstOrNull() ?: throw GraphQueryException("Failed to merge vertex: $label")
+    }
+
+    override fun mergeEdge(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        label: String,
+        matchProperties: Map<String, Any?>,
+        setProperties: Map<String, Any?>,
+    ): GraphEdge {
+        val properties = GraphMergeValidation.validateEdge(fromId, toId, label, matchProperties, setProperties)
+        val matchClause = mergePropertyMap("match", properties.matchProperties)
+        val setClause = mergeSetClause("r", properties)
+        val params = mergeParams(properties) + mapOf("fromId" to fromId.value, "toId" to toId.value)
+
+        return queryList(
+            "MATCH (a), (b) WHERE id(a) = toInteger(\$fromId) AND id(b) = toInteger(\$toId) " +
+                    $$"MERGE (a)-[r:$$label$$matchClause]->(b)$$setClause RETURN r",
+            params,
+        ) {
+            it.toEdge()
+        }.firstOrNull() ?: throw GraphQueryException("Failed to merge edge: $label")
+    }
+
     // -- GraphEdgeRepository --
 
     override fun createEdge(
@@ -312,6 +360,22 @@ class FalkorDBGraphOperations(
         }
         return rs.statistics.relationshipsDeleted() > 0
     }
+
+    private fun mergePropertyMap(prefix: String, properties: Map<String, Any?>): String =
+        if (properties.isEmpty()) "" else
+            " {" + properties.keys.joinToString(", ") { key -> "$key: \$${prefix}_$key" } + "}"
+
+    private fun mergeSetClause(variable: String, properties: GraphMergeProperties): String {
+        if (properties.setProperties.isEmpty()) return ""
+        val assignments = properties.setProperties.keys.joinToString(", ") { key ->
+            "$variable.$key = \$set_$key"
+        }
+        return " ON CREATE SET $assignments ON MATCH SET $assignments"
+    }
+
+    private fun mergeParams(properties: GraphMergeProperties): Map<String, Any?> =
+        properties.matchProperties.mapKeys { (key, _) -> "match_$key" } +
+                properties.setProperties.mapKeys { (key, _) -> "set_$key" }
 
     // -- GraphTraversalRepository --
 

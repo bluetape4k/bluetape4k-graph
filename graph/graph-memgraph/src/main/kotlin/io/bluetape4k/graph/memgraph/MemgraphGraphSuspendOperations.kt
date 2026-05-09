@@ -20,6 +20,13 @@ import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.repository.GraphSuspendOperations
+import io.bluetape4k.graph.repository.GraphSuspendMergeOperations
+import io.bluetape4k.graph.repository.GraphSuspendTransactionScope
+import io.bluetape4k.graph.repository.GraphSuspendTransactionalOperations
+import io.bluetape4k.graph.repository.asSuspendTransactionScope
+import io.bluetape4k.graph.schema.GraphSuspendSchemaManager
+import io.bluetape4k.graph.schema.GraphSuspendSchemaManagementOperations
+import io.bluetape4k.graph.schema.asSuspendSchemaManager
 import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
@@ -35,6 +42,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.neo4j.driver.Driver
 import org.neo4j.driver.Query
@@ -76,7 +84,10 @@ import org.neo4j.driver.reactivestreams.ReactiveSession
 class MemgraphGraphSuspendOperations(
     private val driver: Driver,
     private val database: String = "memgraph",
-): GraphSuspendOperations {
+): GraphSuspendOperations,
+   GraphSuspendTransactionalOperations,
+   GraphSuspendSchemaManagementOperations,
+   GraphSuspendMergeOperations {
 
     companion object: KLoggingChannel()
 
@@ -85,6 +96,37 @@ class MemgraphGraphSuspendOperations(
             ReactiveSession::class.java,
             SessionConfig.builder().withDatabase(database).build(),
         )
+
+    override fun schemaManager(): GraphSuspendSchemaManager =
+        MemgraphGraphSchemaManager(driver, database).asSuspendSchemaManager()
+
+    override suspend fun <T> suspendTransaction(block: suspend GraphSuspendTransactionScope.() -> T): T =
+        withContext(Dispatchers.IO) {
+            MemgraphGraphOperations(driver, database).transaction {
+                val scope = asSuspendTransactionScope()
+                runBlocking { scope.block() }
+            }
+        }
+
+    override suspend fun mergeVertex(
+        label: String,
+        matchProperties: Map<String, Any?>,
+        setProperties: Map<String, Any?>,
+    ): GraphVertex =
+        withContext(Dispatchers.IO) {
+            MemgraphGraphOperations(driver, database).mergeVertex(label, matchProperties, setProperties)
+        }
+
+    override suspend fun mergeEdge(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        label: String,
+        matchProperties: Map<String, Any?>,
+        setProperties: Map<String, Any?>,
+    ): GraphEdge =
+        withContext(Dispatchers.IO) {
+            MemgraphGraphOperations(driver, database).mergeEdge(fromId, toId, label, matchProperties, setProperties)
+        }
 
     /**
      * 단일값/삭제 등 suspend 메서드용 쿼리 헬퍼.
@@ -198,7 +240,10 @@ class MemgraphGraphSuspendOperations(
 
         val whereClause =
             if (filter.isEmpty()) ""
-            else " WHERE " + filter.keys.joinToString(" AND ") { $$"n.$$it = $$$it" }
+            else " WHERE " + filter.keys.joinToString(" AND ") { key ->
+                val propertyKey = key.requireSafeIdentifier("property key")
+                "n.$propertyKey = \$$key"
+            }
 
         return flowQuery(
             $$"MATCH (n:$$label)$$whereClause RETURN n",
@@ -212,7 +257,10 @@ class MemgraphGraphSuspendOperations(
         label.requireNotBlank("label").requireSafeIdentifier("label")
 
         if (properties.isEmpty()) return findVertexById(label, id)
-        val setClause = properties.keys.joinToString(", ") { $$"n.$$it = $$$it" }
+        val setClause = properties.keys.joinToString(", ") { key ->
+            val propertyKey = key.requireSafeIdentifier("property key")
+            "n.$propertyKey = \$$key"
+        }
         val params = properties + mapOf("id" to id.value)
 
         return runQuery(
@@ -275,7 +323,10 @@ class MemgraphGraphSuspendOperations(
 
         val whereClause =
             if (filter.isEmpty()) ""
-            else " WHERE " + filter.keys.joinToString(" AND ") { $$"r.$$it = $$$it" }
+            else " WHERE " + filter.keys.joinToString(" AND ") { key ->
+                val propertyKey = key.requireSafeIdentifier("property key")
+                "r.$propertyKey = \$$key"
+            }
 
         return flowQuery(
             $$"MATCH ()-[r:$$label]->()$$whereClause RETURN r",
@@ -286,7 +337,7 @@ class MemgraphGraphSuspendOperations(
     }
 
     override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): Flow<GraphEdge> {
-        val labelPart = if (edgeLabel != null) ":$edgeLabel" else ""
+        val labelPart = edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
         return flowQuery(
             "MATCH (n)-[r$labelPart]->(m) WHERE id(n) = toInteger(\$startId) RETURN r",
             mapOf("startId" to startId.value),
@@ -294,7 +345,7 @@ class MemgraphGraphSuspendOperations(
     }
 
     override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): Flow<GraphEdge> {
-        val labelPart = if (edgeLabel != null) ":$edgeLabel" else ""
+        val labelPart = edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
         return flowQuery(
             "MATCH (n)-[r$labelPart]->(m) WHERE id(m) = toInteger(\$endId) RETURN r",
             mapOf("endId" to endId.value),
@@ -323,10 +374,14 @@ class MemgraphGraphSuspendOperations(
         options: NeighborOptions,
     ): Flow<GraphVertex> {
         startId.value.toLongOrNull() ?: throw GraphQueryException("Memgraph requires numeric ID, got: $startId")
-        options.edgeLabel?.requireNotBlank("edgeLabel")
+        val edgeLabel = options.edgeLabel?.requireNotBlank("edgeLabel")?.requireSafeIdentifier("edgeLabel")
 
         val depthStr = if (options.maxDepth == 1) "" else $$"*1..$${options.maxDepth}"
-        val edgePart = if (options.edgeLabel != null) $$":$${options.edgeLabel}$$depthStr" else depthStr
+        val edgePart = if (edgeLabel != null) {
+            ":$edgeLabel$depthStr"
+        } else {
+            depthStr
+        }
         val pattern = when (options.direction) {
             Direction.OUTGOING -> $$"(start)-[$$edgePart]->(neighbor)"
             Direction.INCOMING -> $$"(start)<-[$$edgePart]-(neighbor)"
@@ -354,8 +409,9 @@ class MemgraphGraphSuspendOperations(
         }
 
         // Memgraph는 shortestPath() 미지원 → depth-limited MATCH + ORDER BY length(p) LIMIT 1 사용
+        val edgeLabel = options.edgeLabel?.requireNotBlank("edgeLabel")?.requireSafeIdentifier("edgeLabel")
         val relPattern =
-            if (options.edgeLabel != null) ":" + options.edgeLabel + "*1.." + options.maxDepth
+            if (edgeLabel != null) ":$edgeLabel*1..${options.maxDepth}"
             else "*1.." + options.maxDepth
 
         return runQuery(
@@ -387,8 +443,10 @@ class MemgraphGraphSuspendOperations(
         fromId.value.toLongOrNull() ?: throw GraphQueryException("Memgraph requires numeric ID, got: $fromId")
         toId.value.toLongOrNull() ?: throw GraphQueryException("Memgraph requires numeric ID, got: $toId")
 
+        val edgeLabel = options.edgeLabel?.requireNotBlank("edgeLabel")?.requireSafeIdentifier("edgeLabel")
         val relPattern =
-            if (options.edgeLabel != null) $$":$${options.edgeLabel}*1..$${options.maxDepth}" else $$"*1..$${options.maxDepth}"
+            if (edgeLabel != null) ":$edgeLabel*1..${options.maxDepth}"
+            else $$"*1..$${options.maxDepth}"
         return flowQuery(
             $$"MATCH p = (a)-[$$relPattern]-(b) " +
                     $$"WHERE id(a) = toInteger($fromId) AND id(b) = toInteger($toId) RETURN p",

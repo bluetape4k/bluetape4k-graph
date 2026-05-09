@@ -20,7 +20,14 @@ import io.bluetape4k.graph.model.PageRankOptions
 import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.TraversalVisit
+import io.bluetape4k.graph.repository.GraphSuspendMergeOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
+import io.bluetape4k.graph.repository.GraphSuspendTransactionScope
+import io.bluetape4k.graph.repository.GraphSuspendTransactionalOperations
+import io.bluetape4k.graph.repository.asSuspendTransactionScope
+import io.bluetape4k.graph.schema.GraphSuspendSchemaManagementOperations
+import io.bluetape4k.graph.schema.GraphSuspendSchemaManager
+import io.bluetape4k.graph.schema.asSuspendSchemaManager
 import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.support.requireNotBlank
@@ -28,6 +35,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.v1.jdbc.transactions.experimental.newSuspendedTransaction
 
@@ -65,13 +73,47 @@ import org.jetbrains.exposed.v1.jdbc.transactions.experimental.newSuspendedTrans
 @Suppress("DEPRECATION")
 class AgeGraphSuspendOperations(
     private val graphName: String,
-): GraphSuspendOperations {
+): GraphSuspendOperations,
+   GraphSuspendTransactionalOperations,
+   GraphSuspendSchemaManagementOperations,
+   GraphSuspendMergeOperations {
 
     companion object: KLoggingChannel()
 
     init {
         graphName.requireNotBlank("graphName").requireSafeIdentifier("graphName")
     }
+
+    override fun schemaManager(): GraphSuspendSchemaManager =
+        AgeGraphSchemaManager().asSuspendSchemaManager()
+
+    override suspend fun <T> suspendTransaction(block: suspend GraphSuspendTransactionScope.() -> T): T =
+        withContext(Dispatchers.IO) {
+            AgeGraphOperations(graphName).transaction {
+                val scope = asSuspendTransactionScope()
+                runBlocking { scope.block() }
+            }
+        }
+
+    override suspend fun mergeVertex(
+        label: String,
+        matchProperties: Map<String, Any?>,
+        setProperties: Map<String, Any?>,
+    ): GraphVertex =
+        withContext(Dispatchers.IO) {
+            AgeGraphOperations(graphName).mergeVertex(label, matchProperties, setProperties)
+        }
+
+    override suspend fun mergeEdge(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        label: String,
+        matchProperties: Map<String, Any?>,
+        setProperties: Map<String, Any?>,
+    ): GraphEdge =
+        withContext(Dispatchers.IO) {
+            AgeGraphOperations(graphName).mergeEdge(fromId, toId, label, matchProperties, setProperties)
+        }
 
     override suspend fun createGraph(name: String) {
         name.requireNotBlank("name")

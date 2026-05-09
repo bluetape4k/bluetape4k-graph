@@ -76,10 +76,116 @@ GraphSuspendOperations = GraphSuspendSession
 
 | Interface | Responsibility |
 |-----------|----------------|
-| `GraphSession` / `GraphSuspendSession` | Session / transaction lifecycle |
+| `GraphSession` / `GraphSuspendSession` | Graph lifecycle and connection-facing session operations |
 | `GraphVertexRepository` | Vertex CRUD (create / find / update / delete / count) |
 | `GraphEdgeRepository` | Edge CRUD and relationship queries |
 | `GraphTraversalRepository` | `neighbors`, `shortestPath`, `allPaths`, etc. |
+| `GraphTransactionalOperations` | Optional sync transaction capability used by `ops.transaction { }` |
+| `GraphSuspendTransactionalOperations` | Optional coroutine transaction capability used by `ops.suspendTransaction { }` |
+| `GraphSchemaManagementOperations` | Optional sync schema/index capability used by `ops.schemaManager()` |
+| `GraphSuspendSchemaManagementOperations` | Optional coroutine schema/index capability used by `suspendOps.schemaManager()` |
+| `GraphMergeOperations` | Optional sync merge/upsert capability used by `ops.mergeVertex()` and `ops.mergeEdge()` |
+| `GraphSuspendMergeOperations` | Optional coroutine merge/upsert capability used by suspend merge extensions |
+
+### Transaction DSL
+
+Backends that implement `GraphTransactionalOperations` can expose a sync transaction block through the
+`transaction` extension. Unsupported backends fail explicitly instead of silently falling back to auto-commit.
+
+```kotlin
+import io.bluetape4k.graph.repository.transaction
+
+val edge = ops.transaction {
+    val alice = createVertex("Person", mapOf("name" to "Alice"))
+    val bob = createVertex("Person", mapOf("name" to "Bob"))
+    createEdge(alice.id, bob.id, "KNOWS")
+}
+```
+
+Coroutine backends that implement `GraphSuspendTransactionalOperations` expose the same vertex/edge CRUD scope through
+`suspendTransaction`.
+
+```kotlin
+import io.bluetape4k.graph.repository.suspendTransaction
+
+val edge = suspendOps.suspendTransaction {
+    val alice = createVertex("Person", mapOf("name" to "Alice"))
+    val bob = createVertex("Person", mapOf("name" to "Bob"))
+    createEdge(alice.id, bob.id, "KNOWS")
+}
+```
+
+This first slice adds transaction support for Neo4j, Memgraph, AGE, and TinkerGraph sync/coroutine backends.
+FalkorDB remains explicitly unsupported because its Redis `MULTI` API queues graph query results until `EXEC`, while
+this repository DSL needs each created vertex ID immediately for later calls in the same block.
+
+### Schema / Index Manager
+
+Backends that implement `GraphSchemaManagementOperations` expose schema DDL through `schemaManager()`.
+The API validates labels and property names before building backend DDL, and unsupported backends fail explicitly
+instead of silently pretending that constraints were enforced.
+
+```kotlin
+import io.bluetape4k.graph.schema.schemaManager
+
+ops.schemaManager().createIndex("Person", "email")
+ops.schemaManager().createUniqueConstraint("Person", "email")
+val indexes = ops.schemaManager().listIndexes()
+```
+
+The same manager is available for coroutine backends:
+
+```kotlin
+val schema = suspendOps.schemaManager()
+schema.createIndex("Person", "email")
+```
+
+Support matrix:
+
+| Backend | Indexes | Unique constraints | Notes |
+|---------|---------|--------------------|-------|
+| Neo4j | Create / list / drop | Create / list | Uses Neo4j `CREATE INDEX` and `CREATE CONSTRAINT` |
+| Memgraph | Create / list / drop | Create / list | Uses Memgraph `SHOW INDEX INFO` and `SHOW CONSTRAINT INFO` |
+| TinkerGraph | In-memory recorded no-op | Unsupported | Constraints cannot be enforced by TinkerGraph |
+| AGE | Unsupported | Unsupported | PostgreSQL-side AGE indexes are not portable yet |
+| FalkorDB | Create / list / drop | Unsupported | Unique constraints require raw `GRAPH.CONSTRAINT CREATE` support |
+
+### Merge / Upsert
+
+Backends that implement `GraphMergeOperations` expose idempotent vertex and edge upserts through extension functions.
+`matchProperties` are stable identity keys and cannot be empty for vertices. `setProperties` are applied to both the
+create and match branches and cannot overwrite match keys.
+
+```kotlin
+import io.bluetape4k.graph.repository.mergeEdge
+import io.bluetape4k.graph.repository.mergeVertex
+
+val alice = ops.mergeVertex(
+    label = "Person",
+    matchProperties = mapOf("email" to "alice@example.com"),
+    setProperties = mapOf("name" to "Alice", "age" to 31),
+)
+
+val edge = ops.mergeEdge(
+    fromId = alice.id,
+    toId = bob.id,
+    label = "KNOWS",
+    setProperties = mapOf("since" to 2024),
+)
+```
+
+Coroutine backends expose the same API as suspend functions. Merge keys are validated before query construction, so
+unsafe labels and property names fail before reaching the backend.
+
+Support matrix:
+
+| Backend | Vertex merge | Edge merge | Notes |
+|---------|--------------|------------|-------|
+| Neo4j | Native `MERGE` | Native relationship `MERGE` | Uses `elementId()` for endpoints |
+| Memgraph | Native `MERGE` | Native relationship `MERGE` | Uses integer `id()` endpoint lookup |
+| FalkorDB | Native `MERGE` | Native relationship `MERGE` | Uses per-property parameters |
+| AGE | Transactional match/update/create fallback | Transactional match/update/create fallback | AGE image does not support `ON CREATE SET` / `ON MATCH SET` |
+| TinkerGraph | Gremlin get-or-create/update | Gremlin get-or-create/update | In-memory semantics |
 
 ### Schema DSL
 

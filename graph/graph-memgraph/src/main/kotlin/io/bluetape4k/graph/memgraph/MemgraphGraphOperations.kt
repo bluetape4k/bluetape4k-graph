@@ -24,7 +24,14 @@ import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.TraversalVisit
+import io.bluetape4k.graph.repository.GraphMergeOperations
+import io.bluetape4k.graph.repository.GraphMergeProperties
+import io.bluetape4k.graph.repository.GraphMergeValidation
 import io.bluetape4k.graph.repository.GraphOperations
+import io.bluetape4k.graph.repository.GraphTransactionScope
+import io.bluetape4k.graph.repository.GraphTransactionalOperations
+import io.bluetape4k.graph.schema.GraphSchemaManagementOperations
+import io.bluetape4k.graph.schema.GraphSchemaManager
 import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
@@ -35,6 +42,7 @@ import org.neo4j.driver.Driver
 import org.neo4j.driver.Record
 import org.neo4j.driver.Session
 import org.neo4j.driver.SessionConfig
+import org.neo4j.driver.Transaction
 
 /**
  * Memgraph용 [GraphOperations] 구현체 (동기 방식).
@@ -67,7 +75,7 @@ import org.neo4j.driver.SessionConfig
 class MemgraphGraphOperations(
     private val driver: Driver,
     private val database: String = "memgraph",
-): GraphOperations {
+): GraphOperations, GraphTransactionalOperations, GraphSchemaManagementOperations, GraphMergeOperations {
 
     companion object: KLogging()
 
@@ -120,6 +128,36 @@ class MemgraphGraphOperations(
     override fun close() { /* driver는 외부 소유 */
     }
 
+    override fun schemaManager(): GraphSchemaManager =
+        MemgraphGraphSchemaManager(driver, database)
+
+    // -- GraphTransactionalOperations --
+
+    override fun <T> transaction(block: GraphTransactionScope.() -> T): T =
+        session().use { session ->
+            val tx = session.beginTransaction()
+            var failure: Throwable? = null
+            try {
+                val result = block(MemgraphGraphTransactionScope(tx))
+                tx.commit()
+                result
+            } catch (e: Throwable) {
+                failure = e
+                try {
+                    tx.rollback()
+                } catch (rollbackFailure: Throwable) {
+                    e.addSuppressed(rollbackFailure)
+                }
+                throw e
+            } finally {
+                try {
+                    tx.close()
+                } catch (closeFailure: Throwable) {
+                    failure?.addSuppressed(closeFailure) ?: throw closeFailure
+                }
+            }
+        }
+
     // -- GraphVertexRepository --
 
     override fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex {
@@ -155,7 +193,10 @@ class MemgraphGraphOperations(
     override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> {
         label.requireNotBlank("label").requireSafeIdentifier("label")
         val whereClause = if (filter.isEmpty()) "" else
-            " WHERE " + filter.keys.joinToString(" AND ") { $$"n.$$it = $$$it" }
+            " WHERE " + filter.keys.joinToString(" AND ") { key ->
+                val propertyKey = key.requireSafeIdentifier("property key")
+                "n.$propertyKey = \$$key"
+            }
 
         return runQuery(
             $$"MATCH (n:$$label)$$whereClause RETURN n",
@@ -168,7 +209,10 @@ class MemgraphGraphOperations(
     override fun updateVertex(label: String, id: GraphElementId, properties: Map<String, Any?>): GraphVertex? {
         label.requireNotBlank("label").requireSafeIdentifier("label")
         if (properties.isEmpty()) return findVertexById(label, id)
-        val setClause = properties.keys.joinToString(", ") { $$"n.$$it = $$$it" }
+        val setClause = properties.keys.joinToString(", ") { key ->
+            val propertyKey = key.requireSafeIdentifier("property key")
+            "n.$propertyKey = \$$key"
+        }
         val params = properties + mapOf("id" to id.value)
 
         return runQuery(
@@ -199,6 +243,47 @@ class MemgraphGraphOperations(
         }
     }
 
+    // -- GraphMergeOperations --
+
+    override fun mergeVertex(
+        label: String,
+        matchProperties: Map<String, Any?>,
+        setProperties: Map<String, Any?>,
+    ): GraphVertex {
+        val properties = GraphMergeValidation.validateVertex(label, matchProperties, setProperties)
+        val matchClause = mergePropertyMap("match", properties.matchProperties)
+        val setClause = mergeSetClause("n", properties)
+        val params = mergeParams(properties)
+
+        return runQuery(
+            $$"MERGE (n:$$label$$matchClause)$$setClause RETURN n",
+            params,
+        ) {
+            MemgraphRecordMapper.recordToVertex(it)
+        }.firstOrNull() ?: throw GraphQueryException("Failed to merge vertex: $label")
+    }
+
+    override fun mergeEdge(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        label: String,
+        matchProperties: Map<String, Any?>,
+        setProperties: Map<String, Any?>,
+    ): GraphEdge {
+        val properties = GraphMergeValidation.validateEdge(fromId, toId, label, matchProperties, setProperties)
+        val matchClause = mergePropertyMap("match", properties.matchProperties)
+        val setClause = mergeSetClause("r", properties)
+        val params = mergeParams(properties) + mapOf("fromId" to fromId.value, "toId" to toId.value)
+
+        return runQuery(
+            "MATCH (a), (b) WHERE id(a) = toInteger(\$fromId) AND id(b) = toInteger(\$toId) " +
+                    $$"MERGE (a)-[r:$$label$$matchClause]->(b)$$setClause RETURN r",
+            params,
+        ) {
+            MemgraphRecordMapper.recordToEdge(it)
+        }.firstOrNull() ?: throw GraphQueryException("Failed to merge edge: $label")
+    }
+
     // -- GraphEdgeRepository --
 
     override fun createEdge(
@@ -226,7 +311,10 @@ class MemgraphGraphOperations(
         label.requireNotBlank("label").requireSafeIdentifier("label")
 
         val whereClause = if (filter.isEmpty()) "" else
-            " WHERE " + filter.keys.joinToString(" AND ") { $$"r.$$it = $$$it" }
+            " WHERE " + filter.keys.joinToString(" AND ") { key ->
+                val propertyKey = key.requireSafeIdentifier("property key")
+                "r.$propertyKey = \$$key"
+            }
 
         return runQuery(
             $$"MATCH ()-[r:$$label]->()$$whereClause RETURN r",
@@ -235,7 +323,7 @@ class MemgraphGraphOperations(
     }
 
     override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
-        val labelPart = if (edgeLabel != null) ":$edgeLabel" else ""
+        val labelPart = edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
         return runQuery(
             "MATCH (n)-[r$labelPart]->(m) WHERE id(n) = toInteger(\$startId) RETURN r",
             mapOf("startId" to startId.value),
@@ -243,7 +331,7 @@ class MemgraphGraphOperations(
     }
 
     override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
-        val labelPart = if (edgeLabel != null) ":$edgeLabel" else ""
+        val labelPart = edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
         return runQuery(
             "MATCH (n)-[r$labelPart]->(m) WHERE id(m) = toInteger(\$endId) RETURN r",
             mapOf("endId" to endId.value),
@@ -262,6 +350,22 @@ class MemgraphGraphOperations(
         }
     }
 
+    private fun mergePropertyMap(prefix: String, properties: Map<String, Any?>): String =
+        if (properties.isEmpty()) "" else
+            " {" + properties.keys.joinToString(", ") { key -> "$key: \$${prefix}_$key" } + "}"
+
+    private fun mergeSetClause(variable: String, properties: GraphMergeProperties): String {
+        if (properties.setProperties.isEmpty()) return ""
+        val assignments = properties.setProperties.keys.joinToString(", ") { key ->
+            "$variable.$key = \$set_$key"
+        }
+        return " ON CREATE SET $assignments ON MATCH SET $assignments"
+    }
+
+    private fun mergeParams(properties: GraphMergeProperties): Map<String, Any?> =
+        properties.matchProperties.mapKeys { (key, _) -> "match_$key" } +
+                properties.setProperties.mapKeys { (key, _) -> "set_$key" }
+
     // -- GraphTraversalRepository --
 
     override fun neighbors(
@@ -269,10 +373,14 @@ class MemgraphGraphOperations(
         options: NeighborOptions,
     ): List<GraphVertex> {
         startId.value.toLongOrNull() ?: throw GraphQueryException("Memgraph requires numeric ID, got: $startId")
-        options.edgeLabel?.requireNotBlank("edgeLabel")
+        val edgeLabel = options.edgeLabel?.requireNotBlank("edgeLabel")?.requireSafeIdentifier("edgeLabel")
 
         val depthStr = if (options.maxDepth == 1) "" else $$"*1..$${options.maxDepth}"
-        val edgePart = if (options.edgeLabel != null) $$":$${options.edgeLabel}$$depthStr" else depthStr
+        val edgePart = if (edgeLabel != null) {
+            ":$edgeLabel$depthStr"
+        } else {
+            depthStr
+        }
         val pattern = when (options.direction) {
             Direction.OUTGOING -> $$"(start)-[$$edgePart]->(neighbor)"
             Direction.INCOMING -> $$"(start)<-[$$edgePart]-(neighbor)"
@@ -299,8 +407,9 @@ class MemgraphGraphOperations(
         }
 
         // Memgraph는 shortestPath() 미지원 → depth-limited MATCH + ORDER BY length(p) LIMIT 1 사용
+        val edgeLabel = options.edgeLabel?.requireNotBlank("edgeLabel")?.requireSafeIdentifier("edgeLabel")
         val relPattern =
-            if (options.edgeLabel != null) ":" + options.edgeLabel + "*1.." + options.maxDepth
+            if (edgeLabel != null) ":$edgeLabel*1..${options.maxDepth}"
             else "*1.." + options.maxDepth
         return runQuery(
             "MATCH p = (a)-[$relPattern]-(b) " +
@@ -331,8 +440,9 @@ class MemgraphGraphOperations(
         fromId.value.toLongOrNull() ?: throw GraphQueryException("Memgraph requires numeric ID, got: $fromId")
         toId.value.toLongOrNull() ?: throw GraphQueryException("Memgraph requires numeric ID, got: $toId")
 
+        val edgeLabel = options.edgeLabel?.requireNotBlank("edgeLabel")?.requireSafeIdentifier("edgeLabel")
         val relPattern =
-            if (options.edgeLabel != null) $$":$${options.edgeLabel}*1..$${options.maxDepth}"
+            if (edgeLabel != null) ":$edgeLabel*1..${options.maxDepth}"
             else $$"*1..$${options.maxDepth}"
 
         return runQuery(
@@ -567,5 +677,166 @@ class MemgraphGraphOperations(
             }
             GraphCycle(GraphPath(steps))
         }
+    }
+}
+
+private class MemgraphGraphTransactionScope(
+    private val tx: Transaction,
+): GraphTransactionScope {
+
+    private fun <T> runQuery(
+        cypher: String,
+        params: Map<String, Any?> = emptyMap(),
+        mapper: (Record) -> T,
+    ): List<T> {
+        cypher.requireNotBlank("cypher")
+        return tx.run(cypher, params).list(mapper)
+    }
+
+    override fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex {
+        label.requireNotBlank("label").requireSafeIdentifier("label")
+
+        val propsClause = if (properties.isEmpty()) "" else $$" $props"
+        val cypher = $$"CREATE (n:$$label$$propsClause) RETURN n"
+        val params = if (properties.isEmpty()) emptyMap() else mapOf("props" to properties)
+
+        return runQuery(cypher, params) {
+            MemgraphRecordMapper.recordToVertex(it)
+        }.firstOrNull() ?: throw GraphQueryException("Failed to create vertex: $label")
+    }
+
+    override fun findVertexById(label: String, id: GraphElementId): GraphVertex? {
+        label.requireNotBlank("label").requireSafeIdentifier("label")
+
+        return runQuery(
+            $$"MATCH (n:$$label) WHERE id(n) = toInteger($id) RETURN n",
+            mapOf("id" to id.value),
+        ) {
+            MemgraphRecordMapper.recordToVertex(it)
+        }.firstOrNull()
+    }
+
+    override fun findVertexById(id: GraphElementId): GraphVertex? =
+        runQuery(
+            "MATCH (n) WHERE id(n) = toInteger(\$id) RETURN n",
+            mapOf("id" to id.value),
+        ) {
+            MemgraphRecordMapper.recordToVertex(it)
+        }.firstOrNull()
+
+    override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> {
+        label.requireNotBlank("label").requireSafeIdentifier("label")
+        val whereClause = if (filter.isEmpty()) "" else
+            " WHERE " + filter.keys.joinToString(" AND ") { key ->
+                val propertyKey = key.requireSafeIdentifier("property key")
+                "n.$propertyKey = \$$key"
+            }
+
+        return runQuery(
+            $$"MATCH (n:$$label)$$whereClause RETURN n",
+            filter,
+        ) {
+            MemgraphRecordMapper.recordToVertex(it)
+        }
+    }
+
+    override fun updateVertex(label: String, id: GraphElementId, properties: Map<String, Any?>): GraphVertex? {
+        label.requireNotBlank("label").requireSafeIdentifier("label")
+        if (properties.isEmpty()) return findVertexById(label, id)
+        val setClause = properties.keys.joinToString(", ") { key ->
+            val propertyKey = key.requireSafeIdentifier("property key")
+            "n.$propertyKey = \$$key"
+        }
+        val params = properties + mapOf("id" to id.value)
+
+        return runQuery(
+            $$"MATCH (n:$$label) WHERE id(n) = toInteger($id) SET $$setClause RETURN n",
+            params,
+        ) {
+            MemgraphRecordMapper.recordToVertex(it)
+        }.firstOrNull()
+    }
+
+    override fun deleteVertex(label: String, id: GraphElementId): Boolean {
+        label.requireNotBlank("label").requireSafeIdentifier("label")
+
+        val result = tx.run(
+            $$"MATCH (n:$$label) WHERE id(n) = toInteger($id) DETACH DELETE n",
+            mapOf("id" to id.value),
+        )
+        return result.consume().counters().nodesDeleted() > 0
+    }
+
+    override fun countVertices(label: String): Long {
+        label.requireNotBlank("label").requireSafeIdentifier("label")
+        return tx.run($$"MATCH (n:$$label) RETURN count(n) AS cnt").single().get("cnt").asLong()
+    }
+
+    override fun createEdge(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        label: String,
+        properties: Map<String, Any?>,
+    ): GraphEdge {
+        label.requireNotBlank("label").requireSafeIdentifier("label")
+
+        val propsClause = if (properties.isEmpty()) "" else $$" $props"
+        val params = mutableMapOf<String, Any?>("fromId" to fromId.value, "toId" to toId.value)
+        if (properties.isNotEmpty()) params["props"] = properties
+
+        return runQuery(
+            $$"MATCH (a), (b) WHERE id(a) = toInteger($fromId) AND id(b) = toInteger($toId) " +
+                    $$"CREATE (a)-[r:$$label$$propsClause]->(b) RETURN r",
+            params,
+        ) {
+            MemgraphRecordMapper.recordToEdge(it)
+        }.firstOrNull() ?: throw GraphQueryException("Failed to create edge: $label")
+    }
+
+    override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): List<GraphEdge> {
+        label.requireNotBlank("label").requireSafeIdentifier("label")
+        val whereClause = if (filter.isEmpty()) "" else
+            " WHERE " + filter.keys.joinToString(" AND ") { key ->
+                val propertyKey = key.requireSafeIdentifier("property key")
+                "r.$propertyKey = \$$key"
+            }
+
+        return runQuery(
+            $$"MATCH ()-[r:$$label]->()$$whereClause RETURN r",
+            filter,
+        ) {
+            MemgraphRecordMapper.recordToEdge(it)
+        }
+    }
+
+    override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
+        val labelPart = edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
+        return runQuery(
+            $$"MATCH (n)-[r$$labelPart]->(m) WHERE id(n) = toInteger($startId) RETURN r",
+            mapOf("startId" to startId.value),
+        ) {
+            MemgraphRecordMapper.recordToEdge(it)
+        }
+    }
+
+    override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
+        val labelPart = edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
+        return runQuery(
+            $$"MATCH (n)-[r$$labelPart]->(m) WHERE id(m) = toInteger($endId) RETURN r",
+            mapOf("endId" to endId.value),
+        ) {
+            MemgraphRecordMapper.recordToEdge(it)
+        }
+    }
+
+    override fun deleteEdge(label: String, id: GraphElementId): Boolean {
+        label.requireNotBlank("label").requireSafeIdentifier("label")
+        id.value.requireNotBlank("id.value")
+
+        val result = tx.run(
+            $$"MATCH ()-[r:$$label]->() WHERE id(r) = toInteger($id) DELETE r",
+            mapOf("id" to id.value),
+        )
+        return result.consume().counters().relationshipsDeleted() > 0
     }
 }

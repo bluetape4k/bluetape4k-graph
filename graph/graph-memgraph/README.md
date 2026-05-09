@@ -16,6 +16,7 @@ It can be connected to with `neo4j-java-driver` as-is.
 | `MemgraphGraphOperations` | Synchronous (blocking) graph operations |
 | `MemgraphGraphSuspendOperations` | Coroutine (suspend/Flow) graph operations |
 | `CachingMemgraphGraphOperations` | `ConcurrentHashMap`-backed caching decorator over `MemgraphGraphOperations` |
+| `MemgraphGraphSchemaManager` | Schema/index manager for Memgraph indexes and unique constraints |
 
 ## Usage
 
@@ -30,6 +31,24 @@ val vertex = ops.createVertex("Person", mapOf("name" to "Alice"))
 val suspendOps = MemgraphGraphSuspendOperations(driver)
 val vertex = suspendOps.createVertex("Person", mapOf("name" to "Alice"))
 ```
+
+## Schema / Index Management
+
+```kotlin
+import io.bluetape4k.graph.schema.schemaManager
+
+val schema = ops.schemaManager()
+schema.createIndex("Person", "email")
+schema.createUniqueConstraint("Person", "email")
+
+val indexes = schema.listIndexes()
+val constraints = schema.listConstraints()
+
+schema.dropIndex("Person", "email")
+```
+
+Memgraph uses `CREATE INDEX ON :Label(property)`, `SHOW INDEX INFO`,
+`CREATE CONSTRAINT ON (n:Label) ASSERT n.property IS UNIQUE`, and `SHOW CONSTRAINT INFO`.
 
 ## Differences from Neo4j
 
