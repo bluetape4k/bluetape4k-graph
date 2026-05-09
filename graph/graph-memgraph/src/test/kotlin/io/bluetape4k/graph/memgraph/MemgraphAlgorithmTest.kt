@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.memgraph
 
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
@@ -17,7 +18,6 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.assertThrows
 import org.neo4j.driver.AuthTokens
 import org.neo4j.driver.GraphDatabase
 
@@ -41,7 +41,7 @@ class MemgraphAlgorithmTest {
 
     @Test
     fun `sanitizeLabel throws on injection string`() {
-        val ex = assertThrows<IllegalArgumentException> {
+        val ex = assertFailsWith<IllegalArgumentException> {
             ops.degreeCentrality(
                 GraphElementId.of("dummy"),
                 DegreeOptions(edgeLabel = "Person'; DROP TABLE foo--"),

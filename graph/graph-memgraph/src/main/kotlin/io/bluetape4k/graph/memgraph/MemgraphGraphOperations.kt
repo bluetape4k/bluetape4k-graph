@@ -185,7 +185,10 @@ class MemgraphGraphOperations(
     override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> {
         label.requireNotBlank("label").requireSafeIdentifier("label")
         val whereClause = if (filter.isEmpty()) "" else
-            " WHERE " + filter.keys.joinToString(" AND ") { $$"n.$$it = $$$it" }
+            " WHERE " + filter.keys.joinToString(" AND ") { key ->
+                val propertyKey = key.requireSafeIdentifier("property key")
+                "n.$propertyKey = \$$key"
+            }
 
         return runQuery(
             $$"MATCH (n:$$label)$$whereClause RETURN n",
@@ -198,7 +201,10 @@ class MemgraphGraphOperations(
     override fun updateVertex(label: String, id: GraphElementId, properties: Map<String, Any?>): GraphVertex? {
         label.requireNotBlank("label").requireSafeIdentifier("label")
         if (properties.isEmpty()) return findVertexById(label, id)
-        val setClause = properties.keys.joinToString(", ") { $$"n.$$it = $$$it" }
+        val setClause = properties.keys.joinToString(", ") { key ->
+            val propertyKey = key.requireSafeIdentifier("property key")
+            "n.$propertyKey = \$$key"
+        }
         val params = properties + mapOf("id" to id.value)
 
         return runQuery(
@@ -256,7 +262,10 @@ class MemgraphGraphOperations(
         label.requireNotBlank("label").requireSafeIdentifier("label")
 
         val whereClause = if (filter.isEmpty()) "" else
-            " WHERE " + filter.keys.joinToString(" AND ") { $$"r.$$it = $$$it" }
+            " WHERE " + filter.keys.joinToString(" AND ") { key ->
+                val propertyKey = key.requireSafeIdentifier("property key")
+                "r.$propertyKey = \$$key"
+            }
 
         return runQuery(
             $$"MATCH ()-[r:$$label]->()$$whereClause RETURN r",
@@ -265,7 +274,7 @@ class MemgraphGraphOperations(
     }
 
     override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
-        val labelPart = if (edgeLabel != null) ":$edgeLabel" else ""
+        val labelPart = edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
         return runQuery(
             "MATCH (n)-[r$labelPart]->(m) WHERE id(n) = toInteger(\$startId) RETURN r",
             mapOf("startId" to startId.value),
@@ -273,7 +282,7 @@ class MemgraphGraphOperations(
     }
 
     override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
-        val labelPart = if (edgeLabel != null) ":$edgeLabel" else ""
+        val labelPart = edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
         return runQuery(
             "MATCH (n)-[r$labelPart]->(m) WHERE id(m) = toInteger(\$endId) RETURN r",
             mapOf("endId" to endId.value),
@@ -299,10 +308,14 @@ class MemgraphGraphOperations(
         options: NeighborOptions,
     ): List<GraphVertex> {
         startId.value.toLongOrNull() ?: throw GraphQueryException("Memgraph requires numeric ID, got: $startId")
-        options.edgeLabel?.requireNotBlank("edgeLabel")
+        val edgeLabel = options.edgeLabel?.requireNotBlank("edgeLabel")?.requireSafeIdentifier("edgeLabel")
 
         val depthStr = if (options.maxDepth == 1) "" else $$"*1..$${options.maxDepth}"
-        val edgePart = if (options.edgeLabel != null) $$":$${options.edgeLabel}$$depthStr" else depthStr
+        val edgePart = if (edgeLabel != null) {
+            ":$edgeLabel$depthStr"
+        } else {
+            depthStr
+        }
         val pattern = when (options.direction) {
             Direction.OUTGOING -> $$"(start)-[$$edgePart]->(neighbor)"
             Direction.INCOMING -> $$"(start)<-[$$edgePart]-(neighbor)"
@@ -329,8 +342,9 @@ class MemgraphGraphOperations(
         }
 
         // Memgraph는 shortestPath() 미지원 → depth-limited MATCH + ORDER BY length(p) LIMIT 1 사용
+        val edgeLabel = options.edgeLabel?.requireNotBlank("edgeLabel")?.requireSafeIdentifier("edgeLabel")
         val relPattern =
-            if (options.edgeLabel != null) ":" + options.edgeLabel + "*1.." + options.maxDepth
+            if (edgeLabel != null) ":$edgeLabel*1..${options.maxDepth}"
             else "*1.." + options.maxDepth
         return runQuery(
             "MATCH p = (a)-[$relPattern]-(b) " +
@@ -361,8 +375,9 @@ class MemgraphGraphOperations(
         fromId.value.toLongOrNull() ?: throw GraphQueryException("Memgraph requires numeric ID, got: $fromId")
         toId.value.toLongOrNull() ?: throw GraphQueryException("Memgraph requires numeric ID, got: $toId")
 
+        val edgeLabel = options.edgeLabel?.requireNotBlank("edgeLabel")?.requireSafeIdentifier("edgeLabel")
         val relPattern =
-            if (options.edgeLabel != null) $$":$${options.edgeLabel}*1..$${options.maxDepth}"
+            if (edgeLabel != null) ":$edgeLabel*1..${options.maxDepth}"
             else $$"*1..$${options.maxDepth}"
 
         return runQuery(
@@ -647,7 +662,10 @@ private class MemgraphGraphTransactionScope(
     override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> {
         label.requireNotBlank("label").requireSafeIdentifier("label")
         val whereClause = if (filter.isEmpty()) "" else
-            " WHERE " + filter.keys.joinToString(" AND ") { $$"n.$$it = $$$it" }
+            " WHERE " + filter.keys.joinToString(" AND ") { key ->
+                val propertyKey = key.requireSafeIdentifier("property key")
+                "n.$propertyKey = \$$key"
+            }
 
         return runQuery(
             $$"MATCH (n:$$label)$$whereClause RETURN n",
@@ -660,7 +678,10 @@ private class MemgraphGraphTransactionScope(
     override fun updateVertex(label: String, id: GraphElementId, properties: Map<String, Any?>): GraphVertex? {
         label.requireNotBlank("label").requireSafeIdentifier("label")
         if (properties.isEmpty()) return findVertexById(label, id)
-        val setClause = properties.keys.joinToString(", ") { $$"n.$$it = $$$it" }
+        val setClause = properties.keys.joinToString(", ") { key ->
+            val propertyKey = key.requireSafeIdentifier("property key")
+            "n.$propertyKey = \$$key"
+        }
         val params = properties + mapOf("id" to id.value)
 
         return runQuery(
@@ -710,7 +731,10 @@ private class MemgraphGraphTransactionScope(
     override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): List<GraphEdge> {
         label.requireNotBlank("label").requireSafeIdentifier("label")
         val whereClause = if (filter.isEmpty()) "" else
-            " WHERE " + filter.keys.joinToString(" AND ") { $$"r.$$it = $$$it" }
+            " WHERE " + filter.keys.joinToString(" AND ") { key ->
+                val propertyKey = key.requireSafeIdentifier("property key")
+                "r.$propertyKey = \$$key"
+            }
 
         return runQuery(
             $$"MATCH ()-[r:$$label]->()$$whereClause RETURN r",
@@ -721,7 +745,7 @@ private class MemgraphGraphTransactionScope(
     }
 
     override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
-        val labelPart = if (edgeLabel != null) $$":$$edgeLabel" else ""
+        val labelPart = edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
         return runQuery(
             $$"MATCH (n)-[r$$labelPart]->(m) WHERE id(n) = toInteger($startId) RETURN r",
             mapOf("startId" to startId.value),
@@ -731,7 +755,7 @@ private class MemgraphGraphTransactionScope(
     }
 
     override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
-        val labelPart = if (edgeLabel != null) $$":$$edgeLabel" else ""
+        val labelPart = edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
         return runQuery(
             $$"MATCH (n)-[r$$labelPart]->(m) WHERE id(m) = toInteger($endId) RETURN r",
             mapOf("endId" to endId.value),

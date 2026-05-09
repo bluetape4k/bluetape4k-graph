@@ -183,6 +183,17 @@ class MemgraphGraphOperationsTest {
         ops.findEdgesByLabel("KNOWS").shouldHaveSize(0)
     }
 
+    @Test
+    @Order(29)
+    fun `unsafe Cypher identifiers are rejected before query execution`() = runSuspendIO {
+        assertFailsWith<IllegalArgumentException> {
+            ops.findVerticesByLabel("Person", mapOf("name) RETURN n MATCH (m" to "Alice"))
+        }
+        assertFailsWith<IllegalArgumentException> {
+            ops.findEdgesByStartId(GraphElementId.of("0"), "KNOWS) MATCH (m")
+        }
+    }
+
     // ----- 간선(Edge) CRUD -----
 
     @Test

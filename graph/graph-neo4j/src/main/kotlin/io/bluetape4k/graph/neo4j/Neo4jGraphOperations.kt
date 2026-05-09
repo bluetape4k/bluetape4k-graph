@@ -179,7 +179,10 @@ class Neo4jGraphOperations(
         label.requireNotBlank("label").requireSafeIdentifier("label")
 
         val whereClause = if (filter.isEmpty()) "" else
-            " WHERE " + filter.keys.joinToString(" AND ") { $$"n.$$it = $$$it" }
+            " WHERE " + filter.keys.joinToString(" AND ") { key ->
+                val propertyKey = key.requireSafeIdentifier("property key")
+                "n.$propertyKey = \$$key"
+            }
 
         return runQuery(
             $$"MATCH (n:$$label)$$whereClause RETURN n",
@@ -192,7 +195,10 @@ class Neo4jGraphOperations(
     override fun updateVertex(label: String, id: GraphElementId, properties: Map<String, Any?>): GraphVertex? {
         label.requireNotBlank("label").requireSafeIdentifier("label")
         if (properties.isEmpty()) return findVertexById(label, id)
-        val setClause = properties.keys.joinToString(", ") { $$"n.$$it = $$$it" }
+        val setClause = properties.keys.joinToString(", ") { key ->
+            val propertyKey = key.requireSafeIdentifier("property key")
+            "n.$propertyKey = \$$key"
+        }
         val params = properties + mapOf("id" to id.value)
 
         return runQuery(
@@ -250,7 +256,10 @@ class Neo4jGraphOperations(
         label.requireNotBlank("label").requireSafeIdentifier("label")
 
         val whereClause = if (filter.isEmpty()) "" else
-            " WHERE " + filter.keys.joinToString(" AND ") { $$"r.$$it = $$$it" }
+            " WHERE " + filter.keys.joinToString(" AND ") { key ->
+                val propertyKey = key.requireSafeIdentifier("property key")
+                "r.$propertyKey = \$$key"
+            }
 
         return runQuery(
             $$"MATCH ()-[r:$$label]->()$$whereClause RETURN r",
@@ -259,7 +268,7 @@ class Neo4jGraphOperations(
     }
 
     override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
-        val labelPart = if (edgeLabel != null) $$":$$edgeLabel" else ""
+        val labelPart = edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
         return runQuery(
             $$"MATCH (n)-[r$$labelPart]->(m) WHERE elementId(n) = $startId RETURN r",
             mapOf("startId" to startId.value),
@@ -267,7 +276,7 @@ class Neo4jGraphOperations(
     }
 
     override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
-        val labelPart = if (edgeLabel != null) $$":$$edgeLabel" else ""
+        val labelPart = edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
         return runQuery(
             $$"MATCH (n)-[r$$labelPart]->(m) WHERE elementId(m) = $endId RETURN r",
             mapOf("endId" to endId.value),
@@ -294,10 +303,14 @@ class Neo4jGraphOperations(
         options: NeighborOptions,
     ): List<GraphVertex> {
         startId.value.requireNotBlank("startId.value")
-        options.edgeLabel?.requireNotBlank("edgeLabel")
+        val edgeLabel = options.edgeLabel?.requireNotBlank("edgeLabel")?.requireSafeIdentifier("edgeLabel")
 
         val depthStr = if (options.maxDepth == 1) "" else $$"*1..$${options.maxDepth}"
-        val edgePart = if (options.edgeLabel != null) $$":$${options.edgeLabel}$$depthStr" else depthStr
+        val edgePart = if (edgeLabel != null) {
+            ":$edgeLabel$depthStr"
+        } else {
+            depthStr
+        }
         val pattern = when (options.direction) {
             Direction.OUTGOING -> $$"(start)-[$$edgePart]->(neighbor)"
             Direction.INCOMING -> $$"(start)<-[$$edgePart]-(neighbor)"
@@ -323,8 +336,9 @@ class Neo4jGraphOperations(
             return ShortestPathFallback.dijkstra(this, fromId, toId, options)
         }
 
+        val edgeLabel = options.edgeLabel?.requireNotBlank("edgeLabel")?.requireSafeIdentifier("edgeLabel")
         val relPattern =
-            if (options.edgeLabel != null) $$":$${options.edgeLabel}*1..$${options.maxDepth}"
+            if (edgeLabel != null) ":$edgeLabel*1..${options.maxDepth}"
             else $$"*1..$${options.maxDepth}"
 
         return runQuery(
@@ -355,8 +369,9 @@ class Neo4jGraphOperations(
         fromId.value.requireNotBlank("fromId.value")
         toId.value.requireNotBlank("toId.value")
 
+        val edgeLabel = options.edgeLabel?.requireNotBlank("edgeLabel")?.requireSafeIdentifier("edgeLabel")
         val relPattern =
-            if (options.edgeLabel != null) $$":$${options.edgeLabel}*1..$${options.maxDepth}"
+            if (edgeLabel != null) ":$edgeLabel*1..${options.maxDepth}"
             else $$"*1..$${options.maxDepth}"
         
         return runQuery(
@@ -640,7 +655,10 @@ private class Neo4jGraphTransactionScope(
         label.requireNotBlank("label").requireSafeIdentifier("label")
 
         val whereClause = if (filter.isEmpty()) "" else
-            " WHERE " + filter.keys.joinToString(" AND ") { $$"n.$$it = $$$it" }
+            " WHERE " + filter.keys.joinToString(" AND ") { key ->
+                val propertyKey = key.requireSafeIdentifier("property key")
+                "n.$propertyKey = \$$key"
+            }
 
         return runQuery(
             $$"MATCH (n:$$label)$$whereClause RETURN n",
@@ -653,7 +671,10 @@ private class Neo4jGraphTransactionScope(
     override fun updateVertex(label: String, id: GraphElementId, properties: Map<String, Any?>): GraphVertex? {
         label.requireNotBlank("label").requireSafeIdentifier("label")
         if (properties.isEmpty()) return findVertexById(label, id)
-        val setClause = properties.keys.joinToString(", ") { $$"n.$$it = $$$it" }
+        val setClause = properties.keys.joinToString(", ") { key ->
+            val propertyKey = key.requireSafeIdentifier("property key")
+            "n.$propertyKey = \$$key"
+        }
         val params = properties + mapOf("id" to id.value)
 
         return runQuery(
@@ -704,7 +725,10 @@ private class Neo4jGraphTransactionScope(
         label.requireNotBlank("label").requireSafeIdentifier("label")
 
         val whereClause = if (filter.isEmpty()) "" else
-            " WHERE " + filter.keys.joinToString(" AND ") { $$"r.$$it = $$$it" }
+            " WHERE " + filter.keys.joinToString(" AND ") { key ->
+                val propertyKey = key.requireSafeIdentifier("property key")
+                "r.$propertyKey = \$$key"
+            }
 
         return runQuery(
             $$"MATCH ()-[r:$$label]->()$$whereClause RETURN r",
@@ -715,7 +739,7 @@ private class Neo4jGraphTransactionScope(
     }
 
     override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
-        val labelPart = if (edgeLabel != null) $$":$$edgeLabel" else ""
+        val labelPart = edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
         return runQuery(
             $$"MATCH (n)-[r$$labelPart]->(m) WHERE elementId(n) = $startId RETURN r",
             mapOf("startId" to startId.value),
@@ -725,7 +749,7 @@ private class Neo4jGraphTransactionScope(
     }
 
     override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
-        val labelPart = if (edgeLabel != null) $$":$$edgeLabel" else ""
+        val labelPart = edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
         return runQuery(
             $$"MATCH (n)-[r$$labelPart]->(m) WHERE elementId(m) = $endId RETURN r",
             mapOf("endId" to endId.value),
