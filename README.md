@@ -240,7 +240,7 @@ Concrete classes only need to implement `ops` (`GraphOperations` or `GraphSuspen
 
 ## Requirements
 
-- Java 25 (with preview features enabled)
+- Java 21 (with preview features enabled)
 - Kotlin 2.3
 - Docker (for integration tests)
 
