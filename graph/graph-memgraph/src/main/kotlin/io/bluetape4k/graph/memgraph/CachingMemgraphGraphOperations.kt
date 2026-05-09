@@ -7,6 +7,8 @@ import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.repository.GraphOperations
+import io.bluetape4k.graph.schema.GraphSchemaManagementOperations
+import io.bluetape4k.graph.schema.GraphSchemaManager
 import io.bluetape4k.logging.KLogging
 import java.time.Duration
 import java.util.Optional
@@ -60,9 +62,12 @@ class CachingMemgraphGraphOperations(
     private val delegate: MemgraphGraphOperations,
     @Suppress("UNUSED_PARAMETER") maxSize: Long = 10_000,
     @Suppress("UNUSED_PARAMETER") expireAfterWrite: Duration = Duration.ofMinutes(5),
-): GraphOperations by delegate {
+): GraphOperations by delegate, GraphSchemaManagementOperations {
 
     companion object : KLogging()
+
+    override fun schemaManager(): GraphSchemaManager =
+        delegate.schemaManager()
 
     private data class VertexKey(val label: String, val id: GraphElementId)
     private data class LabelKey(val label: String, val filter: Map<String, Any?>)

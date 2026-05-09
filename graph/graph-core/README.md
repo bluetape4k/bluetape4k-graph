@@ -82,6 +82,8 @@ GraphSuspendOperations = GraphSuspendSession
 | `GraphTraversalRepository` | `neighbors`, `shortestPath`, `allPaths`, etc. |
 | `GraphTransactionalOperations` | Optional sync transaction capability used by `ops.transaction { }` |
 | `GraphSuspendTransactionalOperations` | Optional coroutine transaction capability used by `ops.suspendTransaction { }` |
+| `GraphSchemaManagementOperations` | Optional sync schema/index capability used by `ops.schemaManager()` |
+| `GraphSuspendSchemaManagementOperations` | Optional coroutine schema/index capability used by `suspendOps.schemaManager()` |
 
 ### Transaction DSL
 
@@ -114,6 +116,37 @@ val edge = suspendOps.suspendTransaction {
 This first slice adds transaction support for Neo4j, Memgraph, AGE, and TinkerGraph sync/coroutine backends.
 FalkorDB remains explicitly unsupported because its Redis `MULTI` API queues graph query results until `EXEC`, while
 this repository DSL needs each created vertex ID immediately for later calls in the same block.
+
+### Schema / Index Manager
+
+Backends that implement `GraphSchemaManagementOperations` expose schema DDL through `schemaManager()`.
+The API validates labels and property names before building backend DDL, and unsupported backends fail explicitly
+instead of silently pretending that constraints were enforced.
+
+```kotlin
+import io.bluetape4k.graph.schema.schemaManager
+
+ops.schemaManager().createIndex("Person", "email")
+ops.schemaManager().createUniqueConstraint("Person", "email")
+val indexes = ops.schemaManager().listIndexes()
+```
+
+The same manager is available for coroutine backends:
+
+```kotlin
+val schema = suspendOps.schemaManager()
+schema.createIndex("Person", "email")
+```
+
+Support matrix:
+
+| Backend | Indexes | Unique constraints | Notes |
+|---------|---------|--------------------|-------|
+| Neo4j | Create / list / drop | Create / list | Uses Neo4j `CREATE INDEX` and `CREATE CONSTRAINT` |
+| Memgraph | Create / list / drop | Create / list | Uses Memgraph `SHOW INDEX INFO` and `SHOW CONSTRAINT INFO` |
+| TinkerGraph | In-memory recorded no-op | Unsupported | Constraints cannot be enforced by TinkerGraph |
+| AGE | Unsupported | Unsupported | PostgreSQL-side AGE indexes are not portable yet |
+| FalkorDB | Create / list / drop | Unsupported | Unique constraints require raw `GRAPH.CONSTRAINT CREATE` support |
 
 ### Schema DSL
 

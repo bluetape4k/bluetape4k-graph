@@ -21,6 +21,9 @@ import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphSuspendTransactionScope
 import io.bluetape4k.graph.repository.GraphSuspendTransactionalOperations
 import io.bluetape4k.graph.repository.asSuspendTransactionScope
+import io.bluetape4k.graph.schema.GraphSuspendSchemaManagementOperations
+import io.bluetape4k.graph.schema.GraphSuspendSchemaManager
+import io.bluetape4k.graph.schema.asSuspendSchemaManager
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.support.requireNotBlank
 import kotlinx.coroutines.Dispatchers
@@ -56,13 +59,16 @@ import kotlinx.coroutines.withContext
  */
 class TinkerGraphSuspendOperations(
     private val delegate: TinkerGraphOperations = TinkerGraphOperations(),
-): GraphSuspendOperations, GraphSuspendTransactionalOperations {
+): GraphSuspendOperations, GraphSuspendTransactionalOperations, GraphSuspendSchemaManagementOperations {
 
     companion object: KLoggingChannel()
 
     override fun close() {
         delegate.close()
     }
+
+    override fun schemaManager(): GraphSuspendSchemaManager =
+        delegate.schemaManager().asSuspendSchemaManager()
 
     override suspend fun <T> suspendTransaction(block: suspend GraphSuspendTransactionScope.() -> T): T =
         withContext(Dispatchers.IO) {

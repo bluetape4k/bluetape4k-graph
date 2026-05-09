@@ -26,6 +26,8 @@ import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphTransactionScope
 import io.bluetape4k.graph.repository.GraphTransactionalOperations
 import io.bluetape4k.graph.repository.GraphVertexRepository
+import io.bluetape4k.graph.schema.GraphSchemaManagementOperations
+import io.bluetape4k.graph.schema.GraphSchemaManager
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.warn
@@ -57,16 +59,20 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__ as AnonymousT
  * ops.close()
  * ```
  */
-class TinkerGraphOperations : GraphOperations, GraphAlgorithmRepository, GraphTransactionalOperations {
+class TinkerGraphOperations : GraphOperations, GraphAlgorithmRepository, GraphTransactionalOperations, GraphSchemaManagementOperations {
 
     companion object : KLogging()
 
     private val graph: TinkerGraph = TinkerGraph.open()
     private val g: GraphTraversalSource = graph.traversal()
+    private val schemaManager = TinkerGraphSchemaManager()
 
     override fun close() {
         graph.close()
     }
+
+    override fun schemaManager(): GraphSchemaManager =
+        schemaManager
 
     // -- GraphSession --
 

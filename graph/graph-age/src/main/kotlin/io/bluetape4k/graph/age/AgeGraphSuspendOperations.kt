@@ -24,6 +24,9 @@ import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphSuspendTransactionScope
 import io.bluetape4k.graph.repository.GraphSuspendTransactionalOperations
 import io.bluetape4k.graph.repository.asSuspendTransactionScope
+import io.bluetape4k.graph.schema.GraphSuspendSchemaManagementOperations
+import io.bluetape4k.graph.schema.GraphSuspendSchemaManager
+import io.bluetape4k.graph.schema.asSuspendSchemaManager
 import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.support.requireNotBlank
@@ -69,13 +72,16 @@ import org.jetbrains.exposed.v1.jdbc.transactions.experimental.newSuspendedTrans
 @Suppress("DEPRECATION")
 class AgeGraphSuspendOperations(
     private val graphName: String,
-): GraphSuspendOperations, GraphSuspendTransactionalOperations {
+): GraphSuspendOperations, GraphSuspendTransactionalOperations, GraphSuspendSchemaManagementOperations {
 
     companion object: KLoggingChannel()
 
     init {
         graphName.requireNotBlank("graphName").requireSafeIdentifier("graphName")
     }
+
+    override fun schemaManager(): GraphSuspendSchemaManager =
+        AgeGraphSchemaManager().asSuspendSchemaManager()
 
     override suspend fun <T> suspendTransaction(block: suspend GraphSuspendTransactionScope.() -> T): T =
         withContext(Dispatchers.IO) {

@@ -27,6 +27,8 @@ import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphTransactionScope
 import io.bluetape4k.graph.repository.GraphTransactionalOperations
+import io.bluetape4k.graph.schema.GraphSchemaManagementOperations
+import io.bluetape4k.graph.schema.GraphSchemaManager
 import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
@@ -70,7 +72,7 @@ import org.neo4j.driver.Transaction
 class MemgraphGraphOperations(
     private val driver: Driver,
     private val database: String = "memgraph",
-): GraphOperations, GraphTransactionalOperations {
+): GraphOperations, GraphTransactionalOperations, GraphSchemaManagementOperations {
 
     companion object: KLogging()
 
@@ -122,6 +124,9 @@ class MemgraphGraphOperations(
 
     override fun close() { /* driver는 외부 소유 */
     }
+
+    override fun schemaManager(): GraphSchemaManager =
+        MemgraphGraphSchemaManager(driver, database)
 
     // -- GraphTransactionalOperations --
 

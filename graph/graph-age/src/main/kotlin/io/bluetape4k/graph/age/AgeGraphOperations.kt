@@ -31,6 +31,8 @@ import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphTransactionScope
 import io.bluetape4k.graph.repository.GraphTransactionalOperations
 import io.bluetape4k.graph.repository.GraphVertexRepository
+import io.bluetape4k.graph.schema.GraphSchemaManagementOperations
+import io.bluetape4k.graph.schema.GraphSchemaManager
 import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.warn
@@ -67,13 +69,16 @@ import org.jetbrains.exposed.v1.jdbc.transactions.transaction as exposedTransact
  */
 class AgeGraphOperations(
     private val graphName: String,
-): GraphOperations, GraphTransactionalOperations {
+): GraphOperations, GraphTransactionalOperations, GraphSchemaManagementOperations {
 
     companion object: KLogging()
 
     init {
         graphName.requireNotBlank("graphName").requireSafeIdentifier("graphName")
     }
+
+    override fun schemaManager(): GraphSchemaManager =
+        AgeGraphSchemaManager()
 
     override fun createGraph(name: String) {
         name.requireNotBlank("name")

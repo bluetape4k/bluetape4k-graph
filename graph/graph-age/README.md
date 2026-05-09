@@ -34,6 +34,7 @@ graph TD
 | `AgeGraphOperations` | Synchronous `GraphOperations` implementation backed by Exposed + JDBC |
 | `AgeGraphSuspendOperations` | Coroutine-based `GraphSuspendOperations` implementation |
 | `CachingAgeGraphOperations` | `ConcurrentHashMap`-backed caching decorator over `AgeGraphOperations` |
+| `AgeGraphSchemaManager` | Explicit unsupported schema manager for AGE-specific index DDL |
 | `AgeSql` | Produces SQL strings that wrap Cypher queries for Apache AGE |
 | `AgePropertySerializer` | Serializes Kotlin values into AGE-compatible literals |
 | `AgeTypeParser` | Parses `agtype` results into `GraphVertex`, `GraphEdge`, and `GraphPath` |
@@ -94,6 +95,20 @@ val path = ops.shortestPath(alice.id, bob.id, edgeLabel = "KNOWS", maxDepth = 5)
 
 // Neighbors
 val neighbors = ops.neighbors(alice.id, edgeLabel = "KNOWS", direction = Direction.OUTGOING)
+```
+
+## Schema / Index Management
+
+`AgeGraphOperations` exposes `schemaManager()` so callers receive explicit unsupported failures instead of silent no-op
+schema setup. PostgreSQL-side AGE expression indexes depend on graph label tables and `agtype` operators and are not
+portable in this module yet.
+
+```kotlin
+import io.bluetape4k.graph.schema.schemaManager
+
+val schema = ops.schemaManager()
+schema.listIndexes() // empty
+schema.createIndex("Person", "email") // UnsupportedOperationException
 ```
 
 ## Caching Decorator

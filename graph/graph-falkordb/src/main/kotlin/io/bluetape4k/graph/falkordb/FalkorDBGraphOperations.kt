@@ -29,6 +29,8 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.repository.GraphOperations
+import io.bluetape4k.graph.schema.GraphSchemaManagementOperations
+import io.bluetape4k.graph.schema.GraphSchemaManager
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.info
@@ -63,7 +65,7 @@ import io.bluetape4k.support.requireNotBlank
 class FalkorDBGraphOperations(
     private val driver: Driver,
     val graphName: String = DEFAULT_GRAPH_NAME,
-): GraphOperations {
+): GraphOperations, GraphSchemaManagementOperations {
 
     companion object: KLogging() {
         /** 기본 그래프 이름. */
@@ -73,6 +75,9 @@ class FalkorDBGraphOperations(
     init {
         graphName.requireNotBlank("graphName")
     }
+
+    override fun schemaManager(): GraphSchemaManager =
+        FalkorDBGraphSchemaManager(driver, graphName)
 
     /**
      * [graphName]에 해당하는 그래프 컨텍스트를 열고 블록을 실행한 뒤 자동으로 닫습니다.

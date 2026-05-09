@@ -29,6 +29,8 @@ import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphTransactionScope
 import io.bluetape4k.graph.repository.GraphTransactionalOperations
 import io.bluetape4k.graph.repository.GraphVertexRepository
+import io.bluetape4k.graph.schema.GraphSchemaManagementOperations
+import io.bluetape4k.graph.schema.GraphSchemaManager
 import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
@@ -65,7 +67,7 @@ import org.neo4j.driver.Transaction
 class Neo4jGraphOperations(
     private val driver: Driver,
     private val database: String = "neo4j",
-): GraphOperations, GraphTransactionalOperations {
+): GraphOperations, GraphTransactionalOperations, GraphSchemaManagementOperations {
 
     companion object: KLogging()
 
@@ -113,6 +115,9 @@ class Neo4jGraphOperations(
 
     override fun close() { /* driver는 외부 소유 */
     }
+
+    override fun schemaManager(): GraphSchemaManager =
+        Neo4jGraphSchemaManager(driver, database)
 
     // -- GraphTransactionalOperations --
 

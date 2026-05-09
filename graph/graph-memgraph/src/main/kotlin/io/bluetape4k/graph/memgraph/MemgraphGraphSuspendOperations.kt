@@ -23,6 +23,9 @@ import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphSuspendTransactionScope
 import io.bluetape4k.graph.repository.GraphSuspendTransactionalOperations
 import io.bluetape4k.graph.repository.asSuspendTransactionScope
+import io.bluetape4k.graph.schema.GraphSuspendSchemaManager
+import io.bluetape4k.graph.schema.GraphSuspendSchemaManagementOperations
+import io.bluetape4k.graph.schema.asSuspendSchemaManager
 import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
@@ -80,7 +83,7 @@ import org.neo4j.driver.reactivestreams.ReactiveSession
 class MemgraphGraphSuspendOperations(
     private val driver: Driver,
     private val database: String = "memgraph",
-): GraphSuspendOperations, GraphSuspendTransactionalOperations {
+): GraphSuspendOperations, GraphSuspendTransactionalOperations, GraphSuspendSchemaManagementOperations {
 
     companion object: KLoggingChannel()
 
@@ -89,6 +92,9 @@ class MemgraphGraphSuspendOperations(
             ReactiveSession::class.java,
             SessionConfig.builder().withDatabase(database).build(),
         )
+
+    override fun schemaManager(): GraphSuspendSchemaManager =
+        MemgraphGraphSchemaManager(driver, database).asSuspendSchemaManager()
 
     override suspend fun <T> suspendTransaction(block: suspend GraphSuspendTransactionScope.() -> T): T =
         withContext(Dispatchers.IO) {
