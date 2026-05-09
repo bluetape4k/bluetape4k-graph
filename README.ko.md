@@ -238,7 +238,7 @@ driver.close()
 
 ## 요구 사항
 
-- Java 25 (preview 기능 활성화)
+- Java 21 (preview 기능 활성화)
 - Kotlin 2.3
 - Docker (통합 테스트용)
 

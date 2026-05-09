@@ -5,8 +5,8 @@ FalkorDB. Provides paired synchronous and coroutine APIs plus Spring Boot 4
 auto-configuration.
 
 - Kotlin: 2.3
-- Java: 25 with preview enabled
-- Dependency versions: `buildSrc/src/main/kotlin/Libs.kt`
+- Java: 21 with preview enabled
+- Dependency versions: `gradle/libs.versions.toml`
 
 ## Layout
 
