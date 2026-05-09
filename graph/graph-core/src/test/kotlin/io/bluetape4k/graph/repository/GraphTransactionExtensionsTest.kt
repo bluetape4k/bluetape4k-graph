@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.repository
 
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeInstanceOf
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.graph.model.BfsDfsOptions
@@ -24,7 +25,7 @@ class GraphTransactionExtensionsTest {
 
     @Test
     fun `transaction fails clearly when backend does not support transactions`() {
-        val ex = org.junit.jupiter.api.assertThrows<UnsupportedOperationException> {
+        val ex = assertFailsWith<UnsupportedOperationException> {
             UnsupportedGraphOperations.transaction {
                 createVertex("Person")
             }

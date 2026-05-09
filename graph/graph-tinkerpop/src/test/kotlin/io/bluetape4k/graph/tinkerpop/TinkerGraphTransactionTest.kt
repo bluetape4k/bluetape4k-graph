@@ -1,12 +1,12 @@
 package io.bluetape4k.graph.tinkerpop
 
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.graph.repository.transaction
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 class TinkerGraphTransactionTest {
 
@@ -39,7 +39,7 @@ class TinkerGraphTransactionTest {
     fun `transaction rolls back created vertices and edge when block fails`() {
         val existing = ops.createVertex("Person", mapOf("name" to "Existing"))
 
-        assertThrows<IllegalStateException> {
+        assertFailsWith<IllegalStateException> {
             ops.transaction {
                 val alice = createVertex("Person", mapOf("name" to "Alice"))
                 val bob = createVertex("Person", mapOf("name" to "Bob"))
@@ -59,7 +59,7 @@ class TinkerGraphTransactionTest {
         val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
         val edge = ops.createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to 2026L))
 
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             ops.transaction {
                 updateVertex("Person", alice.id, mapOf("name" to "Updated"))
                 deleteVertex("Person", bob.id)

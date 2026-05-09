@@ -40,7 +40,7 @@ val edge = ops.transaction {
 - Neo4j/Memgraph sync 구현은 `Session.run(...)` 헬퍼를 통해 쿼리별 세션을 열고 닫는다.
 - AGE sync 구현은 각 메서드가 Exposed `transaction { ... }`에 위임한다.
 - TinkerGraph는 in-memory 구현이며, 현재 graph/traversal handle이 구현체 내부 private 필드다.
-- FalkorDB는 jfalkordb 0.7.0 동기 API 기반이고, 명확한 graph-level rollback 트랜잭션 표면이 현재 코드에 없다.
+- FalkorDB는 jfalkordb 0.7.0의 `GraphContext.multi()` / `GraphTransaction.exec()` 표면을 제공하지만, Redis `MULTI` 특성상 graph query 결과가 `EXEC`까지 지연된다. 현재 repository DSL은 `createVertex` 결과 ID를 같은 블록의 다음 `createEdge` 호출에서 즉시 사용해야 하므로 이 semantics와 맞지 않는다.
 
 ### 2.2 공식 문서 근거
 
@@ -77,7 +77,7 @@ val edge = ops.transaction {
 
 ### 3.2 이번 PR 제외
 
-- FalkorDB 트랜잭션 구현: jfalkordb/Redis graph-level rollback semantics를 별도로 확인한 뒤 후속 처리한다.
+- FalkorDB 트랜잭션 구현: jfalkordb/Redis graph-level rollback semantics는 확인했으나, 중간 결과 지연 때문에 현재 repository DSL에서는 명시적 미지원으로 유지한다. 향후 단일 Cypher script/command DSL을 별도로 설계할 때 재검토한다.
 - Suspend 백엔드 전체 구현: API 표면은 추가하되, 실제 구현은 sync contract 안정화 후 별도 PR에서 백엔드별로 확장한다.
 - `#32`, `#33`, `#34` 구현: transaction DSL 안정화 후 진행한다.
 - distributed transaction, retry, isolation level, read/write transaction mode.
@@ -133,7 +133,7 @@ TinkerGraph는 테스트와 임베디드 용도의 in-memory backend다. provide
 
 ### 4.5 Suspend API
 
-Suspend contract는 core에 추가하지만 이번 PR에서 백엔드 구현은 제공하지 않는다. 확장 함수는 `GraphSuspendTransactionalOperations`를 구현하지 않은 경우 명시적으로 실패한다. 이렇게 하면 public API shape를 먼저 확보하면서, 각 suspend backend의 transaction strategy를 후속 PR에서 안전하게 설계할 수 있다.
+Suspend contract는 core에 추가하고, 동기 트랜잭션 API가 원자성의 실제 소유자인 Neo4j/Memgraph/AGE/TinkerGraph에서는 동기 transaction scope를 coroutine scope로 어댑트해 제공한다. 확장 함수는 `GraphSuspendTransactionalOperations`를 구현하지 않은 경우 명시적으로 실패한다.
 
 ---
 

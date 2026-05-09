@@ -1,9 +1,11 @@
 package io.bluetape4k.graph.falkordb
 
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.graph.model.Direction
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
+import io.bluetape4k.graph.repository.suspendTransaction
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
@@ -148,6 +150,18 @@ class FalkorDBGraphSuspendOperationsTest : AbstractFalkorDBTest() {
         deleted.shouldBeTrue()
 
         ops.findVertexById("Person", vertex.id).shouldBeNull()
+    }
+
+    @Test
+    @Order(28)
+    fun `suspendTransaction은 중간 결과가 필요한 repository DSL을 지원하지 않는다`() = runSuspendIO {
+        val ex = assertFailsWith<UnsupportedOperationException> {
+            ops.suspendTransaction {
+                createVertex("Person")
+            }
+        }
+
+        ex.message shouldContain "does not support suspend graph transactions"
     }
 
     @Test

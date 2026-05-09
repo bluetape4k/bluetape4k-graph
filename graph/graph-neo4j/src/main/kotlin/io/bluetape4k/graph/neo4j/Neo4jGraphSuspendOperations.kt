@@ -20,6 +20,9 @@ import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.repository.GraphSuspendOperations
+import io.bluetape4k.graph.repository.GraphSuspendTransactionScope
+import io.bluetape4k.graph.repository.GraphSuspendTransactionalOperations
+import io.bluetape4k.graph.repository.asSuspendTransactionScope
 import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
@@ -34,6 +37,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.neo4j.driver.Driver
 import org.neo4j.driver.Query
@@ -68,7 +72,7 @@ import org.neo4j.driver.reactivestreams.ReactiveSession
 class Neo4jGraphSuspendOperations(
     private val driver: Driver,
     private val database: String = "neo4j",
-): GraphSuspendOperations {
+): GraphSuspendOperations, GraphSuspendTransactionalOperations {
 
     companion object: KLoggingChannel()
 
@@ -77,6 +81,14 @@ class Neo4jGraphSuspendOperations(
             ReactiveSession::class.java,
             SessionConfig.builder().withDatabase(database).build(),
         )
+
+    override suspend fun <T> suspendTransaction(block: suspend GraphSuspendTransactionScope.() -> T): T =
+        withContext(Dispatchers.IO) {
+            Neo4jGraphOperations(driver, database).transaction {
+                val scope = asSuspendTransactionScope()
+                runBlocking { scope.block() }
+            }
+        }
 
     /**
      * 단일값/삭제 등 suspend 메서드용 쿼리 헬퍼.

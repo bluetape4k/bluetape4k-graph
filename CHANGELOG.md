@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `GraphPathTest`: `graphPathOf` 8개 케이스 + `emptyGraphPath`
   - `GraphCycleTest`: `toCycle()`, `length`, 동등 비교 7개 케이스
 - **`graph-core` README 모델 빌더 유틸리티 섹션** (`graph/graph-core/README.md`, `README.ko.md`)
-- **Transaction DSL first slice**: `GraphOperations.transaction { }` 확장과 capability contract를 추가하고 Neo4j, Memgraph, AGE, TinkerGraph 동기 백엔드에 1차 구현을 연결했습니다. FalkorDB와 실제 suspend 백엔드 구현은 후속 작업입니다.
+- **Transaction DSL first slice**: `GraphOperations.transaction { }` 확장과 capability contract를 추가하고 Neo4j, Memgraph, AGE, TinkerGraph 동기 백엔드에 1차 구현을 연결했습니다. suspend transaction capability도 동일 백엔드에 연결하고, FalkorDB는 중간 결과를 즉시 반환해야 하는 repository DSL 특성상 명시적 미지원으로 고정했습니다.
 
 ### Fixed
 

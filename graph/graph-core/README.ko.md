@@ -1327,7 +1327,7 @@ dependencies {
 ## 참고
 
 - **AutoCloseable**: `GraphOperations`는 `GraphSession`을 상속하며 `AutoCloseable`을 구현. 외부 리소스(Database/Driver)의 생명주기는 호출자가 관리.
-- **트랜잭션**: `GraphTransactionalOperations`를 구현한 백엔드는 `ops.transaction { }` DSL을 제공한다. 미지원 백엔드는 auto-commit fallback 없이 명시적으로 실패한다.
+- **트랜잭션**: `GraphTransactionalOperations` 또는 `GraphSuspendTransactionalOperations`를 구현한 백엔드는 `ops.transaction { }` / `ops.suspendTransaction { }` DSL을 제공한다. 미지원 백엔드는 auto-commit fallback 없이 명시적으로 실패한다.
 - **백엔드 차이**: AGE는 SQL 기반이므로 쿼리 최적화, Neo4j는 Cypher 쿼리 최적화에 따라 성능이 달라질 수 있음.
 
 ### 트랜잭션 DSL
@@ -1342,8 +1342,18 @@ val edge = ops.transaction {
 }
 ```
 
-이번 1차 구현은 Neo4j, Memgraph, AGE, TinkerGraph의 동기 트랜잭션을 지원한다.
-FalkorDB와 실제 `suspendTransaction` 백엔드 구현은 후속 작업이다.
+```kotlin
+import io.bluetape4k.graph.repository.suspendTransaction
+
+val edge = suspendOps.suspendTransaction {
+    val alice = createVertex("Person", mapOf("name" to "Alice"))
+    val bob = createVertex("Person", mapOf("name" to "Bob"))
+    createEdge(alice.id, bob.id, "KNOWS")
+}
+```
+
+이번 1차 구현은 Neo4j, Memgraph, AGE, TinkerGraph의 동기/코루틴 트랜잭션을 지원한다.
+FalkorDB는 Redis `MULTI`에서 그래프 쿼리 결과가 `EXEC`까지 지연되어, 생성한 정점 ID를 같은 DSL 블록의 다음 호출에서 즉시 사용해야 하는 repository DSL과 맞지 않으므로 명시적으로 미지원한다.
 
 ## 그래프 알고리즘
 

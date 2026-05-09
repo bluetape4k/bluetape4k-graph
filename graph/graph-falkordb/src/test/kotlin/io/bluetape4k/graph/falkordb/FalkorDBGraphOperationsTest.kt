@@ -1,9 +1,11 @@
 package io.bluetape4k.graph.falkordb
 
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.graph.model.Direction
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
+import io.bluetape4k.graph.repository.transaction
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
 import io.bluetape4k.assertions.shouldBeNull
@@ -145,6 +147,18 @@ class FalkorDBGraphOperationsTest : AbstractFalkorDBTest() {
 
         val count = ops.countVertices("Person")
         count shouldBeEqualTo 2L
+    }
+
+    @Test
+    @Order(28)
+    fun `transaction은 중간 결과가 필요한 repository DSL을 지원하지 않는다`() {
+        val ex = assertFailsWith<UnsupportedOperationException> {
+            ops.transaction {
+                createVertex("Person")
+            }
+        }
+
+        ex.message shouldContain "does not support graph transactions"
     }
 
     // ----- 간선(Edge) CRUD -----

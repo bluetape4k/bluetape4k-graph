@@ -18,11 +18,15 @@ import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.repository.GraphSuspendOperations
+import io.bluetape4k.graph.repository.GraphSuspendTransactionScope
+import io.bluetape4k.graph.repository.GraphSuspendTransactionalOperations
+import io.bluetape4k.graph.repository.asSuspendTransactionScope
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.support.requireNotBlank
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 /**
@@ -52,13 +56,21 @@ import kotlinx.coroutines.withContext
  */
 class TinkerGraphSuspendOperations(
     private val delegate: TinkerGraphOperations = TinkerGraphOperations(),
-): GraphSuspendOperations {
+): GraphSuspendOperations, GraphSuspendTransactionalOperations {
 
     companion object: KLoggingChannel()
 
     override fun close() {
         delegate.close()
     }
+
+    override suspend fun <T> suspendTransaction(block: suspend GraphSuspendTransactionScope.() -> T): T =
+        withContext(Dispatchers.IO) {
+            delegate.transaction {
+                val scope = asSuspendTransactionScope()
+                runBlocking { scope.block() }
+            }
+        }
 
     // -- GraphSuspendSession --
 

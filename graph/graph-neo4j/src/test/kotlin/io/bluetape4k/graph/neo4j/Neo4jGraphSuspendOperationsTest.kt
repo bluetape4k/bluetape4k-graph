@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.neo4j
 
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
@@ -7,6 +8,7 @@ import io.bluetape4k.graph.model.DegreeOptions
 import io.bluetape4k.graph.model.Direction
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
+import io.bluetape4k.graph.repository.suspendTransaction
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
@@ -168,6 +170,25 @@ class Neo4jGraphSuspendOperationsTest {
 
         ops.countVertices("Person") shouldBeEqualTo 2L
         ops.countVertices("City") shouldBeEqualTo 1L
+    }
+
+    @Test
+    @Order(29)
+    fun `suspendTransaction은 실패 시 생성한 정점과 간선을 rollback한다`() = runSuspendIO {
+        val existing = ops.createVertex("Person", mapOf("name" to "Existing"))
+
+        assertFailsWith<IllegalStateException> {
+            ops.suspendTransaction {
+                val alice = createVertex("Person", mapOf("name" to "Alice"))
+                val bob = createVertex("Person", mapOf("name" to "Bob"))
+                createEdge(alice.id, bob.id, "KNOWS")
+                error("rollback")
+            }
+        }
+
+        ops.findVertexById("Person", existing.id)?.properties?.get("name") shouldBeEqualTo "Existing"
+        ops.countVertices("Person") shouldBeEqualTo 1L
+        ops.findEdgesByLabel("KNOWS").toList().shouldHaveSize(0)
     }
 
     // ----- 간선(Edge) CRUD -----

@@ -14,7 +14,7 @@
 - 지원하지 않는 구현체는 auto-commit fallback을 쓰지 않고 명시적으로 실패한다.
 - public API는 한국어 KDoc과 짧은 Kotlin 예제를 포함한다.
 - backend transaction scope 내부 쿼리는 기존 mapper와 identifier 검증 규칙을 재사용한다.
-- 이번 PR은 first slice다. FalkorDB와 suspend backend 구현은 후속 작업으로 남긴다.
+- 이번 PR은 first slice다. FalkorDB는 repository DSL semantics와 맞지 않아 명시적 미지원으로 고정하고, suspend backend는 동기 트랜잭션 구현을 어댑트해 지원한다.
 
 ---
 
@@ -111,7 +111,7 @@
   - 신규/수정: `docs/superpowers/index/2026-05.md`, `docs/superpowers/INDEX.md`
 - **내용**
   - transaction DSL first slice 범위 명시
-  - FalkorDB/suspend backend follow-up 명시
+  - FalkorDB 명시적 미지원과 suspend backend 지원 범위 명시
 - **검증**
   - 문서 링크와 코드 snippet 수동 확인
 

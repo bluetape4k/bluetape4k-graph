@@ -81,6 +81,7 @@ GraphSuspendOperations = GraphSuspendSession
 | `GraphEdgeRepository` | Edge CRUD and relationship queries |
 | `GraphTraversalRepository` | `neighbors`, `shortestPath`, `allPaths`, etc. |
 | `GraphTransactionalOperations` | Optional sync transaction capability used by `ops.transaction { }` |
+| `GraphSuspendTransactionalOperations` | Optional coroutine transaction capability used by `ops.suspendTransaction { }` |
 
 ### Transaction DSL
 
@@ -97,8 +98,22 @@ val edge = ops.transaction {
 }
 ```
 
-This first slice adds sync transaction support for Neo4j, Memgraph, AGE, and TinkerGraph. FalkorDB and concrete
-`suspendTransaction` backend implementations are follow-up work.
+Coroutine backends that implement `GraphSuspendTransactionalOperations` expose the same vertex/edge CRUD scope through
+`suspendTransaction`.
+
+```kotlin
+import io.bluetape4k.graph.repository.suspendTransaction
+
+val edge = suspendOps.suspendTransaction {
+    val alice = createVertex("Person", mapOf("name" to "Alice"))
+    val bob = createVertex("Person", mapOf("name" to "Bob"))
+    createEdge(alice.id, bob.id, "KNOWS")
+}
+```
+
+This first slice adds transaction support for Neo4j, Memgraph, AGE, and TinkerGraph sync/coroutine backends.
+FalkorDB remains explicitly unsupported because its Redis `MULTI` API queues graph query results until `EXEC`, while
+this repository DSL needs each created vertex ID immediately for later calls in the same block.
 
 ### Schema DSL
 
