@@ -10,7 +10,7 @@ dependencies {
 
     implementation(libs.bluetape4k.coroutines)
     implementation(libs.bluetape4k.virtualthread.api)
-    implementation(libs.bluetape4k.virtualthread.jdk25)
+    implementation(libs.bluetape4k.virtualthread.jdk21)
 
     // 압축 런타임 — 선택적 의존성 (없어도 GZip/Deflate/Bzip2는 JDK 내장으로 동작)
     compileOnly(libs.snappy.java)
