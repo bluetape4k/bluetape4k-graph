@@ -118,9 +118,9 @@ jobs:
           path: '**/build/reports/kover/'
           retention-days: 14
 
-  # ── 3. Spring Boot Starters (TinkerGraph, in-memory) ─────────────────────
+  # ── 3. Spring Boot 4 Starter (TinkerGraph, in-memory) ───────────────────
   test-spring-starters:
-    name: Test / Spring Boot Starters (TinkerGraph)
+    name: Test / Spring Boot 4 Starter (TinkerGraph)
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: build
@@ -137,11 +137,10 @@ jobs:
           gradle-version: wrapper
           cache-read-only: true
 
-      - name: Test Spring Boot 3/4 starters
+      - name: Test Spring Boot 4 starter
         run: |
           for attempt in 1 2 3; do
             ./gradlew \
-              :graph-spring-boot3-starter:test \
               :graph-spring-boot4-starter:test \
               --no-daemon --continue && break
             echo "Attempt $attempt failed"
@@ -155,7 +154,6 @@ jobs:
         if: always()
         run: |
           ./gradlew \
-            :graph-spring-boot3-starter:koverXmlReport \
             :graph-spring-boot4-starter:koverXmlReport \
             --no-daemon
         continue-on-error: true
