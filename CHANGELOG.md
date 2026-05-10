@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **`graph-bom` README 문서**: BOM 사용법을 English/Korean README로 정리했습니다 ([PR #70](https://github.com/bluetape4k/bluetape4k-graph/pull/70)).
-- **`graph-io-okio`**: OkIO 기반 스트리밍 그래프 I/O 레이어를 추가했습니다. CSV/GraphML/Jackson 계열 I/O에 Source/Sink 기반 확장 지점을 제공합니다 ([PR #48](https://github.com/bluetape4k/bluetape4k-graph/pull/48)).
+- **`graph-okio`**: OkIO 기반 스트리밍 그래프 I/O 레이어를 추가했습니다. CSV/GraphML/Jackson 계열 I/O에 Source/Sink 기반 확장 지점을 제공합니다 ([PR #48](https://github.com/bluetape4k/bluetape4k-graph/pull/48)).
 - **Weighted graph support**: Dijkstra/A* shortest path 지원을 추가했습니다 ([PR #39](https://github.com/bluetape4k/bluetape4k-graph/pull/39)).
 - **`graph-core` 모델 빌더 유틸리티** (`graph/graph-core/src/main/kotlin/io/bluetape4k/graph/model/`)
   - `graphElementIdOf(Any)`: 임의 타입에서 `GraphElementId` 생성 — `String`, `Long`, `Int`, `GraphElementId` 모두 안전하게 변환
@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `graph-io-okio` Gradle project/artifact identity를 `graph-okio`로 변경했습니다 ([#76](https://github.com/bluetape4k/bluetape4k-graph/issues/76)).
 - Gradle dependency declarations migrated from `buildSrc/Libs.kt` to Version Catalog (`gradle/libs.versions.toml`) ([PR #63](https://github.com/bluetape4k/bluetape4k-graph/pull/63)).
 - CI now uses paths-filter, Docker-specific jobs, and retry configuration for container-heavy workflows ([PR #68](https://github.com/bluetape4k/bluetape4k-graph/pull/68)).
 - Removed the `tanvd.kosogor` plugin from the build ([PR #57](https://github.com/bluetape4k/bluetape4k-graph/pull/57)).

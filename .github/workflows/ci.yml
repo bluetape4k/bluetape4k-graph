@@ -165,7 +165,7 @@ jobs:
               :graph-io-jackson2:test \
               :graph-io-jackson3:test \
               :graph-io-graphml:test \
-              :graph-io-okio:test \
+              :graph-okio:test \
               --no-daemon --continue && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 3 ] && sleep 10 || exit 1
@@ -184,7 +184,7 @@ jobs:
             :graph-io-jackson2:koverXmlReport \
             :graph-io-jackson3:koverXmlReport \
             :graph-io-graphml:koverXmlReport \
-            :graph-io-okio:koverXmlReport \
+            :graph-okio:koverXmlReport \
             --no-daemon --continue
         continue-on-error: true
 

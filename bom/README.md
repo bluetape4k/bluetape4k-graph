@@ -28,7 +28,7 @@ graph TB
       GraphML[graph-io-graphml]
       Jackson2[graph-io-jackson2]
       Jackson3[graph-io-jackson3]
-      Okio[graph-io-okio]
+      Okio[graph-okio]
     end
 
     subgraph "Spring Boot starters"
@@ -55,7 +55,7 @@ The BOM is a Gradle `java-platform` that publishes only `<dependencyManagement>`
 | Group | Modules |
 |-------|---------|
 | `graph/*` | `graph-core`, `graph-neo4j`, `graph-memgraph`, `graph-age`, `graph-tinkerpop`, `graph-falkordb` |
-| `graph-io/*` | `graph-io-core`, `graph-io-csv`, `graph-io-graphml`, `graph-io-jackson2`, `graph-io-jackson3`, `graph-io-okio` |
+| `graph-io/*` | `graph-io-core`, `graph-io-csv`, `graph-io-graphml`, `graph-io-jackson2`, `graph-io-jackson3`, `graph-okio` |
 | `spring-boot4/*` | `graph-spring-boot4-starter` |
 
 > Note: `examples/*` and `benchmark/*` modules are excluded from the BOM constraints.
