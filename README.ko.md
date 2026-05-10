@@ -71,6 +71,29 @@ object KnowsLabel : EdgeLabel("KNOWS") {
 }
 ```
 
+### 배치 삽입 API
+
+`GraphVertexRepository.createVertices(...)`와 `GraphEdgeRepository.createEdges(...)`는 여러 그래프 요소를 한 번의 호출로 생성합니다. 기본 인터페이스 메서드는 단건 API를 반복 호출해 소스 호환성을 유지하고, Neo4j, Memgraph, FalkorDB, AGE, TinkerGraph는 백엔드별 배치 경로를 제공합니다.
+
+반환 순서는 입력 순서와 같습니다. 네이티브 간선 배치는 쓰기 전에 엔드포인트를 검증하므로, 누락된 엔드포인트가 있으면 일부 간선을 남기지 않고 전체 배치가 실패합니다.
+
+```kotlin
+val people = ops.createVertices(
+    "Person",
+    listOf(
+        mapOf("name" to "Alice"),
+        mapOf("name" to "Bob"),
+    )
+)
+
+val edges = ops.createEdges(
+    "KNOWS",
+    listOf(BatchEdge(people[0].id, people[1].id, mapOf("since" to 2026)))
+)
+```
+
+동기, suspend, Virtual Thread 어댑터 모두 같은 계약(`createVertices`, `createEdges`, `createVerticesAsync`, `createEdgesAsync`)을 제공합니다. 1만 건 삽입 smoke 근거는 [2026-05 테스트 로그](docs/testlogs/2026-05.md)에 기록되어 있습니다.
+
 ## 벌크 임포트/익스포트 (`graph-io`)
 
 `graph-io` 패밀리는 포맷 독립적인 대용량 I/O를 세 가지 실행 모델(Sync, VirtualThread, Coroutine)로 제공한다.
@@ -96,6 +119,8 @@ SuspendGraphMlBulkExporter().exportGraphSuspending(
     GraphExportSink.PathSink(Path.of("graph.graphml")), suspendOps, options
 )
 ```
+
+임포터는 `GraphImportOptions.batchSize`를 백엔드 쓰기 플러시 크기로 사용합니다. 대기 중인 정점과 간선을 라벨별로 묶어 `createVertices`/`createEdges`로 플러시하며, 중복 ID와 누락 엔드포인트 정책의 의미는 그대로 유지됩니다.
 
 | 모듈 | 포맷 | 문서 |
 |------|------|------|

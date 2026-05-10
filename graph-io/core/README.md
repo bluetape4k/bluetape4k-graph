@@ -72,6 +72,8 @@ enum class DuplicateVertexPolicy { FAIL, SKIP }
 enum class MissingEndpointPolicy { FAIL, SKIP_EDGE }
 ```
 
+`batchSize` controls backend write flushing during imports. Importers group pending vertices and edges by label, call `createVertices`/`createEdges` when a label buffer reaches this size, and flush final partial buffers at the end. It does not change duplicate-ID or missing-endpoint policy semantics.
+
 `requireNotBlank` is enforced on label fields and on every element of label sets.
 
 ### Reports (`io.bluetape4k.graph.io.report`)
@@ -118,6 +120,7 @@ data class GraphIoFailure(
 
 - **`GraphIoPaths`** — opens `BufferedReader`/`BufferedWriter`/`InputStream`/`OutputStream` for any `GraphImportSource`/`GraphExportSink`, auto-creates parent directories for `PathSink`, honours the `closeInput`/`closeOutput` flag for caller-owned streams.
 - **`GraphIoExternalIdMap`** — tracks external ID → backend `GraphElementId` mappings during import and enforces `DuplicateVertexPolicy` (`FAIL` or `SKIP`). Importers follow a 2-step pattern: `putFirstOrFail()` gates the duplicate policy with a temporary ID, then `put()` overwrites with the backend-issued ID. Calling `put()` before `putFirstOrFail()` throws `IllegalStateException` to surface duplicate-policy bypass at the caller site.
+- **`GraphIoBatchWriter` / `SuspendGraphIoBatchWriter`** — label-grouped import write buffers that flush via `createVertices`/`createEdges` according to `GraphImportOptions.batchSize`.
 - **`GraphIoStopwatch`** — millisecond-precision timer used by format importers/exporters to populate `report.elapsed`.
 - **`VirtualThreadGraphBulkAdapter`** — wraps a sync `GraphBulkImporter`/`GraphBulkExporter` as a Virtual-Thread-backed async variant via `CompletableFuture`.
 
