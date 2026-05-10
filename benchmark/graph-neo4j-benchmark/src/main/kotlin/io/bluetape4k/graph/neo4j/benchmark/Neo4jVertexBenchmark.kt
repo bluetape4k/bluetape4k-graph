@@ -1,5 +1,7 @@
 package io.bluetape4k.graph.neo4j.benchmark
 
+import io.bluetape4k.graph.model.BatchEdge
+import io.bluetape4k.graph.model.GraphVertex
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.BenchmarkMode
 import org.openjdk.jmh.annotations.Fork
@@ -44,4 +46,50 @@ open class Neo4jVertexBenchmark: Neo4jBenchmarkState() {
         val edge = ops.createEdge(from.id, to.id, KNOWS_LABEL, mapOf("since" to 2024L))
         return edge.id.value.isNotEmpty()
     }
+
+    @Benchmark
+    fun createVertices10kLoop(): Int {
+        ops.dropGraph(GRAPH_NAME)
+        batchVertexRows().forEach { props ->
+            ops.createVertex(PERSON_LABEL, props)
+        }
+        return ops.findVerticesByLabel(PERSON_LABEL).size
+    }
+
+    @Benchmark
+    fun createVertices10kBatch(): Int {
+        ops.dropGraph(GRAPH_NAME)
+        return ops.createVertices(PERSON_LABEL, batchVertexRows()).size
+    }
+
+    @Benchmark
+    fun createEdges10kLoop(): Int {
+        ops.dropGraph(GRAPH_NAME)
+        val vertices = ops.createVertices(PERSON_LABEL, batchVertexRows())
+        cycleEdges(vertices).forEach { edge ->
+            ops.createEdge(edge.fromId, edge.toId, KNOWS_LABEL, edge.properties)
+        }
+        return ops.findEdgesByLabel(KNOWS_LABEL).size
+    }
+
+    @Benchmark
+    fun createEdges10kBatch(): Int {
+        ops.dropGraph(GRAPH_NAME)
+        val vertices = ops.createVertices(PERSON_LABEL, batchVertexRows())
+        return ops.createEdges(KNOWS_LABEL, cycleEdges(vertices)).size
+    }
+
+    private fun batchVertexRows(): List<Map<String, Any?>> =
+        (0 until 10_000).map { index ->
+            mapOf("name" to "Person-$index", "rank" to index.toLong())
+        }
+
+    private fun cycleEdges(vertices: List<GraphVertex>): List<BatchEdge> =
+        vertices.indices.map { index ->
+            BatchEdge(
+                fromId = vertices[index].id,
+                toId = vertices[(index + 1) % vertices.size].id,
+                properties = mapOf("rank" to index.toLong()),
+            )
+        }
 }
