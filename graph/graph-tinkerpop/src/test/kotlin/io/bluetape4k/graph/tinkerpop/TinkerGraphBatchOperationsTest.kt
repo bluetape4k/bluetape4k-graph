@@ -1,6 +1,7 @@
 package io.bluetape4k.graph.tinkerpop
 
 import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.graph.GraphQueryException
@@ -44,6 +45,37 @@ class TinkerGraphBatchOperationsTest {
         vertices.map { it.properties["name"] } shouldBeEqualTo listOf("Alice", "Bob", "Carol")
         vertices.map { it.properties["rank"] } shouldBeEqualTo listOf(1L, 2L, 3L)
         ops.findVerticesByLabel("Person").shouldHaveSize(3)
+    }
+
+    @Test
+    fun `empty and size one batches preserve write semantics`() {
+        ops.createVertices("Person", emptyList()).shouldBeEmpty()
+        ops.createEdges("KNOWS", emptyList()).shouldBeEmpty()
+
+        val vertices = ops.createVertices("Person", listOf(mapOf("name" to "Solo")))
+        val edge = ops.createEdges("SELF", listOf(BatchEdge(vertices.single().id, vertices.single().id))).single()
+
+        vertices.single().properties["name"] shouldBeEqualTo "Solo"
+        edge.startId shouldBeEqualTo vertices.single().id
+        edge.endId shouldBeEqualTo vertices.single().id
+        ops.findVerticesByLabel("Person").shouldHaveSize(1)
+        ops.findEdgesByLabel("SELF").shouldHaveSize(1)
+    }
+
+    @Test
+    fun `createVertices supports mixed keys and repeated property rows`() {
+        val vertices = ops.createVertices(
+            "Person",
+            listOf(
+                mapOf("name" to "Alice"),
+                mapOf("name" to "Alice"),
+                mapOf("name" to "Bob", "city" to "Seoul"),
+            ),
+        )
+
+        vertices.map { it.properties["name"] } shouldBeEqualTo listOf("Alice", "Alice", "Bob")
+        vertices.map { it.id }.toSet().shouldHaveSize(3)
+        vertices[2].properties["city"] shouldBeEqualTo "Seoul"
     }
 
     @Test

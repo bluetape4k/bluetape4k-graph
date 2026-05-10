@@ -73,18 +73,35 @@ class AgeGraphBatchOperationsTest {
     }
 
     @Test
+    fun `empty and size one batches preserve write semantics`() = runSuspendIO {
+        ops.createVertices("Person", emptyList()).shouldBeEmpty()
+        ops.createEdges("KNOWS", emptyList()).shouldBeEmpty()
+
+        val vertices = ops.createVertices("Person", listOf(mapOf("name" to "Solo")))
+        val edge = ops.createEdges("SELF", listOf(BatchEdge(vertices.single().id, vertices.single().id))).single()
+
+        vertices.single().properties["name"] shouldBeEqualTo "Solo"
+        edge.startId shouldBeEqualTo vertices.single().id
+        edge.endId shouldBeEqualTo vertices.single().id
+        ops.countVertices("Person") shouldBeEqualTo 1L
+        ops.findEdgesByLabel("SELF").shouldHaveSize(1)
+    }
+
+    @Test
     fun `createVertices supports mixed property key groups while preserving order`() = runSuspendIO {
         val vertices = ops.createVertices(
             "Person",
             listOf(
+                mapOf("name" to "Alice"),
                 mapOf("name" to "Alice"),
                 mapOf("name" to "Bob", "city" to "Seoul"),
                 mapOf("name" to "Carol"),
             ),
         )
 
-        vertices.map { it.properties["name"] } shouldBeEqualTo listOf("Alice", "Bob", "Carol")
-        vertices[1].properties["city"] shouldBeEqualTo "Seoul"
+        vertices.map { it.properties["name"] } shouldBeEqualTo listOf("Alice", "Alice", "Bob", "Carol")
+        vertices.map { it.id }.toSet().shouldHaveSize(4)
+        vertices[2].properties["city"] shouldBeEqualTo "Seoul"
     }
 
     @Test
