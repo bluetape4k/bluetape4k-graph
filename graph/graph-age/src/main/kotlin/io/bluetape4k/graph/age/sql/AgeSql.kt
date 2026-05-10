@@ -167,9 +167,7 @@ object AgeSql {
      * ```
      */
     fun updateVertex(graphName: String, label: String, id: Long, properties: Map<String, Any?>): String {
-        val sets = properties.entries.joinToString(", ") { (k, v) ->
-            "v.$k = ${AgePropertySerializer.toCypherValue(v)}"
-        }
+        val sets = AgePropertySerializer.toCypherAssignments("v", properties)
         return cypher(
             graphName,
             "MATCH (v:$label) WHERE id(v) = $id SET $sets RETURN v",
@@ -265,9 +263,7 @@ object AgeSql {
      * 간선 속성을 갱신하는 AGE SQL을 반환한다.
      */
     fun updateEdge(graphName: String, edgeLabel: String, id: Long, properties: Map<String, Any?>): String {
-        val sets = properties.entries.joinToString(", ") { (k, v) ->
-            "e.$k = ${AgePropertySerializer.toCypherValue(v)}"
-        }
+        val sets = AgePropertySerializer.toCypherAssignments("e", properties)
         return cypher(
             graphName,
             "MATCH ()-[e:$edgeLabel]->() WHERE id(e) = $id SET $sets RETURN e",
