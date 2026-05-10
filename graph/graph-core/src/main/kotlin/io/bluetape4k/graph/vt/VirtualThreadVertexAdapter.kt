@@ -28,6 +28,12 @@ class VirtualThreadVertexAdapter(
     ): CompletableFuture<GraphVertex> =
         virtualFutureOf { delegate.createVertex(label, properties) }
 
+    override fun createVerticesAsync(
+        label: String,
+        propertiesList: List<Map<String, Any?>>,
+    ): CompletableFuture<List<GraphVertex>> =
+        virtualFutureOf { delegate.createVertices(label, propertiesList) }
+
     override fun findVertexByIdAsync(
         label: String,
         id: GraphElementId,

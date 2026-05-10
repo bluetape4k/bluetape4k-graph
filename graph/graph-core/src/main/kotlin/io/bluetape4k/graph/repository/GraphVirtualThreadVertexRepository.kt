@@ -17,6 +17,11 @@ interface GraphVirtualThreadVertexRepository {
         properties: Map<String, Any?> = emptyMap(),
     ): CompletableFuture<GraphVertex>
 
+    fun createVerticesAsync(
+        label: String,
+        propertiesList: List<Map<String, Any?>>,
+    ): CompletableFuture<List<GraphVertex>>
+
     fun findVertexByIdAsync(
         label: String,
         id: GraphElementId,

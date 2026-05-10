@@ -1,6 +1,7 @@
 package io.bluetape4k.graph.vt
 
 import io.bluetape4k.concurrent.virtualthread.virtualFutureOf
+import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.repository.GraphEdgeRepository
@@ -28,6 +29,12 @@ class VirtualThreadEdgeAdapter(
         properties: Map<String, Any?>,
     ): CompletableFuture<GraphEdge> =
         virtualFutureOf { delegate.createEdge(fromId, toId, label, properties) }
+
+    override fun createEdgesAsync(
+        label: String,
+        edges: List<BatchEdge>,
+    ): CompletableFuture<List<GraphEdge>> =
+        virtualFutureOf { delegate.createEdges(label, edges) }
 
     override fun findEdgesByLabelAsync(
         label: String,

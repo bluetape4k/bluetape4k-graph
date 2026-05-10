@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.repository
 
+import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphElementId
 import java.util.concurrent.CompletableFuture
@@ -18,6 +19,11 @@ interface GraphVirtualThreadEdgeRepository {
         label: String,
         properties: Map<String, Any?> = emptyMap(),
     ): CompletableFuture<GraphEdge>
+
+    fun createEdgesAsync(
+        label: String,
+        edges: List<BatchEdge>,
+    ): CompletableFuture<List<GraphEdge>>
 
     fun findEdgesByLabelAsync(
         label: String,

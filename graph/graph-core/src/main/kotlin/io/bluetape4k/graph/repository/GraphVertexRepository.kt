@@ -32,6 +32,39 @@ interface GraphVertexRepository {
     fun createVertex(label: String, properties: Map<String, Any?> = emptyMap()): GraphVertex
 
     /**
+     * 같은 레이블의 정점을 여러 개 생성하고 입력 순서와 같은 순서로 반환한다.
+     *
+     * ## 동작/계약
+     *
+     * - 빈 입력은 백엔드를 호출하지 않고 `emptyList()`를 반환한다.
+     * - 기본 구현은 [createVertex]를 순차 호출하는 호환성 fallback이다.
+     * - 기본 구현은 중간 실패 시 앞서 생성된 정점이 남을 수 있다.
+     * - 성능 및 all-or-fail 의미가 필요한 프로덕션 백엔드는 이 메서드를 override해야 한다.
+     *
+     * ```kotlin
+     * val vertices = ops.createVertices(
+     *     "Person",
+     *     listOf(
+     *         mapOf("name" to "Alice"),
+     *         mapOf("name" to "Bob"),
+     *     )
+     * )
+     * ```
+     *
+     * @param label 정점 레이블.
+     * @param propertiesList 각 정점에 저장할 속성 맵 목록.
+     * @return 백엔드에서 생성된 [GraphVertex] 목록.
+     */
+    fun createVertices(
+        label: String,
+        propertiesList: List<Map<String, Any?>>,
+    ): List<GraphVertex> {
+        GraphBatchValidation.validateVertexBatch(label, propertiesList)
+        if (propertiesList.isEmpty()) return emptyList()
+        return propertiesList.map { properties -> createVertex(label, properties) }
+    }
+
+    /**
      * ID로 단일 정점을 조회한다.
      *
      * ```kotlin
