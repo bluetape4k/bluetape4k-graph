@@ -17,6 +17,8 @@ import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.graph.io.support.GraphIoExternalIdMap
 import io.bluetape4k.graph.io.support.GraphIoPaths
 import io.bluetape4k.graph.io.support.GraphIoStopwatch
+import io.bluetape4k.graph.io.support.SuspendGraphIoBatchWriter
+import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
@@ -36,6 +38,7 @@ class SuspendJackson3NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
         log.debug { "Starting NDJSON_JACKSON3 import (suspend): defaultVertexLabel=${options.defaultVertexLabel}, defaultEdgeLabel=${options.defaultEdgeLabel}" }
         val watch = GraphIoStopwatch()
         val idMap = GraphIoExternalIdMap(options.onDuplicateVertexId)
+        val batchWriter = SuspendGraphIoBatchWriter(operations, options.batchSize)
         val failures = mutableListOf<GraphIoFailure>()
         val bufferedEdges = ArrayDeque<GraphIoEdgeRecord>()
         var vr = 0L; var vc = 0L; var er = 0L; var ec = 0L; var sv = 0L; var se = 0L
@@ -66,9 +69,10 @@ class SuspendJackson3NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
                     val rec = codec.toVertex(env, options.defaultVertexLabel)
                     val props = options.preserveExternalIdProperty
                         ?.let { rec.properties + (it to rec.externalId) } ?: rec.properties
-                    val created = operations.createVertex(rec.label, props)
-                    when (idMap.putFirstOrFail(rec.externalId, created.id)) {
-                        GraphIoExternalIdMap.PutResult.CREATED -> vc++
+                    when (idMap.putFirstOrFail(rec.externalId, GraphElementId(rec.externalId))) {
+                        GraphIoExternalIdMap.PutResult.CREATED -> {
+                            vc += batchWriter.addVertex(rec.externalId, rec.label, props, idMap)
+                        }
                         GraphIoExternalIdMap.PutResult.SKIPPED -> {
                             sv++
                             status = GraphIoStatus.PARTIAL
@@ -92,6 +96,8 @@ class SuspendJackson3NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
             }
         }
 
+        vc += batchWriter.flushVertices(idMap)
+
         if (status == GraphIoStatus.FAILED) {
             log.warn { "NDJSON_JACKSON3 import (suspend) failed: vertices=$vc/$vr, edges=$ec/$er, elapsed=${watch.elapsed()}" }
             return GraphImportReport(
@@ -105,6 +111,7 @@ class SuspendJackson3NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
             if (from == null || to == null) {
                 when (options.onMissingEdgeEndpoint) {
                     MissingEndpointPolicy.FAIL -> {
+                        ec += batchWriter.flushEdges()
                         failures += GraphIoFailure(
                             phase = GraphIoPhase.READ_EDGE,
                             fileRole = GraphIoFileRole.UNIFIED,
@@ -124,8 +131,11 @@ class SuspendJackson3NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
             val props = e.externalId?.let { eid ->
                 options.preserveExternalIdProperty?.let { key -> e.properties + (key to eid) } ?: e.properties
             } ?: e.properties
-            operations.createEdge(from, to, e.label, props)
-            ec++
+            ec += batchWriter.addEdge(e.label, from, to, props)
+        }
+
+        if (status != GraphIoStatus.FAILED) {
+            ec += batchWriter.flushEdges()
         }
 
         return GraphImportReport(status, GraphIoFormat.NDJSON_JACKSON3, vr, vc, er, ec, sv, se, watch.elapsed(), failures).also {
