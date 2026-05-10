@@ -25,7 +25,7 @@ consolidated here and in `CHANGELOG.md`.
 | P2 | [#18](https://github.com/bluetape4k/bluetape4k-graph/issues/18) CI quality gates | M | Tune carefully while API churn is active. |
 | P2 | [#19](https://github.com/bluetape4k/bluetape4k-graph/issues/19) Dependabot/Renovate | S | Small automation/security win. |
 | P2 | [#30](https://github.com/bluetape4k/bluetape4k-graph/issues/30) Amazon Neptune backend | XL | Wait for core APIs and CI stability. |
-| P2 | [#49](https://github.com/bluetape4k/bluetape4k-graph/issues/49) graph-io-okio encrypted streaming | L | Separate from graph core; depends on okio/Tink conventions. |
+| P2 | [#49](https://github.com/bluetape4k/bluetape4k-graph/issues/49) graph-okio encrypted streaming | L | Separate from graph core; depends on okio/Tink conventions. |
 | P3 | [#10](https://github.com/bluetape4k/bluetape4k-graph/issues/10) extra example modules | L | Should follow core API stability. |
 | P3 | [#14](https://github.com/bluetape4k/bluetape4k-graph/issues/14) backend JMH benchmark | M | After operations settle. |
 | P3 | [#15](https://github.com/bluetape4k/bluetape4k-graph/issues/15) runtime comparison benchmark | M | After baseline APIs are stable. |

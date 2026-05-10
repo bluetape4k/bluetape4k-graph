@@ -104,7 +104,7 @@ SuspendGraphMlBulkExporter().exportGraphSuspending(
 | `graph-io-jackson2` | NDJSON (Jackson 2.x) | [README](graph-io/jackson2/README.md) |
 | `graph-io-jackson3` | NDJSON (Jackson 3.x) | [README](graph-io/jackson3/README.md) |
 | `graph-io-graphml` | GraphML XML (StAX) | [README](graph-io/graphml/README.md) |
-| `graph-io-okio` | OkIO-based adapter — segment streaming, compression chaining, FakeFileSystem support | [README](graph-io/okio/README.md) |
+| `graph-okio` | OkIO-based adapter — segment streaming, compression chaining, FakeFileSystem support | [README](graph-io/okio/README.md) |
 
 > **Benchmark results**: [2026-04-18 graph-io bulk I/O results](docs/benchmark/2026-04-18-graph-io-bulk-results.md)
 

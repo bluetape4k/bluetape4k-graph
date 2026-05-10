@@ -18,17 +18,29 @@ include("bluetape4k-graph-bom")
 project(":bluetape4k-graph-bom").projectDir = file("bom")
 
 includeModules("graph", false, false)
-includeModules("graph-io", false, true)
+includeModules("graph-io", false, true, excludeModuleNames = setOf("okio"))
+include("graph-okio")
+project(":graph-okio").projectDir = file("graph-io/okio")
 includeModules("benchmark", false, false)
 includeModules("examples", false, false)
 includeModules("spring-boot4", false, false)
 
-fun includeModules(baseDir: String, withProjectName: Boolean = true, withBaseDir: Boolean = true) {
+fun includeModules(
+    baseDir: String,
+    withProjectName: Boolean = true,
+    withBaseDir: Boolean = true,
+    excludeModuleNames: Set<String> = emptySet(),
+) {
     files("$rootDir/$baseDir").files
         .filter { it.isDirectory }
         .forEach { moduleDir ->
             moduleDir.listFiles()
-                ?.filter { it.isDirectory && !it.name.startsWith(".") && File(it, "build.gradle.kts").exists() }
+                ?.filter {
+                    it.isDirectory &&
+                        !it.name.startsWith(".") &&
+                        it.name !in excludeModuleNames &&
+                        File(it, "build.gradle.kts").exists()
+                }
                 ?.forEach { dir ->
                     val basePath = baseDir.replace("/", "-")
                     val projectName = when {

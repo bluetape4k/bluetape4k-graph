@@ -27,7 +27,7 @@ dependencies {
     implementation(project(":graph-io-jackson2"))
     implementation(project(":graph-io-jackson3"))
     implementation(project(":graph-io-graphml"))
-    implementation(project(":graph-io-okio"))
+    implementation(project(":graph-okio"))
     implementation(project(":graph-tinkerpop"))
     implementation(libs.bluetape4k.coroutines)
     implementation(libs.bluetape4k.virtualthread.api)

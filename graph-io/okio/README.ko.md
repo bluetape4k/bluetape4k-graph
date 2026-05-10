@@ -1,4 +1,4 @@
-# graph-io-okio (한국어)
+# graph-okio (한국어)
 
 OkIO 기반 그래프 I/O 레이어. 기존 `graph-io-csv`, `graph-io-jackson2`, `graph-io-jackson3`, `graph-io-graphml` 모듈과 완벽하게 호환되면서 OkIO의 세그먼트 기반 스트리밍, 압축 체이닝, FileSystem 추상화를 제공한다.
 
@@ -284,7 +284,7 @@ class MyGraphIoTest {
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.bluetape4k:graph-io-okio:VERSION")
+    implementation("io.github.bluetape4k.graph:graph-okio:VERSION")
 
     // 선택적 압축 라이브러리 (필요한 것만 추가)
     implementation("org.lz4:lz4-java:1.8.0")

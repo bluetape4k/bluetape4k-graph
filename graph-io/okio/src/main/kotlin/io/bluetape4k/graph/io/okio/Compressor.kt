@@ -4,7 +4,7 @@ import io.bluetape4k.io.compressor.Compressors
 import io.bluetape4k.io.compressor.StreamingCompressor
 
 /**
- * graph-io-okio 모듈에서 지원하는 압축 알고리즘 목록.
+ * graph-okio 모듈에서 지원하는 압축 알고리즘 목록.
  *
  * v1 지원 범위:
  * - GZIP/DEFLATE: JDK 내장 — 항상 사용 가능
