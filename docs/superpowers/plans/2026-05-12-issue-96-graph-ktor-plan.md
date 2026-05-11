@@ -106,8 +106,9 @@ Close/lifecycle rules:
 Dependency strategy:
 
 - backend modules are `compileOnly`.
-- tests use `testImplementation(project(":graph-tinkerpop"))` for runtime behavior.
-- backend helper compile coverage verifies signatures and constructor use.
+- tests use `testImplementation(project(":graph-tinkerpop"))` for in-memory runtime behavior.
+- tests also use backend test dependencies and existing singleton Testcontainers launchers for small Neo4j/Memgraph/AGE/FalkorDB route-level smoke.
+- exhaustive backend behavior remains in each backend module; `graph-ktor` only proves helper wiring through Ktor route accessors.
 
 ### T4. Ktor tests
 
@@ -123,6 +124,7 @@ Test cases:
 - `ApplicationStopped` closes plugin-owned TinkerGraph operations without closing external drivers.
 - TinkerGraph route smoke: install plugin and use `graphSuspendOperations()` from a Ktor route.
 - route accessor smoke: use `call.graphOperations()` / `call.graphSuspendOperations()` from route handlers.
+- backend helper runtime smoke: install Neo4j/Memgraph/AGE/FalkorDB helpers with existing Testcontainers launchers, create two vertices through sync route access, then count through suspend route access.
 
 `MultithreadingTester`, `StructuredTaskScopeTester`, `SuspendedJobTester`: not used. The risk here is Ktor plugin install/lifecycle contract, not race/structured concurrency logic. Coroutine behavior is covered by `testApplication` + suspend route smoke.
 
@@ -176,7 +178,7 @@ Expected PR checks:
 | P1 | Route context needs route-safe accessors. | accepted: add `ApplicationCall` extensions and route tests. |
 | P1 | AGE helper must state Exposed `Database.connect(...)` precondition. | accepted: KDoc/README requirement added. |
 | P1 | build.gradle dependency list must be explicit. | accepted: T1 dependency block added. |
-| P2 | Backend parity can accidentally become runtime parity. | accepted: compileOnly backend modules plus README dependency instructions. |
+| P2 | Backend parity can accidentally become runtime parity. | revised: keep backend modules `compileOnly`, but add narrow runtime smoke for helpers backed by existing Testcontainers launchers. |
 | P2 | Example should avoid external infra. | accepted: TinkerGraph only. |
 | P2 | Lifecycle failure isolation should be tested. | accepted: T4 test added. |
 

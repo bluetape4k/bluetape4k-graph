@@ -33,6 +33,17 @@ dependencies {
     testImplementation(libs.ktor.server.test.host)
 
     testImplementation(project(":graph-tinkerpop"))
+    testImplementation(project(":graph-neo4j"))
+    testImplementation(project(":graph-memgraph"))
+    testImplementation(project(":graph-age"))
+    testImplementation(project(":graph-falkordb"))
+    testImplementation(testFixtures(project(":graph-falkordb")))
+
+    testImplementation(libs.bluetape4k.testcontainers)
+    testImplementation(libs.testcontainers.core)
+    testImplementation(libs.testcontainers.neo4j)
+    testImplementation(libs.testcontainers.postgresql)
+    testImplementation(libs.hikaricp)
 
     testImplementation(libs.bluetape4k.junit5)
     testImplementation(libs.kotlinx.coroutines.test.lib)

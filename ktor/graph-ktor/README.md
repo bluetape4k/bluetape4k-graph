@@ -91,3 +91,7 @@ fun Application.module(driver: Driver) {
 ```bash
 ./gradlew :graph-ktor:test
 ```
+
+The test suite includes Ktor `testApplication` checks plus small Testcontainers smoke tests for
+Neo4j, Memgraph, Apache AGE, and FalkorDB helper wiring. Docker is required for those backend
+runtime checks.

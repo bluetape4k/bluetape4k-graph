@@ -13,3 +13,7 @@
 - Lesson: 신규 publishable module을 추가하면 BOM README와 root README뿐 아니라 `settings.gradle.kts` auto-include 결과를 `./gradlew projects`로 확인해야 한다.
   - Evidence: `:graph-ktor`와 `:ktor-graph-examples`가 `./gradlew projects`에 각각 publishable/example module로 등록됨을 확인했다.
   - Future guard: module 추가 plan에 `projects`, targeted `build`, README/BOM sync를 함께 둔다.
+
+- Lesson: backend helper를 추가할 때 compile coverage만으로 충분하다고 단정하면 기존 lightweight Testcontainers fixture를 놓칠 수 있다.
+  - Evidence: `FalkorDBServer`는 Redis 기반 singleton fixture라 `graph-ktor` route-level runtime smoke에 적합했고, 공통 `bluetape4k-testcontainers`의 Neo4j/Memgraph/AGE launcher도 같은 방식으로 재사용 가능했다.
+  - Future guard: helper parity 작업에서는 먼저 backend별 existing test fixture를 찾아보고, exhaustive behavior test가 아니라 small wiring smoke로 가능한 runtime 검증을 추가한다.

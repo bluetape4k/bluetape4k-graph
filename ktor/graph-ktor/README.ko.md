@@ -92,3 +92,6 @@ fun Application.module(driver: Driver) {
 ```bash
 ./gradlew :graph-ktor:test
 ```
+
+테스트에는 Ktor `testApplication` 검증과 Neo4j, Memgraph, Apache AGE, FalkorDB helper wiring을
+확인하는 작은 Testcontainers smoke가 포함됩니다. 이 backend runtime 검증에는 Docker가 필요합니다.

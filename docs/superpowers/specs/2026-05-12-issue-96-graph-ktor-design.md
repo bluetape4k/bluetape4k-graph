@@ -145,7 +145,7 @@ Route handler에서 자연스럽게 사용할 수 있도록 `ApplicationCall.gra
 | Backend helper public signatures가 optional dependency를 class loading에 끌어들임 | `graph-ktor` only user가 `NoClassDefFoundError`를 볼 수 있음 | backend helper를 separate files로 분리하고 compile/test로 core-only access를 검증 |
 | `GraphOperations.close()`와 `GraphSuspendOperations.close()`가 같은 delegate를 두 번 닫음 | TinkerGraph helper에서 double close 가능 | close actions를 중복 등록하지 않거나 tolerant close로 처리 |
 | Ktor lifecycle cleanup이 누락됨 | in-memory graph/resource leak | `ApplicationStopped` test로 close action 호출 검증 |
-| Testcontainers backend 검증이 무거워짐 | PR feedback 느림 | plugin API unit tests는 TinkerGraph + fake operations 중심, backend helper는 compile coverage 중심 |
+| Testcontainers backend 검증이 무거워짐 | PR feedback 느림 | plugin API unit tests는 TinkerGraph + fake operations 중심으로 유지하되, 기존 singleton Testcontainers가 있는 Neo4j/Memgraph/AGE/FalkorDB helper는 route-level smoke로 작게 검증 |
 | Example이 production infra를 요구함 | 사용자가 바로 실행하기 어려움 | example은 TinkerGraph in-memory로 구성 |
 
 ## 10. Acceptance Criteria
@@ -174,7 +174,7 @@ Route handler에서 자연스럽게 사용할 수 있도록 `ApplicationCall.gra
 | P1 | Route handler 예시가 `Application` extension을 route context에서 직접 호출한다. | accepted: `ApplicationCall` extension을 추가하고 예시를 `call.graphOperations()`로 수정한다. |
 | P1 | TinkerGraph helper의 double close 정책이 구체적이지 않다. | accepted: helper는 `TinkerGraphOperations` delegate를 하나 만들고 close action을 1회만 등록한다. |
 | P1 | AGE helper의 Exposed `Database.connect(...)` 사전 조건이 문서화되지 않았다. | accepted: lifecycle/KDoc/README에 caller 책임을 명시한다. |
-| P2 | Full Testcontainers backend plugin tests는 무겁다. | accepted: module tests는 TinkerGraph/fake 중심, backend parity는 compile coverage와 docs로 검증한다. |
+| P2 | Full Testcontainers backend plugin tests는 무겁다. | revised: exhaustive backend behavior는 각 backend module에 남기고, `graph-ktor`는 기존 Testcontainers launcher로 route-level smoke만 추가한다. |
 | P3 | Driver-creating DSL은 편리하지만 scope expansion이다. | deferred: follow-up에서 필요 시 다룬다. |
 
 Convergence: P0 = 0, P1 = 0.
