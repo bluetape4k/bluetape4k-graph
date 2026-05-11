@@ -9,6 +9,7 @@ kotlinx-coroutines = "1.11.0"  # https://mvnrepository.com/artifact/org.jetbrain
 kotlinx-serialization = "1.11.0"  # https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-serialization-json
 kotlinx-atomicfu = "0.32.1"  # https://mvnrepository.com/artifact/org.jetbrains.kotlinx/atomicfu
 kotlinx-benchmark = "0.4.17"  # https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-benchmark-runtime
+ktor = "3.4.3"  # https://mvnrepository.com/artifact/io.ktor/ktor-bom
 
 spring-boot4 = "4.0.6"  # https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-dependencies
 
@@ -206,6 +207,14 @@ zstd-jni = { module = "com.github.luben:zstd-jni", version = "1.5.7-7" }  # http
 
 # Netty
 netty-bom = { module = "io.netty:netty-bom", version.ref = "netty" }
+
+# Ktor
+ktor-bom = { module = "io.ktor:ktor-bom", version.ref = "ktor" }
+ktor-server-core = { module = "io.ktor:ktor-server-core" }
+ktor-server-cio = { module = "io.ktor:ktor-server-cio" }
+ktor-server-test-host = { module = "io.ktor:ktor-server-test-host" }
+ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation" }
+ktor-serialization-jackson = { module = "io.ktor:ktor-serialization-jackson" }
 
 # Micrometer
 micrometer-bom = { module = "io.micrometer:micrometer-bom", version.ref = "micrometer" }

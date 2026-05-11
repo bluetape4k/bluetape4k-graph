@@ -23,6 +23,7 @@ include("graph-okio")
 project(":graph-okio").projectDir = file("graph-io/okio")
 includeModules("benchmark", false, false)
 includeModules("examples", false, false)
+includeModules("ktor", false, false)
 includeModules("spring-boot4", false, false)
 
 fun includeModules(

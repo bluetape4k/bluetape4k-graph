@@ -30,9 +30,12 @@ benchmark/
   graph-io-benchmark  # JMH benchmarks — CSV / NDJSON / GraphML bulk I/O performance
 spring-boot4/
   graph-spring-boot4-starter  # Spring Boot 4.x AutoConfiguration
+ktor/
+  graph-ktor                  # Ktor 3.x ApplicationPlugin integration
 examples/
   code-graph-examples     # Code dependency graph examples (AGE, Neo4j, Memgraph, TinkerGraph, FalkorDB integration)
   linkedin-graph-examples # LinkedIn social graph examples (AGE, Neo4j, Memgraph, TinkerGraph, FalkorDB integration)
+  ktor-graph-examples     # Ktor GraphPlugin example using TinkerGraph
 ```
 
 ## Core Abstraction (`graph-core`)
@@ -159,7 +162,7 @@ dependencies {
 dependencies {
     implementation("io.github.bluetape4k.graph:graph-core:0.2.0")
     implementation("io.github.bluetape4k.graph:graph-neo4j:0.2.0")
-    // graph-age | graph-memgraph | graph-tinkerpop
+    // graph-age | graph-memgraph | graph-tinkerpop | graph-ktor
 }
 ```
 
@@ -258,6 +261,7 @@ Each example module uses the **abstract test class pattern**. Common test logic 
 | `AbstractCodeGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBCodeGraphSuspendTest` |
 | `AbstractLinkedInGraphTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBLinkedInGraphTest` |
 | `AbstractLinkedInGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBLinkedInGraphSuspendTest` |
+| `KtorGraphAppTest` | TinkerGraph-backed Ktor `GraphPlugin` smoke example |
 
 Concrete classes only need to implement `ops` (`GraphOperations` or `GraphSuspendOperations`) and the server lifecycle (`@BeforeAll`/`@AfterAll`).
 
@@ -273,6 +277,7 @@ Concrete classes only need to implement `ops` (`GraphOperations` or `GraphSuspen
 - **Neo4j Java Driver** 5.x
 - **JetBrains Exposed** (JDBC for Apache AGE)
 - **Apache TinkerPop** (Gremlin)
+- **Ktor** 3.x (ApplicationPlugin integration)
 - **jfalkordb** 0.7.0 (FalkorDB / Redis-module graph)
 - **Testcontainers** (integration tests)
 - **bluetape4k** 1.7.x (common utilities)

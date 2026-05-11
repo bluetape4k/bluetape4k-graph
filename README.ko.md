@@ -30,9 +30,12 @@ benchmark/
   graph-io-benchmark  # JMH 벤치마크 — CSV / NDJSON / GraphML 벌크 I/O 성능
 spring-boot4/
   graph-spring-boot4-starter  # Spring Boot 4.x AutoConfiguration
+ktor/
+  graph-ktor                  # Ktor 3.x ApplicationPlugin integration
 examples/
   code-graph-examples     # 코드 의존성 그래프 예시 (AGE, Neo4j, Memgraph, TinkerGraph, FalkorDB 통합)
   linkedin-graph-examples # LinkedIn 소셜 그래프 예시 (AGE, Neo4j, Memgraph, TinkerGraph, FalkorDB 통합)
+  ktor-graph-examples     # TinkerGraph 기반 Ktor GraphPlugin 예시
 ```
 
 ## 핵심 추상화 (`graph-core`)
@@ -159,7 +162,7 @@ dependencies {
 dependencies {
     implementation("io.github.bluetape4k.graph:graph-core:0.2.0")
     implementation("io.github.bluetape4k.graph:graph-neo4j:0.2.0")
-    // graph-age | graph-memgraph | graph-tinkerpop
+    // graph-age | graph-memgraph | graph-tinkerpop | graph-ktor
 }
 ```
 
@@ -258,6 +261,7 @@ driver.close()
 | `AbstractCodeGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBCodeGraphSuspendTest` |
 | `AbstractLinkedInGraphTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBLinkedInGraphTest` |
 | `AbstractLinkedInGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBLinkedInGraphSuspendTest` |
+| `KtorGraphAppTest` | TinkerGraph 기반 Ktor `GraphPlugin` smoke 예시 |
 
 구체 클래스는 `ops` (`GraphOperations` 또는 `GraphSuspendOperations`) 와 서버 라이프사이클(`@BeforeAll`/`@AfterAll`)만 구현하면 된다.
 
@@ -273,6 +277,7 @@ driver.close()
 - **Neo4j Java Driver** 5.x
 - **JetBrains Exposed** (Apache AGE용 JDBC)
 - **Apache TinkerPop** (Gremlin)
+- **Ktor** 3.x (ApplicationPlugin integration)
 - **jfalkordb** 0.7.0 (FalkorDB / Redis 모듈 그래프)
 - **Testcontainers** (통합 테스트)
 - **bluetape4k** 1.7.x (공통 유틸리티)

@@ -35,11 +35,16 @@ graph TB
       SB4[graph-spring-boot4-starter]
     end
 
+    subgraph "Ktor"
+      Ktor[graph-ktor]
+    end
+
     Consumer -->|platform import| BOM
     BOM -.->|version constraints| Core
     BOM -.->|version constraints| Neo4j
     BOM -.->|version constraints| IoCore
     BOM -.->|version constraints| SB4
+    BOM -.->|version constraints| Ktor
 ```
 
 The BOM is a Gradle `java-platform` that publishes only `<dependencyManagement>` constraints — no runtime classes.
@@ -57,6 +62,7 @@ The BOM is a Gradle `java-platform` that publishes only `<dependencyManagement>`
 | `graph/*` | `graph-core`, `graph-neo4j`, `graph-memgraph`, `graph-age`, `graph-tinkerpop`, `graph-falkordb` |
 | `graph-io/*` | `graph-io-core`, `graph-io-csv`, `graph-io-graphml`, `graph-io-jackson2`, `graph-io-jackson3`, `graph-okio` |
 | `spring-boot4/*` | `graph-spring-boot4-starter` |
+| `ktor/*` | `graph-ktor` |
 
 > Note: `examples/*` and `benchmark/*` modules are excluded from the BOM constraints.
 

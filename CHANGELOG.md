@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`graph-ktor`**: Ktor 3.x `GraphPlugin` module과 TinkerGraph 기반 `ktor-graph-examples`를 추가했습니다. `Application`/`ApplicationCall` extension으로 `GraphOperations`와 `GraphSuspendOperations`에 접근하고, TinkerGraph/Neo4j/Memgraph/AGE/FalkorDB backend helper를 제공합니다 ([#96](https://github.com/bluetape4k/bluetape4k-graph/issues/96)).
 - **`graph-bom` README 문서**: BOM 사용법을 English/Korean README로 정리했습니다 ([PR #70](https://github.com/bluetape4k/bluetape4k-graph/pull/70)).
 - **`graph-okio`**: OkIO 기반 스트리밍 그래프 I/O 레이어를 추가했습니다. CSV/GraphML/Jackson 계열 I/O에 Source/Sink 기반 확장 지점을 제공합니다 ([PR #48](https://github.com/bluetape4k/bluetape4k-graph/pull/48)).
 - **Weighted graph support**: Dijkstra/A* shortest path 지원을 추가했습니다 ([PR #39](https://github.com/bluetape4k/bluetape4k-graph/pull/39)).
