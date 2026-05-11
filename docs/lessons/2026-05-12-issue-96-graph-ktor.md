@@ -17,3 +17,21 @@
 - Lesson: backend helper를 추가할 때 compile coverage만으로 충분하다고 단정하면 기존 lightweight Testcontainers fixture를 놓칠 수 있다.
   - Evidence: `FalkorDBServer`는 Redis 기반 singleton fixture라 `graph-ktor` route-level runtime smoke에 적합했고, 공통 `bluetape4k-testcontainers`의 Neo4j/Memgraph/AGE launcher도 같은 방식으로 재사용 가능했다.
   - Future guard: helper parity 작업에서는 먼저 backend별 existing test fixture를 찾아보고, exhaustive behavior test가 아니라 small wiring smoke로 가능한 runtime 검증을 추가한다.
+
+## 수정 기록
+
+- 잘못한 점: `graph-ktor` backend helper를 만들면서 "외부 DB backend는 무겁다"는 일반론을 너무 빨리 적용했다. 그 결과 `FalkorDBServer`처럼 이미 가볍고 재사용 가능한 Testcontainers fixture가 있는 backend까지 compile-level 검증으로 낮춰 판단했다.
+- 중요한 이유: helper 함수는 단순 constructor wrapper처럼 보여도 Ktor plugin lifecycle, route accessor, sync/suspend facade 연결이 함께 맞아야 한다. Runtime smoke 없이 compile coverage만 두면 helper signature는 맞지만 실제 route wiring이 깨지는 문제를 놓칠 수 있다.
+- 수정한 접근: backend 자체 동작의 exhaustive test는 각 backend module에 남기고, integration module인 `graph-ktor`는 backend별 helper가 Ktor route 안에서 최소한 동작하는지만 검증한다.
+- 재발 방지 기준: "무거운 integration test"와 "작은 wiring smoke"를 구분한다. 기존 singleton Testcontainers launcher가 있고 테스트 시간이 합리적이면 wiring smoke를 추가한다.
+
+## 다음 작업 체크리스트
+
+- 먼저 existing fixture를 검색한다: `rg "Server\\.Launcher|testFixtures|Testcontainers" graph examples -g '*.kt' -g '*.kts'`.
+- Test depth를 정하기 전에 backend별 runtime cost를 분류한다.
+- Production dependency boundary는 `compileOnly`로 유지하고, runtime backend dependency는 `testImplementation`에만 추가한다.
+- Ktor plugin helper는 실제 route를 통해 두 경로를 모두 검증한다:
+  - `call.graphOperations()` for sync facade access.
+  - `call.graphSuspendOperations()` for suspend facade access.
+- Smoke test 이후 reusable container state를 정리한다. 특히 singleton launcher가 container reuse를 사용할 때는 반드시 정리한다.
+- Spec/plan/README에 test boundary를 기록해서 "not exhaustive"가 "not runtime-tested"로 바뀌지 않게 한다.
