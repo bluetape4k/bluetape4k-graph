@@ -7,7 +7,8 @@ import java.io.Serializable
 
 /**
  * 그래프 임포트 옵션.
- * `batchSize`는 진행 보고/플러시 주기이며, `maxEdgeBufferSize`는 NDJSON 엣지 버퍼의 상한이다.
+ * `batchSize`는 임포터가 백엔드 `createVertices`/`createEdges` 호출을 플러시하는 쓰기 배치 크기이며,
+ * `maxEdgeBufferSize`는 NDJSON 엣지 버퍼의 상한이다.
  * `preserveExternalIdProperty`가 null이면 외부 ID를 정점 속성으로 보존하지 않는다.
  */
 data class GraphImportOptions(

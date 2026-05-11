@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.vt
 
+import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.junit5.concurrency.StructuredTaskScopeTester
 import io.bluetape4k.logging.KLogging
@@ -40,6 +41,16 @@ class VirtualThreadOperationsAdapterTest {
         val to = ops.createVertex("Person")
         val edge = vtOps.createEdgeAsync(from.id, to.id, "KNOWS").join()
         edge.shouldNotBeNull()
+        edge.label shouldBeEqualTo "KNOWS"
+    }
+
+    @Test
+    fun `batch create async works through facade`() {
+        val vertices = vtOps.createVerticesAsync("Person", listOf(mapOf("name" to "Alice"), mapOf("name" to "Bob")))
+            .join()
+        val edge = vtOps.createEdgesAsync("KNOWS", listOf(BatchEdge(vertices[0].id, vertices[1].id))).join().single()
+
+        vertices.map { it.properties["name"] } shouldBeEqualTo listOf("Alice", "Bob")
         edge.label shouldBeEqualTo "KNOWS"
     }
 

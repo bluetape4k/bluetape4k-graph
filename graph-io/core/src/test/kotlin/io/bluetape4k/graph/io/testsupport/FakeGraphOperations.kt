@@ -24,7 +24,7 @@ import io.bluetape4k.graph.repository.GraphOperations
  * 어댑터가 오직 `GraphOperations` 타입만 요구하고 실제 호출은 일어나지 않는 단위 테스트에서 사용한다.
  * 모든 메서드는 호출되면 명시적으로 실패하도록 `error(...)` stub으로 구현된다.
  */
-class FakeGraphOperations: GraphOperations {
+open class FakeGraphOperations: GraphOperations {
 
     // --- GraphSession / AutoCloseable ---
     override fun createGraph(name: String): Unit = error("not used in this test")

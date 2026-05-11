@@ -62,6 +62,23 @@ class AgeSqlTest {
         sql shouldContain "agtype"
     }
 
+    @Test
+    fun `createVerticesBatch - UNWIND row list와 index를 포함한다`() {
+        val sql = AgeSql.createVerticesBatch(
+            graph,
+            "Person",
+            listOf(
+                AgeSql.BatchVertexRow(0, mapOf("name" to "Alice")),
+                AgeSql.BatchVertexRow(1, mapOf("name" to "Bob")),
+            ),
+        )
+
+        sql shouldContain "UNWIND"
+        sql shouldContain "CREATE (v:Person {name: row.p0})"
+        sql shouldContain "RETURN row.idx AS idx, v"
+        sql shouldContain "ORDER BY idx"
+    }
+
     // ── matchVertices ─────────────────────────────────────────────────────
 
     @Test
@@ -160,6 +177,36 @@ class AgeSqlTest {
     fun `createEdge - properties가 있을 때 해당 값을 포함한다`() {
         val sql = AgeSql.createEdge(graph, 1L, 2L, "KNOWS", mapOf("since" to 2023))
         sql shouldContain "2023"
+    }
+
+    @Test
+    fun `createEdgesBatch - endpoint 조회와 edge property row map을 포함한다`() {
+        val sql = AgeSql.createEdgesBatch(
+            graph,
+            "KNOWS",
+            listOf(
+                AgeSql.BatchEdgeRow(0, 1L, 2L, mapOf("since" to 2024)),
+                AgeSql.BatchEdgeRow(1, 2L, 3L, mapOf("since" to 2025)),
+            ),
+        )
+
+        sql shouldContain "UNWIND"
+        sql shouldContain "id(a) = row.fromId"
+        sql shouldContain "id(b) = row.toId"
+        sql shouldContain "CREATE (a)-[e:KNOWS {since: row.p0}]->(b)"
+        sql shouldContain "RETURN row.idx AS idx, e"
+    }
+
+    @Test
+    fun `matchBatchEdgeEndpoints - create 없이 endpoint index만 반환한다`() {
+        val sql = AgeSql.matchBatchEdgeEndpoints(
+            graph,
+            listOf(AgeSql.BatchEdgeRow(0, 1L, 2L)),
+        )
+
+        sql shouldContain "MATCH (a), (b)"
+        sql shouldContain "RETURN row.idx AS idx"
+        sql shouldNotContain "CREATE"
     }
 
     // ── matchEdgesByLabel ─────────────────────────────────────────────────

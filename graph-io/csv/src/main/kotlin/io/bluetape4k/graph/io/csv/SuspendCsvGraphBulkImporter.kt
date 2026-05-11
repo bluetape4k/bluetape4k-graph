@@ -15,6 +15,7 @@ import io.bluetape4k.graph.io.report.GraphImportReport
 import io.bluetape4k.graph.io.support.GraphIoExternalIdMap
 import io.bluetape4k.graph.io.support.GraphIoPaths
 import io.bluetape4k.graph.io.support.GraphIoStopwatch
+import io.bluetape4k.graph.io.support.SuspendGraphIoBatchWriter
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.coroutines.KLoggingChannel
@@ -57,6 +58,7 @@ class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSourc
         val watch = GraphIoStopwatch()
         val codec = CsvRecordCodec(csvOptions.propertyMode)
         val idMap = GraphIoExternalIdMap(options.onDuplicateVertexId)
+        val batchWriter = SuspendGraphIoBatchWriter(operations, options.batchSize)
         val failures = mutableListOf<GraphIoFailure>()
         var verticesRead = 0L
         var verticesCreated = 0L
@@ -76,6 +78,7 @@ class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSourc
             val externalId = record.getString("id").orEmpty()
             val label = record.getString("label").orEmpty().ifBlank { options.defaultVertexLabel }
             if (externalId.isBlank()) {
+                verticesCreated += batchWriter.flushVertices(idMap)
                 failures += GraphIoFailure(
                     phase = GraphIoPhase.READ_VERTEX,
                     fileRole = GraphIoFileRole.VERTICES,
@@ -102,9 +105,7 @@ class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSourc
                 putAll(codec.extractProperties(rowMap))
                 options.preserveExternalIdProperty?.let { key -> put(key, externalId) }
             }
-            val created = operations.createVertex(label, props)
-            idMap.put(externalId, created.id)
-            verticesCreated++
+            verticesCreated += batchWriter.addVertex(externalId, label, props, idMap)
         }
 
         if (status == GraphIoStatus.FAILED) {
@@ -114,6 +115,8 @@ class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSourc
                 verticesRead, verticesCreated, edgesRead, edgesCreated, skippedVertices, skippedEdges
             )
         }
+
+        verticesCreated += batchWriter.flushVertices(idMap)
 
         // --- 엣지 패스 ---
         SuspendCsvRecordReader().read(
@@ -130,6 +133,7 @@ class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSourc
             if (fromId == null || toId == null) {
                 when (options.onMissingEdgeEndpoint) {
                     MissingEndpointPolicy.FAIL -> {
+                        edgesCreated += batchWriter.flushEdges()
                         failures += GraphIoFailure(
                             phase = GraphIoPhase.READ_EDGE,
                             fileRole = GraphIoFileRole.EDGES,
@@ -159,8 +163,11 @@ class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSourc
                     options.preserveExternalIdProperty?.let { key -> put(key, eid) }
                 }
             }
-            operations.createEdge(fromId, toId, label, props)
-            edgesCreated++
+            edgesCreated += batchWriter.addEdge(label, fromId, toId, props)
+        }
+
+        if (status != GraphIoStatus.FAILED) {
+            edgesCreated += batchWriter.flushEdges()
         }
 
         buildReport(

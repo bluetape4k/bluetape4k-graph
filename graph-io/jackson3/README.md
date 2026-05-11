@@ -182,7 +182,7 @@ val report = future.join()
 - `onMissingEdgeEndpoint: MissingEndpointPolicy` - Handle dangling edges (FAIL, SKIP_EDGE)
 - `preserveExternalIdProperty: String?` - Store original external ID in properties (key name). `null` disables
 - `maxEdgeBufferSize: Int` - Memory limit for buffered edges before flushing (default `100_000`)
-- `batchSize: Int` - Progress-reporting/flush interval (default `1_000`)
+- `batchSize: Int` - Backend write flush size for label-grouped vertex/edge batches (default `1_000`)
 
 ### GraphExportOptions
 

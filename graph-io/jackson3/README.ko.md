@@ -182,7 +182,7 @@ val report = future.join()
 - `onMissingEdgeEndpoint: MissingEndpointPolicy` - 매달린 간선 처리 (FAIL, SKIP_EDGE)
 - `preserveExternalIdProperty: String?` - 원본 외부 ID를 속성에 저장 (키 이름). `null`이면 비활성화
 - `maxEdgeBufferSize: Int` - 플러시 전 버퍼된 간선의 메모리 제한 (기본 `100_000`)
-- `batchSize: Int` - 진행 보고/플러시 주기 (기본 `1_000`)
+- `batchSize: Int` - 라벨별 정점/간선 배치의 백엔드 쓰기 플러시 크기 (기본 `1_000`)
 
 ### GraphExportOptions
 

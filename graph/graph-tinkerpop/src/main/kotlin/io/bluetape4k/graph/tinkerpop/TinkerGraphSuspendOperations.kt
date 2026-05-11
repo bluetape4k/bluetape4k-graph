@@ -2,6 +2,7 @@ package io.bluetape4k.graph.tinkerpop
 
 import io.bluetape4k.graph.algo.ShortestPathFallback
 import io.bluetape4k.graph.model.BfsDfsOptions
+import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
 import io.bluetape4k.graph.model.DegreeOptions
@@ -132,6 +133,11 @@ class TinkerGraphSuspendOperations(
             delegate.createVertex(label, properties)
         }
 
+    override suspend fun createVertices(label: String, propertiesList: List<Map<String, Any?>>): List<GraphVertex> =
+        withContext(Dispatchers.IO) {
+            delegate.createVertices(label, propertiesList)
+        }
+
     override suspend fun findVertexById(label: String, id: GraphElementId): GraphVertex? =
         withContext(Dispatchers.IO) {
             delegate.findVertexById(label, id)
@@ -174,6 +180,11 @@ class TinkerGraphSuspendOperations(
     ): GraphEdge = withContext(Dispatchers.IO) {
         delegate.createEdge(fromId, toId, label, properties)
     }
+
+    override suspend fun createEdges(label: String, edges: List<BatchEdge>): List<GraphEdge> =
+        withContext(Dispatchers.IO) {
+            delegate.createEdges(label, edges)
+        }
 
     override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphEdge> = flow {
         val list = withContext(Dispatchers.IO) {

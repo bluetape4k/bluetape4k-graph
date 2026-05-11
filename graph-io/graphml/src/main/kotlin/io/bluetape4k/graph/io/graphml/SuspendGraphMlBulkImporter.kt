@@ -15,6 +15,8 @@ import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.graph.io.support.GraphIoExternalIdMap
 import io.bluetape4k.graph.io.support.GraphIoPaths
 import io.bluetape4k.graph.io.support.GraphIoStopwatch
+import io.bluetape4k.graph.io.support.SuspendGraphIoBatchWriter
+import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
@@ -48,6 +50,7 @@ class SuspendGraphMlBulkImporter : GraphSuspendBulkImporter<GraphImportSource> {
         val parsed = GraphIoPaths.openInputStream(source).use { reader.read(it, graphMlOptions) }
 
         val idMap = GraphIoExternalIdMap(options.onDuplicateVertexId)
+        val batchWriter = SuspendGraphIoBatchWriter(operations, options.batchSize)
         val failures = mutableListOf<GraphIoFailure>()
         failures.addAll(parsed.failures)
         var vr = parsed.vertices.size.toLong()
@@ -61,9 +64,10 @@ class SuspendGraphMlBulkImporter : GraphSuspendBulkImporter<GraphImportSource> {
         for (v in parsed.vertices) {
             val props = options.preserveExternalIdProperty
                 ?.let { v.properties + (it to v.externalId) } ?: v.properties
-            val created = operations.createVertex(v.label, props)
-            when (idMap.putFirstOrFail(v.externalId, created.id)) {
-                GraphIoExternalIdMap.PutResult.CREATED -> vc++
+            when (idMap.putFirstOrFail(v.externalId, GraphElementId(v.externalId))) {
+                GraphIoExternalIdMap.PutResult.CREATED -> {
+                    vc += batchWriter.addVertex(v.externalId, v.label, props, idMap)
+                }
                 GraphIoExternalIdMap.PutResult.SKIPPED -> {
                     sv++
                     status = GraphIoStatus.PARTIAL
@@ -77,6 +81,7 @@ class SuspendGraphMlBulkImporter : GraphSuspendBulkImporter<GraphImportSource> {
                 }
             }
         }
+        vc += batchWriter.flushVertices(idMap)
 
         for (e in parsed.edges) {
             val from = idMap.resolve(e.fromExternalId)
@@ -84,6 +89,7 @@ class SuspendGraphMlBulkImporter : GraphSuspendBulkImporter<GraphImportSource> {
             if (from == null || to == null) {
                 when (options.onMissingEdgeEndpoint) {
                     MissingEndpointPolicy.FAIL -> {
+                        ec += batchWriter.flushEdges()
                         val failure = GraphIoFailure(
                             phase = GraphIoPhase.READ_EDGE,
                             fileRole = GraphIoFileRole.UNIFIED,
@@ -112,8 +118,11 @@ class SuspendGraphMlBulkImporter : GraphSuspendBulkImporter<GraphImportSource> {
             val props = e.externalId?.let { eid ->
                 options.preserveExternalIdProperty?.let { key -> e.properties + (key to eid) } ?: e.properties
             } ?: e.properties
-            operations.createEdge(from, to, e.label, props)
-            ec++
+            ec += batchWriter.addEdge(e.label, from, to, props)
+        }
+
+        if (status != GraphIoStatus.FAILED) {
+            ec += batchWriter.flushEdges()
         }
 
         GraphImportReport(status, GraphIoFormat.GRAPHML, vr, vc, er, ec, sv, se, watch.elapsed(), failures)

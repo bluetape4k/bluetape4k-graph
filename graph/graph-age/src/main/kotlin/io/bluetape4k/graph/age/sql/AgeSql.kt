@@ -23,6 +23,18 @@ import io.bluetape4k.graph.support.requireSafeIdentifier
  */
 object AgeSql {
 
+    data class BatchVertexRow(
+        val index: Int,
+        val properties: Map<String, Any?>,
+    )
+
+    data class BatchEdgeRow(
+        val index: Int,
+        val fromId: Long,
+        val toId: Long,
+        val properties: Map<String, Any?> = emptyMap(),
+    )
+
     /**
      * `LOAD 'age'` SQL 문자열을 반환한다. 매 트랜잭션 시작 시 실행해야 한다.
      *
@@ -129,6 +141,29 @@ object AgeSql {
         )
     }
 
+    fun createVerticesBatch(graphName: String, label: String, rows: List<BatchVertexRow>): String {
+        require(rows.isNotEmpty()) { "rows must not be empty" }
+
+        val keys = commonSortedPropertyKeys(rows.map { it.properties })
+        val rowList = rows.joinToString(", ", "[", "]") { row ->
+            val fields = buildList {
+                add("idx: ${row.index}")
+                keys.forEachIndexed { propertyIndex, key ->
+                    add("p$propertyIndex: ${AgePropertySerializer.toCypherValue(row.properties[key])}")
+                }
+            }
+            fields.joinToString(", ", "{", "}")
+        }
+        val props = propertyMapFromRow(keys)
+        val createPattern = if (props.isEmpty()) "(v:$label)" else "(v:$label $props)"
+
+        return cypher(
+            graphName,
+            "UNWIND $rowList AS row CREATE $createPattern RETURN row.idx AS idx, v ORDER BY idx",
+            listOf("idx" to "agtype", "v" to "agtype")
+        )
+    }
+
     /**
      * 레이블과 필터로 정점을 조회하는 AGE SQL을 반환한다.
      *
@@ -167,9 +202,7 @@ object AgeSql {
      * ```
      */
     fun updateVertex(graphName: String, label: String, id: Long, properties: Map<String, Any?>): String {
-        val sets = properties.entries.joinToString(", ") { (k, v) ->
-            "v.$k = ${AgePropertySerializer.toCypherValue(v)}"
-        }
+        val sets = AgePropertySerializer.toCypherAssignments("v", properties)
         return cypher(
             graphName,
             "MATCH (v:$label) WHERE id(v) = $id SET $sets RETURN v",
@@ -227,6 +260,51 @@ object AgeSql {
         )
     }
 
+    fun matchBatchEdgeEndpoints(graphName: String, rows: List<BatchEdgeRow>): String {
+        require(rows.isNotEmpty()) { "rows must not be empty" }
+
+        val rowList = rows.joinToString(", ", "[", "]") { row ->
+            "{idx: ${row.index}, fromId: ${row.fromId}, toId: ${row.toId}}"
+        }
+        return cypher(
+            graphName,
+            "UNWIND $rowList AS row " +
+                    "MATCH (a), (b) " +
+                    "WHERE id(a) = row.fromId AND id(b) = row.toId " +
+                    "RETURN row.idx AS idx ORDER BY idx",
+            listOf("idx" to "agtype")
+        )
+    }
+
+    fun createEdgesBatch(graphName: String, edgeLabel: String, rows: List<BatchEdgeRow>): String {
+        require(rows.isNotEmpty()) { "rows must not be empty" }
+
+        val keys = commonSortedPropertyKeys(rows.map { it.properties })
+        val rowList = rows.joinToString(", ", "[", "]") { row ->
+            val fields = buildList {
+                add("idx: ${row.index}")
+                add("fromId: ${row.fromId}")
+                add("toId: ${row.toId}")
+                keys.forEachIndexed { propertyIndex, key ->
+                    add("p$propertyIndex: ${AgePropertySerializer.toCypherValue(row.properties[key])}")
+                }
+            }
+            fields.joinToString(", ", "{", "}")
+        }
+        val props = propertyMapFromRow(keys)
+        val edgePattern = if (props.isEmpty()) "[e:$edgeLabel]" else "[e:$edgeLabel $props]"
+
+        return cypher(
+            graphName,
+            "UNWIND $rowList AS row " +
+                    "MATCH (a), (b) " +
+                    "WHERE id(a) = row.fromId AND id(b) = row.toId " +
+                    "CREATE (a)-$edgePattern->(b) " +
+                    "RETURN row.idx AS idx, e ORDER BY idx",
+            listOf("idx" to "agtype", "e" to "agtype")
+        )
+    }
+
     /**
      * 레이블과 필터로 간선을 조회하는 AGE SQL을 반환한다.
      *
@@ -265,9 +343,7 @@ object AgeSql {
      * 간선 속성을 갱신하는 AGE SQL을 반환한다.
      */
     fun updateEdge(graphName: String, edgeLabel: String, id: Long, properties: Map<String, Any?>): String {
-        val sets = properties.entries.joinToString(", ") { (k, v) ->
-            "e.$k = ${AgePropertySerializer.toCypherValue(v)}"
-        }
+        val sets = AgePropertySerializer.toCypherAssignments("e", properties)
         return cypher(
             graphName,
             "MATCH ()-[e:$edgeLabel]->() WHERE id(e) = $id SET $sets RETURN e",
@@ -502,4 +578,20 @@ object AgeSql {
             "MATCH ()-[e]->() RETURN e",
             listOf("e" to "agtype"),
         )
+
+    private fun commonSortedPropertyKeys(rows: List<Map<String, Any?>>): List<String> {
+        val keys = rows.first().keys.map { it.requireSafeIdentifier("property key") }.sorted()
+        require(rows.all { row -> row.keys.map { it.requireSafeIdentifier("property key") }.sorted() == keys }) {
+            "all rows must share the same property keys"
+        }
+        return keys
+    }
+
+    private fun propertyMapFromRow(keys: List<String>): String =
+        if (keys.isEmpty()) {
+            ""
+        } else {
+            keys.mapIndexed { index, key -> "$key: row.p$index" }
+                .joinToString(", ", "{", "}")
+        }
 }

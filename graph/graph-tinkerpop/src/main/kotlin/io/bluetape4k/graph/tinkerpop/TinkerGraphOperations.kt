@@ -3,6 +3,7 @@ package io.bluetape4k.graph.tinkerpop
 import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.algo.ShortestPathFallback
 import io.bluetape4k.graph.model.BfsDfsOptions
+import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
 import io.bluetape4k.graph.model.DegreeOptions
@@ -21,6 +22,7 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.repository.GraphAlgorithmRepository
+import io.bluetape4k.graph.repository.GraphBatchValidation
 import io.bluetape4k.graph.repository.GraphEdgeRepository
 import io.bluetape4k.graph.repository.GraphMergeOperations
 import io.bluetape4k.graph.repository.GraphMergeValidation
@@ -41,6 +43,8 @@ import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.T
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__ as AnonymousTraversal
 
 /**
@@ -74,6 +78,7 @@ class TinkerGraphOperations :
     private val graph: TinkerGraph = TinkerGraph.open()
     private val g: GraphTraversalSource = graph.traversal()
     private val schemaManager = TinkerGraphSchemaManager()
+    private val writeLock = ReentrantLock()
 
     override fun close() {
         graph.close()
@@ -121,6 +126,31 @@ class TinkerGraphOperations :
     override fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex {
         label.requireNotBlank("label")
 
+        return addVertex(label, properties)
+    }
+
+    override fun createVertices(label: String, propertiesList: List<Map<String, Any?>>): List<GraphVertex> {
+        val validatedPropertiesList = GraphBatchValidation.validateVertexBatch(label, propertiesList)
+        if (validatedPropertiesList.isEmpty()) return emptyList()
+
+        return writeLock.withLock {
+            val snapshot = snapshot()
+            try {
+                validatedPropertiesList.map { properties ->
+                    addVertex(label, properties)
+                }
+            } catch (e: Throwable) {
+                try {
+                    restore(snapshot)
+                } catch (restoreFailure: Throwable) {
+                    e.addSuppressed(restoreFailure)
+                }
+                throw e
+            }
+        }
+    }
+
+    private fun addVertex(label: String, properties: Map<String, Any?>): GraphVertex {
         val traversal = g.addV(label)
         properties.forEach { (key, value) ->
             if (value != null) traversal.property(key, value)
@@ -229,6 +259,52 @@ class TinkerGraphOperations :
         val toIdValue = toId.value.toLongOrNull()
             ?: throw GraphQueryException("Invalid toId: ${toId.value}")
 
+        return addEdge(fromIdValue, toIdValue, label, properties)
+    }
+
+    override fun createEdges(label: String, edges: List<BatchEdge>): List<GraphEdge> {
+        val validatedEdges = GraphBatchValidation.validateEdgeBatch(label, edges)
+        if (validatedEdges.isEmpty()) return emptyList()
+
+        return writeLock.withLock {
+            val endpoints = validatedEdges.map { edge ->
+                val fromIdValue = edge.fromId.value.toLongOrNull()
+                    ?: throw GraphQueryException("Invalid fromId: ${edge.fromId.value}")
+                val toIdValue = edge.toId.value.toLongOrNull()
+                    ?: throw GraphQueryException("Invalid toId: ${edge.toId.value}")
+
+                if (!g.V(fromIdValue).tryNext().isPresent) {
+                    throw GraphQueryException("Start vertex not found: ${edge.fromId.value}")
+                }
+                if (!g.V(toIdValue).tryNext().isPresent) {
+                    throw GraphQueryException("End vertex not found: ${edge.toId.value}")
+                }
+
+                TinkerGraphEdgeCreateRequest(fromIdValue, toIdValue, edge.properties)
+            }
+
+            val snapshot = snapshot()
+            try {
+                endpoints.map { edge ->
+                    addEdge(edge.fromId, edge.toId, label, edge.properties)
+                }
+            } catch (e: Throwable) {
+                try {
+                    restore(snapshot)
+                } catch (restoreFailure: Throwable) {
+                    e.addSuppressed(restoreFailure)
+                }
+                throw e
+            }
+        }
+    }
+
+    private fun addEdge(
+        fromIdValue: Long,
+        toIdValue: Long,
+        label: String,
+        properties: Map<String, Any?>,
+    ): GraphEdge {
         val traversal = g.V(fromIdValue).addE(label).to(AnonymousTraversal.V<Vertex>(toIdValue))
         properties.forEach { (key, value) ->
             if (value != null) traversal.property(key, value)
@@ -684,6 +760,12 @@ class TinkerGraphOperations :
         val label: String,
         val startId: Any,
         val endId: Any,
+        val properties: Map<String, Any?>,
+    )
+
+    private data class TinkerGraphEdgeCreateRequest(
+        val fromId: Long,
+        val toId: Long,
         val properties: Map<String, Any?>,
     )
 }

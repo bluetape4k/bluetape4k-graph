@@ -7,6 +7,7 @@ import io.bluetape4k.graph.algo.internal.CycleDetector
 import io.bluetape4k.graph.algo.internal.PageRankCalculator
 import io.bluetape4k.graph.algo.internal.UnionFind
 import io.bluetape4k.graph.model.BfsDfsOptions
+import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
 import io.bluetape4k.graph.model.DegreeOptions
@@ -24,6 +25,7 @@ import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.TraversalVisit
+import io.bluetape4k.graph.repository.GraphBatchValidation
 import io.bluetape4k.graph.repository.GraphMergeOperations
 import io.bluetape4k.graph.repository.GraphMergeProperties
 import io.bluetape4k.graph.repository.GraphMergeValidation
@@ -172,6 +174,34 @@ class MemgraphGraphOperations(
         }.firstOrNull() ?: throw GraphQueryException("Failed to create vertex: $label")
     }
 
+    override fun createVertices(label: String, propertiesList: List<Map<String, Any?>>): List<GraphVertex> {
+        GraphBatchValidation.validateVertexBatch(label, propertiesList)
+        if (propertiesList.isEmpty()) return emptyList()
+
+        val rows = propertiesList.mapIndexed { index, properties ->
+            mapOf(
+                "index" to index,
+                "properties" to properties,
+            )
+        }
+
+        val vertices = runQuery(
+            "UNWIND \$rows AS row " +
+                    "CREATE (n:$label) " +
+                    "SET n += row.properties " +
+                    "RETURN row.index AS index, n " +
+                    "ORDER BY index",
+            mapOf("rows" to rows),
+        ) {
+            MemgraphRecordMapper.recordToVertex(it)
+        }
+
+        if (vertices.size != propertiesList.size) {
+            throw GraphQueryException("Failed to create all vertices: $label")
+        }
+        return vertices
+    }
+
     override fun findVertexById(label: String, id: GraphElementId): GraphVertex? {
         label.requireNotBlank("label").requireSafeIdentifier("label")
 
@@ -305,6 +335,43 @@ class MemgraphGraphOperations(
         ) {
             MemgraphRecordMapper.recordToEdge(it)
         }.firstOrNull() ?: throw GraphQueryException("Failed to create edge: $label")
+    }
+
+    override fun createEdges(label: String, edges: List<BatchEdge>): List<GraphEdge> {
+        GraphBatchValidation.validateEdgeBatch(label, edges)
+        if (edges.isEmpty()) return emptyList()
+
+        val rows = edges.mapIndexed { index, edge ->
+            mapOf(
+                "index" to index,
+                "fromId" to edge.fromId.value,
+                "toId" to edge.toId.value,
+                "properties" to edge.properties,
+            )
+        }
+
+        val created = runQuery(
+            "WITH \$rows AS rows, size(\$rows) AS expected " +
+                    "UNWIND rows AS row " +
+                    "MATCH (source), (target) " +
+                    "WHERE id(source) = toInteger(row.fromId) AND id(target) = toInteger(row.toId) " +
+                    "WITH collect({index: row.index, properties: row.properties, source: source, target: target}) AS matched, expected " +
+                    "WHERE size(matched) = expected " +
+                    "UNWIND matched AS row " +
+                    "WITH row.index AS index, row.properties AS properties, row.source AS source, row.target AS target " +
+                    "CREATE (source)-[r:$label]->(target) " +
+                    "SET r += properties " +
+                    "RETURN index, r " +
+                    "ORDER BY index",
+            mapOf("rows" to rows),
+        ) {
+            MemgraphRecordMapper.recordToEdge(it)
+        }
+
+        if (created.size != edges.size) {
+            throw GraphQueryException("Failed to create all edges: $label")
+        }
+        return created
     }
 
     override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): List<GraphEdge> {

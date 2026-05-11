@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.repository
 
+import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphElementId
 import kotlinx.coroutines.flow.Flow
@@ -39,6 +40,29 @@ interface GraphSuspendEdgeRepository {
         label: String,
         properties: Map<String, Any?> = emptyMap(),
     ): GraphEdge
+
+    /**
+     * 같은 레이블의 간선을 여러 개 생성하고 입력 순서와 같은 순서로 반환한다.
+     *
+     * ## 동작/계약
+     *
+     * - 빈 입력은 백엔드를 호출하지 않고 `emptyList()`를 반환한다.
+     * - 기본 구현은 [createEdge]를 순차 호출하는 호환성 fallback이다.
+     * - 기본 구현은 중간 실패 시 앞서 생성된 간선이 남을 수 있다.
+     * - 성능 및 all-or-fail 의미가 필요한 프로덕션 백엔드는 이 메서드를 override해야 한다.
+     *
+     * @param label 간선 레이블.
+     * @param edges 간선 endpoint와 속성 목록.
+     * @return 백엔드에서 생성된 [GraphEdge] 목록.
+     */
+    suspend fun createEdges(
+        label: String,
+        edges: List<BatchEdge>,
+    ): List<GraphEdge> {
+        GraphBatchValidation.validateEdgeBatch(label, edges)
+        if (edges.isEmpty()) return emptyList()
+        return edges.map { edge -> createEdge(edge.fromId, edge.toId, label, edge.properties) }
+    }
 
     /**
      * 레이블과 속성 필터로 간선 목록을 스트림으로 조회한다.

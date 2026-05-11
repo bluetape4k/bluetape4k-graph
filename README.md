@@ -71,6 +71,29 @@ object KnowsLabel : EdgeLabel("KNOWS") {
 }
 ```
 
+### Batch Insert API
+
+`GraphVertexRepository.createVertices(...)` and `GraphEdgeRepository.createEdges(...)` create multiple elements with one call. The default interface methods preserve source compatibility by looping over the single-row APIs, while Neo4j, Memgraph, FalkorDB, AGE, and TinkerGraph provide backend-specific batch paths.
+
+Return order matches input order. Native edge batches validate endpoints before writing so a missing endpoint fails the whole batch instead of leaving partial edges.
+
+```kotlin
+val people = ops.createVertices(
+    "Person",
+    listOf(
+        mapOf("name" to "Alice"),
+        mapOf("name" to "Bob"),
+    )
+)
+
+val edges = ops.createEdges(
+    "KNOWS",
+    listOf(BatchEdge(people[0].id, people[1].id, mapOf("since" to 2026)))
+)
+```
+
+The same contract is exposed on sync, suspend, and virtual-thread adapters (`createVertices`, `createEdges`, `createVerticesAsync`, `createEdgesAsync`). Smoke evidence for 10k-row inserts is tracked in [2026-05 test logs](docs/testlogs/2026-05.md).
+
 ## Bulk Import / Export (`graph-io`)
 
 The `graph-io` family provides format-independent bulk I/O with three execution models (Sync, VirtualThread, Coroutine).
@@ -96,6 +119,8 @@ SuspendGraphMlBulkExporter().exportGraphSuspending(
     GraphExportSink.PathSink(Path.of("graph.graphml")), suspendOps, options
 )
 ```
+
+Importers use `GraphImportOptions.batchSize` as the backend write flush size. Pending vertices and edges are grouped by label and flushed through `createVertices`/`createEdges`; duplicate-ID and missing-endpoint policies keep their existing semantics.
 
 | Module | Format | Docs |
 |--------|--------|------|

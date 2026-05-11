@@ -11,6 +11,7 @@ import io.bluetape4k.graph.algo.internal.PageRankCalculator
 import io.bluetape4k.graph.algo.internal.UnionFind
 import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.graph.model.BfsDfsOptions
+import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
 import io.bluetape4k.graph.model.DegreeOptions
@@ -28,6 +29,7 @@ import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.TraversalVisit
+import io.bluetape4k.graph.repository.GraphBatchValidation
 import io.bluetape4k.graph.repository.GraphMergeOperations
 import io.bluetape4k.graph.repository.GraphMergeProperties
 import io.bluetape4k.graph.repository.GraphMergeValidation
@@ -154,6 +156,29 @@ class FalkorDBGraphOperations(
         return queryList(cypher, properties) {
             it.toVertex()
         }.firstOrNull() ?: throw GraphQueryException("Failed to create vertex: $label")
+    }
+
+    override fun createVertices(label: String, propertiesList: List<Map<String, Any?>>): List<GraphVertex> {
+        GraphBatchValidation.validateVertexBatch(label, propertiesList)
+        if (propertiesList.isEmpty()) return emptyList()
+
+        val rows = vertexBatchRowsLiteral(propertiesList)
+
+        val vertices = queryList(
+            "UNWIND ${rows.literal} AS row " +
+                    "CREATE (n:$label) " +
+                    "SET n += row.properties " +
+                    "RETURN row.index AS index, n " +
+                    "ORDER BY index",
+            rows.params,
+        ) {
+            it.toVertex()
+        }
+
+        if (vertices.size != propertiesList.size) {
+            throw GraphQueryException("Failed to create all vertices: $label")
+        }
+        return vertices
     }
 
     override fun findVertexById(label: String, id: GraphElementId): GraphVertex? {
@@ -307,6 +332,36 @@ class FalkorDBGraphOperations(
         }.firstOrNull() ?: throw GraphQueryException("Failed to create edge: $label")
     }
 
+    override fun createEdges(label: String, edges: List<BatchEdge>): List<GraphEdge> {
+        GraphBatchValidation.validateEdgeBatch(label, edges)
+        if (edges.isEmpty()) return emptyList()
+
+        val rows = edgeBatchRowsLiteral(edges)
+
+        val created = queryList(
+            "WITH ${rows.literal} AS rows, size(${rows.literal}) AS expected " +
+                    "UNWIND rows AS row " +
+                    "MATCH (source), (target) " +
+                    "WHERE id(source) = toInteger(row.fromId) AND id(target) = toInteger(row.toId) " +
+                    "WITH collect({index: row.index, properties: row.properties, source: source, target: target}) AS matched, expected " +
+                    "WHERE size(matched) = expected " +
+                    "UNWIND matched AS row " +
+                    "WITH row.index AS index, row.properties AS properties, row.source AS source, row.target AS target " +
+                    "CREATE (source)-[r:$label]->(target) " +
+                    "SET r += properties " +
+                    "RETURN index, r " +
+                    "ORDER BY index",
+            rows.params,
+        ) {
+            it.toEdge()
+        }
+
+        if (created.size != edges.size) {
+            throw GraphQueryException("Failed to create all edges: $label")
+        }
+        return created
+    }
+
     override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): List<GraphEdge> {
         label.requireNotBlank("label").requireSafeIdentifier("label")
 
@@ -376,6 +431,49 @@ class FalkorDBGraphOperations(
     private fun mergeParams(properties: GraphMergeProperties): Map<String, Any?> =
         properties.matchProperties.mapKeys { (key, _) -> "match_$key" } +
                 properties.setProperties.mapKeys { (key, _) -> "set_$key" }
+
+    private data class BatchRowsLiteral(
+        val literal: String,
+        val params: Map<String, Any?>,
+    )
+
+    private fun vertexBatchRowsLiteral(propertiesList: List<Map<String, Any?>>): BatchRowsLiteral {
+        val params = linkedMapOf<String, Any?>()
+        val rows = propertiesList.mapIndexed { index, properties ->
+            val prefix = "row_${index}"
+            "{index: $index, properties: ${propertyMapLiteral(prefix, properties, params)}}"
+        }
+        return BatchRowsLiteral(rows.joinToString(prefix = "[", postfix = "]"), params)
+    }
+
+    private fun edgeBatchRowsLiteral(edges: List<BatchEdge>): BatchRowsLiteral {
+        val params = linkedMapOf<String, Any?>()
+        val rows = edges.mapIndexed { index, edge ->
+            val prefix = "row_${index}"
+            val fromParam = "${prefix}_fromId"
+            val toParam = "${prefix}_toId"
+            params[fromParam] = edge.fromId.value
+            params[toParam] = edge.toId.value
+            "{index: $index, fromId: \$$fromParam, toId: \$$toParam, properties: " +
+                    "${propertyMapLiteral(prefix, edge.properties, params)}}"
+        }
+        return BatchRowsLiteral(rows.joinToString(prefix = "[", postfix = "]"), params)
+    }
+
+    private fun propertyMapLiteral(
+        prefix: String,
+        properties: Map<String, Any?>,
+        params: MutableMap<String, Any?>,
+    ): String {
+        if (properties.isEmpty()) return "{}"
+
+        return properties.entries.mapIndexed { index, (key, value) ->
+            val propertyKey = key.requireSafeIdentifier("property key")
+            val paramName = "${prefix}_p_$index"
+            params[paramName] = value
+            "$propertyKey: \$$paramName"
+        }.joinToString(prefix = "{", postfix = "}")
+    }
 
     // -- GraphTraversalRepository --
 

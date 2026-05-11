@@ -9,6 +9,7 @@ import io.bluetape4k.graph.algo.internal.CycleDetector
 import io.bluetape4k.graph.algo.internal.PageRankCalculator
 import io.bluetape4k.graph.algo.internal.UnionFind
 import io.bluetape4k.graph.model.BfsDfsOptions
+import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
 import io.bluetape4k.graph.model.DegreeOptions
@@ -26,6 +27,7 @@ import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.TraversalVisit
+import io.bluetape4k.graph.repository.GraphBatchValidation
 import io.bluetape4k.graph.repository.GraphEdgeRepository
 import io.bluetape4k.graph.repository.GraphMergeOperations
 import io.bluetape4k.graph.repository.GraphMergeValidation
@@ -74,6 +76,20 @@ class AgeGraphOperations(
 ): GraphOperations, GraphTransactionalOperations, GraphSchemaManagementOperations, GraphMergeOperations {
 
     companion object: KLogging()
+
+    private data class IndexedProperties(
+        val index: Int,
+        val properties: Map<String, Any?>,
+    )
+
+    private data class IndexedEdge(
+        val index: Int,
+        val fromId: Long,
+        val toId: Long,
+        val properties: Map<String, Any?>,
+    )
+
+    private val batchChunkSize: Int = 500
 
     init {
         graphName.requireNotBlank("graphName").requireSafeIdentifier("graphName")
@@ -135,6 +151,31 @@ class AgeGraphOperations(
                 if (rs.next()) vertex = AgeTypeParser.parseVertex(rs.getString("v"))
             }
             vertex ?: throw GraphQueryException("Failed to create vertex with label=$label")
+        }
+    }
+
+    override fun createVertices(label: String, propertiesList: List<Map<String, Any?>>): List<GraphVertex> {
+        val validated = GraphBatchValidation.validateVertexBatch(label, propertiesList)
+        if (validated.isEmpty()) return emptyList()
+
+        return exposedTransaction {
+            val created = mutableListOf<Pair<Int, GraphVertex>>()
+            val rows = validated.mapIndexed { index, properties -> IndexedProperties(index, properties) }
+            rows.groupBy { it.properties.keys.sorted() }.values.forEach { group ->
+                group.chunked(batchChunkSize).forEach { chunk ->
+                    val sqlRows = chunk.map { AgeSql.BatchVertexRow(it.index, it.properties) }
+                    exec(AgeSql.createVerticesBatch(graphName, label, sqlRows)) { rs ->
+                        while (rs.next()) {
+                            created.add(parseBatchIndex(rs.getString("idx")) to AgeTypeParser.parseVertex(rs.getString("v")))
+                        }
+                    }
+                }
+            }
+
+            if (created.size != validated.size) {
+                throw GraphQueryException("Failed to create all vertices with label=$label")
+            }
+            created.sortedBy { it.first }.map { it.second }
         }
     }
 
@@ -321,6 +362,56 @@ class AgeGraphOperations(
                 }
             }
             edge ?: throw GraphQueryException("Failed to create edge: $label ($fromId -> $toId)")
+        }
+    }
+
+    override fun createEdges(label: String, edges: List<BatchEdge>): List<GraphEdge> {
+        val validated = GraphBatchValidation.validateEdgeBatch(label, edges)
+        if (validated.isEmpty()) return emptyList()
+
+        val rows = validated.mapIndexed { index, edge ->
+            IndexedEdge(
+                index = index,
+                fromId = edge.fromId.value.toLongOrNull()
+                    ?: throw GraphQueryException("AGE requires numeric ID, got: ${edge.fromId.value}"),
+                toId = edge.toId.value.toLongOrNull()
+                    ?: throw GraphQueryException("AGE requires numeric ID, got: ${edge.toId.value}"),
+                properties = edge.properties,
+            )
+        }
+
+        return exposedTransaction {
+            val matchedIndexes = mutableSetOf<Int>()
+            rows.chunked(batchChunkSize).forEach { chunk ->
+                val sqlRows = chunk.map { AgeSql.BatchEdgeRow(it.index, it.fromId, it.toId) }
+                exec(AgeSql.matchBatchEdgeEndpoints(graphName, sqlRows)) { rs ->
+                    while (rs.next()) {
+                        matchedIndexes.add(parseBatchIndex(rs.getString("idx")))
+                    }
+                }
+            }
+            if (matchedIndexes.size != rows.size) {
+                throw GraphQueryException("Failed to match all edge endpoints for label=$label")
+            }
+
+            val created = mutableListOf<Pair<Int, GraphEdge>>()
+            rows.groupBy { it.properties.keys.sorted() }.values.forEach { group ->
+                group.chunked(batchChunkSize).forEach { chunk ->
+                    val sqlRows = chunk.map {
+                        AgeSql.BatchEdgeRow(it.index, it.fromId, it.toId, it.properties)
+                    }
+                    exec(AgeSql.createEdgesBatch(graphName, label, sqlRows)) { rs ->
+                        while (rs.next()) {
+                            created.add(parseBatchIndex(rs.getString("idx")) to AgeTypeParser.parseEdge(rs.getString("e")))
+                        }
+                    }
+                }
+            }
+
+            if (created.size != rows.size) {
+                throw GraphQueryException("Failed to create all edges with label=$label")
+            }
+            created.sortedBy { it.first }.map { it.second }
         }
     }
 
@@ -642,6 +733,13 @@ class AgeGraphOperations(
         }
         return adjacency to vertexById
     }
+
+    private fun parseBatchIndex(value: String): Int =
+        value.trim()
+            .substringBefore("::")
+            .trim()
+            .toIntOrNull()
+            ?: throw GraphQueryException("AGE returned non-numeric batch index: $value")
 
     private class AgeGraphTransactionScope(
         private val delegate: AgeGraphOperations,

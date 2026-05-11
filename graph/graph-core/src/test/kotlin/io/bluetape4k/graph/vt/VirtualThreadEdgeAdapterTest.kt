@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.vt
 
+import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.junit5.concurrency.StructuredTaskScopeTester
 import io.bluetape4k.logging.KLogging
@@ -39,6 +40,18 @@ class VirtualThreadEdgeAdapterTest {
         edge.shouldNotBeNull()
         edge.label shouldBeEqualTo "KNOWS"
         verify(exactly = 1) { delegate.createEdge(from.id, to.id, "KNOWS", mapOf("since" to 2024)) }
+    }
+
+    @Test
+    fun `createEdgesAsync creates and returns edges in order`() {
+        val from = delegate.createVertex("Person", mapOf("name" to "Alice"))
+        val to = delegate.createVertex("Person", mapOf("name" to "Bob"))
+        val rows = listOf(BatchEdge(from.id, to.id, mapOf("since" to 2024)))
+
+        val edges = adapter.createEdgesAsync("KNOWS", rows).join()
+
+        edges.single().properties["since"] shouldBeEqualTo 2024
+        verify(exactly = 1) { delegate.createEdges("KNOWS", rows) }
     }
 
     @Test

@@ -7,6 +7,7 @@ import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
+import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.logging.KLogging
 import io.mockk.clearMocks
 import io.mockk.every
@@ -302,6 +303,47 @@ class CachingNeo4jGraphOperationsTest {
         // 두 번째 createVertex 호출 → 메모이제이션 캐시 히트
         caching.createVertex("Person", props)
         verify(exactly = 1) { delegate.createVertex("Person", props) }  // delegate 추가 호출 없음
+    }
+
+    @Test
+    fun `createVertices 후 읽기 캐시와 쓰기 메모이제이션 캐시가 무효화된다`() {
+        val props = mapOf("name" to "Alice")
+        val batch = listOf(props, mapOf("name" to "Bob"))
+        every { delegate.findVertexById("Person", aliceId) } returns alice
+        every { delegate.createVertex("Person", props) } returns alice andThen alice.copy(id = GraphElementId.of("alice-2"))
+        every { delegate.createVertices("Person", batch) } returns listOf(alice, bob)
+
+        caching.findVertexById("Person", aliceId)
+        caching.createVertex("Person", props)
+        caching.createVertices("Person", batch)
+        caching.findVertexById("Person", aliceId)
+        caching.createVertex("Person", props)
+
+        verify(exactly = 2) { delegate.findVertexById("Person", aliceId) }
+        verify(exactly = 2) { delegate.createVertex("Person", props) }
+        verify(exactly = 1) { delegate.createVertices("Person", batch) }
+    }
+
+    @Test
+    fun `createEdges 후 읽기 캐시와 쓰기 메모이제이션 캐시가 무효화된다`() {
+        val batch = listOf(
+            BatchEdge(aliceId, bobId),
+            BatchEdge(bobId, aliceId, mapOf("since" to 2025L)),
+        )
+        every { delegate.findEdgesByLabel("KNOWS", emptyMap()) } returns listOf(edge)
+        every { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) } returns edge andThen
+            edge.copy(id = GraphElementId.of("edge-2"))
+        every { delegate.createEdges("KNOWS", batch) } returns listOf(edge, edge.copy(id = GraphElementId.of("edge-3")))
+
+        caching.findEdgesByLabel("KNOWS")
+        caching.createEdge(aliceId, bobId, "KNOWS")
+        caching.createEdges("KNOWS", batch)
+        caching.findEdgesByLabel("KNOWS")
+        caching.createEdge(aliceId, bobId, "KNOWS")
+
+        verify(exactly = 2) { delegate.findEdgesByLabel("KNOWS", emptyMap()) }
+        verify(exactly = 2) { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) }
+        verify(exactly = 1) { delegate.createEdges("KNOWS", batch) }
     }
 
     @Test

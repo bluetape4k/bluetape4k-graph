@@ -12,6 +12,7 @@ import io.bluetape4k.graph.io.report.GraphIoFormat
 import io.bluetape4k.graph.io.report.GraphIoPhase
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.report.GraphImportReport
+import io.bluetape4k.graph.io.support.GraphIoBatchWriter
 import io.bluetape4k.graph.io.support.GraphIoExternalIdMap
 import io.bluetape4k.graph.io.support.GraphIoPaths
 import io.bluetape4k.graph.io.support.GraphIoStopwatch
@@ -59,6 +60,7 @@ class CsvGraphBulkImporter : GraphBulkImporter<CsvGraphImportSource> {
         val watch = GraphIoStopwatch()
         val codec = CsvRecordCodec(csvOptions.propertyMode)
         val idMap = GraphIoExternalIdMap(options.onDuplicateVertexId)
+        val batchWriter = GraphIoBatchWriter(operations, options.batchSize)
         val failures = mutableListOf<GraphIoFailure>()
         var verticesRead = 0L
         var verticesCreated = 0L
@@ -79,6 +81,7 @@ class CsvGraphBulkImporter : GraphBulkImporter<CsvGraphImportSource> {
             val externalId = record.getString("id").orEmpty()
             val label = record.getString("label").orEmpty().ifBlank { options.defaultVertexLabel }
             if (externalId.isBlank()) {
+                verticesCreated += batchWriter.flushVertices(idMap)
                 failures += GraphIoFailure(
                     phase = GraphIoPhase.READ_VERTEX,
                     fileRole = GraphIoFileRole.VERTICES,
@@ -108,9 +111,7 @@ class CsvGraphBulkImporter : GraphBulkImporter<CsvGraphImportSource> {
                 putAll(codec.extractProperties(rowMap))
                 options.preserveExternalIdProperty?.let { key -> put(key, externalId) }
             }
-            val created = operations.createVertex(label, props)
-            idMap.put(externalId, created.id)
-            verticesCreated++
+            verticesCreated += batchWriter.addVertex(externalId, label, props, idMap)
         }
 
         if (status == GraphIoStatus.FAILED) {
@@ -120,6 +121,8 @@ class CsvGraphBulkImporter : GraphBulkImporter<CsvGraphImportSource> {
                 verticesRead, verticesCreated, edgesRead, edgesCreated, skippedVertices, skippedEdges
             )
         }
+
+        verticesCreated += batchWriter.flushVertices(idMap)
 
         // --- 엣지 패스 ---
         val edgeRecords = CsvRecordReader().read(
@@ -137,6 +140,7 @@ class CsvGraphBulkImporter : GraphBulkImporter<CsvGraphImportSource> {
             if (fromId == null || toId == null) {
                 when (options.onMissingEdgeEndpoint) {
                     MissingEndpointPolicy.FAIL -> {
+                        edgesCreated += batchWriter.flushEdges()
                         failures += GraphIoFailure(
                             phase = GraphIoPhase.READ_EDGE,
                             fileRole = GraphIoFileRole.EDGES,
@@ -166,8 +170,11 @@ class CsvGraphBulkImporter : GraphBulkImporter<CsvGraphImportSource> {
                     options.preserveExternalIdProperty?.let { key -> put(key, eid) }
                 }
             }
-            operations.createEdge(fromId, toId, label, props)
-            edgesCreated++
+            edgesCreated += batchWriter.addEdge(label, fromId, toId, props)
+        }
+
+        if (status != GraphIoStatus.FAILED) {
+            edgesCreated += batchWriter.flushEdges()
         }
 
         return buildReport(

@@ -11,6 +11,7 @@ import io.bluetape4k.graph.algo.internal.PageRankCalculator
 import io.bluetape4k.graph.algo.internal.UnionFind
 import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.graph.model.BfsDfsOptions
+import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
 import io.bluetape4k.graph.model.DegreeOptions
@@ -215,6 +216,14 @@ class FalkorDBGraphSuspendOperations(
         }.firstOrNull() ?: throw GraphQueryException("Failed to create vertex: $label")
     }
 
+    override suspend fun createVertices(
+        label: String,
+        propertiesList: List<Map<String, Any?>>,
+    ): List<GraphVertex> =
+        withContext(Dispatchers.IO) {
+            syncDelegate.createVertices(label, propertiesList)
+        }
+
     override suspend fun findVertexById(label: String, id: GraphElementId): GraphVertex? {
         label.requireNotBlank("label").requireSafeIdentifier("label")
 
@@ -324,6 +333,11 @@ class FalkorDBGraphSuspendOperations(
             it.toEdge()
         }.firstOrNull() ?: throw GraphQueryException("Failed to create edge: $label")
     }
+
+    override suspend fun createEdges(label: String, edges: List<BatchEdge>): List<GraphEdge> =
+        withContext(Dispatchers.IO) {
+            syncDelegate.createEdges(label, edges)
+        }
 
     override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphEdge> {
         label.requireNotBlank("label").requireSafeIdentifier("label")

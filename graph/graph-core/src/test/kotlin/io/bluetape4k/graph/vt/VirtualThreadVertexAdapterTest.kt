@@ -41,6 +41,19 @@ class VirtualThreadVertexAdapterTest {
     }
 
     @Test
+    fun `createVerticesAsync creates and returns vertices in order`() {
+        val vertices = adapter.createVerticesAsync(
+            "Person",
+            listOf(mapOf("name" to "Alice"), mapOf("name" to "Bob")),
+        ).join()
+
+        vertices.map { it.properties["name"] } shouldBeEqualTo listOf("Alice", "Bob")
+        verify(exactly = 1) {
+            delegate.createVertices("Person", listOf(mapOf("name" to "Alice"), mapOf("name" to "Bob")))
+        }
+    }
+
+    @Test
     fun `findVertexByIdAsync returns created vertex`() {
         val created = delegate.createVertex("Person", mapOf("name" to "Bob"))
         val found = adapter.findVertexByIdAsync("Person", created.id).join()

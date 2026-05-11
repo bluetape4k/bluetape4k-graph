@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.neo4j
 
+import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphPath
@@ -263,6 +264,9 @@ class CachingNeo4jGraphOperations(
         return created
     }
 
+    override fun createVertices(label: String, propertiesList: List<Map<String, Any?>>): List<GraphVertex> =
+        delegate.createVertices(label, propertiesList).also { invalidateAll() }
+
     /**
      * 기존 정점의 속성을 갱신한다. 갱신 후 **읽기·쓰기 캐시 전체**를 무효화하여 이후 조회가 DB 에서 최신 데이터를 가져온다.
      *
@@ -312,6 +316,9 @@ class CachingNeo4jGraphOperations(
         invalidateReads()
         return created
     }
+
+    override fun createEdges(label: String, edges: List<BatchEdge>): List<GraphEdge> =
+        delegate.createEdges(label, edges).also { invalidateAll() }
 
     /**
      * 간선을 삭제하고 **읽기·쓰기 캐시 전체**를 무효화한다.
