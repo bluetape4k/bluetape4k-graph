@@ -674,6 +674,40 @@ val driver = GraphDatabase.driver("bolt://localhost:7687")
 val graphOps = Neo4jGraphOperations(driver, database = "neo4j")
 ```
 
+### Schema / Index Management
+
+`Neo4jGraphOperations`는 Neo4j `CREATE INDEX`와 `CREATE CONSTRAINT`를 공통 `SchemaManager` API로 노출한다.
+
+```kotlin
+import io.bluetape4k.graph.schema.schemaManager
+
+val schema = graphOps.schemaManager()
+schema.createIndex("Person", "email")
+schema.createUniqueConstraint("Person", "email")
+val constraints = schema.listConstraints()
+```
+
+### Merge / Upsert and Transaction DSL
+
+Neo4j backend는 native Cypher `MERGE` 기반 `GraphMergeOperations`와 driver transaction 기반
+`Transaction DSL`을 지원한다. endpoint lookup은 Neo4j 5.x `elementId()`를 사용한다.
+
+```kotlin
+import io.bluetape4k.graph.repository.mergeVertex
+import io.bluetape4k.graph.repository.transaction
+
+val alice = graphOps.mergeVertex(
+    label = "Person",
+    matchProperties = mapOf("email" to "alice@example.com"),
+    setProperties = mapOf("name" to "Alice"),
+)
+
+val edge = graphOps.transaction {
+    val bob = createVertex("Person", mapOf("email" to "bob@example.com"))
+    createEdge(alice.id, bob.id, "KNOWS")
+}
+```
+
 ### createVertex 예시
 
 ```kotlin

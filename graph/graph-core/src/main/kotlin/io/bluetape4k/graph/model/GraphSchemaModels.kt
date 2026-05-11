@@ -4,6 +4,10 @@ import java.io.Serializable
 
 /**
  * 그래프 스키마 객체가 적용되는 엔티티 종류.
+ *
+ * ```kotlin
+ * val target = GraphSchemaEntityType.VERTEX
+ * ```
  */
 enum class GraphSchemaEntityType {
     /** 정점/노드 레이블에 적용되는 스키마 객체. */
@@ -18,6 +22,10 @@ enum class GraphSchemaEntityType {
 
 /**
  * 그래프 제약조건 종류.
+ *
+ * ```kotlin
+ * val type = GraphConstraintType.UNIQUE
+ * ```
  */
 enum class GraphConstraintType {
     /** 특정 레이블과 속성 조합의 값이 유일해야 함을 나타낸다. */
@@ -38,6 +46,14 @@ enum class GraphConstraintType {
  * @property property 인덱스 속성 이름. label-only 인덱스는 `null`일 수 있다.
  * @property entityType 인덱스 대상 엔티티 종류.
  * @property unique 인덱스가 유니크 제약조건을 뒷받침하는지 여부.
+ *
+ * ```kotlin
+ * val index = GraphIndex(
+ *     name = "bt4k_idx_Person_email",
+ *     label = "Person",
+ *     property = "email",
+ * )
+ * ```
  */
 data class GraphIndex(
     val name: String,
@@ -59,6 +75,15 @@ data class GraphIndex(
  * @property property 제약조건 속성 이름.
  * @property type 공통 제약조건 종류.
  * @property entityType 제약조건 대상 엔티티 종류.
+ *
+ * ```kotlin
+ * val constraint = GraphConstraint(
+ *     name = "bt4k_uc_Person_email",
+ *     label = "Person",
+ *     property = "email",
+ *     type = GraphConstraintType.UNIQUE,
+ * )
+ * ```
  */
 data class GraphConstraint(
     val name: String,

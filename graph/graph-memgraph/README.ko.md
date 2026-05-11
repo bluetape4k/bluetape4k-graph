@@ -16,6 +16,7 @@ Memgraph 그래프 데이터베이스를 위한 `GraphOperations` / `GraphSuspen
 | `MemgraphGraphOperations` | 동기(blocking) 방식 그래프 연산 |
 | `MemgraphGraphSuspendOperations` | 코루틴(suspend/Flow) 방식 그래프 연산 |
 | `CachingMemgraphGraphOperations` | `ConcurrentHashMap` 기반 캐싱 데코레이터 |
+| `MemgraphGraphSchemaManager` | Memgraph index와 unique constraint용 SchemaManager |
 
 ## 사용법
 
@@ -29,6 +30,40 @@ val vertex = ops.createVertex("Person", mapOf("name" to "Alice"))
 // 코루틴 방식
 val suspendOps = MemgraphGraphSuspendOperations(driver)
 val vertex = suspendOps.createVertex("Person", mapOf("name" to "Alice"))
+```
+
+## Schema / Index Management
+
+`MemgraphGraphOperations`는 `schemaManager()`를 통해 index와 unique constraint를 생성·조회·삭제할 수 있다.
+
+```kotlin
+import io.bluetape4k.graph.schema.schemaManager
+
+val schema = ops.schemaManager()
+schema.createIndex("Person", "email")
+schema.createUniqueConstraint("Person", "email")
+val indexes = schema.listIndexes()
+```
+
+## Merge / Upsert and Transaction DSL
+
+Memgraph backend는 Cypher `MERGE` 기반 `GraphMergeOperations`와 repository-style `Transaction DSL`을 지원한다.
+`matchProperties`는 vertex identity key로 사용되며, `transaction { }` block은 실패 시 rollback되어야 한다.
+
+```kotlin
+import io.bluetape4k.graph.repository.mergeVertex
+import io.bluetape4k.graph.repository.transaction
+
+val alice = ops.mergeVertex(
+    label = "Person",
+    matchProperties = mapOf("email" to "alice@example.com"),
+    setProperties = mapOf("name" to "Alice"),
+)
+
+val edge = ops.transaction {
+    val bob = createVertex("Person", mapOf("email" to "bob@example.com"))
+    createEdge(alice.id, bob.id, "KNOWS")
+}
 ```
 
 ## Neo4j와의 차이점

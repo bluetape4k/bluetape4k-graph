@@ -2,6 +2,8 @@
 
 FalkorDB graph database backend for bluetape4k-graph.
 
+> 🇰🇷 [한국어 문서](README.ko.md)
+
 ## Overview
 
 [FalkorDB](https://falkordb.com/) is a Redis-module based graph database supporting openCypher queries.
@@ -73,6 +75,34 @@ val schema = ops.schemaManager()
 schema.createIndex("Person", "email")
 val indexes = schema.listIndexes()
 schema.dropIndex("Person", "email")
+```
+
+## Merge / Upsert and Transaction DSL
+
+FalkorDB supports `GraphMergeOperations` with native Cypher `MERGE` for vertices and relationships.
+It does not expose the repository-style `Transaction DSL` because Redis `MULTI` defers graph query results until
+`EXEC`, while the DSL needs created vertex IDs immediately inside the same block.
+
+```kotlin
+import io.bluetape4k.graph.repository.mergeEdge
+import io.bluetape4k.graph.repository.mergeVertex
+
+val alice = ops.mergeVertex(
+    label = "Person",
+    matchProperties = mapOf("email" to "alice@example.com"),
+    setProperties = mapOf("name" to "Alice"),
+)
+
+val bob = ops.mergeVertex(
+    label = "Person",
+    matchProperties = mapOf("email" to "bob@example.com"),
+)
+
+val edge = ops.mergeEdge(
+    fromId = alice.id,
+    toId = bob.id,
+    label = "KNOWS",
+)
 ```
 
 ### Coroutine (Suspend) API

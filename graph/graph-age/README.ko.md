@@ -792,6 +792,41 @@ GraphVertex(
 )
 ```
 
+## Schema / Index Management
+
+`AgeGraphOperations`는 `schemaManager()`를 노출하지만, AGE-specific index DDL은 아직 portable하게 제공하지 않는다.
+따라서 mutation API는 silent no-op 대신 `UnsupportedOperationException`으로 명시적으로 실패한다.
+
+```kotlin
+import io.bluetape4k.graph.schema.schemaManager
+
+val schema = ops.schemaManager()
+schema.listIndexes() // empty
+schema.createIndex("Person", "email") // UnsupportedOperationException
+```
+
+## Merge / Upsert and Transaction DSL
+
+AGE backend는 native `ON CREATE SET` / `ON MATCH SET` 지원이 제한된 환경을 고려해 transactional
+match/update/create fallback으로 `GraphMergeOperations`를 제공한다. `Transaction DSL`은 Exposed transaction 위에서
+vertex/edge work block을 atomic하게 실행한다.
+
+```kotlin
+import io.bluetape4k.graph.repository.mergeVertex
+import io.bluetape4k.graph.repository.transaction
+
+val alice = ops.mergeVertex(
+    label = "Person",
+    matchProperties = mapOf("email" to "alice@example.com"),
+    setProperties = mapOf("name" to "Alice"),
+)
+
+val edge = ops.transaction {
+    val bob = createVertex("Person", mapOf("email" to "bob@example.com"))
+    createEdge(alice.id, bob.id, "KNOWS")
+}
+```
+
 ## 캐싱 데코레이터
 
 `CachingAgeGraphOperations`는 `AgeGraphOperations`를 `ConcurrentHashMap` 기반 캐시로 감싸는 데코레이터입니다.

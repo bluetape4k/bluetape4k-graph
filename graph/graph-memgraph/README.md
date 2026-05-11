@@ -50,6 +50,27 @@ schema.dropIndex("Person", "email")
 Memgraph uses `CREATE INDEX ON :Label(property)`, `SHOW INDEX INFO`,
 `CREATE CONSTRAINT ON (n:Label) ASSERT n.property IS UNIQUE`, and `SHOW CONSTRAINT INFO`.
 
+## Merge / Upsert and Transaction DSL
+
+Memgraph supports `GraphMergeOperations` through Cypher `MERGE` and the repository-style `Transaction DSL`.
+Use `matchProperties` as stable vertex identity keys and keep mutable values in `setProperties`.
+
+```kotlin
+import io.bluetape4k.graph.repository.mergeVertex
+import io.bluetape4k.graph.repository.transaction
+
+val alice = ops.mergeVertex(
+    label = "Person",
+    matchProperties = mapOf("email" to "alice@example.com"),
+    setProperties = mapOf("name" to "Alice"),
+)
+
+val edge = ops.transaction {
+    val bob = createVertex("Person", mapOf("email" to "bob@example.com"))
+    createEdge(alice.id, bob.id, "KNOWS")
+}
+```
+
 ## Differences from Neo4j
 
 | Item | Neo4j | Memgraph |

@@ -14,6 +14,20 @@ import kotlinx.coroutines.withContext
  *
  * 구현체는 백엔드 DDL 차이를 숨기되, 지원하지 않는 제약조건을 성공한 것처럼 처리하지 않고
  * 명시적으로 [UnsupportedOperationException]을 던져야 한다.
+ *
+ * ## 동작/계약
+ * - label과 property는 backend query에 안전한 identifier여야 한다.
+ * - 지원하지 않는 schema DDL은 silent no-op 대신 [UnsupportedOperationException]으로 실패해야 한다.
+ * - [listIndexes]와 [listConstraints]는 backend metadata를 공통 모델로 변환해 반환한다.
+ *
+ * ```kotlin
+ * import io.bluetape4k.graph.schema.schemaManager
+ *
+ * val schema = ops.schemaManager()
+ * schema.createIndex("Person", "email")
+ * schema.createUniqueConstraint("Person", "email")
+ * val indexes = schema.listIndexes()
+ * ```
  */
 interface GraphSchemaManager {
 
@@ -54,6 +68,18 @@ interface GraphSchemaManager {
 
 /**
  * 그래프 백엔드의 인덱스와 제약조건을 관리하는 코루틴 API.
+ *
+ * ## 동작/계약
+ * - [GraphSchemaManager]와 같은 schema metadata semantics를 suspend API로 제공한다.
+ * - blocking backend adapter는 [BlockingGraphSuspendSchemaManager]를 통해 [Dispatchers.IO]에서 실행한다.
+ *
+ * ```kotlin
+ * import io.bluetape4k.graph.schema.schemaManager
+ *
+ * val schema = suspendOps.schemaManager()
+ * schema.createIndex("Person", "email")
+ * val constraints = schema.listConstraints()
+ * ```
  */
 interface GraphSuspendSchemaManager {
 
@@ -75,6 +101,11 @@ interface GraphSuspendSchemaManager {
 
 /**
  * 동기 그래프 구현체가 스키마 관리 기능을 제공할 때 구현하는 capability interface.
+ *
+ * ```kotlin
+ * val schema = ops.schemaManager()
+ * schema.dropIndex("Person", "email")
+ * ```
  */
 interface GraphSchemaManagementOperations {
     /** 이 그래프 구현체의 스키마 관리자를 반환한다. */
@@ -83,6 +114,11 @@ interface GraphSchemaManagementOperations {
 
 /**
  * 코루틴 그래프 구현체가 스키마 관리 기능을 제공할 때 구현하는 capability interface.
+ *
+ * ```kotlin
+ * val schema = suspendOps.schemaManager()
+ * schema.listIndexes()
+ * ```
  */
 interface GraphSuspendSchemaManagementOperations {
     /** 이 그래프 구현체의 코루틴 스키마 관리자를 반환한다. */
@@ -91,6 +127,11 @@ interface GraphSuspendSchemaManagementOperations {
 
 /**
  * 동기 스키마 관리자를 [Dispatchers.IO]에서 실행하는 코루틴 어댑터.
+ *
+ * ```kotlin
+ * val suspendSchema = ops.schemaManager().asSuspendSchemaManager()
+ * suspendSchema.createIndex("Person", "email")
+ * ```
  */
 class BlockingGraphSuspendSchemaManager(
     private val delegate: GraphSchemaManager,
@@ -127,12 +168,25 @@ class BlockingGraphSuspendSchemaManager(
 
 /**
  * 동기 스키마 관리자를 코루틴 API로 노출한다.
+ *
+ * ```kotlin
+ * val schema = ops.schemaManager().asSuspendSchemaManager()
+ * ```
  */
 fun GraphSchemaManager.asSuspendSchemaManager(): GraphSuspendSchemaManager =
     BlockingGraphSuspendSchemaManager(this)
 
 /**
  * 백엔드가 현재 schema DDL을 안전하게 지원하지 않을 때 사용하는 명시적 실패 관리자.
+ *
+ * ## 동작/계약
+ * - [listIndexes]와 [listConstraints]는 빈 목록을 반환한다.
+ * - mutation API는 identifier validation 후 [UnsupportedOperationException]을 던진다.
+ *
+ * ```kotlin
+ * val schema = UnsupportedGraphSchemaManager("AGE", "portable AGE index DDL is not available")
+ * schema.listIndexes() // emptyList()
+ * ```
  */
 class UnsupportedGraphSchemaManager(
     private val backendName: String,
@@ -167,6 +221,13 @@ class UnsupportedGraphSchemaManager(
  *
  * 구현체가 [GraphSchemaManagementOperations]를 구현하지 않으면 auto no-op fallback을 사용하지 않고
  * 명시적으로 [UnsupportedOperationException]을 던진다.
+ *
+ * ```kotlin
+ * import io.bluetape4k.graph.schema.schemaManager
+ *
+ * val schema = ops.schemaManager()
+ * schema.createIndex("Person", "email")
+ * ```
  */
 fun GraphOperations.schemaManager(): GraphSchemaManager {
     val management = this as? GraphSchemaManagementOperations
@@ -181,6 +242,13 @@ fun GraphOperations.schemaManager(): GraphSchemaManager {
  *
  * 구현체가 [GraphSuspendSchemaManagementOperations]를 구현하지 않으면 명시적으로
  * [UnsupportedOperationException]을 던진다.
+ *
+ * ```kotlin
+ * import io.bluetape4k.graph.schema.schemaManager
+ *
+ * val schema = suspendOps.schemaManager()
+ * schema.listConstraints()
+ * ```
  */
 fun GraphSuspendOperations.schemaManager(): GraphSuspendSchemaManager {
     val management = this as? GraphSuspendSchemaManagementOperations
@@ -216,6 +284,11 @@ suspend fun GraphSuspendSchemaManager.dropIndex(label: VertexLabel, property: Pr
 
 /**
  * 공통 스키마 객체 이름을 생성한다.
+ *
+ * ```kotlin
+ * val index = GraphSchemaNames.indexName("Person", "email")
+ * val constraint = GraphSchemaNames.uniqueConstraintName("Person", "email")
+ * ```
  */
 object GraphSchemaNames {
 

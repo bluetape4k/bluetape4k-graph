@@ -15,6 +15,7 @@ TinkerGraph(in-memory JVM 그래프 DB)를 사용하여 `graph-core` 인터페�
 |--------|------|
 | `TinkerGraphOperations` | 동기(blocking) 방식 구현 |
 | `TinkerGraphSuspendOperations` | 코루틴(suspend + Flow) 방식 구현 |
+| `TinkerGraphSchemaManager` | 테스트 친화적인 in-memory schema/index metadata manager |
 | `GremlinRecordMapper` | TinkerPop Vertex/Edge/Path -> GraphVertex/GraphEdge/GraphPath 변환 |
 
 ## 의존성
@@ -43,6 +44,40 @@ ops.createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to 2024L))
 val neighbors = ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS"))
 
 ops.close()
+```
+
+## Schema / Index Management
+
+TinkerGraph는 durable schema DDL이 없지만 `schemaManager()`가 현재 `TinkerGraphOperations` instance 안에
+index metadata를 기록한다. Unique constraint는 강제할 수 없으므로 명시적으로 실패한다.
+
+```kotlin
+import io.bluetape4k.graph.schema.schemaManager
+
+val schema = ops.schemaManager()
+schema.createIndex("Person", "email")
+val indexes = schema.listIndexes()
+```
+
+## Merge / Upsert and Transaction DSL
+
+TinkerGraph backend는 Gremlin get-or-create/update 방식의 `GraphMergeOperations`와 in-memory `Transaction DSL`을
+제공한다. 외부 DB transaction은 없지만, 테스트와 local prototype에서 동일한 API surface를 검증할 수 있다.
+
+```kotlin
+import io.bluetape4k.graph.repository.mergeVertex
+import io.bluetape4k.graph.repository.transaction
+
+val alice = ops.mergeVertex(
+    label = "Person",
+    matchProperties = mapOf("email" to "alice@example.com"),
+    setProperties = mapOf("name" to "Alice"),
+)
+
+ops.transaction {
+    val bob = createVertex("Person", mapOf("email" to "bob@example.com"))
+    createEdge(alice.id, bob.id, "KNOWS")
+}
 ```
 
 ## 그래프 알고리즘

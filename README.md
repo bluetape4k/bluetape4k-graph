@@ -94,6 +94,36 @@ val edges = ops.createEdges(
 
 The same contract is exposed on sync, suspend, and virtual-thread adapters (`createVertices`, `createEdges`, `createVerticesAsync`, `createEdgesAsync`). Smoke evidence for 10k-row inserts is tracked in [2026-05 test logs](docs/testlogs/2026-05.md).
 
+### Schema, Merge, and Transaction Capabilities
+
+`graph-core` also defines optional capability interfaces that backends implement when they can provide stronger
+write-time guarantees without changing the base `GraphOperations` source contract.
+
+| Capability | API | Purpose |
+|------------|-----|---------|
+| Schema manager | `ops.schemaManager()` / `suspendOps.schemaManager()` | Create/list/drop indexes and constraints through common metadata models |
+| Merge / Upsert | `ops.mergeVertex(...)`, `ops.mergeEdge(...)` | Idempotent vertex and edge writes using stable `matchProperties` |
+| Transaction DSL | `ops.transaction { }`, `suspendOps.suspendTransaction { }` | Atomic repository-style vertex/edge work blocks |
+
+```kotlin
+import io.bluetape4k.graph.repository.mergeVertex
+import io.bluetape4k.graph.repository.transaction
+import io.bluetape4k.graph.schema.schemaManager
+
+ops.schemaManager().createIndex("Person", "email")
+
+val alice = ops.mergeVertex(
+    label = "Person",
+    matchProperties = mapOf("email" to "alice@example.com"),
+    setProperties = mapOf("name" to "Alice"),
+)
+
+val edge = ops.transaction {
+    val bob = createVertex("Person", mapOf("email" to "bob@example.com"))
+    createEdge(alice.id, bob.id, "KNOWS")
+}
+```
+
 ## Bulk Import / Export (`graph-io`)
 
 The `graph-io` family provides format-independent bulk I/O with three execution models (Sync, VirtualThread, Coroutine).

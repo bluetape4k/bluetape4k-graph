@@ -2,6 +2,8 @@
 
 bluetape4k-graph의 FalkorDB 그래프 데이터베이스 백엔드 모듈.
 
+> 🇺🇸 [English](README.md)
+
 ## 개요
 
 [FalkorDB](https://falkordb.com/)는 Redis 모듈 기반 그래프 데이터베이스로 openCypher 쿼리를 지원합니다.
@@ -58,6 +60,48 @@ ops.createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to 2024))
 
 val count = ops.countVertices("Person")  // 2
 driver.close()
+```
+
+## Schema / Index Management
+
+FalkorDB는 Cypher를 통해 range index를 지원한다. Unique constraint는 raw Redis
+`GRAPH.CONSTRAINT CREATE` command 경로가 필요하므로, 현재 manager는 unique constraint를 명시적으로 실패시킨다.
+
+```kotlin
+import io.bluetape4k.graph.schema.schemaManager
+
+val schema = ops.schemaManager()
+schema.createIndex("Person", "email")
+val indexes = schema.listIndexes()
+schema.dropIndex("Person", "email")
+```
+
+## Merge / Upsert and Transaction DSL
+
+FalkorDB backend는 native Cypher `MERGE` 기반 `GraphMergeOperations`를 지원한다.
+다만 Redis `MULTI`는 graph query result를 `EXEC`까지 지연시키므로, 같은 block 안에서 생성된 vertex id를
+즉시 사용해야 하는 repository-style `Transaction DSL`은 명시적으로 지원하지 않는다.
+
+```kotlin
+import io.bluetape4k.graph.repository.mergeEdge
+import io.bluetape4k.graph.repository.mergeVertex
+
+val alice = ops.mergeVertex(
+    label = "Person",
+    matchProperties = mapOf("email" to "alice@example.com"),
+    setProperties = mapOf("name" to "Alice"),
+)
+
+val bob = ops.mergeVertex(
+    label = "Person",
+    matchProperties = mapOf("email" to "bob@example.com"),
+)
+
+val edge = ops.mergeEdge(
+    fromId = alice.id,
+    toId = bob.id,
+    label = "KNOWS",
+)
 ```
 
 ### 코루틴 (Suspend) API
