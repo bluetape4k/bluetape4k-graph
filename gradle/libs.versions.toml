@@ -224,7 +224,7 @@ neo4j-bolt-connection-bom = { module = "org.neo4j.bolt:neo4j-bolt-connection-bom
 neo4j-bolt-connection-netty = { module = "org.neo4j.bolt:neo4j-bolt-connection-netty", version.ref = "neo4j-bolt-connection" }
 neo4j-bolt-connection-pooled = { module = "org.neo4j.bolt:neo4j-bolt-connection-pooled", version.ref = "neo4j-bolt-connection" }
 
-jfalkordb = { module = "com.falkordb:jfalkordb", version = "0.7.0" }  # https://mvnrepository.com/artifact/com.falkordb/jfalkordb
+jfalkordb = { module = "com.falkordb:jfalkordb", version = "0.8.0" }  # https://mvnrepository.com/artifact/com.falkordb/jfalkordb
 
 tinkerpop-gremlin-core = { module = "org.apache.tinkerpop:gremlin-core", version = "3.8.1" }  # https://mvnrepository.com/artifact/org.apache.tinkerpop/gremlin-core
 tinkergraph-gremlin = { module = "org.apache.tinkerpop:tinkergraph-gremlin", version = "3.8.1" }  # https://mvnrepository.com/artifact/org.apache.tinkerpop/tinkergraph-gremlin
