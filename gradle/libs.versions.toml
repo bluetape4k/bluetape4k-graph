@@ -239,7 +239,7 @@ exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "e
 caffeine-core = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
 caffeine-jcache = { module = "com.github.ben-manes.caffeine:jcache", version.ref = "caffeine" }
 
-objenesis = { module = "org.objenesis:objenesis", version = "3.4" }  # https://mvnrepository.com/artifact/org.objenesis/objenesis
+objenesis = { module = "org.objenesis:objenesis", version = "3.5" }  # https://mvnrepository.com/artifact/org.objenesis/objenesis
 ow2-asm = { module = "org.ow2.asm:asm", version.ref = "ow2-asm" }
 
 # JUnit 5
