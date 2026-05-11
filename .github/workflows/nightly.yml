@@ -2,8 +2,18 @@ name: Nightly
 
 on:
   schedule:
-    - cron: '0 19 * * *'  # 매일 UTC 19:00 (KST 04:00)
-  workflow_dispatch:       # 수동 실행 가능
+    - cron: '0 19 * * 1-6'  # Daily smoke, UTC 19:00 (KST 04:00) Mon-Sat
+    - cron: '0 19 * * 0'    # Weekly full, UTC 19:00 (KST 04:00) Sunday
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: 'Nightly scope to run'
+        required: true
+        type: choice
+        default: full
+        options:
+          - smoke
+          - full
 
 env:
   JAVA_VERSION: '21'
@@ -177,6 +187,8 @@ jobs:
   # ── 4. Neo4j (Testcontainers) ─────────────────────────────────────────────
   test-graph-neo4j:
     name: Test / Neo4j (Testcontainers)
+    if: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
+
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: build
@@ -229,6 +241,8 @@ jobs:
   # ── 5. Memgraph (Testcontainers) ──────────────────────────────────────────
   test-graph-memgraph:
     name: Test / Memgraph (Testcontainers)
+    if: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
+
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: build
@@ -281,6 +295,8 @@ jobs:
   # ── 6. Apache AGE (Testcontainers) ────────────────────────────────────────
   test-graph-age:
     name: Test / Apache AGE (Testcontainers)
+    if: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
+
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: build
@@ -333,6 +349,8 @@ jobs:
   # ── 7. FalkorDB (Testcontainers) ──────────────────────────────────────────
   test-graph-falkordb:
     name: Test / FalkorDB (Testcontainers)
+    if: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
+
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: build
@@ -385,6 +403,8 @@ jobs:
   # ── 8. Examples (Testcontainers) ──────────────────────────────────────────
   test-examples:
     name: Test / Examples (Testcontainers)
+    if: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
+
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: build
@@ -427,6 +447,7 @@ jobs:
   # ── 9. 커버리지 집계 ──────────────────────────────────────────────────────
   coverage-report:
     name: Coverage Report
+
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs:
@@ -436,7 +457,7 @@ jobs:
       - test-graph-memgraph
       - test-graph-age
       - test-graph-falkordb
-    if: always()
+    if: ${{ always() && ((github.event_name == 'schedule' && github.event.schedule == '0 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full')) }}
     steps:
       - uses: actions/checkout@v4
 
