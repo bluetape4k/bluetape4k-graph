@@ -19,6 +19,7 @@
 ## Outcome
 
 - `AGENTS.md` now explicitly requires CI and Nightly updates when a new module is added.
+- `AGENTS.md` now requires explicit `workflow_dispatch` execution when Nightly workflow changes.
 - CI path filtering now has a `graph-ktor` category for:
   - `ktor/graph-ktor/**`
   - `examples/ktor-graph-examples/**`
@@ -30,10 +31,13 @@
 
 - `git diff --check`
 - `./gradlew :graph-ktor:test :ktor-graph-examples:test --no-daemon`
+- Nightly full dispatch was started for branch `ci/graph-ktor-nightly`:
+  - https://github.com/bluetape4k/bluetape4k-graph/actions/runs/25705115469
 
 ## Future Guidance
 
 - For every new module, search workflow coverage before PR close:
   - `rg "<module-name>|:<module-name>:test" .github/workflows`
 - If a module contains Testcontainers smoke, do not hide it inside an in-memory smoke job.
+- If `nightly.yml` changes, trigger Nightly manually and wait for the relevant jobs before reporting DoD.
 - Add a lesson immediately when workflow coverage was missed.

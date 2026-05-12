@@ -82,3 +82,7 @@ Schema DSL uses Exposed Table-style declarations through `VertexLabel` and
   `.github/workflows/nightly.yml` so the module's tests run in the appropriate
   CI/Nightly scope. Container-backed module tests should usually have a
   dedicated full Nightly job instead of being hidden inside the daily smoke job.
+- When `.github/workflows/nightly.yml` is changed, explicitly run the Nightly
+  workflow with `workflow_dispatch` before DoD and record the run URL/result.
+  For module coverage changes, use `scope=full` unless the change is strictly
+  smoke-only.
