@@ -107,6 +107,9 @@ jobs:
             common:
               - 'buildSrc/**'
               - 'gradle/**'
+              - '.github/actions/testcontainers-image-cache/**'
+              - '.github/scripts/docker-image-cache.sh'
+              - '.github/testcontainers-images.txt'
               - '*.gradle.kts'
               - 'settings.gradle.kts'
               - '.github/workflows/ci.yml'
@@ -301,6 +304,13 @@ jobs:
           gradle-version: wrapper
           cache-read-only: true
 
+      - name: Restore Testcontainers image cache
+        uses: ./.github/actions/testcontainers-image-cache
+        with:
+          mode: restore
+          cache-key: ${{ runner.os }}-testcontainers-images-v1-${{ github.job }}-${{ hashFiles('.github/testcontainers-images.txt') }}
+          restore-key: ${{ runner.os }}-testcontainers-images-v1-${{ github.job }}-
+
       - name: Test graph-ktor and Ktor example
         run: |
           for attempt in 1 2 3; do
@@ -315,6 +325,12 @@ jobs:
           GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
           TESTCONTAINERS_RYUK_DISABLED: "true"
           DOCKER_HOST: "unix:///var/run/docker.sock"
+
+      - name: Save Testcontainers image cache
+        if: always()
+        uses: ./.github/actions/testcontainers-image-cache
+        with:
+          mode: save
 
       - name: Generate Kover XML report
         if: always()
@@ -361,6 +377,13 @@ jobs:
           gradle-version: wrapper
           cache-read-only: true
 
+      - name: Restore Testcontainers image cache
+        uses: ./.github/actions/testcontainers-image-cache
+        with:
+          mode: restore
+          cache-key: ${{ runner.os }}-testcontainers-images-v1-${{ github.job }}-${{ hashFiles('.github/testcontainers-images.txt') }}
+          restore-key: ${{ runner.os }}-testcontainers-images-v1-${{ github.job }}-
+
       - name: Test graph-neo4j
         run: |
           for attempt in 1 2 3; do
@@ -372,6 +395,12 @@ jobs:
           GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
           TESTCONTAINERS_RYUK_DISABLED: "true"
           DOCKER_HOST: "unix:///var/run/docker.sock"
+
+      - name: Save Testcontainers image cache
+        if: always()
+        uses: ./.github/actions/testcontainers-image-cache
+        with:
+          mode: save
 
       - name: Generate Kover XML report
         if: always()
@@ -418,6 +447,13 @@ jobs:
           gradle-version: wrapper
           cache-read-only: true
 
+      - name: Restore Testcontainers image cache
+        uses: ./.github/actions/testcontainers-image-cache
+        with:
+          mode: restore
+          cache-key: ${{ runner.os }}-testcontainers-images-v1-${{ github.job }}-${{ hashFiles('.github/testcontainers-images.txt') }}
+          restore-key: ${{ runner.os }}-testcontainers-images-v1-${{ github.job }}-
+
       - name: Test graph-memgraph
         run: |
           for attempt in 1 2 3; do
@@ -429,6 +465,12 @@ jobs:
           GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
           TESTCONTAINERS_RYUK_DISABLED: "true"
           DOCKER_HOST: "unix:///var/run/docker.sock"
+
+      - name: Save Testcontainers image cache
+        if: always()
+        uses: ./.github/actions/testcontainers-image-cache
+        with:
+          mode: save
 
       - name: Generate Kover XML report
         if: always()
@@ -475,6 +517,13 @@ jobs:
           gradle-version: wrapper
           cache-read-only: true
 
+      - name: Restore Testcontainers image cache
+        uses: ./.github/actions/testcontainers-image-cache
+        with:
+          mode: restore
+          cache-key: ${{ runner.os }}-testcontainers-images-v1-${{ github.job }}-${{ hashFiles('.github/testcontainers-images.txt') }}
+          restore-key: ${{ runner.os }}-testcontainers-images-v1-${{ github.job }}-
+
       - name: Test graph-age
         run: |
           for attempt in 1 2 3; do
@@ -486,6 +535,12 @@ jobs:
           GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
           TESTCONTAINERS_RYUK_DISABLED: "true"
           DOCKER_HOST: "unix:///var/run/docker.sock"
+
+      - name: Save Testcontainers image cache
+        if: always()
+        uses: ./.github/actions/testcontainers-image-cache
+        with:
+          mode: save
 
       - name: Generate Kover XML report
         if: always()
@@ -532,6 +587,13 @@ jobs:
           gradle-version: wrapper
           cache-read-only: true
 
+      - name: Restore Testcontainers image cache
+        uses: ./.github/actions/testcontainers-image-cache
+        with:
+          mode: restore
+          cache-key: ${{ runner.os }}-testcontainers-images-v1-${{ github.job }}-${{ hashFiles('.github/testcontainers-images.txt') }}
+          restore-key: ${{ runner.os }}-testcontainers-images-v1-${{ github.job }}-
+
       - name: Test graph-falkordb
         run: |
           for attempt in 1 2 3; do
@@ -543,6 +605,12 @@ jobs:
           GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
           TESTCONTAINERS_RYUK_DISABLED: "true"
           DOCKER_HOST: "unix:///var/run/docker.sock"
+
+      - name: Save Testcontainers image cache
+        if: always()
+        uses: ./.github/actions/testcontainers-image-cache
+        with:
+          mode: save
 
       - name: Generate Kover XML report
         if: always()

@@ -1,0 +1,6 @@
+# Docker images pulled by graph Testcontainers jobs.
+# Keep this list aligned with bluetape4k-testcontainers graphdb launchers and local graph fixtures.
+neo4j:5.26.24
+memgraph/memgraph:3.9.0
+apache/age:release_PG18_1.7.0
+falkordb/falkordb:v4.18.1
