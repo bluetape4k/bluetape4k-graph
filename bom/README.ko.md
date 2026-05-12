@@ -31,7 +31,7 @@ graph TB
     end
 
     subgraph "Spring Boot starter"
-      SB4[graph-spring-boot4-starter]
+      SB[graph-spring-boot]
     end
 
     subgraph "Ktor"
@@ -42,7 +42,7 @@ graph TB
     BOM -.->|버전 constraint| Core
     BOM -.->|버전 constraint| Neo4j
     BOM -.->|버전 constraint| IoCore
-    BOM -.->|버전 constraint| SB4
+    BOM -.->|버전 constraint| SB
     BOM -.->|버전 constraint| Ktor
 ```
 
@@ -60,7 +60,7 @@ BOM은 Gradle `java-platform` 으로 `<dependencyManagement>` constraint 만 게
 |------|------|
 | `graph/*` | `graph-core`, `graph-neo4j`, `graph-memgraph`, `graph-age`, `graph-tinkerpop`, `graph-falkordb` |
 | `graph-io/*` | `graph-io-core`, `graph-io-csv`, `graph-io-graphml`, `graph-io-jackson2`, `graph-io-jackson3`, `graph-okio` |
-| `spring-boot4/*` | `graph-spring-boot4-starter` |
+| `spring-boot/*` | `graph-spring-boot` |
 | `ktor/*` | `graph-ktor` |
 
 > 참고: `examples/*` 및 `benchmark/*` 모듈은 BOM constraint 에서 제외된다.
@@ -81,8 +81,8 @@ dependencyManagement {
 }
 
 dependencies {
-    implementation("io.github.bluetape4k.graph:bluetape4k-graph-neo4j")
-    implementation("io.github.bluetape4k.graph:bluetape4k-graph-spring-boot4-starter")
+    implementation("io.github.bluetape4k.graph:graph-neo4j")
+    implementation("io.github.bluetape4k.graph:graph-spring-boot")
 }
 ```
 
@@ -91,7 +91,7 @@ dependencies {
 ```kotlin
 dependencies {
     implementation(platform("io.github.bluetape4k.graph:bluetape4k-graph-bom:<version>"))
-    implementation("io.github.bluetape4k.graph:bluetape4k-graph-neo4j")
+    implementation("io.github.bluetape4k.graph:graph-neo4j")
 }
 ```
 

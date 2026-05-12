@@ -31,8 +31,8 @@ graph TB
       Okio[graph-okio]
     end
 
-    subgraph "Spring Boot starters"
-      SB4[graph-spring-boot4-starter]
+    subgraph "Spring Boot integration"
+      SB[graph-spring-boot]
     end
 
     subgraph "Ktor"
@@ -43,7 +43,7 @@ graph TB
     BOM -.->|version constraints| Core
     BOM -.->|version constraints| Neo4j
     BOM -.->|version constraints| IoCore
-    BOM -.->|version constraints| SB4
+    BOM -.->|version constraints| SB
     BOM -.->|version constraints| Ktor
 ```
 
@@ -61,7 +61,7 @@ The BOM is a Gradle `java-platform` that publishes only `<dependencyManagement>`
 |-------|---------|
 | `graph/*` | `graph-core`, `graph-neo4j`, `graph-memgraph`, `graph-age`, `graph-tinkerpop`, `graph-falkordb` |
 | `graph-io/*` | `graph-io-core`, `graph-io-csv`, `graph-io-graphml`, `graph-io-jackson2`, `graph-io-jackson3`, `graph-okio` |
-| `spring-boot4/*` | `graph-spring-boot4-starter` |
+| `spring-boot/*` | `graph-spring-boot` |
 | `ktor/*` | `graph-ktor` |
 
 > Note: `examples/*` and `benchmark/*` modules are excluded from the BOM constraints.
@@ -82,8 +82,8 @@ dependencyManagement {
 }
 
 dependencies {
-    implementation("io.github.bluetape4k.graph:bluetape4k-graph-neo4j")
-    implementation("io.github.bluetape4k.graph:bluetape4k-graph-spring-boot4-starter")
+    implementation("io.github.bluetape4k.graph:graph-neo4j")
+    implementation("io.github.bluetape4k.graph:graph-spring-boot")
 }
 ```
 
@@ -92,7 +92,7 @@ dependencies {
 ```kotlin
 dependencies {
     implementation(platform("io.github.bluetape4k.graph:bluetape4k-graph-bom:<version>"))
-    implementation("io.github.bluetape4k.graph:bluetape4k-graph-neo4j")
+    implementation("io.github.bluetape4k.graph:graph-neo4j")
 }
 ```
 

@@ -25,8 +25,8 @@ graph-io/
 benchmark/
   graph-benchmark/    # JMH — Sync vs VirtualThread
   graph-io-benchmark/ # JMH — CSV/NDJSON/GraphML 벌크 I/O
-spring-boot4/
-  graph-spring-boot4-starter/
+spring-boot/
+  graph-spring-boot/
 examples/
   code-graph-examples/     # 코드 의존성 그래프 예시
   linkedin-graph-examples/ # LinkedIn 소셜 그래프 예시

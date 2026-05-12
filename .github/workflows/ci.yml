@@ -100,7 +100,7 @@ jobs:
             graph-falkordb:
               - 'graph/graph-falkordb/**'
             graph-spring-boot:
-              - 'spring-boot4/**'
+              - 'spring-boot/**'
             graph-ktor:
               - 'ktor/graph-ktor/**'
               - 'examples/ktor-graph-examples/**'
@@ -208,9 +208,9 @@ jobs:
           path: '**/build/reports/kover/report.xml'
           retention-days: 7
 
-  # ── 5. Spring Boot 4 Starter 테스트 (TinkerGraph 프로파일, Docker 불필요) ──
+  # ── 5. Spring Boot 테스트 (TinkerGraph 프로파일, Docker 불필요) ──
   test-spring-starters:
-    name: Test / Spring Boot 4 Starter (TinkerGraph)
+    name: Test / Spring Boot (TinkerGraph)
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: [build, changes]
@@ -236,11 +236,11 @@ jobs:
           gradle-version: wrapper
           cache-read-only: true
 
-      - name: Test Spring Boot 4 starter
+      - name: Test Spring Boot
         run: |
           for attempt in 1 2 3; do
             ./gradlew \
-              :graph-spring-boot4-starter:test \
+              :graph-spring-boot:test \
               --no-daemon --continue && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 3 ] && sleep 10 || exit 1
@@ -253,7 +253,7 @@ jobs:
         if: always()
         run: |
           ./gradlew \
-            :graph-spring-boot4-starter:koverXmlReport \
+            :graph-spring-boot:koverXmlReport \
             --no-daemon
         continue-on-error: true
 

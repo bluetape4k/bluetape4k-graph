@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Renamed the Spring Boot integration from `graph-spring-boot4-starter` (`spring-boot4/graph-spring-boot4-starter`, package `io.bluetape4k.graph.spring.boot4`) to `graph-spring-boot` (`spring-boot/graph-spring-boot`, package `io.bluetape4k.graph.spring.boot`) to publish a stable version-neutral module contract ([#99](https://github.com/bluetape4k/bluetape4k-graph/issues/99)).
 - `graph-io-okio` Gradle project/artifact identity를 `graph-okio`로 변경했습니다 ([#76](https://github.com/bluetape4k/bluetape4k-graph/issues/76)).
 - Gradle dependency declarations migrated from `buildSrc/Libs.kt` to Version Catalog (`gradle/libs.versions.toml`) ([PR #63](https://github.com/bluetape4k/bluetape4k-graph/pull/63)).
 - CI now uses paths-filter, Docker-specific jobs, and retry configuration for container-heavy workflows ([PR #68](https://github.com/bluetape4k/bluetape4k-graph/pull/68)).
