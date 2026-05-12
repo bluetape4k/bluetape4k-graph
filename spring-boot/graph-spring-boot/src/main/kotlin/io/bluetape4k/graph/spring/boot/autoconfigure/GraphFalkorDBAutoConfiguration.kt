@@ -19,10 +19,28 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 /**
- * FalkorDB 백엔드 AutoConfiguration.
+ * Auto-configuration for the FalkorDB backend.
  *
- * `bluetape4k.graph.backend=falkordb` 일 때 활성화된다.
- * FalkorDB는 Redis 모듈 기반의 그래프 데이터베이스이며, jfalkordb 드라이버([com.falkordb.Driver])를 사용한다.
+ * It is active when `bluetape4k.graph.backend=falkordb`. FalkorDB is a Redis
+ * module based graph database and uses the jfalkordb [com.falkordb.Driver].
+ *
+ * Example:
+ *
+ * ```kotlin
+ * import io.bluetape4k.graph.repository.GraphOperations
+ * import org.springframework.boot.autoconfigure.SpringBootApplication
+ * import org.springframework.boot.runApplication
+ *
+ * @SpringBootApplication
+ * class GraphApplication
+ *
+ * val context = runApplication<GraphApplication>(
+ *     "--bluetape4k.graph.backend=falkordb",
+ *     "--bluetape4k.graph.falkordb.host=localhost",
+ *     "--bluetape4k.graph.falkordb.graph-name=bluetape4k",
+ * )
+ * val operations = context.getBean(GraphOperations::class.java)
+ * ```
  */
 @AutoConfiguration
 @ConditionalOnClass(com.falkordb.Driver::class, FalkorDBGraphOperations::class)

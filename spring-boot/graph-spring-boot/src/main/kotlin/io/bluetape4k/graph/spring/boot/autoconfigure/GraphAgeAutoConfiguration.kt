@@ -26,10 +26,28 @@ import org.springframework.context.annotation.DependsOn
 import javax.sql.DataSource
 
 /**
- * Apache AGE 백엔드 AutoConfiguration.
+ * Auto-configuration for the Apache AGE backend.
  *
- * `bluetape4k.graph.backend=age` 일 때 활성화된다.
- * Spring Boot 기본 `DataSource`를 재사용하며, HikariCP가 있으면 AGE extension을 자동 설정한다.
+ * It is active when `bluetape4k.graph.backend=age`. The configuration reuses the
+ * Spring Boot [DataSource] and connects Exposed to it.
+ *
+ * Example:
+ *
+ * ```kotlin
+ * import io.bluetape4k.graph.repository.GraphOperations
+ * import org.springframework.boot.autoconfigure.SpringBootApplication
+ * import org.springframework.boot.runApplication
+ *
+ * @SpringBootApplication
+ * class GraphApplication
+ *
+ * val context = runApplication<GraphApplication>(
+ *     "--bluetape4k.graph.backend=age",
+ *     "--bluetape4k.graph.age.graph-name=tenant_graph",
+ *     "--spring.datasource.hikari.connection-init-sql=LOAD 'age'; SET search_path = ag_catalog, public;",
+ * )
+ * val operations = context.getBean(GraphOperations::class.java)
+ * ```
  */
 @AutoConfiguration(after = [DataSourceAutoConfiguration::class])
 @ConditionalOnClass(AgeGraphOperations::class, DataSource::class)

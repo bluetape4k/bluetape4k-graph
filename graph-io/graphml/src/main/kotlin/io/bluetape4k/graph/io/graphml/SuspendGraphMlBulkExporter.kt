@@ -23,6 +23,25 @@ import kotlinx.coroutines.withContext
  * GraphML 코루틴(suspend) 벌크 익스포터.
  * Flow로 정점/간선을 수집한 뒤 StAX 라이터로 XML 파일에 기록한다.
  */
+/**
+ * Coroutine bulk exporter for GraphML.
+ *
+ * Example:
+ *
+ * ```kotlin
+ * import io.bluetape4k.graph.io.graphml.SuspendGraphMlBulkExporter
+ * import io.bluetape4k.graph.io.options.GraphExportOptions
+ * import io.bluetape4k.graph.io.source.GraphExportSink
+ * import java.nio.file.Paths
+ *
+ * val exporter = SuspendGraphMlBulkExporter()
+ * val report = exporter.exportGraphSuspending(
+ *     sink = GraphExportSink.PathSink(Paths.get("graph.graphml")),
+ *     operations = suspendGraphOps,
+ *     options = GraphExportOptions(vertexLabels = setOf("Person")),
+ * )
+ * ```
+ */
 class SuspendGraphMlBulkExporter : GraphSuspendBulkExporter<GraphExportSink> {
 
     private val writer = StaxGraphMlWriter()

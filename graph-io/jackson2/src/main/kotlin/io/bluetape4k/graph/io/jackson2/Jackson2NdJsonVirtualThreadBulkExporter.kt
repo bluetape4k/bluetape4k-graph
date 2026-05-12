@@ -9,6 +9,26 @@ import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
 import java.util.concurrent.CompletableFuture
 
+/**
+ * Virtual-thread NDJSON bulk exporter backed by Jackson 2.
+ *
+ * Example:
+ *
+ * ```kotlin
+ * import io.bluetape4k.graph.io.jackson2.Jackson2NdJsonVirtualThreadBulkExporter
+ * import io.bluetape4k.graph.io.options.GraphExportOptions
+ * import io.bluetape4k.graph.io.source.GraphExportSink
+ * import java.nio.file.Paths
+ *
+ * val exporter = Jackson2NdJsonVirtualThreadBulkExporter()
+ * val future = exporter.exportGraphAsync(
+ *     sink = GraphExportSink.PathSink(Paths.get("graph.ndjson")),
+ *     operations = graphOps,
+ *     options = GraphExportOptions(vertexLabels = setOf("Person")),
+ * )
+ * val report = future.join()
+ * ```
+ */
 class Jackson2NdJsonVirtualThreadBulkExporter : GraphVirtualThreadBulkExporter<GraphExportSink> {
 
     private val sync: Jackson2NdJsonBulkExporter = Jackson2NdJsonBulkExporter()

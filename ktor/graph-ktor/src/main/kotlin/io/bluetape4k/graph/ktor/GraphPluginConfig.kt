@@ -10,9 +10,9 @@ import java.util.IdentityHashMap
  * ## 동작/계약
  * - `install(GraphPlugin) { ... }` 블록에서 backend를 반드시 한 번 선택해야 합니다.
  * - [operations]는 이미 생성된 [GraphOperations] / [GraphSuspendOperations]를 Ktor application에 연결합니다.
- * - 기본적으로 caller-owned operations를 닫지 않습니다. [closeOnStop]을 `true`로 지정한 경우에만
+ * - 기본적으로 caller-owned operations를 닫지 않습니다. `closeOnStop`을 `true`로 지정한 경우에만
  *   [io.ktor.server.application.ApplicationStopped] 시점에 전달된 operations를 닫습니다.
- * - 두 operations가 내부 delegate를 공유한다면 caller가 idempotent close를 보장하거나 [closeOnStop]을 꺼야 합니다.
+ * - 두 operations가 내부 delegate를 공유한다면 caller가 idempotent close를 보장하거나 `closeOnStop`을 꺼야 합니다.
  *
  * ```kotlin
  * fun Application.module(syncOps: GraphOperations, suspendOps: GraphSuspendOperations) {
@@ -37,8 +37,8 @@ class GraphPluginConfig {
      *
      * ## 동작/계약
      * - [graphOperations]와 [graphSuspendOperations]는 모두 필수입니다.
-     * - [closeOnStop] 기본값은 `false`입니다. 외부 DI/container가 lifecycle을 소유하는 경우 기본값을 유지합니다.
-     * - [closeOnStop]이 `true`이면 두 객체를 object identity 기준으로 중복 제거한 뒤 한 번씩 닫습니다.
+     * - `closeOnStop` 기본값은 `false`입니다. 외부 DI/container가 lifecycle을 소유하는 경우 기본값을 유지합니다.
+     * - `closeOnStop`이 `true`이면 두 객체를 object identity 기준으로 중복 제거한 뒤 한 번씩 닫습니다.
      *
      * @param graphOperations 동기 graph facade
      * @param graphSuspendOperations 코루틴 graph facade

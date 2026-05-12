@@ -26,7 +26,7 @@ sealed class GraphTraversalOptions: Serializable {
 }
 
 /**
- * [GraphTraversalRepository.neighbors] 호출 옵션.
+ * `GraphTraversalRepository.neighbors` 호출 옵션.
  *
  * ```kotlin
  * val opts = NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING, maxDepth = 2)
@@ -49,7 +49,7 @@ data class NeighborOptions(
 }
 
 /**
- * [GraphTraversalRepository.shortestPath] / [GraphTraversalRepository.allPaths] 호출 옵션.
+ * `GraphTraversalRepository.shortestPath` / `GraphTraversalRepository.allPaths` 호출 옵션.
  *
  * [weightProperty]를 지정하면 Dijkstra/A* 알고리즘으로 가중치 최단 경로를 탐색한다.
  * `null`(기본)이면 백엔드 네이티브 BFS 최단 경로를 사용한다.
@@ -94,7 +94,7 @@ data class PathOptions(
 }
 
 /**
- * [GraphTraversalRepository.bfs] / [GraphTraversalRepository.dfs] 호출 옵션.
+ * `GraphTraversalRepository.bfs` / `GraphTraversalRepository.dfs` 호출 옵션.
  *
  * ### 사용 예제
  * ```kotlin
@@ -119,7 +119,7 @@ data class BfsDfsOptions(
 }
 
 /**
- * [GraphTraversalRepository.detectCycles] 호출 옵션.
+ * `GraphTraversalRepository.detectCycles` 호출 옵션.
  *
  * @param vertexLabel 탐색할 정점 레이블. null이면 모든 레이블 탐색.
  * @param edgeLabel 탐색할 엣지 레이블. null이면 모든 레이블 탐색.

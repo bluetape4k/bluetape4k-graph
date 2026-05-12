@@ -1,6 +1,18 @@
 package io.bluetape4k.graph.io.graphml
 
 /** GraphML `attr.type` 열거형. 파싱 시 값을 적절한 JVM 타입으로 변환한다. */
+/**
+ * GraphML attribute value type.
+ *
+ * Example:
+ *
+ * ```kotlin
+ * import io.bluetape4k.graph.io.graphml.GraphMlAttrType
+ *
+ * val xmlType = GraphMlAttrType.STRING.xmlName
+ * check(xmlType == "string")
+ * ```
+ */
 enum class GraphMlAttrType(val xmlName: String) {
     STRING("string"),
     INT("int"),

@@ -3,12 +3,26 @@ package io.bluetape4k.graph.io.graphml
 import java.io.Serializable
 
 /**
- * GraphML 임포트 옵션.
+ * GraphML import options.
  *
- * @param labelAttrName 정점/간선의 라벨로 사용할 GraphML `attr.name` 값
- * @param unsupportedElementPolicy 미지원 요소 처리 정책
- * @param defaultVertexLabel 라벨 데이터가 없는 정점에 사용할 기본 라벨
- * @param defaultEdgeLabel 라벨 데이터가 없는 간선에 사용할 기본 라벨
+ * Example:
+ *
+ * ```kotlin
+ * import io.bluetape4k.graph.io.graphml.GraphMlImportOptions
+ * import io.bluetape4k.graph.io.graphml.UnsupportedGraphMlElementPolicy
+ *
+ * val options = GraphMlImportOptions(
+ *     labelAttrName = "kind",
+ *     unsupportedElementPolicy = UnsupportedGraphMlElementPolicy.FAIL,
+ *     defaultVertexLabel = "Entity",
+ *     defaultEdgeLabel = "RELATED_TO",
+ * )
+ * ```
+ *
+ * @param labelAttrName GraphML `attr.name` value used as the vertex or edge label.
+ * @param unsupportedElementPolicy Policy for unsupported GraphML elements.
+ * @param defaultVertexLabel Label used when a vertex does not contain label data.
+ * @param defaultEdgeLabel Label used when an edge does not contain label data.
  */
 data class GraphMlImportOptions(
     val labelAttrName: String = "label",

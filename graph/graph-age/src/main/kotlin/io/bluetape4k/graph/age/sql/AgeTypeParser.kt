@@ -27,7 +27,7 @@ object AgeTypeParser : KLogging() {
      * println(vertex.properties["name"])  // "Alice"
      * ```
      *
-     * @param agtypeStr AGE가 반환하는 vertex agtype 문자열. 예: `{"id": 1, "label": "Person", "properties": {"name": "Alice"}}::vertex`
+     * @param agtype AGE가 반환하는 vertex agtype 문자열. 예: `{"id": 1, "label": "Person", "properties": {"name": "Alice"}}::vertex`
      * @return 파싱된 [GraphVertex].
      */
     fun parseVertex(agtype: String): GraphVertex {
@@ -48,7 +48,7 @@ object AgeTypeParser : KLogging() {
      * println(edge.label)  // "KNOWS"
      * ```
      *
-     * @param agtypeStr AGE가 반환하는 edge agtype 문자열.
+     * @param agtype AGE가 반환하는 edge agtype 문자열.
      * @return 파싱된 [GraphEdge].
      */
     fun parseEdge(agtype: String): GraphEdge {
@@ -74,7 +74,7 @@ object AgeTypeParser : KLogging() {
      * println(path.vertices)  // 경로 내 정점 목록
      * ```
      *
-     * @param agtypeStr AGE가 반환하는 path agtype 문자열.
+     * @param agtype AGE가 반환하는 path agtype 문자열.
      * @return 파싱된 [GraphPath].
      */
     fun parsePath(agtype: String): GraphPath {
@@ -124,7 +124,7 @@ object AgeTypeParser : KLogging() {
     }
 
     /**
-     * [agtypeStr]이 AGE vertex 타입 문자열인지 판별한다.
+     * `agtype`이 AGE vertex 타입 문자열인지 판별한다.
      *
      * ```kotlin
      * AgeTypeParser.isVertex("""{"id": 1, "label": "Person", ...}::vertex""")  // true
@@ -134,7 +134,7 @@ object AgeTypeParser : KLogging() {
     fun isVertex(agtype: String): Boolean = agtype.trimEnd().endsWith("::vertex")
 
     /**
-     * [agtypeStr]이 AGE edge 타입 문자열인지 판별한다.
+     * `agtype`이 AGE edge 타입 문자열인지 판별한다.
      *
      * ```kotlin
      * AgeTypeParser.isEdge("""{"id": 99, "label": "KNOWS", ...}::edge""")  // true
@@ -143,7 +143,7 @@ object AgeTypeParser : KLogging() {
     fun isEdge(agtype: String): Boolean = agtype.trimEnd().endsWith("::edge")
 
     /**
-     * [agtypeStr]이 AGE path 타입 문자열인지 판별한다.
+     * `agtype`이 AGE path 타입 문자열인지 판별한다.
      *
      * ```kotlin
      * AgeTypeParser.isPath("""[{...}::vertex, {...}::edge, {...}::vertex]""")  // true
@@ -228,7 +228,7 @@ object AgeTypeParser : KLogging() {
      * // → listOf(1, "str", null, true)
      * ```
      *
-     * @param jsonArrayStr `[1, "str", null, true]` 형태의 JSON 배열 문자열.
+     * @param json `[1, "str", null, true]` 형태의 JSON 배열 문자열.
      * @return 파싱된 불변 [List].
      */
     fun parseJsonArray(json: String): List<Any?> {

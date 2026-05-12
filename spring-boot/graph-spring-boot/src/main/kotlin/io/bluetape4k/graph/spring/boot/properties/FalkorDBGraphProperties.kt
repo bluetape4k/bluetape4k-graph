@@ -3,25 +3,38 @@ package io.bluetape4k.graph.spring.boot.properties
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 /**
- * FalkorDB 백엔드 연결 속성.
+ * FalkorDB backend connection properties.
  *
- * `bluetape4k.graph.backend=falkordb` 일 때 활성화된다.
- * FalkorDB는 Redis 모듈 기반의 그래프 데이터베이스이며, jfalkordb 드라이버를 사용한다.
+ * The backend is active when `bluetape4k.graph.backend=falkordb`. FalkorDB is a
+ * Redis module based graph database and is accessed through the jfalkordb
+ * driver.
+ *
+ * Example:
+ *
+ * ```kotlin
+ * import io.bluetape4k.graph.spring.boot.properties.FalkorDBGraphProperties
+ *
+ * val properties = FalkorDBGraphProperties(
+ *     host = "falkordb.example.test",
+ *     port = 6379,
+ *     graphName = "recommendations",
+ * )
+ * ```
  */
 @ConfigurationProperties(prefix = "bluetape4k.graph.falkordb")
 data class FalkorDBGraphProperties(
-    /** FalkorDB 호스트 주소 */
+    /** FalkorDB host name or address. */
     val host: String = "localhost",
-    /** FalkorDB Redis 포트 번호 */
+    /** FalkorDB Redis port. */
     val port: Int = 6379,
-    /** 인증 사용자명 (비어있으면 인증 없음) */
+    /** Authentication username. Leave blank for unauthenticated connections. */
     val username: String = "",
-    /** 인증 비밀번호 (비어있으면 인증 없음) */
+    /** Authentication password. Leave blank for unauthenticated connections. */
     val password: String = "",
-    /** 대상 그래프 이름 */
+    /** Target graph name. */
     val graphName: String = "bluetape4k",
-    /** 코루틴 suspend 기반 [io.bluetape4k.graph.repository.GraphSuspendOperations] 빈 등록 여부 */
+    /** Whether to register a coroutine [io.bluetape4k.graph.repository.GraphSuspendOperations] bean. */
     val registerSuspend: Boolean = true,
-    /** Virtual Thread 기반 [io.bluetape4k.graph.repository.GraphVirtualThreadOperations] 빈 등록 여부 */
+    /** Whether to register a virtual-thread [io.bluetape4k.graph.repository.GraphVirtualThreadOperations] bean. */
     val registerVirtualThread: Boolean = true,
 )

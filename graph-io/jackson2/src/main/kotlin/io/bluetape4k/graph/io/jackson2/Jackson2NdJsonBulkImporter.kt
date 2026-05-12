@@ -25,8 +25,26 @@ import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.warn
 
 /**
- * Jackson2 기반 NDJSON 동기 벌크 임포터.
- * 단일 파일에서 vertex/edge 줄을 판별하며, edge는 버퍼에 쌓았다가 모든 vertex 생성 후 flush한다.
+ * Blocking NDJSON bulk importer backed by Jackson 2.
+ *
+ * The importer detects vertex and edge envelopes from a single file, buffers
+ * edges, and writes them after vertices are created.
+ *
+ * Example:
+ *
+ * ```kotlin
+ * import io.bluetape4k.graph.io.jackson2.Jackson2NdJsonBulkImporter
+ * import io.bluetape4k.graph.io.options.GraphImportOptions
+ * import io.bluetape4k.graph.io.source.GraphImportSource
+ * import java.nio.file.Paths
+ *
+ * val importer = Jackson2NdJsonBulkImporter()
+ * val report = importer.importGraph(
+ *     source = GraphImportSource.PathSource(Paths.get("graph.ndjson")),
+ *     operations = graphOps,
+ *     options = GraphImportOptions(batchSize = 1_000),
+ * )
+ * ```
  */
 class Jackson2NdJsonBulkImporter : GraphBulkImporter<GraphImportSource> {
 

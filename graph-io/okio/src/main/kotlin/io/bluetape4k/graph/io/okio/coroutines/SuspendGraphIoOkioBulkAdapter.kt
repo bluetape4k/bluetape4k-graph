@@ -107,7 +107,7 @@ class SuspendGraphIoOkioBulkAdapter(
      * OkIO 소스로부터 [format] 포맷으로 그래프를 임포트하고 완료 보고서를 반환한다.
      *
      * blocking I/O를 [runInterruptible] 로 래핑하여 코루틴 취소를 지원한다.
-     * finally 에서 리소스가 반드시 닫히도록 [NonCancellable] 로 보호한다.
+     * finally 에서 리소스가 반드시 닫히도록 `NonCancellable` 로 보호한다.
      *
      * @throws IOException I/O 오류 시
      */

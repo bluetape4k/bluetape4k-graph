@@ -26,6 +26,25 @@ import io.bluetape4k.logging.warn
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+/**
+ * Coroutine NDJSON bulk importer backed by Jackson 3.
+ *
+ * Example:
+ *
+ * ```kotlin
+ * import io.bluetape4k.graph.io.jackson3.SuspendJackson3NdJsonBulkImporter
+ * import io.bluetape4k.graph.io.options.GraphImportOptions
+ * import io.bluetape4k.graph.io.source.GraphImportSource
+ * import java.nio.file.Paths
+ *
+ * val importer = SuspendJackson3NdJsonBulkImporter()
+ * val report = importer.importGraphSuspending(
+ *     source = GraphImportSource.PathSource(Paths.get("graph.ndjson")),
+ *     operations = suspendGraphOps,
+ *     options = GraphImportOptions(defaultEdgeLabel = "RELATED_TO"),
+ * )
+ * ```
+ */
 class SuspendJackson3NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSource> {
 
     private val codec: Jackson3EnvelopeCodec = Jackson3EnvelopeCodec()

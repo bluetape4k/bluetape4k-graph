@@ -252,7 +252,10 @@ subprojects {
             configureEach {
                 dokkaSourceSets {
                     configureEach {
-                        includes.from("README.md")
+                        val dokkaModuleDoc = project.file("dokka.md")
+                        if (dokkaModuleDoc.isFile) {
+                            includes.from(dokkaModuleDoc)
+                        }
                     }
                 }
                 dokkaPublications.html {

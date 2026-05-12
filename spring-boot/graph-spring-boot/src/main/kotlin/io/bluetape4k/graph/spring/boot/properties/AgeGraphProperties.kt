@@ -3,7 +3,18 @@ package io.bluetape4k.graph.spring.boot.properties
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 /**
- * Apache AGE 백엔드 속성.
+ * Apache AGE backend properties.
+ *
+ * Example:
+ *
+ * ```kotlin
+ * import io.bluetape4k.graph.spring.boot.properties.AgeGraphProperties
+ *
+ * val properties = AgeGraphProperties(
+ *     graphName = "tenant_graph",
+ *     autoCreateGraph = true,
+ * )
+ * ```
  */
 @ConfigurationProperties(prefix = "bluetape4k.graph.age")
 data class AgeGraphProperties(

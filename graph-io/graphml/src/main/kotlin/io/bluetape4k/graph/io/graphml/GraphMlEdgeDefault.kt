@@ -1,6 +1,18 @@
 package io.bluetape4k.graph.io.graphml
 
 /** GraphML `<graph edgedefault="...">` 값. */
+/**
+ * GraphML edge direction default for a `<graph>` element.
+ *
+ * Example:
+ *
+ * ```kotlin
+ * import io.bluetape4k.graph.io.graphml.GraphMlEdgeDefault
+ * import io.bluetape4k.graph.io.graphml.GraphMlExportOptions
+ *
+ * val options = GraphMlExportOptions(edgeDefault = GraphMlEdgeDefault.DIRECTED)
+ * ```
+ */
 enum class GraphMlEdgeDefault(val xmlName: String) {
     DIRECTED("directed"),
     UNDIRECTED("undirected");

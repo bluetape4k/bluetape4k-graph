@@ -17,8 +17,29 @@ import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 
 /**
- * GraphML 동기 벌크 익스포터.
- * 정점과 간선을 모두 수집한 뒤 StAX 라이터로 단일 XML 파일에 기록한다.
+ * Blocking bulk exporter for GraphML.
+ *
+ * The exporter collects matching vertices and edges, then writes a single XML
+ * document through the StAX writer.
+ *
+ * Example:
+ *
+ * ```kotlin
+ * import io.bluetape4k.graph.io.graphml.GraphMlBulkExporter
+ * import io.bluetape4k.graph.io.graphml.GraphMlExportOptions
+ * import io.bluetape4k.graph.io.options.GraphExportOptions
+ * import io.bluetape4k.graph.io.source.GraphExportSink
+ * import java.nio.file.Paths
+ *
+ * val exporter = GraphMlBulkExporter()
+ * val report = exporter.exportGraph(
+ *     sink = GraphExportSink.PathSink(Paths.get("graph.graphml")),
+ *     operations = graphOps,
+ *     options = GraphExportOptions(vertexLabels = setOf("Person")),
+ *     graphMlOptions = GraphMlExportOptions(graphId = "social"),
+ * )
+ * check(report.verticesWritten >= 0)
+ * ```
  */
 class GraphMlBulkExporter : GraphBulkExporter<GraphExportSink> {
 

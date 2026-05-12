@@ -11,6 +11,26 @@ import io.bluetape4k.logging.KLogging
 import java.util.concurrent.CompletableFuture
 
 /** GraphML Virtual Thread 기반 익스포터. Sync 익스포터를 VT Future로 감싼다. */
+/**
+ * Virtual-thread bulk exporter for GraphML.
+ *
+ * Example:
+ *
+ * ```kotlin
+ * import io.bluetape4k.graph.io.graphml.GraphMlVirtualThreadBulkExporter
+ * import io.bluetape4k.graph.io.options.GraphExportOptions
+ * import io.bluetape4k.graph.io.source.GraphExportSink
+ * import java.nio.file.Paths
+ *
+ * val exporter = GraphMlVirtualThreadBulkExporter()
+ * val future = exporter.exportGraphAsync(
+ *     sink = GraphExportSink.PathSink(Paths.get("graph.graphml")),
+ *     operations = graphOps,
+ *     options = GraphExportOptions(edgeLabels = setOf("KNOWS")),
+ * )
+ * val report = future.join()
+ * ```
+ */
 class GraphMlVirtualThreadBulkExporter(
     private val sync: GraphMlBulkExporter = GraphMlBulkExporter(),
 ) : GraphVirtualThreadBulkExporter<GraphExportSink> {

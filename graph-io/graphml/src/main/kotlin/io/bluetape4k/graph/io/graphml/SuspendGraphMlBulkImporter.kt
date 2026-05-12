@@ -28,6 +28,25 @@ import kotlinx.coroutines.withContext
  * GraphML 코루틴(suspend) 벌크 임포터.
  * StAX 파싱은 IO 디스패처에서 수행하고, 정점/간선 생성은 suspend 함수로 호출한다.
  */
+/**
+ * Coroutine bulk importer for GraphML.
+ *
+ * Example:
+ *
+ * ```kotlin
+ * import io.bluetape4k.graph.io.graphml.SuspendGraphMlBulkImporter
+ * import io.bluetape4k.graph.io.options.GraphImportOptions
+ * import io.bluetape4k.graph.io.source.GraphImportSource
+ * import java.nio.file.Paths
+ *
+ * val importer = SuspendGraphMlBulkImporter()
+ * val report = importer.importGraphSuspending(
+ *     source = GraphImportSource.PathSource(Paths.get("graph.graphml")),
+ *     operations = suspendGraphOps,
+ *     options = GraphImportOptions(batchSize = 250),
+ * )
+ * ```
+ */
 class SuspendGraphMlBulkImporter : GraphSuspendBulkImporter<GraphImportSource> {
 
     private val reader = StaxGraphMlReader()

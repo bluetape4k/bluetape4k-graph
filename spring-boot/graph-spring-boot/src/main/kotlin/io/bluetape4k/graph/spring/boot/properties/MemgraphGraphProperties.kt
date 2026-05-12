@@ -3,7 +3,19 @@ package io.bluetape4k.graph.spring.boot.properties
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 /**
- * Memgraph 백엔드 연결 속성.
+ * Memgraph backend connection properties.
+ *
+ * Example:
+ *
+ * ```kotlin
+ * import io.bluetape4k.graph.spring.boot.properties.MemgraphGraphProperties
+ *
+ * val properties = MemgraphGraphProperties(
+ *     uri = "bolt://memgraph.example.test:7687",
+ *     database = "memgraph",
+ *     registerVirtualThread = false,
+ * )
+ * ```
  */
 @ConfigurationProperties(prefix = "bluetape4k.graph.memgraph")
 data class MemgraphGraphProperties(

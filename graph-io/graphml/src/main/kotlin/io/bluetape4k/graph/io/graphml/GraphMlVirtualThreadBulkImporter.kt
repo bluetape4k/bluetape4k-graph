@@ -11,6 +11,26 @@ import io.bluetape4k.logging.KLogging
 import java.util.concurrent.CompletableFuture
 
 /** GraphML Virtual Thread 기반 임포터. Sync 임포터를 VT Future로 감싼다. */
+/**
+ * Virtual-thread bulk importer for GraphML.
+ *
+ * Example:
+ *
+ * ```kotlin
+ * import io.bluetape4k.graph.io.graphml.GraphMlVirtualThreadBulkImporter
+ * import io.bluetape4k.graph.io.options.GraphImportOptions
+ * import io.bluetape4k.graph.io.source.GraphImportSource
+ * import java.nio.file.Paths
+ *
+ * val importer = GraphMlVirtualThreadBulkImporter()
+ * val future = importer.importGraphAsync(
+ *     source = GraphImportSource.PathSource(Paths.get("graph.graphml")),
+ *     operations = graphOps,
+ *     options = GraphImportOptions(batchSize = 250),
+ * )
+ * val report = future.join()
+ * ```
+ */
 class GraphMlVirtualThreadBulkImporter(
     private val sync: GraphMlBulkImporter = GraphMlBulkImporter(),
 ) : GraphVirtualThreadBulkImporter<GraphImportSource> {
