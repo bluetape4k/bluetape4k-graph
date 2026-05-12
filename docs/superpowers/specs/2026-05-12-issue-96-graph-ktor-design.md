@@ -5,7 +5,7 @@
 
 ## 1. 문제와 목표
 
-`bluetape4k-graph`는 `graph-spring-boot4-starter`로 Spring Boot 4 application에서 `GraphOperations`와
+`bluetape4k-graph`는 `graph-spring-boot`로 Spring Boot 4 application에서 `GraphOperations`와
 `GraphSuspendOperations`를 자동 등록할 수 있다. 하지만 Ktor application은 Spring container가 없고,
 Ktor idiom은 `install(...)` 기반의 explicit plugin model이다.
 
@@ -19,7 +19,7 @@ graph backend를 명시적으로 선택하고, `Application` extension으로 gra
   `testApplication` 검증을 이미 사용한다.
 - Ktor 공식 documentation은 custom plugin에 `createApplicationPlugin(name, createConfiguration = ...)`를 사용하고,
   lifecycle event는 `MonitoringEvent(ApplicationStarted/Stopped)`로 구독하는 패턴을 제시한다.
-- `graph-spring-boot4-starter`는 backend scope로 TinkerGraph, Neo4j, Memgraph, AGE, FalkorDB를 다룬다.
+- `graph-spring-boot`는 backend scope로 TinkerGraph, Neo4j, Memgraph, AGE, FalkorDB를 다룬다.
 - Backend constructors:
   - `TinkerGraphOperations()` + `TinkerGraphSuspendOperations(delegate)`
   - `Neo4jGraphOperations(driver, database)` + `Neo4jGraphSuspendOperations(driver, database)`
@@ -47,7 +47,7 @@ graph backend를 명시적으로 선택하고, `Application` extension으로 gra
 
 ### 제외
 
-- `graph-spring-boot4-starter` rename. 이 작업은 issue #99에서 별도 처리한다.
+- Spring Boot integration rename. 이 작업은 issue #99에서 별도 처리한다.
 - `GraphVirtualThreadOperations` exposure. Ktor integration의 initial scope는 coroutine-first `GraphSuspendOperations`와
   compatibility용 `GraphOperations`이다.
 - Ktor plugin에서 DataSource, Neo4j Driver, FalkorDB Driver를 직접 생성하는 property DSL. Ktor는 DI/container가
@@ -219,7 +219,7 @@ Artifact: `.omx/artifacts/claude-issue-96-graph-ktor-spec-plan-20260512-032751.m
 | Item | Status | Notes |
 |---|---|---|
 | Official docs checked | Done | Ktor custom plugin / lifecycle / testApplication docs via Context7 |
-| Current repo and ecosystem reuse searched | Done | `leader-ktor`, `graph-spring-boot4-starter`, backend constructors |
+| Current repo and ecosystem reuse searched | Done | `leader-ktor`, Spring Boot integration module, backend constructors |
 | Third-party API assumptions checked | Done | Ktor docs and current dependency catalog reference |
 | Adopt/borrow/skip decisions recorded | Done | Option B |
 | Technical constraints identified | Done | Kotlin 2.3, Java 21, Ktor 3.4.3, backend dependency boundary |

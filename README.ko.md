@@ -28,8 +28,8 @@ graph-io/
 benchmark/
   graph-benchmark     # JMH 벤치마크 — Sync vs VirtualThread 그래프 연산
   graph-io-benchmark  # JMH 벤치마크 — CSV / NDJSON / GraphML 벌크 I/O 성능
-spring-boot4/
-  graph-spring-boot4-starter  # Spring Boot 4.x AutoConfiguration
+spring-boot/
+  graph-spring-boot  # Spring Boot 4.x AutoConfiguration
 ktor/
   graph-ktor                  # Ktor 3.x ApplicationPlugin integration
 examples/

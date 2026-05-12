@@ -25,7 +25,8 @@ graph-io/
   jackson3/
   graphml/
 benchmark/
-spring-boot4/
+spring-boot/
+  graph-spring-boot/
 examples/
 ```
 
