@@ -184,7 +184,64 @@ jobs:
           path: '**/build/reports/kover/'
           retention-days: 14
 
-  # ── 4. Neo4j (Testcontainers) ─────────────────────────────────────────────
+  # ── 4. Ktor Graph (Testcontainers + TinkerGraph example) ─────────────────
+  test-graph-ktor:
+    name: Test / Ktor Graph (Testcontainers)
+    if: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: build
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-java@v5
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: wrapper
+          cache-read-only: true
+
+      - name: Test graph-ktor and Ktor example
+        run: |
+          for attempt in 1 2 3; do
+            ./gradlew \
+              :graph-ktor:test \
+              :ktor-graph-examples:test \
+              --no-daemon --continue && break
+            echo "Attempt $attempt failed"
+            [ $attempt -lt 3 ] && sleep 10 || exit 1
+          done
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
+          TESTCONTAINERS_RYUK_DISABLED: "true"
+          DOCKER_HOST: "unix:///var/run/docker.sock"
+
+      - name: Generate Kover XML report
+        if: always()
+        run: ./gradlew :graph-ktor:koverXmlReport --no-daemon
+        continue-on-error: true
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results-ktor
+          path: '**/build/test-results/test/*.xml'
+          retention-days: 14
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-ktor
+          path: '**/build/reports/kover/'
+          retention-days: 14
+
+  # ── 5. Neo4j (Testcontainers) ─────────────────────────────────────────────
   test-graph-neo4j:
     name: Test / Neo4j (Testcontainers)
     if: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
@@ -238,7 +295,7 @@ jobs:
           path: '**/build/reports/kover/'
           retention-days: 14
 
-  # ── 5. Memgraph (Testcontainers) ──────────────────────────────────────────
+  # ── 6. Memgraph (Testcontainers) ──────────────────────────────────────────
   test-graph-memgraph:
     name: Test / Memgraph (Testcontainers)
     if: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
@@ -292,7 +349,7 @@ jobs:
           path: '**/build/reports/kover/'
           retention-days: 14
 
-  # ── 6. Apache AGE (Testcontainers) ────────────────────────────────────────
+  # ── 7. Apache AGE (Testcontainers) ────────────────────────────────────────
   test-graph-age:
     name: Test / Apache AGE (Testcontainers)
     if: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
@@ -346,7 +403,7 @@ jobs:
           path: '**/build/reports/kover/'
           retention-days: 14
 
-  # ── 7. FalkorDB (Testcontainers) ──────────────────────────────────────────
+  # ── 8. FalkorDB (Testcontainers) ──────────────────────────────────────────
   test-graph-falkordb:
     name: Test / FalkorDB (Testcontainers)
     if: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
@@ -400,7 +457,7 @@ jobs:
           path: '**/build/reports/kover/'
           retention-days: 14
 
-  # ── 8. Examples (Testcontainers) ──────────────────────────────────────────
+  # ── 9. Examples (Testcontainers) ──────────────────────────────────────────
   test-examples:
     name: Test / Examples (Testcontainers)
     if: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
@@ -444,7 +501,7 @@ jobs:
           path: '**/build/test-results/test/*.xml'
           retention-days: 14
 
-  # ── 9. 커버리지 집계 ──────────────────────────────────────────────────────
+  # ── 10. 커버리지 집계 ─────────────────────────────────────────────────────
   coverage-report:
     name: Coverage Report
 
@@ -453,6 +510,7 @@ jobs:
     needs:
       - test-core
       - test-spring-starters
+      - test-graph-ktor
       - test-graph-neo4j
       - test-graph-memgraph
       - test-graph-age
@@ -495,7 +553,7 @@ jobs:
           path: coverage-artifacts/
           retention-days: 30
 
-  # ── 10. 결과 집계 ─────────────────────────────────────────────────────────
+  # ── 11. 결과 집계 ─────────────────────────────────────────────────────────
   nightly-status:
     name: Nightly Status
     runs-on: ubuntu-latest
@@ -504,6 +562,7 @@ jobs:
       - build
       - test-core
       - test-spring-starters
+      - test-graph-ktor
       - test-graph-neo4j
       - test-graph-memgraph
       - test-graph-age
