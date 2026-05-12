@@ -1,6 +1,6 @@
 # Issue #96 graph-ktor Design
 
-> Language: Korean with English technical terms.  
+> Language: Korean with English technical terms.
 > Related issue: [#96](https://github.com/bluetape4k/bluetape4k-graph/issues/96)
 
 ## 1. 문제와 목표
