@@ -2,6 +2,10 @@
 
 Store durable bluetape4k-graph lessons in this directory.
 
+Create or update a lesson after every completed PR or work item, even when the
+change is small. Keep it short for small work, but still record the context,
+verification, and one reusable guardrail.
+
 Use this structure for each lesson:
 
 - Context

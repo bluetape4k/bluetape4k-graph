@@ -1,4 +1,12 @@
-# Issue #96 graph-ktor Lessons
+# PR #100 graph-ktor Lessons
+
+## Context
+
+- PR: #100 `feat: graph-ktor Ktor plugin module 추가`
+- Issue: #96
+- Merge commit: `3a883f25ccea0bb3588de7775cfc360312d9abd9`
+- Scope: `ktor/graph-ktor` module, `examples/ktor-graph-examples`, backend helper functions, Ktor route accessors, README/BOM/CHANGELOG/superpowers docs.
+- Verification used in PR: `./gradlew projects --no-daemon`, targeted `graph-ktor` backend smoke tests, `:graph-ktor:test`, `:ktor-graph-examples:test`, module builds, `git diff --check`, GitHub CI.
 
 ## Lessons & Learns
 
