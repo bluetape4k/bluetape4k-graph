@@ -1,0 +1,151 @@
+# fraud-detection-examples
+
+> 🇰🇷 [한국어 문서](README.ko.md)
+
+This example teaches how to model money transfers as a graph and run fraud-oriented analytics through the
+backend-independent bluetape4k-graph API.
+
+## What You Learn
+
+| Topic | Why it matters |
+|---|---|
+| Transfer graph modeling | Money movement is naturally a directed relationship between accounts. |
+| Cycle detection | Circular transfer chains can indicate layering or wash activity. |
+| Connected components | Dense account groups can reveal suspicious clusters. |
+| PageRank | Accounts receiving many important flows can be ranked for review. |
+| Backend portability | The same service runs on TinkerGraph, Neo4j, Memgraph, Apache AGE, and FalkorDB. |
+
+## Why Use a Graph Database?
+
+Fraud signals are often relationship signals, not single-row signals. A relational table can store transfers, but
+questions such as "which accounts form a loop?", "which accounts belong to the same suspicious cluster?", or "which
+receiver is central in this transfer network?" require repeated self-joins and custom traversal logic.
+
+A graph database makes these questions explicit:
+
+- accounts are vertices,
+- transfers are directed edges,
+- suspicious behavior is expressed as paths, cycles, components, and centrality.
+
+That keeps the domain language close to the query language and lets the same analytics contract run across multiple
+graph backends.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    Test[Example test] --> Service[FraudDetectionService]
+    Service --> Ops[GraphOperations]
+    Ops --> Backend[(Graph backend)]
+    Backend --> Analytics[Cycles / Components / PageRank]
+    Analytics --> Findings[Review candidates]
+```
+
+## Domain UML
+
+```mermaid
+classDiagram
+    class Account {
+        +String accountId
+        +String ownerName
+        +String riskTier
+    }
+
+    class Transfer {
+        +Long amount
+        +String occurredAt
+    }
+
+    class FraudDetectionService {
+        +addAccount(accountId, ownerName, riskTier)
+        +recordTransfer(fromAccountId, toAccountId, amount)
+        +detectCircularTransfers(maxDepth, maxCycles)
+        +detectSuspiciousClusters(minSize)
+        +rankHighRiskAccounts(limit)
+    }
+
+    Account "1" --> "*" Transfer : outgoing
+    Transfer "*" --> "1" Account : incoming
+    FraudDetectionService ..> Account
+    FraudDetectionService ..> Transfer
+```
+
+## Analysis Flow
+
+```mermaid
+sequenceDiagram
+    participant Learner
+    participant Service as FraudDetectionService
+    participant Ops as GraphOperations
+    participant DB as Graph DB
+
+    Learner->>Service: addAccount(...)
+    Service->>Ops: createVertex("Account", ...)
+    Ops->>DB: persist account
+    Learner->>Service: recordTransfer(...)
+    Service->>Ops: createEdge(..., "TRANSFERRED_TO", ...)
+    Ops->>DB: persist transfer
+    Learner->>Service: detectCircularTransfers()
+    Service->>Ops: detectCycles(CycleOptions)
+    Ops->>DB: traverse transfer graph
+    DB-->>Learner: suspicious cycles
+```
+
+## Core Features
+
+| Feature | Graph API |
+|---|---|
+| Circular transfer detection | `detectCycles(CycleOptions)` |
+| Suspicious cluster detection | `connectedComponents(ComponentOptions)` |
+| High-risk account ranking | `pageRank(PageRankOptions)` |
+| Coroutine support | `FraudDetectionSuspendService` with `Flow` results |
+
+## Usage
+
+```kotlin
+val service = FraudDetectionService(ops)
+service.initialize()
+
+val alice = service.addAccount("acct-alice", "Alice")
+val bob = service.addAccount("acct-bob", "Bob")
+val carol = service.addAccount("acct-carol", "Carol")
+
+service.recordTransfer(alice.id, bob.id, amount = 100)
+service.recordTransfer(bob.id, carol.id, amount = 75)
+service.recordTransfer(carol.id, alice.id, amount = 50)
+
+val cycles = service.detectCircularTransfers()
+val clusters = service.detectSuspiciousClusters(minSize = 3)
+val ranked = service.rankHighRiskAccounts(limit = 10)
+```
+
+## How to Read the Tests
+
+Start with `AbstractFraudDetectionTest` and `AbstractFraudDetectionSuspendTest`. They contain the learning scenarios.
+Concrete backend classes only provide the backend-specific `GraphOperations` implementation.
+
+| Test class type | Purpose |
+|---|---|
+| Abstract tests | Explain the fraud detection behavior once. |
+| TinkerGraph tests | Fast in-memory smoke path. |
+| Neo4j/Memgraph/AGE/FalkorDB tests | Prove the same domain behavior works against real backends. |
+
+## Running Tests
+
+```bash
+./gradlew :fraud-detection-examples:test
+./gradlew :fraud-detection-examples:test --tests "*TinkerGraph*"
+```
+
+TinkerGraph tests run in memory. Neo4j, Memgraph, Apache AGE, and FalkorDB tests require Docker/Testcontainers.
+
+## Dependencies
+
+```kotlin
+implementation(project(":graph-core"))
+implementation(project(":graph-neo4j"))
+implementation(project(":graph-memgraph"))
+implementation(project(":graph-age"))
+implementation(project(":graph-falkordb"))
+implementation(project(":graph-tinkerpop"))
+```
