@@ -60,6 +60,27 @@ schema.createIndex("Person", "email")
 schema.listIndexes()
 ```
 
+## Merge / Upsert and Transaction DSL
+
+TinkerGraph supports `GraphMergeOperations` with Gremlin get-or-create/update semantics and an in-memory
+`Transaction DSL`. This keeps tests and local prototypes on the same API surface as server-backed modules.
+
+```kotlin
+import io.bluetape4k.graph.repository.mergeVertex
+import io.bluetape4k.graph.repository.transaction
+
+val alice = ops.mergeVertex(
+    label = "Person",
+    matchProperties = mapOf("email" to "alice@example.com"),
+    setProperties = mapOf("name" to "Alice"),
+)
+
+ops.transaction {
+    val bob = createVertex("Person", mapOf("email" to "bob@example.com"))
+    createEdge(alice.id, bob.id, "KNOWS")
+}
+```
+
 ## Graph Algorithms
 
 TinkerPop uses native Gremlin traversals for all 6 algorithms — no JVM fallback needed.

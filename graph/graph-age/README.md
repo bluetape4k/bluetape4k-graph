@@ -111,6 +111,28 @@ schema.listIndexes() // empty
 schema.createIndex("Person", "email") // UnsupportedOperationException
 ```
 
+## Merge / Upsert and Transaction DSL
+
+AGE supports `GraphMergeOperations` through a transactional match/update/create fallback because the current test image
+does not support `ON CREATE SET` / `ON MATCH SET`. The `Transaction DSL` runs vertex and edge work inside the Exposed
+transaction used by `AgeGraphOperations`.
+
+```kotlin
+import io.bluetape4k.graph.repository.mergeVertex
+import io.bluetape4k.graph.repository.transaction
+
+val alice = ops.mergeVertex(
+    label = "Person",
+    matchProperties = mapOf("email" to "alice@example.com"),
+    setProperties = mapOf("name" to "Alice"),
+)
+
+val edge = ops.transaction {
+    val bob = createVertex("Person", mapOf("email" to "bob@example.com"))
+    createEdge(alice.id, bob.id, "KNOWS")
+}
+```
+
 ## Caching Decorator
 
 `CachingAgeGraphOperations` wraps an `AgeGraphOperations` instance and memoizes all read results using `ConcurrentHashMap` (~5 ns lookup). It is designed for read-heavy workloads such as benchmarks or repeated graph traversals.

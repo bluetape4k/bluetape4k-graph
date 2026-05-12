@@ -83,6 +83,27 @@ val driver = GraphDatabase.driver("bolt://localhost:7687")
 val graphOps = Neo4jGraphOperations(driver, database = "neo4j")
 ```
 
+### Merge / Upsert and Transaction DSL
+
+Neo4j supports `GraphMergeOperations` with native Cypher `MERGE` and repository-style `Transaction DSL` backed by
+driver transactions. Relationship merge uses Neo4j 5.x `elementId()` for endpoint lookup.
+
+```kotlin
+import io.bluetape4k.graph.repository.mergeVertex
+import io.bluetape4k.graph.repository.transaction
+
+val alice = graphOps.mergeVertex(
+    label = "Person",
+    matchProperties = mapOf("email" to "alice@example.com"),
+    setProperties = mapOf("name" to "Alice"),
+)
+
+val edge = graphOps.transaction {
+    val bob = createVertex("Person", mapOf("email" to "bob@example.com"))
+    createEdge(alice.id, bob.id, "KNOWS")
+}
+```
+
 ### createVertex Example
 
 ```kotlin

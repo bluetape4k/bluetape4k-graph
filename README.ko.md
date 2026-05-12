@@ -94,6 +94,36 @@ val edges = ops.createEdges(
 
 동기, suspend, Virtual Thread 어댑터 모두 같은 계약(`createVertices`, `createEdges`, `createVerticesAsync`, `createEdgesAsync`)을 제공합니다. 1만 건 삽입 smoke 근거는 [2026-05 테스트 로그](docs/testlogs/2026-05.md)에 기록되어 있습니다.
 
+### Schema, Merge, Transaction capabilities
+
+`graph-core`는 base `GraphOperations` source contract를 깨지 않으면서 backend가 더 강한 write-time guarantee를
+제공할 수 있도록 optional capability interfaces를 정의한다.
+
+| Capability | API | 목적 |
+|------------|-----|------|
+| Schema manager | `ops.schemaManager()` / `suspendOps.schemaManager()` | 공통 metadata model로 index와 constraint 생성·조회·삭제 |
+| Merge / Upsert | `ops.mergeVertex(...)`, `ops.mergeEdge(...)` | 안정적인 `matchProperties` 기반 idempotent vertex/edge write |
+| Transaction DSL | `ops.transaction { }`, `suspendOps.suspendTransaction { }` | repository-style vertex/edge work block을 atomic하게 실행 |
+
+```kotlin
+import io.bluetape4k.graph.repository.mergeVertex
+import io.bluetape4k.graph.repository.transaction
+import io.bluetape4k.graph.schema.schemaManager
+
+ops.schemaManager().createIndex("Person", "email")
+
+val alice = ops.mergeVertex(
+    label = "Person",
+    matchProperties = mapOf("email" to "alice@example.com"),
+    setProperties = mapOf("name" to "Alice"),
+)
+
+val edge = ops.transaction {
+    val bob = createVertex("Person", mapOf("email" to "bob@example.com"))
+    createEdge(alice.id, bob.id, "KNOWS")
+}
+```
+
 ## 벌크 임포트/익스포트 (`graph-io`)
 
 `graph-io` 패밀리는 포맷 독립적인 대용량 I/O를 세 가지 실행 모델(Sync, VirtualThread, Coroutine)로 제공한다.
