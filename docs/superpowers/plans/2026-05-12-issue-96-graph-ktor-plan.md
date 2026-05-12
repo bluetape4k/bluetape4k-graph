@@ -1,6 +1,6 @@
 # Issue #96 graph-ktor Implementation Plan
 
-> Spec: [2026-05-12-issue-96-graph-ktor-design.md](../specs/2026-05-12-issue-96-graph-ktor-design.md)  
+> Spec: [2026-05-12-issue-96-graph-ktor-design.md](../specs/2026-05-12-issue-96-graph-ktor-design.md)
 > Related issue: [#96](https://github.com/bluetape4k/bluetape4k-graph/issues/96)
 
 ## Plan Summary
