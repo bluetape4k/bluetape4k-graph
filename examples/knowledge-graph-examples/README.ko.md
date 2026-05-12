@@ -2,16 +2,104 @@
 
 > 🇺🇸 [English](README.md)
 
-문서 mention, 엔티티 관계, 개념 분류, 제한된 관계 경로 추론을 보여주는 지식 그래프 예제입니다.
+문서, 엔티티, 개념을 지식 그래프로 모델링하고 엔티티 사이의 제한된 관계 경로를 추론하는 방법을 배우는 예제입니다.
+
+## 무엇을 배우나?
+
+| 주제 | 의미 |
+|---|---|
+| 지식 그래프 모델링 | 문서, 엔티티, 개념을 연결된 사실로 표현합니다. |
+| mention 조회 | 문서가 언급하는 엔티티를 `MENTIONS` edge로 찾습니다. |
+| 관련 엔티티 탐색 | 도메인 관계를 중첩 레코드가 아니라 path로 표현합니다. |
+| 개념 분류 | `IS_A` 링크로 구체 엔티티를 정규화된 개념에 연결합니다. |
+| 제한된 경로 추론 | `allPaths`로 안전한 깊이와 결과 수 안에서 관계 설명을 얻습니다. |
+
+## 왜 Graph DB가 좋은가?
+
+지식 그래프의 가치는 사실 사이의 연결에 있습니다. 문서 저장소는 문서 본문을 저장할 수 있고, 관계형 DB는 엔티티 테이블을
+저장할 수 있습니다. 하지만 "Kotlin이 어떤 중간 개념을 통해 Spring과 연결되는가?"는 자연스럽게 path 질문입니다.
+
+Graph DB를 사용하면 다음을 직접 표현할 수 있습니다.
+
+- 문서, 엔티티, 개념은 vertex,
+- mention, 분류, 관계는 typed edge,
+- 발견 과정은 traversal과 path inference,
+- 같은 모델을 검색 보강, 설명, 추천에 재사용할 수 있습니다.
+
+이 예제는 작은 그래프를 사용해 관계 경로가 왜 생기는지 학습자가 직접 확인할 수 있게 구성되어 있습니다.
 
 ## 아키텍처
 
 ```mermaid
 flowchart LR
-    Document[Document] -->|MENTIONS| EntityA[Entity]
-    EntityA -->|RELATED_TO| EntityB[Entity]
-    EntityB -->|IS_A| Concept[Concept]
-    Service[KnowledgeGraphService] --> Ops[GraphOperations]
+    Test[Example test] --> Service[KnowledgeGraphService]
+    Service --> Ops[GraphOperations]
+    Ops --> Backend[(Graph backend)]
+    Backend --> Lookup[Mention lookup]
+    Backend --> Paths[Relationship paths]
+    Lookup --> Insights[Knowledge insights]
+    Paths --> Insights
+```
+
+## 도메인 UML
+
+```mermaid
+classDiagram
+    class Document {
+        +String documentId
+        +String title
+        +String source
+    }
+
+    class Entity {
+        +String entityId
+        +String name
+        +String entityType
+    }
+
+    class Concept {
+        +String conceptId
+        +String name
+        +String domain
+    }
+
+    class KnowledgeGraphService {
+        +addDocument(documentId, title, source)
+        +addEntity(entityId, name, entityType)
+        +addConcept(conceptId, name, domain)
+        +mention(documentId, entityId, confidence)
+        +relateEntities(fromEntityId, toEntityId, relationType)
+        +classify(entityId, conceptId)
+        +findMentionedEntities(documentId)
+        +findRelatedEntities(entityId, depth)
+        +inferRelationshipPaths(fromEntityId, toEntityId, maxDepth, maxPaths)
+    }
+
+    Document "*" --> "*" Entity : MENTIONS
+    Entity "*" --> "*" Entity : RELATED_TO
+    Entity "*" --> "*" Concept : IS_A
+    KnowledgeGraphService ..> Document
+    KnowledgeGraphService ..> Entity
+    KnowledgeGraphService ..> Concept
+```
+
+## 경로 추론 흐름
+
+```mermaid
+sequenceDiagram
+    participant Learner
+    participant Service as KnowledgeGraphService
+    participant Ops as GraphOperations
+    participant DB as Graph DB
+
+    Learner->>Service: mention(document, entity)
+    Service->>Ops: createEdge(document, entity, "MENTIONS")
+    Learner->>Service: relateEntities(kotlin, coroutines)
+    Service->>Ops: createEdge(kotlin, coroutines, "RELATED_TO")
+    Learner->>Service: inferRelationshipPaths(kotlin, spring)
+    Service->>Ops: allPaths(PathOptions(edgeLabel = "RELATED_TO"))
+    Ops->>DB: bounded path traversal
+    DB-->>Learner: explainable relationship paths
 ```
 
 ## 주요 기능
@@ -39,6 +127,17 @@ service.relateEntities(kotlin.id, coroutines.id, relationType = "has-feature")
 val mentioned = service.findMentionedEntities(doc.id)
 val paths = service.inferRelationshipPaths(kotlin.id, coroutines.id)
 ```
+
+## 테스트 읽는 법
+
+Abstract test는 작은 지식 그래프를 만들고, mention 조회, 관련 엔티티 탐색, 개념 분류, 제한된 관계 경로 추론을 한 흐름으로
+보여줍니다.
+
+| 테스트 종류 | 목적 |
+|---|---|
+| Abstract tests | 지식 그래프 동작을 한 번만 설명합니다. |
+| TinkerGraph tests | 빠른 메모리 기반 smoke test입니다. |
+| Neo4j/Memgraph/AGE/FalkorDB tests | 실제 backend에서도 같은 path/lookup 동작이 유지되는지 검증합니다. |
 
 ## 테스트 실행
 
