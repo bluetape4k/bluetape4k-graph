@@ -31,8 +31,10 @@
 
 - `git diff --check`
 - `./gradlew :graph-ktor:test :ktor-graph-examples:test --no-daemon`
-- Nightly full dispatch was started for branch `ci/graph-ktor-nightly`:
+- Nightly full dispatch for branch `ci/graph-ktor-nightly` completed successfully:
   - https://github.com/bluetape4k/bluetape4k-graph/actions/runs/25705115469
+  - `Test / Ktor Graph (Testcontainers)` passed.
+  - `Nightly Status` passed.
 
 ## Future Guidance
 
