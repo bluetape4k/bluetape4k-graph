@@ -3,7 +3,20 @@ package io.bluetape4k.graph.spring.boot.properties
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 /**
- * Neo4j 백엔드 연결 속성.
+ * Neo4j backend connection properties.
+ *
+ * Example:
+ *
+ * ```kotlin
+ * import io.bluetape4k.graph.spring.boot.properties.Neo4jGraphProperties
+ *
+ * val properties = Neo4jGraphProperties(
+ *     uri = "bolt://neo4j.example.test:7687",
+ *     username = "neo4j",
+ *     password = "secret",
+ *     database = "analytics",
+ * )
+ * ```
  */
 @ConfigurationProperties(prefix = "bluetape4k.graph.neo4j")
 data class Neo4jGraphProperties(

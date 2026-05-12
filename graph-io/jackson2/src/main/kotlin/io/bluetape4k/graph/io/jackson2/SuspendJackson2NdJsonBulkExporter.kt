@@ -19,6 +19,25 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withContext
 
+/**
+ * Coroutine NDJSON bulk exporter backed by Jackson 2.
+ *
+ * Example:
+ *
+ * ```kotlin
+ * import io.bluetape4k.graph.io.jackson2.SuspendJackson2NdJsonBulkExporter
+ * import io.bluetape4k.graph.io.options.GraphExportOptions
+ * import io.bluetape4k.graph.io.source.GraphExportSink
+ * import java.nio.file.Paths
+ *
+ * val exporter = SuspendJackson2NdJsonBulkExporter()
+ * val report = exporter.exportGraphSuspending(
+ *     sink = GraphExportSink.PathSink(Paths.get("graph.ndjson")),
+ *     operations = suspendGraphOps,
+ *     options = GraphExportOptions(edgeLabels = setOf("KNOWS")),
+ * )
+ * ```
+ */
 class SuspendJackson2NdJsonBulkExporter : GraphSuspendBulkExporter<GraphExportSink> {
 
     private val codec: Jackson2EnvelopeCodec = Jackson2EnvelopeCodec()

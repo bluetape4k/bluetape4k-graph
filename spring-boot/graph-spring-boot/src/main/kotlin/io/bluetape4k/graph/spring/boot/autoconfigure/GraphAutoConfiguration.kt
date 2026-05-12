@@ -6,11 +6,27 @@ import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 
 /**
- * bluetape4k Graph AutoConfiguration 루트.
+ * Root bluetape4k Graph auto-configuration.
  *
- * 백엔드별 AutoConfiguration의 실행 순서를 보장하고 공통 속성(`GraphProperties`)을 노출한다.
- * 이 클래스 자체는 빈을 생성하지 않는다.
- * 백엔드 AutoConfiguration은 `AutoConfiguration.imports`에 개별 등록된다.
+ * This class exposes [GraphProperties] and orders backend-specific
+ * auto-configuration classes. It does not create graph beans by itself; backend
+ * auto-configurations are registered separately in `AutoConfiguration.imports`.
+ *
+ * Example:
+ *
+ * ```kotlin
+ * import org.springframework.boot.autoconfigure.SpringBootApplication
+ * import org.springframework.boot.runApplication
+ *
+ * @SpringBootApplication
+ * class GraphApplication
+ *
+ * fun main(args: Array<String>) {
+ *     runApplication<GraphApplication>(*args) {
+ *         setDefaultProperties(mapOf("bluetape4k.graph.backend" to "tinkergraph"))
+ *     }
+ * }
+ * ```
  */
 @AutoConfiguration(
     before = [

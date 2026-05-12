@@ -40,7 +40,7 @@ import java.util.*
  * path?.let { println("총 비용=${it.totalWeight}, 경로 길이=${it.steps.size}") }
  * ```
  *
- * @param fetchEdges 정점 ID → 인접 간선 목록 조회 함수. [Direction]은 호출 전 적용되어야 한다.
+ * @param fetchEdges 정점 ID → 인접 간선 목록 조회 함수. `Direction`은 호출 전 적용되어야 한다.
  * @param fetchVertex 정점 ID → [GraphVertex] 조회 함수.
  */
 class DijkstraRunner(

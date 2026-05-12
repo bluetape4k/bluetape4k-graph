@@ -88,7 +88,7 @@ interface GraphTraversalRepository {
     /**
      * A* 알고리즘으로 가중치 최단 경로를 찾는다.
      *
-     * [options.weightProperty]가 반드시 설정되어야 한다.
+     * `options.weightProperty`가 반드시 설정되어야 한다.
      * [heuristic]은 목표 정점까지의 예상 비용을 반환하는 비허용 불가(admissible) 함수여야 한다.
      * 동기 함수만 허용하며 `suspend` 함수는 지원하지 않는다.
      *

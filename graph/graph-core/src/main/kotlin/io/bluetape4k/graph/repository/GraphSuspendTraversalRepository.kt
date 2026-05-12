@@ -87,7 +87,7 @@ interface GraphSuspendTraversalRepository {
     /**
      * A* 알고리즘으로 가중치 최단 경로를 찾는다 (코루틴 방식).
      *
-     * [options.weightProperty]가 반드시 설정되어야 한다.
+     * `options.weightProperty`가 반드시 설정되어야 한다.
      * [heuristic]은 동기 함수여야 한다 (`suspend` 함수 불가).
      *
      * ```kotlin

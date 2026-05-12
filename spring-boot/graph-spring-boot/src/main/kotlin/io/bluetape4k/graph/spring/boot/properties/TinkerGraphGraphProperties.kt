@@ -3,7 +3,18 @@ package io.bluetape4k.graph.spring.boot.properties
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 /**
- * TinkerGraph 인메모리 백엔드 속성.
+ * TinkerGraph in-memory backend properties.
+ *
+ * Example:
+ *
+ * ```kotlin
+ * import io.bluetape4k.graph.spring.boot.properties.TinkerGraphGraphProperties
+ *
+ * val properties = TinkerGraphGraphProperties(
+ *     registerSuspend = true,
+ *     registerVirtualThread = true,
+ * )
+ * ```
  */
 @ConfigurationProperties(prefix = "bluetape4k.graph.tinkergraph")
 data class TinkerGraphGraphProperties(

@@ -23,10 +23,27 @@ import org.springframework.context.annotation.Configuration
 import java.util.concurrent.TimeUnit
 
 /**
- * Memgraph 백엔드 AutoConfiguration.
+ * Auto-configuration for the Memgraph backend.
  *
- * `bluetape4k.graph.backend=memgraph` 일 때 활성화된다.
- * Memgraph는 Neo4j Bolt 프로토콜 호환이므로 Neo4j Driver를 재사용한다.
+ * It is active when `bluetape4k.graph.backend=memgraph`. Memgraph speaks the
+ * Neo4j Bolt protocol, so this configuration uses the Neo4j Java driver.
+ *
+ * Example:
+ *
+ * ```kotlin
+ * import io.bluetape4k.graph.repository.GraphOperations
+ * import org.springframework.boot.autoconfigure.SpringBootApplication
+ * import org.springframework.boot.runApplication
+ *
+ * @SpringBootApplication
+ * class GraphApplication
+ *
+ * val context = runApplication<GraphApplication>(
+ *     "--bluetape4k.graph.backend=memgraph",
+ *     "--bluetape4k.graph.memgraph.uri=bolt://localhost:7687",
+ * )
+ * val operations = context.getBean(GraphOperations::class.java)
+ * ```
  */
 @AutoConfiguration
 @ConditionalOnClass(Driver::class, MemgraphGraphOperations::class)

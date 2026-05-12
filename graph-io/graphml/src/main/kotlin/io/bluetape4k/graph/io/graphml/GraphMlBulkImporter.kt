@@ -23,8 +23,29 @@ import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.warn
 
 /**
- * GraphML 동기 벌크 임포터.
- * StAX 파서로 전체 XML을 읽어 정점을 먼저 생성한 뒤 간선을 연결한다.
+ * Blocking bulk importer for GraphML.
+ *
+ * The importer reads the XML document with StAX, creates all vertices first,
+ * and then connects edges once endpoint ids are known.
+ *
+ * Example:
+ *
+ * ```kotlin
+ * import io.bluetape4k.graph.io.graphml.GraphMlBulkImporter
+ * import io.bluetape4k.graph.io.graphml.GraphMlImportOptions
+ * import io.bluetape4k.graph.io.options.GraphImportOptions
+ * import io.bluetape4k.graph.io.source.GraphImportSource
+ * import java.nio.file.Paths
+ *
+ * val importer = GraphMlBulkImporter()
+ * val report = importer.importGraph(
+ *     source = GraphImportSource.PathSource(Paths.get("graph.graphml")),
+ *     operations = graphOps,
+ *     options = GraphImportOptions(batchSize = 500),
+ *     graphMlOptions = GraphMlImportOptions(defaultVertexLabel = "Entity"),
+ * )
+ * check(report.verticesCreated >= 0)
+ * ```
  */
 class GraphMlBulkImporter : GraphBulkImporter<GraphImportSource> {
 

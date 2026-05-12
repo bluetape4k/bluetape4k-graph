@@ -174,7 +174,7 @@ class LinkedInGraphService(
      *
      * @param fromId 출발 사람 ID.
      * @param toId 도착 사람 ID.
-     * @return 최단 [GraphPath], 경로가 없으면 `null`.
+     * @return 최단 `GraphPath`, 경로가 없으면 `null`.
      */
     fun findConnectionPath(fromId: GraphElementId, toId: GraphElementId) =
         ops.shortestPath(fromId, toId, PathOptions(edgeLabel = "KNOWS", maxDepth = 6))
@@ -188,7 +188,7 @@ class LinkedInGraphService(
      *
      * @param fromId 출발 사람 ID.
      * @param toId 도착 사람 ID.
-     * @return [GraphPath] 목록.
+     * @return `GraphPath` 목록.
      */
     fun findAllConnectionPaths(fromId: GraphElementId, toId: GraphElementId) =
         ops.allPaths(fromId, toId, PathOptions(edgeLabel = "KNOWS", maxDepth = 3))

@@ -30,7 +30,7 @@ private val graphmlSuspendAdapter = SuspendGraphIoOkioBulkAdapter()
 /**
  * GraphML 포맷으로 그래프를 OkIO 소스에서 임포트한다.
  *
- * StAX 파서는 [InputStream] 기반이므로 OkIO [okio.BufferedSource]를 InputStream 으로 변환하여 전달한다.
+ * StAX 파서는 `java.io.InputStream` 기반이므로 OkIO [okio.BufferedSource]를 InputStream 으로 변환하여 전달한다.
  * XXE 방지: StAX 팩토리에 `SUPPORT_DTD=false`, `IS_SUPPORTING_EXTERNAL_ENTITIES=false` 적용 (기존 구현 위임).
  *
  * @param source OkIO 기반 임포트 소스

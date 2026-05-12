@@ -18,10 +18,27 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 /**
- * TinkerGraph 인메모리 백엔드 AutoConfiguration.
+ * Auto-configuration for the in-memory TinkerGraph backend.
  *
- * `bluetape4k.graph.backend=tinkergraph` 이거나 속성 미지정 시 활성화된다.
- * 외부 의존성이 없으므로 기본 백엔드로 적합하다.
+ * It is active when `bluetape4k.graph.backend=tinkergraph` or when the backend
+ * property is absent. TinkerGraph has no external service dependency, so it is
+ * the default backend.
+ *
+ * Example:
+ *
+ * ```kotlin
+ * import io.bluetape4k.graph.repository.GraphOperations
+ * import org.springframework.boot.autoconfigure.SpringBootApplication
+ * import org.springframework.boot.runApplication
+ *
+ * @SpringBootApplication
+ * class GraphApplication
+ *
+ * val context = runApplication<GraphApplication>(
+ *     "--bluetape4k.graph.backend=tinkergraph",
+ * )
+ * val operations = context.getBean(GraphOperations::class.java)
+ * ```
  */
 @AutoConfiguration
 @ConditionalOnClass(TinkerGraphOperations::class)

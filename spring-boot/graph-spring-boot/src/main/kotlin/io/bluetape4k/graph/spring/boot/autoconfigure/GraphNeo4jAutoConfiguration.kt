@@ -23,10 +23,27 @@ import org.springframework.context.annotation.Configuration
 import java.util.concurrent.TimeUnit
 
 /**
- * Neo4j 백엔드 AutoConfiguration.
+ * Auto-configuration for the Neo4j backend.
  *
- * `bluetape4k.graph.backend=neo4j` 일 때 활성화된다.
- * Spring Boot 기본 Neo4j Driver가 이미 있으면 재사용한다.
+ * It is active when `bluetape4k.graph.backend=neo4j`. If the application
+ * already provides a Neo4j [Driver], that driver is reused.
+ *
+ * Example:
+ *
+ * ```kotlin
+ * import io.bluetape4k.graph.repository.GraphOperations
+ * import org.springframework.boot.autoconfigure.SpringBootApplication
+ * import org.springframework.boot.runApplication
+ *
+ * @SpringBootApplication
+ * class GraphApplication
+ *
+ * val context = runApplication<GraphApplication>(
+ *     "--bluetape4k.graph.backend=neo4j",
+ *     "--bluetape4k.graph.neo4j.uri=bolt://localhost:7687",
+ * )
+ * val operations = context.getBean(GraphOperations::class.java)
+ * ```
  */
 @AutoConfiguration
 @ConditionalOnClass(Driver::class, Neo4jGraphOperations::class)

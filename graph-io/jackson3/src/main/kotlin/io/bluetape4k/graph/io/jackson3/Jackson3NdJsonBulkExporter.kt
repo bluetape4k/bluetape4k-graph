@@ -17,8 +17,26 @@ import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 
 /**
- * Jackson3 기반 NDJSON 동기 벌크 익스포터.
- * 정점을 먼저 쓴 뒤 간선을 쓴다. 각 레코드는 한 줄의 JSON.
+ * Blocking NDJSON bulk exporter backed by Jackson 3.
+ *
+ * Vertices are written before edges, and each graph record occupies one JSON
+ * line.
+ *
+ * Example:
+ *
+ * ```kotlin
+ * import io.bluetape4k.graph.io.jackson3.Jackson3NdJsonBulkExporter
+ * import io.bluetape4k.graph.io.options.GraphExportOptions
+ * import io.bluetape4k.graph.io.source.GraphExportSink
+ * import java.nio.file.Paths
+ *
+ * val exporter = Jackson3NdJsonBulkExporter()
+ * val report = exporter.exportGraph(
+ *     sink = GraphExportSink.PathSink(Paths.get("graph.ndjson")),
+ *     operations = graphOps,
+ *     options = GraphExportOptions(edgeLabels = setOf("KNOWS")),
+ * )
+ * ```
  */
 class Jackson3NdJsonBulkExporter : GraphBulkExporter<GraphExportSink> {
 

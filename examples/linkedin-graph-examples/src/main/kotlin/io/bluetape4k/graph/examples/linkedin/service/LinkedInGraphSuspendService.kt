@@ -163,7 +163,7 @@ class LinkedInGraphSuspendService(
      *
      * @param fromId 출발 사람 ID.
      * @param toId 도착 사람 ID.
-     * @return 최단 [GraphPath], 경로가 없으면 `null`.
+     * @return 최단 `GraphPath`, 경로가 없으면 `null`.
      */
     suspend fun findConnectionPath(fromId: GraphElementId, toId: GraphElementId) =
         ops.shortestPath(fromId, toId, PathOptions(edgeLabel = "KNOWS", maxDepth = 6))

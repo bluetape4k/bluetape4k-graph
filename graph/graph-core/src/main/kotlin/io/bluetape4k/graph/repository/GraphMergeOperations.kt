@@ -9,13 +9,13 @@ import io.bluetape4k.support.requireNotBlank
 /**
  * 검증을 통과한 merge/upsert 속성 묶음.
  *
- * [matchProperties]는 요소를 찾는 안정적인 식별자이고, [setProperties]는 생성되었거나
+ * `matchProperties`는 요소를 찾는 안정적인 식별자이고, `setProperties`는 생성되었거나
  * 이미 존재하는 요소에 적용할 갱신 속성이다.
  *
  * ## 동작/계약
- * - [matchProperties]의 값은 `null`일 수 없다. null identity key는 backend별 query 의미가
+ * - `matchProperties`의 값은 `null`일 수 없다. null identity key는 backend별 query 의미가
  *   달라질 수 있기 때문이다.
- * - [setProperties]는 [matchProperties]와 같은 key를 덮어쓸 수 없다.
+ * - `setProperties`는 `matchProperties`와 같은 key를 덮어쓸 수 없다.
  *
  * ```kotlin
  * val props = GraphMergeValidation.validateVertex(
@@ -37,8 +37,8 @@ data class GraphMergeProperties(
  *
  * ## 동작/계약
  * - label과 property key는 backend query에 안전한 identifier여야 한다.
- * - vertex merge는 [validateVertex]에서 non-empty [matchProperties]를 요구한다.
- * - edge merge는 endpoint id와 label이 identity를 이루므로 empty [matchProperties]를 허용한다.
+ * - vertex merge는 [validateVertex]에서 non-empty `matchProperties`를 요구한다.
+ * - edge merge는 endpoint id와 label이 identity를 이루므로 empty `matchProperties`를 허용한다.
  *
  * ```kotlin
  * val validated = GraphMergeValidation.validateEdge(
@@ -56,7 +56,7 @@ object GraphMergeValidation {
      * 정점 merge 입력을 검증한다.
      *
      * 정점은 레이블만으로 merge 하면 여러 기존 정점이 매칭될 수 있으므로
-     * [matchProperties]가 비어 있으면 거부한다.
+     * `matchProperties`가 비어 있으면 거부한다.
      */
     fun validateVertex(
         label: String,
@@ -74,7 +74,7 @@ object GraphMergeValidation {
      * 간선 merge 입력을 검증한다.
      *
      * 간선은 시작 정점 ID, 종료 정점 ID, 레이블이 기본 식별자이므로
-     * [matchProperties]가 비어 있어도 허용한다.
+     * `matchProperties`가 비어 있어도 허용한다.
      */
     fun validateEdge(
         fromId: GraphElementId,
@@ -138,7 +138,7 @@ object GraphMergeValidation {
 interface GraphMergeOperations {
 
     /**
-     * [matchProperties]로 정점을 찾고, 없으면 생성한 뒤 [setProperties]를 적용해 반환한다.
+     * `matchProperties`로 정점을 찾고, 없으면 생성한 뒤 `setProperties`를 적용해 반환한다.
      */
     fun mergeVertex(
         label: String,
@@ -147,8 +147,8 @@ interface GraphMergeOperations {
     ): GraphVertex
 
     /**
-     * 시작/종료 정점, 간선 레이블, [matchProperties]로 간선을 찾고, 없으면 생성한 뒤
-     * [setProperties]를 적용해 반환한다.
+     * 시작/종료 정점, 간선 레이블, `matchProperties`로 간선을 찾고, 없으면 생성한 뒤
+     * `setProperties`를 적용해 반환한다.
      */
     fun mergeEdge(
         fromId: GraphElementId,
@@ -176,14 +176,14 @@ interface GraphMergeOperations {
  */
 interface GraphSuspendMergeOperations {
 
-    /** [matchProperties]로 정점을 찾고, 없으면 생성한 뒤 [setProperties]를 적용해 반환한다. */
+    /** `matchProperties`로 정점을 찾고, 없으면 생성한 뒤 `setProperties`를 적용해 반환한다. */
     suspend fun mergeVertex(
         label: String,
         matchProperties: Map<String, Any?>,
         setProperties: Map<String, Any?> = emptyMap(),
     ): GraphVertex
 
-    /** 시작/종료 정점, 간선 레이블, [matchProperties]로 간선을 찾고, 없으면 생성한 뒤 [setProperties]를 적용한다. */
+    /** 시작/종료 정점, 간선 레이블, `matchProperties`로 간선을 찾고, 없으면 생성한 뒤 `setProperties`를 적용한다. */
     suspend fun mergeEdge(
         fromId: GraphElementId,
         toId: GraphElementId,

@@ -135,7 +135,7 @@ object GraphIoOkioPaths : KLogging() {
     /**
      * GZip 압축 체이닝 편의 함수.
      *
-     * 내부적으로 [Compressors.Streaming.GZip]을 사용한다.
+     * 내부적으로 `Compressors.Streaming.GZip`을 사용한다.
      * 압축 초기화 실패 시 underlying sink를 닫고 예외를 재던진다.
      */
     @Throws(IOException::class)
