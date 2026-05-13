@@ -14,23 +14,26 @@ import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
+import io.bluetape4k.okio.tink.DEFAULT_DAEAD_MAX_CIPHERTEXT_LENGTH
+import io.bluetape4k.tink.daead.TinkDeterministicAead
+import okio.BufferedSource
 import okio.FileSystem
 import okio.Path.Companion.toPath
 import java.io.IOException
 
 /**
- * OkIO 기반 동기 벌크 임포터.
+ * Synchronous graph bulk importer backed by OkIO sources.
  *
- * 포맷은 호출자가 [GraphIoFormat]으로 명시적으로 지정한다. 확장자 기반 스니핑은 지원하지 않는다.
+ * The caller must pass [GraphIoFormat] explicitly. File-extension sniffing is intentionally unsupported.
  *
- * ### CSV 제약
- * CSV 포맷은 정점/간선 파일을 분리해야 하므로, [OkioGraphImportSource.PathSource]만 지원한다.
- * 파일 경로 `{stem}` 기준으로 `{stem}_vertices.csv` 와 `{stem}_edges.csv` 를 자동으로 파생한다.
- * SourceBased/InputStreamBased + CSV 조합은 [UnsupportedOperationException]을 던진다.
+ * ### CSV constraint
+ * CSV requires separate vertex and edge files, so this facade supports CSV only for
+ * [OkioGraphImportSource.PathSource]. The source stem derives `{stem}_vertices.csv` and `{stem}_edges.csv`.
+ * Stream-backed sources throw [UnsupportedOperationException].
  *
- * ### 위임 구조
- * 각 포맷별 기존 BulkImporter (CSV/Jackson2/Jackson3/GraphML) 에게 InputStream 으로 위임한다.
- * OkIO 의 이점(압축 체이닝, FileSystem 추상화)은 [GraphIoOkioPaths]에서 적용된다.
+ * ### Delegation
+ * Format-specific importers for CSV, Jackson 2, Jackson 3, and GraphML receive an adapted input stream.
+ * OkIO-specific behavior such as compression chaining and [okio.FileSystem] support lives in [GraphIoOkioPaths].
  */
 class OkioGraphBulkImporter(
     private val csvImporter: CsvGraphBulkImporter = CsvGraphBulkImporter(),
@@ -42,13 +45,13 @@ class OkioGraphBulkImporter(
     companion object : KLogging()
 
     /**
-     * OkIO 소스로부터 [format] 포맷으로 그래프를 동기 임포트한다.
+     * Imports a graph from an OkIO source using [GraphIoFormat.NDJSON_JACKSON3].
      *
-     * @param source OkIO 기반 임포트 소스
-     * @param operations 임포트 대상 그래프 API
-     * @param options 중복/미존재 엔드포인트 정책, 기본 레이블, 배치 크기 등
-     * @throws IOException I/O 오류 시
-     * @throws UnsupportedOperationException CSV + 스트림 기반 소스 조합 시
+     * @param source OkIO import source
+     * @param operations target graph operations
+     * @param options duplicate handling, missing endpoint handling, default labels, and batch size
+     * @throws IOException when an I/O error occurs
+     * @throws UnsupportedOperationException when CSV is used with a stream-backed source
      */
     override fun importGraph(
         source: OkioGraphImportSource,
@@ -57,9 +60,9 @@ class OkioGraphBulkImporter(
     ): GraphImportReport = importGraph(source, GraphIoFormat.NDJSON_JACKSON3, operations, options)
 
     /**
-     * 포맷을 명시적으로 지정하여 임포트한다.
+     * Imports a graph from an OkIO source using the explicit [format].
      *
-     * @param format 임포트 포맷. 확장자 기반 추론 없음 — 호출자가 반드시 지정.
+     * @param format import format; no extension-based inference is performed
      */
     @Throws(IOException::class)
     fun importGraph(
@@ -83,9 +86,61 @@ class OkioGraphBulkImporter(
         }
     }
 
-    // ─── 내부 헬퍼 ─────────────────────────────────────────────────────────────
+    /**
+     * Imports a single-stream graph format through DAEAD chunk decryption.
+     *
+     * CSV is intentionally unsupported because it is a paired-file format. Use low-level DAEAD helpers directly
+     * for custom CSV file pairs.
+     */
+    @Throws(IOException::class)
+    fun importGraphDaead(
+        source: OkioGraphImportSource,
+        format: GraphIoFormat,
+        daead: TinkDeterministicAead,
+        operations: GraphOperations,
+        options: GraphImportOptions = GraphImportOptions(),
+        associatedData: ByteArray = ByteArray(0),
+        maxCiphertextLength: Long = DEFAULT_DAEAD_MAX_CIPHERTEXT_LENGTH,
+    ): GraphImportReport {
+        requireSingleStreamFormat(format)
+        log.debug { "Starting OkIO DAEAD import: format=$format, source=${describeSource(source)}" }
+        return GraphIoOkioPaths.openDaeadDecryptedSource(source, daead, associatedData, maxCiphertextLength).use { bs ->
+            importSingleStream(bs, format, operations, options)
+        }
+    }
 
-    /** 단일 스트림 임포트 — OkIO source를 InputStream으로 변환하여 [block]에 전달한다. */
+    /**
+     * Imports a single-stream graph format using decrypt-then-inflate DAEAD chunk + GZip source.
+     *
+     * The input must have been written by [OkioGraphBulkExporter.exportGraphGzipDaead].
+     */
+    @Throws(IOException::class)
+    fun importGraphDaeadGzip(
+        source: OkioGraphImportSource,
+        format: GraphIoFormat,
+        daead: TinkDeterministicAead,
+        operations: GraphOperations,
+        options: GraphImportOptions = GraphImportOptions(),
+        associatedData: ByteArray = ByteArray(0),
+        maxCiphertextLength: Long = DEFAULT_DAEAD_MAX_CIPHERTEXT_LENGTH,
+        maxDecompressedBytes: Long = GraphIoOkioPaths.DEFAULT_MAX_DECOMPRESSED_BYTES,
+    ): GraphImportReport {
+        requireSingleStreamFormat(format)
+        log.debug { "Starting OkIO DAEAD+gzip import: format=$format, source=${describeSource(source)}" }
+        return GraphIoOkioPaths.openDaeadDecryptedGzipSource(
+            source = source,
+            daead = daead,
+            associatedData = associatedData,
+            maxCiphertextLength = maxCiphertextLength,
+            maxDecompressedBytes = maxDecompressedBytes,
+        ).use { bs ->
+            importSingleStream(bs, format, operations, options)
+        }
+    }
+
+    // ─── Internal helpers ────────────────────────────────────────────────────
+
+    /** Imports a single-stream format after adapting the OkIO source to an input stream. */
     private inline fun importSingleStream(
         source: OkioGraphImportSource,
         block: (java.io.InputStream) -> GraphImportReport,
@@ -95,11 +150,28 @@ class OkioGraphBulkImporter(
         }
     }
 
+    private fun importSingleStream(
+        source: BufferedSource,
+        format: GraphIoFormat,
+        operations: GraphOperations,
+        options: GraphImportOptions,
+    ): GraphImportReport =
+        source.toInputStream().use { is_ ->
+            when (format) {
+                GraphIoFormat.NDJSON_JACKSON2 ->
+                    jackson2Importer.importGraph(GraphImportSource.InputStreamSource(is_, closeInput = false), operations, options)
+                GraphIoFormat.NDJSON_JACKSON3 ->
+                    jackson3Importer.importGraph(GraphImportSource.InputStreamSource(is_, closeInput = false), operations, options)
+                GraphIoFormat.GRAPHML ->
+                    graphmlImporter.importGraph(GraphImportSource.InputStreamSource(is_, closeInput = false), operations, options)
+                GraphIoFormat.CSV -> unsupportedCsvEncrypted()
+            }
+        }
+
     /**
-     * CSV 임포트: PathSource 기준으로 `{stem}_vertices.csv` + `{stem}_edges.csv` 파생.
+     * Imports CSV by deriving `{stem}_vertices.csv` and `{stem}_edges.csv` from a [OkioGraphImportSource.PathSource].
      *
-     * CSV 는 정점/간선 파일을 분리하는 포맷이므로 PathSource 만 지원한다.
-     * SourceBased/InputStreamBased 는 [UnsupportedOperationException] 을 던진다.
+     * CSV is a paired-file format, so stream-backed sources throw [UnsupportedOperationException].
      */
     private fun importCsv(
         source: OkioGraphImportSource,
@@ -109,9 +181,9 @@ class OkioGraphBulkImporter(
         return when (source) {
             is OkioGraphImportSource.PathSource -> {
                 require(source.fileSystem == FileSystem.SYSTEM) {
-                    "CSV import은 시스템 파일시스템(FileSystem.SYSTEM)만 지원합니다. " +
-                        "커스텀 FileSystem(FakeFileSystem 등)을 사용하려면 CsvGraphBulkImporter를 직접 사용하세요. " +
-                        "제공된 FileSystem: ${source.fileSystem}"
+                    "CSV import supports only FileSystem.SYSTEM. " +
+                        "Use CsvGraphBulkImporter directly for custom FileSystem instances. " +
+                        "Provided FileSystem: ${source.fileSystem}"
                 }
                 val stem = source.path.toString().removeSuffix(".csv")
                 val verticesPath = "${stem}_vertices.csv".toPath()
@@ -123,8 +195,8 @@ class OkioGraphBulkImporter(
                 csvImporter.importGraph(csvSource, operations, options)
             }
             else -> throw UnsupportedOperationException(
-                "CSV 포맷은 두 파일(vertices/edges)이 필요하므로 PathSource 만 지원합니다. " +
-                    "스트림 기반 소스에서는 CsvGraphBulkImporter 를 직접 사용하세요."
+                "CSV requires two files for vertices and edges, so OkioGraphBulkImporter supports only PathSource. " +
+                    "Use CsvGraphBulkImporter directly for stream-backed sources."
             )
         }
     }
@@ -134,4 +206,15 @@ class OkioGraphBulkImporter(
         is OkioGraphImportSource.SourceBased -> "<Source>"
         is OkioGraphImportSource.InputStreamBased -> "<InputStream>"
     }
+
+    private fun requireSingleStreamFormat(format: GraphIoFormat) {
+        if (format == GraphIoFormat.CSV) {
+            unsupportedCsvEncrypted()
+        }
+    }
+
+    private fun unsupportedCsvEncrypted(): Nothing =
+        throw UnsupportedOperationException(
+            "CSV is a paired-file format. Use low-level DAEAD helpers directly for custom CSV file pairs."
+        )
 }

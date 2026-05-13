@@ -3,11 +3,13 @@ package io.bluetape4k.graph.io.okio
 import okio.Buffer
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
-import io.bluetape4k.assertions.invoking
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.tink.daead.TinkDaeads
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import java.io.IOException
+import java.security.GeneralSecurityException
+import kotlin.test.assertFailsWith
 
 class GraphIoOkioPathsTest {
 
@@ -79,7 +81,9 @@ class GraphIoOkioPathsTest {
         val target = "/tmp/missing.txt".toPath()
         val sink = OkioGraphExportSink.PathSink(target, fakeFs, mustExist = true)
 
-        invoking { GraphIoOkioPaths.openSink(sink) } shouldThrow IllegalStateException::class
+        assertFailsWith<IllegalStateException> {
+            GraphIoOkioPaths.openSink(sink)
+        }
     }
 
     @Test
@@ -89,7 +93,9 @@ class GraphIoOkioPathsTest {
         fakeFs.write(target) { writeUtf8("x") }
         val sink = OkioGraphExportSink.PathSink(target, fakeFs, mustCreate = true)
 
-        invoking { GraphIoOkioPaths.openSink(sink) } shouldThrow IllegalStateException::class
+        assertFailsWith<IllegalStateException> {
+            GraphIoOkioPaths.openSink(sink)
+        }
     }
 
     @Test
@@ -108,7 +114,9 @@ class GraphIoOkioPathsTest {
         val target = "/nonexistent/out.txt".toPath()
         val sink = OkioGraphExportSink.PathSink(target, fakeFs, createParentDirectories = false)
 
-        invoking { GraphIoOkioPaths.openSink(sink) } shouldThrow Exception::class
+        assertFailsWith<Exception> {
+            GraphIoOkioPaths.openSink(sink)
+        }
     }
 
     // ─── openGzipSink / openGzipSource ────────────────────────────────────────
@@ -130,6 +138,75 @@ class GraphIoOkioPathsTest {
         result shouldBeEqualTo data
     }
 
+    // ─── DAEAD chunk encryption ─────────────────────────────────────────────
+
+    @Test
+    fun `DAEAD chunk round trip with FakeFileSystem`() {
+        ensureTmpDir()
+        val path = "/tmp/graph.enc".toPath()
+        val associatedData = "graph-okio".encodeToByteArray()
+        val data = "encrypted graph data\n".repeat(100)
+
+        GraphIoOkioPaths.openDaeadEncryptedSink(
+            sink = OkioGraphExportSink.PathSink(path, fakeFs),
+            daead = TinkDaeads.AES256_SIV,
+            associatedData = associatedData,
+        ).use { bs -> bs.writeUtf8(data) }
+
+        val ciphertext = fakeFs.read(path) { readByteArray() }
+        (ciphertext.contentEquals(data.encodeToByteArray())) shouldBeEqualTo false
+
+        val result = GraphIoOkioPaths.openDaeadDecryptedSource(
+            source = OkioGraphImportSource.PathSource(path, fakeFs),
+            daead = TinkDaeads.AES256_SIV,
+            associatedData = associatedData,
+        ).use { bs -> bs.readUtf8() }
+
+        result shouldBeEqualTo data
+    }
+
+    @Test
+    fun `gzip DAEAD chunk round trip with FakeFileSystem`() {
+        ensureTmpDir()
+        val path = "/tmp/graph.ndjson.gz.enc".toPath()
+        val associatedData = "gzip-daead".encodeToByteArray()
+        val data = """{"id":1,"label":"Person"}""" + "\n"
+
+        GraphIoOkioPaths.openGzipDaeadEncryptedSink(
+            sink = OkioGraphExportSink.PathSink(path, fakeFs),
+            daead = TinkDaeads.AES256_SIV,
+            associatedData = associatedData,
+        ).use { bs -> bs.writeUtf8(data.repeat(100)) }
+
+        val result = GraphIoOkioPaths.openDaeadDecryptedGzipSource(
+            source = OkioGraphImportSource.PathSource(path, fakeFs),
+            daead = TinkDaeads.AES256_SIV,
+            associatedData = associatedData,
+        ).use { bs -> bs.readUtf8() }
+
+        result shouldBeEqualTo data.repeat(100)
+    }
+
+    @Test
+    fun `DAEAD decryption fails with wrong associated data`() {
+        ensureTmpDir()
+        val path = "/tmp/graph-wrong-ad.enc".toPath()
+
+        GraphIoOkioPaths.openDaeadEncryptedSink(
+            sink = OkioGraphExportSink.PathSink(path, fakeFs),
+            daead = TinkDaeads.AES256_SIV,
+            associatedData = "right".encodeToByteArray(),
+        ).use { bs -> bs.writeUtf8("secret") }
+
+        assertFailsWith<GeneralSecurityException> {
+            GraphIoOkioPaths.openDaeadDecryptedSource(
+                source = OkioGraphImportSource.PathSource(path, fakeFs),
+                daead = TinkDaeads.AES256_SIV,
+                associatedData = "wrong".encodeToByteArray(),
+            ).use { bs -> bs.readUtf8() }
+        }
+    }
+
     // ─── BombGuardSource ─────────────────────────────────────────────────────
 
     @Test
@@ -142,13 +219,13 @@ class GraphIoOkioPathsTest {
             OkioGraphExportSink.PathSink(path, fakeFs)
         ).use { bs -> bs.writeUtf8(largeData) }
 
-        invoking {
+        assertFailsWith<IOException> {
             GraphIoOkioPaths.openDecompressedSource(
                 source = GraphIoOkioPaths.openSource(OkioGraphImportSource.PathSource(path, fakeFs)),
                 compressor = Compressor.GZIP,
                 maxDecompressedBytes = 100L,
             ).use { it.readUtf8() }
-        } shouldThrow IOException::class
+        }
     }
 
     @Test

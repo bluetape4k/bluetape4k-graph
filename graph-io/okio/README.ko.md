@@ -1,5 +1,7 @@
 # graph-okio (한국어)
 
+[English](README.md) | [한국어](README.ko.md)
+
 OkIO 기반 그래프 I/O 레이어. 기존 `graph-io-csv`, `graph-io-jackson2`, `graph-io-jackson3`, `graph-io-graphml` 모듈과 완벽하게 호환되면서 OkIO의 세그먼트 기반 스트리밍, 압축 체이닝, FileSystem 추상화를 제공한다.
 
 ## OkIO를 선택하는 이유
@@ -188,6 +190,43 @@ GraphIoOkioPaths.openCompressedSink(rawSink, Compressor.ZSTD)
 GraphIoOkioPaths.openDecompressedSource(rawSource, Compressor.ZSTD, maxDecompressedBytes = 1_073_741_824L)
 ```
 
+### DAEAD 청크 암호화
+
+`graph-okio`는 `bluetape4k-okio`의 deterministic DAEAD 청크 암호화를 단일 스트림 포맷에 체이닝할 수 있다.
+NDJSON 또는 GraphML payload를 OkIO 스트리밍 경로로 흘리면서 인증/암호화해야 할 때 사용한다.
+
+```kotlin
+val daead = TinkDaeads.AES256_SIV
+val associatedData = "tenant-a:graph-export".encodeToByteArray()
+
+exporter.exportGraphDaead(
+    sink = OkioGraphExportSink.PathSink("/data/graph.ndjson.enc".toPath()),
+    format = GraphIoFormat.NDJSON_JACKSON3,
+    daead = daead,
+    operations = graphOperations,
+    associatedData = associatedData,
+)
+
+importer.importGraphDaead(
+    source = OkioGraphImportSource.PathSource("/data/graph.ndjson.enc".toPath()),
+    format = GraphIoFormat.NDJSON_JACKSON3,
+    daead = daead,
+    operations = graphOperations,
+    associatedData = associatedData,
+)
+```
+
+압축 후 암호화가 필요하면 다음 편의 함수를 사용한다.
+
+```kotlin
+exporter.exportGraphGzipDaead(sink, GraphIoFormat.NDJSON_JACKSON3, daead, graphOperations)
+importer.importGraphDaeadGzip(source, GraphIoFormat.NDJSON_JACKSON3, daead, graphOperations)
+```
+
+CSV는 정점/간선 파일이 분리되는 paired-file 포맷이므로 high-level 암호화 편의 함수는 `GraphIoFormat.CSV`를
+거부한다. 커스텀 CSV 파일 쌍을 암호화하려면 `GraphIoOkioPaths.openDaeadEncryptedSink()`와
+`openDaeadDecryptedSource()`를 직접 조합한다.
+
 ### 원자적 쓰기
 
 `PathSink(atomicWrite = true)` (기본값)이면:
@@ -277,6 +316,9 @@ class MyGraphIoTest {
 - **Decompression bomb 방지**: `BombGuardSource`가 해제 바이트를 추적하여 `maxDecompressedBytes` 초과 시 `IOException` 발생
   - 기본 한계: 512 MiB (`DEFAULT_MAX_DECOMPRESSED_BYTES`)
   - 커스텀 한계: `openDecompressedSource(source, compressor, maxDecompressedBytes = 1L * 1024 * 1024 * 1024)` (1 GiB)
+- **DAEAD deterministic encryption**: 같은 키와 associated data로 같은 평문 청크를 암호화하면 같은 암호문
+  청크가 생성된다. associated data는 테넌트/용도/스키마 버전처럼 의도적인 경계값으로 정하고, 키 생성/보관/회전은
+  이 모듈 밖에서 관리한다.
 - **CSV Gzip 스트리밍**: `importGraphGzip` / `exportGraphGzip` 모두 단일 패스 스트리밍 — 중간 버퍼링 없음
 
 ## Gradle 의존성
