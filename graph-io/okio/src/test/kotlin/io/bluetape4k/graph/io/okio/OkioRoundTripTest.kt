@@ -5,14 +5,13 @@ import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphIoFormat
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
+import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.tink.daead.TinkDaeads
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
-import io.bluetape4k.assertions.shouldBeEqualTo
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.EnumSource
 
 class OkioRoundTripTest {
 
@@ -198,5 +197,53 @@ class OkioRoundTripTest {
         report.status shouldBeEqualTo GraphIoStatus.COMPLETED
         report.verticesCreated shouldBeEqualTo 3L
         report.edgesCreated shouldBeEqualTo 2L
+    }
+
+    @Test
+    fun `DAEAD export rejects CSV paired format`() {
+        assertFailsWith<UnsupportedOperationException> {
+            exporter.exportGraphDaead(
+                sink = OkioGraphExportSink.PathSink("/graph.enc".toPath(), fakeFs),
+                format = GraphIoFormat.CSV,
+                daead = TinkDaeads.AES256_SIV,
+                operations = buildSourceGraph(),
+            )
+        }
+    }
+
+    @Test
+    fun `gzip DAEAD export rejects CSV paired format`() {
+        assertFailsWith<UnsupportedOperationException> {
+            exporter.exportGraphGzipDaead(
+                sink = OkioGraphExportSink.PathSink("/graph.gz.enc".toPath(), fakeFs),
+                format = GraphIoFormat.CSV,
+                daead = TinkDaeads.AES256_SIV,
+                operations = buildSourceGraph(),
+            )
+        }
+    }
+
+    @Test
+    fun `DAEAD import rejects CSV paired format`() {
+        assertFailsWith<UnsupportedOperationException> {
+            importer.importGraphDaead(
+                source = OkioGraphImportSource.PathSource("/graph.enc".toPath(), fakeFs),
+                format = GraphIoFormat.CSV,
+                daead = TinkDaeads.AES256_SIV,
+                operations = TinkerGraphOperations(),
+            )
+        }
+    }
+
+    @Test
+    fun `gzip DAEAD import rejects CSV paired format`() {
+        assertFailsWith<UnsupportedOperationException> {
+            importer.importGraphDaeadGzip(
+                source = OkioGraphImportSource.PathSource("/graph.gz.enc".toPath(), fakeFs),
+                format = GraphIoFormat.CSV,
+                daead = TinkDaeads.AES256_SIV,
+                operations = TinkerGraphOperations(),
+            )
+        }
     }
 }

@@ -3,13 +3,14 @@ package io.bluetape4k.graph.io.okio
 import okio.Buffer
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.tink.daead.TinkDaeads
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import java.io.EOFException
 import java.io.IOException
 import java.security.GeneralSecurityException
-import kotlin.test.assertFailsWith
 
 class GraphIoOkioPathsTest {
 
@@ -203,6 +204,32 @@ class GraphIoOkioPathsTest {
                 source = OkioGraphImportSource.PathSource(path, fakeFs),
                 daead = TinkDaeads.AES256_SIV,
                 associatedData = "wrong".encodeToByteArray(),
+            ).use { bs -> bs.readUtf8() }
+        }
+    }
+
+    @Test
+    fun `DAEAD decryption fails with truncated ciphertext`() {
+        ensureTmpDir()
+        val path = "/tmp/graph-truncated.enc".toPath()
+        val associatedData = "truncate-check".encodeToByteArray()
+
+        GraphIoOkioPaths.openDaeadEncryptedSink(
+            sink = OkioGraphExportSink.PathSink(path, fakeFs),
+            daead = TinkDaeads.AES256_SIV,
+            associatedData = associatedData,
+        ).use { bs -> bs.writeUtf8("secret payload") }
+
+        val ciphertext = fakeFs.read(path) { readByteArray() }
+        fakeFs.write(path) {
+            write(ciphertext, offset = 0, byteCount = ciphertext.size - 1)
+        }
+
+        assertFailsWith<EOFException> {
+            GraphIoOkioPaths.openDaeadDecryptedSource(
+                source = OkioGraphImportSource.PathSource(path, fakeFs),
+                daead = TinkDaeads.AES256_SIV,
+                associatedData = associatedData,
             ).use { bs -> bs.readUtf8() }
         }
     }
