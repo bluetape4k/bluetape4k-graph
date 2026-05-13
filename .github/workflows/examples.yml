@@ -1,0 +1,132 @@
+name: Examples
+
+on:
+  schedule:
+    - cron: '0 21 * * *'  # Daily example coverage, UTC 21:00 (KST 06:00)
+  push:
+    branches: [develop, main]
+    paths:
+      - 'examples/**'
+      - 'graph/**'
+      - 'graph-io/**'
+      - 'ktor/**'
+      - 'buildSrc/**'
+      - 'gradle/**'
+      - '*.gradle.kts'
+      - 'settings.gradle.kts'
+      - '.github/actions/testcontainers-image-cache/**'
+      - '.github/scripts/docker-image-cache.sh'
+      - '.github/testcontainers-images.txt'
+      - '.github/workflows/examples.yml'
+  pull_request:
+    branches: [develop, main]
+    paths:
+      - 'examples/**'
+      - 'graph/**'
+      - 'graph-io/**'
+      - 'ktor/**'
+      - 'buildSrc/**'
+      - 'gradle/**'
+      - '*.gradle.kts'
+      - 'settings.gradle.kts'
+      - '.github/actions/testcontainers-image-cache/**'
+      - '.github/scripts/docker-image-cache.sh'
+      - '.github/testcontainers-images.txt'
+      - '.github/workflows/examples.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  JAVA_VERSION: '21'
+  JAVA_DISTRIBUTION: 'temurin'
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
+jobs:
+  validate-wrapper:
+    name: Validate Gradle Wrapper
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: gradle/actions/wrapper-validation@v6
+
+  build-examples:
+    name: Build / All Examples (Testcontainers)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    needs: validate-wrapper
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-java@v5
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: wrapper
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+
+      - name: Restore Testcontainers image cache
+        uses: ./.github/actions/testcontainers-image-cache
+        with:
+          mode: restore
+          cache-key: ${{ runner.os }}-testcontainers-images-v1-${{ github.job }}-${{ hashFiles('.github/testcontainers-images.txt') }}
+          restore-key: ${{ runner.os }}-testcontainers-images-v1-${{ github.job }}-
+
+      - name: Build and test example modules
+        run: |
+          for attempt in 1 2 3; do
+            ./gradlew \
+              :code-graph-examples:build \
+              :linkedin-graph-examples:build \
+              :ktor-graph-examples:build \
+              :fraud-detection-examples:build \
+              :recommendation-examples:build \
+              :knowledge-graph-examples:build \
+              --no-daemon --continue && break
+            echo "Attempt $attempt failed"
+            [ $attempt -lt 3 ] && sleep 10 || exit 1
+          done
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
+          TESTCONTAINERS_RYUK_DISABLED: "true"
+          DOCKER_HOST: "unix:///var/run/docker.sock"
+
+      - name: Save Testcontainers image cache
+        if: always() && github.event_name != 'pull_request'
+        uses: ./.github/actions/testcontainers-image-cache
+        with:
+          mode: save
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results-examples
+          path: '**/build/test-results/test/*.xml'
+          retention-days: 14
+
+  examples-status:
+    name: Examples Status
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs:
+      - validate-wrapper
+      - build-examples
+    if: always()
+    steps:
+      - name: Check all jobs
+        env:
+          RESULTS: ${{ join(needs.*.result, ',') }}
+        run: |
+          echo "Examples results: $RESULTS"
+          if echo "$RESULTS" | grep -qE "failure|cancelled"; then
+            echo "Examples workflow failed"
+            exit 1
+          fi
+          echo "Examples workflow passed"
