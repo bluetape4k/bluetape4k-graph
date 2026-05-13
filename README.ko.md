@@ -5,13 +5,105 @@
 [![JVM](https://img.shields.io/badge/JVM-21-ED8B00?logo=openjdk)](https://openjdk.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-bluetape4k 생태계의 그래프 데이터베이스 통합 라이브러리. Apache AGE, Neo4j, Memgraph, Apache TinkerPop, FalkorDB를 단일 추상 API로 사용할 수 있도록 한다.
+![bluetape4k-graph workbench](docs/assets/bluetape4k-graph-workbench.png)
+
+bluetape4k 생태계의 그래프 데이터베이스 통합 라이브러리. Apache AGE, Neo4j, Memgraph, Apache TinkerPop, FalkorDB를 단일 Kotlin API로 사용할 수 있게 하고, 벌크 임포트/익스포트, Ktor 통합, Spring Boot 4 자동 설정, 예제, 벤치마크, 의존성 정렬용 BOM을 함께 제공한다.
 
 > 🇺🇸 [English](README.md)
+
+## 프로젝트가 제공하는 것
+
+`bluetape4k-graph`는 애플리케이션 코드가 그래프 작업을 한 번 정의하고 여러 그래프 데이터베이스에서 실행할 수 있게 한다. 핵심 모듈은 안정적인 도메인 모델, repository 계약, traversal API, schema DSL, optional capability 인터페이스를 담당하고, 백엔드 모듈은 이를 각 데이터베이스의 드라이버와 쿼리 모델로 변환한다.
+
+이 프로젝트는 다음 경우에 적합하다.
+
+- Neo4j, Memgraph, AGE, TinkerGraph, FalkorDB 사이를 이동할 수 있는 공통 그래프 추상화가 필요할 때
+- blocking API와 coroutine API를 함께 제공하고, blocking 백엔드에 virtual-thread adapter를 붙이고 싶을 때
+- batch insert, schema/index 관리, merge/upsert, transaction block, weighted path, graph algorithm 같은 공통 기능이 필요할 때
+- CSV, NDJSON, GraphML, OkIO stream 기반의 이식 가능한 그래프 벌크 I/O가 필요할 때
+- code graph, social graph, fraud detection, recommendation, knowledge graph, Ktor integration 예제를 바로 실행해 보고 싶을 때
+
+## 아키텍처
+
+```mermaid
+flowchart TB
+    app[Application code] --> api[graph-core API]
+    ktor[Ktor GraphPlugin] --> api
+    boot[Spring Boot AutoConfiguration] --> api
+    examples[Example modules] --> api
+
+    api --> sync[GraphOperations]
+    api --> suspend[GraphSuspendOperations]
+    api --> caps[Optional capabilities]
+    caps --> schema[Schema manager]
+    caps --> merge[Merge / upsert]
+    caps --> tx[Transaction DSL]
+
+    sync --> backends[Backend implementations]
+    suspend --> backends
+    backends --> neo4j[Neo4j]
+    backends --> memgraph[Memgraph]
+    backends --> age[Apache AGE]
+    backends --> tinker[TinkerGraph / TinkerPop]
+    backends --> falkor[FalkorDB]
+
+    io[graph-io import/export] --> api
+    io --> csv[CSV]
+    io --> ndjson[Jackson NDJSON]
+    io --> graphml[GraphML]
+    io --> okio[OkIO compression + DAEAD]
+```
+
+```mermaid
+classDiagram
+    class GraphOperations {
+        +createVertex(label, properties)
+        +createEdge(startId, endId, label, properties)
+        +shortestPath(startId, endId, edgeLabel, maxDepth)
+    }
+    class GraphSuspendOperations {
+        +createVertex(label, properties)
+        +createEdge(startId, endId, label, properties)
+        +shortestPath(startId, endId, edgeLabel, maxDepth)
+    }
+    class GraphSchemaManager
+    class GraphMergeOperations
+    class GraphTransactionOperations
+    class Neo4jGraphOperations
+    class MemgraphGraphOperations
+    class AgeGraphOperations
+    class TinkerGraphOperations
+    class FalkorDBGraphOperations
+
+    GraphOperations <|.. Neo4jGraphOperations
+    GraphOperations <|.. MemgraphGraphOperations
+    GraphOperations <|.. AgeGraphOperations
+    GraphOperations <|.. TinkerGraphOperations
+    GraphOperations <|.. FalkorDBGraphOperations
+    GraphOperations --> GraphSchemaManager
+    GraphOperations --> GraphMergeOperations
+    GraphOperations --> GraphTransactionOperations
+    GraphSuspendOperations --> GraphSchemaManager
+    GraphSuspendOperations --> GraphMergeOperations
+    GraphSuspendOperations --> GraphTransactionOperations
+```
+
+## 지원하는 그래프 데이터베이스
+
+| Database | Module | Query model | Local testing | 적합한 용도 |
+|----------|--------|-------------|---------------|-------------|
+| Neo4j | `graph-neo4j` | Neo4j Java Driver 기반 Cypher | Testcontainers `neo4j:5` | 성숙한 도구, index, transaction, Cypher 지원이 필요한 production graph database |
+| Memgraph | `graph-memgraph` | Neo4j-compatible protocol 기반 Cypher | Testcontainers `memgraph/memgraph` | 낮은 지연 시간의 graph workload와 Neo4j 유사 개발 경험 |
+| Apache AGE | `graph-age` | PostgreSQL/JDBC 기반 Cypher-over-SQL | Testcontainers `apache/age:PG16_latest` | 별도 graph server 없이 PostgreSQL 중심 배포에서 graph modeling이 필요할 때 |
+| TinkerPop / TinkerGraph | `graph-tinkerpop` | Gremlin | JVM in-memory graph, 외부 서비스 불필요 | 빠른 테스트, 예제, 로컬 데모, Gremlin traversal |
+| FalkorDB | `graph-falkordb` | Redis module 위 openCypher subset | Testcontainers `falkordb/falkordb:v4.18.1` | Redis 기반 graph workload와 가벼운 graph service 배포 |
+
+Amazon Neptune은 별도 future backend 작업으로 추적한다. 의미 있는 지원은 local/integration test 가능성에 달려 있으므로, `graph-neptune` 구현 전에 feasibility research를 먼저 진행한다.
 
 ## 모듈 구조
 
 ```
+bom/             # module version 정렬용 BOM project (`bluetape4k-graph-bom`)
 graph/
   graph-core       # 백엔드 독립 모델·인터페이스 (모든 모듈의 기반)
   graph-age        # Apache AGE (PostgreSQL 그래프 확장) 구현
@@ -25,16 +117,22 @@ graph-io/
   jackson2         # Jackson 2.x NDJSON 벌크 임포트/익스포트
   jackson3         # Jackson 3.x NDJSON 벌크 임포트/익스포트
   graphml          # GraphML (XML/StAX) 벌크 임포트/익스포트
+  okio             # OkIO streaming, compression chaining, DAEAD encryption
 benchmark/
   graph-benchmark     # JMH 벤치마크 — Sync vs VirtualThread 그래프 연산
   graph-io-benchmark  # JMH 벤치마크 — CSV / NDJSON / GraphML 벌크 I/O 성능
+  graph-age-benchmark # Apache AGE backend benchmark
+  graph-neo4j-benchmark # Neo4j backend benchmark
 spring-boot/
   graph-spring-boot  # Spring Boot 4.x AutoConfiguration
 ktor/
   graph-ktor                  # Ktor 3.x ApplicationPlugin integration
 examples/
   code-graph-examples     # 코드 의존성 그래프 예시 (AGE, Neo4j, Memgraph, TinkerGraph, FalkorDB 통합)
+  fraud-detection-examples # transaction fraud graph 예시
+  knowledge-graph-examples # document/entity knowledge graph 예시
   linkedin-graph-examples # LinkedIn 소셜 그래프 예시 (AGE, Neo4j, Memgraph, TinkerGraph, FalkorDB 통합)
+  recommendation-examples # product/user recommendation graph 예시
   ktor-graph-examples     # TinkerGraph 기반 Ktor GraphPlugin 예시
 ```
 
@@ -162,7 +260,7 @@ SuspendGraphMlBulkExporter().exportGraphSuspending(
 | `graph-io-jackson2` | NDJSON (Jackson 2.x) | [README](graph-io/jackson2/README.ko.md) |
 | `graph-io-jackson3` | NDJSON (Jackson 3.x) | [README](graph-io/jackson3/README.ko.md) |
 | `graph-io-graphml` | GraphML XML (StAX) | [README](graph-io/graphml/README.ko.md) |
-| `graph-okio` | OkIO 기반 통합 어댑터 — 세그먼트 스트리밍, 압축 체이닝, FakeFileSystem 지원 | [README](graph-io/okio/README.ko.md) |
+| `graph-okio` | OkIO 기반 통합 어댑터 — 세그먼트 스트리밍, 압축 체이닝, FakeFileSystem 지원, DAEAD chunk encryption | [README](graph-io/okio/README.ko.md) |
 
 > **벤치마크 결과**: [2026-04-18 graph-io 벌크 I/O 결과](docs/benchmark/2026-04-18-graph-io-bulk-results.md)
 
@@ -262,6 +360,7 @@ driver.close()
 | 인프라 | PostgreSQL + AGE | Neo4j | Memgraph | JVM 인메모리 | Redis 모듈 |
 | 드라이버 | JDBC + Exposed | Neo4j Java Driver | Neo4j Java Driver (호환) | TinkerPop | jfalkordb 0.7.0 |
 | 테스트 컨테이너 | `apache/age:PG16_latest` | `neo4j:5` | `memgraph/memgraph:latest` | 불필요 | `falkordb/falkordb:v4.18.1` |
+| 가장 강한 로컬 역할 | PostgreSQL-native graph | 성숙한 graph server | low-latency Cypher server | unit/integration tests | Redis-backed graph service |
 
 ## 테스트 실행
 
@@ -276,10 +375,15 @@ driver.close()
 ./gradlew :graph-age:test
 ./gradlew :code-graph-examples:test
 ./gradlew :linkedin-graph-examples:test
+./gradlew :fraud-detection-examples:test
+./gradlew :recommendation-examples:test
+./gradlew :knowledge-graph-examples:test
 
 # 특정 클래스
 ./gradlew :graph-neo4j:test --tests "io.bluetape4k.graph.neo4j.Neo4jGraphOperationsTest"
 ```
+
+GitHub Actions는 전용 `Examples` workflow도 실행한다. 이 workflow는 매일 한 번, 그리고 example, graph, graph-io, Ktor, Gradle, workflow 파일 변경 시 실행된다. 예제 검증은 Nightly에서 제외해 backend/integration smoke coverage와 별도 신호로 관리한다.
 
 ## 예시 모듈 구조 (`examples/`)
 
@@ -289,8 +393,11 @@ driver.close()
 |------------|---------------------|
 | `AbstractCodeGraphTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBCodeGraphTest` |
 | `AbstractCodeGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBCodeGraphSuspendTest` |
+| `AbstractFraudDetectionTest` | fraud ring, merchant, card, transaction graph 예시 |
+| `AbstractKnowledgeGraphTest` | document/entity/relation knowledge graph 예시 |
 | `AbstractLinkedInGraphTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBLinkedInGraphTest` |
 | `AbstractLinkedInGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBLinkedInGraphSuspendTest` |
+| `AbstractRecommendationTest` | user/product/category recommendation graph 예시 |
 | `KtorGraphAppTest` | TinkerGraph 기반 Ktor `GraphPlugin` smoke 예시 |
 
 구체 클래스는 `ops` (`GraphOperations` 또는 `GraphSuspendOperations`) 와 서버 라이프사이클(`@BeforeAll`/`@AfterAll`)만 구현하면 된다.

@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Root README refresh**: Added the generated graph workbench hero image, a fuller project overview, Mermaid architecture diagrams, supported database guidance, graph-io DAEAD notes, and the current example module/workflow surface ([PR #116](https://github.com/bluetape4k/bluetape4k-graph/pull/116)).
+- **Dedicated `Examples` workflow**: Added a daily and path-triggered GitHub Actions workflow for all example modules, kept separate from Nightly coverage ([PR #112](https://github.com/bluetape4k/bluetape4k-graph/pull/112)).
+- **Domain example modules**: Added fraud detection, recommendation, and knowledge graph examples on top of the stable graph API and existing backend test pattern ([#10](https://github.com/bluetape4k/bluetape4k-graph/issues/10), [PR #110](https://github.com/bluetape4k/bluetape4k-graph/pull/110)).
+- **Public API KDoc examples**: Added callable English Kotlin examples across public APIs ([#16](https://github.com/bluetape4k/bluetape4k-graph/issues/16), [PR #109](https://github.com/bluetape4k/bluetape4k-graph/pull/109)).
+- **`graph-okio` DAEAD streaming**: Added DAEAD chunk encryption/decryption for OkIO graph streams, including gzip+DAEAD chaining and negative-path tests for wrong associated data and truncated ciphertext ([#49](https://github.com/bluetape4k/bluetape4k-graph/issues/49), [PR #114](https://github.com/bluetape4k/bluetape4k-graph/pull/114), [PR #115](https://github.com/bluetape4k/bluetape4k-graph/pull/115)).
 - **`graph-ktor`**: Ktor 3.x `GraphPlugin` module과 TinkerGraph 기반 `ktor-graph-examples`를 추가했습니다. `Application`/`ApplicationCall` extension으로 `GraphOperations`와 `GraphSuspendOperations`에 접근하고, TinkerGraph/Neo4j/Memgraph/AGE/FalkorDB backend helper를 제공합니다 ([#96](https://github.com/bluetape4k/bluetape4k-graph/issues/96)).
 - **`graph-bom` README 문서**: BOM 사용법을 English/Korean README로 정리했습니다 ([PR #70](https://github.com/bluetape4k/bluetape4k-graph/pull/70)).
 - **`graph-okio`**: OkIO 기반 스트리밍 그래프 I/O 레이어를 추가했습니다. CSV/GraphML/Jackson 계열 I/O에 Source/Sink 기반 확장 지점을 제공합니다 ([PR #48](https://github.com/bluetape4k/bluetape4k-graph/pull/48)).
@@ -37,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Refreshed `WIP.md`, `AGENTS.md`, and `CLAUDE.md` to reflect the current open issue queue, Java 21 runtime, version catalog dependencies, renamed Spring Boot module, graph-okio DAEAD support, examples workflow, and active module layout.
 - Renamed the Spring Boot integration from `graph-spring-boot4-starter` (`spring-boot4/graph-spring-boot4-starter`, package `io.bluetape4k.graph.spring.boot4`) to `graph-spring-boot` (`spring-boot/graph-spring-boot`, package `io.bluetape4k.graph.spring.boot`) to publish a stable version-neutral module contract ([#99](https://github.com/bluetape4k/bluetape4k-graph/issues/99)).
 - `graph-io-okio` Gradle project/artifact identity를 `graph-okio`로 변경했습니다 ([#76](https://github.com/bluetape4k/bluetape4k-graph/issues/76)).
 - Gradle dependency declarations migrated from `buildSrc/Libs.kt` to Version Catalog (`gradle/libs.versions.toml`) ([PR #63](https://github.com/bluetape4k/bluetape4k-graph/pull/63)).
