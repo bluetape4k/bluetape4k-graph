@@ -99,6 +99,7 @@ bluetape4k-io = { module = "io.github.bluetape4k:bluetape4k-io", version.ref = "
 bluetape4k-jackson2 = { module = "io.github.bluetape4k:bluetape4k-jackson2", version.ref = "bluetape4k" }
 bluetape4k-jackson3 = { module = "io.github.bluetape4k:bluetape4k-jackson3", version.ref = "bluetape4k" }
 bluetape4k-okio = { module = "io.github.bluetape4k:bluetape4k-okio", version.ref = "bluetape4k" }
+bluetape4k-tink = { module = "io.github.bluetape4k:bluetape4k-tink", version.ref = "bluetape4k" }
 bluetape4k-assertions = { module = "io.github.bluetape4k:bluetape4k-assertions", version.ref = "bluetape4k" }
 
 # kotlin

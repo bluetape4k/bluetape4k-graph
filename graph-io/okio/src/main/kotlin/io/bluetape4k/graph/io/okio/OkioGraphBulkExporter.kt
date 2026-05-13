@@ -14,18 +14,21 @@ import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
+import io.bluetape4k.okio.tink.DEFAULT_DAEAD_CHUNK_SIZE
+import io.bluetape4k.tink.daead.TinkDeterministicAead
+import okio.BufferedSink
 import okio.FileSystem
 import java.io.IOException
 
 /**
- * OkIO 기반 동기 벌크 익스포터.
+ * Synchronous graph bulk exporter backed by OkIO sources and sinks.
  *
- * 포맷은 호출자가 [GraphIoFormat]으로 명시적으로 지정한다. 확장자 기반 스니핑은 지원하지 않는다.
+ * The caller must pass [GraphIoFormat] explicitly. File-extension sniffing is intentionally unsupported.
  *
- * ### CSV 제약
- * CSV 포맷은 정점/간선 파일을 분리해야 하므로, [OkioGraphExportSink.PathSink]만 지원한다.
- * 파일 경로 `{stem}` 기준으로 `{stem}_vertices.csv` 와 `{stem}_edges.csv` 에 쓴다.
- * SinkBased/OutputStreamBased + CSV 조합은 [UnsupportedOperationException]을 던진다.
+ * ### CSV constraint
+ * CSV requires separate vertex and edge files, so this facade supports CSV only for
+ * [OkioGraphExportSink.PathSink]. The target stem produces `{stem}_vertices.csv` and `{stem}_edges.csv`.
+ * Stream-backed sinks throw [UnsupportedOperationException].
  */
 class OkioGraphBulkExporter(
     private val csvExporter: CsvGraphBulkExporter = CsvGraphBulkExporter(),
@@ -37,7 +40,7 @@ class OkioGraphBulkExporter(
     companion object : KLogging()
 
     /**
-     * OkIO 싱크로 그래프를 동기 익스포트한다. 포맷 기본값: NDJSON_JACKSON3.
+     * Exports a graph to an OkIO sink using [GraphIoFormat.NDJSON_JACKSON3].
      */
     override fun exportGraph(
         sink: OkioGraphExportSink,
@@ -46,11 +49,11 @@ class OkioGraphBulkExporter(
     ): GraphExportReport = exportGraph(sink, GraphIoFormat.NDJSON_JACKSON3, operations, options)
 
     /**
-     * 포맷을 명시적으로 지정하여 익스포트한다.
+     * Exports a graph to an OkIO sink using the explicit [format].
      *
-     * @param format 익스포트 포맷. 확장자 기반 추론 없음 — 호출자가 반드시 지정.
-     * @throws IOException I/O 오류 시
-     * @throws UnsupportedOperationException CSV + 스트림 기반 싱크 조합 시
+     * @param format export format; no extension-based inference is performed
+     * @throws IOException when an I/O error occurs
+     * @throws UnsupportedOperationException when CSV is used with a stream-backed sink
      */
     @Throws(IOException::class)
     fun exportGraph(
@@ -74,9 +77,57 @@ class OkioGraphBulkExporter(
         }
     }
 
-    // ─── 내부 헬퍼 ─────────────────────────────────────────────────────────────
+    /**
+     * Exports a single-stream graph format through DAEAD chunk encryption.
+     *
+     * CSV is intentionally unsupported because it is a paired-file format. Use the low-level
+     * [GraphIoOkioPaths.openDaeadEncryptedSink] helpers directly for custom CSV file pairs.
+     *
+     * @throws IOException I/O or encryption failure
+     * @throws UnsupportedOperationException when [format] is [GraphIoFormat.CSV]
+     */
+    @Throws(IOException::class)
+    fun exportGraphDaead(
+        sink: OkioGraphExportSink,
+        format: GraphIoFormat,
+        daead: TinkDeterministicAead,
+        operations: GraphOperations,
+        options: GraphExportOptions = GraphExportOptions(),
+        chunkSize: Int = DEFAULT_DAEAD_CHUNK_SIZE,
+        associatedData: ByteArray = ByteArray(0),
+    ): GraphExportReport {
+        requireSingleStreamFormat(format)
+        log.debug { "Starting OkIO DAEAD export: format=$format, sink=${describeSink(sink)}" }
+        return GraphIoOkioPaths.openDaeadEncryptedSink(sink, daead, chunkSize, associatedData).use { bs ->
+            exportSingleStream(bs, format, operations, options)
+        }
+    }
 
-    /** 단일 스트림 익스포트 — OkIO sink를 OutputStream으로 변환하여 [block]에 전달한다. */
+    /**
+     * Exports a single-stream graph format using compress-then-encrypt GZip + DAEAD chunk encryption.
+     *
+     * The inverse import path is [OkioGraphBulkImporter.importGraphDaeadGzip].
+     */
+    @Throws(IOException::class)
+    fun exportGraphGzipDaead(
+        sink: OkioGraphExportSink,
+        format: GraphIoFormat,
+        daead: TinkDeterministicAead,
+        operations: GraphOperations,
+        options: GraphExportOptions = GraphExportOptions(),
+        chunkSize: Int = DEFAULT_DAEAD_CHUNK_SIZE,
+        associatedData: ByteArray = ByteArray(0),
+    ): GraphExportReport {
+        requireSingleStreamFormat(format)
+        log.debug { "Starting OkIO gzip+DAEAD export: format=$format, sink=${describeSink(sink)}" }
+        return GraphIoOkioPaths.openGzipDaeadEncryptedSink(sink, daead, chunkSize, associatedData).use { bs ->
+            exportSingleStream(bs, format, operations, options)
+        }
+    }
+
+    // ─── Internal helpers ────────────────────────────────────────────────────
+
+    /** Exports a single-stream format after adapting the OkIO sink to an output stream. */
     private inline fun exportSingleStream(
         sink: OkioGraphExportSink,
         block: (java.io.OutputStream) -> GraphExportReport,
@@ -86,11 +137,28 @@ class OkioGraphBulkExporter(
         }
     }
 
+    private fun exportSingleStream(
+        sink: BufferedSink,
+        format: GraphIoFormat,
+        operations: GraphOperations,
+        options: GraphExportOptions,
+    ): GraphExportReport =
+        sink.asClosingOutputStream().use { os ->
+            when (format) {
+                GraphIoFormat.NDJSON_JACKSON2 ->
+                    jackson2Exporter.exportGraph(GraphExportSink.OutputStreamSink(os, closeOutput = false), operations, options)
+                GraphIoFormat.NDJSON_JACKSON3 ->
+                    jackson3Exporter.exportGraph(GraphExportSink.OutputStreamSink(os, closeOutput = false), operations, options)
+                GraphIoFormat.GRAPHML ->
+                    graphmlExporter.exportGraph(GraphExportSink.OutputStreamSink(os, closeOutput = false), operations, options)
+                GraphIoFormat.CSV -> unsupportedCsvEncrypted()
+            }
+        }
+
     /**
-     * CSV 익스포트: PathSink 기준으로 `{stem}_vertices.csv` + `{stem}_edges.csv` 파생.
+     * Exports CSV by deriving `{stem}_vertices.csv` and `{stem}_edges.csv` from a [OkioGraphExportSink.PathSink].
      *
-     * CSV 는 정점/간선 파일을 분리하는 포맷이므로 PathSink 만 지원한다.
-     * SinkBased/OutputStreamBased 는 [UnsupportedOperationException] 을 던진다.
+     * CSV is a paired-file format, so stream-backed sinks throw [UnsupportedOperationException].
      */
     private fun exportCsv(
         sink: OkioGraphExportSink,
@@ -100,9 +168,9 @@ class OkioGraphBulkExporter(
         return when (sink) {
             is OkioGraphExportSink.PathSink -> {
                 require(sink.fileSystem == FileSystem.SYSTEM) {
-                    "CSV export은 시스템 파일시스템(FileSystem.SYSTEM)만 지원합니다. " +
-                        "커스텀 FileSystem(FakeFileSystem 등)을 사용하려면 CsvGraphBulkExporter를 직접 사용하세요. " +
-                        "제공된 FileSystem: ${sink.fileSystem}"
+                    "CSV export supports only FileSystem.SYSTEM. " +
+                        "Use CsvGraphBulkExporter directly for custom FileSystem instances. " +
+                        "Provided FileSystem: ${sink.fileSystem}"
                 }
                 val stem = sink.path.toString().removeSuffix(".csv")
                 val verticesSink = GraphExportSink.PathSink(java.nio.file.Paths.get("${stem}_vertices.csv"))
@@ -110,8 +178,8 @@ class OkioGraphBulkExporter(
                 csvExporter.exportGraph(CsvGraphExportSink(verticesSink, edgesSink), operations, options)
             }
             else -> throw UnsupportedOperationException(
-                "CSV 포맷은 두 파일(vertices/edges)이 필요하므로 PathSink 만 지원합니다. " +
-                    "스트림 기반 싱크에서는 CsvGraphBulkExporter 를 직접 사용하세요."
+                "CSV requires two files for vertices and edges, so OkioGraphBulkExporter supports only PathSink. " +
+                    "Use CsvGraphBulkExporter directly for stream-backed sinks."
             )
         }
     }
@@ -121,4 +189,15 @@ class OkioGraphBulkExporter(
         is OkioGraphExportSink.SinkBased -> "<Sink>"
         is OkioGraphExportSink.OutputStreamBased -> "<OutputStream>"
     }
+
+    private fun requireSingleStreamFormat(format: GraphIoFormat) {
+        if (format == GraphIoFormat.CSV) {
+            unsupportedCsvEncrypted()
+        }
+    }
+
+    private fun unsupportedCsvEncrypted(): Nothing =
+        throw UnsupportedOperationException(
+            "CSV is a paired-file format. Use low-level DAEAD helpers directly for custom CSV file pairs."
+        )
 }

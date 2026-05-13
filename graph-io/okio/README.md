@@ -1,5 +1,7 @@
 # graph-okio
 
+[English](README.md) | [한국어](README.ko.md)
+
 OkIO 기반 그래프 I/O 레이어. 기존 `graph-io-csv`, `graph-io-jackson2`, `graph-io-jackson3`, `graph-io-graphml` 모듈과 완벽하게 호환되면서 OkIO의 세그먼트 기반 스트리밍, 압축 체이닝, FileSystem 추상화를 제공한다.
 
 ## 지원 포맷
@@ -146,6 +148,44 @@ GraphIoOkioPaths.openCompressedSink(sink, Compressor.ZSTD)
 GraphIoOkioPaths.openDecompressedSource(source, Compressor.ZSTD, maxDecompressedBytes = 1_073_741_824L)
 ```
 
+### DAEAD Chunk Encryption
+
+`graph-okio` can wrap single-stream formats with deterministic DAEAD chunk encryption from `bluetape4k-okio`.
+Use this for NDJSON or GraphML payloads that must be authenticated and encrypted while still flowing through
+OkIO streaming APIs.
+
+```kotlin
+val daead = TinkDaeads.AES256_SIV
+val associatedData = "tenant-a:graph-export".encodeToByteArray()
+
+exporter.exportGraphDaead(
+    sink = OkioGraphExportSink.PathSink("/data/graph.ndjson.enc".toPath()),
+    format = GraphIoFormat.NDJSON_JACKSON3,
+    daead = daead,
+    operations = graphOperations,
+    associatedData = associatedData,
+)
+
+importer.importGraphDaead(
+    source = OkioGraphImportSource.PathSource("/data/graph.ndjson.enc".toPath()),
+    format = GraphIoFormat.NDJSON_JACKSON3,
+    daead = daead,
+    operations = graphOperations,
+    associatedData = associatedData,
+)
+```
+
+For smaller encrypted artifacts, prefer compress-then-encrypt:
+
+```kotlin
+exporter.exportGraphGzipDaead(sink, GraphIoFormat.NDJSON_JACKSON3, daead, graphOperations)
+importer.importGraphDaeadGzip(source, GraphIoFormat.NDJSON_JACKSON3, daead, graphOperations)
+```
+
+CSV is a paired-file format, so the high-level encrypted helpers intentionally reject `GraphIoFormat.CSV`.
+Use `GraphIoOkioPaths.openDaeadEncryptedSink()` and `openDaeadDecryptedSource()` directly if you need a custom
+encrypted CSV file-pair layout.
+
 ### 원자적 쓰기
 
 `PathSink(atomicWrite = true)` (기본값)이면:
@@ -157,6 +197,9 @@ GraphIoOkioPaths.openDecompressedSource(source, Compressor.ZSTD, maxDecompressed
 
 - **XXE 방지**: GraphML StAX 파서에 `IS_SUPPORTING_EXTERNAL_ENTITIES=false`, `SUPPORT_DTD=false` 적용 (기존 구현 위임)
 - **Decompression bomb 방지**: `BombGuardSource`가 해제 바이트를 추적하여 `maxDecompressedBytes` 초과 시 `IOException` 발생
+- **DAEAD deterministic encryption**: encrypted chunks are deterministic. Repeated plaintext chunks encrypted
+  with the same key and associated data produce repeated ciphertext chunks. Choose associated data deliberately
+  and rotate/manage keys outside this module.
 
 ## Gradle 의존성
 

@@ -5,6 +5,7 @@ import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphIoFormat
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
+import io.bluetape4k.tink.daead.TinkDaeads
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
 import io.bluetape4k.assertions.shouldBeEqualTo
@@ -133,6 +134,66 @@ class OkioRoundTripTest {
             val isSource = OkioGraphImportSource.InputStreamBased(is_, ownsStream = false)
             importer.importGraph(isSource, GraphIoFormat.NDJSON_JACKSON3, target, GraphImportOptions())
         }
+
+        report.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        report.verticesCreated shouldBeEqualTo 3L
+        report.edgesCreated shouldBeEqualTo 2L
+    }
+
+    @Test
+    fun `NDJSON Jackson3 DAEAD round trip`() {
+        val path = "/graph.ndjson.enc".toPath()
+        val associatedData = "graph-okio-daead".encodeToByteArray()
+        val src = buildSourceGraph()
+
+        exporter.exportGraphDaead(
+            sink = OkioGraphExportSink.PathSink(path, fakeFs),
+            format = GraphIoFormat.NDJSON_JACKSON3,
+            daead = TinkDaeads.AES256_SIV,
+            operations = src,
+            options = exportOptions,
+            associatedData = associatedData,
+        ).status shouldBeEqualTo GraphIoStatus.COMPLETED
+
+        val target = TinkerGraphOperations()
+        val report = importer.importGraphDaead(
+            source = OkioGraphImportSource.PathSource(path, fakeFs),
+            format = GraphIoFormat.NDJSON_JACKSON3,
+            daead = TinkDaeads.AES256_SIV,
+            operations = target,
+            options = GraphImportOptions(),
+            associatedData = associatedData,
+        )
+
+        report.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        report.verticesCreated shouldBeEqualTo 3L
+        report.edgesCreated shouldBeEqualTo 2L
+    }
+
+    @Test
+    fun `NDJSON Jackson3 gzip DAEAD round trip`() {
+        val path = "/graph.ndjson.gz.enc".toPath()
+        val associatedData = "graph-okio-gzip-daead".encodeToByteArray()
+        val src = buildSourceGraph()
+
+        exporter.exportGraphGzipDaead(
+            sink = OkioGraphExportSink.PathSink(path, fakeFs),
+            format = GraphIoFormat.NDJSON_JACKSON3,
+            daead = TinkDaeads.AES256_SIV,
+            operations = src,
+            options = exportOptions,
+            associatedData = associatedData,
+        ).status shouldBeEqualTo GraphIoStatus.COMPLETED
+
+        val target = TinkerGraphOperations()
+        val report = importer.importGraphDaeadGzip(
+            source = OkioGraphImportSource.PathSource(path, fakeFs),
+            format = GraphIoFormat.NDJSON_JACKSON3,
+            daead = TinkDaeads.AES256_SIV,
+            operations = target,
+            options = GraphImportOptions(),
+            associatedData = associatedData,
+        )
 
         report.status shouldBeEqualTo GraphIoStatus.COMPLETED
         report.verticesCreated shouldBeEqualTo 3L

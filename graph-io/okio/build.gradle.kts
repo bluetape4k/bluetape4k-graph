@@ -1,6 +1,7 @@
 dependencies {
     api(project(":graph-io-core"))
     api(libs.bluetape4k.okio)
+    api(libs.bluetape4k.tink)
 
     // 기존 graph-io 모듈 — 포맷별 임포터/익스포터 위임
     implementation(project(":graph-io-csv"))
