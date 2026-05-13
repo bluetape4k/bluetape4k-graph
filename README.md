@@ -5,13 +5,105 @@
 [![JVM](https://img.shields.io/badge/JVM-21-ED8B00?logo=openjdk)](https://openjdk.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Graph database integration library for the bluetape4k ecosystem. Provides a unified abstract API over Apache AGE, Neo4j, Memgraph, Apache TinkerPop, and FalkorDB.
+![bluetape4k-graph workbench](docs/assets/bluetape4k-graph-workbench.png)
+
+Graph database integration library for the bluetape4k ecosystem. It provides a unified Kotlin API over Apache AGE, Neo4j, Memgraph, Apache TinkerPop, and FalkorDB, plus bulk import/export, Ktor integration, Spring Boot 4 auto-configuration, examples, benchmarks, and a BOM for dependency alignment.
 
 > 🇰🇷 [한국어 문서](README.ko.md)
+
+## What This Project Provides
+
+`bluetape4k-graph` lets application code describe graph work once and run it against several graph databases. The core module owns the stable domain model, repository contracts, traversal APIs, schema DSL, and optional capability interfaces. Backend modules translate those contracts to each database's native driver and query model.
+
+Use this project when you need:
+
+- a shared graph abstraction for services that may move between Neo4j, Memgraph, AGE, TinkerGraph, or FalkorDB
+- paired blocking and coroutine APIs, with virtual-thread adapters for blocking backends
+- common graph capabilities such as batch insert, schema/index management, merge/upsert, transaction blocks, weighted paths, and graph algorithms
+- portable graph bulk I/O in CSV, NDJSON, GraphML, and OkIO streams
+- ready-to-run domain examples for code graphs, social graphs, fraud detection, recommendations, knowledge graphs, and Ktor integration
+
+## Architecture
+
+```mermaid
+flowchart TB
+    app[Application code] --> api[graph-core API]
+    ktor[Ktor GraphPlugin] --> api
+    boot[Spring Boot AutoConfiguration] --> api
+    examples[Example modules] --> api
+
+    api --> sync[GraphOperations]
+    api --> suspend[GraphSuspendOperations]
+    api --> caps[Optional capabilities]
+    caps --> schema[Schema manager]
+    caps --> merge[Merge / upsert]
+    caps --> tx[Transaction DSL]
+
+    sync --> backends[Backend implementations]
+    suspend --> backends
+    backends --> neo4j[Neo4j]
+    backends --> memgraph[Memgraph]
+    backends --> age[Apache AGE]
+    backends --> tinker[TinkerGraph / TinkerPop]
+    backends --> falkor[FalkorDB]
+
+    io[graph-io import/export] --> api
+    io --> csv[CSV]
+    io --> ndjson[Jackson NDJSON]
+    io --> graphml[GraphML]
+    io --> okio[OkIO compression + DAEAD]
+```
+
+```mermaid
+classDiagram
+    class GraphOperations {
+        +createVertex(label, properties)
+        +createEdge(startId, endId, label, properties)
+        +shortestPath(startId, endId, edgeLabel, maxDepth)
+    }
+    class GraphSuspendOperations {
+        +createVertex(label, properties)
+        +createEdge(startId, endId, label, properties)
+        +shortestPath(startId, endId, edgeLabel, maxDepth)
+    }
+    class GraphSchemaManager
+    class GraphMergeOperations
+    class GraphTransactionOperations
+    class Neo4jGraphOperations
+    class MemgraphGraphOperations
+    class AgeGraphOperations
+    class TinkerGraphOperations
+    class FalkorDBGraphOperations
+
+    GraphOperations <|.. Neo4jGraphOperations
+    GraphOperations <|.. MemgraphGraphOperations
+    GraphOperations <|.. AgeGraphOperations
+    GraphOperations <|.. TinkerGraphOperations
+    GraphOperations <|.. FalkorDBGraphOperations
+    GraphOperations --> GraphSchemaManager
+    GraphOperations --> GraphMergeOperations
+    GraphOperations --> GraphTransactionOperations
+    GraphSuspendOperations --> GraphSchemaManager
+    GraphSuspendOperations --> GraphMergeOperations
+    GraphSuspendOperations --> GraphTransactionOperations
+```
+
+## Supported Graph Databases
+
+| Database | Module | Query model | Local testing | Best fit |
+|----------|--------|-------------|---------------|----------|
+| Neo4j | `graph-neo4j` | Cypher through Neo4j Java Driver | Testcontainers `neo4j:5` | Production graph database with mature tooling, indexes, transactions, and Cypher support |
+| Memgraph | `graph-memgraph` | Cypher through Neo4j-compatible protocol | Testcontainers `memgraph/memgraph` | Low-latency graph workloads and Neo4j-like development with Memgraph runtime behavior |
+| Apache AGE | `graph-age` | Cypher-over-SQL through PostgreSQL/JDBC | Testcontainers `apache/age:PG16_latest` | PostgreSQL-centered deployments that need graph modeling without running a separate graph server |
+| TinkerPop / TinkerGraph | `graph-tinkerpop` | Gremlin | In-memory JVM graph, no external service | Fast tests, examples, local demos, and Gremlin-style graph traversal |
+| FalkorDB | `graph-falkordb` | openCypher subset over Redis module | Testcontainers `falkordb/falkordb:v4.18.1` | Redis-backed graph workloads and lightweight graph service deployment |
+
+Amazon Neptune is tracked separately as future backend work. Because meaningful support depends on local/integration testability, feasibility research is handled before implementing `graph-neptune`.
 
 ## Module Structure
 
 ```
+bom/             # BOM project for coordinated module versions (`bluetape4k-graph-bom`)
 graph/
   graph-core       # Backend-independent models and interfaces (foundation for all modules)
   graph-age        # Apache AGE (PostgreSQL graph extension) implementation
@@ -25,16 +117,22 @@ graph-io/
   jackson2         # Jackson 2.x NDJSON bulk import/export
   jackson3         # Jackson 3.x NDJSON bulk import/export
   graphml          # GraphML (XML/StAX) bulk import/export
+  okio             # OkIO streaming, compression chaining, DAEAD encryption
 benchmark/
   graph-benchmark     # JMH benchmarks — Sync vs VirtualThread graph operations
   graph-io-benchmark  # JMH benchmarks — CSV / NDJSON / GraphML bulk I/O performance
+  graph-age-benchmark # Apache AGE backend benchmarks
+  graph-neo4j-benchmark # Neo4j backend benchmarks
 spring-boot/
   graph-spring-boot  # Spring Boot 4.x AutoConfiguration
 ktor/
   graph-ktor                  # Ktor 3.x ApplicationPlugin integration
 examples/
   code-graph-examples     # Code dependency graph examples (AGE, Neo4j, Memgraph, TinkerGraph, FalkorDB integration)
+  fraud-detection-examples # Transaction fraud graph examples
+  knowledge-graph-examples # Document/entity knowledge graph examples
   linkedin-graph-examples # LinkedIn social graph examples (AGE, Neo4j, Memgraph, TinkerGraph, FalkorDB integration)
+  recommendation-examples # Product/user recommendation graph examples
   ktor-graph-examples     # Ktor GraphPlugin example using TinkerGraph
 ```
 
@@ -162,7 +260,7 @@ Importers use `GraphImportOptions.batchSize` as the backend write flush size. Pe
 | `graph-io-jackson2` | NDJSON (Jackson 2.x) | [README](graph-io/jackson2/README.md) |
 | `graph-io-jackson3` | NDJSON (Jackson 3.x) | [README](graph-io/jackson3/README.md) |
 | `graph-io-graphml` | GraphML XML (StAX) | [README](graph-io/graphml/README.md) |
-| `graph-okio` | OkIO-based adapter — segment streaming, compression chaining, FakeFileSystem support | [README](graph-io/okio/README.md) |
+| `graph-okio` | OkIO-based adapter — segment streaming, compression chaining, FakeFileSystem support, and DAEAD chunk encryption | [README](graph-io/okio/README.md) |
 
 > **Benchmark results**: [2026-04-18 graph-io bulk I/O results](docs/benchmark/2026-04-18-graph-io-bulk-results.md)
 
@@ -262,6 +360,7 @@ driver.close()
 | Infrastructure | PostgreSQL + AGE | Neo4j | Memgraph | JVM in-memory | Redis module |
 | Driver | JDBC + Exposed | Neo4j Java Driver | Neo4j Java Driver (compatible) | TinkerPop | jfalkordb 0.7.0 |
 | Test Container | `apache/age:PG16_latest` | `neo4j:5` | `memgraph/memgraph:latest` | not required | `falkordb/falkordb:v4.18.1` |
+| Strongest local role | PostgreSQL-native graph | Mature graph server | Low-latency Cypher server | Unit/integration tests | Redis-backed graph service |
 
 ## Running Tests
 
@@ -276,10 +375,15 @@ Tests automatically launch Docker containers via Testcontainers. Docker is requi
 ./gradlew :graph-age:test
 ./gradlew :code-graph-examples:test
 ./gradlew :linkedin-graph-examples:test
+./gradlew :fraud-detection-examples:test
+./gradlew :recommendation-examples:test
+./gradlew :knowledge-graph-examples:test
 
 # Specific class
 ./gradlew :graph-neo4j:test --tests "io.bluetape4k.graph.neo4j.Neo4jGraphOperationsTest"
 ```
+
+GitHub Actions also runs a dedicated `Examples` workflow daily and on changes to example, graph, graph-io, Ktor, Gradle, or workflow files. The examples are intentionally excluded from the Nightly workflow so the daily example signal stays separate from backend/integration smoke coverage.
 
 ## Example Module Structure (`examples/`)
 
@@ -289,8 +393,11 @@ Each example module uses the **abstract test class pattern**. Common test logic 
 |----------------|---------------------------|
 | `AbstractCodeGraphTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBCodeGraphTest` |
 | `AbstractCodeGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBCodeGraphSuspendTest` |
+| `AbstractFraudDetectionTest` | Fraud-ring, merchant, card, and transaction graph examples |
+| `AbstractKnowledgeGraphTest` | Document/entity/relation knowledge graph examples |
 | `AbstractLinkedInGraphTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBLinkedInGraphTest` |
 | `AbstractLinkedInGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBLinkedInGraphSuspendTest` |
+| `AbstractRecommendationTest` | User/product/category recommendation graph examples |
 | `KtorGraphAppTest` | TinkerGraph-backed Ktor `GraphPlugin` smoke example |
 
 Concrete classes only need to implement `ops` (`GraphOperations` or `GraphSuspendOperations`) and the server lifecycle (`@BeforeAll`/`@AfterAll`).
