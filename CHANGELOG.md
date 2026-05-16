@@ -36,6 +36,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`graph-core` README — model builder utilities section** (`graph/graph-core/README.md`, `README.ko.md`).
 - **Transaction DSL first slice**: Added the `GraphOperations.transaction { }` extension and capability contract, wired to Neo4j, Memgraph, AGE, and TinkerGraph sync backends. The suspend transaction capability is wired to the same backends. FalkorDB is explicitly unsupported because its repository DSL must return intermediate results immediately.
 - **`graph-core` capability docs**: Synchronized `SchemaManager`, `GraphMergeOperations`, and `GraphTransactionScope` / `GraphSuspendTransactionScope` usage examples across the root README, backend READMEs, and KDoc.
+- **FalkorDB Ktor example**: Added `FalkorDBKtorGraphApp` to `ktor-graph-examples` with a full `GraphPlugin` integration test covering city-graph reset, count, and shortest-path routes ([#123](https://github.com/bluetape4k/bluetape4k-graph/issues/123), [PR #130](https://github.com/bluetape4k/bluetape4k-graph/pull/130)).
+- **`graph-spring-boot` FalkorDB health indicator test**: Added `ApplicationContextRunner` test for the FalkorDB `HealthIndicator` bean and updated both `README.md` and `README.ko.md` to list `falkordb` as a supported backend value ([#125](https://github.com/bluetape4k/bluetape4k-graph/issues/125), [PR #131](https://github.com/bluetape4k/bluetape4k-graph/pull/131)).
+- **License text alignment**: Aligned MIT license text across all README files ([PR #117](https://github.com/bluetape4k/bluetape4k-graph/pull/117)).
+- **Test infrastructure**: Added `junit-platform.properties` and `logback-test.xml` to benchmark and graph-io modules ([PR #119](https://github.com/bluetape4k/bluetape4k-graph/pull/119)).
+
+### Docs
+
+- **`graph-ktor` KDoc and messages in English**: Translated all KDoc, log messages, and error strings in `GraphPlugin`, `GraphPluginConfig`, `GraphPluginState`, `ApplicationExt`, and all five backend config helpers ([#122](https://github.com/bluetape4k/bluetape4k-graph/issues/122), [PR #129](https://github.com/bluetape4k/bluetape4k-graph/pull/129)).
+- **`graph-okio` README rewrite to English**: Replaced the Korean README with a full English canonical version; Korean section headers updated ([#118](https://github.com/bluetape4k/bluetape4k-graph/issues/118), [PR #129](https://github.com/bluetape4k/bluetape4k-graph/pull/129)).
 
 ### Fixed
 

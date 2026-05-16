@@ -1,13 +1,22 @@
 # WIP - bluetape4k-graph
 
-Snapshot: 2026-05-13 KST
+Snapshot: 2026-05-17 KST
 Scope: open GitHub issues assigned to `debop`, created on or after 2026-01-01.
-Open count: 8 issues.
+Open count: 5 issues.
 
 ## Recently Completed
 
-Core graph API foundation and several adoption lanes are now closed and should
-stay in issue/PR history rather than the active queue:
+### 0.3.0 Release (2026-05-17)
+
+- `#118` graph-okio README English rewrite, `#121` CHANGELOG 0.3.0 finalization,
+  `#122` graph-ktor KDoc English → closed by PR #129.
+- `#123` FalkorDB Ktor example → closed by PR #130.
+- `#125` Spring Boot FalkorDB health indicator test + README → closed by PR #131.
+- `#124` Pre-release smoke test gate (Nightly `scope=full`) → passed and closed.
+- `#128` Release 0.3.0 Epic → closed.
+- `#120` Version bump 0.3.0-SNAPSHOT → 0.3.0 (this PR).
+
+### Earlier
 
 - `#13` transaction DSL, `#32` schema/index manager, `#34` merge/upsert, and
   `#33` batch insert are merged.
@@ -26,61 +35,37 @@ stay in issue/PR history rather than the active queue:
 
 ## Current Direction
 
-The project has a stable core API surface, refreshed Spring Boot/Ktor module
-identity, dedicated example coverage, and graph-okio encryption. The next queue
-should avoid starting the Neptune backend until local/integration testability is
-proven.
-
-1. Finish `#113` before `#30`; Neptune support is only meaningful if it can be
-   tested locally or with a reliable integration substitute.
-2. Keep CI/dependency governance healthy with `#18` and `#19`.
-3. Use `#111` to improve example adoption by loading sample datasets through
-   graph-io instead of hand-built fixtures.
-4. Defer benchmark expansion until the backend and examples surface stays green.
+0.3.0 is released. The 0.3.1 queue focuses on CI/governance improvements and
+example adoption. Neptune (#30) remains blocked until local testability is
+proven (#113).
 
 ## Priority Queue
 
 | Priority | Issue | Difficulty | Notes |
 |---|---|---:|---|
-| P1 | [#113](https://github.com/bluetape4k/bluetape4k-graph/issues/113) Neptune local testability research | M | Required predecessor for `#30`; verify LocalStack/MiniStack/containers/official options before implementation. |
-| P1 | [#18](https://github.com/bluetape4k/bluetape4k-graph/issues/18) CI quality gates | M | Add quality gates only when they are actionable and not noisy for container-heavy modules. |
-| P1 | [#19](https://github.com/bluetape4k/bluetape4k-graph/issues/19) Dependabot / Renovate automation | S | Governance baseline exists; verify remaining automation gap before closing. |
-| P2 | [#111](https://github.com/bluetape4k/bluetape4k-graph/issues/111) graph-io backed sample dataset loaders | M | Improves examples and onboarding without changing core APIs. |
-| P2 | [#30](https://github.com/bluetape4k/bluetape4k-graph/issues/30) Amazon Neptune backend | XL | Blocked on `#113`; do not implement against mocks only. |
-| P3 | [#14](https://github.com/bluetape4k/bluetape4k-graph/issues/14) backend JMH benchmark | M | Useful after backend paths and CI gates settle. |
-| P3 | [#15](https://github.com/bluetape4k/bluetape4k-graph/issues/15) runtime comparison benchmark | M | Follows stable Sync/VT/Coroutine baselines. |
-| P3 | [#41](https://github.com/bluetape4k/bluetape4k-graph/issues/41) weighted path benchmark | S | Follows merged `#40` suspend test baseline. |
+| P1 | [#113](https://github.com/bluetape4k/bluetape4k-graph/issues/113) Neptune local testability research | M | Required predecessor for `#30`. |
+| P1 | [#18](https://github.com/bluetape4k/bluetape4k-graph/issues/18) CI quality gates | M | Deferred from 0.3.0. |
+| P1 | [#19](https://github.com/bluetape4k/bluetape4k-graph/issues/19) Dependabot / Renovate automation | S | Deferred from 0.3.0. |
+| P2 | [#111](https://github.com/bluetape4k/bluetape4k-graph/issues/111) graph-io backed sample dataset loaders | M | Deferred from 0.3.0. |
+| P2 | [#30](https://github.com/bluetape4k/bluetape4k-graph/issues/30) Amazon Neptune backend | XL | Blocked on `#113`. |
+| P3 | [#14](https://github.com/bluetape4k/bluetape4k-graph/issues/14) backend JMH benchmark | M | After CI gates settle. |
+| P3 | [#15](https://github.com/bluetape4k/bluetape4k-graph/issues/15) runtime comparison benchmark | M | After stable baselines. |
+| P3 | [#41](https://github.com/bluetape4k/bluetape4k-graph/issues/41) weighted path benchmark | S | After merged `#40` baseline. |
 
 ## Dependency Map
 
 ```text
-#13 transaction DSL (closed)
-#32 schema/index API (closed)
-#34 merge/upsert (closed)
-#33 batch insert (closed)
-  -> #30 Neptune backend
-  -> #111 graph-io sample dataset loaders
-
 #113 Neptune local testability research
   -> #30 Neptune backend
 
-#96 graph-ktor (closed)
-  -> Ktor examples use merged graph-ktor APIs
+#18 CI quality gates
+#19 dependency automation
 
-#10 domain examples (closed)
-  -> #111 graph-io backed sample dataset loaders
+#111 graph-io backed sample dataset loaders
+  -> improved examples onboarding
 
 #40 weighted path suspend tests (closed)
   -> #41 weighted path benchmark
-
-#17 build cache (closed)
-#18 quality gates
-#19 dependency automation
-  -> safer large graph changes
-
-#76 graph-okio rename (closed)
-#49 graph-okio encrypted streaming (closed)
-  -> graph-okio docs and adoption work
 ```
 
 ## WIP Limits
@@ -89,6 +74,6 @@ proven.
 |---|---:|---|
 | Research / backend readiness | 1 | `#113` before `#30`. |
 | CI / automation | 1 | `#18` or `#19`, one at a time. |
-| Backend expansion | 1 | `#30` only after `#113` proves a test path. |
-| Examples / adoption | 1 | `#111` after current docs PR lands. |
-| Benchmarks | 1 | `#14`, `#15`, or `#41` after CI remains green. |
+| Backend expansion | 1 | `#30` only after `#113`. |
+| Examples / adoption | 1 | `#111`. |
+| Benchmarks | 1 | `#14`, `#15`, or `#41` after CI green. |
