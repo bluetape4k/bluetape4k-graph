@@ -15,6 +15,7 @@ for the selected backend via a single property.
 | Neo4j | `neo4j` | `graph-neo4j` |
 | Memgraph | `memgraph` | `graph-memgraph` |
 | Apache AGE (PostgreSQL) | `age` | `graph-age` |
+| FalkorDB (Redis module) | `falkordb` | `graph-falkordb` |
 
 ## Getting Started
 
@@ -81,6 +82,21 @@ bluetape4k:
 
 > AGE requires a JDBC `DataSource` bean. Add `spring-boot-jdbc` to your dependencies.
 
+**FalkorDB (Redis-based graph database):**
+```yaml
+bluetape4k:
+  graph:
+    backend: falkordb
+    falkordb:
+      host: localhost
+      port: 6379
+      username: ""        # leave blank for unauthenticated access
+      password: ""
+      graph-name: my_graph
+      register-suspend: true
+      register-virtual-thread: true
+```
+
 ### 3. Inject and use
 
 ```kotlin
@@ -104,7 +120,7 @@ class MyGraphService(
 | `GraphOperations` | Always when backend is active |
 | `GraphSuspendOperations` | `register-suspend=true` (default) |
 | `GraphVirtualThreadOperations` | `register-virtual-thread=true` (default) |
-| `HealthIndicator` (Neo4j/Memgraph) | When `spring-boot-health` is on classpath |
+| `HealthIndicator` (Neo4j/Memgraph/AGE/TinkerGraph/FalkorDB) | When `spring-boot-health` is on classpath |
 
 All beans use `@ConditionalOnMissingBean` — provide your own bean to override.
 
@@ -140,6 +156,18 @@ Same properties as Neo4j with prefix `bluetape4k.graph.memgraph`. Default databa
 | `register-suspend` | `true` | Register `GraphSuspendOperations` |
 | `register-virtual-thread` | `true` | Register `GraphVirtualThreadOperations` |
 
+### FalkorDB (`bluetape4k.graph.falkordb.*`)
+
+| Property | Default | Description |
+|----------|---------|-------------|
+| `host` | `localhost` | FalkorDB host address |
+| `port` | `6379` | FalkorDB Redis port |
+| `username` | *(empty)* | Authentication username (blank = no-auth) |
+| `password` | *(empty)* | Authentication password (blank = no-auth) |
+| `graph-name` | `bluetape4k` | Target graph name |
+| `register-suspend` | `true` | Register `GraphSuspendOperations` |
+| `register-virtual-thread` | `true` | Register `GraphVirtualThreadOperations` |
+
 ## Auto-Configuration Classes
 
 | Class | Activated when |
@@ -149,6 +177,7 @@ Same properties as Neo4j with prefix `bluetape4k.graph.memgraph`. Default databa
 | `GraphNeo4jAutoConfiguration` | `backend=neo4j` |
 | `GraphMemgraphAutoConfiguration` | `backend=memgraph` |
 | `GraphAgeAutoConfiguration` | `backend=age` |
+| `GraphFalkorDBAutoConfiguration` | `backend=falkordb` |
 
 ## Spring Boot 4 Notes
 

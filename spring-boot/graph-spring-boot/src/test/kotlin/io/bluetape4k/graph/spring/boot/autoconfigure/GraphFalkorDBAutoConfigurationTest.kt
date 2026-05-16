@@ -78,4 +78,12 @@ class GraphFalkorDBAutoConfigurationTest {
                     .isInstanceOf(NoSuchBeanDefinitionException::class.java)
             }
     }
+
+    @Test
+    fun `backend=falkordb 이면 HealthIndicator 빈 등록`() {
+        runner.withPropertyValues(*falkordbProperties)
+            .run { ctx ->
+                ctx.getBean(org.springframework.boot.health.contributor.HealthIndicator::class.java).shouldNotBeNull()
+            }
+    }
 }

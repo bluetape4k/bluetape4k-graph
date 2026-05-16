@@ -15,6 +15,7 @@
 | Neo4j | `neo4j` | `graph-neo4j` |
 | Memgraph | `memgraph` | `graph-memgraph` |
 | Apache AGE (PostgreSQL) | `age` | `graph-age` |
+| FalkorDB (Redis 모듈) | `falkordb` | `graph-falkordb` |
 
 ## 시작하기
 
@@ -81,6 +82,21 @@ bluetape4k:
 
 > AGE는 JDBC `DataSource` 빈이 필요하다. 의존성에 `spring-boot-jdbc`를 추가하라.
 
+**FalkorDB (Redis 기반 그래프 데이터베이스):**
+```yaml
+bluetape4k:
+  graph:
+    backend: falkordb
+    falkordb:
+      host: localhost
+      port: 6379
+      username: ""        # 인증 없이 접속할 경우 빈 문자열
+      password: ""
+      graph-name: my_graph
+      register-suspend: true
+      register-virtual-thread: true
+```
+
 ### 3. 주입 후 사용
 
 ```kotlin
@@ -104,7 +120,7 @@ class MyGraphService(
 | `GraphOperations` | 백엔드 활성화 시 항상 등록 |
 | `GraphSuspendOperations` | `register-suspend=true` (기본값) |
 | `GraphVirtualThreadOperations` | `register-virtual-thread=true` (기본값) |
-| `HealthIndicator` (Neo4j/Memgraph) | `spring-boot-health` 클래스패스 존재 시 |
+| `HealthIndicator` (Neo4j/Memgraph/AGE/TinkerGraph/FalkorDB) | `spring-boot-health` 클래스패스 존재 시 |
 
 모든 빈은 `@ConditionalOnMissingBean`을 사용하므로, 직접 빈을 등록하면 자동 구성이 건너뛰어진다.
 
@@ -140,6 +156,18 @@ Neo4j와 동일한 프로퍼티 구조, 프리픽스는 `bluetape4k.graph.memgra
 | `register-suspend` | `true` | `GraphSuspendOperations` 등록 여부 |
 | `register-virtual-thread` | `true` | `GraphVirtualThreadOperations` 등록 여부 |
 
+### FalkorDB (`bluetape4k.graph.falkordb.*`)
+
+| 프로퍼티 | 기본값 | 설명 |
+|---------|-------|------|
+| `host` | `localhost` | FalkorDB 호스트 주소 |
+| `port` | `6379` | FalkorDB Redis 포트 |
+| `username` | *(빈 문자열)* | 인증 사용자명 (빈 문자열이면 인증 없음) |
+| `password` | *(빈 문자열)* | 인증 비밀번호 (빈 문자열이면 인증 없음) |
+| `graph-name` | `bluetape4k` | 대상 그래프 이름 |
+| `register-suspend` | `true` | `GraphSuspendOperations` 등록 여부 |
+| `register-virtual-thread` | `true` | `GraphVirtualThreadOperations` 등록 여부 |
+
 ## Auto-Configuration 클래스
 
 | 클래스 | 활성화 조건 |
@@ -149,6 +177,7 @@ Neo4j와 동일한 프로퍼티 구조, 프리픽스는 `bluetape4k.graph.memgra
 | `GraphNeo4jAutoConfiguration` | `backend=neo4j` |
 | `GraphMemgraphAutoConfiguration` | `backend=memgraph` |
 | `GraphAgeAutoConfiguration` | `backend=age` |
+| `GraphFalkorDBAutoConfiguration` | `backend=falkordb` |
 
 ## Spring Boot 4 참고 사항
 
