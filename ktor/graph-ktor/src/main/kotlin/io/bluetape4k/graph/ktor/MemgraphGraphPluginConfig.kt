@@ -6,11 +6,12 @@ import io.bluetape4k.support.requireNotBlank
 import org.neo4j.driver.Driver
 
 /**
- * Ktor [GraphPlugin]을 Memgraph backend로 설정합니다.
+ * Configures [GraphPlugin] to use a Memgraph backend.
  *
- * ## 동작/계약
- * - [driver]는 caller-owned resource입니다. 이 helper는 driver를 닫지 않습니다.
- * - [database] 기본값은 `MemgraphGraphOperations`와 Spring Boot properties가 사용하는 `"memgraph"`입니다.
+ * ## Behavior / Contract
+ * - [driver] is a caller-owned resource; this helper does not close it.
+ * - [database] defaults to `"memgraph"`, matching the default used by `MemgraphGraphOperations`
+ *   and Spring Boot properties.
  *
  * ```kotlin
  * fun Application.module(driver: Driver) {

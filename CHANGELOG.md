@@ -5,7 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] — 0.3.0-SNAPSHOT
+## [Unreleased]
+
+---
+
+## [0.3.0] - 2026-05-16
 
 ### Added
 
@@ -14,46 +18,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Domain example modules**: Added fraud detection, recommendation, and knowledge graph examples on top of the stable graph API and existing backend test pattern ([#10](https://github.com/bluetape4k/bluetape4k-graph/issues/10), [PR #110](https://github.com/bluetape4k/bluetape4k-graph/pull/110)).
 - **Public API KDoc examples**: Added callable English Kotlin examples across public APIs ([#16](https://github.com/bluetape4k/bluetape4k-graph/issues/16), [PR #109](https://github.com/bluetape4k/bluetape4k-graph/pull/109)).
 - **`graph-okio` DAEAD streaming**: Added DAEAD chunk encryption/decryption for OkIO graph streams, including gzip+DAEAD chaining and negative-path tests for wrong associated data and truncated ciphertext ([#49](https://github.com/bluetape4k/bluetape4k-graph/issues/49), [PR #114](https://github.com/bluetape4k/bluetape4k-graph/pull/114), [PR #115](https://github.com/bluetape4k/bluetape4k-graph/pull/115)).
-- **`graph-ktor`**: Ktor 3.x `GraphPlugin` module과 TinkerGraph 기반 `ktor-graph-examples`를 추가했습니다. `Application`/`ApplicationCall` extension으로 `GraphOperations`와 `GraphSuspendOperations`에 접근하고, TinkerGraph/Neo4j/Memgraph/AGE/FalkorDB backend helper를 제공합니다 ([#96](https://github.com/bluetape4k/bluetape4k-graph/issues/96)).
-- **`graph-bom` README 문서**: BOM 사용법을 English/Korean README로 정리했습니다 ([PR #70](https://github.com/bluetape4k/bluetape4k-graph/pull/70)).
-- **`graph-okio`**: OkIO 기반 스트리밍 그래프 I/O 레이어를 추가했습니다. CSV/GraphML/Jackson 계열 I/O에 Source/Sink 기반 확장 지점을 제공합니다 ([PR #48](https://github.com/bluetape4k/bluetape4k-graph/pull/48)).
-- **Weighted graph support**: Dijkstra/A* shortest path 지원을 추가했습니다 ([PR #39](https://github.com/bluetape4k/bluetape4k-graph/pull/39)).
-- **`graph-core` 모델 빌더 유틸리티** (`graph/graph-core/src/main/kotlin/io/bluetape4k/graph/model/`)
-  - `graphElementIdOf(Any)`: 임의 타입에서 `GraphElementId` 생성 — `String`, `Long`, `Int`, `GraphElementId` 모두 안전하게 변환
-  - `graphVertexOf(Any, label, properties)`: id·label·프로퍼티 맵으로 `GraphVertex` 생성 유틸
-  - `graphPathOf(vertices, edges)` / `graphPathOf(vertices)`: `GraphPath` 빌더 오버로드
-  - `emptyGraphPath()`: 빈 경로 생성 (기존 `emptyGraphPathOf()` 대체)
-  - `GraphPath.toCycle()`: 경로를 `GraphCycle`로 변환하는 확장 메서드
-- **`graph-core` 모델 테스트 클래스 신규 추가** (`graph/graph-core/src/test/`)
-  - `GraphElementIdTest`: `graphElementIdOf` 4개 케이스 (이중 변환 방어 포함)
-  - `GraphVertexTest`: `graphVertexOf` 6개 케이스
-  - `GraphPathTest`: `graphPathOf` 8개 케이스 + `emptyGraphPath`
-  - `GraphCycleTest`: `toCycle()`, `length`, 동등 비교 7개 케이스
-- **`graph-core` README 모델 빌더 유틸리티 섹션** (`graph/graph-core/README.md`, `README.ko.md`)
-- **Transaction DSL first slice**: `GraphOperations.transaction { }` 확장과 capability contract를 추가하고 Neo4j, Memgraph, AGE, TinkerGraph 동기 백엔드에 1차 구현을 연결했습니다. suspend transaction capability도 동일 백엔드에 연결하고, FalkorDB는 중간 결과를 즉시 반환해야 하는 repository DSL 특성상 명시적 미지원으로 고정했습니다.
-- **`graph-core` capability docs**: `SchemaManager`, `GraphMergeOperations`, `GraphTransactionScope` / `GraphSuspendTransactionScope` 사용 예제를 root README, backend README, KDoc에 동기화했습니다.
+- **`graph-ktor`**: Added a Ktor 3.x `GraphPlugin` module and TinkerGraph-based `ktor-graph-examples`. `Application`/`ApplicationCall` extensions provide access to `GraphOperations` and `GraphSuspendOperations`, and backend helpers cover TinkerGraph, Neo4j, Memgraph, AGE, and FalkorDB ([#96](https://github.com/bluetape4k/bluetape4k-graph/issues/96)).
+- **`graph-bom` README**: Documented BOM usage in English and Korean READMEs ([PR #70](https://github.com/bluetape4k/bluetape4k-graph/pull/70)).
+- **`graph-okio`**: Added an OkIO-based streaming graph I/O layer with `Source`/`Sink` entry points for CSV, GraphML, and Jackson family formats ([PR #48](https://github.com/bluetape4k/bluetape4k-graph/pull/48)).
+- **Weighted graph support**: Added Dijkstra/A* shortest path APIs ([PR #39](https://github.com/bluetape4k/bluetape4k-graph/pull/39)).
+- **`graph-core` model builder utilities** (`graph/graph-core/src/main/kotlin/io/bluetape4k/graph/model/`)
+  - `graphElementIdOf(Any)`: creates a `GraphElementId` from any type — `String`, `Long`, `Int`, and `GraphElementId` all convert safely.
+  - `graphVertexOf(Any, label, properties)`: builder utility that creates a `GraphVertex` from an id, label, and property map.
+  - `graphPathOf(vertices, edges)` / `graphPathOf(vertices)`: `GraphPath` builder overloads.
+  - `emptyGraphPath()`: creates an empty path (replaces the former `emptyGraphPathOf()`).
+  - `GraphPath.toCycle()`: extension that converts a path to a `GraphCycle`.
+- **`graph-core` model test classes** (`graph/graph-core/src/test/`)
+  - `GraphElementIdTest`: 4 cases for `graphElementIdOf`, including double-conversion guard.
+  - `GraphVertexTest`: 6 cases for `graphVertexOf`.
+  - `GraphPathTest`: 8 cases for `graphPathOf` + `emptyGraphPath`.
+  - `GraphCycleTest`: 7 cases covering `toCycle()`, `length`, and equality.
+- **`graph-core` README — model builder utilities section** (`graph/graph-core/README.md`, `README.ko.md`).
+- **Transaction DSL first slice**: Added the `GraphOperations.transaction { }` extension and capability contract, wired to Neo4j, Memgraph, AGE, and TinkerGraph sync backends. The suspend transaction capability is wired to the same backends. FalkorDB is explicitly unsupported because its repository DSL must return intermediate results immediately.
+- **`graph-core` capability docs**: Synchronized `SchemaManager`, `GraphMergeOperations`, and `GraphTransactionScope` / `GraphSuspendTransactionScope` usage examples across the root README, backend READMEs, and KDoc.
 
 ### Fixed
 
-- **`graphElementIdOf(Any)` 이중 `toString()` 변환 버그**: `GraphElementId` 값을 다시 `graphElementIdOf`에 전달하면 `"GraphElementId(value=x)"` 문자열로 오염되던 문제 수정 — `is GraphElementId` 타입 체크로 조기 반환
-- `AStarRunner` 성능과 불변식 검증을 보강하고 관련 테스트/KDoc을 정리했습니다 ([PR #62](https://github.com/bluetape4k/bluetape4k-graph/pull/62)).
-- `FakeFileSystem` 동시 접근 시 발생하던 `ConcurrentModificationException`을 수정했습니다 ([PR #53](https://github.com/bluetape4k/bluetape4k-graph/pull/53)).
-- CI artifact 경로와 모듈별 Kover 리포트 경로를 현재 빌드 레이아웃에 맞게 수정했습니다 ([PR #55](https://github.com/bluetape4k/bluetape4k-graph/pull/55), [PR #56](https://github.com/bluetape4k/bluetape4k-graph/pull/56)).
+- **`graphElementIdOf(Any)` double-`toString()` conversion bug**: passing a `GraphElementId` value back into `graphElementIdOf` previously produced `"GraphElementId(value=x)"` string corruption. Fixed with an `is GraphElementId` early-return check.
+- Reinforced `AStarRunner` performance and invariant validation; cleaned up related tests and KDoc ([PR #62](https://github.com/bluetape4k/bluetape4k-graph/pull/62)).
+- Fixed `ConcurrentModificationException` on concurrent `FakeFileSystem` access ([PR #53](https://github.com/bluetape4k/bluetape4k-graph/pull/53)).
+- Fixed CI artifact paths and per-module Kover report paths to match the current build layout ([PR #55](https://github.com/bluetape4k/bluetape4k-graph/pull/55), [PR #56](https://github.com/bluetape4k/bluetape4k-graph/pull/56)).
 
 ### Changed
 
 - Refreshed `WIP.md`, `AGENTS.md`, and `CLAUDE.md` to reflect the current open issue queue, Java 21 runtime, version catalog dependencies, renamed Spring Boot module, graph-okio DAEAD support, examples workflow, and active module layout.
 - Renamed the Spring Boot integration from `graph-spring-boot4-starter` (`spring-boot4/graph-spring-boot4-starter`, package `io.bluetape4k.graph.spring.boot4`) to `graph-spring-boot` (`spring-boot/graph-spring-boot`, package `io.bluetape4k.graph.spring.boot`) to publish a stable version-neutral module contract ([#99](https://github.com/bluetape4k/bluetape4k-graph/issues/99)).
-- `graph-io-okio` Gradle project/artifact identity를 `graph-okio`로 변경했습니다 ([#76](https://github.com/bluetape4k/bluetape4k-graph/issues/76)).
+- Renamed `graph-io-okio` Gradle project/artifact to `graph-okio` ([#76](https://github.com/bluetape4k/bluetape4k-graph/issues/76)).
 - Gradle dependency declarations migrated from `buildSrc/Libs.kt` to Version Catalog (`gradle/libs.versions.toml`) ([PR #63](https://github.com/bluetape4k/bluetape4k-graph/pull/63)).
 - CI now uses paths-filter, Docker-specific jobs, and retry configuration for container-heavy workflows ([PR #68](https://github.com/bluetape4k/bluetape4k-graph/pull/68)).
 - Removed the `tanvd.kosogor` plugin from the build ([PR #57](https://github.com/bluetape4k/bluetape4k-graph/pull/57)).
-- `graph-io-core` test coverage was raised from 65% to 93% ([PR #58](https://github.com/bluetape4k/bluetape4k-graph/pull/58)).
-- `emptyGraphPathOf()` → `emptyGraphPath()` 이름 변경 (Kotlin 팩토리 함수 관례 준수)
-- `graphVertexOf(Any, label)` → `graphVertexOf(Any, label, properties)`: `properties` 파라미터 추가 및 `graphElementIdOf` 경유로 이중 변환 제거
-- `graphPathOf` 단일-arg 중복 오버로드 제거, 명시적 파라미터 오버로드만 유지
-- `AStarRunner` companion object 콜론 앞 공백 추가 (ktlint 규칙 준수)
-- 테스트 코드의 bluetape4k-assertions 의존성을 `bluetape4k-assertions`로 마이그레이션하고 Gradle 테스트 의존성을 교체했습니다. PR #69에서 `./gradlew compileTestKotlin --no-daemon` 성공으로 검증했으며, issue #66은 완료 처리했습니다.
+- `graph-io-core` test coverage raised from 65% to 93% ([PR #58](https://github.com/bluetape4k/bluetape4k-graph/pull/58)).
+- Renamed `emptyGraphPathOf()` → `emptyGraphPath()` to follow Kotlin factory function conventions.
+- `graphVertexOf(Any, label)` → `graphVertexOf(Any, label, properties)`: added `properties` parameter and eliminated the double-conversion path via `graphElementIdOf`.
+- Removed the single-arg duplicate `graphPathOf` overload; only explicit-parameter overloads remain.
+- Added missing space before colon in `AStarRunner` companion object to satisfy ktlint rules.
+- Migrated test-code assertions dependency to `bluetape4k-assertions` and replaced Gradle test dependencies accordingly. Verified with `./gradlew compileTestKotlin --no-daemon` in PR #69; issue #66 closed.
 
 ---
 

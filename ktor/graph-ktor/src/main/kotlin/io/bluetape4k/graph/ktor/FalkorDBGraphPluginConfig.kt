@@ -6,11 +6,11 @@ import io.bluetape4k.graph.falkordb.FalkorDBGraphSuspendOperations
 import io.bluetape4k.support.requireNotBlank
 
 /**
- * Ktor [GraphPlugin]을 FalkorDB backend로 설정합니다.
+ * Configures [GraphPlugin] to use a FalkorDB backend.
  *
- * ## 동작/계약
- * - [driver]는 caller-owned resource입니다. 이 helper는 driver를 닫지 않습니다.
- * - [graphName] 기본값은 [FalkorDBGraphOperations.DEFAULT_GRAPH_NAME]입니다.
+ * ## Behavior / Contract
+ * - [driver] is a caller-owned resource; this helper does not close it.
+ * - [graphName] defaults to [FalkorDBGraphOperations.DEFAULT_GRAPH_NAME].
  *
  * ```kotlin
  * fun Application.module(driver: Driver) {

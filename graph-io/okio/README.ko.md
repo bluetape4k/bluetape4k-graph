@@ -1,4 +1,4 @@
-# graph-okio (한국어)
+# graph-okio
 
 [English](README.md) | [한국어](README.ko.md)
 

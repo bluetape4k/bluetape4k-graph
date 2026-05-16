@@ -4,12 +4,12 @@ import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
 
 /**
- * Ktor [GraphPlugin]을 in-memory TinkerGraph backend로 설정합니다.
+ * Configures [GraphPlugin] to use an in-memory TinkerGraph backend.
  *
- * ## 동작/계약
- * - plugin이 [TinkerGraphOperations] delegate를 직접 생성합니다.
- * - [TinkerGraphSuspendOperations]는 같은 delegate를 공유합니다.
- * - application stop 시 shared delegate를 정확히 한 번만 닫습니다.
+ * ## Behavior / Contract
+ * - The plugin creates the [TinkerGraphOperations] delegate internally.
+ * - [TinkerGraphSuspendOperations] shares the same delegate.
+ * - The shared delegate is closed exactly once on application stop.
  *
  * ```kotlin
  * fun Application.module() {

@@ -6,11 +6,11 @@ import io.bluetape4k.support.requireNotBlank
 import org.neo4j.driver.Driver
 
 /**
- * Ktor [GraphPlugin]을 Neo4j backend로 설정합니다.
+ * Configures [GraphPlugin] to use a Neo4j backend.
  *
- * ## 동작/계약
- * - [driver]는 caller-owned resource입니다. 이 helper는 driver를 닫지 않습니다.
- * - [database]는 blank가 아니어야 합니다.
+ * ## Behavior / Contract
+ * - [driver] is a caller-owned resource; this helper does not close it.
+ * - [database] must not be blank.
  *
  * ```kotlin
  * fun Application.module(driver: Driver) {
