@@ -43,6 +43,7 @@ dependencies {
     testImplementation(libs.neo4j.java.driver)
     testRuntimeOnly(libs.postgresql.driver)
     testImplementation(libs.hikaricp)
+    testImplementation("org.springframework.boot:spring-boot-health")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-starter-web")
     testImplementation("org.springframework.boot:spring-boot-starter-webflux")
