@@ -130,7 +130,7 @@ class MyGraphService(
 
 | 프로퍼티 | 기본값 | 설명 |
 |---------|-------|------|
-| `bluetape4k.graph.backend` | *(없음 — TinkerGraph가 기본 활성화)* | 활성 백엔드: `tinkergraph` \| `neo4j` \| `memgraph` \| `age` |
+| `bluetape4k.graph.backend` | *(없음 — TinkerGraph가 기본 활성화)* | 활성 백엔드: `tinkergraph` \| `neo4j` \| `memgraph` \| `age` \| `falkordb` |
 
 ### Neo4j (`bluetape4k.graph.neo4j.*`)
 

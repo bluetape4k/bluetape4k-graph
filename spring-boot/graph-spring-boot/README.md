@@ -130,7 +130,7 @@ All beans use `@ConditionalOnMissingBean` — provide your own bean to override.
 
 | Property | Default | Description |
 |----------|---------|-------------|
-| `bluetape4k.graph.backend` | *(none — TinkerGraph activates by default)* | Active backend: `tinkergraph` \| `neo4j` \| `memgraph` \| `age` |
+| `bluetape4k.graph.backend` | *(none — TinkerGraph activates by default)* | Active backend: `tinkergraph` \| `neo4j` \| `memgraph` \| `age` \| `falkordb` |
 
 ### Neo4j (`bluetape4k.graph.neo4j.*`)
 
