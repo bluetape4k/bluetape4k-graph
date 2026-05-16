@@ -6,12 +6,13 @@ import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.warn
 
 /**
- * [GraphPlugin]이 resolve한 graph integration state입니다.
+ * Graph integration state resolved by [GraphPlugin].
  *
- * ## 동작/계약
- * - [graphOperations]는 blocking compatibility API입니다.
- * - [graphSuspendOperations]는 Ktor route와 coroutine code에서 우선 사용할 coroutine API입니다.
- * - [close]는 등록된 close action을 독립적으로 실행합니다. 하나의 close 실패가 나머지 close를 막지 않습니다.
+ * ## Behavior / Contract
+ * - [graphOperations] is the blocking compatibility API.
+ * - [graphSuspendOperations] is the preferred coroutine API for Ktor routes and coroutine code.
+ * - [close] executes registered close actions independently; a failure in one action does not
+ *   prevent the remaining actions from running.
  *
  * ```kotlin
  * val state = application.graphPluginState()
