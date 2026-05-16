@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.examples.ktor
 
+import com.falkordb.FalkorDB
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.graph.falkordb.FalkorDBServer
 import io.bluetape4k.junit5.coroutines.runSuspendIO
@@ -17,13 +18,13 @@ import org.junit.jupiter.api.TestInstance
  *
  * ## Behavior / Contract
  * - Uses the singleton [FalkorDBServer.Launcher.falkordb] Testcontainers instance.
- * - Each test creates a fresh [testApplication] scope; state is isolated by
- *   calling `POST /demo/reset` before any assertion.
+ * - The shared [driver] is caller-owned and reused across tests; it is not closed
+ *   between test methods.
+ * - Each test calls `POST /demo/reset` before asserting state to ensure isolation.
  *
  * ```kotlin
- * val server = FalkorDBServer.Launcher.falkordb
  * testApplication {
- *     application { falkorDbModule(server.host, server.port) }
+ *     application { falkorDbModule(driver) }
  * }
  * ```
  */
@@ -32,13 +33,14 @@ class FalkorDBKtorGraphAppTest {
 
     companion object : KLogging() {
         private val server = FalkorDBServer.Launcher.falkordb
+        private val driver by lazy { FalkorDB.driver(server.host, server.port) }
     }
 
     @Test
     fun `health route returns UP`() = runSuspendIO {
         testApplication {
             application {
-                falkorDbModule(server.host, server.port)
+                falkorDbModule(driver)
             }
             startApplication()
 
@@ -52,7 +54,7 @@ class FalkorDBKtorGraphAppTest {
     fun `demo reset and city count and path work with FalkorDB`() = runSuspendIO {
         testApplication {
             application {
-                falkorDbModule(server.host, server.port)
+                falkorDbModule(driver)
             }
             startApplication()
 
