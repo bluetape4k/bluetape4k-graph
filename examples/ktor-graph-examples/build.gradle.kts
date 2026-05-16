@@ -19,6 +19,7 @@ dependencyManagement {
 dependencies {
     implementation(project(":graph-ktor"))
     implementation(project(":graph-tinkerpop"))
+    implementation(project(":graph-falkordb"))
 
     implementation(libs.bluetape4k.coroutines)
     implementation(libs.bluetape4k.logging)
@@ -32,4 +33,5 @@ dependencies {
     testImplementation(libs.bluetape4k.junit5)
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlinx.coroutines.test.lib)
+    testImplementation(testFixtures(project(":graph-falkordb")))
 }
