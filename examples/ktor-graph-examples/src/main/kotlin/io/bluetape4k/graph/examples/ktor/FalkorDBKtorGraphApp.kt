@@ -12,8 +12,10 @@ import io.ktor.server.routing.routing
  *
  * ## Behavior / Contract
  * - [driver] is a caller-owned resource; this module does not close it.
- * - Installs [GraphPlugin] with the FalkorDB backend, binding to the [graphName] graph.
+ * - Installs [GraphPlugin] with the FalkorDB backend, bound to [DEMO_GRAPH_NAME].
  * - Exposes the same demo routes as [module] (health, reset, city count, city path).
+ * - The graph name is fixed to [DEMO_GRAPH_NAME] so that [graphDemoRoutes] reset
+ *   and query operations always target the same graph.
  *
  * ```kotlin
  * val driver = FalkorDB.driver("localhost", 6379)
@@ -23,12 +25,9 @@ import io.ktor.server.routing.routing
  * // Caller is responsible for driver.close() on shutdown.
  * ```
  */
-fun Application.falkorDbModule(
-    driver: Driver,
-    graphName: String = DEMO_GRAPH_NAME,
-) {
+fun Application.falkorDbModule(driver: Driver) {
     install(GraphPlugin) {
-        falkorDB(driver, graphName = graphName)
+        falkorDB(driver, graphName = DEMO_GRAPH_NAME)
     }
     routing {
         graphDemoRoutes()
