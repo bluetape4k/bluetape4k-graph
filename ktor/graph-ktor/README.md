@@ -32,8 +32,8 @@ Use `graph-ktor` with the backend module your application actually runs.
 
 ```kotlin
 dependencies {
-    implementation("io.github.bluetape4k.graph:graph-ktor")
-    implementation("io.github.bluetape4k.graph:graph-tinkerpop") // or graph-neo4j, graph-age, ...
+    implementation("io.github.bluetape4k.graph:bluetape4k-graph-ktor")
+    implementation("io.github.bluetape4k.graph:bluetape4k-graph-tinkerpop") // or graph-neo4j, graph-age, ...
     implementation("io.ktor:ktor-server-core")
 }
 ```
