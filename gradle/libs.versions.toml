@@ -167,7 +167,7 @@ logback-core = { module = "ch.qos.logback:logback-core", version.ref = "logback"
 log4j-bom = { module = "org.apache.logging.log4j:log4j-bom", version.ref = "log4j" }
 
 findbugs = { module = "com.google.code.findbugs:jsr305", version = "3.0.2" }  # https://mvnrepository.com/artifact/com.google.code.findbugs/jsr305
-guava = { module = "com.google.guava:guava", version = "33.4.8-jre" }  # https://mvnrepository.com/artifact/com.google.guava/guava
+guava = { module = "com.google.guava:guava", version = "33.6.0-jre" }  # https://mvnrepository.com/artifact/com.google.guava/guava
 
 kryo5 = { module = "com.esotericsoftware:kryo", version = "5.6.2" }  # https://mvnrepository.com/artifact/com.esotericsoftware/kryo
 fory-kotlin = { module = "org.apache.fory:fory-kotlin", version = "0.15.0" }  # https://mvnrepository.com/artifact/org.apache.fory/fory-kotlin
