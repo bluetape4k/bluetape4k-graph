@@ -8,12 +8,24 @@ plugins {
     signing
 }
 
+fun Project.isNonPublishedModule(): Boolean {
+    val relativePath = rootProject.rootDir.toPath()
+        .relativize(projectDir.toPath())
+        .toString()
+        .replace(File.separatorChar, '/')
+
+    return relativePath == "examples" ||
+            relativePath.startsWith("examples/") ||
+            relativePath == "benchmark" ||
+            relativePath.startsWith("benchmark/") ||
+            name.contains("-demo") ||
+            name.endsWith("-benchmark")
+}
+
 dependencies {
     constraints {
         rootProject.subprojects {
-            if (name != "bluetape4k-graph-bom" &&
-                !projectDir.absolutePath.contains("/examples/")
-            ) {
+            if (name != "bluetape4k-graph-bom" && !isNonPublishedModule()) {
                 api(this)
             }
         }

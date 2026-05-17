@@ -73,8 +73,22 @@ allprojects {
 // where `libs` is not in scope (different receiver type in the lambda).
 val rootLibs = libs
 
+fun Project.isNonPublishedModule(): Boolean {
+    val relativePath = rootProject.rootDir.toPath()
+        .relativize(projectDir.toPath())
+        .toString()
+        .replace(File.separatorChar, '/')
+
+    return relativePath == "examples" ||
+            relativePath.startsWith("examples/") ||
+            relativePath == "benchmark" ||
+            relativePath.startsWith("benchmark/") ||
+            name.contains("-demo") ||
+            name.endsWith("-benchmark")
+}
+
 subprojects {
-    if (!path.contains("examples")) {
+    if (!isNonPublishedModule()) {
         apply(plugin = "com.gradleup.nmcp")
     }
 
@@ -109,8 +123,10 @@ subprojects {
         // Atomicfu
         plugin("org.jetbrains.kotlinx.atomicfu")
 
-        plugin("maven-publish")
-        plugin("signing")
+        if (!isNonPublishedModule()) {
+            plugin("maven-publish")
+            plugin("signing")
+        }
 
         plugin("io.spring.dependency-management")
 
@@ -118,7 +134,7 @@ subprojects {
         plugin("com.adarshr.test-logger")
 
         // Kover — Kotlin 코드 커버리지 (bom/benchmark/examples 는 커버리지 대상에서 제외)
-        if (!path.contains("examples") && !path.contains("benchmark") && name != "bluetape4k-graph-bom") {
+        if (!isNonPublishedModule() && name != "bluetape4k-graph-bom") {
             plugin("org.jetbrains.kotlinx.kover")
         }
     }
@@ -439,10 +455,10 @@ subprojects {
         $ ./gradlew clean build
         $ ./gradlew publishAggregationToCentralPortal
         ```
-     */
-    publishing {
-        publications {
-            if (!project.path.contains("examples")) {
+        */
+    if (!isNonPublishedModule()) {
+        publishing {
+            publications {
                 create<MavenPublication>("BluetapeGraph") {
                     val binaryJar = components["java"]
 
@@ -469,17 +485,17 @@ subprojects {
                     }
                 }
             }
+            repositories {
+                centralSnapshotsRepository(project)
+                mavenLocal()
+            }
         }
-        repositories {
-            centralSnapshotsRepository(project)
-            mavenLocal()
-        }
-    }
 
-    configurePublishingSigning(
-        publicationName = "BluetapeGraph",
-        enabled = !project.path.contains("examples"),
-    )
+        configurePublishingSigning(
+            publicationName = "BluetapeGraph",
+            enabled = true,
+        )
+    }
 
     tasks.withType<GenerateMavenPom>().configureEach {
         notCompatibleWithConfigurationCache("publishing tasks are not cache-safe")
@@ -500,7 +516,7 @@ subprojects {
 
 // Maven Central Portal 집계 배포 설정
 val publishableProjects = subprojects.filterNot { project ->
-    project.path.contains("examples")
+    project.isNonPublishedModule()
 }
 
 extensions.configure<NmcpAggregationExtension>("nmcpAggregation") {
