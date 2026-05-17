@@ -38,7 +38,7 @@ micrometer-tracing = "1.6.5"  # https://mvnrepository.com/artifact/io.micrometer
 caffeine = "3.2.4"  # https://mvnrepository.com/artifact/com.github.ben-manes.caffeine/caffeine
 
 reflectasm = "1.11.9"  # https://mvnrepository.com/artifact/com.esotericsoftware/reflectasm
-ow2-asm = "9.9.1"  # https://mvnrepository.com/artifact/org.ow2.asm/asm
+ow2-asm = "9.10"  # https://mvnrepository.com/artifact/org.ow2.asm/asm
 
 junit-jupiter = "6.0.3"  # https://mvnrepository.com/artifact/org.junit/junit-bom
 junit-platform = "6.0.3"  # https://mvnrepository.com/artifact/org.junit.platform/junit-platform-commons
