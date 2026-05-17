@@ -135,7 +135,7 @@ mocks only.
   runs daily and on example/graph/graph-io/Ktor/build changes. Keep examples
   out of Nightly unless their backend coverage becomes part of Nightly's
   explicit contract.
-- When `.github/workflows/nightly.yml` is changed, explicitly run the Nightly
+- When `.github/workflows/nightly-tests.yml` is changed, explicitly run the Nightly
   workflow with `workflow_dispatch` before DoD and record the run URL/result.
   For module coverage changes, use `scope=full` unless the change is strictly
   smoke-only.
