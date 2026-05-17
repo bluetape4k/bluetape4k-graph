@@ -326,7 +326,7 @@ class MyGraphIoTest {
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.github.bluetape4k.graph:graph-okio:VERSION")
+    implementation("io.github.bluetape4k.graph:bluetape4k-graph-okio:VERSION")
 
     // 선택적 압축 라이브러리 (필요한 것만 추가)
     implementation("org.lz4:lz4-java:1.8.0")

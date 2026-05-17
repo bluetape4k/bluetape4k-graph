@@ -24,10 +24,10 @@
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.github.bluetape4k.graph:graph-spring-boot:<version>")
+    implementation("io.github.bluetape4k.graph:bluetape4k-graph-spring-boot:<version>")
 
     // 런타임에 사용할 백엔드 하나만 추가
-    runtimeOnly("io.github.bluetape4k.graph:graph-neo4j:<version>")   // 또는 graph-memgraph / graph-age / graph-tinkerpop
+    runtimeOnly("io.github.bluetape4k.graph:bluetape4k-graph-neo4j:<version>")   // 또는 graph-memgraph / graph-age / graph-tinkerpop
 }
 ```
 

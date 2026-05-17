@@ -24,8 +24,8 @@ benchmark {
 }
 
 dependencies {
-    implementation(project(":graph-core"))
-    implementation(project(":graph-neo4j"))
+    implementation(project(":bluetape4k-graph-core"))
+    implementation(project(":bluetape4k-graph-neo4j"))
 
     implementation(libs.kotlinx.benchmark.runtime)
     implementation(libs.bluetape4k.core)

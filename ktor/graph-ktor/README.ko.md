@@ -33,8 +33,8 @@ flowchart LR
 
 ```kotlin
 dependencies {
-    implementation("io.github.bluetape4k.graph:graph-ktor")
-    implementation("io.github.bluetape4k.graph:graph-tinkerpop") // 또는 graph-neo4j, graph-age, ...
+    implementation("io.github.bluetape4k.graph:bluetape4k-graph-ktor")
+    implementation("io.github.bluetape4k.graph:bluetape4k-graph-tinkerpop") // 또는 graph-neo4j, graph-age, ...
     implementation("io.ktor:ktor-server-core")
 }
 ```

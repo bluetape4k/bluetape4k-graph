@@ -273,13 +273,13 @@ val path = graphOps.shortestPath(
 
 ```kotlin
 dependencies {
-    implementation("io.github.bluetape4k.graph:graph-core:0.0.1")
+    implementation("io.github.bluetape4k.graph:bluetape4k-graph-core:0.0.1")
 
     // pick one backend
-    implementation("io.github.bluetape4k.graph:graph-neo4j:0.0.1")
-    // implementation("io.github.bluetape4k.graph:graph-age:0.0.1")
-    // implementation("io.github.bluetape4k.graph:graph-memgraph:0.0.1")
-    // implementation("io.github.bluetape4k.graph:graph-tinkerpop:0.0.1")
+    implementation("io.github.bluetape4k.graph:bluetape4k-graph-neo4j:0.0.1")
+    // implementation("io.github.bluetape4k.graph:bluetape4k-graph-age:0.0.1")
+    // implementation("io.github.bluetape4k.graph:bluetape4k-graph-memgraph:0.0.1")
+    // implementation("io.github.bluetape4k.graph:bluetape4k-graph-tinkerpop:0.0.1")
 }
 ```
 

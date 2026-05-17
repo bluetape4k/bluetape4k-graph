@@ -10,13 +10,13 @@ dependencies {
     implementation(platform(libs.spring.boot4.dependencies))
 
     // graph-core는 api로 전이 노출 — GraphOperations 등 공개 API 타입이 전이 노출 필요
-    api(project(":graph-core"))
+    api(project(":bluetape4k-graph-core"))
     // 백엔드 구현 모듈(graph-neo4j 등)만 compileOnly — 사용자가 원하는 백엔드만 runtime에 추가.
-    compileOnly(project(":graph-neo4j"))
-    compileOnly(project(":graph-memgraph"))
-    compileOnly(project(":graph-age"))
-    compileOnly(project(":graph-tinkerpop"))
-    compileOnly(project(":graph-falkordb"))
+    compileOnly(project(":bluetape4k-graph-neo4j"))
+    compileOnly(project(":bluetape4k-graph-memgraph"))
+    compileOnly(project(":bluetape4k-graph-age"))
+    compileOnly(project(":bluetape4k-graph-tinkerpop"))
+    compileOnly(project(":bluetape4k-graph-falkordb"))
 
     // Spring Boot 4.x (위 BOM override 적용됨)
     api("org.springframework.boot:spring-boot-autoconfigure")
@@ -31,12 +31,12 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:${libs.versions.spring.boot4.get()}")
 
     // Test
-    testImplementation(project(":graph-tinkerpop"))
-    testImplementation(project(":graph-neo4j"))
-    testImplementation(project(":graph-memgraph"))
-    testImplementation(project(":graph-age"))
-    testImplementation(project(":graph-falkordb"))
-    testImplementation(testFixtures(project(":graph-falkordb")))
+    testImplementation(project(":bluetape4k-graph-tinkerpop"))
+    testImplementation(project(":bluetape4k-graph-neo4j"))
+    testImplementation(project(":bluetape4k-graph-memgraph"))
+    testImplementation(project(":bluetape4k-graph-age"))
+    testImplementation(project(":bluetape4k-graph-falkordb"))
+    testImplementation(testFixtures(project(":bluetape4k-graph-falkordb")))
     testImplementation(libs.bluetape4k.testcontainers)
     testImplementation(libs.testcontainers.neo4j)
     testImplementation(libs.testcontainers.postgresql)

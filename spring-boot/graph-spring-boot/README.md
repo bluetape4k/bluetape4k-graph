@@ -24,10 +24,10 @@ for the selected backend via a single property.
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.github.bluetape4k.graph:graph-spring-boot:<version>")
+    implementation("io.github.bluetape4k.graph:bluetape4k-graph-spring-boot:<version>")
 
     // Add ONE backend at runtime
-    runtimeOnly("io.github.bluetape4k.graph:graph-neo4j:<version>")   // or graph-memgraph / graph-age / graph-tinkerpop
+    runtimeOnly("io.github.bluetape4k.graph:bluetape4k-graph-neo4j:<version>")   // or graph-memgraph / graph-age / graph-tinkerpop
 }
 ```
 

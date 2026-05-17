@@ -82,8 +82,8 @@ dependencyManagement {
 }
 
 dependencies {
-    implementation("io.github.bluetape4k.graph:graph-neo4j")
-    implementation("io.github.bluetape4k.graph:graph-spring-boot")
+    implementation("io.github.bluetape4k.graph:bluetape4k-graph-neo4j")
+    implementation("io.github.bluetape4k.graph:bluetape4k-graph-spring-boot")
 }
 ```
 
@@ -92,7 +92,7 @@ dependencies {
 ```kotlin
 dependencies {
     implementation(platform("io.github.bluetape4k.graph:bluetape4k-graph-bom:<version>"))
-    implementation("io.github.bluetape4k.graph:graph-neo4j")
+    implementation("io.github.bluetape4k.graph:bluetape4k-graph-neo4j")
 }
 ```
 

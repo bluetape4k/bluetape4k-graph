@@ -17,14 +17,14 @@ rootProject.name = "$baseProjectName-graph"
 include("bluetape4k-graph-bom")
 project(":bluetape4k-graph-bom").projectDir = file("bom")
 
-includeModules("graph", false, false)
-includeModules("graph-io", false, true, excludeModuleNames = setOf("okio"))
-include("graph-okio")
-project(":graph-okio").projectDir = file("graph-io/okio")
+includeModules("graph", true, false)
+includeModules("graph-io", true, true, excludeModuleNames = setOf("okio"))
+include("bluetape4k-graph-okio")
+project(":bluetape4k-graph-okio").projectDir = file("graph-io/okio")
 includeModules("benchmark", false, false)
 includeModules("examples", false, false)
-includeModules("ktor", false, false)
-includeModules("spring-boot", false, false)
+includeModules("ktor", true, false)
+includeModules("spring-boot", true, false)
 
 fun includeModules(
     baseDir: String,

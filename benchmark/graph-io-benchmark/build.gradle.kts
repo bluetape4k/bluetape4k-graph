@@ -22,13 +22,13 @@ benchmark {
 }
 
 dependencies {
-    implementation(project(":graph-io-core"))
-    implementation(project(":graph-io-csv"))
-    implementation(project(":graph-io-jackson2"))
-    implementation(project(":graph-io-jackson3"))
-    implementation(project(":graph-io-graphml"))
-    implementation(project(":graph-okio"))
-    implementation(project(":graph-tinkerpop"))
+    implementation(project(":bluetape4k-graph-io-core"))
+    implementation(project(":bluetape4k-graph-io-csv"))
+    implementation(project(":bluetape4k-graph-io-jackson2"))
+    implementation(project(":bluetape4k-graph-io-jackson3"))
+    implementation(project(":bluetape4k-graph-io-graphml"))
+    implementation(project(":bluetape4k-graph-okio"))
+    implementation(project(":bluetape4k-graph-tinkerpop"))
     implementation(libs.bluetape4k.coroutines)
     implementation(libs.bluetape4k.virtualthread.api)
     implementation(libs.bluetape4k.virtualthread.jdk21)

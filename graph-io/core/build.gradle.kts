@@ -1,5 +1,5 @@
 dependencies {
-    api(project(":graph-core"))
+    api(project(":bluetape4k-graph-core"))
     api(libs.bluetape4k.core)
     api(libs.bluetape4k.io)
     api(libs.kotlinx.coroutines.core.lib)
@@ -9,5 +9,5 @@ dependencies {
 
     testImplementation(libs.bluetape4k.junit5)
     testImplementation(libs.kotlinx.coroutines.test.lib)
-    testImplementation(project(":graph-tinkerpop"))
+    testImplementation(project(":bluetape4k-graph-tinkerpop"))
 }

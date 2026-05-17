@@ -56,20 +56,20 @@ examples/
 ```bash
 ./gradlew build -x test
 ./gradlew test
-./gradlew :graph-neo4j:build
+./gradlew :bluetape4k-graph-neo4j:build
 ./gradlew :graph-okio:test
 ./gradlew :code-graph-examples:test
 ./gradlew :fraud-detection-examples:test
 ./gradlew :knowledge-graph-examples:test
 ./gradlew :recommendation-examples:test
-./gradlew :graph-neo4j:test --tests "io.bluetape4k.graph.neo4j.Neo4jGraphOperationsTest"
+./gradlew :bluetape4k-graph-neo4j:test --tests "io.bluetape4k.graph.neo4j.Neo4jGraphOperationsTest"
 ./gradlew publishBluetapeGraphPublicationToMavenLocalRepository
 ./gradlew publishAggregationToCentralPortal
 ```
 
 ## Architecture
 
-`graph-core` owns the common model and contracts. Backend modules implement
+`bluetape4k-graph-core` owns the common model and contracts. Backend modules implement
 those contracts with each database's driver and query language.
 
 ```text
@@ -91,11 +91,11 @@ Core concepts:
 
 | Module | Driver | Query language | Local verification |
 |---|---|---|---|
-| `graph-neo4j` | Neo4j Java Driver | Cypher | Testcontainers `neo4j:5` |
-| `graph-memgraph` | Neo4j Java Driver compatible | Cypher | Testcontainers `memgraph/memgraph` |
-| `graph-age` | PostgreSQL JDBC + Exposed | Cypher-over-SQL | Testcontainers `apache/age:PG16_latest` |
-| `graph-tinkerpop` | TinkerGraph | Gremlin | In-memory JVM graph |
-| `graph-falkordb` | jfalkordb 0.7.0, Jedis-based | openCypher subset | Testcontainers `falkordb/falkordb:v4.18.1` |
+| `bluetape4k-graph-neo4j` | Neo4j Java Driver | Cypher | Testcontainers `neo4j:5` |
+| `bluetape4k-graph-memgraph` | Neo4j Java Driver compatible | Cypher | Testcontainers `memgraph/memgraph` |
+| `bluetape4k-graph-age` | PostgreSQL JDBC + Exposed | Cypher-over-SQL | Testcontainers `apache/age:PG16_latest` |
+| `bluetape4k-graph-tinkerpop` | TinkerGraph | Gremlin | In-memory JVM graph |
+| `bluetape4k-graph-falkordb` | jfalkordb 0.7.0, Jedis-based | openCypher subset | Testcontainers `falkordb/falkordb:v4.18.1` |
 
 Amazon Neptune implementation is blocked by issue #113 until local or reliable
 integration testability is proven. Do not build Neptune support against mocks

@@ -1,5 +1,5 @@
 dependencies {
-    api(project(":graph-core"))
+    api(project(":bluetape4k-graph-core"))
     api(libs.neo4j.java.driver)
     runtimeOnly(libs.neo4j.bolt.connection.netty)
     runtimeOnly(libs.neo4j.bolt.connection.pooled)
