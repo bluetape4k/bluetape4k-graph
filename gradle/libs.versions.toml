@@ -137,7 +137,7 @@ jakarta-servlet-api = { module = "jakarta.servlet:jakarta.servlet-api", version 
 jakarta-transaction-api = { module = "jakarta.transaction:jakarta.transaction-api", version = "2.0.1" }  # https://mvnrepository.com/artifact/jakarta.transaction/jakarta.transaction-api
 jakarta-validation-api = { module = "jakarta.validation:jakarta.validation-api", version = "3.1.1" }  # https://mvnrepository.com/artifact/jakarta.validation/jakarta.validation-api
 jakarta-ws-rs-api = { module = "jakarta.ws.rs:jakarta.ws.rs-api", version = "4.0.0" }  # https://mvnrepository.com/artifact/jakarta.ws.rs/jakarta.ws.rs-api
-jakarta-xml-bind = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version = "4.0.2" }  # https://mvnrepository.com/artifact/jakarta.xml.bind/jakarta.xml.bind-api
+jakarta-xml-bind = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version = "4.0.5" }  # https://mvnrepository.com/artifact/jakarta.xml.bind/jakarta.xml.bind-api
 
 # Apache Commons
 commons-beanutils = { module = "commons-beanutils:commons-beanutils", version = "1.11.0" }  # https://mvnrepository.com/artifact/commons-beanutils/commons-beanutils
