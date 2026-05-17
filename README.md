@@ -279,8 +279,8 @@ dependencyManagement {
 }
 
 dependencies {
-    implementation("io.github.bluetape4k.graph:graph-neo4j")   // version can be omitted
-    implementation("io.github.bluetape4k.graph:graph-age")
+    implementation("io.github.bluetape4k.graph:bluetape4k-graph-neo4j")   // version can be omitted
+    implementation("io.github.bluetape4k.graph:bluetape4k-graph-age")
 }
 ```
 
@@ -288,8 +288,8 @@ dependencies {
 
 ```kotlin
 dependencies {
-    implementation("io.github.bluetape4k.graph:graph-core:0.2.0")
-    implementation("io.github.bluetape4k.graph:graph-neo4j:0.2.0")
+    implementation("io.github.bluetape4k.graph:bluetape4k-graph-core:0.2.0")
+    implementation("io.github.bluetape4k.graph:bluetape4k-graph-neo4j:0.2.0")
     // graph-age | graph-memgraph | graph-tinkerpop | graph-ktor
 }
 ```

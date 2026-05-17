@@ -22,8 +22,8 @@ benchmark {
 }
 
 dependencies {
-    implementation(project(":graph-core"))
-    implementation(project(":graph-tinkerpop"))
+    implementation(project(":bluetape4k-graph-core"))
+    implementation(project(":bluetape4k-graph-tinkerpop"))
 
     implementation(libs.kotlinx.benchmark.runtime)
     implementation(libs.bluetape4k.core)

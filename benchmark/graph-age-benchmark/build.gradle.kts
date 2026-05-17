@@ -24,8 +24,8 @@ benchmark {
 }
 
 dependencies {
-    implementation(project(":graph-core"))
-    implementation(project(":graph-age"))
+    implementation(project(":bluetape4k-graph-core"))
+    implementation(project(":bluetape4k-graph-age"))
 
     implementation(libs.kotlinx.benchmark.runtime)
     implementation(libs.bluetape4k.core)

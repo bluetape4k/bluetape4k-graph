@@ -1,13 +1,13 @@
 dependencies {
-    api(project(":graph-io-core"))
+    api(project(":bluetape4k-graph-io-core"))
     api(libs.bluetape4k.okio)
     api(libs.bluetape4k.tink)
 
     // 기존 graph-io 모듈 — 포맷별 임포터/익스포터 위임
-    implementation(project(":graph-io-csv"))
-    implementation(project(":graph-io-jackson2"))
-    implementation(project(":graph-io-jackson3"))
-    implementation(project(":graph-io-graphml"))
+    implementation(project(":bluetape4k-graph-io-csv"))
+    implementation(project(":bluetape4k-graph-io-jackson2"))
+    implementation(project(":bluetape4k-graph-io-jackson3"))
+    implementation(project(":bluetape4k-graph-io-graphml"))
 
     implementation(libs.bluetape4k.coroutines)
     implementation(libs.bluetape4k.virtualthread.api)
@@ -22,7 +22,7 @@ dependencies {
     testImplementation(libs.bluetape4k.junit5)
     testImplementation(libs.kotlinx.coroutines.test.lib)
     testImplementation(libs.okio.fakefilesystem)
-    testImplementation(project(":graph-tinkerpop"))
+    testImplementation(project(":bluetape4k-graph-tinkerpop"))
 
     // 통합 테스트에서 압축 알고리즘 실제 사용
     testImplementation(libs.snappy.java)

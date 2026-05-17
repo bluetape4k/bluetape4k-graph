@@ -8,5 +8,5 @@ dependencies {
     testImplementation(libs.bluetape4k.junit5)
     testImplementation(libs.bluetape4k.testcontainers)
     testImplementation(libs.kotlinx.coroutines.test.lib)
-    testImplementation(project(":graph-tinkerpop"))
+    testImplementation(project(":bluetape4k-graph-tinkerpop"))
 }

@@ -168,14 +168,14 @@ jobs:
         run: |
           for attempt in 1 2 3; do
             ./gradlew \
-              :graph-core:test \
-              :graph-tinkerpop:test \
-              :graph-io-core:test \
-              :graph-io-csv:test \
-              :graph-io-jackson2:test \
-              :graph-io-jackson3:test \
-              :graph-io-graphml:test \
-              :graph-okio:test \
+              :bluetape4k-graph-core:test \
+              :bluetape4k-graph-tinkerpop:test \
+              :bluetape4k-graph-io-core:test \
+              :bluetape4k-graph-io-csv:test \
+              :bluetape4k-graph-io-jackson2:test \
+              :bluetape4k-graph-io-jackson3:test \
+              :bluetape4k-graph-io-graphml:test \
+              :bluetape4k-graph-okio:test \
               --no-daemon --continue && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 3 ] && sleep 10 || exit 1
@@ -187,14 +187,14 @@ jobs:
         if: always()
         run: |
           ./gradlew \
-            :graph-core:koverXmlReport \
-            :graph-tinkerpop:koverXmlReport \
-            :graph-io-core:koverXmlReport \
-            :graph-io-csv:koverXmlReport \
-            :graph-io-jackson2:koverXmlReport \
-            :graph-io-jackson3:koverXmlReport \
-            :graph-io-graphml:koverXmlReport \
-            :graph-okio:koverXmlReport \
+            :bluetape4k-graph-core:koverXmlReport \
+            :bluetape4k-graph-tinkerpop:koverXmlReport \
+            :bluetape4k-graph-io-core:koverXmlReport \
+            :bluetape4k-graph-io-csv:koverXmlReport \
+            :bluetape4k-graph-io-jackson2:koverXmlReport \
+            :bluetape4k-graph-io-jackson3:koverXmlReport \
+            :bluetape4k-graph-io-graphml:koverXmlReport \
+            :bluetape4k-graph-okio:koverXmlReport \
             --no-daemon --continue
         continue-on-error: true
 
@@ -246,7 +246,7 @@ jobs:
         run: |
           for attempt in 1 2 3; do
             ./gradlew \
-              :graph-spring-boot:test \
+              :bluetape4k-graph-spring-boot:test \
               --no-daemon --continue && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 3 ] && sleep 10 || exit 1
@@ -259,7 +259,7 @@ jobs:
         if: always()
         run: |
           ./gradlew \
-            :graph-spring-boot:koverXmlReport \
+            :bluetape4k-graph-spring-boot:koverXmlReport \
             --no-daemon
         continue-on-error: true
 
@@ -317,7 +317,7 @@ jobs:
       - name: Test graph-ktor
         run: |
           for attempt in 1 2 3; do
-            ./gradlew :graph-ktor:test --no-daemon --continue && break
+            ./gradlew :bluetape4k-graph-ktor:test --no-daemon --continue && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 3 ] && sleep 10 || exit 1
           done
@@ -334,7 +334,7 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :graph-ktor:koverXmlReport --no-daemon
+        run: ./gradlew :bluetape4k-graph-ktor:koverXmlReport --no-daemon
         continue-on-error: true
 
       - name: Upload test results
@@ -387,7 +387,7 @@ jobs:
       - name: Test graph-neo4j
         run: |
           for attempt in 1 2 3; do
-            ./gradlew :graph-neo4j:test --no-daemon && break
+            ./gradlew :bluetape4k-graph-neo4j:test --no-daemon && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 3 ] && sleep 10 || exit 1
           done
@@ -404,7 +404,7 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :graph-neo4j:koverXmlReport --no-daemon
+        run: ./gradlew :bluetape4k-graph-neo4j:koverXmlReport --no-daemon
         continue-on-error: true
 
       - name: Upload test results
@@ -457,7 +457,7 @@ jobs:
       - name: Test graph-memgraph
         run: |
           for attempt in 1 2 3; do
-            ./gradlew :graph-memgraph:test --no-daemon && break
+            ./gradlew :bluetape4k-graph-memgraph:test --no-daemon && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 3 ] && sleep 10 || exit 1
           done
@@ -474,7 +474,7 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :graph-memgraph:koverXmlReport --no-daemon
+        run: ./gradlew :bluetape4k-graph-memgraph:koverXmlReport --no-daemon
         continue-on-error: true
 
       - name: Upload test results
@@ -527,7 +527,7 @@ jobs:
       - name: Test graph-age
         run: |
           for attempt in 1 2 3; do
-            ./gradlew :graph-age:test --no-daemon && break
+            ./gradlew :bluetape4k-graph-age:test --no-daemon && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 3 ] && sleep 10 || exit 1
           done
@@ -544,7 +544,7 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :graph-age:koverXmlReport --no-daemon
+        run: ./gradlew :bluetape4k-graph-age:koverXmlReport --no-daemon
         continue-on-error: true
 
       - name: Upload test results
@@ -597,7 +597,7 @@ jobs:
       - name: Test graph-falkordb
         run: |
           for attempt in 1 2 3; do
-            ./gradlew :graph-falkordb:test --no-daemon && break
+            ./gradlew :bluetape4k-graph-falkordb:test --no-daemon && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 3 ] && sleep 10 || exit 1
           done
@@ -614,7 +614,7 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :graph-falkordb:koverXmlReport --no-daemon
+        run: ./gradlew :bluetape4k-graph-falkordb:koverXmlReport --no-daemon
         continue-on-error: true
 
       - name: Upload test results

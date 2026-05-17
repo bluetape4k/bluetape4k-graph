@@ -1,5 +1,5 @@
 dependencies {
-    api(project(":graph-core"))
+    api(project(":bluetape4k-graph-core"))
 
     api(libs.exposed.core)
     api(libs.exposed.dao)
