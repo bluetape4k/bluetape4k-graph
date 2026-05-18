@@ -399,6 +399,7 @@ GitHub Actions는 전용 `Examples` workflow도 실행한다. 이 workflow는 �
 | `AbstractLinkedInGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBLinkedInGraphSuspendTest` |
 | `AbstractRecommendationTest` | user/product/category recommendation graph 예시 |
 | `KtorGraphAppTest` | TinkerGraph 기반 Ktor `GraphPlugin` smoke 예시 |
+| `FalkorDBKtorGraphAppTest` | FalkorDB 기반 Ktor `GraphPlugin` smoke 예시 |
 
 구체 클래스는 `ops` (`GraphOperations` 또는 `GraphSuspendOperations`) 와 서버 라이프사이클(`@BeforeAll`/`@AfterAll`)만 구현하면 된다.
 

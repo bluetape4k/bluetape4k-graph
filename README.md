@@ -399,6 +399,7 @@ Each example module uses the **abstract test class pattern**. Common test logic 
 | `AbstractLinkedInGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBLinkedInGraphSuspendTest` |
 | `AbstractRecommendationTest` | User/product/category recommendation graph examples |
 | `KtorGraphAppTest` | TinkerGraph-backed Ktor `GraphPlugin` smoke example |
+| `FalkorDBKtorGraphAppTest` | FalkorDB-backed Ktor `GraphPlugin` smoke example |
 
 Concrete classes only need to implement `ops` (`GraphOperations` or `GraphSuspendOperations`) and the server lifecycle (`@BeforeAll`/`@AfterAll`).
 
