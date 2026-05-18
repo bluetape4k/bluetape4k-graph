@@ -39,6 +39,7 @@ import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.info
 import io.bluetape4k.logging.warn
 import io.bluetape4k.support.requireNotBlank
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
@@ -189,11 +190,14 @@ class FalkorDBGraphSuspendOperations(
     override suspend fun graphExists(name: String): Boolean {
         name.requireNotBlank("name")
         return withContext(Dispatchers.IO) {
-            runCatching { driver.listGraphs().contains(name) }
-                .getOrElse {
-                    log.warn(it) { "graphExists($name) failed; treating as false" }
-                    false
-                }
+            try {
+                driver.listGraphs().contains(name)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                log.warn(e) { "graphExists($name) failed; treating as false" }
+                false
+            }
         }
     }
 
