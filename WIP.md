@@ -2,7 +2,7 @@
 
 Snapshot: 2026-05-19 KST
 Scope: open GitHub issues assigned to `debop`.
-Open count: 8 issues; 7 remain after #135 closes through this work.
+Open count: 7 issues; 6 remain after #133 closes through this work.
 
 ## Refresh Notes
 
@@ -35,13 +35,15 @@ Verified with `gh` on 2026-05-19 KST.
   the targeted Ktor plugin/example tests pass without code changes.
 - Issue #135 is handled by closing the caller-owned FalkorDB driver in
   `FalkorDBKtorGraphAppTest` after the PER_CLASS test lifecycle completes.
+- Issue #133 is handled by adding the FalkorDB-backed Ktor `GraphPlugin` smoke example to the
+  English and Korean README example module tables.
 
 ## Current Direction
 
 0.3.0 is released. The next work should stabilize coroutine/cancellation
 contracts and backend readiness before widening examples or benchmark lanes:
 
-1. Finish the Ktor/FalkorDB hygiene lane with the remaining documentation/adoption items: #133 and #134.
+1. Finish the Ktor/FalkorDB hygiene lane with the remaining documentation item: #134.
 2. Then return to Neptune testability research (#113) before the backlog backend epic (#30).
 3. Keep benchmark work behind stable backend readiness and CI signal quality.
 
@@ -49,8 +51,7 @@ contracts and backend readiness before widening examples or benchmark lanes:
 
 | Priority | Issue | Difficulty | Notes |
 |---|---|---:|---|
-| P1 | [#133](https://github.com/bluetape4k/bluetape4k-graph/issues/133) add FalkorDB Ktor example to README table | S | Documentation/adoption lane. |
-| P2 | [#134](https://github.com/bluetape4k/bluetape4k-graph/issues/134) convert GraphFalkorDBAutoConfiguration KDoc to English | S | Documentation lane. |
+| P1 | [#134](https://github.com/bluetape4k/bluetape4k-graph/issues/134) convert GraphFalkorDBAutoConfiguration KDoc to English | S | Documentation lane. |
 | P3 | [#113](https://github.com/bluetape4k/bluetape4k-graph/issues/113) Neptune local testability research | M | Required predecessor for #30; backlog milestone. |
 | P3 | [#30](https://github.com/bluetape4k/bluetape4k-graph/issues/30) Amazon Neptune backend | XL | Blocked on #113. |
 | P4 | [#14](https://github.com/bluetape4k/bluetape4k-graph/issues/14) backend JMH benchmark | M | After CI gates settle. |
@@ -84,6 +85,9 @@ contracts and backend readiness before widening examples or benchmark lanes:
 
 #135 FalkorDB Ktor example teardown
   -> caller-owned FalkorDB driver is closed after PER_CLASS test lifecycle
+
+#133 FalkorDB Ktor README discoverability
+  -> English/Korean README tables list FalkorDBKtorGraphAppTest
 ```
 
 ## WIP Limits
