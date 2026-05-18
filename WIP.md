@@ -1,12 +1,12 @@
 # WIP - bluetape4k-graph
 
-Snapshot: 2026-05-18 KST
+Snapshot: 2026-05-19 KST
 Scope: open GitHub issues assigned to `debop`.
-Open count: 12 issues; 11 remain after #156 closes through this work.
+Open count: 11 issues; 10 remain after #157 closes through this work.
 
 ## Refresh Notes
 
-Verified with `gh` on 2026-05-18 KST.
+Verified with `gh` on 2026-05-19 KST.
 
 - qmd was queried first for prior graph lessons, specs, plans, and follow-ups.
 - Existing issues #156, #157, and #158 were unassigned; they are now assigned to `debop`.
@@ -25,32 +25,32 @@ Verified with `gh` on 2026-05-18 KST.
   transaction bridges and adding cancellation rollback plus returned `Flow` materialization tests.
 - Issue #156 is handled by rethrowing `CancellationException` from FalkorDB suspend `graphExists()`
   while preserving the ordinary driver-failure fallback.
+- Issue #157 is handled by replacing FalkorDB/Memgraph schema manager `runCatching {}` ignore
+  helpers with explicit `try/catch` branches that rethrow `CancellationException` before expected
+  already-exists or missing-resource fallbacks.
 
 ## Current Direction
 
 0.3.0 is released. The next work should stabilize coroutine/cancellation
 contracts and backend readiness before widening examples or benchmark lanes:
 
-1. Fix the remaining broad `runCatching{}` issue in FalkorDB/Memgraph schema managers (#157).
-2. Continue cancellation correctness work now that suspend transaction `runBlocking` bridges are removed by #158 and #160.
-3. Complete Neptune testability research (#113) before starting the backend epic (#30).
-4. Resume examples, CI automation, and benchmarks only after correctness baselines are stable.
+1. Finish and merge the FalkorDB/Memgraph schema manager cancellation fix (#157).
+2. Resume milestone 0.3.1 feature/adoption work with graph-io backed sample dataset loaders (#111).
+3. Handle Ktor/FalkorDB hygiene items after feature work: #127, #135, #133, and #134.
+4. Keep Neptune testability research (#113) as the predecessor for the backlog backend epic (#30).
 
 ## Priority Queue
 
 | Priority | Issue | Difficulty | Notes |
 |---|---|---:|---|
-| P1 | [#156](https://github.com/bluetape4k/bluetape4k-graph/issues/156) FalkorDBGraphSuspendOperations.graphExists() swallows CancellationException | S | Handled by this work; remove from active queue after merge. |
-| P1 | [#157](https://github.com/bluetape4k/bluetape4k-graph/issues/157) FalkorDB/MemgraphGraphSchemaManager overly broad runCatching{} | S | Narrow to expected exceptions; fix correctness baseline for graph-falkordb and graph-memgraph. |
-| P1 | [#158](https://github.com/bluetape4k/bluetape4k-graph/issues/158) Neo4jGraphSuspendOperations.suspendTransaction() runBlocking inside withContext(IO) | M | Remove `runBlocking`; use async Neo4j driver or coroutine-safe bridge to prevent IO thread starvation. |
-| P1 | [#160](https://github.com/bluetape4k/bluetape4k-graph/issues/160) AGE/Memgraph/TinkerGraph suspendTransaction runBlocking bridge | M | Merged; remove from active queue on next WIP refresh. |
-| P1 | [#113](https://github.com/bluetape4k/bluetape4k-graph/issues/113) Neptune local testability research | M | Required predecessor for #30. |
-| P2 | [#30](https://github.com/bluetape4k/bluetape4k-graph/issues/30) Amazon Neptune backend | XL | Blocked on #113. |
-| P2 | [#111](https://github.com/bluetape4k/bluetape4k-graph/issues/111) graph-io backed sample dataset loaders | M | Useful after backend readiness is clear. |
-| P3 | [#127](https://github.com/bluetape4k/bluetape4k-graph/issues/127) replace deprecated/internal Ktor APIs in graph-ktor | S | Build maintenance when Ktor flags concrete drift. |
-| P3 | [#133](https://github.com/bluetape4k/bluetape4k-graph/issues/133) add FalkorDB Ktor example to README table | S | Documentation lane. |
+| P1 | [#157](https://github.com/bluetape4k/bluetape4k-graph/issues/157) FalkorDB/MemgraphGraphSchemaManager overly broad runCatching{} | S | Handled by this work; remove from active queue after merge. |
+| P1 | [#111](https://github.com/bluetape4k/bluetape4k-graph/issues/111) graph-io backed sample dataset loaders | M | Highest remaining 0.3.1 feature/adoption value after cancellation correctness. |
+| P2 | [#127](https://github.com/bluetape4k/bluetape4k-graph/issues/127) replace deprecated/internal Ktor APIs in graph-ktor | S | Build maintenance when Ktor flags concrete drift. |
+| P2 | [#135](https://github.com/bluetape4k/bluetape4k-graph/issues/135) close FalkorDB driver in Ktor test teardown | S | Test hygiene after feature work. |
+| P3 | [#133](https://github.com/bluetape4k/bluetape4k-graph/issues/133) add FalkorDB Ktor example to README table | S | Documentation/adoption lane. |
 | P3 | [#134](https://github.com/bluetape4k/bluetape4k-graph/issues/134) convert GraphFalkorDBAutoConfiguration KDoc to English | S | Documentation lane. |
-| P3 | [#135](https://github.com/bluetape4k/bluetape4k-graph/issues/135) close FalkorDB driver in Ktor test teardown | S | Test hygiene. |
+| P3 | [#113](https://github.com/bluetape4k/bluetape4k-graph/issues/113) Neptune local testability research | M | Required predecessor for #30; backlog milestone. |
+| P3 | [#30](https://github.com/bluetape4k/bluetape4k-graph/issues/30) Amazon Neptune backend | XL | Blocked on #113. |
 | P4 | [#14](https://github.com/bluetape4k/bluetape4k-graph/issues/14) backend JMH benchmark | M | After CI gates settle. |
 | P4 | [#15](https://github.com/bluetape4k/bluetape4k-graph/issues/15) runtime comparison benchmark | M | After stable baselines. |
 | P4 | [#41](https://github.com/bluetape4k/bluetape4k-graph/issues/41) weighted path benchmark | S | After merged #40 baseline. |
@@ -82,8 +82,8 @@ contracts and backend readiness before widening examples or benchmark lanes:
 
 | Lane | Limit | Current next |
 |---|---:|---|
-| Cancellation correctness | 1 | #156 in PR; continue with `#157` after merge. |
+| Cancellation correctness | 1 | #157 in PR; idle after merge unless a new cancellation bug appears. |
 | Suspend transaction safety | 1 | #160 merged; keep this lane idle unless a new transaction-safety issue appears. |
 | Research / backend readiness | 1 | `#113` before `#30`. |
 | CI / automation | 1 | Keep Detekt/Kover/Dependabot governance stable; open focused follow-up issues for new gates. |
-| Examples / benchmarks | 1 | `#111` before benchmarks; keep benchmark work after CI is stable. |
+| Examples / benchmarks | 1 | `#111` is next milestone 0.3.1 work after #157 merges. |
