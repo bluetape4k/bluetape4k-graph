@@ -10,6 +10,7 @@ import io.ktor.client.request.post
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.testApplication
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
@@ -19,7 +20,7 @@ import org.junit.jupiter.api.TestInstance
  * ## Behavior / Contract
  * - Uses the singleton [FalkorDBServer.Launcher.falkordb] Testcontainers instance.
  * - The shared [driver] is caller-owned and reused across tests; it is not closed
- *   between test methods.
+ *   between test methods and is closed after the test class completes.
  * - Each test calls `POST /demo/reset` before asserting state to ensure isolation.
  *
  * ```kotlin
@@ -33,7 +34,15 @@ class FalkorDBKtorGraphAppTest {
 
     companion object : KLogging() {
         private val server = FalkorDBServer.Launcher.falkordb
-        private val driver by lazy { FalkorDB.driver(server.host, server.port) }
+        private val driverLazy = lazy { FalkorDB.driver(server.host, server.port) }
+        private val driver by driverLazy
+    }
+
+    @AfterAll
+    fun tearDown() {
+        if (driverLazy.isInitialized()) {
+            driver.close()
+        }
     }
 
     @Test
