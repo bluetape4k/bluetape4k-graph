@@ -2,7 +2,7 @@
 
 Snapshot: 2026-05-19 KST
 Scope: open GitHub issues assigned to `debop`.
-Open count: 10 issues; 9 remain after #111 closes through this work.
+Open count: 9 issues; 8 remain after #127 closes through this work.
 
 ## Refresh Notes
 
@@ -30,23 +30,24 @@ Verified with `gh` on 2026-05-19 KST.
   already-exists or missing-resource fallbacks.
 - Issue #111 is handled by adding graph-io CSV sample dataset loaders, bundled fixtures, sync/suspend
   TinkerGraph smoke coverage, English/Korean README import flows, and release notes.
+- Issue #127 is handled by auditing `graph-ktor` and `ktor-graph-examples` against Ktor 3.5.0:
+  the latest stable 3.x BOM is already used, compile output has zero Ktor deprecation warnings, and
+  the targeted Ktor plugin/example tests pass without code changes.
 
 ## Current Direction
 
 0.3.0 is released. The next work should stabilize coroutine/cancellation
 contracts and backend readiness before widening examples or benchmark lanes:
 
-1. Finish and merge graph-io backed sample dataset loaders (#111).
-2. Handle Ktor/FalkorDB hygiene items after feature work: #127, #135, #133, and #134.
+1. Close the Ktor API hygiene audit (#127) with verification evidence; no runtime change is required.
+2. Handle remaining Ktor/FalkorDB hygiene items after feature work: #135, #133, and #134.
 3. Keep Neptune testability research (#113) as the predecessor for the backlog backend epic (#30).
 
 ## Priority Queue
 
 | Priority | Issue | Difficulty | Notes |
 |---|---|---:|---|
-| P1 | [#111](https://github.com/bluetape4k/bluetape4k-graph/issues/111) graph-io backed sample dataset loaders | M | Handled by this work; remove from active queue after merge. |
-| P2 | [#127](https://github.com/bluetape4k/bluetape4k-graph/issues/127) replace deprecated/internal Ktor APIs in graph-ktor | S | Next 0.3.1 maintenance work after #111 merges. |
-| P2 | [#135](https://github.com/bluetape4k/bluetape4k-graph/issues/135) close FalkorDB driver in Ktor test teardown | S | Test hygiene after feature work. |
+| P1 | [#135](https://github.com/bluetape4k/bluetape4k-graph/issues/135) close FalkorDB driver in Ktor test teardown | S | Next 0.3.1 Ktor hygiene item after #127 verification closes. |
 | P3 | [#133](https://github.com/bluetape4k/bluetape4k-graph/issues/133) add FalkorDB Ktor example to README table | S | Documentation/adoption lane. |
 | P3 | [#134](https://github.com/bluetape4k/bluetape4k-graph/issues/134) convert GraphFalkorDBAutoConfiguration KDoc to English | S | Documentation lane. |
 | P3 | [#113](https://github.com/bluetape4k/bluetape4k-graph/issues/113) Neptune local testability research | M | Required predecessor for #30; backlog milestone. |
@@ -76,6 +77,9 @@ contracts and backend readiness before widening examples or benchmark lanes:
 
 #111 graph-io backed sample dataset loaders
   -> improved examples onboarding
+
+#127 Ktor API hygiene audit
+  -> no Ktor deprecation or version work needed on 3.5.0
 ```
 
 ## WIP Limits
@@ -86,4 +90,4 @@ contracts and backend readiness before widening examples or benchmark lanes:
 | Suspend transaction safety | 1 | #160 merged; keep this lane idle unless a new transaction-safety issue appears. |
 | Research / backend readiness | 1 | `#113` before `#30`. |
 | CI / automation | 1 | Keep Detekt/Kover/Dependabot governance stable; open focused follow-up issues for new gates. |
-| Examples / benchmarks | 1 | `#111` in PR; idle after merge unless another adoption issue is selected. |
+| Examples / benchmarks | 1 | #111 merged; idle unless another adoption issue is selected. |
