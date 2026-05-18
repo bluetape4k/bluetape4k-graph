@@ -17,7 +17,7 @@ Verified with `gh` on 2026-05-18 KST.
 - Issues #18 and #19 are handled by the CI quality-gate and dependency-governance refresh:
   - CI now blocks on Detekt in the PR build job while Kover remains report-only.
   - Leaf Dependabot stays scoped to GitHub Actions; Gradle/Maven library updates remain centralized in `bluetape4k-dependencies`.
-- Issue #126 is handled by adding a full-nightly Spring Boot FalkorDB Testcontainers job and a gated
+- Issue #126 is handled by adding a full-nightly Spring Boot FalkorDB Testcontainers step and a gated
   `@SpringBootTest` that verifies the auto-configuration path against a live FalkorDB container.
 
 ## Current Direction
