@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Neo4j suspend transactions no longer bridge through `runBlocking`**: `Neo4jGraphSuspendOperations.suspendTransaction()` now uses Neo4j reactive transactions, preserves rollback/cleanup semantics, and materializes returned transaction `Flow` values before commit ([#158](https://github.com/bluetape4k/bluetape4k-graph/issues/158)).
+
 ---
 
 ## [0.3.0] - 2026-05-16

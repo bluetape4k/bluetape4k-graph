@@ -24,42 +24,43 @@ import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphSuspendMergeOperations
 import io.bluetape4k.graph.repository.GraphSuspendTransactionScope
 import io.bluetape4k.graph.repository.GraphSuspendTransactionalOperations
-import io.bluetape4k.graph.repository.asSuspendTransactionScope
 import io.bluetape4k.graph.schema.GraphSuspendSchemaManager
 import io.bluetape4k.graph.schema.GraphSuspendSchemaManagementOperations
 import io.bluetape4k.graph.schema.asSuspendSchemaManager
 import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
+import io.bluetape4k.logging.warn
 import io.bluetape4k.support.requireNotBlank
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.reactive.asFlow
+import kotlinx.coroutines.reactive.asFlow as asReactiveFlow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.neo4j.driver.Driver
 import org.neo4j.driver.Query
 import org.neo4j.driver.Record
 import org.neo4j.driver.SessionConfig
 import org.neo4j.driver.reactivestreams.ReactiveSession
+import org.neo4j.driver.reactivestreams.ReactiveTransaction
 
 /**
- * Neo4j Java Driver 기반 [GraphSuspendOperations] 구현체 (코루틴 방식).
+ * Coroutine-based [GraphSuspendOperations] implementation for the Neo4j Java Driver.
  *
- * [ReactiveSession] + [Flow]를 사용한다.
+ * Uses [ReactiveSession] and [Flow] for non-blocking query execution. Transactional suspend blocks
+ * run on Neo4j reactive transactions, so they do not bridge through `runBlocking`.
  *
  * ```kotlin
- * val driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.none())
- * val ops = Neo4jGraphSuspendOperations(driver)
- *
- * runBlocking {
+ * suspend fun main() {
+ *     val driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.none())
+ *     val ops = Neo4jGraphSuspendOperations(driver)
  *     val alice = ops.createVertex("Person", mapOf("name" to "Alice", "age" to 30))
  *     val bob   = ops.createVertex("Person", mapOf("name" to "Bob",   "age" to 25))
  *     ops.createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to 2024))
@@ -68,6 +69,7 @@ import org.neo4j.driver.reactivestreams.ReactiveSession
  *     val path    = ops.shortestPath(alice.id, bob.id, PathOptions())
  *
  *     println(friends.map { it.properties["name"] }) // [Bob]
+ *     driver.close()
  * }
  * ```
  *
@@ -93,13 +95,91 @@ class Neo4jGraphSuspendOperations(
     override fun schemaManager(): GraphSuspendSchemaManager =
         Neo4jGraphSchemaManager(driver, database).asSuspendSchemaManager()
 
-    override suspend fun <T> suspendTransaction(block: suspend GraphSuspendTransactionScope.() -> T): T =
-        withContext(Dispatchers.IO) {
-            Neo4jGraphOperations(driver, database).transaction {
-                val scope = asSuspendTransactionScope()
-                runBlocking { scope.block() }
+    @Suppress("TooGenericExceptionCaught")
+    override suspend fun <T> suspendTransaction(block: suspend GraphSuspendTransactionScope.() -> T): T {
+        val s = session()
+        var failure: Throwable? = null
+        try {
+            val tx = beginTransaction(s) { failure = it }
+            try {
+                val result = Neo4jReactiveGraphSuspendTransactionScope(tx).block()
+                val materializedResult = materializeTransactionResult(result)
+                tx.commit<Void>().awaitFirstOrNull()
+                return materializedResult
+            } catch (e: Throwable) {
+                failure = e
+                try {
+                    withContext(NonCancellable) {
+                        tx.rollback<Void>().awaitFirstOrNull()
+                    }
+                } catch (rollbackFailure: Throwable) {
+                    e.addSuppressed(rollbackFailure)
+                }
+                throw e
+            } finally {
+                failure = closeTransaction(tx, failure)
+            }
+        } finally {
+            closeSession(s, failure)
+        }
+    }
+
+    @Suppress("TooGenericExceptionCaught")
+    private suspend fun beginTransaction(
+        session: ReactiveSession,
+        onFailure: (Throwable) -> Unit,
+    ): ReactiveTransaction =
+        try {
+            session.beginTransaction().awaitSingle()
+        } catch (e: Throwable) {
+            onFailure(e)
+            throw e
+        }
+
+    @Suppress("TooGenericExceptionCaught")
+    private suspend fun closeTransaction(
+        tx: ReactiveTransaction,
+        failure: Throwable?,
+    ): Throwable? =
+        try {
+            withContext(NonCancellable) {
+                tx.close().awaitFirstOrNull()
+            }
+            failure
+        } catch (closeFailure: Throwable) {
+            if (failure != null) {
+                failure.addSuppressed(closeFailure)
+            } else {
+                log.warn(closeFailure) { "Failed to close Neo4j reactive transaction after successful commit." }
+            }
+            failure
+        }
+
+    @Suppress("TooGenericExceptionCaught")
+    private suspend fun closeSession(
+        session: ReactiveSession,
+        failure: Throwable?,
+    ) {
+        try {
+            withContext(NonCancellable) {
+                session.close<Void>().awaitFirstOrNull()
+            }
+        } catch (closeFailure: Throwable) {
+            if (failure != null) {
+                failure.addSuppressed(closeFailure)
+            } else {
+                log.warn(closeFailure) { "Failed to close Neo4j reactive session after successful transaction." }
             }
         }
+    }
+
+    private suspend fun <T> materializeTransactionResult(result: T): T {
+        if (result !is Flow<*>) return result
+
+        val values = result.toList()
+        @Suppress("UNCHECKED_CAST")
+        return values.asFlow() as T
+    }
 
     override suspend fun mergeVertex(
         label: String,
@@ -134,7 +214,7 @@ class Neo4jGraphSuspendOperations(
         val s = session()
         return try {
             val result = s.run(Query(cypher, params)).awaitSingle()
-            result.records().asFlow().toList().map(mapper)
+            result.records().asReactiveFlow().toList().map(mapper)
         } finally {
             withContext(NonCancellable) { s.close<Void>().awaitFirstOrNull() }
         }
@@ -156,7 +236,7 @@ class Neo4jGraphSuspendOperations(
             val s = session()
             try {
                 val result = s.run(Query(cypher, params)).awaitSingle()
-                emitAll(result.records().asFlow().map(mapper))
+                emitAll(result.records().asReactiveFlow().map(mapper))
             } finally {
                 withContext(NonCancellable) { s.close<Void>().awaitFirstOrNull() }
             }
@@ -495,5 +575,185 @@ class Neo4jGraphSuspendOperations(
     override fun detectCycles(options: CycleOptions): Flow<GraphCycle> = flow {
         val list = withContext(Dispatchers.IO) { syncDelegate.detectCycles(options) }
         list.forEach { emit(it) }
+    }
+}
+
+@Suppress("TooManyFunctions")
+private class Neo4jReactiveGraphSuspendTransactionScope(
+    private val tx: ReactiveTransaction,
+): GraphSuspendTransactionScope {
+
+    private suspend fun <T> runQuery(
+        cypher: String,
+        params: Map<String, Any?> = emptyMap(),
+        mapper: (Record) -> T,
+    ): List<T> {
+        val result = tx.run(Query(cypher, params)).awaitSingle()
+        return result.records().asReactiveFlow().toList().map(mapper)
+    }
+
+    private fun <T> flowQuery(
+        cypher: String,
+        params: Map<String, Any?> = emptyMap(),
+        mapper: (Record) -> T,
+    ): Flow<T> = flow {
+        val result = tx.run(Query(cypher, params)).awaitSingle()
+        emitAll(result.records().asReactiveFlow().map(mapper))
+    }
+
+    override suspend fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex {
+        label.requireNotBlank("label").requireSafeIdentifier("label")
+
+        val propsClause = if (properties.isEmpty()) "" else $$" $props"
+        val cypher = $$"CREATE (n:$$label$$propsClause) RETURN n"
+        val params = if (properties.isEmpty()) emptyMap() else mapOf("props" to properties)
+
+        return runQuery(cypher, params) {
+            Neo4jRecordMapper.recordToVertex(it)
+        }.firstOrNull() ?: throw GraphQueryException("Failed to create vertex: $label")
+    }
+
+    override suspend fun findVertexById(label: String, id: GraphElementId): GraphVertex? {
+        label.requireNotBlank("label").requireSafeIdentifier("label")
+
+        return runQuery(
+            $$"MATCH (n:$$label) WHERE elementId(n) = $id RETURN n",
+            mapOf("id" to id.value),
+        ) {
+            Neo4jRecordMapper.recordToVertex(it)
+        }.firstOrNull()
+    }
+
+    override suspend fun findVertexById(id: GraphElementId): GraphVertex? =
+        runQuery(
+            $$"MATCH (n) WHERE elementId(n) = $id RETURN n",
+            mapOf("id" to id.value),
+        ) {
+            Neo4jRecordMapper.recordToVertex(it)
+        }.firstOrNull()
+
+    override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphVertex> {
+        label.requireNotBlank("label").requireSafeIdentifier("label")
+
+        val whereClause = if (filter.isEmpty()) "" else
+            " WHERE " + filter.keys.joinToString(" AND ") { key ->
+                val propertyKey = key.requireSafeIdentifier("property key")
+                "n.$propertyKey = \$$key"
+            }
+
+        return flowQuery(
+            $$"MATCH (n:$$label)$$whereClause RETURN n",
+            filter,
+        ) {
+            Neo4jRecordMapper.recordToVertex(it)
+        }
+    }
+
+    override suspend fun updateVertex(label: String, id: GraphElementId, properties: Map<String, Any?>): GraphVertex? {
+        label.requireNotBlank("label").requireSafeIdentifier("label")
+        if (properties.isEmpty()) return findVertexById(label, id)
+
+        val setClause = properties.keys.joinToString(", ") { key ->
+            val propertyKey = key.requireSafeIdentifier("property key")
+            "n.$propertyKey = \$$key"
+        }
+        val params = properties + mapOf("id" to id.value)
+
+        return runQuery(
+            $$"MATCH (n:$$label) WHERE elementId(n) = $id SET $$setClause RETURN n",
+            params,
+        ) {
+            Neo4jRecordMapper.recordToVertex(it)
+        }.firstOrNull()
+    }
+
+    override suspend fun deleteVertex(label: String, id: GraphElementId): Boolean {
+        label.requireNotBlank("label").requireSafeIdentifier("label")
+
+        val result = tx.run(
+            Query(
+                $$"MATCH (n:$$label) WHERE elementId(n) = $id DETACH DELETE n",
+                mapOf("id" to id.value),
+            ),
+        ).awaitSingle()
+        return result.consume().awaitSingle().counters().nodesDeleted() > 0
+    }
+
+    override suspend fun countVertices(label: String): Long {
+        label.requireNotBlank("label").requireSafeIdentifier("label")
+
+        val result = tx.run(Query($$"MATCH (n:$$label) RETURN count(n) AS cnt")).awaitSingle()
+        return result.records().awaitFirstOrNull()?.get("cnt")?.asLong() ?: 0L
+    }
+
+    override suspend fun createEdge(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        label: String,
+        properties: Map<String, Any?>,
+    ): GraphEdge {
+        label.requireNotBlank("label").requireSafeIdentifier("label")
+
+        val propsClause = if (properties.isEmpty()) "" else $$" $props"
+        val params = mutableMapOf<String, Any?>("fromId" to fromId.value, "toId" to toId.value)
+        if (properties.isNotEmpty()) params["props"] = properties
+
+        return runQuery(
+            $$"MATCH (a), (b) WHERE elementId(a) = $fromId AND elementId(b) = $toId " +
+                    $$"CREATE (a)-[r:$$label$$propsClause]->(b) RETURN r",
+            params,
+        ) {
+            Neo4jRecordMapper.recordToEdge(it)
+        }.firstOrNull() ?: throw GraphQueryException("Failed to create edge: $label")
+    }
+
+    override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphEdge> {
+        label.requireNotBlank("label").requireSafeIdentifier("label")
+
+        val whereClause = if (filter.isEmpty()) "" else
+            " WHERE " + filter.keys.joinToString(" AND ") { key ->
+                val propertyKey = key.requireSafeIdentifier("property key")
+                "r.$propertyKey = \$$key"
+            }
+
+        return flowQuery(
+            $$"MATCH ()-[r:$$label]->()$$whereClause RETURN r",
+            filter,
+        ) {
+            Neo4jRecordMapper.recordToEdge(it)
+        }
+    }
+
+    override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): Flow<GraphEdge> {
+        val labelPart = edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
+        return flowQuery(
+            $$"MATCH (n)-[r$$labelPart]->(m) WHERE elementId(n) = $startId RETURN r",
+            mapOf("startId" to startId.value),
+        ) {
+            Neo4jRecordMapper.recordToEdge(it)
+        }
+    }
+
+    override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): Flow<GraphEdge> {
+        val labelPart = edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
+        return flowQuery(
+            $$"MATCH (n)-[r$$labelPart]->(m) WHERE elementId(m) = $endId RETURN r",
+            mapOf("endId" to endId.value),
+        ) {
+            Neo4jRecordMapper.recordToEdge(it)
+        }
+    }
+
+    override suspend fun deleteEdge(label: String, id: GraphElementId): Boolean {
+        label.requireNotBlank("label").requireSafeIdentifier("label")
+        id.value.requireNotBlank("id.value")
+
+        val result = tx.run(
+            Query(
+                $$"MATCH ()-[r:$$label]->() WHERE elementId(r) = $id DELETE r",
+                mapOf("id" to id.value),
+            ),
+        ).awaitSingle()
+        return result.consume().awaitSingle().counters().relationshipsDeleted() > 0
     }
 }
