@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Neo4j suspend transactions no longer bridge through `runBlocking`**: `Neo4jGraphSuspendOperations.suspendTransaction()` now uses Neo4j reactive transactions, preserves rollback/cleanup semantics, and materializes returned transaction `Flow` values before commit ([#158](https://github.com/bluetape4k/bluetape4k-graph/issues/158)).
+- **AGE, Memgraph, and TinkerGraph suspend transactions no longer bridge through `runBlocking`**: AGE now uses Exposed suspended transactions with a native suspend transaction scope, Memgraph uses reactive Bolt transactions, and TinkerGraph uses a suspend-aware rollback snapshot path. Cancellation rollback and returned transaction `Flow` materialization are covered by targeted tests ([#160](https://github.com/bluetape4k/bluetape4k-graph/issues/160)).
 
 ---
 

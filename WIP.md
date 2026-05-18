@@ -21,6 +21,8 @@ Verified with `gh` on 2026-05-18 KST.
   `@SpringBootTest` that verifies the auto-configuration path against a live FalkorDB container.
 - Issue #158 is handled by moving Neo4j suspend transactions to the reactive transaction API, keeping
   rollback/cleanup semantics, and materializing returned transaction `Flow` values before commit.
+- Issue #160 is handled by removing the remaining AGE, Memgraph, and TinkerGraph `runBlocking`
+  transaction bridges and adding cancellation rollback plus returned `Flow` materialization tests.
 
 ## Current Direction
 
@@ -28,7 +30,7 @@ Verified with `gh` on 2026-05-18 KST.
 contracts and backend readiness before widening examples or benchmark lanes:
 
 1. Fix cancellation and `runCatching{}` issues in FalkorDB/Memgraph (#156/#157).
-2. Continue removing `runBlocking` bridges from suspend transaction implementations; #158 is fixed, #160 remains for AGE/Memgraph/TinkerGraph.
+2. Continue cancellation correctness work now that suspend transaction `runBlocking` bridges are removed by #158 and #160.
 3. Complete Neptune testability research (#113) before starting the backend epic (#30).
 4. Resume examples, CI automation, and benchmarks only after correctness baselines are stable.
 
@@ -39,7 +41,7 @@ contracts and backend readiness before widening examples or benchmark lanes:
 | P1 | [#156](https://github.com/bluetape4k/bluetape4k-graph/issues/156) FalkorDBGraphSuspendOperations.graphExists() swallows CancellationException | S | Replace `runCatching{}` so suspend function propagates cancellation correctly. |
 | P1 | [#157](https://github.com/bluetape4k/bluetape4k-graph/issues/157) FalkorDB/MemgraphGraphSchemaManager overly broad runCatching{} | S | Narrow to expected exceptions; fix correctness baseline for graph-falkordb and graph-memgraph. |
 | P1 | [#158](https://github.com/bluetape4k/bluetape4k-graph/issues/158) Neo4jGraphSuspendOperations.suspendTransaction() runBlocking inside withContext(IO) | M | Remove `runBlocking`; use async Neo4j driver or coroutine-safe bridge to prevent IO thread starvation. |
-| P1 | [#160](https://github.com/bluetape4k/bluetape4k-graph/issues/160) AGE/Memgraph/TinkerGraph suspendTransaction runBlocking bridge | M | Align the remaining suspend transaction implementations with #158. |
+| P1 | [#160](https://github.com/bluetape4k/bluetape4k-graph/issues/160) AGE/Memgraph/TinkerGraph suspendTransaction runBlocking bridge | M | Handled by this work; remove from active queue after merge. |
 | P1 | [#113](https://github.com/bluetape4k/bluetape4k-graph/issues/113) Neptune local testability research | M | Required predecessor for #30. |
 | P2 | [#30](https://github.com/bluetape4k/bluetape4k-graph/issues/30) Amazon Neptune backend | XL | Blocked on #113. |
 | P2 | [#111](https://github.com/bluetape4k/bluetape4k-graph/issues/111) graph-io backed sample dataset loaders | M | Useful after backend readiness is clear. |
@@ -60,8 +62,8 @@ contracts and backend readiness before widening examples or benchmark lanes:
 
 #158 Neo4j suspendTransaction runBlocking bridge
 #160 AGE / Memgraph / TinkerGraph suspendTransaction runBlocking bridge
-  -> remove suspend-to-blocking transaction bridges consistently
-  -> verify cancellation does not pin IO workers indefinitely
+  -> suspend-to-blocking transaction bridges removed consistently
+  -> cancellation rollback and returned Flow materialization covered by tests
 
 #113 Neptune local testability research
   -> #30 Neptune backend
@@ -78,7 +80,7 @@ contracts and backend readiness before widening examples or benchmark lanes:
 | Lane | Limit | Current next |
 |---|---:|---|
 | Cancellation correctness | 1 | Start with `#156`, then `#157`. |
-| Suspend transaction safety | 1 | Apply the #158 reactive/suspend-aware strategy to `#160` where each backend supports it. |
+| Suspend transaction safety | 1 | #160 in PR; remove this lane after merge unless a new transaction-safety issue appears. |
 | Research / backend readiness | 1 | `#113` before `#30`. |
 | CI / automation | 1 | Keep Detekt/Kover/Dependabot governance stable; open focused follow-up issues for new gates. |
 | Examples / benchmarks | 1 | `#111` before benchmarks; keep benchmark work after CI is stable. |
