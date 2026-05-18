@@ -1,8 +1,8 @@
 # WIP - bluetape4k-graph
 
-Snapshot: 2026-05-17 KST
+Snapshot: 2026-05-18 KST
 Scope: open GitHub issues assigned to `debop`, created on or after 2026-01-01.
-Open count: 5 issues.
+Open count: 8 issues.
 
 ## Recently Completed
 
@@ -43,9 +43,12 @@ proven (#113).
 
 | Priority | Issue | Difficulty | Notes |
 |---|---|---:|---|
+| P1 | [#156](https://github.com/bluetape4k/bluetape4k-graph/issues/156) FalkorDBGraphSuspendOperations.graphExists() swallows CancellationException | S | Replace `runCatching{}` so suspend function propagates cancellation correctly. |
+| P1 | [#158](https://github.com/bluetape4k/bluetape4k-graph/issues/158) Neo4jGraphSuspendOperations.suspendTransaction() runBlocking inside withContext(IO) | M | Remove `runBlocking`; use async Neo4j driver or coroutine-safe bridge to prevent IO thread starvation. |
 | P1 | [#113](https://github.com/bluetape4k/bluetape4k-graph/issues/113) Neptune local testability research | M | Required predecessor for `#30`. |
 | P1 | [#18](https://github.com/bluetape4k/bluetape4k-graph/issues/18) CI quality gates | M | Deferred from 0.3.0. |
 | P1 | [#19](https://github.com/bluetape4k/bluetape4k-graph/issues/19) Dependabot / Renovate automation | S | Deferred from 0.3.0. |
+| P2 | [#157](https://github.com/bluetape4k/bluetape4k-graph/issues/157) FalkorDB/MemgraphGraphSchemaManager overly broad runCatching{} | S | Narrow to expected exceptions; fix correctness baseline for graph-falkordb and graph-memgraph. |
 | P2 | [#111](https://github.com/bluetape4k/bluetape4k-graph/issues/111) graph-io backed sample dataset loaders | M | Deferred from 0.3.0. |
 | P2 | [#30](https://github.com/bluetape4k/bluetape4k-graph/issues/30) Amazon Neptune backend | XL | Blocked on `#113`. |
 | P3 | [#14](https://github.com/bluetape4k/bluetape4k-graph/issues/14) backend JMH benchmark | M | After CI gates settle. |
@@ -55,6 +58,14 @@ proven (#113).
 ## Dependency Map
 
 ```text
+#156 FalkorDBGraphSuspendOperations.graphExists() CancellationException fix (P1)
+#157 FalkorDB/MemgraphGraphSchemaManager overly broad runCatching{} (P2)
+  -> correctness baseline for graph-falkordb and graph-memgraph
+
+#158 Neo4jGraphSuspendOperations.suspendTransaction() runBlocking inside withContext(IO) (P1)
+  -> IO thread starvation under concurrent transaction load
+  -> long-term: migrate to async Neo4j driver
+
 #113 Neptune local testability research
   -> #30 Neptune backend
 
