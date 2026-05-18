@@ -51,7 +51,7 @@ datafaker = "2.5.4"  # https://mvnrepository.com/artifact/net.datafaker/datafake
 random-beans = "3.9.0"  # https://mvnrepository.com/artifact/io.github.benas/random-beans
 
 # Plugin versions
-detekt = "1.23.8"  # https://mvnrepository.com/artifact/io.gitlab.arturbosch.detekt/detekt-gradle-plugin
+detekt = "2.0.0-alpha.3"  # https://plugins.gradle.org/plugin/dev.detekt
 dependency-management = "1.1.7"  # https://mvnrepository.com/artifact/io.spring.gradle/dependency-management-plugin
 dokka = "2.2.0"  # https://mvnrepository.com/artifact/org.jetbrains.dokka/dokka-gradle-plugin
 kover = "0.9.8"  # https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kover-gradle-plugin
@@ -70,7 +70,7 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 kotlinx-atomicfu = { id = "org.jetbrains.kotlinx.atomicfu", version.ref = "kotlinx-atomicfu" }
 kotlinx-benchmark = { id = "org.jetbrains.kotlinx.benchmark", version.ref = "kotlinx-benchmark" }
 
-detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+detekt = { id = "dev.detekt", version.ref = "detekt" }
 dependency-management = { id = "io.spring.dependency-management", version.ref = "dependency-management" }
 spring-boot = { id = "org.springframework.boot" }
 spring-boot4 = { id = "org.springframework.boot", version.ref = "spring-boot4" }

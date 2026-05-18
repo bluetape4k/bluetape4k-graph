@@ -117,9 +117,9 @@ jobs:
               - 'settings.gradle.kts'
               - '.github/workflows/ci.yml'
 
-  # ── 3. 전체 빌드 (테스트 제외) ───────────────────────────────────────────
+  # ── 3. 전체 빌드 + Detekt 품질 게이트 ─────────────────────────────────────
   build:
-    name: Build (compile only)
+    name: Build & Detekt
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: [validate-wrapper, changes]
@@ -140,6 +140,19 @@ jobs:
         run: ./gradlew build -x test --parallel
         env:
           GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+
+      - name: Detekt static analysis
+        run: ./gradlew detekt --parallel
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+
+      - name: Upload detekt report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: detekt-report
+          path: '**/build/reports/detekt/*.xml'
+          retention-days: 7
 
   # ── 4. Core + TinkerGraph 테스트 (Docker 불필요) ──────────────────────────
   test-core:

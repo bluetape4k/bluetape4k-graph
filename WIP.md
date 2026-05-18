@@ -2,7 +2,7 @@
 
 Snapshot: 2026-05-18 KST
 Scope: open GitHub issues assigned to `debop`.
-Open count: 17 issues.
+Open count: 17 issues; 15 remain after #18/#19 close through this work.
 
 ## Refresh Notes
 
@@ -14,6 +14,9 @@ Verified with `gh` on 2026-05-18 KST.
   - [#160](https://github.com/bluetape4k/bluetape4k-graph/issues/160) - `bug: AGE, Memgraph, and TinkerGraph suspendTransaction still bridge through runBlocking`
 - PR #159 (`chore: refresh WIP snapshot - 2026-05-18`) is already merged, so this file reflects the current post-merge GitHub state.
 - Pre-existing local change `gradlew.bat` was not touched.
+- Issues #18 and #19 are handled by the CI quality-gate and dependency-governance refresh:
+  - CI now blocks on Detekt in the PR build job while Kover remains report-only.
+  - Leaf Dependabot stays scoped to GitHub Actions; Gradle/Maven library updates remain centralized in `bluetape4k-dependencies`.
 
 ## Current Direction
 
@@ -34,8 +37,6 @@ contracts and backend readiness before widening examples or benchmark lanes:
 | P1 | [#158](https://github.com/bluetape4k/bluetape4k-graph/issues/158) Neo4jGraphSuspendOperations.suspendTransaction() runBlocking inside withContext(IO) | M | Remove `runBlocking`; use async Neo4j driver or coroutine-safe bridge to prevent IO thread starvation. |
 | P1 | [#160](https://github.com/bluetape4k/bluetape4k-graph/issues/160) AGE/Memgraph/TinkerGraph suspendTransaction runBlocking bridge | M | Align the remaining suspend transaction implementations with #158. |
 | P1 | [#113](https://github.com/bluetape4k/bluetape4k-graph/issues/113) Neptune local testability research | M | Required predecessor for #30. |
-| P2 | [#18](https://github.com/bluetape4k/bluetape4k-graph/issues/18) CI quality gates | M | Deferred from 0.3.0. |
-| P2 | [#19](https://github.com/bluetape4k/bluetape4k-graph/issues/19) Dependabot / Renovate automation | S | Deferred from 0.3.0. |
 | P2 | [#30](https://github.com/bluetape4k/bluetape4k-graph/issues/30) Amazon Neptune backend | XL | Blocked on #113. |
 | P2 | [#111](https://github.com/bluetape4k/bluetape4k-graph/issues/111) graph-io backed sample dataset loaders | M | Useful after backend readiness is clear. |
 | P3 | [#126](https://github.com/bluetape4k/bluetape4k-graph/issues/126) add Spring Boot FalkorDB auto-config to nightly CI coverage | S | CI/documentation lane. |
@@ -76,5 +77,5 @@ contracts and backend readiness before widening examples or benchmark lanes:
 | Cancellation correctness | 1 | Start with `#156`, then `#157`. |
 | Suspend transaction safety | 1 | `#158` and `#160`; fix strategy should be consistent across backends. |
 | Research / backend readiness | 1 | `#113` before `#30`. |
-| CI / automation | 1 | `#18` or `#19`, one at a time. |
+| CI / automation | 1 | Keep Detekt/Kover/Dependabot governance stable; open focused follow-up issues for new gates. |
 | Examples / benchmarks | 1 | `#111` before benchmarks; keep benchmark work after CI is stable. |

@@ -61,7 +61,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: detekt-report
-          path: 'build/reports/detekt/*.xml'
+          path: '**/build/reports/detekt/*.xml'
           retention-days: 14
 
   # ── 2. Core + TinkerGraph (in-memory) ────────────────────────────────────
