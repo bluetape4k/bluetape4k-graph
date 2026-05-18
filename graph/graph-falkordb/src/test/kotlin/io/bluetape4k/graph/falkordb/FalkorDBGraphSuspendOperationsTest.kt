@@ -9,6 +9,10 @@ import io.bluetape4k.graph.repository.suspendTransaction
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
+import io.mockk.clearMocks
+import io.mockk.every
+import io.mockk.mockk
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.toList
@@ -33,6 +37,7 @@ class FalkorDBGraphSuspendOperationsTest : AbstractFalkorDBTest() {
     companion object : KLoggingChannel()
 
     private lateinit var ops: FalkorDBGraphSuspendOperations
+    private val cancelledDriver = mockk<com.falkordb.Driver>()
 
     @BeforeAll
     override fun setupAll() {
@@ -42,6 +47,7 @@ class FalkorDBGraphSuspendOperationsTest : AbstractFalkorDBTest() {
 
     @BeforeEach
     fun cleanup() = runSuspendIO {
+        clearMocks(cancelledDriver)
         ops.dropGraph(graphName)
     }
 
@@ -68,6 +74,18 @@ class FalkorDBGraphSuspendOperationsTest : AbstractFalkorDBTest() {
     fun `graphExists returns false for non-existent graph`() = runSuspendIO {
         val result = ops.graphExists("non_existent_graph_xyz_12345")
         result shouldBeEqualTo false
+    }
+
+    @Test
+    @Order(13)
+    fun `graphExists propagates coroutine cancellation`() = runSuspendIO {
+        every { cancelledDriver.listGraphs() } throws CancellationException("cancelled")
+
+        val cancelledOps = FalkorDBGraphSuspendOperations(cancelledDriver, graphName)
+
+        assertFailsWith<CancellationException> {
+            cancelledOps.graphExists(graphName)
+        }
     }
 
     // ----- 정점(Vertex) CRUD -----
