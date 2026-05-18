@@ -51,9 +51,13 @@ class GraphFalkorDBAutoConfiguration {
     companion object : KLogging()
 
     /**
-     * FalkorDB Driver 빈. 이미 등록된 Driver 빈이 있으면 재사용한다.
+     * Creates the FalkorDB driver bean.
      *
-     * username이 비어있으면 인증 없이 접속하고, 아니면 username/password 인증을 사용한다.
+     * ## Behavior / Contract
+     * - Skips registration when the application already provides a [com.falkordb.Driver] bean.
+     * - Connects without authentication when [FalkorDBGraphProperties.username] is blank.
+     * - Uses username/password authentication when a username is configured.
+     * - Spring owns this auto-created driver and closes it through the bean destroy method.
      */
     @Bean(name = ["falkordbDriver"], destroyMethod = "close")
     @ConditionalOnMissingBean(com.falkordb.Driver::class)
@@ -67,7 +71,11 @@ class GraphFalkorDBAutoConfiguration {
     }
 
     /**
-     * FalkorDB 기반 [GraphOperations] 빈.
+     * Creates the synchronous FalkorDB [GraphOperations] bean.
+     *
+     * ## Behavior / Contract
+     * - Skips registration when another [GraphOperations] bean already exists.
+     * - Uses the configured FalkorDB graph name from [FalkorDBGraphProperties.graphName].
      */
     @Bean
     @ConditionalOnMissingBean(GraphOperations::class)
@@ -75,7 +83,12 @@ class GraphFalkorDBAutoConfiguration {
         FalkorDBGraphOperations(driver, props.graphName)
 
     /**
-     * FalkorDB 기반 [GraphSuspendOperations] 빈 (코루틴).
+     * Creates the coroutine FalkorDB [GraphSuspendOperations] bean.
+     *
+     * ## Behavior / Contract
+     * - Skips registration when another [GraphSuspendOperations] bean already exists.
+     * - Registers by default and can be disabled with `bluetape4k.graph.falkordb.register-suspend=false`.
+     * - Uses the configured FalkorDB graph name from [FalkorDBGraphProperties.graphName].
      */
     @Bean
     @ConditionalOnMissingBean(GraphSuspendOperations::class)
@@ -89,7 +102,13 @@ class GraphFalkorDBAutoConfiguration {
         FalkorDBGraphSuspendOperations(driver, props.graphName)
 
     /**
-     * Virtual Thread 기반 [GraphVirtualThreadOperations] 빈.
+     * Creates the virtual-thread [GraphVirtualThreadOperations] adapter bean.
+     *
+     * ## Behavior / Contract
+     * - Skips registration when another [GraphVirtualThreadOperations] bean already exists.
+     * - Registers by default and can be disabled with `bluetape4k.graph.falkordb.register-virtual-thread=false`.
+     * - Depends on the synchronous [GraphOperations] bean supplied to this adapter.
+     * - Adapts the synchronous [GraphOperations] bean without changing the underlying FalkorDB driver ownership.
      */
     @Bean
     @ConditionalOnMissingBean(GraphVirtualThreadOperations::class)
@@ -103,8 +122,11 @@ class GraphFalkorDBAutoConfiguration {
         ops.asVirtualThread()
 
     /**
-     * Actuator HealthIndicator — nested class로 격리.
-     * Actuator 미사용 앱에서 `NoClassDefFoundError` 방지.
+     * Health indicator configuration for the FalkorDB backend.
+     *
+     * ## Behavior / Contract
+     * - Loads only when Spring Boot Actuator's `HealthIndicator` type is present.
+     * - Keeps Actuator-only bean signatures isolated from applications that do not use Actuator.
      */
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(name = ["org.springframework.boot.health.contributor.HealthIndicator"])
@@ -113,9 +135,12 @@ class GraphFalkorDBAutoConfiguration {
         companion object : KLogging()
 
         /**
-         * FalkorDB 연결 상태를 확인하는 HealthIndicator 빈.
+         * Creates the FalkorDB health indicator bean.
          *
-         * `__health__` 그래프에 `RETURN 1` 쿼리를 실행하여 연결 상태를 확인한다.
+         * ## Behavior / Contract
+         * - Skips registration when a bean named `falkordbHealthIndicator` already exists.
+         * - Runs `RETURN 1` against the `__health__` graph to verify driver connectivity.
+         * - Reports `UP` with the `backend=falkordb` detail on success and `DOWN` with the thrown exception on failure.
          */
         @Bean
         @ConditionalOnMissingBean(name = ["falkordbHealthIndicator"])
