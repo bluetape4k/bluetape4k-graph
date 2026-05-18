@@ -118,7 +118,7 @@ class GraphFalkorDBAutoConfiguration {
          * `__health__` 그래프에 `RETURN 1` 쿼리를 실행하여 연결 상태를 확인한다.
          */
         @Bean
-        @ConditionalOnMissingBean
+        @ConditionalOnMissingBean(name = ["falkordbHealthIndicator"])
         fun falkordbHealthIndicator(driver: com.falkordb.Driver): org.springframework.boot.health.contributor.HealthIndicator =
             org.springframework.boot.health.contributor.HealthIndicator {
                 try {

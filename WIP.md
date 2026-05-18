@@ -2,7 +2,7 @@
 
 Snapshot: 2026-05-18 KST
 Scope: open GitHub issues assigned to `debop`.
-Open count: 17 issues; 15 remain after #18/#19 close through this work.
+Open count: 15 issues; 14 remain after #126 closes through this work.
 
 ## Refresh Notes
 
@@ -17,6 +17,8 @@ Verified with `gh` on 2026-05-18 KST.
 - Issues #18 and #19 are handled by the CI quality-gate and dependency-governance refresh:
   - CI now blocks on Detekt in the PR build job while Kover remains report-only.
   - Leaf Dependabot stays scoped to GitHub Actions; Gradle/Maven library updates remain centralized in `bluetape4k-dependencies`.
+- Issue #126 is handled by adding a full-nightly Spring Boot FalkorDB Testcontainers job and a gated
+  `@SpringBootTest` that verifies the auto-configuration path against a live FalkorDB container.
 
 ## Current Direction
 
@@ -39,7 +41,6 @@ contracts and backend readiness before widening examples or benchmark lanes:
 | P1 | [#113](https://github.com/bluetape4k/bluetape4k-graph/issues/113) Neptune local testability research | M | Required predecessor for #30. |
 | P2 | [#30](https://github.com/bluetape4k/bluetape4k-graph/issues/30) Amazon Neptune backend | XL | Blocked on #113. |
 | P2 | [#111](https://github.com/bluetape4k/bluetape4k-graph/issues/111) graph-io backed sample dataset loaders | M | Useful after backend readiness is clear. |
-| P3 | [#126](https://github.com/bluetape4k/bluetape4k-graph/issues/126) add Spring Boot FalkorDB auto-config to nightly CI coverage | S | CI/documentation lane. |
 | P3 | [#127](https://github.com/bluetape4k/bluetape4k-graph/issues/127) replace deprecated/internal Ktor APIs in graph-ktor | S | Build maintenance when Ktor flags concrete drift. |
 | P3 | [#133](https://github.com/bluetape4k/bluetape4k-graph/issues/133) add FalkorDB Ktor example to README table | S | Documentation lane. |
 | P3 | [#134](https://github.com/bluetape4k/bluetape4k-graph/issues/134) convert GraphFalkorDBAutoConfiguration KDoc to English | S | Documentation lane. |
