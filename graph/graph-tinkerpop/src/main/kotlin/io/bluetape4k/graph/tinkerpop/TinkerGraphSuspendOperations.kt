@@ -29,9 +29,12 @@ import io.bluetape4k.graph.schema.asSuspendSchemaManager
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.support.requireNotBlank
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withContext
 
 /**
@@ -43,7 +46,7 @@ import kotlinx.coroutines.withContext
  * ```kotlin
  * val ops = TinkerGraphSuspendOperations()
  *
- * runBlocking {
+ * suspend fun writeGraph() {
  *     val alice = ops.createVertex("Person", mapOf("name" to "Alice", "age" to 30L))
  *     val bob   = ops.createVertex("Person", mapOf("name" to "Bob",   "age" to 25L))
  *     ops.createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to 2020L))
@@ -66,7 +69,9 @@ class TinkerGraphSuspendOperations(
    GraphSuspendSchemaManagementOperations,
    GraphSuspendMergeOperations {
 
-    companion object: KLoggingChannel()
+    companion object: KLoggingChannel() {
+        private const val TRANSACTION_GATE_RETRY_DELAY_MILLIS = 10L
+    }
 
     override fun close() {
         delegate.close()
@@ -75,13 +80,46 @@ class TinkerGraphSuspendOperations(
     override fun schemaManager(): GraphSuspendSchemaManager =
         delegate.schemaManager().asSuspendSchemaManager()
 
-    override suspend fun <T> suspendTransaction(block: suspend GraphSuspendTransactionScope.() -> T): T =
-        withContext(Dispatchers.IO) {
-            delegate.transaction {
-                val scope = asSuspendTransactionScope()
-                runBlocking { scope.block() }
+    @Suppress("TooGenericExceptionCaught")
+    override suspend fun <T> suspendTransaction(block: suspend GraphSuspendTransactionScope.() -> T): T {
+        acquireTransactionGate()
+        return try {
+            val snapshot = withContext(Dispatchers.IO) {
+                delegate.createTransactionSnapshot()
             }
+            try {
+                withContext(Dispatchers.IO) {
+                    val result = delegate.transactionScope().asSuspendTransactionScope().block()
+                    materializeTransactionResult(result)
+                }
+            } catch (e: Throwable) {
+                try {
+                    withContext(NonCancellable + Dispatchers.IO) {
+                        delegate.restoreTransactionSnapshot(snapshot)
+                    }
+                } catch (restoreFailure: Throwable) {
+                    e.addSuppressed(restoreFailure)
+                }
+                throw e
+            }
+        } finally {
+            delegate.releaseTransactionGate()
         }
+    }
+
+    private suspend fun acquireTransactionGate() {
+        while (!delegate.tryAcquireTransactionGate()) {
+            delay(TRANSACTION_GATE_RETRY_DELAY_MILLIS)
+        }
+    }
+
+    private suspend fun <T> materializeTransactionResult(result: T): T {
+        if (result !is Flow<*>) return result
+
+        val values = result.toList()
+        @Suppress("UNCHECKED_CAST")
+        return values.asFlow() as T
+    }
 
     override suspend fun mergeVertex(
         label: String,

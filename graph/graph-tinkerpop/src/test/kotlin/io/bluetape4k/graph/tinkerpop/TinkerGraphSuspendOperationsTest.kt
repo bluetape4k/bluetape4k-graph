@@ -8,7 +8,15 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.repository.suspendTransaction
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.coroutines.KLoggingChannel
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.withTimeout
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
 import io.bluetape4k.assertions.shouldBeNull
@@ -187,10 +195,81 @@ class TinkerGraphSuspendOperationsTest {
         ops.findEdgesByLabel("KNOWS").toList().shouldHaveSize(0)
     }
 
+    @Test
+    @Order(31)
+    fun `suspendTransaction은 취소 시 빠르게 반환하고 rollback한다`() = runSuspendIO {
+        val existing = ops.createVertex("Person", mapOf("name" to "Existing"))
+
+        assertFailsWith<TimeoutCancellationException> {
+            withTimeout(500) {
+                ops.suspendTransaction {
+                    createVertex("Person", mapOf("name" to "Cancelled"))
+                    awaitCancellation()
+                }
+            }
+        }
+
+        ops.findVertexById("Person", existing.id)?.properties?.get("name") shouldBeEqualTo "Existing"
+        ops.countVertices("Person") shouldBeEqualTo 1L
+    }
+
+    @Test
+    @Order(32)
+    fun `suspendTransaction은 반환된 Flow를 commit 전에 materialize한다`() = runSuspendIO {
+        val people = ops.suspendTransaction {
+            createVertex("Person", mapOf("name" to "Alice"))
+            findVerticesByLabel("Person")
+        }
+
+        val names = people.toList().map { it.properties["name"] }
+        names shouldContain "Alice"
+    }
+
+    @Test
+    @Order(33)
+    fun `suspendTransaction은 동기 transaction과 rollback snapshot을 직렬화한다`() = runSuspendIO {
+        val delegate = TinkerGraphOperations()
+        val suspendOps = TinkerGraphSuspendOperations(delegate)
+        try {
+            coroutineScope {
+                val started = CompletableDeferred<Unit>()
+                val release = CompletableDeferred<Unit>()
+                val suspendTx = async(Dispatchers.IO) {
+                    assertFailsWith<IllegalStateException> {
+                        suspendOps.suspendTransaction {
+                            createVertex("Person", mapOf("name" to "Suspending"))
+                            started.complete(Unit)
+                            release.await()
+                            error("rollback")
+                        }
+                    }
+                }
+
+                started.await()
+                val syncTx = async(Dispatchers.IO) {
+                    delegate.transaction {
+                        createVertex("Person", mapOf("name" to "Sync"))
+                    }
+                }
+
+                delay(100)
+                release.complete(Unit)
+                suspendTx.await()
+                syncTx.await()
+            }
+
+            val names = delegate.findVerticesByLabel("Person").map { it.properties["name"] }
+            names shouldContain "Sync"
+            delegate.countVertices("Person") shouldBeEqualTo 1L
+        } finally {
+            suspendOps.close()
+        }
+    }
+
     // ----- 간선(Edge) CRUD -----
 
     @Test
-    @Order(30)
+    @Order(34)
     fun `두 정점 사이에 간선을 생성한다`() = runSuspendIO {
         val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
         val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
@@ -204,7 +283,7 @@ class TinkerGraphSuspendOperationsTest {
     }
 
     @Test
-    @Order(31)
+    @Order(35)
     fun `label로 간선 목록을 조회한다`() = runSuspendIO {
         val a = ops.createVertex("Person", mapOf("name" to "A"))
         val b = ops.createVertex("Person", mapOf("name" to "B"))
@@ -220,7 +299,7 @@ class TinkerGraphSuspendOperationsTest {
     }
 
     @Test
-    @Order(32)
+    @Order(36)
     fun `간선을 삭제한다`() = runSuspendIO {
         val a = ops.createVertex("Person", mapOf("name" to "A"))
         val b = ops.createVertex("Person", mapOf("name" to "B"))

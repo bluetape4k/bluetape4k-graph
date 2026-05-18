@@ -43,6 +43,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.T
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph
+import java.util.concurrent.Semaphore
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__ as AnonymousTraversal
@@ -78,6 +79,7 @@ class TinkerGraphOperations :
     private val graph: TinkerGraph = TinkerGraph.open()
     private val g: GraphTraversalSource = graph.traversal()
     private val schemaManager = TinkerGraphSchemaManager()
+    private val transactionGate = Semaphore(1)
     private val writeLock = ReentrantLock()
 
     override fun close() {
@@ -107,19 +109,51 @@ class TinkerGraphOperations :
     // -- GraphTransactionalOperations --
 
     override fun <T> transaction(block: GraphTransactionScope.() -> T): T =
-        synchronized(graph) {
-            val snapshot = snapshot()
-            try {
-                block(TinkerGraphTransactionScope(this))
-            } catch (e: Throwable) {
+        withTransactionGate {
+            synchronized(graph) {
+                val snapshot = snapshot()
                 try {
-                    restore(snapshot)
-                } catch (restoreFailure: Throwable) {
-                    e.addSuppressed(restoreFailure)
+                    block(TinkerGraphTransactionScope(this))
+                } catch (e: Throwable) {
+                    try {
+                        restore(snapshot)
+                    } catch (restoreFailure: Throwable) {
+                        e.addSuppressed(restoreFailure)
+                    }
+                    throw e
                 }
-                throw e
             }
         }
+
+    internal fun tryAcquireTransactionGate(): Boolean =
+        transactionGate.tryAcquire()
+
+    internal fun releaseTransactionGate() {
+        transactionGate.release()
+    }
+
+    internal fun createTransactionSnapshot(): Any =
+        synchronized(graph) {
+            snapshot()
+        }
+
+    internal fun restoreTransactionSnapshot(snapshot: Any) {
+        synchronized(graph) {
+            restore(snapshot as TinkerGraphSnapshot)
+        }
+    }
+
+    internal fun transactionScope(): GraphTransactionScope =
+        TinkerGraphTransactionScope(this)
+
+    private fun <T> withTransactionGate(block: () -> T): T {
+        transactionGate.acquire()
+        try {
+            return block()
+        } finally {
+            transactionGate.release()
+        }
+    }
 
     // -- GraphVertexRepository --
 
@@ -222,27 +256,29 @@ class TinkerGraphOperations :
         matchProperties: Map<String, Any?>,
         setProperties: Map<String, Any?>,
     ): GraphVertex =
-        synchronized(graph) {
-            val properties = GraphMergeValidation.validateVertex(label, matchProperties, setProperties)
-            val traversal = g.V().hasLabel(label)
-            properties.matchProperties.forEach { (key, value) ->
-                traversal.has(key, value)
-            }
-            val optional = traversal.tryNext()
-            val vertex = if (optional.isPresent) {
-                optional.get()
-            } else {
-                val create = g.addV(label)
+        withTransactionGate {
+            synchronized(graph) {
+                val properties = GraphMergeValidation.validateVertex(label, matchProperties, setProperties)
+                val traversal = g.V().hasLabel(label)
                 properties.matchProperties.forEach { (key, value) ->
-                    create.property(key, value)
+                    traversal.has(key, value)
                 }
-                create.next()
-            }
+                val optional = traversal.tryNext()
+                val vertex = if (optional.isPresent) {
+                    optional.get()
+                } else {
+                    val create = g.addV(label)
+                    properties.matchProperties.forEach { (key, value) ->
+                        create.property(key, value)
+                    }
+                    create.next()
+                }
 
-            properties.setProperties.forEach { (key, value) ->
-                if (value != null) vertex.property(key, value)
+                properties.setProperties.forEach { (key, value) ->
+                    if (value != null) vertex.property(key, value)
+                }
+                GremlinRecordMapper.vertexToGraphVertex(vertex)
             }
-            GremlinRecordMapper.vertexToGraphVertex(vertex)
         }
 
     // -- GraphEdgeRepository --
@@ -352,34 +388,36 @@ class TinkerGraphOperations :
         matchProperties: Map<String, Any?>,
         setProperties: Map<String, Any?>,
     ): GraphEdge =
-        synchronized(graph) {
-            val properties = GraphMergeValidation.validateEdge(fromId, toId, label, matchProperties, setProperties)
-            val fromIdValue = fromId.value.toLongOrNull()
-                ?: throw GraphQueryException("Invalid fromId: ${fromId.value}")
-            val toIdValue = toId.value.toLongOrNull()
-                ?: throw GraphQueryException("Invalid toId: ${toId.value}")
+        withTransactionGate {
+            synchronized(graph) {
+                val properties = GraphMergeValidation.validateEdge(fromId, toId, label, matchProperties, setProperties)
+                val fromIdValue = fromId.value.toLongOrNull()
+                    ?: throw GraphQueryException("Invalid fromId: ${fromId.value}")
+                val toIdValue = toId.value.toLongOrNull()
+                    ?: throw GraphQueryException("Invalid toId: ${toId.value}")
 
-            val traversal = g.V(fromIdValue).outE(label)
-                .where(AnonymousTraversal.inV().hasId(toIdValue))
-            properties.matchProperties.forEach { (key, value) ->
-                traversal.has(key, value)
-            }
-
-            val optional = traversal.tryNext()
-            val edge: Edge = if (optional.isPresent) {
-                optional.get()
-            } else {
-                val create = g.V(fromIdValue).addE(label).to(AnonymousTraversal.V<Vertex>(toIdValue))
+                val traversal = g.V(fromIdValue).outE(label)
+                    .where(AnonymousTraversal.inV().hasId(toIdValue))
                 properties.matchProperties.forEach { (key, value) ->
-                    create.property(key, value)
+                    traversal.has(key, value)
                 }
-                create.next()
-            }
 
-            properties.setProperties.forEach { (key, value) ->
-                if (value != null) edge.property(key, value)
+                val optional = traversal.tryNext()
+                val edge: Edge = if (optional.isPresent) {
+                    optional.get()
+                } else {
+                    val create = g.V(fromIdValue).addE(label).to(AnonymousTraversal.V<Vertex>(toIdValue))
+                    properties.matchProperties.forEach { (key, value) ->
+                        create.property(key, value)
+                    }
+                    create.next()
+                }
+
+                properties.setProperties.forEach { (key, value) ->
+                    if (value != null) edge.property(key, value)
+                }
+                GremlinRecordMapper.edgeToGraphEdge(edge)
             }
-            GremlinRecordMapper.edgeToGraphEdge(edge)
         }
 
     // -- GraphTraversalRepository --

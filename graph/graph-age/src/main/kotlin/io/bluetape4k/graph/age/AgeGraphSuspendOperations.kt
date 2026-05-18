@@ -25,7 +25,6 @@ import io.bluetape4k.graph.repository.GraphSuspendMergeOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphSuspendTransactionScope
 import io.bluetape4k.graph.repository.GraphSuspendTransactionalOperations
-import io.bluetape4k.graph.repository.asSuspendTransactionScope
 import io.bluetape4k.graph.schema.GraphSuspendSchemaManagementOperations
 import io.bluetape4k.graph.schema.GraphSuspendSchemaManager
 import io.bluetape4k.graph.schema.asSuspendSchemaManager
@@ -34,11 +33,13 @@ import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.support.requireNotBlank
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.v1.jdbc.transactions.experimental.newSuspendedTransaction
+import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
 
 /**
  * Apache AGE + PostgreSQL 기반 [GraphSuspendOperations] 구현체 (코루틴 방식).
@@ -55,7 +56,7 @@ import org.jetbrains.exposed.v1.jdbc.transactions.experimental.newSuspendedTrans
  * // HikariCP DataSource 생성 (connectionInitSql로 AGE 로드)
  * val ops = AgeGraphSuspendOperations("social")
  *
- * runBlocking {
+ * suspend fun writeGraph() {
  *     ops.createGraph("social")
  *
  *     val alice = ops.createVertex("Person", mapOf("name" to "Alice", "age" to 30))
@@ -89,12 +90,18 @@ class AgeGraphSuspendOperations(
         AgeGraphSchemaManager().asSuspendSchemaManager()
 
     override suspend fun <T> suspendTransaction(block: suspend GraphSuspendTransactionScope.() -> T): T =
-        withContext(Dispatchers.IO) {
-            AgeGraphOperations(graphName).transaction {
-                val scope = asSuspendTransactionScope()
-                runBlocking { scope.block() }
-            }
+        newSuspendedTransaction(Dispatchers.IO) {
+            val result = AgeGraphSuspendTransactionScope(graphName).block()
+            materializeTransactionResult(result)
         }
+
+    private suspend fun <T> materializeTransactionResult(result: T): T {
+        if (result !is Flow<*>) return result
+
+        val values = result.toList()
+        @Suppress("UNCHECKED_CAST")
+        return values.asFlow() as T
+    }
 
     override suspend fun mergeVertex(
         label: String,
@@ -494,5 +501,176 @@ class AgeGraphSuspendOperations(
     override fun pageRank(options: PageRankOptions): Flow<PageRankScore> = flow {
         val list = withContext(Dispatchers.IO) { syncDelegate.pageRank(options) }
         list.forEach { emit(it) }
+    }
+}
+
+@Suppress("TooManyFunctions")
+private class AgeGraphSuspendTransactionScope(
+    private val graphName: String,
+): GraphSuspendTransactionScope {
+
+    private fun GraphElementId.toAgeLong(): Long =
+        value.toLongOrNull()
+            ?: throw GraphQueryException("AGE requires numeric ID, got: $value")
+
+    override suspend fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex {
+        label.requireNotBlank("label")
+
+        var vertex: GraphVertex? = null
+        TransactionManager.current().exec(AgeSql.createVertex(graphName, label, properties)) { rs ->
+            if (rs.next()) {
+                vertex = AgeTypeParser.parseVertex(rs.getString("v"))
+            }
+        }
+        return vertex ?: throw GraphQueryException("Failed to create vertex with label=$label")
+    }
+
+    override suspend fun findVertexById(label: String, id: GraphElementId): GraphVertex? {
+        label.requireNotBlank("label")
+        val longId = id.toAgeLong()
+
+        var vertex: GraphVertex? = null
+        TransactionManager.current().exec(AgeSql.matchVertexById(graphName, label, longId)) { rs ->
+            if (rs.next()) {
+                vertex = AgeTypeParser.parseVertex(rs.getString("v"))
+            }
+        }
+        return vertex
+    }
+
+    override suspend fun findVertexById(id: GraphElementId): GraphVertex? {
+        val longId = id.toAgeLong()
+
+        var vertex: GraphVertex? = null
+        TransactionManager.current().exec(AgeSql.matchVertexById(graphName, longId)) { rs ->
+            if (rs.next()) {
+                vertex = AgeTypeParser.parseVertex(rs.getString("v"))
+            }
+        }
+        return vertex
+    }
+
+    override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphVertex> {
+        label.requireNotBlank("label")
+        return flow {
+            val vertices = mutableListOf<GraphVertex>()
+            TransactionManager.current().exec(AgeSql.matchVertices(graphName, label, filter)) { rs ->
+                while (rs.next()) {
+                    vertices.add(AgeTypeParser.parseVertex(rs.getString("v")))
+                }
+            }
+            vertices.forEach { emit(it) }
+        }
+    }
+
+    override suspend fun updateVertex(
+        label: String,
+        id: GraphElementId,
+        properties: Map<String, Any?>,
+    ): GraphVertex? {
+        label.requireNotBlank("label")
+        val longId = id.toAgeLong()
+
+        var vertex: GraphVertex? = null
+        TransactionManager.current().exec(AgeSql.updateVertex(graphName, label, longId, properties)) { rs ->
+            if (rs.next()) {
+                vertex = AgeTypeParser.parseVertex(rs.getString("v"))
+            }
+        }
+        return vertex
+    }
+
+    override suspend fun deleteVertex(label: String, id: GraphElementId): Boolean {
+        label.requireNotBlank("label")
+        val longId = id.toAgeLong()
+
+        var deleted = false
+        TransactionManager.current().exec(AgeSql.deleteVertex(graphName, label, longId)) { rs ->
+            deleted = rs.next()
+        }
+        return deleted
+    }
+
+    override suspend fun countVertices(label: String): Long {
+        label.requireNotBlank("label")
+
+        var count = 0L
+        TransactionManager.current().exec(AgeSql.countVertices(graphName, label)) { rs ->
+            if (rs.next()) {
+                count = rs.getString("count").trim().toLongOrNull() ?: 0L
+            }
+        }
+        return count
+    }
+
+    override suspend fun createEdge(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        label: String,
+        properties: Map<String, Any?>,
+    ): GraphEdge {
+        label.requireNotBlank("label")
+        val from = fromId.toAgeLong()
+        val to = toId.toAgeLong()
+
+        var edge: GraphEdge? = null
+        TransactionManager.current().exec(AgeSql.createEdge(graphName, from, to, label, properties)) { rs ->
+            if (rs.next()) {
+                edge = AgeTypeParser.parseEdge(rs.getString("e"))
+            }
+        }
+        return edge ?: throw GraphQueryException("Failed to create edge: $label ($fromId -> $toId)")
+    }
+
+    override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphEdge> {
+        label.requireNotBlank("label")
+        return flow {
+            val edges = mutableListOf<GraphEdge>()
+            TransactionManager.current().exec(AgeSql.matchEdgesByLabel(graphName, label, filter)) { rs ->
+                while (rs.next()) {
+                    edges.add(AgeTypeParser.parseEdge(rs.getString("e")))
+                }
+            }
+            edges.forEach { emit(it) }
+        }
+    }
+
+    override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): Flow<GraphEdge> {
+        val longId = startId.toAgeLong()
+
+        return flow {
+            val edges = mutableListOf<GraphEdge>()
+            TransactionManager.current().exec(AgeSql.matchEdgesByStartId(graphName, longId, edgeLabel)) { rs ->
+                while (rs.next()) {
+                    edges.add(AgeTypeParser.parseEdge(rs.getString("e")))
+                }
+            }
+            edges.forEach { emit(it) }
+        }
+    }
+
+    override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): Flow<GraphEdge> {
+        val longId = endId.toAgeLong()
+
+        return flow {
+            val edges = mutableListOf<GraphEdge>()
+            TransactionManager.current().exec(AgeSql.matchEdgesByEndId(graphName, longId, edgeLabel)) { rs ->
+                while (rs.next()) {
+                    edges.add(AgeTypeParser.parseEdge(rs.getString("e")))
+                }
+            }
+            edges.forEach { emit(it) }
+        }
+    }
+
+    override suspend fun deleteEdge(label: String, id: GraphElementId): Boolean {
+        label.requireNotBlank("label")
+        val longId = id.toAgeLong()
+
+        var deleted = false
+        TransactionManager.current().exec(AgeSql.deleteEdge(graphName, label, longId)) { rs ->
+            deleted = rs.next()
+        }
+        return deleted
     }
 }

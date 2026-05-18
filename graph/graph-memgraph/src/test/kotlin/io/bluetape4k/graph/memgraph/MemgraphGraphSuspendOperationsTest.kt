@@ -10,7 +10,10 @@ import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
 import io.bluetape4k.testcontainers.graphdb.MemgraphServer
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.withTimeout
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
 import io.bluetape4k.assertions.shouldBeNull
@@ -193,7 +196,37 @@ class MemgraphGraphSuspendOperationsTest {
     }
 
     @Test
-    @Order(29)
+    @Order(30)
+    fun `suspendTransaction은 취소 시 빠르게 반환하고 rollback한다`() = runSuspendIO {
+        val existing = ops.createVertex("Person", mapOf("name" to "Existing"))
+
+        assertFailsWith<TimeoutCancellationException> {
+            withTimeout(500) {
+                ops.suspendTransaction {
+                    createVertex("Person", mapOf("name" to "Cancelled"))
+                    awaitCancellation()
+                }
+            }
+        }
+
+        ops.findVertexById("Person", existing.id)?.properties?.get("name") shouldBeEqualTo "Existing"
+        ops.countVertices("Person") shouldBeEqualTo 1L
+    }
+
+    @Test
+    @Order(31)
+    fun `suspendTransaction은 반환된 Flow를 commit 전에 materialize한다`() = runSuspendIO {
+        val people = ops.suspendTransaction {
+            createVertex("Person", mapOf("name" to "Alice"))
+            findVerticesByLabel("Person")
+        }
+
+        val names = people.toList().map { it.properties["name"] }
+        names shouldContain "Alice"
+    }
+
+    @Test
+    @Order(32)
     fun `unsafe Cypher identifiers are rejected before query execution`() = runSuspendIO {
         assertFailsWith<IllegalArgumentException> {
             ops.findVerticesByLabel("Person", mapOf("name) RETURN n MATCH (m" to "Alice")).toList()
@@ -206,7 +239,7 @@ class MemgraphGraphSuspendOperationsTest {
     // ----- 간선(Edge) CRUD -----
 
     @Test
-    @Order(30)
+    @Order(33)
     fun `두 정점 사이에 간선을 생성한다`() = runSuspendIO {
         val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
         val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
@@ -221,7 +254,7 @@ class MemgraphGraphSuspendOperationsTest {
     }
 
     @Test
-    @Order(31)
+    @Order(34)
     fun `label로 간선 목록을 조회한다`() = runSuspendIO {
         val a = ops.createVertex("Person", mapOf("name" to "A"))
         val b = ops.createVertex("Person", mapOf("name" to "B"))

@@ -12,7 +12,10 @@ import io.bluetape4k.graph.repository.suspendTransaction
 import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.KLogging
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.withTimeout
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeGreaterThan
@@ -189,10 +192,40 @@ class AgeGraphSuspendOperationsTest {
         ops.findEdgesByLabel("KNOWS").toList().shouldBeEmpty()
     }
 
+    @Test
+    @Order(30)
+    fun `suspendTransaction은 취소 시 빠르게 반환하고 rollback한다`() = runSuspendIO {
+        val existing = ops.createVertex("Person", mapOf("name" to "Existing"))
+
+        assertFailsWith<TimeoutCancellationException> {
+            withTimeout(500) {
+                ops.suspendTransaction {
+                    createVertex("Person", mapOf("name" to "Cancelled"))
+                    awaitCancellation()
+                }
+            }
+        }
+
+        ops.findVertexById("Person", existing.id)?.properties?.get("name") shouldBeEqualTo "Existing"
+        ops.countVertices("Person") shouldBeEqualTo 1L
+    }
+
+    @Test
+    @Order(31)
+    fun `suspendTransaction은 반환된 Flow를 commit 전에 materialize한다`() = runSuspendIO {
+        val people = ops.suspendTransaction {
+            createVertex("Person", mapOf("name" to "Alice"))
+            findVerticesByLabel("Person")
+        }
+
+        val names = people.toList().map { it.properties["name"] }
+        names.any { it == "Alice" }.shouldBeTrue()
+    }
+
     // ───────────────────────── 간선(Edge) CRUD ─────────────────────────
 
     @Test
-    @Order(30)
+    @Order(32)
     fun `두 정점 사이에 간선을 생성한다`() = runSuspendIO {
         val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
         val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
@@ -203,7 +236,7 @@ class AgeGraphSuspendOperationsTest {
     }
 
     @Test
-    @Order(31)
+    @Order(33)
     fun `label로 간선 목록을 조회한다`() = runSuspendIO {
         val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
         val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
@@ -216,7 +249,7 @@ class AgeGraphSuspendOperationsTest {
     }
 
     @Test
-    @Order(32)
+    @Order(34)
     fun `간선을 삭제한다`() = runSuspendIO {
         val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
         val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
