@@ -1,0 +1,6 @@
+id,label,from,to,prop.confidence,prop.relationType
+mention-doc-kotlin,MENTIONS,doc-graph,entity-kotlin,95,
+mention-doc-graph,MENTIONS,doc-graph,entity-graph,90,
+related-kotlin-graph,RELATED_TO,entity-kotlin,entity-graph,,uses
+related-graph-falkordb,RELATED_TO,entity-graph,entity-falkordb,,backend
+is-a-falkordb-database,IS_A,entity-falkordb,concept-database,,

@@ -1,0 +1,7 @@
+id,label,prop.userId,prop.displayName,prop.segment,prop.productId,prop.name,prop.category
+u-alice,User,u-alice,Alice,retail,,,
+u-bob,User,u-bob,Bob,retail,,,
+u-carol,User,u-carol,Carol,creator,,,
+p-camera,Product,,,,p-camera,Camera,photo
+p-tripod,Product,,,,p-tripod,Tripod,photo
+p-light,Product,,,,p-light,Light,studio

@@ -5,6 +5,7 @@ dependencies {
     implementation(project(":bluetape4k-graph-memgraph"))
     implementation(project(":bluetape4k-graph-tinkerpop"))
     implementation(project(":bluetape4k-graph-falkordb"))
+    implementation(project(":bluetape4k-graph-io-csv"))
 
     implementation(libs.bluetape4k.coroutines)
     implementation(libs.kotlinx.coroutines.core.lib)

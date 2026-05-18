@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **graph-io backed domain example sample loaders**: fraud detection, recommendation, and knowledge graph examples now include bundled CSV fixtures plus sync/suspend sample dataset loaders, with TinkerGraph smoke coverage and English/Korean README import flows ([#111](https://github.com/bluetape4k/bluetape4k-graph/issues/111)).
+
 ### Fixed
 
 - **FalkorDB and Memgraph schema manager DDL fallbacks preserve cancellation**: schema manager create/drop index helper paths now rethrow `CancellationException` before applying already-exists or missing-resource message fallbacks ([#157](https://github.com/bluetape4k/bluetape4k-graph/issues/157)).

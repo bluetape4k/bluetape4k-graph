@@ -128,6 +128,27 @@ val products = service.recommendProducts(alice.id)
 val popular = service.rankPopularProducts(limit = 10)
 ```
 
+## Sample Dataset Import
+
+`RecommendationSampleDatasetLoader` imports the bundled graph-io CSV fixture into any `GraphOperations`
+implementation. The fixture contains users, products, purchase edges, and follow edges that produce stable product and
+follow recommendations.
+
+```kotlin
+val service = RecommendationService(ops)
+service.initialize()
+
+val report = RecommendationSampleDatasetLoader.importCsv(ops)
+val alice = ops.findVerticesByLabel("User", mapOf("userId" to "u-alice")).single()
+
+check(report.status == GraphIoStatus.COMPLETED)
+val products = service.recommendProducts(alice.id)
+val follows = service.recommendFollows(alice.id)
+```
+
+The TinkerGraph smoke test is sufficient for the loader path because graph-io writes through the shared
+`GraphOperations` contract. Container-backed backend behavior remains covered by the existing domain test matrix.
+
 ## How to Read the Tests
 
 The abstract tests are the tutorial. They build a tiny graph, run a recommendation, and assert stable membership rather
@@ -151,10 +172,11 @@ TinkerGraph tests run in memory. Neo4j, Memgraph, Apache AGE, and FalkorDB tests
 ## Dependencies
 
 ```kotlin
-implementation(project(":graph-core"))
-implementation(project(":graph-neo4j"))
-implementation(project(":graph-memgraph"))
-implementation(project(":graph-age"))
-implementation(project(":graph-falkordb"))
-implementation(project(":graph-tinkerpop"))
+implementation(project(":bluetape4k-graph-core"))
+implementation(project(":bluetape4k-graph-neo4j"))
+implementation(project(":bluetape4k-graph-memgraph"))
+implementation(project(":bluetape4k-graph-age"))
+implementation(project(":bluetape4k-graph-falkordb"))
+implementation(project(":bluetape4k-graph-tinkerpop"))
+implementation(project(":bluetape4k-graph-io-csv"))
 ```

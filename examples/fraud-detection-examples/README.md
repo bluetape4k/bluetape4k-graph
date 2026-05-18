@@ -119,6 +119,25 @@ val clusters = service.detectSuspiciousClusters(minSize = 3)
 val ranked = service.rankHighRiskAccounts(limit = 10)
 ```
 
+## Sample Dataset Import
+
+`FraudDetectionSampleDatasetLoader` imports the bundled graph-io CSV fixture into any `GraphOperations`
+implementation. The fixture contains three accounts and a circular transfer chain, so it is immediately usable with the
+analysis methods above.
+
+```kotlin
+val service = FraudDetectionService(ops)
+service.initialize()
+
+val report = FraudDetectionSampleDatasetLoader.importCsv(ops)
+
+check(report.status == GraphIoStatus.COMPLETED)
+val cycles = service.detectCircularTransfers(maxDepth = 5)
+```
+
+The TinkerGraph smoke test covers this import flow because the loader exercises graph-io through the backend-independent
+`GraphOperations` contract. Container-backed backend behavior remains covered by the existing domain test matrix.
+
 ## How to Read the Tests
 
 Start with `AbstractFraudDetectionTest` and `AbstractFraudDetectionSuspendTest`. They contain the learning scenarios.
@@ -142,10 +161,11 @@ TinkerGraph tests run in memory. Neo4j, Memgraph, Apache AGE, and FalkorDB tests
 ## Dependencies
 
 ```kotlin
-implementation(project(":graph-core"))
-implementation(project(":graph-neo4j"))
-implementation(project(":graph-memgraph"))
-implementation(project(":graph-age"))
-implementation(project(":graph-falkordb"))
-implementation(project(":graph-tinkerpop"))
+implementation(project(":bluetape4k-graph-core"))
+implementation(project(":bluetape4k-graph-neo4j"))
+implementation(project(":bluetape4k-graph-memgraph"))
+implementation(project(":bluetape4k-graph-age"))
+implementation(project(":bluetape4k-graph-falkordb"))
+implementation(project(":bluetape4k-graph-tinkerpop"))
+implementation(project(":bluetape4k-graph-io-csv"))
 ```
