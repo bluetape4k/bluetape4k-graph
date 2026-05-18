@@ -2,7 +2,7 @@
 
 Snapshot: 2026-05-19 KST
 Scope: open GitHub issues assigned to `debop`.
-Open count: 11 issues; 10 remain after #157 closes through this work.
+Open count: 10 issues; 9 remain after #111 closes through this work.
 
 ## Refresh Notes
 
@@ -28,24 +28,24 @@ Verified with `gh` on 2026-05-19 KST.
 - Issue #157 is handled by replacing FalkorDB/Memgraph schema manager `runCatching {}` ignore
   helpers with explicit `try/catch` branches that rethrow `CancellationException` before expected
   already-exists or missing-resource fallbacks.
+- Issue #111 is handled by adding graph-io CSV sample dataset loaders, bundled fixtures, sync/suspend
+  TinkerGraph smoke coverage, English/Korean README import flows, and release notes.
 
 ## Current Direction
 
 0.3.0 is released. The next work should stabilize coroutine/cancellation
 contracts and backend readiness before widening examples or benchmark lanes:
 
-1. Finish and merge the FalkorDB/Memgraph schema manager cancellation fix (#157).
-2. Resume milestone 0.3.1 feature/adoption work with graph-io backed sample dataset loaders (#111).
-3. Handle Ktor/FalkorDB hygiene items after feature work: #127, #135, #133, and #134.
-4. Keep Neptune testability research (#113) as the predecessor for the backlog backend epic (#30).
+1. Finish and merge graph-io backed sample dataset loaders (#111).
+2. Handle Ktor/FalkorDB hygiene items after feature work: #127, #135, #133, and #134.
+3. Keep Neptune testability research (#113) as the predecessor for the backlog backend epic (#30).
 
 ## Priority Queue
 
 | Priority | Issue | Difficulty | Notes |
 |---|---|---:|---|
-| P1 | [#157](https://github.com/bluetape4k/bluetape4k-graph/issues/157) FalkorDB/MemgraphGraphSchemaManager overly broad runCatching{} | S | Handled by this work; remove from active queue after merge. |
-| P1 | [#111](https://github.com/bluetape4k/bluetape4k-graph/issues/111) graph-io backed sample dataset loaders | M | Highest remaining 0.3.1 feature/adoption value after cancellation correctness. |
-| P2 | [#127](https://github.com/bluetape4k/bluetape4k-graph/issues/127) replace deprecated/internal Ktor APIs in graph-ktor | S | Build maintenance when Ktor flags concrete drift. |
+| P1 | [#111](https://github.com/bluetape4k/bluetape4k-graph/issues/111) graph-io backed sample dataset loaders | M | Handled by this work; remove from active queue after merge. |
+| P2 | [#127](https://github.com/bluetape4k/bluetape4k-graph/issues/127) replace deprecated/internal Ktor APIs in graph-ktor | S | Next 0.3.1 maintenance work after #111 merges. |
 | P2 | [#135](https://github.com/bluetape4k/bluetape4k-graph/issues/135) close FalkorDB driver in Ktor test teardown | S | Test hygiene after feature work. |
 | P3 | [#133](https://github.com/bluetape4k/bluetape4k-graph/issues/133) add FalkorDB Ktor example to README table | S | Documentation/adoption lane. |
 | P3 | [#134](https://github.com/bluetape4k/bluetape4k-graph/issues/134) convert GraphFalkorDBAutoConfiguration KDoc to English | S | Documentation lane. |
@@ -82,8 +82,8 @@ contracts and backend readiness before widening examples or benchmark lanes:
 
 | Lane | Limit | Current next |
 |---|---:|---|
-| Cancellation correctness | 1 | #157 in PR; idle after merge unless a new cancellation bug appears. |
+| Cancellation correctness | 1 | #157 merged; idle unless a new cancellation bug appears. |
 | Suspend transaction safety | 1 | #160 merged; keep this lane idle unless a new transaction-safety issue appears. |
 | Research / backend readiness | 1 | `#113` before `#30`. |
 | CI / automation | 1 | Keep Detekt/Kover/Dependabot governance stable; open focused follow-up issues for new gates. |
-| Examples / benchmarks | 1 | `#111` is next milestone 0.3.1 work after #157 merges. |
+| Examples / benchmarks | 1 | `#111` in PR; idle after merge unless another adoption issue is selected. |

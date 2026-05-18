@@ -1,0 +1,7 @@
+id,label,from,to,prop.quantity,prop.purchasedAt
+purchase-alice-camera,PURCHASED,u-alice,p-camera,1,2026-05-01
+purchase-bob-camera,PURCHASED,u-bob,p-camera,1,2026-05-01
+purchase-bob-tripod,PURCHASED,u-bob,p-tripod,1,2026-05-02
+purchase-carol-light,PURCHASED,u-carol,p-light,1,2026-05-03
+follow-alice-bob,FOLLOWS,u-alice,u-bob,,
+follow-bob-carol,FOLLOWS,u-bob,u-carol,,

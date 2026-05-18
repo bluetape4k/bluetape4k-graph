@@ -128,6 +128,26 @@ val products = service.recommendProducts(alice.id)
 val popular = service.rankPopularProducts(limit = 10)
 ```
 
+## 샘플 데이터셋 Import
+
+`RecommendationSampleDatasetLoader`는 번들된 graph-io CSV fixture를 임의의 `GraphOperations` 구현체로 import합니다.
+fixture에는 안정적인 상품 추천과 팔로우 추천을 만드는 사용자, 상품, 구매 edge, 팔로우 edge가 포함되어 있습니다.
+
+```kotlin
+val service = RecommendationService(ops)
+service.initialize()
+
+val report = RecommendationSampleDatasetLoader.importCsv(ops)
+val alice = ops.findVerticesByLabel("User", mapOf("userId" to "u-alice")).single()
+
+check(report.status == GraphIoStatus.COMPLETED)
+val products = service.recommendProducts(alice.id)
+val follows = service.recommendFollows(alice.id)
+```
+
+이 loader 경로는 TinkerGraph smoke test로 충분합니다. graph-io가 공통 `GraphOperations` 계약을 통해 데이터를 쓰기
+때문입니다. 컨테이너 기반 backend 동작은 기존 도메인 test matrix가 계속 담당합니다.
+
 ## 테스트 읽는 법
 
 Abstract test가 튜토리얼입니다. 작은 그래프를 만들고 추천을 실행한 뒤, backend별 점수나 정렬에 의존하지 않고 안정적인
@@ -151,10 +171,11 @@ TinkerGraph 테스트는 메모리에서 실행됩니다. Neo4j, Memgraph, Apach
 ## 의존성
 
 ```kotlin
-implementation(project(":graph-core"))
-implementation(project(":graph-neo4j"))
-implementation(project(":graph-memgraph"))
-implementation(project(":graph-age"))
-implementation(project(":graph-falkordb"))
-implementation(project(":graph-tinkerpop"))
+implementation(project(":bluetape4k-graph-core"))
+implementation(project(":bluetape4k-graph-neo4j"))
+implementation(project(":bluetape4k-graph-memgraph"))
+implementation(project(":bluetape4k-graph-age"))
+implementation(project(":bluetape4k-graph-falkordb"))
+implementation(project(":bluetape4k-graph-tinkerpop"))
+implementation(project(":bluetape4k-graph-io-csv"))
 ```

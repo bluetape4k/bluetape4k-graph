@@ -130,6 +130,26 @@ val mentioned = service.findMentionedEntities(doc.id)
 val paths = service.inferRelationshipPaths(kotlin.id, coroutines.id)
 ```
 
+## Sample Dataset Import
+
+`KnowledgeGraphSampleDatasetLoader` imports the bundled graph-io CSV fixture into any `GraphOperations`
+implementation. The fixture contains documents, entities, concepts, mentions, related-entity edges, and classifications
+that can be queried immediately.
+
+```kotlin
+val service = KnowledgeGraphService(ops)
+service.initialize()
+
+val report = KnowledgeGraphSampleDatasetLoader.importCsv(ops)
+val document = ops.findVerticesByLabel("Document", mapOf("documentId" to "doc-graph")).single()
+
+check(report.status == GraphIoStatus.COMPLETED)
+val mentioned = service.findMentionedEntities(document.id)
+```
+
+The TinkerGraph smoke test covers the graph-io import contract without adding container cost. Existing backend domain
+tests continue to prove traversal behavior on Neo4j, Memgraph, Apache AGE, and FalkorDB.
+
 ## How to Read the Tests
 
 The abstract tests show the complete story: load a small knowledge graph, query mentioned entities, traverse related
@@ -153,10 +173,11 @@ TinkerGraph tests run in memory. Neo4j, Memgraph, Apache AGE, and FalkorDB tests
 ## Dependencies
 
 ```kotlin
-implementation(project(":graph-core"))
-implementation(project(":graph-neo4j"))
-implementation(project(":graph-memgraph"))
-implementation(project(":graph-age"))
-implementation(project(":graph-falkordb"))
-implementation(project(":graph-tinkerpop"))
+implementation(project(":bluetape4k-graph-core"))
+implementation(project(":bluetape4k-graph-neo4j"))
+implementation(project(":bluetape4k-graph-memgraph"))
+implementation(project(":bluetape4k-graph-age"))
+implementation(project(":bluetape4k-graph-falkordb"))
+implementation(project(":bluetape4k-graph-tinkerpop"))
+implementation(project(":bluetape4k-graph-io-csv"))
 ```

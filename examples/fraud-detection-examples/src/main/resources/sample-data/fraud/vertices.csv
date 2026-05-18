@@ -1,0 +1,4 @@
+id,label,prop.accountId,prop.ownerName,prop.riskTier
+acct-a,Account,acct-a,Alice,watch
+acct-b,Account,acct-b,Bob,standard
+acct-c,Account,acct-c,Carol,standard

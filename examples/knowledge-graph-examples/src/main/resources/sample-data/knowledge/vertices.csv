@@ -1,0 +1,6 @@
+id,label,prop.entityId,prop.name,prop.entityType,prop.conceptId,prop.domain,prop.documentId,prop.title,prop.source
+entity-kotlin,Entity,entity-kotlin,Kotlin,Language,,,,,
+entity-graph,Entity,entity-graph,Graph,Concept,,,,,
+entity-falkordb,Entity,entity-falkordb,FalkorDB,Database,,,,,
+concept-database,Concept,,,,concept-database,graph,,,
+doc-graph,Document,,,,,,doc-graph,Graph API Notes,internal

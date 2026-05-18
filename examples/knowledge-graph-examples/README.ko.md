@@ -128,6 +128,25 @@ val mentioned = service.findMentionedEntities(doc.id)
 val paths = service.inferRelationshipPaths(kotlin.id, coroutines.id)
 ```
 
+## 샘플 데이터셋 Import
+
+`KnowledgeGraphSampleDatasetLoader`는 번들된 graph-io CSV fixture를 임의의 `GraphOperations` 구현체로 import합니다.
+fixture에는 바로 조회할 수 있는 문서, 엔티티, 개념, mention, 관련 엔티티 edge, 분류 edge가 포함되어 있습니다.
+
+```kotlin
+val service = KnowledgeGraphService(ops)
+service.initialize()
+
+val report = KnowledgeGraphSampleDatasetLoader.importCsv(ops)
+val document = ops.findVerticesByLabel("Document", mapOf("documentId" to "doc-graph")).single()
+
+check(report.status == GraphIoStatus.COMPLETED)
+val mentioned = service.findMentionedEntities(document.id)
+```
+
+TinkerGraph smoke test는 컨테이너 비용 없이 graph-io import 계약을 검증합니다. 기존 backend 도메인 테스트는 Neo4j,
+Memgraph, Apache AGE, FalkorDB에서 traversal 동작을 계속 검증합니다.
+
 ## 테스트 읽는 법
 
 Abstract test는 작은 지식 그래프를 만들고, mention 조회, 관련 엔티티 탐색, 개념 분류, 제한된 관계 경로 추론을 한 흐름으로
@@ -151,10 +170,11 @@ TinkerGraph 테스트는 메모리에서 실행됩니다. Neo4j, Memgraph, Apach
 ## 의존성
 
 ```kotlin
-implementation(project(":graph-core"))
-implementation(project(":graph-neo4j"))
-implementation(project(":graph-memgraph"))
-implementation(project(":graph-age"))
-implementation(project(":graph-falkordb"))
-implementation(project(":graph-tinkerpop"))
+implementation(project(":bluetape4k-graph-core"))
+implementation(project(":bluetape4k-graph-neo4j"))
+implementation(project(":bluetape4k-graph-memgraph"))
+implementation(project(":bluetape4k-graph-age"))
+implementation(project(":bluetape4k-graph-falkordb"))
+implementation(project(":bluetape4k-graph-tinkerpop"))
+implementation(project(":bluetape4k-graph-io-csv"))
 ```

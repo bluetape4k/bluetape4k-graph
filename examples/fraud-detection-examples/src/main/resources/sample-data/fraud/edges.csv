@@ -1,0 +1,4 @@
+id,label,from,to,prop.amount,prop.occurredAt
+tx-ab,TRANSFERRED_TO,acct-a,acct-b,150,2026-05-01T10:00:00Z
+tx-bc,TRANSFERRED_TO,acct-b,acct-c,90,2026-05-01T10:05:00Z
+tx-ca,TRANSFERRED_TO,acct-c,acct-a,70,2026-05-01T10:10:00Z

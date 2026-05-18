@@ -117,6 +117,24 @@ val clusters = service.detectSuspiciousClusters(minSize = 3)
 val ranked = service.rankHighRiskAccounts(limit = 10)
 ```
 
+## 샘플 데이터셋 Import
+
+`FraudDetectionSampleDatasetLoader`는 번들된 graph-io CSV fixture를 임의의 `GraphOperations` 구현체로 import합니다.
+fixture에는 세 계좌와 순환 이체 체인이 포함되어 있어 위 분석 메서드를 바로 실행할 수 있습니다.
+
+```kotlin
+val service = FraudDetectionService(ops)
+service.initialize()
+
+val report = FraudDetectionSampleDatasetLoader.importCsv(ops)
+
+check(report.status == GraphIoStatus.COMPLETED)
+val cycles = service.detectCircularTransfers(maxDepth = 5)
+```
+
+이 import flow는 TinkerGraph smoke test로 검증합니다. loader가 backend 독립 `GraphOperations` 계약을 통해 graph-io를
+사용하기 때문입니다. 컨테이너 기반 backend 동작은 기존 도메인 test matrix가 계속 담당합니다.
+
 ## 테스트 읽는 법
 
 `AbstractFraudDetectionTest`와 `AbstractFraudDetectionSuspendTest`가 학습 시나리오입니다. 구체 backend test class는
@@ -140,10 +158,11 @@ TinkerGraph 테스트는 메모리에서 실행됩니다. Neo4j, Memgraph, Apach
 ## 의존성
 
 ```kotlin
-implementation(project(":graph-core"))
-implementation(project(":graph-neo4j"))
-implementation(project(":graph-memgraph"))
-implementation(project(":graph-age"))
-implementation(project(":graph-falkordb"))
-implementation(project(":graph-tinkerpop"))
+implementation(project(":bluetape4k-graph-core"))
+implementation(project(":bluetape4k-graph-neo4j"))
+implementation(project(":bluetape4k-graph-memgraph"))
+implementation(project(":bluetape4k-graph-age"))
+implementation(project(":bluetape4k-graph-falkordb"))
+implementation(project(":bluetape4k-graph-tinkerpop"))
+implementation(project(":bluetape4k-graph-io-csv"))
 ```
