@@ -192,7 +192,18 @@ class Neo4jGraphSuspendOperationsTest {
     }
 
     @Test
-    @Order(29)
+    @Order(30)
+    fun `suspendTransaction은 반환된 Flow를 commit 전에 materialize한다`() = runSuspendIO {
+        val people = ops.suspendTransaction {
+            createVertex("Person", mapOf("name" to "Alice"))
+            findVerticesByLabel("Person")
+        }
+
+        people.toList().map { it.properties["name"] } shouldContain "Alice"
+    }
+
+    @Test
+    @Order(31)
     fun `unsafe Cypher identifiers are rejected before query execution`() = runSuspendIO {
         assertFailsWith<IllegalArgumentException> {
             ops.findVerticesByLabel("Person", mapOf("name) RETURN n MATCH (m" to "Alice")).toList()
@@ -205,7 +216,7 @@ class Neo4jGraphSuspendOperationsTest {
     // ----- 간선(Edge) CRUD -----
 
     @Test
-    @Order(30)
+    @Order(32)
     fun `createEdge로 간선을 생성한다`() = runSuspendIO {
         val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
         val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
@@ -219,7 +230,7 @@ class Neo4jGraphSuspendOperationsTest {
     }
 
     @Test
-    @Order(31)
+    @Order(33)
     fun `createEdge with properties로 간선 속성을 저장한다`() = runSuspendIO {
         val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
         val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
@@ -229,7 +240,7 @@ class Neo4jGraphSuspendOperationsTest {
     }
 
     @Test
-    @Order(32)
+    @Order(34)
     fun `findEdgesByLabel로 간선을 검색한다`() = runSuspendIO {
         val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
         val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
@@ -242,7 +253,7 @@ class Neo4jGraphSuspendOperationsTest {
     }
 
     @Test
-    @Order(33)
+    @Order(35)
     fun `deleteEdge로 간선을 삭제한다`() = runSuspendIO {
         val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
         val bob = ops.createVertex("Person", mapOf("name" to "Bob"))

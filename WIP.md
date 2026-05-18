@@ -19,6 +19,8 @@ Verified with `gh` on 2026-05-18 KST.
   - Leaf Dependabot stays scoped to GitHub Actions; Gradle/Maven library updates remain centralized in `bluetape4k-dependencies`.
 - Issue #126 is handled by adding a full-nightly Spring Boot FalkorDB Testcontainers step and a gated
   `@SpringBootTest` that verifies the auto-configuration path against a live FalkorDB container.
+- Issue #158 is handled by moving Neo4j suspend transactions to the reactive transaction API, keeping
+  rollback/cleanup semantics, and materializing returned transaction `Flow` values before commit.
 
 ## Current Direction
 
@@ -26,7 +28,7 @@ Verified with `gh` on 2026-05-18 KST.
 contracts and backend readiness before widening examples or benchmark lanes:
 
 1. Fix cancellation and `runCatching{}` issues in FalkorDB/Memgraph (#156/#157).
-2. Remove `runBlocking` bridges from suspend transaction implementations (#158/#160).
+2. Continue removing `runBlocking` bridges from suspend transaction implementations; #158 is fixed, #160 remains for AGE/Memgraph/TinkerGraph.
 3. Complete Neptune testability research (#113) before starting the backend epic (#30).
 4. Resume examples, CI automation, and benchmarks only after correctness baselines are stable.
 
@@ -76,7 +78,7 @@ contracts and backend readiness before widening examples or benchmark lanes:
 | Lane | Limit | Current next |
 |---|---:|---|
 | Cancellation correctness | 1 | Start with `#156`, then `#157`. |
-| Suspend transaction safety | 1 | `#158` and `#160`; fix strategy should be consistent across backends. |
+| Suspend transaction safety | 1 | Apply the #158 reactive/suspend-aware strategy to `#160` where each backend supports it. |
 | Research / backend readiness | 1 | `#113` before `#30`. |
 | CI / automation | 1 | Keep Detekt/Kover/Dependabot governance stable; open focused follow-up issues for new gates. |
 | Examples / benchmarks | 1 | `#111` before benchmarks; keep benchmark work after CI is stable. |
