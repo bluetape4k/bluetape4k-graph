@@ -128,9 +128,9 @@ jobs:
           path: '**/build/reports/kover/'
           retention-days: 14
 
-  # ── 3. Spring Boot (TinkerGraph, in-memory) ───────────────────
+  # ── 3. Spring Boot (TinkerGraph + full-scope FalkorDB) ─────────
   test-spring-starters:
-    name: Test / Spring Boot (TinkerGraph)
+    name: Test / Spring Boot
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: build
@@ -160,6 +160,38 @@ jobs:
           GRADLE_OPTS: "-Dorg.gradle.daemon=false"
           SPRING_PROFILES_ACTIVE: tinkergraph
 
+      - name: Restore Testcontainers image cache
+        if: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
+        uses: ./.github/actions/testcontainers-image-cache
+        with:
+          mode: restore
+          cache-key: ${{ runner.os }}-testcontainers-images-v1-${{ github.job }}-${{ hashFiles('.github/testcontainers-images.txt') }}
+          restore-key: ${{ runner.os }}-testcontainers-images-v1-${{ github.job }}-
+
+      - name: Test Spring Boot FalkorDB auto-configuration
+        if: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
+        run: |
+          for attempt in 1 2 3; do
+            ./gradlew \
+              :bluetape4k-graph-spring-boot:test \
+              --tests "*.FalkorDBSpringBootIntegrationTest" \
+              --rerun-tasks \
+              --no-daemon --continue && break
+            echo "Attempt $attempt failed"
+            [ $attempt -lt 3 ] && sleep 10 || exit 1
+          done
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
+          BLUETAPE4K_GRAPH_SPRING_FALKORDB_INTEGRATION: "true"
+          TESTCONTAINERS_RYUK_DISABLED: "true"
+          DOCKER_HOST: "unix:///var/run/docker.sock"
+
+      - name: Save Testcontainers image cache
+        if: ${{ always() && ((github.event_name == 'schedule' && github.event.schedule == '0 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full')) }}
+        uses: ./.github/actions/testcontainers-image-cache
+        with:
+          mode: save
+
       - name: Generate Kover XML report
         if: always()
         run: |
@@ -184,79 +216,7 @@ jobs:
           path: '**/build/reports/kover/'
           retention-days: 14
 
-  # ── 4. Spring Boot FalkorDB auto-configuration (Testcontainers) ──────────
-  test-spring-falkordb:
-    name: Test / Spring Boot FalkorDB (Testcontainers)
-    if: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
-
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    needs: build
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: actions/setup-java@v5
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: ${{ env.JAVA_DISTRIBUTION }}
-
-      - uses: gradle/actions/setup-gradle@v6
-        with:
-          gradle-version: wrapper
-          cache-read-only: true
-
-      - name: Restore Testcontainers image cache
-        uses: ./.github/actions/testcontainers-image-cache
-        with:
-          mode: restore
-          cache-key: ${{ runner.os }}-testcontainers-images-v1-${{ github.job }}-${{ hashFiles('.github/testcontainers-images.txt') }}
-          restore-key: ${{ runner.os }}-testcontainers-images-v1-${{ github.job }}-
-
-      - name: Test Spring Boot FalkorDB auto-configuration
-        run: |
-          for attempt in 1 2 3; do
-            ./gradlew \
-              :bluetape4k-graph-spring-boot:test \
-              --tests "*.FalkorDBSpringBootIntegrationTest" \
-              --rerun-tasks \
-              --no-daemon --continue && break
-            echo "Attempt $attempt failed"
-            [ $attempt -lt 3 ] && sleep 10 || exit 1
-          done
-        env:
-          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
-          BLUETAPE4K_GRAPH_SPRING_FALKORDB_INTEGRATION: "true"
-          TESTCONTAINERS_RYUK_DISABLED: "true"
-          DOCKER_HOST: "unix:///var/run/docker.sock"
-
-      - name: Save Testcontainers image cache
-        if: always()
-        uses: ./.github/actions/testcontainers-image-cache
-        with:
-          mode: save
-
-      - name: Generate Kover XML report
-        if: always()
-        run: ./gradlew :bluetape4k-graph-spring-boot:koverXmlReport --no-daemon
-        continue-on-error: true
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: test-results-spring-falkordb
-          path: '**/build/test-results/test/*.xml'
-          retention-days: 14
-
-      - name: Upload coverage report
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: coverage-spring-falkordb
-          path: '**/build/reports/kover/'
-          retention-days: 14
-
-  # ── 5. Ktor Graph (Testcontainers) ───────────────────────────────────────
+  # ── 4. Ktor Graph (Testcontainers) ───────────────────────────────────────
   test-graph-ktor:
     name: Test / Ktor Graph (Testcontainers)
     if: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
@@ -323,7 +283,7 @@ jobs:
           path: '**/build/reports/kover/'
           retention-days: 14
 
-  # ── 6. Neo4j (Testcontainers) ─────────────────────────────────────────────
+  # ── 5. Neo4j (Testcontainers) ─────────────────────────────────────────────
   test-graph-neo4j:
     name: Test / Neo4j (Testcontainers)
     if: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
@@ -390,7 +350,7 @@ jobs:
           path: '**/build/reports/kover/'
           retention-days: 14
 
-  # ── 7. Memgraph (Testcontainers) ──────────────────────────────────────────
+  # ── 6. Memgraph (Testcontainers) ──────────────────────────────────────────
   test-graph-memgraph:
     name: Test / Memgraph (Testcontainers)
     if: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
@@ -457,7 +417,7 @@ jobs:
           path: '**/build/reports/kover/'
           retention-days: 14
 
-  # ── 8. Apache AGE (Testcontainers) ────────────────────────────────────────
+  # ── 7. Apache AGE (Testcontainers) ────────────────────────────────────────
   test-graph-age:
     name: Test / Apache AGE (Testcontainers)
     if: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
@@ -524,7 +484,7 @@ jobs:
           path: '**/build/reports/kover/'
           retention-days: 14
 
-  # ── 9. FalkorDB (Testcontainers) ──────────────────────────────────────────
+  # ── 8. FalkorDB (Testcontainers) ──────────────────────────────────────────
   test-graph-falkordb:
     name: Test / FalkorDB (Testcontainers)
     if: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
@@ -591,7 +551,7 @@ jobs:
           path: '**/build/reports/kover/'
           retention-days: 14
 
-  # ── 10. 커버리지 집계 ─────────────────────────────────────────────────────
+  # ── 9. 커버리지 집계 ──────────────────────────────────────────────────────
   coverage-report:
     name: Coverage Report
 
@@ -600,7 +560,6 @@ jobs:
     needs:
       - test-core
       - test-spring-starters
-      - test-spring-falkordb
       - test-graph-ktor
       - test-graph-neo4j
       - test-graph-memgraph
@@ -644,7 +603,7 @@ jobs:
           path: coverage-artifacts/
           retention-days: 30
 
-  # ── 11. 결과 집계 ─────────────────────────────────────────────────────────
+  # ── 10. 결과 집계 ─────────────────────────────────────────────────────────
   nightly-status:
     name: Nightly Status
     runs-on: ubuntu-latest
@@ -653,7 +612,6 @@ jobs:
       - build
       - test-core
       - test-spring-starters
-      - test-spring-falkordb
       - test-graph-ktor
       - test-graph-neo4j
       - test-graph-memgraph
