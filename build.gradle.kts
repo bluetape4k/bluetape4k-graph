@@ -1,10 +1,9 @@
+import dev.detekt.gradle.DetektCreateBaselineTask
 import io.bluetape4k.gradle.applyBluetape4kPomMetadata
 import io.bluetape4k.gradle.centralSnapshotsRepository
 import io.bluetape4k.gradle.configurePublishingSigning
 import io.bluetape4k.gradle.resolveCentralPublishingConfig
 import io.bluetape4k.gradle.resolvePublishingSigningConfig
-import io.gitlab.arturbosch.detekt.Detekt
-import io.gitlab.arturbosch.detekt.report.ReportMergeTask
 import nmcp.NmcpAggregationExtension
 import nmcp.NmcpExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
@@ -87,6 +86,22 @@ fun Project.isNonPublishedModule(): Boolean {
             name.endsWith("-benchmark")
 }
 
+val detektBaselineFile = layout.projectDirectory.file("config/detekt/baseline.xml")
+
+val detektProjectBaseline by tasks.registering(DetektCreateBaselineTask::class) {
+    description = "Regenerates the shared Detekt baseline for existing findings."
+    ignoreFailures.set(true)
+    parallel.set(true)
+    buildUponDefaultConfig.set(true)
+    setSource(files(rootDir))
+    baseline.set(detektBaselineFile)
+    include("**/*.kt")
+    include("**/*.kts")
+    exclude("**/build/**")
+    exclude("**/.gradle/**")
+    exclude("**/resources/**")
+}
+
 subprojects {
     if (!isNonPublishedModule()) {
         apply(plugin = "com.gradleup.nmcp")
@@ -133,9 +148,21 @@ subprojects {
         plugin("org.jetbrains.dokka")
         plugin("com.adarshr.test-logger")
 
+        // Detekt — CI quality gate for publishable Kotlin modules.
+        if (!isNonPublishedModule()) {
+            plugin("dev.detekt")
+        }
+
         // Kover — Kotlin 코드 커버리지 (bom/benchmark/examples 는 커버리지 대상에서 제외)
         if (!isNonPublishedModule() && name != "bluetape4k-graph-bom") {
             plugin("org.jetbrains.kotlinx.kover")
+        }
+    }
+
+    plugins.withId("dev.detekt") {
+        extensions.configure<dev.detekt.gradle.extensions.DetektExtension>("detekt") {
+            baseline.set(detektBaselineFile)
+            buildUponDefaultConfig.set(true)
         }
     }
 
@@ -251,17 +278,6 @@ subprojects {
         testlogger {
             theme = com.adarshr.gradle.testlogger.theme.ThemeType.MOCHA_PARALLEL
             showFullStackTraces = true
-        }
-
-        val reportMerge by registering(ReportMergeTask::class) {
-            val file = rootProject.layout.buildDirectory.asFile.get().resolve("reports/detekt/merge.xml")
-            output.set(file)
-        }
-        withType<Detekt>().configureEach detekt@{
-            finalizedBy(reportMerge)
-            reportMerge.configure {
-                input.from(this@detekt.xmlReportFile)
-            }
         }
 
         dokka {

@@ -1,0 +1,321 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ComplexCondition:BenchmarkSingleThreadedCachingAgeGraphOperations.kt:BenchmarkSingleThreadedCachingAgeGraphOperations$slotResult != null &amp;&amp; lastPathFromIdValue == fromVal &amp;&amp; lastPathToIdValue == toVal &amp;&amp; lastAllPathsOptions === options</ID>
+    <ID>ComplexCondition:BenchmarkSingleThreadedCachingAgeGraphOperations.kt:BenchmarkSingleThreadedCachingAgeGraphOperations$slotResult != null &amp;&amp; lastPathFromIdValue == fromVal &amp;&amp; lastPathToIdValue == toVal &amp;&amp; lastShortestPathOptions === options</ID>
+    <ID>ComplexCondition:BenchmarkSingleThreadedCachingNeo4jGraphOperations.kt:BenchmarkSingleThreadedCachingNeo4jGraphOperations$slotResult != null &amp;&amp; lastPathFromIdValue == fromVal &amp;&amp; lastPathToIdValue == toVal &amp;&amp; lastAllPathsOptions === options</ID>
+    <ID>ComplexCondition:BenchmarkSingleThreadedCachingNeo4jGraphOperations.kt:BenchmarkSingleThreadedCachingNeo4jGraphOperations$slotResult != null &amp;&amp; lastPathFromIdValue == fromVal &amp;&amp; lastPathToIdValue == toVal &amp;&amp; lastShortestPathOptions === options</ID>
+    <ID>CyclomaticComplexMethod:AStarRunner.kt:AStarRunner$fun run: GraphPath?</ID>
+    <ID>CyclomaticComplexMethod:AgeTypeParser.kt:AgeTypeParser$private fun parseAgtypeElements: List&lt;String></ID>
+    <ID>CyclomaticComplexMethod:AgeTypeParser.kt:AgeTypeParser$private fun parseValue: Pair&lt;Any?, Int></ID>
+    <ID>CyclomaticComplexMethod:CsvGraphBulkImporter.kt:CsvGraphBulkImporter$fun importGraph: GraphImportReport</ID>
+    <ID>CyclomaticComplexMethod:CycleDetector.kt:CycleDetector$private fun dfsIterative</ID>
+    <ID>CyclomaticComplexMethod:DijkstraRunner.kt:DijkstraRunner$fun run: GraphPath?</ID>
+    <ID>CyclomaticComplexMethod:GraphMlBulkImporter.kt:GraphMlBulkImporter$fun importGraph: GraphImportReport</ID>
+    <ID>CyclomaticComplexMethod:Jackson2NdJsonBulkImporter.kt:Jackson2NdJsonBulkImporter$override fun importGraph: GraphImportReport</ID>
+    <ID>CyclomaticComplexMethod:Jackson3NdJsonBulkImporter.kt:Jackson3NdJsonBulkImporter$override fun importGraph: GraphImportReport</ID>
+    <ID>CyclomaticComplexMethod:StaxGraphMlWriter.kt:StaxGraphMlWriter$fun write</ID>
+    <ID>CyclomaticComplexMethod:SuspendCsvGraphBulkImporter.kt:SuspendCsvGraphBulkImporter$suspend fun importGraphSuspending: GraphImportReport</ID>
+    <ID>CyclomaticComplexMethod:SuspendGraphMlBulkImporter.kt:SuspendGraphMlBulkImporter$suspend fun importGraphSuspending: GraphImportReport</ID>
+    <ID>CyclomaticComplexMethod:SuspendJackson2NdJsonBulkImporter.kt:SuspendJackson2NdJsonBulkImporter$override suspend fun importGraphSuspending: GraphImportReport</ID>
+    <ID>CyclomaticComplexMethod:SuspendJackson3NdJsonBulkImporter.kt:SuspendJackson3NdJsonBulkImporter$override suspend fun importGraphSuspending: GraphImportReport</ID>
+    <ID>CyclomaticComplexMethod:TinkerGraphOperations.kt:TinkerGraphOperations$override fun neighbors: List&lt;GraphVertex></ID>
+    <ID>EmptyKotlinFile:FalkorDBSessionSupport.kt:io.bluetape4k.graph.falkordb.internal.FalkorDBSessionSupport.kt</ID>
+    <ID>FunctionOnlyReturningConstant:AgeSql.kt:AgeSql$fun createExtension: String</ID>
+    <ID>FunctionOnlyReturningConstant:AgeSql.kt:AgeSql$fun loadAge: String</ID>
+    <ID>FunctionOnlyReturningConstant:AgeSql.kt:AgeSql$fun setSearchPath: String</ID>
+    <ID>InvalidPackageDeclaration:PublishingSigningSupport.kt:package io.bluetape4k.gradle</ID>
+    <ID>LargeClass:FalkorDBGraphOperations.kt:FalkorDBGraphOperations : GraphOperationsGraphSchemaManagementOperationsGraphMergeOperations</ID>
+    <ID>LongMethod:CsvGraphBulkExporter.kt:CsvGraphBulkExporter$fun exportGraph: GraphExportReport</ID>
+    <ID>LongMethod:CsvGraphBulkImporter.kt:CsvGraphBulkImporter$fun importGraph: GraphImportReport</ID>
+    <ID>LongMethod:GraphMlBulkImporter.kt:GraphMlBulkImporter$fun importGraph: GraphImportReport</ID>
+    <ID>LongMethod:Jackson2NdJsonBulkImporter.kt:Jackson2NdJsonBulkImporter$override fun importGraph: GraphImportReport</ID>
+    <ID>LongMethod:Jackson3NdJsonBulkImporter.kt:Jackson3NdJsonBulkImporter$override fun importGraph: GraphImportReport</ID>
+    <ID>LongMethod:StaxGraphMlWriter.kt:StaxGraphMlWriter$fun write</ID>
+    <ID>LongMethod:SuspendCsvGraphBulkExporter.kt:SuspendCsvGraphBulkExporter$suspend fun exportGraphSuspending: GraphExportReport</ID>
+    <ID>LongMethod:SuspendCsvGraphBulkImporter.kt:SuspendCsvGraphBulkImporter$suspend fun importGraphSuspending: GraphImportReport</ID>
+    <ID>LongMethod:SuspendGraphMlBulkImporter.kt:SuspendGraphMlBulkImporter$suspend fun importGraphSuspending: GraphImportReport</ID>
+    <ID>LongMethod:SuspendJackson2NdJsonBulkImporter.kt:SuspendJackson2NdJsonBulkImporter$override suspend fun importGraphSuspending: GraphImportReport</ID>
+    <ID>LongMethod:SuspendJackson3NdJsonBulkImporter.kt:SuspendJackson3NdJsonBulkImporter$override suspend fun importGraphSuspending: GraphImportReport</ID>
+    <ID>LoopWithTooManyJumpStatements:AStarRunner.kt:AStarRunner$for</ID>
+    <ID>LoopWithTooManyJumpStatements:AStarRunner.kt:AStarRunner$while</ID>
+    <ID>LoopWithTooManyJumpStatements:BfsDfsRunner.kt:BfsDfsRunner$while</ID>
+    <ID>LoopWithTooManyJumpStatements:CsvGraphBulkImporter.kt:CsvGraphBulkImporter$for</ID>
+    <ID>LoopWithTooManyJumpStatements:CycleDetector.kt:CycleDetector$while</ID>
+    <ID>LoopWithTooManyJumpStatements:DijkstraRunner.kt:DijkstraRunner$for</ID>
+    <ID>LoopWithTooManyJumpStatements:DijkstraRunner.kt:DijkstraRunner$while</ID>
+    <ID>LoopWithTooManyJumpStatements:GraphMlBulkImporter.kt:GraphMlBulkImporter$for</ID>
+    <ID>LoopWithTooManyJumpStatements:Jackson2NdJsonBulkImporter.kt:Jackson2NdJsonBulkImporter$for</ID>
+    <ID>LoopWithTooManyJumpStatements:Jackson3NdJsonBulkImporter.kt:Jackson3NdJsonBulkImporter$for</ID>
+    <ID>LoopWithTooManyJumpStatements:StaxGraphMlReader.kt:StaxGraphMlReader$while</ID>
+    <ID>LoopWithTooManyJumpStatements:SuspendGraphMlBulkImporter.kt:SuspendGraphMlBulkImporter$for</ID>
+    <ID>LoopWithTooManyJumpStatements:SuspendJackson2NdJsonBulkImporter.kt:SuspendJackson2NdJsonBulkImporter$for</ID>
+    <ID>LoopWithTooManyJumpStatements:SuspendJackson3NdJsonBulkImporter.kt:SuspendJackson3NdJsonBulkImporter$for</ID>
+    <ID>MagicNumber:AgeBenchmarkState.kt:AgeBenchmarkState$2019L</ID>
+    <ID>MagicNumber:AgeBenchmarkState.kt:AgeBenchmarkState$2020L</ID>
+    <ID>MagicNumber:AgeBenchmarkState.kt:AgeBenchmarkState$2021L</ID>
+    <ID>MagicNumber:AgeBenchmarkState.kt:AgeBenchmarkState$2022L</ID>
+    <ID>MagicNumber:AgeBenchmarkState.kt:AgeBenchmarkState$4</ID>
+    <ID>MagicNumber:AgeTypeParser.kt:AgeTypeParser$4</ID>
+    <ID>MagicNumber:AgeTypeParser.kt:AgeTypeParser$5</ID>
+    <ID>MagicNumber:AgeVertexBenchmark.kt:AgeVertexBenchmark$10_000</ID>
+    <ID>MagicNumber:BulkGraphIoBenchmarkState.kt:BulkGraphIoBenchmarkState$100_000</ID>
+    <ID>MagicNumber:BulkGraphIoBenchmarkState.kt:BulkGraphIoBenchmarkState$10_000</ID>
+    <ID>MagicNumber:BulkGraphIoBenchmarkState.kt:BulkGraphIoBenchmarkState$1_000</ID>
+    <ID>MagicNumber:BulkGraphIoBenchmarkState.kt:BulkGraphIoBenchmarkState$2000</ID>
+    <ID>MagicNumber:BulkGraphIoBenchmarkState.kt:BulkGraphIoBenchmarkState$200_000</ID>
+    <ID>MagicNumber:BulkGraphIoBenchmarkState.kt:BulkGraphIoBenchmarkState$20_000</ID>
+    <ID>MagicNumber:BulkGraphIoBenchmarkState.kt:BulkGraphIoBenchmarkState$25</ID>
+    <ID>MagicNumber:BulkGraphIoBenchmarkState.kt:BulkGraphIoBenchmarkState$2_000</ID>
+    <ID>MagicNumber:CachingAgeGraphOperations.kt:CachingAgeGraphOperations$5</ID>
+    <ID>MagicNumber:CachingMemgraphGraphOperations.kt:CachingMemgraphGraphOperations$5</ID>
+    <ID>MagicNumber:CachingNeo4jGraphOperations.kt:CachingNeo4jGraphOperations$5</ID>
+    <ID>MagicNumber:FalkorDBServer.kt:FalkorDBServer$60</ID>
+    <ID>MagicNumber:GraphBenchmarkState.kt:GraphBenchmarkState$2019L</ID>
+    <ID>MagicNumber:GraphBenchmarkState.kt:GraphBenchmarkState$2020L</ID>
+    <ID>MagicNumber:GraphBenchmarkState.kt:GraphBenchmarkState$2021L</ID>
+    <ID>MagicNumber:GraphBenchmarkState.kt:GraphBenchmarkState$2022L</ID>
+    <ID>MagicNumber:KnowledgeGraphService.kt:KnowledgeGraphService$100</ID>
+    <ID>MagicNumber:KnowledgeGraphSuspendService.kt:KnowledgeGraphSuspendService$100</ID>
+    <ID>MagicNumber:KtorGraphAppMain.kt:DemoCityGraph$160.0</ID>
+    <ID>MagicNumber:KtorGraphAppMain.kt:DemoCityGraph$220.0</ID>
+    <ID>MagicNumber:KtorGraphAppMain.kt:KtorGraphAppMain$65535</ID>
+    <ID>MagicNumber:Neo4jBenchmarkState.kt:Neo4jBenchmarkState$2019L</ID>
+    <ID>MagicNumber:Neo4jBenchmarkState.kt:Neo4jBenchmarkState$2020L</ID>
+    <ID>MagicNumber:Neo4jBenchmarkState.kt:Neo4jBenchmarkState$2021L</ID>
+    <ID>MagicNumber:Neo4jBenchmarkState.kt:Neo4jBenchmarkState$2022L</ID>
+    <ID>MagicNumber:Neo4jVertexBenchmark.kt:Neo4jVertexBenchmark$10_000</ID>
+    <ID>MagicNumber:VertexOperationsBenchmark.kt:VertexOperationsBenchmark$10_000</ID>
+    <ID>MatchingDeclarationName:BatchInsertSmokeSupport.kt:BatchInsertSmokeResult</ID>
+    <ID>MaxLineLength:AbstractFraudDetectionSuspendTest.kt:AbstractFraudDetectionSuspendTest$component.size >= 3 &amp;&amp; component.vertices.map { it.properties["accountId"] }.containsAll(listOf("acct-a", "acct-b", "acct-c"))</ID>
+    <ID>MaxLineLength:AbstractFraudDetectionTest.kt:AbstractFraudDetectionTest$component.size >= 3 &amp;&amp; component.vertices.map { it.properties["accountId"] }.containsAll(listOf("acct-a", "acct-b", "acct-c"))</ID>
+    <ID>MaxLineLength:AgeGraphOperations.kt:AgeGraphOperations$created.add(parseBatchIndex(rs.getString("idx")) to AgeTypeParser.parseEdge(rs.getString("e")))</ID>
+    <ID>MaxLineLength:AgeGraphOperations.kt:AgeGraphOperations$created.add(parseBatchIndex(rs.getString("idx")) to AgeTypeParser.parseVertex(rs.getString("v")))</ID>
+    <ID>MaxLineLength:AgeGraphOperations.kt:AgeGraphOperations$exec</ID>
+    <ID>MaxLineLength:AgeGraphOperations.kt:AgeGraphOperations$val stmt = AgeSql.createEdge(graphName, from, to, label, properties.matchProperties + properties.setProperties)</ID>
+    <ID>MaxLineLength:AgeTypeParser.kt:AgeTypeParser$*</ID>
+    <ID>MaxLineLength:BenchmarkSingleThreadedCachingAgeGraphOperations.kt:BenchmarkSingleThreadedCachingAgeGraphOperations$if</ID>
+    <ID>MaxLineLength:BenchmarkSingleThreadedCachingAgeGraphOperations.kt:BenchmarkSingleThreadedCachingAgeGraphOperations$lastPathFromIdValue = fromVal</ID>
+    <ID>MaxLineLength:BenchmarkSingleThreadedCachingAgeGraphOperations.kt:BenchmarkSingleThreadedCachingAgeGraphOperations$override</ID>
+    <ID>MaxLineLength:BenchmarkSingleThreadedCachingNeo4jGraphOperations.kt:BenchmarkSingleThreadedCachingNeo4jGraphOperations$if</ID>
+    <ID>MaxLineLength:BenchmarkSingleThreadedCachingNeo4jGraphOperations.kt:BenchmarkSingleThreadedCachingNeo4jGraphOperations$lastPathFromIdValue = fromVal</ID>
+    <ID>MaxLineLength:BenchmarkSingleThreadedCachingNeo4jGraphOperations.kt:BenchmarkSingleThreadedCachingNeo4jGraphOperations$override</ID>
+    <ID>MaxLineLength:BulkGraphIoBenchmark.kt:BulkGraphIoBenchmark$SuspendCsvGraphBulkExporter().exportGraphSuspending(sink, TinkerGraphSuspendOperations(s.ops as TinkerGraphOperations), exportOpts)</ID>
+    <ID>MaxLineLength:CachingAgeGraphOperationsTest.kt:CachingAgeGraphOperationsTest$every { delegate.createVertex("Person", props) } returns alice andThen alice.copy(id = GraphElementId.of("alice-2"))</ID>
+    <ID>MaxLineLength:CachingAgeGraphOperationsTest.kt:CachingAgeGraphOperationsTest$every { delegate.updateVertex("Person", aliceId, any()) } returns alice.copy(properties = mapOf("name" to "Alice Updated"))</ID>
+    <ID>MaxLineLength:CachingMemgraphGraphOperationsTest.kt:CachingMemgraphGraphOperationsTest$every { delegate.createVertex("Person", props) } returns alice andThen alice.copy(id = GraphElementId.of("alice-2"))</ID>
+    <ID>MaxLineLength:CachingMemgraphGraphOperationsTest.kt:CachingMemgraphGraphOperationsTest$every { delegate.updateVertex("Person", aliceId, any()) } returns alice.copy(properties = mapOf("name" to "Alice Updated"))</ID>
+    <ID>MaxLineLength:CachingNeo4jGraphOperationsTest.kt:CachingNeo4jGraphOperationsTest$every { delegate.createVertex("Person", props) } returns alice andThen alice.copy(id = GraphElementId.of("alice-2"))</ID>
+    <ID>MaxLineLength:CachingNeo4jGraphOperationsTest.kt:CachingNeo4jGraphOperationsTest$every { delegate.updateVertex("Person", aliceId, any()) } returns alice.copy(properties = mapOf("name" to "Alice Updated"))</ID>
+    <ID>MaxLineLength:CodeGraphService.kt:CodeGraphService$ops.neighbors(functionId, NeighborOptions(edgeLabel = "CALLS", direction = Direction.OUTGOING, maxDepth = maxDepth))</ID>
+    <ID>MaxLineLength:CodeGraphService.kt:CodeGraphService$ops.neighbors(moduleId, NeighborOptions(edgeLabel = "DEPENDS_ON", direction = Direction.INCOMING, maxDepth = depth))</ID>
+    <ID>MaxLineLength:CodeGraphService.kt:CodeGraphService$ops.neighbors(moduleId, NeighborOptions(edgeLabel = "DEPENDS_ON", direction = Direction.OUTGOING, maxDepth = maxDepth))</ID>
+    <ID>MaxLineLength:CodeGraphSuspendService.kt:CodeGraphSuspendService$ops.neighbors(functionId, NeighborOptions(edgeLabel = "CALLS", direction = Direction.OUTGOING, maxDepth = maxDepth))</ID>
+    <ID>MaxLineLength:CodeGraphSuspendService.kt:CodeGraphSuspendService$ops.neighbors(moduleId, NeighborOptions(edgeLabel = "DEPENDS_ON", direction = Direction.INCOMING, maxDepth = depth))</ID>
+    <ID>MaxLineLength:CodeGraphSuspendService.kt:CodeGraphSuspendService$ops.neighbors(moduleId, NeighborOptions(edgeLabel = "DEPENDS_ON", direction = Direction.OUTGOING, maxDepth = maxDepth))</ID>
+    <ID>MaxLineLength:CsvGraphBulkExporter.kt:CsvGraphBulkExporter$log.debug { "CSV export completed: verticesWritten=$vWritten, edgesWritten=$eWritten, status=$status, elapsed=${watch.elapsed()}" }</ID>
+    <ID>MaxLineLength:CsvGraphBulkImporter.kt:CsvGraphBulkImporter$log.debug { "CSV import completed: vertices=$verticesCreated/$verticesRead, edges=$edgesCreated/$edgesRead, skipped=$skippedVertices/$skippedEdges, status=$status, elapsed=${watch.elapsed()}" }</ID>
+    <ID>MaxLineLength:CsvGraphBulkImporter.kt:CsvGraphBulkImporter$log.debug { "Starting CSV import: defaultVertexLabel=${options.defaultVertexLabel}, defaultEdgeLabel=${options.defaultEdgeLabel}" }</ID>
+    <ID>MaxLineLength:CsvGraphBulkImporter.kt:CsvGraphBulkImporter$log.warn { "CSV import failed during vertex pass: vertices=$verticesCreated/$verticesRead, elapsed=${watch.elapsed()}" }</ID>
+    <ID>MaxLineLength:CycleDetectorTest.kt:CycleDetectorTest$invoking { CycleDetector.findCycles(emptyMap(), maxDepth = 0, maxCycles = 1) } shouldThrow IllegalArgumentException::class</ID>
+    <ID>MaxLineLength:CycleDetectorTest.kt:CycleDetectorTest$invoking { CycleDetector.findCycles(emptyMap(), maxDepth = 1, maxCycles = 0) } shouldThrow IllegalArgumentException::class</ID>
+    <ID>MaxLineLength:FalkorDBGraphOperations.kt:FalkorDBGraphOperations$"WITH collect({index: row.index, properties: row.properties, source: source, target: target}) AS matched, expected "</ID>
+    <ID>MaxLineLength:FalkorDBGraphOperations.kt:FalkorDBGraphOperations$"WITH row.index AS index, row.properties AS properties, row.source AS source, row.target AS target "</ID>
+    <ID>MaxLineLength:FalkorDBGraphSchemaManager.kt:FalkorDBGraphSchemaManager$if</ID>
+    <ID>MaxLineLength:GraphFalkorDBAutoConfiguration.kt:GraphFalkorDBAutoConfiguration.HealthConfig$fun</ID>
+    <ID>MaxLineLength:GraphIdentifiers.kt:"$paramName must be a valid identifier (letters, digits, underscore; must start with letter or underscore): $this"</ID>
+    <ID>MaxLineLength:GraphIoOkioPaths.kt:GraphIoOkioPaths$try { bs.close() } catch (ce: Throwable) { log.warn(ce) { "Failed to close sink after DAEAD init failure" } }</ID>
+    <ID>MaxLineLength:GraphIoOkioPaths.kt:GraphIoOkioPaths$try { bs.close() } catch (ce: Throwable) { log.warn(ce) { "Failed to close sink after gzip+DAEAD init failure" } }</ID>
+    <ID>MaxLineLength:GraphIoOkioPaths.kt:GraphIoOkioPaths$try { bs.close() } catch (ce: Throwable) { log.warn(ce) { "Failed to close source after DAEAD init failure" } }</ID>
+    <ID>MaxLineLength:GraphIoOkioPaths.kt:GraphIoOkioPaths$try { bs.close() } catch (ce: Throwable) { log.warn(ce) { "Failed to close source after DAEAD+gzip init failure" } }</ID>
+    <ID>MaxLineLength:GraphIoOkioPaths.kt:GraphIoOkioPaths$try { bs.close() } catch (ce: Throwable) { log.warn(ce) { "Failed to close source after gzip init failure" } }</ID>
+    <ID>MaxLineLength:GraphIoRecordTest.kt:GraphIoRecordTest$invoking { GraphIoEdgeRecord(label = " ", fromExternalId = "v1", toExternalId = "v2") } shouldThrow IllegalArgumentException::class</ID>
+    <ID>MaxLineLength:GraphIoRecordTest.kt:GraphIoRecordTest$invoking { GraphIoEdgeRecord(label = "KNOWS", fromExternalId = " ", toExternalId = "v2") } shouldThrow IllegalArgumentException::class</ID>
+    <ID>MaxLineLength:GraphIoRecordTest.kt:GraphIoRecordTest$invoking { GraphIoEdgeRecord(label = "KNOWS", fromExternalId = "v1", toExternalId = " ") } shouldThrow IllegalArgumentException::class</ID>
+    <ID>MaxLineLength:GraphIoReportTest.kt:GraphIoReportTest$invoking { GraphExportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, -1L, 0L, elapsed = Duration.ZERO) } shouldThrow IllegalArgumentException::class</ID>
+    <ID>MaxLineLength:GraphIoReportTest.kt:GraphIoReportTest$invoking { GraphExportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, -1L, elapsed = Duration.ZERO) } shouldThrow IllegalArgumentException::class</ID>
+    <ID>MaxLineLength:GraphIoReportTest.kt:GraphIoReportTest$invoking { GraphExportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, skippedEdges = -1L, elapsed = Duration.ZERO) } shouldThrow IllegalArgumentException::class</ID>
+    <ID>MaxLineLength:GraphIoReportTest.kt:GraphIoReportTest$invoking { GraphExportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, skippedVertices = -1L, elapsed = Duration.ZERO) } shouldThrow IllegalArgumentException::class</ID>
+    <ID>MaxLineLength:GraphIoReportTest.kt:GraphIoReportTest$invoking { GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, -1L, 0L, 0L, 0L, elapsed = Duration.ZERO) } shouldThrow IllegalArgumentException::class</ID>
+    <ID>MaxLineLength:GraphIoReportTest.kt:GraphIoReportTest$invoking { GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, -1L, 0L, 0L, elapsed = Duration.ZERO) } shouldThrow IllegalArgumentException::class</ID>
+    <ID>MaxLineLength:GraphIoReportTest.kt:GraphIoReportTest$invoking { GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, -1L, 0L, elapsed = Duration.ZERO) } shouldThrow IllegalArgumentException::class</ID>
+    <ID>MaxLineLength:GraphIoReportTest.kt:GraphIoReportTest$invoking { GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, 0L, -1L, elapsed = Duration.ZERO) } shouldThrow IllegalArgumentException::class</ID>
+    <ID>MaxLineLength:GraphIoReportTest.kt:GraphIoReportTest$invoking { GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, 0L, 0L, skippedEdges = -1L, elapsed = Duration.ZERO) } shouldThrow IllegalArgumentException::class</ID>
+    <ID>MaxLineLength:GraphIoReportTest.kt:GraphIoReportTest$invoking { GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, 0L, 0L, skippedVertices = -1L, elapsed = Duration.ZERO) } shouldThrow IllegalArgumentException::class</ID>
+    <ID>MaxLineLength:GraphIoReportTest.kt:GraphIoReportTest$invoking { GraphIoFailure(phase = GraphIoPhase.READ_VERTEX, message = " ") } shouldThrow IllegalArgumentException::class</ID>
+    <ID>MaxLineLength:GraphMergeOperationsTest.kt:GraphMergeOperationsTest$val edge = GraphEdge(GraphElementId.of("e1"), "KNOWS", GraphElementId.of("v1"), GraphElementId.of("v2"), emptyMap())</ID>
+    <ID>MaxLineLength:GraphMlBulkExporter.kt:GraphMlBulkExporter$)</ID>
+    <ID>MaxLineLength:GraphMlBulkImporter.kt:GraphMlBulkImporter$.</ID>
+    <ID>MaxLineLength:Jackson2EnvelopeCodec.kt:Jackson2EnvelopeCodec$NdJsonEnvelope(NdJsonEnvelope.TYPE_EDGE, e.externalId, e.label, e.fromExternalId, e.toExternalId, e.properties)</ID>
+    <ID>MaxLineLength:Jackson2NdJsonBulkExporter.kt:Jackson2NdJsonBulkExporter$log.debug { "NDJSON_JACKSON2 export completed: verticesWritten=$vWritten, edgesWritten=$eWritten, status=$status, elapsed=${watch.elapsed()}" }</ID>
+    <ID>MaxLineLength:Jackson2NdJsonBulkExporter.kt:Jackson2NdJsonBulkExporter$log.debug { "Starting NDJSON_JACKSON2 export: vertexLabels=${options.vertexLabels}, edgeLabels=${options.edgeLabels}" }</ID>
+    <ID>MaxLineLength:Jackson2NdJsonBulkImporter.kt:Jackson2NdJsonBulkImporter$log.debug { "NDJSON_JACKSON2 import completed: vertices=$vc/$vr, edges=$ec/$er, skipped=$sv/$se, status=$status, elapsed=${watch.elapsed()}" }</ID>
+    <ID>MaxLineLength:Jackson2NdJsonBulkImporter.kt:Jackson2NdJsonBulkImporter$log.debug { "Starting NDJSON_JACKSON2 import: defaultVertexLabel=${options.defaultVertexLabel}, defaultEdgeLabel=${options.defaultEdgeLabel}" }</ID>
+    <ID>MaxLineLength:Jackson2NdJsonBulkImporter.kt:Jackson2NdJsonBulkImporter$return</ID>
+    <ID>MaxLineLength:Jackson2NdJsonBulkImporter.kt:Jackson2NdJsonBulkImporter$return GraphImportReport(status, GraphIoFormat.NDJSON_JACKSON2, vr, vc, er, ec, sv, se, watch.elapsed(), failures)</ID>
+    <ID>MaxLineLength:Jackson3EnvelopeCodec.kt:Jackson3EnvelopeCodec$NdJsonEnvelope(NdJsonEnvelope.TYPE_EDGE, e.externalId, e.label, e.fromExternalId, e.toExternalId, e.properties)</ID>
+    <ID>MaxLineLength:Jackson3NdJsonBulkExporter.kt:Jackson3NdJsonBulkExporter$log.debug { "NDJSON_JACKSON3 export completed: verticesWritten=$vWritten, edgesWritten=$eWritten, status=$status, elapsed=${watch.elapsed()}" }</ID>
+    <ID>MaxLineLength:Jackson3NdJsonBulkExporter.kt:Jackson3NdJsonBulkExporter$log.debug { "Starting NDJSON_JACKSON3 export: vertexLabels=${options.vertexLabels}, edgeLabels=${options.edgeLabels}" }</ID>
+    <ID>MaxLineLength:Jackson3NdJsonBulkImporter.kt:Jackson3NdJsonBulkImporter$log.debug { "NDJSON_JACKSON3 import completed: vertices=$vc/$vr, edges=$ec/$er, skipped=$sv/$se, status=$status, elapsed=${watch.elapsed()}" }</ID>
+    <ID>MaxLineLength:Jackson3NdJsonBulkImporter.kt:Jackson3NdJsonBulkImporter$log.debug { "Starting NDJSON_JACKSON3 import: defaultVertexLabel=${options.defaultVertexLabel}, defaultEdgeLabel=${options.defaultEdgeLabel}" }</ID>
+    <ID>MaxLineLength:Jackson3NdJsonBulkImporter.kt:Jackson3NdJsonBulkImporter$return</ID>
+    <ID>MaxLineLength:Jackson3NdJsonBulkImporter.kt:Jackson3NdJsonBulkImporter$return GraphImportReport(status, GraphIoFormat.NDJSON_JACKSON3, vr, vc, er, ec, sv, se, watch.elapsed(), failures)</ID>
+    <ID>MaxLineLength:JdbcTransactionExtensions.kt:message = "No-op: AGE load and search_path are handled by HikariCP connectionInitSql. Remove calls to this function."</ID>
+    <ID>MaxLineLength:KnowledgeGraphService.kt:KnowledgeGraphService$mapOf(ConceptLabel.conceptId.name to conceptId, ConceptLabel.name.name to name, ConceptLabel.domain.name to domain)</ID>
+    <ID>MaxLineLength:KnowledgeGraphService.kt:KnowledgeGraphService$mapOf(DocumentLabel.documentId.name to documentId, DocumentLabel.title.name to title, DocumentLabel.source.name to source)</ID>
+    <ID>MaxLineLength:KnowledgeGraphService.kt:KnowledgeGraphService$mapOf(EntityLabel.entityId.name to entityId, EntityLabel.name.name to name, EntityLabel.entityType.name to entityType)</ID>
+    <ID>MaxLineLength:KnowledgeGraphService.kt:KnowledgeGraphService$ops.neighbors(documentId, NeighborOptions(edgeLabel = MentionsLabel.label, direction = Direction.OUTGOING, maxDepth = 1))</ID>
+    <ID>MaxLineLength:KnowledgeGraphService.kt:KnowledgeGraphService$ops.neighbors(entityId, NeighborOptions(edgeLabel = RelatedToLabel.label, direction = Direction.OUTGOING, maxDepth = depth))</ID>
+    <ID>MaxLineLength:KnowledgeGraphSuspendService.kt:KnowledgeGraphSuspendService$mapOf(ConceptLabel.conceptId.name to conceptId, ConceptLabel.name.name to name, ConceptLabel.domain.name to domain)</ID>
+    <ID>MaxLineLength:KnowledgeGraphSuspendService.kt:KnowledgeGraphSuspendService$mapOf(DocumentLabel.documentId.name to documentId, DocumentLabel.title.name to title, DocumentLabel.source.name to source)</ID>
+    <ID>MaxLineLength:KnowledgeGraphSuspendService.kt:KnowledgeGraphSuspendService$mapOf(EntityLabel.entityId.name to entityId, EntityLabel.name.name to name, EntityLabel.entityType.name to entityType)</ID>
+    <ID>MaxLineLength:KnowledgeGraphSuspendService.kt:KnowledgeGraphSuspendService$ops.neighbors(documentId, NeighborOptions(edgeLabel = MentionsLabel.label, direction = Direction.OUTGOING, maxDepth = 1))</ID>
+    <ID>MaxLineLength:KnowledgeGraphSuspendService.kt:KnowledgeGraphSuspendService$ops.neighbors(entityId, NeighborOptions(edgeLabel = RelatedToLabel.label, direction = Direction.OUTGOING, maxDepth = depth))</ID>
+    <ID>MaxLineLength:KnowledgeGraphSuspendService.kt:KnowledgeGraphSuspendService$suspend</ID>
+    <ID>MaxLineLength:MemgraphGraphOperations.kt:MemgraphGraphOperations$"WITH collect({index: row.index, properties: row.properties, source: source, target: target}) AS matched, expected "</ID>
+    <ID>MaxLineLength:MemgraphGraphOperations.kt:MemgraphGraphOperations$"WITH row.index AS index, row.properties AS properties, row.source AS source, row.target AS target "</ID>
+    <ID>MaxLineLength:MemgraphGraphSchemaManager.kt:MemgraphGraphSchemaManager$if</ID>
+    <ID>MaxLineLength:MemgraphGraphSchemaManager.kt:MemgraphGraphSchemaManager$name = if (property.isNotBlank()) GraphSchemaNames.uniqueConstraintName(label, property) else "bt4k_constraint_$label"</ID>
+    <ID>MaxLineLength:MemgraphGraphSuspendOperations.kt:MemgraphGraphSuspendOperations$return withContext(Dispatchers.IO) { ShortestPathFallback.aStar(syncDelegate, fromId, toId, options, heuristic) }</ID>
+    <ID>MaxLineLength:Neo4jGraphOperations.kt:Neo4jGraphOperations$"WITH collect({index: row.index, properties: row.properties, source: source, target: target}) AS matched, expected "</ID>
+    <ID>MaxLineLength:Neo4jGraphOperations.kt:Neo4jGraphOperations$"WITH row.index AS index, row.properties AS properties, row.source AS source, row.target AS target "</ID>
+    <ID>MaxLineLength:Neo4jGraphSuspendOperations.kt:Neo4jGraphSuspendOperations$return withContext(Dispatchers.IO) { ShortestPathFallback.aStar(syncDelegate, fromId, toId, options, heuristic) }</ID>
+    <ID>MaxLineLength:OkioGraphBulkExporter.kt:OkioGraphBulkExporter$graphmlExporter.exportGraph(GraphExportSink.OutputStreamSink(os, closeOutput = false), operations, options)</ID>
+    <ID>MaxLineLength:OkioGraphBulkExporter.kt:OkioGraphBulkExporter$jackson2Exporter.exportGraph(GraphExportSink.OutputStreamSink(os, closeOutput = false), operations, options)</ID>
+    <ID>MaxLineLength:OkioGraphBulkExporter.kt:OkioGraphBulkExporter$jackson3Exporter.exportGraph(GraphExportSink.OutputStreamSink(os, closeOutput = false), operations, options)</ID>
+    <ID>MaxLineLength:OkioGraphBulkImporter.kt:OkioGraphBulkImporter$graphmlImporter.importGraph(GraphImportSource.InputStreamSource(is_, closeInput = false), operations, options)</ID>
+    <ID>MaxLineLength:OkioGraphBulkImporter.kt:OkioGraphBulkImporter$jackson2Importer.importGraph(GraphImportSource.InputStreamSource(is_, closeInput = false), operations, options)</ID>
+    <ID>MaxLineLength:OkioGraphBulkImporter.kt:OkioGraphBulkImporter$jackson3Importer.importGraph(GraphImportSource.InputStreamSource(is_, closeInput = false), operations, options)</ID>
+    <ID>MaxLineLength:OkioGraphIoBenchmark.kt:OkioGraphIoBenchmark$Jackson3NdJsonBulkImporter().importGraphGzip(pathSource(s.tempDir, "g3ok.ndjson.gz"), TinkerGraphOperations(), importOpts)</ID>
+    <ID>MaxLineLength:OkioGraphIoBenchmark.kt:OkioGraphIoBenchmark$okioImporter.importGraph(pathSource(s.tempDir, "g3ok.ndjson"), GraphIoFormat.NDJSON_JACKSON3, TinkerGraphOperations(), importOpts)</ID>
+    <ID>MaxLineLength:OkioGraphIoBenchmark.kt:OkioGraphIoBenchmark$okioImporter.importGraph(pathSource(s.tempDir, "gok.graphml"), GraphIoFormat.GRAPHML, TinkerGraphOperations(), importOpts)</ID>
+    <ID>MaxLineLength:OkioGraphIoBenchmark.kt:OkioGraphIoBenchmark$vtAdapter.exportGraphAsync(pathSink(s.tempDir, "g3vt.ndjson"), GraphIoFormat.NDJSON_JACKSON3, s.ops, exportOpts).get()</ID>
+    <ID>MaxLineLength:OkioGraphIoBenchmark.kt:OkioGraphIoBenchmark$vtAdapter.importGraphAsync(pathSource(s.tempDir, "g3vt.ndjson"), GraphIoFormat.NDJSON_JACKSON3, TinkerGraphOperations(), importOpts).get()</ID>
+    <ID>MaxLineLength:RecommendationService.kt:RecommendationService$mapOf(ProductLabel.productId.name to productId, ProductLabel.name.name to name, ProductLabel.category.name to category)</ID>
+    <ID>MaxLineLength:RecommendationService.kt:RecommendationService$mapOf(UserLabel.userId.name to userId, UserLabel.displayName.name to displayName, UserLabel.segment.name to segment)</ID>
+    <ID>MaxLineLength:RecommendationSuspendService.kt:RecommendationSuspendService$mapOf(ProductLabel.productId.name to productId, ProductLabel.name.name to name, ProductLabel.category.name to category)</ID>
+    <ID>MaxLineLength:RecommendationSuspendService.kt:RecommendationSuspendService$mapOf(UserLabel.userId.name to userId, UserLabel.displayName.name to displayName, UserLabel.segment.name to segment)</ID>
+    <ID>MaxLineLength:RecommendationSuspendService.kt:RecommendationSuspendService$suspend</ID>
+    <ID>MaxLineLength:ShortestPathFallbackTest.kt:FakeGraphOperations$override fun aStarPath: GraphPath?</ID>
+    <ID>MaxLineLength:ShortestPathFallbackTest.kt:FakeGraphOperations$override fun allPaths: List&lt;GraphPath></ID>
+    <ID>MaxLineLength:ShortestPathFallbackTest.kt:FakeGraphOperations$override fun createEdge: GraphEdge</ID>
+    <ID>MaxLineLength:ShortestPathFallbackTest.kt:FakeGraphOperations$override fun shortestPath: GraphPath?</ID>
+    <ID>MaxLineLength:ShortestPathFallbackTest.kt:FakeGraphOperations$override fun updateVertex: GraphVertex?</ID>
+    <ID>MaxLineLength:SuspendAdapterTest.kt:SuspendAdapterTest$adapter.exportGraphAwait(OkioGraphExportSink.PathSink(path, fakeFs), GraphIoFormat.NDJSON_JACKSON2, src, exportOptions)</ID>
+    <ID>MaxLineLength:SuspendCsvGraphBulkExporter.kt:SuspendCsvGraphBulkExporter$log.debug { "CSV export (suspend) completed: verticesWritten=$vWritten, edgesWritten=$eWritten, status=$status, elapsed=${watch.elapsed()}" }</ID>
+    <ID>MaxLineLength:SuspendCsvGraphBulkExporter.kt:SuspendCsvGraphBulkExporter$log.debug { "Starting CSV export (suspend): vertexLabels=${options.vertexLabels}, edgeLabels=${options.edgeLabels}" }</ID>
+    <ID>MaxLineLength:SuspendCsvGraphBulkImporter.kt:SuspendCsvGraphBulkImporter$log.debug { "CSV import (suspend) completed: vertices=$verticesCreated/$verticesRead, edges=$edgesCreated/$edgesRead, skipped=$skippedVertices/$skippedEdges, status=$status, elapsed=${watch.elapsed()}" }</ID>
+    <ID>MaxLineLength:SuspendCsvGraphBulkImporter.kt:SuspendCsvGraphBulkImporter$log.debug { "Starting CSV import (suspend): defaultVertexLabel=${options.defaultVertexLabel}, defaultEdgeLabel=${options.defaultEdgeLabel}" }</ID>
+    <ID>MaxLineLength:SuspendCsvGraphBulkImporter.kt:SuspendCsvGraphBulkImporter$log.warn { "CSV import (suspend) failed during vertex pass: vertices=$verticesCreated/$verticesRead, elapsed=${watch.elapsed()}" }</ID>
+    <ID>MaxLineLength:SuspendJackson2NdJsonBulkExporter.kt:SuspendJackson2NdJsonBulkExporter$log.debug { "NDJSON_JACKSON2 export (suspend) completed: verticesWritten=$vWritten, edgesWritten=$eWritten, status=$status, elapsed=${watch.elapsed()}" }</ID>
+    <ID>MaxLineLength:SuspendJackson2NdJsonBulkExporter.kt:SuspendJackson2NdJsonBulkExporter$log.debug { "Starting NDJSON_JACKSON2 export (suspend): vertexLabels=${options.vertexLabels}, edgeLabels=${options.edgeLabels}" }</ID>
+    <ID>MaxLineLength:SuspendJackson2NdJsonBulkImporter.kt:SuspendJackson2NdJsonBulkImporter$log.debug { "NDJSON_JACKSON2 import (suspend) completed: vertices=$vc/$vr, edges=$ec/$er, skipped=$sv/$se, status=$status, elapsed=${watch.elapsed()}" }</ID>
+    <ID>MaxLineLength:SuspendJackson2NdJsonBulkImporter.kt:SuspendJackson2NdJsonBulkImporter$log.debug { "Starting NDJSON_JACKSON2 import (suspend): defaultVertexLabel=${options.defaultVertexLabel}, defaultEdgeLabel=${options.defaultEdgeLabel}" }</ID>
+    <ID>MaxLineLength:SuspendJackson2NdJsonBulkImporter.kt:SuspendJackson2NdJsonBulkImporter$log.warn { "NDJSON_JACKSON2 import (suspend) failed: vertices=$vc/$vr, edges=$ec/$er, elapsed=${watch.elapsed()}" }</ID>
+    <ID>MaxLineLength:SuspendJackson2NdJsonBulkImporter.kt:SuspendJackson2NdJsonBulkImporter$return</ID>
+    <ID>MaxLineLength:SuspendJackson3NdJsonBulkExporter.kt:SuspendJackson3NdJsonBulkExporter$log.debug { "NDJSON_JACKSON3 export (suspend) completed: verticesWritten=$vWritten, edgesWritten=$eWritten, status=$status, elapsed=${watch.elapsed()}" }</ID>
+    <ID>MaxLineLength:SuspendJackson3NdJsonBulkExporter.kt:SuspendJackson3NdJsonBulkExporter$log.debug { "Starting NDJSON_JACKSON3 export (suspend): vertexLabels=${options.vertexLabels}, edgeLabels=${options.edgeLabels}" }</ID>
+    <ID>MaxLineLength:SuspendJackson3NdJsonBulkImporter.kt:SuspendJackson3NdJsonBulkImporter$log.debug { "NDJSON_JACKSON3 import (suspend) completed: vertices=$vc/$vr, edges=$ec/$er, skipped=$sv/$se, status=$status, elapsed=${watch.elapsed()}" }</ID>
+    <ID>MaxLineLength:SuspendJackson3NdJsonBulkImporter.kt:SuspendJackson3NdJsonBulkImporter$log.debug { "Starting NDJSON_JACKSON3 import (suspend): defaultVertexLabel=${options.defaultVertexLabel}, defaultEdgeLabel=${options.defaultEdgeLabel}" }</ID>
+    <ID>MaxLineLength:SuspendJackson3NdJsonBulkImporter.kt:SuspendJackson3NdJsonBulkImporter$log.warn { "NDJSON_JACKSON3 import (suspend) failed: vertices=$vc/$vr, edges=$ec/$er, elapsed=${watch.elapsed()}" }</ID>
+    <ID>MaxLineLength:SuspendJackson3NdJsonBulkImporter.kt:SuspendJackson3NdJsonBulkImporter$return</ID>
+    <ID>MaxLineLength:TinkerGraphOperations.kt:TinkerGraphOperations$?:</ID>
+    <ID>MaxLineLength:TinkerGraphOperations.kt:TinkerGraphOperations$Direction.BOTH -> if (options.edgeLabel != null) AnonymousTraversal.both(options.edgeLabel) else AnonymousTraversal.both()</ID>
+    <ID>MaxLineLength:TinkerGraphOperations.kt:TinkerGraphOperations$Direction.BOTH -> if (options.edgeLabel != null) g.V(idValue).both(options.edgeLabel) else g.V(idValue).both()</ID>
+    <ID>MaxLineLength:TinkerGraphOperations.kt:TinkerGraphOperations$Direction.INCOMING -> if (options.edgeLabel != null) AnonymousTraversal.`in`(options.edgeLabel) else AnonymousTraversal.`in`()</ID>
+    <ID>MaxLineLength:TinkerGraphOperations.kt:TinkerGraphOperations$Direction.INCOMING -> if (options.edgeLabel != null) g.V(idValue).`in`(options.edgeLabel) else g.V(idValue).`in`()</ID>
+    <ID>MaxLineLength:TinkerGraphOperations.kt:TinkerGraphOperations$Direction.OUTGOING -> if (options.edgeLabel != null) AnonymousTraversal.out(options.edgeLabel) else AnonymousTraversal.out()</ID>
+    <ID>MaxLineLength:TinkerGraphOperations.kt:TinkerGraphOperations$Direction.OUTGOING -> if (options.edgeLabel != null) g.V(idValue).out(options.edgeLabel) else g.V(idValue).out()</ID>
+    <ID>MaxLineLength:TinkerGraphOperations.kt:TinkerGraphOperations$val</ID>
+    <ID>MaxLineLength:WeightExtractorTest.kt:WeightExtractorTest$invoking { MissingWeightPolicy.UseDefault(Double.POSITIVE_INFINITY) } shouldThrow IllegalArgumentException::class</ID>
+    <ID>MaxLineLength:WeightExtractorTest.kt:WeightExtractorTest$invoking { extractor.extract(edge("w" to Double.POSITIVE_INFINITY)) } shouldThrow IllegalArgumentException::class</ID>
+    <ID>MaxLineLength:build.gradle.kts:annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:${libs.versions.spring.boot4.get()}")</ID>
+    <ID>ReturnCount:AStarRunner.kt:AStarRunner$fun run: GraphPath?</ID>
+    <ID>ReturnCount:AStarRunnerTest.kt:AStarRunnerTest$private fun euclidean: Double</ID>
+    <ID>ReturnCount:BenchmarkSingleThreadedCachingAgeGraphOperations.kt:BenchmarkSingleThreadedCachingAgeGraphOperations$override fun allPaths: List&lt;GraphPath></ID>
+    <ID>ReturnCount:BenchmarkSingleThreadedCachingAgeGraphOperations.kt:BenchmarkSingleThreadedCachingAgeGraphOperations$override fun findVerticesByLabel: List&lt;GraphVertex></ID>
+    <ID>ReturnCount:BenchmarkSingleThreadedCachingAgeGraphOperations.kt:BenchmarkSingleThreadedCachingAgeGraphOperations$override fun neighbors: List&lt;GraphVertex></ID>
+    <ID>ReturnCount:BenchmarkSingleThreadedCachingAgeGraphOperations.kt:BenchmarkSingleThreadedCachingAgeGraphOperations$override fun shortestPath: GraphPath?</ID>
+    <ID>ReturnCount:BenchmarkSingleThreadedCachingNeo4jGraphOperations.kt:BenchmarkSingleThreadedCachingNeo4jGraphOperations$override fun allPaths: List&lt;GraphPath></ID>
+    <ID>ReturnCount:BenchmarkSingleThreadedCachingNeo4jGraphOperations.kt:BenchmarkSingleThreadedCachingNeo4jGraphOperations$override fun findVerticesByLabel: List&lt;GraphVertex></ID>
+    <ID>ReturnCount:BenchmarkSingleThreadedCachingNeo4jGraphOperations.kt:BenchmarkSingleThreadedCachingNeo4jGraphOperations$override fun neighbors: List&lt;GraphVertex></ID>
+    <ID>ReturnCount:BenchmarkSingleThreadedCachingNeo4jGraphOperations.kt:BenchmarkSingleThreadedCachingNeo4jGraphOperations$override fun shortestPath: GraphPath?</ID>
+    <ID>ReturnCount:KtorGraphAppMain.kt:DemoCityGraph$suspend fun shortestPath: io.bluetape4k.graph.model.GraphPath?</ID>
+    <ID>ReturnCount:PageRankCalculator.kt:PageRankCalculator$fun compute: Map&lt;GraphElementId, Double></ID>
+    <ID>ReturnCount:PathReconstructor.kt:internal fun reconstructPath: GraphPath?</ID>
+    <ID>ReturnCount:TinkerGraphOperations.kt:TinkerGraphOperations$override fun allPaths: List&lt;GraphPath></ID>
+    <ID>ReturnCount:TinkerGraphOperations.kt:TinkerGraphOperations$override fun deleteEdge: Boolean</ID>
+    <ID>ReturnCount:TinkerGraphOperations.kt:TinkerGraphOperations$override fun deleteVertex: Boolean</ID>
+    <ID>ReturnCount:TinkerGraphOperations.kt:TinkerGraphOperations$override fun neighbors: List&lt;GraphVertex></ID>
+    <ID>ReturnCount:TinkerGraphOperations.kt:TinkerGraphOperations$override fun shortestPath: GraphPath?</ID>
+    <ID>ReturnCount:TinkerGraphOperations.kt:TinkerGraphOperations$override fun updateVertex: GraphVertex?</ID>
+    <ID>SerialVersionUIDInSerializableClass:GraphTraversalOptions.kt:GraphTraversalOptions : Serializable</ID>
+    <ID>SwallowedException:MemgraphGraphOperations.kt:MemgraphGraphOperations$e: org.neo4j.driver.exceptions.DatabaseException</ID>
+    <ID>SwallowedException:MemgraphGraphSuspendOperations.kt:MemgraphGraphSuspendOperations$e: org.neo4j.driver.exceptions.DatabaseException</ID>
+    <ID>SwallowedException:Neo4jGraphSuspendOperations.kt:Neo4jGraphSuspendOperations$e: Exception</ID>
+    <ID>ThrowingExceptionFromFinally:MemgraphGraphOperations.kt:MemgraphGraphOperations$throw closeFailure</ID>
+    <ID>ThrowingExceptionFromFinally:Neo4jGraphOperations.kt:Neo4jGraphOperations$throw closeFailure</ID>
+    <ID>ThrowsCount:AgeGraphOperations.kt:AgeGraphOperations$override fun createEdge: GraphEdge</ID>
+    <ID>ThrowsCount:AgeGraphOperations.kt:AgeGraphOperations$override fun createEdges: List&lt;GraphEdge></ID>
+    <ID>ThrowsCount:AgeGraphOperations.kt:AgeGraphOperations$override fun mergeEdge: GraphEdge</ID>
+    <ID>ThrowsCount:AgeGraphOperations.kt:AgeGraphOperations$override fun mergeVertex: GraphVertex</ID>
+    <ID>ThrowsCount:AgeGraphSuspendOperations.kt:AgeGraphSuspendOperations$override suspend fun createEdge: GraphEdge</ID>
+    <ID>ThrowsCount:TinkerGraphOperations.kt:TinkerGraphOperations$override fun createEdges: List&lt;GraphEdge></ID>
+    <ID>TooGenericExceptionCaught:AgeGraphOperations.kt:AgeGraphOperations$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:AgeGraphSuspendOperations.kt:AgeGraphSuspendOperations$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:FalkorDBGraphOperations.kt:FalkorDBGraphOperations$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:FalkorDBGraphSuspendOperations.kt:FalkorDBGraphSuspendOperations$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:GraphAgeAutoConfiguration.kt:GraphAgeAutoConfiguration.HealthConfig$ex: Exception</ID>
+    <ID>TooGenericExceptionCaught:GraphFalkorDBAutoConfiguration.kt:GraphFalkorDBAutoConfiguration.HealthConfig$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:GraphIoOkioPaths.kt:GraphIoOkioPaths$ce: Throwable</ID>
+    <ID>TooGenericExceptionCaught:GraphIoOkioPaths.kt:GraphIoOkioPaths$e: Throwable</ID>
+    <ID>TooGenericExceptionCaught:GraphIoOkioPaths.kt:GraphIoOkioPaths.AtomicMoveSink$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:GraphMemgraphAutoConfiguration.kt:GraphMemgraphAutoConfiguration.HealthConfig$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:GraphNeo4jAutoConfiguration.kt:GraphNeo4jAutoConfiguration.HealthConfig$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:MemgraphGraphOperations.kt:MemgraphGraphOperations$closeFailure: Throwable</ID>
+    <ID>TooGenericExceptionCaught:MemgraphGraphOperations.kt:MemgraphGraphOperations$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:MemgraphGraphOperations.kt:MemgraphGraphOperations$e: Throwable</ID>
+    <ID>TooGenericExceptionCaught:MemgraphGraphOperations.kt:MemgraphGraphOperations$rollbackFailure: Throwable</ID>
+    <ID>TooGenericExceptionCaught:MemgraphGraphSuspendOperations.kt:MemgraphGraphSuspendOperations$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:Neo4jGraphOperations.kt:Neo4jGraphOperations$closeFailure: Throwable</ID>
+    <ID>TooGenericExceptionCaught:Neo4jGraphOperations.kt:Neo4jGraphOperations$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:Neo4jGraphOperations.kt:Neo4jGraphOperations$e: Throwable</ID>
+    <ID>TooGenericExceptionCaught:Neo4jGraphOperations.kt:Neo4jGraphOperations$rollbackFailure: Throwable</ID>
+    <ID>TooGenericExceptionCaught:Neo4jGraphSuspendOperations.kt:Neo4jGraphSuspendOperations$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:TinkerGraphOperations.kt:TinkerGraphOperations$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:TinkerGraphOperations.kt:TinkerGraphOperations$e: Throwable</ID>
+    <ID>TooGenericExceptionCaught:TinkerGraphOperations.kt:TinkerGraphOperations$restoreFailure: Throwable</ID>
+    <ID>TooManyFunctions:AgeGraphOperations.kt:AgeGraphOperations : GraphOperationsGraphTransactionalOperationsGraphSchemaManagementOperationsGraphMergeOperations</ID>
+    <ID>TooManyFunctions:AgeGraphSuspendOperations.kt:AgeGraphSuspendOperations : GraphSuspendOperationsGraphSuspendTransactionalOperationsGraphSuspendSchemaManagementOperationsGraphSuspendMergeOperations</ID>
+    <ID>TooManyFunctions:AgeSql.kt:AgeSql</ID>
+    <ID>TooManyFunctions:AgeVertexBenchmark.kt:AgeVertexBenchmark : AgeBenchmarkState</ID>
+    <ID>TooManyFunctions:BenchmarkSingleThreadedCachingAgeGraphOperations.kt:BenchmarkSingleThreadedCachingAgeGraphOperations : GraphOperations</ID>
+    <ID>TooManyFunctions:BenchmarkSingleThreadedCachingNeo4jGraphOperations.kt:BenchmarkSingleThreadedCachingNeo4jGraphOperations : GraphOperations</ID>
+    <ID>TooManyFunctions:BulkGraphIoBenchmark.kt:BulkGraphIoBenchmark</ID>
+    <ID>TooManyFunctions:CachingAgeGraphOperations.kt:CachingAgeGraphOperations : GraphOperationsGraphSchemaManagementOperationsGraphMergeOperations</ID>
+    <ID>TooManyFunctions:CachingMemgraphGraphOperations.kt:CachingMemgraphGraphOperations : GraphOperationsGraphSchemaManagementOperationsGraphMergeOperations</ID>
+    <ID>TooManyFunctions:CachingNeo4jGraphOperations.kt:CachingNeo4jGraphOperations : GraphOperationsGraphSchemaManagementOperationsGraphMergeOperations</ID>
+    <ID>TooManyFunctions:CodeGraphService.kt:CodeGraphService</ID>
+    <ID>TooManyFunctions:CodeGraphSuspendService.kt:CodeGraphSuspendService</ID>
+    <ID>TooManyFunctions:CsvOkioExtensions.kt:io.bluetape4k.graph.io.okio.extension.CsvOkioExtensions.kt</ID>
+    <ID>TooManyFunctions:FalkorDBGraphOperations.kt:FalkorDBGraphOperations : GraphOperationsGraphSchemaManagementOperationsGraphMergeOperations</ID>
+    <ID>TooManyFunctions:FalkorDBGraphSuspendOperations.kt:FalkorDBGraphSuspendOperations : GraphSuspendOperationsGraphSuspendSchemaManagementOperationsGraphSuspendMergeOperations</ID>
+    <ID>TooManyFunctions:GraphIoOkioPaths.kt:GraphIoOkioPaths : KLogging</ID>
+    <ID>TooManyFunctions:GraphSuspendTransactionScope.kt:BlockingGraphSuspendTransactionScope : GraphSuspendTransactionScope</ID>
+    <ID>TooManyFunctions:JacksonOkioExtensions.kt:io.bluetape4k.graph.io.okio.extension.JacksonOkioExtensions.kt</ID>
+    <ID>TooManyFunctions:LinkedInGraphService.kt:LinkedInGraphService</ID>
+    <ID>TooManyFunctions:LinkedInGraphSuspendService.kt:LinkedInGraphSuspendService</ID>
+    <ID>TooManyFunctions:MemgraphGraphOperations.kt:MemgraphGraphOperations : GraphOperationsGraphTransactionalOperationsGraphSchemaManagementOperationsGraphMergeOperations</ID>
+    <ID>TooManyFunctions:MemgraphGraphOperations.kt:MemgraphGraphTransactionScope : GraphTransactionScope</ID>
+    <ID>TooManyFunctions:MemgraphGraphSuspendOperations.kt:MemgraphGraphSuspendOperations : GraphSuspendOperationsGraphSuspendTransactionalOperationsGraphSuspendSchemaManagementOperationsGraphSuspendMergeOperations</ID>
+    <ID>TooManyFunctions:Neo4jGraphOperations.kt:Neo4jGraphOperations : GraphOperationsGraphTransactionalOperationsGraphSchemaManagementOperationsGraphMergeOperations</ID>
+    <ID>TooManyFunctions:Neo4jGraphOperations.kt:Neo4jGraphTransactionScope : GraphTransactionScope</ID>
+    <ID>TooManyFunctions:Neo4jGraphSuspendOperations.kt:Neo4jGraphSuspendOperations : GraphSuspendOperationsGraphSuspendTransactionalOperationsGraphSuspendSchemaManagementOperationsGraphSuspendMergeOperations</ID>
+    <ID>TooManyFunctions:OkioGraphIoBenchmark.kt:OkioGraphIoBenchmark</ID>
+    <ID>TooManyFunctions:TinkerGraphOperations.kt:TinkerGraphOperations : GraphOperationsGraphAlgorithmRepositoryGraphTransactionalOperationsGraphSchemaManagementOperationsGraphMergeOperations</ID>
+    <ID>TooManyFunctions:TinkerGraphSuspendOperations.kt:TinkerGraphSuspendOperations : GraphSuspendOperationsGraphSuspendTransactionalOperationsGraphSuspendSchemaManagementOperationsGraphSuspendMergeOperations</ID>
+    <ID>TooManyFunctions:VertexOperationsBenchmark.kt:VertexOperationsBenchmark : GraphBenchmarkState</ID>
+    <ID>UtilityClassWithPublicConstructor:GraphAutoConfiguration.kt:GraphAutoConfiguration</ID>
+  </CurrentIssues>
+</SmellBaseline>
