@@ -6,6 +6,7 @@ import io.bluetape4k.graph.model.GraphIndex
 import io.bluetape4k.graph.model.GraphSchemaEntityType
 import io.bluetape4k.graph.schema.GraphSchemaManager
 import io.bluetape4k.graph.schema.GraphSchemaNames
+import kotlinx.coroutines.CancellationException
 import org.neo4j.driver.Driver
 import org.neo4j.driver.Record
 import org.neo4j.driver.Session
@@ -92,8 +93,13 @@ class MemgraphGraphSchemaManager(
         )
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private fun ignoreAlreadyExists(block: () -> Unit) {
-        runCatching(block).getOrElse { e ->
+        try {
+            block()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
             val message = e.message.orEmpty()
             if (!message.contains("already", ignoreCase = true) && !message.contains("exists", ignoreCase = true)) {
                 throw e
@@ -101,8 +107,13 @@ class MemgraphGraphSchemaManager(
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private fun ignoreMissing(block: () -> Unit) {
-        runCatching(block).getOrElse { e ->
+        try {
+            block()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
             val message = e.message.orEmpty()
             if (!message.contains("not found", ignoreCase = true) && !message.contains("does not exist", ignoreCase = true)) {
                 throw e
