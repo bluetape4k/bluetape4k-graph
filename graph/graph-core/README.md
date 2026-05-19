@@ -14,21 +14,7 @@ Common abstraction layer for Graph Databases (Apache AGE, Neo4j, Memgraph, Apach
 
 ## Architecture Overview
 
-```mermaid
-graph TD
-    App["Application Layer"]
-    Core["graph-core<br/>Models, Schema DSL,<br/>Repository Interfaces"]
-    AGE["graph-age<br/>Apache AGE<br/>Implementation"]
-    Neo4j["graph-neo4j<br/>Neo4j<br/>Implementation"]
-    Memgraph["graph-memgraph<br/>Memgraph<br/>Implementation"]
-    Tinker["graph-tinkerpop<br/>TinkerGraph<br/>Implementation"]
-
-    App -->|"GraphOperations"| Core
-    Core -->|"interface"| AGE
-    Core -->|"interface"| Neo4j
-    Core -->|"interface"| Memgraph
-    Core -->|"interface"| Tinker
-```
+![Architecture Overview diagram](../../docs/images/readme-diagrams/graph-graph-core-architecture-01.png)
 
 ## Key Classes
 

@@ -7,16 +7,7 @@
 
 ## 아키텍처
 
-```mermaid
-flowchart LR
-    App[Ktor Application] --> Install[install(GraphPlugin)]
-    Install --> Config[GraphPluginConfig]
-    Config --> State[GraphPluginState]
-    State --> Sync[GraphOperations]
-    State --> Suspend[GraphSuspendOperations]
-    Route[Route Handler] --> CallExt[call.graphSuspendOperations()]
-    CallExt --> Suspend
-```
+![Architecture diagram](../../docs/images/readme-diagrams/ktor-graph-ktor-architecture-01.png)
 
 ## 주요 기능
 
