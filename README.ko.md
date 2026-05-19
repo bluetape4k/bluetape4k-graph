@@ -25,9 +25,9 @@ bluetape4k 생태계의 그래프 데이터베이스 통합 라이브러리. Apa
 
 ## 아키텍처
 
-![Architecture 1](docs/images/readme-diagrams/root-readme-ko-diagram-01.svg)
+![Architecture 1](docs/images/readme-diagrams/root-readme-ko-diagram-01.png)
 
-![Architecture 2](docs/images/readme-diagrams/root-readme-ko-diagram-02.svg)
+![Architecture 2](docs/images/readme-diagrams/root-readme-ko-diagram-02.png)
 
 ## 지원하는 그래프 데이터베이스
 

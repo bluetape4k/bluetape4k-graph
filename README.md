@@ -25,9 +25,9 @@ Use this project when you need:
 
 ## Architecture
 
-![Architecture 1](docs/images/readme-diagrams/root-readme-en-diagram-01.svg)
+![Architecture 1](docs/images/readme-diagrams/root-readme-en-diagram-01.png)
 
-![Architecture 2](docs/images/readme-diagrams/root-readme-en-diagram-02.svg)
+![Architecture 2](docs/images/readme-diagrams/root-readme-en-diagram-02.png)
 
 ## Supported Graph Databases
 
