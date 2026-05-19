@@ -3,6 +3,7 @@
 
 [versions]
 bluetape4k = "1.8.0"  # https://mvnrepository.com/artifact/io.github.bluetape4k/bluetape4k-bom
+bluetape4k-dependencies = "1.0.1-SNAPSHOT"  # https://mvnrepository.com/artifact/io.github.bluetape4k/bluetape4k-dependencies
 
 kotlin = "2.3.21"  # https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-bom
 kotlinx-coroutines = "1.11.0"  # https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-bom
@@ -87,6 +88,7 @@ jetbrains-annotations = { module = "org.jetbrains:annotations", version = "26.1.
 
 # bluetape4k
 bluetape4k-bom = { module = "io.github.bluetape4k:bluetape4k-bom", version.ref = "bluetape4k" }
+bluetape4k-dependencies = { module = "io.github.bluetape4k:bluetape4k-dependencies", version.ref = "bluetape4k-dependencies" }
 bluetape4k-core = { module = "io.github.bluetape4k:bluetape4k-core", version.ref = "bluetape4k" }
 bluetape4k-coroutines = { module = "io.github.bluetape4k:bluetape4k-coroutines", version.ref = "bluetape4k" }
 bluetape4k-logging = { module = "io.github.bluetape4k:bluetape4k-logging", version.ref = "bluetape4k" }
