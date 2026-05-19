@@ -31,74 +31,15 @@ This makes the example close to real recommendation systems while keeping the im
 
 ## Architecture
 
-```mermaid
-flowchart LR
-    Test[Example test] --> Service[RecommendationService]
-    Service --> Ops[GraphOperations]
-    Ops --> Backend[(Graph backend)]
-    Backend --> Traversal[Product / follow traversal]
-    Backend --> Ranking[PageRank]
-    Traversal --> Results[Recommendations]
-    Ranking --> Results
-```
+![Architecture diagram](../../docs/images/readme-diagrams/examples-recommendation-examples-architecture-01.png)
 
 ## Domain UML
 
-```mermaid
-classDiagram
-    class User {
-        +String userId
-        +String displayName
-        +String segment
-    }
-
-    class Product {
-        +String productId
-        +String name
-        +String category
-    }
-
-    class Purchase {
-        +Int quantity
-        +String purchasedAt
-    }
-
-    class RecommendationService {
-        +addUser(userId, displayName, segment)
-        +addProduct(productId, name, category)
-        +recordPurchase(userId, productId, quantity)
-        +follow(followerId, targetId)
-        +recommendProducts(userId, limit)
-        +recommendFollows(userId, limit)
-        +rankPopularProducts(limit)
-    }
-
-    User "1" --> "*" Purchase : makes
-    Purchase "*" --> "1" Product : targets
-    User "*" --> "*" User : FOLLOWS
-    RecommendationService ..> User
-    RecommendationService ..> Product
-```
+![Domain UML diagram](../../docs/images/readme-diagrams/examples-recommendation-examples-class-02.png)
 
 ## Recommendation Flow
 
-```mermaid
-sequenceDiagram
-    participant Learner
-    participant Service as RecommendationService
-    participant Ops as GraphOperations
-    participant DB as Graph DB
-
-    Learner->>Service: recordPurchase(alice, camera)
-    Service->>Ops: createEdge(alice, camera, "PURCHASED")
-    Ops->>DB: persist purchase
-    Learner->>Service: recommendProducts(alice)
-    Service->>Ops: neighbors(alice, PURCHASED OUTGOING)
-    Service->>Ops: neighbors(camera, PURCHASED INCOMING)
-    Service->>Ops: neighbors(similarUser, PURCHASED OUTGOING)
-    Ops->>DB: traverse purchase graph
-    DB-->>Learner: candidate products excluding Alice's existing products
-```
+![Recommendation Flow diagram](../../docs/images/readme-diagrams/examples-recommendation-examples-sequence-03.png)
 
 ## Core Features
 

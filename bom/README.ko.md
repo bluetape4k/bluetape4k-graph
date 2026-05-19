@@ -7,44 +7,7 @@
 
 ## Architecture
 
-```mermaid
-graph TB
-    Consumer[소비 프로젝트]
-    BOM[bluetape4k-graph-bom<br/>java-platform]
-
-    subgraph "graph (DB 드라이버)"
-      Core[graph-core]
-      Neo4j[graph-neo4j]
-      Memgraph[graph-memgraph]
-      Age[graph-age]
-      Tinker[graph-tinkerpop]
-      Falkor[graph-falkordb]
-    end
-
-    subgraph "graph-io (직렬화)"
-      IoCore[graph-io-core]
-      Csv[graph-io-csv]
-      GraphML[graph-io-graphml]
-      Jackson2[graph-io-jackson2]
-      Jackson3[graph-io-jackson3]
-      Okio[graph-okio]
-    end
-
-    subgraph "Spring Boot starter"
-      SB[graph-spring-boot]
-    end
-
-    subgraph "Ktor"
-      Ktor[graph-ktor]
-    end
-
-    Consumer -->|platform import| BOM
-    BOM -.->|버전 constraint| Core
-    BOM -.->|버전 constraint| Neo4j
-    BOM -.->|버전 constraint| IoCore
-    BOM -.->|버전 constraint| SB
-    BOM -.->|버전 constraint| Ktor
-```
+![Architecture diagram](../docs/images/readme-diagrams/bom-architecture-01.png)
 
 BOM은 Gradle `java-platform` 으로 `<dependencyManagement>` constraint 만 게시한다.
 

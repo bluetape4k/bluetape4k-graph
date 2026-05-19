@@ -30,64 +30,15 @@ Graph DB를 사용하면 도메인 언어가 그대로 모델이 됩니다.
 
 ## 아키텍처
 
-```mermaid
-flowchart LR
-    Test[Example test] --> Service[FraudDetectionService]
-    Service --> Ops[GraphOperations]
-    Ops --> Backend[(Graph backend)]
-    Backend --> Analytics[Cycles / Components / PageRank]
-    Analytics --> Findings[Review candidates]
-```
+![Architecture diagram](../../docs/images/readme-diagrams/examples-fraud-detection-examples-architecture-01.png)
 
 ## 도메인 UML
 
-```mermaid
-classDiagram
-    class Account {
-        +String accountId
-        +String ownerName
-        +String riskTier
-    }
-
-    class Transfer {
-        +Long amount
-        +String occurredAt
-    }
-
-    class FraudDetectionService {
-        +addAccount(accountId, ownerName, riskTier)
-        +recordTransfer(fromAccountId, toAccountId, amount)
-        +detectCircularTransfers(maxDepth, maxCycles)
-        +detectSuspiciousClusters(minSize)
-        +rankHighRiskAccounts(limit)
-    }
-
-    Account "1" --> "*" Transfer : outgoing
-    Transfer "*" --> "1" Account : incoming
-    FraudDetectionService ..> Account
-    FraudDetectionService ..> Transfer
-```
+![Domain UML diagram](../../docs/images/readme-diagrams/examples-fraud-detection-examples-class-02.png)
 
 ## 분석 흐름
 
-```mermaid
-sequenceDiagram
-    participant Learner
-    participant Service as FraudDetectionService
-    participant Ops as GraphOperations
-    participant DB as Graph DB
-
-    Learner->>Service: addAccount(...)
-    Service->>Ops: createVertex("Account", ...)
-    Ops->>DB: persist account
-    Learner->>Service: recordTransfer(...)
-    Service->>Ops: createEdge(..., "TRANSFERRED_TO", ...)
-    Ops->>DB: persist transfer
-    Learner->>Service: detectCircularTransfers()
-    Service->>Ops: detectCycles(CycleOptions)
-    Ops->>DB: traverse transfer graph
-    DB-->>Learner: suspicious cycles
-```
+![fraud-detection-examples diagram diagram](../../docs/images/readme-diagrams/examples-fraud-detection-examples-sequence-03.png)
 
 ## 주요 기능
 
