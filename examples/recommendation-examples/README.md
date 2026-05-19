@@ -31,15 +31,15 @@ This makes the example close to real recommendation systems while keeping the im
 
 ## Architecture
 
-![Architecture 1](../../docs/images/readme-diagrams/examples-recommendation-examples-diagram-01.svg)
+![Architecture 1](../../docs/images/readme-diagrams/examples-recommendation-examples-diagram-01.png)
 
 ## Domain UML
 
-![Domain UML 2](../../docs/images/readme-diagrams/examples-recommendation-examples-diagram-02.svg)
+![Domain UML 2](../../docs/images/readme-diagrams/examples-recommendation-examples-diagram-02.png)
 
 ## Recommendation Flow
 
-![Recommendation Flow 3](../../docs/images/readme-diagrams/examples-recommendation-examples-diagram-03.svg)
+![Recommendation Flow 3](../../docs/images/readme-diagrams/examples-recommendation-examples-diagram-03.png)
 
 ## Core Features
 

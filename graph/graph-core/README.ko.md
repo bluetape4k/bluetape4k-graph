@@ -13,7 +13,7 @@ Graph Database (Apache AGE, Neo4j) 공통 추상화 계층. 백엔드 독립 모
 
 ## 아키텍처 개요
 
-![Architecture Component 1](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-01.svg)
+![Architecture Component 1](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-01.png)
 
 ## 주요 클래스
 
@@ -21,11 +21,11 @@ Graph Database (Apache AGE, Neo4j) 공통 추상화 계층. 백엔드 독립 모
 
 #### 기본 모델: GraphElementId, GraphVertex, GraphEdge
 
-![Component Component: GraphElementId, GraphVertex, GraphEdge 2](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-02.svg)
+![Component Component: GraphElementId, GraphVertex, GraphEdge 2](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-02.png)
 
 #### PathStep 및 GraphPath 모델
 
-![PathStep Component GraphPath Component 3](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-03.svg)
+![PathStep Component GraphPath Component 3](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-03.png)
 
 **PathStep 교차 순서 예시**:
 ```
@@ -36,11 +36,11 @@ length = 2  (간선 개수)
 
 ### Repository 계층
 
-![Repository Component 4](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-04.svg)
+![Repository Component 4](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-04.png)
 
 ### 스키마 DSL 클래스
 
-![Component DSL Component 5](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-05.svg)
+![Component DSL Component 5](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-05.png)
 
 ## 스키마 정의 (DSL)
 
@@ -130,43 +130,43 @@ object FollowsLabel : EdgeLabel("FOLLOWS", PersonLabel, PersonLabel) {
 
 ### createVertex 시퀀스
 
-![createVertex Component 6](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-06.svg)
+![createVertex Component 6](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-06.png)
 
 ### shortestPath 시퀀스
 
-![shortestPath Component 7](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-07.svg)
+![shortestPath Component 7](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-07.png)
 
 ### neighbors 순회
 
-![neighbors Component 8](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-08.svg)
+![neighbors Component 8](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-08.png)
 
 ### createEdge 시퀀스
 
-![createEdge Component 9](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-09.svg)
+![createEdge Component 9](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-09.png)
 
 ## 상태 다이어그램
 
 ### GraphPath 라이프사이클
 
-![GraphPath Component 10](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-10.svg)
+![GraphPath Component 10](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-10.png)
 
 ### GraphOperations 사용 상태
 
-![GraphOperations Component Component 11](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-11.svg)
+![GraphOperations Component Component 11](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-11.png)
 
 ## 플로우차트 다이어그램
 
 ### 스키마 DSL 정의 및 사용 흐름
 
-![Component DSL Component Component Component Component 12](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-12.svg)
+![Component DSL Component Component Component Component 12](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-12.png)
 
 ### CRUD 작업 플로우
 
-![CRUD Component Component 13](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-13.svg)
+![CRUD Component Component 13](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-13.png)
 
 ### 경로 탐색 알고리즘 플로우
 
-![Component Component Component Component 14](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-14.svg)
+![Component Component Component Component 14](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-14.png)
 
 ## 사용 예시
 

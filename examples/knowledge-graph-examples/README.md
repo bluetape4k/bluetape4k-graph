@@ -32,15 +32,15 @@ This example focuses on small, explainable graphs so learners can see why the pa
 
 ## Architecture
 
-![Architecture 1](../../docs/images/readme-diagrams/examples-knowledge-graph-examples-diagram-01.svg)
+![Architecture 1](../../docs/images/readme-diagrams/examples-knowledge-graph-examples-diagram-01.png)
 
 ## Domain UML
 
-![Domain UML 2](../../docs/images/readme-diagrams/examples-knowledge-graph-examples-diagram-02.svg)
+![Domain UML 2](../../docs/images/readme-diagrams/examples-knowledge-graph-examples-diagram-02.png)
 
 ## Path Inference Flow
 
-![Path Inference Flow 3](../../docs/images/readme-diagrams/examples-knowledge-graph-examples-diagram-03.svg)
+![Path Inference Flow 3](../../docs/images/readme-diagrams/examples-knowledge-graph-examples-diagram-03.png)
 
 ## Core Features
 

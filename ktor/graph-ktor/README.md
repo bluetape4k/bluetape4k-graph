@@ -6,7 +6,7 @@ Ktor 3.x plugin integration for `bluetape4k-graph`. It exposes `GraphOperations`
 
 ## Architecture
 
-![Architecture 1](../../docs/images/readme-diagrams/ktor-graph-ktor-diagram-01.svg)
+![Architecture 1](../../docs/images/readme-diagrams/ktor-graph-ktor-diagram-01.png)
 
 ## Features
 

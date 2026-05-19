@@ -16,7 +16,7 @@
 
 ### Module Layer Structure
 
-![Module Layer Structure 1](../../docs/images/readme-diagrams/graph-graph-age-diagram-01.svg)
+![Module Layer Structure 1](../../docs/images/readme-diagrams/graph-graph-age-diagram-01.png)
 
 ## Key Classes
 

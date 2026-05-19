@@ -32,15 +32,15 @@ graph backends.
 
 ## Architecture
 
-![Architecture 1](../../docs/images/readme-diagrams/examples-fraud-detection-examples-diagram-01.svg)
+![Architecture 1](../../docs/images/readme-diagrams/examples-fraud-detection-examples-diagram-01.png)
 
 ## Domain UML
 
-![Domain UML 2](../../docs/images/readme-diagrams/examples-fraud-detection-examples-diagram-02.svg)
+![Domain UML 2](../../docs/images/readme-diagrams/examples-fraud-detection-examples-diagram-02.png)
 
 ## Analysis Flow
 
-![Analysis Flow 3](../../docs/images/readme-diagrams/examples-fraud-detection-examples-diagram-03.svg)
+![Analysis Flow 3](../../docs/images/readme-diagrams/examples-fraud-detection-examples-diagram-03.png)
 
 ## Core Features
 

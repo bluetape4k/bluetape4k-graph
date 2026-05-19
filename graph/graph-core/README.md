@@ -14,7 +14,7 @@ Common abstraction layer for Graph Databases (Apache AGE, Neo4j, Memgraph, Apach
 
 ## Architecture Overview
 
-![Architecture Overview 1](../../docs/images/readme-diagrams/graph-graph-core-diagram-01.svg)
+![Architecture Overview 1](../../docs/images/readme-diagrams/graph-graph-core-diagram-01.png)
 
 ## Key Classes
 

@@ -12,7 +12,7 @@ It bridges the Reactive Streams API through `kotlinx-coroutines-reactive` to pro
 - **Direction-Based Traversal**: `neighbors` queries support `OUTGOING` / `INCOMING` / `BOTH` patterns
 - **elementId()**: Uses `elementId()` for stable record lookup and updates (replacement for the deprecated `id()`)
 
-![Overview 1](../../docs/images/readme-diagrams/graph-graph-neo4j-diagram-01.svg)
+![Overview 1](../../docs/images/readme-diagrams/graph-graph-neo4j-diagram-01.png)
 
 ## Key Classes
 

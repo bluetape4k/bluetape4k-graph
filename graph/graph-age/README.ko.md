@@ -16,55 +16,55 @@ Apache AGE (PostgreSQL 그래프 확장)를 기반으로 한 `GraphOperations` �
 
 ### 모듈 레이어 구조
 
-![Component Layer Component 1](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-01.svg)
+![Component Layer Component 1](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-01.png)
 
 ### Apache AGE 동작 흐름
 
-![Apache AGE Component Component 2](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-02.svg)
+![Apache AGE Component Component 2](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-02.png)
 
 ## 주요 클래스
 
 ### AgeGraphOperations 클래스 다이어그램
 
-![AgeGraphOperations Component Diagram 3](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-03.svg)
+![AgeGraphOperations Component Diagram 3](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-03.png)
 
 ### AgeSql 클래스 다이어그램
 
-![AgeSql Component Diagram 4](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-04.svg)
+![AgeSql Component Diagram 4](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-04.png)
 
 ### AgeTypeParser 클래스 다이어그램
 
-![AgeTypeParser Component Diagram 5](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-05.svg)
+![AgeTypeParser Component Diagram 5](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-05.png)
 
 ## 시퀀스 다이어그램
 
 ### createVertex 호출 흐름
 
-![createVertex Component Component 6](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-06.svg)
+![createVertex Component Component 6](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-06.png)
 
 ### createEdge 호출 흐름
 
-![createEdge Component Component 7](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-07.svg)
+![createEdge Component Component 7](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-07.png)
 
 ### shortestPath 호출 흐름
 
-![shortestPath Component Component 8](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-08.svg)
+![shortestPath Component Component 8](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-08.png)
 
 ### neighbors 탐색 (방향별)
 
-![neighbors Component (Component) 9](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-09.svg)
+![neighbors Component (Component) 9](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-09.png)
 
 ## agtype 파싱 플로우
 
-![agtype Component Component 10](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-10.svg)
+![agtype Component Component 10](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-10.png)
 
 ## HikariCP 연결 초기화
 
-![HikariCP Connection Component 11](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-11.svg)
+![HikariCP Connection Component 11](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-11.png)
 
 ## 테스트 환경 구성
 
-![Test Component Configuration 12](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-12.svg)
+![Test Component Configuration 12](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-12.png)
 
 ## 코드 예시
 

@@ -20,57 +20,57 @@ Reactive Streams API를 `kotlinx-coroutines-reactive`로 브릿지하여 Virtual
 - Direction 기반 neighbors 쿼리 패턴 (OUTGOING / INCOMING / BOTH)
 - elementId() 기반 고유 레코드 검색 및 업데이트
 
-![Component Component 1](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-01.svg)
+![Component Component 1](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-01.png)
 
 ## 핵심 아키텍처
 
 ### Reactive-Coroutine 브릿지 원리
 
-![Reactive-Coroutine Component Component 2](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-02.svg)
+![Reactive-Coroutine Component Component 2](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-02.png)
 
 ## 클래스 설계
 
 ### Neo4jGraphOperations 구현 구조
 
-![Neo4jGraphOperations Component Component 3](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-03.svg)
+![Neo4jGraphOperations Component Component 3](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-03.png)
 
 ### Neo4jCoroutineSession 상세 설계
 
-![Neo4jCoroutineSession Component Component 4](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-04.svg)
+![Neo4jCoroutineSession Component Component 4](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-04.png)
 
 ### Neo4jRecordMapper 변환 메서드
 
-![Neo4jRecordMapper Component Component 5](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-05.svg)
+![Neo4jRecordMapper Component Component 5](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-05.png)
 
 ## 시퀀스 다이어그램
 
 ### createVertex 흐름
 
-![createVertex Component 6](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-06.svg)
+![createVertex Component 6](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-06.png)
 
 ### createEdge 트랜잭션 흐름
 
-![createEdge Transaction Component 7](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-07.svg)
+![createEdge Transaction Component 7](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-07.png)
 
 ### shortestPath 조회 흐름
 
-![shortestPath Query Component 8](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-08.svg)
+![shortestPath Query Component 8](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-08.png)
 
 ### neighbors 방향별 Cypher 패턴
 
-![neighbors Component Cypher Component 9](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-09.svg)
+![neighbors Component Cypher Component 9](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-09.png)
 
 ### Publisher → Coroutine 변환 메커니즘
 
-![Publisher → Coroutine Component Component 10](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-10.svg)
+![Publisher → Coroutine Component Component 10](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-10.png)
 
 ### Neo4j 데이터 모델
 
-![Neo4j Data Component 11](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-11.svg)
+![Neo4j Data Component 11](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-11.png)
 
 ### 테스트 환경 구성
 
-![Test Component Configuration 12](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-12.svg)
+![Test Component Configuration 12](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-12.png)
 
 ## 주요 메서드
 

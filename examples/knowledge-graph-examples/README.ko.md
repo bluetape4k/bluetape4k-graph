@@ -30,15 +30,15 @@ Graph DB를 사용하면 다음을 직접 표현할 수 있습니다.
 
 ## 아키텍처
 
-![Architecture 1](../../docs/images/readme-diagrams/examples-knowledge-graph-examples-ko-diagram-01.svg)
+![Architecture 1](../../docs/images/readme-diagrams/examples-knowledge-graph-examples-ko-diagram-01.png)
 
 ## 도메인 UML
 
-![Domain UML 2](../../docs/images/readme-diagrams/examples-knowledge-graph-examples-ko-diagram-02.svg)
+![Domain UML 2](../../docs/images/readme-diagrams/examples-knowledge-graph-examples-ko-diagram-02.png)
 
 ## 경로 추론 흐름
 
-![Component Component Component 3](../../docs/images/readme-diagrams/examples-knowledge-graph-examples-ko-diagram-03.svg)
+![Component Component Component 3](../../docs/images/readme-diagrams/examples-knowledge-graph-examples-ko-diagram-03.png)
 
 ## 주요 기능
 

@@ -10,7 +10,7 @@ FalkorDB graph database backend for bluetape4k-graph.
 This module provides sync and coroutine implementations of `GraphOperations` / `GraphSuspendOperations`
 using the [jfalkordb](https://github.com/FalkorDB/jfalkordb) 0.7.0 Java driver.
 
-![Overview 1](../../docs/images/readme-diagrams/graph-graph-falkordb-diagram-01.svg)
+![Overview 1](../../docs/images/readme-diagrams/graph-graph-falkordb-diagram-01.png)
 
 ## Dependencies
 

@@ -10,7 +10,7 @@ bluetape4k-graph의 FalkorDB 그래프 데이터베이스 백엔드 모듈.
 이 모듈은 [jfalkordb](https://github.com/FalkorDB/jfalkordb) 0.7.0 Java 드라이버를 사용하여
 `GraphOperations` / `GraphSuspendOperations`의 동기 및 코루틴 구현을 제공합니다.
 
-![Component 1](../../docs/images/readme-diagrams/graph-graph-falkordb-ko-diagram-01.svg)
+![Component 1](../../docs/images/readme-diagrams/graph-graph-falkordb-ko-diagram-01.png)
 
 ## 의존성
 
