@@ -6,16 +6,7 @@ Ktor 3.x plugin integration for `bluetape4k-graph`. It exposes `GraphOperations`
 
 ## Architecture
 
-```mermaid
-flowchart LR
-    App[Ktor Application] --> Install[install(GraphPlugin)]
-    Install --> Config[GraphPluginConfig]
-    Config --> State[GraphPluginState]
-    State --> Sync[GraphOperations]
-    State --> Suspend[GraphSuspendOperations]
-    Route[Route Handler] --> CallExt[call.graphSuspendOperations()]
-    CallExt --> Suspend
-```
+![Architecture 1](../../docs/images/readme-diagrams/ktor-graph-ktor-diagram-01.svg)
 
 ## Features
 

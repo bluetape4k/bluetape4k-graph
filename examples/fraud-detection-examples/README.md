@@ -32,43 +32,11 @@ graph backends.
 
 ## Architecture
 
-```mermaid
-flowchart LR
-    Test[Example test] --> Service[FraudDetectionService]
-    Service --> Ops[GraphOperations]
-    Ops --> Backend[(Graph backend)]
-    Backend --> Analytics[Cycles / Components / PageRank]
-    Analytics --> Findings[Review candidates]
-```
+![Architecture 1](../../docs/images/readme-diagrams/examples-fraud-detection-examples-diagram-01.svg)
 
 ## Domain UML
 
-```mermaid
-classDiagram
-    class Account {
-        +String accountId
-        +String ownerName
-        +String riskTier
-    }
-
-    class Transfer {
-        +Long amount
-        +String occurredAt
-    }
-
-    class FraudDetectionService {
-        +addAccount(accountId, ownerName, riskTier)
-        +recordTransfer(fromAccountId, toAccountId, amount)
-        +detectCircularTransfers(maxDepth, maxCycles)
-        +detectSuspiciousClusters(minSize)
-        +rankHighRiskAccounts(limit)
-    }
-
-    Account "1" --> "*" Transfer : outgoing
-    Transfer "*" --> "1" Account : incoming
-    FraudDetectionService ..> Account
-    FraudDetectionService ..> Transfer
-```
+![Domain UML 2](../../docs/images/readme-diagrams/examples-fraud-detection-examples-diagram-02.svg)
 
 ## Analysis Flow
 

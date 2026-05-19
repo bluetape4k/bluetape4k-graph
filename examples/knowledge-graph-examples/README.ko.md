@@ -30,58 +30,11 @@ Graph DB를 사용하면 다음을 직접 표현할 수 있습니다.
 
 ## 아키텍처
 
-```mermaid
-flowchart LR
-    Test[Example test] --> Service[KnowledgeGraphService]
-    Service --> Ops[GraphOperations]
-    Ops --> Backend[(Graph backend)]
-    Backend --> Lookup[Mention lookup]
-    Backend --> Paths[Relationship paths]
-    Lookup --> Insights[Knowledge insights]
-    Paths --> Insights
-```
+![아키텍처 1](../../docs/images/readme-diagrams/examples-knowledge-graph-examples-ko-diagram-01.svg)
 
 ## 도메인 UML
 
-```mermaid
-classDiagram
-    class Document {
-        +String documentId
-        +String title
-        +String source
-    }
-
-    class Entity {
-        +String entityId
-        +String name
-        +String entityType
-    }
-
-    class Concept {
-        +String conceptId
-        +String name
-        +String domain
-    }
-
-    class KnowledgeGraphService {
-        +addDocument(documentId, title, source)
-        +addEntity(entityId, name, entityType)
-        +addConcept(conceptId, name, domain)
-        +mention(documentId, entityId, confidence)
-        +relateEntities(fromEntityId, toEntityId, relationType)
-        +classify(entityId, conceptId)
-        +findMentionedEntities(documentId)
-        +findRelatedEntities(entityId, depth)
-        +inferRelationshipPaths(fromEntityId, toEntityId, maxDepth, maxPaths)
-    }
-
-    Document "*" --> "*" Entity : MENTIONS
-    Entity "*" --> "*" Entity : RELATED_TO
-    Entity "*" --> "*" Concept : IS_A
-    KnowledgeGraphService ..> Document
-    KnowledgeGraphService ..> Entity
-    KnowledgeGraphService ..> Concept
-```
+![도메인 UML 2](../../docs/images/readme-diagrams/examples-knowledge-graph-examples-ko-diagram-02.svg)
 
 ## 경로 추론 흐름
 

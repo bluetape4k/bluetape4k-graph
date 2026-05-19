@@ -13,25 +13,7 @@ Graph Database (Apache AGE, Neo4j) 공통 추상화 계층. 백엔드 독립 모
 
 ## 아키텍처 개요
 
-```mermaid
-graph TD
-    App["Application Layer"]
-    Core["graph-core<br/>Models, Schema DSL,<br/>Repository Interfaces"]
-    AGE["graph-age<br/>Apache AGE<br/>Implementation"]
-    Neo4j["graph-neo4j<br/>Neo4j<br/>Implementation"]
-    PostgreSQL["PostgreSQL<br/>with AGE<br/>Extension"]
-    Neo4jDB["Neo4j<br/>Graph DB"]
-
-    App -->|"GraphOperations"| Core
-    Core -->|"interface"| AGE
-    Core -->|"interface"| Neo4j
-    AGE -->|"SQL"| PostgreSQL
-    Neo4j -->|"Cypher"| Neo4jDB
-
-    style Core fill:#4A90E2,stroke:#2E5C8A,color:#fff
-    style AGE fill:#50C878,stroke:#2D7A4A,color:#fff
-    style Neo4j fill:#FF6B6B,stroke:#A61F1F,color:#fff
-```
+![아키텍처 개요 1](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-01.svg)
 
 ## 주요 클래스
 
@@ -39,71 +21,11 @@ graph TD
 
 #### 기본 모델: GraphElementId, GraphVertex, GraphEdge
 
-```mermaid
-classDiagram
-    class GraphElementId {
-        -String value
-        +of(String) GraphElementId$
-        +of(Long) GraphElementId$
-    }
-
-    class GraphVertex {
-        -GraphElementId id
-        -String label
-        -Map~String, Any?~ properties
-    }
-
-    class GraphEdge {
-        -GraphElementId id
-        -String label
-        -GraphElementId startId
-        -GraphElementId endId
-        -Map~String, Any?~ properties
-    }
-
-    class Direction {
-        <<enumeration>>
-        OUTGOING
-        INCOMING
-        BOTH
-    }
-
-    GraphVertex --> GraphElementId : id
-    GraphEdge --> GraphElementId : id, startId, endId
-```
+![기본 모델: GraphElementId, GraphVertex, GraphEdge 2](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-02.svg)
 
 #### PathStep 및 GraphPath 모델
 
-```mermaid
-classDiagram
-    class PathStep {
-        <<sealed class>>
-    }
-
-    class VertexStep {
-        -GraphVertex vertex
-    }
-
-    class EdgeStep {
-        -GraphEdge edge
-    }
-
-    class GraphPath {
-        -List~PathStep~ steps
-        +vertices: List~GraphVertex~
-        +edges: List~GraphEdge~
-        +length: Int
-        +isEmpty: Boolean
-        +of(varargs GraphVertex) GraphPath$
-        +EMPTY$ GraphPath
-    }
-
-    PathStep <|-- VertexStep
-    PathStep <|-- EdgeStep
-    GraphPath --> PathStep : contains
-    VertexStep --> GraphVertex
-    EdgeStep --> GraphEdge
-```
+![PathStep 및 GraphPath 모델 3](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-03.svg)
 
 **PathStep 교차 순서 예시**:
 ```
@@ -114,94 +36,11 @@ length = 2  (간선 개수)
 
 ### Repository 계층
 
-```mermaid
-classDiagram
-    class GraphSession {
-        <<interface>>
-        +createGraph(String)
-        +dropGraph(String)
-        +graphExists(String) Boolean
-    }
-
-    class GraphVertexRepository {
-        <<interface>>
-        +createVertex(String, Map) GraphVertex
-        +findVertexById(String, GraphElementId) GraphVertex?
-        +findVerticesByLabel(String, Map) List~GraphVertex~
-        +updateVertex(String, GraphElementId, Map) GraphVertex?
-        +deleteVertex(String, GraphElementId) Boolean
-        +countVertices(String) Long
-    }
-
-    class GraphEdgeRepository {
-        <<interface>>
-        +createEdge(GraphElementId, GraphElementId, String, Map) GraphEdge
-        +findEdgesByLabel(String, Map) List~GraphEdge~
-        +deleteEdge(String, GraphElementId) Boolean
-    }
-
-    class GraphTraversalRepository {
-        <<interface>>
-        +neighbors(GraphElementId, String, Direction, Int) List~GraphVertex~
-        +shortestPath(GraphElementId, GraphElementId, String?, Int) GraphPath?
-        +allPaths(GraphElementId, GraphElementId, String?, Int) List~GraphPath~
-    }
-
-    class GraphOperations {
-        <<interface>>
-    }
-
-    GraphOperations --|> GraphSession
-    GraphOperations --|> GraphVertexRepository
-    GraphOperations --|> GraphEdgeRepository
-    GraphOperations --|> GraphTraversalRepository
-```
+![Repository 계층 4](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-04.svg)
 
 ### 스키마 DSL 클래스
 
-```mermaid
-classDiagram
-    class PropertyDef {
-        -String name
-        -KClass~out T~ type
-    }
-
-    class VertexLabel {
-        <<abstract>>
-        -String label
-        -MutableList~PropertyDef~ _properties
-        +properties: List~PropertyDef~
-        +string(name) PropertyDef~String~
-        +integer(name) PropertyDef~Int~
-        +long(name) PropertyDef~Long~
-        +boolean(name) PropertyDef~Boolean~
-        +stringList(name) PropertyDef~List~String~~
-        +json(name) PropertyDef~Map~String,Any~~
-        +localDate(name) PropertyDef~LocalDate~
-        +localDateTime(name) PropertyDef~LocalDateTime~
-        +enum(name, type) PropertyDef~E~
-    }
-
-    class EdgeLabel {
-        <<abstract>>
-        -String label
-        -VertexLabel from
-        -VertexLabel to
-        -MutableList~PropertyDef~ _properties
-        +properties: List~PropertyDef~
-        +string(name) PropertyDef~String~
-        +integer(name) PropertyDef~Int~
-        +long(name) PropertyDef~Long~
-        +boolean(name) PropertyDef~Boolean~
-        +localDate(name) PropertyDef~LocalDate~
-        +localDateTime(name) PropertyDef~LocalDateTime~
-        +enum(name, type) PropertyDef~E~
-    }
-
-    VertexLabel --> PropertyDef : contains
-    EdgeLabel --> PropertyDef : contains
-    EdgeLabel --> VertexLabel : from, to
-```
+![스키마 DSL 클래스 5](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-05.svg)
 
 ## 스키마 정의 (DSL)
 
@@ -396,151 +235,25 @@ sequenceDiagram
 
 ### GraphPath 라이프사이클
 
-```mermaid
-stateDiagram-v2
-    [*] --> EMPTY
-    [*] --> SINGLE
-
-    EMPTY: Empty Path<br/>steps = []<br/>length = 0
-    SINGLE: Single Vertex<br/>steps = [VertexStep]<br/>length = 0
-    MULTI: Multi-step Path<br/>steps = [V1,E1,V2,E2,V3]<br/>length ≥ 2
-
-    SINGLE --> MULTI: addStep(edge, vertex)
-    MULTI --> MULTI: addStep(edge, vertex)
-    MULTI --> SINGLE: removeLast()
-
-    SINGLE --> EMPTY: clear()
-    MULTI --> EMPTY: clear()
-
-    EMPTY --> SINGLE: addVertex(v)
-    EMPTY --> [*]
-    SINGLE --> [*]
-    MULTI --> [*]
-```
+![GraphPath 라이프사이클 6](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-06.svg)
 
 ### GraphOperations 사용 상태
 
-```mermaid
-stateDiagram-v2
-    [*] --> INITIALIZED: createGraph()
-
-    INITIALIZED: Graph Created<br/>Ready for operations
-    VERTEX_OPS: Vertex CRUD<br/>createVertex, updateVertex
-    EDGE_OPS: Edge CRUD<br/>createEdge, deleteEdge
-    TRAVERSAL_OPS: Path Search<br/>neighbors, shortestPath
-
-    INITIALIZED --> VERTEX_OPS: Begin vertex ops
-    VERTEX_OPS --> VERTEX_OPS: CRUD operations
-    VERTEX_OPS --> EDGE_OPS: Link vertices
-    EDGE_OPS --> EDGE_OPS: Relationship ops
-    EDGE_OPS --> TRAVERSAL_OPS: Search paths
-    TRAVERSAL_OPS --> TRAVERSAL_OPS: Continue search
-    TRAVERSAL_OPS --> INITIALIZED: Reset state
-
-    INITIALIZED --> CLOSED: dropGraph()
-    CLOSED --> [*]
-```
+![GraphOperations 사용 상태 7](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-07.svg)
 
 ## 플로우차트 다이어그램
 
 ### 스키마 DSL 정의 및 사용 흐름
 
-```mermaid
-flowchart LR
-    DefV["Define VertexLabel<br/>object PersonLabel : VertexLabel"]
-    DefE["Define EdgeLabel<br/>object WorksAtEdge : EdgeLabel"]
-    RegSchema["Register Schema<br/>to Backend"]
-
-    Create["Create Vertex<br/>createVertex"]
-    CreateEdge["Create Edge<br/>createEdge"]
-    Read["Read Vertex<br/>findVertexById"]
-    Update["Update Vertex<br/>updateVertex"]
-    Delete["Delete Vertex<br/>deleteVertex"]
-
-    Traverse["Traverse Graph<br/>neighbors,<br/>shortestPath"]
-
-    DefV --> RegSchema
-    DefE --> RegSchema
-    RegSchema --> Create
-    RegSchema --> CreateEdge
-
-    Create --> Read
-    Read --> Update
-    Update --> Delete
-    Delete --> Traverse
-    CreateEdge --> Traverse
-    Traverse --> Read
-
-    style DefV fill:#4A90E2,color:#fff
-    style DefE fill:#4A90E2,color:#fff
-    style RegSchema fill:#50C878,color:#fff
-    style Traverse fill:#FF6B6B,color:#fff
-```
+![스키마 DSL 정의 및 사용 흐름 8](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-08.svg)
 
 ### CRUD 작업 플로우
 
-```mermaid
-flowchart TD
-    A["Start<br/>GraphOperations ready"] --> B{"Operation Type"}
-
-    B -->|CREATE| C["createVertex<br/>label, properties"]
-    B -->|READ| D["findVertexById<br/>label, id"]
-    B -->|UPDATE| E["updateVertex<br/>label, id, new properties"]
-    B -->|DELETE| F["deleteVertex<br/>label, id"]
-
-    C --> C1{Success?}
-    D --> D1{Found?}
-    E --> E1{Success?}
-    F --> F1{Success?}
-
-    C1 -->|Yes| G["GraphVertex returned"]
-    C1 -->|No| H["Exception raised"]
-
-    D1 -->|Yes| G
-    D1 -->|No| I["GraphVertex? = null"]
-
-    E1 -->|Yes| G
-    E1 -->|No| H
-
-    F1 -->|Yes| J["Boolean = true"]
-    F1 -->|No| K["Boolean = false"]
-
-    G --> L["End: Operation Complete"]
-    I --> L
-    H --> L
-    J --> L
-    K --> L
-
-    style A fill:#4A90E2,color:#fff
-    style L fill:#50C878,color:#fff
-    style H fill:#FF6B6B,color:#fff
-```
+![CRUD 작업 플로우 9](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-09.svg)
 
 ### 경로 탐색 알고리즘 플로우
 
-```mermaid
-flowchart TD
-    A["Start<br/>shortestPath/allPaths"] --> B["Initialize Search<br/>startId, toId, maxDepth"]
-    B --> C{"Path Cached?"}
-
-    C -->|Yes| D["Return from Cache"]
-    C -->|No| E["Execute BFS/Dijkstra"]
-
-    E --> F{"Path Found?"}
-    F -->|Yes| G["Construct GraphPath<br/>[V1, E1, V2, ...]"]
-    F -->|No| H["Path = null<br/>or empty list"]
-
-    G --> I["Cache Result"]
-    I --> J["Return GraphPath"]
-    D --> J
-    H --> J
-
-    J --> K["End"]
-
-    style A fill:#4A90E2,color:#fff
-    style K fill:#50C878,color:#fff
-    style G fill:#FFC300,color:#000
-```
+![경로 탐색 알고리즘 플로우 10](../../docs/images/readme-diagrams/graph-graph-core-ko-diagram-10.svg)
 
 ## 사용 예시
 

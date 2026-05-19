@@ -30,43 +30,11 @@ Graph DB를 사용하면 도메인 언어가 그대로 모델이 됩니다.
 
 ## 아키텍처
 
-```mermaid
-flowchart LR
-    Test[Example test] --> Service[FraudDetectionService]
-    Service --> Ops[GraphOperations]
-    Ops --> Backend[(Graph backend)]
-    Backend --> Analytics[Cycles / Components / PageRank]
-    Analytics --> Findings[Review candidates]
-```
+![아키텍처 1](../../docs/images/readme-diagrams/examples-fraud-detection-examples-ko-diagram-01.svg)
 
 ## 도메인 UML
 
-```mermaid
-classDiagram
-    class Account {
-        +String accountId
-        +String ownerName
-        +String riskTier
-    }
-
-    class Transfer {
-        +Long amount
-        +String occurredAt
-    }
-
-    class FraudDetectionService {
-        +addAccount(accountId, ownerName, riskTier)
-        +recordTransfer(fromAccountId, toAccountId, amount)
-        +detectCircularTransfers(maxDepth, maxCycles)
-        +detectSuspiciousClusters(minSize)
-        +rankHighRiskAccounts(limit)
-    }
-
-    Account "1" --> "*" Transfer : outgoing
-    Transfer "*" --> "1" Account : incoming
-    FraudDetectionService ..> Account
-    FraudDetectionService ..> Transfer
-```
+![도메인 UML 2](../../docs/images/readme-diagrams/examples-fraud-detection-examples-ko-diagram-02.svg)
 
 ## 분석 흐름
 

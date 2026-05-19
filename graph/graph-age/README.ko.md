@@ -16,200 +16,25 @@ Apache AGE (PostgreSQL 그래프 확장)를 기반으로 한 `GraphOperations` �
 
 ### 모듈 레이어 구조
 
-```mermaid
-graph TD
-    A["graph-core<br/>(GraphOperations 인터페이스)"] --> B["graph-age<br/>(AgeGraphOperations 구현)"]
-    B --> C["AgeSql<br/>(Cypher→SQL 변환)"]
-    C --> D["PostgreSQL AGE<br/>(ag_catalog.cypher)"]
-    E["AgePropertySerializer<br/>(값 직렬화)"] --> C
-    F["AgeTypeParser<br/>(agtype 파싱)"] --> B
-    G["Exposed Database<br/>(JDBC 트랜잭션)"] --> D
-    H["HikariCP<br/>(연결 풀)"] --> G
-    I["PostgreSQL Driver<br/>(TCP)"] --> D
-
-    style A fill:#1565C0,color:#fff
-    style B fill:#E65100,color:#fff
-    style C fill:#6A1B9A,color:#fff
-    style D fill:#2E7D32,color:#fff
-    style E fill:#880E4F,color:#fff
-    style F fill:#880E4F,color:#fff
-    style G fill:#4527A0,color:#fff
-    style H fill:#00695C,color:#fff
-    style I fill:#558B2F,color:#fff
-```
+![모듈 레이어 구조 1](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-01.svg)
 
 ### Apache AGE 동작 흐름
 
-```mermaid
-graph LR
-    A["GraphOperations 메서드<br/>createVertex, shortestPath 등"] --> B["AgeGraphOperations<br/>withContext IO"]
-    B --> C["Exposed transaction"]
-    C --> D["AgeSql 빌더<br/>Cypher-over-SQL"]
-    D --> E["SQL 쿼리 문자열<br/>SELECT * FROM ag_catalog.cypher"]
-    E --> F["PostgreSQL<br/>AGE Extension"]
-    F --> G["Cypher 엔진<br/>MATCH RETURN CREATE"]
-    G --> H["결과 agtype<br/>JSON 유사 포맷"]
-    H --> I["AgeTypeParser<br/>agtype → GraphVertex/Edge"]
-    I --> J["GraphVertex<br/>GraphEdge<br/>GraphPath"]
-
-    style A fill:#E65100,color:#fff
-    style B fill:#6A1B9A,color:#fff
-    style C fill:#4527A0,color:#fff
-    style D fill:#880E4F,color:#fff
-    style E fill:#00695C,color:#fff
-    style F fill:#2E7D32,color:#fff
-    style G fill:#388E3C,color:#fff
-    style H fill:#827717,color:#fff
-    style I fill:#880E4F,color:#fff
-    style J fill:#388E3C,color:#fff
-```
+![Apache AGE 동작 흐름 2](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-02.svg)
 
 ## 주요 클래스
 
 ### AgeGraphOperations 클래스 다이어그램
 
-```mermaid
-classDiagram
-    class GraphOperations {
-        <<interface>>
-    }
-
-    class GraphSession {
-        <<interface>>
-        +createGraph(String)*
-        +dropGraph(String)*
-        +graphExists(String) Boolean*
-        +close()*
-    }
-
-    class GraphVertexRepository {
-        <<interface>>
-        +createVertex(String, Map) GraphVertex*
-        +findVertexById(String, GraphElementId) GraphVertex?*
-        +findVerticesByLabel(String, Map) List~GraphVertex~*
-        +updateVertex(String, GraphElementId, Map) GraphVertex?*
-        +deleteVertex(String, GraphElementId) Boolean*
-        +countVertices(String) Long*
-    }
-
-    class GraphEdgeRepository {
-        <<interface>>
-        +createEdge(GraphElementId, GraphElementId, String, Map) GraphEdge*
-        +findEdgesByLabel(String, Map) List~GraphEdge~*
-        +deleteEdge(String, GraphElementId) Boolean*
-    }
-
-    class GraphTraversalRepository {
-        <<interface>>
-        +neighbors(GraphElementId, String, Direction, Int) List~GraphVertex~*
-        +shortestPath(GraphElementId, GraphElementId, String?, Int) GraphPath?*
-        +allPaths(GraphElementId, GraphElementId, String?, Int) List~GraphPath~*
-    }
-
-    class AgeGraphOperations {
-        -graphName: String
-        +createGraph(String) Unit
-        +dropGraph(String) Unit
-        +graphExists(String) Boolean
-        +createVertex(String, Map) GraphVertex
-        +findVertexById(String, GraphElementId) GraphVertex?
-        +findVerticesByLabel(String, Map) List~GraphVertex~
-        +updateVertex(String, GraphElementId, Map) GraphVertex?
-        +deleteVertex(String, GraphElementId) Boolean
-        +countVertices(String) Long
-        +createEdge(GraphElementId, GraphElementId, String, Map) GraphEdge
-        +findEdgesByLabel(String, Map) List~GraphEdge~
-        +deleteEdge(String, GraphElementId) Boolean
-        +neighbors(GraphElementId, String, Direction, Int) List~GraphVertex~
-        +shortestPath(GraphElementId, GraphElementId, String?, Int) GraphPath?
-        +allPaths(GraphElementId, GraphElementId, String?, Int) List~GraphPath~
-        +close() Unit
-    }
-
-    GraphOperations --|> GraphSession
-    GraphOperations --|> GraphVertexRepository
-    GraphOperations --|> GraphEdgeRepository
-    GraphOperations --|> GraphTraversalRepository
-    AgeGraphOperations ..|> GraphOperations
-```
+![AgeGraphOperations 클래스 다이어그램 3](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-03.svg)
 
 ### AgeSql 클래스 다이어그램
 
-```mermaid
-classDiagram
-    class AgeSql {
-        <<object>>
-        +loadAge() String$
-        +setSearchPath() String$
-        +createExtension() String$
-        +createGraph(String) String$
-        +dropGraph(String, Boolean) String$
-        +graphExists(String) String$
-        +cypher(String, String, List) String$
-        +createVertex(String, String, Map) String$
-        +matchVertices(String, String, Map) String$
-        +matchVertexById(String, String, Long) String$
-        +updateVertex(String, String, Long, Map) String$
-        +deleteVertex(String, String, Long) String$
-        +countVertices(String, String) String$
-        +createEdge(String, Long, Long, String, Map) String$
-        +matchEdgesByLabel(String, String, Map) String$
-        +deleteEdge(String, String, Long) String$
-        +neighbors(String, Long, String, String, Int) String$
-        +shortestPath(String, Long, Long, String?, Int) String$
-    }
-
-    class AgePropertySerializer {
-        <<object>>
-        +toCypherProps(Map) String$
-        +toCypherValue(Any?) String$
-    }
-
-    AgeSql --> AgePropertySerializer: uses
-```
+![AgeSql 클래스 다이어그램 4](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-04.svg)
 
 ### AgeTypeParser 클래스 다이어그램
 
-```mermaid
-classDiagram
-    class AgeTypeParser {
-        <<object>>
-        +parseVertex(String) GraphVertex$
-        +parseEdge(String) GraphEdge$
-        +parsePath(String) GraphPath$
-        +isVertex(String) Boolean$
-        +isEdge(String) Boolean$
-        +isPath(String) Boolean$
-        +parseJsonObject(String) Map$
-        +parseJsonArray(String) List$
-    }
-
-    class GraphVertex {
-        +GraphElementId id
-        +String label
-        +Map~String, Any?~ properties
-    }
-
-    class GraphEdge {
-        +GraphElementId id
-        +String label
-        +GraphElementId startId
-        +GraphElementId endId
-        +Map~String, Any?~ properties
-    }
-
-    class GraphPath {
-        +List~PathStep~ steps
-        +List~GraphVertex~ vertices
-        +List~GraphEdge~ edges
-        +Int length
-        +Boolean isEmpty
-    }
-
-    AgeTypeParser --> GraphVertex: creates
-    AgeTypeParser --> GraphEdge: creates
-    AgeTypeParser --> GraphPath: creates
-```
+![AgeTypeParser 클래스 다이어그램 5](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-05.svg)
 
 ## 시퀀스 다이어그램
 
@@ -348,45 +173,7 @@ sequenceDiagram
 
 ## agtype 파싱 플로우
 
-```mermaid
-flowchart TD
-    A["agtype 결과 문자열<br/>from PostgreSQL"] --> B{"Suffix 확인"}
-    B -->|"::vertex"| C["removePrefix<br/>Remove ::vertex"]
-    B -->|"::edge"| D["removeSuffix<br/>Remove ::edge"]
-    B -->|"::path"| E["removeSuffix<br/>Remove ::path"]
-
-    C --> F["parseJsonObject"]
-    F --> G["Extract<br/>id, label, properties"]
-    G --> H["Create GraphVertex<br/>GraphElementId id,<br/>String label,<br/>Map properties"]
-
-    D --> I["parseJsonObject"]
-    I --> J["Extract<br/>id, label, start_id, end_id, properties"]
-    J --> K["Create GraphEdge<br/>id, label,<br/>startId, endId, properties"]
-
-    E --> L["parseJsonArray"]
-    L --> M["Iterate elements"]
-    M --> N{"Element type?"}
-    N -->|Contains ::vertex| O["parseVertex"]
-    N -->|Contains ::edge| P["parseEdge"]
-    O --> Q["Add VertexStep"]
-    P --> Q
-    Q --> R{"More elements?"}
-    R -->|Yes| M
-    R -->|No| S["Create GraphPath<br/>List of steps"]
-
-    H --> T["Return GraphVertex"]
-    K --> U["Return GraphEdge"]
-    S --> V["Return GraphPath"]
-
-    style A fill:#827717,color:#fff
-    style B fill:#F57F17,color:#fff
-    style C fill:#880E4F,color:#fff
-    style D fill:#880E4F,color:#fff
-    style E fill:#880E4F,color:#fff
-    style T fill:#388E3C,color:#fff
-    style U fill:#388E3C,color:#fff
-    style V fill:#388E3C,color:#fff
-```
+![agtype 파싱 플로우 6](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-06.svg)
 
 ## HikariCP 연결 초기화
 
@@ -414,40 +201,7 @@ sequenceDiagram
 
 ## 테스트 환경 구성
 
-```mermaid
-graph TD
-    A["테스트 시작"] --> B["PostgreSQLAgeServer<br/>Testcontainers"]
-    B --> C["Docker 이미지<br/>apache/age:PG16_latest"]
-    C --> D["PostgreSQL 16<br/>+ AGE Extension"]
-    D --> E["CREATE EXTENSION<br/>IF NOT EXISTS age<br/>자동 실행"]
-
-    E --> F["HikariCP DataSource"]
-    F --> G["connectionInitSql<br/>LOAD 'age'<br/>SET search_path"]
-    G --> H["Exposed Database"]
-    H --> I["AgeGraphOperations"]
-    I --> J["테스트 메서드<br/>runTest"]
-
-    J --> K["suspend 메서드 호출<br/>createVertex 등"]
-    K --> L["withContext<br/>Dispatchers.IO"]
-    L --> M["transaction"]
-    M --> N["PostgreSQL 쿼리"]
-    N --> O["agtype 결과"]
-    O --> P["AgeTypeParser"]
-    P --> Q["GraphVertex<br/>GraphEdge<br/>GraphPath"]
-    Q --> R["테스트 검증"]
-    R --> S["테스트 완료"]
-    S --> T["컨테이너 정리"]
-
-    style A fill:#388E3C,color:#fff
-    style B fill:#2E7D32,color:#fff
-    style C fill:#388E3C,color:#fff
-    style D fill:#a5d6a7,color:#fff
-    style F fill:#4527A0,color:#fff
-    style H fill:#6A1B9A,color:#fff
-    style I fill:#E65100,color:#fff
-    style J fill:#388E3C,color:#fff
-    style T fill:#ffcdd2,color:#fff
-```
+![테스트 환경 구성 7](../../docs/images/readme-diagrams/graph-graph-age-ko-diagram-07.svg)
 
 ## 코드 예시
 

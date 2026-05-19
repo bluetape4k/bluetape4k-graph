@@ -32,58 +32,11 @@ This example focuses on small, explainable graphs so learners can see why the pa
 
 ## Architecture
 
-```mermaid
-flowchart LR
-    Test[Example test] --> Service[KnowledgeGraphService]
-    Service --> Ops[GraphOperations]
-    Ops --> Backend[(Graph backend)]
-    Backend --> Lookup[Mention lookup]
-    Backend --> Paths[Relationship paths]
-    Lookup --> Insights[Knowledge insights]
-    Paths --> Insights
-```
+![Architecture 1](../../docs/images/readme-diagrams/examples-knowledge-graph-examples-diagram-01.svg)
 
 ## Domain UML
 
-```mermaid
-classDiagram
-    class Document {
-        +String documentId
-        +String title
-        +String source
-    }
-
-    class Entity {
-        +String entityId
-        +String name
-        +String entityType
-    }
-
-    class Concept {
-        +String conceptId
-        +String name
-        +String domain
-    }
-
-    class KnowledgeGraphService {
-        +addDocument(documentId, title, source)
-        +addEntity(entityId, name, entityType)
-        +addConcept(conceptId, name, domain)
-        +mention(documentId, entityId, confidence)
-        +relateEntities(fromEntityId, toEntityId, relationType)
-        +classify(entityId, conceptId)
-        +findMentionedEntities(documentId)
-        +findRelatedEntities(entityId, depth)
-        +inferRelationshipPaths(fromEntityId, toEntityId, maxDepth, maxPaths)
-    }
-
-    Document "*" --> "*" Entity : MENTIONS
-    Entity "*" --> "*" Entity : RELATED_TO
-    Entity "*" --> "*" Concept : IS_A
-    KnowledgeGraphService ..> Document
-    KnowledgeGraphService ..> Entity
-    KnowledgeGraphService ..> Concept
-```
+![Domain UML 2](../../docs/images/readme-diagrams/examples-knowledge-graph-examples-diagram-02.svg)
 
 ## Path Inference Flow
 

@@ -10,31 +10,7 @@ bluetape4k-graph의 FalkorDB 그래프 데이터베이스 백엔드 모듈.
 이 모듈은 [jfalkordb](https://github.com/FalkorDB/jfalkordb) 0.7.0 Java 드라이버를 사용하여
 `GraphOperations` / `GraphSuspendOperations`의 동기 및 코루틴 구현을 제공합니다.
 
-```mermaid
-graph TD
-    App["Application"]
-    OpsIface["GraphOperations<br/>(graph-core)"]
-    SuspendIface["GraphSuspendOperations<br/>(graph-core)"]
-    Impl["FalkorDBGraphOperations"]
-    SuspendImpl["FalkorDBGraphSuspendOperations"]
-    Mapper["FalkorDBRecordMapper"]
-    Session["FalkorDBSessionSupport"]
-    Driver["FalkorDB Driver<br/>(jfalkordb)"]
-    Cypher["openCypher Engine"]
-    DB["FalkorDB<br/>(Redis module)"]
-
-    App --> OpsIface
-    App --> SuspendIface
-    OpsIface <|.. Impl
-    SuspendIface <|.. SuspendImpl
-    Impl --> Mapper
-    Impl --> Session
-    SuspendImpl --> Mapper
-    SuspendImpl --> Session
-    Session --> Driver
-    Driver --> Cypher
-    Cypher --> DB
-```
+![개요 1](../../docs/images/readme-diagrams/graph-graph-falkordb-ko-diagram-01.svg)
 
 ## 의존성
 

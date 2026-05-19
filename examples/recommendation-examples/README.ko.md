@@ -31,54 +31,11 @@ Graph DB를 사용하면 다음처럼 표현할 수 있습니다.
 
 ## 아키텍처
 
-```mermaid
-flowchart LR
-    Test[Example test] --> Service[RecommendationService]
-    Service --> Ops[GraphOperations]
-    Ops --> Backend[(Graph backend)]
-    Backend --> Traversal[Product / follow traversal]
-    Backend --> Ranking[PageRank]
-    Traversal --> Results[Recommendations]
-    Ranking --> Results
-```
+![아키텍처 1](../../docs/images/readme-diagrams/examples-recommendation-examples-ko-diagram-01.svg)
 
 ## 도메인 UML
 
-```mermaid
-classDiagram
-    class User {
-        +String userId
-        +String displayName
-        +String segment
-    }
-
-    class Product {
-        +String productId
-        +String name
-        +String category
-    }
-
-    class Purchase {
-        +Int quantity
-        +String purchasedAt
-    }
-
-    class RecommendationService {
-        +addUser(userId, displayName, segment)
-        +addProduct(productId, name, category)
-        +recordPurchase(userId, productId, quantity)
-        +follow(followerId, targetId)
-        +recommendProducts(userId, limit)
-        +recommendFollows(userId, limit)
-        +rankPopularProducts(limit)
-    }
-
-    User "1" --> "*" Purchase : makes
-    Purchase "*" --> "1" Product : targets
-    User "*" --> "*" User : FOLLOWS
-    RecommendationService ..> User
-    RecommendationService ..> Product
-```
+![도메인 UML 2](../../docs/images/readme-diagrams/examples-recommendation-examples-ko-diagram-02.svg)
 
 ## 추천 흐름
 

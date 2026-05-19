@@ -20,281 +20,27 @@ Reactive Streams API를 `kotlinx-coroutines-reactive`로 브릿지하여 Virtual
 - Direction 기반 neighbors 쿼리 패턴 (OUTGOING / INCOMING / BOTH)
 - elementId() 기반 고유 레코드 검색 및 업데이트
 
-```mermaid
-graph TD
-    App["Application"]
-    OpsIface["GraphOperations<br/>(graph-core)"]
-    Impl["Neo4jGraphOperations"]
-    Session["Neo4jCoroutineSession"]
-    Mapper["Neo4jRecordMapper"]
-    ReactiveSession["ReactiveSession<br/>(Neo4j Driver)"]
-    Cypher["Cypher 쿼리 엔진"]
-    Neo4j["Neo4j Database"]
-
-    App --> OpsIface
-    OpsIface <|.. Impl
-    Impl --> Session
-    Impl --> Mapper
-    Session --> ReactiveSession
-    ReactiveSession --> Cypher
-    Cypher --> Neo4j
-
-    style Impl fill:#1565C0,color:#fff
-    style Session fill:#1565C0,color:#fff
-    style Mapper fill:#1565C0,color:#fff
-    style OpsIface fill:#E65100,color:#fff
-    style Neo4j fill:#6A1B9A,color:#fff
-```
+![최근 변경 1](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-01.svg)
 
 ## 핵심 아키텍처
 
 ### Reactive-Coroutine 브릿지 원리
 
-```mermaid
-graph LR
-    ReactiveSession["ReactiveSession"]
-    Query["Query 실행"]
-    Publisher["Publisher&lt;Record&gt;"]
-    Reactive["kotlinx-coroutines-reactive"]
-    Flow["Flow&lt;Record&gt;"]
-    Suspend["suspend fun"]
-    App["Application"]
-
-    ReactiveSession -->|"run(query)"| Query
-    Query -->|"Publisher 반환"| Publisher
-    Publisher -->|"asFlow()"| Reactive
-    Reactive -->|"변환"| Flow
-    Flow -->|"toList()"| Suspend
-    Suspend -->|"List&lt;Record&gt;"| App
-
-    style Publisher fill:#F57F17,color:#fff
-    style Reactive fill:#388E3C,color:#fff
-    style Flow fill:#388E3C,color:#fff
-    style Suspend fill:#BF360C,color:#fff
-```
+![Reactive-Coroutine 브릿지 원리 2](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-02.svg)
 
 ## 클래스 설계
 
 ### Neo4jGraphOperations 구현 구조
 
-```mermaid
-classDiagram
-    class GraphOperations {
-        <<interface>>
-        +createGraph(name)*
-        +dropGraph(name)*
-        +graphExists(name)*
-        +createVertex(label, properties)*
-        +findVertexById(label, id)*
-        +findVerticesByLabel(label, filter)*
-        +updateVertex(label, id, properties)*
-        +deleteVertex(label, id)*
-        +countVertices(label)*
-        +createEdge(fromId, toId, label, properties)*
-        +findEdgesByLabel(label, filter)*
-        +deleteEdge(label, id)*
-        +neighbors(startId, edgeLabel, direction, depth)*
-        +shortestPath(fromId, toId, edgeLabel, maxDepth)*
-        +allPaths(fromId, toId, edgeLabel, maxDepth)*
-    }
-
-    class Neo4jGraphOperations {
-        -driver: Driver
-        -database: String
-        -session(): ReactiveSession
-        -runQuery(cypher, params, mapper): List~T~
-    }
-
-    class Neo4jCoroutineSession {
-        -driver: Driver
-        -database: String
-        +read(block): List~T~
-        +write(block): List~T~
-        +runReadQuery(cypher, params): List~Record~
-        +runWriteQuery(cypher, params): List~Record~
-    }
-
-    class Neo4jRecordMapper {
-        +nodeToVertex(node): GraphVertex$
-        +relationshipToEdge(rel): GraphEdge$
-        +pathToGraphPath(path): GraphPath$
-        +recordToVertex(record, key): GraphVertex$
-        +recordToEdge(record, key): GraphEdge$
-        +recordToPath(record, key): GraphPath$
-    }
-
-    class ReactiveSession {
-        <<interface>>
-        +run(query): Publisher~Result~
-        +close(): Publisher~Void~
-    }
-
-    class GraphVertex {
-        +id: GraphElementId
-        +label: String
-        +properties: Map~String, Any?~
-    }
-
-    class GraphEdge {
-        +id: GraphElementId
-        +type: String
-        +startId: GraphElementId
-        +endId: GraphElementId
-        +properties: Map~String, Any?~
-    }
-
-    class GraphPath {
-        +steps: List~PathStep~
-    }
-
-    GraphOperations <|.. Neo4jGraphOperations
-    Neo4jGraphOperations --> Neo4jCoroutineSession
-    Neo4jGraphOperations --> Neo4jRecordMapper
-    Neo4jCoroutineSession --> ReactiveSession
-    Neo4jRecordMapper --> GraphVertex
-    Neo4jRecordMapper --> GraphEdge
-    Neo4jRecordMapper --> GraphPath
-
-    style GraphOperations fill:#E65100,color:#fff
-    style Neo4jGraphOperations fill:#1565C0,color:#fff
-    style Neo4jCoroutineSession fill:#1565C0,color:#fff
-    style Neo4jRecordMapper fill:#1565C0,color:#fff
-```
+![Neo4jGraphOperations 구현 구조 3](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-03.svg)
 
 ### Neo4jCoroutineSession 상세 설계
 
-```mermaid
-classDiagram
-    class Driver {
-        <<interface>>
-        +session(type, config): T
-    }
-
-    class ReactiveSession {
-        <<interface>>
-        +run(query): Publisher~Result~
-        +close(): Publisher~Void~
-    }
-
-    class Neo4jCoroutineSession {
-        -driver: Driver
-        -database: String = "neo4j"
-        +read(block): List~T~
-        +write(block): List~T~
-        +runReadQuery(cypher, params): List~Record~
-        +runWriteQuery(cypher, params): List~Record~
-        +close()
-        -sessionConfig(): SessionConfig
-    }
-
-    class SessionConfig {
-        +withDatabase(name): SessionConfig
-        +build(): SessionConfig
-    }
-
-    class Publisher~T~ {
-        <<interface>>
-        +subscribe(subscriber)
-        +asFlow(): Flow~T~
-        +awaitFirstOrNull(): T?
-    }
-
-    class Flow~T~ {
-        <<interface>>
-        +toList(): List~T~
-    }
-
-    Driver --> ReactiveSession: "session<ReactiveSession>()"
-    Neo4jCoroutineSession --> Driver
-    Neo4jCoroutineSession --> SessionConfig
-    ReactiveSession --> Publisher
-    Publisher --|"kotlinx-coroutines-reactive"| Flow
-
-    note for Neo4jCoroutineSession "Driver는 외부 소유, close()에서 닫지 않음"
-```
+![Neo4jCoroutineSession 상세 설계 4](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-04.svg)
 
 ### Neo4jRecordMapper 변환 메서드
 
-```mermaid
-classDiagram
-    class Neo4jRecordMapper {
-        +nodeToVertex(node): GraphVertex$
-        +relationshipToEdge(rel): GraphEdge$
-        +pathToGraphPath(path): GraphPath$
-        +recordToVertex(record, key): GraphVertex$
-        +recordToEdge(record, key): GraphEdge$
-        +recordToPath(record, key): GraphPath$
-    }
-
-    class Node {
-        +elementId(): String
-        +labels(): List~String~
-        +asMap(): Map~String, Any?~
-    }
-
-    class Relationship {
-        +elementId(): String
-        +type(): String
-        +startNodeElementId(): String
-        +endNodeElementId(): String
-        +asMap(): Map~String, Any?~
-    }
-
-    class Path {
-        +nodes(): Iterable~Node~
-        +relationships(): Iterable~Relationship~
-    }
-
-    class Record {
-        +get(key): Value
-        +values(): List~Value~
-    }
-
-    class GraphVertex {
-        +id: GraphElementId
-        +label: String
-        +properties: Map~String, Any?~
-    }
-
-    class GraphEdge {
-        +id: GraphElementId
-        +type: String
-        +startId: GraphElementId
-        +endId: GraphElementId
-        +properties: Map~String, Any?~
-    }
-
-    class PathStep {
-        <<abstract>>
-    }
-
-    class VertexStep {
-        +vertex: GraphVertex
-    }
-
-    class EdgeStep {
-        +edge: GraphEdge
-    }
-
-    class GraphPath {
-        +steps: List~PathStep~
-    }
-
-    Neo4jRecordMapper --> Node: "변환"
-    Neo4jRecordMapper --> Relationship: "변환"
-    Neo4jRecordMapper --> Path: "변환"
-    Neo4jRecordMapper --> Record: "읽기"
-    Node --> GraphVertex: "→"
-    Relationship --> GraphEdge: "→"
-    PathStep <|-- VertexStep
-    PathStep <|-- EdgeStep
-    Path --> GraphPath: "→"
-
-    style Neo4jRecordMapper fill:#1565C0,color:#fff
-    style GraphVertex fill:#388E3C,color:#fff
-    style GraphEdge fill:#388E3C,color:#fff
-    style GraphPath fill:#388E3C,color:#fff
-```
+![Neo4jRecordMapper 변환 메서드 5](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-05.svg)
 
 ## 시퀀스 다이어그램
 
@@ -418,34 +164,7 @@ sequenceDiagram
 
 ### neighbors 방향별 Cypher 패턴
 
-```mermaid
-flowchart TD
-    Start["neighbors(startId, edgeLabel, direction, depth)"]
-
-    Start --> CheckDirection{direction?}
-
-    CheckDirection -->|OUTGOING| Outgoing["(start)-[:LABEL*depth]-&gt;(neighbor)"]
-    CheckDirection -->|INCOMING| Incoming["(start)&lt;-[:LABEL*depth]-(neighbor)"]
-    CheckDirection -->|BOTH| Both["(start)-[:LABEL*depth]-(neighbor)"]
-
-    Outgoing --> CypherOut["MATCH (start)-[:LABEL*..depth]-&gt;(neighbor)<br/>WHERE elementId(start) = $startId<br/>RETURN DISTINCT neighbor"]
-    Incoming --> CypherIn["MATCH (start)&lt;-[:LABEL*..depth]-(neighbor)<br/>WHERE elementId(start) = $startId<br/>RETURN DISTINCT neighbor"]
-    Both --> CypherBoth["MATCH (start)-[:LABEL*..depth]-(neighbor)<br/>WHERE elementId(start) = $startId<br/>RETURN DISTINCT neighbor"]
-
-    CypherOut --> Execute["executeQuery()"]
-    CypherIn --> Execute
-    CypherBoth --> Execute
-
-    Execute --> MapToVertices["Neo4jRecordMapper<br/>.recordToVertex(record, 'neighbor')"]
-    MapToVertices --> Result["List&lt;GraphVertex&gt;"]
-
-    style Start fill:#0D47A1,color:#fff
-    style CheckDirection fill:#F57F17,color:#fff
-    style Outgoing fill:#388E3C,color:#fff
-    style Incoming fill:#388E3C,color:#fff
-    style Both fill:#388E3C,color:#fff
-    style Result fill:#AD1457,color:#fff
-```
+![neighbors 방향별 Cypher 패턴 6](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-06.svg)
 
 ### Publisher → Coroutine 변환 메커니즘
 
@@ -485,81 +204,11 @@ sequenceDiagram
 
 ### Neo4j 데이터 모델
 
-```mermaid
-graph LR
-    Neo4j["Neo4j Data Model"]
-
-    Node["Node (정점)"]
-    Rel["Relationship (간선)"]
-    Props["Properties (속성)"]
-
-    NodeId["elementId()<br/>3:00:00:00:01"]
-    NodeLabels["labels()<br/>['User', 'Admin']"]
-    NodeProps["asMap()<br/>{name, email, age}"]
-
-    RelId["elementId()<br/>5:00:00:00:01"]
-    RelType["type()<br/>'KNOWS'"]
-    RelStartId["startNodeElementId()"]
-    RelEndId["endNodeElementId()"]
-    RelProps["asMap()<br/>{since, weight}"]
-
-    GVertex["GraphVertex"]
-    GEdge["GraphEdge"]
-
-    Neo4j --> Node
-    Neo4j --> Rel
-    Neo4j --> Props
-
-    Node --> NodeId
-    Node --> NodeLabels
-    Node --> NodeProps
-
-    Rel --> RelId
-    Rel --> RelType
-    Rel --> RelStartId
-    Rel --> RelEndId
-    Rel --> RelProps
-
-    NodeId --> GVertex
-    NodeLabels --> GVertex
-    NodeProps --> GVertex
-
-    RelId --> GEdge
-    RelType --> GEdge
-    RelStartId --> GEdge
-    RelEndId --> GEdge
-    RelProps --> GEdge
-
-    style Node fill:#388E3C,color:#fff
-    style Rel fill:#bbdefb,color:#fff
-    style GVertex fill:#F57F17,color:#fff
-    style GEdge fill:#F57F17,color:#fff
-```
+![Neo4j 데이터 모델 7](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-07.svg)
 
 ### 테스트 환경 구성
 
-```mermaid
-graph TD
-    Test["Test Case"]
-    Container["Testcontainers<br/>Neo4jContainer"]
-    DockerNeo4j["Docker Neo4j<br/>Image"]
-    DriverCreation["GraphOperations 생성"]
-    Ops["Neo4jGraphOperations"]
-
-    Test -->|"@BeforeEach"| Container
-    Container -->|"pull & start"| DockerNeo4j
-    DockerNeo4j -->|"bolt://localhost:7687"| DriverCreation
-    DriverCreation -->|"Driver 생성"| Ops
-    Ops -->|"테스트 실행"| Test
-
-    Test -->|"@AfterEach"| Stop["close() + Container.stop()"]
-    Stop -->|"리소스 정리"| Cleanup["Docker 컨테이너 종료"]
-
-    style Container fill:#BF360C,color:#fff
-    style DockerNeo4j fill:#6A1B9A,color:#fff
-    style Ops fill:#1565C0,color:#fff
-    style Test fill:#F57F17,color:#fff
-```
+![테스트 환경 구성 8](../../docs/images/readme-diagrams/graph-graph-neo4j-ko-diagram-08.svg)
 
 ## 주요 메서드
 
