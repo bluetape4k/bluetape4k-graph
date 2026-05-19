@@ -17,6 +17,7 @@ benchmark {
             iterations = 5
             iterationTime = 3
             iterationTimeUnit = "s"
+            reportFormat = "json"
         }
     }
 }

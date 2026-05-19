@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="202" viewBox="0 0 820 202">
+<rect x="0.0" y="0.0" width="820.0" height="202.0" fill="#FAFAFA" rx="0" opacity="1.00"/>
+<text x="410.0" y="28.0" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="bold" fill="#333333">ShortestPathBenchmark — ms/op</text>
+<rect x="240.0" y="38.0" width="14.0" height="14.0" fill="#4A90D9" rx="2" opacity="1.00"/>
+<text x="258.0" y="48.0" text-anchor="start" font-family="sans-serif" font-size="11" font-weight="normal" fill="#333333">sync</text>
+<rect x="310.0" y="38.0" width="14.0" height="14.0" fill="#E87040" rx="2" opacity="1.00"/>
+<text x="328.0" y="48.0" text-anchor="start" font-family="sans-serif" font-size="11" font-weight="normal" fill="#333333">virtual-thread</text>
+<line x1="240.0" y1="70.0" x2="240.0" y2="152.0" stroke="#E0E0E0" stroke-width="1.0" stroke-dasharray="4,3"/>
+<text x="240.0" y="170.0" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="normal" fill="#888888">0.00</text>
+<line x1="340.0" y1="70.0" x2="340.0" y2="152.0" stroke="#E0E0E0" stroke-width="1.0" stroke-dasharray="4,3"/>
+<text x="340.0" y="170.0" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="normal" fill="#888888">1.32</text>
+<line x1="440.0" y1="70.0" x2="440.0" y2="152.0" stroke="#E0E0E0" stroke-width="1.0" stroke-dasharray="4,3"/>
+<text x="440.0" y="170.0" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="normal" fill="#888888">2.65</text>
+<line x1="540.0" y1="70.0" x2="540.0" y2="152.0" stroke="#E0E0E0" stroke-width="1.0" stroke-dasharray="4,3"/>
+<text x="540.0" y="170.0" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="normal" fill="#888888">3.97</text>
+<line x1="640.0" y1="70.0" x2="640.0" y2="152.0" stroke="#E0E0E0" stroke-width="1.0" stroke-dasharray="4,3"/>
+<text x="640.0" y="170.0" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="normal" fill="#888888">5.29</text>
+<line x1="740.0" y1="70.0" x2="740.0" y2="152.0" stroke="#E0E0E0" stroke-width="1.0" stroke-dasharray="4,3"/>
+<text x="740.0" y="170.0" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="normal" fill="#888888">6.62</text>
+<line x1="240.0" y1="152.0" x2="740.0" y2="152.0" stroke="#BBBBBB" stroke-width="1.5"/>
+<text x="232.0" y="88.0" text-anchor="end" font-family="sans-serif" font-size="11" font-weight="normal" fill="#333333">syncShortestPath100Pairs</text>
+<rect x="240.0" y="70.0" width="355.8" height="28.0" fill="#4A90D9" rx="3" opacity="0.88"/>
+<line x1="579.7" y1="84.0" x2="611.9" y2="84.0" stroke="#555555" stroke-width="1.5"/>
+<line x1="579.7" y1="81.0" x2="579.7" y2="87.0" stroke="#555555" stroke-width="1.5"/>
+<line x1="611.9" y1="81.0" x2="611.9" y2="87.0" stroke="#555555" stroke-width="1.5"/>
+<text x="615.9" y="88.0" text-anchor="start" font-family="sans-serif" font-size="10" font-weight="normal" fill="#555555">4.708</text>
+<text x="232.0" y="126.0" text-anchor="end" font-family="sans-serif" font-size="11" font-weight="normal" fill="#333333">vtShortestPath100Pairs</text>
+<rect x="240.0" y="108.0" width="434.8" height="28.0" fill="#E87040" rx="3" opacity="0.88"/>
+<line x1="674.0" y1="122.0" x2="675.5" y2="122.0" stroke="#555555" stroke-width="1.5"/>
+<line x1="674.0" y1="119.0" x2="674.0" y2="125.0" stroke="#555555" stroke-width="1.5"/>
+<line x1="675.5" y1="119.0" x2="675.5" y2="125.0" stroke="#555555" stroke-width="1.5"/>
+<text x="679.5" y="126.0" text-anchor="start" font-family="sans-serif" font-size="10" font-weight="normal" fill="#555555">5.753</text>
+</svg>
