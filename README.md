@@ -215,7 +215,7 @@ Importers use `GraphImportOptions.batchSize` as the backend write flush size. Pe
 // build.gradle.kts
 dependencyManagement {
     imports {
-        mavenBom("io.github.bluetape4k.graph:bluetape4k-graph-bom:0.2.0")
+        mavenBom("io.github.bluetape4k.graph:bluetape4k-graph-bom:<version>")
     }
 }
 
@@ -229,8 +229,8 @@ dependencies {
 
 ```kotlin
 dependencies {
-    implementation("io.github.bluetape4k.graph:bluetape4k-graph-core:0.2.0")
-    implementation("io.github.bluetape4k.graph:bluetape4k-graph-neo4j:0.2.0")
+    implementation("io.github.bluetape4k.graph:bluetape4k-graph-core:<version>")
+    implementation("io.github.bluetape4k.graph:bluetape4k-graph-neo4j:<version>")
     // graph-age | graph-memgraph | graph-tinkerpop | graph-ktor
 }
 ```
