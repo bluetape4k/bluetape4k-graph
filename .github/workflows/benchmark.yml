@@ -1,0 +1,84 @@
+name: Benchmarks
+
+# Manually-triggered JMH benchmark workflow for graph-benchmark.
+# Runs the TinkerGraph baseline benchmarks (BatchInsert / ShortestPath / Neighbors / Algorithm / Traversal / VertexOperations)
+# and uploads JMH JSON + rendered SVG charts as build artifacts.
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  JAVA_VERSION: '21'
+  JAVA_DISTRIBUTION: 'temurin'
+
+jobs:
+  graph-benchmark:
+    name: graph-benchmark (TinkerGraph baseline)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v5
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          cache-read-only: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Run JMH benchmarks
+        run: ./gradlew :graph-benchmark:benchmark
+
+      - name: Locate JMH JSON result
+        id: locate
+        run: |
+          JSON_PATH=$(find benchmark/graph-benchmark/build/reports/benchmarks -name 'main.json' | head -n 1)
+          if [ -z "$JSON_PATH" ]; then
+            echo "ERROR: JMH JSON result not found" >&2
+            exit 1
+          fi
+          echo "json_path=$JSON_PATH" >> "$GITHUB_OUTPUT"
+
+      - name: Render SVG charts
+        env:
+          JSON_PATH: ${{ steps.locate.outputs.json_path }}
+        run: |
+          python3 benchmark/scripts/render_benchmark_svg.py "${JSON_PATH}"
+
+      - name: Upload benchmark artifacts
+        uses: actions/upload-artifact@v5
+        with:
+          name: graph-benchmark-results
+          path: |
+            benchmark/graph-benchmark/build/reports/benchmarks/**/main.json
+            docs/benchmark-results/*.svg
+          retention-days: 30
+
+      - name: Summary
+        env:
+          JSON_PATH: ${{ steps.locate.outputs.json_path }}
+        run: |
+          {
+            echo "## graph-benchmark results"
+            echo ""
+            echo "JMH JSON: \`${JSON_PATH}\`"
+            echo ""
+            echo "### Rendered SVG charts"
+            for svg in docs/benchmark-results/*.svg; do
+              [ -e "$svg" ] || continue
+              echo "- \`$svg\`"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
