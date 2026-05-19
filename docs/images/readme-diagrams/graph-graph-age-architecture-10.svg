@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1378" height="1024" viewBox="0 0 1378 1024" role="img" aria-label="agtype">
+<defs>
+  <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="8" stdDeviation="9" flood-color="#1f2937" flood-opacity="0.10"/></filter>
+  <marker id="openArrow" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M 1 1 L 10 5 L 1 9" fill="none" stroke="#758297" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker>
+  <marker id="inherit" markerWidth="14" markerHeight="12" refX="12" refY="6" orient="auto" markerUnits="strokeWidth"><path d="M 0 1 L 12 6 L 0 11 Z" fill="#ffffff" stroke="#758297" stroke-width="1.8"/></marker>
+  <style>
+    .canvas{fill:#f7f9fc}.frame{fill:#fff;stroke:#d8e0ea;stroke-width:1.5}
+    .title{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:43px;font-weight:400;fill:#102033}
+    .subtitle{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:15px;font-weight:400;fill:#536273}
+    .label{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:25px;font-weight:400;fill:#102033}
+    .smallLabel{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:21px;font-weight:400;fill:#102033}
+    .mono{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:12px;font-weight:400;fill:#102033}
+    .small{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:12px;font-weight:400;fill:#536273}
+    .strong{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:13px;font-weight:400;fill:#102033}
+    .card{stroke-width:2.1;filter:url(#shadow)}.compartment{stroke-width:1.5;fill:none}
+    .line{stroke:#758297;stroke-width:2.1;fill:none;marker-end:url(#openArrow)}
+    .plainLine{stroke:#758297;stroke-width:2.1;fill:none}
+    .dashed{stroke:#758297;stroke-width:2.1;stroke-dasharray:7 6;fill:none;marker-end:url(#openArrow)}
+    .inheritLine{stroke:#758297;stroke-width:2.2;fill:none;marker-end:url(#inherit)}
+    .implLine{stroke:#758297;stroke-width:2.2;stroke-dasharray:8 7;fill:none;marker-end:url(#inherit)}
+  </style>
+</defs>
+<rect class="canvas" width="1378" height="1024"/>
+<rect class="frame" x="32" y="28" width="1314" height="968" rx="28"/>
+<text class="title" x="66" y="82">agtype</text>
+<text class="subtitle" x="70" y="118">Architecture nodes and edges from the original Mermaid source</text>
+<path class="line" d="M856 884 C856 801 188 801 188 718"/>
+<path class="line" d="M522 884 C522 884 856 884 856 884"/>
+<path class="line" d="M1190 718 C1190 801 522 801 522 884"/>
+<path class="line" d="M856 718 C856 801 522 801 522 884"/>
+<path class="line" d="M522 718 C522 718 1190 718 1190 718"/>
+<path class="line" d="M522 718 C522 718 856 718 856 718"/>
+<path class="line" d="M188 718 C188 718 522 718 522 718"/>
+<path class="line" d="M1190 552 C1190 635 188 635 188 718"/>
+<path class="line" d="M188 386 C188 469 1190 469 1190 552"/>
+<path class="line" d="M522 552 C522 552 856 552 856 552"/>
+<path class="line" d="M188 552 C188 552 522 552 522 552"/>
+<path class="line" d="M1190 220 C1190 386 188 386 188 552"/>
+<path class="line" d="M856 386 C856 386 1190 386 1190 386"/>
+<path class="line" d="M522 386 C522 386 856 386 856 386"/>
+<path class="line" d="M856 220 C856 303 522 303 522 386"/>
+<path class="line" d="M522 220 C522 303 188 303 188 386"/>
+<path class="line" d="M522 220 C522 220 1190 220 1190 220"/>
+<path class="line" d="M522 220 C522 220 856 220 856 220"/>
+<path class="line" d="M188 220 C188 220 522 220 522 220"/>
+<g transform="translate(48,170)">
+  <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#E8F3FF" stroke="#5B8DEF"/>
+  <text class="smallLabel" x="140" y="45" text-anchor="middle">agtype from PostgreSQL</text>
+</g>
+<g transform="translate(382,170)">
+  <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#EAF7EF" stroke="#58A978"/>
+  <text class="smallLabel" x="140" y="45" text-anchor="middle">Suffix</text>
+</g>
+<g transform="translate(716,170)">
+  <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#FFF3D9" stroke="#D6A441"/>
+  <text class="smallLabel" x="140" y="33" text-anchor="middle">removePrefix Remove</text>
+<text class="smallLabel" x="140" y="59" text-anchor="middle">::vertex</text>
+</g>
+<g transform="translate(1050,170)">
+  <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#FDECEF" stroke="#DC6B82"/>
+  <text class="smallLabel" x="140" y="33" text-anchor="middle">removeSuffix Remove</text>
+<text class="smallLabel" x="140" y="59" text-anchor="middle">::edge</text>
+</g>
+<g transform="translate(48,336)">
+  <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#E9F7F6" stroke="#45A7A1"/>
+  <text class="smallLabel" x="140" y="33" text-anchor="middle">removeSuffix Remove</text>
+<text class="smallLabel" x="140" y="59" text-anchor="middle">::path</text>
+</g>
+<g transform="translate(382,336)">
+  <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#F1ECFF" stroke="#8A72D6"/>
+  <text class="smallLabel" x="140" y="45" text-anchor="middle">parseJsonObject</text>
+</g>
+<g transform="translate(716,336)">
+  <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#F7F1E7" stroke="#B88A44"/>
+  <text class="smallLabel" x="140" y="33" text-anchor="middle">Extract id, label,</text>
+<text class="smallLabel" x="140" y="59" text-anchor="middle">properties</text>
+</g>
+<g transform="translate(1050,336)">
+  <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#EEF6D9" stroke="#8BA84D"/>
+  <text class="smallLabel" x="140" y="21" text-anchor="middle">Create GraphVertex</text>
+<text class="smallLabel" x="140" y="47" text-anchor="middle">GraphElementId id,</text>
+<text class="smallLabel" x="140" y="73" text-anchor="middle">String label, Map</text>
+</g>
+<g transform="translate(48,502)">
+  <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#E8F3FF" stroke="#5B8DEF"/>
+  <text class="smallLabel" x="140" y="45" text-anchor="middle">parseJsonObject</text>
+</g>
+<g transform="translate(382,502)">
+  <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#EAF7EF" stroke="#58A978"/>
+  <text class="smallLabel" x="140" y="21" text-anchor="middle">Extract id, label,</text>
+<text class="smallLabel" x="140" y="47" text-anchor="middle">start_id, end_id,</text>
+<text class="smallLabel" x="140" y="73" text-anchor="middle">properties</text>
+</g>
+<g transform="translate(716,502)">
+  <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#FFF3D9" stroke="#D6A441"/>
+  <text class="smallLabel" x="140" y="21" text-anchor="middle">Create GraphEdge id,</text>
+<text class="smallLabel" x="140" y="47" text-anchor="middle">label, startId, endId,</text>
+<text class="smallLabel" x="140" y="73" text-anchor="middle">properties</text>
+</g>
+<g transform="translate(1050,502)">
+  <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#FDECEF" stroke="#DC6B82"/>
+  <text class="smallLabel" x="140" y="45" text-anchor="middle">parseJsonArray</text>
+</g>
+<g transform="translate(48,668)">
+  <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#E9F7F6" stroke="#45A7A1"/>
+  <text class="smallLabel" x="140" y="45" text-anchor="middle">Iterate elements</text>
+</g>
+<g transform="translate(382,668)">
+  <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#F1ECFF" stroke="#8A72D6"/>
+  <text class="smallLabel" x="140" y="45" text-anchor="middle">Element type?</text>
+</g>
+<g transform="translate(716,668)">
+  <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#F7F1E7" stroke="#B88A44"/>
+  <text class="smallLabel" x="140" y="45" text-anchor="middle">parseVertex</text>
+</g>
+<g transform="translate(1050,668)">
+  <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#EEF6D9" stroke="#8BA84D"/>
+  <text class="smallLabel" x="140" y="45" text-anchor="middle">parseEdge</text>
+</g>
+<g transform="translate(382,834)">
+  <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#E8F3FF" stroke="#5B8DEF"/>
+  <text class="smallLabel" x="140" y="45" text-anchor="middle">Add VertexStep</text>
+</g>
+<g transform="translate(716,834)">
+  <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#EAF7EF" stroke="#58A978"/>
+  <text class="smallLabel" x="140" y="45" text-anchor="middle">More elements?</text>
+</g>
+<text class="small" x="689" y="212" text-anchor="middle">::vertex</text>
+<text class="small" x="856" y="212" text-anchor="middle">::edge</text>
+<text class="small" x="355" y="295" text-anchor="middle">::path</text>
+<text class="small" x="689" y="710" text-anchor="middle">Contains ::vertex</text>
+<text class="small" x="856" y="710" text-anchor="middle">Contains ::edge</text>
+<text class="small" x="522" y="793" text-anchor="middle">Yes</text>
+</svg>
