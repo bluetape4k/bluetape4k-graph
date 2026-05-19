@@ -16,16 +16,7 @@
 
 ### Module Layer Structure
 
-```mermaid
-graph TD
-    A["graph-core<br/>(GraphOperations interface)"] --> B["graph-age<br/>(AgeGraphOperations)"]
-    B --> C["AgeSql<br/>(Cypher → SQL)"]
-    C --> D["PostgreSQL AGE<br/>(ag_catalog.cypher)"]
-    E["AgePropertySerializer<br/>(value serialization)"] --> C
-    F["AgeTypeParser<br/>(agtype parsing)"] --> B
-    G["Exposed Database<br/>(JDBC transaction)"] --> D
-    H["HikariCP<br/>(connection pool)"] --> G
-```
+![Module Layer Structure 1](../../docs/images/readme-diagrams/graph-graph-age-diagram-01.svg)
 
 ## Key Classes
 

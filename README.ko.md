@@ -25,68 +25,9 @@ bluetape4k 생태계의 그래프 데이터베이스 통합 라이브러리. Apa
 
 ## 아키텍처
 
-```mermaid
-flowchart TB
-    app[Application code] --> api[graph-core API]
-    ktor[Ktor GraphPlugin] --> api
-    boot[Spring Boot AutoConfiguration] --> api
-    examples[Example modules] --> api
+![Architecture 1](docs/images/readme-diagrams/root-readme-ko-diagram-01.svg)
 
-    api --> sync[GraphOperations]
-    api --> suspend[GraphSuspendOperations]
-    api --> caps[Optional capabilities]
-    caps --> schema[Schema manager]
-    caps --> merge[Merge / upsert]
-    caps --> tx[Transaction DSL]
-
-    sync --> backends[Backend implementations]
-    suspend --> backends
-    backends --> neo4j[Neo4j]
-    backends --> memgraph[Memgraph]
-    backends --> age[Apache AGE]
-    backends --> tinker[TinkerGraph / TinkerPop]
-    backends --> falkor[FalkorDB]
-
-    io[graph-io import/export] --> api
-    io --> csv[CSV]
-    io --> ndjson[Jackson NDJSON]
-    io --> graphml[GraphML]
-    io --> okio[OkIO compression + DAEAD]
-```
-
-```mermaid
-classDiagram
-    class GraphOperations {
-        +createVertex(label, properties)
-        +createEdge(startId, endId, label, properties)
-        +shortestPath(startId, endId, edgeLabel, maxDepth)
-    }
-    class GraphSuspendOperations {
-        +createVertex(label, properties)
-        +createEdge(startId, endId, label, properties)
-        +shortestPath(startId, endId, edgeLabel, maxDepth)
-    }
-    class GraphSchemaManager
-    class GraphMergeOperations
-    class GraphTransactionOperations
-    class Neo4jGraphOperations
-    class MemgraphGraphOperations
-    class AgeGraphOperations
-    class TinkerGraphOperations
-    class FalkorDBGraphOperations
-
-    GraphOperations <|.. Neo4jGraphOperations
-    GraphOperations <|.. MemgraphGraphOperations
-    GraphOperations <|.. AgeGraphOperations
-    GraphOperations <|.. TinkerGraphOperations
-    GraphOperations <|.. FalkorDBGraphOperations
-    GraphOperations --> GraphSchemaManager
-    GraphOperations --> GraphMergeOperations
-    GraphOperations --> GraphTransactionOperations
-    GraphSuspendOperations --> GraphSchemaManager
-    GraphSuspendOperations --> GraphMergeOperations
-    GraphSuspendOperations --> GraphTransactionOperations
-```
+![Architecture 2](docs/images/readme-diagrams/root-readme-ko-diagram-02.svg)
 
 ## 지원하는 그래프 데이터베이스
 

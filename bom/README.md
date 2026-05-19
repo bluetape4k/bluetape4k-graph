@@ -8,44 +8,7 @@ individual versions.
 
 ## Architecture
 
-```mermaid
-graph TB
-    Consumer[Consumer Project]
-    BOM[bluetape4k-graph-bom<br/>java-platform]
-
-    subgraph "graph (DB drivers)"
-      Core[graph-core]
-      Neo4j[graph-neo4j]
-      Memgraph[graph-memgraph]
-      Age[graph-age]
-      Tinker[graph-tinkerpop]
-      Falkor[graph-falkordb]
-    end
-
-    subgraph "graph-io (serialization)"
-      IoCore[graph-io-core]
-      Csv[graph-io-csv]
-      GraphML[graph-io-graphml]
-      Jackson2[graph-io-jackson2]
-      Jackson3[graph-io-jackson3]
-      Okio[graph-okio]
-    end
-
-    subgraph "Spring Boot integration"
-      SB[graph-spring-boot]
-    end
-
-    subgraph "Ktor"
-      Ktor[graph-ktor]
-    end
-
-    Consumer -->|platform import| BOM
-    BOM -.->|version constraints| Core
-    BOM -.->|version constraints| Neo4j
-    BOM -.->|version constraints| IoCore
-    BOM -.->|version constraints| SB
-    BOM -.->|version constraints| Ktor
-```
+![Architecture 1](../docs/images/readme-diagrams/bom-diagram-01.svg)
 
 The BOM is a Gradle `java-platform` that publishes only `<dependencyManagement>` constraints — no runtime classes.
 

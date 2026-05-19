@@ -12,25 +12,7 @@ It bridges the Reactive Streams API through `kotlinx-coroutines-reactive` to pro
 - **Direction-Based Traversal**: `neighbors` queries support `OUTGOING` / `INCOMING` / `BOTH` patterns
 - **elementId()**: Uses `elementId()` for stable record lookup and updates (replacement for the deprecated `id()`)
 
-```mermaid
-graph TD
-    App["Application"]
-    OpsIface["GraphOperations<br/>(graph-core)"]
-    Impl["Neo4jGraphOperations"]
-    Session["Neo4jCoroutineSession"]
-    Mapper["Neo4jRecordMapper"]
-    ReactiveSession["ReactiveSession<br/>(Neo4j Driver)"]
-    Cypher["Cypher query engine"]
-    Neo4j["Neo4j Database"]
-
-    App --> OpsIface
-    OpsIface <|.. Impl
-    Impl --> Session
-    Impl --> Mapper
-    Session --> ReactiveSession
-    ReactiveSession --> Cypher
-    Cypher --> Neo4j
-```
+![Overview 1](../../docs/images/readme-diagrams/graph-graph-neo4j-diagram-01.svg)
 
 ## Key Classes
 
