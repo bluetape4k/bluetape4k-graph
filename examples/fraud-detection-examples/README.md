@@ -32,7 +32,7 @@ graph backends.
 
 ## Architecture
 
-![Architecture diagram](../../docs/images/readme-diagrams/examples-fraud-detection-examples-architecture-01.png)
+![fraud detection examples Architecture diagram](../../docs/images/readme-diagrams/examples-fraud-detection-examples-architecture-01.png)
 
 ## Domain UML
 

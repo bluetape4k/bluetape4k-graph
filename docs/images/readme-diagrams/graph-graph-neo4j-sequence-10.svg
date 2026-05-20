@@ -1,123 +1,93 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1050" viewBox="0 0 1600 1050" role="img" aria-label="Publisher → Coroutine Sequence">
+<svg xmlns="http://www.w3.org/2000/svg" width="2968" height="1826" viewBox="0 0 2968 1826" role="img" aria-label="Publisher → Coroutine">
 <defs>
-  <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%">
-    <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#1f2937" flood-opacity="0.10"/>
-  </filter>
-  <marker id="openArrow" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
-    <path d="M 1 1 L 10 5 L 1 9" fill="none" stroke="#8a97a8" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-  </marker>
-  <marker id="inherit" markerWidth="14" markerHeight="12" refX="12" refY="6" orient="auto" markerUnits="strokeWidth">
-    <path d="M 0 1 L 12 6 L 0 11 Z" fill="#ffffff" stroke="#8a97a8" stroke-width="1.7"/>
-  </marker>
+  <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="8" stdDeviation="9" flood-color="#1f2937" flood-opacity="0.10"/></filter>
+  <marker id="openArrow" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M 1 1 L 10 5 L 1 9" fill="none" stroke="#758297" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker>
+  <marker id="inherit" markerWidth="14" markerHeight="12" refX="12" refY="6" orient="auto" markerUnits="strokeWidth"><path d="M 0 1 L 12 6 L 0 11 Z" fill="#ffffff" stroke="#758297" stroke-width="1.8"/></marker>
   <style>
-    .canvas { fill: #f7f9fc; }
-    .frame { fill: #ffffff; stroke: #d8e0ea; stroke-width: 1.5; }
-    .title { font-family: "Architects Daughter", "Comic Mono", cursive; font-size: 54px; font-weight: 400; fill: #102033; }
-    .subtitle { font-family: "Comic Mono", "SFMono-Regular", Menlo, Consolas, monospace; font-size: 18px; fill: #536273; }
-    .label { font-family: "Architects Daughter", "Comic Mono", cursive; font-size: 30px; font-weight: 400; fill: #102033; }
-    .smallLabel { font-family: "Architects Daughter", "Comic Mono", cursive; font-size: 24px; font-weight: 400; fill: #102033; }
-    .mono { font-family: "Comic Mono", "SFMono-Regular", Menlo, Consolas, monospace; font-size: 15px; fill: #102033; }
-    .small { font-family: "Comic Mono", "SFMono-Regular", Menlo, Consolas, monospace; font-size: 13px; fill: #536273; }
-    .strong { font-family: "Comic Mono", "SFMono-Regular", Menlo, Consolas, monospace; font-size: 15px; font-weight: 700; fill: #102033; }
-    .card { stroke-width: 2.2; filter: url(#shadow); }
-    .line { stroke: #8a97a8; stroke-width: 2.1; fill: none; marker-end: url(#openArrow); }
-    .softLine { stroke: #8a97a8; stroke-width: 2.1; fill: none; }
-    .dashed { stroke: #8a97a8; stroke-width: 2.1; stroke-dasharray: 7 6; fill: none; marker-end: url(#openArrow); }
-    .inheritLine { stroke: #8a97a8; stroke-width: 2.2; fill: none; marker-end: url(#inherit); }
-    .implLine { stroke: #8a97a8; stroke-width: 2.2; stroke-dasharray: 8 7; fill: none; marker-end: url(#inherit); }
-    .compartment { stroke-width: 1.6; fill: none; }
-    .chip { stroke-width: 1.5; rx: 16; }
-    .chipText { font-family: "Comic Mono", "SFMono-Regular", Menlo, Consolas, monospace; font-size: 13px; font-weight: 700; fill: #102033; }
+    .canvas{fill:#f7f9fc}.frame{fill:#fff;stroke:#d8e0ea;stroke-width:1.5}
+    .title{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:43px;font-weight:400;fill:#102033}
+    .subtitle{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:15px;font-weight:400;fill:#536273}
+    .label{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:25px;font-weight:400;fill:#102033}
+    .smallLabel{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:21px;font-weight:400;fill:#102033}
+    .mono{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:12px;font-weight:400;fill:#102033}
+    .small{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:12px;font-weight:400;fill:#536273}
+    .strong{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:13px;font-weight:400;fill:#102033}
+    .card{stroke-width:2.1;filter:url(#shadow)}.compartment{stroke-width:1.5;fill:none}
+    .line{stroke:#758297;stroke-width:2.1;fill:none;marker-end:url(#openArrow)}
+    .plainLine{stroke:#758297;stroke-width:2.1;fill:none}
+    .dashed{stroke:#758297;stroke-width:2.1;stroke-dasharray:7 6;fill:none;marker-end:url(#openArrow)}
+    .inheritLine{stroke:#758297;stroke-width:2.2;fill:none;marker-end:url(#inherit)}
+    .implLine{stroke:#758297;stroke-width:2.2;stroke-dasharray:8 7;fill:none;marker-end:url(#inherit)}
   </style>
 </defs>
-<rect class="canvas" width="1600" height="1050"/>
-<rect class="frame" x="46" y="34" width="1508" height="982" rx="32"/>
-<text class="title" x="86" y="98">Publisher → Coroutine Sequence</text>
-<text class="subtitle" x="90" y="132">Lifelines remain while messages become readable pastel interaction bands</text>
-<rect class="chip" x="1010" y="64" width="130" height="36" fill="#e8f3ff" stroke="#5b8def"/>
-<text class="chipText" x="1075" y="88" text-anchor="middle">request</text>
-<rect class="chip" x="1158" y="64" width="130" height="36" fill="#eaf7ef" stroke="#58a978"/>
-<text class="chipText" x="1223" y="88" text-anchor="middle">work</text>
-<rect class="chip" x="1306" y="64" width="130" height="36" fill="#fff3d9" stroke="#d6a441"/>
-<text class="chipText" x="1371" y="88" text-anchor="middle">response</text>
-<g>
-  <rect class="card" x="98" y="220" width="224" height="70" rx="24" fill="#e8f3ff" stroke="#5b8def"/>
-  <text class="label" x="210" y="265" text-anchor="middle">Application</text>
-  <line x1="210" y1="306" x2="210" y2="820" stroke="#b7c2d1" stroke-width="2" stroke-dasharray="10 10"/>
-</g>
-<g>
-  <rect class="card" x="393" y="220" width="224" height="70" rx="24" fill="#eaf7ef" stroke="#58a978"/>
-  <text class="label" x="505" y="265" text-anchor="middle">ReactiveSession.</text>
-  <line x1="505" y1="306" x2="505" y2="820" stroke="#b7c2d1" stroke-width="2" stroke-dasharray="10 10"/>
-</g>
-<g>
-  <rect class="card" x="688" y="220" width="224" height="70" rx="24" fill="#fff3d9" stroke="#d6a441"/>
-  <text class="label" x="800" y="265" text-anchor="middle">Publisher~Recor.</text>
-  <line x1="800" y1="306" x2="800" y2="820" stroke="#b7c2d1" stroke-width="2" stroke-dasharray="10 10"/>
-</g>
-<g>
-  <rect class="card" x="983" y="220" width="224" height="70" rx="24" fill="#fdecef" stroke="#dc6b82"/>
-  <text class="label" x="1095" y="265" text-anchor="middle">Flow Collector.</text>
-  <line x1="1095" y1="306" x2="1095" y2="820" stroke="#b7c2d1" stroke-width="2" stroke-dasharray="10 10"/>
-</g>
-<g>
-  <rect class="card" x="1278" y="220" width="224" height="70" rx="24" fill="#e9f7f6" stroke="#45a7a1"/>
-  <text class="label" x="1390" y="265" text-anchor="middle">toList Buffer</text>
-  <line x1="1390" y1="306" x2="1390" y2="820" stroke="#b7c2d1" stroke-width="2" stroke-dasharray="10 10"/>
-</g>
-<g>
-  <rect class="card" x="150" y="360" width="415" height="74" rx="22" fill="#f1ecff" stroke="#8a72d6"/>
-  <text class="strong" x="182" y="392">1</text>
-  <text class="strong" x="224" y="392">return</text>
-  <text class="small" x="224" y="416">ok</text>
-  <path class="dashed" d="M250 397 L465 397"/>
-</g>
-<g>
-  <rect class="card" x="150" y="452" width="415" height="74" rx="22" fill="#e8f3ff" stroke="#5b8def"/>
-  <text class="strong" x="182" y="484">2</text>
-  <text class="strong" x="224" y="484">return</text>
-  <text class="small" x="224" y="508">request more</text>
-  <path class="dashed" d="M250 489 L465 489"/>
-</g>
-<g>
-  <rect class="card" x="150" y="544" width="415" height="74" rx="22" fill="#eaf7ef" stroke="#58a978"/>
-  <text class="strong" x="182" y="576">3</text>
-  <text class="strong" x="224" y="576">return</text>
-  <text class="small" x="224" y="600">ok</text>
-  <path class="dashed" d="M250 581 L465 581"/>
-</g>
-<g>
-  <rect class="card" x="150" y="636" width="415" height="74" rx="22" fill="#fff3d9" stroke="#d6a441"/>
-  <text class="strong" x="182" y="668">4</text>
-  <text class="strong" x="224" y="668">return</text>
-  <text class="small" x="224" y="692">request more</text>
-  <path class="dashed" d="M250 673 L465 673"/>
-</g>
-<g>
-  <rect class="card" x="740" y="728" width="415" height="74" rx="22" fill="#e9f7f6" stroke="#45a7a1"/>
-  <text class="strong" x="772" y="760">5</text>
-  <text class="strong" x="814" y="760">onComplete</text>
-  <text class="small" x="814" y="784">interaction band</text>
-  <path class="line" d="M840 765 L1055 765"/>
-</g>
-<g>
-  <rect class="card" x="150" y="820" width="415" height="74" rx="22" fill="#f1ecff" stroke="#8a72d6"/>
-  <text class="strong" x="182" y="852">6</text>
-  <text class="strong" x="224" y="852">suspend</text>
-  <text class="small" x="224" y="876">interaction band</text>
-  <path class="line" d="M250 857 L465 857"/>
-</g>
-<g>
-  <rect class="card" x="150" y="912" width="415" height="74" rx="22" fill="#e8f3ff" stroke="#5b8def"/>
-  <text class="strong" x="182" y="944">7</text>
-  <text class="strong" x="224" y="944">List~Record~</text>
-  <text class="small" x="224" y="968">interaction band</text>
-  <path class="line" d="M250 949 L465 949"/>
-</g>
-<g transform="translate(124,858)">
-  <rect class="card" x="0" y="0" width="1352" height="88" rx="18" fill="#0d2435" stroke="#0d2435"/>
-  <text class="smallLabel" x="28" y="42" fill="#ffffff">Reading rule</text>
-  <text class="small" x="250" y="38" fill="#dbeafe">Lifelines stay visible; messages are grouped into numbered pastel interaction bands.</text>
-  <text class="small" x="250" y="64" fill="#dbeafe">Dashed bands indicate compact return/response paths.</text>
-</g>
+<rect class="canvas" width="2968" height="1826"/>
+<rect class="frame" x="32" y="28" width="2904" height="1770" rx="28"/>
+<text class="title" x="66" y="82">Publisher → Coroutine</text>
+<text class="subtitle" x="70" y="118">Sequence messages from the original Mermaid source</text>
+<rect class="card" x="-10" y="166" width="300" height="72" rx="20" fill="#E8F3FF" stroke="#5B8DEF"/>
+<text class="smallLabel" x="140" y="209" text-anchor="middle">Application</text>
+<line class="lifeline" x1="140" y1="252" x2="140" y2="1766" stroke="#b7c2d1" stroke-width="2" stroke-dasharray="10 10"/>
+<rect class="card" x="374" y="166" width="300" height="72" rx="20" fill="#EAF7EF" stroke="#58A978"/>
+<text class="smallLabel" x="524" y="198.5" text-anchor="middle">ReactiveSession</text>
+<text class="smallLabel" x="524" y="219.5" text-anchor="middle">run()</text>
+<line class="lifeline" x1="524" y1="252" x2="524" y2="1766" stroke="#b7c2d1" stroke-width="2" stroke-dasharray="10 10"/>
+<rect class="card" x="758" y="166" width="300" height="72" rx="20" fill="#FFF3D9" stroke="#D6A441"/>
+<text class="smallLabel" x="908" y="198.5" text-anchor="middle">Publisher~Record~</text>
+<text class="smallLabel" x="908" y="219.5" text-anchor="middle">(Neo4j)</text>
+<line class="lifeline" x1="908" y1="252" x2="908" y2="1766" stroke="#b7c2d1" stroke-width="2" stroke-dasharray="10 10"/>
+<rect class="card" x="1142" y="166" width="300" height="72" rx="20" fill="#FDECEF" stroke="#DC6B82"/>
+<text class="smallLabel" x="1292" y="198.5" text-anchor="middle">Flow Collector</text>
+<text class="smallLabel" x="1292" y="219.5" text-anchor="middle">(kotlinx-coroutines</text>
+<line class="lifeline" x1="1292" y1="252" x2="1292" y2="1766" stroke="#b7c2d1" stroke-width="2" stroke-dasharray="10 10"/>
+<rect class="card" x="1526" y="166" width="300" height="72" rx="20" fill="#E9F7F6" stroke="#45A7A1"/>
+<text class="smallLabel" x="1676" y="209" text-anchor="middle">toList() Buffer</text>
+<line class="lifeline" x1="1676" y1="252" x2="1676" y2="1766" stroke="#b7c2d1" stroke-width="2" stroke-dasharray="10 10"/>
+<rect class="card" x="1910" y="166" width="300" height="72" rx="20" fill="#F1ECFF" stroke="#8A72D6"/>
+<text class="smallLabel" x="2060" y="209" text-anchor="middle">Coroutine Result</text>
+<line class="lifeline" x1="2060" y1="252" x2="2060" y2="1766" stroke="#b7c2d1" stroke-width="2" stroke-dasharray="10 10"/>
+<rect class="card" x="2294" y="166" width="300" height="72" rx="20" fill="#F7F1E7" stroke="#B88A44"/>
+<text class="smallLabel" x="2444" y="209" text-anchor="middle">-Collector</text>
+<line class="lifeline" x1="2444" y1="252" x2="2444" y2="1766" stroke="#b7c2d1" stroke-width="2" stroke-dasharray="10 10"/>
+<rect class="card" x="2678" y="166" width="300" height="72" rx="20" fill="#EEF6D9" stroke="#8BA84D"/>
+<text class="smallLabel" x="2828" y="209" text-anchor="middle">-Publisher</text>
+<line class="lifeline" x1="2828" y1="252" x2="2828" y2="1766" stroke="#b7c2d1" stroke-width="2" stroke-dasharray="10 10"/>
+<rect x="611" y="286" width="210" height="40" rx="12" fill="#ffffff" opacity="0.97"/>
+<text class="strong" x="629" y="313" text-anchor="start">1. (Reactive Streams)</text>
+<path class="line" d="M524 344 L908 344"/>
+<rect x="995" y="396" width="210" height="40" rx="12" fill="#ffffff" opacity="0.97"/>
+<text class="strong" x="1013" y="423" text-anchor="start">2. onNext(record1)</text>
+<path class="line" d="M908 454 L1292 454"/>
+<rect x="1379" y="506" width="210" height="40" rx="12" fill="#ffffff" opacity="0.97"/>
+<text class="strong" x="1397" y="533" text-anchor="start">3. add(record1)</text>
+<path class="line" d="M1292 564 L1676 564"/>
+<rect x="1955" y="616" width="210" height="40" rx="12" fill="#ffffff" opacity="0.97"/>
+<text class="strong" x="1973" y="643" text-anchor="start">4. ok</text>
+<path class="dashed" d="M1676 674 L2444 674"/>
+<rect x="1955" y="726" width="210" height="40" rx="12" fill="#ffffff" opacity="0.97"/>
+<text class="strong" x="1973" y="753" text-anchor="start">5. request more</text>
+<path class="dashed" d="M1292 784 L2828 784"/>
+<rect x="995" y="836" width="210" height="40" rx="12" fill="#ffffff" opacity="0.97"/>
+<text class="strong" x="1013" y="863" text-anchor="start">6. onNext(record2)</text>
+<path class="line" d="M908 894 L1292 894"/>
+<rect x="1379" y="946" width="210" height="40" rx="12" fill="#ffffff" opacity="0.97"/>
+<text class="strong" x="1397" y="973" text-anchor="start">7. add(record2)</text>
+<path class="line" d="M1292 1004 L1676 1004"/>
+<rect x="1955" y="1056" width="210" height="40" rx="12" fill="#ffffff" opacity="0.97"/>
+<text class="strong" x="1973" y="1083" text-anchor="start">8. ok</text>
+<path class="dashed" d="M1676 1114 L2444 1114"/>
+<rect x="1955" y="1166" width="210" height="40" rx="12" fill="#ffffff" opacity="0.97"/>
+<text class="strong" x="1973" y="1193" text-anchor="start">9. request more</text>
+<path class="dashed" d="M1292 1224 L2828 1224"/>
+<rect x="995" y="1276" width="210" height="40" rx="12" fill="#ffffff" opacity="0.97"/>
+<text class="strong" x="1013" y="1303" text-anchor="start">10. onComplete()</text>
+<path class="line" d="M908 1334 L1292 1334"/>
+<rect x="1571" y="1386" width="210" height="40" rx="12" fill="#ffffff" opacity="0.97"/>
+<text class="strong" x="1589" y="1413" text-anchor="start">11. Collector to App2</text>
+<path class="line" d="M1292 1444 L2060 1444"/>
+<rect x="2003" y="1496" width="210" height="40" rx="12" fill="#ffffff" opacity="0.97"/>
+<text class="strong" x="2021" y="1523" text-anchor="start">12. suspend</text>
+<path class="line" d="M2060 1554 C2124 1554 2124 1588 2060 1588"/>
+<rect x="2003" y="1626" width="210" height="40" rx="12" fill="#ffffff" opacity="0.97"/>
+<text class="strong" x="2021" y="1653" text-anchor="start">13. List~Record~</text>
+<path class="line" d="M2060 1684 C2124 1684 2124 1718 2060 1718"/>
 </svg>

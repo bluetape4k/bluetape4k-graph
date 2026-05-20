@@ -16,7 +16,7 @@ Apache AGE (PostgreSQL 그래프 확장)를 기반으로 한 `GraphOperations` �
 
 ### 모듈 레이어 구조
 
-![Module Structure diagram](../../docs/images/readme-diagrams/graph-graph-age-architecture-01.png)
+![graph age Architecture diagram](../../docs/images/readme-diagrams/graph-graph-age-architecture-01.png)
 
 ### Apache AGE 동작 흐름
 
@@ -52,7 +52,7 @@ Apache AGE (PostgreSQL 그래프 확장)를 기반으로 한 `GraphOperations` �
 
 ### neighbors 탐색 (방향별)
 
-![neighbors diagram](../../docs/images/readme-diagrams/graph-graph-age-sequence-09.png)
+![neighbors () diagram](../../docs/images/readme-diagrams/graph-graph-age-sequence-09.png)
 
 ## agtype 파싱 플로우
 
@@ -64,7 +64,7 @@ Apache AGE (PostgreSQL 그래프 확장)를 기반으로 한 `GraphOperations` �
 
 ## 테스트 환경 구성
 
-![Test diagram](../../docs/images/readme-diagrams/graph-graph-age-architecture-12.png)
+![graph age Architecture 12 diagram](../../docs/images/readme-diagrams/graph-graph-age-architecture-12.png)
 
 ## 코드 예시
 

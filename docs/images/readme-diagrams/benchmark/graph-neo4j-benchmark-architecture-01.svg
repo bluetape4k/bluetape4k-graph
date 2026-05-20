@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1378" height="640" viewBox="0 0 1378 640" role="img" aria-label="graph-neo4j-benchmark Architecture">
+<defs>
+  <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="8" stdDeviation="9" flood-color="#1f2937" flood-opacity="0.10"/></filter>
+  <marker id="arrow" markerWidth="13" markerHeight="10" refX="12" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M 0 1 L 12 5 L 0 9 Z" fill="#64748b"/></marker>
+  <style>
+    .canvas{fill:#f7f9fc}.frame{fill:#fff;stroke:#d8e0ea;stroke-width:1.5}
+    .title{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:43px;font-weight:400;fill:#102033}
+    .subtitle,.body{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-weight:400;fill:#536273}
+    .subtitle{font-size:16px}.label{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:25px;fill:#102033}
+    .small{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:15px;fill:#334155}
+    .tiny{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:13px;fill:#536273}
+    .card{filter:url(#shadow);stroke-width:1.5}.line{stroke:#64748b;stroke-width:2.4;fill:none;marker-end:url(#arrow)}
+  </style>
+</defs>
+<rect class="canvas" width="1378" height="640"/>
+<rect class="frame" x="32" y="28" width="1314" height="584" rx="28"/>
+<text class="title" x="66" y="82">graph-neo4j-benchmark Architecture</text>
+<text class="subtitle" x="70" y="118">JMH measures Neo4j graph operations with the Neo4j Java Driver and Testcontainers</text>
+
+<g transform="translate(78,180)">
+  <rect class="card" width="250" height="150" rx="14" fill="#E8F3FF" stroke="#5B8DEF"/>
+  <text class="label" x="125" y="42" text-anchor="middle">JMH Runner</text>
+  <text class="small" x="28" y="78">kotlinx.benchmark</text>
+  <text class="small" x="28" y="104">warmup + measure</text>
+  <text class="tiny" x="28" y="128">JSON report format</text>
+</g>
+<g transform="translate(382,170)">
+  <rect class="card" width="278" height="170" rx="14" fill="#EAF8EF" stroke="#55B978"/>
+  <text class="label" x="139" y="42" text-anchor="middle">Neo4j Benchmarks</text>
+  <text class="small" x="28" y="78">vertex and edge operations</text>
+  <text class="small" x="28" y="104">10k loop vs batch inserts</text>
+  <text class="small" x="28" y="130">shortestPath and allPaths</text>
+</g>
+<g transform="translate(720,170)">
+  <rect class="card" width="258" height="170" rx="14" fill="#FFF4DE" stroke="#F3B34C"/>
+  <text class="label" x="129" y="42" text-anchor="middle">Neo4j API</text>
+  <text class="small" x="30" y="78">Neo4jGraphOperations</text>
+  <text class="small" x="30" y="104">single-thread cache wrapper</text>
+  <text class="small" x="30" y="130">Neo4j Java Driver</text>
+</g>
+<g transform="translate(1038,170)">
+  <rect class="card" width="250" height="170" rx="14" fill="#FCE9F1" stroke="#E879A6"/>
+  <text class="label" x="125" y="42" text-anchor="middle">Neo4j Server</text>
+  <text class="small" x="28" y="78">Testcontainers launcher</text>
+  <text class="small" x="28" y="104">Bolt runtime modules</text>
+  <text class="small" x="28" y="130">seeded fixture graph</text>
+</g>
+<path class="line" d="M328 255 H370"/>
+<path class="line" d="M660 255 H708"/>
+<path class="line" d="M978 255 H1026"/>
+
+<g transform="translate(168,420)">
+  <rect class="card" width="1042" height="110" rx="14" fill="#F8FAFC" stroke="#CBD5E1"/>
+  <text class="label" x="521" y="40" text-anchor="middle">Seeded Fixture</text>
+  <text class="small" x="54" y="76">Person vertices: Alice, Bob, Charlie, Dave</text>
+  <text class="small" x="418" y="76">KNOWS chain plus FOLLOWS shortcut</text>
+  <text class="small" x="760" y="76">10k generated write batches</text>
+</g>
+</svg>

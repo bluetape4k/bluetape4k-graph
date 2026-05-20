@@ -31,7 +31,7 @@ This makes the example close to real recommendation systems while keeping the im
 
 ## Architecture
 
-![Architecture diagram](../../docs/images/readme-diagrams/examples-recommendation-examples-architecture-01.png)
+![recommendation examples Architecture diagram](../../docs/images/readme-diagrams/examples-recommendation-examples-architecture-01.png)
 
 ## Domain UML
 

@@ -30,15 +30,15 @@ Graph DB를 사용하면 도메인 언어가 그대로 모델이 됩니다.
 
 ## 아키텍처
 
-![Architecture diagram](../../docs/images/readme-diagrams/examples-fraud-detection-examples-architecture-01.png)
+![fraud detection examples Architecture diagram](../../docs/images/readme-diagrams/examples-fraud-detection-examples-architecture-01.png)
 
 ## 도메인 UML
 
-![Domain UML diagram](../../docs/images/readme-diagrams/examples-fraud-detection-examples-class-02.png)
+![UML diagram](../../docs/images/readme-diagrams/examples-fraud-detection-examples-class-02.png)
 
 ## 분석 흐름
 
-![fraud-detection-examples diagram diagram](../../docs/images/readme-diagrams/examples-fraud-detection-examples-sequence-03.png)
+![fraud detection examples Sequence Flow 3 diagram](../../docs/images/readme-diagrams/examples-fraud-detection-examples-sequence-03.png)
 
 ## 주요 기능
 

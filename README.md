@@ -25,9 +25,9 @@ Use this project when you need:
 
 ## Architecture
 
-![Architecture diagram](docs/images/readme-diagrams/bluetape4k-graph-architecture-01.png)
+![graph Architecture diagram](docs/images/readme-diagrams/bluetape4k-graph-architecture-01.png)
 
-![Architecture diagram](docs/images/readme-diagrams/bluetape4k-graph-class-02.png)
+![graph Class Structure 2 diagram](docs/images/readme-diagrams/bluetape4k-graph-class-02.png)
 
 ## Supported Graph Databases
 

@@ -20,7 +20,7 @@ Reactive Streams API를 `kotlinx-coroutines-reactive`로 브릿지하여 Virtual
 - Direction 기반 neighbors 쿼리 패턴 (OUTGOING / INCOMING / BOTH)
 - elementId() 기반 고유 레코드 검색 및 업데이트
 
-![graph-neo4j diagram diagram](../../docs/images/readme-diagrams/graph-graph-neo4j-architecture-01.png)
+![graph neo4j Architecture diagram](../../docs/images/readme-diagrams/graph-graph-neo4j-architecture-01.png)
 
 ## 핵심 아키텍처
 
@@ -32,7 +32,7 @@ Reactive Streams API를 `kotlinx-coroutines-reactive`로 브릿지하여 Virtual
 
 ### Neo4jGraphOperations 구현 구조
 
-![Neo4jGraphOperations Structure diagram](../../docs/images/readme-diagrams/graph-graph-neo4j-class-03.png)
+![Neo4jGraphOperations diagram](../../docs/images/readme-diagrams/graph-graph-neo4j-class-03.png)
 
 ### Neo4jCoroutineSession 상세 설계
 
@@ -50,11 +50,11 @@ Reactive Streams API를 `kotlinx-coroutines-reactive`로 브릿지하여 Virtual
 
 ### createEdge 트랜잭션 흐름
 
-![createEdge Transaction diagram](../../docs/images/readme-diagrams/graph-graph-neo4j-sequence-07.png)
+![createEdge diagram](../../docs/images/readme-diagrams/graph-graph-neo4j-sequence-07.png)
 
 ### shortestPath 조회 흐름
 
-![shortestPath Query diagram](../../docs/images/readme-diagrams/graph-graph-neo4j-sequence-08.png)
+![shortestPath diagram](../../docs/images/readme-diagrams/graph-graph-neo4j-sequence-08.png)
 
 ### neighbors 방향별 Cypher 패턴
 
@@ -70,7 +70,7 @@ Reactive Streams API를 `kotlinx-coroutines-reactive`로 브릿지하여 Virtual
 
 ### 테스트 환경 구성
 
-![Test diagram](../../docs/images/readme-diagrams/graph-graph-neo4j-architecture-12.png)
+![graph neo4j Architecture 12 diagram](../../docs/images/readme-diagrams/graph-graph-neo4j-architecture-12.png)
 
 ## 주요 메서드
 

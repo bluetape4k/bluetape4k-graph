@@ -32,7 +32,7 @@ This example focuses on small, explainable graphs so learners can see why the pa
 
 ## Architecture
 
-![Architecture diagram](../../docs/images/readme-diagrams/examples-knowledge-graph-examples-architecture-01.png)
+![knowledge graph examples Architecture diagram](../../docs/images/readme-diagrams/examples-knowledge-graph-examples-architecture-01.png)
 
 ## Domain UML
 
