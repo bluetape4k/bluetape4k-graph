@@ -32,16 +32,7 @@
 | Jackson3 NDJSON | **1.275** | 1.300 | 1.329 |
 | GraphML | **2.582** | 4.192 | 2.455 |
 
-```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'xyChart': {'backgroundColor': '#fafbfc', 'plotColorPalette': '#a8d8ea,#ffb3c1,#c8e6c9'}}}}%%
-xychart-beta
-    title "Export — 평균 응답 시간 (ms/op, 낮을수록 좋음)"
-    x-axis ["CSV", "Jackson2", "Jackson3", "GraphML"]
-    y-axis "ms/op" 0 --> 5
-    bar [1.017, 1.194, 1.275, 2.582]
-    bar [1.185, 1.221, 1.300, 4.192]
-    bar [1.477, 1.318, 1.329, 2.455]
-```
+![Graph-IO export latency chart](../images/readme-charts/graph-io-export-latency-chart-01.png)
 
 > 범례: Sync(파란) / VT(핑크) / Suspend(초록)
 
@@ -61,16 +52,7 @@ xychart-beta
 | Jackson3 NDJSON | 19.852 | **19.302** | 155.279 ⚠️ |
 | GraphML | 21.111 | **21.095** | 22.380 |
 
-```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'xyChart': {'backgroundColor': '#fafbfc', 'plotColorPalette': '#a8d8ea,#ffb3c1,#c8e6c9'}}}}%%
-xychart-beta
-    title "Import — 평균 응답 시간 (ms/op, 낮을수록 좋음)"
-    x-axis ["CSV", "Jackson2", "Jackson3", "GraphML"]
-    y-axis "ms/op" 0 --> 30
-    bar [17.854, 18.831, 19.852, 21.111]
-    bar [17.624, 18.120, 19.302, 21.095]
-    bar [23.393, 25.0, 25.0, 22.380]
-```
+![Graph-IO import latency chart](../images/readme-charts/graph-io-import-latency-chart-01.png)
 
 > Jackson2/3 Suspend Import의 이상값(~150ms)은 별도 섹션에서 분석
 
@@ -89,6 +71,8 @@ xychart-beta
 | Jackson2 NDJSON | 18.880 | **18.677** | 151.615 ⚠️ |
 | Jackson3 NDJSON | 19.142 | **18.956** | 164.172 ⚠️ |
 | GraphML | 21.707 | **21.450** | 21.236 |
+
+![Graph-IO round-trip latency chart](../images/readme-charts/graph-io-roundtrip-latency-chart-01.png)
 
 ---
 
@@ -109,14 +93,7 @@ Jackson2/3 Suspend Import가 ~150ms로 Sync(~19ms)보다 **8배 느린** 현상�
 
 ## 5. Format 비교 요약
 
-```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'xyChart': {'backgroundColor': '#fafbfc', 'plotColorPalette': '#a8d8ea,#ffb3c1,#c8e6c9,#ffe0b2'}}}}%%
-xychart-beta
-    title "Sync API — Export vs Import (ms/op)"
-    x-axis ["CSV Exp", "J2 Exp", "J3 Exp", "GML Exp", "CSV Imp", "J2 Imp", "J3 Imp", "GML Imp"]
-    y-axis "ms/op" 0 --> 25
-    bar [1.017, 1.194, 1.275, 2.582, 17.854, 18.831, 19.852, 21.111]
-```
+![Graph-IO format latency chart](../images/readme-charts/graph-io-roundtrip-latency-chart-01.png)
 
 **핵심 결론:**
 1. **Export 성능**: CSV ≈ Jackson2 ≈ Jackson3 < GraphML (모두 1–3ms)

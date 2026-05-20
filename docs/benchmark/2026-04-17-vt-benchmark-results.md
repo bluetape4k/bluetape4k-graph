@@ -29,15 +29,7 @@
 | `findVerticesByLabel` | **2.485 ± 0.078** | 8.679 ± 0.503 | ×3.5 |
 | `neighbors` | **2.985 ± 0.074** | 10.595 ± 0.735 | ×3.6 |
 
-```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'xyChart': {'backgroundColor': '#fafbfc', 'plotColorPalette': '#a8d8ea,#ffb3c1'}}}}%%
-xychart-beta
-    title "Vertex Operations — 평균 응답 시간 (µs/op)"
-    x-axis ["findVertexById", "findVerticesByLabel", "neighbors"]
-    y-axis "µs/op" 0 --> 13
-    bar [1.758, 2.485, 2.985]
-    bar [8.055, 8.679, 10.595]
-```
+![Vertex operations latency chart](../images/readme-charts/graph-vt-vertex-latency-chart-01.png)
 
 > 범례: 첫 번째 막대 = **Sync** (파스텔 블루), 두 번째 막대 = **VirtualThread** (파스텔 핑크)
 
@@ -50,15 +42,7 @@ xychart-beta
 | `shortestPath` | **22.031 ± 0.650** | 31.540 ± 1.063 | ×1.4 |
 | `allPaths` | **21.045 ± 0.111** | 32.882 ± 0.876 | ×1.6 |
 
-```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'xyChart': {'backgroundColor': '#fafbfc', 'plotColorPalette': '#a8d8ea,#ffb3c1'}}}}%%
-xychart-beta
-    title "Traversal — 평균 응답 시간 (µs/op)"
-    x-axis ["shortestPath", "allPaths"]
-    y-axis "µs/op" 0 --> 40
-    bar [22.031, 21.045]
-    bar [31.540, 32.882]
-```
+![Traversal latency chart](../images/readme-charts/graph-vt-traversal-latency-chart-01.png)
 
 > 경로 탐색처럼 **작업 자체가 무거울수록** VT 오버헤드 비율이 낮아짐 (×1.4~1.6).
 
@@ -72,29 +56,13 @@ xychart-beta
 | `dfs` | **4.277 ± 0.235** | 12.115 ± 1.390 | ×2.8 |
 | `pageRank` | **7.270 ± 0.559** | 15.257 ± 1.095 | ×2.1 |
 
-```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'xyChart': {'backgroundColor': '#fafbfc', 'plotColorPalette': '#a8d8ea,#ffb3c1'}}}}%%
-xychart-beta
-    title "Algorithm — 평균 응답 시간 (µs/op)"
-    x-axis ["bfs", "dfs", "pageRank"]
-    y-axis "µs/op" 0 --> 20
-    bar [4.216, 4.277, 7.270]
-    bar [12.588, 12.115, 15.257]
-```
+![Algorithm latency chart](../images/readme-charts/graph-vt-algorithm-latency-chart-01.png)
 
 ---
 
 ## 4. 전체 비교
 
-```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'xyChart': {'backgroundColor': '#fafbfc', 'plotColorPalette': '#a8d8ea,#ffb3c1'}}}}%%
-xychart-beta
-    title "전체 벤치마크 — Sync vs VirtualThread (µs/op)"
-    x-axis ["findById", "findByLabel", "neighbors", "bfs", "dfs", "pageRank", "shortestPath", "allPaths"]
-    y-axis "µs/op" 0 --> 40
-    bar [1.758, 2.485, 2.985, 4.216, 4.277, 7.270, 22.031, 21.045]
-    bar [8.055, 8.679, 10.595, 12.588, 12.115, 15.257, 31.540, 32.882]
-```
+![Overall Sync vs VirtualThread latency chart](../images/readme-charts/graph-vt-sync-latency-chart-01.png)
 
 ---
 
@@ -102,14 +70,7 @@ xychart-beta
 
 VirtualThread의 절대 오버헤드(순수 스케줄링 비용)는 측정 결과 **약 6~8 µs** 수준이다.
 
-```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'xyChart': {'backgroundColor': '#fafbfc', 'plotColorPalette': '#c8e6c9,#ffe0b2'}}}}%%
-xychart-beta
-    title "VT 순수 오버헤드 추정치 = VT − Sync (µs)"
-    x-axis ["findById", "findByLabel", "neighbors", "bfs", "dfs", "pageRank", "shortestPath", "allPaths"]
-    y-axis "µs (overhead)" 0 --> 14
-    bar [6.297, 6.194, 7.610, 8.372, 7.838, 7.987, 9.509, 11.837]
-```
+![VirtualThread overhead chart](../images/readme-charts/graph-vt-overhead-chart-01.png)
 
 > `shortestPath` / `allPaths` 의 오버헤드가 높아 보이는 이유는, 해당 벤치마크에서  
 > 각 반복마다 새 `VirtualThreadExecutor` 태스크를 생성하고 `CompletableFuture.join()` 으로  
