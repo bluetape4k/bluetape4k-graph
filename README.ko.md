@@ -27,7 +27,7 @@ bluetape4k 생태계의 그래프 데이터베이스 통합 라이브러리. Apa
 
 ![graph Architecture diagram](docs/images/readme-diagrams/bluetape4k-graph-architecture-01.png)
 
-![graph Class Structure 2 diagram](docs/images/readme-diagrams/bluetape4k-graph-class-02.png)
+![graph Class Structure 2 diagram](docs/images/readme-diagrams/bluetape4k-graph-architecture-01.png)
 
 ## 지원하는 그래프 데이터베이스
 
@@ -40,6 +40,16 @@ bluetape4k 생태계의 그래프 데이터베이스 통합 라이브러리. Apa
 | FalkorDB | `graph-falkordb` | Redis module 위 openCypher subset | Testcontainers `falkordb/falkordb:v4.18.1` | Redis 기반 graph workload와 가벼운 graph service 배포 |
 
 Amazon Neptune은 별도 future backend 작업으로 추적한다. 의미 있는 지원은 local/integration test 가능성에 달려 있으므로, `graph-neptune` 구현 전에 feasibility research를 먼저 진행한다.
+
+<!-- README_VISUAL_OVERVIEW:START -->
+## Overview Diagram
+
+![Bluetape4k Graph overview diagram](docs/images/readme-diagrams/root-readme-overview-01.png)
+
+## Module Composition Chart
+
+![Bluetape4k Graph module composition chart](docs/images/readme-charts/root-readme-module-chart-01.png)
+<!-- README_VISUAL_OVERVIEW:END -->
 
 ## 모듈 구조
 

@@ -28,6 +28,16 @@ dependencies {
 }
 ```
 
+## Architecture
+
+The module follows **bluetape4k-graph**'s dual API pattern:
+
+- **Synchronous**: Direct blocking operations via `GraphOperations`
+- **Virtual Thread**: Async via `CompletableFuture<T>` and virtual thread pools
+- **Suspend**: Coroutine-based via `GraphSuspendOperations` and `suspend` functions
+
+All exporters implement a common contract interface and delegate to the same internal codec (`CsvRecordCodec`), ensuring consistency across execution models.
+
 ## Usage
 
 ### Synchronous Export
@@ -275,16 +285,6 @@ if (report.failures.isNotEmpty()) {
     }
 }
 ```
-
-## Architecture
-
-The module follows **bluetape4k-graph**'s dual API pattern:
-
-- **Synchronous**: Direct blocking operations via `GraphOperations`
-- **Virtual Thread**: Async via `CompletableFuture<T>` and virtual thread pools
-- **Suspend**: Coroutine-based via `GraphSuspendOperations` and `suspend` functions
-
-All exporters implement a common contract interface and delegate to the same internal codec (`CsvRecordCodec`), ensuring consistency across execution models.
 
 ## Performance Considerations
 
