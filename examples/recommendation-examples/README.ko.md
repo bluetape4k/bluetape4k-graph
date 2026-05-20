@@ -31,15 +31,15 @@ Graph DB를 사용하면 다음처럼 표현할 수 있습니다.
 
 ## 아키텍처
 
-![Architecture diagram](../../docs/images/readme-diagrams/examples-recommendation-examples-architecture-01.png)
+![recommendation examples Architecture diagram](../../docs/images/readme-diagrams/examples-recommendation-examples-architecture-01.png)
 
 ## 도메인 UML
 
-![Domain UML diagram](../../docs/images/readme-diagrams/examples-recommendation-examples-class-02.png)
+![UML diagram](../../docs/images/readme-diagrams/examples-recommendation-examples-class-02.png)
 
 ## 추천 흐름
 
-![recommendation-examples diagram diagram](../../docs/images/readme-diagrams/examples-recommendation-examples-sequence-03.png)
+![recommendation examples Sequence Flow 3 diagram](../../docs/images/readme-diagrams/examples-recommendation-examples-sequence-03.png)
 
 ## 주요 기능
 

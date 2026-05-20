@@ -7,7 +7,7 @@
 
 ## 아키텍처
 
-![Architecture diagram](../../docs/images/readme-diagrams/ktor-graph-ktor-architecture-01.png)
+![graph ktor Architecture diagram](../../docs/images/readme-diagrams/ktor-graph-ktor-architecture-01.png)
 
 ## 주요 기능
 

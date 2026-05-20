@@ -13,7 +13,7 @@ Graph Database (Apache AGE, Neo4j) 공통 추상화 계층. 백엔드 독립 모
 
 ## 아키텍처 개요
 
-![Architecture diagram](../../docs/images/readme-diagrams/graph-graph-core-architecture-01.png)
+![graph core Architecture diagram](../../docs/images/readme-diagrams/graph-graph-core-architecture-01.png)
 
 ## 주요 클래스
 
@@ -166,7 +166,7 @@ object FollowsLabel : EdgeLabel("FOLLOWS", PersonLabel, PersonLabel) {
 
 ### 경로 탐색 알고리즘 플로우
 
-![graph-core diagram diagram](../../docs/images/readme-diagrams/graph-graph-core-architecture-14.png)
+![graph core Architecture 14 diagram](../../docs/images/readme-diagrams/graph-graph-core-architecture-14.png)
 
 ## 사용 예시
 

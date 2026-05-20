@@ -25,9 +25,9 @@ bluetape4k 생태계의 그래프 데이터베이스 통합 라이브러리. Apa
 
 ## 아키텍처
 
-![Architecture diagram](docs/images/readme-diagrams/bluetape4k-graph-architecture-01.png)
+![graph Architecture diagram](docs/images/readme-diagrams/bluetape4k-graph-architecture-01.png)
 
-![Architecture diagram](docs/images/readme-diagrams/bluetape4k-graph-class-02.png)
+![graph Class Structure 2 diagram](docs/images/readme-diagrams/bluetape4k-graph-class-02.png)
 
 ## 지원하는 그래프 데이터베이스
 
