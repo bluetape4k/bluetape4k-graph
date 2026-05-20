@@ -1,8 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1366" height="638" viewBox="0 0 1366 638" role="img" aria-label="DSL">
+<svg xmlns="http://www.w3.org/2000/svg" width="1366" height="1300" viewBox="0 0 1366 1300" role="img" aria-label="Repository">
 <defs>
   <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="8" stdDeviation="9" flood-color="#1f2937" flood-opacity="0.10"/></filter>
-  <marker id="openArrow" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M 1 1 L 10 5 L 1 9" fill="none" stroke="#758297" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker>
-  <marker id="inherit" markerWidth="14" markerHeight="12" refX="12" refY="6" orient="auto" markerUnits="strokeWidth"><path d="M 0 1 L 12 6 L 0 11 Z" fill="#ffffff" stroke="#758297" stroke-width="1.8"/></marker>
+  <marker id="openArrow" markerWidth="10" markerHeight="8" refX="8.5" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M 1 1 L 8.5 4 L 1 7" fill="none" stroke="#758297" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></marker>
+  <marker id="inherit" markerWidth="11" markerHeight="10" refX="9.5" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M 0.5 1 L 9.5 5 L 0.5 9 Z" fill="#ffffff" stroke="#758297" stroke-width="1.7"/></marker>
   <style>
     .canvas{fill:#f7f9fc}.frame{fill:#fff;stroke:#d8e0ea;stroke-width:1.5}
     .title{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:43px;font-weight:400;fill:#102033}
@@ -20,43 +20,67 @@
     .implLine{stroke:#758297;stroke-width:2.2;stroke-dasharray:8 7;fill:none;marker-end:url(#inherit)}
   </style>
 </defs>
-<rect class="canvas" width="1366" height="638"/>
-<rect class="frame" x="32" y="28" width="1302" height="582" rx="28"/>
-<text class="title" x="66" y="82">DSL</text>
+<rect class="canvas" width="1366" height="1300"/>
+<rect class="frame" x="32" y="28" width="1302" height="1244" rx="28"/>
+<text class="title" x="66" y="82">Repository</text>
 <text class="subtitle" x="70" y="118">UML classes from the original Mermaid source</text>
-<path class="line" d="M263 172 C263 299 1103 299 1103 426"/>
-<path class="line" d="M263 172 C263 257 683 257 683 342"/>
-<path class="line" d="M1103 172 C1103 257 683 257 683 342"/>
-<g transform="translate(88,180)">
-  <rect class="card" x="0" y="0" width="350" height="238" rx="5" fill="#E8F3FF" stroke="#5B8DEF"/>
-  <line class="compartment" x1="0" y1="78" x2="350" y2="78" stroke="#5B8DEF"/>
-  <text class="small" x="175" y="26" text-anchor="middle">«abstract»</text>
-  <text class="label" x="175" y="61" text-anchor="middle">EdgeLabel</text>
-  <text class="mono" x="18" y="108">-String label</text>
-<text class="mono" x="18" y="129">-VertexLabel from</text>
-<text class="mono" x="18" y="150">-VertexLabel to</text>
-<text class="mono" x="18" y="171">-MutableList~PropertyDef~ _properties</text>
-<text class="mono" x="18" y="192">+properties: List~PropertyDef~</text>
-<text class="mono" x="18" y="213">+string(name) PropertyDef~String~</text>
-</g>
+<path class="inheritLine" d="M683 292 L683 355 L263 355 L263 418"/>
+<path class="inheritLine" d="M683 292 L683 418"/>
+<path class="inheritLine" d="M683 292 L683 339 L56 339 L56 703 L683 703 L683 782"/>
+<path class="inheritLine" d="M683 292 L683 331 L1103 331 L1103 418"/>
 <g transform="translate(508,180)">
-  <rect class="card" x="0" y="0" width="350" height="154" rx="5" fill="#EAF7EF" stroke="#58A978"/>
-  <line class="compartment" x1="0" y1="78" x2="350" y2="78" stroke="#58A978"/>
-  <text class="small" x="175" y="26" text-anchor="middle"></text>
-  <text class="label" x="175" y="61" text-anchor="middle">PropertyDef</text>
-  <text class="mono" x="18" y="108">-String name</text>
-<text class="mono" x="18" y="129">-KClass~out T~ type</text>
+  <rect class="card" x="0" y="0" width="350" height="112" rx="5" fill="#E8F3FF" stroke="#5B8DEF"/>
+  <line class="compartment" x1="0" y1="78" x2="350" y2="78" stroke="#5B8DEF"/>
+  <text class="small" x="175" y="26" text-anchor="middle">«interface»</text>
+  <text class="label" x="175" y="61" text-anchor="middle">GraphOperations</text>
+
 </g>
-<g transform="translate(928,180)">
-  <rect class="card" x="0" y="0" width="350" height="238" rx="5" fill="#FFF3D9" stroke="#D6A441"/>
+<g transform="translate(88,418)">
+  <rect class="card" x="0" y="0" width="350" height="238" rx="5" fill="#EAF7EF" stroke="#58A978"/>
+  <line class="compartment" x1="0" y1="78" x2="350" y2="78" stroke="#58A978"/>
+  <text class="small" x="175" y="26" text-anchor="middle">«interface»</text>
+  <text class="label" x="175" y="61" text-anchor="middle">GraphTraversalRepository</text>
+  <text class="mono" x="18" y="108">+neighbors(GraphElementId, String,</text>
+<text class="mono" x="18" y="129">Direction, Int) List~GraphVertex~</text>
+<text class="mono" x="18" y="150">+shortestPath(GraphElementId,</text>
+<text class="mono" x="18" y="171">GraphElementId, String?, Int) GraphPath?</text>
+<text class="mono" x="18" y="192">+allPaths(GraphElementId, GraphElementId,</text>
+<text class="mono" x="18" y="213">String?, Int) List~GraphPath~</text>
+</g>
+<g transform="translate(508,418)">
+  <rect class="card" x="0" y="0" width="350" height="217" rx="5" fill="#FFF3D9" stroke="#D6A441"/>
   <line class="compartment" x1="0" y1="78" x2="350" y2="78" stroke="#D6A441"/>
-  <text class="small" x="175" y="26" text-anchor="middle">«abstract»</text>
-  <text class="label" x="175" y="61" text-anchor="middle">VertexLabel</text>
-  <text class="mono" x="18" y="108">-String label</text>
-<text class="mono" x="18" y="129">-MutableList~PropertyDef~ _properties</text>
-<text class="mono" x="18" y="150">+properties: List~PropertyDef~</text>
-<text class="mono" x="18" y="171">+string(name) PropertyDef~String~</text>
-<text class="mono" x="18" y="192">+integer(name) PropertyDef~Int~</text>
-<text class="mono" x="18" y="213">+long(name) PropertyDef~Long~</text>
+  <text class="small" x="175" y="26" text-anchor="middle">«interface»</text>
+  <text class="label" x="175" y="61" text-anchor="middle">GraphEdgeRepository</text>
+  <text class="mono" x="18" y="108">+createEdge(GraphElementId, GraphElementId,</text>
+<text class="mono" x="18" y="129">String, Map) GraphEdge</text>
+<text class="mono" x="18" y="150">+findEdgesByLabel(String, Map)</text>
+<text class="mono" x="18" y="171">List~GraphEdge~</text>
+<text class="mono" x="18" y="192">+deleteEdge(String, GraphElementId) Boolean</text>
+</g>
+<g transform="translate(928,418)">
+  <rect class="card" x="0" y="0" width="350" height="175" rx="5" fill="#FDECEF" stroke="#DC6B82"/>
+  <line class="compartment" x1="0" y1="78" x2="350" y2="78" stroke="#DC6B82"/>
+  <text class="small" x="175" y="26" text-anchor="middle">«interface»</text>
+  <text class="label" x="175" y="61" text-anchor="middle">GraphSession</text>
+  <text class="mono" x="18" y="108">+createGraph(String)</text>
+<text class="mono" x="18" y="129">+dropGraph(String)</text>
+<text class="mono" x="18" y="150">+graphExists(String) Boolean</text>
+</g>
+<g transform="translate(508,782)">
+  <rect class="card" x="0" y="0" width="350" height="322" rx="5" fill="#E9F7F6" stroke="#45A7A1"/>
+  <line class="compartment" x1="0" y1="78" x2="350" y2="78" stroke="#45A7A1"/>
+  <text class="small" x="175" y="26" text-anchor="middle">«interface»</text>
+  <text class="label" x="175" y="61" text-anchor="middle">GraphVertexRepository</text>
+  <text class="mono" x="18" y="108">+createVertex(String, Map) GraphVertex</text>
+<text class="mono" x="18" y="129">+findVertexById(String, GraphElementId)</text>
+<text class="mono" x="18" y="150">GraphVertex?</text>
+<text class="mono" x="18" y="171">+findVerticesByLabel(String, Map)</text>
+<text class="mono" x="18" y="192">List~GraphVertex~</text>
+<text class="mono" x="18" y="213">+updateVertex(String, GraphElementId, Map)</text>
+<text class="mono" x="18" y="234">GraphVertex?</text>
+<text class="mono" x="18" y="255">+deleteVertex(String, GraphElementId)</text>
+<text class="mono" x="18" y="276">Boolean</text>
+<text class="mono" x="18" y="297">+countVertices(String) Long</text>
 </g>
 </svg>

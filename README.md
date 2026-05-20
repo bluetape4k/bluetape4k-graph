@@ -23,9 +23,19 @@ Use this project when you need:
 - portable graph bulk I/O in CSV, NDJSON, GraphML, and OkIO streams
 - ready-to-run domain examples for code graphs, social graphs, fraud detection, recommendations, knowledge graphs, and Ktor integration
 
+<!-- README_VISUAL_OVERVIEW:START -->
+## Overview Diagram
+
+![Bluetape4k Graph overview diagram](docs/images/readme-diagrams/root-readme-overview-01.png)
+
+## Module Composition Chart
+
+![Bluetape4k Graph module composition chart](docs/images/readme-charts/root-readme-module-chart-01.png)
+<!-- README_VISUAL_OVERVIEW:END -->
+
 ## Architecture
 
-![graph Architecture diagram](docs/images/readme-diagrams/bluetape4k-graph-architecture-01.png)
+![graph Class Structure 2 diagram](docs/images/readme-diagrams/bluetape4k-graph-architecture-01.png)
 
 ![graph Class Structure 2 diagram](docs/images/readme-diagrams/bluetape4k-graph-class-02.png)
 
