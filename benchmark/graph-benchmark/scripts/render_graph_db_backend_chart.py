@@ -64,7 +64,10 @@ def render(grouped: dict[str, list[dict]], output: Path) -> None:
         '<text x="480" y="30" text-anchor="middle" font-family="sans-serif" font-size="18" '
         'font-weight="bold" fill="#252525">Graph DB Testcontainers Benchmark</text>',
         '<text x="480" y="52" text-anchor="middle" font-family="sans-serif" font-size="12" '
-        'fill="#666666">Average time, ms/op. Lower is better. small dataset, 1 warmup, 3 measurement iterations.</text>',
+        'fill="#666666">Latency, ms/op. Lower score is faster. small dataset, 1 warmup, 3 measurement iterations.</text>',
+        '<rect x="704" y="16" width="224" height="28" fill="#EAF5EA" stroke="#86B586" rx="6"/>',
+        '<text x="816" y="35" text-anchor="middle" font-family="sans-serif" font-size="12" '
+        'font-weight="bold" fill="#2F6F3A">Lower score = faster</text>',
     ]
 
     legend_x = left
@@ -76,6 +79,11 @@ def render(grouped: dict[str, list[dict]], output: Path) -> None:
             f'{esc(backend)}</text>'
         )
         legend_x += 118
+
+    parts.append(
+        f'<text x="{left}" y="90" font-family="sans-serif" font-size="11" '
+        'font-weight="bold" fill="#2F6F3A">Shorter bars are better because each bar is time per operation.</text>'
+    )
 
     y = top + 26
     for operation in operations:
