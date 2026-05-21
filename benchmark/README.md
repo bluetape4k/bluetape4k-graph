@@ -4,13 +4,14 @@
 
 This directory contains benchmark modules for choosing a graph backend, API model, and graph-io format. The guidance below summarizes the current measurements and turns them into service-oriented recommendations.
 
-Use this guide as a starting point, not as a procurement-grade ranking. The backend matrix now includes both `small` and `medium` local Testcontainers runs; production choices still need a workload-shaped benchmark with your data model, query mix, and deployment constraints.
+Use this guide as a starting point, not as a procurement-grade ranking. The backend matrix now includes `small`, `medium`, and sustained write ingestion local Testcontainers runs; production choices still need a workload-shaped benchmark with your data model, query mix, and deployment constraints.
 
 ## Evidence Base
 
 | Area | Source | Current coverage | Main direction |
 |---|---|---|---|
 | Graph DB backend | `graph-benchmark` / `GraphDbComparisonBenchmark` | TinkerGraph, Neo4j, Memgraph, AGE, FalkorDB on `small` and `medium` datasets | Lower `ms/op` is better |
+| Sustained graph writes | `graph-benchmark` / `GraphWriteIngestionBenchmark` | Vertex-only, edge-only, mixed, and repeated mixed write batches at 100 and 1,000 rows | Lower `ms/op` is better |
 | API model | `graph-benchmark` / `ApiModelBenchmark` | Sync, Virtual Thread, Coroutine Flow on TinkerGraph | PageRank `ops/s` higher is better; latency `us/op` lower is better |
 | graph-io format | `graph-io-benchmark` and `graph-benchmark` | CSV, Jackson2/3 NDJSON, GraphML, Okio variants | Lower `ms/op` is better |
 
@@ -18,6 +19,7 @@ Latest raw artifacts:
 
 - `docs/benchmark/graph-db-testcontainers-2026-05-21.json`
 - `docs/benchmark/graph-db-medium-testcontainers-2026-05-21.json`
+- `docs/benchmark/graph-write-ingestion-testcontainers-2026-05-21.json`
 - `docs/benchmark/2026-05-21-api-model-jmh.json`
 - `docs/benchmark/2026-04-18-graph-io-bulk-results.md`
 
@@ -36,15 +38,34 @@ Run conditions: macOS arm64, GraalVM JDK 25.0.3, JMH 1.37, one fork, three warmu
 
 Medium-scale interpretation: Memgraph is the best persistent backend for write-heavy inserts and remains competitive for traversal/path queries. Neo4j is slower than Memgraph in this local benchmark but remains the default low-risk production recommendation because of operational maturity. FalkorDB read paths are competitive in `countPersons` and `shortestPath`, but medium batch insert is too slow for write-heavy workloads. AGE remains a PostgreSQL-consolidation choice, not a raw-latency choice.
 
+## Sustained Write Ingestion Result
+
+![Graph write ingestion Testcontainers benchmark](../docs/images/readme-charts/graph-write-ingestion-testcontainers-latency-chart-01.png)
+
+Run conditions: macOS arm64, GraalVM JDK 25.0.3, JMH 1.37, one fork, one warmup iteration, three one-second measurement iterations, real Testcontainers backends, GC profiler enabled, May 21, 2026. All values are `ms/op`; lower is better. `Repeated mixed batches` runs five mixed vertex+edge batches in one benchmark operation.
+
+| Scenario | Batch | TinkerGraph | Neo4j | Memgraph | AGE | FalkorDB |
+|---|---:|---:|---:|---:|---:|---:|
+| Vertex-only batch insert | 100 | 2.606 | 2.740 | **0.965** | 1.347 | 1.467 |
+| Vertex-only batch insert | 1,000 | 11.902 | 8.499 | **5.429** | 9.100 | 6.210 |
+| Edge-only batch insert | 100 | 3.298 | 3.788 | **1.190** | 9.436 | 32.347 |
+| Edge-only batch insert | 1,000 | 18.971 | 13.762 | **7.572** | 260.430 | 3026.397 |
+| Mixed vertex+edge insert | 100 | 7.102 | 7.352 | **2.199** | 27.426 | 51.437 |
+| Mixed vertex+edge insert | 1,000 | 30.819 | 23.510 | **13.336** | 279.704 | 3354.140 |
+| Repeated mixed batches (5x) | 100 | 32.221 | 35.181 | **11.456** | 149.935 | 263.976 |
+| Repeated mixed batches (5x) | 1,000 | 154.891 | 113.940 | **66.612** | 1428.239 | 17285.768 |
+
+Sustained-write interpretation: Memgraph is the first candidate for ingestion-heavy services. Neo4j is the safer default when operational maturity, tooling, and long-term support dominate. FalkorDB should not be chosen for edge-heavy ingestion without a dedicated workload proof. AGE remains best justified by PostgreSQL consolidation, not by raw write latency.
+
 ## Quick Recommendation
 
 | Situation | Recommended solution | Why |
 |---|---|---|
 | Unit tests, examples, local algorithm experiments | TinkerGraph + Sync API | Fastest in-memory latency and no external service. Not persistent or distributed. |
 | Default production graph service | Neo4j + Sync or Virtual Thread API | Best maturity, operational tooling, ACID semantics, and broad ecosystem. Benchmark latency is not the lowest, but risk is lowest for general production. |
-| Real-time low-latency graph analytics or write-heavy ingestion | Memgraph + Virtual Thread API | Strong container-backed benchmark results: fastest `medium` batch insert and competitive traversal/path latency among persistent backends. |
+| Real-time low-latency graph analytics or write-heavy ingestion | Memgraph + Virtual Thread API | Strong container-backed benchmark results: fastest `medium` batch insert and fastest sustained write ingestion rows among persistent backends. |
 | Existing PostgreSQL-first platform with moderate graph needs | Apache AGE + Sync API | Reuses PostgreSQL operations and data governance. Choose for platform consolidation, not raw graph latency. |
-| Redis/FalkorDB-aligned stack with simple read-mostly graph queries | FalkorDB + Sync or Virtual Thread API | Good shortest-path result in the current small run, but slow batch insert. Validate write workload before choosing it. |
+| Redis/FalkorDB-aligned stack with simple read-mostly graph queries | FalkorDB + Sync or Virtual Thread API | Good shortest-path result in the current small run, but slow edge-heavy sustained writes. Validate write workload before choosing it. |
 | Kotlin coroutine application where graph calls are part of a larger suspend pipeline | Coroutine API | Best integration with existing coroutine structure. It is not automatically faster for in-memory graph work. |
 | File interchange or backups | Jackson3 NDJSON or CSV | Fast, stream-friendly, and simple. Prefer GraphML only when standards/tool compatibility matters. |
 
@@ -65,7 +86,7 @@ Medium-scale interpretation: Memgraph is the best persistent backend for write-h
 |---|---|---|
 | Up to about 10k nodes in tests | TinkerGraph | Current benchmark fixture directly covers this range. |
 | 10k to low millions | Neo4j or Memgraph | The `medium` run supports this split: Neo4j for lower operational risk, Memgraph for lower write latency. Add domain queries before final production choice. |
-| Write-heavy growing graph | Memgraph candidate first | Current `small` run shows best batch insert among persistent backends. Confirm with realistic edge fan-out and transaction size. |
+| Write-heavy growing graph | Memgraph candidate first | The sustained write run shows Memgraph leading all 100 and 1,000-row latency rows. Confirm with realistic edge fan-out and transaction size. |
 | PostgreSQL-owned data with graph as secondary index | AGE | Accept slower graph-native latency in exchange for operational consolidation. |
 | Very large or sharded graph | Not decided by current benchmarks | Add a production-shaped benchmark. The current modules do not prove horizontal scale behavior. |
 
@@ -114,14 +135,14 @@ Add another benchmark run before deciding when any of these are true:
 Tracked follow-up benchmark issues:
 
 - [#197 Benchmark: graph workload shapes by domain and fan-out](https://github.com/bluetape4k/bluetape4k-graph/issues/197)
-- [#198 Benchmark: sustained graph write and batch ingestion profiles](https://github.com/bluetape4k/bluetape4k-graph/issues/198)
 - [#199 Benchmark: production-grade API model latency and allocation](https://github.com/bluetape4k/bluetape4k-graph/issues/199)
+- [#201 Benchmark: selective 10k sustained graph ingestion profiles](https://github.com/bluetape4k/bluetape4k-graph/issues/201)
 
 Suggested next benchmark targets:
 
 - Add #197 domain workloads for social, fraud, and knowledge graph fan-out shapes.
-- Add #198 sustained write profiles so Memgraph's short batch lead is validated under stream pressure.
 - Re-run #199 API model latency and allocation with production-grade windows.
+- Add #201 selective 10k sustained ingestion profiles for backend subsets that can complete in a useful local window.
 
 ```bash
 java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-*-JMH.jar \
