@@ -1,7 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="890" viewBox="0 0 960 890">
 <rect x="0" y="0" width="960" height="890" fill="#FAFAFA"/>
 <text x="480" y="30" text-anchor="middle" font-family="sans-serif" font-size="18" font-weight="bold" fill="#252525">Graph DB Testcontainers Benchmark</text>
-<text x="480" y="52" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#666666">Average time, ms/op. Lower is better. small dataset, 1 warmup, 3 measurement iterations.</text>
+<text x="480" y="52" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#666666">Latency, ms/op. Lower score is faster. small dataset, 1 warmup, 3 measurement iterations.</text>
+<rect x="704" y="16" width="224" height="28" fill="#EAF5EA" stroke="#86B586" rx="6"/>
+<text x="816" y="35" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="bold" fill="#2F6F3A">Lower score = faster</text>
 <rect x="190" y="62" width="12" height="12" fill="#4A90D9" rx="2"/>
 <text x="206" y="72" font-family="sans-serif" font-size="11" fill="#333333">tinkergraph</text>
 <rect x="308" y="62" width="12" height="12" fill="#5ABF6B" rx="2"/>
@@ -12,6 +14,7 @@
 <text x="560" y="72" font-family="sans-serif" font-size="11" fill="#333333">age</text>
 <rect x="662" y="62" width="12" height="12" fill="#7B68EE" rx="2"/>
 <text x="678" y="72" font-family="sans-serif" font-size="11" fill="#333333">falkordb</text>
+<text x="190" y="90" font-family="sans-serif" font-size="11" font-weight="bold" fill="#2F6F3A">Shorter bars are better because each bar is time per operation.</text>
 <text x="24" y="114" font-family="sans-serif" font-size="14" font-weight="bold" fill="#222222">batchInsertCycle</text>
 <text x="780" y="114" text-anchor="end" font-family="sans-serif" font-size="10" fill="#888888">max 38.7 ms/op</text>
 <text x="180" y="139" text-anchor="end" font-family="sans-serif" font-size="12" fill="#333333">tinkergraph</text>
