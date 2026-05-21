@@ -1,0 +1,30 @@
+{
+  "baseline": null,
+  "direction": "lower_is_better",
+  "environment": {
+    "platform": "macOS-26.5-arm64-arm-64bit",
+    "python": "3.9.6"
+  },
+  "gitCommit": "d22d3d3",
+  "notes": "Smoke baseline from a single short JMH run. Replace with a full benchmark baseline before accepting self-improve optimization winners.",
+  "results": [
+    {
+      "baselineScore": null,
+      "benchmark": "io.bluetape4k.graph.benchmark.GraphIoComparisonBenchmark.exportGraph",
+      "benchmarkClass": "GraphIoComparisonBenchmark",
+      "deltaPercent": null,
+      "improved": null,
+      "key": "io.bluetape4k.graph.benchmark.GraphIoComparisonBenchmark.exportGraph[graphIo=jackson3,sizeName=small]",
+      "operation": "exportGraph",
+      "params": {
+        "graphIo": "jackson3",
+        "sizeName": "small"
+      },
+      "score": 5.798449111111111,
+      "scoreError": "NaN",
+      "unit": "ms/op"
+    }
+  ],
+  "schema": "bluetape4k.graph-benchmark.normalized.v1",
+  "source": "/tmp/graph-benchmark-jmh-smoke.json"
+}

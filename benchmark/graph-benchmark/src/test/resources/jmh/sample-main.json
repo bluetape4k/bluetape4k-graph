@@ -1,0 +1,14 @@
+[
+  {
+    "benchmark": "io.bluetape4k.graph.benchmark.GraphIoComparisonBenchmark.exportGraph",
+    "params": {
+      "graphIo": "jackson3",
+      "sizeName": "small"
+    },
+    "primaryMetric": {
+      "score": 12.5,
+      "scoreError": 0.4,
+      "scoreUnit": "ms/op"
+    }
+  }
+]
