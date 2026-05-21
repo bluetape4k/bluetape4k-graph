@@ -12,7 +12,7 @@ Use `benchmark/graph-benchmark` as the unified kotlinx-benchmark entry point ins
 
 The benchmark harness now has DB and graph-io comparison classes plus a normalized JMH report script for before/after scoring.
 
-The first real Testcontainers-backed graph DB run is stored under `docs/benchmark/graph-db-testcontainers-2026-05-21.json`, normalized into `docs/benchmark/graph-benchmark-baseline.json`, and rendered as `docs/benchmark-results/GraphDbTestcontainersComparison.svg`.
+The first real Testcontainers-backed graph DB run is stored under `docs/benchmark/graph-db-testcontainers-2026-05-21.json`, normalized into `docs/benchmark/graph-benchmark-baseline.json`, and rendered as paired README chart assets under `docs/images/readme-charts/graph-db-testcontainers-latency-chart-01.{svg,png}`.
 
 ## Verification
 

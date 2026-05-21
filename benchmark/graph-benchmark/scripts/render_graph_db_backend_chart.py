@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
+import subprocess
 from pathlib import Path
 
 
@@ -113,11 +115,31 @@ def render(grouped: dict[str, list[dict]], output: Path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("jmh_json", type=Path)
-    parser.add_argument("--output", type=Path, default=Path("docs/benchmark-results/GraphDbTestcontainersComparison.svg"))
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=Path("docs/images/readme-charts/graph-db-testcontainers-latency-chart-01.svg"),
+    )
+    parser.add_argument(
+        "--png-output",
+        type=Path,
+        default=Path("docs/images/readme-charts/graph-db-testcontainers-latency-chart-01.png"),
+    )
+    parser.add_argument("--skip-png", action="store_true")
     args = parser.parse_args()
 
     render(load_rows(args.jmh_json), args.output)
     print(args.output)
+    if not args.skip_png:
+        rsvg_convert = shutil.which("rsvg-convert")
+        if rsvg_convert is None:
+            raise SystemExit("rsvg-convert is required to render PNG output")
+        args.png_output.parent.mkdir(parents=True, exist_ok=True)
+        subprocess.run(
+            [rsvg_convert, str(args.output), "--output", str(args.png_output)],
+            check=True,
+        )
+        print(args.png_output)
 
 
 if __name__ == "__main__":

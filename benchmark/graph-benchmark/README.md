@@ -42,12 +42,23 @@ java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-m
 
 ## Latest Testcontainers Result
 
-![Graph DB Testcontainers benchmark](../../docs/benchmark-results/GraphDbTestcontainersComparison.svg)
+![Graph DB Testcontainers benchmark](../../docs/images/readme-charts/graph-db-testcontainers-latency-chart-01.png)
 
 Run conditions: macOS arm64, GraalVM JDK 25.0.3, JMH 1.37, one fork, one warmup iteration, three one-second measurement iterations, `small` dataset, May 21, 2026.
 
+| Operation | TinkerGraph | Neo4j | Memgraph | AGE | FalkorDB |
+|---|---:|---:|---:|---:|---:|
+| `batchInsertCycle` | 5.379 | 6.217 | **1.969** | 21.665 | 38.660 |
+| `countPersons` | **0.032** | 0.809 | 0.402 | 0.610 | 0.193 |
+| `oneHopNeighbors` | **0.003** | 0.811 | 0.334 | 0.932 | 0.708 |
+| `shortestPath` | **0.018** | 0.806 | 0.331 | 1.320 | 0.280 |
+
+All values are `ms/op`; lower is better. Bold indicates the fastest backend in this run.
+
 Artifacts:
 
+- [Chart PNG](../../docs/images/readme-charts/graph-db-testcontainers-latency-chart-01.png)
+- [Chart SVG](../../docs/images/readme-charts/graph-db-testcontainers-latency-chart-01.svg)
 - [Raw JMH JSON](../../docs/benchmark/graph-db-testcontainers-2026-05-21.json)
 - [Normalized baseline JSON](../../docs/benchmark/graph-benchmark-baseline.json)
 - [Markdown result table](../../docs/benchmark/2026-05-21-graph-db-testcontainers-results.md)
