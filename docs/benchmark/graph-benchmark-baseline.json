@@ -5,26 +5,329 @@
     "platform": "macOS-26.5-arm64-arm-64bit",
     "python": "3.9.6"
   },
-  "gitCommit": "d22d3d3",
-  "notes": "Smoke baseline from a single short JMH run. Replace with a full benchmark baseline before accepting self-improve optimization winners.",
+  "gitCommit": "8e16971",
   "results": [
     {
       "baselineScore": null,
-      "benchmark": "io.bluetape4k.graph.benchmark.GraphIoComparisonBenchmark.exportGraph",
-      "benchmarkClass": "GraphIoComparisonBenchmark",
+      "benchmark": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.batchInsertCycle",
+      "benchmarkClass": "GraphDbComparisonBenchmark",
       "deltaPercent": null,
       "improved": null,
-      "key": "io.bluetape4k.graph.benchmark.GraphIoComparisonBenchmark.exportGraph[graphIo=jackson3,sizeName=small]",
-      "operation": "exportGraph",
+      "key": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.batchInsertCycle[backend=tinkergraph,sizeName=small]",
+      "operation": "batchInsertCycle",
       "params": {
-        "graphIo": "jackson3",
+        "backend": "tinkergraph",
         "sizeName": "small"
       },
-      "score": 5.798449111111111,
-      "scoreError": "NaN",
+      "score": 5.37949750546704,
+      "scoreError": 5.553547596281605,
+      "unit": "ms/op"
+    },
+    {
+      "baselineScore": null,
+      "benchmark": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.batchInsertCycle",
+      "benchmarkClass": "GraphDbComparisonBenchmark",
+      "deltaPercent": null,
+      "improved": null,
+      "key": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.batchInsertCycle[backend=neo4j,sizeName=small]",
+      "operation": "batchInsertCycle",
+      "params": {
+        "backend": "neo4j",
+        "sizeName": "small"
+      },
+      "score": 6.217366133889424,
+      "scoreError": 26.804582687360025,
+      "unit": "ms/op"
+    },
+    {
+      "baselineScore": null,
+      "benchmark": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.batchInsertCycle",
+      "benchmarkClass": "GraphDbComparisonBenchmark",
+      "deltaPercent": null,
+      "improved": null,
+      "key": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.batchInsertCycle[backend=memgraph,sizeName=small]",
+      "operation": "batchInsertCycle",
+      "params": {
+        "backend": "memgraph",
+        "sizeName": "small"
+      },
+      "score": 1.968957453637319,
+      "scoreError": 0.9557956387138322,
+      "unit": "ms/op"
+    },
+    {
+      "baselineScore": null,
+      "benchmark": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.batchInsertCycle",
+      "benchmarkClass": "GraphDbComparisonBenchmark",
+      "deltaPercent": null,
+      "improved": null,
+      "key": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.batchInsertCycle[backend=age,sizeName=small]",
+      "operation": "batchInsertCycle",
+      "params": {
+        "backend": "age",
+        "sizeName": "small"
+      },
+      "score": 21.665481085106382,
+      "scoreError": 3.158738058705352,
+      "unit": "ms/op"
+    },
+    {
+      "baselineScore": null,
+      "benchmark": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.batchInsertCycle",
+      "benchmarkClass": "GraphDbComparisonBenchmark",
+      "deltaPercent": null,
+      "improved": null,
+      "key": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.batchInsertCycle[backend=falkordb,sizeName=small]",
+      "operation": "batchInsertCycle",
+      "params": {
+        "backend": "falkordb",
+        "sizeName": "small"
+      },
+      "score": 38.65957714814815,
+      "scoreError": 3.657010495552242,
+      "unit": "ms/op"
+    },
+    {
+      "baselineScore": null,
+      "benchmark": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.countPersons",
+      "benchmarkClass": "GraphDbComparisonBenchmark",
+      "deltaPercent": null,
+      "improved": null,
+      "key": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.countPersons[backend=tinkergraph,sizeName=small]",
+      "operation": "countPersons",
+      "params": {
+        "backend": "tinkergraph",
+        "sizeName": "small"
+      },
+      "score": 0.03248263274066209,
+      "scoreError": 0.011378649812014913,
+      "unit": "ms/op"
+    },
+    {
+      "baselineScore": null,
+      "benchmark": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.countPersons",
+      "benchmarkClass": "GraphDbComparisonBenchmark",
+      "deltaPercent": null,
+      "improved": null,
+      "key": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.countPersons[backend=neo4j,sizeName=small]",
+      "operation": "countPersons",
+      "params": {
+        "backend": "neo4j",
+        "sizeName": "small"
+      },
+      "score": 0.8090368928108388,
+      "scoreError": 3.9584382394827267,
+      "unit": "ms/op"
+    },
+    {
+      "baselineScore": null,
+      "benchmark": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.countPersons",
+      "benchmarkClass": "GraphDbComparisonBenchmark",
+      "deltaPercent": null,
+      "improved": null,
+      "key": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.countPersons[backend=memgraph,sizeName=small]",
+      "operation": "countPersons",
+      "params": {
+        "backend": "memgraph",
+        "sizeName": "small"
+      },
+      "score": 0.40182769360548054,
+      "scoreError": 0.48794893706008197,
+      "unit": "ms/op"
+    },
+    {
+      "baselineScore": null,
+      "benchmark": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.countPersons",
+      "benchmarkClass": "GraphDbComparisonBenchmark",
+      "deltaPercent": null,
+      "improved": null,
+      "key": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.countPersons[backend=age,sizeName=small]",
+      "operation": "countPersons",
+      "params": {
+        "backend": "age",
+        "sizeName": "small"
+      },
+      "score": 0.6097811759117282,
+      "scoreError": 0.797730210003372,
+      "unit": "ms/op"
+    },
+    {
+      "baselineScore": null,
+      "benchmark": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.countPersons",
+      "benchmarkClass": "GraphDbComparisonBenchmark",
+      "deltaPercent": null,
+      "improved": null,
+      "key": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.countPersons[backend=falkordb,sizeName=small]",
+      "operation": "countPersons",
+      "params": {
+        "backend": "falkordb",
+        "sizeName": "small"
+      },
+      "score": 0.19341084390386923,
+      "scoreError": 0.07045804540699309,
+      "unit": "ms/op"
+    },
+    {
+      "baselineScore": null,
+      "benchmark": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.oneHopNeighbors",
+      "benchmarkClass": "GraphDbComparisonBenchmark",
+      "deltaPercent": null,
+      "improved": null,
+      "key": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.oneHopNeighbors[backend=tinkergraph,sizeName=small]",
+      "operation": "oneHopNeighbors",
+      "params": {
+        "backend": "tinkergraph",
+        "sizeName": "small"
+      },
+      "score": 0.003015522481876582,
+      "scoreError": 0.000899870350453257,
+      "unit": "ms/op"
+    },
+    {
+      "baselineScore": null,
+      "benchmark": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.oneHopNeighbors",
+      "benchmarkClass": "GraphDbComparisonBenchmark",
+      "deltaPercent": null,
+      "improved": null,
+      "key": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.oneHopNeighbors[backend=neo4j,sizeName=small]",
+      "operation": "oneHopNeighbors",
+      "params": {
+        "backend": "neo4j",
+        "sizeName": "small"
+      },
+      "score": 0.810795847854164,
+      "scoreError": 4.469222362148209,
+      "unit": "ms/op"
+    },
+    {
+      "baselineScore": null,
+      "benchmark": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.oneHopNeighbors",
+      "benchmarkClass": "GraphDbComparisonBenchmark",
+      "deltaPercent": null,
+      "improved": null,
+      "key": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.oneHopNeighbors[backend=memgraph,sizeName=small]",
+      "operation": "oneHopNeighbors",
+      "params": {
+        "backend": "memgraph",
+        "sizeName": "small"
+      },
+      "score": 0.33395938607611325,
+      "scoreError": 0.5067053195594863,
+      "unit": "ms/op"
+    },
+    {
+      "baselineScore": null,
+      "benchmark": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.oneHopNeighbors",
+      "benchmarkClass": "GraphDbComparisonBenchmark",
+      "deltaPercent": null,
+      "improved": null,
+      "key": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.oneHopNeighbors[backend=age,sizeName=small]",
+      "operation": "oneHopNeighbors",
+      "params": {
+        "backend": "age",
+        "sizeName": "small"
+      },
+      "score": 0.9323806526444235,
+      "scoreError": 0.19040186603958004,
+      "unit": "ms/op"
+    },
+    {
+      "baselineScore": null,
+      "benchmark": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.oneHopNeighbors",
+      "benchmarkClass": "GraphDbComparisonBenchmark",
+      "deltaPercent": null,
+      "improved": null,
+      "key": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.oneHopNeighbors[backend=falkordb,sizeName=small]",
+      "operation": "oneHopNeighbors",
+      "params": {
+        "backend": "falkordb",
+        "sizeName": "small"
+      },
+      "score": 0.7084954280489217,
+      "scoreError": 0.4944722698485336,
+      "unit": "ms/op"
+    },
+    {
+      "baselineScore": null,
+      "benchmark": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.shortestPath",
+      "benchmarkClass": "GraphDbComparisonBenchmark",
+      "deltaPercent": null,
+      "improved": null,
+      "key": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.shortestPath[backend=tinkergraph,sizeName=small]",
+      "operation": "shortestPath",
+      "params": {
+        "backend": "tinkergraph",
+        "sizeName": "small"
+      },
+      "score": 0.01818619199054174,
+      "scoreError": 0.005648062086920887,
+      "unit": "ms/op"
+    },
+    {
+      "baselineScore": null,
+      "benchmark": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.shortestPath",
+      "benchmarkClass": "GraphDbComparisonBenchmark",
+      "deltaPercent": null,
+      "improved": null,
+      "key": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.shortestPath[backend=neo4j,sizeName=small]",
+      "operation": "shortestPath",
+      "params": {
+        "backend": "neo4j",
+        "sizeName": "small"
+      },
+      "score": 0.8057038439208317,
+      "scoreError": 3.505448918784275,
+      "unit": "ms/op"
+    },
+    {
+      "baselineScore": null,
+      "benchmark": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.shortestPath",
+      "benchmarkClass": "GraphDbComparisonBenchmark",
+      "deltaPercent": null,
+      "improved": null,
+      "key": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.shortestPath[backend=memgraph,sizeName=small]",
+      "operation": "shortestPath",
+      "params": {
+        "backend": "memgraph",
+        "sizeName": "small"
+      },
+      "score": 0.3313735808612937,
+      "scoreError": 0.4202294911472451,
+      "unit": "ms/op"
+    },
+    {
+      "baselineScore": null,
+      "benchmark": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.shortestPath",
+      "benchmarkClass": "GraphDbComparisonBenchmark",
+      "deltaPercent": null,
+      "improved": null,
+      "key": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.shortestPath[backend=age,sizeName=small]",
+      "operation": "shortestPath",
+      "params": {
+        "backend": "age",
+        "sizeName": "small"
+      },
+      "score": 1.320027935381609,
+      "scoreError": 0.18104152199340423,
+      "unit": "ms/op"
+    },
+    {
+      "baselineScore": null,
+      "benchmark": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.shortestPath",
+      "benchmarkClass": "GraphDbComparisonBenchmark",
+      "deltaPercent": null,
+      "improved": null,
+      "key": "io.bluetape4k.graph.benchmark.GraphDbComparisonBenchmark.shortestPath[backend=falkordb,sizeName=small]",
+      "operation": "shortestPath",
+      "params": {
+        "backend": "falkordb",
+        "sizeName": "small"
+      },
+      "score": 0.28011008968758183,
+      "scoreError": 0.06358004009705295,
       "unit": "ms/op"
     }
   ],
   "schema": "bluetape4k.graph-benchmark.normalized.v1",
-  "source": "/tmp/graph-benchmark-jmh-smoke.json"
+  "source": "docs/benchmark/graph-db-testcontainers-2026-05-21.json"
 }

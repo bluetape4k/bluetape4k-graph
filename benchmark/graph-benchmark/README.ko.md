@@ -28,6 +28,30 @@
 
 kotlinx-benchmark는 JMH JSON을 `benchmark/graph-benchmark/build/reports/benchmarks/**/main.json` 아래에 기록합니다.
 
+Graph DB backend matrix는 실제 Testcontainers 기반 JMH target으로 실행합니다.
+
+```bash
+java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-*-JMH.jar \
+  '.*GraphDbComparisonBenchmark.*' \
+  -wi 1 -i 3 -r 1s -w 1s -f 1 \
+  -p backend=tinkergraph,neo4j,memgraph,age,falkordb \
+  -p sizeName=small \
+  -rf json \
+  -rff docs/benchmark/graph-db-testcontainers-2026-05-21.json
+```
+
+## 최신 Testcontainers 결과
+
+![Graph DB Testcontainers benchmark](../../docs/benchmark-results/GraphDbTestcontainersComparison.svg)
+
+실행 조건: macOS arm64, GraalVM JDK 25.0.3, JMH 1.37, fork 1회, warmup 1회, 1초 measurement 3회, `small` dataset, 2026-05-21.
+
+결과 산출물:
+
+- [Raw JMH JSON](../../docs/benchmark/graph-db-testcontainers-2026-05-21.json)
+- [Normalized baseline JSON](../../docs/benchmark/graph-benchmark-baseline.json)
+- [Markdown result table](../../docs/benchmark/2026-05-21-graph-db-testcontainers-results.md)
+
 ## 리포트
 
 JMH JSON을 전/후 비교용 안정 스키마로 정규화합니다.
@@ -46,6 +70,13 @@ python3 benchmark/graph-benchmark/scripts/normalize_jmh_report.py candidate.json
   --metric score \
   --direction lower_is_better \
   --markdown docs/benchmark/graph-benchmark-candidate.md
+```
+
+위 README 차트를 렌더링합니다.
+
+```bash
+python3 benchmark/graph-benchmark/scripts/render_graph_db_backend_chart.py \
+  docs/benchmark/graph-db-testcontainers-2026-05-21.json
 ```
 
 ## Self-Improve Gate
