@@ -2,9 +2,10 @@
 
 [English](README.md) | [한국어](README.ko.md)
 
-JMH/kotlinx-benchmark module for graph performance comparison. It now contains three benchmark tracks:
+JMH/kotlinx-benchmark module for graph performance comparison. It now contains four benchmark tracks:
 
 - Existing TinkerGraph sync vs virtual-thread graph operations.
+- TinkerGraph API model comparison across sync, virtual-thread, and coroutine APIs.
 - Graph database backend comparison through the shared `GraphOperations` contract.
 - graph-io format comparison using the same generated TinkerGraph dataset.
 
@@ -16,6 +17,7 @@ JMH/kotlinx-benchmark module for graph performance comparison. It now contains t
 
 - `GraphDbComparisonBenchmark`: `tinkergraph`, `neo4j`, `memgraph`, `age`, and `falkordb` backends.
 - `GraphIoComparisonBenchmark`: `csv`, `jackson2`, `jackson3`, `graphml`, `okio-jackson3`, and `okio-graphml`.
+- `ApiModelBenchmark`: sync, virtual-thread, and coroutine API overhead on the same in-memory TinkerGraph fixture.
 - Legacy operation benchmarks: batch insert, shortest path, neighbors, traversal, algorithm, and vertex operations.
 
 Container-backed backend benchmarks use bluetape4k Testcontainers singleton launchers. Run them serially and expect longer startup time.
@@ -39,6 +41,50 @@ java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-m
   -rf json \
   -rff docs/benchmark/graph-db-testcontainers-2026-05-21.json
 ```
+
+For the Docker-free API model matrix:
+
+```bash
+java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-*-JMH.jar \
+  '.*ApiModelBenchmark.*' \
+  -wi 1 -i 3 -r 1s -w 1s -f 1 \
+  -prof gc \
+  -rf json \
+  -rff docs/benchmark/2026-05-21-api-model-jmh.json
+```
+
+## Latest API Model Result
+
+![API model benchmark](../../docs/images/readme-charts/graph-api-model-chart-01.png)
+
+Run conditions: macOS arm64, GraalVM JDK 25.0.3, JMH 1.37, one fork, one warmup iteration, three one-second measurement iterations, TinkerGraph fixture, May 21, 2026. This is a short local smoke run; use the raw JSON and rerun before treating the ranking as a release-grade claim.
+
+PageRank throughput uses `ops/s`; higher is better.
+
+| API model | Score | Error | Allocation |
+|---|---:|---:|---:|
+| Sync | **138,943.484 ops/s** | ±40,362.146 | 28,451 B/op |
+| Virtual Thread | 40,283.460 ops/s | ±9,678.720 | 29,456 B/op |
+| Coroutine Flow | 36,879.554 ops/s | ±85,084.781 | 29,516 B/op |
+
+BFS and launch/create rows use `us/op`; lower is better.
+
+| Scenario | API model | Score | Error | Allocation |
+|---|---|---:|---:|---:|
+| BFS depth=5 | Sync | **4.724 us/op** | ±3.022 | 21,990 B/op |
+| BFS depth=5 | Virtual Thread | 18.668 us/op | ±8.229 | 23,152 B/op |
+| BFS depth=5 | Coroutine Flow | 20.244 us/op | ±11.268 | 23,455 B/op |
+| BFS 100-way | Virtual Thread | **240.903 us/op** | ±167.502 | 2,318,801 B/op |
+| BFS 100-way | Coroutine async | 279.828 us/op | ±329.942 | 2,367,754 B/op |
+| 100-way launch/create | Virtual Thread | 51.042 us/op | ±173.745 | 61,464 B/op |
+| 100-way launch/create | Coroutine async | **5.916 us/op** | ±3.127 | 28,373 B/op |
+
+Artifacts:
+
+- [Chart PNG](../../docs/images/readme-charts/graph-api-model-chart-01.png)
+- [Chart SVG](../../docs/images/readme-charts/graph-api-model-chart-01.svg)
+- [Raw JMH JSON](../../docs/benchmark/2026-05-21-api-model-jmh.json)
+- [Markdown result table](../../docs/benchmark/2026-05-21-api-model-results.md)
 
 ## Latest Testcontainers Result
 
@@ -88,6 +134,13 @@ Render the graph DB backend chart used above:
 ```bash
 python3 benchmark/graph-benchmark/scripts/render_graph_db_backend_chart.py \
   docs/benchmark/graph-db-testcontainers-2026-05-21.json
+```
+
+Render the API model chart used above:
+
+```bash
+python3 benchmark/graph-benchmark/scripts/render_api_model_chart.py \
+  docs/benchmark/2026-05-21-api-model-jmh.json
 ```
 
 ## Self-Improve Gate
