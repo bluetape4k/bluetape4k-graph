@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1754" height="1643" viewBox="0 0 1754 1643" role="img" aria-label="Neo4jGraphOperations">
+<svg xmlns="http://www.w3.org/2000/svg" width="1754" height="1539" viewBox="0 0 1754 1539" role="img" aria-label="Neo4jGraphOperations">
 <defs>
   <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="8" stdDeviation="9" flood-color="#1f2937" flood-opacity="0.10"/></filter>
   <marker id="openArrow" markerWidth="10" markerHeight="8" refX="8.5" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M 1 1 L 8.5 4 L 1 7" fill="none" stroke="#758297" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></marker>
@@ -20,18 +20,18 @@
     .implLine{stroke:#758297;stroke-width:2.2;stroke-dasharray:8 7;fill:none;marker-end:url(#inherit)}
   </style>
 </defs>
-<rect class="canvas" width="1754" height="1643"/>
-<rect class="frame" x="32" y="28" width="1690" height="1587" rx="28"/>
+<rect class="canvas" width="1754" height="1539"/>
+<rect class="frame" x="32" y="28" width="1690" height="1483" rx="28"/>
 <text class="title" x="66" y="82">Neo4jGraphOperations</text>
 <text class="subtitle" x="70" y="118">UML classes from the original Mermaid source</text>
-<path class="line" d="M877 418 L877 92 L262 92 L262 544"/>
-<path class="line" d="M877 418 L877 497 L1082 497 L1082 544"/>
-<path class="line" d="M877 418 L877 489 L1492 489 L1492 544"/>
-<path class="line" d="M672 1167 L672 1230 L877 1230 L877 1293"/>
-<path class="line" d="M672 544 L672 473 L877 473 L877 418"/>
-<path class="line" d="M672 740 L672 887"/>
-<path class="implLine" d="M672 740 L672 800 L1082 800 L1082 887"/>
-<g transform="translate(707,180)">
+<path class="line" d="M240 418 L240 478 L240 478 L240 538"/>
+<path class="line" d="M240 418 L240 478 L1089.3 478 L1089.3 538"/>
+<path class="line" d="M240 418 L240 478 L1514 478 L1514 538"/>
+<path class="line" d="M877 1155 L877 1215 L877 1215 L877 1275"/>
+<path class="line" d="M664.7 538 L664.7 478 L240 478 L240 418"/>
+<path class="line" d="M664.7 734 L664.7 804.5 L877 804.5 L877 875"/>
+<path class="implLine" d="M664.7 538 L664.7 478 L1514 478 L1514 418"/>
+<g transform="translate(70,180)">
   <rect class="card" x="0" y="0" width="340" height="238" rx="5" fill="#E8F3FF" stroke="#5B8DEF"/>
   <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#5B8DEF"/>
   <text class="small" x="170" y="26" text-anchor="middle"></text>
@@ -43,14 +43,14 @@
 <text class="mono" x="18" y="192">+recordToEdge(record, key): GraphEdge$</text>
 <text class="mono" x="18" y="213">+recordToPath(record, key): GraphPath$</text>
 </g>
-<g transform="translate(92,544)">
+<g transform="translate(70,538)">
   <rect class="card" x="0" y="0" width="340" height="133" rx="5" fill="#EAF7EF" stroke="#58A978"/>
   <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#58A978"/>
   <text class="small" x="170" y="26" text-anchor="middle"></text>
   <text class="label" x="170" y="61" text-anchor="middle">GraphPath</text>
   <text class="mono" x="18" y="108">+steps: List~PathStep~</text>
 </g>
-<g transform="translate(502,544)">
+<g transform="translate(494.7,538)">
   <rect class="card" x="0" y="0" width="340" height="196" rx="5" fill="#FFF3D9" stroke="#D6A441"/>
   <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#D6A441"/>
   <text class="small" x="170" y="26" text-anchor="middle"></text>
@@ -60,7 +60,7 @@
 <text class="mono" x="18" y="150">-session(): ReactiveSession</text>
 <text class="mono" x="18" y="171">-runQuery(cypher, params, mapper): List~T~</text>
 </g>
-<g transform="translate(912,544)">
+<g transform="translate(919.3,538)">
   <rect class="card" x="0" y="0" width="340" height="217" rx="5" fill="#FDECEF" stroke="#DC6B82"/>
   <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#DC6B82"/>
   <text class="small" x="170" y="26" text-anchor="middle"></text>
@@ -71,7 +71,7 @@
 <text class="mono" x="18" y="171">+endId: GraphElementId</text>
 <text class="mono" x="18" y="192">+properties: Map~String, Any?~</text>
 </g>
-<g transform="translate(1322,544)">
+<g transform="translate(1344,538)">
   <rect class="card" x="0" y="0" width="340" height="175" rx="5" fill="#E9F7F6" stroke="#45A7A1"/>
   <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#45A7A1"/>
   <text class="small" x="170" y="26" text-anchor="middle"></text>
@@ -80,7 +80,7 @@
 <text class="mono" x="18" y="129">+label: String</text>
 <text class="mono" x="18" y="150">+properties: Map~String, Any?~</text>
 </g>
-<g transform="translate(502,887)">
+<g transform="translate(707,875)">
   <rect class="card" x="0" y="0" width="340" height="280" rx="5" fill="#F1ECFF" stroke="#8A72D6"/>
   <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#8A72D6"/>
   <text class="small" x="170" y="26" text-anchor="middle"></text>
@@ -94,7 +94,7 @@
 <text class="mono" x="18" y="234">+runWriteQuery(cypher, params):</text>
 <text class="mono" x="18" y="255">List~Record~</text>
 </g>
-<g transform="translate(912,887)">
+<g transform="translate(1344,180)">
   <rect class="card" x="0" y="0" width="340" height="238" rx="5" fill="#F7F1E7" stroke="#B88A44"/>
   <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#B88A44"/>
   <text class="small" x="170" y="26" text-anchor="middle">«interface»</text>
@@ -106,7 +106,7 @@
 <text class="mono" x="18" y="192">+findVertexById(label, id)*</text>
 <text class="mono" x="18" y="213">+findVerticesByLabel(label, filter)*</text>
 </g>
-<g transform="translate(707,1293)">
+<g transform="translate(707,1275)">
   <rect class="card" x="0" y="0" width="340" height="154" rx="5" fill="#EEF6D9" stroke="#8BA84D"/>
   <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#8BA84D"/>
   <text class="small" x="170" y="26" text-anchor="middle">«interface»</text>
