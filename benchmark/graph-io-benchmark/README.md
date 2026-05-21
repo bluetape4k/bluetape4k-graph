@@ -32,6 +32,51 @@ JMH benchmarks for bulk graph import/export formats and I/O adapters.
 
 The benchmark writes temporary files during each trial and removes them in teardown.
 
+## Latest Results
+
+The latest published `small` dataset result is from `docs/benchmark/2026-04-18-graph-io-bulk-results.md`.
+All values are `ms/op`; lower is better.
+
+### Export
+
+| Format | Sync | VirtualThread | Suspend |
+|---|---:|---:|---:|
+| CSV | **1.017** | 1.185 | 1.477 |
+| Jackson2 NDJSON | **1.194** | 1.221 | 1.318 |
+| Jackson3 NDJSON | **1.275** | 1.300 | 1.329 |
+| GraphML | 2.582 | 4.192 | **2.455** |
+
+![Graph-IO export latency chart](../../docs/images/readme-charts/graph-io-export-latency-chart-01.png)
+
+### Import
+
+| Format | Sync | VirtualThread | Suspend |
+|---|---:|---:|---:|
+| CSV | 17.854 | **17.624** | 23.393 |
+| Jackson2 NDJSON | 18.831 | **18.120** | 151.415 |
+| Jackson3 NDJSON | 19.852 | **19.302** | 155.279 |
+| GraphML | 21.111 | **21.095** | 22.380 |
+
+![Graph-IO import latency chart](../../docs/images/readme-charts/graph-io-import-latency-chart-01.png)
+
+### Round Trip
+
+| Format | Sync | VirtualThread | Suspend |
+|---|---:|---:|---:|
+| CSV | 19.752 | **17.629** | 18.512 |
+| Jackson2 NDJSON | 18.880 | **18.677** | 151.615 |
+| Jackson3 NDJSON | 19.142 | **18.956** | 164.172 |
+| GraphML | 21.707 | 21.450 | **21.236** |
+
+![Graph-IO round-trip latency chart](../../docs/images/readme-charts/graph-io-roundtrip-latency-chart-01.png)
+
+Interpretation:
+
+- CSV and Jackson NDJSON export are close, around 1-1.5 ms/op on the small dataset.
+- Import and round-trip are dominated by TinkerGraph vertex/edge creation, not parser choice.
+- Jackson2/3 suspend import has an outlier caused by coroutine dispatcher setup in this quick-run benchmark shape; production coroutine contexts should be measured separately.
+- GraphML needs cached XML factories and buffered I/O to stay in the 2-22 ms/op range.
+
 ## Notes
 
 - Use this module when changing graph bulk I/O serializers, importers, exporters, or OkIO integration.
