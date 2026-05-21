@@ -1,6 +1,6 @@
 package io.bluetape4k.graph.benchmark
 
-import com.falkordb.FalkorDB
+import com.falkordb.impl.api.DriverImpl
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.bluetape4k.graph.age.AgeGraphOperations
@@ -34,6 +34,8 @@ import org.openjdk.jmh.annotations.Setup
 import org.openjdk.jmh.annotations.State
 import org.openjdk.jmh.annotations.TearDown
 import org.openjdk.jmh.annotations.Warmup
+import redis.clients.jedis.JedisPool
+import redis.clients.jedis.JedisPoolConfig
 import java.util.concurrent.TimeUnit
 
 /**
@@ -105,6 +107,7 @@ open class GraphDbComparisonState {
     private var dataSource: HikariDataSource? = null
     private var neo4jDriver: Driver? = null
     private var falkorDriver: com.falkordb.Driver? = null
+    private var falkorServer: FalkorDBServer? = null
 
     @Setup(Level.Trial)
     fun setupBackend() {
@@ -132,8 +135,19 @@ open class GraphDbComparisonState {
                 AgeGraphOperations(GRAPH_NAME)
             }
             "falkordb" -> {
-                val server = FalkorDBServer.Launcher.falkordb
-                falkorDriver = FalkorDB.driver(server.host, server.port)
+                val server = FalkorDBServer(reuse = true).apply {
+                    withEnv("FALKORDB_ARGS", "MAX_QUEUED_QUERIES 25 TIMEOUT 60000 RESULTSET_SIZE 100000")
+                    start()
+                }
+                falkorServer = server
+                falkorDriver = DriverImpl(
+                    JedisPool(
+                        JedisPoolConfig().apply { maxTotal = 4 },
+                        server.host,
+                        server.port,
+                        60_000,
+                    ),
+                )
                 FalkorDBGraphOperations(falkorDriver!!, GRAPH_NAME)
             }
             else -> error("Unsupported graph benchmark backend: $backend")
@@ -180,6 +194,7 @@ open class GraphDbComparisonState {
         runCatching { ops.close() }
         runCatching { neo4jDriver?.close() }
         runCatching { falkorDriver?.close() }
+        runCatching { falkorServer?.close() }
         runCatching { dataSource?.close() }
     }
 }

@@ -44,7 +44,7 @@ def load_rows(path: Path) -> dict[str, list[dict]]:
     return grouped
 
 
-def render(grouped: dict[str, list[dict]], output: Path) -> None:
+def render(grouped: dict[str, list[dict]], output: Path, title: str, subtitle: str) -> None:
     operations = ["batchInsertCycle", "countPersons", "oneHopNeighbors", "shortestPath"]
     backends = ["tinkergraph", "neo4j", "memgraph", "age", "falkordb"]
 
@@ -62,9 +62,9 @@ def render(grouped: dict[str, list[dict]], output: Path) -> None:
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         f'<rect x="0" y="0" width="{width}" height="{height}" fill="#FAFAFA"/>',
         '<text x="480" y="30" text-anchor="middle" font-family="sans-serif" font-size="18" '
-        'font-weight="bold" fill="#252525">Graph DB Testcontainers Benchmark</text>',
+        f'font-weight="bold" fill="#252525">{esc(title)}</text>',
         '<text x="480" y="52" text-anchor="middle" font-family="sans-serif" font-size="12" '
-        'fill="#666666">Latency, ms/op. Lower score is faster. small dataset, 1 warmup, 3 measurement iterations.</text>',
+        f'fill="#666666">{esc(subtitle)}</text>',
         '<rect x="704" y="16" width="224" height="28" fill="#EAF5EA" stroke="#86B586" rx="6"/>',
         '<text x="816" y="35" text-anchor="middle" font-family="sans-serif" font-size="12" '
         'font-weight="bold" fill="#2F6F3A">Lower score = faster</text>',
@@ -133,10 +133,15 @@ def main() -> None:
         type=Path,
         default=Path("docs/images/readme-charts/graph-db-testcontainers-latency-chart-01.png"),
     )
+    parser.add_argument("--title", default="Graph DB Testcontainers Benchmark")
+    parser.add_argument(
+        "--subtitle",
+        default="Latency, ms/op. Lower score is faster. small dataset, 1 warmup, 3 measurement iterations.",
+    )
     parser.add_argument("--skip-png", action="store_true")
     args = parser.parse_args()
 
-    render(load_rows(args.jmh_json), args.output)
+    render(load_rows(args.jmh_json), args.output, args.title, args.subtitle)
     print(args.output)
     if not args.skip_png:
         rsvg_convert = shutil.which("rsvg-convert")

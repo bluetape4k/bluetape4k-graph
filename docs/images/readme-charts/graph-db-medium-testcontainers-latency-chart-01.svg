@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="890" viewBox="0 0 960 890">
+<rect x="0" y="0" width="960" height="890" fill="#FAFAFA"/>
+<text x="480" y="30" text-anchor="middle" font-family="sans-serif" font-size="18" font-weight="bold" fill="#252525">Graph DB Medium Testcontainers Benchmark</text>
+<text x="480" y="52" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#666666">Latency, ms/op. Lower score is faster. medium dataset, 3 warmup, 5 measurement iterations.</text>
+<rect x="704" y="16" width="224" height="28" fill="#EAF5EA" stroke="#86B586" rx="6"/>
+<text x="816" y="35" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="bold" fill="#2F6F3A">Lower score = faster</text>
+<rect x="190" y="62" width="12" height="12" fill="#4A90D9" rx="2"/>
+<text x="206" y="72" font-family="sans-serif" font-size="11" fill="#333333">tinkergraph</text>
+<rect x="308" y="62" width="12" height="12" fill="#5ABF6B" rx="2"/>
+<text x="324" y="72" font-family="sans-serif" font-size="11" fill="#333333">neo4j</text>
+<rect x="426" y="62" width="12" height="12" fill="#E8B040" rx="2"/>
+<text x="442" y="72" font-family="sans-serif" font-size="11" fill="#333333">memgraph</text>
+<rect x="544" y="62" width="12" height="12" fill="#D96C6C" rx="2"/>
+<text x="560" y="72" font-family="sans-serif" font-size="11" fill="#333333">age</text>
+<rect x="662" y="62" width="12" height="12" fill="#7B68EE" rx="2"/>
+<text x="678" y="72" font-family="sans-serif" font-size="11" fill="#333333">falkordb</text>
+<text x="190" y="90" font-family="sans-serif" font-size="11" font-weight="bold" fill="#2F6F3A">Shorter bars are better because each bar is time per operation.</text>
+<text x="24" y="114" font-family="sans-serif" font-size="14" font-weight="bold" fill="#222222">batchInsertCycle</text>
+<text x="780" y="114" text-anchor="end" font-family="sans-serif" font-size="10" fill="#888888">max 1.93e+03 ms/op</text>
+<text x="180" y="139" text-anchor="end" font-family="sans-serif" font-size="12" fill="#333333">tinkergraph</text>
+<rect x="190" y="126" width="13.8" height="18" fill="#4A90D9" rx="3"/>
+<text x="211.8" y="139" font-family="sans-serif" font-size="11" fill="#333333">45</text>
+<text x="180" y="165" text-anchor="end" font-family="sans-serif" font-size="12" fill="#333333">neo4j</text>
+<rect x="190" y="152" width="4.8" height="18" fill="#5ABF6B" rx="3"/>
+<text x="202.8" y="165" font-family="sans-serif" font-size="11" fill="#333333">15.7</text>
+<text x="180" y="191" text-anchor="end" font-family="sans-serif" font-size="12" fill="#333333">memgraph</text>
+<rect x="190" y="178" width="3.5" height="18" fill="#E8B040" rx="3"/>
+<text x="201.5" y="191" font-family="sans-serif" font-size="11" fill="#333333">11.4</text>
+<text x="180" y="217" text-anchor="end" font-family="sans-serif" font-size="12" fill="#333333">age</text>
+<rect x="190" y="204" width="94.5" height="18" fill="#D96C6C" rx="3"/>
+<text x="292.5" y="217" font-family="sans-serif" font-size="11" fill="#333333">309</text>
+<text x="180" y="243" text-anchor="end" font-family="sans-serif" font-size="12" fill="#333333">falkordb</text>
+<rect x="190" y="230" width="590.0" height="18" fill="#7B68EE" rx="3"/>
+<text x="788.0" y="243" font-family="sans-serif" font-size="11" fill="#333333">1.93e+03</text>
+<text x="24" y="306" font-family="sans-serif" font-size="14" font-weight="bold" fill="#222222">countPersons</text>
+<text x="780" y="306" text-anchor="end" font-family="sans-serif" font-size="10" fill="#888888">max 2.18 ms/op</text>
+<text x="180" y="331" text-anchor="end" font-family="sans-serif" font-size="12" fill="#333333">tinkergraph</text>
+<rect x="190" y="318" width="83.6" height="18" fill="#4A90D9" rx="3"/>
+<text x="281.6" y="331" font-family="sans-serif" font-size="11" fill="#333333">0.308</text>
+<text x="180" y="357" text-anchor="end" font-family="sans-serif" font-size="12" fill="#333333">neo4j</text>
+<rect x="190" y="344" width="143.3" height="18" fill="#5ABF6B" rx="3"/>
+<text x="341.3" y="357" font-family="sans-serif" font-size="11" fill="#333333">0.528</text>
+<text x="180" y="383" text-anchor="end" font-family="sans-serif" font-size="12" fill="#333333">memgraph</text>
+<rect x="190" y="370" width="363.6" height="18" fill="#E8B040" rx="3"/>
+<text x="561.6" y="383" font-family="sans-serif" font-size="11" fill="#333333">1.34</text>
+<text x="180" y="409" text-anchor="end" font-family="sans-serif" font-size="12" fill="#333333">age</text>
+<rect x="190" y="396" width="590.0" height="18" fill="#D96C6C" rx="3"/>
+<text x="788.0" y="409" font-family="sans-serif" font-size="11" fill="#333333">2.18</text>
+<text x="180" y="435" text-anchor="end" font-family="sans-serif" font-size="12" fill="#333333">falkordb</text>
+<rect x="190" y="422" width="53.6" height="18" fill="#7B68EE" rx="3"/>
+<text x="251.6" y="435" font-family="sans-serif" font-size="11" fill="#333333">0.197</text>
+<text x="24" y="498" font-family="sans-serif" font-size="14" font-weight="bold" fill="#222222">oneHopNeighbors</text>
+<text x="780" y="498" text-anchor="end" font-family="sans-serif" font-size="10" fill="#888888">max 10.2 ms/op</text>
+<text x="180" y="523" text-anchor="end" font-family="sans-serif" font-size="12" fill="#333333">tinkergraph</text>
+<rect x="190" y="510" width="2.0" height="18" fill="#4A90D9" rx="3"/>
+<text x="200.0" y="523" font-family="sans-serif" font-size="11" fill="#333333">0.00333</text>
+<text x="180" y="549" text-anchor="end" font-family="sans-serif" font-size="12" fill="#333333">neo4j</text>
+<rect x="190" y="536" width="38.6" height="18" fill="#5ABF6B" rx="3"/>
+<text x="236.6" y="549" font-family="sans-serif" font-size="11" fill="#333333">0.665</text>
+<text x="180" y="575" text-anchor="end" font-family="sans-serif" font-size="12" fill="#333333">memgraph</text>
+<rect x="190" y="562" width="17.9" height="18" fill="#E8B040" rx="3"/>
+<text x="215.9" y="575" font-family="sans-serif" font-size="11" fill="#333333">0.308</text>
+<text x="180" y="601" text-anchor="end" font-family="sans-serif" font-size="12" fill="#333333">age</text>
+<rect x="190" y="588" width="590.0" height="18" fill="#D96C6C" rx="3"/>
+<text x="788.0" y="601" font-family="sans-serif" font-size="11" fill="#333333">10.2</text>
+<text x="180" y="627" text-anchor="end" font-family="sans-serif" font-size="12" fill="#333333">falkordb</text>
+<rect x="190" y="614" width="60.7" height="18" fill="#7B68EE" rx="3"/>
+<text x="258.7" y="627" font-family="sans-serif" font-size="11" fill="#333333">1.05</text>
+<text x="24" y="690" font-family="sans-serif" font-size="14" font-weight="bold" fill="#222222">shortestPath</text>
+<text x="780" y="690" text-anchor="end" font-family="sans-serif" font-size="10" fill="#888888">max 12.4 ms/op</text>
+<text x="180" y="715" text-anchor="end" font-family="sans-serif" font-size="12" fill="#333333">tinkergraph</text>
+<rect x="190" y="702" width="2.0" height="18" fill="#4A90D9" rx="3"/>
+<text x="200.0" y="715" font-family="sans-serif" font-size="11" fill="#333333">0.0188</text>
+<text x="180" y="741" text-anchor="end" font-family="sans-serif" font-size="12" fill="#333333">neo4j</text>
+<rect x="190" y="728" width="33.3" height="18" fill="#5ABF6B" rx="3"/>
+<text x="231.3" y="741" font-family="sans-serif" font-size="11" fill="#333333">0.7</text>
+<text x="180" y="767" text-anchor="end" font-family="sans-serif" font-size="12" fill="#333333">memgraph</text>
+<rect x="190" y="754" width="18.3" height="18" fill="#E8B040" rx="3"/>
+<text x="216.3" y="767" font-family="sans-serif" font-size="11" fill="#333333">0.386</text>
+<text x="180" y="793" text-anchor="end" font-family="sans-serif" font-size="12" fill="#333333">age</text>
+<rect x="190" y="780" width="590.0" height="18" fill="#D96C6C" rx="3"/>
+<text x="788.0" y="793" font-family="sans-serif" font-size="11" fill="#333333">12.4</text>
+<text x="180" y="819" text-anchor="end" font-family="sans-serif" font-size="12" fill="#333333">falkordb</text>
+<rect x="190" y="806" width="24.3" height="18" fill="#7B68EE" rx="3"/>
+<text x="222.3" y="819" font-family="sans-serif" font-size="11" fill="#333333">0.512</text>
+</svg>

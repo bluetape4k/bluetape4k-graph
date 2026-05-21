@@ -4,21 +4,37 @@
 
 이 디렉터리는 graph backend, API model, graph-io format을 선택하기 위한 benchmark 모듈을 모아 둔 곳입니다. 아래 가이드는 지금까지의 측정값을 서비스 규모, 데이터 규모, 서비스 분야별 추천으로 정리합니다.
 
-이 문서는 첫 선택을 빠르게 좁히기 위한 기준입니다. 최신 backend matrix는 `small` dataset과 짧은 로컬 JMH run을 기반으로 하므로, 실제 운영 도입 전에는 서비스 데이터 모델, 쿼리 비율, 배포 환경에 맞춘 benchmark를 다시 돌려야 합니다.
+이 문서는 첫 선택을 빠르게 좁히기 위한 기준입니다. backend matrix는 이제 `small`과 `medium` 로컬 Testcontainers run을 모두 포함합니다. 실제 운영 도입 전에는 서비스 데이터 모델, 쿼리 비율, 배포 환경에 맞춘 benchmark를 다시 돌려야 합니다.
 
 ## 근거 자료
 
 | 영역 | Source | 현재 범위 | 해석 방향 |
 |---|---|---|---|
-| Graph DB backend | `graph-benchmark` / `GraphDbComparisonBenchmark` | TinkerGraph, Neo4j, Memgraph, AGE, FalkorDB의 `small` dataset 비교 | `ms/op` 낮을수록 좋음 |
+| Graph DB backend | `graph-benchmark` / `GraphDbComparisonBenchmark` | TinkerGraph, Neo4j, Memgraph, AGE, FalkorDB의 `small`, `medium` dataset 비교 | `ms/op` 낮을수록 좋음 |
 | API model | `graph-benchmark` / `ApiModelBenchmark` | TinkerGraph에서 Sync, Virtual Thread, Coroutine Flow 비교 | PageRank `ops/s` 높을수록 좋음, latency `us/op` 낮을수록 좋음 |
 | graph-io format | `graph-io-benchmark`, `graph-benchmark` | CSV, Jackson2/3 NDJSON, GraphML, Okio variants | `ms/op` 낮을수록 좋음 |
 
 최신 raw artifact:
 
 - `docs/benchmark/graph-db-testcontainers-2026-05-21.json`
+- `docs/benchmark/graph-db-medium-testcontainers-2026-05-21.json`
 - `docs/benchmark/2026-05-21-api-model-jmh.json`
 - `docs/benchmark/2026-04-18-graph-io-bulk-results.md`
+
+## Medium Backend 결과
+
+![Graph DB medium Testcontainers benchmark](../docs/images/readme-charts/graph-db-medium-testcontainers-latency-chart-01.png)
+
+실행 조건: macOS arm64, GraalVM JDK 25.0.3, JMH 1.37, fork 1회, warmup 3회, 3초 measurement 5회, `medium` dataset, 2026-05-21. 모든 값은 `ms/op`이며 낮을수록 좋습니다.
+
+| Operation | TinkerGraph | Neo4j | Memgraph | AGE | FalkorDB |
+|---|---:|---:|---:|---:|---:|
+| `batchInsertCycle` | 44.967 | 15.690 | **11.364** | 309.090 | 1929.180 |
+| `countPersons` | 0.308 | 0.528 | 1.341 | 2.176 | **0.197** |
+| `oneHopNeighbors` | **0.003** | 0.665 | 0.308 | 10.175 | 1.046 |
+| `shortestPath` | **0.019** | 0.700 | 0.386 | 12.420 | 0.512 |
+
+Medium scale 해석: Memgraph는 write-heavy insert에서 가장 좋은 persistent backend이고 traversal/path도 경쟁력이 있습니다. Neo4j는 이 로컬 benchmark에서 Memgraph보다 느리지만 운영 성숙도 때문에 기본 production 추천으로 유지합니다. FalkorDB는 `countPersons`, `shortestPath` read path가 경쟁력 있지만 medium batch insert가 너무 느려 write-heavy workload에는 맞지 않습니다. AGE는 raw latency가 아니라 PostgreSQL 통합이 핵심일 때 선택합니다.
 
 ## 빠른 추천
 
@@ -26,7 +42,7 @@
 |---|---|---|
 | Unit test, example, local algorithm 실험 | TinkerGraph + Sync API | in-memory latency가 가장 낮고 외부 서비스가 필요 없습니다. 단, 영속성과 분산 운영 대상은 아닙니다. |
 | 기본 production graph service | Neo4j + Sync 또는 Virtual Thread API | 성숙도, 운영 도구, ACID, 생태계가 가장 안정적입니다. benchmark latency가 항상 최저는 아니지만 일반 production risk가 가장 낮습니다. |
-| Real-time low-latency graph analytics 또는 write-heavy ingestion | Memgraph + Virtual Thread API | persistent backend 중 batch insert가 가장 빠르고 traversal/path latency도 경쟁력이 있습니다. |
+| Real-time low-latency graph analytics 또는 write-heavy ingestion | Memgraph + Virtual Thread API | `medium` batch insert가 persistent backend 중 가장 빠르고 traversal/path latency도 경쟁력이 있습니다. |
 | PostgreSQL 중심 platform에서 보조 graph 기능 | Apache AGE + Sync API | PostgreSQL 운영, 백업, 권한, 거버넌스를 재사용할 수 있습니다. raw graph latency보다 플랫폼 통합을 우선할 때 선택합니다. |
 | Redis/FalkorDB 기반 stack에서 단순 read-mostly graph query | FalkorDB + Sync 또는 Virtual Thread API | 현재 small run에서 shortest path가 좋지만 batch insert는 느립니다. write workload 검증 후 선택해야 합니다. |
 | Kotlin coroutine app에서 graph 호출이 suspend pipeline 일부 | Coroutine API | 기존 coroutine 구조와 가장 잘 맞습니다. 다만 in-memory graph 작업이 자동으로 더 빨라지는 것은 아닙니다. |
@@ -48,7 +64,7 @@
 | 데이터 규모 | 추천 | 참고 |
 |---|---|---|
 | Test에서 약 10k nodes 이하 | TinkerGraph | 현재 benchmark fixture가 직접 커버하는 범위입니다. |
-| 10k에서 low millions | Neo4j 또는 Memgraph | `GraphDbComparisonBenchmark`를 `sizeName=medium`과 domain query로 재실행하세요. |
+| 10k에서 low millions | Neo4j 또는 Memgraph | `medium` run은 운영 risk 우선이면 Neo4j, write latency 우선이면 Memgraph라는 결론을 지지합니다. production 최종 선택 전 domain query를 추가하세요. |
 | Write-heavy growing graph | Memgraph 후보 우선 | 현재 `small` run에서 persistent backend 중 batch insert가 가장 좋습니다. 실제 edge fan-out과 transaction size로 재검증해야 합니다. |
 | PostgreSQL-owned data의 보조 graph index | AGE | graph-native latency보다 운영 통합을 선택하는 경우입니다. |
 | 매우 큰 graph 또는 sharding 필요 | 현재 benchmark만으로 결정 불가 | horizontal scale 동작은 지금 모듈이 증명하지 않습니다. 별도 production-shaped benchmark가 필요합니다. |
@@ -97,22 +113,15 @@
 
 추적용 follow-up benchmark issue:
 
-- [#196 Benchmark: medium-size Graph DB backend decision matrix](https://github.com/bluetape4k/bluetape4k-graph/issues/196)
 - [#197 Benchmark: graph workload shapes by domain and fan-out](https://github.com/bluetape4k/bluetape4k-graph/issues/197)
 - [#198 Benchmark: sustained graph write and batch ingestion profiles](https://github.com/bluetape4k/bluetape4k-graph/issues/198)
 - [#199 Benchmark: production-grade API model latency and allocation](https://github.com/bluetape4k/bluetape4k-graph/issues/199)
 
-권장 next run:
+권장 next benchmark target:
 
-```bash
-java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-*-JMH.jar \
-  '.*GraphDbComparisonBenchmark.*' \
-  -wi 3 -i 5 -r 3s -w 2s -f 1 \
-  -p backend=neo4j,memgraph,age,falkordb \
-  -p sizeName=medium \
-  -rf json \
-  -rff docs/benchmark/graph-db-medium-production-candidate.json
-```
+- #197에서 social, fraud, knowledge graph의 fan-out별 domain workload를 추가합니다.
+- #198에서 sustained write profile을 추가해 Memgraph의 짧은 batch lead가 stream pressure에서도 유지되는지 확인합니다.
+- #199에서 API model latency와 allocation을 production-grade window로 재측정합니다.
 
 ```bash
 java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-*-JMH.jar \
