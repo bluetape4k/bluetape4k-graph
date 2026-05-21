@@ -42,6 +42,18 @@ java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-m
   -rff docs/benchmark/graph-db-testcontainers-2026-05-21.json
 ```
 
+For the medium backend matrix:
+
+```bash
+java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-*-JMH.jar \
+  '.*GraphDbComparisonBenchmark.*' \
+  -wi 3 -i 5 -r 3s -w 2s -f 1 \
+  -p backend=tinkergraph,neo4j,memgraph,age,falkordb \
+  -p sizeName=medium \
+  -rf json \
+  -rff docs/benchmark/graph-db-medium-testcontainers-2026-05-21.json
+```
+
 For the Docker-free API model matrix:
 
 ```bash
@@ -87,6 +99,31 @@ Artifacts:
 - [Markdown result table](../../docs/benchmark/2026-05-21-api-model-results.md)
 
 ## Latest Testcontainers Result
+
+### Medium Dataset
+
+![Graph DB medium Testcontainers benchmark](../../docs/images/readme-charts/graph-db-medium-testcontainers-latency-chart-01.png)
+
+Run conditions: macOS arm64, GraalVM JDK 25.0.3, JMH 1.37, one fork, three warmup iterations, five three-second measurement iterations, `medium` dataset, May 21, 2026. FalkorDB used a 60 second Jedis read timeout in the benchmark driver because the default `jfalkordb` timeout failed on this fixture.
+
+| Operation | TinkerGraph | Neo4j | Memgraph | AGE | FalkorDB |
+|---|---:|---:|---:|---:|---:|
+| `batchInsertCycle` | 44.967 | 15.690 | **11.364** | 309.090 | 1929.180 |
+| `countPersons` | 0.308 | 0.528 | 1.341 | 2.176 | **0.197** |
+| `oneHopNeighbors` | **0.003** | 0.665 | 0.308 | 10.175 | 1.046 |
+| `shortestPath` | **0.019** | 0.700 | 0.386 | 12.420 | 0.512 |
+
+All values are `ms/op`; lower is better. Bold indicates the fastest backend in this run.
+
+Artifacts:
+
+- [Chart PNG](../../docs/images/readme-charts/graph-db-medium-testcontainers-latency-chart-01.png)
+- [Chart SVG](../../docs/images/readme-charts/graph-db-medium-testcontainers-latency-chart-01.svg)
+- [Raw JMH JSON](../../docs/benchmark/graph-db-medium-testcontainers-2026-05-21.json)
+- [FalkorDB timeout rerun JSON](../../docs/benchmark/graph-db-medium-falkordb-testcontainers-2026-05-21.json)
+- [Markdown result table](../../docs/benchmark/2026-05-21-graph-db-medium-testcontainers-results.md)
+
+### Small Dataset
 
 ![Graph DB Testcontainers benchmark](../../docs/images/readme-charts/graph-db-testcontainers-latency-chart-01.png)
 

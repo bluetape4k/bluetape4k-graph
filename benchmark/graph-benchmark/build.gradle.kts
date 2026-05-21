@@ -22,6 +22,12 @@ benchmark {
     }
 }
 
+tasks.withType<Jar>()
+    .matching { it.name == "mainBenchmarkJar" }
+    .configureEach {
+        from(sourceSets.main.get().output)
+    }
+
 dependencies {
     implementation(project(":bluetape4k-graph-core"))
     implementation(project(":bluetape4k-graph-age"))

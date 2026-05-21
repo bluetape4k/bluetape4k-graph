@@ -4,21 +4,37 @@
 
 This directory contains benchmark modules for choosing a graph backend, API model, and graph-io format. The guidance below summarizes the current measurements and turns them into service-oriented recommendations.
 
-Use this guide as a starting point, not as a procurement-grade ranking. The latest backend matrix uses a `small` dataset and short local JMH runs; production choices still need a workload-shaped benchmark with your data model, query mix, and deployment constraints.
+Use this guide as a starting point, not as a procurement-grade ranking. The backend matrix now includes both `small` and `medium` local Testcontainers runs; production choices still need a workload-shaped benchmark with your data model, query mix, and deployment constraints.
 
 ## Evidence Base
 
 | Area | Source | Current coverage | Main direction |
 |---|---|---|---|
-| Graph DB backend | `graph-benchmark` / `GraphDbComparisonBenchmark` | TinkerGraph, Neo4j, Memgraph, AGE, FalkorDB on `small` dataset | Lower `ms/op` is better |
+| Graph DB backend | `graph-benchmark` / `GraphDbComparisonBenchmark` | TinkerGraph, Neo4j, Memgraph, AGE, FalkorDB on `small` and `medium` datasets | Lower `ms/op` is better |
 | API model | `graph-benchmark` / `ApiModelBenchmark` | Sync, Virtual Thread, Coroutine Flow on TinkerGraph | PageRank `ops/s` higher is better; latency `us/op` lower is better |
 | graph-io format | `graph-io-benchmark` and `graph-benchmark` | CSV, Jackson2/3 NDJSON, GraphML, Okio variants | Lower `ms/op` is better |
 
 Latest raw artifacts:
 
 - `docs/benchmark/graph-db-testcontainers-2026-05-21.json`
+- `docs/benchmark/graph-db-medium-testcontainers-2026-05-21.json`
 - `docs/benchmark/2026-05-21-api-model-jmh.json`
 - `docs/benchmark/2026-04-18-graph-io-bulk-results.md`
+
+## Medium Backend Result
+
+![Graph DB medium Testcontainers benchmark](../docs/images/readme-charts/graph-db-medium-testcontainers-latency-chart-01.png)
+
+Run conditions: macOS arm64, GraalVM JDK 25.0.3, JMH 1.37, one fork, three warmup iterations, five three-second measurement iterations, `medium` dataset, May 21, 2026. All values are `ms/op`; lower is better.
+
+| Operation | TinkerGraph | Neo4j | Memgraph | AGE | FalkorDB |
+|---|---:|---:|---:|---:|---:|
+| `batchInsertCycle` | 44.967 | 15.690 | **11.364** | 309.090 | 1929.180 |
+| `countPersons` | 0.308 | 0.528 | 1.341 | 2.176 | **0.197** |
+| `oneHopNeighbors` | **0.003** | 0.665 | 0.308 | 10.175 | 1.046 |
+| `shortestPath` | **0.019** | 0.700 | 0.386 | 12.420 | 0.512 |
+
+Medium-scale interpretation: Memgraph is the best persistent backend for write-heavy inserts and remains competitive for traversal/path queries. Neo4j is slower than Memgraph in this local benchmark but remains the default low-risk production recommendation because of operational maturity. FalkorDB read paths are competitive in `countPersons` and `shortestPath`, but medium batch insert is too slow for write-heavy workloads. AGE remains a PostgreSQL-consolidation choice, not a raw-latency choice.
 
 ## Quick Recommendation
 
@@ -26,7 +42,7 @@ Latest raw artifacts:
 |---|---|---|
 | Unit tests, examples, local algorithm experiments | TinkerGraph + Sync API | Fastest in-memory latency and no external service. Not persistent or distributed. |
 | Default production graph service | Neo4j + Sync or Virtual Thread API | Best maturity, operational tooling, ACID semantics, and broad ecosystem. Benchmark latency is not the lowest, but risk is lowest for general production. |
-| Real-time low-latency graph analytics or write-heavy ingestion | Memgraph + Virtual Thread API | Strong container-backed benchmark results: fastest batch insert and competitive traversal/path latency among persistent backends. |
+| Real-time low-latency graph analytics or write-heavy ingestion | Memgraph + Virtual Thread API | Strong container-backed benchmark results: fastest `medium` batch insert and competitive traversal/path latency among persistent backends. |
 | Existing PostgreSQL-first platform with moderate graph needs | Apache AGE + Sync API | Reuses PostgreSQL operations and data governance. Choose for platform consolidation, not raw graph latency. |
 | Redis/FalkorDB-aligned stack with simple read-mostly graph queries | FalkorDB + Sync or Virtual Thread API | Good shortest-path result in the current small run, but slow batch insert. Validate write workload before choosing it. |
 | Kotlin coroutine application where graph calls are part of a larger suspend pipeline | Coroutine API | Best integration with existing coroutine structure. It is not automatically faster for in-memory graph work. |
@@ -48,7 +64,7 @@ Latest raw artifacts:
 | Data scale | Recommendation | Notes |
 |---|---|---|
 | Up to about 10k nodes in tests | TinkerGraph | Current benchmark fixture directly covers this range. |
-| 10k to low millions | Neo4j or Memgraph | Re-run `GraphDbComparisonBenchmark` with `sizeName=medium` and domain queries. |
+| 10k to low millions | Neo4j or Memgraph | The `medium` run supports this split: Neo4j for lower operational risk, Memgraph for lower write latency. Add domain queries before final production choice. |
 | Write-heavy growing graph | Memgraph candidate first | Current `small` run shows best batch insert among persistent backends. Confirm with realistic edge fan-out and transaction size. |
 | PostgreSQL-owned data with graph as secondary index | AGE | Accept slower graph-native latency in exchange for operational consolidation. |
 | Very large or sharded graph | Not decided by current benchmarks | Add a production-shaped benchmark. The current modules do not prove horizontal scale behavior. |
@@ -97,22 +113,15 @@ Add another benchmark run before deciding when any of these are true:
 
 Tracked follow-up benchmark issues:
 
-- [#196 Benchmark: medium-size Graph DB backend decision matrix](https://github.com/bluetape4k/bluetape4k-graph/issues/196)
 - [#197 Benchmark: graph workload shapes by domain and fan-out](https://github.com/bluetape4k/bluetape4k-graph/issues/197)
 - [#198 Benchmark: sustained graph write and batch ingestion profiles](https://github.com/bluetape4k/bluetape4k-graph/issues/198)
 - [#199 Benchmark: production-grade API model latency and allocation](https://github.com/bluetape4k/bluetape4k-graph/issues/199)
 
-Suggested next runs:
+Suggested next benchmark targets:
 
-```bash
-java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-*-JMH.jar \
-  '.*GraphDbComparisonBenchmark.*' \
-  -wi 3 -i 5 -r 3s -w 2s -f 1 \
-  -p backend=neo4j,memgraph,age,falkordb \
-  -p sizeName=medium \
-  -rf json \
-  -rff docs/benchmark/graph-db-medium-production-candidate.json
-```
+- Add #197 domain workloads for social, fraud, and knowledge graph fan-out shapes.
+- Add #198 sustained write profiles so Memgraph's short batch lead is validated under stream pressure.
+- Re-run #199 API model latency and allocation with production-grade windows.
 
 ```bash
 java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-*-JMH.jar \

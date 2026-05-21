@@ -42,6 +42,18 @@ java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-m
   -rff docs/benchmark/graph-db-testcontainers-2026-05-21.json
 ```
 
+medium backend matrix는 다음처럼 실행합니다.
+
+```bash
+java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-*-JMH.jar \
+  '.*GraphDbComparisonBenchmark.*' \
+  -wi 3 -i 5 -r 3s -w 2s -f 1 \
+  -p backend=tinkergraph,neo4j,memgraph,age,falkordb \
+  -p sizeName=medium \
+  -rf json \
+  -rff docs/benchmark/graph-db-medium-testcontainers-2026-05-21.json
+```
+
 Docker-free API model matrix는 다음처럼 실행합니다.
 
 ```bash
@@ -87,6 +99,31 @@ BFS와 launch/create 행은 `us/op`이며 낮을수록 좋습니다.
 - [Markdown result table](../../docs/benchmark/2026-05-21-api-model-results.md)
 
 ## 최신 Testcontainers 결과
+
+### Medium dataset
+
+![Graph DB medium Testcontainers benchmark](../../docs/images/readme-charts/graph-db-medium-testcontainers-latency-chart-01.png)
+
+실행 조건: macOS arm64, GraalVM JDK 25.0.3, JMH 1.37, fork 1회, warmup 3회, 3초 measurement 5회, `medium` dataset, 2026-05-21. FalkorDB는 기본 `jfalkordb` timeout이 이 fixture에서 실패해서 benchmark driver에 60초 Jedis read timeout을 적용해 재측정했습니다.
+
+| Operation | TinkerGraph | Neo4j | Memgraph | AGE | FalkorDB |
+|---|---:|---:|---:|---:|---:|
+| `batchInsertCycle` | 44.967 | 15.690 | **11.364** | 309.090 | 1929.180 |
+| `countPersons` | 0.308 | 0.528 | 1.341 | 2.176 | **0.197** |
+| `oneHopNeighbors` | **0.003** | 0.665 | 0.308 | 10.175 | 1.046 |
+| `shortestPath` | **0.019** | 0.700 | 0.386 | 12.420 | 0.512 |
+
+모든 값은 `ms/op`이며 낮을수록 좋습니다. 굵은 값은 이번 실행에서 가장 빠른 backend입니다.
+
+결과 산출물:
+
+- [Chart PNG](../../docs/images/readme-charts/graph-db-medium-testcontainers-latency-chart-01.png)
+- [Chart SVG](../../docs/images/readme-charts/graph-db-medium-testcontainers-latency-chart-01.svg)
+- [Raw JMH JSON](../../docs/benchmark/graph-db-medium-testcontainers-2026-05-21.json)
+- [FalkorDB timeout 재측정 JSON](../../docs/benchmark/graph-db-medium-falkordb-testcontainers-2026-05-21.json)
+- [Markdown result table](../../docs/benchmark/2026-05-21-graph-db-medium-testcontainers-results.md)
+
+### Small dataset
 
 ![Graph DB Testcontainers benchmark](../../docs/images/readme-charts/graph-db-testcontainers-latency-chart-01.png)
 
