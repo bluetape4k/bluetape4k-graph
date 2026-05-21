@@ -2,7 +2,11 @@
 
 [English](README.md) | [한국어](README.ko.md)
 
-인메모리 TinkerGraph 구현을 사용해 백엔드 독립 graph operation을 측정하는 JMH 벤치마크 모듈입니다.
+그래프 성능 비교를 위한 JMH/kotlinx-benchmark 모듈입니다. 현재 세 가지 측정 축을 포함합니다.
+
+- 기존 TinkerGraph Sync vs Virtual Thread 그래프 연산.
+- 공통 `GraphOperations` 계약을 통한 Graph DB backend 비교.
+- 동일한 TinkerGraph 생성 데이터셋을 사용하는 graph-io 포맷 비교.
 
 ## Architecture
 
@@ -10,20 +14,11 @@
 
 ## 측정 대상
 
-`graph-benchmark`는 `TinkerGraphOperations` 위에서 동기 graph API와 virtual-thread adapter 경로를 비교합니다.
+- `GraphDbComparisonBenchmark`: `tinkergraph`, `neo4j`, `memgraph`, `age`, `falkordb` backend.
+- `GraphIoComparisonBenchmark`: `csv`, `jackson2`, `jackson3`, `graphml`, `okio-jackson3`, `okio-graphml`.
+- 기존 operation benchmark: batch insert, shortest path, neighbors, traversal, algorithm, vertex operations.
 
-- 알고리즘: PageRank, BFS, DFS의 동기 및 virtual-thread 경로.
-- 탐색: 이웃 조회, 최단 경로, 전체 경로.
-- 정점 작업: 라벨 조회, ID 조회, 이웃 조회.
-- 배치 삽입: 10k 정점/간선 루프 삽입과 배치 삽입 비교.
-
-## 소스 근거
-
-- `build.gradle.kts`는 `kotlinx.benchmark`를 적용하고 JMH `@State`를 all-open 처리하며, `graph-core`, `graph-tinkerpop`, coroutines, `bluetape4k-virtualthread-api`에 의존합니다.
-- `GraphBenchmarkState`는 `TinkerGraphOperations`로 공유 인메모리 그래프를 구성합니다.
-- `AlgorithmBenchmark`는 동기 알고리즘 호출과 `VirtualThreadAlgorithmAdapter`를 비교합니다.
-- `TraversalBenchmark`, `ShortestPathBenchmark`, `NeighborsBenchmark`, `VertexOperationsBenchmark`는 동기 및 virtual-thread operation 경로를 비교합니다.
-- `BatchInsertBenchmark`와 smoke test support는 10k 루프-vs-배치 정점/간선 삽입 시나리오를 검증합니다.
+컨테이너 기반 backend benchmark는 bluetape4k Testcontainers singleton launcher를 사용합니다. 순차 실행해야 하며 초기 기동 시간이 더 깁니다.
 
 ## 실행
 
@@ -31,9 +26,44 @@
 ./gradlew :graph-benchmark:benchmark
 ```
 
-이 모듈은 인메모리 TinkerGraph 백엔드를 사용하므로 외부 graph database 컨테이너가 필요하지 않습니다.
+kotlinx-benchmark는 JMH JSON을 `benchmark/graph-benchmark/build/reports/benchmarks/**/main.json` 아래에 기록합니다.
+
+## 리포트
+
+JMH JSON을 전/후 비교용 안정 스키마로 정규화합니다.
+
+```bash
+python3 benchmark/graph-benchmark/scripts/normalize_jmh_report.py \
+  benchmark/graph-benchmark/build/reports/benchmarks/main/main.json \
+  --markdown docs/benchmark/graph-benchmark-latest.md
+```
+
+baseline과 candidate를 비교할 때:
+
+```bash
+python3 benchmark/graph-benchmark/scripts/normalize_jmh_report.py candidate.json \
+  --baseline baseline.json \
+  --metric score \
+  --direction lower_is_better \
+  --markdown docs/benchmark/graph-benchmark-candidate.md
+```
+
+## Self-Improve Gate
+
+`bluetape4k-self-improve`는 fresh baseline이 생긴 뒤 사용합니다. 최적화 round에서 봉인할 파일은 다음과 같습니다.
+
+- `benchmark/graph-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/GraphDbComparisonBenchmark.kt`
+- `benchmark/graph-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/GraphIoComparisonBenchmark.kt`
+- `benchmark/graph-benchmark/scripts/normalize_jmh_report.py`
+- `docs/benchmark/graph-benchmark-baseline.json`
+
+candidate를 채택하기 전 sealed-file validator를 실행합니다.
+
+```bash
+scripts/validate-graph-benchmark-sealed.sh
+```
 
 ## 참고
 
-- core API 오버헤드를 확인할 때 가장 빠른 벤치마크 경로입니다.
-- 네트워크나 데이터베이스 시작 비용 없이 동기 호출과 virtual-thread wrapper를 비교하는 데 적합합니다.
+- Amazon Neptune은 신뢰 가능한 로컬/통합 테스트 가능성이 확보될 때까지 제외합니다.
+- Graph DB benchmark는 vendor별 튜닝 쿼리가 아니라 공통 repository contract 성능을 비교합니다.
