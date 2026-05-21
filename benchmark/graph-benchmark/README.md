@@ -28,6 +28,30 @@ Container-backed backend benchmarks use bluetape4k Testcontainers singleton laun
 
 kotlinx-benchmark writes JMH JSON under `benchmark/graph-benchmark/build/reports/benchmarks/**/main.json`.
 
+For the graph DB backend matrix, run the real Testcontainers-backed JMH target:
+
+```bash
+java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-*-JMH.jar \
+  '.*GraphDbComparisonBenchmark.*' \
+  -wi 1 -i 3 -r 1s -w 1s -f 1 \
+  -p backend=tinkergraph,neo4j,memgraph,age,falkordb \
+  -p sizeName=small \
+  -rf json \
+  -rff docs/benchmark/graph-db-testcontainers-2026-05-21.json
+```
+
+## Latest Testcontainers Result
+
+![Graph DB Testcontainers benchmark](../../docs/benchmark-results/GraphDbTestcontainersComparison.svg)
+
+Run conditions: macOS arm64, GraalVM JDK 25.0.3, JMH 1.37, one fork, one warmup iteration, three one-second measurement iterations, `small` dataset, May 21, 2026.
+
+Artifacts:
+
+- [Raw JMH JSON](../../docs/benchmark/graph-db-testcontainers-2026-05-21.json)
+- [Normalized baseline JSON](../../docs/benchmark/graph-benchmark-baseline.json)
+- [Markdown result table](../../docs/benchmark/2026-05-21-graph-db-testcontainers-results.md)
+
 ## Reports
 
 Normalize JMH JSON into a stable before/after report:
@@ -46,6 +70,13 @@ python3 benchmark/graph-benchmark/scripts/normalize_jmh_report.py candidate.json
   --metric score \
   --direction lower_is_better \
   --markdown docs/benchmark/graph-benchmark-candidate.md
+```
+
+Render the graph DB backend chart used above:
+
+```bash
+python3 benchmark/graph-benchmark/scripts/render_graph_db_backend_chart.py \
+  docs/benchmark/graph-db-testcontainers-2026-05-21.json
 ```
 
 ## Self-Improve Gate
