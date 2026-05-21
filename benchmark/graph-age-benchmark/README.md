@@ -33,6 +33,23 @@ JMH benchmarks for the Apache AGE backend in `bluetape4k-graph`.
 
 The benchmark starts a local containerized PostgreSQL AGE instance. Keep this module out of parallel Testcontainers runs.
 
+## Latest Cross-Backend Result
+
+The shared `graph-benchmark` Testcontainers run also measures AGE with the same `GraphOperations` contract used by other backends.
+Run conditions: macOS arm64, GraalVM JDK 25.0.3, JMH 1.37, one fork, one warmup iteration, three one-second measurement iterations, `small` dataset, May 21, 2026.
+All values are `ms/op`; lower is better.
+
+| Operation | AGE | Fastest backend in the same run |
+|---|---:|---|
+| `batchInsertCycle` | 21.665 | Memgraph, 1.969 |
+| `countPersons` | 0.610 | TinkerGraph, 0.032 |
+| `oneHopNeighbors` | 0.932 | TinkerGraph, 0.003 |
+| `shortestPath` | 1.320 | TinkerGraph, 0.018 |
+
+![Graph DB Testcontainers benchmark](../../docs/images/readme-charts/graph-db-testcontainers-latency-chart-01.png)
+
+See the full backend matrix in `benchmark/graph-benchmark/README.md`.
+
 ## Notes
 
 - The fixture graph is intentionally small for operation-level latency comparisons.
