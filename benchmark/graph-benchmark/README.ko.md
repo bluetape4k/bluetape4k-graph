@@ -2,11 +2,12 @@
 
 [English](README.md) | [한국어](README.ko.md)
 
-그래프 성능 비교를 위한 JMH/kotlinx-benchmark 모듈입니다. 현재 네 가지 측정 축을 포함합니다.
+그래프 성능 비교를 위한 JMH/kotlinx-benchmark 모듈입니다. 현재 다섯 가지 측정 축을 포함합니다.
 
 - 기존 TinkerGraph Sync vs Virtual Thread 그래프 연산.
 - 동일한 TinkerGraph fixture에서 Sync, Virtual Thread, Coroutine API model 비교.
 - 공통 `GraphOperations` 계약을 통한 Graph DB backend 비교.
+- 공통 `GraphOperations` 계약을 통한 sustained graph write와 batch ingestion 비교.
 - 동일한 TinkerGraph 생성 데이터셋을 사용하는 graph-io 포맷 비교.
 
 ## Architecture
@@ -16,11 +17,12 @@
 ## 측정 대상
 
 - `GraphDbComparisonBenchmark`: `tinkergraph`, `neo4j`, `memgraph`, `age`, `falkordb` backend.
+- `GraphWriteIngestionBenchmark`: 동일 backend matrix에서 vertex-only, edge-only, mixed, repeated mixed write batch.
 - `GraphIoComparisonBenchmark`: `csv`, `jackson2`, `jackson3`, `graphml`, `okio-jackson3`, `okio-graphml`.
 - `ApiModelBenchmark`: 동일한 in-memory TinkerGraph fixture에서 sync, virtual-thread, coroutine API overhead.
 - 기존 operation benchmark: batch insert, shortest path, neighbors, traversal, algorithm, vertex operations.
 
-컨테이너 기반 backend benchmark는 bluetape4k Testcontainers singleton launcher를 사용합니다. 순차 실행해야 하며 초기 기동 시간이 더 깁니다.
+컨테이너 기반 backend benchmark는 bluetape4k Testcontainers launcher 또는 wrapper를 사용합니다. 순차 실행해야 하며 초기 기동 시간이 더 깁니다.
 
 ## 실행
 
@@ -52,6 +54,20 @@ java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-m
   -p sizeName=medium \
   -rf json \
   -rff docs/benchmark/graph-db-medium-testcontainers-2026-05-21.json
+```
+
+sustained write ingestion profile은 다음처럼 실행합니다.
+
+```bash
+java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-*-JMH.jar \
+  '.*GraphWriteIngestionBenchmark.*' \
+  -wi 1 -i 3 -w 1s -r 1s -f 1 \
+  -p backend=tinkergraph,neo4j,memgraph,age,falkordb \
+  -p batchSize=100,1000 \
+  -p repeatBatches=5 \
+  -prof gc \
+  -rf json \
+  -rff docs/benchmark/graph-write-ingestion-testcontainers-2026-05-21.json
 ```
 
 Docker-free API model matrix는 다음처럼 실행합니다.
@@ -99,6 +115,34 @@ BFS와 launch/create 행은 `us/op`이며 낮을수록 좋습니다.
 - [Markdown result table](../../docs/benchmark/2026-05-21-api-model-results.md)
 
 ## 최신 Testcontainers 결과
+
+### Sustained write ingestion
+
+![Graph write ingestion Testcontainers benchmark](../../docs/images/readme-charts/graph-write-ingestion-testcontainers-latency-chart-01.png)
+
+실행 조건: macOS arm64, GraalVM JDK 25.0.3, JMH 1.37, fork 1회, warmup 1회, 1초 measurement 3회, 실제 Testcontainers backend, GC profiler 활성화, 2026-05-21. `Repeated mixed batches`는 benchmark operation 하나에서 mixed vertex+edge batch를 5회 반복합니다.
+
+모든 값은 `ms/op`이며 낮을수록 좋습니다. 굵은 값은 이번 실행에서 가장 빠른 backend입니다.
+
+| Scenario | Batch | TinkerGraph | Neo4j | Memgraph | AGE | FalkorDB |
+|---|---:|---:|---:|---:|---:|---:|
+| Vertex-only batch insert | 100 | 2.606 | 2.740 | **0.965** | 1.347 | 1.467 |
+| Vertex-only batch insert | 1,000 | 11.902 | 8.499 | **5.429** | 9.100 | 6.210 |
+| Edge-only batch insert | 100 | 3.298 | 3.788 | **1.190** | 9.436 | 32.347 |
+| Edge-only batch insert | 1,000 | 18.971 | 13.762 | **7.572** | 260.430 | 3026.397 |
+| Mixed vertex+edge insert | 100 | 7.102 | 7.352 | **2.199** | 27.426 | 51.437 |
+| Mixed vertex+edge insert | 1,000 | 30.819 | 23.510 | **13.336** | 279.704 | 3354.140 |
+| Repeated mixed batches (5x) | 100 | 32.221 | 35.181 | **11.456** | 149.935 | 263.976 |
+| Repeated mixed batches (5x) | 1,000 | 154.891 | 113.940 | **66.612** | 1428.239 | 17285.768 |
+
+해석: Memgraph는 모든 latency row에서 가장 빠른 persistent backend입니다. Neo4j는 raw ingestion latency보다 운영 성숙도가 더 중요할 때 낮은 risk의 production 기본값으로 유지합니다. FalkorDB는 vertex-only insert에서는 경쟁력이 있지만, edge-heavy와 repeated mixed write profile은 이 공통 contract benchmark에서 너무 느립니다. FalkorDB가 1,000-row repeated mixed profile에서 이미 17.286 s/op까지 올라갔으므로 전체 10k matrix는 [#201](https://github.com/bluetape4k/bluetape4k-graph/issues/201)에서 별도로 추적합니다.
+
+결과 산출물:
+
+- [Chart PNG](../../docs/images/readme-charts/graph-write-ingestion-testcontainers-latency-chart-01.png)
+- [Chart SVG](../../docs/images/readme-charts/graph-write-ingestion-testcontainers-latency-chart-01.svg)
+- [Raw JMH JSON](../../docs/benchmark/graph-write-ingestion-testcontainers-2026-05-21.json)
+- [Markdown result table](../../docs/benchmark/2026-05-21-graph-write-ingestion-testcontainers-results.md)
 
 ### Medium dataset
 
@@ -180,13 +224,22 @@ python3 benchmark/graph-benchmark/scripts/render_api_model_chart.py \
   docs/benchmark/2026-05-21-api-model-jmh.json
 ```
 
+위 sustained write ingestion 차트를 렌더링합니다.
+
+```bash
+python3 benchmark/graph-benchmark/scripts/render_graph_write_ingestion_chart.py \
+  docs/benchmark/graph-write-ingestion-testcontainers-2026-05-21.json
+```
+
 ## Self-Improve Gate
 
 `bluetape4k-self-improve`는 fresh baseline이 생긴 뒤 사용합니다. 최적화 round에서 봉인할 파일은 다음과 같습니다.
 
 - `benchmark/graph-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/GraphDbComparisonBenchmark.kt`
+- `benchmark/graph-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/GraphWriteIngestionBenchmark.kt`
 - `benchmark/graph-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/GraphIoComparisonBenchmark.kt`
 - `benchmark/graph-benchmark/scripts/normalize_jmh_report.py`
+- `benchmark/graph-benchmark/scripts/render_graph_write_ingestion_chart.py`
 - `docs/benchmark/graph-benchmark-baseline.json`
 
 candidate를 채택하기 전 sealed-file validator를 실행합니다.

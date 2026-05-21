@@ -22,9 +22,10 @@ benchmark {
     }
 }
 
-tasks.withType<Jar>()
+tasks.withType<org.gradle.jvm.tasks.Jar>()
     .matching { it.name == "mainBenchmarkJar" }
     .configureEach {
+        dependsOn(tasks.named("classes"))
         from(sourceSets.main.get().output)
     }
 
