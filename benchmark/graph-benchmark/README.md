@@ -2,11 +2,12 @@
 
 [English](README.md) | [한국어](README.ko.md)
 
-JMH/kotlinx-benchmark module for graph performance comparison. It now contains four benchmark tracks:
+JMH/kotlinx-benchmark module for graph performance comparison. It now contains five benchmark tracks:
 
 - Existing TinkerGraph sync vs virtual-thread graph operations.
 - TinkerGraph API model comparison across sync, virtual-thread, and coroutine APIs.
 - Graph database backend comparison through the shared `GraphOperations` contract.
+- Sustained graph write and batch ingestion comparison through the shared `GraphOperations` contract.
 - graph-io format comparison using the same generated TinkerGraph dataset.
 
 ## Architecture
@@ -16,11 +17,12 @@ JMH/kotlinx-benchmark module for graph performance comparison. It now contains f
 ## What It Measures
 
 - `GraphDbComparisonBenchmark`: `tinkergraph`, `neo4j`, `memgraph`, `age`, and `falkordb` backends.
+- `GraphWriteIngestionBenchmark`: vertex-only, edge-only, mixed, and repeated mixed write batches on the same backend matrix.
 - `GraphIoComparisonBenchmark`: `csv`, `jackson2`, `jackson3`, `graphml`, `okio-jackson3`, and `okio-graphml`.
 - `ApiModelBenchmark`: sync, virtual-thread, and coroutine API overhead on the same in-memory TinkerGraph fixture.
 - Legacy operation benchmarks: batch insert, shortest path, neighbors, traversal, algorithm, and vertex operations.
 
-Container-backed backend benchmarks use bluetape4k Testcontainers singleton launchers. Run them serially and expect longer startup time.
+Container-backed backend benchmarks use bluetape4k Testcontainers launchers or wrappers. Run them serially and expect longer startup time.
 
 ## Running
 
@@ -52,6 +54,20 @@ java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-m
   -p sizeName=medium \
   -rf json \
   -rff docs/benchmark/graph-db-medium-testcontainers-2026-05-21.json
+```
+
+For sustained write ingestion profiles:
+
+```bash
+java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-*-JMH.jar \
+  '.*GraphWriteIngestionBenchmark.*' \
+  -wi 1 -i 3 -w 1s -r 1s -f 1 \
+  -p backend=tinkergraph,neo4j,memgraph,age,falkordb \
+  -p batchSize=100,1000 \
+  -p repeatBatches=5 \
+  -prof gc \
+  -rf json \
+  -rff docs/benchmark/graph-write-ingestion-testcontainers-2026-05-21.json
 ```
 
 For the Docker-free API model matrix:
@@ -99,6 +115,34 @@ Artifacts:
 - [Markdown result table](../../docs/benchmark/2026-05-21-api-model-results.md)
 
 ## Latest Testcontainers Result
+
+### Sustained Write Ingestion
+
+![Graph write ingestion Testcontainers benchmark](../../docs/images/readme-charts/graph-write-ingestion-testcontainers-latency-chart-01.png)
+
+Run conditions: macOS arm64, GraalVM JDK 25.0.3, JMH 1.37, one fork, one warmup iteration, three one-second measurement iterations, real Testcontainers backends, GC profiler enabled, May 21, 2026. `Repeated mixed batches` runs five mixed vertex+edge batches in one benchmark operation.
+
+All values are `ms/op`; lower is better. Bold indicates the fastest backend in this run.
+
+| Scenario | Batch | TinkerGraph | Neo4j | Memgraph | AGE | FalkorDB |
+|---|---:|---:|---:|---:|---:|---:|
+| Vertex-only batch insert | 100 | 2.606 | 2.740 | **0.965** | 1.347 | 1.467 |
+| Vertex-only batch insert | 1,000 | 11.902 | 8.499 | **5.429** | 9.100 | 6.210 |
+| Edge-only batch insert | 100 | 3.298 | 3.788 | **1.190** | 9.436 | 32.347 |
+| Edge-only batch insert | 1,000 | 18.971 | 13.762 | **7.572** | 260.430 | 3026.397 |
+| Mixed vertex+edge insert | 100 | 7.102 | 7.352 | **2.199** | 27.426 | 51.437 |
+| Mixed vertex+edge insert | 1,000 | 30.819 | 23.510 | **13.336** | 279.704 | 3354.140 |
+| Repeated mixed batches (5x) | 100 | 32.221 | 35.181 | **11.456** | 149.935 | 263.976 |
+| Repeated mixed batches (5x) | 1,000 | 154.891 | 113.940 | **66.612** | 1428.239 | 17285.768 |
+
+Interpretation: Memgraph is the fastest persistent backend across every latency row. Neo4j remains the lower-risk production default when operational maturity matters more than raw ingestion latency. FalkorDB is competitive for vertex-only insertion, but edge-heavy and repeated mixed write profiles are too slow in this contract benchmark. The full 10k matrix is tracked separately in [#201](https://github.com/bluetape4k/bluetape4k-graph/issues/201) because FalkorDB already reached 17.286 s/op at the 1,000-row repeated mixed profile.
+
+Artifacts:
+
+- [Chart PNG](../../docs/images/readme-charts/graph-write-ingestion-testcontainers-latency-chart-01.png)
+- [Chart SVG](../../docs/images/readme-charts/graph-write-ingestion-testcontainers-latency-chart-01.svg)
+- [Raw JMH JSON](../../docs/benchmark/graph-write-ingestion-testcontainers-2026-05-21.json)
+- [Markdown result table](../../docs/benchmark/2026-05-21-graph-write-ingestion-testcontainers-results.md)
 
 ### Medium Dataset
 
@@ -180,13 +224,22 @@ python3 benchmark/graph-benchmark/scripts/render_api_model_chart.py \
   docs/benchmark/2026-05-21-api-model-jmh.json
 ```
 
+Render the sustained write ingestion chart used above:
+
+```bash
+python3 benchmark/graph-benchmark/scripts/render_graph_write_ingestion_chart.py \
+  docs/benchmark/graph-write-ingestion-testcontainers-2026-05-21.json
+```
+
 ## Self-Improve Gate
 
 Use `bluetape4k-self-improve` only after a fresh baseline exists. Sealed files for optimization rounds are:
 
 - `benchmark/graph-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/GraphDbComparisonBenchmark.kt`
+- `benchmark/graph-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/GraphWriteIngestionBenchmark.kt`
 - `benchmark/graph-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/GraphIoComparisonBenchmark.kt`
 - `benchmark/graph-benchmark/scripts/normalize_jmh_report.py`
+- `benchmark/graph-benchmark/scripts/render_graph_write_ingestion_chart.py`
 - `docs/benchmark/graph-benchmark-baseline.json`
 
 Run the sealed-file validator before accepting a candidate:
