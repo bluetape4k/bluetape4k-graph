@@ -35,7 +35,7 @@ Use this project when you need:
 
 ## Architecture
 
-![graph Class Structure 2 diagram](docs/images/readme-diagrams/bluetape4k-graph-architecture-01.png)
+![graph Architecture diagram](docs/images/readme-diagrams/bluetape4k-graph-architecture-01.png)
 
 ![graph Class Structure 2 diagram](docs/images/readme-diagrams/bluetape4k-graph-class-02.png)
 
