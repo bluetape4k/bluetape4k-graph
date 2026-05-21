@@ -70,6 +70,47 @@ Graph Database(이하 GraphDB)는 데이터를 **정점(Vertex/Node)** 과 **간
 Neo4j / Memgraph / AGE 백엔드 벤치마크는 Testcontainers 기반이므로 CI `benchmark.yml`
 워크플로우의 수동 트리거(`workflow_dispatch`)로 실행합니다.
 
+## API 모델 비교 (Sync vs Virtual Thread vs Coroutine)
+
+> **환경**: macOS arm64 / GraalVM JDK 25.0.3 / JMH 1.37
+> **측정 설정**: warmup 1회 × 1초, measurement 3회 × 1초, fork=1, `-prof gc`
+> **재실행**: `java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-*-JMH.jar '.*ApiModelBenchmark.*' -wi 1 -i 3 -r 1s -w 1s -f 1 -prof gc -rf json -rff docs/benchmark/2026-05-21-api-model-jmh.json`
+> **차트 재생성**: `python3 benchmark/graph-benchmark/scripts/render_api_model_chart.py docs/benchmark/2026-05-21-api-model-jmh.json`
+
+![API model benchmark](images/readme-charts/graph-api-model-chart-01.png)
+
+이 결과는 Docker-free TinkerGraph fixture에서 API model overhead를 보기 위한 짧은 smoke run입니다. Error가 큰 항목은 순위 확정보다 재측정 후보로 해석해야 합니다.
+
+### PageRank 처리량
+
+`ops/s` 기준이며 높을수록 좋습니다.
+
+| API model | Score | Error | Allocation |
+|---|---:|---:|---:|
+| Sync | **138,943.484 ops/s** | ±40,362.146 | 28,451 B/op |
+| Virtual Thread | 40,283.460 ops/s | ±9,678.720 | 29,456 B/op |
+| Coroutine Flow | 36,879.554 ops/s | ±85,084.781 | 29,516 B/op |
+
+### BFS 지연과 100-way 요청
+
+`us/op` 기준이며 낮을수록 좋습니다.
+
+| Scenario | API model | Score | Error | Allocation |
+|---|---|---:|---:|---:|
+| BFS depth=5 | Sync | **4.724 us/op** | ±3.022 | 21,990 B/op |
+| BFS depth=5 | Virtual Thread | 18.668 us/op | ±8.229 | 23,152 B/op |
+| BFS depth=5 | Coroutine Flow | 20.244 us/op | ±11.268 | 23,455 B/op |
+| BFS 100-way | Virtual Thread | **240.903 us/op** | ±167.502 | 2,318,801 B/op |
+| BFS 100-way | Coroutine async | 279.828 us/op | ±329.942 | 2,367,754 B/op |
+| 100-way launch/create | Virtual Thread | 51.042 us/op | ±173.745 | 61,464 B/op |
+| 100-way launch/create | Coroutine async | **5.916 us/op** | ±3.127 | 28,373 B/op |
+
+해석:
+
+- 단일 호출에서는 Sync가 가장 낮은 오버헤드를 보입니다.
+- 100-way BFS에서는 Virtual Thread가 Coroutine보다 낮은 평균 지연과 allocation을 보였지만, 짧은 측정이라 error가 큽니다.
+- 순수 100-way launch/create 비용은 Coroutine async가 Virtual Thread 생성보다 낮았습니다. 실제 I/O blocking workload에서는 이 차이가 달라질 수 있습니다.
+
 ### 정점 삽입 1만 건 — `BatchInsertBenchmark`
 
 10,000개 `Person` 노드와 cycle 토폴로지 `KNOWS` 간선에 대한 단건 vs 배치 처리량 비교.

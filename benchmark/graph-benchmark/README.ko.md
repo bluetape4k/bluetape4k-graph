@@ -2,9 +2,10 @@
 
 [English](README.md) | [한국어](README.ko.md)
 
-그래프 성능 비교를 위한 JMH/kotlinx-benchmark 모듈입니다. 현재 세 가지 측정 축을 포함합니다.
+그래프 성능 비교를 위한 JMH/kotlinx-benchmark 모듈입니다. 현재 네 가지 측정 축을 포함합니다.
 
 - 기존 TinkerGraph Sync vs Virtual Thread 그래프 연산.
+- 동일한 TinkerGraph fixture에서 Sync, Virtual Thread, Coroutine API model 비교.
 - 공통 `GraphOperations` 계약을 통한 Graph DB backend 비교.
 - 동일한 TinkerGraph 생성 데이터셋을 사용하는 graph-io 포맷 비교.
 
@@ -16,6 +17,7 @@
 
 - `GraphDbComparisonBenchmark`: `tinkergraph`, `neo4j`, `memgraph`, `age`, `falkordb` backend.
 - `GraphIoComparisonBenchmark`: `csv`, `jackson2`, `jackson3`, `graphml`, `okio-jackson3`, `okio-graphml`.
+- `ApiModelBenchmark`: 동일한 in-memory TinkerGraph fixture에서 sync, virtual-thread, coroutine API overhead.
 - 기존 operation benchmark: batch insert, shortest path, neighbors, traversal, algorithm, vertex operations.
 
 컨테이너 기반 backend benchmark는 bluetape4k Testcontainers singleton launcher를 사용합니다. 순차 실행해야 하며 초기 기동 시간이 더 깁니다.
@@ -39,6 +41,50 @@ java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-m
   -rf json \
   -rff docs/benchmark/graph-db-testcontainers-2026-05-21.json
 ```
+
+Docker-free API model matrix는 다음처럼 실행합니다.
+
+```bash
+java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-*-JMH.jar \
+  '.*ApiModelBenchmark.*' \
+  -wi 1 -i 3 -r 1s -w 1s -f 1 \
+  -prof gc \
+  -rf json \
+  -rff docs/benchmark/2026-05-21-api-model-jmh.json
+```
+
+## 최신 API Model 결과
+
+![API model benchmark](../../docs/images/readme-charts/graph-api-model-chart-01.png)
+
+실행 조건: macOS arm64, GraalVM JDK 25.0.3, JMH 1.37, fork 1회, warmup 1회, 1초 measurement 3회, TinkerGraph fixture, 2026-05-21. 짧은 로컬 smoke run이므로 release-grade 주장에는 raw JSON 확인과 재측정이 필요합니다.
+
+PageRank throughput은 `ops/s`이며 높을수록 좋습니다.
+
+| API model | Score | Error | Allocation |
+|---|---:|---:|---:|
+| Sync | **138,943.484 ops/s** | ±40,362.146 | 28,451 B/op |
+| Virtual Thread | 40,283.460 ops/s | ±9,678.720 | 29,456 B/op |
+| Coroutine Flow | 36,879.554 ops/s | ±85,084.781 | 29,516 B/op |
+
+BFS와 launch/create 행은 `us/op`이며 낮을수록 좋습니다.
+
+| Scenario | API model | Score | Error | Allocation |
+|---|---|---:|---:|---:|
+| BFS depth=5 | Sync | **4.724 us/op** | ±3.022 | 21,990 B/op |
+| BFS depth=5 | Virtual Thread | 18.668 us/op | ±8.229 | 23,152 B/op |
+| BFS depth=5 | Coroutine Flow | 20.244 us/op | ±11.268 | 23,455 B/op |
+| BFS 100-way | Virtual Thread | **240.903 us/op** | ±167.502 | 2,318,801 B/op |
+| BFS 100-way | Coroutine async | 279.828 us/op | ±329.942 | 2,367,754 B/op |
+| 100-way launch/create | Virtual Thread | 51.042 us/op | ±173.745 | 61,464 B/op |
+| 100-way launch/create | Coroutine async | **5.916 us/op** | ±3.127 | 28,373 B/op |
+
+결과 산출물:
+
+- [Chart PNG](../../docs/images/readme-charts/graph-api-model-chart-01.png)
+- [Chart SVG](../../docs/images/readme-charts/graph-api-model-chart-01.svg)
+- [Raw JMH JSON](../../docs/benchmark/2026-05-21-api-model-jmh.json)
+- [Markdown result table](../../docs/benchmark/2026-05-21-api-model-results.md)
 
 ## 최신 Testcontainers 결과
 
@@ -88,6 +134,13 @@ python3 benchmark/graph-benchmark/scripts/normalize_jmh_report.py candidate.json
 ```bash
 python3 benchmark/graph-benchmark/scripts/render_graph_db_backend_chart.py \
   docs/benchmark/graph-db-testcontainers-2026-05-21.json
+```
+
+위 API model 차트를 렌더링합니다.
+
+```bash
+python3 benchmark/graph-benchmark/scripts/render_api_model_chart.py \
+  docs/benchmark/2026-05-21-api-model-jmh.json
 ```
 
 ## Self-Improve Gate
