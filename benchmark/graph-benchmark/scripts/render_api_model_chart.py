@@ -82,9 +82,9 @@ def render(scores: dict[str, dict[str, float | str]], output: Path) -> None:
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         f'<rect x="0" y="0" width="{width}" height="{height}" fill="#FAFAFA"/>',
-        '<text x="490" y="32" text-anchor="middle" font-family="sans-serif" font-size="18" '
-        'font-weight="bold" fill="#252525">API Model Benchmark</text>',
-        '<text x="490" y="54" text-anchor="middle" font-family="sans-serif" font-size="12" '
+        '<text x="490" y="32" text-anchor="middle" font-family="&apos;Architects Daughter&apos;,&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,cursive" font-size="18" '
+        'font-weight="400" fill="#252525">API Model Benchmark</text>',
+        '<text x="490" y="54" text-anchor="middle" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" '
         'fill="#666666">TinkerGraph fixture, JMH smoke run, one fork, one warmup, three measurement iterations.</text>',
     ]
 
@@ -92,7 +92,7 @@ def render(scores: dict[str, dict[str, float | str]], output: Path) -> None:
     for model, color in MODEL_COLORS.items():
         parts.append(f'<rect x="{legend_x}" y="74" width="12" height="12" fill="{color}" rx="2"/>')
         parts.append(
-            f'<text x="{legend_x + 16}" y="84" font-family="sans-serif" font-size="11" fill="#333333">'
+            f'<text x="{legend_x + 16}" y="84" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">'
             f'{esc(model)}</text>'
         )
         legend_x += 150
@@ -100,12 +100,12 @@ def render(scores: dict[str, dict[str, float | str]], output: Path) -> None:
     parts.extend(
         [
             '<rect x="705" y="70" width="222" height="28" fill="#EAF5EA" stroke="#86B586" rx="6"/>',
-            '<text x="816" y="89" text-anchor="middle" font-family="sans-serif" font-size="12" '
-            'font-weight="bold" fill="#2F6F3A">Direction is per panel</text>',
-            '<text x="24" y="128" font-family="sans-serif" font-size="15" font-weight="bold" '
+            '<text x="816" y="89" text-anchor="middle" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" '
+            'font-weight="400" fill="#2F6F3A">Direction is per panel</text>',
+            '<text x="24" y="128" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="15" font-weight="400" '
             'fill="#222222">PageRank throughput</text>',
-            f'<text x="{left}" y="128" font-family="sans-serif" font-size="11" '
-            'font-weight="bold" fill="#2F6F3A">Longer bars are better, ops/s.</text>',
+            f'<text x="{left}" y="128" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" '
+            'font-weight="400" fill="#2F6F3A">Longer bars are better, ops/s.</text>',
         ]
     )
 
@@ -116,23 +116,23 @@ def render(scores: dict[str, dict[str, float | str]], output: Path) -> None:
         unit = scores[operation]["unit"]
         color = MODEL_COLORS[model]
         parts.append(
-            f'<text x="{left - 10}" y="{y + 13}" text-anchor="end" font-family="sans-serif" '
+            f'<text x="{left - 10}" y="{y + 13}" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" '
             f'font-size="12" fill="#333333">{esc(model)}</text>'
         )
         bar(parts, left, y, (score / max_throughput) * chart_width, bar_h, color)
         parts.append(
             f'<text x="{left + (score / max_throughput) * chart_width + 8:.1f}" y="{y + 13}" '
-            f'font-family="sans-serif" font-size="11" fill="#333333">{score:,.0f} {esc(unit)}</text>'
+            f'font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">{score:,.0f} {esc(unit)}</text>'
         )
         y += bar_h + row_gap
 
     y += 48
     parts.extend(
         [
-            '<text x="24" y="{0}" font-family="sans-serif" font-size="15" font-weight="bold" '
+            '<text x="24" y="{0}" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="15" font-weight="400" '
             'fill="#222222">Latency and launch cost</text>'.format(y),
-            f'<text x="{left}" y="{y}" font-family="sans-serif" font-size="11" '
-            'font-weight="bold" fill="#2F6F3A">Shorter bars are better, us/op.</text>',
+            f'<text x="{left}" y="{y}" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" '
+            'font-weight="400" fill="#2F6F3A">Shorter bars are better, us/op.</text>',
         ]
     )
     y += 20
@@ -140,12 +140,12 @@ def render(scores: dict[str, dict[str, float | str]], output: Path) -> None:
     for title, rows in LATENCY_GROUPS:
         max_latency = max(float(scores[operation]["score"]) for _, operation in rows)
         parts.append(
-            f'<text x="24" y="{y + 15}" font-family="sans-serif" font-size="13" '
-            f'font-weight="bold" fill="#222222">{esc(title)}</text>'
+            f'<text x="24" y="{y + 15}" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="13" '
+            f'font-weight="400" fill="#222222">{esc(title)}</text>'
         )
         parts.append(
             f'<text x="{left + chart_width}" y="{y + 15}" text-anchor="end" '
-            f'font-family="sans-serif" font-size="10" fill="#888888">max {max_latency:.3g} us/op</text>'
+            f'font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="10" fill="#888888">max {max_latency:.3g} us/op</text>'
         )
         y += 28
         for model, operation in rows:
@@ -153,13 +153,13 @@ def render(scores: dict[str, dict[str, float | str]], output: Path) -> None:
             unit = scores[operation]["unit"]
             color = MODEL_COLORS[model]
             parts.append(
-                f'<text x="{left - 10}" y="{y + 13}" text-anchor="end" font-family="sans-serif" '
+                f'<text x="{left - 10}" y="{y + 13}" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" '
                 f'font-size="12" fill="#333333">{esc(model)}</text>'
             )
             bar(parts, left, y, (score / max_latency) * chart_width, bar_h, color)
             parts.append(
                 f'<text x="{left + (score / max_latency) * chart_width + 8:.1f}" y="{y + 13}" '
-                f'font-family="sans-serif" font-size="11" fill="#333333">{score:.3f} {esc(unit)}</text>'
+                f'font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">{score:.3f} {esc(unit)}</text>'
             )
             y += bar_h + row_gap
         y += 32

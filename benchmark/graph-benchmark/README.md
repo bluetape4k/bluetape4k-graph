@@ -2,12 +2,14 @@
 
 [English](README.md) | [한국어](README.ko.md)
 
-JMH/kotlinx-benchmark module for graph performance comparison. It now contains five benchmark tracks:
+kotlinx-benchmark module for graph performance comparison. It now contains seven benchmark tracks:
 
 - Existing TinkerGraph sync vs virtual-thread graph operations.
 - TinkerGraph API model comparison across sync, virtual-thread, and coroutine APIs.
 - Graph database backend comparison through the shared `GraphOperations` contract.
+- Domain-shaped graph workload comparison for social, IAM, fraud, and code graph queries.
 - Sustained graph write and batch ingestion comparison through the shared `GraphOperations` contract.
+- Production-shaped API model comparison across 10, 100, and 1,000 concurrent units.
 - graph-io format comparison using the same generated TinkerGraph dataset.
 
 ## Architecture
@@ -17,6 +19,7 @@ JMH/kotlinx-benchmark module for graph performance comparison. It now contains f
 ## What It Measures
 
 - `GraphDbComparisonBenchmark`: `tinkergraph`, `neo4j`, `memgraph`, `age`, and `falkordb` backends.
+- `GraphDomainWorkloadBenchmark`: social high fan-out, IAM reachability, fraud path, and code dependency workloads on `tinkergraph`, `neo4j`, and `memgraph`.
 - `GraphWriteIngestionBenchmark`: vertex-only, edge-only, mixed, and repeated mixed write batches on the same backend matrix.
 - `GraphIoComparisonBenchmark`: `csv`, `jackson2`, `jackson3`, `graphml`, `okio-jackson3`, and `okio-graphml`.
 - `ApiModelBenchmark`: sync, virtual-thread, and coroutine API overhead on the same in-memory TinkerGraph fixture.
@@ -30,55 +33,31 @@ Container-backed backend benchmarks use bluetape4k Testcontainers launchers or w
 ./gradlew :graph-benchmark:benchmark
 ```
 
-kotlinx-benchmark writes JMH JSON under `benchmark/graph-benchmark/build/reports/benchmarks/**/main.json`.
+kotlinx-benchmark writes JMH JSON under `benchmark/graph-benchmark/build/reports/benchmarks/**/main.json`. Use the Gradle tasks as the primary entrypoint; raw JMH jar execution is only for local diagnostics.
 
-For the graph DB backend matrix, run the real Testcontainers-backed JMH target:
+Graph DB backend matrix:
 
 ```bash
-java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-*-JMH.jar \
-  '.*GraphDbComparisonBenchmark.*' \
-  -wi 1 -i 3 -r 1s -w 1s -f 1 \
-  -p backend=tinkergraph,neo4j,memgraph,age,falkordb \
-  -p sizeName=small \
-  -rf json \
-  -rff docs/benchmark/graph-db-testcontainers-2026-05-21.json
+./gradlew :graph-benchmark:mainGraphDbSmallBenchmark
+./gradlew :graph-benchmark:mainGraphDbMediumBenchmark
 ```
 
-For the medium backend matrix:
+Domain-shaped workload matrix:
 
 ```bash
-java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-*-JMH.jar \
-  '.*GraphDbComparisonBenchmark.*' \
-  -wi 3 -i 5 -r 3s -w 2s -f 1 \
-  -p backend=tinkergraph,neo4j,memgraph,age,falkordb \
-  -p sizeName=medium \
-  -rf json \
-  -rff docs/benchmark/graph-db-medium-testcontainers-2026-05-21.json
+./gradlew :graph-benchmark:mainGraphDomainWorkloadBenchmark
 ```
 
-For sustained write ingestion profiles:
+Sustained write ingestion profiles:
 
 ```bash
-java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-*-JMH.jar \
-  '.*GraphWriteIngestionBenchmark.*' \
-  -wi 1 -i 3 -w 1s -r 1s -f 1 \
-  -p backend=tinkergraph,neo4j,memgraph,age,falkordb \
-  -p batchSize=100,1000 \
-  -p repeatBatches=5 \
-  -prof gc \
-  -rf json \
-  -rff docs/benchmark/graph-write-ingestion-testcontainers-2026-05-21.json
+./gradlew :graph-benchmark:mainGraphWriteIngestion10kBenchmark
 ```
 
-For the Docker-free API model matrix:
+Docker-free API model production matrix:
 
 ```bash
-java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-*-JMH.jar \
-  '.*ApiModelBenchmark.*' \
-  -wi 1 -i 3 -r 1s -w 1s -f 1 \
-  -prof gc \
-  -rf json \
-  -rff docs/benchmark/2026-05-21-api-model-jmh.json
+./gradlew :graph-benchmark:mainApiModelProductionBenchmark
 ```
 
 ## Latest API Model Result
@@ -114,7 +93,52 @@ Artifacts:
 - [Raw JMH JSON](../../docs/benchmark/2026-05-21-api-model-jmh.json)
 - [Markdown result table](../../docs/benchmark/2026-05-21-api-model-results.md)
 
+## Latest API Production Result
+
+![API model production benchmark](../../docs/images/readme-charts/graph-api-model-production-chart-01.png)
+
+Run conditions: macOS arm64, GraalVM JDK 25.0.3, kotlinx-benchmark/JMH 1.37, one fork, five warmup iterations, ten three-second measurement iterations, TinkerGraph fixture, May 21, 2026. All values are `us/op`; lower is better.
+
+| Scenario | Concurrency 10 | Concurrency 100 | Concurrency 1,000 |
+|---|---:|---:|---:|
+| BFS with Virtual Threads | **31.151** | **142.730** | **921.873** |
+| BFS with Coroutines | 38.795 | 157.676 | 1151.154 |
+| Virtual Thread creation | 8.867 | 28.225 | 200.810 |
+| Coroutine launch | **0.586** | **4.826** | **47.657** |
+
+Interpretation: Virtual Threads remain the lower-latency choice for blocking-style concurrent graph work in this fixture. Coroutines have much lower launch overhead, so choose them when the surrounding application is already coroutine-native or the graph call is composed with other suspend work.
+
+Artifacts:
+
+- [Chart PNG](../../docs/images/readme-charts/graph-api-model-production-chart-01.png)
+- [Chart SVG](../../docs/images/readme-charts/graph-api-model-production-chart-01.svg)
+- [Raw JMH JSON](../../docs/benchmark/api-model-production-gradle-2026-05-21.json)
+
 ## Latest Testcontainers Result
+
+### Domain Workloads
+
+![Graph domain workload Testcontainers benchmark](../../docs/images/readme-charts/graph-domain-workload-testcontainers-latency-chart-01.png)
+
+Run conditions: macOS arm64, GraalVM JDK 25.0.3, kotlinx-benchmark/JMH 1.37, one fork, two warmup iterations, four two-second measurement iterations, real Neo4j and Memgraph Testcontainers plus in-memory TinkerGraph, May 21, 2026. All values are `ms/op`; lower is better.
+
+| Workload | TinkerGraph | Neo4j | Memgraph |
+|---|---:|---:|---:|
+| Code dependency traversal | **0.009** | 0.530 | 0.306 |
+| Code reverse dependency lookup | **0.006** | 0.579 | 0.348 |
+| Fraud high-degree neighborhood | **0.038** | 1.119 | 0.620 |
+| Fraud suspicious path exists | 1.000 | 0.509 | **0.405** |
+| IAM permission reachability | **0.033** | 0.508 | 0.300 |
+| Social high fan-out expansion | **0.030** | 0.991 | 0.549 |
+| Social two-hop candidate lookup | **0.164** | 2.756 | 1.755 |
+
+Interpretation: TinkerGraph is still the fastest local analysis engine for in-memory domain fixtures. Among persistent backends, Memgraph is consistently faster than Neo4j in this local domain matrix, while Neo4j remains the safer default when ecosystem, operations, and query tooling dominate.
+
+Artifacts:
+
+- [Chart PNG](../../docs/images/readme-charts/graph-domain-workload-testcontainers-latency-chart-01.png)
+- [Chart SVG](../../docs/images/readme-charts/graph-domain-workload-testcontainers-latency-chart-01.svg)
+- [Raw JMH JSON](../../docs/benchmark/graph-domain-workload-testcontainers-2026-05-21.json)
 
 ### Sustained Write Ingestion
 
@@ -143,6 +167,27 @@ Artifacts:
 - [Chart SVG](../../docs/images/readme-charts/graph-write-ingestion-testcontainers-latency-chart-01.svg)
 - [Raw JMH JSON](../../docs/benchmark/graph-write-ingestion-testcontainers-2026-05-21.json)
 - [Markdown result table](../../docs/benchmark/2026-05-21-graph-write-ingestion-testcontainers-results.md)
+
+### 10k Sustained Write Ingestion
+
+![Graph write ingestion 10k Testcontainers benchmark](../../docs/images/readme-charts/graph-write-ingestion-10k-testcontainers-latency-chart-01.png)
+
+Run conditions: macOS arm64, GraalVM JDK 25.0.3, kotlinx-benchmark/JMH 1.37, one fork, one warmup iteration, three one-second measurement iterations, 10,000-row write batches, real Neo4j and Memgraph Testcontainers plus in-memory TinkerGraph, May 21, 2026. All values are `ms/op`; lower is better. AGE and FalkorDB are excluded from this selective 10k run because the 1,000-row repeated mixed profile already showed multi-second latency and the useful local window was reserved for the three fastest operational candidates.
+
+| Scenario | TinkerGraph | Neo4j | Memgraph |
+|---|---:|---:|---:|
+| Vertex-only batch insert | 71.152 | 67.135 | **53.518** |
+| Edge-only batch insert | 161.907 | 108.949 | **76.105** |
+| Mixed vertex+edge insert | 272.236 | 203.669 | **134.994** |
+| Repeated mixed batches (5x) | 1243.229 | 919.678 | **647.574** |
+
+Interpretation: Memgraph remains the best latency candidate for large sustained ingestion. Neo4j is slower but still viable when operational maturity matters more than peak ingestion speed.
+
+Artifacts:
+
+- [Chart PNG](../../docs/images/readme-charts/graph-write-ingestion-10k-testcontainers-latency-chart-01.png)
+- [Chart SVG](../../docs/images/readme-charts/graph-write-ingestion-10k-testcontainers-latency-chart-01.svg)
+- [Raw JMH JSON](../../docs/benchmark/graph-write-ingestion-10k-testcontainers-2026-05-21.json)
 
 ### Medium Dataset
 
@@ -175,10 +220,10 @@ Run conditions: macOS arm64, GraalVM JDK 25.0.3, JMH 1.37, one fork, one warmup 
 
 | Operation | TinkerGraph | Neo4j | Memgraph | AGE | FalkorDB |
 |---|---:|---:|---:|---:|---:|
-| `batchInsertCycle` | 5.379 | 6.217 | **1.969** | 21.665 | 38.660 |
-| `countPersons` | **0.032** | 0.809 | 0.402 | 0.610 | 0.193 |
-| `oneHopNeighbors` | **0.003** | 0.811 | 0.334 | 0.932 | 0.708 |
-| `shortestPath` | **0.018** | 0.806 | 0.331 | 1.320 | 0.280 |
+| `batchInsertCycle` | 5.704 | 6.903 | **1.954** | 21.580 | 38.670 |
+| `countPersons` | **0.030** | 0.779 | 0.394 | 0.645 | 0.195 |
+| `oneHopNeighbors` | **0.004** | 0.807 | 0.346 | 0.941 | 0.639 |
+| `shortestPath` | **0.022** | 0.795 | 0.344 | 1.279 | 0.290 |
 
 All values are `ms/op`; lower is better. Bold indicates the fastest backend in this run.
 
@@ -186,7 +231,8 @@ Artifacts:
 
 - [Chart PNG](../../docs/images/readme-charts/graph-db-testcontainers-latency-chart-01.png)
 - [Chart SVG](../../docs/images/readme-charts/graph-db-testcontainers-latency-chart-01.svg)
-- [Raw JMH JSON](../../docs/benchmark/graph-db-testcontainers-2026-05-21.json)
+- [Raw JMH JSON](../../docs/benchmark/graph-db-small-gradle-testcontainers-2026-05-21.json)
+- [Legacy raw JMH JSON](../../docs/benchmark/graph-db-testcontainers-2026-05-21.json)
 - [Normalized baseline JSON](../../docs/benchmark/graph-benchmark-baseline.json)
 - [Markdown result table](../../docs/benchmark/2026-05-21-graph-db-testcontainers-results.md)
 
@@ -214,7 +260,7 @@ Render the graph DB backend chart used above:
 
 ```bash
 python3 benchmark/graph-benchmark/scripts/render_graph_db_backend_chart.py \
-  docs/benchmark/graph-db-testcontainers-2026-05-21.json
+  docs/benchmark/graph-db-small-gradle-testcontainers-2026-05-21.json
 ```
 
 Render the API model chart used above:
@@ -224,11 +270,25 @@ python3 benchmark/graph-benchmark/scripts/render_api_model_chart.py \
   docs/benchmark/2026-05-21-api-model-jmh.json
 ```
 
+Render the API production chart used above:
+
+```bash
+python3 benchmark/graph-benchmark/scripts/render_api_model_production_chart.py \
+  docs/benchmark/api-model-production-gradle-2026-05-21.json
+```
+
+Render the domain workload chart used above:
+
+```bash
+python3 benchmark/graph-benchmark/scripts/render_graph_domain_workload_chart.py \
+  docs/benchmark/graph-domain-workload-testcontainers-2026-05-21.json
+```
+
 Render the sustained write ingestion chart used above:
 
 ```bash
 python3 benchmark/graph-benchmark/scripts/render_graph_write_ingestion_chart.py \
-  docs/benchmark/graph-write-ingestion-testcontainers-2026-05-21.json
+  docs/benchmark/graph-write-ingestion-10k-testcontainers-2026-05-21.json
 ```
 
 ## Self-Improve Gate
@@ -236,9 +296,11 @@ python3 benchmark/graph-benchmark/scripts/render_graph_write_ingestion_chart.py 
 Use `bluetape4k-self-improve` only after a fresh baseline exists. Sealed files for optimization rounds are:
 
 - `benchmark/graph-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/GraphDbComparisonBenchmark.kt`
+- `benchmark/graph-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/GraphDomainWorkloadBenchmark.kt`
 - `benchmark/graph-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/GraphWriteIngestionBenchmark.kt`
 - `benchmark/graph-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/GraphIoComparisonBenchmark.kt`
 - `benchmark/graph-benchmark/scripts/normalize_jmh_report.py`
+- `benchmark/graph-benchmark/scripts/render_graph_domain_workload_chart.py`
 - `benchmark/graph-benchmark/scripts/render_graph_write_ingestion_chart.py`
 - `docs/benchmark/graph-benchmark-baseline.json`
 

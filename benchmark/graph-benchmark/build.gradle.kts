@@ -19,6 +19,52 @@ benchmark {
             iterationTimeUnit = "s"
             reportFormat = "json"
         }
+        register("graphDbSmall") {
+            include(".*GraphDbComparisonBenchmark.*")
+            param("sizeName", "small")
+            warmups = 1
+            iterations = 3
+            iterationTime = 1
+            iterationTimeUnit = "s"
+            reportFormat = "json"
+        }
+        register("graphDbMedium") {
+            include(".*GraphDbComparisonBenchmark.*")
+            param("sizeName", "medium")
+            warmups = 3
+            iterations = 5
+            iterationTime = 3
+            iterationTimeUnit = "s"
+            reportFormat = "json"
+        }
+        register("graphWriteIngestion10k") {
+            include(".*GraphWriteIngestionBenchmark.*")
+            param("backend", "tinkergraph", "neo4j", "memgraph")
+            param("batchSize", 10_000)
+            warmups = 1
+            iterations = 3
+            iterationTime = 1
+            iterationTimeUnit = "s"
+            reportFormat = "json"
+        }
+        register("graphDomainWorkload") {
+            include(".*GraphDomainWorkloadBenchmark.*")
+            param("backend", "tinkergraph", "neo4j", "memgraph")
+            warmups = 2
+            iterations = 4
+            iterationTime = 2
+            iterationTimeUnit = "s"
+            reportFormat = "json"
+        }
+        register("apiModelProduction") {
+            include(".*ApiModelBenchmark\\.(bfsConcurrentVirtualThreadLatency|bfsConcurrentCoroutineLatency|virtualThreadConcurrentCreationCost|coroutineConcurrentLaunchCost)")
+            param("concurrency", 10, 100, 1000)
+            warmups = 5
+            iterations = 10
+            iterationTime = 3
+            iterationTimeUnit = "s"
+            reportFormat = "json"
+        }
     }
 }
 

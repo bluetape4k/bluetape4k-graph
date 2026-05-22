@@ -17,6 +17,9 @@ import org.openjdk.jmh.annotations.Fork
 import org.openjdk.jmh.annotations.Measurement
 import org.openjdk.jmh.annotations.Mode
 import org.openjdk.jmh.annotations.OutputTimeUnit
+import org.openjdk.jmh.annotations.Param
+import org.openjdk.jmh.annotations.Scope
+import org.openjdk.jmh.annotations.State
 import org.openjdk.jmh.annotations.Warmup
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
@@ -50,11 +53,11 @@ open class ApiModelBenchmark : GraphBenchmarkState() {
 
     private val concurrentStartIds: List<GraphElementId> by lazy {
         val seeds = listOf(aliceId, bobId, charlieId, daveId)
-        List(CONCURRENT_REQUESTS) { index -> seeds[index % seeds.size] }
+        List(MAX_CONCURRENT_REQUESTS) { index -> seeds[index % seeds.size] }
     }
 
     private val launchPayload: List<Int> =
-        List(CONCURRENT_REQUESTS) { it }
+        List(MAX_CONCURRENT_REQUESTS) { it }
 
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
@@ -100,7 +103,7 @@ open class ApiModelBenchmark : GraphBenchmarkState() {
     @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MICROSECONDS)
     fun bfs100wayVirtualThreadLatency(): Int {
-        val futures = concurrentStartIds.map { startId ->
+        val futures = concurrentStartIds(CONCURRENT_REQUESTS).map { startId ->
             vtAlgoOps.bfsAsync(startId, bfsOptions)
         }
         CompletableFuture.allOf(*futures.toTypedArray()).join()
@@ -112,7 +115,7 @@ open class ApiModelBenchmark : GraphBenchmarkState() {
     @OutputTimeUnit(TimeUnit.MICROSECONDS)
     fun bfs100wayCoroutineLatency(): Int =
         runBlocking {
-            concurrentStartIds
+            concurrentStartIds(CONCURRENT_REQUESTS)
                 .map { startId -> async { suspendOps.bfs(startId, bfsOptions).toList().size } }
                 .awaitAll()
                 .sum()
@@ -122,7 +125,7 @@ open class ApiModelBenchmark : GraphBenchmarkState() {
     @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MICROSECONDS)
     fun virtualThread100wayCreationCost(): Int {
-        val futures = launchPayload.map { value ->
+        val futures = launchPayload(CONCURRENT_REQUESTS).map { value ->
             virtualFutureOf { value }
         }
         CompletableFuture.allOf(*futures.toTypedArray()).join()
@@ -134,14 +137,72 @@ open class ApiModelBenchmark : GraphBenchmarkState() {
     @OutputTimeUnit(TimeUnit.MICROSECONDS)
     fun coroutine100wayLaunchCost(): Int =
         runBlocking {
-            launchPayload
+            launchPayload(CONCURRENT_REQUESTS)
                 .map { value -> async { value } }
                 .awaitAll()
                 .sum()
         }
 
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MICROSECONDS)
+    fun bfsConcurrentVirtualThreadLatency(state: ApiModelConcurrencyState): Int {
+        val futures = concurrentStartIds(state.concurrency).map { startId ->
+            vtAlgoOps.bfsAsync(startId, bfsOptions)
+        }
+        CompletableFuture.allOf(*futures.toTypedArray()).join()
+        return futures.sumOf { it.join().size }
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MICROSECONDS)
+    fun bfsConcurrentCoroutineLatency(state: ApiModelConcurrencyState): Int =
+        runBlocking {
+            concurrentStartIds(state.concurrency)
+                .map { startId -> async { suspendOps.bfs(startId, bfsOptions).toList().size } }
+                .awaitAll()
+                .sum()
+        }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MICROSECONDS)
+    fun virtualThreadConcurrentCreationCost(state: ApiModelConcurrencyState): Int {
+        val futures = launchPayload(state.concurrency).map { value ->
+            virtualFutureOf { value }
+        }
+        CompletableFuture.allOf(*futures.toTypedArray()).join()
+        return futures.sumOf { it.join() }
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MICROSECONDS)
+    fun coroutineConcurrentLaunchCost(state: ApiModelConcurrencyState): Int =
+        runBlocking {
+            launchPayload(state.concurrency)
+                .map { value -> async { value } }
+                .awaitAll()
+                .sum()
+        }
+
+    private fun concurrentStartIds(count: Int): List<GraphElementId> =
+        concurrentStartIds.subList(0, count)
+
+    private fun launchPayload(count: Int): List<Int> =
+        launchPayload.subList(0, count)
+
     private companion object {
         private const val PERSON_LABEL = "Person"
         private const val CONCURRENT_REQUESTS = 100
+        private const val MAX_CONCURRENT_REQUESTS = 1_000
     }
+}
+
+@State(Scope.Thread)
+open class ApiModelConcurrencyState {
+
+    @Param("10", "100", "1000")
+    var concurrency: Int = 100
 }

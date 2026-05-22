@@ -47,11 +47,7 @@ import java.util.concurrent.atomic.AtomicLong
  * - `repeatedMixedBatches` reports one operation as multiple vertex+edge batches; compare it separately from one-batch rows.
  *
  * ```bash
- * java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-*-JMH.jar \
- *   '.*GraphWriteIngestionBenchmark.*' \
- *   -wi 1 -i 3 -w 1s -r 1s -f 1 \
- *   -p backend=tinkergraph,neo4j,memgraph,age,falkordb \
- *   -p batchSize=100,1000
+ * ./gradlew :graph-benchmark:mainGraphWriteIngestion10kBenchmark
  * ```
  */
 @State(Scope.Benchmark)

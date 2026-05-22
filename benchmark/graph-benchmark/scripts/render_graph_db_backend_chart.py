@@ -61,13 +61,13 @@ def render(grouped: dict[str, list[dict]], output: Path, title: str, subtitle: s
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         f'<rect x="0" y="0" width="{width}" height="{height}" fill="#FAFAFA"/>',
-        '<text x="480" y="30" text-anchor="middle" font-family="sans-serif" font-size="18" '
-        f'font-weight="bold" fill="#252525">{esc(title)}</text>',
-        '<text x="480" y="52" text-anchor="middle" font-family="sans-serif" font-size="12" '
+        '<text x="480" y="30" text-anchor="middle" font-family="&apos;Architects Daughter&apos;,&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,cursive" font-size="18" '
+        f'font-weight="400" fill="#252525">{esc(title)}</text>',
+        '<text x="480" y="52" text-anchor="middle" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" '
         f'fill="#666666">{esc(subtitle)}</text>',
         '<rect x="704" y="16" width="224" height="28" fill="#EAF5EA" stroke="#86B586" rx="6"/>',
-        '<text x="816" y="35" text-anchor="middle" font-family="sans-serif" font-size="12" '
-        'font-weight="bold" fill="#2F6F3A">Lower score = faster</text>',
+        '<text x="816" y="35" text-anchor="middle" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" '
+        'font-weight="400" fill="#2F6F3A">Lower score = faster</text>',
     ]
 
     legend_x = left
@@ -75,14 +75,14 @@ def render(grouped: dict[str, list[dict]], output: Path, title: str, subtitle: s
         color = BACKEND_COLORS[backend]
         parts.append(f'<rect x="{legend_x}" y="62" width="12" height="12" fill="{color}" rx="2"/>')
         parts.append(
-            f'<text x="{legend_x + 16}" y="72" font-family="sans-serif" font-size="11" fill="#333333">'
+            f'<text x="{legend_x + 16}" y="72" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">'
             f'{esc(backend)}</text>'
         )
         legend_x += 118
 
     parts.append(
-        f'<text x="{left}" y="90" font-family="sans-serif" font-size="11" '
-        'font-weight="bold" fill="#2F6F3A">Shorter bars are better because each bar is time per operation.</text>'
+        f'<text x="{left}" y="90" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" '
+        'font-weight="400" fill="#2F6F3A">Shorter bars are better because each bar is time per operation.</text>'
     )
 
     y = top + 26
@@ -90,12 +90,12 @@ def render(grouped: dict[str, list[dict]], output: Path, title: str, subtitle: s
         rows = sorted(grouped.get(operation, []), key=lambda r: backends.index(r["backend"]))
         max_score = max((r["score"] for r in rows), default=1.0)
         parts.append(
-            f'<text x="24" y="{y + 16}" font-family="sans-serif" font-size="14" '
-            f'font-weight="bold" fill="#222222">{esc(operation)}</text>'
+            f'<text x="24" y="{y + 16}" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="14" '
+            f'font-weight="400" fill="#222222">{esc(operation)}</text>'
         )
         parts.append(
             f'<text x="{left + chart_width}" y="{y + 16}" text-anchor="end" '
-            f'font-family="sans-serif" font-size="10" fill="#888888">max {max_score:.3g} ms/op</text>'
+            f'font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="10" fill="#888888">max {max_score:.3g} ms/op</text>'
         )
         y += 28
         for row in rows:
@@ -105,12 +105,12 @@ def render(grouped: dict[str, list[dict]], output: Path, title: str, subtitle: s
             color = BACKEND_COLORS.get(backend, "#888888")
             parts.append(
                 f'<text x="{left - 10}" y="{y + 13}" text-anchor="end" '
-                f'font-family="sans-serif" font-size="12" fill="#333333">{esc(backend)}</text>'
+                f'font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">{esc(backend)}</text>'
             )
             parts.append(f'<rect x="{left}" y="{y}" width="{bar_w:.1f}" height="{bar_h}" fill="{color}" rx="3"/>')
             parts.append(
                 f'<text x="{left + bar_w + 8:.1f}" y="{y + 13}" '
-                f'font-family="sans-serif" font-size="11" fill="#333333">{score:.3g}</text>'
+                f'font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">{score:.3g}</text>'
             )
             y += bar_h + row_gap
         y += group_gap

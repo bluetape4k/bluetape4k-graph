@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render GraphWriteIngestionBenchmark JMH JSON as an SVG/PNG latency chart."""
+"""Render GraphDomainWorkloadBenchmark JMH JSON as an SVG/PNG latency chart."""
 
 from __future__ import annotations
 
@@ -14,15 +14,16 @@ BACKEND_COLORS = {
     "tinkergraph": "#4A90D9",
     "neo4j": "#5ABF6B",
     "memgraph": "#E8B040",
-    "age": "#D96C6C",
-    "falkordb": "#7B68EE",
 }
 
 OPERATIONS = [
-    "vertexOnlyBatchInsert",
-    "edgeOnlyBatchInsert",
-    "mixedVertexEdgeInsert",
-    "repeatedMixedBatches",
+    "socialHighFanOutExpansion",
+    "socialTwoHopCandidateLookup",
+    "iamPermissionReachability",
+    "fraudHighDegreeNeighborhood",
+    "fraudSuspiciousPathExists",
+    "codeDependencyTraversal",
+    "codeReverseDependencyLookup",
 ]
 
 
@@ -30,30 +31,17 @@ def esc(value: object) -> str:
     return str(value).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
-def format_score(score: float) -> str:
-    if score >= 100:
-        return f"{score:,.0f}"
-    if score >= 10:
-        return f"{score:,.1f}"
-    if score >= 1:
-        return f"{score:,.2f}"
-    return f"{score:,.3f}"
-
-
 def load_rows(path: Path) -> dict[str, list[dict]]:
-    rows = json.loads(path.read_text())
     grouped: dict[str, list[dict]] = {}
-    for row in rows:
+    for row in json.loads(path.read_text()):
         benchmark = row.get("benchmark", "")
         operation = benchmark.split(".")[-1]
         if operation not in OPERATIONS:
             continue
         params = row.get("params", {})
-        batch_size = params.get("batchSize", "unknown")
-        backend = params.get("backend", "unknown")
-        grouped.setdefault(f"{operation} / batch={batch_size}", []).append(
+        grouped.setdefault(operation, []).append(
             {
-                "backend": backend,
+                "backend": params.get("backend", "unknown"),
                 "score": float(row["primaryMetric"]["score"]),
                 "error": row["primaryMetric"].get("scoreError"),
                 "unit": row["primaryMetric"].get("scoreUnit", ""),
@@ -63,26 +51,17 @@ def load_rows(path: Path) -> dict[str, list[dict]]:
 
 
 def render(grouped: dict[str, list[dict]], output: Path, title: str, subtitle: str) -> None:
-    backend_order = ["tinkergraph", "neo4j", "memgraph", "age", "falkordb"]
-    present_backends = {row["backend"] for rows in grouped.values() for row in rows}
-    backends = [backend for backend in backend_order if backend in present_backends]
-    groups = sorted(
-        grouped,
-        key=lambda key: (
-            OPERATIONS.index(key.split(" / ")[0]),
-            int(key.rsplit("=", maxsplit=1)[-1]),
-        ),
-    )
+    backends = ["tinkergraph", "neo4j", "memgraph"]
 
     width = 1080
-    left = 250
+    left = 270
     chart_width = 620
     top = 92
     bar_h = 16
     row_gap = 7
-    group_gap = 30
+    group_gap = 28
     group_h = 28 + len(backends) * (bar_h + row_gap) + group_gap
-    height = top + 26 + len(groups) * group_h + 24
+    height = top + 26 + len(OPERATIONS) * group_h + 24
 
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
@@ -104,7 +83,7 @@ def render(grouped: dict[str, list[dict]], output: Path, title: str, subtitle: s
             f'<text x="{legend_x + 16}" y="76" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">'
             f'{esc(backend)}</text>'
         )
-        legend_x += 118
+        legend_x += 140
 
     parts.append(
         f'<text x="{left}" y="96" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" '
@@ -112,16 +91,16 @@ def render(grouped: dict[str, list[dict]], output: Path, title: str, subtitle: s
     )
 
     y = top + 26
-    for group in groups:
-        rows = sorted(grouped.get(group, []), key=lambda row: backends.index(row["backend"]))
+    for operation in OPERATIONS:
+        rows = sorted(grouped.get(operation, []), key=lambda row: backends.index(row["backend"]))
         max_score = max((row["score"] for row in rows), default=1.0)
         parts.append(
             f'<text x="24" y="{y + 16}" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="13" '
-            f'font-weight="400" fill="#222222">{esc(group)}</text>'
+            f'font-weight="400" fill="#222222">{esc(operation)}</text>'
         )
         parts.append(
             f'<text x="{left + chart_width}" y="{y + 16}" text-anchor="end" '
-            f'font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="10" fill="#888888">max {format_score(max_score)} ms/op</text>'
+            f'font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="10" fill="#888888">max {max_score:.3g} ms/op</text>'
         )
         y += 28
         for row in rows:
@@ -136,7 +115,7 @@ def render(grouped: dict[str, list[dict]], output: Path, title: str, subtitle: s
             parts.append(f'<rect x="{left}" y="{y}" width="{bar_w:.1f}" height="{bar_h}" fill="{color}" rx="3"/>')
             parts.append(
                 f'<text x="{left + bar_w + 8:.1f}" y="{y + 12}" '
-                f'font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="10" fill="#333333">{format_score(score)}</text>'
+                f'font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="10" fill="#333333">{score:.3g}</text>'
             )
             y += bar_h + row_gap
         y += group_gap
@@ -152,17 +131,17 @@ def main() -> None:
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path("docs/images/readme-charts/graph-write-ingestion-testcontainers-latency-chart-01.svg"),
+        default=Path("docs/images/readme-charts/graph-domain-workload-testcontainers-latency-chart-01.svg"),
     )
     parser.add_argument(
         "--png-output",
         type=Path,
-        default=Path("docs/images/readme-charts/graph-write-ingestion-testcontainers-latency-chart-01.png"),
+        default=Path("docs/images/readme-charts/graph-domain-workload-testcontainers-latency-chart-01.png"),
     )
-    parser.add_argument("--title", default="Graph Write Ingestion Testcontainers Benchmark")
+    parser.add_argument("--title", default="Graph Domain Workload Testcontainers Benchmark")
     parser.add_argument(
         "--subtitle",
-        default="Latency, ms/op. Lower score is faster. 100 and 1,000 row batches.",
+        default="Latency, ms/op. Lower score is faster. Domain-shaped fixtures.",
     )
     parser.add_argument("--skip-png", action="store_true")
     args = parser.parse_args()
