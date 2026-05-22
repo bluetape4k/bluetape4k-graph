@@ -4,14 +4,13 @@ import io.bluetape4k.graph.algo.VirtualThreadAlgorithmAdapter
 import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.PageRankOptions
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
-import org.openjdk.jmh.annotations.Benchmark
-import org.openjdk.jmh.annotations.BenchmarkMode
-import org.openjdk.jmh.annotations.Fork
-import org.openjdk.jmh.annotations.Measurement
-import org.openjdk.jmh.annotations.Mode
-import org.openjdk.jmh.annotations.OutputTimeUnit
-import org.openjdk.jmh.annotations.Warmup
-import java.util.concurrent.TimeUnit
+import kotlinx.benchmark.Benchmark
+import kotlinx.benchmark.BenchmarkMode
+import kotlinx.benchmark.BenchmarkTimeUnit
+import kotlinx.benchmark.Measurement
+import kotlinx.benchmark.Mode
+import kotlinx.benchmark.OutputTimeUnit
+import kotlinx.benchmark.Warmup
 
 /**
  * Sync vs Virtual Thread 그래프 알고리즘 벤치마크.
@@ -20,8 +19,7 @@ import java.util.concurrent.TimeUnit
  * - BFS / DFS
  */
 @BenchmarkMode(Mode.AverageTime)
-@OutputTimeUnit(TimeUnit.MICROSECONDS)
-@Fork(1)
+@OutputTimeUnit(BenchmarkTimeUnit.MICROSECONDS)
 @Warmup(iterations = 3, time = 2)
 @Measurement(iterations = 5, time = 3)
 open class AlgorithmBenchmark : GraphBenchmarkState() {

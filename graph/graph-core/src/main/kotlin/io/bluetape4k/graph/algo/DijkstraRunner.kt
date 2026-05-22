@@ -47,11 +47,14 @@ class DijkstraRunner(
     private val fetchEdges: (GraphElementId) -> List<GraphEdge>,
     private val fetchVertex: (GraphElementId) -> GraphVertex?,
 ) {
-    companion object : KLogging() {
-        /** (cost, vertexId) PriorityQueue 비교자 — run() 호출마다 재생성 방지 */
-        private val NODE_ORDER: Comparator<Pair<Double, GraphElementId>> =
-            compareBy<Pair<Double, GraphElementId>> { it.first }
-                .thenComparing { a, b -> a.second.value.compareTo(b.second.value) }
+    companion object : KLogging()
+
+    /** PriorityQueue entry with deterministic tie-break and no Pair comparator dispatch. */
+    private data class DijkstraNode(val cost: Double, val id: GraphElementId) : Comparable<DijkstraNode> {
+        override fun compareTo(other: DijkstraNode): Int {
+            val cmp = cost.compareTo(other.cost)
+            return if (cmp != 0) cmp else id.value.compareTo(other.id.value)
+        }
     }
 
     /**
@@ -73,13 +76,13 @@ class DijkstraRunner(
         }
         val extractor = WeightExtractor(weightProperty, options.missingWeightPolicy)
 
-        // (cost, vertexId) — tie-break은 vertexId 사전순
-        val pq = PriorityQueue(NODE_ORDER)
+        // cost + vertexId tie-break keeps traversal deterministic across equal-cost frontiers.
+        val pq = PriorityQueue<DijkstraNode>()
         val dist = mutableMapOf<GraphElementId, Double>()
         val cameFrom = mutableMapOf<GraphElementId, Pair<GraphVertex, GraphEdge>>()
 
         dist[fromId] = 0.0
-        pq.add(0.0 to fromId)
+        pq.add(DijkstraNode(0.0, fromId))
         var visited = 0
 
         outer@ while (pq.isNotEmpty()) {
@@ -111,7 +114,7 @@ class DijkstraRunner(
                 if (newCost < (dist[neighborId] ?: Double.MAX_VALUE)) {
                     dist[neighborId] = newCost
                     cameFrom[neighborId] = currentVertex to edge
-                    pq.add(newCost to neighborId)
+                    pq.add(DijkstraNode(newCost, neighborId))
                 }
             }
         }

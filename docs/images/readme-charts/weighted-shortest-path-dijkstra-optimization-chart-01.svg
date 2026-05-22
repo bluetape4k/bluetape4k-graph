@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="520" viewBox="0 0 1280 520" role="img" aria-labelledby="title desc">
+  <title id="title">Weighted shortest path Dijkstra optimization chart</title>
+  <desc id="desc">Baseline and candidate latency for WeightedShortestPathBench.dijkstra at 100, 1000, and 10000 vertices.</desc>
+  <style>
+    .title{font:700 34px 'Architects Daughter','Comic Sans MS',cursive;fill:#273043}
+    .subtitle{font:18px 'Architects Daughter','Comic Sans MS',cursive;fill:#6b7280}
+    .legend{font:18px 'Architects Daughter','Comic Sans MS',cursive;fill:#273043}
+    .label{font:700 22px 'Architects Daughter','Comic Sans MS',cursive;fill:#273043}
+    .value{font:18px 'Architects Daughter','Comic Sans MS',cursive;fill:#273043}
+    .note{font:16px 'Architects Daughter','Comic Sans MS',cursive;fill:#6b7280}
+    .axis{stroke:#d7e3ee;stroke-width:2}
+  </style>
+  <rect width="1280" height="520" fill="#f6f8fb"/>
+  <rect x="24" y="24" width="1232" height="472" rx="18" fill="#fff" stroke="#d7e3ee" stroke-width="2"/>
+
+  <text class="title" x="56" y="72">Dijkstra Optimization Pass</text>
+  <text class="subtitle" x="58" y="104">WeightedShortestPathBench.dijkstra, lower is better</text>
+
+  <rect x="56" y="122" width="18" height="18" rx="5" fill="#8ecae6"/>
+  <text class="legend" x="82" y="138">Baseline</text>
+  <rect x="176" y="122" width="18" height="18" rx="5" fill="#ffb3c7"/>
+  <text class="legend" x="202" y="138">Candidate</text>
+
+  <line class="axis" x1="300" y1="414" x2="1040" y2="414"/>
+  <text class="note" x="300" y="444">0 ms</text>
+  <text class="note" x="520" y="444">25 ms</text>
+  <text class="note" x="742" y="444">50 ms</text>
+  <text class="note" x="962" y="444">75 ms</text>
+  <text class="note" x="1106" y="444">100 ms</text>
+
+  <text class="label" x="56" y="198">100 vertices</text>
+  <rect x="300" y="158" width="5.9" height="22" rx="8" fill="#8ecae6"/>
+  <rect x="300" y="188" width="6.0" height="22" rx="8" fill="#ffb3c7"/>
+  <text class="value" x="324" y="176">0.699 ms/op</text>
+  <text class="value" x="324" y="206">0.710 ms/op</text>
+  <text class="note" x="1080" y="194">-1.6%</text>
+
+  <text class="label" x="56" y="292">1,000 vertices</text>
+  <rect x="300" y="252" width="68.3" height="22" rx="8" fill="#8ecae6"/>
+  <rect x="300" y="282" width="63.5" height="22" rx="8" fill="#ffb3c7"/>
+  <text class="value" x="382" y="270">8.072 ms/op</text>
+  <text class="value" x="378" y="300">7.501 ms/op</text>
+  <text class="note" x="1080" y="288">+7.1%</text>
+
+  <text class="label" x="56" y="386">10,000 vertices</text>
+  <rect x="300" y="346" width="728.8" height="22" rx="8" fill="#8ecae6"/>
+  <rect x="300" y="376" width="706.2" height="22" rx="8" fill="#ffb3c7"/>
+  <text class="value" x="1042" y="364">86.092 ms/op</text>
+  <text class="value" x="1020" y="394">83.417 ms/op</text>
+  <text class="note" x="1080" y="382">+3.1%</text>
+
+  <text class="note" x="56" y="474">Candidate: DijkstraNode priority queue entry. Run: 2026-05-22 KST, ./gradlew :graph-benchmark:mainBenchmark.</text>
+</svg>
