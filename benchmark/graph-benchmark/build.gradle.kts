@@ -4,7 +4,7 @@ plugins {
 }
 
 allOpen {
-    annotation("org.openjdk.jmh.annotations.State")
+    annotation("kotlinx.benchmark.State")
 }
 
 benchmark {
