@@ -7,9 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-05-22
+
 ### Added
 
 - **graph-io backed domain example sample loaders**: fraud detection, recommendation, and knowledge graph examples now include bundled CSV fixtures plus sync/suspend sample dataset loaders, with TinkerGraph smoke coverage and English/Korean README import flows ([#111](https://github.com/bluetape4k/bluetape4k-graph/issues/111)).
+- **graph benchmark evidence program**: added backend, graph-io, runtime-model, workload-shape, sustained-write, production API model, and weighted shortest-path benchmark lanes with normalized reports and README chart assets ([#14](https://github.com/bluetape4k/bluetape4k-graph/issues/14), [#15](https://github.com/bluetape4k/bluetape4k-graph/issues/15), [#41](https://github.com/bluetape4k/bluetape4k-graph/issues/41), [#188](https://github.com/bluetape4k/bluetape4k-graph/issues/188), [#189](https://github.com/bluetape4k/bluetape4k-graph/issues/189), [#190](https://github.com/bluetape4k/bluetape4k-graph/issues/190), [#191](https://github.com/bluetape4k/bluetape4k-graph/issues/191), [#192](https://github.com/bluetape4k/bluetape4k-graph/issues/192), [#193](https://github.com/bluetape4k/bluetape4k-graph/issues/193), [#196](https://github.com/bluetape4k/bluetape4k-graph/issues/196), [#197](https://github.com/bluetape4k/bluetape4k-graph/issues/197), [#198](https://github.com/bluetape4k/bluetape4k-graph/issues/198), [#199](https://github.com/bluetape4k/bluetape4k-graph/issues/199), [#201](https://github.com/bluetape4k/bluetape4k-graph/issues/201)).
+- **graph-spring-boot FalkorDB nightly coverage**: full-nightly CI now covers the FalkorDB Spring Boot auto-configuration path with a live container smoke test ([#126](https://github.com/bluetape4k/bluetape4k-graph/issues/126)).
 
 ### Fixed
 
@@ -17,6 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **FalkorDB suspend graph existence checks propagate coroutine cancellation**: `FalkorDBGraphSuspendOperations.graphExists()` now rethrows `CancellationException` instead of converting cancellation into `false`, while preserving the existing fallback for ordinary driver failures ([#156](https://github.com/bluetape4k/bluetape4k-graph/issues/156)).
 - **Neo4j suspend transactions no longer bridge through `runBlocking`**: `Neo4jGraphSuspendOperations.suspendTransaction()` now uses Neo4j reactive transactions, preserves rollback/cleanup semantics, and materializes returned transaction `Flow` values before commit ([#158](https://github.com/bluetape4k/bluetape4k-graph/issues/158)).
 - **AGE, Memgraph, and TinkerGraph suspend transactions no longer bridge through `runBlocking`**: AGE now uses Exposed suspended transactions with a native suspend transaction scope, Memgraph uses reactive Bolt transactions, and TinkerGraph uses a suspend-aware rollback snapshot path. Cancellation rollback and returned transaction `Flow` materialization are covered by targeted tests ([#160](https://github.com/bluetape4k/bluetape4k-graph/issues/160)).
+- **FalkorDB Ktor example teardown closes its driver**: the example test now closes the caller-owned driver after the PER_CLASS test lifecycle completes ([#135](https://github.com/bluetape4k/bluetape4k-graph/issues/135)).
+
+### Changed
+
+- Aligned release dependencies with `io.github.bluetape4k:bluetape4k-bom:1.9.0` and the latest published `io.github.bluetape4k:bluetape4k-dependencies:1.0.0`.
+- Kept leaf Dependabot scoped to GitHub Actions and made Detekt the PR quality gate while Kover remains report-only ([#18](https://github.com/bluetape4k/bluetape4k-graph/issues/18), [#19](https://github.com/bluetape4k/bluetape4k-graph/issues/19)).
+- Audited `graph-ktor` and examples against Ktor 3.5.0 with no API changes required ([#127](https://github.com/bluetape4k/bluetape4k-graph/issues/127)).
+- Added FalkorDB Ktor example discoverability to English and Korean README module tables and converted public FalkorDB auto-configuration KDoc to English ([#133](https://github.com/bluetape4k/bluetape4k-graph/issues/133), [#134](https://github.com/bluetape4k/bluetape4k-graph/issues/134)).
 
 ---
 
