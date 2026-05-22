@@ -11,8 +11,9 @@ Use this guide as a starting point, not as a procurement-grade ranking. The back
 | Area | Source | Current coverage | Main direction |
 |---|---|---|---|
 | Graph DB backend | `graph-benchmark` / `GraphDbComparisonBenchmark` | TinkerGraph, Neo4j, Memgraph, AGE, FalkorDB on `small` and `medium` datasets | Lower `ms/op` is better |
-| Sustained graph writes | `graph-benchmark` / `GraphWriteIngestionBenchmark` | Vertex-only, edge-only, mixed, and repeated mixed write batches at 100 and 1,000 rows | Lower `ms/op` is better |
-| API model | `graph-benchmark` / `ApiModelBenchmark` | Sync, Virtual Thread, Coroutine Flow on TinkerGraph | PageRank `ops/s` higher is better; latency `us/op` lower is better |
+| Domain graph workloads | `graph-benchmark` / `GraphDomainWorkloadBenchmark` | Social, IAM, fraud, and code graph workloads on TinkerGraph, Neo4j, Memgraph | Lower `ms/op` is better |
+| Sustained graph writes | `graph-benchmark` / `GraphWriteIngestionBenchmark` | Vertex-only, edge-only, mixed, and repeated mixed write batches at 100, 1,000, and selective 10,000 rows | Lower `ms/op` is better |
+| API model | `graph-benchmark` / `ApiModelBenchmark` | Sync, Virtual Thread, Coroutine Flow, plus production concurrency at 10, 100, and 1,000 units on TinkerGraph | PageRank `ops/s` higher is better; latency `us/op` lower is better |
 | graph-io format | `graph-io-benchmark` and `graph-benchmark` | CSV, Jackson2/3 NDJSON, GraphML, Okio variants | Lower `ms/op` is better |
 
 Latest raw artifacts:
@@ -20,6 +21,10 @@ Latest raw artifacts:
 - `docs/benchmark/graph-db-testcontainers-2026-05-21.json`
 - `docs/benchmark/graph-db-medium-testcontainers-2026-05-21.json`
 - `docs/benchmark/graph-write-ingestion-testcontainers-2026-05-21.json`
+- `docs/benchmark/graph-db-small-gradle-testcontainers-2026-05-21.json`
+- `docs/benchmark/graph-domain-workload-testcontainers-2026-05-21.json`
+- `docs/benchmark/graph-write-ingestion-10k-testcontainers-2026-05-21.json`
+- `docs/benchmark/api-model-production-gradle-2026-05-21.json`
 - `docs/benchmark/2026-05-21-api-model-jmh.json`
 - `docs/benchmark/2026-04-18-graph-io-bulk-results.md`
 
@@ -56,6 +61,39 @@ Run conditions: macOS arm64, GraalVM JDK 25.0.3, JMH 1.37, one fork, one warmup 
 | Repeated mixed batches (5x) | 1,000 | 154.891 | 113.940 | **66.612** | 1428.239 | 17285.768 |
 
 Sustained-write interpretation: Memgraph is the first candidate for ingestion-heavy services. Neo4j is the safer default when operational maturity, tooling, and long-term support dominate. FalkorDB should not be chosen for edge-heavy ingestion without a dedicated workload proof. AGE remains best justified by PostgreSQL consolidation, not by raw write latency.
+
+## Domain Workload Result
+
+![Graph domain workload Testcontainers benchmark](../docs/images/readme-charts/graph-domain-workload-testcontainers-latency-chart-01.png)
+
+Run conditions: macOS arm64, GraalVM JDK 25.0.3, kotlinx-benchmark/JMH 1.37, one fork, two warmup iterations, four two-second measurement iterations, real Neo4j and Memgraph Testcontainers plus in-memory TinkerGraph, May 21, 2026. All values are `ms/op`; lower is better.
+
+| Workload | TinkerGraph | Neo4j | Memgraph |
+|---|---:|---:|---:|
+| Code dependency traversal | **0.009** | 0.530 | 0.306 |
+| Code reverse dependency lookup | **0.006** | 0.579 | 0.348 |
+| Fraud high-degree neighborhood | **0.038** | 1.119 | 0.620 |
+| Fraud suspicious path exists | 1.000 | 0.509 | **0.405** |
+| IAM permission reachability | **0.033** | 0.508 | 0.300 |
+| Social high fan-out expansion | **0.030** | 0.991 | 0.549 |
+| Social two-hop candidate lookup | **0.164** | 2.756 | 1.755 |
+
+Domain-workload interpretation: TinkerGraph is best for local and CI analysis fixtures. Memgraph is the faster persistent candidate in this local domain matrix. Neo4j remains the default production recommendation when the decision is driven by operational maturity, tooling, and maintainability.
+
+## 10k Sustained Write Result
+
+![Graph write ingestion 10k Testcontainers benchmark](../docs/images/readme-charts/graph-write-ingestion-10k-testcontainers-latency-chart-01.png)
+
+Run conditions: macOS arm64, GraalVM JDK 25.0.3, kotlinx-benchmark/JMH 1.37, one fork, one warmup iteration, three one-second measurement iterations, 10,000-row write batches, real Neo4j and Memgraph Testcontainers plus in-memory TinkerGraph, May 21, 2026. All values are `ms/op`; lower is better.
+
+| Scenario | TinkerGraph | Neo4j | Memgraph |
+|---|---:|---:|---:|
+| Vertex-only batch insert | 71.152 | 67.135 | **53.518** |
+| Edge-only batch insert | 161.907 | 108.949 | **76.105** |
+| Mixed vertex+edge insert | 272.236 | 203.669 | **134.994** |
+| Repeated mixed batches (5x) | 1243.229 | 919.678 | **647.574** |
+
+10k-write interpretation: Memgraph remains the first latency candidate for sustained ingestion at larger local batch size. Neo4j is slower but remains viable when operational maturity matters more than peak ingestion speed.
 
 ## Quick Recommendation
 
@@ -112,6 +150,19 @@ Sustained-write interpretation: Memgraph is the first candidate for ingestion-he
 
 Current `ApiModelBenchmark` result supports this: Sync was fastest for single in-memory PageRank/BFS, Virtual Thread was slightly better than Coroutine for 100-way BFS, and Coroutine had lower pure 100-way launch cost.
 
+Production concurrency rerun, measured with five warmup iterations and ten three-second measurement iterations:
+
+![API model production benchmark](../docs/images/readme-charts/graph-api-model-production-chart-01.png)
+
+| Scenario | Concurrency 10 | Concurrency 100 | Concurrency 1,000 |
+|---|---:|---:|---:|
+| BFS with Virtual Threads | **31.151 us/op** | **142.730 us/op** | **921.873 us/op** |
+| BFS with Coroutines | 38.795 us/op | 157.676 us/op | 1151.154 us/op |
+| Virtual Thread creation | 8.867 us/op | 28.225 us/op | 200.810 us/op |
+| Coroutine launch | **0.586 us/op** | **4.826 us/op** | **47.657 us/op** |
+
+This keeps the recommendation unchanged: choose Virtual Threads for blocking graph driver concurrency, and choose Coroutines for coroutine-native composition where launch overhead and structured concurrency matter.
+
 ## graph-io Format Choice
 
 | Format | Best use | Caution |
@@ -144,13 +195,12 @@ Suggested next benchmark targets:
 - Re-run #199 API model latency and allocation with production-grade windows.
 - Add #201 selective 10k sustained ingestion profiles for backend subsets that can complete in a useful local window.
 
+Use the existing Gradle benchmark tasks as the primary execution path:
+
 ```bash
-java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-*-JMH.jar \
-  '.*ApiModelBenchmark.*' \
-  -wi 3 -i 5 -r 3s -w 2s -f 1 \
-  -prof gc \
-  -rf json \
-  -rff docs/benchmark/api-model-production-candidate.json
+./gradlew :graph-benchmark:mainGraphDomainWorkloadBenchmark
+./gradlew :graph-benchmark:mainApiModelProductionBenchmark
+./gradlew :graph-benchmark:mainGraphWriteIngestion10kBenchmark
 ```
 
 ## Final Selection Rule

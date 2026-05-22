@@ -2,12 +2,14 @@
 
 [English](README.md) | [한국어](README.ko.md)
 
-그래프 성능 비교를 위한 JMH/kotlinx-benchmark 모듈입니다. 현재 다섯 가지 측정 축을 포함합니다.
+그래프 성능 비교를 위한 kotlinx-benchmark 모듈입니다. 현재 일곱 가지 측정 축을 포함합니다.
 
 - 기존 TinkerGraph Sync vs Virtual Thread 그래프 연산.
 - 동일한 TinkerGraph fixture에서 Sync, Virtual Thread, Coroutine API model 비교.
 - 공통 `GraphOperations` 계약을 통한 Graph DB backend 비교.
+- social, IAM, fraud, code graph query를 반영한 domain-shaped workload 비교.
 - 공통 `GraphOperations` 계약을 통한 sustained graph write와 batch ingestion 비교.
+- 동시성 10, 100, 1,000 단위의 production-shaped API model 비교.
 - 동일한 TinkerGraph 생성 데이터셋을 사용하는 graph-io 포맷 비교.
 
 ## Architecture
@@ -17,6 +19,7 @@
 ## 측정 대상
 
 - `GraphDbComparisonBenchmark`: `tinkergraph`, `neo4j`, `memgraph`, `age`, `falkordb` backend.
+- `GraphDomainWorkloadBenchmark`: `tinkergraph`, `neo4j`, `memgraph`의 social high fan-out, IAM reachability, fraud path, code dependency workload.
 - `GraphWriteIngestionBenchmark`: 동일 backend matrix에서 vertex-only, edge-only, mixed, repeated mixed write batch.
 - `GraphIoComparisonBenchmark`: `csv`, `jackson2`, `jackson3`, `graphml`, `okio-jackson3`, `okio-graphml`.
 - `ApiModelBenchmark`: 동일한 in-memory TinkerGraph fixture에서 sync, virtual-thread, coroutine API overhead.
@@ -30,55 +33,31 @@
 ./gradlew :graph-benchmark:benchmark
 ```
 
-kotlinx-benchmark는 JMH JSON을 `benchmark/graph-benchmark/build/reports/benchmarks/**/main.json` 아래에 기록합니다.
+kotlinx-benchmark는 JMH JSON을 `benchmark/graph-benchmark/build/reports/benchmarks/**/main.json` 아래에 기록합니다. 기본 실행 경로는 Gradle task입니다. raw JMH jar 실행은 로컬 진단용으로만 사용합니다.
 
-Graph DB backend matrix는 실제 Testcontainers 기반 JMH target으로 실행합니다.
+Graph DB backend matrix:
 
 ```bash
-java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-*-JMH.jar \
-  '.*GraphDbComparisonBenchmark.*' \
-  -wi 1 -i 3 -r 1s -w 1s -f 1 \
-  -p backend=tinkergraph,neo4j,memgraph,age,falkordb \
-  -p sizeName=small \
-  -rf json \
-  -rff docs/benchmark/graph-db-testcontainers-2026-05-21.json
+./gradlew :graph-benchmark:mainGraphDbSmallBenchmark
+./gradlew :graph-benchmark:mainGraphDbMediumBenchmark
 ```
 
-medium backend matrix는 다음처럼 실행합니다.
+Domain-shaped workload matrix:
 
 ```bash
-java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-*-JMH.jar \
-  '.*GraphDbComparisonBenchmark.*' \
-  -wi 3 -i 5 -r 3s -w 2s -f 1 \
-  -p backend=tinkergraph,neo4j,memgraph,age,falkordb \
-  -p sizeName=medium \
-  -rf json \
-  -rff docs/benchmark/graph-db-medium-testcontainers-2026-05-21.json
+./gradlew :graph-benchmark:mainGraphDomainWorkloadBenchmark
 ```
 
-sustained write ingestion profile은 다음처럼 실행합니다.
+Sustained write ingestion profile:
 
 ```bash
-java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-*-JMH.jar \
-  '.*GraphWriteIngestionBenchmark.*' \
-  -wi 1 -i 3 -w 1s -r 1s -f 1 \
-  -p backend=tinkergraph,neo4j,memgraph,age,falkordb \
-  -p batchSize=100,1000 \
-  -p repeatBatches=5 \
-  -prof gc \
-  -rf json \
-  -rff docs/benchmark/graph-write-ingestion-testcontainers-2026-05-21.json
+./gradlew :graph-benchmark:mainGraphWriteIngestion10kBenchmark
 ```
 
-Docker-free API model matrix는 다음처럼 실행합니다.
+Docker-free API model production matrix:
 
 ```bash
-java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-*-JMH.jar \
-  '.*ApiModelBenchmark.*' \
-  -wi 1 -i 3 -r 1s -w 1s -f 1 \
-  -prof gc \
-  -rf json \
-  -rff docs/benchmark/2026-05-21-api-model-jmh.json
+./gradlew :graph-benchmark:mainApiModelProductionBenchmark
 ```
 
 ## 최신 API Model 결과
@@ -114,7 +93,52 @@ BFS와 launch/create 행은 `us/op`이며 낮을수록 좋습니다.
 - [Raw JMH JSON](../../docs/benchmark/2026-05-21-api-model-jmh.json)
 - [Markdown result table](../../docs/benchmark/2026-05-21-api-model-results.md)
 
+## 최신 API Production 결과
+
+![API model production benchmark](../../docs/images/readme-charts/graph-api-model-production-chart-01.png)
+
+실행 조건: macOS arm64, GraalVM JDK 25.0.3, kotlinx-benchmark/JMH 1.37, fork 1회, warmup 5회, 3초 measurement 10회, TinkerGraph fixture, 2026-05-21. 모든 값은 `us/op`이며 낮을수록 좋습니다.
+
+| Scenario | 동시성 10 | 동시성 100 | 동시성 1,000 |
+|---|---:|---:|---:|
+| BFS with Virtual Threads | **31.151** | **142.730** | **921.873** |
+| BFS with Coroutines | 38.795 | 157.676 | 1151.154 |
+| Virtual Thread creation | 8.867 | 28.225 | 200.810 |
+| Coroutine launch | **0.586** | **4.826** | **47.657** |
+
+해석: 이 fixture의 blocking-style concurrent graph work에서는 Virtual Thread가 낮은 latency를 보입니다. Coroutine은 launch overhead가 훨씬 낮으므로, 주변 application이 coroutine-native이거나 graph call을 다른 suspend 작업과 합성할 때 선택합니다.
+
+결과 산출물:
+
+- [Chart PNG](../../docs/images/readme-charts/graph-api-model-production-chart-01.png)
+- [Chart SVG](../../docs/images/readme-charts/graph-api-model-production-chart-01.svg)
+- [Raw JMH JSON](../../docs/benchmark/api-model-production-gradle-2026-05-21.json)
+
 ## 최신 Testcontainers 결과
+
+### Domain workload
+
+![Graph domain workload Testcontainers benchmark](../../docs/images/readme-charts/graph-domain-workload-testcontainers-latency-chart-01.png)
+
+실행 조건: macOS arm64, GraalVM JDK 25.0.3, kotlinx-benchmark/JMH 1.37, fork 1회, warmup 2회, 2초 measurement 4회, 실제 Neo4j/Memgraph Testcontainers와 in-memory TinkerGraph, 2026-05-21. 모든 값은 `ms/op`이며 낮을수록 좋습니다.
+
+| Workload | TinkerGraph | Neo4j | Memgraph |
+|---|---:|---:|---:|
+| Code dependency traversal | **0.009** | 0.530 | 0.306 |
+| Code reverse dependency lookup | **0.006** | 0.579 | 0.348 |
+| Fraud high-degree neighborhood | **0.038** | 1.119 | 0.620 |
+| Fraud suspicious path exists | 1.000 | 0.509 | **0.405** |
+| IAM permission reachability | **0.033** | 0.508 | 0.300 |
+| Social high fan-out expansion | **0.030** | 0.991 | 0.549 |
+| Social two-hop candidate lookup | **0.164** | 2.756 | 1.755 |
+
+해석: TinkerGraph는 in-memory domain fixture의 local analysis engine으로 여전히 가장 빠릅니다. Persistent backend 중에서는 Memgraph가 이 local domain matrix에서 Neo4j보다 일관되게 빠르지만, ecosystem, operations, query tooling이 중요하면 Neo4j가 더 안전한 기본값입니다.
+
+결과 산출물:
+
+- [Chart PNG](../../docs/images/readme-charts/graph-domain-workload-testcontainers-latency-chart-01.png)
+- [Chart SVG](../../docs/images/readme-charts/graph-domain-workload-testcontainers-latency-chart-01.svg)
+- [Raw JMH JSON](../../docs/benchmark/graph-domain-workload-testcontainers-2026-05-21.json)
 
 ### Sustained write ingestion
 
@@ -143,6 +167,27 @@ BFS와 launch/create 행은 `us/op`이며 낮을수록 좋습니다.
 - [Chart SVG](../../docs/images/readme-charts/graph-write-ingestion-testcontainers-latency-chart-01.svg)
 - [Raw JMH JSON](../../docs/benchmark/graph-write-ingestion-testcontainers-2026-05-21.json)
 - [Markdown result table](../../docs/benchmark/2026-05-21-graph-write-ingestion-testcontainers-results.md)
+
+### 10k Sustained write ingestion
+
+![Graph write ingestion 10k Testcontainers benchmark](../../docs/images/readme-charts/graph-write-ingestion-10k-testcontainers-latency-chart-01.png)
+
+실행 조건: macOS arm64, GraalVM JDK 25.0.3, kotlinx-benchmark/JMH 1.37, fork 1회, warmup 1회, 1초 measurement 3회, 10,000-row write batch, 실제 Neo4j/Memgraph Testcontainers와 in-memory TinkerGraph, 2026-05-21. 모든 값은 `ms/op`이며 낮을수록 좋습니다. AGE와 FalkorDB는 1,000-row repeated mixed profile에서 이미 multi-second latency가 나왔고, 유용한 local window를 가장 빠른 운영 후보 3개에 집중하기 위해 이번 selective 10k run에서 제외했습니다.
+
+| Scenario | TinkerGraph | Neo4j | Memgraph |
+|---|---:|---:|---:|
+| Vertex-only batch insert | 71.152 | 67.135 | **53.518** |
+| Edge-only batch insert | 161.907 | 108.949 | **76.105** |
+| Mixed vertex+edge insert | 272.236 | 203.669 | **134.994** |
+| Repeated mixed batches (5x) | 1243.229 | 919.678 | **647.574** |
+
+해석: 대규모 sustained ingestion에서도 Memgraph가 latency 기준 1순위 후보입니다. Neo4j는 느리지만, 운영 성숙도가 peak ingestion speed보다 중요할 때 여전히 유효합니다.
+
+결과 산출물:
+
+- [Chart PNG](../../docs/images/readme-charts/graph-write-ingestion-10k-testcontainers-latency-chart-01.png)
+- [Chart SVG](../../docs/images/readme-charts/graph-write-ingestion-10k-testcontainers-latency-chart-01.svg)
+- [Raw JMH JSON](../../docs/benchmark/graph-write-ingestion-10k-testcontainers-2026-05-21.json)
 
 ### Medium dataset
 
@@ -175,10 +220,10 @@ BFS와 launch/create 행은 `us/op`이며 낮을수록 좋습니다.
 
 | Operation | TinkerGraph | Neo4j | Memgraph | AGE | FalkorDB |
 |---|---:|---:|---:|---:|---:|
-| `batchInsertCycle` | 5.379 | 6.217 | **1.969** | 21.665 | 38.660 |
-| `countPersons` | **0.032** | 0.809 | 0.402 | 0.610 | 0.193 |
-| `oneHopNeighbors` | **0.003** | 0.811 | 0.334 | 0.932 | 0.708 |
-| `shortestPath` | **0.018** | 0.806 | 0.331 | 1.320 | 0.280 |
+| `batchInsertCycle` | 5.704 | 6.903 | **1.954** | 21.580 | 38.670 |
+| `countPersons` | **0.030** | 0.779 | 0.394 | 0.645 | 0.195 |
+| `oneHopNeighbors` | **0.004** | 0.807 | 0.346 | 0.941 | 0.639 |
+| `shortestPath` | **0.022** | 0.795 | 0.344 | 1.279 | 0.290 |
 
 모든 값은 `ms/op`이며 낮을수록 좋습니다. 굵은 값은 이번 실행에서 가장 빠른 backend입니다.
 
@@ -186,7 +231,8 @@ BFS와 launch/create 행은 `us/op`이며 낮을수록 좋습니다.
 
 - [Chart PNG](../../docs/images/readme-charts/graph-db-testcontainers-latency-chart-01.png)
 - [Chart SVG](../../docs/images/readme-charts/graph-db-testcontainers-latency-chart-01.svg)
-- [Raw JMH JSON](../../docs/benchmark/graph-db-testcontainers-2026-05-21.json)
+- [Raw JMH JSON](../../docs/benchmark/graph-db-small-gradle-testcontainers-2026-05-21.json)
+- [Legacy raw JMH JSON](../../docs/benchmark/graph-db-testcontainers-2026-05-21.json)
 - [Normalized baseline JSON](../../docs/benchmark/graph-benchmark-baseline.json)
 - [Markdown result table](../../docs/benchmark/2026-05-21-graph-db-testcontainers-results.md)
 
@@ -214,7 +260,7 @@ python3 benchmark/graph-benchmark/scripts/normalize_jmh_report.py candidate.json
 
 ```bash
 python3 benchmark/graph-benchmark/scripts/render_graph_db_backend_chart.py \
-  docs/benchmark/graph-db-testcontainers-2026-05-21.json
+  docs/benchmark/graph-db-small-gradle-testcontainers-2026-05-21.json
 ```
 
 위 API model 차트를 렌더링합니다.
@@ -224,11 +270,25 @@ python3 benchmark/graph-benchmark/scripts/render_api_model_chart.py \
   docs/benchmark/2026-05-21-api-model-jmh.json
 ```
 
+위 API production 차트를 렌더링합니다.
+
+```bash
+python3 benchmark/graph-benchmark/scripts/render_api_model_production_chart.py \
+  docs/benchmark/api-model-production-gradle-2026-05-21.json
+```
+
+위 domain workload 차트를 렌더링합니다.
+
+```bash
+python3 benchmark/graph-benchmark/scripts/render_graph_domain_workload_chart.py \
+  docs/benchmark/graph-domain-workload-testcontainers-2026-05-21.json
+```
+
 위 sustained write ingestion 차트를 렌더링합니다.
 
 ```bash
 python3 benchmark/graph-benchmark/scripts/render_graph_write_ingestion_chart.py \
-  docs/benchmark/graph-write-ingestion-testcontainers-2026-05-21.json
+  docs/benchmark/graph-write-ingestion-10k-testcontainers-2026-05-21.json
 ```
 
 ## Self-Improve Gate
@@ -236,9 +296,11 @@ python3 benchmark/graph-benchmark/scripts/render_graph_write_ingestion_chart.py 
 `bluetape4k-self-improve`는 fresh baseline이 생긴 뒤 사용합니다. 최적화 round에서 봉인할 파일은 다음과 같습니다.
 
 - `benchmark/graph-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/GraphDbComparisonBenchmark.kt`
+- `benchmark/graph-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/GraphDomainWorkloadBenchmark.kt`
 - `benchmark/graph-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/GraphWriteIngestionBenchmark.kt`
 - `benchmark/graph-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/GraphIoComparisonBenchmark.kt`
 - `benchmark/graph-benchmark/scripts/normalize_jmh_report.py`
+- `benchmark/graph-benchmark/scripts/render_graph_domain_workload_chart.py`
 - `benchmark/graph-benchmark/scripts/render_graph_write_ingestion_chart.py`
 - `docs/benchmark/graph-benchmark-baseline.json`
 

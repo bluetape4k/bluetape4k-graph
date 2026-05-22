@@ -11,8 +11,9 @@
 | 영역 | Source | 현재 범위 | 해석 방향 |
 |---|---|---|---|
 | Graph DB backend | `graph-benchmark` / `GraphDbComparisonBenchmark` | TinkerGraph, Neo4j, Memgraph, AGE, FalkorDB의 `small`, `medium` dataset 비교 | `ms/op` 낮을수록 좋음 |
-| Sustained graph writes | `graph-benchmark` / `GraphWriteIngestionBenchmark` | 100, 1,000 row의 vertex-only, edge-only, mixed, repeated mixed write batch | `ms/op` 낮을수록 좋음 |
-| API model | `graph-benchmark` / `ApiModelBenchmark` | TinkerGraph에서 Sync, Virtual Thread, Coroutine Flow 비교 | PageRank `ops/s` 높을수록 좋음, latency `us/op` 낮을수록 좋음 |
+| Domain graph workloads | `graph-benchmark` / `GraphDomainWorkloadBenchmark` | TinkerGraph, Neo4j, Memgraph의 social, IAM, fraud, code graph workload | `ms/op` 낮을수록 좋음 |
+| Sustained graph writes | `graph-benchmark` / `GraphWriteIngestionBenchmark` | 100, 1,000, selective 10,000 row의 vertex-only, edge-only, mixed, repeated mixed write batch | `ms/op` 낮을수록 좋음 |
+| API model | `graph-benchmark` / `ApiModelBenchmark` | TinkerGraph에서 Sync, Virtual Thread, Coroutine Flow와 동시성 10, 100, 1,000 production run 비교 | PageRank `ops/s` 높을수록 좋음, latency `us/op` 낮을수록 좋음 |
 | graph-io format | `graph-io-benchmark`, `graph-benchmark` | CSV, Jackson2/3 NDJSON, GraphML, Okio variants | `ms/op` 낮을수록 좋음 |
 
 최신 raw artifact:
@@ -20,6 +21,10 @@
 - `docs/benchmark/graph-db-testcontainers-2026-05-21.json`
 - `docs/benchmark/graph-db-medium-testcontainers-2026-05-21.json`
 - `docs/benchmark/graph-write-ingestion-testcontainers-2026-05-21.json`
+- `docs/benchmark/graph-db-small-gradle-testcontainers-2026-05-21.json`
+- `docs/benchmark/graph-domain-workload-testcontainers-2026-05-21.json`
+- `docs/benchmark/graph-write-ingestion-10k-testcontainers-2026-05-21.json`
+- `docs/benchmark/api-model-production-gradle-2026-05-21.json`
 - `docs/benchmark/2026-05-21-api-model-jmh.json`
 - `docs/benchmark/2026-04-18-graph-io-bulk-results.md`
 
@@ -56,6 +61,39 @@ Medium scale 해석: Memgraph는 write-heavy insert에서 가장 좋은 persiste
 | Repeated mixed batches (5x) | 1,000 | 154.891 | 113.940 | **66.612** | 1428.239 | 17285.768 |
 
 Sustained-write 해석: ingestion-heavy service의 1순위 후보는 Memgraph입니다. 운영 성숙도, 도구, 장기 지원이 raw ingestion latency보다 중요하면 Neo4j가 더 안전한 기본값입니다. FalkorDB는 edge-heavy ingestion을 선택하기 전에 전용 workload 증거가 필요합니다. AGE는 raw write latency가 아니라 PostgreSQL 통합으로 정당화하는 선택입니다.
+
+## Domain Workload 결과
+
+![Graph domain workload Testcontainers benchmark](../docs/images/readme-charts/graph-domain-workload-testcontainers-latency-chart-01.png)
+
+실행 조건: macOS arm64, GraalVM JDK 25.0.3, kotlinx-benchmark/JMH 1.37, fork 1회, warmup 2회, 2초 measurement 4회, 실제 Neo4j/Memgraph Testcontainers와 in-memory TinkerGraph, 2026-05-21. 모든 값은 `ms/op`이며 낮을수록 좋습니다.
+
+| Workload | TinkerGraph | Neo4j | Memgraph |
+|---|---:|---:|---:|
+| Code dependency traversal | **0.009** | 0.530 | 0.306 |
+| Code reverse dependency lookup | **0.006** | 0.579 | 0.348 |
+| Fraud high-degree neighborhood | **0.038** | 1.119 | 0.620 |
+| Fraud suspicious path exists | 1.000 | 0.509 | **0.405** |
+| IAM permission reachability | **0.033** | 0.508 | 0.300 |
+| Social high fan-out expansion | **0.030** | 0.991 | 0.549 |
+| Social two-hop candidate lookup | **0.164** | 2.756 | 1.755 |
+
+Domain-workload 해석: TinkerGraph는 local/CI analysis fixture에서 가장 적합합니다. Persistent 후보 중에서는 Memgraph가 이 local domain matrix에서 더 빠릅니다. Neo4j는 운영 성숙도, tooling, maintainability가 decision driver일 때 기본 production 추천으로 유지합니다.
+
+## 10k Sustained Write 결과
+
+![Graph write ingestion 10k Testcontainers benchmark](../docs/images/readme-charts/graph-write-ingestion-10k-testcontainers-latency-chart-01.png)
+
+실행 조건: macOS arm64, GraalVM JDK 25.0.3, kotlinx-benchmark/JMH 1.37, fork 1회, warmup 1회, 1초 measurement 3회, 10,000-row write batch, 실제 Neo4j/Memgraph Testcontainers와 in-memory TinkerGraph, 2026-05-21. 모든 값은 `ms/op`이며 낮을수록 좋습니다.
+
+| Scenario | TinkerGraph | Neo4j | Memgraph |
+|---|---:|---:|---:|
+| Vertex-only batch insert | 71.152 | 67.135 | **53.518** |
+| Edge-only batch insert | 161.907 | 108.949 | **76.105** |
+| Mixed vertex+edge insert | 272.236 | 203.669 | **134.994** |
+| Repeated mixed batches (5x) | 1243.229 | 919.678 | **647.574** |
+
+10k-write 해석: 더 큰 local batch size의 sustained ingestion에서도 Memgraph가 latency 기준 1순위 후보입니다. Neo4j는 느리지만 운영 성숙도가 peak ingestion speed보다 중요할 때 여전히 유효합니다.
 
 ## 빠른 추천
 
@@ -112,6 +150,19 @@ Sustained-write 해석: ingestion-heavy service의 1순위 후보는 Memgraph입
 
 현재 `ApiModelBenchmark` 결과도 같은 방향입니다. 단일 in-memory PageRank/BFS는 Sync가 가장 빨랐고, 100-way BFS는 Virtual Thread가 Coroutine보다 약간 낮은 평균 지연을 보였으며, 순수 100-way launch cost는 Coroutine이 더 낮았습니다.
 
+Production concurrency rerun은 warmup 5회와 3초 measurement 10회로 측정했습니다.
+
+![API model production benchmark](../docs/images/readme-charts/graph-api-model-production-chart-01.png)
+
+| Scenario | 동시성 10 | 동시성 100 | 동시성 1,000 |
+|---|---:|---:|---:|
+| BFS with Virtual Threads | **31.151 us/op** | **142.730 us/op** | **921.873 us/op** |
+| BFS with Coroutines | 38.795 us/op | 157.676 us/op | 1151.154 us/op |
+| Virtual Thread creation | 8.867 us/op | 28.225 us/op | 200.810 us/op |
+| Coroutine launch | **0.586 us/op** | **4.826 us/op** | **47.657 us/op** |
+
+따라서 추천은 유지합니다. Blocking graph driver 동시성에는 Virtual Thread, coroutine-native composition과 structured concurrency가 중요하면 Coroutine을 선택합니다.
+
 ## graph-io Format 선택
 
 | Format | 적합한 용도 | 주의 |
@@ -144,13 +195,12 @@ Sustained-write 해석: ingestion-heavy service의 1순위 후보는 Memgraph입
 - #199에서 API model latency와 allocation을 production-grade window로 재측정합니다.
 - #201에서 useful local window 안에 끝낼 수 있는 backend subset 중심으로 10k sustained ingestion profile을 추가합니다.
 
+기본 실행 경로는 기존 Gradle benchmark task입니다.
+
 ```bash
-java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-*-JMH.jar \
-  '.*ApiModelBenchmark.*' \
-  -wi 3 -i 5 -r 3s -w 2s -f 1 \
-  -prof gc \
-  -rf json \
-  -rff docs/benchmark/api-model-production-candidate.json
+./gradlew :graph-benchmark:mainGraphDomainWorkloadBenchmark
+./gradlew :graph-benchmark:mainApiModelProductionBenchmark
+./gradlew :graph-benchmark:mainGraphWriteIngestion10kBenchmark
 ```
 
 ## 최종 선택 규칙
