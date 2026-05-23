@@ -318,7 +318,6 @@ subprojects {
 
         imports {
             mavenBom(rootLibs.bluetape4k.bom.get().toString())
-            mavenBom(rootLibs.bluetape4k.dependencies.get().toString())
             mavenBom(rootLibs.spring.boot4.dependencies.get().toString())
 
             mavenBom(rootLibs.feign.bom.get().toString())
