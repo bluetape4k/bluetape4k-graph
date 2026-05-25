@@ -213,7 +213,7 @@ Importers use `GraphImportOptions.batchSize` as the backend write flush size. Pe
 | `graph-io-graphml` | GraphML XML (StAX) | [README](graph-io/graphml/README.md) |
 | `graph-okio` | OkIO-based adapter — segment streaming, compression chaining, FakeFileSystem support, and DAEAD chunk encryption | [README](graph-io/okio/README.md) |
 
-> **Benchmark results**: [2026-04-18 graph-io bulk I/O results](docs/benchmark/2026-04-18-graph-io-bulk-results.md)
+> **Benchmark results (graph-io)**: [2026-04-18 graph-io bulk I/O results](docs/benchmark/2026-04-18-graph-io-bulk-results.md) — see [Benchmark Decision Guide](benchmark/README.md) for the full 0.4.0 result set including graph-db backend, write ingestion, domain workload, and API model comparisons.
 
 ---
 
@@ -374,3 +374,4 @@ Concrete classes only need to implement `ops` (`GraphOperations` or `GraphSuspen
 ## Documentation
 
 - [Graph Database Pros & Cons and Selection Guide](docs/graphdb-tradeoffs.md) — GraphDB trade-offs and backend selection guide for bluetape4k-graph (Neo4j, Memgraph, AGE, TinkerPop)
+- [Benchmark Decision Guide](benchmark/README.md) — Backend selection guide with measured evidence: graph-db backend comparison (small/medium/large), sustained write ingestion, domain workloads, 10k write ingestion, and API model (Sync / Virtual Thread / Coroutine) results from the 0.4.0 release benchmark run (May 2026)
