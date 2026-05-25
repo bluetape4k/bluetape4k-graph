@@ -213,7 +213,7 @@ SuspendGraphMlBulkExporter().exportGraphSuspending(
 | `graph-io-graphml` | GraphML XML (StAX) | [README](graph-io/graphml/README.ko.md) |
 | `graph-okio` | OkIO 기반 통합 어댑터 — 세그먼트 스트리밍, 압축 체이닝, FakeFileSystem 지원, DAEAD chunk encryption | [README](graph-io/okio/README.ko.md) |
 
-> **벤치마크 결과**: [2026-04-18 graph-io 벌크 I/O 결과](docs/benchmark/2026-04-18-graph-io-bulk-results.md)
+> **벤치마크 결과 (graph-io)**: [2026-04-18 graph-io 벌크 I/O 결과](docs/benchmark/2026-04-18-graph-io-bulk-results.md) — 전체 0.4.0 결과셋(graph-db 백엔드 비교, 쓰기 ingestion, 도메인 워크로드, API 모델 비교)은 [벤치마크 의사결정 가이드](benchmark/README.md)를 참고하세요.
 
 ---
 
@@ -374,3 +374,4 @@ GitHub Actions는 전용 `Examples` workflow도 실행한다. 이 workflow는 �
 ## 문서
 
 - [Graph Database 장단점 및 선택 가이드](docs/graphdb-tradeoffs.md) — GraphDB의 장단점과 bluetape4k-graph 백엔드(Neo4j, Memgraph, AGE, TinkerPop) 선택 가이드
+- [벤치마크 의사결정 가이드](benchmark/README.md) — 실측 데이터 기반 백엔드 선택 가이드: graph-db 백엔드 비교(small/medium/large), 지속 쓰기 ingestion, 도메인 워크로드, 10k 쓰기 ingestion, API 모델(Sync / Virtual Thread / Coroutine) 비교 — 0.4.0 릴리즈 벤치마크 결과(2026년 5월) 기준
