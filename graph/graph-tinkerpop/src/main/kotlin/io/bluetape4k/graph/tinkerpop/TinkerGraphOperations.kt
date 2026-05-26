@@ -488,7 +488,8 @@ class TinkerGraphOperations :
             emptyList()
         }
 
-        return paths.firstOrNull()?.let { GremlinRecordMapper.pathToGraphPath(it) }
+        // Post-process: vertex-only paths from both() need edges inserted between consecutive vertices.
+        return paths.firstOrNull()?.let { buildGraphPathWithEdges(it, options.edgeLabel) }
     }
 
     override fun aStarPath(
@@ -527,7 +528,43 @@ class TinkerGraphOperations :
             emptyList()
         }
 
-        return paths.map { GremlinRecordMapper.pathToGraphPath(it) }
+        // Post-process: vertex-only paths from both() need edges inserted between consecutive vertices.
+        return paths.map { buildGraphPathWithEdges(it, options.edgeLabel) }
+    }
+
+    /**
+     * Builds a [GraphPath] from a Gremlin [Path] that contains only vertices (as returned by `both()`).
+     * Looks up the connecting edge between each consecutive vertex pair so that
+     * [GraphPath.length] (edge count) correctly reflects the hop count.
+     */
+    private fun buildGraphPathWithEdges(
+        gremlinPath: org.apache.tinkerpop.gremlin.process.traversal.Path,
+        edgeLabel: String?,
+    ): GraphPath {
+        val vertices = gremlinPath.objects().filterIsInstance<Vertex>()
+        if (vertices.isEmpty()) return GraphPath.EMPTY
+
+        val steps = mutableListOf<PathStep>()
+        steps.add(PathStep.VertexStep(GremlinRecordMapper.vertexToGraphVertex(vertices.first())))
+
+        for (i in 1 until vertices.size) {
+            val fromV = vertices[i - 1]
+            val toVId = vertices[i].id()
+
+            // Find the edge connecting fromV → toV (either direction)
+            val edgeOpt = if (edgeLabel != null) {
+                g.V(fromV.id()).bothE(edgeLabel).toList()
+            } else {
+                g.V(fromV.id()).bothE().toList()
+            }.firstOrNull { e -> e.inVertex().id() == toVId || e.outVertex().id() == toVId }
+
+            if (edgeOpt != null) {
+                steps.add(PathStep.EdgeStep(GremlinRecordMapper.edgeToGraphEdge(edgeOpt)))
+            }
+            steps.add(PathStep.VertexStep(GremlinRecordMapper.vertexToGraphVertex(vertices[i])))
+        }
+
+        return GraphPath(steps)
     }
 
     // -- GraphAlgorithmRepository --

@@ -399,6 +399,8 @@ class TinkerGraphSuspendOperationsTest {
         val path = ops.shortestPath(a.id, c.id, PathOptions(edgeLabel = "KNOWS"))
         path.shouldNotBeNull()
         path.vertices.shouldNotBeEmpty()
+        path.edges shouldHaveSize 2
+        path.length shouldBeEqualTo 2
     }
 
     @Test
