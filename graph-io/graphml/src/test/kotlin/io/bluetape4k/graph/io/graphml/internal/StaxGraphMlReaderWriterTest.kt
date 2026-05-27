@@ -2,8 +2,11 @@ package io.bluetape4k.graph.io.graphml.internal
 
 import io.bluetape4k.graph.io.graphml.GraphMlExportOptions
 import io.bluetape4k.graph.io.graphml.GraphMlImportOptions
+import io.bluetape4k.graph.io.graphml.UnsupportedGraphMlElementPolicy
 import io.bluetape4k.graph.io.model.GraphIoEdgeRecord
 import io.bluetape4k.graph.io.model.GraphIoVertexRecord
+import io.bluetape4k.graph.io.report.GraphIoFailureSeverity
+import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldHaveSize
@@ -113,6 +116,53 @@ class StaxGraphMlReaderWriterTest {
 </graphml>"""
         val result = reader.read(ByteArrayInputStream(xml.toByteArray()))
         result.failures.isEmpty().not().shouldBeTrue()
+    }
+
+    @Test
+    fun `reader records warnings for unsupported graphml elements with SKIP policy`() {
+        val xml = """<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/graphml">
+  <graph id="G" edgedefault="undirected">
+    <node id="n1">
+      <port name="p1"/>
+      <graph id="nested" edgedefault="directed">
+        <node id="n2"/>
+      </graph>
+    </node>
+    <hyperedge id="h1"/>
+    <edge id="e1" source="n1" target="n1" directed="false"/>
+  </graph>
+</graphml>"""
+        val result = reader.read(ByteArrayInputStream(xml.toByteArray()))
+
+        result.vertices shouldHaveSize 1
+        result.edges shouldHaveSize 1
+        result.failures shouldHaveSize 5
+        result.failures.map { it.severity }.toSet() shouldBeEqualTo setOf(GraphIoFailureSeverity.WARN)
+        result.failures.map { it.elementName } shouldContain "graph"
+        result.failures.map { it.elementName } shouldContain "port"
+        result.failures.map { it.elementName } shouldContain "hyperedge"
+        result.failures.map { it.message } shouldContain "Nested GraphML graphs are not supported"
+        result.failures.map { it.message } shouldContain "GraphML undirected edges are not supported"
+    }
+
+    @Test
+    fun `reader records errors for unsupported graphml elements with FAIL policy`() {
+        val xml = """<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/graphml">
+  <graph id="G" edgedefault="undirected">
+    <node id="n1"/>
+  </graph>
+</graphml>"""
+        val result = reader.read(
+            ByteArrayInputStream(xml.toByteArray()),
+            GraphMlImportOptions(unsupportedElementPolicy = UnsupportedGraphMlElementPolicy.FAIL),
+        )
+
+        result.vertices shouldHaveSize 1
+        result.failures shouldHaveSize 1
+        result.failures.single().severity shouldBeEqualTo GraphIoFailureSeverity.ERROR
+        result.failures.single().message shouldContain "undirected graphs"
     }
 
     @Test

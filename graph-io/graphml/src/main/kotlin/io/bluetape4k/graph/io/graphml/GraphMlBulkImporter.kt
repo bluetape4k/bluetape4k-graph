@@ -78,7 +78,15 @@ class GraphMlBulkImporter : GraphBulkImporter<GraphImportSource> {
         var ec = 0L
         var sv = 0L
         var se = 0L
-        var status = GraphIoStatus.COMPLETED
+        var status = when {
+            parsed.failures.any { it.severity == GraphIoFailureSeverity.ERROR } -> GraphIoStatus.FAILED
+            parsed.failures.any { it.severity == GraphIoFailureSeverity.WARN } -> GraphIoStatus.PARTIAL
+            else -> GraphIoStatus.COMPLETED
+        }
+
+        if (status == GraphIoStatus.FAILED) {
+            return GraphImportReport(status, GraphIoFormat.GRAPHML, vr, vc, er, ec, sv, se, watch.elapsed(), failures)
+        }
 
         for (v in parsed.vertices) {
             val props = options.preserveExternalIdProperty

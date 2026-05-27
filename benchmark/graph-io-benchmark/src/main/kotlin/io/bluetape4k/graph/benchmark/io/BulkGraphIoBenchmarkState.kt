@@ -28,6 +28,7 @@ open class BulkGraphIoBenchmarkState {
         ops = TinkerGraphOperations()
 
         val (vCount, eCount) = when (sizeName) {
+            "smoke" -> 10 to 20
             "small" -> 1_000 to 2_000
             "medium" -> 10_000 to 20_000
             else -> 100_000 to 200_000

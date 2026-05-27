@@ -32,6 +32,16 @@ JMH benchmarks for bulk graph import/export formats and I/O adapters.
 
 The benchmark writes temporary files during each trial and removes them in teardown.
 
+For a fast wiring check that runs a tiny dataset and emits a normal kotlinx-benchmark JSON report, use:
+
+```bash
+./gradlew :graph-io-benchmark:smokeBenchmark
+```
+
+The smoke configuration compares representative CSV, Jackson 3 OkIO, and GraphML OkIO round-trip paths with `sizeName=smoke`.
+Use it as CI evidence that benchmark methods and report generation still work, not as performance data.
+The generated JSON report is under `benchmark/graph-io-benchmark/build/reports/benchmarks/smoke/*/main.json`.
+
 ## Latest Results
 
 The latest published `small` dataset result is from `docs/benchmark/2026-04-18-graph-io-bulk-results.md`.

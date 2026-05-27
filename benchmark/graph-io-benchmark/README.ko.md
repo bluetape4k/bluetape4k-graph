@@ -32,6 +32,16 @@ graph bulk import/export format과 I/O adapter를 측정하는 JMH 벤치마크 
 
 벤치마크는 각 trial 동안 임시 파일을 쓰고 teardown에서 제거합니다.
 
+작은 데이터셋으로 wiring과 kotlinx-benchmark JSON report 생성을 빠르게 확인하려면 다음 smoke 구성을 사용합니다:
+
+```bash
+./gradlew :graph-io-benchmark:smokeBenchmark
+```
+
+smoke 구성은 `sizeName=smoke`로 CSV, Jackson 3 OkIO, GraphML OkIO round-trip 대표 경로를 비교합니다.
+이는 benchmark method와 report 생성이 동작한다는 CI 근거이며, 성능 수치로 해석하지 않습니다.
+생성된 JSON report는 `benchmark/graph-io-benchmark/build/reports/benchmarks/smoke/*/main.json` 아래에 있습니다.
+
 ## 최신 결과
 
 최신 공개 `small` dataset 결과는 `docs/benchmark/2026-04-18-graph-io-bulk-results.md`에 있습니다.
