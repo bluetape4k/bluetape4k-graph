@@ -3,11 +3,15 @@ package io.bluetape4k.graph.io.csv
 import io.bluetape4k.graph.io.options.DuplicateVertexPolicy
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.options.MissingEndpointPolicy
+import io.bluetape4k.graph.io.report.GraphIoFailureSeverity
+import io.bluetape4k.graph.io.report.GraphIoFileRole
+import io.bluetape4k.graph.io.report.GraphIoPhase
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
+import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.coroutines.KLoggingChannel
-import kotlinx.coroutines.test.runTest
+import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeGreaterThan
 import io.bluetape4k.assertions.shouldHaveSize
@@ -30,7 +34,7 @@ class SuspendCsvImportErrorTest {
     }
 
     @Test
-    fun `blank vertex id causes FAILED status`(@TempDir dir: Path) = runTest {
+    fun `blank vertex id causes FAILED status`(@TempDir dir: Path) = runSuspendIO {
         val src = source(
             dir,
             vCsv = "id,label\n,Person\n",
@@ -44,7 +48,7 @@ class SuspendCsvImportErrorTest {
     }
 
     @Test
-    fun `duplicate vertex id with SKIP policy gives PARTIAL status`(@TempDir dir: Path) = runTest {
+    fun `duplicate vertex id with SKIP policy gives PARTIAL status`(@TempDir dir: Path) = runSuspendIO {
         val src = source(
             dir,
             vCsv = "id,label\nv1,Person\nv1,Person\n",
@@ -60,10 +64,14 @@ class SuspendCsvImportErrorTest {
         report.verticesCreated shouldBeEqualTo 1L
         report.skippedVertices shouldBeEqualTo 1L
         report.failures shouldHaveSize 1
+        report.failures.single().phase shouldBeEqualTo GraphIoPhase.CREATE_VERTEX
+        report.failures.single().severity shouldBeEqualTo GraphIoFailureSeverity.WARN
+        report.failures.single().fileRole shouldBeEqualTo GraphIoFileRole.VERTICES
+        report.failures.single().message shouldContain "Duplicate vertex externalId skipped"
     }
 
     @Test
-    fun `missing edge endpoint with SKIP_EDGE policy gives PARTIAL status`(@TempDir dir: Path) = runTest {
+    fun `missing edge endpoint with SKIP_EDGE policy gives PARTIAL status`(@TempDir dir: Path) = runSuspendIO {
         val src = source(
             dir,
             vCsv = "id,label\nv1,Person\n",
@@ -80,10 +88,14 @@ class SuspendCsvImportErrorTest {
         report.edgesCreated shouldBeEqualTo 0L
         report.skippedEdges shouldBeEqualTo 1L
         report.failures shouldHaveSize 1
+        report.failures.single().phase shouldBeEqualTo GraphIoPhase.READ_EDGE
+        report.failures.single().severity shouldBeEqualTo GraphIoFailureSeverity.WARN
+        report.failures.single().fileRole shouldBeEqualTo GraphIoFileRole.EDGES
+        report.failures.single().message shouldContain "Missing endpoint skipped"
     }
 
     @Test
-    fun `missing edge endpoint with FAIL policy gives FAILED status`(@TempDir dir: Path) = runTest {
+    fun `missing edge endpoint with FAIL policy gives FAILED status`(@TempDir dir: Path) = runSuspendIO {
         val src = source(
             dir,
             vCsv = "id,label\nv1,Person\n",
@@ -101,7 +113,7 @@ class SuspendCsvImportErrorTest {
     }
 
     @Test
-    fun `import with multiple vertices and edges sets correct counts`(@TempDir dir: Path) = runTest {
+    fun `import with multiple vertices and edges sets correct counts`(@TempDir dir: Path) = runSuspendIO {
         val src = source(
             dir,
             vCsv = "id,label,prop.name\nv1,Person,Alice\nv2,Person,Bob\nv3,Person,Carol\n",

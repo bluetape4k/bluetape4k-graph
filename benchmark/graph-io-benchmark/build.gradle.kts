@@ -18,6 +18,15 @@ benchmark {
             iterationTime = 3
             iterationTimeUnit = "s"
         }
+        register("smoke") {
+            include(".*(BulkGraphIoBenchmark|OkioGraphIoBenchmark)\\.(csvSyncRoundTrip|jackson3OkioRoundTrip|graphMlOkioRoundTrip)")
+            param("sizeName", "smoke")
+            warmups = 1
+            iterations = 1
+            iterationTime = 200
+            iterationTimeUnit = "ms"
+            reportFormat = "json"
+        }
     }
 }
 

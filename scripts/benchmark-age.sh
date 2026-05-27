@@ -8,14 +8,16 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$REPO_ROOT"
 
-MODULE=":graph-age-benchmark"
-REPORT_ROOT="$REPO_ROOT/benchmark/graph-age-benchmark/build/reports/benchmarks/main"
+MODULE="${BENCHMARK_AGE_MODULE:-:graph-age-benchmark}"
+REPORT_ROOT="${BENCHMARK_AGE_REPORT_ROOT:-$REPO_ROOT/benchmark/graph-age-benchmark/build/reports/benchmarks/main}"
 
-# Remove previous runs so we can pick the freshest report deterministically.
-rm -rf "$REPORT_ROOT" 2>/dev/null || true
+if [[ "${BENCHMARK_SKIP_RUN:-false}" != "true" ]]; then
+    # Remove previous runs so we can pick the freshest report deterministically.
+    rm -rf "$REPORT_ROOT" 2>/dev/null || true
 
-# Run benchmark; stream raw output to stderr so only the JSON line hits stdout.
-./gradlew "$MODULE:benchmark" --rerun --console=plain 1>&2
+    # Run benchmark; stream raw output to stderr so only the JSON line hits stdout.
+    ./gradlew "$MODULE:benchmark" --rerun --console=plain 1>&2
+fi
 
 # Pick the newest JSON report produced by the run (fd-based, avoids `ls`).
 REPORT_FILE="$(fd --type f --extension json . "$REPORT_ROOT" 2>/dev/null | head -n1 || true)"

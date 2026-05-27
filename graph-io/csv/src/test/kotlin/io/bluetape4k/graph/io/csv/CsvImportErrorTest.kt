@@ -3,9 +3,13 @@ package io.bluetape4k.graph.io.csv
 import io.bluetape4k.graph.io.options.DuplicateVertexPolicy
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.options.MissingEndpointPolicy
+import io.bluetape4k.graph.io.report.GraphIoFailureSeverity
+import io.bluetape4k.graph.io.report.GraphIoFileRole
+import io.bluetape4k.graph.io.report.GraphIoPhase
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
+import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeGreaterThan
@@ -59,6 +63,10 @@ class CsvImportErrorTest {
         report.verticesCreated shouldBeEqualTo 1L
         report.skippedVertices shouldBeEqualTo 1L
         report.failures shouldHaveSize 1
+        report.failures.single().phase shouldBeEqualTo GraphIoPhase.CREATE_VERTEX
+        report.failures.single().severity shouldBeEqualTo GraphIoFailureSeverity.WARN
+        report.failures.single().fileRole shouldBeEqualTo GraphIoFileRole.VERTICES
+        report.failures.single().message shouldContain "Duplicate vertex externalId skipped"
     }
 
     @Test
@@ -79,6 +87,10 @@ class CsvImportErrorTest {
         report.edgesCreated shouldBeEqualTo 0L
         report.skippedEdges shouldBeEqualTo 1L
         report.failures shouldHaveSize 1
+        report.failures.single().phase shouldBeEqualTo GraphIoPhase.READ_EDGE
+        report.failures.single().severity shouldBeEqualTo GraphIoFailureSeverity.WARN
+        report.failures.single().fileRole shouldBeEqualTo GraphIoFileRole.EDGES
+        report.failures.single().message shouldContain "Missing endpoint skipped"
     }
 
     @Test

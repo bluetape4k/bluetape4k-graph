@@ -157,6 +157,14 @@ data class GraphMlImportOptions(
 )
 ```
 
+Supported import subset:
+
+- Directed `<graph>` documents with `<node>`, `<edge>`, and scalar `<data>` children.
+- `key` definitions with scalar GraphML attribute types.
+- Unsupported GraphML constructs such as undirected graphs, undirected edges, nested graphs, ports, and hyperedges are recorded in the import failure list.
+- `UnsupportedGraphMlElementPolicy.SKIP` records `WARN` failures and continues with the supported subset.
+- `UnsupportedGraphMlElementPolicy.FAIL` records `ERROR` failures and the bulk importer returns `FAILED` without creating graph elements.
+
 ### Export Options
 
 `GraphMlExportOptions` is currently empty but provides extension point for future features:

@@ -157,6 +157,14 @@ data class GraphMlImportOptions(
 )
 ```
 
+지원하는 import subset:
+
+- `<node>`, `<edge>`, scalar `<data>` 자식을 가진 directed `<graph>` 문서.
+- scalar GraphML attribute type을 사용하는 `key` 정의.
+- undirected graph, undirected edge, nested graph, port, hyperedge 같은 미지원 GraphML construct는 import failure 목록에 기록됩니다.
+- `UnsupportedGraphMlElementPolicy.SKIP`은 `WARN` failure를 기록하고 지원되는 subset 처리를 계속합니다.
+- `UnsupportedGraphMlElementPolicy.FAIL`은 `ERROR` failure를 기록하며 bulk importer는 graph element를 생성하지 않고 `FAILED`를 반환합니다.
+
 ### 익스포트 옵션
 
 `GraphMlExportOptions`는 현재 비어 있지만 향후 기능 확장을 위한 확장 포인트를 제공합니다:
