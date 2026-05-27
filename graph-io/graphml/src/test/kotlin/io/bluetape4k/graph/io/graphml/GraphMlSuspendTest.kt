@@ -7,8 +7,8 @@ import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
-import kotlinx.coroutines.test.runTest
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.junit5.coroutines.runSuspendIO
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
@@ -16,7 +16,7 @@ import java.nio.file.Path
 class GraphMlSuspendTest {
 
     @Test
-    fun `suspend import and export round trip`(@TempDir dir: Path) = runTest {
+    fun `suspend import and export round trip`(@TempDir dir: Path) = runSuspendIO {
         val out = dir.resolve("graph-suspend.graphml")
 
         val src = TinkerGraphOperations()

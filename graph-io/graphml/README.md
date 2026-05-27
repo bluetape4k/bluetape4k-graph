@@ -15,7 +15,7 @@ All implementations use StAX (Streaming API for XML) for memory-efficient parsin
 ## Features
 
 - **StAX-based streaming**: Memory-efficient parsing and serialization
-- **GraphML 2.4 standard support**: Full compatibility with GraphML specification
+- **GraphML subset support**: Directed graphs with nodes, edges, scalar data, and explicit reporting for unsupported constructs
 - **Three execution models**: Sync, async, and virtual thread variants
 - **Detailed import reports**: Comprehensive failure reporting with phase and severity tracking
 - **Flexible configuration**: Customizable attribute names, default labels, and error handling policies
