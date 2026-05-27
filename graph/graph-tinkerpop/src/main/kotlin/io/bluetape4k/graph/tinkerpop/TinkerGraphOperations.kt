@@ -67,6 +67,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__ as AnonymousT
  * ops.close()
  * ```
  */
+@Suppress("LargeClass")
 class TinkerGraphOperations :
     GraphOperations,
     GraphAlgorithmRepository,
