@@ -204,7 +204,9 @@ internal class StaxGraphMlReader {
                         result[key] = value
                     } else {
                         when (reader.localName) {
-                            "graph" -> recordUnsupportedElement(reader, options, failures, "Nested GraphML graphs are not supported")
+                            "graph" -> recordUnsupportedElement(
+                                reader, options, failures, "Nested GraphML graphs are not supported"
+                            )
                             "port" -> recordUnsupportedElement(reader, options, failures)
                         }
                         skipElement(reader, reader.localName)
