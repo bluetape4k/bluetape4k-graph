@@ -84,7 +84,9 @@ class SuspendGraphMlBulkImporter : GraphSuspendBulkImporter<GraphImportSource> {
         }
 
         if (status == GraphIoStatus.FAILED) {
-            return@withContext GraphImportReport(status, GraphIoFormat.GRAPHML, vr, vc, er, ec, sv, se, watch.elapsed(), failures)
+            return@withContext GraphImportReport(
+                status, GraphIoFormat.GRAPHML, vr, vc, er, ec, sv, se, watch.elapsed(), failures
+            )
         }
 
         for (v in parsed.vertices) {
