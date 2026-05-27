@@ -26,6 +26,9 @@ concurrency:
   group: publish-release
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 env:
   JAVA_VERSION: '21'
   JAVA_DISTRIBUTION: 'temurin'
