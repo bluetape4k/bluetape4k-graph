@@ -31,6 +31,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 env:
   JAVA_VERSION: '21'
   JAVA_DISTRIBUTION: 'temurin'
@@ -76,6 +79,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     needs: validate-wrapper
+    permissions:
+      contents: read
+      pull-requests: read
     outputs:
       graph-core: ${{ steps.filter.outputs.graph-core }}
       graph-neo4j: ${{ steps.filter.outputs.graph-neo4j }}
