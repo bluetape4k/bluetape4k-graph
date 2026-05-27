@@ -152,3 +152,13 @@ mocks only.
   as visual direction.
 - Update `WIP.md`, `CHANGELOG.md`, and lessons after substantial work or when
   project state changes.
+
+## Cross-Repo Lesson Guards
+
+- Before issue, PR, workflow, release, or module-registration work, query GNO
+  for this repo in both `bluetape4k-github` and `bluetape4k-docs`.
+- For graph backend or example module changes, keep README locale sets,
+  repo-local module lists, examples workflow, Nightly/full coverage, coverage
+  artifacts, and BOM/catalog constraints synchronized.
+- Run graph database Testcontainers verification sequentially across modules
+  and worktrees. A pass-after-retry still needs a short lifecycle/timing note.
