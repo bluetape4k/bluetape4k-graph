@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-05-27
+
+### Fixed
+
+- **Release catalog selection is deterministic for tag-triggered releases**:
+  release workflow tag runs now ignore stale repository catalog variables and
+  use the checked-in catalog default, while manual dispatch can still override
+  `catalogRef` explicitly ([#227](https://github.com/bluetape4k/bluetape4k-graph/issues/227)).
+- **TinkerGraph shortest-path facade warning cleanup**: suppressed the
+  facade-size warning without changing the shortest-path behavior stabilized in
+  the 0.4.x line.
+
+### Changed
+
+- **Dependency alignment for the 0.4.2 release line**: updated the graph build to
+  consume the `bluetape4k-projects` 1.9.2 BOM and the
+  `catalog/2026-05-26-01` shared catalog reference.
+- **GitHub Actions token hardening**: CI, Nightly, Examples, Benchmark,
+  Snapshot publish, and Release workflows now declare explicit read-only default
+  `GITHUB_TOKEN` permissions, with narrow job-level write/read overrides only
+  where required ([#243](https://github.com/bluetape4k/bluetape4k-graph/issues/243)).
+
+### Tests
+
+- **GraphML unsupported element policy matrix**: locked reader behavior for
+  unsupported GraphML elements so future parser changes preserve the documented
+  skip/fail policy ([#231](https://github.com/bluetape4k/bluetape4k-graph/issues/231)).
+- **Graph-io skipped-record failure accounting**: added coverage for skipped
+  record accounting on graph-io failure paths ([#239](https://github.com/bluetape4k/bluetape4k-graph/issues/239)).
+- **Benchmark evidence contracts**: added lightweight coverage for benchmark
+  wrapper JSON stdout, benchmark SVG rendering, and graph-io benchmark smoke
+  execution paths ([#236](https://github.com/bluetape4k/bluetape4k-graph/issues/236),
+  [#237](https://github.com/bluetape4k/bluetape4k-graph/issues/237),
+  [#238](https://github.com/bluetape4k/bluetape4k-graph/issues/238)).
+- **Suspend graph test harness alignment**: remaining IO/Testcontainers-backed
+  suspend graph tests now use `runSuspendIO` and bluetape4k assertion helpers
+  instead of virtual-time or Kotlin test assertions ([#241](https://github.com/bluetape4k/bluetape4k-graph/issues/241)).
+
 ## [0.4.0] - 2026-05-22
 
 ### Added
