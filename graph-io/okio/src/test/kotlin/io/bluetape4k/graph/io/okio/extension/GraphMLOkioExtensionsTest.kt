@@ -1,5 +1,7 @@
 package io.bluetape4k.graph.io.okio.extension
 
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.graph.io.graphml.GraphMlBulkExporter
 import io.bluetape4k.graph.io.graphml.GraphMlBulkImporter
 import io.bluetape4k.graph.io.okio.OkioGraphExportSink
@@ -8,12 +10,10 @@ import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
+import io.bluetape4k.junit5.coroutines.runSuspendIO
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.test.runTest
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
-import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldHaveSize
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 
@@ -104,7 +104,7 @@ class GraphMLOkioExtensionsTest {
     // ─── Suspend ─────────────────────────────────────────────────────────────
 
     @Test
-    fun `GraphML exportGraphAwait returns completed report`() = runTest {
+    fun `GraphML exportGraphAwait returns completed report`() = runSuspendIO {
         val path = "/graph-await.graphml".toPath()
         val report = GraphMlBulkExporter().exportGraphAwait(
             OkioGraphExportSink.PathSink(path, fakeFs), buildSourceGraph(), exportOptions,
@@ -114,7 +114,7 @@ class GraphMLOkioExtensionsTest {
     }
 
     @Test
-    fun `GraphML importGraphAwait returns completed report`() = runTest {
+    fun `GraphML importGraphAwait returns completed report`() = runSuspendIO {
         val path = "/graph-await-import.graphml".toPath()
         GraphMlBulkExporter().exportGraph(
             OkioGraphExportSink.PathSink(path, fakeFs), buildSourceGraph(), exportOptions,
@@ -128,7 +128,7 @@ class GraphMLOkioExtensionsTest {
     }
 
     @Test
-    fun `GraphML exportGraphFlow emits progress`() = runTest {
+    fun `GraphML exportGraphFlow emits progress`() = runSuspendIO {
         val path = "/graph-flow-export.graphml".toPath()
         val events = GraphMlBulkExporter().exportGraphFlow(
             OkioGraphExportSink.PathSink(path, fakeFs), buildSourceGraph(), exportOptions,
@@ -137,7 +137,7 @@ class GraphMLOkioExtensionsTest {
     }
 
     @Test
-    fun `GraphML importGraphFlow emits progress`() = runTest {
+    fun `GraphML importGraphFlow emits progress`() = runSuspendIO {
         val path = "/graph-flow-import.graphml".toPath()
         GraphMlBulkExporter().exportGraph(
             OkioGraphExportSink.PathSink(path, fakeFs), buildSourceGraph(), exportOptions,

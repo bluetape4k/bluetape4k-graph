@@ -1,5 +1,7 @@
 package io.bluetape4k.graph.io.okio.extension
 
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.graph.io.csv.CsvGraphBulkExporter
 import io.bluetape4k.graph.io.csv.CsvGraphBulkImporter
 import io.bluetape4k.graph.io.okio.OkioGraphExportSink
@@ -8,12 +10,10 @@ import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
+import io.bluetape4k.junit5.coroutines.runSuspendIO
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.test.runTest
 import okio.FileSystem
 import okio.Path.Companion.toPath
-import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldHaveSize
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
@@ -104,13 +104,13 @@ class CsvOkioExtensionsTest {
     // ─── Suspend ─────────────────────────────────────────────────────────────
 
     @Test
-    fun `CSV exportGraphAwait completes via coroutine`() = runTest {
+    fun `CSV exportGraphAwait completes via coroutine`() = runSuspendIO {
         val report = exporter.exportGraphAwait(csvSink(), buildSourceGraph(), exportOptions)
         report.status shouldBeEqualTo GraphIoStatus.COMPLETED
     }
 
     @Test
-    fun `CSV importGraphAwait completes via coroutine`() = runTest {
+    fun `CSV importGraphAwait completes via coroutine`() = runSuspendIO {
         exporter.exportGraph(csvSink(), buildSourceGraph(), exportOptions)
         val report = importer.importGraphAwait(csvSource(), TinkerGraphOperations(), GraphImportOptions())
         report.verticesCreated shouldBeEqualTo 2L
@@ -118,13 +118,13 @@ class CsvOkioExtensionsTest {
     }
 
     @Test
-    fun `CSV exportGraphFlow emits progress`() = runTest {
+    fun `CSV exportGraphFlow emits progress`() = runSuspendIO {
         val events = exporter.exportGraphFlow(csvSink(), buildSourceGraph(), exportOptions).toList()
         events shouldHaveSize 2
     }
 
     @Test
-    fun `CSV importGraphFlow emits progress`() = runTest {
+    fun `CSV importGraphFlow emits progress`() = runSuspendIO {
         exporter.exportGraph(csvSink(), buildSourceGraph(), exportOptions)
         val events = importer.importGraphFlow(csvSource(), TinkerGraphOperations(), GraphImportOptions()).toList()
         events shouldHaveSize 2

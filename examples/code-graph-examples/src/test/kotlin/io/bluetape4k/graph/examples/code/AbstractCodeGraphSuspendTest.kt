@@ -1,15 +1,15 @@
 package io.bluetape4k.graph.examples.code
 
-import io.bluetape4k.graph.examples.code.service.CodeGraphSuspendService
-import io.bluetape4k.graph.repository.GraphSuspendOperations
-import io.bluetape4k.logging.KLogging
-import io.bluetape4k.logging.debug
-import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.test.runTest
 import io.bluetape4k.assertions.shouldBeGreaterThan
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.graph.examples.code.service.CodeGraphSuspendService
+import io.bluetape4k.graph.repository.GraphSuspendOperations
+import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
+import kotlinx.coroutines.flow.toList
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -22,13 +22,13 @@ abstract class AbstractCodeGraphSuspendTest {
     protected val service: CodeGraphSuspendService by lazy { CodeGraphSuspendService(ops, graphName) }
 
     @BeforeEach
-    fun cleanGraph() = runTest {
+    fun cleanGraph() = runSuspendIO {
         if (ops.graphExists(graphName)) ops.dropGraph(graphName)
         service.initialize()
     }
 
     @Test
-    fun `모듈 추가 및 의존성 관계 구성`() = runTest {
+    fun `모듈 추가 및 의존성 관계 구성`() = runSuspendIO {
         val core = service.addModule("core", "graph/graph-core", "1.0.0")
         val middle = service.addModule("middle", "graph/middle", "1.0.0")
         val app = service.addModule("app", "examples/app", "1.0.0")
@@ -45,7 +45,7 @@ abstract class AbstractCodeGraphSuspendTest {
     }
 
     @Test
-    fun `의존성 경로 탐색`() = runTest {
+    fun `의존성 경로 탐색`() = runSuspendIO {
         val core = service.addModule("core", path = "", version = "1.0.0")
         val mid = service.addModule("middle", path = "", version = "1.0.0")
         val top = service.addModule("top", path = "", version = "1.0.0")
@@ -60,7 +60,7 @@ abstract class AbstractCodeGraphSuspendTest {
     }
 
     @Test
-    fun `영향 범위 분석 - 역방향 탐색`() = runTest {
+    fun `영향 범위 분석 - 역방향 탐색`() = runSuspendIO {
         val core = service.addModule("core", path = "", version = "1.0.0")
         val moduleA = service.addModule("moduleA", path = "", version = "1.0.0")
         val moduleB = service.addModule("moduleB", path = "", version = "1.0.0")
@@ -74,7 +74,7 @@ abstract class AbstractCodeGraphSuspendTest {
     }
 
     @Test
-    fun `클래스 상속 계층 탐색`() = runTest {
+    fun `클래스 상속 계층 탐색`() = runSuspendIO {
         val baseClass = service.addClass("Animal", "io.example.Animal")
         val midClass = service.addClass("Mammal", "io.example.Mammal")
         val leafClass = service.addClass("Dog", "io.example.Dog")
@@ -88,7 +88,7 @@ abstract class AbstractCodeGraphSuspendTest {
     }
 
     @Test
-    fun `함수 호출 체인 분석`() = runTest {
+    fun `함수 호출 체인 분석`() = runSuspendIO {
         val funcA = service.addFunction("processOrder", "fun processOrder(orderId: Long)")
         val funcB = service.addFunction("validateOrder", "fun validateOrder(orderId: Long)")
         val funcC = service.addFunction("saveOrder", "fun saveOrder(order: Order)")
@@ -103,7 +103,7 @@ abstract class AbstractCodeGraphSuspendTest {
     }
 
     @Test
-    fun `의존성 없는 경우 경로 null`() = runTest {
+    fun `의존성 없는 경우 경로 null`() = runSuspendIO {
         val isolated = service.addModule("isolated", path = "", version = "1.0.0")
         val other = service.addModule("other", path = "", version = "1.0.0")
 

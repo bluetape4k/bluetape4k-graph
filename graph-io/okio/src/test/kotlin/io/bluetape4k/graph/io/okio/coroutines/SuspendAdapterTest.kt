@@ -1,5 +1,8 @@
 package io.bluetape4k.graph.io.okio.coroutines
 
+import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.graph.io.okio.OkioGraphBulkExporter
 import io.bluetape4k.graph.io.okio.OkioGraphBulkImporter
 import io.bluetape4k.graph.io.okio.OkioGraphExportSink
@@ -9,15 +12,12 @@ import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphIoFormat
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
+import io.bluetape4k.junit5.coroutines.runSuspendIO
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
-import kotlin.test.assertFailsWith
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
-import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldHaveSize
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 
@@ -48,7 +48,7 @@ class SuspendAdapterTest {
     )
 
     @Test
-    fun `importGraphAwait returns completed report`() = runTest {
+    fun `importGraphAwait returns completed report`() = runSuspendIO {
         val path = "/await.ndjson".toPath()
         val src = buildSourceGraph()
         val sink = OkioGraphExportSink.PathSink(path, fakeFs)
@@ -66,7 +66,7 @@ class SuspendAdapterTest {
     }
 
     @Test
-    fun `exportGraphAwait returns completed report`() = runTest {
+    fun `exportGraphAwait returns completed report`() = runSuspendIO {
         val path = "/await-export.ndjson".toPath()
         val src = buildSourceGraph()
 
@@ -82,7 +82,7 @@ class SuspendAdapterTest {
     }
 
     @Test
-    fun `importGraph Flow emits start and completion progress`() = runTest {
+    fun `importGraph Flow emits start and completion progress`() = runSuspendIO {
         val path = "/flow.ndjson".toPath()
         val src = buildSourceGraph()
         adapter.exportGraphAwait(
@@ -104,7 +104,7 @@ class SuspendAdapterTest {
     }
 
     @Test
-    fun `exportGraph Flow emits start and completion progress`() = runTest {
+    fun `exportGraph Flow emits start and completion progress`() = runSuspendIO {
         val path = "/flow-export.ndjson".toPath()
         val src = buildSourceGraph()
 
@@ -122,7 +122,7 @@ class SuspendAdapterTest {
     // ─── 다중 포맷 커버리지 ───────────────────────────────────────────────────────
 
     @Test
-    fun `importGraphAwait with NDJSON_JACKSON2 format returns correct counts`() = runTest {
+    fun `importGraphAwait with NDJSON_JACKSON2 format returns correct counts`() = runSuspendIO {
         val path = "/await-j2.ndjson".toPath()
         val src = buildSourceGraph()
         adapter.exportGraphAwait(OkioGraphExportSink.PathSink(path, fakeFs), GraphIoFormat.NDJSON_JACKSON2, src, exportOptions)
@@ -139,7 +139,7 @@ class SuspendAdapterTest {
     }
 
     @Test
-    fun `importGraphAwait with GRAPHML format returns correct counts`() = runTest {
+    fun `importGraphAwait with GRAPHML format returns correct counts`() = runSuspendIO {
         val path = "/await-graphml.xml".toPath()
         val src = buildSourceGraph()
         adapter.exportGraphAwait(OkioGraphExportSink.PathSink(path, fakeFs), GraphIoFormat.GRAPHML, src, exportOptions)
@@ -156,7 +156,7 @@ class SuspendAdapterTest {
     }
 
     @Test
-    fun `exportGraphAwait with GRAPHML format returns completed report`() = runTest {
+    fun `exportGraphAwait with GRAPHML format returns completed report`() = runSuspendIO {
         val path = "/await-export-graphml.xml".toPath()
         val src = buildSourceGraph()
 
@@ -174,7 +174,7 @@ class SuspendAdapterTest {
     // ─── 취소 전파 ────────────────────────────────────────────────────────────
 
     @Test
-    fun `exportGraphAwait throws CancellationException when coroutine is pre-cancelled`() = runTest {
+    fun `exportGraphAwait throws CancellationException when coroutine is pre-cancelled`() = runSuspendIO {
         val cancelledJob = Job().apply { cancel() }
 
         assertFailsWith<kotlinx.coroutines.CancellationException> {
@@ -191,7 +191,7 @@ class SuspendAdapterTest {
     }
 
     @Test
-    fun `importGraphAwait throws CancellationException when coroutine is pre-cancelled`() = runTest {
+    fun `importGraphAwait throws CancellationException when coroutine is pre-cancelled`() = runSuspendIO {
         val path = "/cancel-import.ndjson".toPath()
         adapter.exportGraphAwait(
             OkioGraphExportSink.PathSink(path, fakeFs),
