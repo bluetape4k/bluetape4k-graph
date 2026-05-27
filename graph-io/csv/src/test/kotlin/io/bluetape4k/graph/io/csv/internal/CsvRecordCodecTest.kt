@@ -2,14 +2,14 @@ package io.bluetape4k.graph.io.csv.internal
 
 import io.bluetape4k.graph.io.csv.CsvPropertyMode
 import io.bluetape4k.graph.io.model.GraphIoVertexRecord
-import io.bluetape4k.logging.KLogging
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.logging.KLogging
 import org.junit.jupiter.api.Test
-import kotlin.test.assertFailsWith
 
 class CsvRecordCodecTest {
 
-    companion object: KLogging()
+    companion object : KLogging()
 
     @Test
     fun `union header sorts property keys after reserved columns`() {

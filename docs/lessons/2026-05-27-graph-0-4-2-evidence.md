@@ -29,3 +29,5 @@ The actual smoke benchmark remains available as an explicit Gradle task for rele
 ## Future Guidance
 
 Keep benchmark CI evidence split from real performance claims. Use fixture tests for wrapper contracts, explicit smoke tasks for wiring, and full benchmark runs only when the result is intended to be interpreted.
+When touching graph-io suspend tests, re-scan sibling tests for real file IO still using `runTest` and migrate touched coverage to `runSuspendIO`.
+When documenting GraphML support, avoid "full compatibility" wording unless unsupported constructs are actually implemented.

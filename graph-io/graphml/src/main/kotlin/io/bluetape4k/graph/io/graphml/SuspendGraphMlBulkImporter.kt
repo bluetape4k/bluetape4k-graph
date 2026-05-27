@@ -25,11 +25,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * GraphML 코루틴(suspend) 벌크 임포터.
- * StAX 파싱은 IO 디스패처에서 수행하고, 정점/간선 생성은 suspend 함수로 호출한다.
- */
-/**
  * Coroutine bulk importer for GraphML.
+ *
+ * StAX parsing runs on [Dispatchers.IO], and vertex/edge creation is delegated
+ * to the provided suspend graph operations.
  *
  * Example:
  *

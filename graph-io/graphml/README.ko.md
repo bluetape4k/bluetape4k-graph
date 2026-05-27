@@ -15,7 +15,7 @@ StAX 스트리밍 파서를 이용한 GraphML (XML) 대량 임포터 및 익스�
 ## 기능
 
 - **StAX 기반 스트리밍**: 메모리 효율적인 파싱 및 직렬화
-- **GraphML 2.4 표준 지원**: GraphML 사양과의 완벽한 호환성
+- **GraphML subset 지원**: directed graph, node, edge, scalar data를 처리하고 미지원 construct를 명시적으로 리포팅
 - **세 가지 실행 모델**: 동기, 비동기, 가상 스레드 변형
 - **상세한 임포트 리포트**: 단계(phase)와 심각도(severity)를 포함한 종합 실패 리포팅
 - **유연한 설정**: 속성 이름, 기본 레이블, 오류 처리 정책 커스터마이징 가능
