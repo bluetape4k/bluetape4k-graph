@@ -1,0 +1,35 @@
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/Users/debop/work/bluetape4k/bluetape4k-graph/.worktrees/feat-abuser-detection-benchmark/benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-0.5.0-JMH.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# JMH version: 1.37
+# VM version: JDK 25.0.3, Java HotSpot(TM) 64-Bit Server VM, 25.0.3+9-LTS-jvmci-b01
+# VM invoker: /Library/Java/JavaVirtualMachines/graalvm-jdk-25/Contents/Home/bin/java
+# VM options: -XX:ThreadPriorityPolicy=1 -XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCIProduct -XX:+EnableJVMCI -XX:-UnlockExperimentalVMOptions
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: <none>
+# Measurement: 1 iterations, 1 s each
+# Timeout: 60 s per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: io.bluetape4k.graph.benchmark.AuthzInheritanceBenchmark.resolveResources
+# Parameters: (backend = age-cypher, scenarioName = deep-wide, sizeName = large)
+
+# Run progress: 0.00% complete, ETA 00:00:01
+# Fork: 1 of 1
+Java HotSpot(TM) 64-Bit Server VM warning: -XX:ThreadPriorityPolicy=1 may require system level permission, e.g., being the root user. If the necessary permission is not possessed, changes to priority will be silently ignored.
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/Users/debop/work/bluetape4k/bluetape4k-graph/.worktrees/feat-abuser-detection-benchmark/benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-0.5.0-JMH.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+Iteration   1: 21:23:35.752 [io.bluetape4k.graph.benchmark.AuthzInheritanceBenchmark.resolveResources-jmh-worker-1] WARN  o.t.utility.ResourceReaper - 
+********************************************************************************
+Ryuk has been disabled. This can cause unexpected behavior in your environment.
+********************************************************************************
+testcontainers.postgresql-age.host=localhost
+testcontainers.postgresql-age.port=33326
+testcontainers.postgresql-age.url=jdbc:postgresql://localhost:33326/test?loggerLevel=OFF
+testcontainers.postgresql-age.jdbc-url=jdbc:postgresql://localhost:33326/test?loggerLevel=OFF
+testcontainers.postgresql-age.username=test
+testcontainers.postgresql-age.password=test
+testcontainers.postgresql-age.database=test
