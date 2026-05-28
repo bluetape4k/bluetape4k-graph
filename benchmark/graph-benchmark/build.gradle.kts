@@ -68,7 +68,7 @@ benchmark {
         }
         register("abuserDetectionSmoke") {
             include(".*AbuserDetectionBenchmark.*")
-            param("backend", "age", "exposed", "jpa")
+            param("backend", "age-cypher", "exposed-cte", "exposed-iterative", "jpa-cte", "jpa-iterative")
             param("sizeName", "smoke")
             param("scenarioName", "shared")
             warmups = 1
@@ -79,9 +79,31 @@ benchmark {
         }
         register("abuserDetection") {
             include(".*AbuserDetectionBenchmark.*")
-            param("backend", "age", "exposed", "jpa")
+            param("backend", "age-cypher", "exposed-cte", "exposed-iterative", "jpa-cte", "jpa-iterative")
             param("sizeName", "small", "medium")
             param("scenarioName", "shared", "transfer", "noisy-dense", "wide-fanout")
+            warmups = 2
+            iterations = 3
+            iterationTime = 2
+            iterationTimeUnit = "s"
+            reportFormat = "json"
+        }
+        register("authzInheritanceSmoke") {
+            include(".*AuthzInheritanceBenchmark.*")
+            param("backend", "age-cypher", "postgres-cte", "postgres-iterative")
+            param("sizeName", "smoke")
+            param("scenarioName", "deep-inheritance")
+            warmups = 1
+            iterations = 1
+            iterationTime = 1
+            iterationTimeUnit = "s"
+            reportFormat = "json"
+        }
+        register("authzInheritance") {
+            include(".*AuthzInheritanceBenchmark.*")
+            param("backend", "age-cypher", "postgres-cte", "postgres-iterative")
+            param("sizeName", "small", "medium")
+            param("scenarioName", "shallow", "deep-inheritance", "deny-heavy", "wide-groups")
             warmups = 2
             iterations = 3
             iterationTime = 2

@@ -9,6 +9,7 @@ import io.bluetape4k.graph.benchmark.abuser.AgeAbuserDetectionEngine
 import io.bluetape4k.graph.benchmark.abuser.ExposedAbuserDetectionEngine
 import io.bluetape4k.graph.benchmark.abuser.JpaAbuserDetectionEngine
 import io.bluetape4k.graph.benchmark.abuser.PostgreSqlAbuserDetectionSupport
+import io.bluetape4k.graph.benchmark.abuser.SqlTraversalMode
 import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
 import kotlinx.benchmark.Benchmark
 import kotlinx.benchmark.BenchmarkMode
@@ -33,7 +34,7 @@ import kotlinx.benchmark.Warmup
 @State(Scope.Benchmark)
 open class AbuserDetectionBenchmark {
 
-    @Param("age", "exposed", "jpa")
+    @Param("age-cypher", "exposed-cte", "exposed-iterative", "jpa-cte", "jpa-iterative")
     lateinit var backend: String
 
     @Param("smoke", "small", "medium")
@@ -54,7 +55,7 @@ open class AbuserDetectionBenchmark {
             scenario = AbuserDetectionScenario.fromName(scenarioName),
         )
         val server = PostgreSQLAgeServer.Launcher.postgresqlAge
-        val loadAge = backend == "age"
+        val loadAge = backend == "age-cypher"
         val pool = PostgreSqlAbuserDetectionSupport.createDataSource(
             jdbcUrl = server.jdbcUrl,
             username = requireNotNull(server.username) { "PostgreSQL AGE username is not available" },
@@ -65,9 +66,14 @@ open class AbuserDetectionBenchmark {
         dataSource = pool
 
         engine = when (backend) {
-            "age" -> AgeAbuserDetectionEngine("abuser_detection_${sizeName}_${scenarioName.replace('-', '_')}", pool)
-            "exposed" -> ExposedAbuserDetectionEngine(pool)
-            "jpa" -> JpaAbuserDetectionEngine(pool)
+            "age-cypher" -> AgeAbuserDetectionEngine(
+                "abuser_detection_${sizeName}_${scenarioName.replace('-', '_')}",
+                pool,
+            )
+            "exposed-cte" -> ExposedAbuserDetectionEngine(pool, SqlTraversalMode.RECURSIVE_CTE)
+            "exposed-iterative" -> ExposedAbuserDetectionEngine(pool, SqlTraversalMode.ITERATIVE)
+            "jpa-cte" -> JpaAbuserDetectionEngine(pool, SqlTraversalMode.RECURSIVE_CTE)
+            "jpa-iterative" -> JpaAbuserDetectionEngine(pool, SqlTraversalMode.ITERATIVE)
             else -> error("Unsupported abuser detection backend: $backend")
         }
         engine.reset()

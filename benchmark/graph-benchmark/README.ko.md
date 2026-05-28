@@ -2,7 +2,7 @@
 
 [English](README.md) | [한국어](README.ko.md)
 
-그래프 성능 비교를 위한 kotlinx-benchmark 모듈입니다. 현재 여덟 가지 측정 축을 포함합니다.
+그래프 성능 비교를 위한 kotlinx-benchmark 모듈입니다. 현재 아홉 가지 측정 축을 포함합니다.
 
 - 기존 TinkerGraph Sync vs Virtual Thread 그래프 연산.
 - 동일한 TinkerGraph fixture에서 Sync, Virtual Thread, Coroutine API model 비교.
@@ -10,7 +10,8 @@
 - social, IAM, fraud, code graph query를 반영한 domain-shaped workload 비교.
 - 공통 `GraphOperations` 계약을 통한 sustained graph write와 batch ingestion 비교.
 - 동시성 10, 100, 1,000 단위의 production-shaped API model 비교.
-- AGE + Exposed, Exposed JDBC, JPA/Hibernate의 PostgreSQL abuser detection 비교.
+- AGE/Cypher, recursive CTE, iterative traversal의 PostgreSQL authorization inheritance 비교.
+- AGE/Cypher, Exposed JDBC, JPA/Hibernate의 PostgreSQL bounded fraud/abuser detection 비교.
 - 동일한 TinkerGraph 생성 데이터셋을 사용하는 graph-io 포맷 비교.
 
 ## Architecture
@@ -22,7 +23,8 @@
 - `GraphDbComparisonBenchmark`: `tinkergraph`, `neo4j`, `memgraph`, `age`, `falkordb` backend.
 - `GraphDomainWorkloadBenchmark`: `tinkergraph`, `neo4j`, `memgraph`의 social high fan-out, IAM reachability, fraud path, code dependency workload.
 - `GraphWriteIngestionBenchmark`: 동일 backend matrix에서 vertex-only, edge-only, mixed, repeated mixed write batch.
-- `AbuserDetectionBenchmark`: 하나의 deterministic account-signal fixture를 사용하는 PostgreSQL `age`, `exposed`, `jpa` abuser-detection backend.
+- `AuthzInheritanceBenchmark`: 하나의 deterministic user/group/role/resource fixture를 사용하는 PostgreSQL AGE/Cypher, recursive CTE, iterative traversal.
+- `AbuserDetectionBenchmark`: 하나의 deterministic account-transfer fixture를 사용하는 PostgreSQL AGE/Cypher, Exposed JDBC, JPA/Hibernate fraud-detection backend.
 - `GraphIoComparisonBenchmark`: `csv`, `jackson2`, `jackson3`, `graphml`, `okio-jackson3`, `okio-graphml`.
 - `ApiModelBenchmark`: 동일한 in-memory TinkerGraph fixture에서 sync, virtual-thread, coroutine API overhead.
 - 기존 operation benchmark: batch insert, shortest path, neighbors, traversal, algorithm, vertex operations.
@@ -61,6 +63,15 @@ Docker-free API model production matrix:
 ```bash
 ./gradlew :graph-benchmark:mainApiModelProductionBenchmark
 ```
+
+PostgreSQL authorization inheritance smoke와 comparison matrix:
+
+```bash
+./gradlew :graph-benchmark:authzInheritanceSmokeBenchmark
+./gradlew :graph-benchmark:authzInheritanceBenchmark
+```
+
+Smoke task는 `sizeName=smoke`, `scenarioName=deep-inheritance`를 실행합니다. Comparison task는 `small`, `medium` dataset을 `shallow`, `deep-inheritance`, `deny-heavy`, `wide-groups` scenario 전체에 대해 실행합니다.
 
 PostgreSQL abuser detection smoke와 comparison matrix:
 
@@ -125,30 +136,38 @@ BFS와 launch/create 행은 `us/op`이며 낮을수록 좋습니다.
 - [Chart SVG](../../docs/images/readme-charts/graph-api-model-production-chart-01.svg)
 - [Raw JMH JSON](../../docs/benchmark/api-model-production-gradle-2026-05-21.json)
 
-## 최신 Abuser Detection 결과
+## 최신 Authorization Inheritance 결과
 
-실행 조건: macOS arm64, GraalVM JDK 25.0.3, kotlinx-benchmark/JMH 1.37, fork 1회, warmup 1회, 1초 measurement 1회, PostgreSQL AGE Testcontainer, 120 account `smoke` fixture, `shared` scenario, 2026-05-28. 모든 latency 값은 `ms/op`이며 낮을수록 좋습니다. Benchmark 전에 smoke test로 AGE + Exposed, Exposed JDBC, JPA/Hibernate 모두 precision `1.0`, recall `1.0`, F1 `1.0`을 확인했습니다.
+![Authorization inheritance traversal latency](../../docs/images/readme-charts/authz-inheritance-postgresql-latency-chart-01.png)
+
+실행 조건: macOS arm64, Java HotSpot 21.0.11, kotlinx-benchmark/JMH 1.37, fork 1회, warmup 2회, 2초 measurement 3회, PostgreSQL AGE Testcontainer, 2026-05-28. 모든 latency 값은 `ms/op`이며 낮을수록 좋습니다. Benchmark 전에 smoke test로 AGE/Cypher, PostgreSQL recursive CTE, PostgreSQL iterative traversal 모두 result-set equivalence와 F1 `1.0`을 확인했습니다.
 
 Scenario matrix:
 
 | Scenario | Shape |
 |---|---|
-| `shared` | shared device/IP/payment 중심 signal graph |
-| `transfer` | 더 깊은 transfer-chain 중심 signal graph |
-| `noisy-dense` | 높은 background edge volume과 더 조밀한 검사량 |
-| `wide-fanout` | known abusive account당 많은 direct suspicious neighbor |
+| `shallow` | 짧은 user/group/role/resource inheritance path |
+| `deep-inheritance` | cycle edge가 포함된 더 깊은 inheritance chain |
+| `deny-heavy` | deny grant edge가 많고 deny-overrides-allow 의미론이 강한 fixture |
+| `wide-groups` | group membership fan-out이 넓은 fixture |
 
-| Benchmark | AGE + Exposed | Exposed JDBC | JPA/Hibernate |
-|---|---:|---:|---:|
-| `detectCandidates` | 13.002 | **0.199** | 0.210 |
-| `detectF1BasisPoints` | 11.533 | **0.197** | 0.202 |
+Medium fixture `resolveResources` latency:
 
-해석: 이 smoke run은 계약과 benchmark 실행 표면 검증용입니다. AGE는 현재 graph abstraction과 traversal 비용을 부담하고, relational baseline 둘은 공통 recursive SQL query를 직접 실행합니다. Release-grade 순위 주장에는 `small`, `medium` scenario matrix 재측정이 필요합니다.
+| Scenario | AGE/Cypher | PostgreSQL CTE | PostgreSQL iterative | Winner |
+|---|---:|---:|---:|---|
+| `shallow` | 57.382 | 12.085 | **1.056** | PostgreSQL iterative |
+| `deep-inheritance` | 604.833 | 9.385 | **2.102** | PostgreSQL iterative |
+| `deny-heavy` | 448.263 | 9.450 | **4.310** | PostgreSQL iterative |
+| `wide-groups` | 250.083 | **1.521** | 3.658 | PostgreSQL CTE |
+
+해석: 이 PostgreSQL AGE fixture에서는 AGE/Cypher가 latency에서 이기지 못했습니다. 측정된 authorization-inheritance matrix 전체에서 PostgreSQL recursive CTE와 iterative batched traversal이 더 빨랐습니다. AGE는 variable-depth graph traversal 표현은 더 직접적이지만, 현재 구현과 dataset으로는 속도 기반 GraphDB 도입 주장을 뒷받침하지 못합니다.
 
 결과 산출물:
 
-- [Raw JMH JSON](../../docs/benchmark/2026-05-28-abuser-detection-smoke-main.json)
-- [Markdown result table](../../docs/benchmark/2026-05-28-abuser-detection-smoke-results.md)
+- [Chart PNG](../../docs/images/readme-charts/authz-inheritance-postgresql-latency-chart-01.png)
+- [Chart SVG](../../docs/images/readme-charts/authz-inheritance-postgresql-latency-chart-01.svg)
+- [Raw JMH JSON](../../docs/benchmark/2026-05-28-authz-inheritance-main.json)
+- [Markdown result table](../../docs/benchmark/2026-05-28-authz-inheritance-results.md)
 
 ## 최신 Testcontainers 결과
 

@@ -1,34 +1,24 @@
-package io.bluetape4k.graph.benchmark.abuser
+package io.bluetape4k.graph.benchmark.authz
 
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.graph.benchmark.abuser.PostgreSqlAbuserDetectionSupport
+import io.bluetape4k.graph.benchmark.abuser.SqlTraversalMode
 import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import javax.sql.DataSource
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class AbuserDetectionEngineSmokeTest {
+class AuthzInheritanceEngineSmokeTest {
 
     @Test
-    fun `AGE Exposed detects smoke fixture`() {
-        runEngine("age-smoke", loadAge = true) { dataSource ->
-            AgeAbuserDetectionEngine("abuser_detection_smoke_test", dataSource)
+    fun `authorization inheritance engines resolve the same resources`() {
+        runEngine("authz-age-smoke", loadAge = true) { dataSource ->
+            AgeAuthzInheritanceEngine("authz_inheritance_smoke_test", dataSource)
         }
-    }
-
-    @Test
-    fun `Exposed JDBC detects smoke fixture`() {
         SqlTraversalMode.entries.forEach { mode ->
-            runEngine("exposed-smoke-${mode.displayName}", loadAge = false) { dataSource ->
-                ExposedAbuserDetectionEngine(dataSource, mode)
-            }
-        }
-    }
-
-    @Test
-    fun `JPA Hibernate detects smoke fixture`() {
-        SqlTraversalMode.entries.forEach { mode ->
-            runEngine("jpa-smoke-${mode.displayName}", loadAge = false) { dataSource ->
-                JpaAbuserDetectionEngine(dataSource, mode)
+            runEngine("authz-postgres-${mode.displayName}", loadAge = false) { dataSource ->
+                SqlAuthzInheritanceEngine(dataSource, mode)
             }
         }
     }
@@ -36,9 +26,12 @@ class AbuserDetectionEngineSmokeTest {
     private fun runEngine(
         poolName: String,
         loadAge: Boolean,
-        engineFactory: (AutoCloseableDataSource) -> AbuserDetectionEngine,
+        engineFactory: (AutoCloseableDataSource) -> AuthzInheritanceEngine,
     ) {
-        val fixture = AbuserDetectionFixtureFactory.create(AbuserDetectionSize.SMOKE, AbuserDetectionScenario.SHARED)
+        val fixture = AuthzInheritanceFixtureFactory.create(
+            AuthzInheritanceSize.SMOKE,
+            AuthzInheritanceScenario.DEEP_INHERITANCE,
+        )
         val server = PostgreSQLAgeServer.Launcher.postgresqlAge
         val dataSource = AutoCloseableDataSource(
             PostgreSqlAbuserDetectionSupport.createDataSource(
@@ -55,9 +48,9 @@ class AbuserDetectionEngineSmokeTest {
                 engine.reset()
                 engine.load(fixture)
 
-                val result = engine.detect()
+                val result = engine.resolve()
 
-                result.predictedAbusiveAccountIds shouldBeEqualTo fixture.expectedAbusiveAccountIds
+                result.resourceIds shouldBeEqualTo fixture.expectedResourceIds
                 result.metrics.falsePositives shouldBeEqualTo 0
                 result.metrics.falseNegatives shouldBeEqualTo 0
                 result.metrics.f1 shouldBeEqualTo 1.0
@@ -67,7 +60,7 @@ class AbuserDetectionEngineSmokeTest {
 
     private class AutoCloseableDataSource(
         private val delegate: com.zaxxer.hikari.HikariDataSource,
-    ): javax.sql.DataSource by delegate, AutoCloseable {
+    ): DataSource by delegate, AutoCloseable {
         override fun close() {
             delegate.close()
         }

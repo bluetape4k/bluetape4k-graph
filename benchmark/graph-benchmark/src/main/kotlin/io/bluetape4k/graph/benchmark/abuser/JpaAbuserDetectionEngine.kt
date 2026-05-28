@@ -16,12 +16,14 @@ import javax.sql.DataSource
 
 class JpaAbuserDetectionEngine(
     private val dataSource: DataSource,
+    private val traversalMode: SqlTraversalMode = SqlTraversalMode.RECURSIVE_CTE,
 ): AbuserDetectionEngine {
 
-    override val implementationName: String = "jpa-hibernate"
+    override val implementationName: String = "jpa-${traversalMode.displayName}"
 
     private var serviceRegistry: StandardServiceRegistry? = null
     private var sessionFactory: SessionFactory? = null
+    private var scenario: AbuserDetectionScenario = AbuserDetectionScenario.SHARED
 
     private fun getSessionFactory(): SessionFactory {
         sessionFactory?.let { return it }
@@ -59,7 +61,10 @@ class JpaAbuserDetectionEngine(
                         account_id VARCHAR(32) PRIMARY KEY,
                         segment VARCHAR(32) NOT NULL,
                         known_abusive BOOLEAN NOT NULL,
-                        expected_abusive BOOLEAN NOT NULL
+                        expected_abusive BOOLEAN NOT NULL,
+                        risk_score DOUBLE PRECISION NOT NULL,
+                        account_age_hours INTEGER NOT NULL,
+                        shared_device_cluster VARCHAR(64) NOT NULL
                     )
                     """.trimIndent(),
                 )
@@ -70,7 +75,9 @@ class JpaAbuserDetectionEngine(
                         from_account_id VARCHAR(32) NOT NULL REFERENCES $ACCOUNT_TABLE(account_id),
                         to_account_id VARCHAR(32) NOT NULL REFERENCES $ACCOUNT_TABLE(account_id),
                         kind VARCHAR(32) NOT NULL,
-                        weight DOUBLE PRECISION NOT NULL
+                        weight DOUBLE PRECISION NOT NULL,
+                        amount DOUBLE PRECISION NOT NULL,
+                        created_at_minute INTEGER NOT NULL
                     )
                     """.trimIndent(),
                 )
@@ -82,6 +89,7 @@ class JpaAbuserDetectionEngine(
 
     override fun load(fixture: AbuserDetectionFixture) {
         expectedAbusiveAccountIds = fixture.expectedAbusiveAccountIds
+        scenario = fixture.scenario
 
         getSessionFactory().openSession().use { session ->
             val transaction = session.beginTransaction()
@@ -93,6 +101,9 @@ class JpaAbuserDetectionEngine(
                             segment = account.segment,
                             knownAbusive = account.knownAbusive,
                             expectedAbusive = account.expectedAbusive,
+                            riskScore = account.riskScore,
+                            accountAgeHours = account.accountAgeHours,
+                            sharedDeviceCluster = account.sharedDeviceCluster,
                         ),
                     )
                     session.flushAndClear(index)
@@ -104,6 +115,8 @@ class JpaAbuserDetectionEngine(
                             toAccountId = edge.toAccountId,
                             kind = edge.kind.name,
                             weight = edge.weight,
+                            amount = edge.amount,
+                            createdAtMinute = edge.createdAtMinute,
                         ),
                     )
                     session.flushAndClear(index)
@@ -123,6 +136,9 @@ class JpaAbuserDetectionEngine(
             dataSource = dataSource,
             accountsTableName = ACCOUNT_TABLE,
             edgesTableName = EDGE_TABLE,
+            scenario = scenario,
+            maxDepth = scenario.hopLimit,
+            mode = traversalMode,
         )
         return AbuserDetectionResult(implementationName, predicted, expectedAbusiveAccountIds)
     }
@@ -161,6 +177,15 @@ open class JpaAbuserAccount(
 
     @Column(name = "expected_abusive", nullable = false)
     open var expectedAbusive: Boolean = false,
+
+    @Column(name = "risk_score", nullable = false)
+    open var riskScore: Double = 0.0,
+
+    @Column(name = "account_age_hours", nullable = false)
+    open var accountAgeHours: Int = 0,
+
+    @Column(name = "shared_device_cluster", length = 64, nullable = false)
+    open var sharedDeviceCluster: String = "",
 )
 
 @Entity
@@ -182,4 +207,10 @@ open class JpaAbuserEdge(
 
     @Column(name = "weight", nullable = false)
     open var weight: Double = 1.0,
+
+    @Column(name = "amount", nullable = false)
+    open var amount: Double = 0.0,
+
+    @Column(name = "created_at_minute", nullable = false)
+    open var createdAtMinute: Int = 0,
 )

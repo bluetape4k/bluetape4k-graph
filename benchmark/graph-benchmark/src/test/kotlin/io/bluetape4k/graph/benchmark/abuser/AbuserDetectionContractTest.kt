@@ -17,7 +17,7 @@ class AbuserDetectionContractTest {
         first.accounts.size shouldBeEqualTo AbuserDetectionSize.SMOKE.accountCount
         first.edges.shouldNotBeEmpty()
         first.expectedAbusiveAccountIds.shouldNotBeEmpty()
-        first.knownAbusiveAccountIds.size shouldBeEqualTo 5
+        first.knownAbusiveAccountIds.size shouldBeEqualTo AbuserDetectionScenario.SHARED.riskySourceCount
     }
 
     @Test
