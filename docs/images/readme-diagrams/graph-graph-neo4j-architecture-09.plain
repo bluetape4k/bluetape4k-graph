@@ -1,0 +1,25 @@
+graph 1 13.119 9.0069
+node n0 6.5892 8.7569 3.9667 0.5 "neighbors(startId, edgeLabel, direction, depth)" rounded,filled box #5B8DEF #E8F3FF
+node n1 6.5892 7.3958 1.0708 0.5 "direction?" rounded,filled box #58A978 #EAF7EF
+node n2 2.3115 6.0347 3.1229 0.5 "(start)-[:LABEL*dept h]->(neighbor)" rounded,filled box #D6A441 #FFF3D9
+node n3 6.5892 6.0347 3.1229 0.5 "(start)<-[:LABEL* depth]-(neighbor)" rounded,filled box #DC6B82 #FDECEF
+node n4 10.839 6.0347 3.0604 0.5 "(start)-[:LABEL*dept h]-(neighbor)" rounded,filled box #45A7A1 #E9F7F6
+node n5 1.9365 4.6736 3.8729 0.5 "MATCH (start)-[:LABEL*..de pth]->(neighbor)" rounded,filled box #8A72D6 #F1ECFF
+node n6 6.5892 4.6736 3.8729 0.5 "MATCH (start)<-[:LABEL* ..depth]-(neighbor)" rounded,filled box #B88A44 #F7F1E7
+node n7 11.214 4.6736 3.8104 0.5 "MATCH (start)-[:LABEL*..de pth]-(neighbor)" rounded,filled box #8BA84D #EEF6D9
+node n8 6.5892 3.3125 1.5396 0.5 "executeQuery()" rounded,filled box #5B8DEF #E8F3FF
+node n9 6.5892 1.9514 4.0083 0.5 "Neo4jRecordMapper .record To Vertex(record," rounded,filled box #58A978 #EAF7EF
+node n10 6.5892 0.59028 1.8 0.5 "List<Graph Vertex>" rounded,filled box #D6A441 #FFF3D9
+edge n0 n1 4 6.5892 8.5009 6.5892 8.5009 6.5892 7.8039 6.5892 7.8039 solid #758297
+edge n1 n2 7 6.0475 7.3958 4.8964 7.3958 2.3115 7.3958 2.3115 7.3958 2.3115 7.3958 2.3115 6.4439 2.3115 6.4439 solid #758297
+edge n1 n3 4 6.5892 7.1398 6.5892 7.1398 6.5892 6.4427 6.5892 6.4427 solid #758297
+edge n1 n4 7 7.1275 7.3958 8.2711 7.3958 10.839 7.3958 10.839 7.3958 10.839 7.3958 10.839 6.4439 10.839 6.4439 solid #758297
+edge n2 n5 4 2.3115 5.7787 2.3115 5.7787 2.3115 5.0816 2.3115 5.0816 solid #758297
+edge n3 n6 4 6.5892 5.7787 6.5892 5.7787 6.5892 5.0816 6.5892 5.0816 solid #758297
+edge n4 n7 4 10.839 5.7787 10.839 5.7787 10.839 5.0816 10.839 5.0816 solid #758297
+edge n5 n8 7 1.9365 4.4176 1.9365 4.0233 1.9365 3.3125 1.9365 3.3125 1.9365 3.3125 5.6625 3.3125 5.6625 3.3125 solid #758297
+edge n6 n8 4 6.5892 4.4176 6.5892 4.4176 6.5892 3.7205 6.5892 3.7205 solid #758297
+edge n7 n8 7 11.214 4.4176 11.214 4.0233 11.214 3.3125 11.214 3.3125 11.214 3.3125 7.5165 3.3125 7.5165 3.3125 solid #758297
+edge n8 n9 4 6.5892 3.0565 6.5892 3.0565 6.5892 2.3594 6.5892 2.3594 solid #758297
+edge n9 n10 4 6.5892 1.6954 6.5892 1.6954 6.5892 0.9983 6.5892 0.9983 solid #758297
+stop

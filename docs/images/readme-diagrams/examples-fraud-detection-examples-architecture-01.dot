@@ -1,0 +1,17 @@
+digraph "examples-fraud-detection-examples-architecture-01" {
+  graph [rankdir=TB, splines=ortho, nodesep=0.78, ranksep=0.86, bgcolor="transparent"];
+  node [shape=box, style="rounded,filled", fontname="Comic Sans MS", fontsize=12, margin="0.15,0.08"];
+  edge [color="#758297", penwidth=2.0, arrowsize=0.8, fontname="Comic Sans MS", fontsize=10];
+  label="fraud detection examples Architecture";
+  n0 [label="Example test", fillcolor="#E8F3FF", color="#5B8DEF"];
+  n1 [label="Fraud Detection Service", fillcolor="#EAF7EF", color="#58A978"];
+  n2 [label="GraphOperations", fillcolor="#FFF3D9", color="#D6A441"];
+  n3 [label="(Graph backend)", fillcolor="#FDECEF", color="#DC6B82"];
+  n4 [label="Cycles / Components / PageRank", fillcolor="#E9F7F6", color="#45A7A1"];
+  n5 [label="Review candidates", fillcolor="#F1ECFF", color="#8A72D6"];
+  n0 -> n1 [style="solid"];
+  n1 -> n2 [style="solid"];
+  n2 -> n3 [style="solid"];
+  n3 -> n4 [style="solid"];
+  n4 -> n5 [style="solid"];
+}

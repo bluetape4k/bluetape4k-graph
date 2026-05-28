@@ -1,0 +1,11 @@
+graph 1 9.175 6.2847
+node n0 4.5875 6.0347 5.9979 0.5 "JMH Runner sizeName parameter small and medium data trial-level setup" rounded,filled box #5B8DEF #E8F3FF
+node n1 4.5875 4.6736 4.6646 0.5 "Format Suites CSV Jackson 2 and 3 NDJSON GraphML" rounded,filled box #55B978 #EAF8EF
+node n2 4.5875 3.3125 6.3938 0.5 "I/O Adapters sync import/export virtual-thread adapters coroutine adapters" rounded,filled box #F3B34C #FFF4DE
+node n3 4.5875 1.9514 5.9146 0.5 "Storage Layer temporary files OkIO path sources GZIP NDJSON path" rounded,filled box #E879A6 #FCE9F1
+node n4 4.5875 0.59028 9.175 0.5 "Benchmark Dataset TinkerGraphOperations source graph export, import, round-trip teardown removes temp files" rounded,filled box #CBD5E1 #F8FAFC
+edge n0 n1 4 4.5875 5.7787 4.5875 5.7787 4.5875 5.0816 4.5875 5.0816 solid #758297
+edge n1 n2 4 4.5875 4.4176 4.5875 4.4176 4.5875 3.7205 4.5875 3.7205 solid #758297
+edge n2 n3 4 4.5875 3.0565 4.5875 3.0565 4.5875 2.3594 4.5875 2.3594 solid #758297
+edge n3 n4 4 4.5875 1.6954 4.5875 1.6954 4.5875 0.9983 4.5875 0.9983 solid #758297
+stop

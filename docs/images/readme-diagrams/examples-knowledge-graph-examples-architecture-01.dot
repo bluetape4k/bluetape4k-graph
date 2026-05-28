@@ -1,0 +1,20 @@
+digraph "examples-knowledge-graph-examples-architecture-01" {
+  graph [rankdir=TB, splines=ortho, nodesep=0.78, ranksep=0.86, bgcolor="transparent"];
+  node [shape=box, style="rounded,filled", fontname="Comic Sans MS", fontsize=12, margin="0.15,0.08"];
+  edge [color="#758297", penwidth=2.0, arrowsize=0.8, fontname="Comic Sans MS", fontsize=10];
+  label="knowledge graph examples Architecture";
+  n0 [label="Example test", fillcolor="#E8F3FF", color="#5B8DEF"];
+  n1 [label="Knowledge Graph Service", fillcolor="#EAF7EF", color="#58A978"];
+  n2 [label="GraphOperations", fillcolor="#FFF3D9", color="#D6A441"];
+  n3 [label="(Graph backend)", fillcolor="#FDECEF", color="#DC6B82"];
+  n4 [label="Mention lookup", fillcolor="#E9F7F6", color="#45A7A1"];
+  n5 [label="Relationship paths", fillcolor="#F1ECFF", color="#8A72D6"];
+  n6 [label="Knowledge insights", fillcolor="#F7F1E7", color="#B88A44"];
+  n5 -> n6 [style="solid"];
+  n4 -> n6 [style="solid"];
+  n3 -> n5 [style="solid"];
+  n3 -> n4 [style="solid"];
+  n2 -> n3 [style="solid"];
+  n1 -> n2 [style="solid"];
+  n0 -> n1 [style="solid"];
+}

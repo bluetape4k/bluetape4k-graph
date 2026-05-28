@@ -1,0 +1,25 @@
+digraph "graph-graph-falkordb-architecture-01" {
+  graph [rankdir=TB, splines=ortho, nodesep=0.78, ranksep=0.86, bgcolor="transparent"];
+  node [shape=box, style="rounded,filled", fontname="Comic Sans MS", fontsize=12, margin="0.15,0.08"];
+  edge [color="#758297", penwidth=2.0, arrowsize=0.8, fontname="Comic Sans MS", fontsize=10];
+  label="Overview";
+  n0 [label="Application", fillcolor="#E8F3FF", color="#5B8DEF"];
+  n1 [label="GraphOperations (graph-core)", fillcolor="#EAF7EF", color="#58A978"];
+  n2 [label="Graph Suspend Operations (graph-core)", fillcolor="#FFF3D9", color="#D6A441"];
+  n3 [label="Falkor DBGraph Operations", fillcolor="#FDECEF", color="#DC6B82"];
+  n4 [label="Falkor DBGraph Suspend Operations", fillcolor="#E9F7F6", color="#45A7A1"];
+  n5 [label="FalkorDBRecordMapper", fillcolor="#F1ECFF", color="#8A72D6"];
+  n6 [label="Falkor DBSession Support", fillcolor="#F7F1E7", color="#B88A44"];
+  n7 [label="FalkorDB Driver (jfalkordb)", fillcolor="#EEF6D9", color="#8BA84D"];
+  n8 [label="openCypher Engine", fillcolor="#E8F3FF", color="#5B8DEF"];
+  n9 [label="FalkorDB (Redis module)", fillcolor="#EAF7EF", color="#58A978"];
+  n8 -> n9 [style="solid"];
+  n7 -> n8 [style="solid"];
+  n6 -> n7 [style="solid"];
+  n4 -> n6 [style="solid"];
+  n4 -> n5 [style="solid"];
+  n3 -> n6 [style="solid"];
+  n3 -> n5 [style="solid"];
+  n0 -> n2 [style="solid"];
+  n0 -> n1 [style="solid"];
+}

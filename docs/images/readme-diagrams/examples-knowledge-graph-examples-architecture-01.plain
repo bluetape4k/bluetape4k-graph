@@ -1,0 +1,16 @@
+graph 1 3.9424 7.6458
+node n0 1.9035 7.3958 1.3312 0.5 "Example test" rounded,filled box #5B8DEF #E8F3FF
+node n1 1.9035 6.0347 2.2583 0.5 "Knowledge Graph Service" rounded,filled box #58A978 #EAF7EF
+node n2 1.9035 4.6736 1.6333 0.5 GraphOperations rounded,filled box #D6A441 #FFF3D9
+node n3 1.9035 3.3125 1.5708 0.5 "(Graph backend)" rounded,filled box #DC6B82 #FDECEF
+node n4 0.72292 1.9514 1.4458 0.5 "Mention lookup" rounded,filled box #45A7A1 #E9F7F6
+node n5 3.084 1.9514 1.7167 0.5 "Relationship paths" rounded,filled box #8A72D6 #F1ECFF
+node n6 1.9035 0.59028 1.7375 0.5 "Knowledge insights" rounded,filled box #B88A44 #F7F1E7
+edge n0 n1 4 1.9035 7.1398 1.9035 7.1398 1.9035 6.4427 1.9035 6.4427 solid #758297
+edge n1 n2 4 1.9035 5.7787 1.9035 5.7787 1.9035 5.0816 1.9035 5.0816 solid #758297
+edge n2 n3 4 1.9035 4.4176 1.9035 4.4176 1.9035 3.7205 1.9035 3.7205 solid #758297
+edge n3 n4 4 1.2819 3.0565 1.2819 3.0565 1.2819 2.3594 1.2819 2.3594 solid #758297
+edge n3 n5 4 2.4573 3.0565 2.4573 3.0565 2.4573 2.3594 2.4573 2.3594 solid #758297
+edge n4 n6 4 1.2403 1.6954 1.2403 1.6954 1.2403 0.9983 1.2403 0.9983 solid #758297
+edge n5 n6 4 2.499 1.6954 2.499 1.6954 2.499 0.9983 2.499 0.9983 solid #758297
+stop

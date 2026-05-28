@@ -1,0 +1,17 @@
+graph 1 23.668 3.5625
+node n0 6.0406 1.9514 2.0187 0.5 GraphSchemaManager rounded,filled box #5B8DEF #E8F3FF
+node n1 11.735 3.3125 4.8938 0.5 "GraphSuspendOperations +createVertex(label, properties)" rounded,filled box #58A978 #EAF7EF
+node n2 2.124 1.9514 4.2479 0.5 "GraphOperations +createVertex(label, properties)" rounded,filled box #D6A441 #FFF3D9
+node n3 8.8878 1.9514 2.1333 0.5 GraphMergeOperations rounded,filled box #DC6B82 #FDECEF
+node n4 4.0823 0.59028 2.6437 0.5 "Graph Transaction Operations" rounded,filled box #45A7A1 #E9F7F6
+node n5 7.4573 3.3125 2.1125 0.5 Neo4jGraphOperations rounded,filled box #8A72D6 #F1ECFF
+node n6 16.193 3.3125 2.4562 0.5 "Falkor DBGraph Operations" rounded,filled box #8CA0B8 #F4F7FA
+node n7 2.124 3.3125 1.9354 0.5 AgeGraphOperations rounded,filled box #D98A4A #FFF0E4
+node n8 19.471 3.3125 2.5396 0.5 "Memgraph Graph Operations" rounded,filled box #5B8DEF #E8F3FF
+node n9 22.596 3.3125 2.1437 0.5 TinkerGraphOperations rounded,filled box #58A978 #EAF7EF
+edge n0 n4 4 5.2177 1.6954 5.2177 1.6954 5.2177 0.9983 5.2177 0.9983 solid #758297
+edge n2 n4 4 3.5042 1.6954 3.5042 1.6954 3.5042 0.9983 3.5042 0.9983 solid #758297
+edge n5 n0 4 6.7255 3.0565 6.7255 3.0565 6.7255 2.3594 6.7255 2.3594 solid #758297
+edge n5 n3 4 8.1674 3.0565 8.1674 3.0565 8.1674 2.3594 8.1674 2.3594 solid #758297
+edge n7 n2 4 2.124 3.0565 2.124 3.0565 2.124 2.3594 2.124 2.3594 solid #758297
+stop
