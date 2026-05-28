@@ -20,6 +20,8 @@ The first authz matrix was still too shallow for a final adoption call. The foll
 
 The adoption probe finally produced a qualified GraphDB signal: `large + long-chain` favored Neo4j Cypher at 12.731 ms/op versus PostgreSQL iterative at 47.568 ms/op and PostgreSQL CTE at 55.364 ms/op. `large + deep-wide` still favored PostgreSQL CTE at 11.596 ms/op, so the use case is not generic authorization or fraud; it is long, selective, path-shaped traversal. AGE timed out on both `large + long-chain` and `large + deep-wide`, and Memgraph terminated the Bolt connection during large fixture load in this local run.
 
+The final adoption decision report is `docs/benchmark/2026-05-28-graphdb-adoption-decision-report.md`. Keep it as the entrypoint for this benchmark slice because it includes AGE timeout rows, Memgraph load-failure evidence, TinkerGraph scope, recommendation, artifacts, and DoD.
+
 ## Verification
 
 - `./gradlew :graph-benchmark:compileKotlin :graph-benchmark:compileTestKotlin :graph-benchmark:test --tests "io.bluetape4k.graph.benchmark.authz.AuthzInheritanceEngineSmokeTest" --no-build-cache`

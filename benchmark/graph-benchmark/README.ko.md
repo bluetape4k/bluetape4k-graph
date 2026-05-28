@@ -173,10 +173,10 @@ Large fixture adoption-scope `resolveResources` latency:
 
 ![Authorization inheritance adoption latency](../../docs/images/readme-charts/authz-inheritance-adoption-latency-chart-01.png)
 
-| Scenario | Neo4j Cypher | AGE/Cypher | PostgreSQL CTE | PostgreSQL iterative | Winner |
-|---|---:|---:|---:|---:|---|
-| `long-chain` | **12.731** | timeout >75s | 55.364 | 47.568 | Neo4j Cypher |
-| `deep-wide` | 56.467 | timeout >75s | **11.596** | 27.836 | PostgreSQL CTE |
+| Scenario | Neo4j Cypher | Memgraph Cypher | AGE/Cypher | PostgreSQL CTE | PostgreSQL iterative | Winner |
+|---|---:|---:|---:|---:|---:|---|
+| `long-chain` | **12.731** | load failure | timeout >75s | 55.364 | 47.568 | Neo4j Cypher |
+| `deep-wide` | 56.467 | load failure | timeout >75s | **11.596** | 27.836 | PostgreSQL CTE |
 
 실행 조건: macOS arm64, GraalVM JDK 25.0.3, kotlinx-benchmark/JMH 1.37, fork 1회, warmup 없음, 1초 measurement 1회, Testcontainers, 2026-05-28. 모든 latency 값은 `ms/op`이며 낮을수록 좋습니다. 이 결과는 adoption 방향성 probe이며 release-grade benchmark는 아닙니다.
 
@@ -185,7 +185,7 @@ Adoption probe 해석:
 - `long-chain`은 속도 기준 GraphDB 신호가 처음 나온 row입니다. Neo4j Cypher가 PostgreSQL iterative보다 3.74배, PostgreSQL recursive CTE보다 4.35배 빠릅니다.
 - `deep-wide`는 여전히 PostgreSQL CTE가 이깁니다. GraphDB 도입 대상은 모든 권한/fraud query가 아니라 길고 선택적인 path-shaped traversal이어야 합니다.
 - AGE/Cypher는 이 로컬 실행에서 `large + long-chain`과 `large + deep-wide` 모두 75초 외부 timeout 안에 완료하지 못했습니다.
-- Memgraph는 smoke parity test는 통과했지만, 로컬 `large + long-chain` 실행에서 load 중 Bolt connection이 종료되어 adoption result table에는 포함하지 않았습니다.
+- Memgraph는 smoke parity test는 통과했지만, 로컬 large adoption 실행에서 load 중 Bolt connection이 종료되어 latency row가 아니라 실패한 adoption 후보로 표시합니다.
 
 결과 산출물:
 
@@ -200,6 +200,7 @@ Adoption probe 해석:
 - [Adoption AGE deep-wide timeout log](../../docs/benchmark/2026-05-28-authz-inheritance-adoption-age-deep-wide-timeout.txt)
 - [Adoption Memgraph failure log](../../docs/benchmark/2026-05-28-authz-inheritance-adoption-memgraph-failure.txt)
 - [Markdown result table](../../docs/benchmark/2026-05-28-authz-inheritance-results.md)
+- [GraphDB adoption decision report](../../docs/benchmark/2026-05-28-graphdb-adoption-decision-report.md)
 
 ## 최신 Testcontainers 결과
 
