@@ -27,6 +27,7 @@ Implement child issues #261 through #265 in one feature branch:
    - Add PostgreSQL recursive CTE authorization traversal.
    - Add PostgreSQL iterative authorization traversal.
    - Split fraud relational baselines into recursive CTE and iterative traversal.
+   - Exclude TinkerGraph from this GraphDB adoption benchmark only.
 
 4. Benchmark class and Gradle wiring
    - Add `AuthzInheritanceBenchmark` with `kotlinx.benchmark` annotations.
@@ -73,9 +74,11 @@ git diff --check
 | ORM boundaries documented | JPA fraud baseline remains explicit |
 | Result docs updated | README/docs with command, conditions, table, chart, raw evidence path |
 | Local verification complete | Gradle/test/benchmark/diff-check output |
+| TinkerGraph excluded from adoption benchmark | README/docs/issue/PR state that TinkerGraph remains only in separate in-memory tracks |
 
 ## Known Constraints
 
 - Benchmark-owned `DataSource` setup is allowed here; production AGE managed DataSource remains outside this slice.
+- TinkerGraph is excluded only from this adoption benchmark; unrelated in-memory benchmark tracks stay intact.
 - Public GitHub issue, PR, and commit text must be English.
 - Internal spec/plan/lesson can use Korean or English; this plan uses English for reuse.
