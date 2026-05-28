@@ -173,10 +173,10 @@ Large fixture adoption-scope `resolveResources` latency:
 
 ![Authorization inheritance adoption latency](../../docs/images/readme-charts/authz-inheritance-adoption-latency-chart-01.png)
 
-| Scenario | Neo4j Cypher | AGE/Cypher | PostgreSQL CTE | PostgreSQL iterative | Winner |
-|---|---:|---:|---:|---:|---|
-| `long-chain` | **12.731** | timeout >75s | 55.364 | 47.568 | Neo4j Cypher |
-| `deep-wide` | 56.467 | timeout >75s | **11.596** | 27.836 | PostgreSQL CTE |
+| Scenario | Neo4j Cypher | Memgraph Cypher | AGE/Cypher | PostgreSQL CTE | PostgreSQL iterative | Winner |
+|---|---:|---:|---:|---:|---:|---|
+| `long-chain` | **12.731** | load failure | timeout >75s | 55.364 | 47.568 | Neo4j Cypher |
+| `deep-wide` | 56.467 | load failure | timeout >75s | **11.596** | 27.836 | PostgreSQL CTE |
 
 Run conditions: macOS arm64, GraalVM JDK 25.0.3, kotlinx-benchmark/JMH 1.37, one fork, no warmup, one one-second measurement iteration, Testcontainers, May 28, 2026. All latency values are `ms/op`; lower is better. This is an adoption-direction probe, not a release-grade benchmark.
 
@@ -185,7 +185,7 @@ Adoption probe interpretation:
 - `long-chain` is the first measured row that gives a speed-based GraphDB signal: Neo4j Cypher is 3.74x faster than PostgreSQL iterative and 4.35x faster than PostgreSQL recursive CTE.
 - `deep-wide` still favors PostgreSQL CTE. GraphDB adoption should target long, selective, path-shaped traversals rather than every permission or fraud query.
 - AGE/Cypher did not complete either `large + long-chain` or `large + deep-wide` within the 75-second external timeout in this local run.
-- Memgraph passed the smoke parity test, but the local `large + long-chain` run terminated the Bolt connection during load, so it is not included in the adoption result table.
+- Memgraph passed the smoke parity test, but the local large adoption run terminated the Bolt connection during load, so it is shown as a failed adoption candidate rather than a latency row.
 
 Artifacts:
 
@@ -200,6 +200,7 @@ Artifacts:
 - [Adoption AGE deep-wide timeout log](../../docs/benchmark/2026-05-28-authz-inheritance-adoption-age-deep-wide-timeout.txt)
 - [Adoption Memgraph failure log](../../docs/benchmark/2026-05-28-authz-inheritance-adoption-memgraph-failure.txt)
 - [Markdown result table](../../docs/benchmark/2026-05-28-authz-inheritance-results.md)
+- [GraphDB adoption decision report](../../docs/benchmark/2026-05-28-graphdb-adoption-decision-report.md)
 
 ## Latest Testcontainers Result
 
