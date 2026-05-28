@@ -1,0 +1,10 @@
+graph 1 4.1944 3.2083
+node person 0.37674 1.3056 0.75347 0.5 Person rounded,filled box #9aa8b8 #ffffff
+node company 3.5938 2.9583 0.94097 0.5 Company rounded,filled box #9aa8b8 #ffffff
+node skill 3.5938 1.7639 0.75 0.5 Skill rounded,filled box #9aa8b8 #ffffff
+node peer 3.5938 0.25 1.2014 0.5 "Other Person" rounded,filled box #9aa8b8 #ffffff
+edge person company 7 0.69022 1.5614 0.84068 1.6825 1.0294 1.8237 1.2118 1.9306 1.7929 2.271 2.5077 2.5659 2.999 2.7514 WORKS_AT 1.8733 2.6461 solid #738295
+edge person skill 4 0.75647 1.3581 1.3293 1.4405 2.4388 1.5999 3.0833 1.6925 HAS_SKILL 1.8733 1.6807 solid #738295
+edge person peer 4 0.75647 1.1845 1.2699 1.0146 2.2144 0.70193 2.8688 0.48534 "KNOWS / FOLLOWS" 1.8733 1.1006 solid #738295
+edge peer person 7 2.9883 0.1311 2.4888 0.06061 1.7681 0.030951 1.2118 0.30208 0.93781 0.43561 0.72394 0.7086 0.58323 0.93618 ENDORSES 1.8733 0.38021 solid #738295
+stop

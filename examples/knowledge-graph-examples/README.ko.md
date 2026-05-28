@@ -4,6 +4,11 @@
 
 문서, 엔티티, 개념을 지식 그래프로 모델링하고 엔티티 사이의 제한된 관계 경로를 추론하는 방법을 배우는 예제입니다.
 
+## 예제 시나리오
+
+문서가 Kotlin 및 Spring 관련 엔티티를 언급한다. 이 예제는 문서와 엔티티를 연결하고, 엔티티를 개념 아래로 분류하며,
+두 엔티티가 어떤 중간 fact를 통해 연결되는지 제한된 path로 설명한다.
+
 ## 무엇을 배우나?
 
 | 주제 | 의미 |
@@ -32,11 +37,11 @@ Graph DB를 사용하면 다음을 직접 표현할 수 있습니다.
 
 ![knowledge graph examples Architecture diagram](../../docs/images/readme-diagrams/examples-knowledge-graph-examples-architecture-01.png)
 
-## 도메인 UML
+## ERD / 도메인 UML
 
 ![UML diagram](../../docs/images/readme-diagrams/examples-knowledge-graph-examples-class-02.png)
 
-## 경로 추론 흐름
+## Data Flow
 
 ![knowledge graph examples Sequence Flow 3 diagram](../../docs/images/readme-diagrams/examples-knowledge-graph-examples-sequence-03.png)
 
@@ -104,6 +109,15 @@ Abstract test는 작은 지식 그래프를 만들고, mention 조회, 관련 �
 ```
 
 TinkerGraph 테스트는 메모리에서 실행됩니다. Neo4j, Memgraph, Apache AGE, FalkorDB 테스트는 Docker/Testcontainers가 필요합니다.
+
+## Expected Output
+
+| 시나리오 | 예상 결과 |
+|---|---|
+| Mention lookup | 문서가 언급한 entity를 반환한다. |
+| Related entity traversal | `RELATED_TO` traversal로 인접 fact를 찾는다. |
+| Concept classification | entity를 정규화된 concept에 연결한다. |
+| Path inference | 제한된 `allPaths`로 두 entity의 연결을 설명한다. |
 
 ## 의존성
 

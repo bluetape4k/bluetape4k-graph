@@ -1,0 +1,11 @@
+graph 1 8.6076 1.6944
+node client 0.57465 0.84722 1.1493 0.5 "HTTP Client" rounded,filled box #9aa8b8 #ffffff
+node routes 3.0625 0.84722 1.0972 0.5 "Ktor Routes" rounded,filled box #9aa8b8 #ffffff
+node plugin 5.5139 0.84722 1.1597 0.5 GraphPlugin rounded,filled box #9aa8b8 #ffffff
+node tinker 8.0434 1.4444 1.1285 0.5 TinkerGraph rounded,filled box #9aa8b8 #ffffff
+node falkor 8.0434 0.25 0.93056 0.5 FalkorDB rounded,filled box #9aa8b8 #ffffff
+edge client routes 4 1.1529 0.84722 1.5171 0.84722 1.9927 0.84722 2.3764 0.84722 request 1.8316 0.92535 solid #738295
+edge routes plugin 4 3.6143 0.84722 3.9636 0.84722 4.4224 0.84722 4.8 0.84722 facade 4.2726 0.92535 solid #738295
+edge plugin tinker 4 6.0955 0.98274 6.4675 1.0716 6.9559 1.1881 7.3488 1.2819 default 6.7865 1.2775 solid #738295
+edge plugin falkor 4 6.0955 0.7117 6.4987 0.61543 7.0386 0.48654 7.4455 0.38941 optional 6.7865 0.68023 solid #738295
+stop

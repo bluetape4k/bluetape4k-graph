@@ -4,6 +4,12 @@
 
 계좌 이체를 그래프로 모델링하고, bluetape4k-graph의 백엔드 독립 API로 이상 거래 분석을 수행하는 방법을 배우는 예제입니다.
 
+## 예제 시나리오
+
+세 계좌가 순환 이체를 만든다. Alice가 Bob에게, Bob이 Carol에게, Carol이 다시 Alice에게 송금한다. 이 예제는 이 작은
+그래프에서 circular transfer, suspicious connected cluster, transfer network 안의 high-risk account ranking을
+탐지한다.
+
 ## 무엇을 배우나?
 
 | 주제 | 의미 |
@@ -32,11 +38,11 @@ Graph DB를 사용하면 도메인 언어가 그대로 모델이 됩니다.
 
 ![fraud detection examples Architecture diagram](../../docs/images/readme-diagrams/examples-fraud-detection-examples-architecture-01.png)
 
-## 도메인 UML
+## ERD / 도메인 UML
 
 ![UML diagram](../../docs/images/readme-diagrams/examples-fraud-detection-examples-class-02.png)
 
-## 분석 흐름
+## Data Flow
 
 ![fraud detection examples Sequence Flow 3 diagram](../../docs/images/readme-diagrams/examples-fraud-detection-examples-sequence-03.png)
 
@@ -105,6 +111,15 @@ backend별 `GraphOperations` 구현만 제공합니다.
 ```
 
 TinkerGraph 테스트는 메모리에서 실행됩니다. Neo4j, Memgraph, Apache AGE, FalkorDB 테스트는 Docker/Testcontainers가 필요합니다.
+
+## Expected Output
+
+| 시나리오 | 예상 결과 |
+|---|---|
+| Circular transfer detection | Alice, Bob, Carol transfer loop를 찾는다. |
+| Suspicious cluster detection | 연결된 세 계좌를 cluster로 찾는다. |
+| High-risk ranking | transfer receiver를 review priority로 ranking한다. |
+| CSV import | bundled fixture가 account 3개와 transfer 3개를 import한다. |
 
 ## 의존성
 

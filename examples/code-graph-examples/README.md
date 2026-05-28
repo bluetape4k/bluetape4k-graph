@@ -12,6 +12,25 @@ This example models a software codebase as a property graph and verifies that th
 - **Abstract Tests**: `AbstractCodeGraphTest` / `AbstractCodeGraphSuspendTest` encapsulate shared test scenarios
 - **Concrete Tests**: Each backend (Neo4j, Memgraph, AGE, TinkerGraph) only provides a `GraphOperations` factory
 
+## Scenario
+
+The sample codebase has a small module stack: an `app` module depends on `middle`, and `middle` depends on `core`.
+The same graph also contains class inheritance (`Dog -> Mammal -> Animal`) and function calls
+(`processOrder -> validateOrder -> saveOrder`). The example answers dependency-path, impact-radius, inheritance-chain,
+and call-chain questions from that graph.
+
+## Architecture Diagram
+
+![code graph examples architecture](../../docs/images/readme-diagrams/examples-code-graph-examples-architecture-01.png)
+
+## ERD
+
+![code graph examples ERD](../../docs/images/readme-diagrams/examples-code-graph-examples-erd-02.png)
+
+## Data Flow
+
+![code graph examples data flow](../../docs/images/readme-diagrams/examples-code-graph-examples-data-flow-03.png)
+
 ## Domain Model
 
 ### Vertex Labels
@@ -72,6 +91,15 @@ class Neo4jCodeGraphTest : AbstractCodeGraphTest() {
 ```
 
 Docker is required for integration tests (Neo4j, Memgraph, Apache AGE). TinkerGraph runs in-memory.
+
+## Expected Output
+
+| Scenario | Expected result |
+|---|---|
+| Dependency path | `top -> middle -> core` style path is found. |
+| Impact radius | Reverse dependency traversal finds modules that depend on `core`. |
+| Inheritance chain | `Dog` resolves its parent chain through `Mammal` and `Animal`. |
+| Function call chain | `processOrder` reaches validation and persistence functions. |
 
 ## Module Notes
 

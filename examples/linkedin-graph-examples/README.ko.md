@@ -12,6 +12,24 @@ bluetape4k-graph의 백엔드 독립 API를 사용해 사람, 회사, 스킬 및
 - **추상 테스트**: `AbstractLinkedInGraphTest` / `AbstractLinkedInGraphSuspendTest`가 공유 테스트 시나리오를 캡슐화
 - **구체 테스트**: 각 백엔드(Neo4j, Memgraph, AGE, TinkerGraph)는 `GraphOperations` 팩토리만 제공
 
+## 예제 시나리오
+
+샘플 네트워크에는 Alice, Bob, Carol, Dave 같은 사람과 TechCorp 같은 회사가 있다. 그래프는 양방향 `KNOWS` edge,
+단방향 `FOLLOWS` edge, `WORKS_AT` employment edge를 만든다. 이 예제는 direct connection, 2촌 connection,
+shortest path, follower lookup, employee lookup 질문을 해결한다.
+
+## Architecture Diagram
+
+![linkedin graph examples architecture](../../docs/images/readme-diagrams/examples-linkedin-graph-examples-architecture-01.png)
+
+## ERD
+
+![linkedin graph examples ERD](../../docs/images/readme-diagrams/examples-linkedin-graph-examples-erd-02.png)
+
+## Data Flow
+
+![linkedin graph examples data flow](../../docs/images/readme-diagrams/examples-linkedin-graph-examples-data-flow-03.png)
+
 ## 도메인 모델
 
 ### 정점 라벨
@@ -76,6 +94,16 @@ class Neo4jLinkedInGraphTest : AbstractLinkedInGraphTest() {
 ```
 
 통합 테스트에는 Docker가 필요하다(Neo4j, Memgraph, Apache AGE). TinkerGraph는 인메모리로 실행된다.
+
+## Expected Output
+
+| 시나리오 | 예상 결과 |
+|---|---|
+| Direct connections | 양방향 `KNOWS` edge 생성 후 Alice가 Bob을 반환한다. |
+| Six-degree path | Alice가 Bob, Carol을 거쳐 Dave에 도달한다. |
+| Second-degree network | Alice가 Bob을 거쳐 Carol에 도달한다. |
+| Company lookup | TechCorp가 현재 재직자를 반환한다. |
+| Followers | incoming `FOLLOWS` traversal로 profile follower를 찾는다. |
 
 ## 모듈 참고 사항
 

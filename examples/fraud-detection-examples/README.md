@@ -5,6 +5,12 @@
 This example teaches how to model money transfers as a graph and run fraud-oriented analytics through the
 backend-independent bluetape4k-graph API.
 
+## Scenario
+
+Three accounts transfer money in a cycle: Alice sends to Bob, Bob sends to Carol, and Carol sends back to Alice. The
+example uses that small graph to detect circular transfers, suspicious connected clusters, and accounts that rank highly
+in the transfer network.
+
 ## What You Learn
 
 | Topic | Why it matters |
@@ -30,15 +36,15 @@ A graph database makes these questions explicit:
 That keeps the domain language close to the query language and lets the same analytics contract run across multiple
 graph backends.
 
-## Architecture
+## Architecture Diagram
 
 ![fraud detection examples Architecture diagram](../../docs/images/readme-diagrams/examples-fraud-detection-examples-architecture-01.png)
 
-## Domain UML
+## ERD / Domain UML
 
 ![Domain UML diagram](../../docs/images/readme-diagrams/examples-fraud-detection-examples-class-02.png)
 
-## Analysis Flow
+## Data Flow
 
 ![Analysis Flow diagram](../../docs/images/readme-diagrams/examples-fraud-detection-examples-sequence-03.png)
 
@@ -108,6 +114,15 @@ Concrete backend classes only provide the backend-specific `GraphOperations` imp
 ```
 
 TinkerGraph tests run in memory. Neo4j, Memgraph, Apache AGE, and FalkorDB tests require Docker/Testcontainers.
+
+## Expected Output
+
+| Scenario | Expected result |
+|---|---|
+| Circular transfer detection | The Alice, Bob, Carol transfer loop is found. |
+| Suspicious cluster detection | The three connected accounts form a cluster. |
+| High-risk ranking | Transfer receivers can be ranked for review. |
+| CSV import | The bundled fixture imports 3 accounts and 3 transfers. |
 
 ## Dependencies
 

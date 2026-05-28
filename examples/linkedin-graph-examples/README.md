@@ -12,6 +12,24 @@ This example models a LinkedIn-like social network as a property graph and verif
 - **Abstract Tests**: `AbstractLinkedInGraphTest` / `AbstractLinkedInGraphSuspendTest` encapsulate shared test scenarios
 - **Concrete Tests**: Each backend (Neo4j, Memgraph, AGE, TinkerGraph) only provides a `GraphOperations` factory
 
+## Scenario
+
+The sample network contains people such as Alice, Bob, Carol, and Dave, plus a company such as TechCorp. The graph
+creates mutual `KNOWS` edges, one-way `FOLLOWS` edges, and `WORKS_AT` employment edges. The example answers direct
+connection, second-degree connection, shortest path, follower lookup, and employee lookup questions.
+
+## Architecture Diagram
+
+![linkedin graph examples architecture](../../docs/images/readme-diagrams/examples-linkedin-graph-examples-architecture-01.png)
+
+## ERD
+
+![linkedin graph examples ERD](../../docs/images/readme-diagrams/examples-linkedin-graph-examples-erd-02.png)
+
+## Data Flow
+
+![linkedin graph examples data flow](../../docs/images/readme-diagrams/examples-linkedin-graph-examples-data-flow-03.png)
+
 ## Domain Model
 
 ### Vertex Labels
@@ -76,6 +94,16 @@ class Neo4jLinkedInGraphTest : AbstractLinkedInGraphTest() {
 ```
 
 Docker is required for integration tests (Neo4j, Memgraph, Apache AGE). TinkerGraph runs in-memory.
+
+## Expected Output
+
+| Scenario | Expected result |
+|---|---|
+| Direct connections | Alice returns Bob after a mutual `KNOWS` edge is created. |
+| Six-degree path | Alice reaches Dave through Bob and Carol. |
+| Second-degree network | Alice reaches Carol through Bob. |
+| Company lookup | TechCorp returns its current employees. |
+| Followers | Incoming `FOLLOWS` traversal finds followers of a profile. |
 
 ## Module Notes
 

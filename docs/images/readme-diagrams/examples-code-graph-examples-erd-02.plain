@@ -1,0 +1,11 @@
+graph 1 6.8733 2.9479
+node module 3.3785 1.0417 0.77431 0.5 Module rounded,filled box #9aa8b8 #ffffff
+node class 0.71354 1.8472 0.75 0.5 Class rounded,filled box #9aa8b8 #ffffff
+node function 0.71354 0.25 0.86806 0.5 Function rounded,filled box #9aa8b8 #ffffff
+node external 6.2622 1.0417 1.2222 0.5 "Other Module" rounded,filled box #9aa8b8 #ffffff
+edge module external 4 3.7716 1.0417 4.2155 1.0417 4.9607 1.0417 5.518 1.0417 DEPENDS_ON 4.7083 1.1198 solid #738295
+edge class module 4 1.0941 1.7352 1.5547 1.5945 2.347 1.3525 2.8633 1.1948 BELONGS_TO 2.0694 1.6418 solid #738295
+edge class class 7 0.53319 2.1035 0.39257 2.4188 0.45269 2.7917 0.71354 2.7917 0.94077 2.7917 1.0157 2.5087 0.93827 2.2274 "IMPORTS / EXTENDS" 0.71354 2.8698 solid #738295
+edge function module 7 1.1543 0.31668 1.5249 0.38107 2.0727 0.49205 2.533 0.64931 2.6438 0.68718 2.7595 0.73558 2.868 0.78537 BELONGS_TO 2.0694 0.72743 solid #738295
+edge function function 7 0.53319 0.50627 0.39257 0.82159 0.45269 1.1944 0.71354 1.1944 0.94077 1.1944 1.0157 0.91152 0.93827 0.63016 CALLS 0.71354 1.2726 solid #738295
+stop
