@@ -45,6 +45,7 @@ examples/
   fraud-detection-examples/
   knowledge-graph-examples/
   linkedin-graph-examples/
+  observability-graph-examples/
   recommendation-examples/
   ktor-graph-examples/
 ```
@@ -61,6 +62,7 @@ examples/
 ./gradlew :code-graph-examples:test
 ./gradlew :fraud-detection-examples:test
 ./gradlew :knowledge-graph-examples:test
+./gradlew :observability-graph-examples:test
 ./gradlew :recommendation-examples:test
 ./gradlew :bluetape4k-graph-neo4j:test --tests "io.bluetape4k.graph.neo4j.Neo4jGraphOperationsTest"
 ./gradlew publishBluetapeGraphPublicationToMavenLocalRepository
