@@ -79,6 +79,7 @@ enum class AuthzInheritanceSize(
     SMALL(200, 500, 300, 1_000),
     MEDIUM(2_000, 5_000, 2_000, 10_000),
     LARGE(10_000, 25_000, 10_000, 50_000),
+    XLARGE(25_000, 75_000, 25_000, 150_000),
     ;
 
     companion object {
@@ -94,14 +95,18 @@ enum class AuthzInheritanceScenario(
     val groupFanout: Int,
     val roleFanout: Int,
     val resourceFanout: Int,
+    val targetChainLength: Int,
+    val backgroundGroupStride: Int,
     val denyEvery: Int,
     val inactiveEvery: Int,
     val cycleEvery: Int,
 ) {
-    SHALLOW(displayName = "shallow", hopLimit = 2, groupFanout = 3, roleFanout = 2, resourceFanout = 4, denyEvery = 11, inactiveEvery = 17, cycleEvery = 0),
-    DEEP_INHERITANCE(displayName = "deep-inheritance", hopLimit = 6, groupFanout = 3, roleFanout = 2, resourceFanout = 3, denyEvery = 13, inactiveEvery = 19, cycleEvery = 7),
-    DENY_HEAVY(displayName = "deny-heavy", hopLimit = 5, groupFanout = 4, roleFanout = 3, resourceFanout = 3, denyEvery = 4, inactiveEvery = 23, cycleEvery = 11),
-    WIDE_GROUPS(displayName = "wide-groups", hopLimit = 4, groupFanout = 12, roleFanout = 2, resourceFanout = 2, denyEvery = 17, inactiveEvery = 29, cycleEvery = 9),
+    SHALLOW(displayName = "shallow", hopLimit = 3, groupFanout = 3, roleFanout = 2, resourceFanout = 4, targetChainLength = 0, backgroundGroupStride = 3, denyEvery = 11, inactiveEvery = 17, cycleEvery = 0),
+    DEEP_INHERITANCE(displayName = "deep-inheritance", hopLimit = 6, groupFanout = 3, roleFanout = 2, resourceFanout = 3, targetChainLength = 3, backgroundGroupStride = 3, denyEvery = 13, inactiveEvery = 19, cycleEvery = 7),
+    DENY_HEAVY(displayName = "deny-heavy", hopLimit = 5, groupFanout = 4, roleFanout = 3, resourceFanout = 3, targetChainLength = 2, backgroundGroupStride = 3, denyEvery = 4, inactiveEvery = 23, cycleEvery = 11),
+    WIDE_GROUPS(displayName = "wide-groups", hopLimit = 4, groupFanout = 12, roleFanout = 2, resourceFanout = 2, targetChainLength = 1, backgroundGroupStride = 3, denyEvery = 17, inactiveEvery = 29, cycleEvery = 9),
+    LONG_CHAIN(displayName = "long-chain", hopLimit = 10, groupFanout = 2, roleFanout = 2, resourceFanout = 3, targetChainLength = 7, backgroundGroupStride = 5, denyEvery = 19, inactiveEvery = 31, cycleEvery = 13),
+    DEEP_WIDE(displayName = "deep-wide", hopLimit = 12, groupFanout = 8, roleFanout = 4, resourceFanout = 4, targetChainLength = 9, backgroundGroupStride = 4, denyEvery = 17, inactiveEvery = 37, cycleEvery = 11),
     ;
 
     companion object {

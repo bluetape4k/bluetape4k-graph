@@ -41,7 +41,7 @@ object AuthzInheritanceFixtureFactory {
                 edges += inherit(groupId(group - 1), groupId(group), AuthzEdgeKind.MEMBER_OF, group + 1, scenario)
             }
             val nextGroup = group + 1
-            if (nextGroup < size.groupCount && group % 3 == 0) {
+            if (nextGroup < size.groupCount && group % scenario.backgroundGroupStride == 0) {
                 edges += inherit(groupId(group), groupId(nextGroup), AuthzEdgeKind.MEMBER_OF, group + 2, scenario)
             }
             repeat(scenario.roleFanout) { offset ->
@@ -63,6 +63,38 @@ object AuthzInheritanceFixtureFactory {
             }
         }
 
+        edges += buildTargetChain(size, scenario)
+
+        return edges
+    }
+
+    private fun buildTargetChain(
+        size: AuthzInheritanceSize,
+        scenario: AuthzInheritanceScenario,
+    ): List<AuthzEdge> {
+        val edges = ArrayList<AuthzEdge>(scenario.targetChainLength + scenario.resourceFanout + 2)
+        val chainLength = scenario.targetChainLength.coerceAtMost(size.groupCount - 1)
+
+        edges += activeInherit(userId(0), groupId(0), AuthzEdgeKind.MEMBER_OF)
+        repeat(chainLength) { group ->
+            edges += activeInherit(groupId(group), groupId(group + 1), AuthzEdgeKind.MEMBER_OF)
+        }
+
+        val terminalGroup = groupId(chainLength)
+        val terminalRole = roleId(size.roleCount - 1)
+        edges += activeInherit(terminalGroup, terminalRole, AuthzEdgeKind.ASSIGNED_ROLE)
+
+        repeat(scenario.resourceFanout) { offset ->
+            val resourceIndex = size.resourceCount - 1 - offset
+            edges += AuthzEdge(
+                fromNodeId = terminalRole,
+                toNodeId = resourceId(resourceIndex),
+                kind = AuthzEdgeKind.GRANTS,
+                effect = AuthzEffect.ALLOW,
+                active = true,
+            )
+        }
+
         return edges
     }
 
@@ -79,6 +111,19 @@ object AuthzInheritanceFixtureFactory {
             kind = kind,
             effect = AuthzEffect.ALLOW,
             active = seed % scenario.inactiveEvery != 0,
+        )
+
+    private fun activeInherit(
+        from: String,
+        to: String,
+        kind: AuthzEdgeKind,
+    ): AuthzEdge =
+        AuthzEdge(
+            fromNodeId = from,
+            toNodeId = to,
+            kind = kind,
+            effect = AuthzEffect.ALLOW,
+            active = true,
         )
 
     internal fun userId(index: Int): String = "user-%06d".format(index)

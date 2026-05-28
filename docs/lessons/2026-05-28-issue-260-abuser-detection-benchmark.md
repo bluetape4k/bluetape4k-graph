@@ -6,7 +6,7 @@ Epic #260 started as an abuser-detection comparison, but the stronger GraphDB ad
 
 ## Decision
 
-Use `benchmark/graph-benchmark` and `kotlinx-benchmark`. Compare AGE/Cypher with PostgreSQL recursive CTE and iterative traversal on a deterministic authorization inheritance fixture. Keep correctness evidence separate from latency ranking.
+Use `benchmark/graph-benchmark` and `kotlinx-benchmark`. Compare native Neo4j Cypher plus AGE/Cypher with PostgreSQL recursive CTE and iterative traversal on a deterministic authorization inheritance fixture. Keep correctness evidence separate from latency ranking.
 
 ## Outcome
 
@@ -16,14 +16,19 @@ Measured authorization inheritance results did not support a speed-based AGE ado
 
 TinkerGraph is excluded only from this GraphDB adoption benchmark because it is in-memory. Keep existing TinkerGraph API/contract benchmark tracks separate and do not use them as persistent database adoption evidence.
 
+The first authz matrix was still too shallow for a final adoption call. The follow-up large-data, long-path probe added `long-chain` with 10-hop traversal and `deep-wide` with 12-hop traversal on `large` data through `authzInheritanceAdoptionBenchmark`.
+
+The adoption probe finally produced a qualified GraphDB signal: `large + long-chain` favored Neo4j Cypher at 12.731 ms/op versus PostgreSQL iterative at 47.568 ms/op and PostgreSQL CTE at 55.364 ms/op. `large + deep-wide` still favored PostgreSQL CTE at 11.596 ms/op, so the use case is not generic authorization or fraud; it is long, selective, path-shaped traversal. AGE timed out on `large + long-chain`, and Memgraph terminated the Bolt connection during large fixture load in this local run.
+
 ## Verification
 
 - `./gradlew :graph-benchmark:compileKotlin :graph-benchmark:compileTestKotlin :graph-benchmark:test --tests "io.bluetape4k.graph.benchmark.authz.AuthzInheritanceEngineSmokeTest" --no-build-cache`
 - `./gradlew :graph-benchmark:compileKotlin :graph-benchmark:compileTestKotlin :graph-benchmark:test --tests "io.bluetape4k.graph.benchmark.abuser.AbuserDetectionContractTest" --tests "io.bluetape4k.graph.benchmark.abuser.AbuserDetectionEngineSmokeTest" --no-build-cache`
 - `./gradlew :graph-benchmark:authzInheritanceBenchmark --no-build-cache`
+- Direct JMH diagnostic runs for `authzInheritanceAdoptionBenchmark` backend isolation: Neo4j/PostgreSQL JSON plus AGE timeout and Memgraph failure logs under `docs/benchmark/`.
 
 ## Future Guard
 
 For graph benchmark comparisons, publish the `kotlinx-benchmark` task, raw JSON path, run conditions, metric direction, scenario/size matrix, chart assets, and explicit interpretation. Do not collapse recursive CTE and iterative traversal into one relational baseline, and do not claim a GraphDB win unless measured results support it.
 
-For GraphDB adoption comparisons, exclude TinkerGraph from the decision table while leaving unrelated in-memory benchmark tracks intact.
+For GraphDB adoption comparisons, exclude TinkerGraph from the decision table while leaving unrelated in-memory benchmark tracks intact. Do not stop at AGE-only results; include at least one native persistent graph backend before deciding whether the workload justifies GraphDB.
