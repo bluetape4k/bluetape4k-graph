@@ -43,6 +43,16 @@ The fixture is deterministic for each size:
 | `smoke` | local compile/test confidence | 120 |
 | `small` | quick benchmark run | 1,000 |
 | `medium` | documented comparison run | 10,000 |
+| `large` | local stress comparison | 50,000 |
+
+It also supports scenario shapes so the comparison is not tied to one graph density:
+
+| Scenario | Purpose |
+|---|---|
+| `shared` | shared device/IP/payment dominated signal graph |
+| `transfer` | deeper transfer-chain dominated signal graph |
+| `noisy-dense` | high background edge volume and denser inspection set |
+| `wide-fanout` | many direct suspicious neighbors per known abusive account |
 
 Truth labels are generated during fixture construction. Detection candidates are any account reached from a known abusive account by strong shared-signal paths, suspicious transfer paths, or report-heavy neighborhoods.
 
@@ -107,7 +117,7 @@ Add `AbuserDetectionBenchmark` with `kotlinx.benchmark` annotations:
 Add Gradle configurations:
 
 - `abuserDetectionSmoke`: `sizeName=smoke`, one short warmup/iteration.
-- `abuserDetection`: `sizeName=small,medium`, JSON report.
+- `abuserDetection`: `sizeName=small,medium`, `scenarioName=shared,transfer,noisy-dense,wide-fanout`, JSON report.
 
 The primary command is:
 

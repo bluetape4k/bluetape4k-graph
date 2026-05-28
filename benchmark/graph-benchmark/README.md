@@ -2,7 +2,7 @@
 
 [English](README.md) | [한국어](README.ko.md)
 
-kotlinx-benchmark module for graph performance comparison. It now contains seven benchmark tracks:
+kotlinx-benchmark module for graph performance comparison. It now contains eight benchmark tracks:
 
 - Existing TinkerGraph sync vs virtual-thread graph operations.
 - TinkerGraph API model comparison across sync, virtual-thread, and coroutine APIs.
@@ -10,6 +10,7 @@ kotlinx-benchmark module for graph performance comparison. It now contains seven
 - Domain-shaped graph workload comparison for social, IAM, fraud, and code graph queries.
 - Sustained graph write and batch ingestion comparison through the shared `GraphOperations` contract.
 - Production-shaped API model comparison across 10, 100, and 1,000 concurrent units.
+- PostgreSQL abuser detection comparison across AGE + Exposed, Exposed JDBC, and JPA/Hibernate.
 - graph-io format comparison using the same generated TinkerGraph dataset.
 
 ## Architecture
@@ -21,6 +22,7 @@ kotlinx-benchmark module for graph performance comparison. It now contains seven
 - `GraphDbComparisonBenchmark`: `tinkergraph`, `neo4j`, `memgraph`, `age`, and `falkordb` backends.
 - `GraphDomainWorkloadBenchmark`: social high fan-out, IAM reachability, fraud path, and code dependency workloads on `tinkergraph`, `neo4j`, and `memgraph`.
 - `GraphWriteIngestionBenchmark`: vertex-only, edge-only, mixed, and repeated mixed write batches on the same backend matrix.
+- `AbuserDetectionBenchmark`: PostgreSQL `age`, `exposed`, and `jpa` abuser-detection backends over one deterministic account-signal fixture.
 - `GraphIoComparisonBenchmark`: `csv`, `jackson2`, `jackson3`, `graphml`, `okio-jackson3`, and `okio-graphml`.
 - `ApiModelBenchmark`: sync, virtual-thread, and coroutine API overhead on the same in-memory TinkerGraph fixture.
 - Legacy operation benchmarks: batch insert, shortest path, neighbors, traversal, algorithm, and vertex operations.
@@ -59,6 +61,15 @@ Docker-free API model production matrix:
 ```bash
 ./gradlew :graph-benchmark:mainApiModelProductionBenchmark
 ```
+
+PostgreSQL abuser detection smoke and comparison matrix:
+
+```bash
+./gradlew :graph-benchmark:abuserDetectionSmokeBenchmark
+./gradlew :graph-benchmark:abuserDetectionBenchmark
+```
+
+The smoke task runs `sizeName=smoke` and `scenarioName=shared`. The comparison task runs `small` and `medium` datasets across `shared`, `transfer`, `noisy-dense`, and `wide-fanout`. A manual `large` fixture exists for local stress runs when the useful question is how latency changes as account count and inspection edges grow.
 
 ## Latest API Model Result
 
@@ -113,6 +124,31 @@ Artifacts:
 - [Chart PNG](../../docs/images/readme-charts/graph-api-model-production-chart-01.png)
 - [Chart SVG](../../docs/images/readme-charts/graph-api-model-production-chart-01.svg)
 - [Raw JMH JSON](../../docs/benchmark/api-model-production-gradle-2026-05-21.json)
+
+## Latest Abuser Detection Result
+
+Run conditions: macOS arm64, GraalVM JDK 25.0.3, kotlinx-benchmark/JMH 1.37, one fork, one warmup iteration, one one-second measurement iteration, PostgreSQL AGE Testcontainer, `smoke` fixture with 120 accounts, `shared` scenario, May 28, 2026. All latency values are `ms/op`; lower is better. Detection quality was verified by smoke tests before the benchmark: precision `1.0`, recall `1.0`, and F1 `1.0` for AGE + Exposed, Exposed JDBC, and JPA/Hibernate.
+
+Scenario matrix:
+
+| Scenario | Shape |
+|---|---|
+| `shared` | shared device/IP/payment dominated signal graph |
+| `transfer` | deeper transfer-chain dominated signal graph |
+| `noisy-dense` | high background edge volume and denser inspection set |
+| `wide-fanout` | many direct suspicious neighbors per known abusive account |
+
+| Benchmark | AGE + Exposed | Exposed JDBC | JPA/Hibernate |
+|---|---:|---:|---:|
+| `detectCandidates` | 13.002 | **0.199** | 0.210 |
+| `detectF1BasisPoints` | 11.533 | **0.197** | 0.202 |
+
+Interpretation: this smoke run proves the contract and benchmark execution surface. AGE currently pays graph abstraction and traversal cost, while the relational baselines execute the shared recursive SQL query directly. Treat this as smoke evidence; use the `small` and `medium` scenario matrix before making release-grade ranking claims.
+
+Artifacts:
+
+- [Raw JMH JSON](../../docs/benchmark/2026-05-28-abuser-detection-smoke-main.json)
+- [Markdown result table](../../docs/benchmark/2026-05-28-abuser-detection-smoke-results.md)
 
 ## Latest Testcontainers Result
 

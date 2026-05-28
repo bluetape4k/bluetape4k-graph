@@ -18,7 +18,7 @@ Implement child issues #261 through #265 in one feature branch:
    - Check dependency-management path for JPA/Hibernate.
 
 2. Contract implementation
-   - Add fixture generation, domain value objects, signal kinds, result metrics, and engine interface under `benchmark/graph-benchmark`.
+   - Add fixture generation, scenario generation, domain value objects, signal kinds, result metrics, and engine interface under `benchmark/graph-benchmark`.
    - Add pure unit tests for deterministic fixture and metric math.
 
 3. Storage implementations
@@ -29,7 +29,7 @@ Implement child issues #261 through #265 in one feature branch:
 
 4. Benchmark class and Gradle wiring
    - Add `AbuserDetectionBenchmark` with `kotlinx.benchmark` annotations.
-   - Add `abuserDetectionSmoke` and `abuserDetection` benchmark configurations.
+   - Add `abuserDetectionSmoke` and `abuserDetection` benchmark configurations with size and scenario parameters.
    - Keep Testcontainers-backed execution serial.
 
 5. Documentation and evidence
