@@ -18,7 +18,7 @@ TinkerGraph is excluded only from this GraphDB adoption benchmark because it is 
 
 The first authz matrix was still too shallow for a final adoption call. The follow-up large-data, long-path probe added `long-chain` with 10-hop traversal and `deep-wide` with 12-hop traversal on `large` data through `authzInheritanceAdoptionBenchmark`.
 
-The adoption probe finally produced a qualified GraphDB signal: `large + long-chain` favored Neo4j Cypher at 12.731 ms/op versus PostgreSQL iterative at 47.568 ms/op and PostgreSQL CTE at 55.364 ms/op. `large + deep-wide` still favored PostgreSQL CTE at 11.596 ms/op, so the use case is not generic authorization or fraud; it is long, selective, path-shaped traversal. AGE timed out on `large + long-chain`, and Memgraph terminated the Bolt connection during large fixture load in this local run.
+The adoption probe finally produced a qualified GraphDB signal: `large + long-chain` favored Neo4j Cypher at 12.731 ms/op versus PostgreSQL iterative at 47.568 ms/op and PostgreSQL CTE at 55.364 ms/op. `large + deep-wide` still favored PostgreSQL CTE at 11.596 ms/op, so the use case is not generic authorization or fraud; it is long, selective, path-shaped traversal. AGE timed out on both `large + long-chain` and `large + deep-wide`, and Memgraph terminated the Bolt connection during large fixture load in this local run.
 
 ## Verification
 

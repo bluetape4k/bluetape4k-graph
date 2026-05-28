@@ -85,6 +85,6 @@ git diff --check
 
 - Benchmark-owned `DataSource` setup is allowed here; production AGE managed DataSource remains outside this slice.
 - TinkerGraph is excluded only from this adoption benchmark; unrelated in-memory benchmark tracks stay intact.
-- AGE `large + long-chain` and Memgraph `large + long-chain` are not default adoption-task rows because the local diagnostic run produced timeout/load-failure evidence.
+- AGE `large + long-chain` and `large + deep-wide`, plus Memgraph `large + long-chain`, are not default adoption-task rows because the local diagnostic runs produced timeout/load-failure evidence.
 - Public GitHub issue, PR, and commit text must be English.
 - Internal spec/plan/lesson can use Korean or English; this plan uses English for reuse.
