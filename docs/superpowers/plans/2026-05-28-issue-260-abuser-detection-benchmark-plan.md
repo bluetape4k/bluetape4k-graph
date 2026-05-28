@@ -1,76 +1,78 @@
-# Issue #260 Abuser Detection Benchmark Plan
+# Issue #260 PostgreSQL Traversal Benchmark Plan
 
 ## Scope
 
 Implement child issues #261 through #265 in one feature branch:
 
-- #261 shared PostgreSQL abuser detection workload contract.
-- #262 AGE plus Exposed benchmark implementation.
-- #263 Exposed JDBC relational baseline.
-- #264 JPA/Hibernate PostgreSQL baseline.
-- #265 benchmark report and README documentation.
+- #261 shared traversal workload contracts.
+- #262 AGE/Cypher traversal benchmark implementation.
+- #263 PostgreSQL recursive CTE and iterative traversal baselines.
+- #264 explicit ORM baseline boundaries.
+- #265 benchmark report, chart, and README documentation.
 
 ## Step Plan
 
 1. Baseline inspection
    - Confirm `benchmark/graph-benchmark` uses `kotlinx-benchmark`.
-   - Inspect existing AGE/Testcontainers benchmark setup.
-   - Check dependency-management path for JPA/Hibernate.
+   - Inspect existing AGE/Testcontainers setup.
+   - Check PostgreSQL and Hibernate dependency-management paths.
 
 2. Contract implementation
-   - Add fixture generation, scenario generation, domain value objects, signal kinds, result metrics, and engine interface under `benchmark/graph-benchmark`.
-   - Add pure unit tests for deterministic fixture and metric math.
+   - Add authorization inheritance fixture, result metrics, oracle, and engine interface.
+   - Keep bounded fraud/abuser fixture and metrics for the secondary comparison.
+   - Add smoke tests that prove result-set equivalence and F1 `1.0`.
 
 3. Storage implementations
-   - Add AGE + Exposed engine using `GraphOperations`.
-   - Add Exposed JDBC engine using PostgreSQL tables and SQL queries.
-   - Add JPA/Hibernate engine using programmatic persistence setup.
-   - Add smoke tests that load/detect the same fixture per engine.
+   - Add AGE/Cypher authorization traversal.
+   - Add PostgreSQL recursive CTE authorization traversal.
+   - Add PostgreSQL iterative authorization traversal.
+   - Split fraud relational baselines into recursive CTE and iterative traversal.
 
 4. Benchmark class and Gradle wiring
-   - Add `AbuserDetectionBenchmark` with `kotlinx.benchmark` annotations.
-   - Add `abuserDetectionSmoke` and `abuserDetection` benchmark configurations with size and scenario parameters.
+   - Add `AuthzInheritanceBenchmark` with `kotlinx.benchmark` annotations.
+   - Add `authzInheritanceSmoke` and `authzInheritance` benchmark configurations.
+   - Keep `AbuserDetectionBenchmark` and expose CTE/iterative backend parameters.
    - Keep Testcontainers-backed execution serial.
 
 5. Documentation and evidence
-   - Add or update benchmark docs and README sections.
-   - Commit raw result JSON only when a representative run completes locally.
-   - Add `docs/lessons/2026-05-28-issue-260-abuser-detection-benchmark.md`.
+   - Commit representative raw JSON under `docs/benchmark/`.
+   - Generate Markdown result table plus PNG/SVG chart assets.
+   - Update `benchmark/graph-benchmark/README.md` and `README.ko.md`.
+   - Update the lesson file with the measured conclusion.
 
 6. Verification and review
-   - Run targeted unit tests.
-   - Run compile for `:graph-benchmark`.
-   - Run smoke benchmark or a bounded fallback if local containers fail.
+   - Run targeted unit/smoke tests.
+   - Run `:graph-benchmark` compile.
+   - Run `authzInheritanceBenchmark`.
    - Run `git diff --check`.
-   - Run local 7-tier review and fix P0/P1 before PR.
+   - Run local review and fix P0/P1 before finalizing.
 
 ## Validation Commands
 
-Preferred commands:
-
 ```bash
-./gradlew :graph-benchmark:compileKotlin :graph-benchmark:test --tests "*Abuser*"
-./gradlew :graph-benchmark:abuserDetectionSmokeBenchmark
+./gradlew :graph-benchmark:compileKotlin :graph-benchmark:compileTestKotlin \
+  :graph-benchmark:test \
+  --tests "io.bluetape4k.graph.benchmark.authz.AuthzInheritanceEngineSmokeTest" \
+  --tests "io.bluetape4k.graph.benchmark.abuser.AbuserDetectionContractTest" \
+  --tests "io.bluetape4k.graph.benchmark.abuser.AbuserDetectionEngineSmokeTest" \
+  --no-build-cache
+
+./gradlew :graph-benchmark:authzInheritanceBenchmark --no-build-cache
+
 git diff --check
-```
-
-If Gradle emits a different benchmark task name, verify with:
-
-```bash
-./gradlew :graph-benchmark:tasks --group benchmark
 ```
 
 ## DoD
 
 | Item | Evidence |
 |---|---|
-| Shared workload contract implemented | Contract source and unit tests |
-| AGE engine implemented | Smoke detection test and benchmark inclusion |
-| Exposed engine implemented | Smoke detection test and benchmark inclusion |
-| JPA/Hibernate engine implemented | Smoke detection test and benchmark inclusion |
-| Docs updated | README/docs with command, conditions, table, raw evidence path |
-| Local verification complete | Gradle/test/diff-check output |
-| Review gate closed | Local 7-tier review P0=0 P1=0 |
+| Shared traversal contracts implemented | Contract source and unit/smoke tests |
+| AGE/Cypher traversal implemented | Smoke test and benchmark inclusion |
+| PostgreSQL CTE baseline implemented | Separate benchmark parameter and smoke test |
+| PostgreSQL iterative baseline implemented | Separate benchmark parameter and smoke test |
+| ORM boundaries documented | JPA fraud baseline remains explicit |
+| Result docs updated | README/docs with command, conditions, table, chart, raw evidence path |
+| Local verification complete | Gradle/test/benchmark/diff-check output |
 
 ## Known Constraints
 

@@ -1,8 +1,9 @@
 package io.bluetape4k.graph.benchmark.abuser
 
 import io.bluetape4k.graph.age.AgeGraphOperations
+import io.bluetape4k.graph.age.sql.AgeSql
+import io.bluetape4k.graph.age.sql.AgeTypeParser
 import io.bluetape4k.graph.model.BatchEdge
-import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.repository.GraphOperations
 import org.jetbrains.exposed.v1.jdbc.Database
 import javax.sql.DataSource
@@ -12,7 +13,7 @@ class AgeAbuserDetectionEngine(
     private val dataSource: DataSource,
 ): AbuserDetectionEngine {
 
-    override val implementationName: String = "age-exposed"
+    override val implementationName: String = "age-cypher"
 
     private val ops: GraphOperations by lazy {
         Database.connect(dataSource)
@@ -20,6 +21,7 @@ class AgeAbuserDetectionEngine(
     }
 
     private var expectedAbusiveAccountIds: Set<String> = emptySet()
+    private var scenario: AbuserDetectionScenario = AbuserDetectionScenario.SHARED
 
     override fun reset() {
         runCatching { ops.dropGraph(graphName) }
@@ -28,6 +30,7 @@ class AgeAbuserDetectionEngine(
 
     override fun load(fixture: AbuserDetectionFixture) {
         expectedAbusiveAccountIds = fixture.expectedAbusiveAccountIds
+        scenario = fixture.scenario
 
         val vertices = ops.createVertices(
             ACCOUNT_LABEL,
@@ -37,6 +40,9 @@ class AgeAbuserDetectionEngine(
                     "segment" to account.segment,
                     "knownAbusive" to account.knownAbusive,
                     "expectedAbusive" to account.expectedAbusive,
+                    "riskScore" to account.riskScore,
+                    "accountAgeHours" to account.accountAgeHours,
+                    "sharedDeviceCluster" to account.sharedDeviceCluster,
                 )
             },
         )
@@ -51,6 +57,8 @@ class AgeAbuserDetectionEngine(
                     properties = mapOf(
                         "kind" to edge.kind.name,
                         "weight" to edge.weight,
+                        "amount" to edge.amount,
+                        "createdAtMinute" to edge.createdAtMinute,
                     ),
                 )
             },
@@ -58,37 +66,51 @@ class AgeAbuserDetectionEngine(
     }
 
     override fun detect(): AbuserDetectionResult {
-        val allAccounts = ops.findVerticesByLabel(ACCOUNT_LABEL)
-        val knownVertexIds = allAccounts.asSequence()
-            .filter { it.properties["knownAbusive"] == true }
-            .map { it.id }
-            .toSet()
-        val knownAccountIds = allAccounts.asSequence()
-            .filter { it.id in knownVertexIds }
-            .mapNotNull { it.properties[ACCOUNT_ID_PROPERTY] as? String }
-            .toSet()
-
-        val accountIdByVertexId = allAccounts.associate { vertex ->
-            vertex.id to (vertex.properties[ACCOUNT_ID_PROPERTY] as String)
-        }
-        val predicted = linkedSetOf<String>()
-        var frontier: Set<GraphElementId> = knownVertexIds
-
-        repeat(DETECTION_DEPTH) {
-            val next = linkedSetOf<GraphElementId>()
-            frontier.forEach { vertexId ->
-                ops.findEdgesByStartId(vertexId, EDGE_LABEL).forEach { edge ->
-                    val accountId = accountIdByVertexId[edge.endId]
-                    if (accountId != null && accountId !in knownAccountIds) {
-                        predicted += accountId
+        val upstreamByCandidate = dataSource.connection.use { connection ->
+            connection.createStatement().use { statement ->
+                val upstreamByCandidate = linkedMapOf<String, MutableSet<String>>()
+                for (depth in 1..scenario.hopLimit) {
+                    statement.executeQuery(detectCandidatesSql(depth)).use { rs ->
+                        while (rs.next()) {
+                            val source = AgeTypeParser.parseVertex(rs.getString("source"))
+                            val candidate = AgeTypeParser.parseVertex(rs.getString("candidate"))
+                            val sourceId = source.properties[ACCOUNT_ID_PROPERTY] as String
+                            val candidateId = candidate.properties[ACCOUNT_ID_PROPERTY] as String
+                            upstreamByCandidate.getOrPut(candidateId) { linkedSetOf() } += sourceId
+                        }
                     }
-                    next += edge.endId
                 }
+                upstreamByCandidate
             }
-            frontier = next
         }
+        val predicted = upstreamByCandidate.asSequence()
+            .filter { (_, upstream) -> upstream.size >= scenario.minDistinctUpstream }
+            .map { (candidate, _) -> candidate }
+            .toSet()
 
         return AbuserDetectionResult(implementationName, predicted, expectedAbusiveAccountIds)
+    }
+
+    private fun detectCandidatesSql(depth: Int): String {
+        val relationshipChain = (1..depth).joinToString("") { index ->
+            "-[e$index:$EDGE_LABEL]->(n$index:$ACCOUNT_LABEL)"
+        }
+        val candidateAlias = "n$depth"
+        val edgeFilters = (1..depth).joinToString("\n              AND ") { index ->
+            "e$index.kind = 'TRANSFER' AND e$index.createdAtMinute >= ${scenario.windowStartMinute} " +
+                "AND e$index.weight >= ${scenario.riskThreshold}"
+        }
+
+        return AgeSql.cypher(
+            graphName,
+            """
+            MATCH (source:$ACCOUNT_LABEL)$relationshipChain
+            WHERE source.riskScore >= ${scenario.riskThreshold}
+              AND $edgeFilters
+            RETURN DISTINCT source, $candidateAlias AS candidate
+            """.trimIndent(),
+            listOf("source" to "agtype", "candidate" to "agtype"),
+        )
     }
 
     override fun close() {
@@ -100,6 +122,5 @@ class AgeAbuserDetectionEngine(
         const val ACCOUNT_LABEL = "AbuserAccount"
         const val EDGE_LABEL = "ABUSE_LINK"
         const val ACCOUNT_ID_PROPERTY = "accountId"
-        const val DETECTION_DEPTH = 2
     }
 }

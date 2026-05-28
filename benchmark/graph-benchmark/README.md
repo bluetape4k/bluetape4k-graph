@@ -2,7 +2,7 @@
 
 [English](README.md) | [한국어](README.ko.md)
 
-kotlinx-benchmark module for graph performance comparison. It now contains eight benchmark tracks:
+kotlinx-benchmark module for graph performance comparison. It now contains nine benchmark tracks:
 
 - Existing TinkerGraph sync vs virtual-thread graph operations.
 - TinkerGraph API model comparison across sync, virtual-thread, and coroutine APIs.
@@ -10,7 +10,8 @@ kotlinx-benchmark module for graph performance comparison. It now contains eight
 - Domain-shaped graph workload comparison for social, IAM, fraud, and code graph queries.
 - Sustained graph write and batch ingestion comparison through the shared `GraphOperations` contract.
 - Production-shaped API model comparison across 10, 100, and 1,000 concurrent units.
-- PostgreSQL abuser detection comparison across AGE + Exposed, Exposed JDBC, and JPA/Hibernate.
+- PostgreSQL authorization inheritance comparison across AGE/Cypher, recursive CTE, and iterative traversal.
+- PostgreSQL bounded fraud/abuser detection comparison across AGE/Cypher, Exposed JDBC, and JPA/Hibernate.
 - graph-io format comparison using the same generated TinkerGraph dataset.
 
 ## Architecture
@@ -22,7 +23,8 @@ kotlinx-benchmark module for graph performance comparison. It now contains eight
 - `GraphDbComparisonBenchmark`: `tinkergraph`, `neo4j`, `memgraph`, `age`, and `falkordb` backends.
 - `GraphDomainWorkloadBenchmark`: social high fan-out, IAM reachability, fraud path, and code dependency workloads on `tinkergraph`, `neo4j`, and `memgraph`.
 - `GraphWriteIngestionBenchmark`: vertex-only, edge-only, mixed, and repeated mixed write batches on the same backend matrix.
-- `AbuserDetectionBenchmark`: PostgreSQL `age`, `exposed`, and `jpa` abuser-detection backends over one deterministic account-signal fixture.
+- `AuthzInheritanceBenchmark`: PostgreSQL AGE/Cypher, recursive CTE, and iterative traversal over one deterministic user/group/role/resource fixture.
+- `AbuserDetectionBenchmark`: PostgreSQL AGE/Cypher, Exposed JDBC, and JPA/Hibernate fraud-detection backends over one deterministic account-transfer fixture.
 - `GraphIoComparisonBenchmark`: `csv`, `jackson2`, `jackson3`, `graphml`, `okio-jackson3`, and `okio-graphml`.
 - `ApiModelBenchmark`: sync, virtual-thread, and coroutine API overhead on the same in-memory TinkerGraph fixture.
 - Legacy operation benchmarks: batch insert, shortest path, neighbors, traversal, algorithm, and vertex operations.
@@ -61,6 +63,15 @@ Docker-free API model production matrix:
 ```bash
 ./gradlew :graph-benchmark:mainApiModelProductionBenchmark
 ```
+
+PostgreSQL authorization inheritance smoke and comparison matrix:
+
+```bash
+./gradlew :graph-benchmark:authzInheritanceSmokeBenchmark
+./gradlew :graph-benchmark:authzInheritanceBenchmark
+```
+
+The smoke task runs `sizeName=smoke` and `scenarioName=deep-inheritance`. The comparison task runs `small` and `medium` datasets across `shallow`, `deep-inheritance`, `deny-heavy`, and `wide-groups`.
 
 PostgreSQL abuser detection smoke and comparison matrix:
 
@@ -125,30 +136,38 @@ Artifacts:
 - [Chart SVG](../../docs/images/readme-charts/graph-api-model-production-chart-01.svg)
 - [Raw JMH JSON](../../docs/benchmark/api-model-production-gradle-2026-05-21.json)
 
-## Latest Abuser Detection Result
+## Latest Authorization Inheritance Result
 
-Run conditions: macOS arm64, GraalVM JDK 25.0.3, kotlinx-benchmark/JMH 1.37, one fork, one warmup iteration, one one-second measurement iteration, PostgreSQL AGE Testcontainer, `smoke` fixture with 120 accounts, `shared` scenario, May 28, 2026. All latency values are `ms/op`; lower is better. Detection quality was verified by smoke tests before the benchmark: precision `1.0`, recall `1.0`, and F1 `1.0` for AGE + Exposed, Exposed JDBC, and JPA/Hibernate.
+![Authorization inheritance traversal latency](../../docs/images/readme-charts/authz-inheritance-postgresql-latency-chart-01.png)
+
+Run conditions: macOS arm64, Java HotSpot 21.0.11, kotlinx-benchmark/JMH 1.37, one fork, two warmup iterations, three two-second measurement iterations, PostgreSQL AGE Testcontainer, May 28, 2026. All latency values are `ms/op`; lower is better. Smoke tests verified result-set equivalence and F1 `1.0` for AGE/Cypher, PostgreSQL recursive CTE, and PostgreSQL iterative traversal before the benchmark.
 
 Scenario matrix:
 
 | Scenario | Shape |
 |---|---|
-| `shared` | shared device/IP/payment dominated signal graph |
-| `transfer` | deeper transfer-chain dominated signal graph |
-| `noisy-dense` | high background edge volume and denser inspection set |
-| `wide-fanout` | many direct suspicious neighbors per known abusive account |
+| `shallow` | short user/group/role/resource inheritance paths |
+| `deep-inheritance` | deeper inheritance chains with cycle edges |
+| `deny-heavy` | many deny grant edges, deny-overrides-allow semantics |
+| `wide-groups` | wider group membership fan-out |
 
-| Benchmark | AGE + Exposed | Exposed JDBC | JPA/Hibernate |
-|---|---:|---:|---:|
-| `detectCandidates` | 13.002 | **0.199** | 0.210 |
-| `detectF1BasisPoints` | 11.533 | **0.197** | 0.202 |
+Medium fixture `resolveResources` latency:
 
-Interpretation: this smoke run proves the contract and benchmark execution surface. AGE currently pays graph abstraction and traversal cost, while the relational baselines execute the shared recursive SQL query directly. Treat this as smoke evidence; use the `small` and `medium` scenario matrix before making release-grade ranking claims.
+| Scenario | AGE/Cypher | PostgreSQL CTE | PostgreSQL iterative | Winner |
+|---|---:|---:|---:|---|
+| `shallow` | 57.382 | 12.085 | **1.056** | PostgreSQL iterative |
+| `deep-inheritance` | 604.833 | 9.385 | **2.102** | PostgreSQL iterative |
+| `deny-heavy` | 448.263 | 9.450 | **4.310** | PostgreSQL iterative |
+| `wide-groups` | 250.083 | **1.521** | 3.658 | PostgreSQL CTE |
+
+Interpretation: AGE/Cypher did not win latency in this PostgreSQL AGE fixture. PostgreSQL recursive CTE and iterative batched traversal were faster across the measured authorization-inheritance matrix. AGE still expresses variable-depth graph traversal more directly, but this result does not support a speed-based GraphDB adoption claim for the current implementation and dataset.
 
 Artifacts:
 
-- [Raw JMH JSON](../../docs/benchmark/2026-05-28-abuser-detection-smoke-main.json)
-- [Markdown result table](../../docs/benchmark/2026-05-28-abuser-detection-smoke-results.md)
+- [Chart PNG](../../docs/images/readme-charts/authz-inheritance-postgresql-latency-chart-01.png)
+- [Chart SVG](../../docs/images/readme-charts/authz-inheritance-postgresql-latency-chart-01.svg)
+- [Raw JMH JSON](../../docs/benchmark/2026-05-28-authz-inheritance-main.json)
+- [Markdown result table](../../docs/benchmark/2026-05-28-authz-inheritance-results.md)
 
 ## Latest Testcontainers Result
 

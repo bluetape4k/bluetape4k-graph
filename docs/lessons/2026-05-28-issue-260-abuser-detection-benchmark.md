@@ -1,24 +1,25 @@
-# Issue #260 Abuser Detection Benchmark
+# Issue #260 PostgreSQL Traversal Benchmark
 
 ## Context
 
-Epic #260 needed a PostgreSQL-only benchmark comparing AGE + Exposed, Exposed JDBC, and JPA/Hibernate for abuser detection.
+Epic #260 started as an abuser-detection comparison, but the stronger GraphDB adoption question is variable-depth traversal. The final slice keeps bounded fraud detection as a secondary scenario and makes authorization inheritance the primary measured workload.
 
 ## Decision
 
-Keep the workload in `benchmark/graph-benchmark`, add a shared fixture/metric contract, and expose the run through `kotlinx-benchmark` Gradle tasks. Use smoke tests to prove detection quality before treating latency output as meaningful.
+Use `benchmark/graph-benchmark` and `kotlinx-benchmark`. Compare AGE/Cypher with PostgreSQL recursive CTE and iterative traversal on a deterministic authorization inheritance fixture. Keep correctness evidence separate from latency ranking.
 
 ## Outcome
 
-Added deterministic `smoke`/`small`/`medium`/`large` fixtures, scenario shapes (`shared`, `transfer`, `noisy-dense`, `wide-fanout`), three backend engines, `AbuserDetectionBenchmark`, smoke/comparison benchmark Gradle configurations, README documentation, and raw smoke JSON evidence.
+Added authorization inheritance fixtures, oracle, AGE/Cypher engine, PostgreSQL CTE and iterative engines, benchmark tasks, measured result JSON, Markdown tables, and README chart assets. Fraud detection was also tightened to bounded, time-windowed, risk-filtered traversal with CTE/iterative relational splits.
+
+Measured authorization inheritance results did not support a speed-based AGE adoption claim. PostgreSQL CTE and iterative traversal were faster across the documented `small` and `medium` matrix; AGE remains an expressiveness candidate, not the latency winner for this fixture.
 
 ## Verification
 
-- `./gradlew :graph-benchmark:compileKotlin :graph-benchmark:compileTestKotlin --no-build-cache`
-- `./gradlew :graph-benchmark:test --tests "io.bluetape4k.graph.benchmark.abuser.AbuserDetectionContractTest" --no-build-cache`
-- `./gradlew :graph-benchmark:test --tests "io.bluetape4k.graph.benchmark.abuser.AbuserDetectionEngineSmokeTest" --no-build-cache`
-- `./gradlew :graph-benchmark:abuserDetectionSmokeBenchmark --no-build-cache`
+- `./gradlew :graph-benchmark:compileKotlin :graph-benchmark:compileTestKotlin :graph-benchmark:test --tests "io.bluetape4k.graph.benchmark.authz.AuthzInheritanceEngineSmokeTest" --no-build-cache`
+- `./gradlew :graph-benchmark:compileKotlin :graph-benchmark:compileTestKotlin :graph-benchmark:test --tests "io.bluetape4k.graph.benchmark.abuser.AbuserDetectionContractTest" --tests "io.bluetape4k.graph.benchmark.abuser.AbuserDetectionEngineSmokeTest" --no-build-cache`
+- `./gradlew :graph-benchmark:authzInheritanceBenchmark --no-build-cache`
 
 ## Future Guard
 
-For graph benchmark comparisons, always publish the `kotlinx-benchmark` task, raw JSON path, run conditions, metric direction, scenario/size matrix, and separate detection-quality evidence from latency ranking.
+For graph benchmark comparisons, publish the `kotlinx-benchmark` task, raw JSON path, run conditions, metric direction, scenario/size matrix, chart assets, and explicit interpretation. Do not collapse recursive CTE and iterative traversal into one relational baseline, and do not claim a GraphDB win unless measured results support it.
