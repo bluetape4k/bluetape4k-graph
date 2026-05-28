@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Memgraph, and FalkorDB drivers through `neo4j { ... }`, `memgraph { ... }`,
   and `falkorDB { ... }`, while preserving caller-owned helper overloads
   ([#232](https://github.com/bluetape4k/bluetape4k-graph/issues/232)).
+- **Ktor managed Apache AGE DataSource DSL**: `graph-ktor` can now create a
+  Hikari-backed AGE pool through `ageDataSource { ... }`, connect it through
+  Exposed `Database.connect(...)`, and close only the plugin-owned pool on Ktor
+  shutdown ([#254](https://github.com/bluetape4k/bluetape4k-graph/issues/254)).
 
 ### Changed
 
