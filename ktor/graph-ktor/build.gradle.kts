@@ -23,6 +23,7 @@ dependencies {
     compileOnly(project(":bluetape4k-graph-memgraph"))
     compileOnly(project(":bluetape4k-graph-age"))
     compileOnly(project(":bluetape4k-graph-falkordb"))
+    compileOnly(libs.hikaricp)
 
     // Logging
     implementation(libs.bluetape4k.logging)

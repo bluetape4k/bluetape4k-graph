@@ -15,7 +15,7 @@ Ktor 3.x plugin integration for `bluetape4k-graph`. It exposes `GraphOperations`
 - `Application.graphOperations()` / `Application.graphSuspendOperations()`.
 - `ApplicationCall.graphOperations()` / `ApplicationCall.graphSuspendOperations()` for route handlers.
 - Backend helper functions for TinkerGraph, Neo4j, Memgraph, Apache AGE, and FalkorDB.
-- Managed-driver property DSLs for Neo4j, Memgraph, and FalkorDB.
+- Managed-driver property DSLs for Neo4j, Memgraph, FalkorDB, and Apache AGE.
 - Lifecycle cleanup for plugin-owned resources.
 
 ## Dependencies
@@ -27,6 +27,7 @@ dependencies {
     implementation("io.github.bluetape4k.graph:bluetape4k-graph-ktor")
     implementation("io.github.bluetape4k.graph:bluetape4k-graph-tinkerpop") // or graph-neo4j, graph-age, ...
     implementation("io.ktor:ktor-server-core")
+    implementation("com.zaxxer:HikariCP") // required when using ageDataSource { ... }
 }
 ```
 
@@ -86,6 +87,27 @@ fun Application.module() {
 The same managed-driver pattern is available through `memgraph { ... }` and
 `falkorDB { ... }`. Applications still declare the concrete backend module as a dependency.
 
+### Managed Apache AGE DataSource
+
+```kotlin
+fun Application.module() {
+    install(GraphPlugin) {
+        ageDataSource {
+            jdbcUrl = "jdbc:postgresql://localhost:5432/postgres"
+            username = "postgres"
+            password = "secret"
+            graphName = "social"
+            connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, public;"
+        }
+    }
+}
+```
+
+`ageDataSource { ... }` creates a Hikari-backed pool, calls Exposed
+`Database.connect(dataSource)`, and closes only that plugin-owned pool on
+application stop. Use `age(graphName)` when an external DI container already owns
+the Exposed `Database`, `DataSource`, or transaction-manager lifecycle.
+
 ## Backend Notes
 
 | Backend | Helper | Lifecycle |
@@ -96,12 +118,9 @@ The same managed-driver pattern is available through `memgraph { ... }` and
 | Memgraph | `memgraph(driver, database)` | Driver is caller-owned and is not closed by the plugin. |
 | Memgraph | `memgraph { uri; username; password; database }` | Plugin creates and closes the driver. |
 | Apache AGE | `age(graphName)` | Caller must call Exposed `Database.connect(...)` before graph use. |
+| Apache AGE | `ageDataSource { jdbcUrl; username; password; graphName; connectionInitSql }` | Plugin creates the Hikari pool, connects Exposed, and closes only the pool it created. |
 | FalkorDB | `falkorDB(driver, graphName)` | Driver is caller-owned and is not closed by the plugin. |
 | FalkorDB | `falkorDB { host; port; username; password; graphName }` | Plugin creates and closes the driver. |
-
-Managed Apache AGE `DataSource` creation is intentionally tracked separately in
-[#254](https://github.com/bluetape4k/bluetape4k-graph/issues/254) because Exposed
-transaction-manager and pool ownership need a dedicated contract.
 
 ## Testing
 

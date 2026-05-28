@@ -59,13 +59,53 @@ class BackendGraphPluginRuntimeTest {
     }
 
     @Test
-    fun `Apache AGE helper 는 Ktor route 에서 sync suspend operations 를 연결한다`() = runSuspendIO {
+    fun `managed Apache AGE DataSource DSL 은 Ktor route 에서 sync suspend operations 를 연결한다`() = runSuspendIO {
         val graphName = randomGraphName("ktor_age")
         val server = PostgreSQLAgeServer.Launcher.postgresqlAge
+        val username = requireNotNull(server.username) { "PostgreSQL AGE username must be available" }
+        val password = requireNotNull(server.password) { "PostgreSQL AGE password must be available" }
+
+        try {
+            backendSmoke(graphName = graphName) {
+                ageDataSource {
+                    jdbcUrl = server.jdbcUrl
+                    this.username = username
+                    this.password = password
+                    this.graphName = graphName
+                    connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
+                    maximumPoolSize = 2
+                }
+            }
+        } finally {
+            HikariDataSource(HikariConfig().apply {
+                jdbcUrl = server.jdbcUrl
+                this.username = username
+                this.password = password
+                driverClassName = "org.postgresql.Driver"
+                connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
+                maximumPoolSize = 1
+            }).use { cleanupDataSource ->
+                Database.connect(cleanupDataSource)
+                runCatching {
+                    val ops = AgeGraphOperations(graphName)
+                    if (ops.graphExists(graphName)) {
+                        ops.dropGraph(graphName)
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `caller-owned Apache AGE helper 는 Ktor route 에서 sync suspend operations 를 연결한다`() = runSuspendIO {
+        val graphName = randomGraphName("ktor_age")
+        val server = PostgreSQLAgeServer.Launcher.postgresqlAge
+        val username = requireNotNull(server.username) { "PostgreSQL AGE username must be available" }
+        val password = requireNotNull(server.password) { "PostgreSQL AGE password must be available" }
         val dataSource = HikariDataSource(HikariConfig().apply {
             jdbcUrl = server.jdbcUrl
-            username = server.username
-            password = server.password
+            this.username = username
+            this.password = password
             driverClassName = "org.postgresql.Driver"
             connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
             maximumPoolSize = 2

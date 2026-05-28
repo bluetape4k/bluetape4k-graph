@@ -159,6 +159,24 @@ class GraphPluginTest {
                 port = 0
             }
         }
+
+        assertFailsWith<IllegalArgumentException> {
+            GraphPluginConfig().ageDataSource {
+                jdbcUrl = " "
+            }
+        }
+
+        assertFailsWith<IllegalArgumentException> {
+            GraphPluginConfig().ageDataSource {
+                graphName = " "
+            }
+        }
+
+        assertFailsWith<IllegalArgumentException> {
+            GraphPluginConfig().ageDataSource {
+                maximumPoolSize = 0
+            }
+        }
     }
 
     private class ThrowingGraphOperations(
