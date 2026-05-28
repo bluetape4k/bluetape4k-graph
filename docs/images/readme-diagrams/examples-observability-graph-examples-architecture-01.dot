@@ -1,0 +1,21 @@
+digraph observability_example_architecture {
+  graph [rankdir=LR, bgcolor="transparent", margin=0.1, nodesep=0.7, ranksep=0.9]
+  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=12, color="#9aa8b8", fillcolor="#ffffff"]
+  edge [fontname="Helvetica", fontsize=10, color="#738295", arrowsize=0.8]
+
+  csv [label="Bundled CSV\nvertices.csv / edges.csv", fillcolor="#e8f4ff"]
+  loader [label="ObservabilitySampleDatasetLoader\ngraph-io CSV import", fillcolor="#eaf7ef"]
+  service [label="ObservabilityIncidentService\nsync API", fillcolor="#fff4d8"]
+  suspend_service [label="ObservabilityIncidentSuspendService\nsuspend API", fillcolor="#fff4d8"]
+  graph_api [label="GraphOperations\nGraphSuspendOperations", fillcolor="#f2eefc"]
+  backends [label="TinkerGraph\nNeo4j / Memgraph / AGE / FalkorDB", fillcolor="#fdecef"]
+  tests [label="Abstract backend tests\nblast radius / APIs / owner lookup", fillcolor="#edf7f7"]
+
+  csv -> loader [label="imports"]
+  loader -> graph_api [label="creates vertices + edges"]
+  service -> graph_api [label="traverses"]
+  suspend_service -> graph_api [label="traverses"]
+  graph_api -> backends [label="portable contract"]
+  tests -> service [label="sync scenarios"]
+  tests -> suspend_service [label="suspend scenarios"]
+}

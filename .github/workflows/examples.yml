@@ -90,6 +90,7 @@ jobs:
               :ktor-graph-examples:build \
               :fraud-detection-examples:build \
               :recommendation-examples:build \
+              :observability-graph-examples:build \
               :knowledge-graph-examples:build \
               --no-daemon --continue && break
             echo "Attempt $attempt failed"

@@ -1,0 +1,11 @@
+id,label,prop.serviceId,prop.apiId,prop.teamId,prop.alertId,prop.incidentId,prop.name,prop.tier,prop.severity,prop.status
+svc-edge,Service,edge-api,,,,,Edge API,edge,,healthy
+svc-checkout,Service,checkout-service,,,,,Checkout Service,application,,degraded
+svc-payment,Service,payment-service,,,,,Payment Service,application,,failing
+svc-postgres,Service,postgres-primary,,,,,PostgreSQL Primary,database,,degraded
+api-checkout,Api,,checkout-api,,,,Checkout API,public,,degraded
+api-mobile,Api,,mobile-checkout-api,,,,Mobile Checkout API,public,,degraded
+team-payments,Team,,,payments-team,,,Payments Team,oncall,,active
+alert-payment,Alert,,,,payment-latency,,Payment latency high,,critical,open
+alert-checkout,Alert,,,,checkout-errors,,Checkout errors,,warning,open
+incident-1001,Incident,,,,,incident-1001,Checkout payment incident,,critical,open

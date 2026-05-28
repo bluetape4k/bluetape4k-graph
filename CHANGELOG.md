@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Hikari-backed AGE pool through `ageDataSource { ... }`, connect it through
   Exposed `Database.connect(...)`, and close only the plugin-owned pool on Ktor
   shutdown ([#254](https://github.com/bluetape4k/bluetape4k-graph/issues/254)).
+- **Observability incident graph example**: Added an
+  `observability-graph-examples` module with service dependency blast-radius,
+  alert-boundary correlation, affected API lookup, owner traversal, bundled CSV
+  fixture import, and sync/suspend backend tests ([#247](https://github.com/bluetape4k/bluetape4k-graph/issues/247)).
 
 ### Changed
 

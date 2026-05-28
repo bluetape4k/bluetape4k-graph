@@ -1,0 +1,11 @@
+id,label,from,to,prop.kind
+dep-checkout-payment,DEPENDS_ON,svc-checkout,svc-payment,sync-call
+dep-payment-postgres,DEPENDS_ON,svc-payment,svc-postgres,jdbc
+dep-edge-checkout,DEPENDS_ON,svc-edge,svc-checkout,http
+dep-api-checkout,DEPENDS_ON,api-checkout,svc-edge,http
+dep-api-mobile,DEPENDS_ON,api-mobile,svc-edge,http
+own-payment,OWNED_BY,svc-payment,team-payments,oncall
+own-checkout,OWNED_BY,svc-checkout,team-payments,oncall
+alert-payment,ALERTS_ON,alert-payment,svc-payment,metric
+alert-checkout,ALERTS_ON,alert-checkout,svc-checkout,metric
+root-incident,ROOT_CAUSE,incident-1001,svc-payment,investigation
