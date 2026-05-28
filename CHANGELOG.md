@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Ktor managed backend DSL**: `graph-ktor` can now create and own Neo4j,
+  Memgraph, and FalkorDB drivers through `neo4j { ... }`, `memgraph { ... }`,
+  and `falkorDB { ... }`, while preserving caller-owned helper overloads
+  ([#232](https://github.com/bluetape4k/bluetape4k-graph/issues/232)).
+
 ### Changed
 
 ### Fixed

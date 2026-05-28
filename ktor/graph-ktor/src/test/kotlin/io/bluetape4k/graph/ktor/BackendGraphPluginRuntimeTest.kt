@@ -6,8 +6,6 @@ import com.zaxxer.hikari.HikariDataSource
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.graph.age.AgeGraphOperations
 import io.bluetape4k.graph.falkordb.FalkorDBServer
-import io.bluetape4k.graph.memgraph.MemgraphGraphOperations
-import io.bluetape4k.graph.neo4j.Neo4jGraphOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.testcontainers.graphdb.MemgraphServer
 import io.bluetape4k.testcontainers.graphdb.Neo4jServer
@@ -31,30 +29,32 @@ import java.util.UUID
 class BackendGraphPluginRuntimeTest {
 
     @Test
-    fun `Neo4j helper 는 Ktor route 에서 sync suspend operations 를 연결한다`() = runSuspendIO {
-        val driver = GraphDatabase.driver(Neo4jServer.Launcher.neo4j.boltUrl, AuthTokens.none())
-
+    fun `managed Neo4j DSL 은 Ktor route 에서 sync suspend operations 를 연결한다`() = runSuspendIO {
         try {
             backendSmoke(graphName = "default") {
-                neo4j(driver)
+                neo4j {
+                    uri = Neo4jServer.Launcher.neo4j.boltUrl
+                }
             }
         } finally {
-            runCatching { Neo4jGraphOperations(driver).dropGraph("default") }
-            driver.close()
+            GraphDatabase.driver(Neo4jServer.Launcher.neo4j.boltUrl, AuthTokens.none()).use { driver ->
+                runCatching { driver.session().use { session -> session.run("MATCH (n) DETACH DELETE n").consume() } }
+            }
         }
     }
 
     @Test
-    fun `Memgraph helper 는 Ktor route 에서 sync suspend operations 를 연결한다`() = runSuspendIO {
-        val driver = GraphDatabase.driver(MemgraphServer.Launcher.memgraph.boltUrl, AuthTokens.none())
-
+    fun `managed Memgraph DSL 은 Ktor route 에서 sync suspend operations 를 연결한다`() = runSuspendIO {
         try {
             backendSmoke(graphName = "default") {
-                memgraph(driver)
+                memgraph {
+                    uri = MemgraphServer.Launcher.memgraph.boltUrl
+                }
             }
         } finally {
-            runCatching { MemgraphGraphOperations(driver).dropGraph("default") }
-            driver.close()
+            GraphDatabase.driver(MemgraphServer.Launcher.memgraph.boltUrl, AuthTokens.none()).use { driver ->
+                runCatching { driver.session().use { session -> session.run("MATCH (n) DETACH DELETE n").consume() } }
+            }
         }
     }
 
@@ -88,18 +88,22 @@ class BackendGraphPluginRuntimeTest {
     }
 
     @Test
-    fun `FalkorDB helper 는 Ktor route 에서 sync suspend operations 를 연결한다`() = runSuspendIO {
+    fun `managed FalkorDB DSL 은 Ktor route 에서 sync suspend operations 를 연결한다`() = runSuspendIO {
         val graphName = randomGraphName("ktor_falkor")
         val server = FalkorDBServer.Launcher.falkordb
-        val driver = FalkorDB.driver(server.host, server.port)
 
         try {
             backendSmoke(graphName = graphName) {
-                falkorDB(driver, graphName)
+                falkorDB {
+                    host = server.host
+                    port = server.port
+                    this.graphName = graphName
+                }
             }
         } finally {
-            runCatching { driver.graph(graphName).use { graph -> graph.deleteGraph() } }
-            driver.close()
+            FalkorDB.driver(server.host, server.port).use { driver ->
+                runCatching { driver.graph(graphName).use { graph -> graph.deleteGraph() } }
+            }
         }
     }
 

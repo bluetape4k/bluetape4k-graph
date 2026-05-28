@@ -134,6 +134,33 @@ class GraphPluginTest {
         }
     }
 
+    @Test
+    fun `managed backend DSL 은 잘못된 property 를 fail fast 한다`() {
+        assertFailsWith<IllegalArgumentException> {
+            GraphPluginConfig().neo4j {
+                uri = " "
+            }
+        }
+
+        assertFailsWith<IllegalArgumentException> {
+            GraphPluginConfig().memgraph {
+                database = " "
+            }
+        }
+
+        assertFailsWith<IllegalArgumentException> {
+            GraphPluginConfig().falkorDB {
+                host = " "
+            }
+        }
+
+        assertFailsWith<IllegalArgumentException> {
+            GraphPluginConfig().falkorDB {
+                port = 0
+            }
+        }
+    }
+
     private class ThrowingGraphOperations(
         private val delegate: GraphOperations,
         private val closed: AtomicBoolean,

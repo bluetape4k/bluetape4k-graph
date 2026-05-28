@@ -16,6 +16,7 @@
 - `Application.graphOperations()` / `Application.graphSuspendOperations()`.
 - Route handler용 `ApplicationCall.graphOperations()` / `ApplicationCall.graphSuspendOperations()`.
 - TinkerGraph, Neo4j, Memgraph, Apache AGE, FalkorDB backend helper.
+- Neo4j, Memgraph, FalkorDB용 managed-driver property DSL.
 - Plugin-owned resource lifecycle cleanup.
 
 ## 의존성
@@ -68,15 +69,39 @@ fun Application.module(driver: Driver) {
 }
 ```
 
+### Managed Neo4j Driver
+
+```kotlin
+fun Application.module() {
+    install(GraphPlugin) {
+        neo4j {
+            uri = "bolt://localhost:7687"
+            username = "neo4j"
+            password = "secret"
+            database = "neo4j"
+        }
+    }
+}
+```
+
+같은 managed-driver pattern은 `memgraph { ... }`, `falkorDB { ... }`에서도 사용할 수 있습니다.
+Application은 여전히 실제 사용할 backend module dependency를 직접 선언해야 합니다.
+
 ## Backend 참고
 
 | Backend | Helper | Lifecycle |
 |---|---|---|
 | TinkerGraph | `tinkerGraph()` | Plugin이 in-memory graph delegate를 생성하고 닫습니다. |
 | Neo4j | `neo4j(driver, database)` | Driver는 caller-owned이며 plugin이 닫지 않습니다. |
+| Neo4j | `neo4j { uri; username; password; database }` | Plugin이 driver를 생성하고 닫습니다. |
 | Memgraph | `memgraph(driver, database)` | Driver는 caller-owned이며 plugin이 닫지 않습니다. |
+| Memgraph | `memgraph { uri; username; password; database }` | Plugin이 driver를 생성하고 닫습니다. |
 | Apache AGE | `age(graphName)` | Graph 사용 전에 caller가 Exposed `Database.connect(...)`를 호출해야 합니다. |
 | FalkorDB | `falkorDB(driver, graphName)` | Driver는 caller-owned이며 plugin이 닫지 않습니다. |
+| FalkorDB | `falkorDB { host; port; username; password; graphName }` | Plugin이 driver를 생성하고 닫습니다. |
+
+Apache AGE managed `DataSource` 생성은 Exposed transaction manager와 pool ownership 계약이 필요하므로
+[#254](https://github.com/bluetape4k/bluetape4k-graph/issues/254)에서 별도로 다룹니다.
 
 ## 테스트
 

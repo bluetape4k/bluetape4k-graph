@@ -15,6 +15,7 @@ Ktor 3.x plugin integration for `bluetape4k-graph`. It exposes `GraphOperations`
 - `Application.graphOperations()` / `Application.graphSuspendOperations()`.
 - `ApplicationCall.graphOperations()` / `ApplicationCall.graphSuspendOperations()` for route handlers.
 - Backend helper functions for TinkerGraph, Neo4j, Memgraph, Apache AGE, and FalkorDB.
+- Managed-driver property DSLs for Neo4j, Memgraph, and FalkorDB.
 - Lifecycle cleanup for plugin-owned resources.
 
 ## Dependencies
@@ -67,15 +68,40 @@ fun Application.module(driver: Driver) {
 }
 ```
 
+### Managed Neo4j Driver
+
+```kotlin
+fun Application.module() {
+    install(GraphPlugin) {
+        neo4j {
+            uri = "bolt://localhost:7687"
+            username = "neo4j"
+            password = "secret"
+            database = "neo4j"
+        }
+    }
+}
+```
+
+The same managed-driver pattern is available through `memgraph { ... }` and
+`falkorDB { ... }`. Applications still declare the concrete backend module as a dependency.
+
 ## Backend Notes
 
 | Backend | Helper | Lifecycle |
 |---|---|---|
 | TinkerGraph | `tinkerGraph()` | Plugin creates and closes the in-memory graph delegate. |
 | Neo4j | `neo4j(driver, database)` | Driver is caller-owned and is not closed by the plugin. |
+| Neo4j | `neo4j { uri; username; password; database }` | Plugin creates and closes the driver. |
 | Memgraph | `memgraph(driver, database)` | Driver is caller-owned and is not closed by the plugin. |
+| Memgraph | `memgraph { uri; username; password; database }` | Plugin creates and closes the driver. |
 | Apache AGE | `age(graphName)` | Caller must call Exposed `Database.connect(...)` before graph use. |
 | FalkorDB | `falkorDB(driver, graphName)` | Driver is caller-owned and is not closed by the plugin. |
+| FalkorDB | `falkorDB { host; port; username; password; graphName }` | Plugin creates and closes the driver. |
+
+Managed Apache AGE `DataSource` creation is intentionally tracked separately in
+[#254](https://github.com/bluetape4k/bluetape4k-graph/issues/254) because Exposed
+transaction-manager and pool ownership need a dedicated contract.
 
 ## Testing
 
