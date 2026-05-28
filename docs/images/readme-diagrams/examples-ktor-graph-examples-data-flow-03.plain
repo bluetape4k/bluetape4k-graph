@@ -1,0 +1,9 @@
+graph 1 7.0625 1.6944
+node reset 0.7934 0.84722 1.5868 0.5 "POST /demo/reset" rounded,filled box #9aa8b8 #ffffff
+node store 3.4844 0.84722 1.3785 0.5 "Graph Backend" rounded,filled box #9aa8b8 #ffffff
+node count 6.3212 1.4444 1.4826 0.5 "GET /cities/count" rounded,filled box #9aa8b8 #ffffff
+node path 6.3212 0.25 1.3993 0.5 "GET /cities/path" rounded,filled box #9aa8b8 #ffffff
+edge reset store 4 1.5919 0.84722 1.9279 0.84722 2.32 0.84722 2.6588 0.84722 write 2.191 0.92535 solid #738295
+edge store count 4 4.1783 0.99179 4.5608 1.0731 5.0422 1.1755 5.4504 1.2623 read 4.8767 1.2597 solid #738295
+edge store path 4 4.1783 0.70265 4.5741 0.61849 5.0756 0.51186 5.4925 0.42323 traverse 4.8767 0.68023 solid #738295
+stop

@@ -5,6 +5,11 @@
 This example teaches how to model documents, entities, and concepts as a knowledge graph and infer bounded relationship
 paths between entities.
 
+## Scenario
+
+A document mentions Kotlin and Spring-related entities. The example links documents to entities, classifies entities
+under concepts, and infers bounded paths that explain how two entities are connected through intermediate facts.
+
 ## What You Learn
 
 | Topic | Why it matters |
@@ -30,15 +35,15 @@ With a graph database:
 
 This example focuses on small, explainable graphs so learners can see why the path exists.
 
-## Architecture
+## Architecture Diagram
 
 ![knowledge graph examples Architecture diagram](../../docs/images/readme-diagrams/examples-knowledge-graph-examples-architecture-01.png)
 
-## Domain UML
+## ERD / Domain UML
 
 ![Domain UML diagram](../../docs/images/readme-diagrams/examples-knowledge-graph-examples-class-02.png)
 
-## Path Inference Flow
+## Data Flow
 
 ![Path Inference Flow diagram](../../docs/images/readme-diagrams/examples-knowledge-graph-examples-sequence-03.png)
 
@@ -107,6 +112,15 @@ entities, classify an entity under a concept, and infer relationship paths with 
 ```
 
 TinkerGraph tests run in memory. Neo4j, Memgraph, Apache AGE, and FalkorDB tests require Docker/Testcontainers.
+
+## Expected Output
+
+| Scenario | Expected result |
+|---|---|
+| Mention lookup | A document returns the entities it mentions. |
+| Related entity traversal | `RELATED_TO` traversal finds neighboring facts. |
+| Concept classification | An entity can be connected to a normalized concept. |
+| Path inference | Bounded `allPaths` explains how two entities are connected. |
 
 ## Dependencies
 

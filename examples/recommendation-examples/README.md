@@ -4,6 +4,11 @@
 
 This example teaches how to build product and social recommendations with graph traversal and PageRank.
 
+## Scenario
+
+Alice buys a camera. Bob buys the same camera and also buys a tripod. The example uses shared purchases to recommend
+products to Alice, uses two-hop social paths to recommend follows, and ranks popular products with PageRank.
+
 ## What You Learn
 
 | Topic | Why it matters |
@@ -29,15 +34,15 @@ With a graph database:
 
 This makes the example close to real recommendation systems while keeping the implementation small enough to study.
 
-## Architecture
+## Architecture Diagram
 
 ![recommendation examples Architecture diagram](../../docs/images/readme-diagrams/examples-recommendation-examples-architecture-01.png)
 
-## Domain UML
+## ERD / Domain UML
 
 ![Domain UML diagram](../../docs/images/readme-diagrams/examples-recommendation-examples-class-02.png)
 
-## Recommendation Flow
+## Data Flow
 
 ![Recommendation Flow diagram](../../docs/images/readme-diagrams/examples-recommendation-examples-sequence-03.png)
 
@@ -109,6 +114,15 @@ than exact score values or backend-specific ordering.
 ```
 
 TinkerGraph tests run in memory. Neo4j, Memgraph, Apache AGE, and FalkorDB tests require Docker/Testcontainers.
+
+## Expected Output
+
+| Scenario | Expected result |
+|---|---|
+| Product recommendation | Alice can receive `p-tripod` through Bob's shared purchase path. |
+| Follow recommendation | Two-hop `FOLLOWS` traversal proposes a follow candidate. |
+| Popular product ranking | PageRank includes popular purchased products. |
+| CSV import | The bundled fixture imports users, products, purchases, and follows. |
 
 ## Dependencies
 

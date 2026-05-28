@@ -4,6 +4,11 @@
 
 상품 추천과 소셜 팔로우 추천을 그래프 탐색 및 PageRank로 구현하는 방법을 배우는 예제입니다.
 
+## 예제 시나리오
+
+Alice가 camera를 구매한다. Bob도 같은 camera를 구매하고 tripod도 구매한다. 이 예제는 shared purchase path로
+Alice에게 상품을 추천하고, 2-hop social path로 follow 후보를 추천하며, PageRank로 인기 상품을 ranking한다.
+
 ## 무엇을 배우나?
 
 | 주제 | 의미 |
@@ -33,11 +38,11 @@ Graph DB를 사용하면 다음처럼 표현할 수 있습니다.
 
 ![recommendation examples Architecture diagram](../../docs/images/readme-diagrams/examples-recommendation-examples-architecture-01.png)
 
-## 도메인 UML
+## ERD / 도메인 UML
 
 ![UML diagram](../../docs/images/readme-diagrams/examples-recommendation-examples-class-02.png)
 
-## 추천 흐름
+## Data Flow
 
 ![recommendation examples Sequence Flow 3 diagram](../../docs/images/readme-diagrams/examples-recommendation-examples-sequence-03.png)
 
@@ -108,6 +113,15 @@ Abstract test가 튜토리얼입니다. 작은 그래프를 만들고 추천을 
 ```
 
 TinkerGraph 테스트는 메모리에서 실행됩니다. Neo4j, Memgraph, Apache AGE, FalkorDB 테스트는 Docker/Testcontainers가 필요합니다.
+
+## Expected Output
+
+| 시나리오 | 예상 결과 |
+|---|---|
+| Product recommendation | Alice가 Bob의 shared purchase path를 통해 `p-tripod`를 추천받는다. |
+| Follow recommendation | 2-hop `FOLLOWS` traversal이 follow 후보를 제안한다. |
+| Popular product ranking | PageRank 결과에 인기 구매 상품이 포함된다. |
+| CSV import | bundled fixture가 user, product, purchase, follow를 import한다. |
 
 ## 의존성
 

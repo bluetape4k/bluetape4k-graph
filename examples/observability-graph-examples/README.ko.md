@@ -23,6 +23,14 @@ API owner에게 알리기 전에 alert 신호와 runtime dependency graph를 함
 
 ![observability graph examples architecture](../../docs/images/readme-diagrams/examples-observability-graph-examples-architecture-01.png)
 
+## ERD
+
+![observability graph examples ERD](../../docs/images/readme-diagrams/examples-observability-graph-examples-erd-02.png)
+
+## Data Flow
+
+![observability graph examples data flow](../../docs/images/readme-diagrams/examples-observability-graph-examples-data-flow-03.png)
+
 ## Graph Model
 
 | 요소 | Label | 주요 속성 | 목적 |

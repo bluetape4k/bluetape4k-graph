@@ -1,0 +1,12 @@
+graph 1 5.9444 2.8889
+node api 0.40278 2.6389 0.75 0.5 Api rounded,filled box #9aa8b8 #ffffff
+node service 3.0833 1.4444 0.78472 0.5 Service rounded,filled box #9aa8b8 #ffffff
+node team 5.5694 1.4444 0.75 0.5 Team rounded,filled box #9aa8b8 #ffffff
+node alert 0.40278 1.4444 0.75 0.5 Alert rounded,filled box #9aa8b8 #ffffff
+node incident 0.40278 0.25 0.80556 0.5 Incident rounded,filled box #9aa8b8 #ffffff
+edge api service 4 0.77996 2.4753 1.2424 2.2671 2.0436 1.9063 2.5651 1.6715 DEPENDS_ON 1.7483 2.3307 solid #738295
+edge service service 7 2.9168 1.7007 2.787 2.016 2.8425 2.3889 3.0833 2.3889 3.2931 2.3889 3.3623 2.106 3.2908 1.8246 DEPENDS_ON 3.0833 2.467 solid #738295
+edge service team 4 3.4813 1.4444 3.9066 1.4444 4.5934 1.4444 5.0592 1.4444 OWNED_BY 4.3351 1.5226 solid #738295
+edge alert service 4 0.77996 1.4444 1.2404 1.4444 2.0369 1.4444 2.5585 1.4444 ALERTS_ON 1.7483 1.5226 solid #738295
+edge incident service 4 0.80809 0.42624 1.2751 0.63651 2.0567 0.98844 2.5677 1.2185 ROOT_CAUSE 1.7483 1.1362 solid #738295
+stop

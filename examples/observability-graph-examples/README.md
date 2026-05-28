@@ -23,6 +23,14 @@ The sample graph contains:
 
 ![observability graph examples architecture](../../docs/images/readme-diagrams/examples-observability-graph-examples-architecture-01.png)
 
+## ERD
+
+![observability graph examples ERD](../../docs/images/readme-diagrams/examples-observability-graph-examples-erd-02.png)
+
+## Data Flow
+
+![observability graph examples data flow](../../docs/images/readme-diagrams/examples-observability-graph-examples-data-flow-03.png)
+
 ## Graph Model
 
 | Element | Label | Key properties | Purpose |

@@ -1,0 +1,12 @@
+digraph examples_code_graph_examples_data_flow_03 {
+  graph [rankdir=LR, bgcolor="transparent", margin=0.1, nodesep=0.7, ranksep=0.9]
+  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=12, color="#9aa8b8", fillcolor="#ffffff"]
+  edge [fontname="Helvetica", fontsize=10, color="#738295", arrowsize=0.8]
+  seed [label="Seed Scenario"];
+  mutate [label="Create Graph"];
+  query [label="Traversal API"];
+  answers [label="Expected Output"];
+  seed -> mutate [label="create"];
+  mutate -> query [label="query"];
+  query -> answers [label="assert"];
+}

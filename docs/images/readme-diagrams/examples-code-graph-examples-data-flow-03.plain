@@ -1,0 +1,9 @@
+graph 1 9.0451 0.5
+node seed 0.66319 0.25 1.3264 0.5 "Seed Scenario" rounded,filled box #9aa8b8 #ffffff
+node mutate 3.2292 0.25 1.2222 0.5 "Create Graph" rounded,filled box #9aa8b8 #ffffff
+node query 5.6962 0.25 1.2118 0.5 "Traversal API" rounded,filled box #9aa8b8 #ffffff
+node answers 8.3194 0.25 1.4514 0.5 "Expected Output" rounded,filled box #9aa8b8 #ffffff
+edge seed mutate 4 1.3307 0.25 1.6826 0.25 2.1178 0.25 2.4813 0.25 create 1.9722 0.32812 solid #738295
+edge mutate query 4 3.846 0.25 4.1813 0.25 4.6009 0.25 4.9544 0.25 query 4.4653 0.32812 solid #738295
+edge query answers 4 6.3055 0.25 6.6469 0.25 7.0811 0.25 7.4576 0.25 assert 6.9479 0.32812 solid #738295
+stop

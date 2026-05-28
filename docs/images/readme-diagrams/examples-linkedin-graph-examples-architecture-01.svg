@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="520" viewBox="0 0 1120 520" role="img" aria-labelledby="title desc">
+  <title id="title">LinkedIn Graph Example Architecture</title>
+  <desc id="desc">Social graph scenarios across portable graph backends</desc>
+  <defs>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M1,1 L8,4.5 L1,8 Z" fill="#5f6f82"/>
+    </marker>
+    <style>
+      .canvas { fill: #fbfcfe; }
+      .frame { fill: #ffffff; stroke: #d7dee8; stroke-width: 2; }
+      .title { font-family: "Architects Daughter", "Comic Sans MS", "Helvetica", sans-serif; font-size: 30px; fill: #243142; }
+      .subtitle { font-family: "Comic Mono", "Comic Sans MS", "Helvetica", sans-serif; font-size: 15px; fill: #5c6b7d; }
+      .box-title { font-family: "Architects Daughter", "Comic Sans MS", "Helvetica", sans-serif; font-size: 18px; fill: #233044; }
+      .box-text { font-family: "Comic Mono", "Comic Sans MS", "Helvetica", sans-serif; font-size: 13px; fill: #435266; }
+      .label { font-family: "Comic Mono", "Comic Sans MS", "Helvetica", sans-serif; font-size: 12px; fill: #4f5e70; }
+      .edge { fill: none; stroke: #5f6f82; stroke-width: 2.4; marker-end: url(#arrow); }
+      .pill { fill: #ffffff; stroke: #dbe3ee; stroke-width: 1; }
+    </style>
+  </defs>
+  <rect class="canvas" width="1120" height="520"/>
+  <rect class="frame" x="24" y="24" width="1072" height="472" rx="18"/>
+  <text class="title" x="560" y="68" text-anchor="middle">LinkedIn Graph Example Architecture</text>
+  <text class="subtitle" x="560" y="94" text-anchor="middle">Social graph scenarios across portable graph backends</text>
+
+      <path class="edge" d="M 265 202.5 H 300 V 146 H 335"/>
+      <rect class="pill" x="282.25" y="150.25" width="48" height="22" rx="11"/>
+      <text class="label" x="306.25" y="165.25" text-anchor="middle">sync</text>
+
+      <path class="edge" d="M 265 202.5 H 300 V 256 H 335"/>
+      <rect class="pill" x="272.75" y="205.25" width="67" height="22" rx="11"/>
+      <text class="label" x="306.25" y="220.25" text-anchor="middle">suspend</text>
+
+      <path class="edge" d="M 555 146 H 605 V 225 H 655"/>
+      <rect class="pill" x="570.5" y="161.5" width="74" height="22" rx="11"/>
+      <text class="label" x="607.5" y="176.5" text-anchor="middle">traverse</text>
+
+      <path class="edge" d="M 555 256 H 605 V 225 H 655"/>
+      <rect class="pill" x="570.5" y="216.5" width="74" height="22" rx="11"/>
+      <text class="label" x="607.5" y="231.5" text-anchor="middle">traverse</text>
+
+      <path class="edge" d="M 555 381 H 605 V 225 H 655"/>
+      <rect class="pill" x="577.5" y="279" width="60" height="22" rx="11"/>
+      <text class="label" x="607.5" y="294" text-anchor="middle">labels</text>
+
+      <path class="edge" d="M 885 225 H 915 V 235 H 945"/>
+      <rect class="pill" x="853" y="206" width="74" height="22" rx="11"/>
+      <text class="label" x="890" y="221" text-anchor="middle">portable</text>
+
+      <g>
+        <rect x="70" y="150" width="195" height="105" rx="14" fill="#edf7f7" stroke="#9ccaca" stroke-width="2"/>
+        <text class="box-title" x="167.5" y="184" text-anchor="middle">Abstract Tests</text>
+        <text class="box-text" x="167.5" y="212" text-anchor="middle">connections</text>
+<text class="box-text" x="167.5" y="233" text-anchor="middle">company lookup</text>
+<text class="box-text" x="167.5" y="254" text-anchor="middle">follows</text>
+      </g>
+
+      <g>
+        <rect x="335" y="105" width="220" height="82" rx="14" fill="#fff4d8" stroke="#e3c46f" stroke-width="2"/>
+        <text class="box-title" x="445" y="139" text-anchor="middle">LinkedInGraphService</text>
+        <text class="box-text" x="445" y="167" text-anchor="middle">sync API</text>
+      </g>
+
+      <g>
+        <rect x="335" y="215" width="220" height="82" rx="14" fill="#fff4d8" stroke="#e3c46f" stroke-width="2"/>
+        <text class="box-title" x="445" y="249" text-anchor="middle">SuspendService</text>
+        <text class="box-text" x="445" y="277" text-anchor="middle">coroutine API</text>
+      </g>
+
+      <g>
+        <rect x="335" y="335" width="220" height="92" rx="14" fill="#e8f4ff" stroke="#98c1df" stroke-width="2"/>
+        <text class="box-title" x="445" y="369" text-anchor="middle">Schema DSL</text>
+        <text class="box-text" x="445" y="397" text-anchor="middle">Person / Company / Skill</text>
+<text class="box-text" x="445" y="418" text-anchor="middle">social edge labels</text>
+      </g>
+
+      <g>
+        <rect x="655" y="175" width="230" height="100" rx="14" fill="#f2eefc" stroke="#b7a7dc" stroke-width="2"/>
+        <text class="box-title" x="770" y="209" text-anchor="middle">Graph API</text>
+        <text class="box-text" x="770" y="237" text-anchor="middle">shortestPath</text>
+<text class="box-text" x="770" y="258" text-anchor="middle">neighbors</text>
+<text class="box-text" x="770" y="279" text-anchor="middle">allPaths</text>
+      </g>
+
+      <g>
+        <rect x="945" y="150" width="130" height="170" rx="14" fill="#fdecef" stroke="#d8a6b0" stroke-width="2"/>
+        <text class="box-title" x="1010" y="184" text-anchor="middle">Backends</text>
+        <text class="box-text" x="1010" y="212" text-anchor="middle">TinkerGraph</text>
+<text class="box-text" x="1010" y="233" text-anchor="middle">Neo4j / Memgraph</text>
+<text class="box-text" x="1010" y="254" text-anchor="middle">AGE / FalkorDB</text>
+      </g>
+</svg>
