@@ -23,7 +23,7 @@ kotlinx-benchmark module for graph performance comparison. It now contains nine 
 - `GraphDbComparisonBenchmark`: `tinkergraph`, `neo4j`, `memgraph`, `age`, and `falkordb` backends.
 - `GraphDomainWorkloadBenchmark`: social high fan-out, IAM reachability, fraud path, and code dependency workloads on `tinkergraph`, `neo4j`, and `memgraph`.
 - `GraphWriteIngestionBenchmark`: vertex-only, edge-only, mixed, and repeated mixed write batches on the same backend matrix.
-- `AuthzInheritanceBenchmark`: PostgreSQL AGE/Cypher, recursive CTE, and iterative traversal over one deterministic user/group/role/resource fixture.
+- `AuthzInheritanceBenchmark`: native Neo4j Cypher plus PostgreSQL AGE/Cypher, recursive CTE, and iterative traversal over one deterministic user/group/role/resource fixture.
 - `AbuserDetectionBenchmark`: PostgreSQL AGE/Cypher, Exposed JDBC, and JPA/Hibernate fraud-detection backends over one deterministic account-transfer fixture.
 - `GraphIoComparisonBenchmark`: `csv`, `jackson2`, `jackson3`, `graphml`, `okio-jackson3`, and `okio-graphml`.
 - `ApiModelBenchmark`: sync, virtual-thread, and coroutine API overhead on the same in-memory TinkerGraph fixture.
@@ -69,9 +69,10 @@ PostgreSQL authorization inheritance smoke and comparison matrix:
 ```bash
 ./gradlew :graph-benchmark:authzInheritanceSmokeBenchmark
 ./gradlew :graph-benchmark:authzInheritanceBenchmark
+./gradlew :graph-benchmark:authzInheritanceAdoptionBenchmark
 ```
 
-The smoke task runs `sizeName=smoke` and `scenarioName=deep-inheritance`. The comparison task runs `small` and `medium` datasets across `shallow`, `deep-inheritance`, `deny-heavy`, and `wide-groups`.
+The smoke task runs `sizeName=smoke` and `scenarioName=deep-inheritance` across Neo4j, Memgraph, AGE, PostgreSQL CTE, and PostgreSQL iterative engines. The comparison task keeps the earlier PostgreSQL AGE/CTE/iterative matrix on `small` and `medium` data across `shallow`, `deep-inheritance`, `deny-heavy`, and `wide-groups`. The adoption task runs `large` datasets over `long-chain` and `deep-wide` with `neo4j-cypher`, `postgres-cte`, and `postgres-iterative`, so the decision surface uses much larger data and 10-12 hop traversal paths without an in-memory TinkerGraph baseline.
 
 This GraphDB adoption benchmark intentionally excludes TinkerGraph. TinkerGraph remains in separate in-memory API/contract benchmark tracks, but it is not part of this persistent database adoption decision.
 
@@ -152,6 +153,8 @@ Scenario matrix:
 | `deep-inheritance` | deeper inheritance chains with cycle edges |
 | `deny-heavy` | many deny grant edges, deny-overrides-allow semantics |
 | `wide-groups` | wider group membership fan-out |
+| `long-chain` | 10-hop traversal with a forced target chain |
+| `deep-wide` | 12-hop traversal with wider fan-out and cycles |
 
 Medium fixture `resolveResources` latency:
 
@@ -162,15 +165,39 @@ Medium fixture `resolveResources` latency:
 | `deny-heavy` | 448.263 | 9.450 | **4.310** | PostgreSQL iterative |
 | `wide-groups` | 250.083 | **1.521** | 3.658 | PostgreSQL CTE |
 
-Interpretation: AGE/Cypher did not win latency in this PostgreSQL AGE fixture. PostgreSQL recursive CTE and iterative batched traversal were faster across the measured authorization-inheritance matrix. AGE still expresses variable-depth graph traversal more directly, but this result does not support a speed-based GraphDB adoption claim for the current implementation and dataset.
+Interpretation: AGE/Cypher did not win latency in this PostgreSQL AGE fixture. PostgreSQL recursive CTE and iterative batched traversal were faster across the measured authorization-inheritance matrix. This result is a shallow/mid-size negative baseline; the follow-up adoption task now uses `large` data and 10-12 hop paths before making a stronger GraphDB adoption call.
 
 Adoption-scope note: TinkerGraph is excluded only from this GraphDB adoption benchmark because it is in-memory. Existing TinkerGraph micro/contract benchmark tracks remain separate.
+
+Large fixture adoption-scope `resolveResources` latency:
+
+![Authorization inheritance adoption latency](../../docs/images/readme-charts/authz-inheritance-adoption-latency-chart-01.png)
+
+| Scenario | Neo4j Cypher | PostgreSQL CTE | PostgreSQL iterative | Winner |
+|---|---:|---:|---:|---|
+| `long-chain` | **12.731** | 55.364 | 47.568 | Neo4j Cypher |
+| `deep-wide` | 56.467 | **11.596** | 27.836 | PostgreSQL CTE |
+
+Run conditions: macOS arm64, GraalVM JDK 25.0.3, kotlinx-benchmark/JMH 1.37, one fork, no warmup, one one-second measurement iteration, Testcontainers, May 28, 2026. All latency values are `ms/op`; lower is better. This is an adoption-direction probe, not a release-grade benchmark.
+
+Adoption probe interpretation:
+
+- `long-chain` is the first measured row that gives a speed-based GraphDB signal: Neo4j Cypher is 3.74x faster than PostgreSQL iterative and 4.35x faster than PostgreSQL recursive CTE.
+- `deep-wide` still favors PostgreSQL CTE. GraphDB adoption should target long, selective, path-shaped traversals rather than every permission or fraud query.
+- AGE/Cypher did not complete `large + long-chain` within the 75-second external timeout in this local run.
+- Memgraph passed the smoke parity test, but the local `large + long-chain` run terminated the Bolt connection during load, so it is not included in the adoption result table.
 
 Artifacts:
 
 - [Chart PNG](../../docs/images/readme-charts/authz-inheritance-postgresql-latency-chart-01.png)
 - [Chart SVG](../../docs/images/readme-charts/authz-inheritance-postgresql-latency-chart-01.svg)
+- [Adoption Chart PNG](../../docs/images/readme-charts/authz-inheritance-adoption-latency-chart-01.png)
+- [Adoption Chart SVG](../../docs/images/readme-charts/authz-inheritance-adoption-latency-chart-01.svg)
 - [Raw JMH JSON](../../docs/benchmark/2026-05-28-authz-inheritance-main.json)
+- [Adoption Neo4j JMH JSON](../../docs/benchmark/2026-05-28-authz-inheritance-adoption-neo4j.json)
+- [Adoption PostgreSQL JMH JSON](../../docs/benchmark/2026-05-28-authz-inheritance-adoption-postgres.json)
+- [Adoption AGE timeout log](../../docs/benchmark/2026-05-28-authz-inheritance-adoption-age-timeout.txt)
+- [Adoption Memgraph failure log](../../docs/benchmark/2026-05-28-authz-inheritance-adoption-memgraph-failure.txt)
 - [Markdown result table](../../docs/benchmark/2026-05-28-authz-inheritance-results.md)
 
 ## Latest Testcontainers Result

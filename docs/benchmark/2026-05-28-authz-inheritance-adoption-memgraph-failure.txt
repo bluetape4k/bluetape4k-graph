@@ -1,0 +1,136 @@
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/Users/debop/work/bluetape4k/bluetape4k-graph/.worktrees/feat-abuser-detection-benchmark/benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-0.5.0-JMH.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# JMH version: 1.37
+# VM version: JDK 25.0.3, Java HotSpot(TM) 64-Bit Server VM, 25.0.3+9-LTS-jvmci-b01
+# VM invoker: /Library/Java/JavaVirtualMachines/graalvm-jdk-25/Contents/Home/bin/java
+# VM options: -XX:ThreadPriorityPolicy=1 -XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCIProduct -XX:+EnableJVMCI -XX:-UnlockExperimentalVMOptions
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: <none>
+# Measurement: 1 iterations, 1 s each
+# Timeout: 60 s per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: io.bluetape4k.graph.benchmark.AuthzInheritanceBenchmark.resolveResources
+# Parameters: (backend = memgraph-cypher, scenarioName = long-chain, sizeName = large)
+
+# Run progress: 0.00% complete, ETA 00:00:01
+# Fork: 1 of 1
+Java HotSpot(TM) 64-Bit Server VM warning: -XX:ThreadPriorityPolicy=1 may require system level permission, e.g., being the root user. If the necessary permission is not possessed, changes to priority will be silently ignored.
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/Users/debop/work/bluetape4k/bluetape4k-graph/.worktrees/feat-abuser-detection-benchmark/benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-0.5.0-JMH.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+Iteration   1: 21:11:55.251 [io.bluetape4k.graph.benchmark.AuthzInheritanceBenchmark.resolveResources-jmh-worker-1] WARN  o.t.utility.ResourceReaper - 
+********************************************************************************
+Ryuk has been disabled. This can cause unexpected behavior in your environment.
+********************************************************************************
+testcontainers.memgraph.host=localhost
+testcontainers.memgraph.port=33305
+testcontainers.memgraph.url=bolt://localhost:33305
+testcontainers.memgraph.bolt-port=33305
+testcontainers.memgraph.log-port=33304
+testcontainers.memgraph.bolt-url=bolt://localhost:33305
+5월 28, 2026 9:11:56 오후 org.neo4j.driver.internal.logging.SystemLogger info
+INFO: Driver instance 247109261 created for server uri 'bolt://localhost:33305'
+<failure>
+
+org.neo4j.driver.exceptions.ServiceUnavailableException: Connection to the database terminated. Please ensure that your database is listening on the correct host and port and that you have compatible encryption settings both on Neo4j server and driver. Note that the default encryption setting has changed in Neo4j 4.0.
+	at org.neo4j.driver.internal.util.Futures.blockingGet(Futures.java:63)
+	at org.neo4j.driver.internal.InternalSession.lambda$run$1(InternalSession.java:70)
+	at org.neo4j.driver.internal.observation.util.ObservationUtil.observe(ObservationUtil.java:40)
+	at org.neo4j.driver.internal.InternalSession.run(InternalSession.java:69)
+	at org.neo4j.driver.internal.InternalSession.run(InternalSession.java:53)
+	at org.neo4j.driver.internal.AbstractQueryRunner.run(AbstractQueryRunner.java:32)
+	at org.neo4j.driver.internal.AbstractQueryRunner.run(AbstractQueryRunner.java:37)
+	at io.bluetape4k.graph.benchmark.authz.NativeCypherAuthzInheritanceEngine.load(NativeCypherAuthzInheritanceEngine.kt:28)
+	at io.bluetape4k.graph.benchmark.AuthzInheritanceBenchmark.setup(AuthzInheritanceBenchmark.kt:94)
+	at io.bluetape4k.graph.benchmark.jmh_generated.AuthzInheritanceBenchmark_resolveResources_jmhTest._jmh_tryInit_f_authzinheritancebenchmark0_G(AuthzInheritanceBenchmark_resolveResources_jmhTest.java:454)
+	at io.bluetape4k.graph.benchmark.jmh_generated.AuthzInheritanceBenchmark_resolveResources_jmhTest.resolveResources_AverageTime(AuthzInheritanceBenchmark_resolveResources_jmhTest.java:164)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call(BenchmarkHandler.java:527)
+	at org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call(BenchmarkHandler.java:504)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:545)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+	Suppressed: org.neo4j.driver.internal.util.ErrorUtil$InternalExceptionCause
+		at org.neo4j.driver.internal.adaptedbolt.ErrorMapper.mapServiceUnavailable(ErrorMapper.java:200)
+		at org.neo4j.driver.internal.adaptedbolt.ErrorMapper.map(ErrorMapper.java:87)
+		at org.neo4j.driver.internal.adaptedbolt.ErrorMapper.mapAndThrow(ErrorMapper.java:66)
+		at java.base/java.util.concurrent.CompletableFuture.uniExceptionally(CompletableFuture.java:1011)
+		at java.base/java.util.concurrent.CompletableFuture$UniExceptionally.tryFire(CompletableFuture.java:995)
+		at java.base/java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:531)
+		at java.base/java.util.concurrent.CompletableFuture.completeExceptionally(CompletableFuture.java:2221)
+		at org.neo4j.bolt.connection.pooled.PooledBoltConnectionSource.lambda$connect$15(PooledBoltConnectionSource.java:375)
+		at java.base/java.util.concurrent.CompletableFuture.uniWhenComplete(CompletableFuture.java:884)
+		at java.base/java.util.concurrent.CompletableFuture$UniWhenComplete.tryFire(CompletableFuture.java:862)
+		at java.base/java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:531)
+		at java.base/java.util.concurrent.CompletableFuture.completeExceptionally(CompletableFuture.java:2221)
+		at org.neo4j.bolt.connection.netty.impl.async.connection.HandshakeHandler.lambda$fail$3(HandshakeHandler.java:212)
+		at io.netty.util.concurrent.DefaultPromise.notifyListener0(DefaultPromise.java:604)
+		at io.netty.util.concurrent.DefaultPromise.notifyListenersNow(DefaultPromise.java:571)
+		at io.netty.util.concurrent.DefaultPromise.notifyListeners(DefaultPromise.java:506)
+		at io.netty.util.concurrent.DefaultPromise.addListener(DefaultPromise.java:199)
+		at io.netty.channel.DefaultChannelPromise.addListener(DefaultChannelPromise.java:95)
+		at io.netty.channel.DefaultChannelPromise.addListener(DefaultChannelPromise.java:30)
+		at org.neo4j.bolt.connection.netty.impl.async.connection.HandshakeHandler.fail(HandshakeHandler.java:212)
+		at org.neo4j.bolt.connection.netty.impl.async.connection.HandshakeHandler.channelInactive(HandshakeHandler.java:121)
+		at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:251)
+		at io.netty.channel.ChannelInboundHandlerAdapter.channelInactive(ChannelInboundHandlerAdapter.java:81)
+		at io.netty.handler.timeout.IdleStateHandler.channelInactive(IdleStateHandler.java:279)
+		at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:251)
+		at io.netty.channel.DefaultChannelPipeline$HeadContext.channelInactive(DefaultChannelPipeline.java:1424)
+		at io.netty.channel.DefaultChannelPipeline.fireChannelInactive(DefaultChannelPipeline.java:876)
+		at io.netty.channel.AbstractChannel$AbstractUnsafe$6.run(AbstractChannel.java:676)
+		at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:148)
+		at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:141)
+		at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:535)
+		at io.netty.channel.SingleThreadIoEventLoop.run(SingleThreadIoEventLoop.java:201)
+		at io.netty.util.concurrent.SingleThreadEventExecutor$5.run(SingleThreadEventExecutor.java:1195)
+		at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+		at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+		... 1 more
+Caused by: org.neo4j.bolt.connection.exception.BoltServiceUnavailableException: Connection to the database terminated. Please ensure that your database is listening on the correct host and port and that you have compatible encryption settings both on Neo4j server and driver. Note that the default encryption setting has changed in Neo4j 4.0.
+	at org.neo4j.bolt.connection.netty.impl.async.connection.HandshakeHandler.newConnectionTerminatedError(HandshakeHandler.java:126)
+	at org.neo4j.bolt.connection.netty.impl.async.connection.HandshakeHandler.channelInactive(HandshakeHandler.java:120)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:251)
+	at io.netty.channel.ChannelInboundHandlerAdapter.channelInactive(ChannelInboundHandlerAdapter.java:81)
+	at io.netty.handler.timeout.IdleStateHandler.channelInactive(IdleStateHandler.java:279)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:251)
+	at io.netty.channel.DefaultChannelPipeline$HeadContext.channelInactive(DefaultChannelPipeline.java:1424)
+	at io.netty.channel.DefaultChannelPipeline.fireChannelInactive(DefaultChannelPipeline.java:876)
+	at io.netty.channel.AbstractChannel$AbstractUnsafe$6.run(AbstractChannel.java:676)
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:148)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:141)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:535)
+	at io.netty.channel.SingleThreadIoEventLoop.run(SingleThreadIoEventLoop.java:201)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$5.run(SingleThreadEventExecutor.java:1195)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+	... 1 more
+
+
+
+
+# Run complete. Total time: 00:00:05
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark  Mode  Cnt  Score   Error  Units
+
+Benchmark result is saved to /tmp/authz-inheritance-adoption-memgraph.json

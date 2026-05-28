@@ -90,7 +90,7 @@ benchmark {
         }
         register("authzInheritanceSmoke") {
             include(".*AuthzInheritanceBenchmark.*")
-            param("backend", "age-cypher", "postgres-cte", "postgres-iterative")
+            param("backend", "neo4j-cypher", "memgraph-cypher", "age-cypher", "postgres-cte", "postgres-iterative")
             param("sizeName", "smoke")
             param("scenarioName", "deep-inheritance")
             warmups = 1
@@ -106,6 +106,17 @@ benchmark {
             param("scenarioName", "shallow", "deep-inheritance", "deny-heavy", "wide-groups")
             warmups = 2
             iterations = 3
+            iterationTime = 2
+            iterationTimeUnit = "s"
+            reportFormat = "json"
+        }
+        register("authzInheritanceAdoption") {
+            include(".*AuthzInheritanceBenchmark.*")
+            param("backend", "neo4j-cypher", "postgres-cte", "postgres-iterative")
+            param("sizeName", "large")
+            param("scenarioName", "long-chain", "deep-wide")
+            warmups = 1
+            iterations = 2
             iterationTime = 2
             iterationTimeUnit = "s"
             reportFormat = "json"

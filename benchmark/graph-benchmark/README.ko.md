@@ -23,7 +23,7 @@
 - `GraphDbComparisonBenchmark`: `tinkergraph`, `neo4j`, `memgraph`, `age`, `falkordb` backend.
 - `GraphDomainWorkloadBenchmark`: `tinkergraph`, `neo4j`, `memgraph`의 social high fan-out, IAM reachability, fraud path, code dependency workload.
 - `GraphWriteIngestionBenchmark`: 동일 backend matrix에서 vertex-only, edge-only, mixed, repeated mixed write batch.
-- `AuthzInheritanceBenchmark`: 하나의 deterministic user/group/role/resource fixture를 사용하는 PostgreSQL AGE/Cypher, recursive CTE, iterative traversal.
+- `AuthzInheritanceBenchmark`: 하나의 deterministic user/group/role/resource fixture를 사용하는 native Neo4j Cypher, PostgreSQL AGE/Cypher, recursive CTE, iterative traversal.
 - `AbuserDetectionBenchmark`: 하나의 deterministic account-transfer fixture를 사용하는 PostgreSQL AGE/Cypher, Exposed JDBC, JPA/Hibernate fraud-detection backend.
 - `GraphIoComparisonBenchmark`: `csv`, `jackson2`, `jackson3`, `graphml`, `okio-jackson3`, `okio-graphml`.
 - `ApiModelBenchmark`: 동일한 in-memory TinkerGraph fixture에서 sync, virtual-thread, coroutine API overhead.
@@ -69,9 +69,10 @@ PostgreSQL authorization inheritance smoke와 comparison matrix:
 ```bash
 ./gradlew :graph-benchmark:authzInheritanceSmokeBenchmark
 ./gradlew :graph-benchmark:authzInheritanceBenchmark
+./gradlew :graph-benchmark:authzInheritanceAdoptionBenchmark
 ```
 
-Smoke task는 `sizeName=smoke`, `scenarioName=deep-inheritance`를 실행합니다. Comparison task는 `small`, `medium` dataset을 `shallow`, `deep-inheritance`, `deny-heavy`, `wide-groups` scenario 전체에 대해 실행합니다.
+Smoke task는 `sizeName=smoke`, `scenarioName=deep-inheritance`를 Neo4j, Memgraph, AGE, PostgreSQL CTE, PostgreSQL iterative engine 전체에 대해 실행합니다. Comparison task는 기존 PostgreSQL AGE/CTE/iterative matrix를 `small`, `medium` dataset과 `shallow`, `deep-inheritance`, `deny-heavy`, `wide-groups` scenario에 대해 실행합니다. Adoption task는 `large` dataset에서 `long-chain`, `deep-wide`를 `neo4j-cypher`, `postgres-cte`, `postgres-iterative`로 실행하므로, 도입 판단은 in-memory TinkerGraph baseline 없이 훨씬 큰 데이터와 10-12 hop traversal path를 기준으로 봅니다.
 
 이번 GraphDB 도입 판단용 benchmark에서는 TinkerGraph를 의도적으로 제외합니다. TinkerGraph는 별도 in-memory API/contract benchmark track에는 남지만, persistent database 도입 판단에는 포함하지 않습니다.
 
@@ -152,6 +153,8 @@ Scenario matrix:
 | `deep-inheritance` | cycle edge가 포함된 더 깊은 inheritance chain |
 | `deny-heavy` | deny grant edge가 많고 deny-overrides-allow 의미론이 강한 fixture |
 | `wide-groups` | group membership fan-out이 넓은 fixture |
+| `long-chain` | 강제 target chain이 있는 10-hop traversal |
+| `deep-wide` | fan-out과 cycle이 더 큰 12-hop traversal |
 
 Medium fixture `resolveResources` latency:
 
@@ -162,15 +165,39 @@ Medium fixture `resolveResources` latency:
 | `deny-heavy` | 448.263 | 9.450 | **4.310** | PostgreSQL iterative |
 | `wide-groups` | 250.083 | **1.521** | 3.658 | PostgreSQL CTE |
 
-해석: 이 PostgreSQL AGE fixture에서는 AGE/Cypher가 latency에서 이기지 못했습니다. 측정된 authorization-inheritance matrix 전체에서 PostgreSQL recursive CTE와 iterative batched traversal이 더 빨랐습니다. AGE는 variable-depth graph traversal 표현은 더 직접적이지만, 현재 구현과 dataset으로는 속도 기반 GraphDB 도입 주장을 뒷받침하지 못합니다.
+해석: 이 PostgreSQL AGE fixture에서는 AGE/Cypher가 latency에서 이기지 못했습니다. 측정된 authorization-inheritance matrix 전체에서 PostgreSQL recursive CTE와 iterative batched traversal이 더 빨랐습니다. 이 결과는 얕은/중간 규모의 negative baseline이며, 더 강한 GraphDB 도입 판단은 새 adoption task의 `large` 데이터와 10-12 hop path 기준으로 다시 봐야 합니다.
 
 도입 판단 기준: TinkerGraph는 in-memory이므로 이번 GraphDB 도입 판단 benchmark에서만 제외합니다. 기존 TinkerGraph micro/contract benchmark track은 별도 범위로 유지합니다.
+
+Large fixture adoption-scope `resolveResources` latency:
+
+![Authorization inheritance adoption latency](../../docs/images/readme-charts/authz-inheritance-adoption-latency-chart-01.png)
+
+| Scenario | Neo4j Cypher | PostgreSQL CTE | PostgreSQL iterative | Winner |
+|---|---:|---:|---:|---|
+| `long-chain` | **12.731** | 55.364 | 47.568 | Neo4j Cypher |
+| `deep-wide` | 56.467 | **11.596** | 27.836 | PostgreSQL CTE |
+
+실행 조건: macOS arm64, GraalVM JDK 25.0.3, kotlinx-benchmark/JMH 1.37, fork 1회, warmup 없음, 1초 measurement 1회, Testcontainers, 2026-05-28. 모든 latency 값은 `ms/op`이며 낮을수록 좋습니다. 이 결과는 adoption 방향성 probe이며 release-grade benchmark는 아닙니다.
+
+Adoption probe 해석:
+
+- `long-chain`은 속도 기준 GraphDB 신호가 처음 나온 row입니다. Neo4j Cypher가 PostgreSQL iterative보다 3.74배, PostgreSQL recursive CTE보다 4.35배 빠릅니다.
+- `deep-wide`는 여전히 PostgreSQL CTE가 이깁니다. GraphDB 도입 대상은 모든 권한/fraud query가 아니라 길고 선택적인 path-shaped traversal이어야 합니다.
+- AGE/Cypher는 이 로컬 실행에서 `large + long-chain`을 75초 외부 timeout 안에 완료하지 못했습니다.
+- Memgraph는 smoke parity test는 통과했지만, 로컬 `large + long-chain` 실행에서 load 중 Bolt connection이 종료되어 adoption result table에는 포함하지 않았습니다.
 
 결과 산출물:
 
 - [Chart PNG](../../docs/images/readme-charts/authz-inheritance-postgresql-latency-chart-01.png)
 - [Chart SVG](../../docs/images/readme-charts/authz-inheritance-postgresql-latency-chart-01.svg)
+- [Adoption Chart PNG](../../docs/images/readme-charts/authz-inheritance-adoption-latency-chart-01.png)
+- [Adoption Chart SVG](../../docs/images/readme-charts/authz-inheritance-adoption-latency-chart-01.svg)
 - [Raw JMH JSON](../../docs/benchmark/2026-05-28-authz-inheritance-main.json)
+- [Adoption Neo4j JMH JSON](../../docs/benchmark/2026-05-28-authz-inheritance-adoption-neo4j.json)
+- [Adoption PostgreSQL JMH JSON](../../docs/benchmark/2026-05-28-authz-inheritance-adoption-postgres.json)
+- [Adoption AGE timeout log](../../docs/benchmark/2026-05-28-authz-inheritance-adoption-age-timeout.txt)
+- [Adoption Memgraph failure log](../../docs/benchmark/2026-05-28-authz-inheritance-adoption-memgraph-failure.txt)
 - [Markdown result table](../../docs/benchmark/2026-05-28-authz-inheritance-results.md)
 
 ## 최신 Testcontainers 결과

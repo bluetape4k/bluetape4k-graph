@@ -61,7 +61,7 @@ class AgeAuthzInheritanceEngine(
         val denied = linkedSetOf<String>()
         dataSource.connection.use { connection ->
             connection.createStatement().use { statement ->
-                for (depth in 1..loadedFixture.scenario.hopLimit) {
+                for (depth in MIN_AUTHZ_DEPTH..loadedFixture.scenario.hopLimit) {
                     statement.executeQuery(resolveSql(loadedFixture.targetUserId, depth)).use { rs ->
                         while (rs.next()) {
                             val resource = AgeTypeParser.parseVertex(rs.getString("resource"))
@@ -85,12 +85,20 @@ class AgeAuthzInheritanceEngine(
         }
         val resourceAlias = "n$depth"
         val activeFilters = (1..depth).joinToString("\n              AND ") { index -> "e$index.active = true" }
+        val inheritanceEdgeFilters = (1 until depth).joinToString("\n              AND ") { index ->
+            "e$index.kind <> '${AuthzEdgeKind.GRANTS.name}'"
+        }
+        val intermediateNodeFilters = (1 until depth).joinToString("\n              AND ") { index ->
+            "n$index.kind <> '${AuthzNodeKind.RESOURCE.name}'"
+        }
         return AgeSql.cypher(
             graphName,
             """
             MATCH (user:$NODE_LABEL)$chain
             WHERE user.nodeId = '$targetUserId'
               AND $activeFilters
+              AND $inheritanceEdgeFilters
+              AND $intermediateNodeFilters
               AND e$depth.kind = '${AuthzEdgeKind.GRANTS.name}'
               AND $resourceAlias.kind = '${AuthzNodeKind.RESOURCE.name}'
               AND $resourceAlias.publicApi = true
@@ -106,6 +114,7 @@ class AgeAuthzInheritanceEngine(
     }
 
     private companion object {
+        const val MIN_AUTHZ_DEPTH = 3
         const val NODE_LABEL = "AuthzNode"
         const val EDGE_LABEL = "AUTHZ_LINK"
     }
