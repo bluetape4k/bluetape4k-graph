@@ -20,6 +20,7 @@ The work stays inside `benchmark/graph-benchmark` and uses the existing Gradle `
 - No standalone benchmark module unless `graph-benchmark` cannot host the slice.
 - No production AGE managed `DataSource` ownership change.
 - No speed-based GraphDB adoption claim unless measured results support it.
+- No TinkerGraph in this GraphDB adoption benchmark; existing in-memory TinkerGraph API/contract benchmark tracks remain separate.
 
 ## Primary Workload: Authorization Inheritance
 

@@ -68,3 +68,5 @@ This method resolves the same resources and converts correctness to basis points
 AGE/Cypher did not win latency in this PostgreSQL AGE fixture. PostgreSQL recursive CTE and iterative batched traversal were faster across the measured `small` and `medium` authorization-inheritance scenarios. AGE still expresses variable-depth graph traversal more directly, but this result does not support a speed-based GraphDB adoption claim for the current implementation and dataset.
 
 The result should drive the next optimization question: whether AGE can close the gap with better Cypher shape, indexes, or graph-specific modeling, or whether PostgreSQL CTE/iterative traversal is the correct implementation for this workload.
+
+TinkerGraph is excluded only from this GraphDB adoption benchmark because it is in-memory. Existing TinkerGraph API/contract benchmark tracks remain separate and should not be used as persistent database adoption evidence.

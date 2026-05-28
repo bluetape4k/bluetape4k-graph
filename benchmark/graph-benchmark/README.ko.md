@@ -73,6 +73,8 @@ PostgreSQL authorization inheritance smoke와 comparison matrix:
 
 Smoke task는 `sizeName=smoke`, `scenarioName=deep-inheritance`를 실행합니다. Comparison task는 `small`, `medium` dataset을 `shallow`, `deep-inheritance`, `deny-heavy`, `wide-groups` scenario 전체에 대해 실행합니다.
 
+이번 GraphDB 도입 판단용 benchmark에서는 TinkerGraph를 의도적으로 제외합니다. TinkerGraph는 별도 in-memory API/contract benchmark track에는 남지만, persistent database 도입 판단에는 포함하지 않습니다.
+
 PostgreSQL abuser detection smoke와 comparison matrix:
 
 ```bash
@@ -161,6 +163,8 @@ Medium fixture `resolveResources` latency:
 | `wide-groups` | 250.083 | **1.521** | 3.658 | PostgreSQL CTE |
 
 해석: 이 PostgreSQL AGE fixture에서는 AGE/Cypher가 latency에서 이기지 못했습니다. 측정된 authorization-inheritance matrix 전체에서 PostgreSQL recursive CTE와 iterative batched traversal이 더 빨랐습니다. AGE는 variable-depth graph traversal 표현은 더 직접적이지만, 현재 구현과 dataset으로는 속도 기반 GraphDB 도입 주장을 뒷받침하지 못합니다.
+
+도입 판단 기준: TinkerGraph는 in-memory이므로 이번 GraphDB 도입 판단 benchmark에서만 제외합니다. 기존 TinkerGraph micro/contract benchmark track은 별도 범위로 유지합니다.
 
 결과 산출물:
 

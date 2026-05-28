@@ -73,6 +73,8 @@ PostgreSQL authorization inheritance smoke and comparison matrix:
 
 The smoke task runs `sizeName=smoke` and `scenarioName=deep-inheritance`. The comparison task runs `small` and `medium` datasets across `shallow`, `deep-inheritance`, `deny-heavy`, and `wide-groups`.
 
+This GraphDB adoption benchmark intentionally excludes TinkerGraph. TinkerGraph remains in separate in-memory API/contract benchmark tracks, but it is not part of this persistent database adoption decision.
+
 PostgreSQL abuser detection smoke and comparison matrix:
 
 ```bash
@@ -161,6 +163,8 @@ Medium fixture `resolveResources` latency:
 | `wide-groups` | 250.083 | **1.521** | 3.658 | PostgreSQL CTE |
 
 Interpretation: AGE/Cypher did not win latency in this PostgreSQL AGE fixture. PostgreSQL recursive CTE and iterative batched traversal were faster across the measured authorization-inheritance matrix. AGE still expresses variable-depth graph traversal more directly, but this result does not support a speed-based GraphDB adoption claim for the current implementation and dataset.
+
+Adoption-scope note: TinkerGraph is excluded only from this GraphDB adoption benchmark because it is in-memory. Existing TinkerGraph micro/contract benchmark tracks remain separate.
 
 Artifacts:
 

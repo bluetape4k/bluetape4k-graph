@@ -14,6 +14,8 @@ Added authorization inheritance fixtures, oracle, AGE/Cypher engine, PostgreSQL 
 
 Measured authorization inheritance results did not support a speed-based AGE adoption claim. PostgreSQL CTE and iterative traversal were faster across the documented `small` and `medium` matrix; AGE remains an expressiveness candidate, not the latency winner for this fixture.
 
+TinkerGraph is excluded only from this GraphDB adoption benchmark because it is in-memory. Keep existing TinkerGraph API/contract benchmark tracks separate and do not use them as persistent database adoption evidence.
+
 ## Verification
 
 - `./gradlew :graph-benchmark:compileKotlin :graph-benchmark:compileTestKotlin :graph-benchmark:test --tests "io.bluetape4k.graph.benchmark.authz.AuthzInheritanceEngineSmokeTest" --no-build-cache`
@@ -23,3 +25,5 @@ Measured authorization inheritance results did not support a speed-based AGE ado
 ## Future Guard
 
 For graph benchmark comparisons, publish the `kotlinx-benchmark` task, raw JSON path, run conditions, metric direction, scenario/size matrix, chart assets, and explicit interpretation. Do not collapse recursive CTE and iterative traversal into one relational baseline, and do not claim a GraphDB win unless measured results support it.
+
+For GraphDB adoption comparisons, exclude TinkerGraph from the decision table while leaving unrelated in-memory benchmark tracks intact.
