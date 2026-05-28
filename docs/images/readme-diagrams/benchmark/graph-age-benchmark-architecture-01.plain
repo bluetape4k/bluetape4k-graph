@@ -1,0 +1,11 @@
+graph 1 10.206 6.2847
+node n0 5.1031 6.0347 5.9042 0.5 "JMH Runner kotlinx.benchmark warmup + measure JSON report format" rounded,filled box #5B8DEF #E8F3FF
+node n1 5.1031 4.6736 7.8313 0.5 "AGE Benchmarks vertex and edge operations 10k loop vs batch inserts shortestPath and allPaths" rounded,filled box #55B978 #EAF8EF
+node n2 5.1031 3.3125 7.2583 0.5 "AGE Operations AgeGraphOperations single-thread cache wrapper GraphOperations API" rounded,filled box #F3B34C #FFF4DE
+node n3 5.1031 1.9514 7.2688 0.5 "PostgreSQL AGE Testcontainers launcher HikariCP + Exposed JDBC bench_graph fixture" rounded,filled box #E879A6 #FCE9F1
+node n4 5.1031 0.59028 10.206 0.5 "Seeded Fixture Person vertices: Alice, Bob, Charlie, Dave KNOWS chain plus FOLLOWS shortcut 10k generated write batches" rounded,filled box #CBD5E1 #F8FAFC
+edge n0 n1 4 5.1031 5.7787 5.1031 5.7787 5.1031 5.0816 5.1031 5.0816 solid #758297
+edge n1 n2 4 5.1031 4.4176 5.1031 4.4176 5.1031 3.7205 5.1031 3.7205 solid #758297
+edge n2 n3 4 5.1031 3.0565 5.1031 3.0565 5.1031 2.3594 5.1031 2.3594 solid #758297
+edge n3 n4 4 5.1031 1.6954 5.1031 1.6954 5.1031 0.9983 5.1031 0.9983 solid #758297
+stop

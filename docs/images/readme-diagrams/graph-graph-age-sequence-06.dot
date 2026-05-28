@@ -1,0 +1,29 @@
+digraph "graph-graph-age-sequence-06" {
+  graph [rankdir=LR, splines=ortho, nodesep=0.78, ranksep=0.86, bgcolor="transparent"];
+  node [shape=box, style="rounded,filled", fontname="Comic Sans MS", fontsize=12, margin="0.15,0.08"];
+  edge [color="#758297", penwidth=2.0, arrowsize=0.8, fontname="Comic Sans MS", fontsize=10];
+  label="createVertex";
+  a0 [label="User", fillcolor="#F4F7FA", color="#8CA0B8"];
+  a1 [label="AgeGraphOperations", fillcolor="#F4F7FA", color="#8CA0B8"];
+  a2 [label="Dispatchers.IO", fillcolor="#F4F7FA", color="#8CA0B8"];
+  a3 [label="Exposed Transaction", fillcolor="#F4F7FA", color="#8CA0B8"];
+  a4 [label="PostgreSQL AGE", fillcolor="#F4F7FA", color="#8CA0B8"];
+  a5 [label="AgeTypeParser", fillcolor="#F4F7FA", color="#8CA0B8"];
+  a6 [label="GraphVertex", fillcolor="#F4F7FA", color="#8CA0B8"];
+  a0 -> a1 [style="solid"];
+  a1 -> a2 [style="solid"];
+  a2 -> a3 [style="solid"];
+  a3 -> a4 [style="solid"];
+  a4 -> a3 [style="dashed"];
+  a3 -> a4 [style="solid"];
+  a4 -> a3 [style="dashed"];
+  a3 -> a4 [style="solid"];
+  a4 -> a3 [style="dashed"];
+  a3 -> a5 [style="solid"];
+  a5 -> a5 [style="solid"];
+  a5 -> a5 [style="solid"];
+  a5 -> a6 [style="solid"];
+  a6 -> a5 [style="dashed"];
+  a5 -> a1 [style="dashed"];
+  a1 -> a0 [style="dashed"];
+}

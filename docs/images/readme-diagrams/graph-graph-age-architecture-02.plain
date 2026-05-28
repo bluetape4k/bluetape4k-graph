@@ -1,0 +1,21 @@
+graph 1 3.8833 13.09
+node n0 1.9417 12.84 3.8833 0.5 "GraphOperations createVertex, shortestPath" rounded,filled box #5B8DEF #E8F3FF
+node n1 1.9417 11.479 3.2271 0.5 "AgeGraphOperations withContext IO" rounded,filled box #58A978 #EAF7EF
+node n2 1.9417 10.118 1.8729 0.5 "Exposed transaction" rounded,filled box #D6A441 #FFF3D9
+node n3 1.9417 8.7569 2.2896 0.5 "AgeSql Cypher-over-SQL" rounded,filled box #DC6B82 #FDECEF
+node n4 1.9417 7.3958 3.4562 0.5 "SQL SELECT * FROM ag_catalog.cypher" rounded,filled box #45A7A1 #E9F7F6
+node n5 1.9417 6.0347 2.4458 0.5 "PostgreSQL AGE Extension" rounded,filled box #8A72D6 #F1ECFF
+node n6 1.9417 4.6736 2.9667 0.5 "Cypher MATCH RETURN CREATE" rounded,filled box #B88A44 #F7F1E7
+node n7 1.9417 3.3125 1.3729 0.5 "agtype JSON" rounded,filled box #8BA84D #EEF6D9
+node n8 1.9417 1.9514 3.8208 0.5 "AgeTypeParser agtype → GraphVertex/Edge" rounded,filled box #5B8DEF #E8F3FF
+node n9 1.9417 0.59028 3.0812 0.5 "GraphVertex GraphEdge GraphPath" rounded,filled box #58A978 #EAF7EF
+edge n0 n1 4 1.9417 12.584 1.9417 12.584 1.9417 11.887 1.9417 11.887 solid #758297
+edge n1 n2 4 1.9417 11.223 1.9417 11.223 1.9417 10.526 1.9417 10.526 solid #758297
+edge n2 n3 4 1.9417 9.862 1.9417 9.862 1.9417 9.165 1.9417 9.165 solid #758297
+edge n3 n4 4 1.9417 8.5009 1.9417 8.5009 1.9417 7.8039 1.9417 7.8039 solid #758297
+edge n4 n5 4 1.9417 7.1398 1.9417 7.1398 1.9417 6.4427 1.9417 6.4427 solid #758297
+edge n5 n6 4 1.9417 5.7787 1.9417 5.7787 1.9417 5.0816 1.9417 5.0816 solid #758297
+edge n6 n7 4 1.9417 4.4176 1.9417 4.4176 1.9417 3.7205 1.9417 3.7205 solid #758297
+edge n7 n8 4 1.9417 3.0565 1.9417 3.0565 1.9417 2.3594 1.9417 2.3594 solid #758297
+edge n8 n9 4 1.9417 1.6954 1.9417 1.6954 1.9417 0.9983 1.9417 0.9983 solid #758297
+stop

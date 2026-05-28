@@ -1,0 +1,21 @@
+digraph "bluetape4k-graph-architecture-01" {
+  graph [rankdir=TB, splines=ortho, nodesep=0.78, ranksep=0.86, bgcolor="transparent"];
+  node [shape=box, style="rounded,filled", fontname="Comic Sans MS", fontsize=12, margin="0.15,0.08"];
+  edge [color="#758297", penwidth=2.0, arrowsize=0.8, fontname="Comic Sans MS", fontsize=10];
+  label="graph Class Structure 2";
+  n0 [label="GraphSchemaManager", fillcolor="#E8F3FF", color="#5B8DEF"];
+  n1 [label="GraphSuspendOperations +createVertex(label, properties)", fillcolor="#EAF7EF", color="#58A978"];
+  n2 [label="GraphOperations +createVertex(label, properties)", fillcolor="#FFF3D9", color="#D6A441"];
+  n3 [label="GraphMergeOperations", fillcolor="#FDECEF", color="#DC6B82"];
+  n4 [label="Graph Transaction Operations", fillcolor="#E9F7F6", color="#45A7A1"];
+  n5 [label="Neo4jGraphOperations", fillcolor="#F1ECFF", color="#8A72D6"];
+  n6 [label="Falkor DBGraph Operations", fillcolor="#F4F7FA", color="#8CA0B8"];
+  n7 [label="AgeGraphOperations", fillcolor="#FFF0E4", color="#D98A4A"];
+  n8 [label="Memgraph Graph Operations", fillcolor="#E8F3FF", color="#5B8DEF"];
+  n9 [label="TinkerGraphOperations", fillcolor="#EAF7EF", color="#58A978"];
+  n5 -> n3 [style="solid"];
+  n0 -> n4 [style="solid"];
+  n5 -> n0 [style="solid"];
+  n2 -> n4 [style="solid"];
+  n7 -> n2 [style="solid"];
+}

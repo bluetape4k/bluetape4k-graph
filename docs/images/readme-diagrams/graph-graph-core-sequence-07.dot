@@ -1,0 +1,21 @@
+digraph "graph-graph-core-sequence-07" {
+  graph [rankdir=LR, splines=ortho, nodesep=0.78, ranksep=0.86, bgcolor="transparent"];
+  node [shape=box, style="rounded,filled", fontname="Comic Sans MS", fontsize=12, margin="0.15,0.08"];
+  edge [color="#758297", penwidth=2.0, arrowsize=0.8, fontname="Comic Sans MS", fontsize=10];
+  label="shortestPath";
+  a0 [label="User", fillcolor="#F4F7FA", color="#8CA0B8"];
+  a1 [label="GraphOperations", fillcolor="#F4F7FA", color="#8CA0B8"];
+  a2 [label="Path Algorithm", fillcolor="#F4F7FA", color="#8CA0B8"];
+  a3 [label="Backend Driver", fillcolor="#F4F7FA", color="#8CA0B8"];
+  a4 [label="Database", fillcolor="#F4F7FA", color="#8CA0B8"];
+  a0 -> a1 [style="solid"];
+  a1 -> a2 [style="solid"];
+  a2 -> a1 [style="dashed"];
+  a2 -> a3 [style="solid"];
+  a3 -> a4 [style="solid"];
+  a4 -> a3 [style="dashed"];
+  a3 -> a2 [style="solid"];
+  a2 -> a2 [style="solid"];
+  a2 -> a1 [style="dashed"];
+  a1 -> a0 [style="dashed"];
+}

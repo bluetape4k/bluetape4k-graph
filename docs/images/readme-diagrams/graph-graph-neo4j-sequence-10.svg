@@ -1,93 +1,88 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="2968" height="1826" viewBox="0 0 2968 1826" role="img" aria-label="Publisher → Coroutine">
+<svg xmlns="http://www.w3.org/2000/svg" width="2570" height="1298" viewBox="0 0 2570 1298" role="img" aria-label="Publisher → Coroutine">
 <defs>
-  <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="8" stdDeviation="9" flood-color="#1f2937" flood-opacity="0.10"/></filter>
-  <marker id="openArrow" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M 1 1 L 10 5 L 1 9" fill="none" stroke="#758297" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker>
-  <marker id="inherit" markerWidth="14" markerHeight="12" refX="12" refY="6" orient="auto" markerUnits="strokeWidth"><path d="M 0 1 L 12 6 L 0 11 Z" fill="#ffffff" stroke="#758297" stroke-width="1.8"/></marker>
+  <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="7" stdDeviation="8" flood-color="#1f2937" flood-opacity="0.10"/></filter>
+  <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth"><path d="M1,1 L8,4.5 L1,8 Z" fill="#758297"/></marker>
   <style>
     .canvas{fill:#f7f9fc}.frame{fill:#fff;stroke:#d8e0ea;stroke-width:1.5}
-    .title{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:43px;font-weight:400;fill:#102033}
-    .subtitle{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:15px;font-weight:400;fill:#536273}
-    .label{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:25px;font-weight:400;fill:#102033}
-    .smallLabel{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:21px;font-weight:400;fill:#102033}
-    .mono{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:12px;font-weight:400;fill:#102033}
+    .title{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:40px;font-weight:400;fill:#102033}
+    .subtitle{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:14px;font-weight:400;fill:#536273}
+    .label{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:21px;font-weight:400;fill:#102033}
     .small{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:12px;font-weight:400;fill:#536273}
     .strong{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:13px;font-weight:400;fill:#102033}
-    .card{stroke-width:2.1;filter:url(#shadow)}.compartment{stroke-width:1.5;fill:none}
-    .line{stroke:#758297;stroke-width:2.1;fill:none;marker-end:url(#openArrow)}
-    .plainLine{stroke:#758297;stroke-width:2.1;fill:none}
-    .dashed{stroke:#758297;stroke-width:2.1;stroke-dasharray:7 6;fill:none;marker-end:url(#openArrow)}
-    .inheritLine{stroke:#758297;stroke-width:2.2;fill:none;marker-end:url(#inherit)}
-    .implLine{stroke:#758297;stroke-width:2.2;stroke-dasharray:8 7;fill:none;marker-end:url(#inherit)}
+    .card{stroke-width:2.0;filter:url(#shadow)}
+    .line{stroke:#758297;stroke-width:2.1;fill:none;marker-end:url(#arrow)}
+    .dashed{stroke:#758297;stroke-width:2.1;stroke-dasharray:7 6;fill:none;marker-end:url(#arrow)}
+    .lifeline{stroke:#b7c2d1;stroke-width:1.8;stroke-dasharray:9 9}
   </style>
 </defs>
-<rect class="canvas" width="2968" height="1826"/>
-<rect class="frame" x="32" y="28" width="2904" height="1770" rx="28"/>
-<text class="title" x="66" y="82">Publisher → Coroutine</text>
-<text class="subtitle" x="70" y="118">Sequence messages from the original Mermaid source</text>
-<rect class="card" x="-10" y="166" width="300" height="72" rx="20" fill="#E8F3FF" stroke="#5B8DEF"/>
-<text class="smallLabel" x="140" y="209" text-anchor="middle">Application</text>
-<line class="lifeline" x1="140" y1="252" x2="140" y2="1766" stroke="#b7c2d1" stroke-width="2" stroke-dasharray="10 10"/>
-<rect class="card" x="374" y="166" width="300" height="72" rx="20" fill="#EAF7EF" stroke="#58A978"/>
-<text class="smallLabel" x="524" y="198.5" text-anchor="middle">ReactiveSession</text>
-<text class="smallLabel" x="524" y="219.5" text-anchor="middle">run()</text>
-<line class="lifeline" x1="524" y1="252" x2="524" y2="1766" stroke="#b7c2d1" stroke-width="2" stroke-dasharray="10 10"/>
-<rect class="card" x="758" y="166" width="300" height="72" rx="20" fill="#FFF3D9" stroke="#D6A441"/>
-<text class="smallLabel" x="908" y="198.5" text-anchor="middle">Publisher~Record~</text>
-<text class="smallLabel" x="908" y="219.5" text-anchor="middle">(Neo4j)</text>
-<line class="lifeline" x1="908" y1="252" x2="908" y2="1766" stroke="#b7c2d1" stroke-width="2" stroke-dasharray="10 10"/>
-<rect class="card" x="1142" y="166" width="300" height="72" rx="20" fill="#FDECEF" stroke="#DC6B82"/>
-<text class="smallLabel" x="1292" y="198.5" text-anchor="middle">Flow Collector</text>
-<text class="smallLabel" x="1292" y="219.5" text-anchor="middle">(kotlinx-coroutines</text>
-<line class="lifeline" x1="1292" y1="252" x2="1292" y2="1766" stroke="#b7c2d1" stroke-width="2" stroke-dasharray="10 10"/>
-<rect class="card" x="1526" y="166" width="300" height="72" rx="20" fill="#E9F7F6" stroke="#45A7A1"/>
-<text class="smallLabel" x="1676" y="209" text-anchor="middle">toList() Buffer</text>
-<line class="lifeline" x1="1676" y1="252" x2="1676" y2="1766" stroke="#b7c2d1" stroke-width="2" stroke-dasharray="10 10"/>
-<rect class="card" x="1910" y="166" width="300" height="72" rx="20" fill="#F1ECFF" stroke="#8A72D6"/>
-<text class="smallLabel" x="2060" y="209" text-anchor="middle">Coroutine Result</text>
-<line class="lifeline" x1="2060" y1="252" x2="2060" y2="1766" stroke="#b7c2d1" stroke-width="2" stroke-dasharray="10 10"/>
-<rect class="card" x="2294" y="166" width="300" height="72" rx="20" fill="#F7F1E7" stroke="#B88A44"/>
-<text class="smallLabel" x="2444" y="209" text-anchor="middle">-Collector</text>
-<line class="lifeline" x1="2444" y1="252" x2="2444" y2="1766" stroke="#b7c2d1" stroke-width="2" stroke-dasharray="10 10"/>
-<rect class="card" x="2678" y="166" width="300" height="72" rx="20" fill="#EEF6D9" stroke="#8BA84D"/>
-<text class="smallLabel" x="2828" y="209" text-anchor="middle">-Publisher</text>
-<line class="lifeline" x1="2828" y1="252" x2="2828" y2="1766" stroke="#b7c2d1" stroke-width="2" stroke-dasharray="10 10"/>
-<rect x="611" y="286" width="210" height="40" rx="12" fill="#ffffff" opacity="0.97"/>
-<text class="strong" x="629" y="313" text-anchor="start">1. (Reactive Streams)</text>
-<path class="line" d="M524 344 L908 344"/>
-<rect x="995" y="396" width="210" height="40" rx="12" fill="#ffffff" opacity="0.97"/>
-<text class="strong" x="1013" y="423" text-anchor="start">2. onNext(record1)</text>
-<path class="line" d="M908 454 L1292 454"/>
-<rect x="1379" y="506" width="210" height="40" rx="12" fill="#ffffff" opacity="0.97"/>
-<text class="strong" x="1397" y="533" text-anchor="start">3. add(record1)</text>
-<path class="line" d="M1292 564 L1676 564"/>
-<rect x="1955" y="616" width="210" height="40" rx="12" fill="#ffffff" opacity="0.97"/>
-<text class="strong" x="1973" y="643" text-anchor="start">4. ok</text>
-<path class="dashed" d="M1676 674 L2444 674"/>
-<rect x="1955" y="726" width="210" height="40" rx="12" fill="#ffffff" opacity="0.97"/>
-<text class="strong" x="1973" y="753" text-anchor="start">5. request more</text>
-<path class="dashed" d="M1292 784 L2828 784"/>
-<rect x="995" y="836" width="210" height="40" rx="12" fill="#ffffff" opacity="0.97"/>
-<text class="strong" x="1013" y="863" text-anchor="start">6. onNext(record2)</text>
-<path class="line" d="M908 894 L1292 894"/>
-<rect x="1379" y="946" width="210" height="40" rx="12" fill="#ffffff" opacity="0.97"/>
-<text class="strong" x="1397" y="973" text-anchor="start">7. add(record2)</text>
-<path class="line" d="M1292 1004 L1676 1004"/>
-<rect x="1955" y="1056" width="210" height="40" rx="12" fill="#ffffff" opacity="0.97"/>
-<text class="strong" x="1973" y="1083" text-anchor="start">8. ok</text>
-<path class="dashed" d="M1676 1114 L2444 1114"/>
-<rect x="1955" y="1166" width="210" height="40" rx="12" fill="#ffffff" opacity="0.97"/>
-<text class="strong" x="1973" y="1193" text-anchor="start">9. request more</text>
-<path class="dashed" d="M1292 1224 L2828 1224"/>
-<rect x="995" y="1276" width="210" height="40" rx="12" fill="#ffffff" opacity="0.97"/>
-<text class="strong" x="1013" y="1303" text-anchor="start">10. onComplete()</text>
-<path class="line" d="M908 1334 L1292 1334"/>
-<rect x="1571" y="1386" width="210" height="40" rx="12" fill="#ffffff" opacity="0.97"/>
-<text class="strong" x="1589" y="1413" text-anchor="start">11. Collector to App2</text>
-<path class="line" d="M1292 1444 L2060 1444"/>
-<rect x="2003" y="1496" width="210" height="40" rx="12" fill="#ffffff" opacity="0.97"/>
-<text class="strong" x="2021" y="1523" text-anchor="start">12. suspend</text>
-<path class="line" d="M2060 1554 C2124 1554 2124 1588 2060 1588"/>
-<rect x="2003" y="1626" width="210" height="40" rx="12" fill="#ffffff" opacity="0.97"/>
-<text class="strong" x="2021" y="1653" text-anchor="start">13. List~Record~</text>
-<path class="line" d="M2060 1684 C2124 1684 2124 1718 2060 1718"/>
+<rect class="canvas" width="2570" height="1298"/>
+<rect class="frame" x="44" y="30" width="2482" height="1238" rx="28"/>
+<text class="title" x="76" y="84">Publisher → Coroutine</text>
+<text class="subtitle" x="80" y="116">Graphviz actor layout with compact message lanes and wider outer margins</text>
+<rect class="card" x="120.0" y="156" width="230" height="58" rx="16" fill="#E8F3FF" stroke="#5B8DEF"/>
+<text class="label" x="235.0" y="185.0" text-anchor="middle">Application</text>
+<line class="lifeline" x1="235.0" y1="230" x2="235.0" y2="1232"/>
+<rect class="card" x="420.0" y="156" width="230" height="58" rx="16" fill="#EAF7EF" stroke="#58A978"/>
+<text class="label" x="535.0" y="175.0" text-anchor="middle">ReactiveSession</text>
+<text class="label" x="535.0" y="195.0" text-anchor="middle">run()</text>
+<line class="lifeline" x1="535.0" y1="230" x2="535.0" y2="1232"/>
+<rect class="card" x="720.0" y="156" width="230" height="58" rx="16" fill="#FFF3D9" stroke="#D6A441"/>
+<text class="label" x="835.0" y="175.0" text-anchor="middle">Publisher~Record~</text>
+<text class="label" x="835.0" y="195.0" text-anchor="middle">(Neo4j)</text>
+<line class="lifeline" x1="835.0" y1="230" x2="835.0" y2="1232"/>
+<rect class="card" x="1020.0" y="156" width="230" height="58" rx="16" fill="#FDECEF" stroke="#DC6B82"/>
+<text class="label" x="1135.0" y="175.0" text-anchor="middle">Flow Collector</text>
+<text class="label" x="1135.0" y="195.0" text-anchor="middle">(kotlinx-coroutines</text>
+<line class="lifeline" x1="1135.0" y1="230" x2="1135.0" y2="1232"/>
+<rect class="card" x="1320.0" y="156" width="230" height="58" rx="16" fill="#E9F7F6" stroke="#45A7A1"/>
+<text class="label" x="1435.0" y="185.0" text-anchor="middle">toList() Buffer</text>
+<line class="lifeline" x1="1435.0" y1="230" x2="1435.0" y2="1232"/>
+<rect class="card" x="1620.0" y="156" width="230" height="58" rx="16" fill="#F1ECFF" stroke="#8A72D6"/>
+<text class="label" x="1735.0" y="185.0" text-anchor="middle">Coroutine Result</text>
+<line class="lifeline" x1="1735.0" y1="230" x2="1735.0" y2="1232"/>
+<rect class="card" x="1920.0" y="156" width="230" height="58" rx="16" fill="#F4F7FA" stroke="#8CA0B8"/>
+<text class="label" x="2035.0" y="185.0" text-anchor="middle">-Publisher</text>
+<line class="lifeline" x1="2035.0" y1="230" x2="2035.0" y2="1232"/>
+<rect class="card" x="2220.0" y="156" width="230" height="58" rx="16" fill="#FFF0E4" stroke="#D98A4A"/>
+<text class="label" x="2335.0" y="185.0" text-anchor="middle">-Collector</text>
+<line class="lifeline" x1="2335.0" y1="230" x2="2335.0" y2="1232"/>
+<rect x="610.0" y="232.0" width="150.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="620.0" y="252.0">1. (Reactive Streams)</text>
+<path class="line" d="M535.0 262.0 L835.0 262.0"/>
+<rect x="910.0" y="308.0" width="150.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="920.0" y="328.0">2. onNext(record1)</text>
+<path class="line" d="M835.0 338.0 L1135.0 338.0"/>
+<rect x="1210.0" y="384.0" width="150.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="1220.0" y="404.0">3. add(record1)</text>
+<path class="line" d="M1135.0 414.0 L1435.0 414.0"/>
+<rect x="1810.0" y="460.0" width="150.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="1820.0" y="480.0">4. ok</text>
+<path class="dashed" d="M1435.0 490.0 L2335.0 490.0"/>
+<rect x="1510.0" y="536.0" width="150.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="1520.0" y="556.0">5. request more</text>
+<path class="dashed" d="M1135.0 566.0 L2035.0 566.0"/>
+<rect x="910.0" y="612.0" width="150.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="920.0" y="632.0">6. onNext(record2)</text>
+<path class="line" d="M835.0 642.0 L1135.0 642.0"/>
+<rect x="1210.0" y="688.0" width="150.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="1220.0" y="708.0">7. add(record2)</text>
+<path class="line" d="M1135.0 718.0 L1435.0 718.0"/>
+<rect x="1810.0" y="764.0" width="150.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="1820.0" y="784.0">8. ok</text>
+<path class="dashed" d="M1435.0 794.0 L2335.0 794.0"/>
+<rect x="1510.0" y="840.0" width="150.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="1520.0" y="860.0">9. request more</text>
+<path class="dashed" d="M1135.0 870.0 L2035.0 870.0"/>
+<rect x="910.0" y="916.0" width="150.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="920.0" y="936.0">10. onComplete()</text>
+<path class="line" d="M835.0 946.0 L1135.0 946.0"/>
+<rect x="1360.0" y="992.0" width="150.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="1370.0" y="1012.0">11. Collector to App2</text>
+<path class="line" d="M1135.0 1022.0 L1735.0 1022.0"/>
+<rect x="1746.0" y="1068.0" width="-22.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="1756.0" y="1088.0">12. suspend</text>
+<path class="line" d="M1735.0 1098.0 L1735.0 1098.0"/>
+<rect x="1746.0" y="1144.0" width="-22.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="1756.0" y="1164.0">13. List~Record~</text>
+<path class="line" d="M1735.0 1174.0 L1735.0 1174.0"/>
 </svg>
