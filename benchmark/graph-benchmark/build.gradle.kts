@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.kotlinx.benchmark)
     kotlin("plugin.allopen")
+    kotlin("plugin.jpa")
 }
 
 allOpen {
@@ -65,6 +66,28 @@ benchmark {
             iterationTimeUnit = "s"
             reportFormat = "json"
         }
+        register("abuserDetectionSmoke") {
+            include(".*AbuserDetectionBenchmark.*")
+            param("backend", "age", "exposed", "jpa")
+            param("sizeName", "smoke")
+            param("scenarioName", "shared")
+            warmups = 1
+            iterations = 1
+            iterationTime = 1
+            iterationTimeUnit = "s"
+            reportFormat = "json"
+        }
+        register("abuserDetection") {
+            include(".*AbuserDetectionBenchmark.*")
+            param("backend", "age", "exposed", "jpa")
+            param("sizeName", "small", "medium")
+            param("scenarioName", "shared", "transfer", "noisy-dense", "wide-fanout")
+            warmups = 2
+            iterations = 3
+            iterationTime = 2
+            iterationTimeUnit = "s"
+            reportFormat = "json"
+        }
     }
 }
 
@@ -98,6 +121,8 @@ dependencies {
     implementation(libs.exposed.core)
     implementation(libs.exposed.jdbc)
     implementation(libs.hikaricp)
+    implementation(libs.jakarta.persistence.api)
+    implementation("org.hibernate.orm:hibernate-core")
     implementation(libs.jfalkordb)
     implementation(libs.neo4j.java.driver)
     implementation(libs.postgresql.driver)

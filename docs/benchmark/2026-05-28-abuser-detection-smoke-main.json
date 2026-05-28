@@ -1,0 +1,364 @@
+[
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "io.bluetape4k.graph.benchmark.AbuserDetectionBenchmark.detectCandidates",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/Library/Java/JavaVirtualMachines/graalvm-jdk-21/Contents/Home/bin/java",
+        "jvmArgs" : [
+            "-XX:ThreadPriorityPolicy=1",
+            "-XX:+UnlockExperimentalVMOptions",
+            "-XX:+EnableJVMCIProduct",
+            "-XX:-UnlockExperimentalVMOptions",
+            "-Dfile.encoding=UTF-8",
+            "-Duser.country=KR",
+            "-Duser.language=ko",
+            "-Duser.variant"
+        ],
+        "jdkVersion" : "21.0.11",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "21.0.11+9-LTS-jvmci-23.1-b92",
+        "warmupIterations" : 1,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "backend" : "age",
+            "scenarioName" : "shared",
+            "sizeName" : "smoke"
+        },
+        "primaryMetric" : {
+            "score" : 13.002217532467533,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 13.002217532467533,
+                "50.0" : 13.002217532467533,
+                "90.0" : 13.002217532467533,
+                "95.0" : 13.002217532467533,
+                "99.0" : 13.002217532467533,
+                "99.9" : 13.002217532467533,
+                "99.99" : 13.002217532467533,
+                "99.999" : 13.002217532467533,
+                "99.9999" : 13.002217532467533,
+                "100.0" : 13.002217532467533
+            },
+            "scoreUnit" : "ms/op",
+            "rawData" : [
+                [
+                    13.002217532467533
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "io.bluetape4k.graph.benchmark.AbuserDetectionBenchmark.detectCandidates",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/Library/Java/JavaVirtualMachines/graalvm-jdk-21/Contents/Home/bin/java",
+        "jvmArgs" : [
+            "-XX:ThreadPriorityPolicy=1",
+            "-XX:+UnlockExperimentalVMOptions",
+            "-XX:+EnableJVMCIProduct",
+            "-XX:-UnlockExperimentalVMOptions",
+            "-Dfile.encoding=UTF-8",
+            "-Duser.country=KR",
+            "-Duser.language=ko",
+            "-Duser.variant"
+        ],
+        "jdkVersion" : "21.0.11",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "21.0.11+9-LTS-jvmci-23.1-b92",
+        "warmupIterations" : 1,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "backend" : "exposed",
+            "scenarioName" : "shared",
+            "sizeName" : "smoke"
+        },
+        "primaryMetric" : {
+            "score" : 0.19939346236345581,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 0.19939346236345581,
+                "50.0" : 0.19939346236345581,
+                "90.0" : 0.19939346236345581,
+                "95.0" : 0.19939346236345581,
+                "99.0" : 0.19939346236345581,
+                "99.9" : 0.19939346236345581,
+                "99.99" : 0.19939346236345581,
+                "99.999" : 0.19939346236345581,
+                "99.9999" : 0.19939346236345581,
+                "100.0" : 0.19939346236345581
+            },
+            "scoreUnit" : "ms/op",
+            "rawData" : [
+                [
+                    0.19939346236345581
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "io.bluetape4k.graph.benchmark.AbuserDetectionBenchmark.detectCandidates",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/Library/Java/JavaVirtualMachines/graalvm-jdk-21/Contents/Home/bin/java",
+        "jvmArgs" : [
+            "-XX:ThreadPriorityPolicy=1",
+            "-XX:+UnlockExperimentalVMOptions",
+            "-XX:+EnableJVMCIProduct",
+            "-XX:-UnlockExperimentalVMOptions",
+            "-Dfile.encoding=UTF-8",
+            "-Duser.country=KR",
+            "-Duser.language=ko",
+            "-Duser.variant"
+        ],
+        "jdkVersion" : "21.0.11",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "21.0.11+9-LTS-jvmci-23.1-b92",
+        "warmupIterations" : 1,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "backend" : "jpa",
+            "scenarioName" : "shared",
+            "sizeName" : "smoke"
+        },
+        "primaryMetric" : {
+            "score" : 0.21044348632730334,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 0.21044348632730334,
+                "50.0" : 0.21044348632730334,
+                "90.0" : 0.21044348632730334,
+                "95.0" : 0.21044348632730334,
+                "99.0" : 0.21044348632730334,
+                "99.9" : 0.21044348632730334,
+                "99.99" : 0.21044348632730334,
+                "99.999" : 0.21044348632730334,
+                "99.9999" : 0.21044348632730334,
+                "100.0" : 0.21044348632730334
+            },
+            "scoreUnit" : "ms/op",
+            "rawData" : [
+                [
+                    0.21044348632730334
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "io.bluetape4k.graph.benchmark.AbuserDetectionBenchmark.detectF1BasisPoints",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/Library/Java/JavaVirtualMachines/graalvm-jdk-21/Contents/Home/bin/java",
+        "jvmArgs" : [
+            "-XX:ThreadPriorityPolicy=1",
+            "-XX:+UnlockExperimentalVMOptions",
+            "-XX:+EnableJVMCIProduct",
+            "-XX:-UnlockExperimentalVMOptions",
+            "-Dfile.encoding=UTF-8",
+            "-Duser.country=KR",
+            "-Duser.language=ko",
+            "-Duser.variant"
+        ],
+        "jdkVersion" : "21.0.11",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "21.0.11+9-LTS-jvmci-23.1-b92",
+        "warmupIterations" : 1,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "backend" : "age",
+            "scenarioName" : "shared",
+            "sizeName" : "smoke"
+        },
+        "primaryMetric" : {
+            "score" : 11.533336206896552,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 11.533336206896552,
+                "50.0" : 11.533336206896552,
+                "90.0" : 11.533336206896552,
+                "95.0" : 11.533336206896552,
+                "99.0" : 11.533336206896552,
+                "99.9" : 11.533336206896552,
+                "99.99" : 11.533336206896552,
+                "99.999" : 11.533336206896552,
+                "99.9999" : 11.533336206896552,
+                "100.0" : 11.533336206896552
+            },
+            "scoreUnit" : "ms/op",
+            "rawData" : [
+                [
+                    11.533336206896552
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "io.bluetape4k.graph.benchmark.AbuserDetectionBenchmark.detectF1BasisPoints",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/Library/Java/JavaVirtualMachines/graalvm-jdk-21/Contents/Home/bin/java",
+        "jvmArgs" : [
+            "-XX:ThreadPriorityPolicy=1",
+            "-XX:+UnlockExperimentalVMOptions",
+            "-XX:+EnableJVMCIProduct",
+            "-XX:-UnlockExperimentalVMOptions",
+            "-Dfile.encoding=UTF-8",
+            "-Duser.country=KR",
+            "-Duser.language=ko",
+            "-Duser.variant"
+        ],
+        "jdkVersion" : "21.0.11",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "21.0.11+9-LTS-jvmci-23.1-b92",
+        "warmupIterations" : 1,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "backend" : "exposed",
+            "scenarioName" : "shared",
+            "sizeName" : "smoke"
+        },
+        "primaryMetric" : {
+            "score" : 0.19719628389248578,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 0.19719628389248578,
+                "50.0" : 0.19719628389248578,
+                "90.0" : 0.19719628389248578,
+                "95.0" : 0.19719628389248578,
+                "99.0" : 0.19719628389248578,
+                "99.9" : 0.19719628389248578,
+                "99.99" : 0.19719628389248578,
+                "99.999" : 0.19719628389248578,
+                "99.9999" : 0.19719628389248578,
+                "100.0" : 0.19719628389248578
+            },
+            "scoreUnit" : "ms/op",
+            "rawData" : [
+                [
+                    0.19719628389248578
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "io.bluetape4k.graph.benchmark.AbuserDetectionBenchmark.detectF1BasisPoints",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/Library/Java/JavaVirtualMachines/graalvm-jdk-21/Contents/Home/bin/java",
+        "jvmArgs" : [
+            "-XX:ThreadPriorityPolicy=1",
+            "-XX:+UnlockExperimentalVMOptions",
+            "-XX:+EnableJVMCIProduct",
+            "-XX:-UnlockExperimentalVMOptions",
+            "-Dfile.encoding=UTF-8",
+            "-Duser.country=KR",
+            "-Duser.language=ko",
+            "-Duser.variant"
+        ],
+        "jdkVersion" : "21.0.11",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "21.0.11+9-LTS-jvmci-23.1-b92",
+        "warmupIterations" : 1,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "backend" : "jpa",
+            "scenarioName" : "shared",
+            "sizeName" : "smoke"
+        },
+        "primaryMetric" : {
+            "score" : 0.2018698764315853,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 0.2018698764315853,
+                "50.0" : 0.2018698764315853,
+                "90.0" : 0.2018698764315853,
+                "95.0" : 0.2018698764315853,
+                "99.0" : 0.2018698764315853,
+                "99.9" : 0.2018698764315853,
+                "99.99" : 0.2018698764315853,
+                "99.999" : 0.2018698764315853,
+                "99.9999" : 0.2018698764315853,
+                "100.0" : 0.2018698764315853
+            },
+            "scoreUnit" : "ms/op",
+            "rawData" : [
+                [
+                    0.2018698764315853
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    }
+]
+
+

@@ -2,7 +2,7 @@
 
 [English](README.md) | [한국어](README.ko.md)
 
-그래프 성능 비교를 위한 kotlinx-benchmark 모듈입니다. 현재 일곱 가지 측정 축을 포함합니다.
+그래프 성능 비교를 위한 kotlinx-benchmark 모듈입니다. 현재 여덟 가지 측정 축을 포함합니다.
 
 - 기존 TinkerGraph Sync vs Virtual Thread 그래프 연산.
 - 동일한 TinkerGraph fixture에서 Sync, Virtual Thread, Coroutine API model 비교.
@@ -10,6 +10,7 @@
 - social, IAM, fraud, code graph query를 반영한 domain-shaped workload 비교.
 - 공통 `GraphOperations` 계약을 통한 sustained graph write와 batch ingestion 비교.
 - 동시성 10, 100, 1,000 단위의 production-shaped API model 비교.
+- AGE + Exposed, Exposed JDBC, JPA/Hibernate의 PostgreSQL abuser detection 비교.
 - 동일한 TinkerGraph 생성 데이터셋을 사용하는 graph-io 포맷 비교.
 
 ## Architecture
@@ -21,6 +22,7 @@
 - `GraphDbComparisonBenchmark`: `tinkergraph`, `neo4j`, `memgraph`, `age`, `falkordb` backend.
 - `GraphDomainWorkloadBenchmark`: `tinkergraph`, `neo4j`, `memgraph`의 social high fan-out, IAM reachability, fraud path, code dependency workload.
 - `GraphWriteIngestionBenchmark`: 동일 backend matrix에서 vertex-only, edge-only, mixed, repeated mixed write batch.
+- `AbuserDetectionBenchmark`: 하나의 deterministic account-signal fixture를 사용하는 PostgreSQL `age`, `exposed`, `jpa` abuser-detection backend.
 - `GraphIoComparisonBenchmark`: `csv`, `jackson2`, `jackson3`, `graphml`, `okio-jackson3`, `okio-graphml`.
 - `ApiModelBenchmark`: 동일한 in-memory TinkerGraph fixture에서 sync, virtual-thread, coroutine API overhead.
 - 기존 operation benchmark: batch insert, shortest path, neighbors, traversal, algorithm, vertex operations.
@@ -59,6 +61,15 @@ Docker-free API model production matrix:
 ```bash
 ./gradlew :graph-benchmark:mainApiModelProductionBenchmark
 ```
+
+PostgreSQL abuser detection smoke와 comparison matrix:
+
+```bash
+./gradlew :graph-benchmark:abuserDetectionSmokeBenchmark
+./gradlew :graph-benchmark:abuserDetectionBenchmark
+```
+
+Smoke task는 `sizeName=smoke`, `scenarioName=shared`를 실행합니다. Comparison task는 `small`, `medium` dataset을 `shared`, `transfer`, `noisy-dense`, `wide-fanout` scenario 전체에 대해 실행합니다. Account 수와 검사 edge 수가 커질 때 latency가 어떻게 변하는지가 핵심 질문이면 로컬 stress run용 `large` fixture도 사용할 수 있습니다.
 
 ## 최신 API Model 결과
 
@@ -113,6 +124,31 @@ BFS와 launch/create 행은 `us/op`이며 낮을수록 좋습니다.
 - [Chart PNG](../../docs/images/readme-charts/graph-api-model-production-chart-01.png)
 - [Chart SVG](../../docs/images/readme-charts/graph-api-model-production-chart-01.svg)
 - [Raw JMH JSON](../../docs/benchmark/api-model-production-gradle-2026-05-21.json)
+
+## 최신 Abuser Detection 결과
+
+실행 조건: macOS arm64, GraalVM JDK 25.0.3, kotlinx-benchmark/JMH 1.37, fork 1회, warmup 1회, 1초 measurement 1회, PostgreSQL AGE Testcontainer, 120 account `smoke` fixture, `shared` scenario, 2026-05-28. 모든 latency 값은 `ms/op`이며 낮을수록 좋습니다. Benchmark 전에 smoke test로 AGE + Exposed, Exposed JDBC, JPA/Hibernate 모두 precision `1.0`, recall `1.0`, F1 `1.0`을 확인했습니다.
+
+Scenario matrix:
+
+| Scenario | Shape |
+|---|---|
+| `shared` | shared device/IP/payment 중심 signal graph |
+| `transfer` | 더 깊은 transfer-chain 중심 signal graph |
+| `noisy-dense` | 높은 background edge volume과 더 조밀한 검사량 |
+| `wide-fanout` | known abusive account당 많은 direct suspicious neighbor |
+
+| Benchmark | AGE + Exposed | Exposed JDBC | JPA/Hibernate |
+|---|---:|---:|---:|
+| `detectCandidates` | 13.002 | **0.199** | 0.210 |
+| `detectF1BasisPoints` | 11.533 | **0.197** | 0.202 |
+
+해석: 이 smoke run은 계약과 benchmark 실행 표면 검증용입니다. AGE는 현재 graph abstraction과 traversal 비용을 부담하고, relational baseline 둘은 공통 recursive SQL query를 직접 실행합니다. Release-grade 순위 주장에는 `small`, `medium` scenario matrix 재측정이 필요합니다.
+
+결과 산출물:
+
+- [Raw JMH JSON](../../docs/benchmark/2026-05-28-abuser-detection-smoke-main.json)
+- [Markdown result table](../../docs/benchmark/2026-05-28-abuser-detection-smoke-results.md)
 
 ## 최신 Testcontainers 결과
 
