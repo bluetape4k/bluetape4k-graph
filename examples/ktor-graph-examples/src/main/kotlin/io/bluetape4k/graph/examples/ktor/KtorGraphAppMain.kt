@@ -8,6 +8,8 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
+import io.bluetape4k.ktor.core.Bluetape4kKtorCoreConfig
+import io.bluetape4k.ktor.core.installBluetape4kKtorCore
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.info
 import io.ktor.server.application.Application
@@ -26,7 +28,7 @@ import kotlinx.coroutines.flow.toList
  * ## 동작/계약
  * - 환경 변수 `PORT`로 listen port를 지정하고, 미설정 시 8080을 사용합니다.
  * - 외부 graph database 없이 in-memory TinkerGraph backend를 사용합니다.
- * - `/demo/reset`, `/cities/count`, `/cities/path`, `/health` route로 plugin 사용법을 보여줍니다.
+ * - `/demo/reset`, `/cities/count`, `/cities/path`, `/health`, `/readyz` route로 plugin 사용법을 보여줍니다.
  */
 object KtorGraphAppMain: KLogging() {
     const val ENV_PORT: String = "PORT"
@@ -54,6 +56,7 @@ object KtorGraphAppMain: KLogging() {
  * - route handler는 `call.graphOperations()` / `call.graphSuspendOperations()`로 facade를 조회합니다.
  */
 fun Application.module() {
+    installGraphExampleKtorCore()
     install(GraphPlugin) {
         tinkerGraph()
     }
@@ -61,6 +64,15 @@ fun Application.module() {
     routing {
         graphDemoRoutes()
     }
+}
+
+internal fun Application.installGraphExampleKtorCore() {
+    installBluetape4kKtorCore(
+        Bluetape4kKtorCoreConfig(
+            healthPath = "/health",
+            readinessPath = "/readyz",
+        )
+    )
 }
 
 /**
@@ -72,10 +84,6 @@ fun Application.module() {
  * - `GET /cities/path`: Seoul에서 Busan까지 shortest path를 반환합니다.
  */
 fun io.ktor.server.routing.Route.graphDemoRoutes() {
-    get("/health") {
-        call.respondText("UP")
-    }
-
     post("/demo/reset") {
         DemoCityGraph.reset(call.graphOperations())
         call.respondText("reset")

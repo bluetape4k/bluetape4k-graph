@@ -7,6 +7,7 @@ import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.graph.age.AgeGraphOperations
 import io.bluetape4k.graph.falkordb.FalkorDBServer
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.ktor.testing.shouldHaveStatus
 import io.bluetape4k.testcontainers.graphdb.MemgraphServer
 import io.bluetape4k.testcontainers.graphdb.Neo4jServer
 import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
@@ -177,11 +178,11 @@ class BackendGraphPluginRuntimeTest {
             startApplication()
 
             val createResponse = client.post("/vertices")
-            createResponse.status shouldBeEqualTo HttpStatusCode.OK
+            createResponse shouldHaveStatus HttpStatusCode.OK
             createResponse.bodyAsText() shouldBeEqualTo "created"
 
             val countResponse = client.get("/vertices/count")
-            countResponse.status shouldBeEqualTo HttpStatusCode.OK
+            countResponse shouldHaveStatus HttpStatusCode.OK
             countResponse.bodyAsText() shouldBeEqualTo "2"
         }
     }

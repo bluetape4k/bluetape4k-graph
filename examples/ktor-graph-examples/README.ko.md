@@ -3,6 +3,7 @@
 > 🇺🇸 [English](README.md)
 
 `graph-ktor`의 실행 가능한 Ktor 예시입니다. TinkerGraph를 사용하므로 Docker나 외부 graph database 없이 실행할 수 있습니다.
+애플리케이션은 표준 health/readiness route와 JSON 기본값에 `bluetape4k-ktor-core`도 재사용합니다.
 
 ## 예제 시나리오
 
@@ -27,7 +28,8 @@
 
 | Route | Method | 설명 |
 |---|---|---|
-| `/health` | GET | `UP`을 반환합니다. |
+| `/health` | GET | 표준 bluetape4k health JSON body를 반환합니다. |
+| `/readyz` | GET | 표준 bluetape4k readiness JSON body를 반환합니다. |
 | `/demo/reset` | POST | demo city graph를 다시 생성합니다. |
 | `/cities/count` | GET | `City` vertex 수를 반환합니다. |
 | `/cities/path` | GET | Seoul에서 Busan까지 shortest path를 반환합니다. |
@@ -40,6 +42,8 @@
 
 ```bash
 curl -X POST http://localhost:8080/demo/reset
+curl http://localhost:8080/health
+curl http://localhost:8080/readyz
 curl http://localhost:8080/cities/count
 curl http://localhost:8080/cities/path
 ```
@@ -48,7 +52,8 @@ curl http://localhost:8080/cities/path
 
 | 요청 | 예상 응답 |
 |---|---|
-| `GET /health` | `UP` |
+| `GET /health` | `{"status":"UP","details":{}}` |
+| `GET /readyz` | `{"status":"UP","details":{}}` |
 | `POST /demo/reset` | `reset` |
 | `GET /cities/count` | `3` |
 | `GET /cities/path` | `Seoul -> Daejeon -> Busan` |
