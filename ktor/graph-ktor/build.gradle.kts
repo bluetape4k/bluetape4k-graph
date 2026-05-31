@@ -32,6 +32,7 @@ dependencies {
     testImplementation(libs.ktor.server.core)
     testImplementation(libs.ktor.server.cio)
     testImplementation(libs.ktor.server.test.host)
+    testImplementation(libs.bluetape4k.ktor.testing)
 
     testImplementation(project(":bluetape4k-graph-tinkerpop"))
     testImplementation(project(":bluetape4k-graph-neo4j"))

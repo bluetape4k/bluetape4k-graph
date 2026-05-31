@@ -4,6 +4,9 @@ import com.falkordb.FalkorDB
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.graph.falkordb.FalkorDBServer
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.ktor.core.HealthResponse
+import io.bluetape4k.ktor.testing.decodeJsonBody
+import io.bluetape4k.ktor.testing.shouldHaveStatus
 import io.bluetape4k.logging.KLogging
 import io.ktor.client.request.get
 import io.ktor.client.request.post
@@ -46,7 +49,7 @@ class FalkorDBKtorGraphAppTest {
     }
 
     @Test
-    fun `health route returns UP`() = runSuspendIO {
+    fun `shared health route returns UP`() = runSuspendIO {
         testApplication {
             application {
                 falkorDbModule(driver)
@@ -54,8 +57,22 @@ class FalkorDBKtorGraphAppTest {
             startApplication()
 
             val response = client.get("/health")
-            response.status shouldBeEqualTo HttpStatusCode.OK
-            response.bodyAsText() shouldBeEqualTo "UP"
+            response shouldHaveStatus HttpStatusCode.OK
+            response.decodeJsonBody<HealthResponse>().status shouldBeEqualTo HealthResponse.UP
+        }
+    }
+
+    @Test
+    fun `shared readiness route returns UP`() = runSuspendIO {
+        testApplication {
+            application {
+                falkorDbModule(driver)
+            }
+            startApplication()
+
+            val response = client.get("/readyz")
+            response shouldHaveStatus HttpStatusCode.OK
+            response.decodeJsonBody<HealthResponse>().status shouldBeEqualTo HealthResponse.UP
         }
     }
 
@@ -68,15 +85,15 @@ class FalkorDBKtorGraphAppTest {
             startApplication()
 
             val resetResponse = client.post("/demo/reset")
-            resetResponse.status shouldBeEqualTo HttpStatusCode.OK
+            resetResponse shouldHaveStatus HttpStatusCode.OK
             resetResponse.bodyAsText() shouldBeEqualTo "reset"
 
             val countResponse = client.get("/cities/count")
-            countResponse.status shouldBeEqualTo HttpStatusCode.OK
+            countResponse shouldHaveStatus HttpStatusCode.OK
             countResponse.bodyAsText() shouldBeEqualTo "3"
 
             val pathResponse = client.get("/cities/path")
-            pathResponse.status shouldBeEqualTo HttpStatusCode.OK
+            pathResponse shouldHaveStatus HttpStatusCode.OK
             pathResponse.bodyAsText() shouldBeEqualTo "Seoul -> Daejeon -> Busan"
         }
     }

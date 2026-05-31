@@ -8,6 +8,7 @@ import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.ktor.testing.shouldHaveStatus
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
@@ -83,11 +84,11 @@ class GraphPluginTest {
             startApplication()
 
             val syncResponse = client.get("/sync-count")
-            syncResponse.status shouldBeEqualTo HttpStatusCode.OK
+            syncResponse shouldHaveStatus HttpStatusCode.OK
             syncResponse.bodyAsText() shouldBeEqualTo "0"
 
             val suspendResponse = client.get("/suspend-count")
-            suspendResponse.status shouldBeEqualTo HttpStatusCode.OK
+            suspendResponse shouldHaveStatus HttpStatusCode.OK
             suspendResponse.bodyAsText() shouldBeEqualTo "0"
         }
     }

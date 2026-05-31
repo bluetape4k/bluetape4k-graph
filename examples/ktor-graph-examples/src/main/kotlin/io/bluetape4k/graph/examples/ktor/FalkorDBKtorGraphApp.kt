@@ -12,8 +12,9 @@ import io.ktor.server.routing.routing
  *
  * ## Behavior / Contract
  * - [driver] is a caller-owned resource; this module does not close it.
+ * - Installs shared bluetape4k Ktor core defaults for health/readiness and JSON.
  * - Installs [GraphPlugin] with the FalkorDB backend, bound to [DEMO_GRAPH_NAME].
- * - Exposes the same demo routes as [module] (health, reset, city count, city path).
+ * - Exposes the same demo routes as [module] (health, readiness, reset, city count, city path).
  * - The graph name is fixed to [DEMO_GRAPH_NAME] so that [graphDemoRoutes] reset
  *   and query operations always target the same graph.
  *
@@ -26,6 +27,7 @@ import io.ktor.server.routing.routing
  * ```
  */
 fun Application.falkorDbModule(driver: Driver) {
+    installGraphExampleKtorCore()
     install(GraphPlugin) {
         falkorDB(driver, graphName = DEMO_GRAPH_NAME)
     }

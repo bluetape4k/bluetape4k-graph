@@ -3,6 +3,7 @@
 > 🇰🇷 [한국어 문서](README.ko.md)
 
 Runnable Ktor example for `graph-ktor`. It uses TinkerGraph so the application can run without Docker or an external graph database.
+The application also reuses `bluetape4k-ktor-core` for standard health/readiness routes and JSON defaults.
 
 ## Scenario
 
@@ -27,7 +28,8 @@ shows the same route surface with a caller-owned driver.
 
 | Route | Method | Description |
 |---|---|---|
-| `/health` | GET | Returns `UP`. |
+| `/health` | GET | Returns the standard bluetape4k health JSON body. |
+| `/readyz` | GET | Returns the standard bluetape4k readiness JSON body. |
 | `/demo/reset` | POST | Recreates the demo city graph. |
 | `/cities/count` | GET | Returns the number of `City` vertices. |
 | `/cities/path` | GET | Returns the shortest path from Seoul to Busan. |
@@ -40,6 +42,8 @@ shows the same route surface with a caller-owned driver.
 
 ```bash
 curl -X POST http://localhost:8080/demo/reset
+curl http://localhost:8080/health
+curl http://localhost:8080/readyz
 curl http://localhost:8080/cities/count
 curl http://localhost:8080/cities/path
 ```
@@ -48,7 +52,8 @@ curl http://localhost:8080/cities/path
 
 | Request | Expected response |
 |---|---|
-| `GET /health` | `UP` |
+| `GET /health` | `{"status":"UP","details":{}}` |
+| `GET /readyz` | `{"status":"UP","details":{}}` |
 | `POST /demo/reset` | `reset` |
 | `GET /cities/count` | `3` |
 | `GET /cities/path` | `Seoul -> Daejeon -> Busan` |
