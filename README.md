@@ -51,6 +51,10 @@ Use this project when you need:
 
 Amazon Neptune is tracked separately as future backend work. Because meaningful support depends on local/integration testability, feasibility research is handled before implementing `graph-neptune`.
 
+### Backend Capability Matrix
+
+![Backend capability matrix](docs/images/readme-diagrams/root-readme-backend-capability-matrix-01.png)
+
 ## Module Structure
 
 ```
