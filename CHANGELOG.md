@@ -27,6 +27,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   module with direct grants, inherited group grants, explicit deny paths,
   temporary break-glass grants, risky nested privilege-chain detection, and
   sync/suspend backend tests ([#248](https://github.com/bluetape4k/bluetape4k-graph/issues/248)).
+- **Supply-chain impact graph example**: Added a
+  `supply-chain-graph-examples` module with graph-io CSV fixtures, supplier and
+  part impact queries, route failure alternates, bottleneck part detection,
+  substitution-cycle detection, and sync/suspend TinkerGraph tests
+  ([#249](https://github.com/bluetape4k/bluetape4k-graph/issues/249)).
 
 ### Changed
 

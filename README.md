@@ -21,7 +21,7 @@ Use this project when you need:
 - paired blocking and coroutine APIs, with virtual-thread adapters for blocking backends
 - common graph capabilities such as batch insert, schema/index management, merge/upsert, transaction blocks, weighted paths, and graph algorithms
 - portable graph bulk I/O in CSV, NDJSON, GraphML, and OkIO streams
-- ready-to-run domain examples for code graphs, social graphs, fraud detection, recommendations, knowledge graphs, observability incidents, IAM access paths, and Ktor integration
+- ready-to-run domain examples for code graphs, social graphs, fraud detection, recommendations, knowledge graphs, observability incidents, IAM access paths, supply-chain impact analysis, and Ktor integration
 
 <!-- README_VISUAL_OVERVIEW:START -->
 ## Overview Diagram
@@ -86,6 +86,7 @@ examples/
   linkedin-graph-examples # LinkedIn social graph examples (AGE, Neo4j, Memgraph, TinkerGraph, FalkorDB integration)
   observability-graph-examples # Observability incident graph examples
   recommendation-examples # Product/user recommendation graph examples
+  supply-chain-graph-examples # Supply-chain impact and alternate-route graph examples
   ktor-graph-examples     # Ktor GraphPlugin example using TinkerGraph
 ```
 
@@ -333,6 +334,7 @@ Tests automatically launch Docker containers via Testcontainers. Docker is requi
 ./gradlew :recommendation-examples:test
 ./gradlew :knowledge-graph-examples:test
 ./gradlew :observability-graph-examples:test
+./gradlew :supply-chain-graph-examples:test
 
 # Specific class
 ./gradlew :graph-neo4j:test --tests "io.bluetape4k.graph.neo4j.Neo4jGraphOperationsTest"
@@ -357,6 +359,8 @@ Each example module uses the **abstract test class pattern**. Common test logic 
 | `AbstractObservabilityIncidentTest` | Service dependency, alert boundary, affected API, and owner lookup examples |
 | `AbstractObservabilityIncidentSuspendTest` | Coroutine observability incident graph examples |
 | `AbstractRecommendationTest` | User/product/category recommendation graph examples |
+| `AbstractSupplyChainImpactTest` | Supplier, part, route, order impact analysis examples |
+| `AbstractSupplyChainImpactSuspendTest` | Coroutine supply-chain impact examples |
 | `KtorGraphAppTest` | TinkerGraph-backed Ktor `GraphPlugin` smoke example |
 | `FalkorDBKtorGraphAppTest` | FalkorDB-backed Ktor `GraphPlugin` smoke example |
 
