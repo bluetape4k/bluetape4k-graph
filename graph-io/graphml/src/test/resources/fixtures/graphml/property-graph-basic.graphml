@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/graphml">
+  <key id="label" for="all" attr.name="label" attr.type="string"/>
+  <key id="name" for="node" attr.name="name" attr.type="string"/>
+  <key id="age" for="node" attr.name="age" attr.type="int"/>
+  <key id="score" for="edge" attr.name="score" attr.type="double"/>
+  <graph id="G" edgedefault="directed">
+    <node id="n1">
+      <data key="label">Person</data>
+      <data key="name">Alice</data>
+      <data key="age">31</data>
+    </node>
+    <node id="n2">
+      <data key="label">Person</data>
+      <data key="name">Bob</data>
+      <data key="age">29</data>
+    </node>
+    <edge id="e1" source="n1" target="n2">
+      <data key="label">KNOWS</data>
+      <data key="score">0.75</data>
+    </edge>
+  </graph>
+</graphml>
