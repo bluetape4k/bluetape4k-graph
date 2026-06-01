@@ -1,0 +1,11 @@
+id,label,from,to,prop.edgeId,prop.kind,prop.technique,prop.impact,prop.location,prop.method,prop.scope,prop.status
+edge-internet-web,CAN_REACH,asset-internet,host-web,edge-internet-web,http,,,,,,active
+edge-web-rce,EXPLOITS,host-web,vuln-web-rce,edge-web-rce,,rce,,,,,active
+edge-rce-websvc,COMPROMISES,vuln-web-rce,principal-websvc,edge-rce-websvc,,,service-account,,,,active
+edge-web-app,CAN_REACH,host-web,host-app,edge-web-app,service-call,,,,,,active
+edge-app-secret,EXPLOITS,host-app,vuln-app-secret,edge-app-secret,,secret-disclosure,,,,,active
+edge-secret-credential,COMPROMISES,vuln-app-secret,credential-ci-admin,edge-secret-credential,,,token-leak,,,,active
+edge-websvc-credential,HAS_CREDENTIAL,principal-websvc,credential-ci-admin,edge-websvc-credential,,,,runtime-env,,,active
+edge-credential-admin,GRANTS_ACCESS,credential-ci-admin,principal-admin,edge-credential-admin,,,,,token-exchange,,active
+edge-admin-permission,HAS_PERMISSION,principal-admin,permission-db-admin,edge-admin-permission,,,,,,database,active
+edge-permission-db,CONTROLS_ASSET,permission-db-admin,host-db,edge-permission-db,,,,,,admin,active
