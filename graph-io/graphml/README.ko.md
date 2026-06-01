@@ -165,6 +165,20 @@ data class GraphMlImportOptions(
 - `UnsupportedGraphMlElementPolicy.SKIP`은 `WARN` failure를 기록하고 지원되는 subset 처리를 계속합니다.
 - `UnsupportedGraphMlElementPolicy.FAIL`은 `ERROR` failure를 기록하며 bulk importer는 graph element를 생성하지 않고 `FAILED`를 반환합니다.
 
+### Property-graph subset 이후의 compatibility contract
+
+| GraphML construct | 결정 | Import 동작 | 근거 |
+|---|---|---|---|
+| node, edge, scalar data, scalar key를 가진 directed graph | 구현됨 | Import/export 지원 | `GraphVertex`, directed `GraphEdge`, scalar property에 직접 대응됩니다. |
+| Graph-level `edgedefault="undirected"` | 보류 | `SKIP`은 `WARN` 기록, `FAIL`은 write 전 `FAILED` 반환 | `GraphEdge`는 directed입니다. reverse edge를 자동 생성하면 edge 수와 traversal 의미가 바뀝니다. |
+| Edge-level `directed="false"` | 보류 | `SKIP`은 `WARN` 기록 후 source-to-target projection 유지, `FAIL`은 write 전 `FAILED` 반환 | projection은 진단용 import에는 유용하지만 충실한 undirected-edge contract는 아닙니다. |
+| Nested `<graph>` | 이번 slice에서는 거부 | `SKIP`은 `WARN` 기록 후 nested content skip, `FAIL`은 write 전 `FAILED` 반환 | `GraphVertex`에는 child graph scope가 없습니다. Flattening에는 명시적 ownership mapping 설계가 필요합니다. |
+| `<hyperedge>` | 거부 | `SKIP`은 `WARN` 기록, `FAIL`은 write 전 `FAILED` 반환 | `GraphEdge`는 source 하나와 target 하나만 가집니다. Hyperedge 지원에는 reification node 정책이 필요합니다. |
+| `<port>` | 보류 | `SKIP`은 `WARN` 기록, `FAIL`은 write 전 `FAILED` 반환 | port는 endpoint metadata이지만 현재 backend-neutral endpoint는 vertex만 가리킵니다. |
+| yFiles graphics 같은 XML extension payload | 보류 | 지원 contract 밖 | 시각 metadata를 보존하려면 namespaced extension-property 정책이 먼저 필요합니다. |
+
+`src/test/resources/fixtures/graphml/`의 대표 fixture가 permissive/strict import policy 양쪽의 contract를 고정합니다.
+
 ### 익스포트 옵션
 
 `GraphMlExportOptions`는 현재 비어 있지만 향후 기능 확장을 위한 확장 포인트를 제공합니다:

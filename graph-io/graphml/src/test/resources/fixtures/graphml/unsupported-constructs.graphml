@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/graphml">
+  <key id="label" for="all" attr.name="label" attr.type="string"/>
+  <graph id="G" edgedefault="undirected">
+    <node id="n1">
+      <data key="label">Router</data>
+      <port name="eth0"/>
+      <graph id="nested" edgedefault="directed">
+        <node id="n2">
+          <data key="label">NestedDevice</data>
+        </node>
+      </graph>
+    </node>
+    <hyperedge id="h1">
+      <endpoint node="n1"/>
+      <endpoint node="n2"/>
+      <endpoint node="n3"/>
+    </hyperedge>
+    <edge id="e1" source="n1" target="n1" directed="false">
+      <data key="label">LINK</data>
+    </edge>
+  </graph>
+</graphml>

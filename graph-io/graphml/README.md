@@ -165,6 +165,20 @@ Supported import subset:
 - `UnsupportedGraphMlElementPolicy.SKIP` records `WARN` failures and continues with the supported subset.
 - `UnsupportedGraphMlElementPolicy.FAIL` records `ERROR` failures and the bulk importer returns `FAILED` without creating graph elements.
 
+### Compatibility Contract Beyond the Property-Graph Subset
+
+| GraphML construct | Decision | Import behavior | Rationale |
+|---|---|---|---|
+| Directed graph with nodes, edges, scalar data, and scalar keys | Implemented | Imported/exported | Directly maps to `GraphVertex`, directed `GraphEdge`, and scalar properties. |
+| Graph-level `edgedefault="undirected"` | Deferred | `SKIP` records `WARN`; `FAIL` returns `FAILED` before writes | `GraphEdge` is directed; auto-creating reverse edges would change edge counts and traversal semantics. |
+| Edge-level `directed="false"` | Deferred | `SKIP` records `WARN` and keeps the source-to-target projection; `FAIL` returns `FAILED` before writes | The projection is useful for diagnostic imports but is not a faithful undirected-edge contract. |
+| Nested `<graph>` | Rejected for this slice | `SKIP` records `WARN` and skips nested content; `FAIL` returns `FAILED` before writes | `GraphVertex` has no child graph scope. Flattening needs an explicit ownership mapping design. |
+| `<hyperedge>` | Rejected | `SKIP` records `WARN`; `FAIL` returns `FAILED` before writes | `GraphEdge` has exactly one source and one target. Hyperedge support needs a reification-node policy. |
+| `<port>` | Deferred | `SKIP` records `WARN`; `FAIL` returns `FAILED` before writes | Ports describe endpoint metadata, while current backend-neutral endpoints target vertices only. |
+| XML extension payloads such as yFiles graphics | Deferred | Outside the supported contract | Visual metadata needs a namespaced extension-property policy before preservation. |
+
+Representative fixtures under `src/test/resources/fixtures/graphml/` lock this contract for both permissive and strict import policies.
+
 ### Export Options
 
 `GraphMlExportOptions` is currently empty but provides extension point for future features:
