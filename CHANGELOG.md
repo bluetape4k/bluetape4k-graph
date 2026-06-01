@@ -42,6 +42,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   failure-impact checks, isolated segment detection, redundant route discovery,
   and sync/suspend TinkerGraph tests
   ([#251](https://github.com/bluetape4k/bluetape4k-graph/issues/251)).
+- **Security attack-path graph example**: Added a
+  `security-attack-path-examples` module with graph-io CSV fixtures, shortest
+  attack-path queries, risk-ranked path enumeration, credential-based privilege
+  escalation, remediation-impact checks, and sync/suspend TinkerGraph tests
+  ([#252](https://github.com/bluetape4k/bluetape4k-graph/issues/252)).
 
 ### Changed
 
