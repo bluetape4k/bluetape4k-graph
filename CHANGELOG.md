@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.5.0] - Unreleased
+## [0.5.0] - 2026-06-01
 
 ### Added
 
@@ -49,6 +49,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#252](https://github.com/bluetape4k/bluetape4k-graph/issues/252)).
 
 ### Changed
+
+- **Dependency alignment for the 0.5.0 release line**: updated the graph build
+  to consume `io.github.bluetape4k:bluetape4k-bom:1.10.0` while keeping the
+  shared dependency catalog on `catalog/2026-05-26-01`.
 
 ### Fixed
 
