@@ -21,7 +21,7 @@ Use this project when you need:
 - paired blocking and coroutine APIs, with virtual-thread adapters for blocking backends
 - common graph capabilities such as batch insert, schema/index management, merge/upsert, transaction blocks, weighted paths, and graph algorithms
 - portable graph bulk I/O in CSV, NDJSON, GraphML, and OkIO streams
-- ready-to-run domain examples for code graphs, social graphs, fraud detection, recommendations, knowledge graphs, observability incidents, and Ktor integration
+- ready-to-run domain examples for code graphs, social graphs, fraud detection, recommendations, knowledge graphs, observability incidents, IAM access paths, and Ktor integration
 
 <!-- README_VISUAL_OVERVIEW:START -->
 ## Overview Diagram
@@ -85,6 +85,7 @@ ktor/
 examples/
   code-graph-examples     # Code dependency graph examples (AGE, Neo4j, Memgraph, TinkerGraph, FalkorDB integration)
   fraud-detection-examples # Transaction fraud graph examples
+  iam-access-graph-examples # IAM access-path and privilege-chain graph examples
   knowledge-graph-examples # Document/entity knowledge graph examples
   linkedin-graph-examples # LinkedIn social graph examples (AGE, Neo4j, Memgraph, TinkerGraph, FalkorDB integration)
   observability-graph-examples # Observability incident graph examples
@@ -332,6 +333,7 @@ Tests automatically launch Docker containers via Testcontainers. Docker is requi
 ./gradlew :code-graph-examples:test
 ./gradlew :linkedin-graph-examples:test
 ./gradlew :fraud-detection-examples:test
+./gradlew :iam-access-graph-examples:test
 ./gradlew :recommendation-examples:test
 ./gradlew :knowledge-graph-examples:test
 ./gradlew :observability-graph-examples:test
@@ -351,6 +353,8 @@ Each example module uses the **abstract test class pattern**. Common test logic 
 | `AbstractCodeGraphTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBCodeGraphTest` |
 | `AbstractCodeGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBCodeGraphSuspendTest` |
 | `AbstractFraudDetectionTest` | Fraud-ring, merchant, card, and transaction graph examples |
+| `AbstractIamAccessGraphTest` | IAM direct, inherited, denied, and risky privilege-chain examples |
+| `AbstractIamAccessGraphSuspendTest` | Coroutine IAM access-path examples |
 | `AbstractKnowledgeGraphTest` | Document/entity/relation knowledge graph examples |
 | `AbstractLinkedInGraphTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBLinkedInGraphTest` |
 | `AbstractLinkedInGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBLinkedInGraphSuspendTest` |
