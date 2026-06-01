@@ -28,6 +28,62 @@ Latest raw artifacts:
 - `docs/benchmark/2026-05-21-api-model-jmh.json`
 - `docs/benchmark/2026-04-18-graph-io-bulk-results.md`
 
+## AGE + Neo4j Summary Wrapper
+
+Use `scripts/benchmark-neo4j-age.sh` when an automation lane needs one machine-readable summary for the standalone AGE and Neo4j benchmark modules:
+
+```bash
+scripts/benchmark-neo4j-age.sh
+```
+
+The wrapper runs `:graph-age-benchmark:benchmark` and `:graph-neo4j-benchmark:benchmark`, reads the generated kotlinx-benchmark/JMH JSON reports, and emits exactly one JSON object on the last stdout line. Gradle benchmark logs are streamed to stderr so callers can safely parse stdout.
+
+Stable summary schema:
+
+```json
+{
+  "schema": "bluetape4k.graph.backend-benchmark-summary.v1",
+  "primary": 1500.0,
+  "unit": "us/op",
+  "direction": "lower_is_better",
+  "sources": {
+    "age": "benchmark/graph-age-benchmark/build/reports/benchmarks/main/main.json",
+    "neo4j": "benchmark/graph-neo4j-benchmark/build/reports/benchmarks/main/main.json"
+  },
+  "sub_scores": {
+    "age_createVertex": 1000.0,
+    "neo4j_createVertex": 2000.0
+  },
+  "benchmarks": [
+    {
+      "backend": "age",
+      "key": "age_createVertex",
+      "benchmark": "pkg.CreateVertexBenchmark.createVertex",
+      "operation": "createVertex",
+      "params": {},
+      "score": 1000.0,
+      "unit": "us/op",
+      "sourceScore": 1.0,
+      "sourceUnit": "ms/op",
+      "source": "benchmark/graph-age-benchmark/build/reports/benchmarks/main/main.json"
+    }
+  ]
+}
+```
+
+`primary` and every `sub_scores` value are normalized to `us/op`; lower is better. `sub_scores` keeps the compact contract used by ranking scripts, while `benchmarks` carries source paths, original units, and parameters for diagnostics.
+
+For contract tests or report-only parsing, skip Gradle execution and point the wrapper at existing report roots:
+
+```bash
+BENCHMARK_SKIP_RUN=true \
+BENCHMARK_AGE_REPORT_ROOT=benchmark/graph-age-benchmark/build/reports/benchmarks/main \
+BENCHMARK_NEO4J_REPORT_ROOT=benchmark/graph-neo4j-benchmark/build/reports/benchmarks/main \
+scripts/benchmark-neo4j-age.sh
+```
+
+If report generation fails, the wrapper exits non-zero and writes the searched root, expected file shape, and recovery hint to stderr. Malformed JMH JSON also fails with the backend name and file path.
+
 ## Medium Backend Result
 
 ![Graph DB medium Testcontainers benchmark](../docs/images/readme-charts/graph-db-medium-testcontainers-latency-chart-01.png)

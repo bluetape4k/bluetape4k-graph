@@ -28,6 +28,62 @@
 - `docs/benchmark/2026-05-21-api-model-jmh.json`
 - `docs/benchmark/2026-04-18-graph-io-bulk-results.md`
 
+## AGE + Neo4j Summary Wrapper
+
+standalone AGE와 Neo4j benchmark module의 결과를 자동화에서 하나의 machine-readable summary로 읽어야 할 때 `scripts/benchmark-neo4j-age.sh`를 사용합니다.
+
+```bash
+scripts/benchmark-neo4j-age.sh
+```
+
+wrapper는 `:graph-age-benchmark:benchmark`와 `:graph-neo4j-benchmark:benchmark`를 실행하고, 생성된 kotlinx-benchmark/JMH JSON report를 읽은 뒤 마지막 stdout line에 JSON object 하나만 출력합니다. Gradle benchmark log는 stderr로 흘려 stdout parser가 summary만 읽을 수 있게 합니다.
+
+안정 summary schema:
+
+```json
+{
+  "schema": "bluetape4k.graph.backend-benchmark-summary.v1",
+  "primary": 1500.0,
+  "unit": "us/op",
+  "direction": "lower_is_better",
+  "sources": {
+    "age": "benchmark/graph-age-benchmark/build/reports/benchmarks/main/main.json",
+    "neo4j": "benchmark/graph-neo4j-benchmark/build/reports/benchmarks/main/main.json"
+  },
+  "sub_scores": {
+    "age_createVertex": 1000.0,
+    "neo4j_createVertex": 2000.0
+  },
+  "benchmarks": [
+    {
+      "backend": "age",
+      "key": "age_createVertex",
+      "benchmark": "pkg.CreateVertexBenchmark.createVertex",
+      "operation": "createVertex",
+      "params": {},
+      "score": 1000.0,
+      "unit": "us/op",
+      "sourceScore": 1.0,
+      "sourceUnit": "ms/op",
+      "source": "benchmark/graph-age-benchmark/build/reports/benchmarks/main/main.json"
+    }
+  ]
+}
+```
+
+`primary`와 모든 `sub_scores` 값은 `us/op`로 정규화되며 낮을수록 좋습니다. `sub_scores`는 ranking script가 쓰는 compact contract이고, `benchmarks`는 source path, original unit, parameter를 담아 진단에 사용합니다.
+
+contract test나 report-only parsing에서는 Gradle 실행을 건너뛰고 기존 report root를 지정할 수 있습니다.
+
+```bash
+BENCHMARK_SKIP_RUN=true \
+BENCHMARK_AGE_REPORT_ROOT=benchmark/graph-age-benchmark/build/reports/benchmarks/main \
+BENCHMARK_NEO4J_REPORT_ROOT=benchmark/graph-neo4j-benchmark/build/reports/benchmarks/main \
+scripts/benchmark-neo4j-age.sh
+```
+
+report 생성에 실패하면 wrapper는 non-zero로 종료하고 검색한 root, 기대하는 file shape, 복구 hint를 stderr에 씁니다. malformed JMH JSON도 backend name과 file path를 포함해 실패합니다.
+
 ## Medium Backend 결과
 
 ![Graph DB medium Testcontainers benchmark](../docs/images/readme-charts/graph-db-medium-testcontainers-latency-chart-01.png)

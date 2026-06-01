@@ -68,6 +68,10 @@ class BenchmarkScriptContractTest {
 
         result.exitCode shouldBeEqualTo 0
         result.stdoutLines shouldHaveSingleLineContaining "\"primary\": 1500"
+        result.stdoutLines.single() shouldContain "\"schema\": \"bluetape4k.graph.backend-benchmark-summary.v1\""
+        result.stdoutLines.single() shouldContain "\"unit\": \"us/op\""
+        result.stdoutLines.single() shouldContain "\"direction\": \"lower_is_better\""
+        result.stdoutLines.single() shouldContain "\"benchmarks\""
         result.stdoutLines.single() shouldContain "\"age_createVertex\": 1000"
         result.stdoutLines.single() shouldContain "\"neo4j_createVertex\": 2000"
         assertJson(result.stdoutLines.single())
@@ -85,6 +89,32 @@ class BenchmarkScriptContractTest {
 
         (result.exitCode != 0).shouldBeTrue()
         result.stderr shouldContain "ERROR: benchmark JSON report not found"
+        result.stdoutLines shouldBeEqualTo emptyList()
+    }
+
+    @Test
+    fun `neo4j age benchmark wrapper explains malformed reports`(@TempDir dir: Path) {
+        val ageRoot = jmhReportRoot(dir, "age")
+        val neo4jRoot = jmhReportRoot(dir, "neo4j")
+        writeJmhReport(
+            ageRoot.resolve("main.json"),
+            """
+            [
+              {"benchmark": "pkg.CreateVertexBenchmark.createVertex", "primaryMetric": {"score": 1.0, "scoreUnit": "ms/op"}}
+            ]
+            """.trimIndent(),
+        )
+        writeJmhReport(neo4jRoot.resolve("main.json"), """{"not": "a JMH list"}""")
+
+        val result = runScript(
+            "benchmark-neo4j-age.sh",
+            "BENCHMARK_SKIP_RUN" to "true",
+            "BENCHMARK_AGE_REPORT_ROOT" to ageRoot.parent.toString(),
+            "BENCHMARK_NEO4J_REPORT_ROOT" to neo4jRoot.parent.toString(),
+        )
+
+        (result.exitCode != 0).shouldBeTrue()
+        result.stderr shouldContain "ERROR: Expected JMH result list for neo4j report"
         result.stdoutLines shouldBeEqualTo emptyList()
     }
 
