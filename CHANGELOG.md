@@ -37,6 +37,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   upstream table lookup, broken job owner traversal, data quality impact
   explanations, and sync/suspend TinkerGraph tests
   ([#250](https://github.com/bluetape4k/bluetape4k-graph/issues/250)).
+- **Network topology graph example**: Added a `network-topology-examples`
+  module with graph-io CSV fixtures, shortest active path queries, service
+  failure-impact checks, isolated segment detection, redundant route discovery,
+  and sync/suspend TinkerGraph tests
+  ([#251](https://github.com/bluetape4k/bluetape4k-graph/issues/251)).
 
 ### Changed
 

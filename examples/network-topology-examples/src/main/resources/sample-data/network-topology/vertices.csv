@@ -1,0 +1,18 @@
+id,label,prop.siteId,prop.deviceId,prop.segmentId,prop.serviceId,prop.name,prop.region,prop.role,prop.status,prop.cidr,prop.tier
+site-seoul,Site,site-seoul,,,,Seoul Edge,ap-northeast-2,,active,,
+site-busan,Site,site-busan,,,,Busan DR,ap-northeast-2,,active,,
+device-router-core,Device,,router-core,,,Core Router,,router,active,,
+device-router-edge-a,Device,,router-edge-a,,,Edge Router A,,router,active,,
+device-router-edge-b,Device,,router-edge-b,,,Edge Router B,,router,active,,
+device-switch-access-a,Device,,switch-access-a,,,Access Switch A,,switch,active,,
+device-switch-access-b,Device,,switch-access-b,,,Access Switch B,,switch,active,,
+device-switch-iot,Device,,switch-iot,,,IoT Switch,,switch,active,,
+device-switch-lab,Device,,switch-lab,,,Lab Switch,,switch,active,,
+segment-core,Segment,,,seg-core,,Core Transit,,,active,10.0.0.0/24,
+segment-app,Segment,,,seg-app,,Application Segment,,,active,10.10.0.0/24,
+segment-iot,Segment,,,seg-iot,,IoT Segment,,,active,10.20.0.0/24,
+segment-lab,Segment,,,seg-lab,,Lab Segment,,,isolated,10.30.0.0/24,
+service-checkout,Service,,,,svc-checkout,Checkout API,,,active,,gold
+service-observability,Service,,,,svc-observability,Observability Stack,,,active,,silver
+service-cameras,Service,,,,svc-cameras,Camera Ingest,,,active,,bronze
+service-lab,Service,,,,svc-lab,Lab Build Farm,,,active,,bronze

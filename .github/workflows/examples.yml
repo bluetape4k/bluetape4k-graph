@@ -95,6 +95,7 @@ jobs:
               :knowledge-graph-examples:build \
               :supply-chain-graph-examples:build \
               :data-lineage-examples:build \
+              :network-topology-examples:build \
               --no-daemon --continue && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 3 ] && sleep 10 || exit 1

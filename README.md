@@ -21,7 +21,7 @@ Use this project when you need:
 - paired blocking and coroutine APIs, with virtual-thread adapters for blocking backends
 - common graph capabilities such as batch insert, schema/index management, merge/upsert, transaction blocks, weighted paths, and graph algorithms
 - portable graph bulk I/O in CSV, NDJSON, GraphML, and OkIO streams
-- ready-to-run domain examples for code graphs, social graphs, fraud detection, recommendations, knowledge graphs, observability incidents, IAM access paths, supply-chain impact analysis, data lineage, and Ktor integration
+- ready-to-run domain examples for code graphs, social graphs, fraud detection, recommendations, knowledge graphs, observability incidents, IAM access paths, supply-chain impact analysis, data lineage, network topology, and Ktor integration
 
 <!-- README_VISUAL_OVERVIEW:START -->
 ## Overview Diagram
@@ -88,6 +88,7 @@ examples/
   recommendation-examples # Product/user recommendation graph examples
   supply-chain-graph-examples # Supply-chain impact and alternate-route graph examples
   data-lineage-examples # Data lineage and dashboard impact examples
+  network-topology-examples # Network topology path and failure-impact examples
   ktor-graph-examples     # Ktor GraphPlugin example using TinkerGraph
 ```
 
@@ -337,6 +338,7 @@ Tests automatically launch Docker containers via Testcontainers. Docker is requi
 ./gradlew :observability-graph-examples:test
 ./gradlew :supply-chain-graph-examples:test
 ./gradlew :data-lineage-examples:test
+./gradlew :network-topology-examples:test
 
 # Specific class
 ./gradlew :graph-neo4j:test --tests "io.bluetape4k.graph.neo4j.Neo4jGraphOperationsTest"
@@ -365,6 +367,8 @@ Each example module uses the **abstract test class pattern**. Common test logic 
 | `AbstractSupplyChainImpactSuspendTest` | Coroutine supply-chain impact examples |
 | `AbstractDataLineageImpactTest` | Table, column, pipeline, dashboard, owner, and quality-check lineage examples |
 | `AbstractDataLineageImpactSuspendTest` | Coroutine data lineage impact examples |
+| `AbstractNetworkTopologyImpactTest` | Device path, service impact, isolated segment, and redundant route examples |
+| `AbstractNetworkTopologyImpactSuspendTest` | Coroutine network topology impact examples |
 | `KtorGraphAppTest` | TinkerGraph-backed Ktor `GraphPlugin` smoke example |
 | `FalkorDBKtorGraphAppTest` | FalkorDB-backed Ktor `GraphPlugin` smoke example |
 
