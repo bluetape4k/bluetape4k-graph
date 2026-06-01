@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `observability-graph-examples` module with service dependency blast-radius,
   alert-boundary correlation, affected API lookup, owner traversal, bundled CSV
   fixture import, and sync/suspend backend tests ([#247](https://github.com/bluetape4k/bluetape4k-graph/issues/247)).
+- **IAM access-path graph example**: Added an `iam-access-graph-examples`
+  module with direct grants, inherited group grants, explicit deny paths,
+  temporary break-glass grants, risky nested privilege-chain detection, and
+  sync/suspend backend tests ([#248](https://github.com/bluetape4k/bluetape4k-graph/issues/248)).
 
 ### Changed
 

@@ -42,6 +42,7 @@ spring-boot/
 examples/
   code-graph-examples/
   fraud-detection-examples/
+  iam-access-graph-examples/
   knowledge-graph-examples/
   linkedin-graph-examples/
   observability-graph-examples/
@@ -60,6 +61,7 @@ examples/
 ./gradlew :graph-okio:test
 ./gradlew :code-graph-examples:test
 ./gradlew :fraud-detection-examples:test
+./gradlew :iam-access-graph-examples:test
 ./gradlew :knowledge-graph-examples:test
 ./gradlew :observability-graph-examples:test
 ./gradlew :recommendation-examples:test

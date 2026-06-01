@@ -21,7 +21,7 @@ bluetape4k 생태계의 그래프 데이터베이스 통합 라이브러리. Apa
 - blocking API와 coroutine API를 함께 제공하고, blocking 백엔드에 virtual-thread adapter를 붙이고 싶을 때
 - batch insert, schema/index 관리, merge/upsert, transaction block, weighted path, graph algorithm 같은 공통 기능이 필요할 때
 - CSV, NDJSON, GraphML, OkIO stream 기반의 이식 가능한 그래프 벌크 I/O가 필요할 때
-- code graph, social graph, fraud detection, recommendation, knowledge graph, observability incident, Ktor integration 예제를 바로 실행해 보고 싶을 때
+- code graph, social graph, fraud detection, recommendation, knowledge graph, observability incident, IAM access path, Ktor integration 예제를 바로 실행해 보고 싶을 때
 
 <!-- README_VISUAL_OVERVIEW:START -->
 ## Overview Diagram
@@ -81,6 +81,7 @@ ktor/
 examples/
   code-graph-examples     # 코드 의존성 그래프 예시 (AGE, Neo4j, Memgraph, TinkerGraph, FalkorDB 통합)
   fraud-detection-examples # transaction fraud graph 예시
+  iam-access-graph-examples # IAM access-path, privilege-chain graph 예시
   knowledge-graph-examples # document/entity knowledge graph 예시
   linkedin-graph-examples # LinkedIn 소셜 그래프 예시 (AGE, Neo4j, Memgraph, TinkerGraph, FalkorDB 통합)
   observability-graph-examples # observability incident graph 예시
@@ -328,6 +329,7 @@ driver.close()
 ./gradlew :code-graph-examples:test
 ./gradlew :linkedin-graph-examples:test
 ./gradlew :fraud-detection-examples:test
+./gradlew :iam-access-graph-examples:test
 ./gradlew :recommendation-examples:test
 ./gradlew :knowledge-graph-examples:test
 ./gradlew :observability-graph-examples:test
@@ -347,6 +349,8 @@ GitHub Actions는 전용 `Examples` workflow도 실행한다. 이 workflow는 �
 | `AbstractCodeGraphTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBCodeGraphTest` |
 | `AbstractCodeGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBCodeGraphSuspendTest` |
 | `AbstractFraudDetectionTest` | fraud ring, merchant, card, transaction graph 예시 |
+| `AbstractIamAccessGraphTest` | IAM direct, inherited, denied, risky privilege-chain 예시 |
+| `AbstractIamAccessGraphSuspendTest` | coroutine IAM access-path 예시 |
 | `AbstractKnowledgeGraphTest` | document/entity/relation knowledge graph 예시 |
 | `AbstractLinkedInGraphTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBLinkedInGraphTest` |
 | `AbstractLinkedInGraphSuspendTest` | `Neo4j/Memgraph/TinkerGraph/Age/FalkorDBLinkedInGraphSuspendTest` |
