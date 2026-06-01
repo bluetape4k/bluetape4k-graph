@@ -1,0 +1,12 @@
+id,label,prop.assetId,prop.hostId,prop.principalId,prop.credentialId,prop.vulnerabilityId,prop.permissionId,prop.name,prop.kind,prop.exposure,prop.criticality,prop.severity,prop.privilege,prop.status
+asset-internet,EntryAsset,internet,,,,,,Internet,,public,,,,active
+host-web,Host,,web-edge,,,,,Public Web Edge,,public,medium,,,active
+host-app,Host,,app-api,,,,,Application API,,internal,high,,,active
+host-db,Host,,customer-db,,,,,Customer Database,,restricted,crown_jewel,,,active
+host-backup,Host,,backup-vault,,,,,Backup Vault,,restricted,crown_jewel,,,active
+principal-websvc,Principal,,,web-service,,,,Web Service Account,service,,,,user,active
+principal-admin,Principal,,,domain-admin,,,,Domain Admin,human,,,,admin,active
+credential-ci-admin,Credential,,,,ci-admin-token,,,CI Admin Token,token,,,,,active
+vuln-web-rce,Vulnerability,,,,,vuln-web-rce,,Web Remote Code Execution,,,,9,,active
+vuln-app-secret,Vulnerability,,,,,vuln-app-secret,,Application Secret Disclosure,,,,8,,active
+permission-db-admin,Permission,,,,,,db-admin,Database Admin Permission,,,,,admin,active
