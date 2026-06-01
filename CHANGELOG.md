@@ -32,6 +32,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   part impact queries, route failure alternates, bottleneck part detection,
   substitution-cycle detection, and sync/suspend TinkerGraph tests
   ([#249](https://github.com/bluetape4k/bluetape4k-graph/issues/249)).
+- **Data lineage impact graph example**: Added a `data-lineage-examples`
+  module with graph-io CSV fixtures, downstream dashboard impact queries,
+  upstream table lookup, broken job owner traversal, data quality impact
+  explanations, and sync/suspend TinkerGraph tests
+  ([#250](https://github.com/bluetape4k/bluetape4k-graph/issues/250)).
 
 ### Changed
 
