@@ -51,6 +51,10 @@ bluetape4k 생태계의 그래프 데이터베이스 통합 라이브러리. Apa
 
 Amazon Neptune은 별도 future backend 작업으로 추적한다. 의미 있는 지원은 local/integration test 가능성에 달려 있으므로, `graph-neptune` 구현 전에 feasibility research를 먼저 진행한다.
 
+### Backend capability matrix
+
+![Backend capability matrix](docs/images/readme-diagrams/root-readme-backend-capability-matrix-01.png)
+
 ## 모듈 구조
 
 ```
