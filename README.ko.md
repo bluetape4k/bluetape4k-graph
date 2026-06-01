@@ -21,7 +21,7 @@ bluetape4k 생태계의 그래프 데이터베이스 통합 라이브러리. Apa
 - blocking API와 coroutine API를 함께 제공하고, blocking 백엔드에 virtual-thread adapter를 붙이고 싶을 때
 - batch insert, schema/index 관리, merge/upsert, transaction block, weighted path, graph algorithm 같은 공통 기능이 필요할 때
 - CSV, NDJSON, GraphML, OkIO stream 기반의 이식 가능한 그래프 벌크 I/O가 필요할 때
-- code graph, social graph, fraud detection, recommendation, knowledge graph, observability incident, IAM access path, supply-chain impact analysis, Ktor integration 예제를 바로 실행해 보고 싶을 때
+- code graph, social graph, fraud detection, recommendation, knowledge graph, observability incident, IAM access path, supply-chain impact analysis, data lineage, Ktor integration 예제를 바로 실행해 보고 싶을 때
 
 <!-- README_VISUAL_OVERVIEW:START -->
 ## Overview Diagram
@@ -87,6 +87,7 @@ examples/
   observability-graph-examples # observability incident graph 예시
   recommendation-examples # product/user recommendation graph 예시
   supply-chain-graph-examples # supply-chain impact, alternate-route graph 예시
+  data-lineage-examples # data lineage, dashboard impact graph 예시
   ktor-graph-examples     # TinkerGraph 기반 Ktor GraphPlugin 예시
 ```
 
@@ -335,6 +336,7 @@ driver.close()
 ./gradlew :knowledge-graph-examples:test
 ./gradlew :observability-graph-examples:test
 ./gradlew :supply-chain-graph-examples:test
+./gradlew :data-lineage-examples:test
 
 # 특정 클래스
 ./gradlew :graph-neo4j:test --tests "io.bluetape4k.graph.neo4j.Neo4jGraphOperationsTest"
@@ -361,6 +363,8 @@ GitHub Actions는 전용 `Examples` workflow도 실행한다. 이 workflow는 �
 | `AbstractRecommendationTest` | user/product/category recommendation graph 예시 |
 | `AbstractSupplyChainImpactTest` | supplier, part, route, order impact analysis 예시 |
 | `AbstractSupplyChainImpactSuspendTest` | coroutine supply-chain impact 예시 |
+| `AbstractDataLineageImpactTest` | table, column, pipeline, dashboard, owner, quality-check lineage 예시 |
+| `AbstractDataLineageImpactSuspendTest` | coroutine data lineage impact 예시 |
 | `KtorGraphAppTest` | TinkerGraph 기반 Ktor `GraphPlugin` smoke 예시 |
 | `FalkorDBKtorGraphAppTest` | FalkorDB 기반 Ktor `GraphPlugin` smoke 예시 |
 
