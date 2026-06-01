@@ -1,0 +1,17 @@
+id,label,prop.datasetId,prop.tableId,prop.columnId,prop.jobId,prop.dashboardId,prop.ownerId,prop.checkId,prop.name,prop.domain,prop.status,prop.dataType,prop.schedule,prop.metric,prop.team,prop.channel,prop.severity
+dataset-commerce,Dataset,dataset-commerce,,,,,,,Commerce Lake,commerce,active,,,,,,
+dataset-finance,Dataset,dataset-finance,,,,,,,Finance Mart,finance,active,,,,,,
+table-raw-orders,Table,,raw.orders,,,,,,Raw Orders,commerce,active,,,,,,
+table-raw-payments,Table,,raw.payments,,,,,,Raw Payments,finance,active,,,,,,
+table-curated-orders,Table,,curated.orders_enriched,,,,,,Curated Orders,commerce,active,,,,,,
+table-mart-revenue,Table,,mart.revenue_daily,,,,,,Revenue Daily Mart,finance,active,,,,,,
+column-orders-customer,Column,,,raw.orders.customer_id,,,,,Customer ID,,active,string,,,,,
+column-orders-amount,Column,,,raw.orders.amount,,,,,Order Amount,,active,decimal,,,,,
+column-revenue-total,Column,,,mart.revenue_daily.revenue,,,,,Revenue Total,,active,decimal,,,,,
+job-ingest-orders,PipelineJob,,,,ingest-orders,,,,Ingest Orders,commerce,active,,hourly,,,,
+job-build-revenue,PipelineJob,,,,build-revenue-mart,,,,Build Revenue Mart,finance,active,,daily,,,,
+dashboard-exec-revenue,Dashboard,,,,,exec-revenue,,,Executive Revenue,finance,active,,,gross_revenue,,,
+dashboard-ops-quality,Dashboard,,,,,ops-quality,,,Operations Quality,commerce,active,,,order_quality,,,
+owner-data-platform,Owner,,,,,,data-platform,,Data Platform Owner,,active,,,,data-platform,#data-platform,
+owner-finance-analytics,Owner,,,,,,finance-analytics,,Finance Analytics Owner,,active,,,,finance-analytics,#finance-analytics,
+check-orders-customer,QualityCheck,,,,,,,check-orders-customer,Orders Customer Not Null,commerce,failing,,,,,,high
