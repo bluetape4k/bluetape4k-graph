@@ -48,6 +48,7 @@ examples/
   observability-graph-examples/
   recommendation-examples/
   supply-chain-graph-examples/
+  data-lineage-examples/
   ktor-graph-examples/
 ```
 
@@ -67,6 +68,7 @@ examples/
 ./gradlew :observability-graph-examples:test
 ./gradlew :recommendation-examples:test
 ./gradlew :supply-chain-graph-examples:test
+./gradlew :data-lineage-examples:test
 ./gradlew :bluetape4k-graph-neo4j:test --tests "io.bluetape4k.graph.neo4j.Neo4jGraphOperationsTest"
 ./gradlew publishBluetapeGraphPublicationToMavenLocalRepository
 ./gradlew publishAggregationToCentralPortal
