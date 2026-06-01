@@ -1,0 +1,16 @@
+id,label,prop.supplierId,prop.partId,prop.warehouseId,prop.routeId,prop.carrierId,prop.orderId,prop.name,prop.region,prop.status,prop.criticality
+supplier-alpha,Supplier,supplier-alpha,,,,,,Alpha Components,apac,active,
+supplier-beta,Supplier,supplier-beta,,,,,,Beta Electronics,emea,active,
+supplier-gamma,Supplier,supplier-gamma,,,,,,Gamma Precision,amer,blocked,
+part-battery-cell,Part,,battery-cell,,,,,Battery Cell,,active,critical
+part-battery-module,Part,,battery-module,,,,,Battery Module,,active,critical
+part-gps-module,Part,,gps-module,,,,,GPS Module,,active,high
+warehouse-west,Warehouse,,,warehouse-west,,,,West Fulfillment,amer,active,
+warehouse-east,Warehouse,,,warehouse-east,,,,East Fulfillment,amer,active,
+route-pacific,Route,,,,route-pacific,,,Pacific Ocean Freight,amer,blocked,
+route-air-express,Route,,,,route-air-express,,,Air Express,amer,active,
+route-rail-east,Route,,,,route-rail-east,,,East Rail,amer,active,
+carrier-ocean,Carrier,,,,,carrier-ocean,,Oceanic Freight,amer,active,
+carrier-air,Carrier,,,,,carrier-air,,AirBridge Logistics,amer,active,
+order-1001,CustomerOrder,,,,,,order-1001,Medical Device Order 1001,amer,open,
+order-1002,CustomerOrder,,,,,,order-1002,Telemetry Kit Order 1002,amer,open,
