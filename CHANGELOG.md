@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Opened the `0.6.0` development line after the `0.5.0` stable release.
+- Aligned the local `bluetape4k-bom` reference to `1.11.0-SNAPSHOT`.
+
 ## [0.5.0] - 2026-06-01
 
 ### Added
