@@ -1,6 +1,6 @@
 # WIP - bluetape4k-graph
 
-Snapshot: 2026-06-01 KST
+Snapshot: 2026-06-02 KST
 Scope: open GitHub issues assigned to `debop`.
 Open count: 4 issues.
 
@@ -24,10 +24,10 @@ The `0.5.0` stable line has been published and consumed by
 - `0.5.0` Ktor managed backend DSL work is complete for Neo4j, Memgraph,
   FalkorDB, and Apache AGE DataSource ownership.
 - `0.5.0` domain example suite is complete for observability, IAM access paths,
-  supply-chain impact, data lineage, network topology, and security attack
-  paths.
+  supply-chain impact, data lineage, network topology, and security attack paths.
 - Root README English/Korean module lists and example test commands already
   include the 0.5.0 example modules.
+- Aligned Ktor examples with shared bluetape4k-ktor-core modules.
 
 ## Verification Evidence
 
