@@ -4,14 +4,11 @@ Snapshot: 2026-06-01 KST
 Scope: open GitHub issues assigned to `debop`.
 Open count: 4 issues.
 
-## Current Release Gate
+## Current Direction
 
-Prepare and publish `0.5.0`.
-
-The `0.5.0` milestone has zero open issues and no open pull requests. The
-release line consumes `io.github.bluetape4k:bluetape4k-bom:1.10.0`, keeps
-`snapshotVersion=` empty, and has recent `develop` CI plus Examples workflow
-success on commit `8e4abdd`.
+The `0.5.0` stable line has been published and consumed by
+`bluetape4k-dependencies` `1.2.0`. Development now moves to `0.6.0` with
+`snapshotVersion=` kept empty for workflow-injected snapshot publication.
 
 ## Active Queue
 
@@ -40,13 +37,12 @@ success on commit `8e4abdd`.
   succeeded on commit `8e4abdd`.
 - Examples: `https://github.com/bluetape4k/bluetape4k-graph/actions/runs/26733305942`
   succeeded on commit `8e4abdd`.
-- Maven Central pre-release check:
-  `io.github.bluetape4k.graph:bluetape4k-graph-bom:0.5.0` is not yet
-  published, as expected before the stable release dispatch.
+- Maven Central release check:
+  `io.github.bluetape4k.graph:bluetape4k-graph-bom:0.5.0` is published and
+  managed by `bluetape4k-dependencies` `1.2.0`.
 
 ## Release Notes
 
-- Keep `0.5.0` focused on graph-ktor managed backend setup plus runnable domain
-  graph examples.
-- Move any new streaming, backend-native bulk loader, or Neptune work to `0.6.0`
-  or backlog unless it is release fallout.
+- Use `0.6.0` for graph-io streaming and backend-native bulk loader work.
+- Keep Neptune work in backlog until local or reliable integration testability
+  is proven.
