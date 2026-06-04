@@ -54,20 +54,20 @@ jobs:
 
       - name: Build (compile only)
         run: |
-          for attempt in 1 2 3; do
+          for attempt in 1 2 3 4 5; do
             ./gradlew --refresh-dependencies build -x test --parallel --no-configuration-cache && break
             echo "Attempt $attempt failed"
-            [ $attempt -lt 3 ] && sleep 10 || exit 1
+            [ $attempt -lt 5 ] && sleep 30 || exit 1
           done
         env:
           GRADLE_OPTS: "-Dorg.gradle.daemon=false"
 
       - name: Detekt static analysis
         run: |
-          for attempt in 1 2 3; do
+          for attempt in 1 2 3 4 5; do
             ./gradlew --refresh-dependencies detekt --parallel --no-configuration-cache && break
             echo "Attempt $attempt failed"
-            [ $attempt -lt 3 ] && sleep 10 || exit 1
+            [ $attempt -lt 5 ] && sleep 30 || exit 1
           done
 
       - name: Upload detekt report
@@ -100,7 +100,7 @@ jobs:
 
       - name: Test graph-core & graph-tinkerpop & graph-io
         run: |
-          for attempt in 1 2 3; do
+          for attempt in 1 2 3 4 5; do
             ./gradlew --refresh-dependencies --no-configuration-cache \
               :bluetape4k-graph-core:test \
               :bluetape4k-graph-tinkerpop:test \
@@ -112,7 +112,7 @@ jobs:
               :bluetape4k-graph-okio:test \
               --no-daemon --continue && break
             echo "Attempt $attempt failed"
-            [ $attempt -lt 3 ] && sleep 10 || exit 1
+            [ $attempt -lt 5 ] && sleep 30 || exit 1
           done
         env:
           GRADLE_OPTS: "-Dorg.gradle.daemon=false"
@@ -169,12 +169,12 @@ jobs:
 
       - name: Test Spring Boot
         run: |
-          for attempt in 1 2 3; do
+          for attempt in 1 2 3 4 5; do
             ./gradlew --refresh-dependencies --no-configuration-cache \
               :bluetape4k-graph-spring-boot:test \
               --no-daemon --continue && break
             echo "Attempt $attempt failed"
-            [ $attempt -lt 3 ] && sleep 10 || exit 1
+            [ $attempt -lt 5 ] && sleep 30 || exit 1
           done
         env:
           GRADLE_OPTS: "-Dorg.gradle.daemon=false"
@@ -191,14 +191,14 @@ jobs:
       - name: Test Spring Boot FalkorDB auto-configuration
         if: ${{ (github.event_name == 'schedule' && github.event.schedule == '7 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
         run: |
-          for attempt in 1 2 3; do
+          for attempt in 1 2 3 4 5; do
             ./gradlew --refresh-dependencies --no-configuration-cache \
               :bluetape4k-graph-spring-boot:test \
               --tests "*.FalkorDBSpringBootIntegrationTest" \
               --rerun-tasks \
               --no-daemon --continue && break
             echo "Attempt $attempt failed"
-            [ $attempt -lt 3 ] && sleep 10 || exit 1
+            [ $attempt -lt 5 ] && sleep 30 || exit 1
           done
         env:
           GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
@@ -271,10 +271,10 @@ jobs:
 
       - name: Test graph-ktor
         run: |
-          for attempt in 1 2 3; do
+          for attempt in 1 2 3 4 5; do
             ./gradlew --refresh-dependencies :bluetape4k-graph-ktor:test --no-daemon --continue --no-configuration-cache && break
             echo "Attempt $attempt failed"
-            [ $attempt -lt 3 ] && sleep 10 || exit 1
+            [ $attempt -lt 5 ] && sleep 30 || exit 1
           done
         env:
           GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
@@ -344,10 +344,10 @@ jobs:
 
       - name: Test graph-neo4j
         run: |
-          for attempt in 1 2 3; do
+          for attempt in 1 2 3 4 5; do
             ./gradlew --refresh-dependencies :bluetape4k-graph-neo4j:test --no-daemon --no-configuration-cache && break
             echo "Attempt $attempt failed"
-            [ $attempt -lt 3 ] && sleep 10 || exit 1
+            [ $attempt -lt 5 ] && sleep 30 || exit 1
           done
         env:
           GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
@@ -417,10 +417,10 @@ jobs:
 
       - name: Test graph-memgraph
         run: |
-          for attempt in 1 2 3; do
+          for attempt in 1 2 3 4 5; do
             ./gradlew --refresh-dependencies :bluetape4k-graph-memgraph:test --no-daemon --no-configuration-cache && break
             echo "Attempt $attempt failed"
-            [ $attempt -lt 3 ] && sleep 10 || exit 1
+            [ $attempt -lt 5 ] && sleep 30 || exit 1
           done
         env:
           GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
@@ -490,10 +490,10 @@ jobs:
 
       - name: Test graph-age
         run: |
-          for attempt in 1 2 3; do
+          for attempt in 1 2 3 4 5; do
             ./gradlew --refresh-dependencies :bluetape4k-graph-age:test --no-daemon --no-configuration-cache && break
             echo "Attempt $attempt failed"
-            [ $attempt -lt 3 ] && sleep 10 || exit 1
+            [ $attempt -lt 5 ] && sleep 30 || exit 1
           done
         env:
           GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
@@ -563,10 +563,10 @@ jobs:
 
       - name: Test graph-falkordb
         run: |
-          for attempt in 1 2 3; do
+          for attempt in 1 2 3 4 5; do
             ./gradlew --refresh-dependencies :bluetape4k-graph-falkordb:test --no-daemon --no-configuration-cache && break
             echo "Attempt $attempt failed"
-            [ $attempt -lt 3 ] && sleep 10 || exit 1
+            [ $attempt -lt 5 ] && sleep 30 || exit 1
           done
         env:
           GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
