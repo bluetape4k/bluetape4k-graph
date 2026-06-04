@@ -83,7 +83,7 @@ jobs:
 
       - name: Build and test example modules
         run: |
-          for attempt in 1 2 3; do
+          for attempt in 1 2 3 4 5; do
             ./gradlew \
               :code-graph-examples:build \
               :linkedin-graph-examples:build \
@@ -99,7 +99,7 @@ jobs:
               :security-attack-path-examples:build \
               --no-daemon --continue && break
             echo "Attempt $attempt failed"
-            [ $attempt -lt 3 ] && sleep 10 || exit 1
+            [ $attempt -lt 5 ] && sleep 30 || exit 1
           done
         env:
           GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
