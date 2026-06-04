@@ -120,11 +120,15 @@ jobs:
       - name: Generate Kover XML report
         if: always()
         run: |
-          ./gradlew --refresh-dependencies --no-configuration-cache \
-            :bluetape4k-graph-core:koverXmlReport \
-            :bluetape4k-graph-tinkerpop:koverXmlReport \
-            :bluetape4k-graph-okio:koverXmlReport \
-            --no-daemon
+          for attempt in 1 2 3 4 5; do
+            ./gradlew --refresh-dependencies --no-configuration-cache \
+              :bluetape4k-graph-core:koverXmlReport \
+              :bluetape4k-graph-tinkerpop:koverXmlReport \
+              :bluetape4k-graph-okio:koverXmlReport \
+              --no-daemon && break
+            echo "Attempt $attempt failed"
+            [ $attempt -lt 5 ] && sleep 30 || exit 1
+          done
         continue-on-error: true
 
       - name: Upload test results
@@ -211,9 +215,13 @@ jobs:
       - name: Generate Kover XML report
         if: always()
         run: |
-          ./gradlew --refresh-dependencies --no-configuration-cache \
-            :bluetape4k-graph-spring-boot:koverXmlReport \
-            --no-daemon
+          for attempt in 1 2 3 4 5; do
+            ./gradlew --refresh-dependencies --no-configuration-cache \
+              :bluetape4k-graph-spring-boot:koverXmlReport \
+              --no-daemon && break
+            echo "Attempt $attempt failed"
+            [ $attempt -lt 5 ] && sleep 30 || exit 1
+          done
         continue-on-error: true
 
       - name: Upload test results
@@ -281,7 +289,12 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew --refresh-dependencies :bluetape4k-graph-ktor:koverXmlReport --no-daemon --no-configuration-cache
+        run: |
+          for attempt in 1 2 3 4 5; do
+            ./gradlew --refresh-dependencies :bluetape4k-graph-ktor:koverXmlReport --no-daemon --no-configuration-cache && break
+            echo "Attempt $attempt failed"
+            [ $attempt -lt 5 ] && sleep 30 || exit 1
+          done
         continue-on-error: true
 
       - name: Upload test results
@@ -349,7 +362,12 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew --refresh-dependencies :bluetape4k-graph-neo4j:koverXmlReport --no-daemon --no-configuration-cache
+        run: |
+          for attempt in 1 2 3 4 5; do
+            ./gradlew --refresh-dependencies :bluetape4k-graph-neo4j:koverXmlReport --no-daemon --no-configuration-cache && break
+            echo "Attempt $attempt failed"
+            [ $attempt -lt 5 ] && sleep 30 || exit 1
+          done
         continue-on-error: true
 
       - name: Upload test results
@@ -417,7 +435,12 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew --refresh-dependencies :bluetape4k-graph-memgraph:koverXmlReport --no-daemon --no-configuration-cache
+        run: |
+          for attempt in 1 2 3 4 5; do
+            ./gradlew --refresh-dependencies :bluetape4k-graph-memgraph:koverXmlReport --no-daemon --no-configuration-cache && break
+            echo "Attempt $attempt failed"
+            [ $attempt -lt 5 ] && sleep 30 || exit 1
+          done
         continue-on-error: true
 
       - name: Upload test results
@@ -485,7 +508,12 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew --refresh-dependencies :bluetape4k-graph-age:koverXmlReport --no-daemon --no-configuration-cache
+        run: |
+          for attempt in 1 2 3 4 5; do
+            ./gradlew --refresh-dependencies :bluetape4k-graph-age:koverXmlReport --no-daemon --no-configuration-cache && break
+            echo "Attempt $attempt failed"
+            [ $attempt -lt 5 ] && sleep 30 || exit 1
+          done
         continue-on-error: true
 
       - name: Upload test results
@@ -553,7 +581,12 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew --refresh-dependencies :bluetape4k-graph-falkordb:koverXmlReport --no-daemon --no-configuration-cache
+        run: |
+          for attempt in 1 2 3 4 5; do
+            ./gradlew --refresh-dependencies :bluetape4k-graph-falkordb:koverXmlReport --no-daemon --no-configuration-cache && break
+            echo "Attempt $attempt failed"
+            [ $attempt -lt 5 ] && sleep 30 || exit 1
+          done
         continue-on-error: true
 
       - name: Upload test results
