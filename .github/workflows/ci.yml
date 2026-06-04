@@ -143,12 +143,22 @@ jobs:
           cache-read-only: ${{ github.event_name == 'pull_request' }}
 
       - name: Build (compile only)
-        run: ./gradlew build -x test --parallel
+        run: |
+          for attempt in 1 2 3; do
+            ./gradlew build -x test --parallel && break
+            echo "Attempt $attempt failed"
+            [ $attempt -lt 3 ] && sleep 10 || exit 1
+          done
         env:
           GRADLE_OPTS: "-Dorg.gradle.daemon=false"
 
       - name: Detekt static analysis
-        run: ./gradlew detekt --parallel
+        run: |
+          for attempt in 1 2 3; do
+            ./gradlew detekt --parallel && break
+            echo "Attempt $attempt failed"
+            [ $attempt -lt 3 ] && sleep 10 || exit 1
+          done
         env:
           GRADLE_OPTS: "-Dorg.gradle.daemon=false"
 
@@ -406,7 +416,7 @@ jobs:
       - name: Test graph-neo4j
         run: |
           for attempt in 1 2 3; do
-            ./gradlew :bluetape4k-graph-neo4j:test --no-daemon && break
+            ./gradlew :bluetape4k-graph-neo4j:test --no-daemon --no-configuration-cache && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 3 ] && sleep 10 || exit 1
           done
@@ -423,7 +433,12 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :bluetape4k-graph-neo4j:koverXmlReport --no-daemon
+        run: |
+          for attempt in 1 2 3; do
+            ./gradlew :bluetape4k-graph-neo4j:koverXmlReport --no-daemon --no-configuration-cache && break
+            echo "Attempt $attempt failed"
+            [ $attempt -lt 3 ] && sleep 10 || exit 1
+          done
         continue-on-error: true
 
       - name: Upload test results
