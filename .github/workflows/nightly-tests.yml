@@ -164,7 +164,7 @@ jobs:
           SPRING_PROFILES_ACTIVE: tinkergraph
 
       - name: Restore Testcontainers image cache
-        if: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
+        if: ${{ (github.event_name == 'schedule' && github.event.schedule == '7 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
         uses: ./.github/actions/testcontainers-image-cache
         with:
           mode: restore
@@ -172,7 +172,7 @@ jobs:
           restore-key: ${{ runner.os }}-testcontainers-images-v1-${{ github.job }}-
 
       - name: Test Spring Boot FalkorDB auto-configuration
-        if: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
+        if: ${{ (github.event_name == 'schedule' && github.event.schedule == '7 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
         run: |
           for attempt in 1 2 3; do
             ./gradlew --refresh-dependencies \
@@ -190,7 +190,7 @@ jobs:
           DOCKER_HOST: "unix:///var/run/docker.sock"
 
       - name: Save Testcontainers image cache
-        if: ${{ always() && ((github.event_name == 'schedule' && github.event.schedule == '0 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full')) }}
+        if: ${{ always() && ((github.event_name == 'schedule' && github.event.schedule == '7 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full')) }}
         uses: ./.github/actions/testcontainers-image-cache
         with:
           mode: save
@@ -222,7 +222,7 @@ jobs:
   # ── 4. Ktor Graph (Testcontainers) ───────────────────────────────────────
   test-graph-ktor:
     name: Test / Ktor Graph (Testcontainers)
-    if: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
+    if: ${{ (github.event_name == 'schedule' && github.event.schedule == '7 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
 
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -289,7 +289,7 @@ jobs:
   # ── 5. Neo4j (Testcontainers) ─────────────────────────────────────────────
   test-graph-neo4j:
     name: Test / Neo4j (Testcontainers)
-    if: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
+    if: ${{ (github.event_name == 'schedule' && github.event.schedule == '7 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
 
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -356,7 +356,7 @@ jobs:
   # ── 6. Memgraph (Testcontainers) ──────────────────────────────────────────
   test-graph-memgraph:
     name: Test / Memgraph (Testcontainers)
-    if: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
+    if: ${{ (github.event_name == 'schedule' && github.event.schedule == '7 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
 
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -423,7 +423,7 @@ jobs:
   # ── 7. Apache AGE (Testcontainers) ────────────────────────────────────────
   test-graph-age:
     name: Test / Apache AGE (Testcontainers)
-    if: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
+    if: ${{ (github.event_name == 'schedule' && github.event.schedule == '7 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
 
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -490,7 +490,7 @@ jobs:
   # ── 8. FalkorDB (Testcontainers) ──────────────────────────────────────────
   test-graph-falkordb:
     name: Test / FalkorDB (Testcontainers)
-    if: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
+    if: ${{ (github.event_name == 'schedule' && github.event.schedule == '7 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
 
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -568,7 +568,7 @@ jobs:
       - test-graph-memgraph
       - test-graph-age
       - test-graph-falkordb
-    if: ${{ always() && ((github.event_name == 'schedule' && github.event.schedule == '0 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full')) }}
+    if: ${{ always() && ((github.event_name == 'schedule' && github.event.schedule == '7 19 * * 0') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full')) }}
     steps:
       - uses: actions/checkout@v6
 
