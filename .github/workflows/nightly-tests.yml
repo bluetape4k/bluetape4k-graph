@@ -50,6 +50,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
+          cache-disabled: true
 
       - name: Build (compile only)
         run: ./gradlew --refresh-dependencies build -x test --parallel
@@ -84,6 +85,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
+          cache-disabled: true
           cache-read-only: true
 
       - name: Test graph-core & graph-tinkerpop & graph-io
@@ -148,6 +150,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
+          cache-disabled: true
           cache-read-only: true
 
       - name: Test Spring Boot
@@ -238,6 +241,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
+          cache-disabled: true
           cache-read-only: true
 
       - name: Restore Testcontainers image cache
@@ -305,6 +309,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
+          cache-disabled: true
           cache-read-only: true
 
       - name: Restore Testcontainers image cache
@@ -372,6 +377,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
+          cache-disabled: true
           cache-read-only: true
 
       - name: Restore Testcontainers image cache
@@ -439,6 +445,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
+          cache-disabled: true
           cache-read-only: true
 
       - name: Restore Testcontainers image cache
@@ -506,6 +513,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
+          cache-disabled: true
           cache-read-only: true
 
       - name: Restore Testcontainers image cache
@@ -580,6 +588,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
+          cache-disabled: true
           cache-read-only: true
 
       - uses: actions/setup-python@v6
