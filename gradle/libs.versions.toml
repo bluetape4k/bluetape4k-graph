@@ -142,13 +142,13 @@ jakarta-xml-bind = { module = "jakarta.xml.bind:jakarta.xml.bind-api" }  # versi
 
 # Apache Commons
 commons-beanutils = { module = "commons-beanutils:commons-beanutils", version = "1.11.0" }  # https://mvnrepository.com/artifact/commons-beanutils/commons-beanutils
-commons-compress = { module = "org.apache.commons:commons-compress", version = "1.27.1" }  # https://mvnrepository.com/artifact/org.apache.commons/commons-compress
+commons-compress = { module = "org.apache.commons:commons-compress", version = "1.28.0" }  # https://mvnrepository.com/artifact/org.apache.commons/commons-compress
 commons-codec = { module = "commons-codec:commons-codec" }  # version from bt4k catalog
 commons-collections4 = { module = "org.apache.commons:commons-collections4", version = "4.5.0" }  # https://mvnrepository.com/artifact/org.apache.commons/commons-collections4
 commons-csv = { module = "org.apache.commons:commons-csv" }  # version from bt4k catalog
 commons-exec = { module = "org.apache.commons:commons-exec" }  # version from bt4k catalog
 commons-io = { module = "commons-io:commons-io" }  # version from bt4k catalog
-commons-lang3 = { module = "org.apache.commons:commons-lang3", version = "3.17.0" }  # https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+commons-lang3 = { module = "org.apache.commons:commons-lang3", version = "3.20.0" }  # https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
 commons-logging = { module = "commons-logging:commons-logging" }  # version from bt4k catalog
 commons-math3 = { module = "org.apache.commons:commons-math3", version = "3.6.1" }  # https://mvnrepository.com/artifact/org.apache.commons/commons-math3
 commons-pool2 = { module = "org.apache.commons:commons-pool2" }  # version from bt4k catalog

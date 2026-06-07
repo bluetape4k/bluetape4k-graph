@@ -332,7 +332,7 @@ dependencies {
     implementation("org.lz4:lz4-java:1.8.0")
     implementation("org.xerial.snappy:snappy-java:1.1.10.7")
     implementation("com.github.luben:zstd-jni:1.5.6-6")
-    implementation("org.apache.commons:commons-compress:1.27.1")
+    implementation("org.apache.commons:commons-compress:1.28.0")
 }
 ```
 
