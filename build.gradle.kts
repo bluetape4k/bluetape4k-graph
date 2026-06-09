@@ -71,6 +71,7 @@ allprojects {
 // Capture root-project catalog reference once; used inside subprojects {} closures
 // where `libs` is not in scope (different receiver type in the lambda).
 val rootLibs = libs
+val detektSupportedKotlinVersion = "2.3.21"
 val bt4kCatalog = extensions.getByType<org.gradle.api.artifacts.VersionCatalogsExtension>().named("bt4k")
 fun bt4kVersion(alias: String): String {
     val version = bt4kCatalog.findVersion(alias).get()
@@ -171,6 +172,14 @@ subprojects {
         extensions.configure<dev.detekt.gradle.extensions.DetektExtension>("detekt") {
             baseline.set(detektBaselineFile)
             buildUponDefaultConfig.set(true)
+        }
+        configurations.named("detekt") {
+            resolutionStrategy.eachDependency {
+                if (requested.group == "org.jetbrains.kotlin") {
+                    useVersion(detektSupportedKotlinVersion)
+                    because("detekt 2.0.0-alpha.3 is built and validated with Kotlin 2.3.21")
+                }
+            }
         }
     }
 
