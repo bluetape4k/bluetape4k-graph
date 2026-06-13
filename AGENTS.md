@@ -1,5 +1,10 @@
 # AGENTS.md - bluetape4k-graph
 
+This repository inherits the workspace guidance from `../AGENTS.md`.
+Read and follow the workspace root guide first. This file only adds
+repo-specific layout, commands, domain rules, and local exceptions.
+
+
 Graph database integration library for Neo4j, Memgraph, Apache AGE,
 TinkerPop/TinkerGraph, and FalkorDB. The project provides paired synchronous
 and coroutine APIs, virtual-thread adapters, graph-io bulk import/export,
@@ -9,8 +14,6 @@ and a BOM.
 - Kotlin: 2.3
 - Java: 21 with preview enabled
 - Dependency versions: `gradle/libs.versions.toml`
-- Public/contributor-facing docs and KDoc: English
-- Library-user README files: keep `README.md` and `README.ko.md` in sync
 
 ## Layout
 
@@ -144,23 +147,16 @@ mocks only.
 
 ## Documentation
 
-- Root README updates must keep `README.md` and `README.ko.md` structurally in
-  sync.
-- Public API changes require English KDoc with a one-line summary, behavior
-  contract, and callable Kotlin example when useful.
-- README architecture diagrams should use Mermaid.
-- Root README hero assets live under `docs/assets/`. Use generated raster
+- `docs/assets/` is the graph repo root README asset path. Use generated raster
   images for final README visuals; `.github/profile/assets/` may be used only
   as visual direction.
 - Update `WIP.md`, `CHANGELOG.md`, and lessons after substantial work or when
   project state changes.
 
-## Cross-Repo Lesson Guards
+## Repo-Specific Guards
 
-- Before issue, PR, workflow, release, or module-registration work, query GNO
-  for this repo in both `bluetape4k-github` and `bluetape4k-docs`.
-- For graph backend or example module changes, keep README locale sets,
-  repo-local module lists, examples workflow, Nightly/full coverage, coverage
-  artifacts, and BOM/catalog constraints synchronized.
+- For graph backend or example module changes, keep backend-specific examples
+  workflow coverage, Nightly/full coverage, and graph BOM/catalog constraints
+  synchronized with the changed backend.
 - Run graph database Testcontainers verification sequentially across modules
   and worktrees. A pass-after-retry still needs a short lifecycle/timing note.
