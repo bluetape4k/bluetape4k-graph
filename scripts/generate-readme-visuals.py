@@ -1908,6 +1908,84 @@ def graph_neo4j_operations_class_svg() -> str:
     return close_svg(out)
 
 
+def graph_neo4j_coroutine_session_class_svg() -> str:
+    width, height = 1840, 1100
+    out = open_svg(
+        "Neo4jCoroutineSession Class Model",
+        "Small AutoCloseable bridge that opens a ReactiveSession, runs Query publishers, collects records through Flow, and closes sessions without owning Driver",
+        width,
+        height,
+    )
+    out[-1] = (
+        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: graph-neo4j / Neo4jCoroutineSession</text>'
+    )
+    out.append('<rect x="70" y="150" width="1700" height="800" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+
+    def relation_label(x: float, y: float, text: str) -> None:
+        out.append(f'<text x="{x}" y="{y}" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">{esc(text)}</text>')
+        out.append(f'<text x="{x}" y="{y}" text-anchor="middle" class="tiny">{esc(text)}</text>')
+
+    # Relations are drawn first; cards sit above them.
+    arrow(out, 395, 330, 560, 330, "constructs", "line")
+    arrow(out, 920, 330, 1080, 330, "opens", "line")
+    arrow(out, 1270, 430, 1270, 555, "run Query", "line")
+    arrow(out, 1200, 740, 960, 740, "", "line")
+    arrow(out, 760, 705, 760, 520, "toList()", "thin")
+    arrow(out, 1080, 835, 960, 835, "", "thin")
+    arrow(out, 760, 520, 455, 520, "List<Record>", "line")
+    relation_label(760, 252, "Driver ownership remains external")
+    relation_label(1080, 730, "records().asFlow()")
+    relation_label(970, 810, "finally close")
+
+    card(out, 125, 255, 270, 160, "Caller", [
+        "suspend service",
+        "read/write block",
+        "query helper call",
+    ], PALETTE["sky"])
+    card(out, 125, 470, 330, 170, "Result Contract", [
+        "read(block): List<T>",
+        "write(block): List<T>",
+        "runReadQuery(): List<Record>",
+        "runWriteQuery(): List<Record>",
+    ], PALETTE["mint"])
+
+    card(out, 560, 235, 360, 330, "Neo4jCoroutineSession", [
+        "driver: Driver",
+        "database: String = neo4j",
+        "sessionConfig()",
+        "close() leaves driver open",
+        "requires non-blank Cypher",
+    ], PALETTE["lemon"])
+    card(out, 560, 650, 400, 145, "kotlinx-coroutines-reactive", [
+        "awaitSingle()",
+        "awaitFirstOrNull()",
+        "Publisher<Record>.asFlow()",
+    ], PALETTE["aqua"])
+
+    card(out, 1080, 245, 380, 170, "ReactiveSession", [
+        "driver.session(ReactiveSession)",
+        "SessionConfig.withDatabase",
+        "one session per operation",
+    ], PALETTE["lavender"])
+    card(out, 1080, 550, 380, 160, "Reactive Result Stream", [
+        "Query(cypher, params)",
+        "result.records() publisher",
+        "Record values returned",
+    ], PALETTE["peach"])
+    card(out, 1080, 810, 380, 120, "Session Close", [
+        "session.close<Void>()",
+        "awaitFirstOrNull() in finally",
+    ], PALETTE["rose"])
+
+    out.append('<rect x="180" y="990" width="1480" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+    out.append(
+        '<text x="920" y="1023" text-anchor="middle" class="tiny">'
+        'Source: Neo4jCoroutineSession.kt; read/write collect Flow values, query helpers collect Record publisher values, and close() does not close Driver.</text>'
+    )
+    return close_svg(out)
+
+
 def class_svg(slug: str) -> str:
     if slug == "graph-graph-core-class-02":
         return graph_core_model_class_svg()
@@ -1925,6 +2003,8 @@ def class_svg(slug: str) -> str:
         return graph_age_type_parser_class_svg()
     if slug == "graph-graph-neo4j-class-03":
         return graph_neo4j_operations_class_svg()
+    if slug == "graph-graph-neo4j-class-04":
+        return graph_neo4j_coroutine_session_class_svg()
     title = "Backend Capability Matrix" if "capability" in slug else f"{module_title(slug)} Class Model"
     subtitle = "Contracts, data classes, and adapter responsibilities"
     out = open_svg(title, subtitle)
