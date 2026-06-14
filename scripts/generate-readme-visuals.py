@@ -213,6 +213,8 @@ def architecture_svg(slug: str) -> str:
         return graph_age_execution_flow_svg()
     if slug == "graph-graph-age-architecture-10":
         return graph_age_agtype_parse_flow_svg()
+    if slug == "graph-graph-age-architecture-12":
+        return graph_age_test_environment_svg()
     title = "Bluetape4k Graph Overview" if slug.startswith("root") else f"{module_title(slug)} Architecture"
     subtitle = "Current README and module source model"
     out = open_svg(title, subtitle)
@@ -772,6 +774,97 @@ def graph_age_agtype_parse_flow_svg() -> str:
     out.append(
         '<text x="920" y="1093" text-anchor="middle" class="tiny">'
         'Source: AgeTypeParser.kt; suffix dispatch and lightweight JSON parsing convert AGE agtype strings into graph-core model types.</text>'
+    )
+    return close_svg(out)
+
+
+def graph_age_test_environment_svg() -> str:
+    width, height = 1840, 1180
+    out = open_svg(
+        "Graph AGE Test Environment",
+        "Integration tests wire PostgreSQL AGE Testcontainers, HikariCP connection initialization, Exposed, and sync/suspend operations",
+        width,
+        height,
+    )
+    out[-1] = (
+        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: graph-age / Test Environment</text>'
+    )
+    out.append('<rect x="70" y="150" width="1700" height="880" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+
+    def relation_label(x: float, y: float, text: str) -> None:
+        out.append(f'<text x="{x}" y="{y}" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">{esc(text)}</text>')
+        out.append(f'<text x="{x}" y="{y}" text-anchor="middle" class="tiny">{esc(text)}</text>')
+
+    # Draw arrows first so card text stays on top.
+    arrow(out, 390, 300, 485, 300, "launcher", "line")
+    arrow(out, 770, 300, 865, 300, "image", "line")
+    arrow(out, 1150, 300, 1245, 300, "jdbcUrl", "line")
+    arrow(out, 1425, 405, 1425, 510, "pool", "thin")
+    arrow(out, 250, 375, 665, 510, "construct ops", "line")
+    arrow(out, 870, 595, 1060, 595, "uses Exposed tx", "line")
+    arrow(out, 465, 680, 300, 790, "reset graph", "thin")
+    arrow(out, 680, 680, 680, 790, "create/read/write", "thin")
+    arrow(out, 870, 680, 1060, 790, "exec SQL", "thin")
+    arrow(out, 1250, 840, 1425, 840, "agtype", "line")
+    relation_label(920, 760, "same graphName boundary")
+
+    card(out, 120, 225, 270, 150, "JUnit Tests", [
+        "@BeforeAll setup",
+        "@BeforeEach resetGraph",
+        "runSuspendIO / runTest",
+    ], PALETTE["sky"])
+    card(out, 485, 225, 285, 150, "PostgreSQLAgeServer", [
+        "Launcher.postgresqlAge",
+        "shared Testcontainer",
+        "jdbcUrl/user/password",
+    ], PALETTE["mint"])
+    card(out, 865, 225, 285, 150, "Docker AGE", [
+        "apache/age:PG16_latest",
+        "PostgreSQL + AGE extension",
+        "CREATE EXTENSION once",
+    ], PALETTE["lemon"])
+    card(out, 1245, 225, 360, 180, "HikariCP DataSource", [
+        "driverClassName PostgreSQL",
+        "maximumPoolSize = 5",
+        "connectionInitSql loads AGE",
+        "sets ag_catalog search_path",
+    ], PALETTE["rose"])
+    card(out, 1060, 510, 365, 170, "Exposed Database", [
+        "Database.connect(dataSource)",
+        "TransactionManager.exec(...)",
+        "JDBC transaction boundary",
+    ], PALETTE["aqua"])
+    card(out, 465, 510, 405, 170, "Graph Operations Under Test", [
+        "AgeGraphOperations(graphName)",
+        "AgeGraphSuspendOperations(graphName)",
+        "sync and suspend tests share setup",
+    ], PALETTE["lavender"])
+    card(out, 120, 790, 360, 170, "Graph Reset", [
+        "if graphExists -> dropGraph",
+        "createGraph(test_graph)",
+        "clean state per test",
+    ], PALETTE["peach"])
+    card(out, 560, 790, 360, 170, "Test Operations", [
+        "createVertex / createEdge",
+        "neighbors / shortestPath",
+        "merge and algorithm scenarios",
+    ], PALETTE["sky"])
+    card(out, 1060, 790, 360, 170, "PostgreSQL AGE Exec", [
+        "AgeSql.cypher(...)",
+        "ag_catalog.cypher executes",
+        "returns agtype columns",
+    ], PALETTE["mint"])
+    card(out, 1425, 790, 285, 170, "Assertions", [
+        "AgeTypeParser maps results",
+        "GraphVertex / Edge / Path",
+        "bluetape4k assertions",
+    ], PALETTE["lemon"])
+
+    out.append('<rect x="180" y="1060" width="1480" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+    out.append(
+        '<text x="920" y="1093" text-anchor="middle" class="tiny">'
+        'Source: AgeGraphOperationsTest.kt, AgeGraphSuspendOperationsTest.kt, README setup; every pooled connection runs LOAD age and search_path.</text>'
     )
     return close_svg(out)
 
