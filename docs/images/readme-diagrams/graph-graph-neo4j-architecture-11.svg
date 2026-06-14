@@ -1,100 +1,110 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="2735" height="783" viewBox="0 0 2735 783" role="img" aria-label="Neo4j">
-<defs>
-  <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="7" stdDeviation="8" flood-color="#1f2937" flood-opacity="0.10"/></filter>
-  <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth"><path d="M1,1 L8,4.5 L1,8 Z" fill="#758297"/></marker>
-  <style>
-    .canvas{fill:#f7f9fc}.frame{fill:#fff;stroke:#d8e0ea;stroke-width:1.5}
-    .title{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:40px;font-weight:400;fill:#102033}
-    .subtitle{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:14px;font-weight:400;fill:#536273}
-    .label{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:21px;font-weight:400;fill:#102033}
-    .small{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:12px;font-weight:400;fill:#536273}
-    .strong{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:13px;font-weight:400;fill:#102033}
-    .card{stroke-width:2.0;filter:url(#shadow)}
-    .line{stroke:#758297;stroke-width:2.1;fill:none;marker-end:url(#arrow)}
-    .dashed{stroke:#758297;stroke-width:2.1;stroke-dasharray:7 6;fill:none;marker-end:url(#arrow)}
-    .lifeline{stroke:#b7c2d1;stroke-width:1.8;stroke-dasharray:9 9}
-  </style>
-</defs>
-<rect class="canvas" width="2735" height="783"/>
-<rect class="frame" x="32" y="28" width="2671" height="727" rx="28"/>
-<text class="title" x="66" y="82">Neo4j</text>
-<text class="subtitle" x="70" y="116">Graphviz-derived layout and orthogonal route evidence</text>
-<path class="line" d="M1650.4 205.3 L1650.4 249.2 L1650.4 326.3 L1650.4 326.3 L1650.4 326.3 L800.6 326.3 L800.6 326.3"/>
-<path class="line" d="M1742.5 205.7 L1742.5 205.7 L1742.5 288.0 L1742.5 288.0"/>
-<path class="line" d="M1834.6 205.7 L1834.6 252.2 L1834.6 336.1 L1834.6 336.1 L1834.6 336.1 L1897.7 336.1 L1897.7 336.1"/>
-<path class="line" d="M677.0 336.1 L544.0 336.1 L205.2 336.1 L205.2 336.1 L205.2 336.1 L205.2 448.4 L205.2 448.4"/>
-<path class="line" d="M721.5 366.3 L721.5 412.8 L721.5 496.7 L721.5 496.7 L721.5 496.7 L691.7 496.7 L691.7 496.7"/>
-<path class="line" d="M773.6 366.3 L773.6 366.3 L773.6 448.6 L773.6 448.6"/>
-<path class="line" d="M1659.2 345.9 L1523.7 345.9 L1270.5 345.9 L1270.5 345.9 L1270.5 345.9 L1270.5 448.9 L1270.5 448.9"/>
-<path class="line" d="M1669.9 366.3 L1669.9 366.3 L1669.9 448.6 L1669.9 448.6"/>
-<path class="line" d="M1785.1 366.3 L1785.1 366.3 L1785.1 448.6 L1785.1 448.6"/>
-<path class="line" d="M1798.5 366.2 L1798.5 394.6 L1798.5 432.8 L1798.5 432.8 L1798.5 432.8 L2219.4 432.8 L2219.4 432.8 L2219.4 432.8 L2219.4 448.9 L2219.4 448.9"/>
-<path class="line" d="M1811.9 365.8 L1811.9 382.5 L1811.9 400.0 L1811.9 400.0 L1811.9 400.0 L2547.2 400.0 L2547.2 400.0 L2547.2 400.0 L2547.2 448.6 L2547.2 448.6"/>
-<path class="line" d="M205.2 526.9 L205.2 573.5 L205.2 657.3 L205.2 657.3 L205.2 657.3 L459.2 657.3 L459.2 657.3"/>
-<path class="line" d="M556.0 526.9 L556.0 526.9 L556.0 609.2 L556.0 609.2"/>
-<path class="line" d="M901.8 526.9 L901.8 569.7 L901.8 642.6 L901.8 642.6 L901.8 642.6 L652.5 642.6 L652.5 642.6"/>
-<path class="line" d="M1270.5 526.5 L1270.5 576.5 L1270.5 672.1 L1270.5 672.1 L1270.5 672.1 L1807.3 672.1 L1807.3 672.1"/>
-<path class="line" d="M1591.7 526.9 L1591.7 573.5 L1591.7 657.3 L1591.7 657.3 L1591.7 657.3 L1807.6 657.3 L1807.6 657.3"/>
-<path class="line" d="M1893.2 526.9 L1893.2 526.9 L1893.2 609.2 L1893.2 609.2"/>
-<path class="line" d="M2219.4 526.5 L2219.4 570.4 L2219.4 647.5 L2219.4 647.5 L2219.4 647.5 L1978.9 647.5 L1978.9 647.5"/>
-<path class="line" d="M2547.2 526.4 L2547.2 575.2 L2547.2 667.2 L2547.2 667.2 L2547.2 667.2 L1979.5 667.2 L1979.5 667.2"/>
-<g transform="translate(1627.3,133.5)">
-<rect class="card" x="0" y="0" width="230.6" height="84.0" rx="14" fill="#E8F3FF" stroke="#5B8DEF"/>
-<text class="label" x="115.3" y="42.0" text-anchor="middle">Neo4j Data Model</text>
-</g>
-<g transform="translate(624.7,294.1)">
-<rect class="card" x="0" y="0" width="210.0" height="84.0" rx="14" fill="#EAF7EF" stroke="#58A978"/>
-<text class="label" x="105.0" y="42.0" text-anchor="middle">Node ()</text>
-</g>
-<g transform="translate(1637.5,294.1)">
-<rect class="card" x="0" y="0" width="210.0" height="84.0" rx="14" fill="#FFF3D9" stroke="#D6A441"/>
-<text class="label" x="105.0" y="42.0" text-anchor="middle">Relationship ()</text>
-</g>
-<g transform="translate(1888.3,294.1)">
-<rect class="card" x="0" y="0" width="210.0" height="84.0" rx="14" fill="#FDECEF" stroke="#DC6B82"/>
-<text class="label" x="105.0" y="42.0" text-anchor="middle">Properties ()</text>
-</g>
-<g transform="translate(50.0,449.7)">
-<rect class="card" x="0" y="0" width="310.5" height="94.0" rx="14" fill="#E9F7F6" stroke="#45A7A1"/>
-<text class="label" x="155.2" y="35.0" text-anchor="middle">elementId()</text>
-<text class="label" x="155.2" y="59.0" text-anchor="middle">3:00:00:00:01</text>
-</g>
-<g transform="translate(424.7,454.7)">
-<rect class="card" x="0" y="0" width="262.5" height="84.0" rx="14" fill="#F1ECFF" stroke="#8A72D6"/>
-<text class="label" x="131.3" y="42.0" text-anchor="middle">labels() [User, Admin]</text>
-</g>
-<g transform="translate(751.5,449.7)">
-<rect class="card" x="0" y="0" width="300.6" height="94.0" rx="14" fill="#F4F7FA" stroke="#8CA0B8"/>
-<text class="label" x="150.3" y="35.0" text-anchor="middle">asMap() {name, email,</text>
-<text class="label" x="150.3" y="59.0" text-anchor="middle">age}</text>
-</g>
-<g transform="translate(1115.3,449.7)">
-<rect class="card" x="0" y="0" width="310.5" height="94.0" rx="14" fill="#FFF0E4" stroke="#D98A4A"/>
-<text class="label" x="155.2" y="35.0" text-anchor="middle">elementId()</text>
-<text class="label" x="155.2" y="59.0" text-anchor="middle">5:00:00:00:01</text>
-</g>
-<g transform="translate(1486.7,454.7)">
-<rect class="card" x="0" y="0" width="210.0" height="84.0" rx="14" fill="#E8F3FF" stroke="#5B8DEF"/>
-<text class="label" x="105.0" y="42.0" text-anchor="middle">type() KNOWS</text>
-</g>
-<g transform="translate(1757.7,454.7)">
-<rect class="card" x="0" y="0" width="271.1" height="84.0" rx="14" fill="#EAF7EF" stroke="#58A978"/>
-<text class="label" x="135.6" y="42.0" text-anchor="middle">startNodeElementId()</text>
-</g>
-<g transform="translate(2092.4,454.7)">
-<rect class="card" x="0" y="0" width="253.9" height="84.0" rx="14" fill="#FFF3D9" stroke="#D6A441"/>
-<text class="label" x="127.0" y="42.0" text-anchor="middle">endNodeElementId()</text>
-</g>
-<g transform="translate(2410.4,454.7)">
-<rect class="card" x="0" y="0" width="273.6" height="84.0" rx="14" fill="#FDECEF" stroke="#DC6B82"/>
-<text class="label" x="136.8" y="42.0" text-anchor="middle">asMap() {since, weight}</text>
-</g>
-<g transform="translate(451.0,615.3)">
-<rect class="card" x="0" y="0" width="210.0" height="84.0" rx="14" fill="#E9F7F6" stroke="#45A7A1"/>
-<text class="label" x="105.0" y="42.0" text-anchor="middle">GraphVertex</text>
-</g>
-<g transform="translate(1788.2,615.3)">
-<rect class="card" x="0" y="0" width="210.0" height="84.0" rx="14" fill="#F1ECFF" stroke="#8A72D6"/>
-<text class="label" x="105.0" y="42.0" text-anchor="middle">GraphEdge</text>
-</g>
+<svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1080" viewBox="0 0 1840 1080">
+
+    <defs>
+      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
+        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
+      </filter>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+      </marker>
+    </defs>
+    <style>
+      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
+      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
+      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
+      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
+      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
+      .card { filter: url(#softShadow); }
+      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
+    </style>
+
+<rect x="0" y="0" width="1840" height="1080" fill="#F8FAFC"/>
+<rect x="24" y="24" width="1792" height="1032" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
+<circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
+<circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
+<circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
+<text x="72" y="82" class="title">Neo4j Data Model Mapping</text>
+<text x="74" y="118" class="subtitle">Neo4j Node, Relationship, and Path values are mapped to graph-core Vertex, Edge, and Path models using Neo4j 5.x element IDs</text>
+<text x="920.0" y="1032" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: graph-neo4j / Data Model Mapping</text>
+<rect x="70" y="150" width="1700" height="780" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+<path d="M 405 325 C 497.5 325, 497.5 325, 590 325" class="line"/>
+<text x="497.5" y="297.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">nodeToVertex</text>
+<text x="497.5" y="297.0" text-anchor="middle" class="tiny">nodeToVertex</text>
+<path d="M 405 585 C 497.5 585, 497.5 585, 590 585" class="line"/>
+<text x="497.5" y="557.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">relationshipToEdge</text>
+<text x="497.5" y="557.0" text-anchor="middle" class="tiny">relationshipToEdge</text>
+<path d="M 960 325 C 1047.5 325, 1047.5 325, 1135 325" class="thin"/>
+<text x="1047.5" y="297.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">GraphElementId</text>
+<text x="1047.5" y="297.0" text-anchor="middle" class="tiny">GraphElementId</text>
+<path d="M 960 585 C 1047.5 585, 1047.5 585, 1135 585" class="thin"/>
+<text x="1047.5" y="557.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">GraphElementId</text>
+<text x="1047.5" y="557.0" text-anchor="middle" class="tiny">GraphElementId</text>
+<path d="M 760 705 C 760.0 705, 760.0 730, 760 730" class="line"/>
+<path d="M 1135 825 C 1272.5 825, 1272.5 770, 1410 770" class="thin"/>
+<text x="1272.5" y="769.5" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">ordered steps</text>
+<text x="1272.5" y="769.5" text-anchor="middle" class="tiny">ordered steps</text>
+<text x="920" y="220" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">Neo4j numeric id() is not used</text>
+<text x="920" y="220" text-anchor="middle" class="tiny">Neo4j numeric id() is not used</text>
+<text x="860" y="715" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">pathToGraphPath</text>
+<text x="860" y="715" text-anchor="middle" class="tiny">pathToGraphPath</text>
+<rect x="125" y="250" width="280" height="180" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+<rect x="135" y="260" width="12" height="160" rx="6" fill="#3B82F6" opacity="0.95"/>
+<text x="147" y="290" class="label">Neo4j Node</text>
+<text x="149" y="326" class="small">elementId()</text>
+<text x="149" y="354" class="small">labels().firstOrNull()</text>
+<text x="149" y="382" class="small">asMap() properties</text>
+<text x="149" y="410" class="small">Record key: n / neighbor</text>
+<rect x="125" y="510" width="280" height="180" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
+<rect x="135" y="520" width="12" height="160" rx="6" fill="#22C55E" opacity="0.95"/>
+<text x="147" y="550" class="label">Neo4j Relationship</text>
+<text x="149" y="586" class="small">elementId()</text>
+<text x="149" y="614" class="small">startNodeElementId()</text>
+<text x="149" y="642" class="small">endNodeElementId()</text>
+<text x="149" y="670" class="small">type() + asMap()</text>
+<rect x="590" y="250" width="370" height="180" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
+<rect x="600" y="260" width="12" height="160" rx="6" fill="#EAB308" opacity="0.95"/>
+<text x="612" y="290" class="label">GraphVertex</text>
+<text x="614" y="326" class="small">id: GraphElementId</text>
+<text x="614" y="354" class="small">label: first node label</text>
+<text x="614" y="382" class="small">Unknown when no label</text>
+<text x="614" y="410" class="small">properties: Map</text>
+<rect x="590" y="510" width="370" height="180" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
+<rect x="600" y="520" width="12" height="160" rx="6" fill="#8B5CF6" opacity="0.95"/>
+<text x="612" y="550" class="label">GraphEdge</text>
+<text x="614" y="586" class="small">id: GraphElementId</text>
+<text x="614" y="614" class="small">label: rel.type()</text>
+<text x="614" y="642" class="small">startId / endId</text>
+<text x="614" y="670" class="small">properties: Map</text>
+<rect x="1135" y="250" width="355" height="180" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="3" class="card"/>
+<rect x="1145" y="260" width="12" height="160" rx="6" fill="#EF4444" opacity="0.95"/>
+<text x="1157" y="290" class="label">Stable ID Policy</text>
+<text x="1159" y="326" class="small">GraphElementId(value)</text>
+<text x="1159" y="354" class="small">elementId-based lookup</text>
+<text x="1159" y="382" class="small">Neo4j 5.x compatible</text>
+<text x="1159" y="410" class="small">deprecated id() avoided</text>
+<rect x="1135" y="510" width="355" height="180" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
+<rect x="1145" y="520" width="12" height="160" rx="6" fill="#F97316" opacity="0.95"/>
+<text x="1157" y="550" class="label">Cypher Endpoints</text>
+<text x="1159" y="586" class="small">MATCH by elementId(a)</text>
+<text x="1159" y="614" class="small">MATCH by elementId(b)</text>
+<text x="1159" y="642" class="small">relationship endpoints use</text>
+<text x="1159" y="670" class="small">start/end element IDs</text>
+<rect x="470" y="730" width="580" height="180" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
+<rect x="480" y="740" width="12" height="160" rx="6" fill="#14B8A6" opacity="0.95"/>
+<text x="492" y="770" class="label">Neo4j Path</text>
+<text x="494" y="806" class="small">nodes().toList()</text>
+<text x="494" y="834" class="small">relationships().toList()</text>
+<text x="494" y="862" class="small">each node becomes VertexStep</text>
+<text x="494" y="890" class="small">each relationship becomes EdgeStep</text>
+<rect x="1410" y="720" width="300" height="180" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+<rect x="1420" y="730" width="12" height="160" rx="6" fill="#3B82F6" opacity="0.95"/>
+<text x="1432" y="760" class="label">GraphPath</text>
+<text x="1434" y="796" class="small">List&lt;PathStep&gt;</text>
+<text x="1434" y="824" class="small">VertexStep</text>
+<text x="1434" y="852" class="small">EdgeStep</text>
+<text x="1434" y="880" class="small">cost + metadata defaults</text>
+<rect x="180" y="965" width="1480" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
+<text x="920" y="998" text-anchor="middle" class="tiny">Source: Neo4jRecordMapper.kt and graph-neo4j README; Path mapping preserves node/relationship order as graph-core PathStep values.</text>
 </svg>
