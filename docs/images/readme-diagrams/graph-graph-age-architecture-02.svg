@@ -1,78 +1,113 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="980" height="1747" viewBox="0 0 980 1747" role="img" aria-label="Apache AGE">
-<defs>
-  <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="7" stdDeviation="8" flood-color="#1f2937" flood-opacity="0.10"/></filter>
-  <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth"><path d="M1,1 L8,4.5 L1,8 Z" fill="#758297"/></marker>
-  <style>
-    .canvas{fill:#f7f9fc}.frame{fill:#fff;stroke:#d8e0ea;stroke-width:1.5}
-    .title{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:40px;font-weight:400;fill:#102033}
-    .subtitle{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:14px;font-weight:400;fill:#536273}
-    .label{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:21px;font-weight:400;fill:#102033}
-    .small{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:12px;font-weight:400;fill:#536273}
-    .strong{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:13px;font-weight:400;fill:#102033}
-    .card{stroke-width:2.0;filter:url(#shadow)}
-    .line{stroke:#758297;stroke-width:2.1;fill:none;marker-end:url(#arrow)}
-    .dashed{stroke:#758297;stroke-width:2.1;stroke-dasharray:7 6;fill:none;marker-end:url(#arrow)}
-    .lifeline{stroke:#b7c2d1;stroke-width:1.8;stroke-dasharray:9 9}
-  </style>
-</defs>
-<rect class="canvas" width="980" height="1747"/>
-<rect class="frame" x="32" y="28" width="916" height="1691" rx="28"/>
-<text class="title" x="66" y="82">Apache AGE</text>
-<text class="subtitle" x="70" y="116">Graphviz-derived layout and orthogonal route evidence</text>
-<path class="line" d="M293.1 205.7 L293.1 205.7 L293.1 288.0 L293.1 288.0"/>
-<path class="line" d="M293.1 366.3 L293.1 366.3 L293.1 448.6 L293.1 448.6"/>
-<path class="line" d="M293.1 526.9 L293.1 526.9 L293.1 609.2 L293.1 609.2"/>
-<path class="line" d="M293.1 687.5 L293.1 687.5 L293.1 769.8 L293.1 769.8"/>
-<path class="line" d="M293.1 848.1 L293.1 848.1 L293.1 930.4 L293.1 930.4"/>
-<path class="line" d="M293.1 1008.7 L293.1 1008.7 L293.1 1091.0 L293.1 1091.0"/>
-<path class="line" d="M293.1 1169.3 L293.1 1169.3 L293.1 1251.6 L293.1 1251.6"/>
-<path class="line" d="M293.1 1330.0 L293.1 1330.0 L293.1 1412.2 L293.1 1412.2"/>
-<path class="line" d="M293.1 1490.6 L293.1 1490.6 L293.1 1572.8 L293.1 1572.8"/>
-<g transform="translate(50.0,118.0)">
-<rect class="card" x="0" y="0" width="486.2" height="115.0" rx="14" fill="#E8F3FF" stroke="#5B8DEF"/>
-<text class="label" x="243.1" y="33.5" text-anchor="middle">GraphOperations</text>
-<text class="label" x="243.1" y="57.5" text-anchor="middle">createVertex,</text>
-<text class="label" x="243.1" y="81.5" text-anchor="middle">shortestPath</text>
-</g>
-<g transform="translate(88.7,289.1)">
-<rect class="card" x="0" y="0" width="408.8" height="94.0" rx="14" fill="#EAF7EF" stroke="#58A978"/>
-<text class="label" x="204.4" y="35.0" text-anchor="middle">AgeGraphOperations</text>
-<text class="label" x="204.4" y="59.0" text-anchor="middle">withContext IO</text>
-</g>
-<g transform="translate(168.6,454.7)">
-<rect class="card" x="0" y="0" width="249.0" height="84.0" rx="14" fill="#FFF3D9" stroke="#D6A441"/>
-<text class="label" x="124.5" y="42.0" text-anchor="middle">Exposed transaction</text>
-</g>
-<g transform="translate(144.0,615.3)">
-<rect class="card" x="0" y="0" width="298.2" height="84.0" rx="14" fill="#FDECEF" stroke="#DC6B82"/>
-<text class="label" x="149.1" y="42.0" text-anchor="middle">AgeSql Cypher-over-SQL</text>
-</g>
-<g transform="translate(75.2,770.9)">
-<rect class="card" x="0" y="0" width="435.8" height="94.0" rx="14" fill="#E9F7F6" stroke="#45A7A1"/>
-<text class="label" x="217.9" y="35.0" text-anchor="middle">SQL SELECT * FROM</text>
-<text class="label" x="217.9" y="59.0" text-anchor="middle">ag_catalog.cypher</text>
-</g>
-<g transform="translate(134.8,936.5)">
-<rect class="card" x="0" y="0" width="316.6" height="84.0" rx="14" fill="#F1ECFF" stroke="#8A72D6"/>
-<text class="label" x="158.3" y="42.0" text-anchor="middle">PostgreSQL AGE Extension</text>
-</g>
-<g transform="translate(104.1,1092.1)">
-<rect class="card" x="0" y="0" width="378.1" height="94.0" rx="14" fill="#F4F7FA" stroke="#8CA0B8"/>
-<text class="label" x="189.0" y="35.0" text-anchor="middle">Cypher MATCH RETURN</text>
-<text class="label" x="189.0" y="59.0" text-anchor="middle">CREATE</text>
-</g>
-<g transform="translate(188.1,1257.7)">
-<rect class="card" x="0" y="0" width="210.0" height="84.0" rx="14" fill="#FFF0E4" stroke="#D98A4A"/>
-<text class="label" x="105.0" y="42.0" text-anchor="middle">agtype JSON</text>
-</g>
-<g transform="translate(53.7,1413.4)">
-<rect class="card" x="0" y="0" width="478.9" height="94.0" rx="14" fill="#E8F3FF" stroke="#5B8DEF"/>
-<text class="label" x="239.4" y="35.0" text-anchor="middle">AgeTypeParser agtype →</text>
-<text class="label" x="239.4" y="59.0" text-anchor="middle">GraphVertex/Edge</text>
-</g>
-<g transform="translate(97.3,1574.0)">
-<rect class="card" x="0" y="0" width="391.6" height="94.0" rx="14" fill="#EAF7EF" stroke="#58A978"/>
-<text class="label" x="195.8" y="35.0" text-anchor="middle">GraphVertex GraphEdge</text>
-<text class="label" x="195.8" y="59.0" text-anchor="middle">GraphPath</text>
-</g>
+<svg xmlns="http://www.w3.org/2000/svg" width="1760" height="1040" viewBox="0 0 1760 1040">
+
+    <defs>
+      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
+        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
+      </filter>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+      </marker>
+    </defs>
+    <style>
+      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
+      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
+      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
+      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
+      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
+      .card { filter: url(#softShadow); }
+      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
+    </style>
+
+<rect x="0" y="0" width="1760" height="1040" fill="#F8FAFC"/>
+<rect x="24" y="24" width="1712" height="992" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
+<circle cx="1696" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
+<circle cx="1656" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
+<circle cx="1616" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
+<text x="72" y="82" class="title">Apache AGE Execution Flow</text>
+<text x="74" y="118" class="subtitle">AGE operations wrap Cypher in SQL, execute through Exposed/JDBC, then parse agtype rows into graph-core models</text>
+<text x="880.0" y="992" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: graph-age / Apache AGE Flow</text>
+<rect x="70" y="150" width="1620" height="720" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+<path d="M 390 310 C 429.0 310, 429.0 310, 468 310" class="line"/>
+<text x="429.0" y="282.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">call</text>
+<text x="429.0" y="282.0" text-anchor="middle" class="tiny">call</text>
+<path d="M 760 310 C 799.0 310, 799.0 310, 838 310" class="line"/>
+<text x="799.0" y="282.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">transaction</text>
+<text x="799.0" y="282.0" text-anchor="middle" class="tiny">transaction</text>
+<path d="M 1120 310 C 1159.0 310, 1159.0 310, 1198 310" class="line"/>
+<text x="1159.0" y="282.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">SQL</text>
+<text x="1159.0" y="282.0" text-anchor="middle" class="tiny">SQL</text>
+<path d="M 1330 400 C 1330.0 400, 1330.0 478, 1330 478" class="line"/>
+<text x="1330.0" y="411.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">execute</text>
+<text x="1330.0" y="411.0" text-anchor="middle" class="tiny">execute</text>
+<path d="M 1200 585 C 1160.0 585, 1160.0 735, 1120 735" class="line"/>
+<text x="1160.0" y="632.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">agtype</text>
+<text x="1160.0" y="632.0" text-anchor="middle" class="tiny">agtype</text>
+<path d="M 840 740 C 804.0 740, 804.0 740, 768 740" class="line"/>
+<text x="804.0" y="712.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">parse</text>
+<text x="804.0" y="712.0" text-anchor="middle" class="tiny">parse</text>
+<path d="M 980 475 C 1092.5 475, 1092.5 385, 1205 385" class="thin"/>
+<text x="1092.5" y="402.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">literals</text>
+<text x="1092.5" y="402.0" text-anchor="middle" class="tiny">literals</text>
+<path d="M 610 385 C 530.0 385, 530.0 540, 450 540" class="thin"/>
+<text x="530.0" y="434.5" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">weighted</text>
+<text x="530.0" y="434.5" text-anchor="middle" class="tiny">weighted</text>
+<rect x="120" y="235" width="270" height="150" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+<rect x="130" y="245" width="12" height="130" rx="6" fill="#3B82F6" opacity="0.95"/>
+<text x="142" y="275" class="label">Graph API Call</text>
+<text x="144" y="311" class="small">createVertex / createEdge</text>
+<text x="144" y="339" class="small">neighbors / shortestPath</text>
+<text x="144" y="367" class="small">batch + merge paths</text>
+<rect x="470" y="235" width="290" height="150" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
+<rect x="480" y="245" width="12" height="130" rx="6" fill="#22C55E" opacity="0.95"/>
+<text x="492" y="275" class="label">AgeGraphOperations</text>
+<text x="494" y="311" class="small">validate labels and ids</text>
+<text x="494" y="339" class="small">choose native AGE query</text>
+<text x="494" y="367" class="small">or fallback runner</text>
+<rect x="840" y="235" width="280" height="150" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
+<rect x="850" y="245" width="12" height="130" rx="6" fill="#EAB308" opacity="0.95"/>
+<text x="862" y="275" class="label">Exposed Boundary</text>
+<text x="864" y="311" class="small">exposedTransaction</text>
+<text x="864" y="339" class="small">newSuspendedTransaction</text>
+<text x="864" y="367" class="small">exec(...) callback</text>
+<rect x="1200" y="235" width="300" height="150" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="3" class="card"/>
+<rect x="1210" y="245" width="12" height="130" rx="6" fill="#EF4444" opacity="0.95"/>
+<text x="1222" y="275" class="label">AgeSql</text>
+<text x="1224" y="311" class="small">wrap Cypher in SELECT</text>
+<text x="1224" y="339" class="small">ag_catalog.cypher</text>
+<text x="1224" y="367" class="small">typed result columns</text>
+<rect x="780" y="455" width="300" height="150" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
+<rect x="790" y="465" width="12" height="130" rx="6" fill="#8B5CF6" opacity="0.95"/>
+<text x="802" y="495" class="label">Property Serialization</text>
+<text x="804" y="531" class="small">AgePropertySerializer</text>
+<text x="804" y="559" class="small">safe identifiers</text>
+<text x="804" y="587" class="small">escaped Cypher literals</text>
+<rect x="1200" y="455" width="300" height="150" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
+<rect x="1210" y="465" width="12" height="130" rx="6" fill="#14B8A6" opacity="0.95"/>
+<text x="1222" y="495" class="label">PostgreSQL AGE</text>
+<text x="1224" y="531" class="small">LOAD age + search_path</text>
+<text x="1224" y="559" class="small">MATCH / CREATE / RETURN</text>
+<text x="1224" y="587" class="small">agtype result rows</text>
+<rect x="840" y="665" width="280" height="150" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
+<rect x="850" y="675" width="12" height="130" rx="6" fill="#F97316" opacity="0.95"/>
+<text x="862" y="705" class="label">AgeTypeParser</text>
+<text x="864" y="741" class="small">parseVertex / parseEdge</text>
+<text x="864" y="769" class="small">parsePath</text>
+<text x="864" y="797" class="small">JSON-like agtype</text>
+<rect x="490" y="665" width="280" height="150" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
+<rect x="500" y="675" width="12" height="130" rx="6" fill="#22C55E" opacity="0.95"/>
+<text x="512" y="705" class="label">Graph Models</text>
+<text x="514" y="741" class="small">GraphVertex</text>
+<text x="514" y="769" class="small">GraphEdge</text>
+<text x="514" y="797" class="small">GraphPath</text>
+<rect x="150" y="500" width="300" height="165" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
+<rect x="160" y="510" width="12" height="145" rx="6" fill="#EAB308" opacity="0.95"/>
+<text x="172" y="540" class="label">Fallback Branch</text>
+<text x="174" y="576" class="small">weightProperty set</text>
+<text x="174" y="604" class="small">ShortestPathFallback</text>
+<text x="174" y="632" class="small">Dijkstra / A* uses edges</text>
+<rect x="180" y="892" width="1400" height="62" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
+<text x="880" y="917" text-anchor="middle" dominant-baseline="middle" class="tiny">Source: AgeGraphOperations CRUD/traversal methods, AgeSql.cypher, AgePropertySerializer, AgeTypeParser, AgeGraphSuspendOperations.</text>
+<text x="880" y="940" text-anchor="middle" dominant-baseline="middle" class="tiny">Every connection must load AGE and set search_path; weighted shortestPath routes to graph-core JVM fallback instead of native Cypher.</text>
 </svg>
