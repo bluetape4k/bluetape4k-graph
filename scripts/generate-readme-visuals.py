@@ -207,6 +207,8 @@ def architecture_svg(slug: str) -> str:
         return graph_core_crud_flow_svg()
     if slug == "graph-graph-core-architecture-14":
         return graph_core_path_algorithm_flow_svg()
+    if slug == "graph-graph-age-architecture-01":
+        return graph_age_layer_structure_svg()
     title = "Bluetape4k Graph Overview" if slug.startswith("root") else f"{module_title(slug)} Architecture"
     subtitle = "Current README and module source model"
     out = open_svg(title, subtitle)
@@ -517,6 +519,98 @@ def graph_core_path_algorithm_flow_svg() -> str:
     out.append(
         '<text x="880" y="940" text-anchor="middle" dominant-baseline="middle" class="tiny">'
         'Weighted paths validate positive finite weights; unweighted and analytics paths return the graph-core model contracts.</text>'
+    )
+    return close_svg(out)
+
+
+def graph_age_layer_structure_svg() -> str:
+    width, height = 1760, 1040
+    out = open_svg(
+        "Graph AGE Module Layer Structure",
+        "Apache AGE adapter maps graph-core contracts to Cypher-over-SQL through Exposed and PostgreSQL JDBC",
+        width,
+        height,
+    )
+    out[-1] = (
+        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: graph-age / Layer Structure</text>'
+    )
+    out.append('<rect x="70" y="150" width="1620" height="720" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+
+    # Draw arrows before cards so routed lines never cover card text.
+    arrow(out, 500, 305, 558, 305, "API", "line")
+    arrow(out, 960, 305, 872, 305, "wraps", "thin")
+    arrow(out, 690, 380, 320, 468, "queries", "line")
+    arrow(out, 730, 380, 1100, 468, "maps", "thin")
+    arrow(out, 870, 365, 1318, 520, "fallback", "thin")
+    arrow(out, 650, 550, 472, 550, "", "thin")
+    arrow(out, 320, 630, 420, 678, "exec", "line")
+    arrow(out, 585, 760, 712, 760, "transaction", "line")
+    arrow(out, 1045, 760, 1148, 760, "JDBC", "line")
+    arrow(out, 1320, 680, 1238, 632, "", "thin")
+
+    card(out, 160, 230, 340, 150, "graph-core Contracts", [
+        "GraphOperations",
+        "GraphSuspendOperations",
+        "model + repository APIs",
+    ], PALETTE["sky"])
+    card(out, 560, 230, 310, 150, "AGE Operations", [
+        "AgeGraphOperations",
+        "transaction scope",
+        "schema / merge support",
+    ], PALETTE["mint"])
+    card(out, 960, 230, 310, 150, "Coroutine + Cache", [
+        "AgeGraphSuspendOperations",
+        "Dispatchers.IO",
+        "CachingAgeGraphOperations",
+    ], PALETTE["lemon"])
+
+    card(out, 170, 470, 300, 160, "SQL Builder", [
+        "AgeSql",
+        "Cypher-over-SQL",
+        "batch rows",
+    ], PALETTE["rose"])
+    card(out, 560, 470, 300, 160, "Property Serializer", [
+        "safe identifiers",
+        "literal escaping",
+        "Kotlin -> Cypher values",
+    ], PALETTE["lavender"])
+    card(out, 950, 470, 330, 160, "agtype Parser", [
+        "parseVertex / parseEdge",
+        "parsePath",
+        "Graph model mapping",
+    ], PALETTE["aqua"])
+    card(out, 1320, 405, 260, 190, "JVM Fallbacks", [
+        "ShortestPathFallback",
+        "BFS / DFS",
+        "PageRank / cycles",
+        "UnionFind components",
+    ], PALETTE["peach"])
+
+    card(out, 255, 680, 330, 160, "Exposed Transaction", [
+        "org.jetbrains.exposed",
+        "exec(...) result sets",
+        "external DB ownership",
+    ], PALETTE["mint"])
+    card(out, 715, 680, 330, 160, "HikariCP + JDBC", [
+        "PostgreSQL driver",
+        "LOAD 'age'",
+        "SET search_path",
+    ], PALETTE["sky"])
+    card(out, 1150, 680, 360, 160, "PostgreSQL AGE", [
+        "ag_catalog.cypher",
+        "graphName namespace",
+        "agtype rows",
+    ], PALETTE["lemon"])
+
+    out.append('<rect x="180" y="892" width="1400" height="62" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+    out.append(
+        '<text x="880" y="917" text-anchor="middle" dominant-baseline="middle" class="tiny">'
+        'Source: AgeGraphOperations, AgeGraphSuspendOperations, CachingAgeGraphOperations, AgeSql, AgePropertySerializer, AgeTypeParser.</text>'
+    )
+    out.append(
+        '<text x="880" y="940" text-anchor="middle" dominant-baseline="middle" class="tiny">'
+        'AGE setup is connection-owned: HikariCP initializes LOAD age and search_path; graph-core models remain the public boundary.</text>'
     )
     return close_svg(out)
 
