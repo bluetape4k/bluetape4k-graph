@@ -211,6 +211,8 @@ def architecture_svg(slug: str) -> str:
         return graph_age_layer_structure_svg()
     if slug == "graph-graph-age-architecture-02":
         return graph_age_execution_flow_svg()
+    if slug == "graph-graph-age-architecture-10":
+        return graph_age_agtype_parse_flow_svg()
     title = "Bluetape4k Graph Overview" if slug.startswith("root") else f"{module_title(slug)} Architecture"
     subtitle = "Current README and module source model"
     out = open_svg(title, subtitle)
@@ -696,6 +698,80 @@ def graph_age_execution_flow_svg() -> str:
     out.append(
         '<text x="880" y="940" text-anchor="middle" dominant-baseline="middle" class="tiny">'
         'Every connection must load AGE and set search_path; weighted shortestPath routes to graph-core JVM fallback instead of native Cypher.</text>'
+    )
+    return close_svg(out)
+
+
+def graph_age_agtype_parse_flow_svg() -> str:
+    width, height = 1840, 1180
+    out = open_svg(
+        "Apache AGE agtype Parse Flow",
+        "AgeTypeParser dispatches AGE result suffixes into vertex, edge, path, and lightweight JSON parsing branches",
+        width,
+        height,
+    )
+    out[-1] = (
+        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: graph-age / agtype parse flow</text>'
+    )
+    out.append('<rect x="70" y="150" width="1700" height="880" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+
+    def relation_label(x: float, y: float, text: str) -> None:
+        out.append(f'<text x="{x}" y="{y}" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">{esc(text)}</text>')
+        out.append(f'<text x="{x}" y="{y}" text-anchor="middle" class="tiny">{esc(text)}</text>')
+
+    # Flow lines first; cards are drawn afterward to keep text unobstructed.
+    arrow(out, 920, 345, 920, 420, "result string", "line")
+    arrow(out, 790, 520, 355, 620, "", "thin")
+    arrow(out, 920, 520, 920, 620, "", "thin")
+    arrow(out, 1050, 520, 1485, 620, "", "thin")
+    relation_label(565, 570, "::vertex")
+    relation_label(920, 570, "::edge")
+    relation_label(1275, 570, "::path")
+    arrow(out, 360, 860, 650, 912, "parseJsonObject", "thin")
+    arrow(out, 920, 860, 770, 912, "parseJsonObject", "thin")
+    arrow(out, 1485, 860, 930, 912, "parse array", "thin")
+    arrow(out, 1040, 960, 1210, 960, "model output", "line")
+
+    card(out, 650, 215, 540, 130, "PostgreSQL AGE Result", [
+        "ag_catalog.cypher(...) returns agtype text",
+        "rows expose v/e/p columns to operations",
+    ], PALETTE["sky"])
+    card(out, 700, 420, 440, 120, "Suffix Router", [
+        "isVertex / isEdge / isPath",
+        "remove ::vertex, ::edge, or ::path",
+    ], PALETTE["mint"])
+    card(out, 120, 620, 470, 240, "Vertex Branch", [
+        "parseVertex(agtype)",
+        "parseJsonObject(json)",
+        "id -> GraphElementId",
+        "label + properties -> GraphVertex",
+    ], PALETTE["lemon"])
+    card(out, 685, 620, 470, 240, "Edge Branch", [
+        "parseEdge(agtype)",
+        "parseJsonObject(json)",
+        "id/start_id/end_id -> IDs",
+        "label + properties -> GraphEdge",
+    ], PALETTE["rose"])
+    card(out, 1250, 620, 470, 240, "Path Branch", [
+        "parsePath(agtype)",
+        "parseAgtypeElements(content)",
+        "element suffix -> vertex or edge",
+        "steps -> GraphPath",
+    ], PALETTE["aqua"])
+    card(out, 560, 910, 480, 120, "Lightweight JSON Helpers", [
+        "parseJsonObject / parseJsonArray",
+        "parseValue + findClosing for nested content",
+    ], PALETTE["peach"])
+    card(out, 1210, 910, 430, 120, "Graph Core Output", [
+        "GraphVertex, GraphEdge, GraphPath",
+        "PathStep.VertexStep / EdgeStep",
+    ], PALETTE["lavender"])
+
+    out.append('<rect x="180" y="1060" width="1480" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+    out.append(
+        '<text x="920" y="1093" text-anchor="middle" class="tiny">'
+        'Source: AgeTypeParser.kt; suffix dispatch and lightweight JSON parsing convert AGE agtype strings into graph-core model types.</text>'
     )
     return close_svg(out)
 
