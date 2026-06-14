@@ -1,67 +1,81 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1754" height="617" viewBox="0 0 1754 617" role="img" aria-label=": GraphElementId, GraphVertex, GraphEdge">
-<defs>
-  <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="8" stdDeviation="9" flood-color="#1f2937" flood-opacity="0.10"/></filter>
-  <marker id="openArrow" markerWidth="10" markerHeight="8" refX="8.5" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M 1 1 L 8.5 4 L 1 7" fill="none" stroke="#758297" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></marker>
-  <marker id="inherit" markerWidth="11" markerHeight="10" refX="9.5" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M 0.5 1 L 9.5 5 L 0.5 9 Z" fill="#ffffff" stroke="#758297" stroke-width="1.7"/></marker>
-  <style>
-    .canvas{fill:#f7f9fc}.frame{fill:#fff;stroke:#d8e0ea;stroke-width:1.5}
-    .title{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:43px;font-weight:400;fill:#102033}
-    .subtitle{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:15px;font-weight:400;fill:#536273}
-    .label{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:25px;font-weight:400;fill:#102033}
-    .smallLabel{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:21px;font-weight:400;fill:#102033}
-    .mono{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:12px;font-weight:400;fill:#102033}
-    .small{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:12px;font-weight:400;fill:#536273}
-    .strong{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:13px;font-weight:400;fill:#102033}
-    .card{stroke-width:2.1;filter:url(#shadow)}.compartment{stroke-width:1.5;fill:none}
-    .line{stroke:#758297;stroke-width:2.1;fill:none;marker-end:url(#openArrow)}
-    .plainLine{stroke:#758297;stroke-width:2.1;fill:none}
-    .dashed{stroke:#758297;stroke-width:2.1;stroke-dasharray:7 6;fill:none;marker-end:url(#openArrow)}
-    .inheritLine{stroke:#758297;stroke-width:2.2;fill:none;marker-end:url(#inherit)}
-    .implLine{stroke:#758297;stroke-width:2.2;stroke-dasharray:8 7;fill:none;marker-end:url(#inherit)}
-  </style>
-</defs>
-<rect class="canvas" width="1754" height="617"/>
-<rect class="frame" x="32" y="28" width="1690" height="561" rx="28"/>
-<text class="title" x="66" y="82">: GraphElementId, GraphVertex, GraphEdge</text>
-<text class="subtitle" x="70" y="118">UML classes from the original Mermaid source</text>
-<path class="line" d="M1082 180 L1082 132 L672 132 L672 355"/>
-<path class="line" d="M262 355 L262 435 L672 435 L672 180"/>
-<g transform="translate(92,180)">
-  <rect class="card" x="0" y="0" width="340" height="175" rx="5" fill="#E8F3FF" stroke="#5B8DEF"/>
-  <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#5B8DEF"/>
-  <text class="small" x="170" y="26" text-anchor="middle"></text>
-  <text class="label" x="170" y="61" text-anchor="middle">GraphVertex</text>
-  <text class="mono" x="18" y="108">-GraphElementId id</text>
-<text class="mono" x="18" y="129">-String label</text>
-<text class="mono" x="18" y="150">-Map~String, Any?~ properties</text>
-</g>
-<g transform="translate(502,180)">
-  <rect class="card" x="0" y="0" width="340" height="175" rx="5" fill="#EAF7EF" stroke="#58A978"/>
-  <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#58A978"/>
-  <text class="small" x="170" y="26" text-anchor="middle"></text>
-  <text class="label" x="170" y="61" text-anchor="middle">GraphElementId</text>
-  <text class="mono" x="18" y="108">-String value</text>
-<text class="mono" x="18" y="129">+of(String) GraphElementId$</text>
-<text class="mono" x="18" y="150">+of(Long) GraphElementId$</text>
-</g>
-<g transform="translate(912,180)">
-  <rect class="card" x="0" y="0" width="340" height="217" rx="5" fill="#FFF3D9" stroke="#D6A441"/>
-  <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#D6A441"/>
-  <text class="small" x="170" y="26" text-anchor="middle"></text>
-  <text class="label" x="170" y="61" text-anchor="middle">GraphEdge</text>
-  <text class="mono" x="18" y="108">-GraphElementId id</text>
-<text class="mono" x="18" y="129">-String label</text>
-<text class="mono" x="18" y="150">-GraphElementId startId</text>
-<text class="mono" x="18" y="171">-GraphElementId endId</text>
-<text class="mono" x="18" y="192">-Map~String, Any?~ properties</text>
-</g>
-<g transform="translate(1322,180)">
-  <rect class="card" x="0" y="0" width="340" height="175" rx="5" fill="#FDECEF" stroke="#DC6B82"/>
-  <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#DC6B82"/>
-  <text class="small" x="170" y="26" text-anchor="middle">«enumeration»</text>
-  <text class="label" x="170" y="61" text-anchor="middle">Direction</text>
-  <text class="mono" x="18" y="108">OUTGOING</text>
-<text class="mono" x="18" y="129">INCOMING</text>
-<text class="mono" x="18" y="150">BOTH</text>
-</g>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1040" viewBox="0 0 1600 1040">
+
+    <defs>
+      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
+        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
+      </filter>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+      </marker>
+    </defs>
+    <style>
+      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
+      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
+      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
+      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
+      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
+      .card { filter: url(#softShadow); }
+      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
+    </style>
+
+<rect x="0" y="0" width="1600" height="1040" fill="#F8FAFC"/>
+<rect x="24" y="24" width="1552" height="992" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
+<circle cx="1536" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
+<circle cx="1496" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
+<circle cx="1456" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
+<text x="72" y="82" class="title">Graph Core Model Classes</text>
+<text x="74" y="118" class="subtitle">Backend-neutral IDs, immutable vertex/edge records, and traversal direction enum</text>
+<text x="800.0" y="992" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: graph-core / Model Classes</text>
+<rect x="70" y="150" width="1460" height="710" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+<rect x="600" y="215" width="400" height="235" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
+<text x="800.0" y="249" text-anchor="middle" class="tiny">&lt;&lt;value class&gt;&gt;</text>
+<text x="800.0" y="283" text-anchor="middle" class="label">GraphElementId</text>
+<line x1="600" y1="303" x2="1000" y2="303" stroke="#22C55E" stroke-width="2"/>
+<text x="626" y="339" class="small">value: String</text>
+<text x="626" y="367" class="small">of(value: String)</text>
+<text x="626" y="395" class="small">of(value: Long)</text>
+<text x="626" y="423" class="small">validates nonblank String</text>
+<rect x="145" y="575" width="390" height="235" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+<text x="340.0" y="609" text-anchor="middle" class="tiny">&lt;&lt;data class&gt;&gt;</text>
+<text x="340.0" y="643" text-anchor="middle" class="label">GraphVertex</text>
+<line x1="145" y1="663" x2="535" y2="663" stroke="#3B82F6" stroke-width="2"/>
+<text x="171" y="699" class="small">id: GraphElementId</text>
+<text x="171" y="727" class="small">label: String</text>
+<text x="171" y="755" class="small">properties: Map&lt;String, Any?&gt;</text>
+<text x="171" y="783" class="small">implements Serializable</text>
+<rect x="600" y="575" width="440" height="265" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
+<text x="820.0" y="609" text-anchor="middle" class="tiny">&lt;&lt;data class&gt;&gt;</text>
+<text x="820.0" y="643" text-anchor="middle" class="label">GraphEdge</text>
+<line x1="600" y1="663" x2="1040" y2="663" stroke="#EAB308" stroke-width="2"/>
+<text x="626" y="699" class="small">id: GraphElementId</text>
+<text x="626" y="727" class="small">label: String</text>
+<text x="626" y="755" class="small">startId: GraphElementId</text>
+<text x="626" y="783" class="small">endId: GraphElementId</text>
+<text x="626" y="811" class="small">properties: Map&lt;String, Any?&gt;</text>
+<rect x="1125" y="575" width="310" height="235" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="3" class="card"/>
+<text x="1280.0" y="609" text-anchor="middle" class="tiny">&lt;&lt;enum&gt;&gt;</text>
+<text x="1280.0" y="643" text-anchor="middle" class="label">Direction</text>
+<line x1="1125" y1="663" x2="1435" y2="663" stroke="#EF4444" stroke-width="2"/>
+<text x="1151" y="699" class="small">OUTGOING</text>
+<text x="1151" y="727" class="small">INCOMING</text>
+<text x="1151" y="755" class="small">BOTH</text>
+<text x="1151" y="783" class="small">used by traversal options</text>
+<rect x="1125" y="245" width="310" height="110" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
+<rect x="1135" y="255" width="12" height="90" rx="6" fill="#8B5CF6" opacity="0.95"/>
+<text x="1147" y="285" class="label">Traversal Options</text>
+<text x="1149" y="321" class="small">neighbors and degree</text>
+<text x="1149" y="349" class="small">choose edge direction</text>
+<path d="M 340 572 C 520.0 572, 520.0 452, 700 452" class="thin"/>
+<text x="520.0" y="484.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">id</text>
+<text x="520.0" y="484.0" text-anchor="middle" class="tiny">id</text>
+<path d="M 820 572 C 820.0 572, 820.0 452, 820 452" class="thin"/>
+<text x="820.0" y="484.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">id/start/end</text>
+<text x="820.0" y="484.0" text-anchor="middle" class="tiny">id/start/end</text>
+<path d="M 1280 355 C 1280.0 355, 1280.0 572, 1280 572" class="thin"/>
+<text x="1280.0" y="435.5" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">direction</text>
+<text x="1280.0" y="435.5" text-anchor="middle" class="tiny">direction</text>
+<rect x="150" y="890" width="1300" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
+<text x="800" y="923" text-anchor="middle" class="tiny">Source: graph-core model package; graphElementIdOf converts Any IDs, and GraphEdge stores start/end vertex IDs.</text>
 </svg>
