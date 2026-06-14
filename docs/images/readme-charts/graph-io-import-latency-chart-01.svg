@@ -1,70 +1,95 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="860" viewBox="0 0 1500 860">
+<svg xmlns="http://www.w3.org/2000/svg" width="1720" height="980" viewBox="0 0 1720 980">
 
     <defs>
       <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
-        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#26384A" flood-opacity="0.10"/>
+        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
       </filter>
       <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="#6F8396"/>
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
       </marker>
     </defs>
     <style>
-      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #36424F; }
-      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #667085; }
-      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #36424F; }
-      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #536273; }
-      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #667085; }
-      .card { stroke: #D7E0EA; stroke-width: 2; filter: url(#softShadow); }
-      .line { stroke: #6F8396; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-      .thin { stroke: #A5B5C4; stroke-width: 2; fill: none; marker-end: url(#arrow); }
-      .dash { stroke: #A5B5C4; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
+      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
+      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
+      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
+      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
+      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
+      .card { filter: url(#softShadow); }
+      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
     </style>
 
-<rect x="0" y="0" width="1500" height="860" fill="#FFFDF8"/>
-<rect x="24" y="24" width="1452" height="812" rx="22" fill="none" stroke="#7DAED3" stroke-width="4"/>
-<circle cx="1436" cy="64" r="15" fill="#FFD5B8" opacity="0.95"/>
-<circle cx="1396" cy="64" r="15" fill="#BFE8D2" opacity="0.95"/>
-<circle cx="1356" cy="64" r="15" fill="#CBBCEB" opacity="0.95"/>
+<rect x="0" y="0" width="1720" height="980" fill="#F8FAFC"/>
+<rect x="24" y="24" width="1672" height="932" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
+<circle cx="1656" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
+<circle cx="1616" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
+<circle cx="1576" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
 <text x="72" y="82" class="title">Graph-IO Import Latency</text>
 <text x="74" y="118" class="subtitle">File to TinkerGraph</text>
-<text x="750.0" y="812" text-anchor="middle" class="tiny">github.com/bluetape4k/bluetape4k-graph | bluetape4k-graph | Graph-IO Import Latency</text>
-<text x="350" y="171" class="tiny">Unit: ms/op / lower is better</text>
-<rect x="350" y="137" width="24" height="16" rx="5" fill="#8FC4EA"/>
-<text x="384" y="151" class="tiny">Sync</text>
-<rect x="540" y="137" width="24" height="16" rx="5" fill="#F4BE8D"/>
-<text x="574" y="151" class="tiny">VirtualThread</text>
-<rect x="730" y="137" width="24" height="16" rx="5" fill="#9FD7B7"/>
-<text x="764" y="151" class="tiny">Suspend</text>
-<text x="86" y="231" class="tiny">CSV</text>
-<line x1="350" y1="239" x2="1390" y2="239" stroke="#E7EEF5" stroke-width="2"/>
-<rect x="350" y="206" width="311.9602285198495" height="15" rx="6" fill="#8FC4EA"/>
-<text x="673.9602285198496" y="219" class="tiny">17.854</text>
-<rect x="350" y="227" width="309.94433764176995" height="15" rx="6" fill="#F4BE8D"/>
-<text x="671.94433764177" y="240" class="tiny">17.624</text>
-<rect x="350" y="248" width="357.0873168075001" height="15" rx="6" fill="#9FD7B7"/>
-<text x="719.0873168075001" y="261" class="tiny">23.393</text>
-<text x="86" y="303" class="tiny">Jackson2 NDJSON</text>
-<line x1="350" y1="311" x2="1390" y2="311" stroke="#E7EEF5" stroke-width="2"/>
-<rect x="350" y="278" width="320.3820354899158" height="15" rx="6" fill="#8FC4EA"/>
-<text x="682.3820354899158" y="291" class="tiny">18.831</text>
-<rect x="350" y="299" width="314.27552550573074" height="15" rx="6" fill="#F4BE8D"/>
-<text x="676.2755255057307" y="312" class="tiny">18.12</text>
-<rect x="350" y="320" width="908.4811383485355" height="15" rx="6" fill="#9FD7B7"/>
-<text x="1270.4811383485355" y="333" class="tiny">151.415</text>
-<text x="86" y="375" class="tiny">Jackson3 NDJSON</text>
-<line x1="350" y1="383" x2="1390" y2="383" stroke="#E7EEF5" stroke-width="2"/>
-<rect x="350" y="350" width="328.9528079105534" height="15" rx="6" fill="#8FC4EA"/>
-<text x="690.9528079105535" y="363" class="tiny">19.852</text>
-<rect x="350" y="371" width="324.3639796877142" height="15" rx="6" fill="#F4BE8D"/>
-<text x="686.3639796877142" y="384" class="tiny">19.302</text>
-<rect x="350" y="392" width="920.0" height="15" rx="6" fill="#9FD7B7"/>
-<text x="1282.0" y="405" class="tiny">155.279</text>
-<text x="86" y="447" class="tiny">GraphML</text>
-<line x1="350" y1="455" x2="1390" y2="455" stroke="#E7EEF5" stroke-width="2"/>
-<rect x="350" y="422" width="339.22345056180905" height="15" rx="6" fill="#8FC4EA"/>
-<text x="701.223450561809" y="435" class="tiny">21.111</text>
-<rect x="350" y="443" width="339.0948776854184" height="15" rx="6" fill="#F4BE8D"/>
-<text x="701.0948776854184" y="456" class="tiny">21.095</text>
-<rect x="350" y="464" width="349.2701781235978" height="15" rx="6" fill="#9FD7B7"/>
-<text x="711.2701781235978" y="477" class="tiny">22.38</text>
+<text x="860.0" y="932" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: Graph-IO Import Latency</text>
+<rect x="70" y="150" width="1580" height="662" rx="22" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+<text x="96" y="194" class="label">Measured rows</text>
+<text x="1560" y="224" text-anchor="end" class="small">Unit: ms/op / lower is better</text>
+<rect x="570" y="168" width="26" height="18" rx="5" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="608" y="183" class="small">Sync</text>
+<rect x="800" y="168" width="26" height="18" rx="5" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+<text x="838" y="183" class="small">VirtualThread</text>
+<rect x="1030" y="168" width="26" height="18" rx="5" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/>
+<text x="1068" y="183" class="small">Suspend</text>
+<line x1="570.0" y1="220" x2="570.0" y2="710" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
+<text x="570.0" y="740" text-anchor="middle" class="tiny">0</text>
+<line x1="787.5" y1="220" x2="787.5" y2="710" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
+<text x="787.5" y="740" text-anchor="middle" class="tiny">38.8197</text>
+<line x1="1005.0" y1="220" x2="1005.0" y2="710" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
+<text x="1005.0" y="740" text-anchor="middle" class="tiny">77.6395</text>
+<line x1="1222.5" y1="220" x2="1222.5" y2="710" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
+<text x="1222.5" y="740" text-anchor="middle" class="tiny">116.459</text>
+<line x1="1440.0" y1="220" x2="1440.0" y2="710" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
+<text x="1440.0" y="740" text-anchor="middle" class="tiny">155.279</text>
+<text x="96" y="256" class="small">CSV</text>
+<line x1="570" y1="266" x2="1540" y2="266" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="570" y="224" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="224" width="295.0058682742055" height="20" rx="6" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="879.0058682742056" y="240" class="small">17.854</text>
+<rect x="570" y="253" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="253" width="293.0995366829781" height="20" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+<text x="877.0995366829782" y="269" class="small">17.624</text>
+<rect x="570" y="282" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="282" width="337.6803974157881" height="20" rx="6" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/>
+<text x="921.6803974157881" y="298" class="small">23.393</text>
+<text x="96" y="374" class="small">Jackson2 NDJSON</text>
+<line x1="570" y1="384" x2="1540" y2="384" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="570" y="342" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="342" width="302.9699683437247" height="20" rx="6" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="886.9699683437248" y="358" class="small">18.831</text>
+<rect x="570" y="371" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="371" width="297.19533390215844" height="20" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+<text x="881.1953339021584" y="387" class="small">18.12</text>
+<rect x="570" y="400" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="400" width="859.107163438289" height="20" rx="6" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/>
+<text x="1434" y="416" class="small" text-anchor="end">151.415</text>
+<text x="96" y="492" class="small">Jackson3 NDJSON</text>
+<line x1="570" y1="502" x2="1540" y2="502" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="570" y="460" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="460" width="311.07493791541464" height="20" rx="6" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="895.0749379154147" y="476" class="small">19.852</text>
+<rect x="570" y="489" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="489" width="306.7355025307732" height="20" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+<text x="890.7355025307731" y="505" class="small">19.302</text>
+<rect x="570" y="518" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="518" width="870.0" height="20" rx="6" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/>
+<text x="1434" y="534" class="small" text-anchor="end">155.279</text>
+<text x="96" y="610" class="small">GraphML</text>
+<line x1="570" y1="620" x2="1540" y2="620" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="570" y="578" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="578" width="320.7873934660585" height="20" rx="6" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="904.7873934660586" y="594" class="small">21.111</text>
+<rect x="570" y="607" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="607" width="320.6658082459935" height="20" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+<text x="904.6658082459935" y="623" class="small">21.095</text>
+<rect x="570" y="636" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="636" width="330.2881032255762" height="20" rx="6" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/>
+<text x="914.2881032255762" y="652" class="small">22.38</text>
+<text x="570" y="778" class="tiny">Source: README benchmark table values. Complementary colors separate comparable series.</text>
 </svg>

@@ -23,25 +23,28 @@ CHART_DIR = IMAGE_ROOT / "readme-charts"
 
 W = 1440
 H = 900
+REPOSITORY_URL = "https://github.com/bluetape4k/bluetape4k-graph"
+PROJECT_NAME = "bluetape4k-graph"
 
 PALETTE = {
-    "ink": "#36424F",
-    "muted": "#667085",
-    "paper": "#FFFDF8",
-    "frame": "#7DAED3",
-    "sky": "#B7DBF4",
-    "mint": "#BFE8D2",
-    "peach": "#FFD5B8",
-    "rose": "#F5B5C8",
-    "lavender": "#CBBCEB",
-    "lemon": "#F8E8A6",
-    "aqua": "#B9E7E2",
-    "coral": "#F5A69C",
-    "blue": "#8FC4EA",
-    "green": "#9FD7B7",
-    "orange": "#F4BE8D",
-    "purple": "#B9A9DD",
-    "red": "#EFA3A8",
+    "ink": "#111827",
+    "muted": "#4B5563",
+    "paper": "#F8FAFC",
+    "frame": "#60A5FA",
+    "sky": "#DBEAFE",
+    "mint": "#DCFCE7",
+    "peach": "#FED7AA",
+    "rose": "#FEE2E2",
+    "lavender": "#EDE9FE",
+    "lemon": "#FEF3C7",
+    "aqua": "#CCFBF1",
+    "coral": "#FECACA",
+    "blue": "#60A5FA",
+    "green": "#34D399",
+    "orange": "#FB923C",
+    "purple": "#A78BFA",
+    "red": "#FB7185",
+    "slate": "#94A3B8",
 }
 
 SERIES_COLORS = [
@@ -52,6 +55,28 @@ SERIES_COLORS = [
     PALETTE["lavender"],
     PALETTE["lemon"],
 ]
+
+CHART_SERIES = [
+    ("#FFE7D8", "#F97316"),
+    ("#DBEAFE", "#2563EB"),
+    ("#DCFCE7", "#16A34A"),
+    ("#FCE7F3", "#DB2777"),
+    ("#EDE9FE", "#7C3AED"),
+    ("#FEF3C7", "#D97706"),
+    ("#CCFBF1", "#0D9488"),
+    ("#FEE2E2", "#DC2626"),
+]
+
+CARD_STROKES = {
+    PALETTE["sky"]: "#3B82F6",
+    PALETTE["mint"]: "#22C55E",
+    PALETTE["peach"]: "#F97316",
+    PALETTE["rose"]: "#EF4444",
+    PALETTE["lavender"]: "#8B5CF6",
+    PALETTE["lemon"]: "#EAB308",
+    PALETTE["aqua"]: "#14B8A6",
+    PALETTE["coral"]: "#F43F5E",
+}
 
 
 def esc(value: object) -> str:
@@ -79,28 +104,33 @@ def style() -> str:
     return """
     <defs>
       <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
-        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#26384A" flood-opacity="0.10"/>
+        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
       </filter>
       <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="#6F8396"/>
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
       </marker>
     </defs>
     <style>
-      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #36424F; }
-      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #667085; }
-      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #36424F; }
-      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #536273; }
-      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #667085; }
-      .card { stroke: #D7E0EA; stroke-width: 2; filter: url(#softShadow); }
-      .line { stroke: #6F8396; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-      .thin { stroke: #A5B5C4; stroke-width: 2; fill: none; marker-end: url(#arrow); }
-      .dash { stroke: #A5B5C4; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
+      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
+      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
+      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
+      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
+      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
+      .card { filter: url(#softShadow); }
+      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
     </style>
     """
 
 
+def footer_module(title: str) -> str:
+    module = re.sub(r"\s+(Architecture|Class Model|Class|Sequence|Data Flow)$", "", title)
+    return module.strip() or PROJECT_NAME
+
+
 def open_svg(title: str, subtitle: str, width: int = W, height: int = H) -> list[str]:
-    footer = f"github.com/bluetape4k/bluetape4k-graph | bluetape4k-graph | {title}"
+    footer = f"{REPOSITORY_URL} | project: {PROJECT_NAME} | module: {footer_module(title)}"
     out = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         style(),
@@ -122,7 +152,12 @@ def close_svg(out: list[str]) -> str:
 
 
 def card(out: list[str], x: float, y: float, w: float, h: float, title: str, lines: list[str], fill: str) -> None:
-    out.append(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="14" fill="{fill}" class="card"/>')
+    stroke = CARD_STROKES.get(fill, PALETTE["slate"])
+    out.append(
+        f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="14" fill="{fill}" '
+        f'stroke="{stroke}" stroke-width="3" class="card"/>'
+    )
+    out.append(f'<rect x="{x+10}" y="{y+10}" width="12" height="{h-20}" rx="6" fill="{stroke}" opacity="0.95"/>')
     out.append(f'<text x="{x+22}" y="{y+40}" class="label">{esc(title)}</text>')
     yy = y + 76
     for line in lines[:5]:
@@ -134,9 +169,11 @@ def arrow(out: list[str], x1: float, y1: float, x2: float, y2: float, label: str
     out.append(f'<path d="M {x1} {y1} C {(x1+x2)/2} {y1}, {(x1+x2)/2} {y2}, {x2} {y2}" class="{cls}"/>')
     if label:
         lx = (x1 + x2) / 2
-        ly = (y1 + y2) / 2 - 18
-        label_w = max(54, min(190, len(label) * 8 + 26))
-        out.append(f'<rect x="{lx-label_w/2}" y="{ly-25}" width="{label_w}" height="31" rx="9" fill="#FFFDF8" opacity="0.94"/>')
+        ly = (y1 + y2) / 2 - 28
+        out.append(
+            f'<text x="{lx}" y="{ly}" text-anchor="middle" class="tiny" '
+            f'stroke="{PALETTE["paper"]}" stroke-width="7" stroke-linejoin="round">{esc(label)}</text>'
+        )
         out.append(f'<text x="{lx}" y="{ly}" text-anchor="middle" class="tiny">{esc(label)}</text>')
 
 
@@ -173,7 +210,7 @@ def architecture_svg(slug: str) -> str:
         cols = [
             ("Fixtures", ["JMH state", "Testcontainers", "TinkerGraph"]),
             ("Benchmarks", ["Graph DB matrix", "Domain workloads", "API model", "Graph-IO"]),
-            ("Reports", ["Markdown tables", "JSON result", "Pastel charts"]),
+            ("Reports", ["Markdown tables", "JSON result", "Light charts"]),
         ]
     elif "graph-age" in slug:
         cols = [("Kotlin API", ["GraphOperations", "Transactions", "Schema DSL"]), ("AGE adapter", ["Cypher over SQL", "Exposed/JDBC", "Agtype mapping"]), ("PostgreSQL AGE", ["graphs", "vertices", "edges"])]
@@ -268,10 +305,16 @@ def sequence_svg(slug: str) -> str:
     title = "Bluetape4k Graph Sequence" if slug.startswith("root-readme-") else f"{module_title(slug)} Sequence"
     subtitle = "Happy-path operation flow with labels placed away from cards"
     out = open_svg(title, subtitle)
-    actors = ["Caller", "GraphOperations", "Adapter", "Graph DB", "Result"]
-    xs = [150, 430, 710, 990, 1260]
-    for x, actor in zip(xs, actors):
-        out.append(f'<rect x="{x-90}" y="190" width="180" height="62" rx="14" fill="{PALETTE["sky"]}" class="card"/>')
+    actors = [
+        ("Caller", 150, 190),
+        ("GraphOperations", 445, 260),
+        ("Adapter", 740, 190),
+        ("Graph DB", 1035, 210),
+        ("Result", 1280, 190),
+    ]
+    xs = [x for _, x, _ in actors]
+    for actor, x, actor_w in actors:
+        out.append(f'<rect x="{x-actor_w/2}" y="190" width="{actor_w}" height="62" rx="14" fill="{PALETTE["sky"]}" class="card"/>')
         out.append(f'<text x="{x}" y="230" text-anchor="middle" class="label">{esc(actor)}</text>')
         out.append(f'<line x1="{x}" y1="270" x2="{x}" y2="710" stroke="#C2CED9" stroke-width="3" stroke-dasharray="8 8"/>')
     steps = [
@@ -301,33 +344,53 @@ def generic_diagram(slug: str) -> str:
 
 
 def chart_svg(title: str, subtitle: str, categories: list[str], series: list[tuple[str, list[float]]], unit: str, lower_is_better: bool = True) -> str:
-    width = 1500
-    height = max(860, 220 + len(categories) * max(62, 22 * len(series)))
+    width = 1720
+    row_h = max(86, 30 * len(series) + 28)
+    height = max(980, 430 + len(categories) * row_h)
     out = open_svg(title, subtitle, width, height)
-    left = 350
-    right = width - 110
-    top = 195
-    row_h = max(64, 24 * len(series))
+    label_x = 96
+    left = 570
+    right = width - 160
+    top = 220
+    panel_x = 70
+    panel_y = 150
+    panel_h = len(categories) * row_h + 190
     max_value = max(max(vals) for _, vals in series if vals)
     if max_value <= 0:
         max_value = 1
-    out.append(f'<text x="{left}" y="{top-24}" class="tiny">Unit: {esc(unit)} / {"lower is better" if lower_is_better else "higher is better"}</text>')
+    out.append(f'<rect x="{panel_x}" y="{panel_y}" width="{width - panel_x * 2}" height="{panel_h}" rx="22" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+    out.append(f'<text x="{label_x}" y="{panel_y+44}" class="label">Measured rows</text>')
+    out.append(f'<text x="{right}" y="{panel_y+74}" text-anchor="end" class="small">Unit: {esc(unit)} / {"lower is better" if lower_is_better else "higher is better"}</text>')
     for i, (name, _) in enumerate(series):
-        lx = left + i * 190
-        out.append(f'<rect x="{lx}" y="{top-58}" width="24" height="16" rx="5" fill="{SERIES_COLORS[i % len(SERIES_COLORS)]}"/>')
-        out.append(f'<text x="{lx+34}" y="{top-44}" class="tiny">{esc(name)}</text>')
+        fill, stroke = CHART_SERIES[i % len(CHART_SERIES)]
+        lx = left + i * 230
+        out.append(f'<rect x="{lx}" y="{top-52}" width="26" height="18" rx="5" fill="{fill}" stroke="{stroke}" stroke-width="2"/>')
+        out.append(f'<text x="{lx+38}" y="{top-37}" class="small">{esc(name)}</text>')
+    plot_w = right - left - 120
+    tick_count = 4
+    axis_bottom = top + len(categories) * row_h + 18
+    for ti in range(tick_count + 1):
+        tick = max_value * ti / tick_count
+        tx = left + (tick / max_value) * plot_w
+        out.append(f'<line x1="{tx}" y1="{top}" x2="{tx}" y2="{axis_bottom}" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>')
+        out.append(f'<text x="{tx}" y="{axis_bottom + 30}" text-anchor="middle" class="tiny">{tick:g}</text>')
     for ci, cat in enumerate(categories):
         y = top + ci * row_h + 36
-        for li, line in enumerate(wrap(cat, 25)[:2]):
-            out.append(f'<text x="86" y="{y + li*21}" class="tiny">{esc(line)}</text>')
-        out.append(f'<line x1="{left}" y1="{y+8}" x2="{right}" y2="{y+8}" stroke="#E7EEF5" stroke-width="2"/>')
+        for li, line in enumerate(wrap(cat, 30)[:2]):
+            out.append(f'<text x="{label_x}" y="{y + li*24}" class="small">{esc(line)}</text>')
+        out.append(f'<line x1="{left}" y1="{y+10}" x2="{right-20}" y2="{y+10}" stroke="#E7EEF5" stroke-width="2"/>')
         for si, (name, vals) in enumerate(series):
             value = vals[ci]
-            bar_h = 15
-            yy = y - 25 + si * 21
-            bw = (right - left - 120) * math.sqrt(value / max_value)
-            out.append(f'<rect x="{left}" y="{yy}" width="{max(2, bw)}" height="{bar_h}" rx="6" fill="{SERIES_COLORS[si % len(SERIES_COLORS)]}"/>')
-            out.append(f'<text x="{left + bw + 12}" y="{yy+13}" class="tiny">{value:g}</text>')
+            fill, stroke = CHART_SERIES[si % len(CHART_SERIES)]
+            bar_h = 20
+            yy = y - 32 + si * 29
+            bw = plot_w * math.sqrt(value / max_value)
+            out.append(f'<rect x="{left}" y="{yy}" width="{plot_w}" height="{bar_h}" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>')
+            out.append(f'<rect x="{left}" y="{yy}" width="{max(3, bw)}" height="{bar_h}" rx="6" fill="{fill}" stroke="{stroke}" stroke-width="2"/>')
+            value_x = min(left + plot_w - 6, left + bw + 14)
+            anchor = ' text-anchor="end"' if value_x >= left + plot_w - 6 else ""
+            out.append(f'<text x="{value_x}" y="{yy+16}" class="small"{anchor}>{value:g}</text>')
+    out.append(f'<text x="{left}" y="{axis_bottom + 68}" class="tiny">Source: README benchmark table values. Complementary colors separate comparable series.</text>')
     return close_svg(out)
 
 
