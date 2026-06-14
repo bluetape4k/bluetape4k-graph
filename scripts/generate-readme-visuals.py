@@ -1564,6 +1564,100 @@ def root_architecture_svg() -> str:
     return close_svg(out)
 
 
+def root_class_model_svg() -> str:
+    width, height = 1840, 1080
+    out = open_svg(
+        "Bluetape4k Graph Class Model",
+        "Root class view of graph-core contracts, optional capabilities, models, adapter implementations, and async variants",
+        width,
+        height,
+    )
+    out[-1] = (
+        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: root README / Class Model</text>'
+    )
+    out.append('<rect x="70" y="150" width="1700" height="800" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+    out.append('<text x="920" y="205" text-anchor="middle" class="tiny">Source: graph-core repository/model/schema contracts plus AGE, Neo4j, Memgraph, TinkerGraph, and FalkorDB operation classes</text>')
+
+    arrow(out, 410, 335, 575, 335, "extends", "line")
+    arrow(out, 905, 335, 1085, 335, "uses", "line")
+    arrow(out, 905, 580, 1085, 580, "optional", "thin")
+    arrow(out, 740, 455, 740, 700, "", "line")
+    arrow(out, 740, 455, 430, 700, "", "thin")
+    arrow(out, 740, 455, 1090, 700, "", "thin")
+    out.append('<text x="748" y="615" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">implemented by</text>')
+    out.append('<text x="748" y="615" text-anchor="middle" class="tiny">implemented by</text>')
+    out.append('<text x="500" y="632" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">sync backends</text>')
+    out.append('<text x="500" y="632" text-anchor="middle" class="tiny">sync backends</text>')
+    out.append('<text x="1095" y="632" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">async variants</text>')
+    out.append('<text x="1095" y="632" text-anchor="middle" class="tiny">async variants</text>')
+
+    card(out, 120, 250, 290, 205, "Repository Pieces", [
+        "GraphSession",
+        "Vertex / Edge repositories",
+        "Traversal repository",
+        "Algorithm repository",
+    ], PALETTE["sky"])
+    card(out, 575, 250, 330, 205, "GraphOperations", [
+        "sync facade",
+        "AutoCloseable",
+        "CRUD / traversal / algorithms",
+        "backend-independent contract",
+    ], PALETTE["mint"])
+    card(out, 1085, 250, 310, 205, "Model Classes", [
+        "GraphElementId",
+        "GraphVertex",
+        "GraphEdge",
+        "GraphPath / PathStep",
+    ], PALETTE["lemon"])
+    card(out, 1460, 250, 260, 205, "Schema DSL", [
+        "VertexLabel",
+        "EdgeLabel",
+        "PropertyDef",
+        "GraphSchemaManager",
+    ], PALETTE["aqua"])
+
+    card(out, 575, 520, 330, 170, "Optional Capabilities", [
+        "GraphMergeOperations",
+        "GraphTransactionalOperations",
+        "Schema management",
+    ], PALETTE["lavender"])
+    card(out, 1085, 520, 340, 170, "Async Variants", [
+        "GraphSuspendOperations",
+        "GraphVirtualThreadOperations",
+        "Flow and CompletableFuture",
+    ], PALETTE["peach"])
+
+    card(out, 120, 730, 330, 185, "Sync Backends", [
+        "AgeGraphOperations",
+        "Neo4jGraphOperations",
+        "MemgraphGraphOperations",
+        "TinkerGraphOperations",
+    ], PALETTE["rose"])
+    card(out, 520, 745, 330, 165, "Redis Backend", [
+        "FalkorDBGraphOperations",
+        "FalkorDBGraphSuspendOps",
+        "jfalkordb Driver",
+    ], PALETTE["sky"])
+    card(out, 920, 745, 330, 165, "Wrappers", [
+        "Caching*GraphOperations",
+        "VirtualThread adapters",
+        "Suspend schema manager",
+    ], PALETTE["mint"])
+    card(out, 1320, 745, 330, 165, "Validation Surface", [
+        "batch validation",
+        "safe identifiers",
+        "explicit unsupported ops",
+    ], PALETTE["lemon"])
+
+    out.append('<rect x="180" y="965" width="1480" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+    out.append(
+        '<text x="920" y="997" text-anchor="middle" class="tiny">'
+        'Source note: GraphOperations composes repository contracts; backend classes implement the same model-facing API with optional capability interfaces.</text>'
+    )
+    return close_svg(out)
+
+
 def graph_age_operations_class_svg() -> str:
     width, height = 1840, 1180
     out = open_svg(
@@ -2604,6 +2698,8 @@ def graph_neo4j_record_mapper_class_svg() -> str:
 
 
 def class_svg(slug: str) -> str:
+    if slug == "bluetape4k-graph-class-02":
+        return root_class_model_svg()
     if slug == "graph-graph-core-class-02":
         return graph_core_model_class_svg()
     if slug == "graph-graph-core-class-03":
