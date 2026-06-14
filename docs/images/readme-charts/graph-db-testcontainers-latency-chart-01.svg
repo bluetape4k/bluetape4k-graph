@@ -1,90 +1,123 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="860" viewBox="0 0 1500 860">
+<svg xmlns="http://www.w3.org/2000/svg" width="1720" height="1142" viewBox="0 0 1720 1142">
 
     <defs>
       <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
-        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#26384A" flood-opacity="0.10"/>
+        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
       </filter>
       <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="#6F8396"/>
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
       </marker>
     </defs>
     <style>
-      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #36424F; }
-      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #667085; }
-      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #36424F; }
-      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #536273; }
-      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #667085; }
-      .card { stroke: #D7E0EA; stroke-width: 2; filter: url(#softShadow); }
-      .line { stroke: #6F8396; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-      .thin { stroke: #A5B5C4; stroke-width: 2; fill: none; marker-end: url(#arrow); }
-      .dash { stroke: #A5B5C4; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
+      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
+      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
+      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
+      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
+      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
+      .card { filter: url(#softShadow); }
+      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
     </style>
 
-<rect x="0" y="0" width="1500" height="860" fill="#FFFDF8"/>
-<rect x="24" y="24" width="1452" height="812" rx="22" fill="none" stroke="#7DAED3" stroke-width="4"/>
-<circle cx="1436" cy="64" r="15" fill="#FFD5B8" opacity="0.95"/>
-<circle cx="1396" cy="64" r="15" fill="#BFE8D2" opacity="0.95"/>
-<circle cx="1356" cy="64" r="15" fill="#CBBCEB" opacity="0.95"/>
+<rect x="0" y="0" width="1720" height="1142" fill="#F8FAFC"/>
+<rect x="24" y="24" width="1672" height="1094" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
+<circle cx="1656" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
+<circle cx="1616" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
+<circle cx="1576" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
 <text x="72" y="82" class="title">Graph DB Small Benchmark</text>
 <text x="74" y="118" class="subtitle">Common GraphOperations contract, small fixture</text>
-<text x="750.0" y="812" text-anchor="middle" class="tiny">github.com/bluetape4k/bluetape4k-graph | bluetape4k-graph | Graph DB Small Benchmark</text>
-<text x="350" y="171" class="tiny">Unit: ms/op / lower is better</text>
-<rect x="350" y="137" width="24" height="16" rx="5" fill="#8FC4EA"/>
-<text x="384" y="151" class="tiny">TinkerGraph</text>
-<rect x="540" y="137" width="24" height="16" rx="5" fill="#F4BE8D"/>
-<text x="574" y="151" class="tiny">Neo4j</text>
-<rect x="730" y="137" width="24" height="16" rx="5" fill="#9FD7B7"/>
-<text x="764" y="151" class="tiny">Memgraph</text>
-<rect x="920" y="137" width="24" height="16" rx="5" fill="#F5B5C8"/>
-<text x="954" y="151" class="tiny">AGE</text>
-<rect x="1110" y="137" width="24" height="16" rx="5" fill="#CBBCEB"/>
-<text x="1144" y="151" class="tiny">FalkorDB</text>
-<text x="86" y="231" class="tiny">batchInsertCycle</text>
-<line x1="350" y1="239" x2="1390" y2="239" stroke="#E7EEF5" stroke-width="2"/>
-<rect x="350" y="206" width="353.33812469000816" height="15" rx="6" fill="#8FC4EA"/>
-<text x="715.3381246900082" y="219" class="tiny">5.704</text>
-<rect x="350" y="227" width="388.7045980512191" height="15" rx="6" fill="#F4BE8D"/>
-<text x="750.7045980512191" y="240" class="tiny">6.903</text>
-<rect x="350" y="248" width="206.8059458769613" height="15" rx="6" fill="#9FD7B7"/>
-<text x="568.8059458769612" y="261" class="tiny">1.954</text>
-<rect x="350" y="269" width="687.2685354533212" height="15" rx="6" fill="#F5B5C8"/>
-<text x="1049.2685354533212" y="282" class="tiny">21.58</text>
-<rect x="350" y="290" width="920.0" height="15" rx="6" fill="#CBBCEB"/>
-<text x="1282.0" y="303" class="tiny">38.67</text>
-<text x="86" y="351" class="tiny">countPersons</text>
-<line x1="350" y1="359" x2="1390" y2="359" stroke="#E7EEF5" stroke-width="2"/>
-<rect x="350" y="326" width="25.624852172746227" height="15" rx="6" fill="#8FC4EA"/>
-<text x="387.6248521727462" y="339" class="tiny">0.03</text>
-<rect x="350" y="347" width="130.57783694967796" height="15" rx="6" fill="#F4BE8D"/>
-<text x="492.57783694967793" y="360" class="tiny">0.779</text>
-<rect x="350" y="368" width="92.86431342856957" height="15" rx="6" fill="#9FD7B7"/>
-<text x="454.8643134285696" y="381" class="tiny">0.394</text>
-<rect x="350" y="389" width="118.81755152676133" height="15" rx="6" fill="#F5B5C8"/>
-<text x="480.81755152676135" y="402" class="tiny">0.645</text>
-<rect x="350" y="410" width="65.33081063088174" height="15" rx="6" fill="#CBBCEB"/>
-<text x="427.33081063088173" y="423" class="tiny">0.195</text>
-<text x="86" y="471" class="tiny">oneHopNeighbors</text>
-<line x1="350" y1="479" x2="1390" y2="479" stroke="#E7EEF5" stroke-width="2"/>
-<rect x="350" y="446" width="9.356873045165583" height="15" rx="6" fill="#8FC4EA"/>
-<text x="371.35687304516557" y="459" class="tiny">0.004</text>
-<rect x="350" y="467" width="132.903833709717" height="15" rx="6" fill="#F4BE8D"/>
-<text x="494.903833709717" y="480" class="tiny">0.807</text>
-<rect x="350" y="488" width="87.02394975154512" height="15" rx="6" fill="#9FD7B7"/>
-<text x="449.0239497515451" y="501" class="tiny">0.346</text>
-<rect x="350" y="509" width="143.51442424502915" height="15" rx="6" fill="#F5B5C8"/>
-<text x="505.51442424502915" y="522" class="tiny">0.941</text>
-<rect x="350" y="530" width="118.26362053074295" height="15" rx="6" fill="#CBBCEB"/>
-<text x="480.26362053074297" y="543" class="tiny">0.639</text>
-<text x="86" y="591" class="tiny">shortestPath</text>
-<line x1="350" y1="599" x2="1390" y2="599" stroke="#E7EEF5" stroke-width="2"/>
-<rect x="350" y="566" width="21.94381239685585" height="15" rx="6" fill="#8FC4EA"/>
-<text x="383.94381239685583" y="579" class="tiny">0.022</text>
-<rect x="350" y="587" width="131.91200019403112" height="15" rx="6" fill="#F4BE8D"/>
-<text x="493.9120001940311" y="600" class="tiny">0.795</text>
-<rect x="350" y="608" width="86.77207093165275" height="15" rx="6" fill="#9FD7B7"/>
-<text x="448.77207093165276" y="621" class="tiny">0.344</text>
-<rect x="350" y="629" width="167.31543757338997" height="15" rx="6" fill="#F5B5C8"/>
-<text x="529.31543757339" y="642" class="tiny">1.279</text>
-<rect x="350" y="650" width="79.67090313152352" height="15" rx="6" fill="#CBBCEB"/>
-<text x="441.6709031315235" y="663" class="tiny">0.29</text>
+<text x="860.0" y="1094" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: Graph DB Small Benchmark</text>
+<rect x="70" y="150" width="1580" height="902" rx="22" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+<text x="96" y="194" class="label">Measured rows</text>
+<text x="1560" y="224" text-anchor="end" class="small">Unit: ms/op / lower is better</text>
+<rect x="570" y="168" width="26" height="18" rx="5" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="608" y="183" class="small">TinkerGraph</text>
+<rect x="800" y="168" width="26" height="18" rx="5" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+<text x="838" y="183" class="small">Neo4j</text>
+<rect x="1030" y="168" width="26" height="18" rx="5" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/>
+<text x="1068" y="183" class="small">Memgraph</text>
+<rect x="1260" y="168" width="26" height="18" rx="5" fill="#FCE7F3" stroke="#DB2777" stroke-width="2"/>
+<text x="1298" y="183" class="small">AGE</text>
+<rect x="1490" y="168" width="26" height="18" rx="5" fill="#EDE9FE" stroke="#7C3AED" stroke-width="2"/>
+<text x="1528" y="183" class="small">FalkorDB</text>
+<line x1="570.0" y1="220" x2="570.0" y2="950" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
+<text x="570.0" y="980" text-anchor="middle" class="tiny">0</text>
+<line x1="787.5" y1="220" x2="787.5" y2="950" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
+<text x="787.5" y="980" text-anchor="middle" class="tiny">9.6675</text>
+<line x1="1005.0" y1="220" x2="1005.0" y2="950" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
+<text x="1005.0" y="980" text-anchor="middle" class="tiny">19.335</text>
+<line x1="1222.5" y1="220" x2="1222.5" y2="950" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
+<text x="1222.5" y="980" text-anchor="middle" class="tiny">29.0025</text>
+<line x1="1440.0" y1="220" x2="1440.0" y2="950" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
+<text x="1440.0" y="980" text-anchor="middle" class="tiny">38.67</text>
+<text x="96" y="256" class="small">batchInsertCycle</text>
+<line x1="570" y1="266" x2="1540" y2="266" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="570" y="224" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="224" width="334.13496573946423" height="20" rx="6" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="918.1349657394642" y="240" class="small">5.704</text>
+<rect x="570" y="253" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="253" width="367.5793481571311" height="20" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+<text x="951.5793481571311" y="269" class="small">6.903</text>
+<rect x="570" y="282" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="282" width="195.56649229669165" height="20" rx="6" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/>
+<text x="779.5664922966916" y="298" class="small">1.954</text>
+<rect x="570" y="311" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="311" width="649.9169846134668" height="20" rx="6" fill="#FCE7F3" stroke="#DB2777" stroke-width="2"/>
+<text x="1233.9169846134669" y="327" class="small">21.58</text>
+<rect x="570" y="340" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="340" width="870.0" height="20" rx="6" fill="#EDE9FE" stroke="#7C3AED" stroke-width="2"/>
+<text x="1434" y="356" class="small" text-anchor="end">38.67</text>
+<text x="96" y="434" class="small">countPersons</text>
+<line x1="570" y1="444" x2="1540" y2="444" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="570" y="402" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="402" width="24.232197163357846" height="20" rx="6" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="608.2321971633578" y="418" class="small">0.03</text>
+<rect x="570" y="431" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="431" width="123.4812153763259" height="20" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+<text x="707.481215376326" y="447" class="small">0.779</text>
+<rect x="570" y="460" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="460" width="87.81733987266905" height="20" rx="6" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/>
+<text x="671.8173398726691" y="476" class="small">0.394</text>
+<rect x="570" y="489" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="489" width="112.36007590030691" height="20" rx="6" fill="#FCE7F3" stroke="#DB2777" stroke-width="2"/>
+<text x="696.3600759003069" y="505" class="small">0.645</text>
+<rect x="570" y="518" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="518" width="61.78022309659469" height="20" rx="6" fill="#EDE9FE" stroke="#7C3AED" stroke-width="2"/>
+<text x="645.7802230965947" y="534" class="small">0.195</text>
+<text x="96" y="612" class="small">oneHopNeighbors</text>
+<line x1="570" y1="622" x2="1540" y2="622" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="570" y="580" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="580" width="8.848347336189192" height="20" rx="6" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="592.8483473361891" y="596" class="small">0.004</text>
+<rect x="570" y="609" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="609" width="125.68079926897151" height="20" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+<text x="709.6807992689716" y="625" class="small">0.807</text>
+<rect x="570" y="638" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="638" width="82.2943872650481" height="20" rx="6" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/>
+<text x="666.294387265048" y="654" class="small">0.346</text>
+<rect x="570" y="667" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="667" width="135.7147272751906" height="20" rx="6" fill="#FCE7F3" stroke="#DB2777" stroke-width="2"/>
+<text x="719.7147272751906" y="683" class="small">0.941</text>
+<rect x="570" y="696" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="696" width="111.83624984972433" height="20" rx="6" fill="#EDE9FE" stroke="#7C3AED" stroke-width="2"/>
+<text x="695.8362498497244" y="712" class="small">0.639</text>
+<text x="96" y="790" class="small">shortestPath</text>
+<line x1="570" y1="800" x2="1540" y2="800" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="570" y="758" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="758" width="20.751213897026727" height="20" rx="6" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="604.7512138970267" y="774" class="small">0.022</text>
+<rect x="570" y="787" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="787" width="124.74286974870336" height="20" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+<text x="708.7428697487034" y="803" class="small">0.795</text>
+<rect x="570" y="816" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="816" width="82.05619751145423" height="20" rx="6" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/>
+<text x="666.0561975114542" y="832" class="small">0.344</text>
+<rect x="570" y="845" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="845" width="158.22220727048835" height="20" rx="6" fill="#FCE7F3" stroke="#DB2777" stroke-width="2"/>
+<text x="742.2222072704883" y="861" class="small">1.279</text>
+<rect x="570" y="874" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="874" width="75.34096274394072" height="20" rx="6" fill="#EDE9FE" stroke="#7C3AED" stroke-width="2"/>
+<text x="659.3409627439407" y="890" class="small">0.29</text>
+<text x="570" y="1018" class="tiny">Source: README benchmark table values. Complementary colors separate comparable series.</text>
 </svg>

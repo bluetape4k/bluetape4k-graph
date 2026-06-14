@@ -1,58 +1,77 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="860" viewBox="0 0 1500 860">
+<svg xmlns="http://www.w3.org/2000/svg" width="1720" height="980" viewBox="0 0 1720 980">
 
     <defs>
       <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
-        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#26384A" flood-opacity="0.10"/>
+        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
       </filter>
       <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="#6F8396"/>
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
       </marker>
     </defs>
     <style>
-      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #36424F; }
-      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #667085; }
-      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #36424F; }
-      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #536273; }
-      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #667085; }
-      .card { stroke: #D7E0EA; stroke-width: 2; filter: url(#softShadow); }
-      .line { stroke: #6F8396; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-      .thin { stroke: #A5B5C4; stroke-width: 2; fill: none; marker-end: url(#arrow); }
-      .dash { stroke: #A5B5C4; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
+      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
+      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
+      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
+      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
+      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
+      .card { filter: url(#softShadow); }
+      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
     </style>
 
-<rect x="0" y="0" width="1500" height="860" fill="#FFFDF8"/>
-<rect x="24" y="24" width="1452" height="812" rx="22" fill="none" stroke="#7DAED3" stroke-width="4"/>
-<circle cx="1436" cy="64" r="15" fill="#FFD5B8" opacity="0.95"/>
-<circle cx="1396" cy="64" r="15" fill="#BFE8D2" opacity="0.95"/>
-<circle cx="1356" cy="64" r="15" fill="#CBBCEB" opacity="0.95"/>
+<rect x="0" y="0" width="1720" height="980" fill="#F8FAFC"/>
+<rect x="24" y="24" width="1672" height="932" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
+<circle cx="1656" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
+<circle cx="1616" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
+<circle cx="1576" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
 <text x="72" y="82" class="title">Module Composition</text>
 <text x="74" y="118" class="subtitle">Repository areas counted from current layout</text>
-<text x="750.0" y="812" text-anchor="middle" class="tiny">github.com/bluetape4k/bluetape4k-graph | bluetape4k-graph | Module Composition</text>
-<text x="350" y="171" class="tiny">Unit: modules / higher is better</text>
-<rect x="350" y="137" width="24" height="16" rx="5" fill="#8FC4EA"/>
-<text x="384" y="151" class="tiny">module count</text>
-<text x="86" y="231" class="tiny">Graph backends</text>
-<line x1="350" y1="239" x2="1390" y2="239" stroke="#E7EEF5" stroke-width="2"/>
-<rect x="350" y="206" width="650.5382386916237" height="15" rx="6" fill="#8FC4EA"/>
-<text x="1012.5382386916237" y="219" class="tiny">6</text>
-<text x="86" y="295" class="tiny">Graph-IO modules</text>
-<line x1="350" y1="303" x2="1390" y2="303" stroke="#E7EEF5" stroke-width="2"/>
-<rect x="350" y="270" width="650.5382386916237" height="15" rx="6" fill="#8FC4EA"/>
-<text x="1012.5382386916237" y="283" class="tiny">6</text>
-<text x="86" y="359" class="tiny">Examples</text>
-<line x1="350" y1="367" x2="1390" y2="367" stroke="#E7EEF5" stroke-width="2"/>
-<rect x="350" y="334" width="920.0" height="15" rx="6" fill="#8FC4EA"/>
-<text x="1282.0" y="347" class="tiny">12</text>
-<text x="86" y="423" class="tiny">Benchmarks</text>
-<line x1="350" y1="431" x2="1390" y2="431" stroke="#E7EEF5" stroke-width="2"/>
-<rect x="350" y="398" width="531.1622476544557" height="15" rx="6" fill="#8FC4EA"/>
-<text x="893.1622476544557" y="411" class="tiny">4</text>
-<text x="86" y="487" class="tiny">Integrations</text>
-<line x1="350" y1="495" x2="1390" y2="495" stroke="#E7EEF5" stroke-width="2"/>
-<rect x="350" y="462" width="375.588427226754" height="15" rx="6" fill="#8FC4EA"/>
-<text x="737.588427226754" y="475" class="tiny">2</text>
-<text x="86" y="551" class="tiny">BOM</text>
-<line x1="350" y1="559" x2="1390" y2="559" stroke="#E7EEF5" stroke-width="2"/>
-<rect x="350" y="526" width="265.5811238272278" height="15" rx="6" fill="#8FC4EA"/>
-<text x="627.5811238272279" y="539" class="tiny">1</text>
+<text x="860.0" y="932" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: Module Composition</text>
+<rect x="70" y="150" width="1580" height="706" rx="22" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+<text x="96" y="194" class="label">Measured rows</text>
+<text x="1560" y="224" text-anchor="end" class="small">Unit: modules / higher is better</text>
+<rect x="570" y="168" width="26" height="18" rx="5" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="608" y="183" class="small">module count</text>
+<line x1="570.0" y1="220" x2="570.0" y2="754" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
+<text x="570.0" y="784" text-anchor="middle" class="tiny">0</text>
+<line x1="787.5" y1="220" x2="787.5" y2="754" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
+<text x="787.5" y="784" text-anchor="middle" class="tiny">3</text>
+<line x1="1005.0" y1="220" x2="1005.0" y2="754" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
+<text x="1005.0" y="784" text-anchor="middle" class="tiny">6</text>
+<line x1="1222.5" y1="220" x2="1222.5" y2="754" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
+<text x="1222.5" y="784" text-anchor="middle" class="tiny">9</text>
+<line x1="1440.0" y1="220" x2="1440.0" y2="754" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
+<text x="1440.0" y="784" text-anchor="middle" class="tiny">12</text>
+<text x="96" y="256" class="small">Graph backends</text>
+<line x1="570" y1="266" x2="1540" y2="266" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="570" y="224" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="224" width="615.1828996322964" height="20" rx="6" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="1199.1828996322965" y="240" class="small">6</text>
+<text x="96" y="342" class="small">Graph-IO modules</text>
+<line x1="570" y1="352" x2="1540" y2="352" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="570" y="310" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="310" width="615.1828996322964" height="20" rx="6" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="1199.1828996322965" y="326" class="small">6</text>
+<text x="96" y="428" class="small">Examples</text>
+<line x1="570" y1="438" x2="1540" y2="438" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="570" y="396" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="396" width="870.0" height="20" rx="6" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="1434" y="412" class="small" text-anchor="end">12</text>
+<text x="96" y="514" class="small">Benchmarks</text>
+<line x1="570" y1="524" x2="1540" y2="524" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="570" y="482" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="482" width="502.2947341949744" height="20" rx="6" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="1086.2947341949744" y="498" class="small">4</text>
+<text x="96" y="600" class="small">Integrations</text>
+<line x1="570" y1="610" x2="1540" y2="610" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="570" y="568" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="568" width="355.17601270356084" height="20" rx="6" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="939.1760127035609" y="584" class="small">2</text>
+<text x="96" y="686" class="small">BOM</text>
+<line x1="570" y1="696" x2="1540" y2="696" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="570" y="654" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="654" width="251.1473670974872" height="20" rx="6" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="835.1473670974872" y="670" class="small">1</text>
+<text x="570" y="822" class="tiny">Source: README benchmark table values. Complementary colors separate comparable series.</text>
 </svg>

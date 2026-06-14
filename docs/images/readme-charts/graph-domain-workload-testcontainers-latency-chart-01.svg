@@ -1,94 +1,128 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="860" viewBox="0 0 1500 860">
+<svg xmlns="http://www.w3.org/2000/svg" width="1720" height="1256" viewBox="0 0 1720 1256">
 
     <defs>
       <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
-        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#26384A" flood-opacity="0.10"/>
+        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
       </filter>
       <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="#6F8396"/>
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
       </marker>
     </defs>
     <style>
-      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #36424F; }
-      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #667085; }
-      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #36424F; }
-      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #536273; }
-      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #667085; }
-      .card { stroke: #D7E0EA; stroke-width: 2; filter: url(#softShadow); }
-      .line { stroke: #6F8396; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-      .thin { stroke: #A5B5C4; stroke-width: 2; fill: none; marker-end: url(#arrow); }
-      .dash { stroke: #A5B5C4; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
+      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
+      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
+      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
+      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
+      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
+      .card { filter: url(#softShadow); }
+      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
     </style>
 
-<rect x="0" y="0" width="1500" height="860" fill="#FFFDF8"/>
-<rect x="24" y="24" width="1452" height="812" rx="22" fill="none" stroke="#7DAED3" stroke-width="4"/>
-<circle cx="1436" cy="64" r="15" fill="#FFD5B8" opacity="0.95"/>
-<circle cx="1396" cy="64" r="15" fill="#BFE8D2" opacity="0.95"/>
-<circle cx="1356" cy="64" r="15" fill="#CBBCEB" opacity="0.95"/>
+<rect x="0" y="0" width="1720" height="1256" fill="#F8FAFC"/>
+<rect x="24" y="24" width="1672" height="1208" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
+<circle cx="1656" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
+<circle cx="1616" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
+<circle cx="1576" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
 <text x="72" y="82" class="title">Domain Workload Latency</text>
 <text x="74" y="118" class="subtitle">Social, IAM, fraud, and code graph workloads</text>
-<text x="750.0" y="812" text-anchor="middle" class="tiny">github.com/bluetape4k/bluetape4k-graph | bluetape4k-graph | Domain Workload Latency</text>
-<text x="350" y="171" class="tiny">Unit: ms/op / lower is better</text>
-<rect x="350" y="137" width="24" height="16" rx="5" fill="#8FC4EA"/>
-<text x="384" y="151" class="tiny">TinkerGraph</text>
-<rect x="540" y="137" width="24" height="16" rx="5" fill="#F4BE8D"/>
-<text x="574" y="151" class="tiny">Neo4j</text>
-<rect x="730" y="137" width="24" height="16" rx="5" fill="#9FD7B7"/>
-<text x="764" y="151" class="tiny">Memgraph</text>
-<text x="86" y="231" class="tiny">Code deps</text>
-<line x1="350" y1="239" x2="1390" y2="239" stroke="#E7EEF5" stroke-width="2"/>
-<rect x="350" y="206" width="52.5738129254027" height="15" rx="6" fill="#8FC4EA"/>
-<text x="414.5738129254027" y="219" class="tiny">0.009</text>
-<rect x="350" y="227" width="403.44668888123346" height="15" rx="6" fill="#F4BE8D"/>
-<text x="765.4466888812335" y="240" class="tiny">0.53</text>
-<rect x="350" y="248" width="306.55537409661923" height="15" rx="6" fill="#9FD7B7"/>
-<text x="668.5553740966193" y="261" class="tiny">0.306</text>
-<text x="86" y="303" class="tiny">Reverse deps</text>
-<line x1="350" y1="311" x2="1390" y2="311" stroke="#E7EEF5" stroke-width="2"/>
-<rect x="350" y="278" width="42.926338499925194" height="15" rx="6" fill="#8FC4EA"/>
-<text x="404.9263384999252" y="291" class="tiny">0.006</text>
-<rect x="350" y="299" width="421.68436871845324" height="15" rx="6" fill="#F4BE8D"/>
-<text x="783.6843687184532" y="312" class="tiny">0.579</text>
-<rect x="350" y="320" width="326.9172542809407" height="15" rx="6" fill="#9FD7B7"/>
-<text x="688.9172542809407" y="333" class="tiny">0.348</text>
-<text x="86" y="375" class="tiny">Fraud neighborhood</text>
-<line x1="350" y1="383" x2="1390" y2="383" stroke="#E7EEF5" stroke-width="2"/>
-<rect x="350" y="350" width="108.02891619560792" height="15" rx="6" fill="#8FC4EA"/>
-<text x="470.0289161956079" y="363" class="tiny">0.038</text>
-<rect x="350" y="371" width="586.2235539044766" height="15" rx="6" fill="#F4BE8D"/>
-<text x="948.2235539044766" y="384" class="tiny">1.119</text>
-<rect x="350" y="392" width="436.35912826980393" height="15" rx="6" fill="#9FD7B7"/>
-<text x="798.3591282698039" y="405" class="tiny">0.62</text>
-<text x="86" y="447" class="tiny">Fraud path</text>
-<line x1="350" y1="455" x2="1390" y2="455" stroke="#E7EEF5" stroke-width="2"/>
-<rect x="350" y="422" width="554.1766470795752" height="15" rx="6" fill="#8FC4EA"/>
-<text x="916.1766470795752" y="435" class="tiny">1</text>
-<rect x="350" y="443" width="395.3730945445014" height="15" rx="6" fill="#F4BE8D"/>
-<text x="757.3730945445013" y="456" class="tiny">0.509</text>
-<rect x="350" y="464" width="352.6758586126725" height="15" rx="6" fill="#9FD7B7"/>
-<text x="714.6758586126725" y="477" class="tiny">0.405</text>
-<text x="86" y="519" class="tiny">IAM reachability</text>
-<line x1="350" y1="527" x2="1390" y2="527" stroke="#E7EEF5" stroke-width="2"/>
-<rect x="350" y="494" width="100.67118730578218" height="15" rx="6" fill="#8FC4EA"/>
-<text x="462.67118730578215" y="507" class="tiny">0.033</text>
-<rect x="350" y="515" width="394.98452138473334" height="15" rx="6" fill="#F4BE8D"/>
-<text x="756.9845213847334" y="528" class="tiny">0.508</text>
-<rect x="350" y="536" width="303.5350504480627" height="15" rx="6" fill="#9FD7B7"/>
-<text x="665.5350504480627" y="549" class="tiny">0.3</text>
-<text x="86" y="591" class="tiny">Social fan-out</text>
-<line x1="350" y1="599" x2="1390" y2="599" stroke="#E7EEF5" stroke-width="2"/>
-<rect x="350" y="566" width="95.98621091099908" height="15" rx="6" fill="#8FC4EA"/>
-<text x="457.9862109109991" y="579" class="tiny">0.03</text>
-<rect x="350" y="587" width="551.6772157365616" height="15" rx="6" fill="#F4BE8D"/>
-<text x="913.6772157365616" y="600" class="tiny">0.991</text>
-<rect x="350" y="608" width="410.6146053618035" height="15" rx="6" fill="#9FD7B7"/>
-<text x="772.6146053618036" y="621" class="tiny">0.549</text>
-<text x="86" y="663" class="tiny">Two-hop candidates</text>
-<line x1="350" y1="671" x2="1390" y2="671" stroke="#E7EEF5" stroke-width="2"/>
-<rect x="350" y="638" width="224.4244371979376" height="15" rx="6" fill="#8FC4EA"/>
-<text x="586.4244371979376" y="651" class="tiny">0.164</text>
-<rect x="350" y="659" width="920.0" height="15" rx="6" fill="#F4BE8D"/>
-<text x="1282.0" y="672" class="tiny">2.756</text>
-<rect x="350" y="680" width="734.1533437065254" height="15" rx="6" fill="#9FD7B7"/>
-<text x="1096.1533437065254" y="693" class="tiny">1.755</text>
+<text x="860.0" y="1208" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: Domain Workload Latency</text>
+<rect x="70" y="150" width="1580" height="1016" rx="22" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+<text x="96" y="194" class="label">Measured rows</text>
+<text x="1560" y="224" text-anchor="end" class="small">Unit: ms/op / lower is better</text>
+<rect x="570" y="168" width="26" height="18" rx="5" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="608" y="183" class="small">TinkerGraph</text>
+<rect x="800" y="168" width="26" height="18" rx="5" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+<text x="838" y="183" class="small">Neo4j</text>
+<rect x="1030" y="168" width="26" height="18" rx="5" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/>
+<text x="1068" y="183" class="small">Memgraph</text>
+<line x1="570.0" y1="220" x2="570.0" y2="1064" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
+<text x="570.0" y="1094" text-anchor="middle" class="tiny">0</text>
+<line x1="787.5" y1="220" x2="787.5" y2="1064" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
+<text x="787.5" y="1094" text-anchor="middle" class="tiny">0.689</text>
+<line x1="1005.0" y1="220" x2="1005.0" y2="1064" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
+<text x="1005.0" y="1094" text-anchor="middle" class="tiny">1.378</text>
+<line x1="1222.5" y1="220" x2="1222.5" y2="1064" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
+<text x="1222.5" y="1094" text-anchor="middle" class="tiny">2.067</text>
+<line x1="1440.0" y1="220" x2="1440.0" y2="1064" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
+<text x="1440.0" y="1094" text-anchor="middle" class="tiny">2.756</text>
+<text x="96" y="256" class="small">Code deps</text>
+<line x1="570" y1="266" x2="1540" y2="266" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="570" y="224" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="224" width="49.71654048380473" height="20" rx="6" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="633.7165404838047" y="240" class="small">0.009</text>
+<rect x="570" y="253" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="253" width="381.52023839855775" height="20" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+<text x="965.5202383985577" y="269" class="small">0.53</text>
+<rect x="570" y="282" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="282" width="289.8947559391943" height="20" rx="6" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/>
+<text x="873.8947559391943" y="298" class="small">0.306</text>
+<text x="96" y="374" class="small">Reverse deps</text>
+<line x1="570" y1="384" x2="1540" y2="384" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="570" y="342" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="342" width="40.59338532058143" height="20" rx="6" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="624.5933853205814" y="358" class="small">0.006</text>
+<rect x="570" y="371" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="371" width="398.7667399837547" height="20" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+<text x="982.7667399837546" y="387" class="small">0.579</text>
+<rect x="570" y="400" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="400" width="309.1500122004548" height="20" rx="6" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/>
+<text x="893.1500122004547" y="416" class="small">0.348</text>
+<text x="96" y="492" class="small">Fraud neighborhood</text>
+<line x1="570" y1="502" x2="1540" y2="502" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="570" y="460" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="460" width="102.15777944584661" height="20" rx="6" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="686.1577794458466" y="476" class="small">0.038</text>
+<rect x="570" y="489" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="489" width="554.3635781487985" height="20" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+<text x="1138.3635781487985" y="505" class="small">1.119</text>
+<rect x="570" y="518" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="518" width="412.64395825514066" height="20" rx="6" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/>
+<text x="996.6439582551407" y="534" class="small">0.62</text>
+<text x="96" y="610" class="small">Fraud path</text>
+<line x1="570" y1="620" x2="1540" y2="620" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="570" y="578" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="578" width="524.0583510426418" height="20" rx="6" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="1108.0583510426418" y="594" class="small">1</text>
+<rect x="570" y="607" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="607" width="373.88542636273496" height="20" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+<text x="957.885426362735" y="623" class="small">0.509</text>
+<rect x="570" y="636" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="636" width="333.508692383723" height="20" rx="6" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/>
+<text x="917.508692383723" y="652" class="small">0.405</text>
+<text x="96" y="728" class="small">IAM reachability</text>
+<line x1="570" y1="738" x2="1540" y2="738" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="570" y="696" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="696" width="95.1999271261201" height="20" rx="6" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="679.1999271261201" y="712" class="small">0.033</text>
+<rect x="570" y="725" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="725" width="373.5179713094761" height="20" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+<text x="957.517971309476" y="741" class="small">0.508</text>
+<rect x="570" y="754" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="754" width="287.03858031501585" height="20" rx="6" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/>
+<text x="871.0385803150159" y="770" class="small">0.3</text>
+<text x="96" y="846" class="small">Social fan-out</text>
+<line x1="570" y1="856" x2="1540" y2="856" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="570" y="814" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="814" width="90.76956901366218" height="20" rx="6" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="674.7695690136621" y="830" class="small">0.03</text>
+<rect x="570" y="843" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="843" width="521.6947583595745" height="20" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+<text x="1105.6947583595745" y="859" class="small">0.991</text>
+<rect x="570" y="872" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="872" width="388.29859420083596" height="20" rx="6" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/>
+<text x="972.298594200836" y="888" class="small">0.549</text>
+<text x="96" y="964" class="small">Two-hop candidates</text>
+<line x1="570" y1="974" x2="1540" y2="974" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="570" y="932" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="932" width="212.227456915441" height="20" rx="6" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="796.227456915441" y="948" class="small">0.164</text>
+<rect x="570" y="961" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="961" width="870.0" height="20" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+<text x="1434" y="977" class="small" text-anchor="end">2.756</text>
+<rect x="570" y="990" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="990" width="694.2537054616056" height="20" rx="6" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/>
+<text x="1278.2537054616055" y="1006" class="small">1.755</text>
+<text x="570" y="1132" class="tiny">Source: README benchmark table values. Complementary colors separate comparable series.</text>
 </svg>

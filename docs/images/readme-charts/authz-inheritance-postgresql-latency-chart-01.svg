@@ -1,70 +1,95 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="860" viewBox="0 0 1500 860">
+<svg xmlns="http://www.w3.org/2000/svg" width="1720" height="980" viewBox="0 0 1720 980">
 
     <defs>
       <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
-        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#26384A" flood-opacity="0.10"/>
+        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
       </filter>
       <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="#6F8396"/>
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
       </marker>
     </defs>
     <style>
-      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #36424F; }
-      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #667085; }
-      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #36424F; }
-      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #536273; }
-      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #667085; }
-      .card { stroke: #D7E0EA; stroke-width: 2; filter: url(#softShadow); }
-      .line { stroke: #6F8396; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-      .thin { stroke: #A5B5C4; stroke-width: 2; fill: none; marker-end: url(#arrow); }
-      .dash { stroke: #A5B5C4; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
+      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
+      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
+      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
+      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
+      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
+      .card { filter: url(#softShadow); }
+      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
     </style>
 
-<rect x="0" y="0" width="1500" height="860" fill="#FFFDF8"/>
-<rect x="24" y="24" width="1452" height="812" rx="22" fill="none" stroke="#7DAED3" stroke-width="4"/>
-<circle cx="1436" cy="64" r="15" fill="#FFD5B8" opacity="0.95"/>
-<circle cx="1396" cy="64" r="15" fill="#BFE8D2" opacity="0.95"/>
-<circle cx="1356" cy="64" r="15" fill="#CBBCEB" opacity="0.95"/>
+<rect x="0" y="0" width="1720" height="980" fill="#F8FAFC"/>
+<rect x="24" y="24" width="1672" height="932" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
+<circle cx="1656" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
+<circle cx="1616" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
+<circle cx="1576" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
 <text x="72" y="82" class="title">Authorization Inheritance Latency</text>
 <text x="74" y="118" class="subtitle">PostgreSQL AGE fixture, medium rows</text>
-<text x="750.0" y="812" text-anchor="middle" class="tiny">github.com/bluetape4k/bluetape4k-graph | bluetape4k-graph | Authorization Inheritance Latency</text>
-<text x="350" y="171" class="tiny">Unit: ms/op / lower is better</text>
-<rect x="350" y="137" width="24" height="16" rx="5" fill="#8FC4EA"/>
-<text x="384" y="151" class="tiny">AGE/Cypher</text>
-<rect x="540" y="137" width="24" height="16" rx="5" fill="#F4BE8D"/>
-<text x="574" y="151" class="tiny">PostgreSQL CTE</text>
-<rect x="730" y="137" width="24" height="16" rx="5" fill="#9FD7B7"/>
-<text x="764" y="151" class="tiny">PostgreSQL iterative</text>
-<text x="86" y="231" class="tiny">shallow</text>
-<line x1="350" y1="239" x2="1390" y2="239" stroke="#E7EEF5" stroke-width="2"/>
-<rect x="350" y="206" width="283.37264811882966" height="15" rx="6" fill="#8FC4EA"/>
-<text x="645.3726481188296" y="219" class="tiny">57.382</text>
-<rect x="350" y="227" width="130.0449270814568" height="15" rx="6" fill="#F4BE8D"/>
-<text x="492.04492708145676" y="240" class="tiny">12.085</text>
-<rect x="350" y="248" width="38.441652384626025" height="15" rx="6" fill="#9FD7B7"/>
-<text x="400.441652384626" y="261" class="tiny">1.056</text>
-<text x="86" y="303" class="tiny">deep inheritance</text>
-<line x1="350" y1="311" x2="1390" y2="311" stroke="#E7EEF5" stroke-width="2"/>
-<rect x="350" y="278" width="920.0" height="15" rx="6" fill="#8FC4EA"/>
-<text x="1282.0" y="291" class="tiny">604.833</text>
-<rect x="350" y="299" width="114.60068844406341" height="15" rx="6" fill="#F4BE8D"/>
-<text x="476.6006884440634" y="312" class="tiny">9.385</text>
-<rect x="350" y="320" width="54.235849128456245" height="15" rx="6" fill="#9FD7B7"/>
-<text x="416.23584912845627" y="333" class="tiny">2.102</text>
-<text x="86" y="375" class="tiny">deny heavy</text>
-<line x1="350" y1="383" x2="1390" y2="383" stroke="#E7EEF5" stroke-width="2"/>
-<rect x="350" y="350" width="792.0207044678548" height="15" rx="6" fill="#8FC4EA"/>
-<text x="1154.0207044678548" y="363" class="tiny">448.263</text>
-<rect x="350" y="371" width="114.99686272759118" height="15" rx="6" fill="#F4BE8D"/>
-<text x="476.9968627275912" y="384" class="tiny">9.45</text>
-<rect x="350" y="392" width="77.66202729128841" height="15" rx="6" fill="#9FD7B7"/>
-<text x="439.6620272912884" y="405" class="tiny">4.31</text>
-<text x="86" y="447" class="tiny">wide groups</text>
-<line x1="350" y1="455" x2="1390" y2="455" stroke="#E7EEF5" stroke-width="2"/>
-<rect x="350" y="422" width="591.5782160049307" height="15" rx="6" fill="#8FC4EA"/>
-<text x="953.5782160049307" y="435" class="tiny">250.083</text>
-<rect x="350" y="443" width="46.13544300039517" height="15" rx="6" fill="#F4BE8D"/>
-<text x="408.1354430003952" y="456" class="tiny">1.521</text>
-<rect x="350" y="464" width="71.54708408142154" height="15" rx="6" fill="#9FD7B7"/>
-<text x="433.54708408142153" y="477" class="tiny">3.658</text>
+<text x="860.0" y="932" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: Authorization Inheritance Latency</text>
+<rect x="70" y="150" width="1580" height="662" rx="22" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+<text x="96" y="194" class="label">Measured rows</text>
+<text x="1560" y="224" text-anchor="end" class="small">Unit: ms/op / lower is better</text>
+<rect x="570" y="168" width="26" height="18" rx="5" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="608" y="183" class="small">AGE/Cypher</text>
+<rect x="800" y="168" width="26" height="18" rx="5" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+<text x="838" y="183" class="small">PostgreSQL CTE</text>
+<rect x="1030" y="168" width="26" height="18" rx="5" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/>
+<text x="1068" y="183" class="small">PostgreSQL iterative</text>
+<line x1="570.0" y1="220" x2="570.0" y2="710" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
+<text x="570.0" y="740" text-anchor="middle" class="tiny">0</text>
+<line x1="787.5" y1="220" x2="787.5" y2="710" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
+<text x="787.5" y="740" text-anchor="middle" class="tiny">151.208</text>
+<line x1="1005.0" y1="220" x2="1005.0" y2="710" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
+<text x="1005.0" y="740" text-anchor="middle" class="tiny">302.416</text>
+<line x1="1222.5" y1="220" x2="1222.5" y2="710" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
+<text x="1222.5" y="740" text-anchor="middle" class="tiny">453.625</text>
+<line x1="1440.0" y1="220" x2="1440.0" y2="710" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
+<text x="1440.0" y="740" text-anchor="middle" class="tiny">604.833</text>
+<text x="96" y="256" class="small">shallow</text>
+<line x1="570" y1="266" x2="1540" y2="266" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="570" y="224" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="224" width="267.97196072106715" height="20" rx="6" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="851.9719607210671" y="240" class="small">57.382</text>
+<rect x="570" y="253" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="253" width="122.97726800094284" height="20" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+<text x="706.9772680009428" y="269" class="small">12.085</text>
+<rect x="570" y="282" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="282" width="36.35243214633113" height="20" rx="6" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/>
+<text x="620.3524321463311" y="298" class="small">1.056</text>
+<text x="96" y="374" class="small">deep inheritance</text>
+<line x1="570" y1="384" x2="1540" y2="384" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="570" y="342" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="342" width="870.0" height="20" rx="6" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="1434" y="358" class="small" text-anchor="end">604.833</text>
+<rect x="570" y="371" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="371" width="108.37239015905996" height="20" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+<text x="692.3723901590599" y="387" class="small">9.385</text>
+<rect x="570" y="400" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="400" width="51.2882486323445" height="20" rx="6" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/>
+<text x="635.2882486323444" y="416" class="small">2.102</text>
+<text x="96" y="492" class="small">deny heavy</text>
+<line x1="570" y1="502" x2="1540" y2="502" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="570" y="460" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="460" width="748.976100964167" height="20" rx="6" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="1332.976100964167" y="476" class="small">448.263</text>
+<rect x="570" y="489" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="489" width="108.74703323152643" height="20" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+<text x="692.7470332315264" y="505" class="small">9.45</text>
+<rect x="570" y="518" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="518" width="73.441264938501" height="20" rx="6" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/>
+<text x="657.441264938501" y="534" class="small">4.31</text>
+<text x="96" y="610" class="small">wide groups</text>
+<line x1="570" y1="620" x2="1540" y2="620" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="570" y="578" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="578" width="559.4272260046628" height="20" rx="6" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="1143.4272260046628" y="594" class="small">250.083</text>
+<rect x="570" y="607" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="607" width="43.628081967765" height="20" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+<text x="627.628081967765" y="623" class="small">1.521</text>
+<rect x="570" y="636" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="570" y="636" width="67.65865559873559" height="20" rx="6" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/>
+<text x="651.6586555987355" y="652" class="small">3.658</text>
+<text x="570" y="778" class="tiny">Source: README benchmark table values. Complementary colors separate comparable series.</text>
 </svg>
