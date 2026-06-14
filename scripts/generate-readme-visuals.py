@@ -1986,6 +1986,96 @@ def graph_neo4j_coroutine_session_class_svg() -> str:
     return close_svg(out)
 
 
+def graph_neo4j_record_mapper_class_svg() -> str:
+    width, height = 1840, 1100
+    out = open_svg(
+        "Neo4jRecordMapper Class Model",
+        "Record, Node, Relationship, and Path values from Neo4j Driver are converted into graph-core domain models with elementId-based IDs",
+        width,
+        height,
+    )
+    out[-1] = (
+        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: graph-neo4j / Neo4jRecordMapper</text>'
+    )
+    out.append('<rect x="70" y="150" width="1700" height="800" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+
+    def relation_label(x: float, y: float, text: str) -> None:
+        out.append(f'<text x="{x}" y="{y}" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">{esc(text)}</text>')
+        out.append(f'<text x="{x}" y="{y}" text-anchor="middle" class="tiny">{esc(text)}</text>')
+
+    # Left-to-right conversion flow, with Path expansion kept separate at the bottom.
+    arrow(out, 390, 315, 560, 315, "record[key]", "line")
+    arrow(out, 390, 525, 560, 525, "record[key]", "line")
+    arrow(out, 390, 735, 560, 735, "record[key]", "line")
+    arrow(out, 900, 315, 1090, 315, "nodeToVertex", "line")
+    arrow(out, 900, 525, 1090, 525, "relationshipToEdge", "line")
+    arrow(out, 900, 735, 1090, 735, "pathToGraphPath", "line")
+    arrow(out, 750, 805, 750, 830, "interleaves", "thin")
+    relation_label(750, 205, "key.requireNotBlank before record extraction")
+
+    card(out, 125, 240, 265, 150, "Record -> Node", [
+        "recordToVertex(record)",
+        "default key: n",
+        "record[key].asNode()",
+    ], PALETTE["sky"])
+    card(out, 125, 450, 265, 150, "Record -> Rel", [
+        "recordToEdge(record)",
+        "default key: r",
+        "asRelationship()",
+    ], PALETTE["mint"])
+    card(out, 125, 660, 265, 150, "Record -> Path", [
+        "recordToPath(record)",
+        "default key: p",
+        "record[key].asPath()",
+    ], PALETTE["peach"])
+
+    card(out, 560, 225, 340, 190, "Node Conversion", [
+        "node.elementId()",
+        "first label or Unknown",
+        "node.asMap()",
+        "returns GraphVertex",
+    ], PALETTE["lemon"])
+    card(out, 560, 445, 340, 185, "Relationship Conversion", [
+        "rel.elementId()",
+        "start/end elementId",
+        "rel.type() + asMap()",
+        "returns GraphEdge",
+    ], PALETTE["lavender"])
+    card(out, 560, 665, 340, 145, "Path Conversion", [
+        "path.nodes().toList()",
+        "path.relationships().toList()",
+        "build ordered PathStep list",
+    ], PALETTE["aqua"])
+
+    card(out, 1090, 225, 360, 185, "GraphVertex", [
+        "id: GraphElementId",
+        "label: String",
+        "properties: Map",
+    ], PALETTE["sky"])
+    card(out, 1090, 445, 360, 185, "GraphEdge", [
+        "id: GraphElementId",
+        "label: relationship type",
+        "startId / endId",
+    ], PALETTE["mint"])
+    card(out, 1090, 665, 360, 185, "GraphPath", [
+        "List<PathStep>",
+        "VertexStep(node)",
+        "EdgeStep(relationship)",
+    ], PALETTE["peach"])
+    card(out, 520, 830, 460, 115, "PathStep Ordering", [
+        "VertexStep, EdgeStep, VertexStep ...",
+        "relationship added when index < rels.size",
+    ], PALETTE["rose"])
+
+    out.append('<rect x="180" y="990" width="1480" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+    out.append(
+        '<text x="920" y="1023" text-anchor="middle" class="tiny">'
+        'Source: Neo4jRecordMapper.kt; elementId(), startNodeElementId(), and endNodeElementId() avoid deprecated numeric id() mapping.</text>'
+    )
+    return close_svg(out)
+
+
 def class_svg(slug: str) -> str:
     if slug == "graph-graph-core-class-02":
         return graph_core_model_class_svg()
@@ -2005,6 +2095,8 @@ def class_svg(slug: str) -> str:
         return graph_neo4j_operations_class_svg()
     if slug == "graph-graph-neo4j-class-04":
         return graph_neo4j_coroutine_session_class_svg()
+    if slug == "graph-graph-neo4j-class-05":
+        return graph_neo4j_record_mapper_class_svg()
     title = "Backend Capability Matrix" if "capability" in slug else f"{module_title(slug)} Class Model"
     subtitle = "Contracts, data classes, and adapter responsibilities"
     out = open_svg(title, subtitle)
