@@ -1,61 +1,100 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="980" height="1265" viewBox="0 0 980 1265" role="img" aria-label="Reactive-Coroutine">
-<defs>
-  <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="7" stdDeviation="8" flood-color="#1f2937" flood-opacity="0.10"/></filter>
-  <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth"><path d="M1,1 L8,4.5 L1,8 Z" fill="#758297"/></marker>
-  <style>
-    .canvas{fill:#f7f9fc}.frame{fill:#fff;stroke:#d8e0ea;stroke-width:1.5}
-    .title{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:40px;font-weight:400;fill:#102033}
-    .subtitle{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:14px;font-weight:400;fill:#536273}
-    .label{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:21px;font-weight:400;fill:#102033}
-    .small{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:12px;font-weight:400;fill:#536273}
-    .strong{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:13px;font-weight:400;fill:#102033}
-    .card{stroke-width:2.0;filter:url(#shadow)}
-    .line{stroke:#758297;stroke-width:2.1;fill:none;marker-end:url(#arrow)}
-    .dashed{stroke:#758297;stroke-width:2.1;stroke-dasharray:7 6;fill:none;marker-end:url(#arrow)}
-    .lifeline{stroke:#b7c2d1;stroke-width:1.8;stroke-dasharray:9 9}
-  </style>
-</defs>
-<rect class="canvas" width="980" height="1265"/>
-<rect class="frame" x="32" y="28" width="916" height="1209" rx="28"/>
-<text class="title" x="66" y="82">Reactive-Coroutine</text>
-<text class="subtitle" x="70" y="116">Graphviz-derived layout and orthogonal route evidence</text>
-<path class="line" d="M209.5 205.7 L209.5 205.7 L209.5 288.0 L209.5 288.0"/>
-<path class="line" d="M209.5 366.3 L209.5 366.3 L209.5 448.6 L209.5 448.6"/>
-<path class="line" d="M209.5 526.9 L209.5 526.9 L209.5 609.2 L209.5 609.2"/>
-<path class="line" d="M209.5 687.5 L209.5 687.5 L209.5 769.8 L209.5 769.8"/>
-<path class="line" d="M209.5 848.1 L209.5 848.1 L209.5 930.4 L209.5 930.4"/>
-<path class="line" d="M209.5 1008.8 L209.5 1008.8 L209.5 1091.0 L209.5 1091.0"/>
-<g transform="translate(104.1,133.5)">
-<rect class="card" x="0" y="0" width="210.9" height="84.0" rx="14" fill="#E8F3FF" stroke="#5B8DEF"/>
-<text class="label" x="105.5" y="42.0" text-anchor="middle">ReactiveSession</text>
-</g>
-<g transform="translate(104.5,294.1)">
-<rect class="card" x="0" y="0" width="210.0" height="84.0" rx="14" fill="#EAF7EF" stroke="#58A978"/>
-<text class="label" x="105.0" y="42.0" text-anchor="middle">Query</text>
-</g>
-<g transform="translate(78.9,454.7)">
-<rect class="card" x="0" y="0" width="261.3" height="84.0" rx="14" fill="#FFF3D9" stroke="#D6A441"/>
-<text class="label" x="130.6" y="42.0" text-anchor="middle">Publisher&lt;Record&amp; gt;</text>
-</g>
-<g transform="translate(50.0,610.3)">
-<rect class="card" x="0" y="0" width="319.1" height="94.0" rx="14" fill="#FDECEF" stroke="#DC6B82"/>
-<text class="label" x="159.5" y="35.0" text-anchor="middle">kotlinx-coroutines-r</text>
-<text class="label" x="159.5" y="59.0" text-anchor="middle">eactive</text>
-</g>
-<g transform="translate(104.5,775.9)">
-<rect class="card" x="0" y="0" width="210.0" height="84.0" rx="14" fill="#E9F7F6" stroke="#45A7A1"/>
-<text class="label" x="105.0" y="42.0" text-anchor="middle">Flow&lt;Record&gt;</text>
-</g>
-<g transform="translate(104.5,936.5)">
-<rect class="card" x="0" y="0" width="210.0" height="84.0" rx="14" fill="#F1ECFF" stroke="#8A72D6"/>
-<text class="label" x="105.0" y="42.0" text-anchor="middle">suspend fun</text>
-</g>
-<g transform="translate(104.5,1097.2)">
-<rect class="card" x="0" y="0" width="210.0" height="84.0" rx="14" fill="#F4F7FA" stroke="#8CA0B8"/>
-<text class="label" x="105.0" y="42.0" text-anchor="middle">Application</text>
-</g>
-<g transform="translate(332.3,133.5)">
-<rect class="card" x="0" y="0" width="210.0" height="84.0" rx="14" fill="#FFF0E4" stroke="#D98A4A"/>
-<text class="label" x="105.0" y="42.0" text-anchor="middle">query</text>
-</g>
+<svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1080" viewBox="0 0 1840 1080">
+
+    <defs>
+      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
+        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
+      </filter>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+      </marker>
+    </defs>
+    <style>
+      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
+      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
+      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
+      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
+      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
+      .card { filter: url(#softShadow); }
+      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
+    </style>
+
+<rect x="0" y="0" width="1840" height="1080" fill="#F8FAFC"/>
+<rect x="24" y="24" width="1792" height="1032" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
+<circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
+<circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
+<circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
+<text x="72" y="82" class="title">Neo4j Reactive-Coroutine Bridge</text>
+<text x="74" y="118" class="subtitle">Neo4jCoroutineSession converts ReactiveSession query publishers into coroutine-friendly lists and mapped graph-core results</text>
+<text x="920.0" y="1032" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: graph-neo4j / Reactive-Coroutine Bridge</text>
+<rect x="70" y="150" width="1700" height="780" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+<path d="M 355 320 C 412.5 320, 412.5 320, 470 320" class="line"/>
+<text x="412.5" y="292.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">read/write</text>
+<text x="412.5" y="292.0" text-anchor="middle" class="tiny">read/write</text>
+<path d="M 760 320 C 817.5 320, 817.5 320, 875 320" class="line"/>
+<text x="817.5" y="292.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">session</text>
+<text x="817.5" y="292.0" text-anchor="middle" class="tiny">session</text>
+<path d="M 1165 320 C 1222.5 320, 1222.5 320, 1280 320" class="line"/>
+<text x="1222.5" y="292.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">run Query</text>
+<text x="1222.5" y="292.0" text-anchor="middle" class="tiny">run Query</text>
+<path d="M 1480 420 C 1480.0 420, 1480.0 545, 1480 545" class="thin"/>
+<text x="1480.0" y="454.5" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">publisher</text>
+<text x="1480.0" y="454.5" text-anchor="middle" class="tiny">publisher</text>
+<path d="M 1300 620 C 1185.0 620, 1185.0 620, 1070 620" class="line"/>
+<text x="1185.0" y="592.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">asFlow().toList()</text>
+<text x="1185.0" y="592.0" text-anchor="middle" class="tiny">asFlow().toList()</text>
+<path d="M 880 620 C 765.0 620, 765.0 620, 650 620" class="line"/>
+<text x="765.0" y="592.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">map records</text>
+<text x="765.0" y="592.0" text-anchor="middle" class="tiny">map records</text>
+<path d="M 560 405 C 560.0 405, 560.0 545, 560 545" class="thin"/>
+<text x="560.0" y="447.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">finally close</text>
+<text x="560.0" y="447.0" text-anchor="middle" class="tiny">finally close</text>
+<text x="920" y="760" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">session.close&lt;Void&gt;().awaitFirstOrNull() keeps driver ownership external</text>
+<text x="920" y="760" text-anchor="middle" class="tiny">session.close&lt;Void&gt;().awaitFirstOrNull() keeps driver ownership external</text>
+<rect x="115" y="245" width="240" height="150" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+<rect x="125" y="255" width="12" height="130" rx="6" fill="#3B82F6" opacity="0.95"/>
+<text x="137" y="285" class="label">Coroutine Caller</text>
+<text x="139" y="321" class="small">suspend repo method</text>
+<text x="139" y="349" class="small">GraphSuspendOperations</text>
+<text x="139" y="377" class="small">runRead / runWrite</text>
+<rect x="470" y="245" width="290" height="160" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
+<rect x="480" y="255" width="12" height="140" rx="6" fill="#8B5CF6" opacity="0.95"/>
+<text x="492" y="285" class="label">Coroutine Session</text>
+<text x="494" y="321" class="small">Neo4jCoroutineSession</text>
+<text x="494" y="349" class="small">read(block) / write(block)</text>
+<text x="494" y="377" class="small">sessionConfig() per database</text>
+<rect x="875" y="245" width="290" height="160" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
+<rect x="885" y="255" width="12" height="140" rx="6" fill="#22C55E" opacity="0.95"/>
+<text x="897" y="285" class="label">ReactiveSession</text>
+<text x="899" y="321" class="small">driver.session(...)</text>
+<text x="899" y="349" class="small">Neo4j Java Driver API</text>
+<text x="899" y="377" class="small">read/write query execution</text>
+<rect x="1280" y="245" width="290" height="175" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
+<rect x="1290" y="255" width="12" height="155" rx="6" fill="#EAB308" opacity="0.95"/>
+<text x="1302" y="285" class="label">Reactive Result</text>
+<text x="1304" y="321" class="small">run(Query(cypher, params))</text>
+<text x="1304" y="349" class="small">awaitSingle()</text>
+<text x="1304" y="377" class="small">records() publisher</text>
+<text x="1304" y="405" class="small">Record stream</text>
+<rect x="1280" y="545" width="400" height="160" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="3" class="card"/>
+<rect x="1290" y="555" width="12" height="140" rx="6" fill="#EF4444" opacity="0.95"/>
+<text x="1302" y="585" class="label">kotlinx-coroutines-reactive</text>
+<text x="1304" y="621" class="small">Publisher&lt;Record&gt;.asFlow()</text>
+<text x="1304" y="649" class="small">collect with toList()</text>
+<text x="1304" y="677" class="small">non-blocking bridge to suspend code</text>
+<rect x="670" y="545" width="400" height="160" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
+<rect x="680" y="555" width="12" height="140" rx="6" fill="#14B8A6" opacity="0.95"/>
+<text x="692" y="585" class="label">Graph Mapping</text>
+<text x="694" y="621" class="small">Neo4jRecordMapper</text>
+<text x="694" y="649" class="small">Node / Relationship / Path</text>
+<text x="694" y="677" class="small">GraphVertex / GraphEdge / GraphPath</text>
+<rect x="245" y="545" width="405" height="160" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
+<rect x="255" y="555" width="12" height="140" rx="6" fill="#F97316" opacity="0.95"/>
+<text x="267" y="585" class="label">Caller Receives</text>
+<text x="269" y="621" class="small">List&lt;Record&gt; or graph models</text>
+<text x="269" y="649" class="small">exceptions propagate</text>
+<text x="269" y="677" class="small">driver remains externally owned</text>
+<rect x="180" y="955" width="1480" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
+<text x="920" y="988" text-anchor="middle" class="tiny">Source: Neo4jCoroutineSession.kt and Neo4jRecordMapper.kt; ReactiveSession is closed after collection, but the Driver is not closed.</text>
 </svg>
