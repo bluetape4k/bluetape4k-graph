@@ -223,6 +223,8 @@ def architecture_svg(slug: str) -> str:
         return graph_neo4j_neighbors_pattern_svg()
     if slug == "graph-graph-neo4j-architecture-11":
         return graph_neo4j_data_model_svg()
+    if slug == "graph-graph-neo4j-architecture-12":
+        return graph_neo4j_test_environment_svg()
     title = "Bluetape4k Graph Overview" if slug.startswith("root") else f"{module_title(slug)} Architecture"
     subtitle = "Current README and module source model"
     out = open_svg(title, subtitle)
@@ -1209,6 +1211,90 @@ def graph_neo4j_data_model_svg() -> str:
     out.append(
         '<text x="920" y="998" text-anchor="middle" class="tiny">'
         'Source: Neo4jRecordMapper.kt and graph-neo4j README; Path mapping preserves node/relationship order as graph-core PathStep values.</text>'
+    )
+    return close_svg(out)
+
+
+def graph_neo4j_test_environment_svg() -> str:
+    width, height = 1840, 1080
+    out = open_svg(
+        "Neo4j Test Environment",
+        "Tests share Neo4jServer, create drivers in @BeforeAll, clear graph state before each test, and verify sync/suspend operations",
+        width,
+        height,
+    )
+    out[-1] = (
+        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: graph-neo4j / Test Environment</text>'
+    )
+    out.append('<rect x="70" y="150" width="1700" height="780" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+
+    def relation_label(x: float, y: float, text: str) -> None:
+        out.append(f'<text x="{x}" y="{y}" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">{esc(text)}</text>')
+        out.append(f'<text x="{x}" y="{y}" text-anchor="middle" class="tiny">{esc(text)}</text>')
+
+    arrow(out, 430, 300, 545, 300, "boltUrl", "line")
+    arrow(out, 895, 300, 1065, 300, "driver", "line")
+    arrow(out, 895, 540, 1065, 540, "driver", "thin")
+    arrow(out, 715, 410, 715, 515, "GraphDatabase.driver", "line")
+    arrow(out, 1225, 420, 1225, 515, "BeforeEach", "thin")
+    arrow(out, 1370, 630, 1370, 755, "", "line")
+    arrow(out, 1385, 315, 1600, 470, "Bolt", "thin")
+    arrow(out, 1385, 610, 1600, 570, "", "thin")
+    arrow(out, 1185, 845, 1095, 845, "AfterAll", "thin")
+    relation_label(920, 205, "Neo4jServer.Launcher.neo4j is shared across integration tests")
+    relation_label(1490, 735, "test cases")
+    relation_label(1550, 675, "Cypher cleanup")
+
+    card(out, 115, 225, 315, 160, "Test Dependencies", [
+        "bluetape4k-testcontainers",
+        "testcontainers-neo4j",
+        "kotlinx-coroutines-test",
+    ], PALETTE["sky"])
+    card(out, 545, 225, 350, 190, "Neo4jServer Singleton", [
+        "Neo4jServer.Launcher.neo4j",
+        "container-backed Bolt URL",
+        "AuthTokens.none()",
+        "shared launch wrapper",
+    ], PALETTE["mint"])
+    card(out, 1065, 225, 320, 190, "Driver Per Test Class", [
+        "GraphDatabase.driver(boltUrl)",
+        "@BeforeAll setup",
+        "@AfterAll driver.close()",
+        "driver owned by tests",
+    ], PALETTE["lemon"])
+
+    card(out, 545, 515, 350, 180, "Operations Under Test", [
+        "Neo4jGraphOperations",
+        "Neo4jGraphSuspendOperations",
+        "schema / merge / weighted path",
+        "algorithm tests",
+    ], PALETTE["lavender"])
+    card(out, 1065, 515, 320, 180, "Clean State", [
+        "@BeforeEach clearGraph",
+        "ops.dropGraph(default)",
+        "MATCH (n) DETACH DELETE n",
+    ], PALETTE["peach"])
+    card(out, 1460, 400, 250, 180, "Neo4j Container", [
+        "nodes",
+        "relationships",
+        "indexes",
+        "Bolt protocol",
+    ], PALETTE["aqua"])
+    card(out, 1185, 755, 370, 120, "Assertions", [
+        "create / find / update / delete",
+        "neighbors / path / schema / merge",
+    ], PALETTE["rose"])
+    card(out, 745, 745, 350, 155, "Teardown", [
+        "@AfterAll teardown",
+        "driver.close()",
+        "operations do not close driver",
+    ], PALETTE["sky"])
+
+    out.append('<rect x="180" y="965" width="1480" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+    out.append(
+        '<text x="920" y="998" text-anchor="middle" class="tiny">'
+        'Source: graph-neo4j tests and README Testcontainers setup; tests close Driver explicitly because graph operations do not own it.</text>'
     )
     return close_svg(out)
 

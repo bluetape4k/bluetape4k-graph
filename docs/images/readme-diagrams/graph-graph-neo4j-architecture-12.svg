@@ -1,59 +1,114 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="980" height="944" viewBox="0 0 980 944" role="img" aria-label="graph neo4j Architecture 12">
-<defs>
-  <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="7" stdDeviation="8" flood-color="#1f2937" flood-opacity="0.10"/></filter>
-  <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth"><path d="M1,1 L8,4.5 L1,8 Z" fill="#758297"/></marker>
-  <style>
-    .canvas{fill:#f7f9fc}.frame{fill:#fff;stroke:#d8e0ea;stroke-width:1.5}
-    .title{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:40px;font-weight:400;fill:#102033}
-    .subtitle{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:14px;font-weight:400;fill:#536273}
-    .label{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:21px;font-weight:400;fill:#102033}
-    .small{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:12px;font-weight:400;fill:#536273}
-    .strong{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:13px;font-weight:400;fill:#102033}
-    .card{stroke-width:2.0;filter:url(#shadow)}
-    .line{stroke:#758297;stroke-width:2.1;fill:none;marker-end:url(#arrow)}
-    .dashed{stroke:#758297;stroke-width:2.1;stroke-dasharray:7 6;fill:none;marker-end:url(#arrow)}
-    .lifeline{stroke:#b7c2d1;stroke-width:1.8;stroke-dasharray:9 9}
-  </style>
-</defs>
-<rect class="canvas" width="980" height="944"/>
-<rect class="frame" x="32" y="28" width="916" height="888" rx="28"/>
-<text class="title" x="66" y="82">graph neo4j Architecture 12</text>
-<text class="subtitle" x="70" y="116">Graphviz-derived layout and orthogonal route evidence</text>
-<path class="line" d="M547.7 175.5 L437.5 175.5 L226.1 175.5 L226.1 175.5 L226.1 175.5 L226.1 287.8 L226.1 287.8"/>
-<path class="line" d="M612.9 205.7 L612.9 205.7 L612.9 288.0 L612.9 288.0"/>
-<path class="line" d="M283.2 366.3 L283.2 366.3 L283.2 448.6 L283.2 448.6"/>
-<path class="line" d="M389.6 526.9 L389.6 526.9 L389.6 609.2 L389.6 609.2"/>
-<path class="line" d="M515.2 687.5 L515.2 687.5 L515.2 769.8 L515.2 769.8"/>
-<path class="line" d="M713.4 817.9 L747.4 817.9 L775.0 817.9 L775.0 817.9 L775.0 817.9 L775.0 175.5 L775.0 175.5 L775.0 175.5 L696.0 175.5 L696.0 175.5"/>
-<path class="line" d="M612.9 366.3 L612.9 366.3 L612.9 448.6 L612.9 448.6"/>
-<g transform="translate(507.9,133.5)">
-<rect class="card" x="0" y="0" width="210.0" height="84.0" rx="14" fill="#E8F3FF" stroke="#5B8DEF"/>
-<text class="label" x="105.0" y="42.0" text-anchor="middle">Test Case</text>
-</g>
-<g transform="translate(50.0,289.1)">
-<rect class="card" x="0" y="0" width="352.3" height="94.0" rx="14" fill="#EAF7EF" stroke="#58A978"/>
-<text class="label" x="176.1" y="35.0" text-anchor="middle">Testcontainers</text>
-<text class="label" x="176.1" y="59.0" text-anchor="middle">Neo4jContainer</text>
-</g>
-<g transform="translate(164.1,454.7)">
-<rect class="card" x="0" y="0" width="255.2" height="84.0" rx="14" fill="#FFF3D9" stroke="#D6A441"/>
-<text class="label" x="127.6" y="42.0" text-anchor="middle">Docker Neo4j Image</text>
-</g>
-<g transform="translate(360.0,615.3)">
-<rect class="card" x="0" y="0" width="220.7" height="84.0" rx="14" fill="#FDECEF" stroke="#DC6B82"/>
-<text class="label" x="110.4" y="42.0" text-anchor="middle">GraphOperations</text>
-</g>
-<g transform="translate(449.7,775.9)">
-<rect class="card" x="0" y="0" width="277.3" height="84.0" rx="14" fill="#E9F7F6" stroke="#45A7A1"/>
-<text class="label" x="138.6" y="42.0" text-anchor="middle">Neo4jGraphOperations</text>
-</g>
-<g transform="translate(466.3,289.1)">
-<rect class="card" x="0" y="0" width="293.3" height="94.0" rx="14" fill="#F1ECFF" stroke="#8A72D6"/>
-<text class="label" x="146.6" y="35.0" text-anchor="middle">close() +</text>
-<text class="label" x="146.6" y="59.0" text-anchor="middle">Container.stop()</text>
-</g>
-<g transform="translate(507.9,454.7)">
-<rect class="card" x="0" y="0" width="210.0" height="84.0" rx="14" fill="#F4F7FA" stroke="#8CA0B8"/>
-<text class="label" x="105.0" y="42.0" text-anchor="middle">Docker</text>
-</g>
+<svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1080" viewBox="0 0 1840 1080">
+
+    <defs>
+      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
+        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
+      </filter>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+      </marker>
+    </defs>
+    <style>
+      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
+      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
+      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
+      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
+      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
+      .card { filter: url(#softShadow); }
+      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
+    </style>
+
+<rect x="0" y="0" width="1840" height="1080" fill="#F8FAFC"/>
+<rect x="24" y="24" width="1792" height="1032" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
+<circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
+<circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
+<circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
+<text x="72" y="82" class="title">Neo4j Test Environment</text>
+<text x="74" y="118" class="subtitle">Tests share Neo4jServer, create drivers in @BeforeAll, clear graph state before each test, and verify sync/suspend operations</text>
+<text x="920.0" y="1032" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: graph-neo4j / Test Environment</text>
+<rect x="70" y="150" width="1700" height="780" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+<path d="M 430 300 C 487.5 300, 487.5 300, 545 300" class="line"/>
+<text x="487.5" y="272.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">boltUrl</text>
+<text x="487.5" y="272.0" text-anchor="middle" class="tiny">boltUrl</text>
+<path d="M 895 300 C 980.0 300, 980.0 300, 1065 300" class="line"/>
+<text x="980.0" y="272.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">driver</text>
+<text x="980.0" y="272.0" text-anchor="middle" class="tiny">driver</text>
+<path d="M 895 540 C 980.0 540, 980.0 540, 1065 540" class="thin"/>
+<text x="980.0" y="512.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">driver</text>
+<text x="980.0" y="512.0" text-anchor="middle" class="tiny">driver</text>
+<path d="M 715 410 C 715.0 410, 715.0 515, 715 515" class="line"/>
+<text x="715.0" y="434.5" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">GraphDatabase.driver</text>
+<text x="715.0" y="434.5" text-anchor="middle" class="tiny">GraphDatabase.driver</text>
+<path d="M 1225 420 C 1225.0 420, 1225.0 515, 1225 515" class="thin"/>
+<text x="1225.0" y="439.5" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">BeforeEach</text>
+<text x="1225.0" y="439.5" text-anchor="middle" class="tiny">BeforeEach</text>
+<path d="M 1370 630 C 1370.0 630, 1370.0 755, 1370 755" class="line"/>
+<path d="M 1385 315 C 1492.5 315, 1492.5 470, 1600 470" class="thin"/>
+<text x="1492.5" y="364.5" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">Bolt</text>
+<text x="1492.5" y="364.5" text-anchor="middle" class="tiny">Bolt</text>
+<path d="M 1385 610 C 1492.5 610, 1492.5 570, 1600 570" class="thin"/>
+<path d="M 1185 845 C 1140.0 845, 1140.0 845, 1095 845" class="thin"/>
+<text x="1140.0" y="817.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">AfterAll</text>
+<text x="1140.0" y="817.0" text-anchor="middle" class="tiny">AfterAll</text>
+<text x="920" y="205" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">Neo4jServer.Launcher.neo4j is shared across integration tests</text>
+<text x="920" y="205" text-anchor="middle" class="tiny">Neo4jServer.Launcher.neo4j is shared across integration tests</text>
+<text x="1490" y="735" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">test cases</text>
+<text x="1490" y="735" text-anchor="middle" class="tiny">test cases</text>
+<text x="1550" y="675" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">Cypher cleanup</text>
+<text x="1550" y="675" text-anchor="middle" class="tiny">Cypher cleanup</text>
+<rect x="115" y="225" width="315" height="160" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+<rect x="125" y="235" width="12" height="140" rx="6" fill="#3B82F6" opacity="0.95"/>
+<text x="137" y="265" class="label">Test Dependencies</text>
+<text x="139" y="301" class="small">bluetape4k-testcontainers</text>
+<text x="139" y="329" class="small">testcontainers-neo4j</text>
+<text x="139" y="357" class="small">kotlinx-coroutines-test</text>
+<rect x="545" y="225" width="350" height="190" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
+<rect x="555" y="235" width="12" height="170" rx="6" fill="#22C55E" opacity="0.95"/>
+<text x="567" y="265" class="label">Neo4jServer Singleton</text>
+<text x="569" y="301" class="small">Neo4jServer.Launcher.neo4j</text>
+<text x="569" y="329" class="small">container-backed Bolt URL</text>
+<text x="569" y="357" class="small">AuthTokens.none()</text>
+<text x="569" y="385" class="small">shared launch wrapper</text>
+<rect x="1065" y="225" width="320" height="190" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
+<rect x="1075" y="235" width="12" height="170" rx="6" fill="#EAB308" opacity="0.95"/>
+<text x="1087" y="265" class="label">Driver Per Test Class</text>
+<text x="1089" y="301" class="small">GraphDatabase.driver(boltUrl)</text>
+<text x="1089" y="329" class="small">@BeforeAll setup</text>
+<text x="1089" y="357" class="small">@AfterAll driver.close()</text>
+<text x="1089" y="385" class="small">driver owned by tests</text>
+<rect x="545" y="515" width="350" height="180" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
+<rect x="555" y="525" width="12" height="160" rx="6" fill="#8B5CF6" opacity="0.95"/>
+<text x="567" y="555" class="label">Operations Under Test</text>
+<text x="569" y="591" class="small">Neo4jGraphOperations</text>
+<text x="569" y="619" class="small">Neo4jGraphSuspendOperations</text>
+<text x="569" y="647" class="small">schema / merge / weighted path</text>
+<text x="569" y="675" class="small">algorithm tests</text>
+<rect x="1065" y="515" width="320" height="180" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
+<rect x="1075" y="525" width="12" height="160" rx="6" fill="#F97316" opacity="0.95"/>
+<text x="1087" y="555" class="label">Clean State</text>
+<text x="1089" y="591" class="small">@BeforeEach clearGraph</text>
+<text x="1089" y="619" class="small">ops.dropGraph(default)</text>
+<text x="1089" y="647" class="small">MATCH (n) DETACH DELETE n</text>
+<rect x="1460" y="400" width="250" height="180" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
+<rect x="1470" y="410" width="12" height="160" rx="6" fill="#14B8A6" opacity="0.95"/>
+<text x="1482" y="440" class="label">Neo4j Container</text>
+<text x="1484" y="476" class="small">nodes</text>
+<text x="1484" y="504" class="small">relationships</text>
+<text x="1484" y="532" class="small">indexes</text>
+<text x="1484" y="560" class="small">Bolt protocol</text>
+<rect x="1185" y="755" width="370" height="120" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="3" class="card"/>
+<rect x="1195" y="765" width="12" height="100" rx="6" fill="#EF4444" opacity="0.95"/>
+<text x="1207" y="795" class="label">Assertions</text>
+<text x="1209" y="831" class="small">create / find / update / delete</text>
+<text x="1209" y="859" class="small">neighbors / path / schema / merge</text>
+<rect x="745" y="745" width="350" height="155" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+<rect x="755" y="755" width="12" height="135" rx="6" fill="#3B82F6" opacity="0.95"/>
+<text x="767" y="785" class="label">Teardown</text>
+<text x="769" y="821" class="small">@AfterAll teardown</text>
+<text x="769" y="849" class="small">driver.close()</text>
+<text x="769" y="877" class="small">operations do not close driver</text>
+<rect x="180" y="965" width="1480" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
+<text x="920" y="998" text-anchor="middle" class="tiny">Source: graph-neo4j tests and README Testcontainers setup; tests close Driver explicitly because graph operations do not own it.</text>
 </svg>
