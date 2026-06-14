@@ -497,6 +497,95 @@ def graph_core_repository_class_svg() -> str:
     return close_svg(out)
 
 
+def graph_core_schema_class_svg() -> str:
+    width, height = 1700, 1060
+    out = open_svg(
+        "Graph Core Schema DSL",
+        "Type-safe label/property declarations feed backend schema managers for indexes and constraints",
+        width,
+        height,
+    )
+    out[-1] = (
+        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: graph-core / Schema DSL</text>'
+    )
+    out.append('<rect x="70" y="150" width="1560" height="750" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+
+    card(
+        out,
+        125,
+        235,
+        400,
+        225,
+        "PropertyHolder",
+        ["properties: List<PropertyDef<*>>", "string / integer / long", "boolean / stringList / json", "localDate / localDateTime / enum"],
+        PALETTE["mint"],
+    )
+    card(
+        out,
+        610,
+        235,
+        390,
+        205,
+        "PropertyDef<T>",
+        ["name: String", "type: KClass<out T>", "created by DSL functions"],
+        PALETTE["lemon"],
+    )
+    card(
+        out,
+        1100,
+        230,
+        420,
+        260,
+        "GraphSchemaManager",
+        ["createIndex(label, property)", "createUniqueConstraint(...)", "dropIndex(label, property)", "listIndexes()", "listConstraints()"],
+        PALETTE["lavender"],
+    )
+    card(
+        out,
+        125,
+        590,
+        400,
+        180,
+        "VertexLabel",
+        ["label: String", "extends PropertyHolder", "object PersonLabel : VertexLabel"],
+        PALETTE["sky"],
+    )
+    card(
+        out,
+        610,
+        590,
+        390,
+        200,
+        "EdgeLabel",
+        ["label: String", "from: VertexLabel", "to: VertexLabel", "extends PropertyHolder"],
+        PALETTE["peach"],
+    )
+    card(
+        out,
+        1100,
+        585,
+        420,
+        205,
+        "Suspend Schema",
+        ["GraphSuspendSchemaManager", "BlockingGraphSuspendSchemaManager", "Dispatchers.IO bridge"],
+        PALETTE["aqua"],
+    )
+
+    arrow(out, 525, 350, 608, 350, "creates", "thin")
+    arrow(out, 330, 588, 330, 462, "inherits", "thin")
+    arrow(out, 805, 588, 380, 462, "inherits", "thin")
+    arrow(out, 1000, 350, 1098, 350, "uses", "thin")
+    arrow(out, 1310, 490, 1310, 583, "suspend", "thin")
+
+    out.append('<rect x="170" y="925" width="1360" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+    out.append(
+        '<text x="850" y="958" text-anchor="middle" class="tiny">'
+        'Source: graph-core schema package; unsupported schema DDL fails explicitly instead of silently no-oping.</text>'
+    )
+    return close_svg(out)
+
+
 def class_svg(slug: str) -> str:
     if slug == "graph-graph-core-class-02":
         return graph_core_model_class_svg()
@@ -504,6 +593,8 @@ def class_svg(slug: str) -> str:
         return graph_core_path_class_svg()
     if slug == "graph-graph-core-class-04":
         return graph_core_repository_class_svg()
+    if slug == "graph-graph-core-class-05":
+        return graph_core_schema_class_svg()
     title = "Backend Capability Matrix" if "capability" in slug else f"{module_title(slug)} Class Model"
     subtitle = "Contracts, data classes, and adapter responsibilities"
     out = open_svg(title, subtitle)
