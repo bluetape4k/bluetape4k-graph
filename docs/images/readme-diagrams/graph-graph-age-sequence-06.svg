@@ -31,26 +31,26 @@
 <text x="1270.0" y="1297" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: graph-age / createVertex</text>
 <rect x="70" y="150" width="2400" height="1055" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
 <rect x="115.0" y="190" width="270" height="74" rx="12" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="250.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">User Code</text>
+<text x="250.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">User Code</text>
 <line x1="250.0" y1="282" x2="250.0" y2="1113" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="455.0" y="190" width="270" height="74" rx="12" fill="#DCFCE7" stroke="#22C55E" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="590.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">AgeGraphOperations</text>
+<text x="590.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">AgeGraphOperations</text>
 <line x1="590.0" y1="282" x2="590.0" y2="1113" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="795.0" y="190" width="270" height="74" rx="12" fill="#FEF3C7" stroke="#D97706" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="930.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">Dispatchers.IO</text>
+<text x="930.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">Dispatchers.IO</text>
 <line x1="930.0" y1="282" x2="930.0" y2="1113" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="1135.0" y="190" width="270" height="74" rx="12" fill="#FEE2E2" stroke="#DB2777" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="1270.0" y="215" text-anchor="middle" dominant-baseline="middle" class="label">Exposed</text>
-<text x="1270.0" y="239" text-anchor="middle" dominant-baseline="middle" class="label">Transaction</text>
+<text x="1270.0" y="215.0" text-anchor="middle" dominant-baseline="middle" class="label">Exposed</text>
+<text x="1270.0" y="239.0" text-anchor="middle" dominant-baseline="middle" class="label">Transaction</text>
 <line x1="1270.0" y1="282" x2="1270.0" y2="1113" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="1475.0" y="190" width="270" height="74" rx="12" fill="#CCFBF1" stroke="#2E9C9B" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="1610.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">PostgreSQL AGE</text>
+<text x="1610.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">PostgreSQL AGE</text>
 <line x1="1610.0" y1="282" x2="1610.0" y2="1113" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="1815.0" y="190" width="270" height="74" rx="12" fill="#FEF3C7" stroke="#D97706" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="1950.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">AgeTypeParser</text>
+<text x="1950.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">AgeTypeParser</text>
 <line x1="1950.0" y1="282" x2="1950.0" y2="1113" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="2155.0" y="190" width="270" height="74" rx="12" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="2290.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">GraphVertex</text>
+<text x="2290.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">GraphVertex</text>
 <line x1="2290.0" y1="282" x2="2290.0" y2="1113" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="242.0" y="312" width="16" height="801" rx="6" fill="#DBEAFE" stroke="#3B82F6" stroke-width="1.5"/>
 <rect x="582.0" y="312" width="16" height="801" rx="6" fill="#DCFCE7" stroke="#22C55E" stroke-width="1.5"/>
@@ -62,53 +62,53 @@
 <line x1="260.0" y1="330" x2="580.0" y2="330" stroke="#4F83BF" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="265.0" y="286" width="310" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="289.0" cy="301" r="13" fill="#4F83BF"/>
-<text x="289.0" y="306" text-anchor="middle" class="tiny" style="fill:#FFFFFF">1</text>
-<text x="313.0" y="306" class="tiny">createVertex(Person, props)</text>
+<text x="289.0" y="301" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">1</text>
+<text x="313.0" y="301" dominant-baseline="middle" class="tiny">createVertex(Person, props)</text>
 <line x1="600.0" y1="415" x2="920.0" y2="415" stroke="#2F9E6B" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="607.5" y="371" width="305" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="631.5" cy="386" r="13" fill="#2F9E6B"/>
-<text x="631.5" y="391" text-anchor="middle" class="tiny" style="fill:#FFFFFF">2</text>
-<text x="655.5" y="391" class="tiny">withContext(Dispatchers.IO)</text>
+<text x="631.5" y="386" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">2</text>
+<text x="655.5" y="386" dominant-baseline="middle" class="tiny">withContext(Dispatchers.IO)</text>
 <line x1="940.0" y1="500" x2="1260.0" y2="500" stroke="#D6A441" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="972.5" y="456" width="255" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="996.5" cy="471" r="13" fill="#D6A441"/>
-<text x="996.5" y="476" text-anchor="middle" class="tiny" style="fill:#FFFFFF">3</text>
-<text x="1020.5" y="476" class="tiny">transaction(database)</text>
+<text x="996.5" y="471" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">3</text>
+<text x="1020.5" y="471" dominant-baseline="middle" class="tiny">transaction(database)</text>
 <line x1="1280.0" y1="585" x2="1600.0" y2="585" stroke="#D6A441" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="1275.0" y="541" width="330" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="1299.0" cy="556" r="13" fill="#D6A441"/>
-<text x="1299.0" y="561" text-anchor="middle" class="tiny" style="fill:#FFFFFF">4</text>
-<text x="1323.0" y="561" class="tiny">LOAD age and SET search_path</text>
+<text x="1299.0" y="556" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">4</text>
+<text x="1323.0" y="556" dominant-baseline="middle" class="tiny">LOAD age and SET search_path</text>
 <line x1="1280.0" y1="670" x2="1600.0" y2="670" stroke="#D6A441" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="1270.0" y="626" width="340" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="1294.0" cy="641" r="13" fill="#D6A441"/>
-<text x="1294.0" y="646" text-anchor="middle" class="tiny" style="fill:#FFFFFF">5</text>
-<text x="1318.0" y="646" class="tiny">exec(AgeSql.createVertex(...))</text>
+<text x="1294.0" y="641" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">5</text>
+<text x="1318.0" y="641" dominant-baseline="middle" class="tiny">exec(AgeSql.createVertex(...))</text>
 <line x1="1600.0" y1="755" x2="1280.0" y2="755" stroke="#2E9C9B" stroke-width="2.7" stroke-dasharray="10 8" marker-end="url(#seqArrow)"/>
 <rect x="1320.0" y="711" width="240" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="1344.0" cy="726" r="13" fill="#2E9C9B"/>
-<text x="1344.0" y="731" text-anchor="middle" class="tiny" style="fill:#FFFFFF">6</text>
-<text x="1368.0" y="731" class="tiny">agtype vertex row</text>
+<text x="1344.0" y="726" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">6</text>
+<text x="1368.0" y="726" dominant-baseline="middle" class="tiny">agtype vertex row</text>
 <line x1="1280.0" y1="840" x2="1940.0" y2="840" stroke="#2F9E6B" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="1485.0" y="796" width="250" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="1509.0" cy="811" r="13" fill="#2F9E6B"/>
-<text x="1509.0" y="816" text-anchor="middle" class="tiny" style="fill:#FFFFFF">7</text>
-<text x="1533.0" y="816" class="tiny">parseVertex(agtype)</text>
+<text x="1509.0" y="811" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">7</text>
+<text x="1533.0" y="811" dominant-baseline="middle" class="tiny">parseVertex(agtype)</text>
 <line x1="1960.0" y1="925" x2="2280.0" y2="925" stroke="#2F9E6B" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="1960.0" y="881" width="320" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="1984.0" cy="896" r="13" fill="#2F9E6B"/>
-<text x="1984.0" y="901" text-anchor="middle" class="tiny" style="fill:#FFFFFF">8</text>
-<text x="2008.0" y="901" class="tiny">GraphVertex(id, label, props)</text>
+<text x="1984.0" y="896" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">8</text>
+<text x="2008.0" y="896" dominant-baseline="middle" class="tiny">GraphVertex(id, label, props)</text>
 <line x1="2280.0" y1="1010" x2="600.0" y2="1010" stroke="#2E9C9B" stroke-width="2.7" stroke-dasharray="10 8" marker-end="url(#seqArrow)"/>
 <rect x="1337.5" y="966" width="205" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="1361.5" cy="981" r="13" fill="#2E9C9B"/>
-<text x="1361.5" y="986" text-anchor="middle" class="tiny" style="fill:#FFFFFF">9</text>
-<text x="1385.5" y="986" class="tiny">GraphVertex</text>
+<text x="1361.5" y="981" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">9</text>
+<text x="1385.5" y="981" dominant-baseline="middle" class="tiny">GraphVertex</text>
 <line x1="580.0" y1="1095" x2="260.0" y2="1095" stroke="#2E9C9B" stroke-width="2.7" stroke-dasharray="10 8" marker-end="url(#seqArrow)"/>
 <rect x="317.5" y="1051" width="205" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="341.5" cy="1066" r="13" fill="#2E9C9B"/>
-<text x="341.5" y="1071" text-anchor="middle" class="tiny" style="fill:#FFFFFF">10</text>
-<text x="365.5" y="1071" class="tiny">GraphVertex</text>
+<text x="341.5" y="1066" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">10</text>
+<text x="365.5" y="1066" dominant-baseline="middle" class="tiny">GraphVertex</text>
 <rect x="150" y="1130" width="2240" height="42" rx="11" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
-<text x="1270.0" y="1157" text-anchor="middle" class="tiny">Numbered labels sit above message lines; lifelines and activations stay separated from participant cards.</text>
+<text x="1270.0" y="1151" text-anchor="middle" dominant-baseline="middle" class="tiny">Numbered labels sit above message lines; lifelines and activations stay separated from participant cards.</text>
 </svg>

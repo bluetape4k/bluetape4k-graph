@@ -31,28 +31,28 @@
 <text x="1440.0" y="1467" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: fraud-detection-examples / Fraud Analysis Flow</text>
 <rect x="70" y="150" width="2740" height="1225" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
 <rect x="115.0" y="190" width="270" height="74" rx="12" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="250.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">Abstract Test</text>
+<text x="250.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">Abstract Test</text>
 <line x1="250.0" y1="282" x2="250.0" y2="1283" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="455.0" y="190" width="270" height="74" rx="12" fill="#DCFCE7" stroke="#22C55E" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="590.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">FraudService</text>
+<text x="590.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">FraudService</text>
 <line x1="590.0" y1="282" x2="590.0" y2="1283" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="795.0" y="190" width="270" height="74" rx="12" fill="#FEF3C7" stroke="#D97706" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="930.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">GraphOperations</text>
+<text x="930.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">GraphOperations</text>
 <line x1="930.0" y1="282" x2="930.0" y2="1283" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="1135.0" y="190" width="270" height="74" rx="12" fill="#FEE2E2" stroke="#DB2777" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="1270.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">Transfer Graph</text>
+<text x="1270.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">Transfer Graph</text>
 <line x1="1270.0" y1="282" x2="1270.0" y2="1283" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="1475.0" y="190" width="270" height="74" rx="12" fill="#CCFBF1" stroke="#2E9C9B" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="1610.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">Cycle Detection</text>
+<text x="1610.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">Cycle Detection</text>
 <line x1="1610.0" y1="282" x2="1610.0" y2="1283" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="1815.0" y="190" width="270" height="74" rx="12" fill="#FEF3C7" stroke="#D97706" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="1950.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">Components</text>
+<text x="1950.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">Components</text>
 <line x1="1950.0" y1="282" x2="1950.0" y2="1283" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="2155.0" y="190" width="270" height="74" rx="12" fill="#DCFCE7" stroke="#22C55E" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="2290.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">PageRank</text>
+<text x="2290.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">PageRank</text>
 <line x1="2290.0" y1="282" x2="2290.0" y2="1283" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="2495.0" y="190" width="270" height="74" rx="12" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="2630.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">Review Result</text>
+<text x="2630.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">Review Result</text>
 <line x1="2630.0" y1="282" x2="2630.0" y2="1283" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="242.0" y="312" width="16" height="376" rx="6" fill="#DBEAFE" stroke="#3B82F6" stroke-width="1.5"/>
 <rect x="582.0" y="312" width="16" height="716" rx="6" fill="#DCFCE7" stroke="#22C55E" stroke-width="1.5"/>
@@ -65,63 +65,63 @@
 <line x1="260.0" y1="330" x2="580.0" y2="330" stroke="#4F83BF" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="330.0" y="286" width="180" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="354.0" cy="301" r="13" fill="#4F83BF"/>
-<text x="354.0" y="306" text-anchor="middle" class="tiny" style="fill:#FFFFFF">1</text>
-<text x="378.0" y="306" class="tiny">initialize()</text>
+<text x="354.0" y="301" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">1</text>
+<text x="378.0" y="301" dominant-baseline="middle" class="tiny">initialize()</text>
 <line x1="600.0" y1="415" x2="920.0" y2="415" stroke="#2F9E6B" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="612.5" y="371" width="295" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="636.5" cy="386" r="13" fill="#2F9E6B"/>
-<text x="636.5" y="391" text-anchor="middle" class="tiny" style="fill:#FFFFFF">2</text>
-<text x="660.5" y="391" class="tiny">graphExists / createGraph</text>
+<text x="636.5" y="386" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">2</text>
+<text x="660.5" y="386" dominant-baseline="middle" class="tiny">graphExists / createGraph</text>
 <line x1="260.0" y1="500" x2="580.0" y2="500" stroke="#4F83BF" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="252.5" y="456" width="335" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="276.5" cy="471" r="13" fill="#4F83BF"/>
-<text x="276.5" y="476" text-anchor="middle" class="tiny" style="fill:#FFFFFF">3</text>
-<text x="300.5" y="476" class="tiny">addAccount(Alice, Bob, Carol)</text>
+<text x="276.5" y="471" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">3</text>
+<text x="300.5" y="471" dominant-baseline="middle" class="tiny">addAccount(Alice, Bob, Carol)</text>
 <line x1="600.0" y1="585" x2="1260.0" y2="585" stroke="#D6A441" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="787.5" y="541" width="285" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="811.5" cy="556" r="13" fill="#D6A441"/>
-<text x="811.5" y="561" text-anchor="middle" class="tiny" style="fill:#FFFFFF">4</text>
-<text x="835.5" y="561" class="tiny">create Account vertices</text>
+<text x="811.5" y="556" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">4</text>
+<text x="835.5" y="556" dominant-baseline="middle" class="tiny">create Account vertices</text>
 <line x1="260.0" y1="670" x2="580.0" y2="670" stroke="#4F83BF" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="295.0" y="626" width="250" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="319.0" cy="641" r="13" fill="#4F83BF"/>
-<text x="319.0" y="646" text-anchor="middle" class="tiny" style="fill:#FFFFFF">5</text>
-<text x="343.0" y="646" class="tiny">recordTransfer loop</text>
+<text x="319.0" y="641" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">5</text>
+<text x="343.0" y="641" dominant-baseline="middle" class="tiny">recordTransfer loop</text>
 <line x1="600.0" y1="755" x2="1260.0" y2="755" stroke="#D6A441" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="757.5" y="711" width="345" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="781.5" cy="726" r="13" fill="#D6A441"/>
-<text x="781.5" y="731" text-anchor="middle" class="tiny" style="fill:#FFFFFF">6</text>
-<text x="805.5" y="731" class="tiny">create TRANSFERRED_TO edges</text>
+<text x="781.5" y="726" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">6</text>
+<text x="805.5" y="726" dominant-baseline="middle" class="tiny">create TRANSFERRED_TO edges</text>
 <line x1="600.0" y1="840" x2="1600.0" y2="840" stroke="#2F9E6B" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="962.5" y="796" width="275" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="986.5" cy="811" r="13" fill="#2F9E6B"/>
-<text x="986.5" y="816" text-anchor="middle" class="tiny" style="fill:#FFFFFF">7</text>
-<text x="1010.5" y="816" class="tiny">detectCycles(maxDepth)</text>
+<text x="986.5" y="811" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">7</text>
+<text x="1010.5" y="811" dominant-baseline="middle" class="tiny">detectCycles(maxDepth)</text>
 <line x1="600.0" y1="925" x2="1940.0" y2="925" stroke="#2F9E6B" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="1105.0" y="881" width="330" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="1129.0" cy="896" r="13" fill="#2F9E6B"/>
-<text x="1129.0" y="901" text-anchor="middle" class="tiny" style="fill:#FFFFFF">8</text>
-<text x="1153.0" y="901" class="tiny">connectedComponents(minSize)</text>
+<text x="1129.0" y="896" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">8</text>
+<text x="1153.0" y="896" dominant-baseline="middle" class="tiny">connectedComponents(minSize)</text>
 <line x1="600.0" y1="1010" x2="2280.0" y2="1010" stroke="#2F9E6B" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="1335.0" y="966" width="210" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="1359.0" cy="981" r="13" fill="#2F9E6B"/>
-<text x="1359.0" y="986" text-anchor="middle" class="tiny" style="fill:#FFFFFF">9</text>
-<text x="1383.0" y="986" class="tiny">pageRank(topK)</text>
+<text x="1359.0" y="981" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">9</text>
+<text x="1383.0" y="981" dominant-baseline="middle" class="tiny">pageRank(topK)</text>
 <line x1="1620.0" y1="1095" x2="2620.0" y2="1095" stroke="#2E9C9B" stroke-width="2.7" stroke-dasharray="10 8" marker-end="url(#seqArrow)"/>
 <rect x="2000.0" y="1051" width="240" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="2024.0" cy="1066" r="13" fill="#2E9C9B"/>
-<text x="2024.0" y="1071" text-anchor="middle" class="tiny" style="fill:#FFFFFF">10</text>
-<text x="2048.0" y="1071" class="tiny">circular transfer</text>
+<text x="2024.0" y="1066" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">10</text>
+<text x="2048.0" y="1066" dominant-baseline="middle" class="tiny">circular transfer</text>
 <line x1="1960.0" y1="1180" x2="2620.0" y2="1180" stroke="#2E9C9B" stroke-width="2.7" stroke-dasharray="10 8" marker-end="url(#seqArrow)"/>
 <rect x="2162.5" y="1136" width="255" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="2186.5" cy="1151" r="13" fill="#2E9C9B"/>
-<text x="2186.5" y="1156" text-anchor="middle" class="tiny" style="fill:#FFFFFF">11</text>
-<text x="2210.5" y="1156" class="tiny">suspicious cluster</text>
+<text x="2186.5" y="1151" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">11</text>
+<text x="2210.5" y="1151" dominant-baseline="middle" class="tiny">suspicious cluster</text>
 <line x1="2300.0" y1="1265" x2="2620.0" y2="1265" stroke="#2E9C9B" stroke-width="2.7" stroke-dasharray="10 8" marker-end="url(#seqArrow)"/>
 <rect x="2335.0" y="1221" width="250" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="2359.0" cy="1236" r="13" fill="#2E9C9B"/>
-<text x="2359.0" y="1241" text-anchor="middle" class="tiny" style="fill:#FFFFFF">12</text>
-<text x="2383.0" y="1241" class="tiny">high-risk ranking</text>
+<text x="2359.0" y="1236" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">12</text>
+<text x="2383.0" y="1236" dominant-baseline="middle" class="tiny">high-risk ranking</text>
 <rect x="150" y="1300" width="2580" height="42" rx="11" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
-<text x="1440.0" y="1327" text-anchor="middle" class="tiny">Numbered labels sit above message lines; lifelines and activations stay separated from participant cards.</text>
+<text x="1440.0" y="1321" text-anchor="middle" dominant-baseline="middle" class="tiny">Numbered labels sit above message lines; lifelines and activations stay separated from participant cards.</text>
 </svg>

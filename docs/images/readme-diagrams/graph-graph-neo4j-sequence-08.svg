@@ -31,28 +31,28 @@
 <text x="1440.0" y="1382" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: graph-neo4j / shortestPath</text>
 <rect x="70" y="150" width="2740" height="1140" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
 <rect x="115.0" y="190" width="270" height="74" rx="12" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="250.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">User Code</text>
+<text x="250.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">User Code</text>
 <line x1="250.0" y1="282" x2="250.0" y2="1198" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="455.0" y="190" width="270" height="74" rx="12" fill="#DCFCE7" stroke="#22C55E" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="590.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">Neo4jSuspendOps</text>
+<text x="590.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">Neo4jSuspendOps</text>
 <line x1="590.0" y1="282" x2="590.0" y2="1198" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="795.0" y="190" width="270" height="74" rx="12" fill="#FEF3C7" stroke="#D97706" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="930.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">PathOptions</text>
+<text x="930.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">PathOptions</text>
 <line x1="930.0" y1="282" x2="930.0" y2="1198" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="1135.0" y="190" width="270" height="74" rx="12" fill="#FEE2E2" stroke="#DB2777" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="1270.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">ReactiveSession</text>
+<text x="1270.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">ReactiveSession</text>
 <line x1="1270.0" y1="282" x2="1270.0" y2="1198" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="1475.0" y="190" width="270" height="74" rx="12" fill="#CCFBF1" stroke="#2E9C9B" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="1610.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">Neo4j DB</text>
+<text x="1610.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">Neo4j DB</text>
 <line x1="1610.0" y1="282" x2="1610.0" y2="1198" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="1815.0" y="190" width="270" height="74" rx="12" fill="#FEF3C7" stroke="#D97706" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="1950.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">Reactive Records</text>
+<text x="1950.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">Reactive Records</text>
 <line x1="1950.0" y1="282" x2="1950.0" y2="1198" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="2155.0" y="190" width="270" height="74" rx="12" fill="#DCFCE7" stroke="#22C55E" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="2290.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">Neo4jRecordMapper</text>
+<text x="2290.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">Neo4jRecordMapper</text>
 <line x1="2290.0" y1="282" x2="2290.0" y2="1198" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="2495.0" y="190" width="270" height="74" rx="12" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="2630.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">GraphPath</text>
+<text x="2630.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">GraphPath</text>
 <line x1="2630.0" y1="282" x2="2630.0" y2="1198" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="242.0" y="312" width="16" height="886" rx="6" fill="#DBEAFE" stroke="#3B82F6" stroke-width="1.5"/>
 <rect x="582.0" y="312" width="16" height="886" rx="6" fill="#DCFCE7" stroke="#22C55E" stroke-width="1.5"/>
@@ -65,58 +65,58 @@
 <line x1="260.0" y1="330" x2="580.0" y2="330" stroke="#4F83BF" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="225.0" y="286" width="390" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="249.0" cy="301" r="13" fill="#4F83BF"/>
-<text x="249.0" y="306" text-anchor="middle" class="tiny" style="fill:#FFFFFF">1</text>
-<text x="273.0" y="306" class="tiny">shortestPath(fromId, toId, options)</text>
+<text x="249.0" y="301" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">1</text>
+<text x="273.0" y="301" dominant-baseline="middle" class="tiny">shortestPath(fromId, toId, options)</text>
 <line x1="600.0" y1="415" x2="920.0" y2="415" stroke="#2F9E6B" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="625.0" y="371" width="270" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="649.0" cy="386" r="13" fill="#2F9E6B"/>
-<text x="649.0" y="391" text-anchor="middle" class="tiny" style="fill:#FFFFFF">2</text>
-<text x="673.0" y="391" class="tiny">check weightProperty</text>
+<text x="649.0" y="386" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">2</text>
+<text x="673.0" y="386" dominant-baseline="middle" class="tiny">check weightProperty</text>
 <line x1="920.0" y1="500" x2="600.0" y2="500" stroke="#2E9C9B" stroke-width="2.7" stroke-dasharray="10 8" marker-end="url(#seqArrow)"/>
 <rect x="620.0" y="456" width="280" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="644.0" cy="471" r="13" fill="#2E9C9B"/>
-<text x="644.0" y="476" text-anchor="middle" class="tiny" style="fill:#FFFFFF">3</text>
-<text x="668.0" y="476" class="tiny">unweighted Cypher path</text>
+<text x="644.0" y="471" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">3</text>
+<text x="668.0" y="471" dominant-baseline="middle" class="tiny">unweighted Cypher path</text>
 <line x1="600.0" y1="585" x2="1260.0" y2="585" stroke="#2F9E6B" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="847.5" y="541" width="165" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="871.5" cy="556" r="13" fill="#2F9E6B"/>
-<text x="871.5" y="561" text-anchor="middle" class="tiny" style="fill:#FFFFFF">4</text>
-<text x="895.5" y="561" class="tiny">session()</text>
+<text x="871.5" y="556" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">4</text>
+<text x="895.5" y="556" dominant-baseline="middle" class="tiny">session()</text>
 <line x1="600.0" y1="670" x2="1260.0" y2="670" stroke="#2F9E6B" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="755.0" y="626" width="350" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="779.0" cy="641" r="13" fill="#2F9E6B"/>
-<text x="779.0" y="646" text-anchor="middle" class="tiny" style="fill:#FFFFFF">5</text>
-<text x="803.0" y="646" class="tiny">run(Query(shortestPath(...)))</text>
+<text x="779.0" y="641" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">5</text>
+<text x="803.0" y="641" dominant-baseline="middle" class="tiny">run(Query(shortestPath(...)))</text>
 <line x1="1280.0" y1="755" x2="1600.0" y2="755" stroke="#D6A441" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="1287.5" y="711" width="305" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="1311.5" cy="726" r="13" fill="#D6A441"/>
-<text x="1311.5" y="731" text-anchor="middle" class="tiny" style="fill:#FFFFFF">6</text>
-<text x="1335.5" y="731" class="tiny">MATCH p = shortestPath</text>
+<text x="1311.5" y="726" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">6</text>
+<text x="1335.5" y="726" dominant-baseline="middle" class="tiny">MATCH p = shortestPath</text>
 <line x1="1620.0" y1="840" x2="1940.0" y2="840" stroke="#2E9C9B" stroke-width="2.7" stroke-dasharray="10 8" marker-end="url(#seqArrow)"/>
 <rect x="1660.0" y="796" width="240" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="1684.0" cy="811" r="13" fill="#2E9C9B"/>
-<text x="1684.0" y="816" text-anchor="middle" class="tiny" style="fill:#FFFFFF">7</text>
-<text x="1708.0" y="816" class="tiny">Publisher&lt;Record&gt;</text>
+<text x="1684.0" y="811" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">7</text>
+<text x="1708.0" y="811" dominant-baseline="middle" class="tiny">Publisher&lt;Record&gt;</text>
 <line x1="1960.0" y1="925" x2="2280.0" y2="925" stroke="#2F9E6B" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="1940.0" y="881" width="360" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="1964.0" cy="896" r="13" fill="#2F9E6B"/>
-<text x="1964.0" y="901" text-anchor="middle" class="tiny" style="fill:#FFFFFF">8</text>
-<text x="1988.0" y="901" class="tiny">asReactiveFlow().toList().map</text>
+<text x="1964.0" y="896" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">8</text>
+<text x="1988.0" y="896" dominant-baseline="middle" class="tiny">asReactiveFlow().toList().map</text>
 <line x1="2300.0" y1="1010" x2="2620.0" y2="1010" stroke="#2F9E6B" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="2332.5" y="966" width="255" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="2356.5" cy="981" r="13" fill="#2F9E6B"/>
-<text x="2356.5" y="986" text-anchor="middle" class="tiny" style="fill:#FFFFFF">9</text>
-<text x="2380.5" y="986" class="tiny">recordToPath(record)</text>
+<text x="2356.5" y="981" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">9</text>
+<text x="2380.5" y="981" dominant-baseline="middle" class="tiny">recordToPath(record)</text>
 <line x1="2620.0" y1="1095" x2="600.0" y2="1095" stroke="#2E9C9B" stroke-width="2.7" stroke-dasharray="10 8" marker-end="url(#seqArrow)"/>
 <rect x="1487.5" y="1051" width="245" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="1511.5" cy="1066" r="13" fill="#2E9C9B"/>
-<text x="1511.5" y="1071" text-anchor="middle" class="tiny" style="fill:#FFFFFF">10</text>
-<text x="1535.5" y="1071" class="tiny">GraphPath or null</text>
+<text x="1511.5" y="1066" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">10</text>
+<text x="1535.5" y="1066" dominant-baseline="middle" class="tiny">GraphPath or null</text>
 <line x1="580.0" y1="1180" x2="260.0" y2="1180" stroke="#2E9C9B" stroke-width="2.7" stroke-dasharray="10 8" marker-end="url(#seqArrow)"/>
 <rect x="325.0" y="1136" width="190" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="349.0" cy="1151" r="13" fill="#2E9C9B"/>
-<text x="349.0" y="1156" text-anchor="middle" class="tiny" style="fill:#FFFFFF">11</text>
-<text x="373.0" y="1156" class="tiny">GraphPath?</text>
+<text x="349.0" y="1151" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">11</text>
+<text x="373.0" y="1151" dominant-baseline="middle" class="tiny">GraphPath?</text>
 <rect x="150" y="1215" width="2580" height="42" rx="11" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
-<text x="1440.0" y="1242" text-anchor="middle" class="tiny">Numbered labels sit above message lines; lifelines and activations stay separated from participant cards.</text>
+<text x="1440.0" y="1236" text-anchor="middle" dominant-baseline="middle" class="tiny">Numbered labels sit above message lines; lifelines and activations stay separated from participant cards.</text>
 </svg>
