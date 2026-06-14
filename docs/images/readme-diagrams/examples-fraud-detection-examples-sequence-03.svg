@@ -1,64 +1,65 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
-
-    <defs>
-      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
-        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
-      </filter>
-      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
-      </marker>
-    </defs>
-    <style>
-      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
-      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
-      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
-      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
-      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
-      .card { filter: url(#softShadow); }
-      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
-      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
-    </style>
-
-<rect x="0" y="0" width="1440" height="900" fill="#F8FAFC"/>
-<rect x="24" y="24" width="1392" height="852" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
-<circle cx="1376" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
-<circle cx="1336" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
-<circle cx="1296" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
-<text x="72" y="82" class="title">Fraud Detection Examples Sequence 03 Sequence</text>
-<text x="74" y="118" class="subtitle">Happy-path operation flow with labels placed away from cards</text>
-<text x="720.0" y="852" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: Fraud Detection Examples Sequence 03</text>
-<rect x="55.0" y="190" width="190" height="62" rx="14" fill="#DBEAFE" class="card"/>
-<text x="150" y="230" text-anchor="middle" class="label">Caller</text>
-<line x1="150" y1="270" x2="150" y2="710" stroke="#C2CED9" stroke-width="3" stroke-dasharray="8 8"/>
-<rect x="315.0" y="190" width="260" height="62" rx="14" fill="#DBEAFE" class="card"/>
-<text x="445" y="230" text-anchor="middle" class="label">GraphOperations</text>
-<line x1="445" y1="270" x2="445" y2="710" stroke="#C2CED9" stroke-width="3" stroke-dasharray="8 8"/>
-<rect x="645.0" y="190" width="190" height="62" rx="14" fill="#DBEAFE" class="card"/>
-<text x="740" y="230" text-anchor="middle" class="label">Adapter</text>
-<line x1="740" y1="270" x2="740" y2="710" stroke="#C2CED9" stroke-width="3" stroke-dasharray="8 8"/>
-<rect x="930.0" y="190" width="210" height="62" rx="14" fill="#DBEAFE" class="card"/>
-<text x="1035" y="230" text-anchor="middle" class="label">Graph DB</text>
-<line x1="1035" y1="270" x2="1035" y2="710" stroke="#C2CED9" stroke-width="3" stroke-dasharray="8 8"/>
-<rect x="1185.0" y="190" width="190" height="62" rx="14" fill="#DBEAFE" class="card"/>
-<text x="1280" y="230" text-anchor="middle" class="label">Result</text>
-<line x1="1280" y1="270" x2="1280" y2="710" stroke="#C2CED9" stroke-width="3" stroke-dasharray="8 8"/>
-<path d="M 220 310 C 297.5 310, 297.5 310, 375 310" class="line"/>
-<text x="297.5" y="282.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">create/query request</text>
-<text x="297.5" y="282.0" text-anchor="middle" class="tiny">create/query request</text>
-<path d="M 515 385 C 592.5 385, 592.5 385, 670 385" class="line"/>
-<text x="592.5" y="357.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">validate contract</text>
-<text x="592.5" y="357.0" text-anchor="middle" class="tiny">validate contract</text>
-<path d="M 810 460 C 887.5 460, 887.5 460, 965 460" class="line"/>
-<text x="887.5" y="432.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">translate native query</text>
-<text x="887.5" y="432.0" text-anchor="middle" class="tiny">translate native query</text>
-<path d="M 965 535 C 887.5 535, 887.5 535, 810 535" class="dash"/>
-<text x="887.5" y="507.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">execute</text>
-<text x="887.5" y="507.0" text-anchor="middle" class="tiny">execute</text>
-<path d="M 810 610 C 1010.0 610, 1010.0 610, 1210 610" class="line"/>
-<text x="1010.0" y="582.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">map vertex/edge/path</text>
-<text x="1010.0" y="582.0" text-anchor="middle" class="tiny">map vertex/edge/path</text>
-<path d="M 1210 685 C 715.0 685, 715.0 685, 220 685" class="dash"/>
-<text x="715.0" y="657.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">return domain result</text>
-<text x="715.0" y="657.0" text-anchor="middle" class="tiny">return domain result</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1370" height="1070" viewBox="0 0 1370 1070" role="img" aria-label="Analysis Flow">
+<defs>
+  <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="7" stdDeviation="8" flood-color="#1f2937" flood-opacity="0.10"/></filter>
+  <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth"><path d="M1,1 L8,4.5 L1,8 Z" fill="#758297"/></marker>
+  <style>
+    .canvas{fill:#f7f9fc}.frame{fill:#fff;stroke:#d8e0ea;stroke-width:1.5}
+    .title{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:40px;font-weight:400;fill:#102033}
+    .subtitle{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:14px;font-weight:400;fill:#536273}
+    .label{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:21px;font-weight:400;fill:#102033}
+    .small{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:12px;font-weight:400;fill:#536273}
+    .strong{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:13px;font-weight:400;fill:#102033}
+    .card{stroke-width:2.0;filter:url(#shadow)}
+    .line{stroke:#758297;stroke-width:2.1;fill:none;marker-end:url(#arrow)}
+    .dashed{stroke:#758297;stroke-width:2.1;stroke-dasharray:7 6;fill:none;marker-end:url(#arrow)}
+    .lifeline{stroke:#b7c2d1;stroke-width:1.8;stroke-dasharray:9 9}
+  </style>
+</defs>
+<rect class="canvas" width="1370" height="1070"/>
+<rect class="frame" x="44" y="30" width="1282" height="1010" rx="28"/>
+<text class="title" x="76" y="84">Analysis Flow</text>
+<text class="subtitle" x="80" y="116">Graphviz actor layout with compact message lanes and wider outer margins</text>
+<rect class="card" x="120.0" y="156" width="230" height="58" rx="16" fill="#E8F3FF" stroke="#5B8DEF"/>
+<text class="label" x="235.0" y="185.0" text-anchor="middle">Learner</text>
+<line class="lifeline" x1="235.0" y1="230" x2="235.0" y2="1004"/>
+<rect class="card" x="420.0" y="156" width="230" height="58" rx="16" fill="#EAF7EF" stroke="#58A978"/>
+<text class="label" x="535.0" y="175.0" text-anchor="middle">Fraud Detection</text>
+<text class="label" x="535.0" y="195.0" text-anchor="middle">Service</text>
+<line class="lifeline" x1="535.0" y1="230" x2="535.0" y2="1004"/>
+<rect class="card" x="720.0" y="156" width="230" height="58" rx="16" fill="#FFF3D9" stroke="#D6A441"/>
+<text class="label" x="835.0" y="185.0" text-anchor="middle">GraphOperations</text>
+<line class="lifeline" x1="835.0" y1="230" x2="835.0" y2="1004"/>
+<rect class="card" x="1020.0" y="156" width="230" height="58" rx="16" fill="#FDECEF" stroke="#DC6B82"/>
+<text class="label" x="1135.0" y="185.0" text-anchor="middle">Graph DB</text>
+<line class="lifeline" x1="1135.0" y1="230" x2="1135.0" y2="1004"/>
+<rect x="310.0" y="232.0" width="150.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="320.0" y="252.0">1. addAccount(...)</text>
+<path class="line" d="M235.0 262.0 L535.0 262.0"/>
+<rect x="581.4" y="308.0" width="207.2" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="591.4" y="328.0">2. createVertex(Account, ...)</text>
+<path class="line" d="M535.0 338.0 L835.0 338.0"/>
+<rect x="910.0" y="384.0" width="150.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="920.0" y="404.0">3. persist account</text>
+<path class="line" d="M835.0 414.0 L1135.0 414.0"/>
+<rect x="306.6" y="460.0" width="156.8" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="316.6" y="480.0">4. recordTransfer(...)</text>
+<path class="line" d="M235.0 490.0 L535.0 490.0"/>
+<rect x="546.0" y="536.0" width="278.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="556.0" y="556.0">5. createEdge(..., TRANSFERRED_TO, ...)</text>
+<path class="line" d="M535.0 566.0 L835.0 566.0"/>
+<rect x="910.0" y="612.0" width="150.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="920.0" y="632.0">6. persist transfer</text>
+<path class="line" d="M835.0 642.0 L1135.0 642.0"/>
+<rect x="285.0" y="688.0" width="200.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="295.0" y="708.0">7. detectCircularTransfers()</text>
+<path class="line" d="M235.0 718.0 L535.0 718.0"/>
+<rect x="581.4" y="764.0" width="207.2" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="591.4" y="784.0">8. detectCycles(CycleOptions)</text>
+<path class="line" d="M535.0 794.0 L835.0 794.0"/>
+<rect x="892.2" y="840.0" width="185.6" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="902.2" y="860.0">9. traverse transfer graph</text>
+<path class="line" d="M835.0 870.0 L1135.0 870.0"/>
+<rect x="610.0" y="916.0" width="150.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="620.0" y="936.0">10. suspicious cycles</text>
+<path class="dashed" d="M1135.0 946.0 L235.0 946.0"/>
 </svg>

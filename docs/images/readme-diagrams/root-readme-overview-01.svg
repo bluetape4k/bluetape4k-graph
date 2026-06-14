@@ -1,72 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
-
-    <defs>
-      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
-        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
-      </filter>
-      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
-      </marker>
-    </defs>
-    <style>
-      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
-      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
-      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
-      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
-      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
-      .card { filter: url(#softShadow); }
-      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
-      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
-    </style>
-
-<rect x="0" y="0" width="1440" height="900" fill="#F8FAFC"/>
-<rect x="24" y="24" width="1392" height="852" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
-<circle cx="1376" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
-<circle cx="1336" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
-<circle cx="1296" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
-<text x="72" y="82" class="title">Bluetape4k Graph Overview</text>
-<text x="74" y="118" class="subtitle">Current README and module source model</text>
-<text x="720.0" y="852" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: Bluetape4k Graph Overview</text>
-<rect x="78.0" y="210" width="300.0" height="360" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
-<rect x="88.0" y="220" width="12" height="340" rx="6" fill="#3B82F6" opacity="0.95"/>
-<text x="100.0" y="250" class="label">Application layer</text>
-<text x="102.0" y="286" class="small">Ktor plugin</text>
-<text x="102.0" y="314" class="small">Spring Boot auto-config</text>
-<text x="102.0" y="342" class="small">Domain examples</text>
-<rect x="406.0" y="210" width="300.0" height="360" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
-<rect x="416.0" y="220" width="12" height="340" rx="6" fill="#22C55E" opacity="0.95"/>
-<text x="428.0" y="250" class="label">Graph contract</text>
-<text x="430.0" y="286" class="small">GraphOperations</text>
-<text x="430.0" y="314" class="small">Suspend APIs</text>
-<text x="430.0" y="342" class="small">Schema DSL</text>
-<text x="430.0" y="370" class="small">Algorithms</text>
-<path d="M 382.0 390 C 390.0 390, 390.0 390, 398.0 390" class="line"/>
-<text x="390.0" y="362.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">maps</text>
-<text x="390.0" y="362.0" text-anchor="middle" class="tiny">maps</text>
-<rect x="734.0" y="210" width="300.0" height="360" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
-<rect x="744.0" y="220" width="12" height="340" rx="6" fill="#F97316" opacity="0.95"/>
-<text x="756.0" y="250" class="label">Backend adapters</text>
-<text x="758.0" y="286" class="small">Neo4j</text>
-<text x="758.0" y="314" class="small">Memgraph</text>
-<text x="758.0" y="342" class="small">AGE</text>
-<text x="758.0" y="370" class="small">TinkerGraph</text>
-<text x="758.0" y="398" class="small">FalkorDB</text>
-<path d="M 710.0 390 C 718.0 390, 718.0 390, 726.0 390" class="line"/>
-<text x="718.0" y="362.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">maps</text>
-<text x="718.0" y="362.0" text-anchor="middle" class="tiny">maps</text>
-<rect x="1062.0" y="210" width="300.0" height="360" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
-<rect x="1072.0" y="220" width="12" height="340" rx="6" fill="#8B5CF6" opacity="0.95"/>
-<text x="1084.0" y="250" class="label">Bulk I/O</text>
-<text x="1086.0" y="286" class="small">CSV</text>
-<text x="1086.0" y="314" class="small">Jackson NDJSON</text>
-<text x="1086.0" y="342" class="small">GraphML</text>
-<text x="1086.0" y="370" class="small">OkIO</text>
-<path d="M 1038.0 390 C 1046.0 390, 1046.0 390, 1054.0 390" class="line"/>
-<text x="1046.0" y="362.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">maps</text>
-<text x="1046.0" y="362.0" text-anchor="middle" class="tiny">maps</text>
-<rect x="164" y="650" width="1112" height="120" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
-<rect x="174" y="660" width="12" height="100" rx="6" fill="#14B8A6" opacity="0.95"/>
-<text x="186" y="690" class="label">Source truth</text>
-<text x="188" y="726" class="small">README module contract, AGENTS layout, Kotlin source names, benchmark result tables</text>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1000" viewBox="0 0 1400 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Bluetape4k Graph overview</title><desc id="desc">Overview diagram generated from the current repository source layout.</desc>
+  <defs><filter id="shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#203040" flood-opacity="0.09"/></filter>
+    <style>.canvas{fill:#F6F9FC}.frame{fill:#FFFFFF;stroke:#D7E2EC;stroke-width:2}.title{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:42px;fill:#22344A;font-weight:400}.subtitle{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:17px;fill:#536476;font-weight:400}.group{filter:url(#shadow);stroke-width:2}.gtitle{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:24px;fill:#22344A;font-weight:400}.label{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:15px;fill:#34465B;font-weight:400}.small{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:13px;fill:#627184;font-weight:400}.axis{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:22px;fill:#22344A;font-weight:400}</style>
+  </defs><rect class="canvas" width="1400" height="1000"/><rect class="frame" x="36" y="28" width="1328" height="944" rx="24"/>
+<text class="title" x="72" y="82">Bluetape4k Graph overview</text><text class="subtitle" x="76" y="114">Verified from current source layout before README placement.</text>
+<g transform="translate(78,145)"><rect class="group" x="0" y="0" width="380" height="110" rx="14" fill="#E8F3FF" stroke="#75A9E8"/><text class="gtitle" x="190" y="36" text-anchor="middle">BOM</text><rect x="24" y="50" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="68" text-anchor="middle" dominant-baseline="middle">graph-bom</text></g>
+<g transform="translate(492,145)"><rect class="group" x="0" y="0" width="380" height="250" rx="14" fill="#EAF7EF" stroke="#69B888"/><text class="gtitle" x="190" y="36" text-anchor="middle">Graph databases</text><rect x="24" y="50" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="68" text-anchor="middle" dominant-baseline="middle">graph-age</text><rect x="24" y="78" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="96" text-anchor="middle" dominant-baseline="middle">graph-core</text><rect x="24" y="106" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="124" text-anchor="middle" dominant-baseline="middle">graph-falkordb</text><rect x="24" y="134" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="152" text-anchor="middle" dominant-baseline="middle">graph-memgraph</text><rect x="24" y="162" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="180" text-anchor="middle" dominant-baseline="middle">graph-neo4j</text><rect x="24" y="190" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="208" text-anchor="middle" dominant-baseline="middle">graph-tinkerpop</text></g>
+<g transform="translate(906,145)"><rect class="group" x="0" y="0" width="380" height="250" rx="14" fill="#FFF3D9" stroke="#D9AA4D"/><text class="gtitle" x="190" y="36" text-anchor="middle">Graph I/O</text><rect x="24" y="50" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="68" text-anchor="middle" dominant-baseline="middle">core</text><rect x="24" y="78" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="96" text-anchor="middle" dominant-baseline="middle">csv</text><rect x="24" y="106" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="124" text-anchor="middle" dominant-baseline="middle">graphml</text><rect x="24" y="134" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="152" text-anchor="middle" dominant-baseline="middle">jackson2</text><rect x="24" y="162" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="180" text-anchor="middle" dominant-baseline="middle">jackson3</text><rect x="24" y="190" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="208" text-anchor="middle" dominant-baseline="middle">graph-okio</text></g>
+<g transform="translate(78,423)"><rect class="group" x="0" y="0" width="380" height="110" rx="14" fill="#FDECEF" stroke="#DB7890"/><text class="gtitle" x="190" y="36" text-anchor="middle">Spring Boot</text><rect x="24" y="50" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="68" text-anchor="middle" dominant-baseline="middle">graph-spring-boot</text></g>
+<g transform="translate(492,423)"><rect class="group" x="0" y="0" width="380" height="110" rx="14" fill="#E9F7F6" stroke="#55B5AF"/><text class="gtitle" x="190" y="36" text-anchor="middle">Ktor integration</text><rect x="24" y="50" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="68" text-anchor="middle" dominant-baseline="middle">graph-ktor</text></g>
+<g transform="translate(906,423)"><rect class="group" x="0" y="0" width="380" height="194" rx="14" fill="#F7F1E7" stroke="#B68C55"/><text class="gtitle" x="190" y="36" text-anchor="middle">Benchmarks</text><rect x="24" y="50" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="68" text-anchor="middle" dominant-baseline="middle">graph-age-benchmark</text><rect x="24" y="78" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="96" text-anchor="middle" dominant-baseline="middle">graph-benchmark</text><rect x="24" y="106" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="124" text-anchor="middle" dominant-baseline="middle">graph-io-benchmark</text><rect x="24" y="134" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="152" text-anchor="middle" dominant-baseline="middle">graph-neo4j-benchmark</text></g>
+<g transform="translate(78,701)"><rect class="group" x="0" y="0" width="380" height="250" rx="14" fill="#F1ECFF" stroke="#A58BE3"/><text class="gtitle" x="190" y="36" text-anchor="middle">Examples</text><rect x="24" y="50" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="68" text-anchor="middle" dominant-baseline="middle">code-graph-examples</text><rect x="24" y="78" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="96" text-anchor="middle" dominant-baseline="middle">fraud-detection-examples</text><rect x="24" y="106" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="124" text-anchor="middle" dominant-baseline="middle">knowledge-graph-examples</text><rect x="24" y="134" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="152" text-anchor="middle" dominant-baseline="middle">ktor-graph-examples</text><rect x="24" y="162" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="180" text-anchor="middle" dominant-baseline="middle">linkedin-graph-examples</text><rect x="24" y="190" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="208" text-anchor="middle" dominant-baseline="middle">recommendation-examples</text></g>
+<text class="small" x="700.0" y="946" text-anchor="middle">Overview labels are generated from build modules or repository source surfaces; generated image text is English-only.</text></svg>

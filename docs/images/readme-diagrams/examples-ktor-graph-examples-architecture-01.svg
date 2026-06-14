@@ -1,59 +1,74 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
-
-    <defs>
-      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
-        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
-      </filter>
-      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
-      </marker>
-    </defs>
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="520" viewBox="0 0 1120 520" role="img" aria-labelledby="title desc">
+  <title id="title">Ktor Graph Example Architecture</title>
+  <desc id="desc">GraphPlugin facade access from HTTP routes</desc>
+  <defs>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M1,1 L8,4.5 L1,8 Z" fill="#5f6f82"/>
+    </marker>
     <style>
-      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
-      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
-      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
-      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
-      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
-      .card { filter: url(#softShadow); }
-      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
-      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
+      .canvas { fill: #fbfcfe; }
+      .frame { fill: #ffffff; stroke: #d7dee8; stroke-width: 2; }
+      .title { font-family: "Architects Daughter", "Comic Sans MS", "Helvetica", sans-serif; font-size: 30px; fill: #243142; }
+      .subtitle { font-family: "Comic Mono", "Comic Sans MS", "Helvetica", sans-serif; font-size: 15px; fill: #5c6b7d; }
+      .box-title { font-family: "Architects Daughter", "Comic Sans MS", "Helvetica", sans-serif; font-size: 18px; fill: #233044; }
+      .box-text { font-family: "Comic Mono", "Comic Sans MS", "Helvetica", sans-serif; font-size: 13px; fill: #435266; }
+      .label { font-family: "Comic Mono", "Comic Sans MS", "Helvetica", sans-serif; font-size: 12px; fill: #4f5e70; }
+      .edge { fill: none; stroke: #5f6f82; stroke-width: 2.4; marker-end: url(#arrow); }
+      .pill { fill: #ffffff; stroke: #dbe3ee; stroke-width: 1; }
     </style>
+  </defs>
+  <rect class="canvas" width="1120" height="520"/>
+  <rect class="frame" x="24" y="24" width="1072" height="472" rx="18"/>
+  <text class="title" x="560" y="68" text-anchor="middle">Ktor Graph Example Architecture</text>
+  <text class="subtitle" x="560" y="94" text-anchor="middle">GraphPlugin facade access from HTTP routes</text>
 
-<rect x="0" y="0" width="1440" height="900" fill="#F8FAFC"/>
-<rect x="24" y="24" width="1392" height="852" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
-<circle cx="1376" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
-<circle cx="1336" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
-<circle cx="1296" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
-<text x="72" y="82" class="title">Ktor Graph Examples Architecture Architecture</text>
-<text x="74" y="118" class="subtitle">Current README and module source model</text>
-<text x="720.0" y="852" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: Ktor Graph Examples Architecture</text>
-<rect x="78.0" y="210" width="409.3333333333333" height="360" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
-<rect x="88.0" y="220" width="12" height="340" rx="6" fill="#3B82F6" opacity="0.95"/>
-<text x="100.0" y="250" class="label">Ktor app</text>
-<text x="102.0" y="286" class="small">Routes</text>
-<text x="102.0" y="314" class="small">ApplicationCall</text>
-<text x="102.0" y="342" class="small">GraphPlugin</text>
-<rect x="515.3333333333333" y="210" width="409.3333333333333" height="360" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
-<rect x="525.3333333333333" y="220" width="12" height="340" rx="6" fill="#22C55E" opacity="0.95"/>
-<text x="537.3333333333333" y="250" class="label">Plugin</text>
-<text x="539.3333333333333" y="286" class="small">Graph registry</text>
-<text x="539.3333333333333" y="314" class="small">Backend neutral</text>
-<text x="539.3333333333333" y="342" class="small">Lifecycle owned by caller</text>
-<path d="M 491.33333333333326 390 C 499.33333333333326 390, 499.33333333333326 390, 507.33333333333326 390" class="line"/>
-<text x="499.33333333333326" y="362.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">maps</text>
-<text x="499.33333333333326" y="362.0" text-anchor="middle" class="tiny">maps</text>
-<rect x="952.6666666666666" y="210" width="409.3333333333333" height="360" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
-<rect x="962.6666666666666" y="220" width="12" height="340" rx="6" fill="#F97316" opacity="0.95"/>
-<text x="974.6666666666666" y="250" class="label">GraphOperations</text>
-<text x="976.6666666666666" y="286" class="small">TinkerGraph demo</text>
-<text x="976.6666666666666" y="314" class="small">Neo4j/AGE helpers</text>
-<text x="976.6666666666666" y="342" class="small">Responses</text>
-<path d="M 928.6666666666666 390 C 936.6666666666666 390, 936.6666666666666 390, 944.6666666666666 390" class="line"/>
-<text x="936.6666666666666" y="362.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">maps</text>
-<text x="936.6666666666666" y="362.0" text-anchor="middle" class="tiny">maps</text>
-<rect x="164" y="650" width="1112" height="120" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
-<rect x="174" y="660" width="12" height="100" rx="6" fill="#14B8A6" opacity="0.95"/>
-<text x="186" y="690" class="label">Source truth</text>
-<text x="188" y="726" class="small">README module contract, AGENTS layout, Kotlin source names, benchmark result tables</text>
+      <path class="edge" d="M 240 237.5 H 275 V 235 H 310"/>
+      <rect class="pill" x="251.5" y="212.25" width="67" height="22" rx="11"/>
+      <text class="label" x="285" y="227.25" text-anchor="middle">request</text>
+
+      <path class="edge" d="M 520 235 H 560 V 235 H 600"/>
+      <rect class="pill" x="535" y="211" width="60" height="22" rx="11"/>
+      <text class="label" x="565" y="226" text-anchor="middle">facade</text>
+
+      <path class="edge" d="M 830 235 H 870 V 167.5 H 910"/>
+      <rect class="pill" x="819" y="177.25" width="67" height="22" rx="11"/>
+      <text class="label" x="852.5" y="192.25" text-anchor="middle">default</text>
+
+      <path class="edge" d="M 830 235 H 870 V 327.5 H 910"/>
+      <rect class="pill" x="815.5" y="257.25" width="74" height="22" rx="11"/>
+      <text class="label" x="852.5" y="272.25" text-anchor="middle">optional</text>
+
+      <g>
+        <rect x="70" y="190" width="170" height="95" rx="14" fill="#e8f4ff" stroke="#98c1df" stroke-width="2"/>
+        <text class="box-title" x="155" y="224" text-anchor="middle">HTTP Client</text>
+        <text class="box-text" x="155" y="252" text-anchor="middle">curl / tests</text>
+      </g>
+
+      <g>
+        <rect x="310" y="160" width="210" height="150" rx="14" fill="#eaf7ef" stroke="#9ccdad" stroke-width="2"/>
+        <text class="box-title" x="415" y="194" text-anchor="middle">Ktor Routes</text>
+        <text class="box-text" x="415" y="222" text-anchor="middle">/demo/reset</text>
+<text class="box-text" x="415" y="243" text-anchor="middle">/cities/count</text>
+<text class="box-text" x="415" y="264" text-anchor="middle">/cities/path</text>
+      </g>
+
+      <g>
+        <rect x="600" y="160" width="230" height="150" rx="14" fill="#f2eefc" stroke="#b7a7dc" stroke-width="2"/>
+        <text class="box-title" x="715" y="194" text-anchor="middle">GraphPlugin</text>
+        <text class="box-text" x="715" y="222" text-anchor="middle">graphOperations()</text>
+<text class="box-text" x="715" y="243" text-anchor="middle">graphSuspendOperations()</text>
+      </g>
+
+      <g>
+        <rect x="910" y="120" width="160" height="95" rx="14" fill="#fff4d8" stroke="#e3c46f" stroke-width="2"/>
+        <text class="box-title" x="990" y="154" text-anchor="middle">TinkerGraph</text>
+        <text class="box-text" x="990" y="182" text-anchor="middle">in-memory default</text>
+      </g>
+
+      <g>
+        <rect x="910" y="275" width="160" height="105" rx="14" fill="#fdecef" stroke="#d8a6b0" stroke-width="2"/>
+        <text class="box-title" x="990" y="309" text-anchor="middle">FalkorDB</text>
+        <text class="box-text" x="990" y="337" text-anchor="middle">caller-owned driver</text>
+<text class="box-text" x="990" y="358" text-anchor="middle">demo graph</text>
+      </g>
 </svg>
