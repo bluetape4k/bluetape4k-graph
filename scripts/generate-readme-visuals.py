@@ -201,6 +201,8 @@ def architecture_svg(slug: str) -> str:
         return graph_core_path_lifecycle_svg()
     if slug == "graph-graph-core-architecture-11":
         return graph_core_operations_usage_svg()
+    if slug == "graph-graph-core-architecture-12":
+        return graph_core_schema_flow_svg()
     title = "Bluetape4k Graph Overview" if slug.startswith("root") else f"{module_title(slug)} Architecture"
     subtitle = "Current README and module source model"
     out = open_svg(title, subtitle)
@@ -340,6 +342,49 @@ def graph_core_operations_usage_svg() -> str:
     out.append(
         '<text x="810" y="898" text-anchor="middle" class="tiny">'
         'Source: GraphOperations repository contracts; unsupported optional capabilities fail explicitly instead of falling back silently.</text>'
+    )
+    return close_svg(out)
+
+
+def graph_core_schema_flow_svg() -> str:
+    width, height = 1640, 1000
+    out = open_svg(
+        "Schema DSL Flow",
+        "Declare labels and properties once, then use them for schema DDL and graph operations",
+        width,
+        height,
+    )
+    out[-1] = (
+        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: graph-core / Schema DSL Flow</text>'
+    )
+    out.append('<rect x="70" y="150" width="1500" height="710" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+
+    top = [
+        ("Declare Labels", ["object PersonLabel", "object WorksAtLabel", "VertexLabel / EdgeLabel"], PALETTE["sky"]),
+        ("Collect Properties", ["PropertyHolder.properties", "PropertyDef(name, type)", "typed DSL functions"], PALETTE["mint"]),
+        ("Validate Names", ["GraphSchemaNames", "safe label/property", "fail before backend"], PALETTE["lemon"]),
+        ("Schema Manager", ["createIndex", "createUniqueConstraint", "dropIndex / list"], PALETTE["lavender"]),
+    ]
+    x = 130
+    for i, (title, lines, fill) in enumerate(top):
+        card(out, x, 245, 285, 205, title, lines, fill)
+        if i < len(top) - 1:
+            arrow(out, x + 285, 348, x + 338, 348, ["defs", "props", "ddl"][i], "line")
+        x += 360
+
+    card(out, 190, 585, 380, 170, "Use In Operations", ["PersonLabel.label", "PersonLabel.email.name", "createVertex / filters"], PALETTE["aqua"])
+    card(out, 650, 585, 380, 170, "Backend DDL", ["Neo4j / Memgraph", "TinkerGraph recorded index", "FalkorDB index support"], PALETTE["peach"])
+    card(out, 1110, 585, 330, 170, "Unsupported", ["AGE portable DDL", "unique constraints gaps", "explicit exception"], PALETTE["rose"])
+
+    arrow(out, 272, 450, 380, 583, "names", "thin")
+    arrow(out, 1275, 450, 840, 583, "supported", "thin")
+    arrow(out, 1360, 450, 1275, 583, "unsupported", "thin")
+
+    out.append('<rect x="150" y="885" width="1340" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+    out.append(
+        '<text x="820" y="918" text-anchor="middle" class="tiny">'
+        'Source: schema package README and GraphSchemaManager.kt support matrix; no silent success for unsupported DDL.</text>'
     )
     return close_svg(out)
 
