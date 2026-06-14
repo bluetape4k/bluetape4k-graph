@@ -1,82 +1,120 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="980" height="1587" viewBox="0 0 980 1587" role="img" aria-label="graph core Architecture 14">
-<defs>
-  <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="7" stdDeviation="8" flood-color="#1f2937" flood-opacity="0.10"/></filter>
-  <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth"><path d="M1,1 L8,4.5 L1,8 Z" fill="#758297"/></marker>
-  <style>
-    .canvas{fill:#f7f9fc}.frame{fill:#fff;stroke:#d8e0ea;stroke-width:1.5}
-    .title{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:40px;font-weight:400;fill:#102033}
-    .subtitle{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:14px;font-weight:400;fill:#536273}
-    .label{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:21px;font-weight:400;fill:#102033}
-    .small{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:12px;font-weight:400;fill:#536273}
-    .strong{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:13px;font-weight:400;fill:#102033}
-    .card{stroke-width:2.0;filter:url(#shadow)}
-    .line{stroke:#758297;stroke-width:2.1;fill:none;marker-end:url(#arrow)}
-    .dashed{stroke:#758297;stroke-width:2.1;stroke-dasharray:7 6;fill:none;marker-end:url(#arrow)}
-    .lifeline{stroke:#b7c2d1;stroke-width:1.8;stroke-dasharray:9 9}
-  </style>
-</defs>
-<rect class="canvas" width="980" height="1587"/>
-<rect class="frame" x="32" y="28" width="916" height="1531" rx="28"/>
-<text class="title" x="66" y="82">graph core Architecture 14</text>
-<text class="subtitle" x="70" y="116">Graphviz-derived layout and orthogonal route evidence</text>
-<path class="line" d="M301.1 205.7 L301.1 205.7 L301.1 288.0 L301.1 288.0"/>
-<path class="line" d="M301.1 366.3 L301.1 366.3 L301.1 448.6 L301.1 448.6"/>
-<path class="line" d="M247.6 526.9 L247.6 526.9 L247.6 769.9 L247.6 769.9"/>
-<path class="line" d="M346.3 526.9 L346.3 526.9 L346.3 609.2 L346.3 609.2"/>
-<path class="line" d="M168.4 848.1 L168.4 953.5 L168.4 1299.8 L168.4 1299.8 L168.4 1299.8 L344.6 1299.8 L344.6 1299.8"/>
-<path class="line" d="M463.4 687.5 L463.4 687.5 L463.4 769.8 L463.4 769.8"/>
-<path class="line" d="M463.4 848.1 L463.4 848.1 L463.4 930.4 L463.4 930.4"/>
-<path class="line" d="M536.4 817.9 L627.5 817.9 L771.5 817.9 L771.5 817.9 L771.5 817.9 L771.5 1090.8 L771.5 1090.8"/>
-<path class="line" d="M463.4 1008.7 L463.4 1008.7 L463.4 1091.0 L463.4 1091.0"/>
-<path class="line" d="M644.9 1139.1 L596.1 1139.1 L551.7 1139.1 L551.7 1139.1 L551.7 1139.1 L551.7 1251.5 L551.7 1251.5"/>
-<path class="line" d="M463.4 1169.4 L463.4 1169.4 L463.4 1251.6 L463.4 1251.6"/>
-<path class="line" d="M463.4 1330.0 L463.4 1330.0 L463.4 1412.2 L463.4 1412.2"/>
-<g transform="translate(133.0,128.5)">
-<rect class="card" x="0" y="0" width="336.3" height="94.0" rx="14" fill="#E8F3FF" stroke="#5B8DEF"/>
-<text class="label" x="168.1" y="35.0" text-anchor="middle">Start shortest Path/all</text>
-<text class="label" x="168.1" y="59.0" text-anchor="middle">Paths</text>
-</g>
-<g transform="translate(75.2,289.1)">
-<rect class="card" x="0" y="0" width="451.8" height="94.0" rx="14" fill="#EAF7EF" stroke="#58A978"/>
-<text class="label" x="225.9" y="35.0" text-anchor="middle">Initialize Search</text>
-<text class="label" x="225.9" y="59.0" text-anchor="middle">startId, toId, maxDepth</text>
-</g>
-<g transform="translate(196.1,454.7)">
-<rect class="card" x="0" y="0" width="210.0" height="84.0" rx="14" fill="#FFF3D9" stroke="#D6A441"/>
-<text class="label" x="105.0" y="42.0" text-anchor="middle">Path Cached?</text>
-</g>
-<g transform="translate(50.0,775.9)">
-<rect class="card" x="0" y="0" width="236.7" height="84.0" rx="14" fill="#FDECEF" stroke="#DC6B82"/>
-<text class="label" x="118.4" y="42.0" text-anchor="middle">Return from Cache</text>
-</g>
-<g transform="translate(298.9,615.3)">
-<rect class="card" x="0" y="0" width="269.9" height="84.0" rx="14" fill="#E9F7F6" stroke="#45A7A1"/>
-<text class="label" x="134.9" y="42.0" text-anchor="middle">Execute BFS/Dijkstra</text>
-</g>
-<g transform="translate(358.4,775.9)">
-<rect class="card" x="0" y="0" width="210.0" height="84.0" rx="14" fill="#F1ECFF" stroke="#8A72D6"/>
-<text class="label" x="105.0" y="42.0" text-anchor="middle">Path Found?</text>
-</g>
-<g transform="translate(267.6,931.5)">
-<rect class="card" x="0" y="0" width="391.6" height="94.0" rx="14" fill="#F4F7FA" stroke="#8CA0B8"/>
-<text class="label" x="195.8" y="35.0" text-anchor="middle">Construct GraphPath [V1,</text>
-<text class="label" x="195.8" y="59.0" text-anchor="middle">E1, V2, ...]</text>
-</g>
-<g transform="translate(631.6,1092.1)">
-<rect class="card" x="0" y="0" width="279.7" height="94.0" rx="14" fill="#FFF0E4" stroke="#D98A4A"/>
-<text class="label" x="139.9" y="35.0" text-anchor="middle">Path = null or empty</text>
-<text class="label" x="139.9" y="59.0" text-anchor="middle">list</text>
-</g>
-<g transform="translate(358.4,1097.1)">
-<rect class="card" x="0" y="0" width="210.0" height="84.0" rx="14" fill="#E8F3FF" stroke="#5B8DEF"/>
-<text class="label" x="105.0" y="42.0" text-anchor="middle">Cache Result</text>
-</g>
-<g transform="translate(349.3,1257.8)">
-<rect class="card" x="0" y="0" width="228.1" height="84.0" rx="14" fill="#EAF7EF" stroke="#58A978"/>
-<text class="label" x="114.1" y="42.0" text-anchor="middle">Return GraphPath</text>
-</g>
-<g transform="translate(358.4,1418.4)">
-<rect class="card" x="0" y="0" width="210.0" height="84.0" rx="14" fill="#FFF3D9" stroke="#D6A441"/>
-<text class="label" x="105.0" y="42.0" text-anchor="middle">End</text>
-</g>
+<svg xmlns="http://www.w3.org/2000/svg" width="1760" height="1040" viewBox="0 0 1760 1040">
+
+    <defs>
+      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
+        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
+      </filter>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+      </marker>
+    </defs>
+    <style>
+      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
+      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
+      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
+      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
+      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
+      .card { filter: url(#softShadow); }
+      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
+    </style>
+
+<rect x="0" y="0" width="1760" height="1040" fill="#F8FAFC"/>
+<rect x="24" y="24" width="1712" height="992" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
+<circle cx="1696" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
+<circle cx="1656" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
+<circle cx="1616" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
+<text x="72" y="82" class="title">Graph Core Path Algorithm Flow</text>
+<text x="74" y="118" class="subtitle">Traversal calls choose backend-native paths or JVM fallback runners for weighted and graph algorithms</text>
+<text x="880.0" y="992" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: graph-core / Path Algorithm Flow</text>
+<rect x="70" y="150" width="1620" height="720" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+<path d="M 420 318 C 459.0 318, 459.0 318, 498 318" class="line"/>
+<text x="459.0" y="290.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">call</text>
+<text x="459.0" y="290.0" text-anchor="middle" class="tiny">call</text>
+<path d="M 830 300 C 869.0 300, 869.0 275, 908 275" class="thin"/>
+<text x="869.0" y="259.5" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">native</text>
+<text x="869.0" y="259.5" text-anchor="middle" class="tiny">native</text>
+<path d="M 830 345 C 869.0 345, 869.0 510, 908 510" class="line"/>
+<text x="869.0" y="399.5" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">weighted</text>
+<text x="869.0" y="399.5" text-anchor="middle" class="tiny">weighted</text>
+<path d="M 1210 275 C 1254.0 275, 1254.0 355, 1298 355" class="thin"/>
+<text x="1254.0" y="287.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">neighbors</text>
+<text x="1254.0" y="287.0" text-anchor="middle" class="tiny">neighbors</text>
+<path d="M 1210 510 C 1254.0 510, 1254.0 430, 1298 430" class="line"/>
+<text x="1254.0" y="442.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">incident</text>
+<text x="1254.0" y="442.0" text-anchor="middle" class="tiny">incident</text>
+<path d="M 1450 490 C 1155.0 490, 1155.0 618, 860 618" class="line"/>
+<path d="M 650 400 C 485.0 400, 485.0 618, 320 618" class="thin"/>
+<text x="485.0" y="481.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">limits</text>
+<text x="485.0" y="481.0" text-anchor="middle" class="tiny">limits</text>
+<path d="M 470 705 C 514.0 705, 514.0 705, 558 705" class="line"/>
+<text x="514.0" y="677.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">guard</text>
+<text x="514.0" y="677.0" text-anchor="middle" class="tiny">guard</text>
+<path d="M 880 705 C 924.0 705, 924.0 725, 968 725" class="line"/>
+<text x="924.0" y="687.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">found</text>
+<text x="924.0" y="687.0" text-anchor="middle" class="tiny">found</text>
+<path d="M 1280 725 C 1324.0 725, 1324.0 725, 1368 725" class="line"/>
+<text x="1324.0" y="697.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">models</text>
+<text x="1324.0" y="697.0" text-anchor="middle" class="tiny">models</text>
+<rect x="120" y="235" width="300" height="165" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+<rect x="130" y="245" width="12" height="145" rx="6" fill="#3B82F6" opacity="0.95"/>
+<text x="142" y="275" class="label">Traversal Request</text>
+<text x="144" y="311" class="small">shortestPath / allPaths</text>
+<text x="144" y="339" class="small">aStarPath</text>
+<text x="144" y="367" class="small">bfs / dfs / pageRank</text>
+<rect x="500" y="235" width="330" height="165" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
+<rect x="510" y="245" width="12" height="145" rx="6" fill="#22C55E" opacity="0.95"/>
+<text x="522" y="275" class="label">Capability Gate</text>
+<text x="524" y="311" class="small">backend native query</text>
+<text x="524" y="339" class="small">or JVM fallback</text>
+<text x="524" y="367" class="small">PathOptions / algorithm options</text>
+<rect x="910" y="200" width="300" height="150" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
+<rect x="920" y="210" width="12" height="130" rx="6" fill="#EAB308" opacity="0.95"/>
+<text x="932" y="240" class="label">Unweighted Path</text>
+<text x="934" y="276" class="small">native traversal when present</text>
+<text x="934" y="304" class="small">edgeLabel / direction</text>
+<text x="934" y="332" class="small">maxDepth bound</text>
+<rect x="910" y="420" width="300" height="180" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
+<rect x="920" y="430" width="12" height="160" rx="6" fill="#8B5CF6" opacity="0.95"/>
+<text x="932" y="460" class="label">Weighted Path</text>
+<text x="934" y="496" class="small">ShortestPathFallback</text>
+<text x="934" y="524" class="small">Dijkstra / A* runner</text>
+<text x="934" y="552" class="small">weightProperty required</text>
+<text x="934" y="580" class="small">heuristic for A*</text>
+<rect x="1300" y="305" width="300" height="185" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
+<rect x="1310" y="315" width="12" height="165" rx="6" fill="#14B8A6" opacity="0.95"/>
+<text x="1322" y="345" class="label">Fetch Graph Slice</text>
+<text x="1324" y="381" class="small">findVertexById</text>
+<text x="1324" y="409" class="small">incident edges</text>
+<text x="1324" y="437" class="small">OUT / IN / BOTH</text>
+<text x="1324" y="465" class="small">distinct + sorted for BOTH</text>
+<rect x="170" y="620" width="300" height="170" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="3" class="card"/>
+<rect x="180" y="630" width="12" height="150" rx="6" fill="#EF4444" opacity="0.95"/>
+<text x="192" y="660" class="label">Safety Guards</text>
+<text x="194" y="696" class="small">maxVisited / maxVertices</text>
+<text x="194" y="724" class="small">maxDepth</text>
+<text x="194" y="752" class="small">missing weight policy</text>
+<rect x="560" y="620" width="320" height="170" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
+<rect x="570" y="630" width="12" height="150" rx="6" fill="#F97316" opacity="0.95"/>
+<text x="582" y="660" class="label">Frontier Loop</text>
+<text x="584" y="696" class="small">priority queue / queue / stack</text>
+<text x="584" y="724" class="small">visited set</text>
+<text x="584" y="752" class="small">cameFrom or rank state</text>
+<rect x="970" y="650" width="310" height="150" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
+<rect x="980" y="660" width="12" height="130" rx="6" fill="#22C55E" opacity="0.95"/>
+<text x="992" y="690" class="label">Reconstruct</text>
+<text x="994" y="726" class="small">PathReconstructor</text>
+<text x="994" y="754" class="small">VertexStep / EdgeStep order</text>
+<text x="994" y="782" class="small">totalWeight preserved</text>
+<rect x="1370" y="625" width="260" height="195" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+<rect x="1380" y="635" width="12" height="175" rx="6" fill="#3B82F6" opacity="0.95"/>
+<text x="1392" y="665" class="label">Return Models</text>
+<text x="1394" y="701" class="small">GraphPath?</text>
+<text x="1394" y="729" class="small">TraversalVisit list</text>
+<text x="1394" y="757" class="small">PageRankScore list</text>
+<text x="1394" y="785" class="small">GraphCycle / Component</text>
+<rect x="170" y="892" width="1420" height="62" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
+<text x="880" y="917" text-anchor="middle" dominant-baseline="middle" class="tiny">Source: ShortestPathFallback, DijkstraRunner, AStarRunner, BfsDfsRunner, PageRankCalculator, CycleDetector, UnionFind.</text>
+<text x="880" y="940" text-anchor="middle" dominant-baseline="middle" class="tiny">Weighted paths validate positive finite weights; unweighted and analytics paths return the graph-core model contracts.</text>
 </svg>

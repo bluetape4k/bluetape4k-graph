@@ -205,6 +205,8 @@ def architecture_svg(slug: str) -> str:
         return graph_core_schema_flow_svg()
     if slug == "graph-graph-core-architecture-13":
         return graph_core_crud_flow_svg()
+    if slug == "graph-graph-core-architecture-14":
+        return graph_core_path_algorithm_flow_svg()
     title = "Bluetape4k Graph Overview" if slug.startswith("root") else f"{module_title(slug)} Architecture"
     subtitle = "Current README and module source model"
     out = open_svg(title, subtitle)
@@ -428,6 +430,93 @@ def graph_core_crud_flow_svg() -> str:
     out.append(
         '<text x="830" y="918" text-anchor="middle" class="tiny">'
         'Source: GraphVertexRepository, GraphEdgeRepository, and GraphBatchValidation contracts.</text>'
+    )
+    return close_svg(out)
+
+
+def graph_core_path_algorithm_flow_svg() -> str:
+    width, height = 1760, 1040
+    out = open_svg(
+        "Graph Core Path Algorithm Flow",
+        "Traversal calls choose backend-native paths or JVM fallback runners for weighted and graph algorithms",
+        width,
+        height,
+    )
+    out[-1] = (
+        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: graph-core / Path Algorithm Flow</text>'
+    )
+    out.append('<rect x="70" y="150" width="1620" height="720" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+
+    arrow(out, 420, 318, 498, 318, "call", "line")
+    arrow(out, 830, 300, 908, 275, "native", "thin")
+    arrow(out, 830, 345, 908, 510, "weighted", "line")
+    arrow(out, 1210, 275, 1298, 355, "neighbors", "thin")
+    arrow(out, 1210, 510, 1298, 430, "incident", "line")
+    arrow(out, 1450, 490, 860, 618, "", "line")
+    arrow(out, 650, 400, 320, 618, "limits", "thin")
+    arrow(out, 470, 705, 558, 705, "guard", "line")
+    arrow(out, 880, 705, 968, 725, "found", "line")
+    arrow(out, 1280, 725, 1368, 725, "models", "line")
+
+    card(out, 120, 235, 300, 165, "Traversal Request", [
+        "shortestPath / allPaths",
+        "aStarPath",
+        "bfs / dfs / pageRank",
+    ], PALETTE["sky"])
+    card(out, 500, 235, 330, 165, "Capability Gate", [
+        "backend native query",
+        "or JVM fallback",
+        "PathOptions / algorithm options",
+    ], PALETTE["mint"])
+    card(out, 910, 200, 300, 150, "Unweighted Path", [
+        "native traversal when present",
+        "edgeLabel / direction",
+        "maxDepth bound",
+    ], PALETTE["lemon"])
+    card(out, 910, 420, 300, 180, "Weighted Path", [
+        "ShortestPathFallback",
+        "Dijkstra / A* runner",
+        "weightProperty required",
+        "heuristic for A*",
+    ], PALETTE["lavender"])
+    card(out, 1300, 305, 300, 185, "Fetch Graph Slice", [
+        "findVertexById",
+        "incident edges",
+        "OUT / IN / BOTH",
+        "distinct + sorted for BOTH",
+    ], PALETTE["aqua"])
+
+    card(out, 170, 620, 300, 170, "Safety Guards", [
+        "maxVisited / maxVertices",
+        "maxDepth",
+        "missing weight policy",
+    ], PALETTE["rose"])
+    card(out, 560, 620, 320, 170, "Frontier Loop", [
+        "priority queue / queue / stack",
+        "visited set",
+        "cameFrom or rank state",
+    ], PALETTE["peach"])
+    card(out, 970, 650, 310, 150, "Reconstruct", [
+        "PathReconstructor",
+        "VertexStep / EdgeStep order",
+        "totalWeight preserved",
+    ], PALETTE["mint"])
+    card(out, 1370, 625, 260, 195, "Return Models", [
+        "GraphPath?",
+        "TraversalVisit list",
+        "PageRankScore list",
+        "GraphCycle / Component",
+    ], PALETTE["sky"])
+
+    out.append('<rect x="170" y="892" width="1420" height="62" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+    out.append(
+        '<text x="880" y="917" text-anchor="middle" dominant-baseline="middle" class="tiny">'
+        'Source: ShortestPathFallback, DijkstraRunner, AStarRunner, BfsDfsRunner, PageRankCalculator, CycleDetector, UnionFind.</text>'
+    )
+    out.append(
+        '<text x="880" y="940" text-anchor="middle" dominant-baseline="middle" class="tiny">'
+        'Weighted paths validate positive finite weights; unweighted and analytics paths return the graph-core model contracts.</text>'
     )
     return close_svg(out)
 
