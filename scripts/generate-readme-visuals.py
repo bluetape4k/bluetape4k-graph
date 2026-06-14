@@ -203,6 +203,8 @@ def architecture_svg(slug: str) -> str:
         return graph_core_operations_usage_svg()
     if slug == "graph-graph-core-architecture-12":
         return graph_core_schema_flow_svg()
+    if slug == "graph-graph-core-architecture-13":
+        return graph_core_crud_flow_svg()
     title = "Bluetape4k Graph Overview" if slug.startswith("root") else f"{module_title(slug)} Architecture"
     subtitle = "Current README and module source model"
     out = open_svg(title, subtitle)
@@ -385,6 +387,47 @@ def graph_core_schema_flow_svg() -> str:
     out.append(
         '<text x="820" y="918" text-anchor="middle" class="tiny">'
         'Source: schema package README and GraphSchemaManager.kt support matrix; no silent success for unsupported DDL.</text>'
+    )
+    return close_svg(out)
+
+
+def graph_core_crud_flow_svg() -> str:
+    width, height = 1660, 1000
+    out = open_svg(
+        "Graph Core CRUD Flow",
+        "Vertex and edge repositories validate input, call backend adapters, and return model values",
+        width,
+        height,
+    )
+    out[-1] = (
+        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: graph-core / CRUD Flow</text>'
+    )
+    out.append('<rect x="70" y="150" width="1520" height="710" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+
+    card(out, 130, 245, 280, 180, "Call API", ["GraphOperations", "suspend variant", "virtual-thread async"], PALETTE["sky"])
+    card(out, 500, 210, 310, 180, "Validate Input", ["label not blank", "safe identifiers", "batch size / endpoints"], PALETTE["lemon"])
+    card(out, 500, 495, 310, 180, "Batch Guard", ["createVertices", "createEdges", "validate before backend"], PALETTE["rose"])
+    card(out, 900, 210, 290, 180, "Vertex Repo", ["create / find", "update / delete", "count by label"], PALETTE["mint"])
+    card(out, 900, 495, 290, 180, "Edge Repo", ["create / find", "startId / endId", "delete by id"], PALETTE["peach"])
+    card(out, 1270, 350, 240, 190, "Return", ["GraphVertex?", "GraphEdge list", "Boolean / Long"], PALETTE["lavender"])
+
+    arrow(out, 410, 335, 498, 300, "request", "line")
+    arrow(out, 655, 390, 655, 493, "bulk", "thin")
+    arrow(out, 810, 300, 898, 300, "vertex", "line")
+    arrow(out, 810, 585, 898, 585, "edge", "line")
+    arrow(out, 1190, 300, 1268, 410, "models", "line")
+    arrow(out, 1190, 585, 1268, 470, "models", "line")
+
+    card(out, 300, 735, 1060, 115, "Failure Contract", [
+        "Invalid input fails before backend query.",
+        "Unsupported backend behavior should surface as explicit exceptions.",
+    ], PALETTE["aqua"])
+
+    out.append('<rect x="160" y="885" width="1340" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+    out.append(
+        '<text x="830" y="918" text-anchor="middle" class="tiny">'
+        'Source: GraphVertexRepository, GraphEdgeRepository, and GraphBatchValidation contracts.</text>'
     )
     return close_svg(out)
 
