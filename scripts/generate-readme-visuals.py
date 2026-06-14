@@ -10,7 +10,6 @@ from __future__ import annotations
 import html
 import math
 import re
-import shutil
 import subprocess
 from pathlib import Path
 from xml.etree import ElementTree
@@ -344,53 +343,79 @@ def generic_diagram(slug: str) -> str:
 
 
 def chart_svg(title: str, subtitle: str, categories: list[str], series: list[tuple[str, list[float]]], unit: str, lower_is_better: bool = True) -> str:
-    width = 1720
-    row_h = max(86, 30 * len(series) + 28)
-    height = max(980, 430 + len(categories) * row_h)
-    out = open_svg(title, subtitle, width, height)
-    label_x = 96
-    left = 570
-    right = width - 160
-    top = 220
-    panel_x = 70
+    width = 1760
+    chart_top = 245
+    bar_h = 34
+    series_gap = 42
+    row_h = max(96, len(series) * series_gap + 38)
+    axis_gap = 52
+    source_gap = 48
+    footer_gap = 92
+    axis_y = chart_top + len(categories) * row_h + 16
+    panel_x = 56
     panel_y = 150
-    panel_h = len(categories) * row_h + 190
+    panel_bottom = axis_y + axis_gap + source_gap
+    panel_h = panel_bottom - panel_y
+    height = panel_bottom + footer_gap
+    out = open_svg(title, subtitle, width, height)
+    longest_label = max(len(category) for category in categories)
+    left = max(330, min(470, 170 + longest_label * 9))
+    right_margin = 150
+    plot_w = width - left - right_margin
     max_value = max(max(vals) for _, vals in series if vals)
     if max_value <= 0:
         max_value = 1
-    out.append(f'<rect x="{panel_x}" y="{panel_y}" width="{width - panel_x * 2}" height="{panel_h}" rx="22" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
-    out.append(f'<text x="{label_x}" y="{panel_y+44}" class="label">Measured rows</text>')
-    out.append(f'<text x="{right}" y="{panel_y+74}" text-anchor="end" class="small">Unit: {esc(unit)} / {"lower is better" if lower_is_better else "higher is better"}</text>')
+    positive_values = [value for _, vals in series for value in vals if value > 0]
+    min_positive = min(positive_values) if positive_values else max_value
+    use_log_scale = max_value / min_positive > 25
+    scale_max = math.log10(max_value + 1) if use_log_scale else max_value
+    out.append(f'<rect x="{panel_x}" y="{panel_y}" width="{width - panel_x * 2}" height="{panel_h}" rx="12" fill="#FFFFFF" stroke="#BFDBFE" stroke-width="2" filter="url(#softShadow)"/>')
+    out.append(f'<text x="{panel_x + 32}" y="{panel_y + 46}" class="label">Measured ranking</text>')
+    out.append(f'<text x="{left}" y="{panel_y + 46}" class="small">{esc(unit)} / {"lower is better" if lower_is_better else "higher is better"}</text>')
+    scale_note = "log scale" if use_log_scale else "linear scale"
+    out.append(f'<text x="{left + plot_w}" y="{panel_y + 76}" text-anchor="end" class="tiny">0 to {max_value:g} ({scale_note})</text>')
     for i, (name, _) in enumerate(series):
         fill, stroke = CHART_SERIES[i % len(CHART_SERIES)]
-        lx = left + i * 230
-        out.append(f'<rect x="{lx}" y="{top-52}" width="26" height="18" rx="5" fill="{fill}" stroke="{stroke}" stroke-width="2"/>')
-        out.append(f'<text x="{lx+38}" y="{top-37}" class="small">{esc(name)}</text>')
-    plot_w = right - left - 120
-    tick_count = 4
-    axis_bottom = top + len(categories) * row_h + 18
-    for ti in range(tick_count + 1):
-        tick = max_value * ti / tick_count
-        tx = left + (tick / max_value) * plot_w
-        out.append(f'<line x1="{tx}" y1="{top}" x2="{tx}" y2="{axis_bottom}" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>')
-        out.append(f'<text x="{tx}" y="{axis_bottom + 30}" text-anchor="middle" class="tiny">{tick:g}</text>')
+        lx = width - right_margin - (len(series) - i) * 165
+        out.append(f'<rect x="{lx}" y="{panel_y + 30}" width="24" height="16" rx="5" fill="{fill}" stroke="{stroke}" stroke-width="1.7"/>')
+        out.append(f'<text x="{lx + 34}" y="{panel_y + 44}" class="tiny">{esc(name)}</text>')
+    for ti in range(5):
+        if use_log_scale:
+            ratio = ti / 4
+            tick = 0 if ti == 0 else math.pow(10, scale_max * ratio) - 1
+        else:
+            tick = max_value * ti / 4
+            ratio = tick / max_value
+        tx = left + ratio * plot_w
+        out.append(f'<line x1="{tx:.1f}" y1="{chart_top - 18}" x2="{tx:.1f}" y2="{axis_y}" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>')
+        out.append(f'<text x="{tx:.1f}" y="{axis_y + 30}" text-anchor="middle" class="tiny">{tick:g}</text>')
+    out.append(f'<line x1="{left}" y1="{axis_y}" x2="{left + plot_w}" y2="{axis_y}" stroke="#94A3B8" stroke-width="1.2"/>')
     for ci, cat in enumerate(categories):
-        y = top + ci * row_h + 36
-        for li, line in enumerate(wrap(cat, 30)[:2]):
-            out.append(f'<text x="{label_x}" y="{y + li*24}" class="small">{esc(line)}</text>')
-        out.append(f'<line x1="{left}" y1="{y+10}" x2="{right-20}" y2="{y+10}" stroke="#E7EEF5" stroke-width="2"/>')
+        y = chart_top + ci * row_h
+        label_y = y + 18 + (len(series) - 1) * series_gap / 2
+        for li, line in enumerate(wrap(cat, 28)[:2]):
+            out.append(f'<text x="{left - 28}" y="{label_y + li * 22:.1f}" text-anchor="end" class="small">{esc(line)}</text>')
+        out.append(f'<line x1="{left}" y1="{label_y + 10:.1f}" x2="{left + plot_w}" y2="{label_y + 10:.1f}" stroke="#E7EEF5" stroke-width="1.6"/>')
         for si, (name, vals) in enumerate(series):
             value = vals[ci]
             fill, stroke = CHART_SERIES[si % len(CHART_SERIES)]
-            bar_h = 20
-            yy = y - 32 + si * 29
-            bw = plot_w * math.sqrt(value / max_value)
-            out.append(f'<rect x="{left}" y="{yy}" width="{plot_w}" height="{bar_h}" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>')
-            out.append(f'<rect x="{left}" y="{yy}" width="{max(3, bw)}" height="{bar_h}" rx="6" fill="{fill}" stroke="{stroke}" stroke-width="2"/>')
-            value_x = min(left + plot_w - 6, left + bw + 14)
-            anchor = ' text-anchor="end"' if value_x >= left + plot_w - 6 else ""
-            out.append(f'<text x="{value_x}" y="{yy+16}" class="small"{anchor}>{value:g}</text>')
-    out.append(f'<text x="{left}" y="{axis_bottom + 68}" class="tiny">Source: README benchmark table values. Complementary colors separate comparable series.</text>')
+            yy = y + si * series_gap
+            if value > 0:
+                measure = math.log10(value + 1) if use_log_scale else value
+                bw = max(18, plot_w * measure / scale_max)
+            else:
+                bw = 0
+            out.append(f'<rect x="{left}" y="{yy}" width="{plot_w}" height="{bar_h}" rx="8" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>')
+            if value > 0:
+                out.append(f'<rect x="{left}" y="{yy}" width="{min(plot_w, bw):.1f}" height="{bar_h}" rx="8" fill="{fill}" stroke="{stroke}" stroke-width="2"/>')
+            if value > 0 and bw > plot_w - 96:
+                value_x = left + min(plot_w, bw) - 12
+                anchor = ' text-anchor="end"'
+            else:
+                value_x = left + min(plot_w - 6, bw + 14 if value > 0 else 14)
+                anchor = ""
+            out.append(f'<text x="{value_x:.1f}" y="{yy + 23}" class="small"{anchor}>{value:g}</text>')
+    out.append(f'<text x="{left}" y="{axis_y + 72}" class="tiny">Source: README benchmark table values. Complementary colors separate comparable series.</text>')
     return close_svg(out)
 
 
@@ -502,10 +527,6 @@ def collect_png_refs() -> set[Path]:
             target = (markdown.parent / match).resolve()
             if target.is_relative_to(ROOT):
                 refs.add(target.relative_to(ROOT))
-    refs.update({
-        Path("docs/images/readme-diagrams/root-readme-data-flow-01.png"),
-        Path("docs/images/readme-diagrams/root-readme-sequence-01.png"),
-    })
     return refs
 
 
@@ -534,14 +555,10 @@ def write_visual(path: Path) -> None:
 
 
 def main() -> None:
-    if IMAGE_ROOT.exists():
-        shutil.rmtree(IMAGE_ROOT)
-    DIAGRAM_DIR.mkdir(parents=True, exist_ok=True)
     CHART_DIR.mkdir(parents=True, exist_ok=True)
-    refs = collect_png_refs()
-    for rel in sorted(refs):
-        write_visual(ROOT / rel)
-    print(f"generated {len(refs)} README PNG visuals and matching SVG sources")
+    for slug in sorted(CHARTS):
+        write_visual(CHART_DIR / f"{slug}.png")
+    print(f"generated {len(CHARTS)} README chart PNG visuals and matching SVG sources")
 
 
 if __name__ == "__main__":

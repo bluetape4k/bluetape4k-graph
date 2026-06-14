@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1720" height="980" viewBox="0 0 1720 980">
+<svg xmlns="http://www.w3.org/2000/svg" width="1760" height="819" viewBox="0 0 1760 819">
 
     <defs>
       <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
@@ -20,54 +20,56 @@
       .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
     </style>
 
-<rect x="0" y="0" width="1720" height="980" fill="#F8FAFC"/>
-<rect x="24" y="24" width="1672" height="932" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
-<circle cx="1656" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
-<circle cx="1616" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
-<circle cx="1576" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
+<rect x="0" y="0" width="1760" height="819" fill="#F8FAFC"/>
+<rect x="24" y="24" width="1712" height="771" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
+<circle cx="1696" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
+<circle cx="1656" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
+<circle cx="1616" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
 <text x="72" y="82" class="title">Weighted Shortest Path Optimization</text>
 <text x="74" y="118" class="subtitle">Dijkstra baseline versus accepted candidate</text>
-<text x="860.0" y="932" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: Weighted Shortest Path Optimization</text>
-<rect x="70" y="150" width="1580" height="454" rx="22" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
-<text x="96" y="194" class="label">Measured rows</text>
-<text x="1560" y="224" text-anchor="end" class="small">Unit: ms/op / lower is better</text>
-<rect x="570" y="168" width="26" height="18" rx="5" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
-<text x="608" y="183" class="small">Baseline</text>
-<rect x="800" y="168" width="26" height="18" rx="5" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
-<text x="838" y="183" class="small">Candidate</text>
-<line x1="570.0" y1="220" x2="570.0" y2="502" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
-<text x="570.0" y="532" text-anchor="middle" class="tiny">0</text>
-<line x1="787.5" y1="220" x2="787.5" y2="502" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
-<text x="787.5" y="532" text-anchor="middle" class="tiny">21.523</text>
-<line x1="1005.0" y1="220" x2="1005.0" y2="502" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
-<text x="1005.0" y="532" text-anchor="middle" class="tiny">43.046</text>
-<line x1="1222.5" y1="220" x2="1222.5" y2="502" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
-<text x="1222.5" y="532" text-anchor="middle" class="tiny">64.569</text>
-<line x1="1440.0" y1="220" x2="1440.0" y2="502" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
-<text x="1440.0" y="532" text-anchor="middle" class="tiny">86.092</text>
-<text x="96" y="256" class="small">100 vertices</text>
-<line x1="570" y1="266" x2="1540" y2="266" stroke="#E7EEF5" stroke-width="2"/>
-<rect x="570" y="224" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
-<rect x="570" y="224" width="78.39284789167208" height="20" rx="6" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
-<text x="662.3928478916721" y="240" class="small">0.699</text>
-<rect x="570" y="253" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
-<rect x="570" y="253" width="79.00726507586158" height="20" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
-<text x="663.0072650758616" y="269" class="small">0.71</text>
-<text x="96" y="344" class="small">1,000 vertices</text>
-<line x1="570" y1="354" x2="1540" y2="354" stroke="#E7EEF5" stroke-width="2"/>
-<rect x="570" y="312" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
-<rect x="570" y="312" width="266.39644852728003" height="20" rx="6" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
-<text x="850.39644852728" y="328" class="small">8.072</text>
-<rect x="570" y="341" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
-<rect x="570" y="341" width="256.80142944923415" height="20" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
-<text x="840.8014294492341" y="357" class="small">7.501</text>
-<text x="96" y="432" class="small">10,000 vertices</text>
-<line x1="570" y1="442" x2="1540" y2="442" stroke="#E7EEF5" stroke-width="2"/>
-<rect x="570" y="400" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
-<rect x="570" y="400" width="870.0" height="20" rx="6" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
-<text x="1434" y="416" class="small" text-anchor="end">86.092</text>
-<rect x="570" y="429" width="870" height="20" rx="6" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
-<rect x="570" y="429" width="856.3772815026911" height="20" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
-<text x="1434" y="445" class="small" text-anchor="end">83.417</text>
-<text x="570" y="570" class="tiny">Source: README benchmark table values. Complementary colors separate comparable series.</text>
+<text x="880.0" y="771" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: Weighted Shortest Path Optimization</text>
+<rect x="56" y="150" width="1648" height="577" rx="12" fill="#FFFFFF" stroke="#BFDBFE" stroke-width="2" filter="url(#softShadow)"/>
+<text x="88" y="196" class="label">Measured ranking</text>
+<text x="330" y="196" class="small">ms/op / lower is better</text>
+<text x="1610" y="226" text-anchor="end" class="tiny">0 to 86.092 (log scale)</text>
+<rect x="1280" y="180" width="24" height="16" rx="5" fill="#FFE7D8" stroke="#F97316" stroke-width="1.7"/>
+<text x="1314" y="194" class="tiny">Baseline</text>
+<rect x="1445" y="180" width="24" height="16" rx="5" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.7"/>
+<text x="1479" y="194" class="tiny">Candidate</text>
+<line x1="330.0" y1="227" x2="330.0" y2="627" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
+<text x="330.0" y="657" text-anchor="middle" class="tiny">0</text>
+<line x1="650.0" y1="227" x2="650.0" y2="627" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
+<text x="650.0" y="657" text-anchor="middle" class="tiny">2.05488</text>
+<line x1="970.0" y1="227" x2="970.0" y2="627" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
+<text x="970.0" y="657" text-anchor="middle" class="tiny">8.33231</text>
+<line x1="1290.0" y1="227" x2="1290.0" y2="627" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
+<text x="1290.0" y="657" text-anchor="middle" class="tiny">27.5091</text>
+<line x1="1610.0" y1="227" x2="1610.0" y2="627" stroke="#D7E2EC" stroke-width="1" stroke-dasharray="4 7"/>
+<text x="1610.0" y="657" text-anchor="middle" class="tiny">86.092</text>
+<line x1="330" y1="627" x2="1610" y2="627" stroke="#94A3B8" stroke-width="1.2"/>
+<text x="302" y="284.0" text-anchor="end" class="small">100 vertices</text>
+<line x1="330" y1="294.0" x2="1610" y2="294.0" stroke="#E7EEF5" stroke-width="1.6"/>
+<rect x="330" y="245" width="1280" height="34" rx="8" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="330" y="245" width="151.9" height="34" rx="8" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="495.9" y="268" class="small">0.699</text>
+<rect x="330" y="287" width="1280" height="34" rx="8" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="330" y="287" width="153.7" height="34" rx="8" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+<text x="497.7" y="310" class="small">0.71</text>
+<text x="302" y="406.0" text-anchor="end" class="small">1,000 vertices</text>
+<line x1="330" y1="416.0" x2="1610" y2="416.0" stroke="#E7EEF5" stroke-width="1.6"/>
+<rect x="330" y="367" width="1280" height="34" rx="8" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="330" y="367" width="631.9" height="34" rx="8" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="975.9" y="390" class="small">8.072</text>
+<rect x="330" y="409" width="1280" height="34" rx="8" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="330" y="409" width="613.3" height="34" rx="8" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+<text x="957.3" y="432" class="small">7.501</text>
+<text x="302" y="528.0" text-anchor="end" class="small">10,000 vertices</text>
+<line x1="330" y1="538.0" x2="1610" y2="538.0" stroke="#E7EEF5" stroke-width="1.6"/>
+<rect x="330" y="489" width="1280" height="34" rx="8" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="330" y="489" width="1280.0" height="34" rx="8" fill="#FFE7D8" stroke="#F97316" stroke-width="2"/>
+<text x="1598.0" y="512" class="small" text-anchor="end">86.092</text>
+<rect x="330" y="531" width="1280" height="34" rx="8" fill="#EEF4F9" stroke="#D7E2EC" stroke-width="1.2"/>
+<rect x="330" y="531" width="1271.1" height="34" rx="8" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+<text x="1589.1" y="554" class="small" text-anchor="end">83.417</text>
+<text x="330" y="699" class="tiny">Source: README benchmark table values. Complementary colors separate comparable series.</text>
 </svg>
