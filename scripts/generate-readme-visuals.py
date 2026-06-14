@@ -700,6 +700,154 @@ def graph_age_execution_flow_svg() -> str:
     return close_svg(out)
 
 
+def graph_age_operations_class_svg() -> str:
+    width, height = 1840, 1180
+    out = open_svg(
+        "AgeGraphOperations Class Model",
+        "Synchronous AGE adapter implements graph-core operations, transactions, schema access, merge fallback, and algorithms",
+        width,
+        height,
+    )
+    out[-1] = (
+        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: graph-age / AgeGraphOperations</text>'
+    )
+    out.append('<rect x="70" y="150" width="1700" height="890" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+
+    def class_box(x: float, y: float, w: float, h: float, title: str, stereotype: str, lines: list[str], fill: str) -> None:
+        stroke = CARD_STROKES.get(fill, PALETTE["slate"])
+        title_class = "small" if len(title) > 22 else "label"
+        out.append(
+            f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="14" fill="{fill}" '
+            f'stroke="{stroke}" stroke-width="3" class="card"/>'
+        )
+        out.append(f'<text x="{x+w/2}" y="{y+34}" text-anchor="middle" dominant-baseline="middle" class="tiny">{esc(stereotype)}</text>')
+        out.append(f'<text x="{x+w/2}" y="{y+68}" text-anchor="middle" dominant-baseline="middle" class="{title_class}">{esc(title)}</text>')
+        out.append(f'<line x1="{x}" y1="{y+88}" x2="{x+w}" y2="{y+88}" stroke="{stroke}" stroke-width="2"/>')
+        yy = y + 122
+        for line in lines:
+            out.append(f'<text x="{x+24}" y="{yy}" class="small">{esc(line)}</text>')
+            yy += 26
+
+    # Relationship lines first so class compartments remain readable.
+    for x in [300, 710, 1120, 1530]:
+        arrow(out, x, 420, 920, 457, "", "thin")
+    out.append('<text x="920" y="440" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">implements graph-core interfaces</text>')
+    out.append('<text x="920" y="440" text-anchor="middle" class="tiny">implements graph-core interfaces</text>')
+    arrow(out, 740, 745, 300, 785, "", "thin")
+    arrow(out, 880, 745, 710, 785, "", "thin")
+    arrow(out, 1060, 745, 1120, 785, "", "thin")
+    arrow(out, 1130, 745, 1530, 785, "", "thin")
+    for label, x in [("builds SQL", 520), ("parses rows", 820), ("scopes tx", 1090), ("fallback", 1360)]:
+        out.append(f'<text x="{x}" y="770" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">{esc(label)}</text>')
+        out.append(f'<text x="{x}" y="770" text-anchor="middle" class="tiny">{esc(label)}</text>')
+
+    class_box(
+        120,
+        215,
+        360,
+        205,
+        "GraphOperations",
+        "<<interface>>",
+        ["session + vertex repo", "edge + traversal repo", "algorithm repo"],
+        PALETTE["sky"],
+    )
+    class_box(
+        530,
+        215,
+        360,
+        205,
+        "GraphTransactionalOperations",
+        "<<interface>>",
+        ["transaction(block)", "GraphTransactionScope", "Exposed transaction bridge"],
+        PALETTE["mint"],
+    )
+    class_box(
+        940,
+        215,
+        360,
+        205,
+        "GraphSchemaManagement",
+        "<<interface>>",
+        ["schemaManager()", "explicit unsupported AGE DDL", "index / constraint surface"],
+        PALETTE["lemon"],
+    )
+    class_box(
+        1350,
+        215,
+        360,
+        205,
+        "GraphMergeOperations",
+        "<<interface>>",
+        ["mergeVertex", "mergeEdge", "match/update/create fallback"],
+        PALETTE["rose"],
+    )
+    class_box(
+        560,
+        460,
+        720,
+        285,
+        "AgeGraphOperations",
+        "<<class>>",
+        [
+            "- graphName: String",
+            "- batchChunkSize: Int = 500",
+            "+ create/drop/exists graph",
+            "+ vertex + edge CRUD and batch create",
+            "+ neighbors / shortestPath / allPaths / aStarPath",
+            "+ merge, transaction, schemaManager, algorithms",
+        ],
+        PALETTE["lavender"],
+    )
+    class_box(
+        120,
+        785,
+        360,
+        190,
+        "AgeSql",
+        "<<object>>",
+        ["cypher(graph, query, columns)", "create/match/update/delete", "batch rows + graph namespace"],
+        PALETTE["rose"],
+    )
+    class_box(
+        530,
+        785,
+        360,
+        190,
+        "AgeTypeParser",
+        "<<object>>",
+        ["parseVertex / parseEdge", "parsePath", "agtype -> graph models"],
+        PALETTE["aqua"],
+    )
+    class_box(
+        940,
+        785,
+        360,
+        190,
+        "AgeGraphTransactionScope",
+        "<<class>>",
+        ["delegates scoped operations", "used inside transaction { }", "same graphName boundary"],
+        PALETTE["mint"],
+    )
+    class_box(
+        1350,
+        785,
+        360,
+        190,
+        "Graph Algorithms",
+        "<<fallback>>",
+        ["ShortestPathFallback", "BfsDfsRunner / CycleDetector", "PageRankCalculator / UnionFind"],
+        PALETTE["peach"],
+    )
+
+    out.append('<rect x="180" y="1060" width="1480" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+    out.append(
+        '<text x="920" y="1093" text-anchor="middle" class="tiny">'
+        'Source: AgeGraphOperations.kt; class implements graph-core sync APIs and delegates SQL, parsing, transactions, and fallback algorithms.</text>'
+    )
+    return close_svg(out)
+
+
 def graph_core_architecture_overview_svg() -> str:
     width, height = 1760, 1040
     out = open_svg(
@@ -1056,6 +1204,8 @@ def class_svg(slug: str) -> str:
         return graph_core_repository_class_svg()
     if slug == "graph-graph-core-class-05":
         return graph_core_schema_class_svg()
+    if slug == "graph-graph-age-class-03":
+        return graph_age_operations_class_svg()
     title = "Backend Capability Matrix" if "capability" in slug else f"{module_title(slug)} Class Model"
     subtitle = "Contracts, data classes, and adapter responsibilities"
     out = open_svg(title, subtitle)
