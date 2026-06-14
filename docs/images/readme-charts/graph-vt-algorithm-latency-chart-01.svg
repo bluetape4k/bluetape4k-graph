@@ -1,1 +1,54 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="440" viewBox="0 0 1280 440"><style>.title{font-family:'Architects Daughter','Comic Sans MS',cursive;font-size:34px;font-weight:400;fill:#273043}.label,.value{font-family:'Comic Sans MS','Comic Neue',cursive;fill:#273043;font-weight:400}.subtitle,.legend,.note{font-family:'Comic Sans MS','Comic Neue',cursive;fill:#6b7280;font-weight:400}.label{font-size:18px}.value{font-size:16px}.legend{font-size:18px}.subtitle{font-size:18px}.note{font-size:17px}</style><rect width="1280" height="440" fill="#f6f8fb"/><rect x="24" y="24" width="1232" height="392" rx="18" fill="#fff" stroke="#d7e3ee" stroke-width="2"/><text class="title" x="56" y="72">Algorithm Latency</text><text class="subtitle" x="58" y="104">Graph algorithms on in-memory TinkerGraph</text><rect x="56" y="116" width="18" height="18" rx="5" fill="#8ecae6"/><text class="legend" x="82" y="131">Sync</text><rect x="156" y="116" width="18" height="18" rx="5" fill="#ffb3c7"/><text class="legend" x="182" y="131">VirtualThread</text><text class="label" x="56" y="168">bfs</text><rect x="285" y="142" width="191.02963429473573" height="20" rx="8" fill="#8ecae6"/><text class="value" x="486.02963429473573" y="158">4.22 us/op</text><rect x="285" y="168" width="570.3702648249841" height="20" rx="8" fill="#ffb3c7"/><text class="value" x="865.3702648249841" y="184">12.6 us/op</text><text class="label" x="56" y="242">dfs</text><rect x="285" y="216" width="193.7935829882791" height="20" rx="8" fill="#8ecae6"/><text class="value" x="488.7935829882791" y="232">4.28 us/op</text><rect x="285" y="242" width="548.9383347914429" height="20" rx="8" fill="#ffb3c7"/><text class="value" x="843.9383347914429" y="258">12.1 us/op</text><text class="label" x="56" y="316">pageRank</text><rect x="285" y="290" width="329.4083115091861" height="20" rx="8" fill="#8ecae6"/><text class="value" x="624.4083115091861" y="306">7.27 us/op</text><rect x="285" y="316" width="691.304347826087" height="20" rx="8" fill="#ffb3c7"/><text class="value" x="986.304347826087" y="332">15.3 us/op</text><text class="note" x="56" y="400">Lower is better.</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="860" viewBox="0 0 1500 860">
+
+    <defs>
+      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
+        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#26384A" flood-opacity="0.10"/>
+      </filter>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#6F8396"/>
+      </marker>
+    </defs>
+    <style>
+      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #36424F; }
+      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #667085; }
+      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #36424F; }
+      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #536273; }
+      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #667085; }
+      .card { stroke: #D7E0EA; stroke-width: 2; filter: url(#softShadow); }
+      .line { stroke: #6F8396; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .thin { stroke: #A5B5C4; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #A5B5C4; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
+    </style>
+
+<rect x="0" y="0" width="1500" height="860" fill="#FFFDF8"/>
+<rect x="24" y="24" width="1452" height="812" rx="22" fill="none" stroke="#7DAED3" stroke-width="4"/>
+<circle cx="1436" cy="64" r="15" fill="#FFD5B8" opacity="0.95"/>
+<circle cx="1396" cy="64" r="15" fill="#BFE8D2" opacity="0.95"/>
+<circle cx="1356" cy="64" r="15" fill="#CBBCEB" opacity="0.95"/>
+<text x="72" y="82" class="title">Virtual Thread Algorithm Latency</text>
+<text x="74" y="118" class="subtitle">Algorithm operations through adapter</text>
+<text x="750.0" y="812" text-anchor="middle" class="tiny">github.com/bluetape4k/bluetape4k-graph | bluetape4k-graph | Virtual Thread Algorithm Latency</text>
+<text x="350" y="171" class="tiny">Unit: us/op / lower is better</text>
+<rect x="350" y="137" width="24" height="16" rx="5" fill="#8FC4EA"/>
+<text x="384" y="151" class="tiny">Sync</text>
+<rect x="540" y="137" width="24" height="16" rx="5" fill="#F4BE8D"/>
+<text x="574" y="151" class="tiny">VirtualThread</text>
+<text x="86" y="231" class="tiny">bfs</text>
+<line x1="350" y1="239" x2="1390" y2="239" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="350" y="206" width="483.6192234126389" height="15" rx="6" fill="#8FC4EA"/>
+<text x="845.6192234126389" y="219" class="tiny">4.216</text>
+<rect x="350" y="227" width="835.6638614122899" height="15" rx="6" fill="#F4BE8D"/>
+<text x="1197.6638614122899" y="240" class="tiny">12.588</text>
+<text x="86" y="295" class="tiny">dfs</text>
+<line x1="350" y1="303" x2="1390" y2="303" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="350" y="270" width="487.10532733829507" height="15" rx="6" fill="#8FC4EA"/>
+<text x="849.1053273382951" y="283" class="tiny">4.277</text>
+<rect x="350" y="291" width="819.8133071356722" height="15" rx="6" fill="#F4BE8D"/>
+<text x="1181.8133071356722" y="304" class="tiny">12.115</text>
+<text x="86" y="359" class="tiny">pageRank</text>
+<line x1="350" y1="367" x2="1390" y2="367" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="350" y="334" width="635.0683359363048" height="15" rx="6" fill="#8FC4EA"/>
+<text x="997.0683359363048" y="347" class="tiny">7.27</text>
+<rect x="350" y="355" width="920.0" height="15" rx="6" fill="#F4BE8D"/>
+<text x="1282.0" y="368" class="tiny">15.257</text>
+</svg>

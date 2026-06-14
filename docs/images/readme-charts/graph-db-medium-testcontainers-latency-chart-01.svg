@@ -1,86 +1,90 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="960" height="890" viewBox="0 0 960 890">
-<rect x="0" y="0" width="960" height="890" fill="#FAFAFA"/>
-<text x="480" y="30" text-anchor="middle" font-family="&apos;Architects Daughter&apos;,&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,cursive" font-size="18" font-weight="400" fill="#252525">Graph DB Medium Testcontainers Benchmark</text>
-<text x="480" y="52" text-anchor="middle" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#666666">Latency, ms/op. Lower score is faster. medium dataset, 3 warmup, 5 measurement iterations.</text>
-<rect x="704" y="16" width="224" height="28" fill="#EAF5EA" stroke="#86B586" rx="6"/>
-<text x="816" y="35" text-anchor="middle" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" font-weight="400" fill="#2F6F3A">Lower score = faster</text>
-<rect x="190" y="62" width="12" height="12" fill="#4A90D9" rx="2"/>
-<text x="206" y="72" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">tinkergraph</text>
-<rect x="308" y="62" width="12" height="12" fill="#5ABF6B" rx="2"/>
-<text x="324" y="72" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">neo4j</text>
-<rect x="426" y="62" width="12" height="12" fill="#E8B040" rx="2"/>
-<text x="442" y="72" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">memgraph</text>
-<rect x="544" y="62" width="12" height="12" fill="#D96C6C" rx="2"/>
-<text x="560" y="72" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">age</text>
-<rect x="662" y="62" width="12" height="12" fill="#7B68EE" rx="2"/>
-<text x="678" y="72" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">falkordb</text>
-<text x="190" y="90" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" font-weight="400" fill="#2F6F3A">Shorter bars are better because each bar is time per operation.</text>
-<text x="24" y="114" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="14" font-weight="400" fill="#222222">batchInsertCycle</text>
-<text x="780" y="114" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="10" fill="#888888">max 1.93e+03 ms/op</text>
-<text x="180" y="139" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">tinkergraph</text>
-<rect x="190" y="126" width="13.8" height="18" fill="#4A90D9" rx="3"/>
-<text x="211.8" y="139" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">45</text>
-<text x="180" y="165" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">neo4j</text>
-<rect x="190" y="152" width="4.8" height="18" fill="#5ABF6B" rx="3"/>
-<text x="202.8" y="165" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">15.7</text>
-<text x="180" y="191" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">memgraph</text>
-<rect x="190" y="178" width="3.5" height="18" fill="#E8B040" rx="3"/>
-<text x="201.5" y="191" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">11.4</text>
-<text x="180" y="217" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">age</text>
-<rect x="190" y="204" width="94.5" height="18" fill="#D96C6C" rx="3"/>
-<text x="292.5" y="217" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">309</text>
-<text x="180" y="243" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">falkordb</text>
-<rect x="190" y="230" width="590.0" height="18" fill="#7B68EE" rx="3"/>
-<text x="788.0" y="243" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">1.93e+03</text>
-<text x="24" y="306" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="14" font-weight="400" fill="#222222">countPersons</text>
-<text x="780" y="306" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="10" fill="#888888">max 2.18 ms/op</text>
-<text x="180" y="331" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">tinkergraph</text>
-<rect x="190" y="318" width="83.6" height="18" fill="#4A90D9" rx="3"/>
-<text x="281.6" y="331" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">0.308</text>
-<text x="180" y="357" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">neo4j</text>
-<rect x="190" y="344" width="143.3" height="18" fill="#5ABF6B" rx="3"/>
-<text x="341.3" y="357" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">0.528</text>
-<text x="180" y="383" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">memgraph</text>
-<rect x="190" y="370" width="363.6" height="18" fill="#E8B040" rx="3"/>
-<text x="561.6" y="383" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">1.34</text>
-<text x="180" y="409" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">age</text>
-<rect x="190" y="396" width="590.0" height="18" fill="#D96C6C" rx="3"/>
-<text x="788.0" y="409" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">2.18</text>
-<text x="180" y="435" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">falkordb</text>
-<rect x="190" y="422" width="53.6" height="18" fill="#7B68EE" rx="3"/>
-<text x="251.6" y="435" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">0.197</text>
-<text x="24" y="498" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="14" font-weight="400" fill="#222222">oneHopNeighbors</text>
-<text x="780" y="498" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="10" fill="#888888">max 10.2 ms/op</text>
-<text x="180" y="523" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">tinkergraph</text>
-<rect x="190" y="510" width="2.0" height="18" fill="#4A90D9" rx="3"/>
-<text x="200.0" y="523" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">0.00333</text>
-<text x="180" y="549" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">neo4j</text>
-<rect x="190" y="536" width="38.6" height="18" fill="#5ABF6B" rx="3"/>
-<text x="236.6" y="549" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">0.665</text>
-<text x="180" y="575" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">memgraph</text>
-<rect x="190" y="562" width="17.9" height="18" fill="#E8B040" rx="3"/>
-<text x="215.9" y="575" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">0.308</text>
-<text x="180" y="601" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">age</text>
-<rect x="190" y="588" width="590.0" height="18" fill="#D96C6C" rx="3"/>
-<text x="788.0" y="601" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">10.2</text>
-<text x="180" y="627" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">falkordb</text>
-<rect x="190" y="614" width="60.7" height="18" fill="#7B68EE" rx="3"/>
-<text x="258.7" y="627" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">1.05</text>
-<text x="24" y="690" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="14" font-weight="400" fill="#222222">shortestPath</text>
-<text x="780" y="690" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="10" fill="#888888">max 12.4 ms/op</text>
-<text x="180" y="715" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">tinkergraph</text>
-<rect x="190" y="702" width="2.0" height="18" fill="#4A90D9" rx="3"/>
-<text x="200.0" y="715" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">0.0188</text>
-<text x="180" y="741" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">neo4j</text>
-<rect x="190" y="728" width="33.3" height="18" fill="#5ABF6B" rx="3"/>
-<text x="231.3" y="741" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">0.7</text>
-<text x="180" y="767" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">memgraph</text>
-<rect x="190" y="754" width="18.3" height="18" fill="#E8B040" rx="3"/>
-<text x="216.3" y="767" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">0.386</text>
-<text x="180" y="793" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">age</text>
-<rect x="190" y="780" width="590.0" height="18" fill="#D96C6C" rx="3"/>
-<text x="788.0" y="793" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">12.4</text>
-<text x="180" y="819" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">falkordb</text>
-<rect x="190" y="806" width="24.3" height="18" fill="#7B68EE" rx="3"/>
-<text x="222.3" y="819" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">0.512</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="860" viewBox="0 0 1500 860">
+
+    <defs>
+      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
+        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#26384A" flood-opacity="0.10"/>
+      </filter>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#6F8396"/>
+      </marker>
+    </defs>
+    <style>
+      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #36424F; }
+      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #667085; }
+      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #36424F; }
+      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #536273; }
+      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #667085; }
+      .card { stroke: #D7E0EA; stroke-width: 2; filter: url(#softShadow); }
+      .line { stroke: #6F8396; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .thin { stroke: #A5B5C4; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #A5B5C4; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
+    </style>
+
+<rect x="0" y="0" width="1500" height="860" fill="#FFFDF8"/>
+<rect x="24" y="24" width="1452" height="812" rx="22" fill="none" stroke="#7DAED3" stroke-width="4"/>
+<circle cx="1436" cy="64" r="15" fill="#FFD5B8" opacity="0.95"/>
+<circle cx="1396" cy="64" r="15" fill="#BFE8D2" opacity="0.95"/>
+<circle cx="1356" cy="64" r="15" fill="#CBBCEB" opacity="0.95"/>
+<text x="72" y="82" class="title">Graph DB Medium Benchmark</text>
+<text x="74" y="118" class="subtitle">Common GraphOperations contract, medium fixture</text>
+<text x="750.0" y="812" text-anchor="middle" class="tiny">github.com/bluetape4k/bluetape4k-graph | bluetape4k-graph | Graph DB Medium Benchmark</text>
+<text x="350" y="171" class="tiny">Unit: ms/op / lower is better</text>
+<rect x="350" y="137" width="24" height="16" rx="5" fill="#8FC4EA"/>
+<text x="384" y="151" class="tiny">TinkerGraph</text>
+<rect x="540" y="137" width="24" height="16" rx="5" fill="#F4BE8D"/>
+<text x="574" y="151" class="tiny">Neo4j</text>
+<rect x="730" y="137" width="24" height="16" rx="5" fill="#9FD7B7"/>
+<text x="764" y="151" class="tiny">Memgraph</text>
+<rect x="920" y="137" width="24" height="16" rx="5" fill="#F5B5C8"/>
+<text x="954" y="151" class="tiny">AGE</text>
+<rect x="1110" y="137" width="24" height="16" rx="5" fill="#CBBCEB"/>
+<text x="1144" y="151" class="tiny">FalkorDB</text>
+<text x="86" y="231" class="tiny">batchInsertCycle</text>
+<line x1="350" y1="239" x2="1390" y2="239" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="350" y="206" width="140.45862384226533" height="15" rx="6" fill="#8FC4EA"/>
+<text x="502.4586238422653" y="219" class="tiny">44.967</text>
+<rect x="350" y="227" width="82.96843986044294" height="15" rx="6" fill="#F4BE8D"/>
+<text x="444.9684398604429" y="240" class="tiny">15.69</text>
+<rect x="350" y="248" width="70.61013867365793" height="15" rx="6" fill="#9FD7B7"/>
+<text x="432.61013867365796" y="261" class="tiny">11.364</text>
+<rect x="350" y="269" width="368.2509951741748" height="15" rx="6" fill="#F5B5C8"/>
+<text x="730.2509951741748" y="282" class="tiny">309.09</text>
+<rect x="350" y="290" width="920.0" height="15" rx="6" fill="#CBBCEB"/>
+<text x="1282.0" y="303" class="tiny">1929.18</text>
+<text x="86" y="351" class="tiny">countPersons</text>
+<line x1="350" y1="359" x2="1390" y2="359" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="350" y="326" width="11.624567674179813" height="15" rx="6" fill="#8FC4EA"/>
+<text x="373.6245676741798" y="339" class="tiny">0.308</text>
+<rect x="350" y="347" width="15.220131796590213" height="15" rx="6" fill="#F4BE8D"/>
+<text x="377.22013179659024" y="360" class="tiny">0.528</text>
+<rect x="350" y="368" width="24.25581328186567" height="15" rx="6" fill="#9FD7B7"/>
+<text x="386.2558132818657" y="381" class="tiny">1.341</text>
+<rect x="350" y="389" width="30.898037605215077" height="15" rx="6" fill="#F5B5C8"/>
+<text x="392.89803760521505" y="402" class="tiny">2.176</text>
+<rect x="350" y="410" width="9.296823050697594" height="15" rx="6" fill="#CBBCEB"/>
+<text x="371.2968230506976" y="423" class="tiny">0.197</text>
+<text x="86" y="471" class="tiny">oneHopNeighbors</text>
+<line x1="350" y1="479" x2="1390" y2="479" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="350" y="446" width="2" height="15" rx="6" fill="#8FC4EA"/>
+<text x="363.14726060066016" y="459" class="tiny">0.003</text>
+<rect x="350" y="467" width="17.08095995619145" height="15" rx="6" fill="#F4BE8D"/>
+<text x="379.08095995619146" y="480" class="tiny">0.665</text>
+<rect x="350" y="488" width="11.624567674179813" height="15" rx="6" fill="#9FD7B7"/>
+<text x="373.6245676741798" y="501" class="tiny">0.308</text>
+<rect x="350" y="509" width="66.81418278402458" height="15" rx="6" fill="#F5B5C8"/>
+<text x="428.8141827840246" y="522" class="tiny">10.175</text>
+<rect x="350" y="530" width="21.422359056020476" height="15" rx="6" fill="#CBBCEB"/>
+<text x="383.42235905602047" y="543" class="tiny">1.046</text>
+<text x="86" y="591" class="tiny">shortestPath</text>
+<line x1="350" y1="599" x2="1390" y2="599" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="350" y="566" width="2.8872091963645237" height="15" rx="6" fill="#8FC4EA"/>
+<text x="364.88720919636455" y="579" class="tiny">0.019</text>
+<rect x="350" y="587" width="17.524695147885808" height="15" rx="6" fill="#F4BE8D"/>
+<text x="379.52469514788584" y="600" class="tiny">0.7</text>
+<rect x="350" y="608" width="13.013529599731653" height="15" rx="6" fill="#9FD7B7"/>
+<text x="375.01352959973167" y="621" class="tiny">0.386</text>
+<rect x="350" y="629" width="73.81799582299939" height="15" rx="6" fill="#F5B5C8"/>
+<text x="435.81799582299936" y="642" class="tiny">12.42</text>
+<rect x="350" y="650" width="14.987749725953917" height="15" rx="6" fill="#CBBCEB"/>
+<text x="376.9877497259539" y="663" class="tiny">0.512</text>
 </svg>

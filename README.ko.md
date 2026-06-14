@@ -39,6 +39,10 @@ bluetape4k 생태계의 그래프 데이터베이스 통합 라이브러리. Apa
 
 ![graph Class Structure 2 diagram](docs/images/readme-diagrams/bluetape4k-graph-class-02.png)
 
+![graph Data Flow diagram](docs/images/readme-diagrams/root-readme-data-flow-01.png)
+
+![graph Sequence diagram](docs/images/readme-diagrams/root-readme-sequence-01.png)
+
 ## 지원하는 그래프 데이터베이스
 
 | Database | Module | Query model | Local testing | 적합한 용도 |

@@ -39,6 +39,10 @@ Use this project when you need:
 
 ![graph Class Structure 2 diagram](docs/images/readme-diagrams/bluetape4k-graph-class-02.png)
 
+![graph Data Flow diagram](docs/images/readme-diagrams/root-readme-data-flow-01.png)
+
+![graph Sequence diagram](docs/images/readme-diagrams/root-readme-sequence-01.png)
+
 ## Supported Graph Databases
 
 | Database | Module | Query model | Local testing | Best fit |
