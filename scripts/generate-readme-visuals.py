@@ -195,6 +195,8 @@ def diagram_kind(slug: str) -> str:
 
 
 def architecture_svg(slug: str) -> str:
+    if slug == "root-readme-overview-01":
+        return root_readme_overview_svg()
     if slug == "graph-graph-core-architecture-01":
         return graph_core_architecture_overview_svg()
     if slug == "graph-graph-core-architecture-10":
@@ -1388,6 +1390,89 @@ def graph_falkordb_overview_svg() -> str:
     out.append(
         '<text x="920" y="997" text-anchor="middle" class="tiny">'
         'Source note: FalkorDB operations do not close the externally owned Driver; suspend operations isolate blocking jfalkordb calls on Dispatchers.IO.</text>'
+    )
+    return close_svg(out)
+
+
+def root_readme_overview_svg() -> str:
+    width, height = 1840, 1080
+    out = open_svg(
+        "Bluetape4k Graph Overview",
+        "Unified Kotlin graph API with multiple database backends, bulk I/O, application integrations, examples, benchmarks, and BOM alignment",
+        width,
+        height,
+    )
+    out[-1] = (
+        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: root README / Overview</text>'
+    )
+    out.append('<rect x="70" y="150" width="1700" height="800" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+    out.append('<text x="920" y="205" text-anchor="middle" class="tiny">Source: README module structure, settings.gradle.kts includeModules, backend capability table, and module READMEs</text>')
+
+    arrow(out, 395, 420, 590, 420, "shared contracts", "line")
+    arrow(out, 915, 420, 1095, 420, "native adapters", "line")
+    arrow(out, 745, 590, 745, 710, "bulk graph data", "thin")
+    arrow(out, 1045, 590, 1045, 710, "app integration", "thin")
+    arrow(out, 600, 675, 430, 800, "domain flows", "thin")
+    arrow(out, 1210, 675, 1390, 790, "measure & align", "thin")
+
+    card(out, 115, 315, 280, 220, "Application Code", [
+        "services and examples",
+        "blocking or suspend API",
+        "schema / merge / traversal",
+        "portable graph models",
+    ], PALETTE["sky"])
+
+    card(out, 590, 285, 325, 285, "graph-core", [
+        "GraphOperations",
+        "GraphSuspendOperations",
+        "GraphVertex / Edge / Path",
+        "Schema DSL",
+        "algorithms and fallbacks",
+    ], PALETTE["mint"])
+
+    card(out, 1095, 245, 345, 350, "Database Backends", [
+        "Neo4j Java Driver",
+        "Memgraph protocol",
+        "Apache AGE over JDBC",
+        "TinkerGraph / Gremlin",
+        "FalkorDB Redis module",
+    ], PALETTE["lemon"])
+    card(out, 1480, 300, 245, 235, "Local Testing", [
+        "Testcontainers",
+        "Neo4j / AGE",
+        "Memgraph / FalkorDB",
+        "TinkerGraph in-memory",
+    ], PALETTE["aqua"])
+
+    card(out, 545, 710, 310, 175, "Graph I/O", [
+        "CSV",
+        "Jackson NDJSON",
+        "GraphML",
+        "OkIO streaming",
+    ], PALETTE["peach"])
+    card(out, 900, 710, 315, 175, "Integrations", [
+        "Ktor GraphPlugin",
+        "Spring Boot 4 auto-config",
+        "virtual-thread adapters",
+        "coroutine wrappers",
+    ], PALETTE["rose"])
+    card(out, 115, 760, 315, 160, "Examples", [
+        "code / fraud / knowledge",
+        "linkedin / recommendation",
+        "observability / Ktor",
+    ], PALETTE["lavender"])
+    card(out, 1390, 745, 325, 180, "Benchmarks & BOM", [
+        "JMH graph operations",
+        "I/O benchmarks",
+        "backend benchmarks",
+        "dependency BOM",
+    ], PALETTE["sky"])
+
+    out.append('<rect x="180" y="965" width="1480" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+    out.append(
+        '<text x="920" y="997" text-anchor="middle" class="tiny">'
+        'Source note: root README presents graph-core as the stable API surface; backend modules translate it to each database driver and query model.</text>'
     )
     return close_svg(out)
 
