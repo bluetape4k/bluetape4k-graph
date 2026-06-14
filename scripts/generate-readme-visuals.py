@@ -301,6 +301,86 @@ def data_svg(slug: str) -> str:
 
 
 def sequence_svg(slug: str) -> str:
+    if slug == "graph-graph-core-sequence-06":
+        return graph_core_sequence_svg(
+            "createVertex",
+            "GraphOperations creates a backend-neutral vertex and maps the native generated id.",
+            [
+                ("user", "User Code", "blue"),
+                ("ops", "GraphOperations", "green"),
+                ("adapter", "Backend Adapter", "amber"),
+                ("db", "Graph Database", "rose"),
+            ],
+            [
+                ("user", "ops", "createVertex(label, properties)", 330, "blue", False, 300),
+                ("ops", "adapter", "validate label and properties", 420, "green", False, 315),
+                ("adapter", "db", "execute CREATE vertex query", 515, "amber", False, 305),
+                ("db", "adapter", "generated native id", 610, "teal", True, 250),
+                ("adapter", "ops", "map to GraphElementId", 705, "teal", True, 275),
+                ("ops", "user", "GraphVertex", 805, "teal", True, 190),
+            ],
+        )
+    if slug == "graph-graph-core-sequence-07":
+        return graph_core_sequence_svg(
+            "shortestPath",
+            "GraphOperations resolves cached paths first, then asks the backend when traversal is required.",
+            [
+                ("user", "User Code", "blue"),
+                ("ops", "GraphOperations", "green"),
+                ("algo", "Path Algorithm", "lemon"),
+                ("adapter", "Backend Adapter", "amber"),
+                ("db", "Graph Database", "rose"),
+            ],
+            [
+                ("user", "ops", "shortestPath(fromId, toId, label, maxDepth)", 330, "blue", False, 430),
+                ("ops", "algo", "check cache and route strategy", 415, "green", False, 335),
+                ("algo", "ops", "cached GraphPath if present", 500, "teal", True, 300),
+                ("algo", "adapter", "BFS or backend shortest path query", 585, "amber", False, 360),
+                ("adapter", "db", "execute path search", 670, "amber", False, 245),
+                ("db", "adapter", "vertices and edges", 755, "teal", True, 230),
+                ("adapter", "algo", "construct GraphPath", 840, "teal", True, 240),
+                ("algo", "ops", "cache result", 925, "teal", True, 200),
+                ("ops", "user", "GraphPath?", 1010, "teal", True, 190),
+            ],
+        )
+    if slug == "graph-graph-core-sequence-08":
+        return graph_core_sequence_svg(
+            "neighbors",
+            "GraphOperations traverses adjacent vertices with direction, relationship label, and depth.",
+            [
+                ("user", "User Code", "blue"),
+                ("ops", "GraphOperations", "green"),
+                ("adapter", "Backend Adapter", "amber"),
+                ("db", "Graph Database", "rose"),
+            ],
+            [
+                ("user", "ops", "neighbors(startId, label, direction, depth)", 330, "blue", False, 390),
+                ("ops", "adapter", "build traversal query", 420, "green", False, 265),
+                ("adapter", "db", "relationship traversal query", 515, "amber", False, 305),
+                ("db", "adapter", "neighboring vertices", 610, "teal", True, 250),
+                ("adapter", "ops", "List<GraphVertex>", 705, "teal", True, 245),
+                ("ops", "user", "List<GraphVertex>", 805, "teal", True, 245),
+            ],
+        )
+    if slug == "graph-graph-core-sequence-09":
+        return graph_core_sequence_svg(
+            "createEdge",
+            "GraphOperations creates a typed relationship between existing vertices and maps backend metadata.",
+            [
+                ("user", "User Code", "blue"),
+                ("ops", "GraphOperations", "green"),
+                ("adapter", "Backend Adapter", "amber"),
+                ("db", "Graph Database", "rose"),
+            ],
+            [
+                ("user", "ops", "createEdge(fromId, toId, label, properties)", 330, "blue", False, 390),
+                ("ops", "adapter", "validate endpoints and edge label", 420, "green", False, 330),
+                ("adapter", "db", "MATCH endpoints and CREATE relationship", 515, "amber", False, 390),
+                ("db", "adapter", "edge id and metadata", 610, "teal", True, 250),
+                ("adapter", "ops", "map to GraphEdge", 705, "teal", True, 230),
+                ("ops", "user", "GraphEdge", 805, "teal", True, 190),
+            ],
+        )
     title = "Bluetape4k Graph Sequence" if slug.startswith("root-readme-") else f"{module_title(slug)} Sequence"
     subtitle = "Happy-path operation flow with labels placed away from cards"
     out = open_svg(title, subtitle)
@@ -328,6 +408,84 @@ def sequence_svg(slug: str) -> str:
     for (label, y), (a, b) in zip(steps, pairs):
         cls = "dash" if b < a else "line"
         arrow(out, xs[a] + (70 if b > a else -70), y, xs[b] - (70 if b > a else -70), y, label, cls)
+    return close_svg(out)
+
+
+def graph_core_sequence_svg(
+    title: str,
+    subtitle: str,
+    participants: list[tuple[str, str, str]],
+    messages: list[tuple[str, str, str, int, str, bool, int]],
+) -> str:
+    width = 1600 if len(participants) <= 4 else 1840
+    max_y = max(message[3] for message in messages)
+    panel_bottom = max_y + 110
+    height = panel_bottom + 140
+    out = open_svg(title, subtitle, width, height)
+    out[-1] = (
+        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: graph-core / {esc(title)}</text>'
+    )
+    out.insert(2, '<defs><marker id="seqArrow" markerWidth="6" markerHeight="6" refX="5.5" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M 0 0 L 6 3 L 0 6 z" fill="#2E9C9B"/></marker></defs>')
+    tones = {
+        "blue": (PALETTE["sky"], "#3B82F6"),
+        "green": (PALETTE["mint"], "#22C55E"),
+        "amber": (PALETTE["lemon"], "#D97706"),
+        "rose": (PALETTE["rose"], "#DB2777"),
+        "lemon": (PALETTE["lemon"], "#D97706"),
+        "teal": (PALETTE["aqua"], "#2E9C9B"),
+    }
+    left, right = 250, width - 250
+    step = (right - left) / (len(participants) - 1)
+    xs = {key: left + index * step for index, (key, _, _) in enumerate(participants)}
+    top, bottom = 190, 835
+    bottom = panel_bottom - 92
+    out.append(f'<rect x="70" y="150" width="{width - 140}" height="{panel_bottom - 150}" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+    for key, label, tone in participants:
+        fill, stroke = tones[tone]
+        x = xs[key]
+        out.append(f'<rect x="{x - 135}" y="{top}" width="270" height="74" rx="12" fill="{fill}" stroke="{stroke}" stroke-width="2.2" filter="url(#softShadow)"/>')
+        for li, line in enumerate(wrap(label, 16)[:2]):
+            out.append(f'<text x="{x}" y="{top + 32 + li * 24}" text-anchor="middle" class="label">{esc(line)}</text>')
+        out.append(f'<line x1="{x}" y1="{top + 92}" x2="{x}" y2="{bottom}" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>')
+
+    for key, _, tone in participants:
+        related = [y for source, target, _, y, _, _, _ in messages if source == key or target == key]
+        if not related:
+            continue
+        fill, stroke = tones[tone]
+        y1, y2 = min(related) - 18, max(related) + 18
+        x = xs[key]
+        out.append(f'<rect x="{x - 8}" y="{y1}" width="16" height="{y2 - y1}" rx="6" fill="{fill}" stroke="{stroke}" stroke-width="1.5"/>')
+
+    line_colors = {
+        "blue": "#4F83BF",
+        "green": "#2F9E6B",
+        "amber": "#D6A441",
+        "teal": "#2E9C9B",
+    }
+    badge_fills = {
+        "blue": "#4F83BF",
+        "green": "#2F9E6B",
+        "amber": "#D6A441",
+        "teal": "#2E9C9B",
+    }
+    for index, (source, target, label, y, tone, dashed, pill_w) in enumerate(messages, start=1):
+        sx, tx = xs[source], xs[target]
+        start = sx + (10 if tx > sx else -10)
+        end = tx - (10 if tx > sx else -10)
+        color = line_colors[tone]
+        dash = ' stroke-dasharray="10 8"' if dashed else ""
+        out.append(f'<line x1="{start}" y1="{y}" x2="{end}" y2="{y}" stroke="{color}" stroke-width="2.7"{dash} marker-end="url(#seqArrow)"/>')
+        pill_x = (sx + tx) / 2 - pill_w / 2
+        pill_y = y - 44
+        out.append(f'<rect x="{pill_x:.1f}" y="{pill_y}" width="{pill_w}" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+        out.append(f'<circle cx="{pill_x + 24:.1f}" cy="{pill_y + 15}" r="13" fill="{badge_fills[tone]}"/>')
+        out.append(f'<text x="{pill_x + 24:.1f}" y="{pill_y + 20}" text-anchor="middle" class="tiny" style="fill:#FFFFFF">{index}</text>')
+        out.append(f'<text x="{pill_x + 48:.1f}" y="{pill_y + 20}" class="tiny">{esc(label)}</text>')
+    note_y = panel_bottom - 48
+    out.append(f'<rect x="150" y="{note_y - 27}" width="{width - 300}" height="42" rx="11" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+    out.append(f'<text x="{width / 2}" y="{note_y}" text-anchor="middle" class="tiny">Numbered labels sit above message lines; lifelines and activations stay separated from participant cards.</text>')
     return close_svg(out)
 
 
