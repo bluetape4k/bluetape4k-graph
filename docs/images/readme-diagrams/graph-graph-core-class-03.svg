@@ -1,67 +1,85 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="998" height="894" viewBox="0 0 998 894" role="img" aria-label=": GraphElementId, GraphVertex, GraphEdge">
-<defs>
-  <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="8" stdDeviation="9" flood-color="#1f2937" flood-opacity="0.10"/></filter>
-  <marker id="openArrow" markerWidth="10" markerHeight="8" refX="8.5" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M 1 1 L 8.5 4 L 1 7" fill="none" stroke="#758297" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></marker>
-  <marker id="inherit" markerWidth="11" markerHeight="10" refX="9.5" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M 0.5 1 L 9.5 5 L 0.5 9 Z" fill="#ffffff" stroke="#758297" stroke-width="1.7"/></marker>
-  <style>
-    .canvas{fill:#f7f9fc}.frame{fill:#fff;stroke:#d8e0ea;stroke-width:1.5}
-    .title{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:43px;font-weight:400;fill:#102033}
-    .subtitle{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:15px;font-weight:400;fill:#536273}
-    .label{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:25px;font-weight:400;fill:#102033}
-    .smallLabel{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:21px;font-weight:400;fill:#102033}
-    .mono{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:12px;font-weight:400;fill:#102033}
-    .small{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:12px;font-weight:400;fill:#536273}
-    .strong{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:13px;font-weight:400;fill:#102033}
-    .card{stroke-width:2.1;filter:url(#shadow)}.compartment{stroke-width:1.5;fill:none}
-    .line{stroke:#758297;stroke-width:2.1;fill:none;marker-end:url(#openArrow)}
-    .plainLine{stroke:#758297;stroke-width:2.1;fill:none}
-    .dashed{stroke:#758297;stroke-width:2.1;stroke-dasharray:7 6;fill:none;marker-end:url(#openArrow)}
-    .inheritLine{stroke:#758297;stroke-width:2.2;fill:none;marker-end:url(#inherit)}
-    .implLine{stroke:#758297;stroke-width:2.2;stroke-dasharray:8 7;fill:none;marker-end:url(#inherit)}
-  </style>
-</defs>
-<rect class="canvas" width="998" height="894"/>
-<rect class="frame" x="32" y="28" width="934" height="838" rx="28"/>
-<text class="title" x="66" y="82">: GraphElementId, GraphVertex, Gr.</text>
-<text class="subtitle" x="70" y="118">UML classes from the original Mermaid source</text>
-<path class="line" d="M274 481 L274 355"/>
-<path class="line" d="M724 481 L724 394 L274 394 L274 355"/>
-<g transform="translate(84,180)">
-  <rect class="card" x="0" y="0" width="380" height="175" rx="5" fill="#E8F3FF" stroke="#5B8DEF"/>
-  <line class="compartment" x1="0" y1="78" x2="380" y2="78" stroke="#5B8DEF"/>
-  <text class="small" x="190" y="26" text-anchor="middle"></text>
-  <text class="label" x="190" y="61" text-anchor="middle">GraphElementId</text>
-  <text class="mono" x="18" y="108">-String value</text>
-<text class="mono" x="18" y="129">+of(String) GraphElementId$</text>
-<text class="mono" x="18" y="150">+of(Long) GraphElementId$</text>
-</g>
-<g transform="translate(534,180)">
-  <rect class="card" x="0" y="0" width="380" height="175" rx="5" fill="#EAF7EF" stroke="#58A978"/>
-  <line class="compartment" x1="0" y1="78" x2="380" y2="78" stroke="#58A978"/>
-  <text class="small" x="190" y="26" text-anchor="middle">«enumeration»</text>
-  <text class="label" x="190" y="61" text-anchor="middle">Direction</text>
-  <text class="mono" x="18" y="108">OUTGOING</text>
-<text class="mono" x="18" y="129">INCOMING</text>
-<text class="mono" x="18" y="150">BOTH</text>
-</g>
-<g transform="translate(84,481)">
-  <rect class="card" x="0" y="0" width="380" height="217" rx="5" fill="#FFF3D9" stroke="#D6A441"/>
-  <line class="compartment" x1="0" y1="78" x2="380" y2="78" stroke="#D6A441"/>
-  <text class="small" x="190" y="26" text-anchor="middle"></text>
-  <text class="label" x="190" y="61" text-anchor="middle">GraphEdge</text>
-  <text class="mono" x="18" y="108">-GraphElementId id</text>
-<text class="mono" x="18" y="129">-String label</text>
-<text class="mono" x="18" y="150">-GraphElementId startId</text>
-<text class="mono" x="18" y="171">-GraphElementId endId</text>
-<text class="mono" x="18" y="192">-Map~String, Any?~ properties</text>
-</g>
-<g transform="translate(534,481)">
-  <rect class="card" x="0" y="0" width="380" height="175" rx="5" fill="#FDECEF" stroke="#DC6B82"/>
-  <line class="compartment" x1="0" y1="78" x2="380" y2="78" stroke="#DC6B82"/>
-  <text class="small" x="190" y="26" text-anchor="middle"></text>
-  <text class="label" x="190" y="61" text-anchor="middle">GraphVertex</text>
-  <text class="mono" x="18" y="108">-GraphElementId id</text>
-<text class="mono" x="18" y="129">-String label</text>
-<text class="mono" x="18" y="150">-Map~String, Any?~ properties</text>
-</g>
+<svg xmlns="http://www.w3.org/2000/svg" width="1640" height="1060" viewBox="0 0 1640 1060">
+
+    <defs>
+      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
+        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
+      </filter>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+      </marker>
+    </defs>
+    <style>
+      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
+      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
+      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
+      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
+      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
+      .card { filter: url(#softShadow); }
+      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
+    </style>
+
+<rect x="0" y="0" width="1640" height="1060" fill="#F8FAFC"/>
+<rect x="24" y="24" width="1592" height="1012" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
+<circle cx="1576" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
+<circle cx="1536" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
+<circle cx="1496" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
+<text x="72" y="82" class="title">Graph Core Path Classes</text>
+<text x="74" y="118" class="subtitle">Path results alternate vertex and edge steps while exposing derived path views</text>
+<text x="820.0" y="1012" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: graph-core / Path Classes</text>
+<rect x="70" y="150" width="1500" height="750" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+<rect x="135" y="230" width="330" height="185" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
+<text x="300.0" y="264" text-anchor="middle" class="tiny">&lt;&lt;sealed class&gt;&gt;</text>
+<text x="300.0" y="298" text-anchor="middle" class="label">PathStep</text>
+<line x1="135" y1="318" x2="465" y2="318" stroke="#22C55E" stroke-width="2"/>
+<text x="161" y="354" class="small">VertexStep(vertex)</text>
+<text x="161" y="382" class="small">EdgeStep(edge)</text>
+<rect x="110" y="525" width="360" height="175" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+<text x="290.0" y="559" text-anchor="middle" class="tiny">&lt;&lt;data class&gt;&gt;</text>
+<text x="290.0" y="593" text-anchor="middle" class="label">VertexStep</text>
+<line x1="110" y1="613" x2="470" y2="613" stroke="#3B82F6" stroke-width="2"/>
+<text x="136" y="649" class="small">vertex: GraphVertex</text>
+<text x="136" y="677" class="small">path node snapshot</text>
+<rect x="520" y="525" width="360" height="175" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
+<text x="700.0" y="559" text-anchor="middle" class="tiny">&lt;&lt;data class&gt;&gt;</text>
+<text x="700.0" y="593" text-anchor="middle" class="label">EdgeStep</text>
+<line x1="520" y1="613" x2="880" y2="613" stroke="#EAB308" stroke-width="2"/>
+<text x="546" y="649" class="small">edge: GraphEdge</text>
+<text x="546" y="677" class="small">relationship snapshot</text>
+<rect x="1010" y="250" width="430" height="295" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
+<text x="1225.0" y="284" text-anchor="middle" class="tiny">&lt;&lt;data class&gt;&gt;</text>
+<text x="1225.0" y="318" text-anchor="middle" class="label">GraphPath</text>
+<line x1="1010" y1="338" x2="1440" y2="338" stroke="#8B5CF6" stroke-width="2"/>
+<text x="1036" y="374" class="small">steps: List&lt;PathStep&gt;</text>
+<text x="1036" y="402" class="small">totalWeight: Double</text>
+<text x="1036" y="430" class="small">vertices: List&lt;GraphVertex&gt;</text>
+<text x="1036" y="458" class="small">edges: List&lt;GraphEdge&gt;</text>
+<text x="1036" y="486" class="small">length: Int = edges.size</text>
+<path d="M 290 523 C 282.5 523, 282.5 417, 275 417" class="thin"/>
+<text x="282.5" y="442.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">inherits</text>
+<text x="282.5" y="442.0" text-anchor="middle" class="tiny">inherits</text>
+<path d="M 700 523 C 540.0 523, 540.0 417, 380 417" class="thin"/>
+<text x="540.0" y="442.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">inherits</text>
+<text x="540.0" y="442.0" text-anchor="middle" class="tiny">inherits</text>
+<path d="M 1010 390 C 739.0 390, 739.0 320, 468 320" class="thin"/>
+<text x="739.0" y="327.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">steps</text>
+<text x="739.0" y="327.0" text-anchor="middle" class="tiny">steps</text>
+<text x="820" y="735" text-anchor="middle" class="tiny">alternating order</text>
+<rect x="120" y="760" width="240" height="58" rx="12" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2"/>
+<text x="240" y="796" text-anchor="middle" class="small">VertexStep(A)</text>
+<path d="M 360 789 C 384.0 789, 384.0 789, 408 789" class="thin"/>
+<rect x="410" y="760" width="240" height="58" rx="12" fill="#FEF3C7" stroke="#EAB308" stroke-width="2"/>
+<text x="530" y="796" text-anchor="middle" class="small">EdgeStep(KNOWS)</text>
+<path d="M 650 789 C 674.0 789, 674.0 789, 698 789" class="thin"/>
+<rect x="700" y="760" width="240" height="58" rx="12" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2"/>
+<text x="820" y="796" text-anchor="middle" class="small">VertexStep(B)</text>
+<path d="M 940 789 C 964.0 789, 964.0 789, 988 789" class="thin"/>
+<rect x="990" y="760" width="240" height="58" rx="12" fill="#FEF3C7" stroke="#EAB308" stroke-width="2"/>
+<text x="1110" y="796" text-anchor="middle" class="small">EdgeStep(WORKS_AT)</text>
+<path d="M 1230 789 C 1254.0 789, 1254.0 789, 1278 789" class="thin"/>
+<rect x="1280" y="760" width="240" height="58" rx="12" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2"/>
+<text x="1400" y="796" text-anchor="middle" class="small">VertexStep(Company)</text>
+<rect x="150" y="925" width="1340" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
+<text x="820" y="958" text-anchor="middle" class="tiny">Source: GraphPath.kt; default totalWeight is edge count, while weighted algorithms may set accumulated cost.</text>
 </svg>

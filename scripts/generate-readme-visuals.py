@@ -364,9 +364,82 @@ def graph_core_model_class_svg() -> str:
     return close_svg(out)
 
 
+def graph_core_path_class_svg() -> str:
+    width, height = 1640, 1060
+    out = open_svg(
+        "Graph Core Path Classes",
+        "Path results alternate vertex and edge steps while exposing derived path views",
+        width,
+        height,
+    )
+    out[-1] = (
+        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: graph-core / Path Classes</text>'
+    )
+    out.append('<rect x="70" y="150" width="1500" height="750" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+
+    def class_box(x: float, y: float, w: float, h: float, title: str, stereotype: str, lines: list[str], fill: str) -> None:
+        stroke = CARD_STROKES.get(fill, PALETTE["slate"])
+        out.append(
+            f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="14" fill="{fill}" '
+            f'stroke="{stroke}" stroke-width="3" class="card"/>'
+        )
+        out.append(f'<text x="{x+w/2}" y="{y+34}" text-anchor="middle" class="tiny">{esc(stereotype)}</text>')
+        out.append(f'<text x="{x+w/2}" y="{y+68}" text-anchor="middle" class="label">{esc(title)}</text>')
+        out.append(f'<line x1="{x}" y1="{y+88}" x2="{x+w}" y2="{y+88}" stroke="{stroke}" stroke-width="2"/>')
+        yy = y + 124
+        for line in lines:
+            out.append(f'<text x="{x+26}" y="{yy}" class="small">{esc(line)}</text>')
+            yy += 28
+
+    class_box(135, 230, 330, 185, "PathStep", "<<sealed class>>", ["VertexStep(vertex)", "EdgeStep(edge)"], PALETTE["mint"])
+    class_box(110, 525, 360, 175, "VertexStep", "<<data class>>", ["vertex: GraphVertex", "path node snapshot"], PALETTE["sky"])
+    class_box(520, 525, 360, 175, "EdgeStep", "<<data class>>", ["edge: GraphEdge", "relationship snapshot"], PALETTE["lemon"])
+    class_box(
+        1010,
+        250,
+        430,
+        295,
+        "GraphPath",
+        "<<data class>>",
+        ["steps: List<PathStep>", "totalWeight: Double", "vertices: List<GraphVertex>", "edges: List<GraphEdge>", "length: Int = edges.size"],
+        PALETTE["lavender"],
+    )
+
+    arrow(out, 290, 523, 275, 417, "inherits", "thin")
+    arrow(out, 700, 523, 380, 417, "inherits", "thin")
+    arrow(out, 1010, 390, 468, 320, "steps", "thin")
+
+    out.append('<text x="820" y="735" text-anchor="middle" class="tiny">alternating order</text>')
+    step_items = [
+        ("VertexStep(A)", PALETTE["sky"]),
+        ("EdgeStep(KNOWS)", PALETTE["lemon"]),
+        ("VertexStep(B)", PALETTE["sky"]),
+        ("EdgeStep(WORKS_AT)", PALETTE["lemon"]),
+        ("VertexStep(Company)", PALETTE["sky"]),
+    ]
+    x = 120
+    for i, (label, fill) in enumerate(step_items):
+        stroke = CARD_STROKES[fill]
+        out.append(f'<rect x="{x}" y="760" width="240" height="58" rx="12" fill="{fill}" stroke="{stroke}" stroke-width="2"/>')
+        out.append(f'<text x="{x+120}" y="796" text-anchor="middle" class="small">{esc(label)}</text>')
+        if i < len(step_items) - 1:
+            arrow(out, x + 240, 789, x + 288, 789, "", "thin")
+        x += 290
+
+    out.append('<rect x="150" y="925" width="1340" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+    out.append(
+        '<text x="820" y="958" text-anchor="middle" class="tiny">'
+        'Source: GraphPath.kt; default totalWeight is edge count, while weighted algorithms may set accumulated cost.</text>'
+    )
+    return close_svg(out)
+
+
 def class_svg(slug: str) -> str:
     if slug == "graph-graph-core-class-02":
         return graph_core_model_class_svg()
+    if slug == "graph-graph-core-class-03":
+        return graph_core_path_class_svg()
     title = "Backend Capability Matrix" if "capability" in slug else f"{module_title(slug)} Class Model"
     subtitle = "Contracts, data classes, and adapter responsibilities"
     out = open_svg(title, subtitle)
