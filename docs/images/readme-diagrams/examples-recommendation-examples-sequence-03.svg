@@ -31,28 +31,28 @@
 <text x="1440.0" y="1467" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: recommendation-examples / Recommendation Flow</text>
 <rect x="70" y="150" width="2740" height="1225" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
 <rect x="115.0" y="190" width="270" height="74" rx="12" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="250.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">Abstract Test</text>
+<text x="250.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">Abstract Test</text>
 <line x1="250.0" y1="282" x2="250.0" y2="1283" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="455.0" y="190" width="270" height="74" rx="12" fill="#DCFCE7" stroke="#22C55E" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="590.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">RecommendService</text>
+<text x="590.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">RecommendService</text>
 <line x1="590.0" y1="282" x2="590.0" y2="1283" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="795.0" y="190" width="270" height="74" rx="12" fill="#FEF3C7" stroke="#D97706" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="930.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">GraphOperations</text>
+<text x="930.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">GraphOperations</text>
 <line x1="930.0" y1="282" x2="930.0" y2="1283" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="1135.0" y="190" width="270" height="74" rx="12" fill="#FEE2E2" stroke="#DB2777" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="1270.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">Purchase Graph</text>
+<text x="1270.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">Purchase Graph</text>
 <line x1="1270.0" y1="282" x2="1270.0" y2="1283" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="1475.0" y="190" width="270" height="74" rx="12" fill="#CCFBF1" stroke="#2E9C9B" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="1610.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">Similar Users</text>
+<text x="1610.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">Similar Users</text>
 <line x1="1610.0" y1="282" x2="1610.0" y2="1283" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="1815.0" y="190" width="270" height="74" rx="12" fill="#FEF3C7" stroke="#D97706" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="1950.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">Follow Graph</text>
+<text x="1950.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">Follow Graph</text>
 <line x1="1950.0" y1="282" x2="1950.0" y2="1283" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="2155.0" y="190" width="270" height="74" rx="12" fill="#DCFCE7" stroke="#22C55E" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="2290.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">PageRank</text>
+<text x="2290.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">PageRank</text>
 <line x1="2290.0" y1="282" x2="2290.0" y2="1283" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="2495.0" y="190" width="270" height="74" rx="12" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="2630.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">Recommendations</text>
+<text x="2630.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">Recommendations</text>
 <line x1="2630.0" y1="282" x2="2630.0" y2="1283" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="242.0" y="312" width="16" height="716" rx="6" fill="#DBEAFE" stroke="#3B82F6" stroke-width="1.5"/>
 <rect x="582.0" y="312" width="16" height="886" rx="6" fill="#DCFCE7" stroke="#22C55E" stroke-width="1.5"/>
@@ -65,63 +65,63 @@
 <line x1="260.0" y1="330" x2="580.0" y2="330" stroke="#4F83BF" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="277.5" y="286" width="285" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="301.5" cy="301" r="13" fill="#4F83BF"/>
-<text x="301.5" y="306" text-anchor="middle" class="tiny" style="fill:#FFFFFF">1</text>
-<text x="325.5" y="306" class="tiny">add users and products</text>
+<text x="301.5" y="301" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">1</text>
+<text x="325.5" y="301" dominant-baseline="middle" class="tiny">add users and products</text>
 <line x1="600.0" y1="415" x2="1260.0" y2="415" stroke="#D6A441" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="780.0" y="371" width="300" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="804.0" cy="386" r="13" fill="#D6A441"/>
-<text x="804.0" y="391" text-anchor="middle" class="tiny" style="fill:#FFFFFF">2</text>
-<text x="828.0" y="391" class="tiny">create PURCHASED edges</text>
+<text x="804.0" y="386" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">2</text>
+<text x="828.0" y="386" dominant-baseline="middle" class="tiny">create PURCHASED edges</text>
 <line x1="260.0" y1="500" x2="580.0" y2="500" stroke="#4F83BF" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="270.0" y="456" width="300" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="294.0" cy="471" r="13" fill="#4F83BF"/>
-<text x="294.0" y="476" text-anchor="middle" class="tiny" style="fill:#FFFFFF">3</text>
-<text x="318.0" y="476" class="tiny">recommendProducts(Alice)</text>
+<text x="294.0" y="471" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">3</text>
+<text x="318.0" y="471" dominant-baseline="middle" class="tiny">recommendProducts(Alice)</text>
 <line x1="600.0" y1="585" x2="920.0" y2="585" stroke="#2F9E6B" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="602.5" y="541" width="315" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="626.5" cy="556" r="13" fill="#2F9E6B"/>
-<text x="626.5" y="561" text-anchor="middle" class="tiny" style="fill:#FFFFFF">4</text>
-<text x="650.5" y="561" class="tiny">neighbors(Alice, PURCHASED)</text>
+<text x="626.5" y="556" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">4</text>
+<text x="650.5" y="556" dominant-baseline="middle" class="tiny">neighbors(Alice, PURCHASED)</text>
 <line x1="940.0" y1="670" x2="1260.0" y2="670" stroke="#2E9C9B" stroke-width="2.7" stroke-dasharray="10 8" marker-end="url(#seqArrow)"/>
 <rect x="995.0" y="626" width="210" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="1019.0" cy="641" r="13" fill="#2E9C9B"/>
-<text x="1019.0" y="646" text-anchor="middle" class="tiny" style="fill:#FFFFFF">5</text>
-<text x="1043.0" y="646" class="tiny">owned products</text>
+<text x="1019.0" y="641" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">5</text>
+<text x="1043.0" y="641" dominant-baseline="middle" class="tiny">owned products</text>
 <line x1="600.0" y1="755" x2="1600.0" y2="755" stroke="#2F9E6B" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="940.0" y="711" width="320" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="964.0" cy="726" r="13" fill="#2F9E6B"/>
-<text x="964.0" y="731" text-anchor="middle" class="tiny" style="fill:#FFFFFF">6</text>
-<text x="988.0" y="731" class="tiny">incoming PURCHASED buyers</text>
+<text x="964.0" y="726" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">6</text>
+<text x="988.0" y="726" dominant-baseline="middle" class="tiny">incoming PURCHASED buyers</text>
 <line x1="1600.0" y1="840" x2="1280.0" y2="840" stroke="#2F9E6B" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="1302.5" y="796" width="275" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="1326.5" cy="811" r="13" fill="#2F9E6B"/>
-<text x="1326.5" y="816" text-anchor="middle" class="tiny" style="fill:#FFFFFF">7</text>
-<text x="1350.5" y="816" class="tiny">other bought products</text>
+<text x="1326.5" y="811" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">7</text>
+<text x="1350.5" y="811" dominant-baseline="middle" class="tiny">other bought products</text>
 <line x1="1280.0" y1="925" x2="2620.0" y2="925" stroke="#2E9C9B" stroke-width="2.7" stroke-dasharray="10 8" marker-end="url(#seqArrow)"/>
 <rect x="1800.0" y="881" width="300" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="1824.0" cy="896" r="13" fill="#2E9C9B"/>
-<text x="1824.0" y="901" text-anchor="middle" class="tiny" style="fill:#FFFFFF">8</text>
-<text x="1848.0" y="901" class="tiny">exclude owned products</text>
+<text x="1824.0" y="896" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">8</text>
+<text x="1848.0" y="896" dominant-baseline="middle" class="tiny">exclude owned products</text>
 <line x1="260.0" y1="1010" x2="580.0" y2="1010" stroke="#4F83BF" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="275.0" y="966" width="290" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="299.0" cy="981" r="13" fill="#4F83BF"/>
-<text x="299.0" y="986" text-anchor="middle" class="tiny" style="fill:#FFFFFF">9</text>
-<text x="323.0" y="986" class="tiny">recommendFollows(Alice)</text>
+<text x="299.0" y="981" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">9</text>
+<text x="323.0" y="981" dominant-baseline="middle" class="tiny">recommendFollows(Alice)</text>
 <line x1="600.0" y1="1095" x2="1940.0" y2="1095" stroke="#2F9E6B" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="1152.5" y="1051" width="235" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="1176.5" cy="1066" r="13" fill="#2F9E6B"/>
-<text x="1176.5" y="1071" text-anchor="middle" class="tiny" style="fill:#FFFFFF">10</text>
-<text x="1200.5" y="1071" class="tiny">two-hop FOLLOWS</text>
+<text x="1176.5" y="1066" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">10</text>
+<text x="1200.5" y="1066" dominant-baseline="middle" class="tiny">two-hop FOLLOWS</text>
 <line x1="600.0" y1="1180" x2="2280.0" y2="1180" stroke="#2F9E6B" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="1317.5" y="1136" width="245" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="1341.5" cy="1151" r="13" fill="#2F9E6B"/>
-<text x="1341.5" y="1156" text-anchor="middle" class="tiny" style="fill:#FFFFFF">11</text>
-<text x="1365.5" y="1156" class="tiny">pageRank(products)</text>
+<text x="1341.5" y="1151" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">11</text>
+<text x="1365.5" y="1151" dominant-baseline="middle" class="tiny">pageRank(products)</text>
 <line x1="2300.0" y1="1265" x2="2620.0" y2="1265" stroke="#2E9C9B" stroke-width="2.7" stroke-dasharray="10 8" marker-end="url(#seqArrow)"/>
 <rect x="2342.5" y="1221" width="235" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="2366.5" cy="1236" r="13" fill="#2E9C9B"/>
-<text x="2366.5" y="1241" text-anchor="middle" class="tiny" style="fill:#FFFFFF">12</text>
-<text x="2390.5" y="1241" class="tiny">popular products</text>
+<text x="2366.5" y="1236" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">12</text>
+<text x="2390.5" y="1236" dominant-baseline="middle" class="tiny">popular products</text>
 <rect x="150" y="1300" width="2580" height="42" rx="11" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
-<text x="1440.0" y="1327" text-anchor="middle" class="tiny">Numbered labels sit above message lines; lifelines and activations stay separated from participant cards.</text>
+<text x="1440.0" y="1321" text-anchor="middle" dominant-baseline="middle" class="tiny">Numbered labels sit above message lines; lifelines and activations stay separated from participant cards.</text>
 </svg>

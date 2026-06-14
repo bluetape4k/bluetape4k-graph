@@ -1329,11 +1329,12 @@ def graph_core_sequence_svg(
         x = xs[key]
         out.append(f'<rect x="{x - 135}" y="{top}" width="270" height="74" rx="12" fill="{fill}" stroke="{stroke}" stroke-width="2.2" filter="url(#softShadow)"/>')
         label_lines = wrap(label, 16)[:2]
+        line_height = 24
         card_center_y = top + 37
-        first_label_y = card_center_y if len(label_lines) == 1 else card_center_y - 12
+        first_label_y = card_center_y - ((len(label_lines) - 1) * line_height / 2)
         for li, line in enumerate(label_lines):
             out.append(
-                f'<text x="{x}" y="{first_label_y + li * 24}" text-anchor="middle" '
+                f'<text x="{x}" y="{first_label_y + li * line_height}" text-anchor="middle" '
                 f'dominant-baseline="middle" class="label">{esc(line)}</text>'
             )
         out.append(f'<line x1="{x}" y1="{top + 92}" x2="{x}" y2="{bottom}" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>')
@@ -1368,13 +1369,14 @@ def graph_core_sequence_svg(
         out.append(f'<line x1="{start}" y1="{y}" x2="{end}" y2="{y}" stroke="{color}" stroke-width="2.7"{dash} marker-end="url(#seqArrow)"/>')
         pill_x = (sx + tx) / 2 - pill_w / 2
         pill_y = y - 44
+        pill_center_y = pill_y + 15
         out.append(f'<rect x="{pill_x:.1f}" y="{pill_y}" width="{pill_w}" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
-        out.append(f'<circle cx="{pill_x + 24:.1f}" cy="{pill_y + 15}" r="13" fill="{badge_fills[tone]}"/>')
-        out.append(f'<text x="{pill_x + 24:.1f}" y="{pill_y + 20}" text-anchor="middle" class="tiny" style="fill:#FFFFFF">{index}</text>')
-        out.append(f'<text x="{pill_x + 48:.1f}" y="{pill_y + 20}" class="tiny">{esc(label)}</text>')
+        out.append(f'<circle cx="{pill_x + 24:.1f}" cy="{pill_center_y}" r="13" fill="{badge_fills[tone]}"/>')
+        out.append(f'<text x="{pill_x + 24:.1f}" y="{pill_center_y}" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">{index}</text>')
+        out.append(f'<text x="{pill_x + 48:.1f}" y="{pill_center_y}" dominant-baseline="middle" class="tiny">{esc(label)}</text>')
     note_y = panel_bottom - 48
     out.append(f'<rect x="150" y="{note_y - 27}" width="{width - 300}" height="42" rx="11" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
-    out.append(f'<text x="{width / 2}" y="{note_y}" text-anchor="middle" class="tiny">Numbered labels sit above message lines; lifelines and activations stay separated from participant cards.</text>')
+    out.append(f'<text x="{width / 2}" y="{note_y - 6}" text-anchor="middle" dominant-baseline="middle" class="tiny">Numbered labels sit above message lines; lifelines and activations stay separated from participant cards.</text>')
     return close_svg(out)
 
 
