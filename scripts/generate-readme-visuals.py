@@ -623,6 +623,96 @@ def sequence_svg(slug: str) -> str:
             ],
             module_name="graph-neo4j",
         )
+    if slug == "examples-fraud-detection-examples-sequence-03":
+        return graph_core_sequence_svg(
+            "Fraud Analysis Flow",
+            "The example records account transfers, then runs cycle, component, and PageRank analytics through GraphOperations.",
+            [
+                ("test", "Abstract Test", "blue"),
+                ("service", "FraudService", "green"),
+                ("ops", "GraphOperations", "amber"),
+                ("graph", "Transfer Graph", "rose"),
+                ("cycles", "Cycle Detection", "teal"),
+                ("components", "Components", "lemon"),
+                ("rank", "PageRank", "green"),
+                ("review", "Review Result", "blue"),
+            ],
+            [
+                ("test", "service", "initialize()", 330, "blue", False, 180),
+                ("service", "ops", "graphExists / createGraph", 415, "green", False, 295),
+                ("test", "service", "addAccount(Alice, Bob, Carol)", 500, "blue", False, 335),
+                ("service", "graph", "create Account vertices", 585, "amber", False, 285),
+                ("test", "service", "recordTransfer loop", 670, "blue", False, 250),
+                ("service", "graph", "create TRANSFERRED_TO edges", 755, "amber", False, 345),
+                ("service", "cycles", "detectCycles(maxDepth)", 840, "green", False, 275),
+                ("service", "components", "connectedComponents(minSize)", 925, "green", False, 330),
+                ("service", "rank", "pageRank(topK)", 1010, "green", False, 210),
+                ("cycles", "review", "circular transfer", 1095, "teal", True, 240),
+                ("components", "review", "suspicious cluster", 1180, "teal", True, 255),
+                ("rank", "review", "high-risk ranking", 1265, "teal", True, 250),
+            ],
+            module_name="fraud-detection-examples",
+        )
+    if slug == "examples-recommendation-examples-sequence-03":
+        return graph_core_sequence_svg(
+            "Recommendation Flow",
+            "The example turns purchases and follows into short graph traversals plus product PageRank.",
+            [
+                ("test", "Abstract Test", "blue"),
+                ("service", "RecommendService", "green"),
+                ("ops", "GraphOperations", "amber"),
+                ("purchase", "Purchase Graph", "rose"),
+                ("similar", "Similar Users", "teal"),
+                ("follow", "Follow Graph", "lemon"),
+                ("rank", "PageRank", "green"),
+                ("result", "Recommendations", "blue"),
+            ],
+            [
+                ("test", "service", "add users and products", 330, "blue", False, 285),
+                ("service", "purchase", "create PURCHASED edges", 415, "amber", False, 300),
+                ("test", "service", "recommendProducts(Alice)", 500, "blue", False, 300),
+                ("service", "ops", "neighbors(Alice, PURCHASED)", 585, "green", False, 315),
+                ("ops", "purchase", "owned products", 670, "teal", True, 210),
+                ("service", "similar", "incoming PURCHASED buyers", 755, "green", False, 320),
+                ("similar", "purchase", "other bought products", 840, "green", False, 275),
+                ("purchase", "result", "exclude owned products", 925, "teal", True, 300),
+                ("test", "service", "recommendFollows(Alice)", 1010, "blue", False, 290),
+                ("service", "follow", "two-hop FOLLOWS", 1095, "green", False, 235),
+                ("service", "rank", "pageRank(products)", 1180, "green", False, 245),
+                ("rank", "result", "popular products", 1265, "teal", True, 235),
+            ],
+            module_name="recommendation-examples",
+        )
+    if slug == "examples-knowledge-graph-examples-sequence-03":
+        return graph_core_sequence_svg(
+            "Path Inference Flow",
+            "The example links documents, entities, and concepts, then explains relationships with bounded allPaths traversal.",
+            [
+                ("test", "Abstract Test", "blue"),
+                ("service", "KnowledgeService", "green"),
+                ("ops", "GraphOperations", "amber"),
+                ("facts", "Fact Graph", "rose"),
+                ("mentions", "Mention Lookup", "teal"),
+                ("related", "Related Traversal", "lemon"),
+                ("paths", "allPaths Bound", "green"),
+                ("result", "Explanation", "blue"),
+            ],
+            [
+                ("test", "service", "add document/entities", 330, "blue", False, 275),
+                ("service", "facts", "create vertices", 415, "amber", False, 210),
+                ("test", "service", "mention / relate / classify", 500, "blue", False, 310),
+                ("service", "facts", "create typed edges", 585, "amber", False, 235),
+                ("test", "service", "findMentionedEntities(doc)", 670, "blue", False, 320),
+                ("service", "mentions", "neighbors(MENTIONS)", 755, "green", False, 270),
+                ("mentions", "result", "mentioned entities", 840, "teal", True, 260),
+                ("test", "service", "findRelatedEntities(entity)", 925, "blue", False, 320),
+                ("service", "related", "neighbors(RELATED_TO)", 1010, "green", False, 290),
+                ("test", "service", "inferRelationshipPaths()", 1095, "blue", False, 305),
+                ("service", "paths", "allPaths(maxDepth).take(maxPaths)", 1180, "green", False, 380),
+                ("paths", "result", "bounded explanation paths", 1265, "teal", True, 330),
+            ],
+            module_name="knowledge-graph-examples",
+        )
     title = "Bluetape4k Graph Sequence" if slug.startswith("root-readme-") else f"{module_title(slug)} Sequence"
     subtitle = "Happy-path operation flow with labels placed away from cards"
     out = open_svg(title, subtitle)

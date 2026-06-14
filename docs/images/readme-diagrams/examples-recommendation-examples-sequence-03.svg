@@ -1,62 +1,127 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1370" height="994" viewBox="0 0 1370 994" role="img" aria-label="Recommendation Flow">
-<defs>
-  <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="7" stdDeviation="8" flood-color="#1f2937" flood-opacity="0.10"/></filter>
-  <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth"><path d="M1,1 L8,4.5 L1,8 Z" fill="#758297"/></marker>
-  <style>
-    .canvas{fill:#f7f9fc}.frame{fill:#fff;stroke:#d8e0ea;stroke-width:1.5}
-    .title{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:40px;font-weight:400;fill:#102033}
-    .subtitle{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:14px;font-weight:400;fill:#536273}
-    .label{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:21px;font-weight:400;fill:#102033}
-    .small{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:12px;font-weight:400;fill:#536273}
-    .strong{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:13px;font-weight:400;fill:#102033}
-    .card{stroke-width:2.0;filter:url(#shadow)}
-    .line{stroke:#758297;stroke-width:2.1;fill:none;marker-end:url(#arrow)}
-    .dashed{stroke:#758297;stroke-width:2.1;stroke-dasharray:7 6;fill:none;marker-end:url(#arrow)}
-    .lifeline{stroke:#b7c2d1;stroke-width:1.8;stroke-dasharray:9 9}
-  </style>
-</defs>
-<rect class="canvas" width="1370" height="994"/>
-<rect class="frame" x="44" y="30" width="1282" height="934" rx="28"/>
-<text class="title" x="76" y="84">Recommendation Flow</text>
-<text class="subtitle" x="80" y="116">Graphviz actor layout with compact message lanes and wider outer margins</text>
-<rect class="card" x="120.0" y="156" width="230" height="58" rx="16" fill="#E8F3FF" stroke="#5B8DEF"/>
-<text class="label" x="235.0" y="185.0" text-anchor="middle">Learner</text>
-<line class="lifeline" x1="235.0" y1="230" x2="235.0" y2="928"/>
-<rect class="card" x="420.0" y="156" width="230" height="58" rx="16" fill="#EAF7EF" stroke="#58A978"/>
-<text class="label" x="535.0" y="175.0" text-anchor="middle">Recommendation</text>
-<text class="label" x="535.0" y="195.0" text-anchor="middle">Service</text>
-<line class="lifeline" x1="535.0" y1="230" x2="535.0" y2="928"/>
-<rect class="card" x="720.0" y="156" width="230" height="58" rx="16" fill="#FFF3D9" stroke="#D6A441"/>
-<text class="label" x="835.0" y="185.0" text-anchor="middle">GraphOperations</text>
-<line class="lifeline" x1="835.0" y1="230" x2="835.0" y2="928"/>
-<rect class="card" x="1020.0" y="156" width="230" height="58" rx="16" fill="#FDECEF" stroke="#DC6B82"/>
-<text class="label" x="1135.0" y="185.0" text-anchor="middle">Graph DB</text>
-<line class="lifeline" x1="1135.0" y1="230" x2="1135.0" y2="928"/>
-<rect x="270.6" y="232.0" width="228.8" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
-<text class="strong" x="280.6" y="252.0">1. recordPurchase(alice, camera)</text>
-<path class="line" d="M235.0 262.0 L535.0 262.0"/>
-<rect x="546.0" y="308.0" width="278.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
-<text class="strong" x="556.0" y="328.0">2. createEdge(alice, camera, PURCHASED)</text>
-<path class="line" d="M535.0 338.0 L835.0 338.0"/>
-<rect x="910.0" y="384.0" width="150.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
-<text class="strong" x="920.0" y="404.0">3. persist purchase</text>
-<path class="line" d="M835.0 414.0 L1135.0 414.0"/>
-<rect x="288.6" y="460.0" width="192.8" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
-<text class="strong" x="298.6" y="480.0">4. recommendProducts(alice)</text>
-<path class="line" d="M235.0 490.0 L535.0 490.0"/>
-<rect x="546.0" y="536.0" width="278.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
-<text class="strong" x="556.0" y="556.0">5. neighbors(alice, PURCHASED OUTGOING)</text>
-<path class="line" d="M535.0 566.0 L835.0 566.0"/>
-<rect x="546.0" y="612.0" width="278.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
-<text class="strong" x="556.0" y="632.0">6. neighbors(camera, PURCHASED INCOMING)</text>
-<path class="line" d="M535.0 642.0 L835.0 642.0"/>
-<rect x="546.0" y="688.0" width="278.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
-<text class="strong" x="556.0" y="708.0">7. neighbors(similarUser, PURCHASED OUTGOING)</text>
-<path class="line" d="M535.0 718.0 L835.0 718.0"/>
-<rect x="892.2" y="764.0" width="185.6" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
-<text class="strong" x="902.2" y="784.0">8. traverse purchase graph</text>
-<path class="line" d="M835.0 794.0 L1135.0 794.0"/>
-<rect x="484.2" y="840.0" width="401.6" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
-<text class="strong" x="494.2" y="860.0">9. candidate products excluding Alices existing products</text>
-<path class="dashed" d="M1135.0 870.0 L235.0 870.0"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="2880" height="1515" viewBox="0 0 2880 1515">
+
+    <defs>
+      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
+        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
+      </filter>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+      </marker>
+    </defs>
+    <style>
+      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
+      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
+      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
+      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
+      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
+      .card { filter: url(#softShadow); }
+      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
+    </style>
+
+<defs><marker id="seqArrow" markerWidth="6" markerHeight="6" refX="5.5" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M 0 0 L 6 3 L 0 6 z" fill="#2E9C9B"/></marker></defs>
+<rect x="0" y="0" width="2880" height="1515" fill="#F8FAFC"/>
+<rect x="24" y="24" width="2832" height="1467" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
+<circle cx="2816" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
+<circle cx="2776" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
+<circle cx="2736" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
+<text x="72" y="82" class="title">Recommendation Flow</text>
+<text x="74" y="118" class="subtitle">The example turns purchases and follows into short graph traversals plus product PageRank.</text>
+<text x="1440.0" y="1467" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: recommendation-examples / Recommendation Flow</text>
+<rect x="70" y="150" width="2740" height="1225" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+<rect x="115.0" y="190" width="270" height="74" rx="12" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2.2" filter="url(#softShadow)"/>
+<text x="250.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">Abstract Test</text>
+<line x1="250.0" y1="282" x2="250.0" y2="1283" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
+<rect x="455.0" y="190" width="270" height="74" rx="12" fill="#DCFCE7" stroke="#22C55E" stroke-width="2.2" filter="url(#softShadow)"/>
+<text x="590.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">RecommendService</text>
+<line x1="590.0" y1="282" x2="590.0" y2="1283" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
+<rect x="795.0" y="190" width="270" height="74" rx="12" fill="#FEF3C7" stroke="#D97706" stroke-width="2.2" filter="url(#softShadow)"/>
+<text x="930.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">GraphOperations</text>
+<line x1="930.0" y1="282" x2="930.0" y2="1283" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
+<rect x="1135.0" y="190" width="270" height="74" rx="12" fill="#FEE2E2" stroke="#DB2777" stroke-width="2.2" filter="url(#softShadow)"/>
+<text x="1270.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">Purchase Graph</text>
+<line x1="1270.0" y1="282" x2="1270.0" y2="1283" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
+<rect x="1475.0" y="190" width="270" height="74" rx="12" fill="#CCFBF1" stroke="#2E9C9B" stroke-width="2.2" filter="url(#softShadow)"/>
+<text x="1610.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">Similar Users</text>
+<line x1="1610.0" y1="282" x2="1610.0" y2="1283" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
+<rect x="1815.0" y="190" width="270" height="74" rx="12" fill="#FEF3C7" stroke="#D97706" stroke-width="2.2" filter="url(#softShadow)"/>
+<text x="1950.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">Follow Graph</text>
+<line x1="1950.0" y1="282" x2="1950.0" y2="1283" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
+<rect x="2155.0" y="190" width="270" height="74" rx="12" fill="#DCFCE7" stroke="#22C55E" stroke-width="2.2" filter="url(#softShadow)"/>
+<text x="2290.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">PageRank</text>
+<line x1="2290.0" y1="282" x2="2290.0" y2="1283" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
+<rect x="2495.0" y="190" width="270" height="74" rx="12" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2.2" filter="url(#softShadow)"/>
+<text x="2630.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">Recommendations</text>
+<line x1="2630.0" y1="282" x2="2630.0" y2="1283" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
+<rect x="242.0" y="312" width="16" height="716" rx="6" fill="#DBEAFE" stroke="#3B82F6" stroke-width="1.5"/>
+<rect x="582.0" y="312" width="16" height="886" rx="6" fill="#DCFCE7" stroke="#22C55E" stroke-width="1.5"/>
+<rect x="922.0" y="567" width="16" height="121" rx="6" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5"/>
+<rect x="1262.0" y="397" width="16" height="546" rx="6" fill="#FEE2E2" stroke="#DB2777" stroke-width="1.5"/>
+<rect x="1602.0" y="737" width="16" height="121" rx="6" fill="#CCFBF1" stroke="#2E9C9B" stroke-width="1.5"/>
+<rect x="1942.0" y="1077" width="16" height="36" rx="6" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5"/>
+<rect x="2282.0" y="1162" width="16" height="121" rx="6" fill="#DCFCE7" stroke="#22C55E" stroke-width="1.5"/>
+<rect x="2622.0" y="907" width="16" height="376" rx="6" fill="#DBEAFE" stroke="#3B82F6" stroke-width="1.5"/>
+<line x1="260.0" y1="330" x2="580.0" y2="330" stroke="#4F83BF" stroke-width="2.7" marker-end="url(#seqArrow)"/>
+<rect x="277.5" y="286" width="285" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
+<circle cx="301.5" cy="301" r="13" fill="#4F83BF"/>
+<text x="301.5" y="306" text-anchor="middle" class="tiny" style="fill:#FFFFFF">1</text>
+<text x="325.5" y="306" class="tiny">add users and products</text>
+<line x1="600.0" y1="415" x2="1260.0" y2="415" stroke="#D6A441" stroke-width="2.7" marker-end="url(#seqArrow)"/>
+<rect x="780.0" y="371" width="300" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
+<circle cx="804.0" cy="386" r="13" fill="#D6A441"/>
+<text x="804.0" y="391" text-anchor="middle" class="tiny" style="fill:#FFFFFF">2</text>
+<text x="828.0" y="391" class="tiny">create PURCHASED edges</text>
+<line x1="260.0" y1="500" x2="580.0" y2="500" stroke="#4F83BF" stroke-width="2.7" marker-end="url(#seqArrow)"/>
+<rect x="270.0" y="456" width="300" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
+<circle cx="294.0" cy="471" r="13" fill="#4F83BF"/>
+<text x="294.0" y="476" text-anchor="middle" class="tiny" style="fill:#FFFFFF">3</text>
+<text x="318.0" y="476" class="tiny">recommendProducts(Alice)</text>
+<line x1="600.0" y1="585" x2="920.0" y2="585" stroke="#2F9E6B" stroke-width="2.7" marker-end="url(#seqArrow)"/>
+<rect x="602.5" y="541" width="315" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
+<circle cx="626.5" cy="556" r="13" fill="#2F9E6B"/>
+<text x="626.5" y="561" text-anchor="middle" class="tiny" style="fill:#FFFFFF">4</text>
+<text x="650.5" y="561" class="tiny">neighbors(Alice, PURCHASED)</text>
+<line x1="940.0" y1="670" x2="1260.0" y2="670" stroke="#2E9C9B" stroke-width="2.7" stroke-dasharray="10 8" marker-end="url(#seqArrow)"/>
+<rect x="995.0" y="626" width="210" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
+<circle cx="1019.0" cy="641" r="13" fill="#2E9C9B"/>
+<text x="1019.0" y="646" text-anchor="middle" class="tiny" style="fill:#FFFFFF">5</text>
+<text x="1043.0" y="646" class="tiny">owned products</text>
+<line x1="600.0" y1="755" x2="1600.0" y2="755" stroke="#2F9E6B" stroke-width="2.7" marker-end="url(#seqArrow)"/>
+<rect x="940.0" y="711" width="320" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
+<circle cx="964.0" cy="726" r="13" fill="#2F9E6B"/>
+<text x="964.0" y="731" text-anchor="middle" class="tiny" style="fill:#FFFFFF">6</text>
+<text x="988.0" y="731" class="tiny">incoming PURCHASED buyers</text>
+<line x1="1600.0" y1="840" x2="1280.0" y2="840" stroke="#2F9E6B" stroke-width="2.7" marker-end="url(#seqArrow)"/>
+<rect x="1302.5" y="796" width="275" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
+<circle cx="1326.5" cy="811" r="13" fill="#2F9E6B"/>
+<text x="1326.5" y="816" text-anchor="middle" class="tiny" style="fill:#FFFFFF">7</text>
+<text x="1350.5" y="816" class="tiny">other bought products</text>
+<line x1="1280.0" y1="925" x2="2620.0" y2="925" stroke="#2E9C9B" stroke-width="2.7" stroke-dasharray="10 8" marker-end="url(#seqArrow)"/>
+<rect x="1800.0" y="881" width="300" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
+<circle cx="1824.0" cy="896" r="13" fill="#2E9C9B"/>
+<text x="1824.0" y="901" text-anchor="middle" class="tiny" style="fill:#FFFFFF">8</text>
+<text x="1848.0" y="901" class="tiny">exclude owned products</text>
+<line x1="260.0" y1="1010" x2="580.0" y2="1010" stroke="#4F83BF" stroke-width="2.7" marker-end="url(#seqArrow)"/>
+<rect x="275.0" y="966" width="290" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
+<circle cx="299.0" cy="981" r="13" fill="#4F83BF"/>
+<text x="299.0" y="986" text-anchor="middle" class="tiny" style="fill:#FFFFFF">9</text>
+<text x="323.0" y="986" class="tiny">recommendFollows(Alice)</text>
+<line x1="600.0" y1="1095" x2="1940.0" y2="1095" stroke="#2F9E6B" stroke-width="2.7" marker-end="url(#seqArrow)"/>
+<rect x="1152.5" y="1051" width="235" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
+<circle cx="1176.5" cy="1066" r="13" fill="#2F9E6B"/>
+<text x="1176.5" y="1071" text-anchor="middle" class="tiny" style="fill:#FFFFFF">10</text>
+<text x="1200.5" y="1071" class="tiny">two-hop FOLLOWS</text>
+<line x1="600.0" y1="1180" x2="2280.0" y2="1180" stroke="#2F9E6B" stroke-width="2.7" marker-end="url(#seqArrow)"/>
+<rect x="1317.5" y="1136" width="245" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
+<circle cx="1341.5" cy="1151" r="13" fill="#2F9E6B"/>
+<text x="1341.5" y="1156" text-anchor="middle" class="tiny" style="fill:#FFFFFF">11</text>
+<text x="1365.5" y="1156" class="tiny">pageRank(products)</text>
+<line x1="2300.0" y1="1265" x2="2620.0" y2="1265" stroke="#2E9C9B" stroke-width="2.7" stroke-dasharray="10 8" marker-end="url(#seqArrow)"/>
+<rect x="2342.5" y="1221" width="235" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
+<circle cx="2366.5" cy="1236" r="13" fill="#2E9C9B"/>
+<text x="2366.5" y="1241" text-anchor="middle" class="tiny" style="fill:#FFFFFF">12</text>
+<text x="2390.5" y="1241" class="tiny">popular products</text>
+<rect x="150" y="1300" width="2580" height="42" rx="11" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
+<text x="1440.0" y="1327" text-anchor="middle" class="tiny">Numbered labels sit above message lines; lifelines and activations stay separated from participant cards.</text>
 </svg>
