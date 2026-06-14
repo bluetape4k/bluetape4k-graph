@@ -219,6 +219,8 @@ def architecture_svg(slug: str) -> str:
         return graph_neo4j_overview_svg()
     if slug == "graph-graph-neo4j-architecture-02":
         return graph_neo4j_reactive_coroutine_svg()
+    if slug == "graph-graph-neo4j-architecture-09":
+        return graph_neo4j_neighbors_pattern_svg()
     title = "Bluetape4k Graph Overview" if slug.startswith("root") else f"{module_title(slug)} Architecture"
     subtitle = "Current README and module source model"
     out = open_svg(title, subtitle)
@@ -1033,6 +1035,93 @@ def graph_neo4j_reactive_coroutine_svg() -> str:
     out.append(
         '<text x="920" y="988" text-anchor="middle" class="tiny">'
         'Source: Neo4jCoroutineSession.kt and Neo4jRecordMapper.kt; ReactiveSession is closed after collection, but the Driver is not closed.</text>'
+    )
+    return close_svg(out)
+
+
+def graph_neo4j_neighbors_pattern_svg() -> str:
+    width, height = 1840, 1080
+    out = open_svg(
+        "Neo4j Neighbors Direction Patterns",
+        "neighbors(startId, options) builds a safe edge pattern for OUTGOING, INCOMING, or BOTH traversal and maps DISTINCT neighbor records",
+        width,
+        height,
+    )
+    out[-1] = (
+        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: graph-neo4j / Neighbors Direction Patterns</text>'
+    )
+    out.append('<rect x="70" y="150" width="1700" height="780" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+
+    def relation_label(x: float, y: float, text: str) -> None:
+        out.append(f'<text x="{x}" y="{y}" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">{esc(text)}</text>')
+        out.append(f'<text x="{x}" y="{y}" text-anchor="middle" class="tiny">{esc(text)}</text>')
+
+    arrow(out, 365, 300, 535, 300, "validate", "line")
+    arrow(out, 365, 535, 535, 535, "depth", "thin")
+    arrow(out, 830, 300, 1010, 275, "edgePart", "line")
+    arrow(out, 830, 535, 1010, 535, "edgePart", "thin")
+    arrow(out, 830, 770, 1010, 795, "edgePart", "line")
+    arrow(out, 1360, 275, 1500, 420, "MATCH", "thin")
+    arrow(out, 1360, 535, 1500, 535, "MATCH", "thin")
+    arrow(out, 1360, 795, 1500, 650, "MATCH", "thin")
+    relation_label(920, 205, "same construction in sync and suspend operations")
+
+    card(out, 115, 225, 250, 180, "NeighborOptions", [
+        "startId: GraphElementId",
+        "edgeLabel optional",
+        "direction",
+        "maxDepth",
+    ], PALETTE["sky"])
+    card(out, 115, 455, 250, 160, "Depth Builder", [
+        "maxDepth == 1 -> empty",
+        "else *1..maxDepth",
+        "label + depth suffix",
+    ], PALETTE["mint"])
+
+    card(out, 535, 215, 295, 170, "OUTGOING", [
+        "(start)-[edgePart]->",
+        "(neighbor)",
+        "follows outgoing rels",
+    ], PALETTE["lemon"])
+    card(out, 535, 450, 295, 170, "INCOMING", [
+        "(start)<-[edgePart]-",
+        "(neighbor)",
+        "follows incoming rels",
+    ], PALETTE["lavender"])
+    card(out, 535, 685, 295, 170, "BOTH", [
+        "(start)-[edgePart]-",
+        "(neighbor)",
+        "undirected pattern",
+    ], PALETTE["aqua"])
+
+    card(out, 1010, 205, 350, 160, "Cypher Pattern", [
+        "MATCH pattern",
+        "WHERE elementId(start) = $startId",
+        "RETURN DISTINCT neighbor",
+    ], PALETTE["peach"])
+    card(out, 1010, 455, 350, 160, "Safe Identifier Rules", [
+        "edgeLabel.requireNotBlank",
+        "requireSafeIdentifier",
+        "params carry startId.value",
+    ], PALETTE["rose"])
+    card(out, 1010, 705, 350, 160, "Result Mapping", [
+        "record key: neighbor",
+        "Neo4jRecordMapper.recordToVertex",
+        "GraphVertex list or Flow",
+    ], PALETTE["sky"])
+
+    card(out, 1500, 420, 220, 230, "Neo4j", [
+        "elementId(start)",
+        "relationship direction",
+        "distinct neighbors",
+        "records returned",
+    ], PALETTE["mint"])
+
+    out.append('<rect x="180" y="965" width="1480" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+    out.append(
+        '<text x="920" y="998" text-anchor="middle" class="tiny">'
+        'Source: Neo4jGraphOperations.kt and Neo4jGraphSuspendOperations.kt neighbors(); direction changes only the Cypher relationship arrows.</text>'
     )
     return close_svg(out)
 
