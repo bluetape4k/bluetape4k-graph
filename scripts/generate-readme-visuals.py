@@ -209,6 +209,8 @@ def architecture_svg(slug: str) -> str:
         return graph_core_path_algorithm_flow_svg()
     if slug == "graph-graph-age-architecture-01":
         return graph_age_layer_structure_svg()
+    if slug == "graph-graph-age-architecture-02":
+        return graph_age_execution_flow_svg()
     title = "Bluetape4k Graph Overview" if slug.startswith("root") else f"{module_title(slug)} Architecture"
     subtitle = "Current README and module source model"
     out = open_svg(title, subtitle)
@@ -611,6 +613,89 @@ def graph_age_layer_structure_svg() -> str:
     out.append(
         '<text x="880" y="940" text-anchor="middle" dominant-baseline="middle" class="tiny">'
         'AGE setup is connection-owned: HikariCP initializes LOAD age and search_path; graph-core models remain the public boundary.</text>'
+    )
+    return close_svg(out)
+
+
+def graph_age_execution_flow_svg() -> str:
+    width, height = 1760, 1040
+    out = open_svg(
+        "Apache AGE Execution Flow",
+        "AGE operations wrap Cypher in SQL, execute through Exposed/JDBC, then parse agtype rows into graph-core models",
+        width,
+        height,
+    )
+    out[-1] = (
+        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: graph-age / Apache AGE Flow</text>'
+    )
+    out.append('<rect x="70" y="150" width="1620" height="720" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+
+    # Lines first; cards stay visually dominant and labels are kept in open gutters.
+    arrow(out, 390, 310, 468, 310, "call", "line")
+    arrow(out, 760, 310, 838, 310, "transaction", "line")
+    arrow(out, 1120, 310, 1198, 310, "SQL", "line")
+    arrow(out, 1330, 400, 1330, 478, "execute", "line")
+    arrow(out, 1200, 585, 1120, 735, "agtype", "line")
+    arrow(out, 840, 740, 768, 740, "parse", "line")
+    arrow(out, 980, 475, 1205, 385, "literals", "thin")
+    arrow(out, 610, 385, 450, 540, "weighted", "thin")
+
+    card(out, 120, 235, 270, 150, "Graph API Call", [
+        "createVertex / createEdge",
+        "neighbors / shortestPath",
+        "batch + merge paths",
+    ], PALETTE["sky"])
+    card(out, 470, 235, 290, 150, "AgeGraphOperations", [
+        "validate labels and ids",
+        "choose native AGE query",
+        "or fallback runner",
+    ], PALETTE["mint"])
+    card(out, 840, 235, 280, 150, "Exposed Boundary", [
+        "exposedTransaction",
+        "newSuspendedTransaction",
+        "exec(...) callback",
+    ], PALETTE["lemon"])
+    card(out, 1200, 235, 300, 150, "AgeSql", [
+        "wrap Cypher in SELECT",
+        "ag_catalog.cypher",
+        "typed result columns",
+    ], PALETTE["rose"])
+
+    card(out, 780, 455, 300, 150, "Property Serialization", [
+        "AgePropertySerializer",
+        "safe identifiers",
+        "escaped Cypher literals",
+    ], PALETTE["lavender"])
+    card(out, 1200, 455, 300, 150, "PostgreSQL AGE", [
+        "LOAD age + search_path",
+        "MATCH / CREATE / RETURN",
+        "agtype result rows",
+    ], PALETTE["aqua"])
+    card(out, 840, 665, 280, 150, "AgeTypeParser", [
+        "parseVertex / parseEdge",
+        "parsePath",
+        "JSON-like agtype",
+    ], PALETTE["peach"])
+    card(out, 490, 665, 280, 150, "Graph Models", [
+        "GraphVertex",
+        "GraphEdge",
+        "GraphPath",
+    ], PALETTE["mint"])
+    card(out, 150, 500, 300, 165, "Fallback Branch", [
+        "weightProperty set",
+        "ShortestPathFallback",
+        "Dijkstra / A* uses edges",
+    ], PALETTE["lemon"])
+
+    out.append('<rect x="180" y="892" width="1400" height="62" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+    out.append(
+        '<text x="880" y="917" text-anchor="middle" dominant-baseline="middle" class="tiny">'
+        'Source: AgeGraphOperations CRUD/traversal methods, AgeSql.cypher, AgePropertySerializer, AgeTypeParser, AgeGraphSuspendOperations.</text>'
+    )
+    out.append(
+        '<text x="880" y="940" text-anchor="middle" dominant-baseline="middle" class="tiny">'
+        'Every connection must load AGE and set search_path; weighted shortestPath routes to graph-core JVM fallback instead of native Cypher.</text>'
     )
     return close_svg(out)
 
