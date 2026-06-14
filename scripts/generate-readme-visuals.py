@@ -435,11 +435,75 @@ def graph_core_path_class_svg() -> str:
     return close_svg(out)
 
 
+def graph_core_repository_class_svg() -> str:
+    width, height = 1760, 1120
+    out = open_svg(
+        "Graph Core Repository Contracts",
+        "Facade interfaces compose session, vertex, edge, traversal, algorithm, and optional capabilities",
+        width,
+        height,
+    )
+    out[-1] = (
+        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: graph-core / Repository Contracts</text>'
+    )
+    out.append('<rect x="70" y="150" width="1620" height="800" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+
+    columns = [
+        (
+            "GraphOperations",
+            "sync facade",
+            ["GraphSession", "GraphVertexRepository", "GraphEdgeRepository", "GraphGenericRepository"],
+            ["blocking calls", "List<T> results", "backend implements directly"],
+            PALETTE["sky"],
+        ),
+        (
+            "GraphSuspendOperations",
+            "coroutine facade",
+            ["GraphSuspendSession", "GraphSuspendVertexRepository", "GraphSuspendEdgeRepository", "GraphSuspendGenericRepository"],
+            ["suspend calls", "Flow<T> streams", "cancellation-aware adapters"],
+            PALETTE["mint"],
+        ),
+        (
+            "GraphVirtualThreadOperations",
+            "virtual-thread facade",
+            ["AutoCloseable", "Session + Vertex/Edge repos", "Traversal + Algorithm repos", "CompletableFuture API"],
+            ["CompletableFuture<T>", "Async method surface", "wraps sync operations"],
+            PALETTE["lavender"],
+        ),
+    ]
+
+    x_positions = [115, 630, 1145]
+    for x, (title, subtitle, inherited, behavior, fill) in zip(x_positions, columns):
+        card(out, x, 215, 470, 230, title, [subtitle] + inherited, fill)
+        card(out, x, 505, 470, 205, "Repository Profile", behavior, PALETTE["lemon"] if fill != PALETTE["lemon"] else PALETTE["aqua"])
+        arrow(out, x + 235, 447, x + 235, 503, "uses", "thin")
+
+    capability_cards = [
+        ("Traversal", ["neighbors", "shortestPath", "allPaths", "aStarPath"], PALETTE["aqua"]),
+        ("Algorithms", ["pageRank", "degree", "components", "bfs / dfs / cycles"], PALETTE["peach"]),
+        ("Optional Extensions", ["transaction blocks", "schemaManager", "mergeVertex / mergeEdge"], PALETTE["rose"]),
+    ]
+    x = 160
+    for title, lines, fill in capability_cards:
+        card(out, x, 735, 430, 180, title, lines, fill)
+        x += 520
+
+    out.append('<rect x="170" y="975" width="1420" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+    out.append(
+        '<text x="880" y="1008" text-anchor="middle" class="tiny">'
+        'Source: graph-core repository package; GraphGenericRepository bundles traversal and algorithm repositories.</text>'
+    )
+    return close_svg(out)
+
+
 def class_svg(slug: str) -> str:
     if slug == "graph-graph-core-class-02":
         return graph_core_model_class_svg()
     if slug == "graph-graph-core-class-03":
         return graph_core_path_class_svg()
+    if slug == "graph-graph-core-class-04":
+        return graph_core_repository_class_svg()
     title = "Backend Capability Matrix" if "capability" in slug else f"{module_title(slug)} Class Model"
     subtitle = "Contracts, data classes, and adapter responsibilities"
     out = open_svg(title, subtitle)
