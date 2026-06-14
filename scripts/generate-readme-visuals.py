@@ -1820,6 +1820,94 @@ def graph_core_schema_class_svg() -> str:
     return close_svg(out)
 
 
+def graph_neo4j_operations_class_svg() -> str:
+    width, height = 1840, 1180
+    out = open_svg(
+        "Neo4jGraphOperations Class Model",
+        "Synchronous graph-core adapter over Neo4j Driver sessions, Cypher execution, record mapping, schema DDL, and JVM algorithm fallbacks",
+        width,
+        height,
+    )
+    out[-1] = (
+        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: graph-neo4j / Neo4jGraphOperations</text>'
+    )
+    out.append('<rect x="70" y="150" width="1700" height="880" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+
+    def relation_label(x: float, y: float, text: str) -> None:
+        out.append(f'<text x="{x}" y="{y}" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">{esc(text)}</text>')
+        out.append(f'<text x="{x}" y="{y}" text-anchor="middle" class="tiny">{esc(text)}</text>')
+
+    # Draw relations before cards so labels never cover class labels.
+    arrow(out, 430, 325, 610, 395, "implements", "line")
+    arrow(out, 430, 535, 610, 505, "implements", "line")
+    arrow(out, 430, 745, 610, 615, "implements", "line")
+    arrow(out, 970, 395, 1160, 305, "opens", "line")
+    arrow(out, 970, 505, 1160, 455, "maps records", "thin")
+    arrow(out, 970, 615, 1160, 625, "delegates", "thin")
+    arrow(out, 850, 710, 850, 835, "tx scope", "thin")
+    arrow(out, 1005, 745, 1160, 845, "fallbacks", "thin")
+    relation_label(805, 248, "Driver externally owned")
+
+    card(out, 120, 240, 310, 170, "GraphOperations", [
+        "GraphVertexRepository",
+        "GraphEdgeRepository",
+        "GraphTraversalRepository",
+        "GraphAlgorithmRepository",
+    ], PALETTE["sky"])
+    card(out, 120, 455, 310, 160, "GraphTransactional", [
+        "transaction(block)",
+        "GraphTransactionScope",
+        "commit or rollback",
+    ], PALETTE["mint"])
+    card(out, 120, 670, 310, 160, "Schema + Merge", [
+        "GraphSchemaManagement",
+        "GraphMergeOperations",
+        "MERGE vertex / edge",
+    ], PALETTE["peach"])
+
+    card(out, 610, 295, 360, 475, "Neo4jGraphOperations", [
+        "driver: Driver",
+        "database: String = neo4j",
+        "session(): Session",
+        "runQuery(cypher, params)",
+        "elementId() based IDs",
+    ], PALETTE["lemon"])
+
+    card(out, 1160, 220, 380, 165, "Neo4j Driver Session", [
+        "SessionConfig.withDatabase",
+        "blocking Session",
+        "s.run(cypher, params)",
+    ], PALETTE["lavender"])
+    card(out, 1160, 430, 380, 175, "Neo4jRecordMapper", [
+        "recordToVertex / Edge",
+        "recordToPath",
+        "Node / Relationship / Path",
+    ], PALETTE["aqua"])
+    card(out, 1160, 650, 380, 160, "Neo4jGraphSchemaManager", [
+        "createIndex",
+        "unique constraints",
+        "list/drop metadata",
+    ], PALETTE["rose"])
+
+    card(out, 650, 835, 400, 120, "Neo4jGraphTransactionScope", [
+        "uses Transaction",
+        "same mapper and Cypher contract",
+    ], PALETTE["mint"])
+    card(out, 1160, 845, 380, 140, "Algorithm Fallbacks", [
+        "ShortestPathFallback",
+        "BfsDfsRunner",
+        "CycleDetector / UnionFind",
+    ], PALETTE["sky"])
+
+    out.append('<rect x="180" y="1065" width="1480" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+    out.append(
+        '<text x="920" y="1098" text-anchor="middle" class="tiny">'
+        'Source: Neo4jGraphOperations.kt; labels and property keys are validated before Cypher text is assembled; close() leaves Driver ownership external.</text>'
+    )
+    return close_svg(out)
+
+
 def class_svg(slug: str) -> str:
     if slug == "graph-graph-core-class-02":
         return graph_core_model_class_svg()
@@ -1835,6 +1923,8 @@ def class_svg(slug: str) -> str:
         return graph_age_sql_class_svg()
     if slug == "graph-graph-age-class-05":
         return graph_age_type_parser_class_svg()
+    if slug == "graph-graph-neo4j-class-03":
+        return graph_neo4j_operations_class_svg()
     title = "Backend Capability Matrix" if "capability" in slug else f"{module_title(slug)} Class Model"
     subtitle = "Contracts, data classes, and adapter responsibilities"
     out = open_svg(title, subtitle)
