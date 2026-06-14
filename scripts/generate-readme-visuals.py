@@ -197,6 +197,8 @@ def diagram_kind(slug: str) -> str:
 def architecture_svg(slug: str) -> str:
     if slug == "graph-graph-core-architecture-01":
         return graph_core_architecture_overview_svg()
+    if slug == "graph-graph-core-architecture-10":
+        return graph_core_path_lifecycle_svg()
     title = "Bluetape4k Graph Overview" if slug.startswith("root") else f"{module_title(slug)} Architecture"
     subtitle = "Current README and module source model"
     out = open_svg(title, subtitle)
@@ -236,6 +238,61 @@ def architecture_svg(slug: str) -> str:
         if i:
             arrow(out, x - gap + 4, 390, x - 8, 390, "maps")
     card(out, 164, 650, 1112, 120, "Source truth", ["README module contract, AGENTS layout, Kotlin source names, benchmark result tables"], PALETTE["aqua"])
+    return close_svg(out)
+
+
+def graph_core_path_lifecycle_svg() -> str:
+    width, height = 1600, 980
+    out = open_svg(
+        "GraphPath Lifecycle",
+        "Path construction, derived views, and traversal algorithm outputs",
+        width,
+        height,
+    )
+    out[-1] = (
+        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: graph-core / GraphPath Lifecycle</text>'
+    )
+    out.append('<rect x="70" y="150" width="1460" height="690" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+
+    steps = [
+        ("No path", ["emptyGraphPath()", "GraphPath.EMPTY", "isEmpty == true"], PALETTE["rose"]),
+        ("Construct", ["graphPathOf(...)", "PathStep list", "VertexStep / EdgeStep"], PALETTE["sky"]),
+        ("Normalize", ["steps alternate", "vertices derived", "edges derived"], PALETTE["mint"]),
+        ("Measure", ["length = edges.size", "totalWeight default", "weighted cost optional"], PALETTE["lemon"]),
+        ("Return", ["shortestPath", "allPaths", "aStarPath"], PALETTE["lavender"]),
+    ]
+    x = 95
+    for i, (title, lines, fill) in enumerate(steps):
+        card(out, x, 260, 250, 210, title, lines, fill)
+        if i < len(steps) - 1:
+            arrow(out, x + 250, 365, x + 283, 365, ["build", "view", "count", "emit"][i], "line")
+        x += 285
+
+    out.append('<text x="800" y="570" text-anchor="middle" class="tiny">example step sequence</text>')
+    sequence = [
+        ("VertexStep(A)", PALETTE["sky"]),
+        ("EdgeStep(KNOWS)", PALETTE["lemon"]),
+        ("VertexStep(B)", PALETTE["sky"]),
+        ("EdgeStep(WORKS_AT)", PALETTE["lemon"]),
+        ("VertexStep(Company)", PALETTE["sky"]),
+    ]
+    x = 135
+    for i, (label, fill) in enumerate(sequence):
+        stroke = CARD_STROKES[fill]
+        out.append(f'<rect x="{x}" y="605" width="240" height="58" rx="12" fill="{fill}" stroke="{stroke}" stroke-width="2"/>')
+        out.append(f'<text x="{x+120}" y="641" text-anchor="middle" class="small">{esc(label)}</text>')
+        if i < len(sequence) - 1:
+            arrow(out, x + 240, 634, x + 286, 634, "", "thin")
+        x += 290
+
+    card(out, 385, 705, 830, 125, "Contract", ["GraphPath does not mutate; builders create value objects.", "Traversal and algorithm repositories return path results."], PALETTE["aqua"])
+
+    out.append('<rect x="150" y="865" width="1300" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+    out.append(
+        '<text x="800" y="898" text-anchor="middle" class="tiny">'
+        'Source: GraphPath.kt and GraphTraversalRepository; weighted runners may override totalWeight with accumulated cost.</text>'
+    )
     return close_svg(out)
 
 
