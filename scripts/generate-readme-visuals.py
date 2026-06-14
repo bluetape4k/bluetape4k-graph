@@ -197,6 +197,8 @@ def diagram_kind(slug: str) -> str:
 def architecture_svg(slug: str) -> str:
     if slug == "root-readme-overview-01":
         return root_readme_overview_svg()
+    if slug == "bluetape4k-graph-architecture-01":
+        return root_architecture_svg()
     if slug == "graph-graph-core-architecture-01":
         return graph_core_architecture_overview_svg()
     if slug == "graph-graph-core-architecture-10":
@@ -1473,6 +1475,91 @@ def root_readme_overview_svg() -> str:
     out.append(
         '<text x="920" y="997" text-anchor="middle" class="tiny">'
         'Source note: root README presents graph-core as the stable API surface; backend modules translate it to each database driver and query model.</text>'
+    )
+    return close_svg(out)
+
+
+def root_architecture_svg() -> str:
+    width, height = 1840, 1080
+    out = open_svg(
+        "Bluetape4k Graph Architecture",
+        "Layered graph platform architecture: public APIs, core contracts, capabilities, backend adapters, database runtimes, I/O, integrations, and validation",
+        width,
+        height,
+    )
+    out[-1] = (
+        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: root README / Architecture</text>'
+    )
+    out.append('<rect x="70" y="150" width="1700" height="800" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+    out.append('<text x="920" y="205" text-anchor="middle" class="tiny">Source: README architecture sections, module layout, graph-core contracts, backend READMEs, benchmark and integration modules</text>')
+
+    arrow(out, 315, 335, 520, 335, "calls", "line")
+    arrow(out, 845, 335, 1015, 335, "capabilities", "line")
+    arrow(out, 1325, 335, 1510, 335, "query model", "line")
+    arrow(out, 685, 535, 685, 690, "bulk data", "thin")
+    arrow(out, 250, 440, 250, 560, "web apps", "thin")
+    arrow(out, 1275, 535, 1420, 690, "measure", "thin")
+
+    card(out, 115, 250, 270, 190, "Public API", [
+        "GraphOperations",
+        "GraphSuspendOperations",
+        "schema / merge / transaction",
+        "virtual-thread adapters",
+    ], PALETTE["sky"])
+    card(out, 520, 245, 325, 205, "graph-core", [
+        "GraphVertex / GraphEdge",
+        "GraphPath / PathStep",
+        "repositories and sessions",
+        "validation and ID model",
+    ], PALETTE["mint"])
+    card(out, 1015, 245, 310, 205, "Capabilities", [
+        "batch insert",
+        "schema/index manager",
+        "merge/upsert",
+        "weighted paths",
+    ], PALETTE["lavender"])
+    card(out, 1510, 245, 275, 205, "Database Runtime", [
+        "Neo4j",
+        "Memgraph",
+        "PostgreSQL AGE",
+        "TinkerGraph / FalkorDB",
+    ], PALETTE["aqua"])
+
+    card(out, 1030, 505, 370, 205, "Backend Adapters", [
+        "Neo4j Java Driver",
+        "Neo4j-compatible Memgraph",
+        "Exposed/JDBC AGE SQL",
+        "Gremlin and jfalkordb",
+    ], PALETTE["lemon"])
+    card(out, 520, 690, 330, 190, "Graph I/O", [
+        "CSV import/export",
+        "Jackson NDJSON",
+        "GraphML StAX",
+        "OkIO compression/encryption",
+    ], PALETTE["peach"])
+    card(out, 115, 560, 320, 190, "App Integrations", [
+        "Ktor 3 plugin",
+        "Spring Boot 4 auto-config",
+        "domain example apps",
+        "coroutine-friendly APIs",
+    ], PALETTE["rose"])
+    card(out, 1420, 690, 300, 190, "Validation", [
+        "JMH benchmarks",
+        "Testcontainers backends",
+        "BOM version alignment",
+        "README visual evidence",
+    ], PALETTE["sky"])
+
+    out.append('<rect x="155" y="805" width="300" height="115" rx="14" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"/>')
+    out.append('<text x="305" y="848" text-anchor="middle" class="label">Source Sets</text>')
+    out.append('<text x="305" y="885" text-anchor="middle" class="small">main / test / fixtures</text>')
+    out.append('<text x="305" y="913" text-anchor="middle" class="small">examples / benchmark</text>')
+
+    out.append('<rect x="180" y="965" width="1480" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+    out.append(
+        '<text x="920" y="997" text-anchor="middle" class="tiny">'
+        'Source note: graph-core owns the stable contracts; adapters translate contracts into each backend driver and database runtime.</text>'
     )
     return close_svg(out)
 
