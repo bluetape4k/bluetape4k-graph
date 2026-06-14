@@ -1,73 +1,122 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1700" height="783" viewBox="0 0 1700 783" role="img" aria-label="Module Layer Structure">
-<defs>
-  <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="7" stdDeviation="8" flood-color="#1f2937" flood-opacity="0.10"/></filter>
-  <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth"><path d="M1,1 L8,4.5 L1,8 Z" fill="#758297"/></marker>
-  <style>
-    .canvas{fill:#f7f9fc}.frame{fill:#fff;stroke:#d8e0ea;stroke-width:1.5}
-    .title{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:40px;font-weight:400;fill:#102033}
-    .subtitle{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:14px;font-weight:400;fill:#536273}
-    .label{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:21px;font-weight:400;fill:#102033}
-    .small{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:12px;font-weight:400;fill:#536273}
-    .strong{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:13px;font-weight:400;fill:#102033}
-    .card{stroke-width:2.0;filter:url(#shadow)}
-    .line{stroke:#758297;stroke-width:2.1;fill:none;marker-end:url(#arrow)}
-    .dashed{stroke:#758297;stroke-width:2.1;stroke-dasharray:7 6;fill:none;marker-end:url(#arrow)}
-    .lifeline{stroke:#b7c2d1;stroke-width:1.8;stroke-dasharray:9 9}
-  </style>
-</defs>
-<rect class="canvas" width="1700" height="783"/>
-<rect class="frame" x="32" y="28" width="1636" height="727" rx="28"/>
-<text class="title" x="66" y="82">Module Layer Structure</text>
-<text class="subtitle" x="70" y="116">Graphviz-derived layout and orthogonal route evidence</text>
-<path class="line" d="M267.3 205.7 L267.3 205.7 L267.3 288.0 L267.3 288.0"/>
-<path class="line" d="M1465.4 366.3 L1465.4 412.8 L1465.4 496.7 L1465.4 496.7 L1465.4 496.7 L1131.3 496.7 L1131.3 496.7"/>
-<path class="line" d="M901.9 526.9 L901.9 526.9 L901.9 609.2 L901.9 609.2"/>
-<path class="line" d="M983.5 366.3 L983.5 366.3 L983.5 448.6 L983.5 448.6"/>
-<path class="line" d="M1465.4 205.7 L1465.4 205.7 L1465.4 288.0 L1465.4 288.0"/>
-<path class="line" d="M659.5 526.9 L659.5 526.9 L659.5 609.2 L659.5 609.2"/>
-<path class="line" d="M537.7 366.3 L537.7 366.3 L537.7 448.6 L537.7 448.6"/>
-<g transform="translate(50.0,118.0)">
-<rect class="card" x="0" y="0" width="434.6" height="115.0" rx="14" fill="#E8F3FF" stroke="#5B8DEF"/>
-<text class="label" x="217.3" y="33.5" text-anchor="middle">graph-core</text>
-<text class="label" x="217.3" y="57.5" text-anchor="middle">(GraphOperations</text>
-<text class="label" x="217.3" y="81.5" text-anchor="middle">interface)</text>
-</g>
-<g transform="translate(1281.3,289.1)">
-<rect class="card" x="0" y="0" width="368.2" height="94.0" rx="14" fill="#EAF7EF" stroke="#58A978"/>
-<text class="label" x="184.1" y="35.0" text-anchor="middle">graph-age</text>
-<text class="label" x="184.1" y="59.0" text-anchor="middle">(AgeGraphOperations)</text>
-</g>
-<g transform="translate(162.3,294.1)">
-<rect class="card" x="0" y="0" width="210.0" height="84.0" rx="14" fill="#FFF3D9" stroke="#D6A441"/>
-<text class="label" x="105.0" y="42.0" text-anchor="middle">core</text>
-</g>
-<g transform="translate(840.0,454.7)">
-<rect class="card" x="0" y="0" width="287.1" height="84.0" rx="14" fill="#FDECEF" stroke="#DC6B82"/>
-<text class="label" x="143.6" y="42.0" text-anchor="middle">AgeSql (Cypher → SQL)</text>
-</g>
-<g transform="translate(557.4,610.3)">
-<rect class="card" x="0" y="0" width="406.3" height="94.0" rx="14" fill="#E9F7F6" stroke="#45A7A1"/>
-<text class="label" x="203.2" y="35.0" text-anchor="middle">PostgreSQL AGE</text>
-<text class="label" x="203.2" y="59.0" text-anchor="middle">(ag_catalog.cypher)</text>
-</g>
-<g transform="translate(750.2,289.1)">
-<rect class="card" x="0" y="0" width="466.6" height="94.0" rx="14" fill="#F1ECFF" stroke="#8A72D6"/>
-<text class="label" x="233.3" y="35.0" text-anchor="middle">Age Property Serializer</text>
-<text class="label" x="233.3" y="59.0" text-anchor="middle">(value serialization)</text>
-</g>
-<g transform="translate(1286.2,128.5)">
-<rect class="card" x="0" y="0" width="358.4" height="94.0" rx="14" fill="#F4F7FA" stroke="#8CA0B8"/>
-<text class="label" x="179.2" y="35.0" text-anchor="middle">AgeTypeParser (agtype</text>
-<text class="label" x="179.2" y="59.0" text-anchor="middle">parsing)</text>
-</g>
-<g transform="translate(346.6,449.7)">
-<rect class="card" x="0" y="0" width="414.9" height="94.0" rx="14" fill="#FFF0E4" stroke="#D98A4A"/>
-<text class="label" x="207.5" y="35.0" text-anchor="middle">Exposed Database (JDBC</text>
-<text class="label" x="207.5" y="59.0" text-anchor="middle">transaction)</text>
-</g>
-<g transform="translate(388.6,289.1)">
-<rect class="card" x="0" y="0" width="298.2" height="94.0" rx="14" fill="#E8F3FF" stroke="#5B8DEF"/>
-<text class="label" x="149.1" y="35.0" text-anchor="middle">HikariCP (connection</text>
-<text class="label" x="149.1" y="59.0" text-anchor="middle">pool)</text>
-</g>
+<svg xmlns="http://www.w3.org/2000/svg" width="1760" height="1040" viewBox="0 0 1760 1040">
+
+    <defs>
+      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
+        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
+      </filter>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+      </marker>
+    </defs>
+    <style>
+      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
+      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
+      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
+      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
+      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
+      .card { filter: url(#softShadow); }
+      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
+    </style>
+
+<rect x="0" y="0" width="1760" height="1040" fill="#F8FAFC"/>
+<rect x="24" y="24" width="1712" height="992" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
+<circle cx="1696" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
+<circle cx="1656" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
+<circle cx="1616" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
+<text x="72" y="82" class="title">Graph AGE Module Layer Structure</text>
+<text x="74" y="118" class="subtitle">Apache AGE adapter maps graph-core contracts to Cypher-over-SQL through Exposed and PostgreSQL JDBC</text>
+<text x="880.0" y="992" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: graph-age / Layer Structure</text>
+<rect x="70" y="150" width="1620" height="720" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+<path d="M 500 305 C 529.0 305, 529.0 305, 558 305" class="line"/>
+<text x="529.0" y="277.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">API</text>
+<text x="529.0" y="277.0" text-anchor="middle" class="tiny">API</text>
+<path d="M 960 305 C 916.0 305, 916.0 305, 872 305" class="thin"/>
+<text x="916.0" y="277.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">wraps</text>
+<text x="916.0" y="277.0" text-anchor="middle" class="tiny">wraps</text>
+<path d="M 690 380 C 505.0 380, 505.0 468, 320 468" class="line"/>
+<text x="505.0" y="396.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">queries</text>
+<text x="505.0" y="396.0" text-anchor="middle" class="tiny">queries</text>
+<path d="M 730 380 C 915.0 380, 915.0 468, 1100 468" class="thin"/>
+<text x="915.0" y="396.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">maps</text>
+<text x="915.0" y="396.0" text-anchor="middle" class="tiny">maps</text>
+<path d="M 870 365 C 1094.0 365, 1094.0 520, 1318 520" class="thin"/>
+<text x="1094.0" y="414.5" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">fallback</text>
+<text x="1094.0" y="414.5" text-anchor="middle" class="tiny">fallback</text>
+<path d="M 650 550 C 561.0 550, 561.0 550, 472 550" class="thin"/>
+<path d="M 320 630 C 370.0 630, 370.0 678, 420 678" class="line"/>
+<text x="370.0" y="626.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">exec</text>
+<text x="370.0" y="626.0" text-anchor="middle" class="tiny">exec</text>
+<path d="M 585 760 C 648.5 760, 648.5 760, 712 760" class="line"/>
+<text x="648.5" y="732.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">transaction</text>
+<text x="648.5" y="732.0" text-anchor="middle" class="tiny">transaction</text>
+<path d="M 1045 760 C 1096.5 760, 1096.5 760, 1148 760" class="line"/>
+<text x="1096.5" y="732.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">JDBC</text>
+<text x="1096.5" y="732.0" text-anchor="middle" class="tiny">JDBC</text>
+<path d="M 1320 680 C 1279.0 680, 1279.0 632, 1238 632" class="thin"/>
+<rect x="160" y="230" width="340" height="150" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+<rect x="170" y="240" width="12" height="130" rx="6" fill="#3B82F6" opacity="0.95"/>
+<text x="182" y="270" class="label">graph-core Contracts</text>
+<text x="184" y="306" class="small">GraphOperations</text>
+<text x="184" y="334" class="small">GraphSuspendOperations</text>
+<text x="184" y="362" class="small">model + repository APIs</text>
+<rect x="560" y="230" width="310" height="150" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
+<rect x="570" y="240" width="12" height="130" rx="6" fill="#22C55E" opacity="0.95"/>
+<text x="582" y="270" class="label">AGE Operations</text>
+<text x="584" y="306" class="small">AgeGraphOperations</text>
+<text x="584" y="334" class="small">transaction scope</text>
+<text x="584" y="362" class="small">schema / merge support</text>
+<rect x="960" y="230" width="310" height="150" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
+<rect x="970" y="240" width="12" height="130" rx="6" fill="#EAB308" opacity="0.95"/>
+<text x="982" y="270" class="label">Coroutine + Cache</text>
+<text x="984" y="306" class="small">AgeGraphSuspendOperations</text>
+<text x="984" y="334" class="small">Dispatchers.IO</text>
+<text x="984" y="362" class="small">CachingAgeGraphOperations</text>
+<rect x="170" y="470" width="300" height="160" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="3" class="card"/>
+<rect x="180" y="480" width="12" height="140" rx="6" fill="#EF4444" opacity="0.95"/>
+<text x="192" y="510" class="label">SQL Builder</text>
+<text x="194" y="546" class="small">AgeSql</text>
+<text x="194" y="574" class="small">Cypher-over-SQL</text>
+<text x="194" y="602" class="small">batch rows</text>
+<rect x="560" y="470" width="300" height="160" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
+<rect x="570" y="480" width="12" height="140" rx="6" fill="#8B5CF6" opacity="0.95"/>
+<text x="582" y="510" class="label">Property Serializer</text>
+<text x="584" y="546" class="small">safe identifiers</text>
+<text x="584" y="574" class="small">literal escaping</text>
+<text x="584" y="602" class="small">Kotlin -&gt; Cypher values</text>
+<rect x="950" y="470" width="330" height="160" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
+<rect x="960" y="480" width="12" height="140" rx="6" fill="#14B8A6" opacity="0.95"/>
+<text x="972" y="510" class="label">agtype Parser</text>
+<text x="974" y="546" class="small">parseVertex / parseEdge</text>
+<text x="974" y="574" class="small">parsePath</text>
+<text x="974" y="602" class="small">Graph model mapping</text>
+<rect x="1320" y="405" width="260" height="190" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
+<rect x="1330" y="415" width="12" height="170" rx="6" fill="#F97316" opacity="0.95"/>
+<text x="1342" y="445" class="label">JVM Fallbacks</text>
+<text x="1344" y="481" class="small">ShortestPathFallback</text>
+<text x="1344" y="509" class="small">BFS / DFS</text>
+<text x="1344" y="537" class="small">PageRank / cycles</text>
+<text x="1344" y="565" class="small">UnionFind components</text>
+<rect x="255" y="680" width="330" height="160" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
+<rect x="265" y="690" width="12" height="140" rx="6" fill="#22C55E" opacity="0.95"/>
+<text x="277" y="720" class="label">Exposed Transaction</text>
+<text x="279" y="756" class="small">org.jetbrains.exposed</text>
+<text x="279" y="784" class="small">exec(...) result sets</text>
+<text x="279" y="812" class="small">external DB ownership</text>
+<rect x="715" y="680" width="330" height="160" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+<rect x="725" y="690" width="12" height="140" rx="6" fill="#3B82F6" opacity="0.95"/>
+<text x="737" y="720" class="label">HikariCP + JDBC</text>
+<text x="739" y="756" class="small">PostgreSQL driver</text>
+<text x="739" y="784" class="small">LOAD &#x27;age&#x27;</text>
+<text x="739" y="812" class="small">SET search_path</text>
+<rect x="1150" y="680" width="360" height="160" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
+<rect x="1160" y="690" width="12" height="140" rx="6" fill="#EAB308" opacity="0.95"/>
+<text x="1172" y="720" class="label">PostgreSQL AGE</text>
+<text x="1174" y="756" class="small">ag_catalog.cypher</text>
+<text x="1174" y="784" class="small">graphName namespace</text>
+<text x="1174" y="812" class="small">agtype rows</text>
+<rect x="180" y="892" width="1400" height="62" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
+<text x="880" y="917" text-anchor="middle" dominant-baseline="middle" class="tiny">Source: AgeGraphOperations, AgeGraphSuspendOperations, CachingAgeGraphOperations, AgeSql, AgePropertySerializer, AgeTypeParser.</text>
+<text x="880" y="940" text-anchor="middle" dominant-baseline="middle" class="tiny">AGE setup is connection-owned: HikariCP initializes LOAD age and search_path; graph-core models remain the public boundary.</text>
 </svg>
