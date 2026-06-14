@@ -199,6 +199,8 @@ def architecture_svg(slug: str) -> str:
         return graph_core_architecture_overview_svg()
     if slug == "graph-graph-core-architecture-10":
         return graph_core_path_lifecycle_svg()
+    if slug == "graph-graph-core-architecture-11":
+        return graph_core_operations_usage_svg()
     title = "Bluetape4k Graph Overview" if slug.startswith("root") else f"{module_title(slug)} Architecture"
     subtitle = "Current README and module source model"
     out = open_svg(title, subtitle)
@@ -292,6 +294,52 @@ def graph_core_path_lifecycle_svg() -> str:
     out.append(
         '<text x="800" y="898" text-anchor="middle" class="tiny">'
         'Source: GraphPath.kt and GraphTraversalRepository; weighted runners may override totalWeight with accumulated cost.</text>'
+    )
+    return close_svg(out)
+
+
+def graph_core_operations_usage_svg() -> str:
+    width, height = 1620, 980
+    out = open_svg(
+        "GraphOperations Usage States",
+        "A backend facade moves from lifecycle setup through CRUD, traversal, optional capabilities, and close",
+        width,
+        height,
+    )
+    out[-1] = (
+        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: graph-core / GraphOperations Usage</text>'
+    )
+    out.append('<rect x="70" y="150" width="1480" height="690" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+
+    top = [
+        ("Obtain Facade", ["GraphOperations", "backend implementation", "same API per DB"], PALETTE["sky"]),
+        ("Graph Lifecycle", ["createGraph(name)", "graphExists(name)", "dropGraph(name)"], PALETTE["mint"]),
+        ("Vertex Ops", ["createVertex", "find / update / delete", "countVertices"], PALETTE["lemon"]),
+        ("Edge Ops", ["createEdge", "find by label/start/end", "deleteEdge"], PALETTE["peach"]),
+        ("Traversal", ["neighbors", "shortestPath", "allPaths / aStarPath"], PALETTE["lavender"]),
+    ]
+    x = 100
+    for i, (title, lines, fill) in enumerate(top):
+        card(out, x, 245, 250, 205, title, lines, fill)
+        if i < len(top) - 1:
+            arrow(out, x + 250, 348, x + 298, 348, ["init", "write", "link", "query"][i], "line")
+        x += 300
+
+    card(out, 250, 585, 360, 150, "Algorithms", ["pageRank / degree", "components", "bfs / dfs / cycles"], PALETTE["aqua"])
+    card(out, 690, 585, 360, 150, "Optional Caps", ["transaction { }", "schemaManager()", "mergeVertex / mergeEdge"], PALETTE["rose"])
+    card(out, 1130, 585, 250, 150, "Close", ["AutoCloseable", "release resources"], PALETTE["sky"])
+
+    arrow(out, 1225, 450, 430, 583, "", "thin")
+    out.append('<text x="445" y="560" text-anchor="middle" class="tiny">algorithms</text>')
+    arrow(out, 810, 450, 870, 583, "", "thin")
+    out.append('<text x="900" y="560" text-anchor="middle" class="tiny">optional</text>')
+    arrow(out, 1380, 450, 1255, 583, "finally", "thin")
+
+    out.append('<rect x="150" y="865" width="1320" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+    out.append(
+        '<text x="810" y="898" text-anchor="middle" class="tiny">'
+        'Source: GraphOperations repository contracts; unsupported optional capabilities fail explicitly instead of falling back silently.</text>'
     )
     return close_svg(out)
 
