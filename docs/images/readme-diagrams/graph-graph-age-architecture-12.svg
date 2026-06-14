@@ -1,118 +1,127 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="980" height="3032" viewBox="0 0 980 3032" role="img" aria-label="graph age Architecture 12">
-<defs>
-  <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="7" stdDeviation="8" flood-color="#1f2937" flood-opacity="0.10"/></filter>
-  <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth"><path d="M1,1 L8,4.5 L1,8 Z" fill="#758297"/></marker>
-  <style>
-    .canvas{fill:#f7f9fc}.frame{fill:#fff;stroke:#d8e0ea;stroke-width:1.5}
-    .title{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:40px;font-weight:400;fill:#102033}
-    .subtitle{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:14px;font-weight:400;fill:#536273}
-    .label{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:21px;font-weight:400;fill:#102033}
-    .small{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:12px;font-weight:400;fill:#536273}
-    .strong{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:13px;font-weight:400;fill:#102033}
-    .card{stroke-width:2.0;filter:url(#shadow)}
-    .line{stroke:#758297;stroke-width:2.1;fill:none;marker-end:url(#arrow)}
-    .dashed{stroke:#758297;stroke-width:2.1;stroke-dasharray:7 6;fill:none;marker-end:url(#arrow)}
-    .lifeline{stroke:#b7c2d1;stroke-width:1.8;stroke-dasharray:9 9}
-  </style>
-</defs>
-<rect class="canvas" width="980" height="3032"/>
-<rect class="frame" x="32" y="28" width="916" height="2976" rx="28"/>
-<text class="title" x="66" y="82">graph age Architecture 12</text>
-<text class="subtitle" x="70" y="116">Graphviz-derived layout and orthogonal route evidence</text>
-<path class="line" d="M294.3 205.7 L294.3 205.7 L294.3 288.0 L294.3 288.0"/>
-<path class="line" d="M294.3 366.3 L294.3 366.3 L294.3 448.6 L294.3 448.6"/>
-<path class="line" d="M294.3 526.9 L294.3 526.9 L294.3 609.2 L294.3 609.2"/>
-<path class="line" d="M294.3 687.5 L294.3 687.5 L294.3 769.7 L294.3 769.7"/>
-<path class="line" d="M294.3 848.1 L294.3 848.1 L294.3 930.3 L294.3 930.3"/>
-<path class="line" d="M294.3 1008.7 L294.3 1008.7 L294.3 1090.9 L294.3 1090.9"/>
-<path class="line" d="M294.3 1169.4 L294.3 1169.4 L294.3 1251.7 L294.3 1251.7"/>
-<path class="line" d="M294.3 1330.0 L294.3 1330.0 L294.3 1412.3 L294.3 1412.3"/>
-<path class="line" d="M294.3 1490.6 L294.3 1490.6 L294.3 1572.9 L294.3 1572.9"/>
-<path class="line" d="M294.3 1651.2 L294.3 1651.2 L294.3 1733.5 L294.3 1733.5"/>
-<path class="line" d="M294.3 1811.8 L294.3 1811.8 L294.3 1894.1 L294.3 1894.1"/>
-<path class="line" d="M294.3 1972.4 L294.3 1972.4 L294.3 2054.7 L294.3 2054.7"/>
-<path class="line" d="M294.3 2133.0 L294.3 2133.0 L294.3 2215.3 L294.3 2215.3"/>
-<path class="line" d="M294.3 2293.6 L294.3 2293.6 L294.3 2375.9 L294.3 2375.9"/>
-<path class="line" d="M294.3 2454.2 L294.3 2454.2 L294.3 2536.5 L294.3 2536.5"/>
-<path class="line" d="M294.3 2614.9 L294.3 2614.9 L294.3 2697.1 L294.3 2697.1"/>
-<path class="line" d="M294.3 2775.5 L294.3 2775.5 L294.3 2857.7 L294.3 2857.7"/>
-<g transform="translate(189.3,133.5)">
-<rect class="card" x="0" y="0" width="210.0" height="84.0" rx="14" fill="#E8F3FF" stroke="#5B8DEF"/>
-<text class="label" x="105.0" y="42.0" text-anchor="middle">A</text>
-</g>
-<g transform="translate(83.8,289.1)">
-<rect class="card" x="0" y="0" width="421.1" height="94.0" rx="14" fill="#EAF7EF" stroke="#58A978"/>
-<text class="label" x="210.5" y="35.0" text-anchor="middle">PostgreSQLAgeServer</text>
-<text class="label" x="210.5" y="59.0" text-anchor="middle">Testcontainers</text>
-</g>
-<g transform="translate(112.7,449.7)">
-<rect class="card" x="0" y="0" width="363.3" height="94.0" rx="14" fill="#FFF3D9" stroke="#D6A441"/>
-<text class="label" x="181.7" y="35.0" text-anchor="middle">Docker</text>
-<text class="label" x="181.7" y="59.0" text-anchor="middle">apache/age:PG16_late st</text>
-</g>
-<g transform="translate(114.5,610.3)">
-<rect class="card" x="0" y="0" width="359.6" height="94.0" rx="14" fill="#FDECEF" stroke="#DC6B82"/>
-<text class="label" x="179.8" y="35.0" text-anchor="middle">PostgreSQL 16 + AGE</text>
-<text class="label" x="179.8" y="59.0" text-anchor="middle">Extension</text>
-</g>
-<g transform="translate(56.8,770.9)">
-<rect class="card" x="0" y="0" width="475.2" height="94.0" rx="14" fill="#E9F7F6" stroke="#45A7A1"/>
-<text class="label" x="237.6" y="35.0" text-anchor="middle">CREATE EXTENSION IF NOT</text>
-<text class="label" x="237.6" y="59.0" text-anchor="middle">EXISTS age</text>
-</g>
-<g transform="translate(166.8,936.5)">
-<rect class="card" x="0" y="0" width="255.2" height="84.0" rx="14" fill="#F1ECFF" stroke="#8A72D6"/>
-<text class="label" x="127.6" y="42.0" text-anchor="middle">HikariCP DataSource</text>
-</g>
-<g transform="translate(50.0,1092.2)">
-<rect class="card" x="0" y="0" width="488.7" height="94.0" rx="14" fill="#F4F7FA" stroke="#8CA0B8"/>
-<text class="label" x="244.3" y="35.0" text-anchor="middle">connectionInitSql LOAD</text>
-<text class="label" x="244.3" y="59.0" text-anchor="middle">age SET search_path</text>
-</g>
-<g transform="translate(178.4,1257.8)">
-<rect class="card" x="0" y="0" width="231.8" height="84.0" rx="14" fill="#FFF0E4" stroke="#D98A4A"/>
-<text class="label" x="115.9" y="42.0" text-anchor="middle">Exposed Database</text>
-</g>
-<g transform="translate(166.2,1418.4)">
-<rect class="card" x="0" y="0" width="256.4" height="84.0" rx="14" fill="#E8F3FF" stroke="#5B8DEF"/>
-<text class="label" x="128.2" y="42.0" text-anchor="middle">AgeGraphOperations</text>
-</g>
-<g transform="translate(189.3,1579.0)">
-<rect class="card" x="0" y="0" width="210.0" height="84.0" rx="14" fill="#EAF7EF" stroke="#58A978"/>
-<text class="label" x="105.0" y="42.0" text-anchor="middle">runTest</text>
-</g>
-<g transform="translate(160.0,1739.6)">
-<rect class="card" x="0" y="0" width="268.7" height="84.0" rx="14" fill="#FFF3D9" stroke="#D6A441"/>
-<text class="label" x="134.3" y="42.0" text-anchor="middle">suspend createVertex</text>
-</g>
-<g transform="translate(131.1,1895.2)">
-<rect class="card" x="0" y="0" width="326.4" height="94.0" rx="14" fill="#FDECEF" stroke="#DC6B82"/>
-<text class="label" x="163.2" y="35.0" text-anchor="middle">withContext</text>
-<text class="label" x="163.2" y="59.0" text-anchor="middle">Dispatchers.IO</text>
-</g>
-<g transform="translate(189.3,2060.8)">
-<rect class="card" x="0" y="0" width="210.0" height="84.0" rx="14" fill="#E9F7F6" stroke="#45A7A1"/>
-<text class="label" x="105.0" y="42.0" text-anchor="middle">transaction</text>
-</g>
-<g transform="translate(189.3,2221.4)">
-<rect class="card" x="0" y="0" width="210.0" height="84.0" rx="14" fill="#F1ECFF" stroke="#8A72D6"/>
-<text class="label" x="105.0" y="42.0" text-anchor="middle">PostgreSQL</text>
-</g>
-<g transform="translate(189.3,2382.0)">
-<rect class="card" x="0" y="0" width="210.0" height="84.0" rx="14" fill="#F4F7FA" stroke="#8CA0B8"/>
-<text class="label" x="105.0" y="42.0" text-anchor="middle">agtype</text>
-</g>
-<g transform="translate(189.3,2542.6)">
-<rect class="card" x="0" y="0" width="210.0" height="84.0" rx="14" fill="#FFF0E4" stroke="#D98A4A"/>
-<text class="label" x="105.0" y="42.0" text-anchor="middle">AgeTypeParser</text>
-</g>
-<g transform="translate(98.6,2698.3)">
-<rect class="card" x="0" y="0" width="391.6" height="94.0" rx="14" fill="#E8F3FF" stroke="#5B8DEF"/>
-<text class="label" x="195.8" y="35.0" text-anchor="middle">GraphVertex GraphEdge</text>
-<text class="label" x="195.8" y="59.0" text-anchor="middle">GraphPath</text>
-</g>
-<g transform="translate(189.3,2863.9)">
-<rect class="card" x="0" y="0" width="210.0" height="84.0" rx="14" fill="#EAF7EF" stroke="#58A978"/>
-<text class="label" x="105.0" y="42.0" text-anchor="middle">R</text>
-</g>
+<svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1180" viewBox="0 0 1840 1180">
+
+    <defs>
+      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
+        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
+      </filter>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+      </marker>
+    </defs>
+    <style>
+      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
+      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
+      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
+      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
+      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
+      .card { filter: url(#softShadow); }
+      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
+    </style>
+
+<rect x="0" y="0" width="1840" height="1180" fill="#F8FAFC"/>
+<rect x="24" y="24" width="1792" height="1132" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
+<circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
+<circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
+<circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
+<text x="72" y="82" class="title">Graph AGE Test Environment</text>
+<text x="74" y="118" class="subtitle">Integration tests wire PostgreSQL AGE Testcontainers, HikariCP connection initialization, Exposed, and sync/suspend operations</text>
+<text x="920.0" y="1132" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: graph-age / Test Environment</text>
+<rect x="70" y="150" width="1700" height="880" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+<path d="M 390 300 C 437.5 300, 437.5 300, 485 300" class="line"/>
+<text x="437.5" y="272.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">launcher</text>
+<text x="437.5" y="272.0" text-anchor="middle" class="tiny">launcher</text>
+<path d="M 770 300 C 817.5 300, 817.5 300, 865 300" class="line"/>
+<text x="817.5" y="272.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">image</text>
+<text x="817.5" y="272.0" text-anchor="middle" class="tiny">image</text>
+<path d="M 1150 300 C 1197.5 300, 1197.5 300, 1245 300" class="line"/>
+<text x="1197.5" y="272.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">jdbcUrl</text>
+<text x="1197.5" y="272.0" text-anchor="middle" class="tiny">jdbcUrl</text>
+<path d="M 1425 405 C 1425.0 405, 1425.0 510, 1425 510" class="thin"/>
+<text x="1425.0" y="429.5" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">pool</text>
+<text x="1425.0" y="429.5" text-anchor="middle" class="tiny">pool</text>
+<path d="M 250 375 C 457.5 375, 457.5 510, 665 510" class="line"/>
+<text x="457.5" y="414.5" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">construct ops</text>
+<text x="457.5" y="414.5" text-anchor="middle" class="tiny">construct ops</text>
+<path d="M 870 595 C 965.0 595, 965.0 595, 1060 595" class="line"/>
+<text x="965.0" y="567.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">uses Exposed tx</text>
+<text x="965.0" y="567.0" text-anchor="middle" class="tiny">uses Exposed tx</text>
+<path d="M 465 680 C 382.5 680, 382.5 790, 300 790" class="thin"/>
+<text x="382.5" y="707.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">reset graph</text>
+<text x="382.5" y="707.0" text-anchor="middle" class="tiny">reset graph</text>
+<path d="M 680 680 C 680.0 680, 680.0 790, 680 790" class="thin"/>
+<text x="680.0" y="707.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">create/read/write</text>
+<text x="680.0" y="707.0" text-anchor="middle" class="tiny">create/read/write</text>
+<path d="M 870 680 C 965.0 680, 965.0 790, 1060 790" class="thin"/>
+<text x="965.0" y="707.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">exec SQL</text>
+<text x="965.0" y="707.0" text-anchor="middle" class="tiny">exec SQL</text>
+<path d="M 1250 840 C 1337.5 840, 1337.5 840, 1425 840" class="line"/>
+<text x="1337.5" y="812.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">agtype</text>
+<text x="1337.5" y="812.0" text-anchor="middle" class="tiny">agtype</text>
+<text x="920" y="760" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">same graphName boundary</text>
+<text x="920" y="760" text-anchor="middle" class="tiny">same graphName boundary</text>
+<rect x="120" y="225" width="270" height="150" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+<rect x="130" y="235" width="12" height="130" rx="6" fill="#3B82F6" opacity="0.95"/>
+<text x="142" y="265" class="label">JUnit Tests</text>
+<text x="144" y="301" class="small">@BeforeAll setup</text>
+<text x="144" y="329" class="small">@BeforeEach resetGraph</text>
+<text x="144" y="357" class="small">runSuspendIO / runTest</text>
+<rect x="485" y="225" width="285" height="150" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
+<rect x="495" y="235" width="12" height="130" rx="6" fill="#22C55E" opacity="0.95"/>
+<text x="507" y="265" class="label">PostgreSQLAgeServer</text>
+<text x="509" y="301" class="small">Launcher.postgresqlAge</text>
+<text x="509" y="329" class="small">shared Testcontainer</text>
+<text x="509" y="357" class="small">jdbcUrl/user/password</text>
+<rect x="865" y="225" width="285" height="150" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
+<rect x="875" y="235" width="12" height="130" rx="6" fill="#EAB308" opacity="0.95"/>
+<text x="887" y="265" class="label">Docker AGE</text>
+<text x="889" y="301" class="small">apache/age:PG16_latest</text>
+<text x="889" y="329" class="small">PostgreSQL + AGE extension</text>
+<text x="889" y="357" class="small">CREATE EXTENSION once</text>
+<rect x="1245" y="225" width="360" height="180" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="3" class="card"/>
+<rect x="1255" y="235" width="12" height="160" rx="6" fill="#EF4444" opacity="0.95"/>
+<text x="1267" y="265" class="label">HikariCP DataSource</text>
+<text x="1269" y="301" class="small">driverClassName PostgreSQL</text>
+<text x="1269" y="329" class="small">maximumPoolSize = 5</text>
+<text x="1269" y="357" class="small">connectionInitSql loads AGE</text>
+<text x="1269" y="385" class="small">sets ag_catalog search_path</text>
+<rect x="1060" y="510" width="365" height="170" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
+<rect x="1070" y="520" width="12" height="150" rx="6" fill="#14B8A6" opacity="0.95"/>
+<text x="1082" y="550" class="label">Exposed Database</text>
+<text x="1084" y="586" class="small">Database.connect(dataSource)</text>
+<text x="1084" y="614" class="small">TransactionManager.exec(...)</text>
+<text x="1084" y="642" class="small">JDBC transaction boundary</text>
+<rect x="465" y="510" width="405" height="170" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
+<rect x="475" y="520" width="12" height="150" rx="6" fill="#8B5CF6" opacity="0.95"/>
+<text x="487" y="550" class="label">Graph Operations Under Test</text>
+<text x="489" y="586" class="small">AgeGraphOperations(graphName)</text>
+<text x="489" y="614" class="small">AgeGraphSuspendOperations(graphName)</text>
+<text x="489" y="642" class="small">sync and suspend tests share setup</text>
+<rect x="120" y="790" width="360" height="170" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
+<rect x="130" y="800" width="12" height="150" rx="6" fill="#F97316" opacity="0.95"/>
+<text x="142" y="830" class="label">Graph Reset</text>
+<text x="144" y="866" class="small">if graphExists -&gt; dropGraph</text>
+<text x="144" y="894" class="small">createGraph(test_graph)</text>
+<text x="144" y="922" class="small">clean state per test</text>
+<rect x="560" y="790" width="360" height="170" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+<rect x="570" y="800" width="12" height="150" rx="6" fill="#3B82F6" opacity="0.95"/>
+<text x="582" y="830" class="label">Test Operations</text>
+<text x="584" y="866" class="small">createVertex / createEdge</text>
+<text x="584" y="894" class="small">neighbors / shortestPath</text>
+<text x="584" y="922" class="small">merge and algorithm scenarios</text>
+<rect x="1060" y="790" width="360" height="170" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
+<rect x="1070" y="800" width="12" height="150" rx="6" fill="#22C55E" opacity="0.95"/>
+<text x="1082" y="830" class="label">PostgreSQL AGE Exec</text>
+<text x="1084" y="866" class="small">AgeSql.cypher(...)</text>
+<text x="1084" y="894" class="small">ag_catalog.cypher executes</text>
+<text x="1084" y="922" class="small">returns agtype columns</text>
+<rect x="1425" y="790" width="285" height="170" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
+<rect x="1435" y="800" width="12" height="150" rx="6" fill="#EAB308" opacity="0.95"/>
+<text x="1447" y="830" class="label">Assertions</text>
+<text x="1449" y="866" class="small">AgeTypeParser maps results</text>
+<text x="1449" y="894" class="small">GraphVertex / Edge / Path</text>
+<text x="1449" y="922" class="small">bluetape4k assertions</text>
+<rect x="180" y="1060" width="1480" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
+<text x="920" y="1093" text-anchor="middle" class="tiny">Source: AgeGraphOperationsTest.kt, AgeGraphSuspendOperationsTest.kt, README setup; every pooled connection runs LOAD age and search_path.</text>
 </svg>
