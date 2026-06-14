@@ -282,7 +282,91 @@ def graph_core_architecture_overview_svg() -> str:
     return close_svg(out)
 
 
+def graph_core_model_class_svg() -> str:
+    width, height = 1600, 1040
+    out = open_svg(
+        "Graph Core Model Classes",
+        "Backend-neutral IDs, immutable vertex/edge records, and traversal direction enum",
+        width,
+        height,
+    )
+    out[-1] = (
+        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: graph-core / Model Classes</text>'
+    )
+    out.append('<rect x="70" y="150" width="1460" height="710" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+
+    def class_box(x: float, y: float, w: float, h: float, title: str, stereotype: str, lines: list[str], fill: str) -> None:
+        stroke = CARD_STROKES.get(fill, PALETTE["slate"])
+        out.append(
+            f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="14" fill="{fill}" '
+            f'stroke="{stroke}" stroke-width="3" class="card"/>'
+        )
+        out.append(f'<text x="{x+w/2}" y="{y+34}" text-anchor="middle" class="tiny">{esc(stereotype)}</text>')
+        out.append(f'<text x="{x+w/2}" y="{y+68}" text-anchor="middle" class="label">{esc(title)}</text>')
+        out.append(f'<line x1="{x}" y1="{y+88}" x2="{x+w}" y2="{y+88}" stroke="{stroke}" stroke-width="2"/>')
+        yy = y + 124
+        for line in lines:
+            out.append(f'<text x="{x+26}" y="{yy}" class="small">{esc(line)}</text>')
+            yy += 28
+
+    class_box(
+        600,
+        215,
+        400,
+        235,
+        "GraphElementId",
+        "<<value class>>",
+        ["value: String", "of(value: String)", "of(value: Long)", "validates nonblank String"],
+        PALETTE["mint"],
+    )
+    class_box(
+        145,
+        575,
+        390,
+        235,
+        "GraphVertex",
+        "<<data class>>",
+        ["id: GraphElementId", "label: String", "properties: Map<String, Any?>", "implements Serializable"],
+        PALETTE["sky"],
+    )
+    class_box(
+        600,
+        575,
+        440,
+        265,
+        "GraphEdge",
+        "<<data class>>",
+        ["id: GraphElementId", "label: String", "startId: GraphElementId", "endId: GraphElementId", "properties: Map<String, Any?>"],
+        PALETTE["lemon"],
+    )
+    class_box(
+        1125,
+        575,
+        310,
+        235,
+        "Direction",
+        "<<enum>>",
+        ["OUTGOING", "INCOMING", "BOTH", "used by traversal options"],
+        PALETTE["rose"],
+    )
+
+    card(out, 1125, 245, 310, 110, "Traversal Options", ["neighbors and degree", "choose edge direction"], PALETTE["lavender"])
+    arrow(out, 340, 572, 700, 452, "id", "thin")
+    arrow(out, 820, 572, 820, 452, "id/start/end", "thin")
+    arrow(out, 1280, 355, 1280, 572, "direction", "thin")
+
+    out.append('<rect x="150" y="890" width="1300" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+    out.append(
+        '<text x="800" y="923" text-anchor="middle" class="tiny">'
+        'Source: graph-core model package; graphElementIdOf converts Any IDs, and GraphEdge stores start/end vertex IDs.</text>'
+    )
+    return close_svg(out)
+
+
 def class_svg(slug: str) -> str:
+    if slug == "graph-graph-core-class-02":
+        return graph_core_model_class_svg()
     title = "Backend Capability Matrix" if "capability" in slug else f"{module_title(slug)} Class Model"
     subtitle = "Contracts, data classes, and adapter responsibilities"
     out = open_svg(title, subtitle)
