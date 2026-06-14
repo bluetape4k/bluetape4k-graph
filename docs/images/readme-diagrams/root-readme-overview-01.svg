@@ -1,14 +1,182 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1000" viewBox="0 0 1400 1000" role="img" aria-labelledby="title desc">
-  <title id="title">Bluetape4k Graph overview</title><desc id="desc">Overview diagram generated from the current repository source layout.</desc>
-  <defs><filter id="shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#203040" flood-opacity="0.09"/></filter>
-    <style>.canvas{fill:#F6F9FC}.frame{fill:#FFFFFF;stroke:#D7E2EC;stroke-width:2}.title{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:42px;fill:#22344A;font-weight:400}.subtitle{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:17px;fill:#536476;font-weight:400}.group{filter:url(#shadow);stroke-width:2}.gtitle{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:24px;fill:#22344A;font-weight:400}.label{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:15px;fill:#34465B;font-weight:400}.small{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:13px;fill:#627184;font-weight:400}.axis{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:22px;fill:#22344A;font-weight:400}</style>
-  </defs><rect class="canvas" width="1400" height="1000"/><rect class="frame" x="36" y="28" width="1328" height="944" rx="24"/>
-<text class="title" x="72" y="82">Bluetape4k Graph overview</text><text class="subtitle" x="76" y="114">Verified from current source layout before README placement.</text>
-<g transform="translate(78,145)"><rect class="group" x="0" y="0" width="380" height="110" rx="14" fill="#E8F3FF" stroke="#75A9E8"/><text class="gtitle" x="190" y="36" text-anchor="middle">BOM</text><rect x="24" y="50" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="68" text-anchor="middle" dominant-baseline="middle">graph-bom</text></g>
-<g transform="translate(492,145)"><rect class="group" x="0" y="0" width="380" height="250" rx="14" fill="#EAF7EF" stroke="#69B888"/><text class="gtitle" x="190" y="36" text-anchor="middle">Graph databases</text><rect x="24" y="50" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="68" text-anchor="middle" dominant-baseline="middle">graph-age</text><rect x="24" y="78" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="96" text-anchor="middle" dominant-baseline="middle">graph-core</text><rect x="24" y="106" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="124" text-anchor="middle" dominant-baseline="middle">graph-falkordb</text><rect x="24" y="134" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="152" text-anchor="middle" dominant-baseline="middle">graph-memgraph</text><rect x="24" y="162" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="180" text-anchor="middle" dominant-baseline="middle">graph-neo4j</text><rect x="24" y="190" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="208" text-anchor="middle" dominant-baseline="middle">graph-tinkerpop</text></g>
-<g transform="translate(906,145)"><rect class="group" x="0" y="0" width="380" height="250" rx="14" fill="#FFF3D9" stroke="#D9AA4D"/><text class="gtitle" x="190" y="36" text-anchor="middle">Graph I/O</text><rect x="24" y="50" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="68" text-anchor="middle" dominant-baseline="middle">core</text><rect x="24" y="78" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="96" text-anchor="middle" dominant-baseline="middle">csv</text><rect x="24" y="106" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="124" text-anchor="middle" dominant-baseline="middle">graphml</text><rect x="24" y="134" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="152" text-anchor="middle" dominant-baseline="middle">jackson2</text><rect x="24" y="162" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="180" text-anchor="middle" dominant-baseline="middle">jackson3</text><rect x="24" y="190" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="208" text-anchor="middle" dominant-baseline="middle">graph-okio</text></g>
-<g transform="translate(78,423)"><rect class="group" x="0" y="0" width="380" height="110" rx="14" fill="#FDECEF" stroke="#DB7890"/><text class="gtitle" x="190" y="36" text-anchor="middle">Spring Boot</text><rect x="24" y="50" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="68" text-anchor="middle" dominant-baseline="middle">graph-spring-boot</text></g>
-<g transform="translate(492,423)"><rect class="group" x="0" y="0" width="380" height="110" rx="14" fill="#E9F7F6" stroke="#55B5AF"/><text class="gtitle" x="190" y="36" text-anchor="middle">Ktor integration</text><rect x="24" y="50" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="68" text-anchor="middle" dominant-baseline="middle">graph-ktor</text></g>
-<g transform="translate(906,423)"><rect class="group" x="0" y="0" width="380" height="194" rx="14" fill="#F7F1E7" stroke="#B68C55"/><text class="gtitle" x="190" y="36" text-anchor="middle">Benchmarks</text><rect x="24" y="50" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="68" text-anchor="middle" dominant-baseline="middle">graph-age-benchmark</text><rect x="24" y="78" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="96" text-anchor="middle" dominant-baseline="middle">graph-benchmark</text><rect x="24" y="106" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="124" text-anchor="middle" dominant-baseline="middle">graph-io-benchmark</text><rect x="24" y="134" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="152" text-anchor="middle" dominant-baseline="middle">graph-neo4j-benchmark</text></g>
-<g transform="translate(78,701)"><rect class="group" x="0" y="0" width="380" height="250" rx="14" fill="#F1ECFF" stroke="#A58BE3"/><text class="gtitle" x="190" y="36" text-anchor="middle">Examples</text><rect x="24" y="50" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="68" text-anchor="middle" dominant-baseline="middle">code-graph-examples</text><rect x="24" y="78" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="96" text-anchor="middle" dominant-baseline="middle">fraud-detection-examples</text><rect x="24" y="106" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="124" text-anchor="middle" dominant-baseline="middle">knowledge-graph-examples</text><rect x="24" y="134" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="152" text-anchor="middle" dominant-baseline="middle">ktor-graph-examples</text><rect x="24" y="162" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="180" text-anchor="middle" dominant-baseline="middle">linkedin-graph-examples</text><rect x="24" y="190" width="332" height="24" rx="7" fill="#FFFFFF" opacity="0.76" stroke="#D7E2EC"/><text class="label" x="190" y="208" text-anchor="middle" dominant-baseline="middle">recommendation-examples</text></g>
-<text class="small" x="700.0" y="946" text-anchor="middle">Overview labels are generated from build modules or repository source surfaces; generated image text is English-only.</text></svg>
+  <title id="title">Bluetape4k Graph overview</title>
+  <desc id="desc">Dark architecture overview of the bluetape4k-graph repository: BOM, common graph APIs, backend adapters, graph I/O, application integrations, examples, benchmarks, and verification surfaces.</desc>
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.7"/>
+    </pattern>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#64748b"/>
+    </marker>
+    <filter id="glow" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="8" stdDeviation="9" flood-color="#020617" flood-opacity="0.45"/>
+    </filter>
+    <style>
+      .bg { fill: #020617; }
+      .panel { fill: #0f172a; stroke: #1e293b; stroke-width: 2; }
+      .title { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 38px; fill: #f8fafc; font-weight: 700; }
+      .subtitle { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 16px; fill: #94a3b8; }
+      .section { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; fill: #cbd5e1; font-weight: 700; letter-spacing: 0; }
+      .label { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 15px; fill: #f8fafc; font-weight: 700; }
+      .sub { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 11px; fill: #94a3b8; }
+      .tiny { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 10px; fill: #94a3b8; }
+      .note { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; fill: #64748b; }
+      .bom-fill { fill: #78350f; fill-opacity: 0.32; stroke: #fbbf24; }
+      .backend-fill { fill: #064e3b; fill-opacity: 0.42; stroke: #34d399; }
+      .db-fill { fill: #4c1d95; fill-opacity: 0.44; stroke: #a78bfa; }
+      .io-fill { fill: #7c2d12; fill-opacity: 0.34; stroke: #fb923c; }
+      .app-fill { fill: #083344; fill-opacity: 0.44; stroke: #22d3ee; }
+      .verify-fill { fill: #881337; fill-opacity: 0.40; stroke: #fb7185; }
+      .external-fill { fill: #1e293b; fill-opacity: 0.70; stroke: #94a3b8; }
+      .box { stroke-width: 1.6; rx: 8; filter: url(#glow); }
+      .cluster { fill: transparent; stroke-width: 1.2; stroke-dasharray: 8 5; rx: 14; }
+      .flow { fill: none; stroke: #64748b; stroke-width: 1.6; marker-end: url(#arrowhead); }
+      .flow-strong { fill: none; stroke: #34d399; stroke-width: 2; marker-end: url(#arrowhead); }
+      .flow-io { fill: none; stroke: #fb923c; stroke-width: 1.8; marker-end: url(#arrowhead); }
+      .flow-app { fill: none; stroke: #22d3ee; stroke-width: 1.8; marker-end: url(#arrowhead); }
+      .flow-verify { fill: none; stroke: #fb7185; stroke-width: 1.6; stroke-dasharray: 6 5; marker-end: url(#arrowhead); }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1400" height="1000"/>
+  <rect width="1400" height="1000" fill="url(#grid)" opacity="0.72"/>
+  <rect class="panel" x="36" y="32" width="1328" height="936" rx="22"/>
+
+  <circle cx="78" cy="78" r="7" fill="#22d3ee">
+    <animate attributeName="opacity" values="1;0.35;1" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <text class="title" x="102" y="91">Bluetape4k Graph overview</text>
+  <text class="subtitle" x="102" y="121">Unified Kotlin graph APIs, backend adapters, bulk I/O, application integrations, examples, and benchmark surfaces.</text>
+
+  <text class="section" x="76" y="172">DEPENDENCY ALIGNMENT</text>
+  <text class="section" x="426" y="172">COMMON API FOUNDATION</text>
+  <text class="section" x="776" y="172">GRAPH DATABASE ADAPTERS</text>
+  <text class="section" x="1106" y="172">VERIFICATION SURFACES</text>
+
+  <!-- Arrows are intentionally drawn before boxes so components mask connection lines. -->
+  <path class="flow-strong" d="M 334 250 L 430 250"/>
+  <path class="flow-strong" d="M 680 250 L 778 250"/>
+  <path class="flow-io" d="M 582 338 C 582 384 390 392 390 440"/>
+  <path class="flow-io" d="M 582 338 C 582 384 580 392 580 440"/>
+  <path class="flow-app" d="M 972 338 C 972 384 775 394 775 440"/>
+  <path class="flow-app" d="M 972 338 C 972 384 965 394 965 440"/>
+  <path class="flow-app" d="M 972 338 C 972 384 1155 394 1155 440"/>
+  <path class="flow-verify" d="M 1182 520 L 1182 600"/>
+  <path class="flow-verify" d="M 1054 658 C 935 610 835 610 720 660"/>
+  <path class="flow-verify" d="M 1142 658 C 1070 608 1034 578 997 520"/>
+  <path class="flow" d="M 755 740 C 635 785 495 785 390 740"/>
+
+  <rect class="cluster" x="752" y="186" width="486" height="166" stroke="#a78bfa"/>
+  <text class="tiny" x="772" y="208" fill="#a78bfa">runtime backends</text>
+  <rect class="cluster" x="296" y="426" width="960" height="118" stroke="#22d3ee"/>
+  <text class="tiny" x="316" y="448" fill="#22d3ee">consumer entrypoints</text>
+
+  <rect x="96" y="198" width="238" height="104" rx="8" fill="#0f172a"/>
+  <rect class="box bom-fill" x="96" y="198" width="238" height="104"/>
+  <text class="label" x="215" y="232" text-anchor="middle">bluetape4k-graph-bom</text>
+  <text class="sub" x="215" y="255" text-anchor="middle">Maven BOM</text>
+  <text class="tiny" x="215" y="276" text-anchor="middle">version alignment for all modules</text>
+
+  <rect x="430" y="198" width="250" height="104" rx="8" fill="#0f172a"/>
+  <rect class="box backend-fill" x="430" y="198" width="250" height="104"/>
+  <text class="label" x="555" y="229" text-anchor="middle">graph-core</text>
+  <text class="sub" x="555" y="252" text-anchor="middle">GraphOperations + suspend API</text>
+  <text class="tiny" x="555" y="273" text-anchor="middle">schema, merge, transaction DSL</text>
+
+  <rect x="778" y="224" width="174" height="54" rx="8" fill="#0f172a"/>
+  <rect class="box db-fill" x="778" y="224" width="174" height="54"/>
+  <text class="label" x="865" y="247" text-anchor="middle">graph-neo4j</text>
+  <text class="sub" x="865" y="266" text-anchor="middle">Cypher driver</text>
+
+  <rect x="972" y="224" width="174" height="54" rx="8" fill="#0f172a"/>
+  <rect class="box db-fill" x="972" y="224" width="174" height="54"/>
+  <text class="label" x="1059" y="247" text-anchor="middle">graph-memgraph</text>
+  <text class="sub" x="1059" y="266" text-anchor="middle">Neo4j-compatible</text>
+
+  <rect x="778" y="292" width="174" height="54" rx="8" fill="#0f172a"/>
+  <rect class="box db-fill" x="778" y="292" width="174" height="54"/>
+  <text class="label" x="865" y="315" text-anchor="middle">graph-age</text>
+  <text class="sub" x="865" y="334" text-anchor="middle">PostgreSQL + AGE</text>
+
+  <rect x="972" y="292" width="174" height="54" rx="8" fill="#0f172a"/>
+  <rect class="box db-fill" x="972" y="292" width="174" height="54"/>
+  <text class="label" x="1059" y="315" text-anchor="middle">graph-falkordb</text>
+  <text class="sub" x="1059" y="334" text-anchor="middle">Redis module graph</text>
+
+  <rect x="1162" y="258" width="62" height="54" rx="8" fill="#0f172a"/>
+  <rect class="box db-fill" x="1162" y="258" width="62" height="54"/>
+  <text class="label" x="1193" y="282" text-anchor="middle">Tinker</text>
+  <text class="sub" x="1193" y="300" text-anchor="middle">Pop</text>
+
+  <rect x="296" y="462" width="188" height="58" rx="8" fill="#0f172a"/>
+  <rect class="box io-fill" x="296" y="462" width="188" height="58"/>
+  <text class="label" x="390" y="486" text-anchor="middle">graph-io</text>
+  <text class="sub" x="390" y="505" text-anchor="middle">CSV / NDJSON / GraphML</text>
+
+  <rect x="496" y="462" width="168" height="58" rx="8" fill="#0f172a"/>
+  <rect class="box io-fill" x="496" y="462" width="168" height="58"/>
+  <text class="label" x="580" y="486" text-anchor="middle">graph-okio</text>
+  <text class="sub" x="580" y="505" text-anchor="middle">streams + encryption</text>
+
+  <rect x="688" y="462" width="174" height="58" rx="8" fill="#0f172a"/>
+  <rect class="box app-fill" x="688" y="462" width="174" height="58"/>
+  <text class="label" x="775" y="486" text-anchor="middle">graph-ktor</text>
+  <text class="sub" x="775" y="505" text-anchor="middle">Ktor 3 plugin</text>
+
+  <rect x="878" y="462" width="174" height="58" rx="8" fill="#0f172a"/>
+  <rect class="box app-fill" x="878" y="462" width="174" height="58"/>
+  <text class="label" x="965" y="486" text-anchor="middle">graph-spring-boot</text>
+  <text class="sub" x="965" y="505" text-anchor="middle">Spring Boot 4 config</text>
+
+  <rect x="1070" y="462" width="170" height="58" rx="8" fill="#0f172a"/>
+  <rect class="box verify-fill" x="1070" y="462" width="170" height="58"/>
+  <text class="label" x="1155" y="486" text-anchor="middle">benchmark</text>
+  <text class="sub" x="1155" y="505" text-anchor="middle">JMH performance suites</text>
+
+  <text class="section" x="76" y="600">DOMAIN EXAMPLES</text>
+  <text class="section" x="756" y="600">FORMAT AND API COVERAGE</text>
+  <text class="section" x="1094" y="600">LOCAL PROOF</text>
+
+  <rect x="84" y="626" width="598" height="196" rx="8" fill="#0f172a"/>
+  <rect class="box external-fill" x="84" y="626" width="598" height="196"/>
+  <text class="label" x="112" y="660">examples/</text>
+  <text class="sub" x="112" y="688">code-graph, fraud-detection, iam-access, knowledge-graph</text>
+  <text class="sub" x="112" y="716">linkedin, observability, recommendation, supply-chain</text>
+  <text class="sub" x="112" y="744">data-lineage, network-topology, security-attack-path</text>
+  <text class="sub" x="112" y="772">ktor-graph app examples</text>
+  <text class="tiny" x="112" y="798">Concrete tests share abstract graph scenarios across supported backends.</text>
+
+  <rect x="720" y="626" width="286" height="196" rx="8" fill="#0f172a"/>
+  <rect class="box backend-fill" x="720" y="626" width="286" height="196"/>
+  <text class="label" x="748" y="660">Execution models</text>
+  <text class="sub" x="748" y="688">blocking GraphOperations</text>
+  <text class="sub" x="748" y="716">coroutine GraphSuspendOperations</text>
+  <text class="sub" x="748" y="744">virtual-thread adapters</text>
+  <text class="tiny" x="748" y="784">Bulk import/export reuses the same graph contracts.</text>
+
+  <rect x="1054" y="626" width="226" height="196" rx="8" fill="#0f172a"/>
+  <rect class="box verify-fill" x="1054" y="626" width="226" height="196"/>
+  <text class="label" x="1082" y="660">Verification</text>
+  <text class="sub" x="1082" y="688">Testcontainers graphdb launchers</text>
+  <text class="sub" x="1082" y="716">TinkerGraph in-memory tests</text>
+  <text class="sub" x="1082" y="744">examples workflow coverage</text>
+  <text class="sub" x="1082" y="772">benchmark decision guide</text>
+
+  <text class="section" x="76" y="876">LEGEND</text>
+  <rect x="76" y="898" width="16" height="10" rx="2" class="bom-fill"/>
+  <text class="tiny" x="102" y="907">BOM</text>
+  <rect x="172" y="898" width="16" height="10" rx="2" class="backend-fill"/>
+  <text class="tiny" x="198" y="907">Core API</text>
+  <rect x="298" y="898" width="16" height="10" rx="2" class="db-fill"/>
+  <text class="tiny" x="324" y="907">Graph DB backend</text>
+  <rect x="478" y="898" width="16" height="10" rx="2" class="io-fill"/>
+  <text class="tiny" x="504" y="907">Bulk I/O</text>
+  <rect x="590" y="898" width="16" height="10" rx="2" class="app-fill"/>
+  <text class="tiny" x="616" y="907">Application integration</text>
+  <rect x="790" y="898" width="16" height="10" rx="2" class="verify-fill"/>
+  <text class="tiny" x="816" y="907">Benchmark / verification</text>
+  <line x1="1036" y1="903" x2="1082" y2="903" stroke="#64748b" stroke-width="1.6" marker-end="url(#arrowhead)"/>
+  <text class="tiny" x="1098" y="907">primary dependency / validation flow</text>
+
+  <text class="note" x="700" y="944" text-anchor="middle">Source-backed overview for README placement. Labels are English-only and reflect the current repository layout.</text>
+</svg>
