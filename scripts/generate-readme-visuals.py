@@ -221,6 +221,8 @@ def architecture_svg(slug: str) -> str:
         return graph_neo4j_reactive_coroutine_svg()
     if slug == "graph-graph-neo4j-architecture-09":
         return graph_neo4j_neighbors_pattern_svg()
+    if slug == "graph-graph-neo4j-architecture-11":
+        return graph_neo4j_data_model_svg()
     title = "Bluetape4k Graph Overview" if slug.startswith("root") else f"{module_title(slug)} Architecture"
     subtitle = "Current README and module source model"
     out = open_svg(title, subtitle)
@@ -1122,6 +1124,91 @@ def graph_neo4j_neighbors_pattern_svg() -> str:
     out.append(
         '<text x="920" y="998" text-anchor="middle" class="tiny">'
         'Source: Neo4jGraphOperations.kt and Neo4jGraphSuspendOperations.kt neighbors(); direction changes only the Cypher relationship arrows.</text>'
+    )
+    return close_svg(out)
+
+
+def graph_neo4j_data_model_svg() -> str:
+    width, height = 1840, 1080
+    out = open_svg(
+        "Neo4j Data Model Mapping",
+        "Neo4j Node, Relationship, and Path values are mapped to graph-core Vertex, Edge, and Path models using Neo4j 5.x element IDs",
+        width,
+        height,
+    )
+    out[-1] = (
+        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: graph-neo4j / Data Model Mapping</text>'
+    )
+    out.append('<rect x="70" y="150" width="1700" height="780" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+
+    def relation_label(x: float, y: float, text: str) -> None:
+        out.append(f'<text x="{x}" y="{y}" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">{esc(text)}</text>')
+        out.append(f'<text x="{x}" y="{y}" text-anchor="middle" class="tiny">{esc(text)}</text>')
+
+    arrow(out, 405, 325, 590, 325, "nodeToVertex", "line")
+    arrow(out, 405, 585, 590, 585, "relationshipToEdge", "line")
+    arrow(out, 960, 325, 1135, 325, "GraphElementId", "thin")
+    arrow(out, 960, 585, 1135, 585, "GraphElementId", "thin")
+    arrow(out, 760, 705, 760, 730, "", "line")
+    arrow(out, 1135, 825, 1410, 770, "ordered steps", "thin")
+    relation_label(920, 220, "Neo4j numeric id() is not used")
+    relation_label(860, 715, "pathToGraphPath")
+
+    card(out, 125, 250, 280, 180, "Neo4j Node", [
+        "elementId()",
+        "labels().firstOrNull()",
+        "asMap() properties",
+        "Record key: n / neighbor",
+    ], PALETTE["sky"])
+    card(out, 125, 510, 280, 180, "Neo4j Relationship", [
+        "elementId()",
+        "startNodeElementId()",
+        "endNodeElementId()",
+        "type() + asMap()",
+    ], PALETTE["mint"])
+    card(out, 590, 250, 370, 180, "GraphVertex", [
+        "id: GraphElementId",
+        "label: first node label",
+        "Unknown when no label",
+        "properties: Map",
+    ], PALETTE["lemon"])
+    card(out, 590, 510, 370, 180, "GraphEdge", [
+        "id: GraphElementId",
+        "label: rel.type()",
+        "startId / endId",
+        "properties: Map",
+    ], PALETTE["lavender"])
+    card(out, 1135, 250, 355, 180, "Stable ID Policy", [
+        "GraphElementId(value)",
+        "elementId-based lookup",
+        "Neo4j 5.x compatible",
+        "deprecated id() avoided",
+    ], PALETTE["rose"])
+    card(out, 1135, 510, 355, 180, "Cypher Endpoints", [
+        "MATCH by elementId(a)",
+        "MATCH by elementId(b)",
+        "relationship endpoints use",
+        "start/end element IDs",
+    ], PALETTE["peach"])
+
+    card(out, 470, 730, 580, 180, "Neo4j Path", [
+        "nodes().toList()",
+        "relationships().toList()",
+        "each node becomes VertexStep",
+        "each relationship becomes EdgeStep",
+    ], PALETTE["aqua"])
+    card(out, 1410, 720, 300, 180, "GraphPath", [
+        "List<PathStep>",
+        "VertexStep",
+        "EdgeStep",
+        "cost + metadata defaults",
+    ], PALETTE["sky"])
+
+    out.append('<rect x="180" y="965" width="1480" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+    out.append(
+        '<text x="920" y="998" text-anchor="middle" class="tiny">'
+        'Source: Neo4jRecordMapper.kt and graph-neo4j README; Path mapping preserves node/relationship order as graph-core PathStep values.</text>'
     )
     return close_svg(out)
 
