@@ -215,6 +215,8 @@ def architecture_svg(slug: str) -> str:
         return graph_age_agtype_parse_flow_svg()
     if slug == "graph-graph-age-architecture-12":
         return graph_age_test_environment_svg()
+    if slug == "graph-graph-neo4j-architecture-01":
+        return graph_neo4j_overview_svg()
     title = "Bluetape4k Graph Overview" if slug.startswith("root") else f"{module_title(slug)} Architecture"
     subtitle = "Current README and module source model"
     out = open_svg(title, subtitle)
@@ -865,6 +867,97 @@ def graph_age_test_environment_svg() -> str:
     out.append(
         '<text x="920" y="1093" text-anchor="middle" class="tiny">'
         'Source: AgeGraphOperationsTest.kt, AgeGraphSuspendOperationsTest.kt, README setup; every pooled connection runs LOAD age and search_path.</text>'
+    )
+    return close_svg(out)
+
+
+def graph_neo4j_overview_svg() -> str:
+    width, height = 1840, 1180
+    out = open_svg(
+        "Neo4j Graph Module Overview",
+        "Graph-core operations over Neo4j Java Driver 5.x with coroutine bridge, elementId mapping, schema support, and optional caching",
+        width,
+        height,
+    )
+    out[-1] = (
+        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: graph-neo4j / Overview</text>'
+    )
+    out.append('<rect x="70" y="150" width="1700" height="880" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+
+    def relation_label(x: float, y: float, text: str) -> None:
+        out.append(f'<text x="{x}" y="{y}" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">{esc(text)}</text>')
+        out.append(f'<text x="{x}" y="{y}" text-anchor="middle" class="tiny">{esc(text)}</text>')
+
+    # Arrows first; cards later keep labels and text readable.
+    arrow(out, 360, 310, 470, 310, "calls", "line")
+    arrow(out, 760, 310, 880, 310, "implements", "line")
+    arrow(out, 1160, 310, 1280, 310, "decorates", "thin")
+    arrow(out, 1060, 405, 830, 525, "sync queries", "thin")
+    arrow(out, 1060, 405, 1035, 525, "records", "thin")
+    arrow(out, 1060, 405, 1325, 525, "schema", "thin")
+    arrow(out, 760, 650, 600, 785, "ReactiveSession", "line")
+    arrow(out, 600, 900, 920, 900, "Cypher + params", "line")
+    arrow(out, 920, 900, 1250, 900, "Bolt", "line")
+    arrow(out, 1050, 650, 1050, 785, "maps", "thin")
+    relation_label(920, 760, "elementId() IDs and PathStep ordering")
+
+    card(out, 120, 235, 240, 150, "Application", [
+        "domain services",
+        "sync or suspend callers",
+        "usage examples",
+    ], PALETTE["sky"])
+    card(out, 470, 235, 290, 150, "graph-core APIs", [
+        "GraphOperations",
+        "GraphSuspendOperations",
+        "schema / merge / tx contracts",
+    ], PALETTE["mint"])
+    card(out, 880, 225, 280, 180, "Neo4j Facade", [
+        "Neo4jGraphOperations",
+        "Neo4jGraphSuspendOperations",
+        "native MERGE + tx DSL",
+        "elementId() lookups",
+    ], PALETTE["lemon"])
+    card(out, 1280, 235, 320, 150, "Optional Wrappers", [
+        "CachingNeo4jGraphOperations",
+        "Neo4jGraphSchemaManager",
+        "indexes + constraints",
+    ], PALETTE["rose"])
+    card(out, 540, 525, 290, 150, "Coroutine Bridge", [
+        "Neo4jCoroutineSession",
+        "ReactiveSession read/write",
+        "Publisher -> Flow -> List",
+    ], PALETTE["lavender"])
+    card(out, 1035, 525, 290, 150, "Record Mapper", [
+        "Node -> GraphVertex",
+        "Relationship -> GraphEdge",
+        "Path -> GraphPath",
+    ], PALETTE["aqua"])
+    card(out, 1325, 525, 290, 150, "Schema Manager", [
+        "createIndex",
+        "unique constraints",
+        "list/drop metadata",
+    ], PALETTE["peach"])
+    card(out, 420, 785, 300, 150, "Neo4j Java Driver", [
+        "Driver externally owned",
+        "SessionConfig database",
+        "Reactive + blocking sessions",
+    ], PALETTE["sky"])
+    card(out, 820, 785, 300, 150, "Cypher Query Layer", [
+        "MATCH / CREATE / MERGE",
+        "direction traversal",
+        "shortestPath / allPaths",
+    ], PALETTE["mint"])
+    card(out, 1250, 785, 300, 150, "Neo4j Database", [
+        "nodes and relationships",
+        "Bolt protocol",
+        "record values returned",
+    ], PALETTE["lemon"])
+
+    out.append('<rect x="180" y="1060" width="1480" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+    out.append(
+        '<text x="920" y="1093" text-anchor="middle" class="tiny">'
+        'Source: graph-neo4j README, Neo4jGraphOperations.kt, Neo4jCoroutineSession.kt, Neo4jRecordMapper.kt; driver ownership stays external.</text>'
     )
     return close_svg(out)
 
