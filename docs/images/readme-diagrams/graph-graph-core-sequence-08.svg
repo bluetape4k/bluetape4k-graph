@@ -31,16 +31,16 @@
 <text x="800.0" y="1007" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: graph-core / neighbors</text>
 <rect x="70" y="150" width="1460" height="765" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
 <rect x="115.0" y="190" width="270" height="74" rx="12" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="250.0" y="222" text-anchor="middle" class="label">User Code</text>
+<text x="250.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">User Code</text>
 <line x1="250.0" y1="282" x2="250.0" y2="823" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="481.66666666666674" y="190" width="270" height="74" rx="12" fill="#DCFCE7" stroke="#22C55E" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="616.6666666666667" y="222" text-anchor="middle" class="label">GraphOperations</text>
+<text x="616.6666666666667" y="227" text-anchor="middle" dominant-baseline="middle" class="label">GraphOperations</text>
 <line x1="616.6666666666667" y1="282" x2="616.6666666666667" y2="823" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="848.3333333333334" y="190" width="270" height="74" rx="12" fill="#FEF3C7" stroke="#D97706" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="983.3333333333334" y="222" text-anchor="middle" class="label">Backend Adapter</text>
+<text x="983.3333333333334" y="227" text-anchor="middle" dominant-baseline="middle" class="label">Backend Adapter</text>
 <line x1="983.3333333333334" y1="282" x2="983.3333333333334" y2="823" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="1215.0" y="190" width="270" height="74" rx="12" fill="#FEE2E2" stroke="#DB2777" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="1350.0" y="222" text-anchor="middle" class="label">Graph Database</text>
+<text x="1350.0" y="227" text-anchor="middle" dominant-baseline="middle" class="label">Graph Database</text>
 <line x1="1350.0" y1="282" x2="1350.0" y2="823" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="242.0" y="312" width="16" height="511" rx="6" fill="#DBEAFE" stroke="#3B82F6" stroke-width="1.5"/>
 <rect x="608.6666666666667" y="312" width="16" height="511" rx="6" fill="#DCFCE7" stroke="#22C55E" stroke-width="1.5"/>

@@ -688,8 +688,14 @@ def graph_core_sequence_svg(
         fill, stroke = tones[tone]
         x = xs[key]
         out.append(f'<rect x="{x - 135}" y="{top}" width="270" height="74" rx="12" fill="{fill}" stroke="{stroke}" stroke-width="2.2" filter="url(#softShadow)"/>')
-        for li, line in enumerate(wrap(label, 16)[:2]):
-            out.append(f'<text x="{x}" y="{top + 32 + li * 24}" text-anchor="middle" class="label">{esc(line)}</text>')
+        label_lines = wrap(label, 16)[:2]
+        card_center_y = top + 37
+        first_label_y = card_center_y if len(label_lines) == 1 else card_center_y - 12
+        for li, line in enumerate(label_lines):
+            out.append(
+                f'<text x="{x}" y="{first_label_y + li * 24}" text-anchor="middle" '
+                f'dominant-baseline="middle" class="label">{esc(line)}</text>'
+            )
         out.append(f'<line x1="{x}" y1="{top + 92}" x2="{x}" y2="{bottom}" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>')
 
     for key, _, tone in participants:
