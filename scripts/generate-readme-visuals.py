@@ -992,6 +992,150 @@ def graph_age_sql_class_svg() -> str:
     return close_svg(out)
 
 
+def graph_age_type_parser_class_svg() -> str:
+    width, height = 1840, 1280
+    out = open_svg(
+        "AgeTypeParser Class Model",
+        "Apache AGE agtype parser converts vertex, edge, path, and lightweight JSON strings into graph-core models",
+        width,
+        height,
+    )
+    out[-1] = (
+        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: graph-age / AgeTypeParser</text>'
+    )
+    out.append('<rect x="70" y="150" width="1700" height="990" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+
+    def class_box(x: float, y: float, w: float, h: float, title: str, stereotype: str, lines: list[str], fill: str) -> None:
+        stroke = CARD_STROKES.get(fill, PALETTE["slate"])
+        title_class = "small" if len(title) > 22 else "label"
+        out.append(
+            f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="14" fill="{fill}" '
+            f'stroke="{stroke}" stroke-width="3" class="card"/>'
+        )
+        out.append(f'<text x="{x+w/2}" y="{y+34}" text-anchor="middle" dominant-baseline="middle" class="tiny">{esc(stereotype)}</text>')
+        out.append(f'<text x="{x+w/2}" y="{y+68}" text-anchor="middle" dominant-baseline="middle" class="{title_class}">{esc(title)}</text>')
+        out.append(f'<line x1="{x}" y1="{y+88}" x2="{x+w}" y2="{y+88}" stroke="{stroke}" stroke-width="2"/>')
+        yy = y + 122
+        for line in lines:
+            out.append(f'<text x="{x+24}" y="{yy}" class="small">{esc(line)}</text>')
+            yy += 26
+
+    def relation_label(x: float, y: float, text: str) -> None:
+        out.append(f'<text x="{x}" y="{y}" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">{esc(text)}</text>')
+        out.append(f'<text x="{x}" y="{y}" text-anchor="middle" class="tiny">{esc(text)}</text>')
+
+    # Relationship lines first so parser cards remain readable.
+    arrow(out, 520, 325, 650, 400, "", "thin")
+    arrow(out, 1220, 400, 1330, 325, "", "thin")
+    relation_label(920, 285, "agtype suffix selects parser branch")
+    arrow(out, 650, 610, 365, 690, "", "thin")
+    arrow(out, 760, 635, 455, 895, "", "thin")
+    arrow(out, 920, 635, 920, 895, "", "thin")
+    arrow(out, 1080, 635, 1385, 895, "", "thin")
+    arrow(out, 1220, 610, 1475, 690, "", "thin")
+    relation_label(560, 660, "vertex")
+    relation_label(690, 850, "path scan")
+    relation_label(920, 850, "JSON values")
+    relation_label(1150, 850, "model steps")
+    relation_label(1280, 660, "edge")
+
+    class_box(
+        120,
+        220,
+        400,
+        210,
+        "AGE agtype Input",
+        "<<strings>>",
+        ["{...}::vertex", "{...}::edge", "[...]::path", "JSON object / array payload"],
+        PALETTE["sky"],
+    )
+    class_box(
+        650,
+        355,
+        570,
+        280,
+        "AgeTypeParser",
+        "<<object : KLogging>>",
+        [
+            "+ parseVertex(agtype)",
+            "+ parseEdge(agtype)",
+            "+ parsePath(agtype)",
+            "+ isVertex / isEdge / isPath",
+            "+ parseJsonObject / parseJsonArray",
+            "- parseValue / findClosing / agtype scan",
+        ],
+        PALETTE["lavender"],
+    )
+    class_box(
+        1330,
+        220,
+        400,
+        210,
+        "Graph Core Models",
+        "<<outputs>>",
+        ["GraphVertex(id, label, props)", "GraphEdge(id, start, end)", "GraphPath(PathStep list)", "GraphElementId.of(Long)"],
+        PALETTE["mint"],
+    )
+    class_box(
+        120,
+        650,
+        390,
+        210,
+        "Vertex Parser",
+        "<<branch>>",
+        ["removeSuffix(::vertex)", "parse id / label / properties", "GraphElementId.of(id)", "return GraphVertex"],
+        PALETTE["lemon"],
+    )
+    class_box(
+        1330,
+        650,
+        390,
+        210,
+        "Edge Parser",
+        "<<branch>>",
+        ["removeSuffix(::edge)", "parse id / label", "parse start_id / end_id", "return GraphEdge"],
+        PALETTE["rose"],
+    )
+    class_box(
+        250,
+        895,
+        410,
+        215,
+        "Path Parser",
+        "<<branch>>",
+        ["removeSuffix(::path)", "parseAgtypeElements(content)", "VertexStep / EdgeStep", "warn unknown agtype element"],
+        PALETTE["aqua"],
+    )
+    class_box(
+        715,
+        895,
+        410,
+        215,
+        "Lightweight JSON Parser",
+        "<<private helpers>>",
+        ["parseJsonObject(json)", "parseJsonArray(json)", "parseValue(content, start)", "findClosing(open, close)"],
+        PALETTE["peach"],
+    )
+    class_box(
+        1180,
+        895,
+        410,
+        215,
+        "Path Steps",
+        "<<graph-core>>",
+        ["PathStep.VertexStep", "PathStep.EdgeStep", "GraphPath(steps)", "preserves vertex/edge order"],
+        PALETTE["sky"],
+    )
+
+    out.append('<rect x="180" y="1160" width="1480" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+    out.append(
+        '<text x="920" y="1193" text-anchor="middle" class="tiny">'
+        'Source: AgeTypeParser.kt; AGE agtype suffixes are stripped, JSON payloads parsed, and graph-core model objects returned.</text>'
+    )
+    return close_svg(out)
+
+
 def graph_core_architecture_overview_svg() -> str:
     width, height = 1760, 1040
     out = open_svg(
@@ -1352,6 +1496,8 @@ def class_svg(slug: str) -> str:
         return graph_age_operations_class_svg()
     if slug == "graph-graph-age-class-04":
         return graph_age_sql_class_svg()
+    if slug == "graph-graph-age-class-05":
+        return graph_age_type_parser_class_svg()
     title = "Backend Capability Matrix" if "capability" in slug else f"{module_title(slug)} Class Model"
     subtitle = "Contracts, data classes, and adapter responsibilities"
     out = open_svg(title, subtitle)
