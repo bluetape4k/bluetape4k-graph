@@ -225,6 +225,8 @@ def architecture_svg(slug: str) -> str:
         return graph_neo4j_data_model_svg()
     if slug == "graph-graph-neo4j-architecture-12":
         return graph_neo4j_test_environment_svg()
+    if slug == "graph-graph-falkordb-architecture-01":
+        return graph_falkordb_overview_svg()
     title = "Bluetape4k Graph Overview" if slug.startswith("root") else f"{module_title(slug)} Architecture"
     subtitle = "Current README and module source model"
     out = open_svg(title, subtitle)
@@ -1295,6 +1297,97 @@ def graph_neo4j_test_environment_svg() -> str:
     out.append(
         '<text x="920" y="998" text-anchor="middle" class="tiny">'
         'Source: graph-neo4j tests and README Testcontainers setup; tests close Driver explicitly because graph operations do not own it.</text>'
+    )
+    return close_svg(out)
+
+
+def graph_falkordb_overview_svg() -> str:
+    width, height = 1840, 1080
+    out = open_svg(
+        "FalkorDB Backend Overview",
+        "Redis-module graph backend using jfalkordb Driver, graph-core contracts, Cypher, schema indexes, merge, and coroutine IO isolation",
+        width,
+        height,
+    )
+    out[-1] = (
+        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: graph-falkordb / Overview</text>'
+    )
+    out.append('<rect x="70" y="150" width="1700" height="800" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+    out.append('<text x="920" y="205" text-anchor="middle" class="tiny">Source: graph-falkordb README, FalkorDBGraphOperations, FalkorDBGraphSuspendOperations, SchemaManager, RecordMapper, and FalkorDBServer fixture</text>')
+
+    arrow(out, 390, 318, 565, 318, "GraphOperations", "line")
+    arrow(out, 390, 540, 565, 540, "GraphSuspendOperations", "line")
+    arrow(out, 915, 318, 1095, 318, "queryList", "line")
+    arrow(out, 915, 540, 1095, 540, "Dispatchers.IO", "thin")
+    arrow(out, 1245, 405, 1455, 405, "Cypher", "line")
+    arrow(out, 1245, 595, 1455, 500, "index DDL", "thin")
+    arrow(out, 760, 700, 760, 775, "to model", "thin")
+    arrow(out, 1095, 700, 1095, 775, "fallback", "thin")
+
+    card(out, 115, 245, 275, 170, "graph-core API", [
+        "GraphOperations",
+        "GraphMergeOperations",
+        "GraphSchemaManager",
+        "GraphVertex / Edge / Path",
+    ], PALETTE["sky"])
+    card(out, 115, 465, 275, 170, "Coroutine API", [
+        "GraphSuspendOperations",
+        "Flow results",
+        "channelFlow backpressure",
+        "cancellation rethrows",
+    ], PALETTE["lavender"])
+
+    card(out, 565, 245, 350, 210, "Sync Operations", [
+        "driver.graph(graphName).use",
+        "CREATE uses named props",
+        "id(n) = toInteger($id)",
+        "MERGE vertex / edge",
+        "driver owned externally",
+    ], PALETTE["mint"])
+    card(out, 565, 485, 350, 185, "Suspend Operations", [
+        "sync delegate for merge/schema",
+        "withContext(Dispatchers.IO)",
+        "queryListIO",
+        "flowQuery",
+    ], PALETTE["peach"])
+
+    card(out, 1095, 245, 330, 185, "jfalkordb Driver", [
+        "FalkorDB.driver(host, port)",
+        "Graph context per call",
+        "ResultSet / Record",
+        "Redis connection lifecycle",
+    ], PALETTE["lemon"])
+    card(out, 1095, 485, 330, 185, "Schema & Merge", [
+        "CREATE INDEX",
+        "CALL db.indexes()",
+        "unique constraint unsupported",
+        "native Cypher MERGE",
+    ], PALETTE["rose"])
+
+    card(out, 1455, 310, 265, 210, "FalkorDB", [
+        "Redis module",
+        "openCypher subset",
+        "integer node IDs",
+        "GRAPH.CONSTRAINT gap",
+        "falkordb:v4.18.1 tests",
+    ], PALETTE["aqua"])
+
+    card(out, 585, 775, 350, 150, "Record Mapping", [
+        "Node -> GraphVertex",
+        "Edge -> GraphEdge",
+        "Path -> GraphPath steps",
+    ], PALETTE["sky"])
+    card(out, 1015, 775, 365, 150, "Algorithms", [
+        "shortest path fallback",
+        "BFS / DFS / PageRank",
+        "cycle and component helpers",
+    ], PALETTE["lavender"])
+
+    out.append('<rect x="180" y="965" width="1480" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+    out.append(
+        '<text x="920" y="997" text-anchor="middle" class="tiny">'
+        'Source note: FalkorDB operations do not close the externally owned Driver; suspend operations isolate blocking jfalkordb calls on Dispatchers.IO.</text>'
     )
     return close_svg(out)
 
