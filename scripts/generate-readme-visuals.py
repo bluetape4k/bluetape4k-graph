@@ -848,6 +848,150 @@ def graph_age_operations_class_svg() -> str:
     return close_svg(out)
 
 
+def graph_age_sql_class_svg() -> str:
+    width, height = 1840, 1180
+    out = open_svg(
+        "AgeSql Class Model",
+        "Apache AGE Cypher-over-SQL factory for graph setup, CRUD, batch rows, traversal, and algorithm helpers",
+        width,
+        height,
+    )
+    out[-1] = (
+        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: graph-age / AgeSql</text>'
+    )
+    out.append('<rect x="70" y="150" width="1700" height="890" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+
+    def class_box(x: float, y: float, w: float, h: float, title: str, stereotype: str, lines: list[str], fill: str) -> None:
+        stroke = CARD_STROKES.get(fill, PALETTE["slate"])
+        title_class = "small" if len(title) > 22 else "label"
+        out.append(
+            f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="14" fill="{fill}" '
+            f'stroke="{stroke}" stroke-width="3" class="card"/>'
+        )
+        out.append(f'<text x="{x+w/2}" y="{y+34}" text-anchor="middle" dominant-baseline="middle" class="tiny">{esc(stereotype)}</text>')
+        out.append(f'<text x="{x+w/2}" y="{y+68}" text-anchor="middle" dominant-baseline="middle" class="{title_class}">{esc(title)}</text>')
+        out.append(f'<line x1="{x}" y1="{y+88}" x2="{x+w}" y2="{y+88}" stroke="{stroke}" stroke-width="2"/>')
+        yy = y + 122
+        for line in lines:
+            out.append(f'<text x="{x+24}" y="{yy}" class="small">{esc(line)}</text>')
+            yy += 26
+
+    def relation_label(x: float, y: float, text: str) -> None:
+        out.append(f'<text x="{x}" y="{y}" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">{esc(text)}</text>')
+        out.append(f'<text x="{x}" y="{y}" text-anchor="middle" class="tiny">{esc(text)}</text>')
+
+    # Relationship lines first so cards and labels remain readable.
+    arrow(out, 480, 315, 675, 390, "", "thin")
+    arrow(out, 1360, 315, 1165, 390, "", "thin")
+    relation_label(920, 285, "builds SQL strings for ag_catalog.cypher")
+    arrow(out, 650, 520, 510, 610, "", "thin")
+    arrow(out, 1190, 520, 1330, 610, "", "thin")
+    relation_label(560, 565, "vertex SQL")
+    relation_label(1280, 565, "edge SQL")
+    arrow(out, 760, 620, 450, 800, "", "thin")
+    arrow(out, 920, 620, 920, 800, "", "thin")
+    arrow(out, 1080, 620, 1390, 800, "", "thin")
+    relation_label(600, 760, "batch rows")
+    relation_label(920, 760, "serializes props")
+    relation_label(1240, 760, "path helpers")
+
+    class_box(
+        120,
+        220,
+        360,
+        225,
+        "Setup + Graph DDL",
+        "<<functions>>",
+        ["loadAge()", "setSearchPath()", "createExtension()", "create/drop/exists graph"],
+        PALETTE["sky"],
+    )
+    class_box(
+        650,
+        345,
+        540,
+        275,
+        "AgeSql",
+        "<<object>>",
+        [
+            "+ cypher(graph, query, columns)",
+            "+ vertex + edge CRUD factories",
+            "+ batch create and endpoint match",
+            "+ neighbors / shortestPath / allPaths",
+            "+ degreeCentrality / match all",
+            "- commonSortedPropertyKeys / row props",
+        ],
+        PALETTE["lavender"],
+    )
+    class_box(
+        1360,
+        220,
+        360,
+        190,
+        "Cypher Wrapper",
+        "<<SQL shape>>",
+        ["SELECT * FROM ag_catalog.cypher", "graphName + $$ query $$", "typed agtype column list"],
+        PALETTE["mint"],
+    )
+    class_box(
+        120,
+        550,
+        390,
+        210,
+        "Vertex SQL",
+        "<<factory group>>",
+        ["createVertex / createVerticesBatch", "matchVertices / matchVertexById", "updateVertex / deleteVertex", "countVertices"],
+        PALETTE["lemon"],
+    )
+    class_box(
+        1330,
+        550,
+        390,
+        210,
+        "Edge SQL",
+        "<<factory group>>",
+        ["createEdge / createEdgesBatch", "matchEdgeBetween", "match by label/start/end id", "updateEdge / deleteEdge"],
+        PALETTE["rose"],
+    )
+    class_box(
+        250,
+        800,
+        400,
+        220,
+        "Batch Row Models",
+        "<<data classes>>",
+        ["BatchVertexRow(index, props)", "BatchEdgeRow(index, from, to)", "shared sorted property keys"],
+        PALETTE["aqua"],
+    )
+    class_box(
+        720,
+        800,
+        400,
+        220,
+        "AgePropertySerializer",
+        "<<dependency>>",
+        ["toCypherProps(properties)", "toCypherAssignments(variable)", "toCypherValue(value)", "escape strings + safe keys"],
+        PALETTE["peach"],
+    )
+    class_box(
+        1190,
+        800,
+        400,
+        220,
+        "Traversal + Algorithms",
+        "<<factory group>>",
+        ["neighbors(direction, depth)", "shortestPath / allPaths", "degreeCentrality", "matchAllVertices / matchAllEdges"],
+        PALETTE["sky"],
+    )
+
+    out.append('<rect x="180" y="1060" width="1480" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+    out.append(
+        '<text x="920" y="1093" text-anchor="middle" class="tiny">'
+        'Source: AgeSql.kt and AgePropertySerializer.kt; graphName/label/property inputs are converted into AGE Cypher-over-SQL strings.</text>'
+    )
+    return close_svg(out)
+
+
 def graph_core_architecture_overview_svg() -> str:
     width, height = 1760, 1040
     out = open_svg(
@@ -1206,6 +1350,8 @@ def class_svg(slug: str) -> str:
         return graph_core_schema_class_svg()
     if slug == "graph-graph-age-class-03":
         return graph_age_operations_class_svg()
+    if slug == "graph-graph-age-class-04":
+        return graph_age_sql_class_svg()
     title = "Backend Capability Matrix" if "capability" in slug else f"{module_title(slug)} Class Model"
     subtitle = "Contracts, data classes, and adapter responsibilities"
     out = open_svg(title, subtitle)
