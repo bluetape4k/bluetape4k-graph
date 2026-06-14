@@ -381,6 +381,133 @@ def sequence_svg(slug: str) -> str:
                 ("ops", "user", "GraphEdge", 805, "teal", True, 190),
             ],
         )
+    if slug == "graph-graph-age-sequence-06":
+        return graph_core_sequence_svg(
+            "createVertex",
+            "AGE adapter runs blocking PostgreSQL AGE work on Dispatchers.IO and parses agtype into GraphVertex.",
+            [
+                ("user", "User Code", "blue"),
+                ("ops", "AgeGraphOperations", "green"),
+                ("io", "Dispatchers.IO", "amber"),
+                ("tx", "Exposed Transaction", "rose"),
+                ("age", "PostgreSQL AGE", "teal"),
+                ("parser", "AgeTypeParser", "lemon"),
+                ("result", "GraphVertex", "blue"),
+            ],
+            [
+                ("user", "ops", "createVertex(Person, props)", 330, "blue", False, 310),
+                ("ops", "io", "withContext(Dispatchers.IO)", 415, "green", False, 305),
+                ("io", "tx", "transaction(database)", 500, "amber", False, 255),
+                ("tx", "age", "LOAD age and SET search_path", 585, "amber", False, 330),
+                ("tx", "age", "exec(AgeSql.createVertex(...))", 670, "amber", False, 340),
+                ("age", "tx", "agtype vertex row", 755, "teal", True, 240),
+                ("tx", "parser", "parseVertex(agtype)", 840, "green", False, 250),
+                ("parser", "result", "GraphVertex(id, label, props)", 925, "green", False, 320),
+                ("result", "ops", "GraphVertex", 1010, "teal", True, 205),
+                ("ops", "user", "GraphVertex", 1095, "teal", True, 205),
+            ],
+            module_name="graph-age",
+        )
+    if slug == "graph-graph-age-sequence-07":
+        return graph_core_sequence_svg(
+            "createEdge",
+            "AGE adapter creates a relationship through Cypher SQL and maps the agtype edge result.",
+            [
+                ("user", "User Code", "blue"),
+                ("ops", "AgeGraphOperations", "green"),
+                ("io", "Dispatchers.IO", "amber"),
+                ("tx", "Exposed Transaction", "rose"),
+                ("age", "PostgreSQL AGE", "teal"),
+                ("parser", "AgeTypeParser", "lemon"),
+                ("result", "GraphEdge", "blue"),
+            ],
+            [
+                ("user", "ops", "createEdge(fromId, toId, label, props)", 330, "blue", False, 390),
+                ("ops", "io", "withContext(Dispatchers.IO)", 415, "green", False, 305),
+                ("io", "tx", "transaction(database)", 500, "amber", False, 255),
+                ("tx", "age", "MATCH vertices and CREATE edge", 585, "amber", False, 360),
+                ("age", "tx", "agtype edge row", 670, "teal", True, 225),
+                ("tx", "parser", "parseEdge(agtype)", 755, "green", False, 235),
+                ("parser", "result", "GraphEdge(id, endpoints, props)", 840, "green", False, 330),
+                ("result", "ops", "GraphEdge", 925, "teal", True, 190),
+                ("ops", "user", "GraphEdge", 1010, "teal", True, 190),
+            ],
+            module_name="graph-age",
+        )
+    if slug == "graph-graph-age-sequence-08":
+        return graph_core_sequence_svg(
+            "shortestPath",
+            "AGE shortestPath executes Cypher over PostgreSQL AGE and parses agtype path elements.",
+            [
+                ("user", "User Code", "blue"),
+                ("ops", "AgeGraphOperations", "green"),
+                ("io", "Dispatchers.IO", "amber"),
+                ("tx", "Exposed Transaction", "rose"),
+                ("age", "PostgreSQL AGE", "teal"),
+                ("parser", "AgeTypeParser", "lemon"),
+                ("result", "GraphPath", "blue"),
+            ],
+            [
+                ("user", "ops", "shortestPath(fromId, toId, label, maxDepth)", 330, "blue", False, 430),
+                ("ops", "io", "withContext(Dispatchers.IO)", 415, "green", False, 305),
+                ("io", "tx", "transaction(database)", 500, "amber", False, 255),
+                ("tx", "age", "exec(AgeSql.shortestPath(...))", 585, "amber", False, 345),
+                ("age", "tx", "agtype path row", 670, "teal", True, 225),
+                ("tx", "parser", "parsePath(agtype)", 755, "green", False, 235),
+                ("parser", "result", "GraphPath(steps)", 840, "green", False, 230),
+                ("result", "ops", "GraphPath or null", 925, "teal", True, 245),
+                ("ops", "user", "GraphPath?", 1010, "teal", True, 190),
+            ],
+            module_name="graph-age",
+        )
+    if slug == "graph-graph-age-sequence-09":
+        return graph_core_sequence_svg(
+            "neighbors",
+            "AGE neighbors query translates direction and label into Cypher SQL, then parses vertex rows.",
+            [
+                ("user", "User Code", "blue"),
+                ("ops", "AgeGraphOperations", "green"),
+                ("io", "Dispatchers.IO", "amber"),
+                ("tx", "Exposed Transaction", "rose"),
+                ("age", "PostgreSQL AGE", "teal"),
+                ("parser", "AgeTypeParser", "lemon"),
+                ("result", "List<GraphVertex>", "blue"),
+            ],
+            [
+                ("user", "ops", "neighbors(startId, label, direction, depth)", 330, "blue", False, 410),
+                ("ops", "io", "withContext(Dispatchers.IO)", 415, "green", False, 305),
+                ("io", "tx", "transaction(database)", 500, "amber", False, 255),
+                ("tx", "age", "exec(AgeSql.neighbors(...))", 585, "amber", False, 320),
+                ("age", "tx", "agtype vertex rows", 670, "teal", True, 250),
+                ("tx", "parser", "parseVertex(row)", 755, "green", False, 225),
+                ("parser", "result", "List<GraphVertex>", 840, "green", False, 245),
+                ("result", "ops", "List<GraphVertex>", 925, "teal", True, 245),
+                ("ops", "user", "List<GraphVertex>", 1010, "teal", True, 245),
+            ],
+            module_name="graph-age",
+        )
+    if slug == "graph-graph-age-sequence-11":
+        return graph_core_sequence_svg(
+            "HikariCP",
+            "Connection initialization loads AGE once and sets the graph search path before use.",
+            [
+                ("init", "Connection Init", "blue"),
+                ("pool", "HikariCP Pool", "green"),
+                ("pg", "PostgreSQL", "amber"),
+                ("age", "AGE Extension", "rose"),
+            ],
+            [
+                ("init", "pool", "connectionInitSql", 330, "blue", False, 245),
+                ("pool", "pg", "open TCP connection", 420, "green", False, 270),
+                ("pg", "pool", "connected", 510, "teal", True, 190),
+                ("pool", "pg", "LOAD age", 600, "amber", False, 190),
+                ("pg", "age", "extension available", 690, "amber", False, 245),
+                ("age", "pg", "OK", 780, "teal", True, 155),
+                ("pg", "pool", "SET search_path", 870, "amber", False, 245),
+                ("pool", "init", "connection ready", 960, "teal", True, 230),
+            ],
+            module_name="graph-age",
+        )
     title = "Bluetape4k Graph Sequence" if slug.startswith("root-readme-") else f"{module_title(slug)} Sequence"
     subtitle = "Happy-path operation flow with labels placed away from cards"
     out = open_svg(title, subtitle)
@@ -416,15 +543,16 @@ def graph_core_sequence_svg(
     subtitle: str,
     participants: list[tuple[str, str, str]],
     messages: list[tuple[str, str, str, int, str, bool, int]],
+    module_name: str = "graph-core",
 ) -> str:
-    width = 1600 if len(participants) <= 4 else 1840
+    width = max(1600, 500 + (len(participants) - 1) * 340)
     max_y = max(message[3] for message in messages)
     panel_bottom = max_y + 110
     height = panel_bottom + 140
     out = open_svg(title, subtitle, width, height)
     out[-1] = (
         f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
-        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: graph-core / {esc(title)}</text>'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: {esc(module_name)} / {esc(title)}</text>'
     )
     out.insert(2, '<defs><marker id="seqArrow" markerWidth="6" markerHeight="6" refX="5.5" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M 0 0 L 6 3 L 0 6 z" fill="#2E9C9B"/></marker></defs>')
     tones = {
