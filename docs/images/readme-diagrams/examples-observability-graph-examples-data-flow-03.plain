@@ -1,9 +1,0 @@
-graph 1 9.0556 0.5
-node csv 0.56424 0.25 1.1285 0.5 "CSV Fixture" rounded,filled box #9aa8b8 #ffffff
-node loader 2.974 0.25 1.3576 0.5 "Dataset Loader" rounded,filled box #9aa8b8 #ffffff
-node service 5.6076 0.25 1.4097 0.5 "Incident Service" rounded,filled box #9aa8b8 #ffffff
-node answers 8.3299 0.25 1.4514 0.5 "Expected Output" rounded,filled box #9aa8b8 #ffffff
-edge csv loader 4 1.1306 0.25 1.4363 0.25 1.8218 0.25 2.1599 0.25 load 1.7118 0.32812 solid #738295
-edge loader service 4 3.6589 0.25 3.9974 0.25 4.4109 0.25 4.7686 0.25 query 4.2778 0.32812 solid #738295
-edge service answers 4 6.3189 0.25 6.6704 0.25 7.0995 0.25 7.4698 0.25 assert 6.9583 0.32812 solid #738295
-stop

@@ -1,53 +1,46 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="980" height="700" viewBox="0 0 980 700">
-<rect x="0" y="0" width="980" height="700" fill="#FAFAFA"/>
-<text x="490" y="32" text-anchor="middle" font-family="&apos;Architects Daughter&apos;,&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,cursive" font-size="18" font-weight="400" fill="#252525">API Model Benchmark</text>
-<text x="490" y="54" text-anchor="middle" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#666666">TinkerGraph fixture, JMH smoke run, one fork, one warmup, three measurement iterations.</text>
-<rect x="220" y="74" width="12" height="12" fill="#4A90D9" rx="2"/>
-<text x="236" y="84" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">sync</text>
-<rect x="370" y="74" width="12" height="12" fill="#5ABF6B" rx="2"/>
-<text x="386" y="84" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">virtual-thread</text>
-<rect x="520" y="74" width="12" height="12" fill="#E8B040" rx="2"/>
-<text x="536" y="84" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">coroutine</text>
-<rect x="705" y="70" width="222" height="28" fill="#EAF5EA" stroke="#86B586" rx="6"/>
-<text x="816" y="89" text-anchor="middle" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" font-weight="400" fill="#2F6F3A">Direction is per panel</text>
-<text x="24" y="128" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="15" font-weight="400" fill="#222222">PageRank throughput</text>
-<text x="220" y="128" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" font-weight="400" fill="#2F6F3A">Longer bars are better, ops/s.</text>
-<text x="210" y="161" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">sync</text>
-<rect x="220" y="148" width="590.0" height="18" fill="#4A90D9" rx="3"/>
-<text x="818.0" y="161" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">138,943 ops/s</text>
-<text x="210" y="190" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">virtual-thread</text>
-<rect x="220" y="177" width="171.1" height="18" fill="#5ABF6B" rx="3"/>
-<text x="399.1" y="190" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">40,283 ops/s</text>
-<text x="210" y="219" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">coroutine</text>
-<rect x="220" y="206" width="156.6" height="18" fill="#E8B040" rx="3"/>
-<text x="384.6" y="219" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">36,880 ops/s</text>
-<text x="24" y="283" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="15" font-weight="400" fill="#222222">Latency and launch cost</text>
-<text x="220" y="283" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" font-weight="400" fill="#2F6F3A">Shorter bars are better, us/op.</text>
-<text x="24" y="318" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="13" font-weight="400" fill="#222222">BFS depth=5 latency</text>
-<text x="810" y="318" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="10" fill="#888888">max 20.2 us/op</text>
-<text x="210" y="344" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">sync</text>
-<rect x="220" y="331" width="137.7" height="18" fill="#4A90D9" rx="3"/>
-<text x="365.7" y="344" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">4.724 us/op</text>
-<text x="210" y="373" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">virtual-thread</text>
-<rect x="220" y="360" width="544.1" height="18" fill="#5ABF6B" rx="3"/>
-<text x="772.1" y="373" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">18.668 us/op</text>
-<text x="210" y="402" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">coroutine</text>
-<rect x="220" y="389" width="590.0" height="18" fill="#E8B040" rx="3"/>
-<text x="818.0" y="402" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">20.244 us/op</text>
-<text x="24" y="465" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="13" font-weight="400" fill="#222222">100-way BFS latency</text>
-<text x="810" y="465" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="10" fill="#888888">max 280 us/op</text>
-<text x="210" y="491" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">virtual-thread</text>
-<rect x="220" y="478" width="507.9" height="18" fill="#5ABF6B" rx="3"/>
-<text x="735.9" y="491" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">240.903 us/op</text>
-<text x="210" y="520" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">coroutine</text>
-<rect x="220" y="507" width="590.0" height="18" fill="#E8B040" rx="3"/>
-<text x="818.0" y="520" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">279.828 us/op</text>
-<text x="24" y="583" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="13" font-weight="400" fill="#222222">100-way launch/create cost</text>
-<text x="810" y="583" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="10" fill="#888888">max 51 us/op</text>
-<text x="210" y="609" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">virtual-thread</text>
-<rect x="220" y="596" width="590.0" height="18" fill="#5ABF6B" rx="3"/>
-<text x="818.0" y="609" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">51.042 us/op</text>
-<text x="210" y="638" text-anchor="end" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="12" fill="#333333">coroutine</text>
-<rect x="220" y="625" width="68.4" height="18" fill="#E8B040" rx="3"/>
-<text x="296.4" y="638" font-family="&apos;Comic Sans MS&apos;,&apos;Comic Sans&apos;,&apos;Comic Neue&apos;,&apos;Chalkboard SE&apos;,cursive" font-size="11" fill="#333333">5.916 us/op</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="860" viewBox="0 0 1500 860">
+
+    <defs>
+      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
+        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#26384A" flood-opacity="0.10"/>
+      </filter>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#6F8396"/>
+      </marker>
+    </defs>
+    <style>
+      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #36424F; }
+      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #667085; }
+      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #36424F; }
+      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #536273; }
+      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #667085; }
+      .card { stroke: #D7E0EA; stroke-width: 2; filter: url(#softShadow); }
+      .line { stroke: #6F8396; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .thin { stroke: #A5B5C4; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #A5B5C4; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
+    </style>
+
+<rect x="0" y="0" width="1500" height="860" fill="#FFFDF8"/>
+<rect x="24" y="24" width="1452" height="812" rx="22" fill="none" stroke="#7DAED3" stroke-width="4"/>
+<circle cx="1436" cy="64" r="15" fill="#FFD5B8" opacity="0.95"/>
+<circle cx="1396" cy="64" r="15" fill="#BFE8D2" opacity="0.95"/>
+<circle cx="1356" cy="64" r="15" fill="#CBBCEB" opacity="0.95"/>
+<text x="72" y="82" class="title">API Model Smoke Benchmark</text>
+<text x="74" y="118" class="subtitle">PageRank throughput on TinkerGraph fixture</text>
+<text x="750.0" y="812" text-anchor="middle" class="tiny">github.com/bluetape4k/bluetape4k-graph | bluetape4k-graph | API Model Smoke Benchmark</text>
+<text x="350" y="171" class="tiny">Unit: ops/s / higher is better</text>
+<rect x="350" y="137" width="24" height="16" rx="5" fill="#8FC4EA"/>
+<text x="384" y="151" class="tiny">throughput</text>
+<text x="86" y="231" class="tiny">Sync</text>
+<line x1="350" y1="239" x2="1390" y2="239" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="350" y="206" width="920.0" height="15" rx="6" fill="#8FC4EA"/>
+<text x="1282.0" y="219" class="tiny">138943</text>
+<text x="86" y="295" class="tiny">Virtual Thread</text>
+<line x1="350" y1="303" x2="1390" y2="303" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="350" y="270" width="495.3727558108794" height="15" rx="6" fill="#8FC4EA"/>
+<text x="857.3727558108794" y="283" class="tiny">40283.5</text>
+<text x="86" y="359" class="tiny">Coroutine Flow</text>
+<line x1="350" y1="367" x2="1390" y2="367" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="350" y="334" width="473.98169009229434" height="15" rx="6" fill="#8FC4EA"/>
+<text x="835.9816900922943" y="347" class="tiny">36879.6</text>
 </svg>

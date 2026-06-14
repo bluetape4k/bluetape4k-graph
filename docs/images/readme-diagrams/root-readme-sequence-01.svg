@@ -25,9 +25,9 @@
 <circle cx="1376" cy="64" r="15" fill="#FFD5B8" opacity="0.95"/>
 <circle cx="1336" cy="64" r="15" fill="#BFE8D2" opacity="0.95"/>
 <circle cx="1296" cy="64" r="15" fill="#CBBCEB" opacity="0.95"/>
-<text x="72" y="82" class="title">Neo4j Sequence 08 Sequence</text>
+<text x="72" y="82" class="title">Bluetape4k Graph Sequence</text>
 <text x="74" y="118" class="subtitle">Happy-path operation flow with labels placed away from cards</text>
-<text x="720.0" y="852" text-anchor="middle" class="tiny">github.com/bluetape4k/bluetape4k-graph | bluetape4k-graph | Neo4j Sequence 08 Sequence</text>
+<text x="720.0" y="852" text-anchor="middle" class="tiny">github.com/bluetape4k/bluetape4k-graph | bluetape4k-graph | Bluetape4k Graph Sequence</text>
 <rect x="60" y="190" width="180" height="62" rx="14" fill="#B7DBF4" class="card"/>
 <text x="150" y="230" text-anchor="middle" class="label">Caller</text>
 <line x1="150" y1="270" x2="150" y2="710" stroke="#C2CED9" stroke-width="3" stroke-dasharray="8 8"/>

@@ -1,11 +1,70 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="560" viewBox="0 0 1280 560">
-<style>
-.title{font-family:'Architects Daughter','Comic Sans MS','Comic Neue',cursive;font-size:34px;font-weight:400;fill:#273043}
-.subtitle,.axis,.legend,.note{font-family:'Comic Sans MS','Comic Neue','Chalkboard SE',cursive;fill:#6b7280;font-weight:400}
-.label{font-family:'Comic Sans MS','Comic Neue','Chalkboard SE',cursive;fill:#273043;font-weight:400}
-.value{font-family:'Comic Sans MS','Comic Neue','Chalkboard SE',cursive;fill:#273043;font-weight:400;font-size:18px}
-.axis{font-size:16px}.legend{font-size:18px}.note{font-size:17px}.label{font-size:18px}
-</style>
-<rect width="1280" height="560" rx="0" fill="#f6f8fb"/>
-<rect x="24" y="24" width="1232" height="512" rx="18" fill="#ffffff" stroke="#d7e3ee" stroke-width="2"/>
-<text class="title" x="56" y="72">Graph-IO Import Latency</text><text class="subtitle" x="58" y="104" font-size="18">File to TinkerGraph; log scale keeps coroutine outliers readable</text><rect x="56" y="116" width="18" height="18" rx="5" fill="#8ecae6"/><text class="legend" x="82" y="131">Sync</text><rect x="146" y="116" width="18" height="18" rx="5" fill="#ffb3c7"/><text class="legend" x="172" y="131">VirtualThread</text><rect x="326" y="116" width="18" height="18" rx="5" fill="#b8e0d2"/><text class="legend" x="352" y="131">Suspend</text><text class="label" x="56" y="185">CSV</text><rect x="285" y="142" width="75.25091750674648" height="18" rx="7" fill="#8ecae6"/><text class="value" x="370.2509175067465" y="157" font-size="16">17.9 ms/op</text><rect x="285" y="166" width="71.11851041917487" height="18" rx="7" fill="#ffb3c7"/><text class="value" x="366.11851041917487" y="181" font-size="16">17.6 ms/op</text><rect x="285" y="190" width="161.36983032229978" height="18" rx="7" fill="#b8e0d2"/><text class="value" x="456.3698303222998" y="205" font-size="16">23.4 ms/op</text><text class="label" x="56" y="283">Jackson2 NDJSON</text><rect x="285" y="240" width="92.23089288578939" height="18" rx="7" fill="#8ecae6"/><text class="value" x="387.2308928857894" y="255" font-size="16">18.8 ms/op</text><rect x="285" y="264" width="79.96426140594156" height="18" rx="7" fill="#ffb3c7"/><text class="value" x="374.96426140594156" y="279" font-size="16">18.1 ms/op</text><rect x="285" y="288" width="756.592259648035" height="18" rx="7" fill="#b8e0d2"/><text class="value" x="1051.592259648035" y="303" font-size="16">151.4 ms/op</text><text class="label" x="56" y="381">Jackson3 NDJSON</text><rect x="285" y="338" width="109.05898114987787" height="18" rx="7" fill="#8ecae6"/><text class="value" x="404.05898114987787" y="353" font-size="16">19.9 ms/op</text><rect x="285" y="362" width="100.10443812680757" height="18" rx="7" fill="#ffb3c7"/><text class="value" x="395.10443812680757" y="377" font-size="16">19.3 ms/op</text><rect x="285" y="386" width="764.6235092811503" height="18" rx="7" fill="#b8e0d2"/><text class="value" x="1059.6235092811503" y="401" font-size="16">155.3 ms/op</text><text class="label" x="56" y="479">GraphML</text><rect x="285" y="436" width="128.65640965011931" height="18" rx="7" fill="#8ecae6"/><text class="value" x="423.6564096501193" y="451" font-size="16">21.1 ms/op</text><rect x="285" y="460" width="128.4147667075215" height="18" rx="7" fill="#ffb3c7"/><text class="value" x="423.4147667075215" y="475" font-size="16">21.1 ms/op</text><rect x="285" y="484" width="147.26073093797925" height="18" rx="7" fill="#b8e0d2"/><text class="value" x="442.26073093797925" y="499" font-size="16">22.4 ms/op</text><text class="axis" x="285" y="496">log scale</text><text class="note" x="56" y="520">Lower is better. Jackson suspend import includes benchmark setup overhead.</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="860" viewBox="0 0 1500 860">
+
+    <defs>
+      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
+        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#26384A" flood-opacity="0.10"/>
+      </filter>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#6F8396"/>
+      </marker>
+    </defs>
+    <style>
+      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #36424F; }
+      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #667085; }
+      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #36424F; }
+      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #536273; }
+      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #667085; }
+      .card { stroke: #D7E0EA; stroke-width: 2; filter: url(#softShadow); }
+      .line { stroke: #6F8396; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .thin { stroke: #A5B5C4; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #A5B5C4; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
+    </style>
+
+<rect x="0" y="0" width="1500" height="860" fill="#FFFDF8"/>
+<rect x="24" y="24" width="1452" height="812" rx="22" fill="none" stroke="#7DAED3" stroke-width="4"/>
+<circle cx="1436" cy="64" r="15" fill="#FFD5B8" opacity="0.95"/>
+<circle cx="1396" cy="64" r="15" fill="#BFE8D2" opacity="0.95"/>
+<circle cx="1356" cy="64" r="15" fill="#CBBCEB" opacity="0.95"/>
+<text x="72" y="82" class="title">Graph-IO Import Latency</text>
+<text x="74" y="118" class="subtitle">File to TinkerGraph</text>
+<text x="750.0" y="812" text-anchor="middle" class="tiny">github.com/bluetape4k/bluetape4k-graph | bluetape4k-graph | Graph-IO Import Latency</text>
+<text x="350" y="171" class="tiny">Unit: ms/op / lower is better</text>
+<rect x="350" y="137" width="24" height="16" rx="5" fill="#8FC4EA"/>
+<text x="384" y="151" class="tiny">Sync</text>
+<rect x="540" y="137" width="24" height="16" rx="5" fill="#F4BE8D"/>
+<text x="574" y="151" class="tiny">VirtualThread</text>
+<rect x="730" y="137" width="24" height="16" rx="5" fill="#9FD7B7"/>
+<text x="764" y="151" class="tiny">Suspend</text>
+<text x="86" y="231" class="tiny">CSV</text>
+<line x1="350" y1="239" x2="1390" y2="239" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="350" y="206" width="311.9602285198495" height="15" rx="6" fill="#8FC4EA"/>
+<text x="673.9602285198496" y="219" class="tiny">17.854</text>
+<rect x="350" y="227" width="309.94433764176995" height="15" rx="6" fill="#F4BE8D"/>
+<text x="671.94433764177" y="240" class="tiny">17.624</text>
+<rect x="350" y="248" width="357.0873168075001" height="15" rx="6" fill="#9FD7B7"/>
+<text x="719.0873168075001" y="261" class="tiny">23.393</text>
+<text x="86" y="303" class="tiny">Jackson2 NDJSON</text>
+<line x1="350" y1="311" x2="1390" y2="311" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="350" y="278" width="320.3820354899158" height="15" rx="6" fill="#8FC4EA"/>
+<text x="682.3820354899158" y="291" class="tiny">18.831</text>
+<rect x="350" y="299" width="314.27552550573074" height="15" rx="6" fill="#F4BE8D"/>
+<text x="676.2755255057307" y="312" class="tiny">18.12</text>
+<rect x="350" y="320" width="908.4811383485355" height="15" rx="6" fill="#9FD7B7"/>
+<text x="1270.4811383485355" y="333" class="tiny">151.415</text>
+<text x="86" y="375" class="tiny">Jackson3 NDJSON</text>
+<line x1="350" y1="383" x2="1390" y2="383" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="350" y="350" width="328.9528079105534" height="15" rx="6" fill="#8FC4EA"/>
+<text x="690.9528079105535" y="363" class="tiny">19.852</text>
+<rect x="350" y="371" width="324.3639796877142" height="15" rx="6" fill="#F4BE8D"/>
+<text x="686.3639796877142" y="384" class="tiny">19.302</text>
+<rect x="350" y="392" width="920.0" height="15" rx="6" fill="#9FD7B7"/>
+<text x="1282.0" y="405" class="tiny">155.279</text>
+<text x="86" y="447" class="tiny">GraphML</text>
+<line x1="350" y1="455" x2="1390" y2="455" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="350" y="422" width="339.22345056180905" height="15" rx="6" fill="#8FC4EA"/>
+<text x="701.223450561809" y="435" class="tiny">21.111</text>
+<rect x="350" y="443" width="339.0948776854184" height="15" rx="6" fill="#F4BE8D"/>
+<text x="701.0948776854184" y="456" class="tiny">21.095</text>
+<rect x="350" y="464" width="349.2701781235978" height="15" rx="6" fill="#9FD7B7"/>
+<text x="711.2701781235978" y="477" class="tiny">22.38</text>
+</svg>

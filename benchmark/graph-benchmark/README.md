@@ -114,7 +114,6 @@ BFS and launch/create rows use `us/op`; lower is better.
 Artifacts:
 
 - [Chart PNG](../../docs/images/readme-charts/graph-api-model-chart-01.png)
-- [Chart SVG](../../docs/images/readme-charts/graph-api-model-chart-01.svg)
 - [Raw JMH JSON](../../docs/benchmark/2026-05-21-api-model-jmh.json)
 - [Markdown result table](../../docs/benchmark/2026-05-21-api-model-results.md)
 
@@ -136,7 +135,6 @@ Interpretation: Virtual Threads remain the lower-latency choice for blocking-sty
 Artifacts:
 
 - [Chart PNG](../../docs/images/readme-charts/graph-api-model-production-chart-01.png)
-- [Chart SVG](../../docs/images/readme-charts/graph-api-model-production-chart-01.svg)
 - [Raw JMH JSON](../../docs/benchmark/api-model-production-gradle-2026-05-21.json)
 
 ## Latest Authorization Inheritance Result
@@ -190,9 +188,7 @@ Adoption probe interpretation:
 Artifacts:
 
 - [Chart PNG](../../docs/images/readme-charts/authz-inheritance-postgresql-latency-chart-01.png)
-- [Chart SVG](../../docs/images/readme-charts/authz-inheritance-postgresql-latency-chart-01.svg)
 - [Adoption Chart PNG](../../docs/images/readme-charts/authz-inheritance-adoption-latency-chart-01.png)
-- [Adoption Chart SVG](../../docs/images/readme-charts/authz-inheritance-adoption-latency-chart-01.svg)
 - [Raw JMH JSON](../../docs/benchmark/2026-05-28-authz-inheritance-main.json)
 - [Adoption Neo4j JMH JSON](../../docs/benchmark/2026-05-28-authz-inheritance-adoption-neo4j.json)
 - [Adoption PostgreSQL JMH JSON](../../docs/benchmark/2026-05-28-authz-inheritance-adoption-postgres.json)
@@ -225,7 +221,6 @@ Interpretation: TinkerGraph is still the fastest local analysis engine for in-me
 Artifacts:
 
 - [Chart PNG](../../docs/images/readme-charts/graph-domain-workload-testcontainers-latency-chart-01.png)
-- [Chart SVG](../../docs/images/readme-charts/graph-domain-workload-testcontainers-latency-chart-01.svg)
 - [Raw JMH JSON](../../docs/benchmark/graph-domain-workload-testcontainers-2026-05-21.json)
 
 ### Sustained Write Ingestion
@@ -252,7 +247,6 @@ Interpretation: Memgraph is the fastest persistent backend across every latency 
 Artifacts:
 
 - [Chart PNG](../../docs/images/readme-charts/graph-write-ingestion-testcontainers-latency-chart-01.png)
-- [Chart SVG](../../docs/images/readme-charts/graph-write-ingestion-testcontainers-latency-chart-01.svg)
 - [Raw JMH JSON](../../docs/benchmark/graph-write-ingestion-testcontainers-2026-05-21.json)
 - [Markdown result table](../../docs/benchmark/2026-05-21-graph-write-ingestion-testcontainers-results.md)
 
@@ -274,7 +268,6 @@ Interpretation: Memgraph remains the best latency candidate for large sustained 
 Artifacts:
 
 - [Chart PNG](../../docs/images/readme-charts/graph-write-ingestion-10k-testcontainers-latency-chart-01.png)
-- [Chart SVG](../../docs/images/readme-charts/graph-write-ingestion-10k-testcontainers-latency-chart-01.svg)
 - [Raw JMH JSON](../../docs/benchmark/graph-write-ingestion-10k-testcontainers-2026-05-21.json)
 
 ### Medium Dataset
@@ -295,7 +288,6 @@ All values are `ms/op`; lower is better. Bold indicates the fastest backend in t
 Artifacts:
 
 - [Chart PNG](../../docs/images/readme-charts/graph-db-medium-testcontainers-latency-chart-01.png)
-- [Chart SVG](../../docs/images/readme-charts/graph-db-medium-testcontainers-latency-chart-01.svg)
 - [Raw JMH JSON](../../docs/benchmark/graph-db-medium-testcontainers-2026-05-21.json)
 - [FalkorDB timeout rerun JSON](../../docs/benchmark/graph-db-medium-falkordb-testcontainers-2026-05-21.json)
 - [Markdown result table](../../docs/benchmark/2026-05-21-graph-db-medium-testcontainers-results.md)
@@ -318,7 +310,6 @@ All values are `ms/op`; lower is better. Bold indicates the fastest backend in t
 Artifacts:
 
 - [Chart PNG](../../docs/images/readme-charts/graph-db-testcontainers-latency-chart-01.png)
-- [Chart SVG](../../docs/images/readme-charts/graph-db-testcontainers-latency-chart-01.svg)
 - [Raw JMH JSON](../../docs/benchmark/graph-db-small-gradle-testcontainers-2026-05-21.json)
 - [Legacy raw JMH JSON](../../docs/benchmark/graph-db-testcontainers-2026-05-21.json)
 - [Normalized baseline JSON](../../docs/benchmark/graph-benchmark-baseline.json)

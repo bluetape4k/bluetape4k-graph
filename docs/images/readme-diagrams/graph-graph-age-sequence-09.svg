@@ -1,67 +1,64 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1370" height="1146" viewBox="0 0 1370 1146" role="img" aria-label="neighbors ()">
-<defs>
-  <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="7" stdDeviation="8" flood-color="#1f2937" flood-opacity="0.10"/></filter>
-  <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth"><path d="M1,1 L8,4.5 L1,8 Z" fill="#758297"/></marker>
-  <style>
-    .canvas{fill:#f7f9fc}.frame{fill:#fff;stroke:#d8e0ea;stroke-width:1.5}
-    .title{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:40px;font-weight:400;fill:#102033}
-    .subtitle{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:14px;font-weight:400;fill:#536273}
-    .label{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:21px;font-weight:400;fill:#102033}
-    .small{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:12px;font-weight:400;fill:#536273}
-    .strong{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:13px;font-weight:400;fill:#102033}
-    .card{stroke-width:2.0;filter:url(#shadow)}
-    .line{stroke:#758297;stroke-width:2.1;fill:none;marker-end:url(#arrow)}
-    .dashed{stroke:#758297;stroke-width:2.1;stroke-dasharray:7 6;fill:none;marker-end:url(#arrow)}
-    .lifeline{stroke:#b7c2d1;stroke-width:1.8;stroke-dasharray:9 9}
-  </style>
-</defs>
-<rect class="canvas" width="1370" height="1146"/>
-<rect class="frame" x="44" y="30" width="1282" height="1086" rx="28"/>
-<text class="title" x="76" y="84">neighbors ()</text>
-<text class="subtitle" x="80" y="116">Graphviz actor layout with compact message lanes and wider outer margins</text>
-<rect class="card" x="120.0" y="156" width="230" height="58" rx="16" fill="#E8F3FF" stroke="#5B8DEF"/>
-<text class="label" x="235.0" y="185.0" text-anchor="middle">User</text>
-<line class="lifeline" x1="235.0" y1="230" x2="235.0" y2="1080"/>
-<rect class="card" x="420.0" y="156" width="230" height="58" rx="16" fill="#EAF7EF" stroke="#58A978"/>
-<text class="label" x="535.0" y="185.0" text-anchor="middle">AgeGraphOperations</text>
-<line class="lifeline" x1="535.0" y1="230" x2="535.0" y2="1080"/>
-<rect class="card" x="720.0" y="156" width="230" height="58" rx="16" fill="#FFF3D9" stroke="#D6A441"/>
-<text class="label" x="835.0" y="185.0" text-anchor="middle">AgeSql</text>
-<line class="lifeline" x1="835.0" y1="230" x2="835.0" y2="1080"/>
-<rect class="card" x="1020.0" y="156" width="230" height="58" rx="16" fill="#FDECEF" stroke="#DC6B82"/>
-<text class="label" x="1135.0" y="185.0" text-anchor="middle">PostgreSQL AGE</text>
-<line class="lifeline" x1="1135.0" y1="230" x2="1135.0" y2="1080"/>
-<rect x="246.0" y="232.0" width="278.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
-<text class="strong" x="256.0" y="252.0">1. neighbors(startId, KNOWS, OUTGOING, depth=2)</text>
-<path class="line" d="M235.0 262.0 L535.0 262.0"/>
-<rect x="546.0" y="308.0" width="278.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
-<text class="strong" x="556.0" y="328.0">2. neighbors(graphName, startId, KNOWS, OUTGOING, 2)</text>
-<path class="line" d="M535.0 338.0 L835.0 338.0"/>
-<rect x="846.0" y="384.0" width="-22.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
-<text class="strong" x="856.0" y="404.0">3. ALT: OUTGOING 4. Pattern = (start)-[:KNOWS*1..2]-&gt;(neighbor)</text>
-<path class="line" d="M835.0 414.0 L835.0 414.0"/>
-<rect x="846.0" y="460.0" width="-22.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
-<text class="strong" x="856.0" y="480.0">4. ELSE: INCOMING 6. Pattern = (start)&lt;-[:KNOWS*1..2]-(neighbor)</text>
-<path class="line" d="M835.0 490.0 L835.0 490.0"/>
-<rect x="846.0" y="536.0" width="-22.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
-<text class="strong" x="856.0" y="556.0">5. ELSE: BOTH 8. Pattern = (start)-[:KNOWS*1..2]-(neighbor)</text>
-<path class="line" d="M835.0 566.0 L835.0 566.0"/>
-<rect x="846.0" y="612.0" width="-22.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
-<text class="strong" x="856.0" y="632.0">6. Build Cypher: MATCH pattern WHERE id(start) = startId RETURN DISTINCT neighbor</text>
-<path class="line" d="M835.0 642.0 L835.0 642.0"/>
-<rect x="610.0" y="688.0" width="150.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
-<text class="strong" x="620.0" y="708.0">7. SQL</text>
-<path class="dashed" d="M835.0 718.0 L535.0 718.0"/>
-<rect x="760.0" y="764.0" width="150.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
-<text class="strong" x="770.0" y="784.0">8. exec(SQL )</text>
-<path class="line" d="M535.0 794.0 L1135.0 794.0"/>
-<rect x="742.2" y="840.0" width="185.6" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
-<text class="strong" x="752.2" y="860.0">9. List of agtype vertices</text>
-<path class="dashed" d="M1135.0 870.0 L535.0 870.0"/>
-<rect x="546.0" y="916.0" width="-22.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
-<text class="strong" x="556.0" y="936.0">10. parseVertex for each result</text>
-<path class="line" d="M535.0 946.0 L535.0 946.0"/>
-<rect x="310.0" y="992.0" width="150.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
-<text class="strong" x="320.0" y="1012.0">11. List~GraphVertex~</text>
-<path class="dashed" d="M535.0 1022.0 L235.0 1022.0"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
+
+    <defs>
+      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
+        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#26384A" flood-opacity="0.10"/>
+      </filter>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#6F8396"/>
+      </marker>
+    </defs>
+    <style>
+      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #36424F; }
+      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #667085; }
+      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #36424F; }
+      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #536273; }
+      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #667085; }
+      .card { stroke: #D7E0EA; stroke-width: 2; filter: url(#softShadow); }
+      .line { stroke: #6F8396; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .thin { stroke: #A5B5C4; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #A5B5C4; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
+    </style>
+
+<rect x="0" y="0" width="1440" height="900" fill="#FFFDF8"/>
+<rect x="24" y="24" width="1392" height="852" rx="22" fill="none" stroke="#7DAED3" stroke-width="4"/>
+<circle cx="1376" cy="64" r="15" fill="#FFD5B8" opacity="0.95"/>
+<circle cx="1336" cy="64" r="15" fill="#BFE8D2" opacity="0.95"/>
+<circle cx="1296" cy="64" r="15" fill="#CBBCEB" opacity="0.95"/>
+<text x="72" y="82" class="title">Age Sequence 09 Sequence</text>
+<text x="74" y="118" class="subtitle">Happy-path operation flow with labels placed away from cards</text>
+<text x="720.0" y="852" text-anchor="middle" class="tiny">github.com/bluetape4k/bluetape4k-graph | bluetape4k-graph | Age Sequence 09 Sequence</text>
+<rect x="60" y="190" width="180" height="62" rx="14" fill="#B7DBF4" class="card"/>
+<text x="150" y="230" text-anchor="middle" class="label">Caller</text>
+<line x1="150" y1="270" x2="150" y2="710" stroke="#C2CED9" stroke-width="3" stroke-dasharray="8 8"/>
+<rect x="340" y="190" width="180" height="62" rx="14" fill="#B7DBF4" class="card"/>
+<text x="430" y="230" text-anchor="middle" class="label">GraphOperations</text>
+<line x1="430" y1="270" x2="430" y2="710" stroke="#C2CED9" stroke-width="3" stroke-dasharray="8 8"/>
+<rect x="620" y="190" width="180" height="62" rx="14" fill="#B7DBF4" class="card"/>
+<text x="710" y="230" text-anchor="middle" class="label">Adapter</text>
+<line x1="710" y1="270" x2="710" y2="710" stroke="#C2CED9" stroke-width="3" stroke-dasharray="8 8"/>
+<rect x="900" y="190" width="180" height="62" rx="14" fill="#B7DBF4" class="card"/>
+<text x="990" y="230" text-anchor="middle" class="label">Graph DB</text>
+<line x1="990" y1="270" x2="990" y2="710" stroke="#C2CED9" stroke-width="3" stroke-dasharray="8 8"/>
+<rect x="1170" y="190" width="180" height="62" rx="14" fill="#B7DBF4" class="card"/>
+<text x="1260" y="230" text-anchor="middle" class="label">Result</text>
+<line x1="1260" y1="270" x2="1260" y2="710" stroke="#C2CED9" stroke-width="3" stroke-dasharray="8 8"/>
+<path d="M 220 310 C 290.0 310, 290.0 310, 360 310" class="line"/>
+<rect x="197.0" y="267.0" width="186" height="31" rx="9" fill="#FFFDF8" opacity="0.94"/>
+<text x="290.0" y="292.0" text-anchor="middle" class="tiny">create/query request</text>
+<path d="M 500 385 C 570.0 385, 570.0 385, 640 385" class="line"/>
+<rect x="489.0" y="342.0" width="162" height="31" rx="9" fill="#FFFDF8" opacity="0.94"/>
+<text x="570.0" y="367.0" text-anchor="middle" class="tiny">validate contract</text>
+<path d="M 780 460 C 850.0 460, 850.0 460, 920 460" class="line"/>
+<rect x="755.0" y="417.0" width="190" height="31" rx="9" fill="#FFFDF8" opacity="0.94"/>
+<text x="850.0" y="442.0" text-anchor="middle" class="tiny">translate native query</text>
+<path d="M 920 535 C 850.0 535, 850.0 535, 780 535" class="dash"/>
+<rect x="809.0" y="492.0" width="82" height="31" rx="9" fill="#FFFDF8" opacity="0.94"/>
+<text x="850.0" y="517.0" text-anchor="middle" class="tiny">execute</text>
+<path d="M 780 610 C 985.0 610, 985.0 610, 1190 610" class="line"/>
+<rect x="892.0" y="567.0" width="186" height="31" rx="9" fill="#FFFDF8" opacity="0.94"/>
+<text x="985.0" y="592.0" text-anchor="middle" class="tiny">map vertex/edge/path</text>
+<path d="M 1190 685 C 705.0 685, 705.0 685, 220 685" class="dash"/>
+<rect x="612.0" y="642.0" width="186" height="31" rx="9" fill="#FFFDF8" opacity="0.94"/>
+<text x="705.0" y="667.0" text-anchor="middle" class="tiny">return domain result</text>
 </svg>

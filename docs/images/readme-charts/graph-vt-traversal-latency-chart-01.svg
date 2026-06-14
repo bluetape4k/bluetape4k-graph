@@ -1,1 +1,48 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="380" viewBox="0 0 1280 380"><style>.title{font-family:'Architects Daughter','Comic Sans MS',cursive;font-size:34px;font-weight:400;fill:#273043}.label,.value{font-family:'Comic Sans MS','Comic Neue',cursive;fill:#273043;font-weight:400}.subtitle,.legend,.note{font-family:'Comic Sans MS','Comic Neue',cursive;fill:#6b7280;font-weight:400}.label{font-size:18px}.value{font-size:16px}.legend{font-size:18px}.subtitle{font-size:18px}.note{font-size:17px}</style><rect width="1280" height="380" fill="#f6f8fb"/><rect x="24" y="24" width="1232" height="332" rx="18" fill="#fff" stroke="#d7e3ee" stroke-width="2"/><text class="title" x="56" y="72">Traversal Latency</text><text class="subtitle" x="58" y="104">Path traversal work reduces relative VT overhead</text><rect x="56" y="116" width="18" height="18" rx="5" fill="#8ecae6"/><text class="legend" x="82" y="131">Sync</text><rect x="156" y="116" width="18" height="18" rx="5" fill="#ffb3c7"/><text class="legend" x="182" y="131">VirtualThread</text><text class="label" x="56" y="168">shortestPath</text><rect x="285" y="142" width="463.1751744710335" height="20" rx="8" fill="#8ecae6"/><text class="value" x="758.1751744710334" y="158">22.0 us/op</text><rect x="285" y="168" width="663.0904181751349" height="20" rx="8" fill="#ffb3c7"/><text class="value" x="958.0904181751349" y="184">31.5 us/op</text><text class="label" x="56" y="242">allPaths</text><rect x="285" y="216" width="442.4457149808407" height="20" rx="8" fill="#8ecae6"/><text class="value" x="737.4457149808406" y="232">21.0 us/op</text><rect x="285" y="242" width="691.304347826087" height="20" rx="8" fill="#ffb3c7"/><text class="value" x="986.304347826087" y="258">32.9 us/op</text><text class="note" x="56" y="340">Lower is better.</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="860" viewBox="0 0 1500 860">
+
+    <defs>
+      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
+        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#26384A" flood-opacity="0.10"/>
+      </filter>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#6F8396"/>
+      </marker>
+    </defs>
+    <style>
+      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #36424F; }
+      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #667085; }
+      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #36424F; }
+      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #536273; }
+      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #667085; }
+      .card { stroke: #D7E0EA; stroke-width: 2; filter: url(#softShadow); }
+      .line { stroke: #6F8396; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .thin { stroke: #A5B5C4; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #A5B5C4; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
+    </style>
+
+<rect x="0" y="0" width="1500" height="860" fill="#FFFDF8"/>
+<rect x="24" y="24" width="1452" height="812" rx="22" fill="none" stroke="#7DAED3" stroke-width="4"/>
+<circle cx="1436" cy="64" r="15" fill="#FFD5B8" opacity="0.95"/>
+<circle cx="1396" cy="64" r="15" fill="#BFE8D2" opacity="0.95"/>
+<circle cx="1356" cy="64" r="15" fill="#CBBCEB" opacity="0.95"/>
+<text x="72" y="82" class="title">Virtual Thread Traversal Latency</text>
+<text x="74" y="118" class="subtitle">Traversal operations through adapter</text>
+<text x="750.0" y="812" text-anchor="middle" class="tiny">github.com/bluetape4k/bluetape4k-graph | bluetape4k-graph | Virtual Thread Traversal Latency</text>
+<text x="350" y="171" class="tiny">Unit: us/op / lower is better</text>
+<rect x="350" y="137" width="24" height="16" rx="5" fill="#8FC4EA"/>
+<text x="384" y="151" class="tiny">Sync</text>
+<rect x="540" y="137" width="24" height="16" rx="5" fill="#F4BE8D"/>
+<text x="574" y="151" class="tiny">VirtualThread</text>
+<text x="86" y="231" class="tiny">shortestPath</text>
+<line x1="350" y1="239" x2="1390" y2="239" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="350" y="206" width="753.0534804591265" height="15" rx="6" fill="#8FC4EA"/>
+<text x="1115.0534804591266" y="219" class="tiny">22.031</text>
+<rect x="350" y="227" width="901.0306393934239" height="15" rx="6" fill="#F4BE8D"/>
+<text x="1263.0306393934238" y="240" class="tiny">31.54</text>
+<text x="86" y="295" class="tiny">allPaths</text>
+<line x1="350" y1="303" x2="1390" y2="303" stroke="#E7EEF5" stroke-width="2"/>
+<rect x="350" y="270" width="736.0090930646854" height="15" rx="6" fill="#8FC4EA"/>
+<text x="1098.0090930646854" y="283" class="tiny">21.045</text>
+<rect x="350" y="291" width="920.0" height="15" rx="6" fill="#F4BE8D"/>
+<text x="1282.0" y="304" class="tiny">32.882</text>
+</svg>

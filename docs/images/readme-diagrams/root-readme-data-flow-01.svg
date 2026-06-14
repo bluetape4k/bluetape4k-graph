@@ -25,9 +25,9 @@
 <circle cx="1376" cy="64" r="15" fill="#FFD5B8" opacity="0.95"/>
 <circle cx="1336" cy="64" r="15" fill="#BFE8D2" opacity="0.95"/>
 <circle cx="1296" cy="64" r="15" fill="#CBBCEB" opacity="0.95"/>
-<text x="72" y="82" class="title">Linkedin Graph Examples Data Flow 03 Data Flow</text>
+<text x="72" y="82" class="title">Bluetape4k Graph Data Flow</text>
 <text x="74" y="118" class="subtitle">Example data moves from domain input to graph query output</text>
-<text x="720.0" y="852" text-anchor="middle" class="tiny">github.com/bluetape4k/bluetape4k-graph | bluetape4k-graph | Linkedin Graph Examples Data Flow 03 Data Flow</text>
+<text x="720.0" y="852" text-anchor="middle" class="tiny">github.com/bluetape4k/bluetape4k-graph | bluetape4k-graph | Bluetape4k Graph Data Flow</text>
 <rect x="80" y="260" width="220" height="250" rx="14" fill="#F8E8A6" class="card"/>
 <text x="102" y="300" class="label">Input records</text>
 <text x="104" y="336" class="small">files</text>
