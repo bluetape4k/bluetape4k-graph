@@ -217,6 +217,8 @@ def architecture_svg(slug: str) -> str:
         return graph_age_test_environment_svg()
     if slug == "graph-graph-neo4j-architecture-01":
         return graph_neo4j_overview_svg()
+    if slug == "graph-graph-neo4j-architecture-02":
+        return graph_neo4j_reactive_coroutine_svg()
     title = "Bluetape4k Graph Overview" if slug.startswith("root") else f"{module_title(slug)} Architecture"
     subtitle = "Current README and module source model"
     out = open_svg(title, subtitle)
@@ -958,6 +960,79 @@ def graph_neo4j_overview_svg() -> str:
     out.append(
         '<text x="920" y="1093" text-anchor="middle" class="tiny">'
         'Source: graph-neo4j README, Neo4jGraphOperations.kt, Neo4jCoroutineSession.kt, Neo4jRecordMapper.kt; driver ownership stays external.</text>'
+    )
+    return close_svg(out)
+
+
+def graph_neo4j_reactive_coroutine_svg() -> str:
+    width, height = 1840, 1080
+    out = open_svg(
+        "Neo4j Reactive-Coroutine Bridge",
+        "Neo4jCoroutineSession converts ReactiveSession query publishers into coroutine-friendly lists and mapped graph-core results",
+        width,
+        height,
+    )
+    out[-1] = (
+        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: graph-neo4j / Reactive-Coroutine Bridge</text>'
+    )
+    out.append('<rect x="70" y="150" width="1700" height="780" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+
+    def relation_label(x: float, y: float, text: str) -> None:
+        out.append(f'<text x="{x}" y="{y}" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">{esc(text)}</text>')
+        out.append(f'<text x="{x}" y="{y}" text-anchor="middle" class="tiny">{esc(text)}</text>')
+
+    # Primary horizontal bridge.
+    arrow(out, 355, 320, 470, 320, "read/write", "line")
+    arrow(out, 760, 320, 875, 320, "session", "line")
+    arrow(out, 1165, 320, 1280, 320, "run Query", "line")
+    arrow(out, 1480, 420, 1480, 545, "publisher", "thin")
+    arrow(out, 1300, 620, 1070, 620, "asFlow().toList()", "line")
+    arrow(out, 880, 620, 650, 620, "map records", "line")
+    arrow(out, 560, 405, 560, 545, "finally close", "thin")
+    relation_label(920, 760, "session.close<Void>().awaitFirstOrNull() keeps driver ownership external")
+
+    card(out, 115, 245, 240, 150, "Coroutine Caller", [
+        "suspend repo method",
+        "GraphSuspendOperations",
+        "runRead / runWrite",
+    ], PALETTE["sky"])
+    card(out, 470, 245, 290, 160, "Coroutine Session", [
+        "Neo4jCoroutineSession",
+        "read(block) / write(block)",
+        "sessionConfig() per database",
+    ], PALETTE["lavender"])
+    card(out, 875, 245, 290, 160, "ReactiveSession", [
+        "driver.session(...)",
+        "Neo4j Java Driver API",
+        "read/write query execution",
+    ], PALETTE["mint"])
+    card(out, 1280, 245, 290, 175, "Reactive Result", [
+        "run(Query(cypher, params))",
+        "awaitSingle()",
+        "records() publisher",
+        "Record stream",
+    ], PALETTE["lemon"])
+    card(out, 1280, 545, 400, 160, "kotlinx-coroutines-reactive", [
+        "Publisher<Record>.asFlow()",
+        "collect with toList()",
+        "non-blocking bridge to suspend code",
+    ], PALETTE["rose"])
+    card(out, 670, 545, 400, 160, "Graph Mapping", [
+        "Neo4jRecordMapper",
+        "Node / Relationship / Path",
+        "GraphVertex / GraphEdge / GraphPath",
+    ], PALETTE["aqua"])
+    card(out, 245, 545, 405, 160, "Caller Receives", [
+        "List<Record> or graph models",
+        "exceptions propagate",
+        "driver remains externally owned",
+    ], PALETTE["peach"])
+
+    out.append('<rect x="180" y="955" width="1480" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+    out.append(
+        '<text x="920" y="988" text-anchor="middle" class="tiny">'
+        'Source: Neo4jCoroutineSession.kt and Neo4jRecordMapper.kt; ReactiveSession is closed after collection, but the Driver is not closed.</text>'
     )
     return close_svg(out)
 
