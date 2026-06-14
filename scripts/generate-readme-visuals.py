@@ -508,6 +508,121 @@ def sequence_svg(slug: str) -> str:
             ],
             module_name="graph-age",
         )
+    if slug == "graph-graph-neo4j-sequence-06":
+        return graph_core_sequence_svg(
+            "createVertex",
+            "Neo4j suspend operations bridge ReactiveSession publishers into coroutine-friendly mapped results.",
+            [
+                ("user", "User Code", "blue"),
+                ("ops", "Neo4jSuspendOps", "green"),
+                ("session", "ReactiveSession", "amber"),
+                ("driver", "Neo4j Driver", "rose"),
+                ("db", "Neo4j DB", "teal"),
+                ("records", "Reactive Records", "lemon"),
+                ("mapper", "Neo4jRecordMapper", "green"),
+                ("result", "GraphVertex", "blue"),
+            ],
+            [
+                ("user", "ops", "createVertex(label, props)", 330, "blue", False, 310),
+                ("ops", "session", "session()", 415, "green", False, 165),
+                ("session", "driver", "driver.session(ReactiveSession)", 500, "amber", False, 360),
+                ("driver", "session", "ReactiveSession", 585, "teal", True, 230),
+                ("ops", "session", "run(Query(CREATE...RETURN n))", 670, "green", False, 370),
+                ("session", "db", "execute Cypher", 755, "amber", False, 220),
+                ("db", "records", "Publisher<Record>", 840, "teal", True, 240),
+                ("records", "mapper", "asReactiveFlow().toList().map", 925, "green", False, 360),
+                ("mapper", "result", "recordToVertex(record)", 1010, "green", False, 280),
+                ("result", "ops", "GraphVertex", 1095, "teal", True, 205),
+                ("ops", "user", "GraphVertex", 1180, "teal", True, 205),
+            ],
+            module_name="graph-neo4j",
+        )
+    if slug == "graph-graph-neo4j-sequence-07":
+        return graph_core_sequence_svg(
+            "createEdge",
+            "Neo4j createEdge matches endpoint elementIds, creates a relationship, and maps the returned record.",
+            [
+                ("user", "User Code", "blue"),
+                ("ops", "Neo4jSuspendOps", "green"),
+                ("session", "ReactiveSession", "amber"),
+                ("driver", "Neo4j Driver", "rose"),
+                ("db", "Neo4j DB", "teal"),
+                ("records", "Reactive Records", "lemon"),
+                ("mapper", "Neo4jRecordMapper", "green"),
+                ("result", "GraphEdge", "blue"),
+            ],
+            [
+                ("user", "ops", "createEdge(fromId, toId, label, props)", 330, "blue", False, 400),
+                ("ops", "session", "session()", 415, "green", False, 165),
+                ("session", "driver", "driver.session(ReactiveSession)", 500, "amber", False, 360),
+                ("driver", "session", "ReactiveSession", 585, "teal", True, 230),
+                ("ops", "session", "run(Query(MATCH...CREATE r))", 670, "green", False, 360),
+                ("session", "db", "match endpoints and create edge", 755, "amber", False, 350),
+                ("db", "records", "Publisher<Record>", 840, "teal", True, 240),
+                ("records", "mapper", "asReactiveFlow().toList().map", 925, "green", False, 360),
+                ("mapper", "result", "recordToEdge(record)", 1010, "green", False, 260),
+                ("result", "ops", "GraphEdge", 1095, "teal", True, 190),
+                ("ops", "user", "GraphEdge", 1180, "teal", True, 190),
+            ],
+            module_name="graph-neo4j",
+        )
+    if slug == "graph-graph-neo4j-sequence-08":
+        return graph_core_sequence_svg(
+            "shortestPath",
+            "Unweighted shortestPath uses Neo4j Cypher directly; weighted paths fall back to the Dijkstra helper.",
+            [
+                ("user", "User Code", "blue"),
+                ("ops", "Neo4jSuspendOps", "green"),
+                ("options", "PathOptions", "amber"),
+                ("session", "ReactiveSession", "rose"),
+                ("db", "Neo4j DB", "teal"),
+                ("records", "Reactive Records", "lemon"),
+                ("mapper", "Neo4jRecordMapper", "green"),
+                ("result", "GraphPath", "blue"),
+            ],
+            [
+                ("user", "ops", "shortestPath(fromId, toId, options)", 330, "blue", False, 390),
+                ("ops", "options", "check weightProperty", 415, "green", False, 270),
+                ("options", "ops", "unweighted Cypher path", 500, "teal", True, 280),
+                ("ops", "session", "session()", 585, "green", False, 165),
+                ("ops", "session", "run(Query(shortestPath(...)))", 670, "green", False, 350),
+                ("session", "db", "MATCH p = shortestPath", 755, "amber", False, 305),
+                ("db", "records", "Publisher<Record>", 840, "teal", True, 240),
+                ("records", "mapper", "asReactiveFlow().toList().map", 925, "green", False, 360),
+                ("mapper", "result", "recordToPath(record)", 1010, "green", False, 255),
+                ("result", "ops", "GraphPath or null", 1095, "teal", True, 245),
+                ("ops", "user", "GraphPath?", 1180, "teal", True, 190),
+            ],
+            module_name="graph-neo4j",
+        )
+    if slug == "graph-graph-neo4j-sequence-10":
+        return graph_core_sequence_svg(
+            "Publisher to Coroutine",
+            "Reactive Streams results are awaited, converted to Flow, materialized, and mapped before session close.",
+            [
+                ("caller", "Suspend Caller", "blue"),
+                ("ops", "runQuery / flowQuery", "green"),
+                ("session", "ReactiveSession", "amber"),
+                ("result", "ReactiveResult", "rose"),
+                ("publisher", "Publisher<Record>", "teal"),
+                ("flow", "Kotlin Flow", "lemon"),
+                ("mapper", "Mapper", "green"),
+                ("close", "Session Close", "blue"),
+            ],
+            [
+                ("caller", "ops", "invoke suspend query", 330, "blue", False, 280),
+                ("ops", "session", "s.run(Query).awaitSingle()", 415, "green", False, 350),
+                ("session", "result", "ReactiveResult", 500, "teal", True, 230),
+                ("result", "publisher", "records()", 585, "amber", False, 165),
+                ("publisher", "flow", "asReactiveFlow()", 670, "green", False, 240),
+                ("flow", "mapper", "toList().map(mapper)", 755, "green", False, 265),
+                ("mapper", "ops", "List<T>", 840, "teal", True, 170),
+                ("ops", "close", "NonCancellable close", 925, "amber", False, 275),
+                ("close", "session", "close<Void>().awaitFirstOrNull()", 1010, "teal", True, 365),
+                ("ops", "caller", "mapped result", 1095, "teal", True, 220),
+            ],
+            module_name="graph-neo4j",
+        )
     title = "Bluetape4k Graph Sequence" if slug.startswith("root-readme-") else f"{module_title(slug)} Sequence"
     subtitle = "Happy-path operation flow with labels placed away from cards"
     out = open_svg(title, subtitle)
