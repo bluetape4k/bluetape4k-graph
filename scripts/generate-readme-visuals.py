@@ -195,6 +195,8 @@ def diagram_kind(slug: str) -> str:
 
 
 def architecture_svg(slug: str) -> str:
+    if slug == "graph-graph-core-architecture-01":
+        return graph_core_architecture_overview_svg()
     title = "Bluetape4k Graph Overview" if slug.startswith("root") else f"{module_title(slug)} Architecture"
     subtitle = "Current README and module source model"
     out = open_svg(title, subtitle)
@@ -234,6 +236,49 @@ def architecture_svg(slug: str) -> str:
         if i:
             arrow(out, x - gap + 4, 390, x - 8, 390, "maps")
     card(out, 164, 650, 1112, 120, "Source truth", ["README module contract, AGENTS layout, Kotlin source names, benchmark result tables"], PALETTE["aqua"])
+    return close_svg(out)
+
+
+def graph_core_architecture_overview_svg() -> str:
+    width, height = 1760, 1040
+    out = open_svg(
+        "Graph Core Architecture",
+        "Backend-neutral graph contracts, models, schema DSL, algorithms, and adapter-facing APIs",
+        width,
+        height,
+    )
+    out[-1] = (
+        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
+        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: graph-core / Architecture Overview</text>'
+    )
+    out.append('<rect x="70" y="150" width="1620" height="740" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+
+    layers = [
+        ("Application Code", 120, 200, 260, 120, PALETTE["sky"], ["sync, suspend, or", "virtual-thread callers"]),
+        ("API Facade", 470, 185, 360, 150, PALETTE["mint"], ["GraphOperations", "GraphSuspendOperations", "GraphVirtualThreadOperations"]),
+        ("Repository Contracts", 930, 185, 400, 150, PALETTE["lemon"], ["Session / Vertex / Edge", "Traversal / Algorithm", "Transaction / Merge / Schema"]),
+        ("Adapters", 1430, 190, 240, 145, PALETTE["lavender"], ["Neo4j, Memgraph", "AGE, TinkerGraph", "FalkorDB"]),
+        ("Domain Models", 190, 470, 350, 175, PALETTE["aqua"], ["GraphElementId", "GraphVertex / GraphEdge", "GraphPath / PathStep", "Options and scores"]),
+        ("Schema DSL", 650, 470, 320, 175, PALETTE["rose"], ["VertexLabel / EdgeLabel", "PropertyDef", "GraphSchemaManager"]),
+        ("Algorithm Helpers", 1080, 470, 330, 175, PALETTE["peach"], ["Dijkstra / A*", "BFS / DFS / cycles", "PageRank / components"]),
+        ("Execution Bridges", 520, 710, 520, 150, PALETTE["sky"], ["Coroutine repositories expose", "Flow and suspend APIs", "VT adapters wrap sync operations"]),
+    ]
+    for title, x, y, w, h, fill, lines in layers:
+        card(out, x, y, w, h, title, lines, fill)
+
+    arrow(out, 380, 260, 468, 260, "calls", "line")
+    arrow(out, 830, 260, 928, 260, "composes", "line")
+    arrow(out, 1330, 260, 1428, 260, "implements", "line")
+    arrow(out, 650, 335, 365, 468, "returns", "thin")
+    arrow(out, 1040, 335, 810, 468, "validates", "thin")
+    arrow(out, 1130, 335, 1240, 468, "traverses", "thin")
+    arrow(out, 830, 645, 780, 708, "sync/suspend/vt", "thin")
+
+    out.append('<rect x="150" y="910" width="1460" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>')
+    out.append(
+        '<text x="880" y="943" text-anchor="middle" class="tiny">'
+        'Source: graph-core README plus repository/model/schema/algo/vt package structure; arrows show API ownership boundaries.</text>'
+    )
     return close_svg(out)
 
 
