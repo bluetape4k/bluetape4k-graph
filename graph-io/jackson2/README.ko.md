@@ -6,6 +6,17 @@ Jackson 2.x를 사용한 NDJSON(Newline-Delimited JSON) 그래프 데이터 벌�
 
 `graph-io-jackson2`는 NDJSON 형식을 이용한 고성능 그래프 데이터 임포트/익스포트를 제공합니다. 각 줄이 정점(vertex) 또는 간선(edge)을 나타내는 완전한 JSON 객체이므로 전체 데이터를 메모리에 로드하지 않고 스트리밍 방식으로 대용량 그래프를 처리할 수 있습니다.
 
+## 아키텍처
+
+![graph-io-jackson2 architecture](../../docs/images/readme-diagrams/graph-io-jackson2-architecture-01.png)
+
+이 모듈은 단일 NDJSON 스트림을 사용하고, 실제 그래프 쓰기는 `graph-io-core`에 위임합니다:
+
+- `Jackson2EnvelopeCodec`이 각 JSON 라인을 `vertex` 또는 `edge` envelope로 매핑합니다.
+- Import는 먼저 정점을 생성하고 외부 ID를 저장한 뒤, 버퍼링한 간선을 해석합니다.
+- Export는 선택한 label을 스캔하고 정점 envelope를 간선 envelope보다 먼저 씁니다.
+- 동기, 가상 스레드, suspend API는 같은 envelope 계약을 공유합니다.
+
 ## 기능
 
 ### 세 가지 실행 모델
