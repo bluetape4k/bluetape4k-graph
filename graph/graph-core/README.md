@@ -205,7 +205,7 @@ object PersonLabel : VertexLabel("Person") {
     val joinedAt = localDate("joinedAt")
 }
 
-object KnowsLabel : EdgeLabel("KNOWS") {
+object KnowsLabel : EdgeLabel("KNOWS", PersonLabel, PersonLabel) {
     val since = localDate("since")
 }
 ```

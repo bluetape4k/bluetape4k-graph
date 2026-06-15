@@ -1,13 +1,13 @@
 # graph-core
 
-Graph Database (Apache AGE, Neo4j) 공통 추상화 계층. 백엔드 독립 모델 및 Repository 인터페이스를 제공하여 여러 그래프 데이터베이스 구현체가 동일한 API로 작동할 수 있도록 한다.
+Graph Database (Apache AGE, Neo4j, Memgraph, Apache TinkerPop 등) 공통 추상화 계층. 백엔드 독립 모델 및 Repository 인터페이스를 제공하여 여러 그래프 데이터베이스 구현체가 동일한 API로 작동할 수 있도록 한다.
 
 > 🇺🇸 [English](README.md)
 
 ## 모듈 설명
 
-- **백엔드 독립 추상화**: Apache AGE, Neo4j 등 다양한 그래프 데이터베이스의 공통 인터페이스
-- **코루틴 기반 API**: 모든 Repository 메서드가 `suspend` 함수 (Kotlin Coroutines)
+- **백엔드 독립 추상화**: Apache AGE, Neo4j, Memgraph, TinkerPop 등 다양한 그래프 데이터베이스의 공통 인터페이스
+- **동기/코루틴 API 병행**: `GraphOperations`와 `GraphSuspendOperations`를 모두 제공
 - **Schema DSL**: `VertexLabel`, `EdgeLabel`을 통한 선언적 스키마 정의
 - **Path 추적**: 최단 경로, 모든 경로 탐색 결과를 `GraphPath` 모델로 표현
 
