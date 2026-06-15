@@ -1,56 +1,102 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1333" height="944" viewBox="0 0 1333 944" role="img" aria-label="graph-age-benchmark Architecture">
-<defs>
-  <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="7" stdDeviation="8" flood-color="#1f2937" flood-opacity="0.10"/></filter>
-  <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth"><path d="M1,1 L8,4.5 L1,8 Z" fill="#758297"/></marker>
+<svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1080" viewBox="0 0 1840 1080">
+  <defs>
+    <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.13"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+    </marker>
+  </defs>
+
   <style>
-    .canvas{fill:#f7f9fc}.frame{fill:#fff;stroke:#d8e0ea;stroke-width:1.5}
-    .title{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:40px;font-weight:400;fill:#102033}
-    .subtitle{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:14px;font-weight:400;fill:#536273}
-    .label{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:21px;font-weight:400;fill:#102033}
-    .small{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:12px;font-weight:400;fill:#536273}
-    .strong{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:13px;font-weight:400;fill:#102033}
-    .card{stroke-width:2.0;filter:url(#shadow)}
-    .line{stroke:#758297;stroke-width:2.1;fill:none;marker-end:url(#arrow)}
-    .dashed{stroke:#758297;stroke-width:2.1;stroke-dasharray:7 6;fill:none;marker-end:url(#arrow)}
-    .lifeline{stroke:#b7c2d1;stroke-width:1.8;stroke-dasharray:9 9}
+    .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
+    .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
+    .section { font-family: 'Architects Daughter', cursive; font-size: 30px; fill: #111827; }
+    .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
+    .small { font-family: 'Comic Mono', monospace; font-size: 17px; fill: #374151; }
+    .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
+    .card { filter: url(#softShadow); }
+    .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+    .thin { stroke: #64748B; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
   </style>
-</defs>
-<rect class="canvas" width="1333" height="944"/>
-<rect class="frame" x="32" y="28" width="1269" height="888" rx="28"/>
-<text class="title" x="66" y="82">graph-age-benchmark Architecture</text>
-<text class="subtitle" x="70" y="116">Graphviz-derived layout and orthogonal route evidence</text>
-<path class="line" d="M666.2 205.7 L666.2 205.7 L666.2 288.0 L666.2 288.0"/>
-<path class="line" d="M666.2 366.3 L666.2 366.3 L666.2 448.6 L666.2 448.6"/>
-<path class="line" d="M666.2 526.9 L666.2 526.9 L666.2 609.2 L666.2 609.2"/>
-<path class="line" d="M666.2 687.5 L666.2 687.5 L666.2 769.8 L666.2 769.8"/>
-<g transform="translate(303.8,112.5)">
-<rect class="card" x="0" y="0" width="724.7" height="126.0" rx="14" fill="#E8F3FF" stroke="#5B8DEF"/>
-<text class="label" x="362.3" y="39.0" text-anchor="middle">JMH Runner</text>
-<text class="label" x="362.3" y="63.0" text-anchor="middle">kotlinx.benchmark warmup</text>
-<text class="label" x="362.3" y="87.0" text-anchor="middle">+ measure JSON report</text>
-</g>
-<g transform="translate(190.1,273.1)">
-<rect class="card" x="0" y="0" width="952.1" height="126.0" rx="14" fill="#EAF7EF" stroke="#58A978"/>
-<text class="label" x="476.0" y="39.0" text-anchor="middle">AGE Benchmarks vertex</text>
-<text class="label" x="476.0" y="63.0" text-anchor="middle">and edge operations 10k</text>
-<text class="label" x="476.0" y="87.0" text-anchor="middle">loop vs batch inserts</text>
-</g>
-<g transform="translate(223.9,433.7)">
-<rect class="card" x="0" y="0" width="884.5" height="126.0" rx="14" fill="#FFF3D9" stroke="#D6A441"/>
-<text class="label" x="442.2" y="39.0" text-anchor="middle">AGE Operations</text>
-<text class="label" x="442.2" y="63.0" text-anchor="middle">AgeGraphOperations</text>
-<text class="label" x="442.2" y="87.0" text-anchor="middle">single-thread cache</text>
-</g>
-<g transform="translate(223.3,594.3)">
-<rect class="card" x="0" y="0" width="885.7" height="126.0" rx="14" fill="#FDECEF" stroke="#DC6B82"/>
-<text class="label" x="442.9" y="39.0" text-anchor="middle">PostgreSQL AGE</text>
-<text class="label" x="442.9" y="63.0" text-anchor="middle">Testcontainers launcher</text>
-<text class="label" x="442.9" y="87.0" text-anchor="middle">HikariCP + Exposed JDBC</text>
-</g>
-<g transform="translate(50.0,754.9)">
-<rect class="card" x="0" y="0" width="1232.3" height="126.0" rx="14" fill="#E9F7F6" stroke="#45A7A1"/>
-<text class="label" x="616.2" y="39.0" text-anchor="middle">Seeded Fixture Person</text>
-<text class="label" x="616.2" y="63.0" text-anchor="middle">vertices: Alice, Bob,</text>
-<text class="label" x="616.2" y="87.0" text-anchor="middle">Charlie, Dave KNOWS</text>
-</g>
+
+  <rect x="0" y="0" width="1840" height="1080" fill="#F8FAFC"/>
+  <rect x="24" y="24" width="1792" height="1032" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
+  <circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
+  <circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
+  <circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
+
+  <text x="72" y="82" class="title">Apache AGE Benchmark Architecture</text>
+  <text x="74" y="118" class="subtitle">JMH measures AgeGraphOperations against PostgreSQL AGE through HikariCP, Exposed, and a seeded bench_graph fixture.</text>
+
+  <rect x="70" y="150" width="1700" height="790" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+
+  <text x="280" y="215" text-anchor="middle" class="section">JMH State</text>
+  <text x="835" y="215" text-anchor="middle" class="section">Operations Under Test</text>
+  <text x="1430" y="215" text-anchor="middle" class="section">PostgreSQL AGE Runtime</text>
+
+  <rect x="130" y="260" width="360" height="165" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+  <text x="165" y="308" class="label">AgeBenchmarkState</text>
+  <text x="165" y="344" class="small">@State(Scope.Benchmark)</text>
+  <text x="165" y="372" class="small">starts PostgreSQLAgeServer launcher</text>
+  <text x="165" y="400" class="small">loads AGE and sets search_path</text>
+
+  <rect x="130" y="555" width="360" height="150" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
+  <text x="165" y="603" class="label">bench_graph Fixture</text>
+  <text x="165" y="639" class="small">Person: Alice, Bob, Charlie, Dave</text>
+  <text x="165" y="667" class="small">KNOWS chain plus FOLLOWS shortcut</text>
+  <text x="165" y="695" class="small">resetGraph for 10k write runs</text>
+
+  <rect x="620" y="250" width="445" height="155" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
+  <text x="655" y="298" class="label">AgeGraphOperations</text>
+  <text x="655" y="334" class="small">wrapped by benchmark-only cache</text>
+  <text x="655" y="362" class="small">single-thread HashMap lookup cache</text>
+  <text x="655" y="390" class="small">uses graph name: bench_graph</text>
+
+  <rect x="620" y="485" width="445" height="150" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
+  <text x="655" y="533" class="label">Vertex Benchmarks</text>
+  <text x="655" y="569" class="small">create, find by label, find by id</text>
+  <text x="655" y="597" class="small">neighbors and createEdge</text>
+  <text x="655" y="625" class="small">10k loop writes vs batch APIs</text>
+
+  <rect x="620" y="710" width="445" height="125" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
+  <text x="655" y="758" class="label">Traversal Benchmarks</text>
+  <text x="655" y="794" class="small">shortestPath(alice, dave)</text>
+  <text x="655" y="822" class="small">allPaths(alice, dave, maxDepth=4)</text>
+
+  <rect x="1200" y="245" width="450" height="150" rx="14" fill="#F8FAFC" stroke="#94A3B8" stroke-width="3" class="card"/>
+  <text x="1235" y="293" class="label">JDBC Binding</text>
+  <text x="1235" y="329" class="small">HikariDataSource(maximumPoolSize=4)</text>
+  <text x="1235" y="357" class="small">Database.connect(dataSource)</text>
+  <text x="1235" y="385" class="small">dataSource.close() in teardown()</text>
+
+  <g class="card">
+    <ellipse cx="1425" cy="535" rx="235" ry="48" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3"/>
+    <rect x="1190" y="535" width="470" height="205" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3"/>
+    <ellipse cx="1425" cy="740" rx="235" ry="48" fill="#A7F3D0" stroke="#14B8A6" stroke-width="3"/>
+  </g>
+  <text x="1425" y="557" text-anchor="middle" class="label">PostgreSQL + AGE</text>
+  <text x="1425" y="616" text-anchor="middle" class="small">Testcontainers launcher</text>
+  <text x="1425" y="652" text-anchor="middle" class="small">AGE extension and ag_catalog path</text>
+  <text x="1425" y="688" text-anchor="middle" class="small">bench_graph vertex and edge state</text>
+
+  <rect x="1200" y="815" width="450" height="80" rx="14" fill="#F8FAFC" stroke="#94A3B8" stroke-width="3" class="card"/>
+  <text x="1235" y="848" class="label">JMH JSON</text>
+  <text x="1235" y="878" class="small">average-time reports from kotlinx-benchmark</text>
+
+  <path d="M 490 342 L 620 327" class="line"/>
+  <path d="M 490 630 L 620 560" class="line"/>
+  <path d="M 1065 327 L 1200 320" class="line"/>
+  <path d="M 1425 395 L 1425 487" class="line"/>
+  <path d="M 1065 560 L 1190 610" class="line"/>
+  <path d="M 1065 773 L 1190 675" class="thin"/>
+  <path d="M 1425 788 L 1425 815" class="line"/>
+
+  <text x="555" y="320" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">creates ops</text>
+  <text x="555" y="320" text-anchor="middle" class="tiny">creates ops</text>
+  <text x="1125" y="298" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">binds JDBC</text>
+  <text x="1125" y="298" text-anchor="middle" class="tiny">binds JDBC</text>
+  <text x="1125" y="540" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">measures</text>
+  <text x="1125" y="540" text-anchor="middle" class="tiny">measures</text>
+  <text x="920" y="1032" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | module: graph-age-benchmark / architecture</text>
 </svg>
