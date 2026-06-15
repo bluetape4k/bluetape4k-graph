@@ -6,6 +6,17 @@ Bluetape4k 그래프 연산을 위한 Jackson 3.x 기반 NDJSON 벌크 임포터
 
 이 모듈은 **Jackson 3.x** (`tools.jackson` 패키지 네임스페이스)를 사용하여 고성능의 유연한 NDJSON(newline-delimited JSON) 벌크 임포트/익스포트 기능을 제공합니다. 다양한 동시성 패턴에 맞춘 세 가지 실행 모델을 지원합니다: 동기, 코루틴 기반 suspend, 그리고 Java Virtual Thread 기반 방식.
 
+## 아키텍처
+
+![graph-io-jackson3 architecture](../../docs/images/readme-diagrams/graph-io-jackson3-architecture-01.png)
+
+Jackson3는 mapper 구현을 `tools.jackson`으로 전환하면서도 Jackson2 모듈과 같은 NDJSON envelope 계약을 사용합니다:
+
+- `Jackson3EnvelopeCodec`이 각 JSON 라인을 `vertex` 또는 `edge` envelope로 매핑합니다.
+- Import는 먼저 정점을 생성하고 외부 ID를 저장한 뒤, 버퍼링한 간선을 해석합니다.
+- Export는 선택한 label을 스캔하고 정점 envelope를 간선 envelope보다 먼저 씁니다.
+- 동기, 가상 스레드, suspend API는 같은 envelope 계약을 공유합니다.
+
 ## 핵심 기능
 
 ### 세 가지 실행 모델
@@ -157,19 +168,20 @@ val report = future.join()
 ### 정점 줄
 
 ```json
-{"v":{"id":"person_1","label":"Person","p":{"name":"Alice","age":30}}}
+{"type":"vertex","id":"person_1","label":"Person","properties":{"name":"Alice","age":30}}
 ```
 
 ### 간선 줄
 
 ```json
-{"e":{"id":"edge_1","label":"KNOWS","from":"person_1","to":"person_2","p":{"since":2020}}}
+{"type":"edge","id":"edge_1","label":"KNOWS","from":"person_1","to":"person_2","properties":{"since":2020}}
 ```
 
 **필드:**
+- `type`: `vertex` 또는 `edge`
 - `id`: 고유 외부 식별자
 - `label`: 정점 또는 간선 라벨/타입
-- `p`: 속성 객체 (평탄화된 키-값 쌍)
+- `properties`: 속성 객체
 - `from`/`to`: 간선 엔드포인트 ID (간선만 해당)
 
 ## 설정
@@ -194,7 +206,7 @@ val report = future.join()
 
 ```gradle
 dependencies {
-    api("io.bluetape4k:graph-io-jackson3:latest")
+    implementation("io.bluetape4k:graph-io-jackson3:$version")
 }
 ```
 
@@ -244,9 +256,9 @@ data class GraphImportReport(
 
 ## 호환성
 
-- Jackson 3.0+
-- Java 11+ (Virtual Thread 지원은 Java 21+ 필요)
-- Kotlin 1.9+
+- Jackson 3.1+
+- Java 21+
+- Kotlin 2.4+
 - 모든 Bluetape4k 그래프 백엔드 (Neo4j, AGE, Memgraph, TinkerPop)
 
 ## 모듈 좌표

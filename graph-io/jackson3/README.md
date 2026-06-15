@@ -6,6 +6,17 @@ Jackson 3.x based NDJSON bulk importer and exporter for Bluetape4k graph operati
 
 This module provides high-performance, flexible NDJSON (newline-delimited JSON) bulk import/export capabilities for graph data using **Jackson 3.x** (with `tools.jackson` package namespace). It supports multiple execution models to accommodate different concurrency patterns: synchronous, coroutine-based suspend, and Java Virtual Thread-based approaches.
 
+## Architecture
+
+![graph-io-jackson3 architecture](../../docs/images/readme-diagrams/graph-io-jackson3-architecture-01.png)
+
+Jackson3 uses the same NDJSON envelope contract as the Jackson2 module while switching the mapper implementation to `tools.jackson`:
+
+- `Jackson3EnvelopeCodec` maps each JSON line to a `vertex` or `edge` envelope.
+- Import creates vertices first, stores external IDs, then resolves buffered edges.
+- Export scans selected labels and writes vertex envelopes before edge envelopes.
+- Sync, virtual-thread, and suspend APIs share the same envelope contract.
+
 ## Key Features
 
 ### Three Execution Models
@@ -157,19 +168,20 @@ val report = future.join()
 ### Vertex Line
 
 ```json
-{"v":{"id":"person_1","label":"Person","p":{"name":"Alice","age":30}}}
+{"type":"vertex","id":"person_1","label":"Person","properties":{"name":"Alice","age":30}}
 ```
 
 ### Edge Line
 
 ```json
-{"e":{"id":"edge_1","label":"KNOWS","from":"person_1","to":"person_2","p":{"since":2020}}}
+{"type":"edge","id":"edge_1","label":"KNOWS","from":"person_1","to":"person_2","properties":{"since":2020}}
 ```
 
 **Fields:**
+- `type`: `vertex` or `edge`
 - `id`: Unique external identifier
 - `label`: Vertex or edge label/type
-- `p`: Properties object (flattened key-value pairs)
+- `properties`: Properties object
 - `from`/`to`: Edge endpoint IDs (edges only)
 
 ## Configuration
@@ -194,7 +206,7 @@ val report = future.join()
 
 ```gradle
 dependencies {
-    api("io.bluetape4k:graph-io-jackson3:latest")
+    implementation("io.bluetape4k:graph-io-jackson3:$version")
 }
 ```
 
@@ -244,9 +256,9 @@ Each failure includes:
 
 ## Compatibility
 
-- Jackson 3.0+
-- Java 11+ (Virtual Thread support requires Java 21+)
-- Kotlin 1.9+
+- Jackson 3.1+
+- Java 21+
+- Kotlin 2.4+
 - All Bluetape4k graph backends (Neo4j, AGE, Memgraph, TinkerPop)
 
 ## Module Coordinates
