@@ -9,6 +9,12 @@
 [Memgraph](https://memgraph.com/) is an in-memory graph database that is fully compatible with the Neo4j Bolt protocol and openCypher.
 It can be connected to with `neo4j-java-driver` as-is.
 
+## Architecture Diagram
+
+![graph-memgraph architecture](../../docs/images/readme-diagrams/graph-graph-memgraph-architecture-01.png)
+
+`graph-memgraph` keeps the `graph-core` repository contracts and maps them to Memgraph through the Neo4j Java Driver, Memgraph Cypher syntax, numeric `id()` values, schema DDL, and JVM algorithm fallbacks.
+
 ## Key Classes
 
 | Class | Description |
