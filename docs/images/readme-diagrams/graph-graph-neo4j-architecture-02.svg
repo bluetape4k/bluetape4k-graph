@@ -1,100 +1,78 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1080" viewBox="0 0 1840 1080">
+<svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1120" viewBox="0 0 1840 1120">
+  <defs>
+    <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+    </marker>
+  </defs>
+  <style>
+    .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
+    .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
+    .section { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
+    .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
+    .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
+    .card { filter: url(#softShadow); }
+    .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+    .soft { stroke: #64748B; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+  </style>
 
-    <defs>
-      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
-        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
-      </filter>
-      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
-      </marker>
-    </defs>
-    <style>
-      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
-      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
-      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
-      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
-      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
-      .card { filter: url(#softShadow); }
-      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
-      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
-    </style>
+  <rect x="0" y="0" width="1840" height="1120" fill="#F8FAFC"/>
+  <rect x="24" y="24" width="1792" height="1072" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
+  <circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
+  <circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
+  <circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
 
-<rect x="0" y="0" width="1840" height="1080" fill="#F8FAFC"/>
-<rect x="24" y="24" width="1792" height="1032" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
-<circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
-<circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
-<circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
-<text x="72" y="82" class="title">Neo4j Reactive-Coroutine Bridge</text>
-<text x="74" y="118" class="subtitle">Neo4jCoroutineSession converts ReactiveSession query publishers into coroutine-friendly lists and mapped graph-core results</text>
-<text x="920.0" y="1032" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: graph-neo4j / Reactive-Coroutine Bridge</text>
-<rect x="70" y="150" width="1700" height="780" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
-<path d="M 355 320 C 412.5 320, 412.5 320, 470 320" class="line"/>
-<text x="412.5" y="292.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">read/write</text>
-<text x="412.5" y="292.0" text-anchor="middle" class="tiny">read/write</text>
-<path d="M 760 320 C 817.5 320, 817.5 320, 875 320" class="line"/>
-<text x="817.5" y="292.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">session</text>
-<text x="817.5" y="292.0" text-anchor="middle" class="tiny">session</text>
-<path d="M 1165 320 C 1222.5 320, 1222.5 320, 1280 320" class="line"/>
-<text x="1222.5" y="292.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">run Query</text>
-<text x="1222.5" y="292.0" text-anchor="middle" class="tiny">run Query</text>
-<path d="M 1480 420 C 1480.0 420, 1480.0 545, 1480 545" class="thin"/>
-<text x="1480.0" y="454.5" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">publisher</text>
-<text x="1480.0" y="454.5" text-anchor="middle" class="tiny">publisher</text>
-<path d="M 1300 620 C 1185.0 620, 1185.0 620, 1070 620" class="line"/>
-<text x="1185.0" y="592.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">asFlow().toList()</text>
-<text x="1185.0" y="592.0" text-anchor="middle" class="tiny">asFlow().toList()</text>
-<path d="M 880 620 C 765.0 620, 765.0 620, 650 620" class="line"/>
-<text x="765.0" y="592.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">map records</text>
-<text x="765.0" y="592.0" text-anchor="middle" class="tiny">map records</text>
-<path d="M 560 405 C 560.0 405, 560.0 545, 560 545" class="thin"/>
-<text x="560.0" y="447.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">finally close</text>
-<text x="560.0" y="447.0" text-anchor="middle" class="tiny">finally close</text>
-<text x="920" y="760" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">session.close&lt;Void&gt;().awaitFirstOrNull() keeps driver ownership external</text>
-<text x="920" y="760" text-anchor="middle" class="tiny">session.close&lt;Void&gt;().awaitFirstOrNull() keeps driver ownership external</text>
-<rect x="115" y="245" width="240" height="150" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
-<rect x="125" y="255" width="12" height="130" rx="6" fill="#3B82F6" opacity="0.95"/>
-<text x="137" y="285" class="label">Coroutine Caller</text>
-<text x="139" y="321" class="small">suspend repo method</text>
-<text x="139" y="349" class="small">GraphSuspendOperations</text>
-<text x="139" y="377" class="small">runRead / runWrite</text>
-<rect x="470" y="245" width="290" height="160" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
-<rect x="480" y="255" width="12" height="140" rx="6" fill="#8B5CF6" opacity="0.95"/>
-<text x="492" y="285" class="label">Coroutine Session</text>
-<text x="494" y="321" class="small">Neo4jCoroutineSession</text>
-<text x="494" y="349" class="small">read(block) / write(block)</text>
-<text x="494" y="377" class="small">sessionConfig() per database</text>
-<rect x="875" y="245" width="290" height="160" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
-<rect x="885" y="255" width="12" height="140" rx="6" fill="#22C55E" opacity="0.95"/>
-<text x="897" y="285" class="label">ReactiveSession</text>
-<text x="899" y="321" class="small">driver.session(...)</text>
-<text x="899" y="349" class="small">Neo4j Java Driver API</text>
-<text x="899" y="377" class="small">read/write query execution</text>
-<rect x="1280" y="245" width="290" height="175" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
-<rect x="1290" y="255" width="12" height="155" rx="6" fill="#EAB308" opacity="0.95"/>
-<text x="1302" y="285" class="label">Reactive Result</text>
-<text x="1304" y="321" class="small">run(Query(cypher, params))</text>
-<text x="1304" y="349" class="small">awaitSingle()</text>
-<text x="1304" y="377" class="small">records() publisher</text>
-<text x="1304" y="405" class="small">Record stream</text>
-<rect x="1280" y="545" width="400" height="160" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="3" class="card"/>
-<rect x="1290" y="555" width="12" height="140" rx="6" fill="#EF4444" opacity="0.95"/>
-<text x="1302" y="585" class="label">kotlinx-coroutines-reactive</text>
-<text x="1304" y="621" class="small">Publisher&lt;Record&gt;.asFlow()</text>
-<text x="1304" y="649" class="small">collect with toList()</text>
-<text x="1304" y="677" class="small">non-blocking bridge to suspend code</text>
-<rect x="670" y="545" width="400" height="160" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
-<rect x="680" y="555" width="12" height="140" rx="6" fill="#14B8A6" opacity="0.95"/>
-<text x="692" y="585" class="label">Graph Mapping</text>
-<text x="694" y="621" class="small">Neo4jRecordMapper</text>
-<text x="694" y="649" class="small">Node / Relationship / Path</text>
-<text x="694" y="677" class="small">GraphVertex / GraphEdge / GraphPath</text>
-<rect x="245" y="545" width="405" height="160" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
-<rect x="255" y="555" width="12" height="140" rx="6" fill="#F97316" opacity="0.95"/>
-<text x="267" y="585" class="label">Caller Receives</text>
-<text x="269" y="621" class="small">List&lt;Record&gt; or graph models</text>
-<text x="269" y="649" class="small">exceptions propagate</text>
-<text x="269" y="677" class="small">driver remains externally owned</text>
-<rect x="180" y="955" width="1480" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
-<text x="920" y="988" text-anchor="middle" class="tiny">Source: Neo4jCoroutineSession.kt and Neo4jRecordMapper.kt; ReactiveSession is closed after collection, but the Driver is not closed.</text>
+  <text x="72" y="82" class="title">Reactive to Coroutine Bridge</text>
+  <text x="74" y="118" class="subtitle">Neo4j reactive publishers are materialized through kotlinx-coroutines-reactive and closed safely after each query.</text>
+
+  <rect x="70" y="150" width="1700" height="820" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+
+  <line x1="430" y1="365" x2="555" y2="365" class="line"/>
+  <line x1="855" y1="365" x2="980" y2="365" class="line"/>
+  <line x1="1280" y1="365" x2="1405" y2="365" class="line"/>
+  <line x1="920" y1="530" x2="920" y2="650" class="soft"/>
+
+  <rect x="110" y="265" width="320" height="210" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+  <text x="270" y="302" text-anchor="middle" class="tiny">&lt;&lt;suspend caller&gt;&gt;</text>
+  <text x="270" y="341" text-anchor="middle" class="section">Query Request</text>
+  <line x1="110" y1="365" x2="430" y2="365" stroke="#3B82F6" stroke-width="2"/>
+  <text x="140" y="402" class="small">runReadQuery / runWriteQuery</text>
+  <text x="140" y="431" class="small">read { } / write { }</text>
+  <text x="140" y="460" class="small">Cypher + params validated</text>
+
+  <rect x="555" y="245" width="300" height="250" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
+  <text x="705" y="282" text-anchor="middle" class="tiny">&lt;&lt;Neo4j driver&gt;&gt;</text>
+  <text x="705" y="321" text-anchor="middle" class="section">ReactiveSession</text>
+  <line x1="555" y1="345" x2="855" y2="345" stroke="#8B5CF6" stroke-width="2"/>
+  <text x="585" y="382" class="small">driver.session(...)</text>
+  <text x="585" y="411" class="small">SessionConfig(database)</text>
+  <text x="585" y="440" class="small">session.run(Query)</text>
+  <text x="585" y="469" class="small">returns Publisher result</text>
+
+  <rect x="980" y="245" width="300" height="250" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
+  <text x="1130" y="282" text-anchor="middle" class="tiny">&lt;&lt;kotlinx-coroutines-reactive&gt;&gt;</text>
+  <text x="1130" y="321" text-anchor="middle" class="section">Bridge</text>
+  <line x1="980" y1="345" x2="1280" y2="345" stroke="#EAB308" stroke-width="2"/>
+  <text x="1010" y="382" class="small">awaitSingle()</text>
+  <text x="1010" y="411" class="small">records().asFlow()</text>
+  <text x="1010" y="440" class="small">asReactiveFlow()</text>
+  <text x="1010" y="469" class="small">toList() or emitAll()</text>
+
+  <rect x="1405" y="265" width="320" height="210" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
+  <text x="1565" y="302" text-anchor="middle" class="tiny">&lt;&lt;coroutine result&gt;&gt;</text>
+  <text x="1565" y="341" text-anchor="middle" class="section">Records / Flow</text>
+  <line x1="1405" y1="365" x2="1725" y2="365" stroke="#22C55E" stroke-width="2"/>
+  <text x="1435" y="402" class="small">List&lt;Record&gt; for single calls</text>
+  <text x="1435" y="431" class="small">Flow&lt;T&gt; for streaming reads</text>
+  <text x="1435" y="460" class="small">mapped by Neo4jRecordMapper</text>
+
+  <rect x="270" y="650" width="1300" height="200" rx="14" fill="#F8FAFC" stroke="#94A3B8" stroke-width="3" class="card"/>
+  <text x="920" y="688" text-anchor="middle" class="tiny">&lt;&lt;resource boundary&gt;&gt;</text>
+  <text x="920" y="727" text-anchor="middle" class="section">Session Close Is Part of the Bridge</text>
+  <line x1="270" y1="750" x2="1570" y2="750" stroke="#94A3B8" stroke-width="2"/>
+  <text x="315" y="790" class="small">Neo4jCoroutineSession closes the ReactiveSession in finally with awaitFirstOrNull().</text>
+  <text x="315" y="820" class="small">Neo4jGraphSuspendOperations uses NonCancellable close so cancellation does not leak sessions.</text>
+  <text x="920" y="1048" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | module: graph-neo4j / reactive-coroutine bridge</text>
 </svg>

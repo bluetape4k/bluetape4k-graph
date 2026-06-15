@@ -1,122 +1,105 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1080" viewBox="0 0 1840 1080">
+  <defs>
+    <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.13"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+    </marker>
+  </defs>
 
-    <defs>
-      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
-        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
-      </filter>
-      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
-      </marker>
-    </defs>
-    <style>
-      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
-      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
-      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
-      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
-      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
-      .card { filter: url(#softShadow); }
-      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
-      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
-    </style>
+  <style>
+    .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
+    .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
+    .section { font-family: 'Architects Daughter', cursive; font-size: 30px; fill: #111827; }
+    .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
+    .small { font-family: 'Comic Mono', monospace; font-size: 17px; fill: #374151; }
+    .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
+    .card { filter: url(#softShadow); }
+    .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+    .thin { stroke: #64748B; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+  </style>
 
-<rect x="0" y="0" width="1840" height="1080" fill="#F8FAFC"/>
-<rect x="24" y="24" width="1792" height="1032" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
-<circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
-<circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
-<circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
-<text x="72" y="82" class="title">FalkorDB Backend Overview</text>
-<text x="74" y="118" class="subtitle">Redis-module graph backend using jfalkordb Driver, graph-core contracts, Cypher, schema indexes, merge, and coroutine IO isolation</text>
-<text x="920.0" y="1032" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: graph-falkordb / Overview</text>
-<rect x="70" y="150" width="1700" height="800" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
-<text x="920" y="205" text-anchor="middle" class="tiny">Source: graph-falkordb README, FalkorDBGraphOperations, FalkorDBGraphSuspendOperations, SchemaManager, RecordMapper, and FalkorDBServer fixture</text>
-<path d="M 390 318 C 477.5 318, 477.5 318, 565 318" class="line"/>
-<text x="477.5" y="290.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">GraphOperations</text>
-<text x="477.5" y="290.0" text-anchor="middle" class="tiny">GraphOperations</text>
-<path d="M 390 540 C 477.5 540, 477.5 540, 565 540" class="line"/>
-<text x="477.5" y="512.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">GraphSuspendOperations</text>
-<text x="477.5" y="512.0" text-anchor="middle" class="tiny">GraphSuspendOperations</text>
-<path d="M 915 318 C 1005.0 318, 1005.0 318, 1095 318" class="line"/>
-<text x="1005.0" y="290.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">queryList</text>
-<text x="1005.0" y="290.0" text-anchor="middle" class="tiny">queryList</text>
-<path d="M 915 540 C 1005.0 540, 1005.0 540, 1095 540" class="thin"/>
-<text x="1005.0" y="512.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">Dispatchers.IO</text>
-<text x="1005.0" y="512.0" text-anchor="middle" class="tiny">Dispatchers.IO</text>
-<path d="M 1245 405 C 1350.0 405, 1350.0 405, 1455 405" class="line"/>
-<text x="1350.0" y="377.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">Cypher</text>
-<text x="1350.0" y="377.0" text-anchor="middle" class="tiny">Cypher</text>
-<path d="M 1245 595 C 1350.0 595, 1350.0 500, 1455 500" class="thin"/>
-<text x="1350.0" y="519.5" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">index DDL</text>
-<text x="1350.0" y="519.5" text-anchor="middle" class="tiny">index DDL</text>
-<path d="M 760 700 C 760.0 700, 760.0 775, 760 775" class="thin"/>
-<text x="760.0" y="709.5" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">to model</text>
-<text x="760.0" y="709.5" text-anchor="middle" class="tiny">to model</text>
-<path d="M 1095 700 C 1095.0 700, 1095.0 775, 1095 775" class="thin"/>
-<text x="1095.0" y="709.5" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">fallback</text>
-<text x="1095.0" y="709.5" text-anchor="middle" class="tiny">fallback</text>
-<rect x="115" y="245" width="275" height="170" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
-<rect x="125" y="255" width="12" height="150" rx="6" fill="#3B82F6" opacity="0.95"/>
-<text x="137" y="285" class="label">graph-core API</text>
-<text x="139" y="321" class="small">GraphOperations</text>
-<text x="139" y="349" class="small">GraphMergeOperations</text>
-<text x="139" y="377" class="small">GraphSchemaManager</text>
-<text x="139" y="405" class="small">GraphVertex / Edge / Path</text>
-<rect x="115" y="465" width="275" height="170" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
-<rect x="125" y="475" width="12" height="150" rx="6" fill="#8B5CF6" opacity="0.95"/>
-<text x="137" y="505" class="label">Coroutine API</text>
-<text x="139" y="541" class="small">GraphSuspendOperations</text>
-<text x="139" y="569" class="small">Flow results</text>
-<text x="139" y="597" class="small">channelFlow backpressure</text>
-<text x="139" y="625" class="small">cancellation rethrows</text>
-<rect x="565" y="245" width="350" height="210" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
-<rect x="575" y="255" width="12" height="190" rx="6" fill="#22C55E" opacity="0.95"/>
-<text x="587" y="285" class="label">Sync Operations</text>
-<text x="589" y="321" class="small">driver.graph(graphName).use</text>
-<text x="589" y="349" class="small">CREATE uses named props</text>
-<text x="589" y="377" class="small">id(n) = toInteger($id)</text>
-<text x="589" y="405" class="small">MERGE vertex / edge</text>
-<text x="589" y="433" class="small">driver owned externally</text>
-<rect x="565" y="485" width="350" height="185" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
-<rect x="575" y="495" width="12" height="165" rx="6" fill="#F97316" opacity="0.95"/>
-<text x="587" y="525" class="label">Suspend Operations</text>
-<text x="589" y="561" class="small">sync delegate for merge/schema</text>
-<text x="589" y="589" class="small">withContext(Dispatchers.IO)</text>
-<text x="589" y="617" class="small">queryListIO</text>
-<text x="589" y="645" class="small">flowQuery</text>
-<rect x="1095" y="245" width="330" height="185" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
-<rect x="1105" y="255" width="12" height="165" rx="6" fill="#EAB308" opacity="0.95"/>
-<text x="1117" y="285" class="label">jfalkordb Driver</text>
-<text x="1119" y="321" class="small">FalkorDB.driver(host, port)</text>
-<text x="1119" y="349" class="small">Graph context per call</text>
-<text x="1119" y="377" class="small">ResultSet / Record</text>
-<text x="1119" y="405" class="small">Redis connection lifecycle</text>
-<rect x="1095" y="485" width="330" height="185" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="3" class="card"/>
-<rect x="1105" y="495" width="12" height="165" rx="6" fill="#EF4444" opacity="0.95"/>
-<text x="1117" y="525" class="label">Schema &amp; Merge</text>
-<text x="1119" y="561" class="small">CREATE INDEX</text>
-<text x="1119" y="589" class="small">CALL db.indexes()</text>
-<text x="1119" y="617" class="small">unique constraint unsupported</text>
-<text x="1119" y="645" class="small">native Cypher MERGE</text>
-<rect x="1455" y="310" width="265" height="210" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
-<rect x="1465" y="320" width="12" height="190" rx="6" fill="#14B8A6" opacity="0.95"/>
-<text x="1477" y="350" class="label">FalkorDB</text>
-<text x="1479" y="386" class="small">Redis module</text>
-<text x="1479" y="414" class="small">openCypher subset</text>
-<text x="1479" y="442" class="small">integer node IDs</text>
-<text x="1479" y="470" class="small">GRAPH.CONSTRAINT gap</text>
-<text x="1479" y="498" class="small">falkordb:v4.18.1 tests</text>
-<rect x="585" y="775" width="350" height="150" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
-<rect x="595" y="785" width="12" height="130" rx="6" fill="#3B82F6" opacity="0.95"/>
-<text x="607" y="815" class="label">Record Mapping</text>
-<text x="609" y="851" class="small">Node -&gt; GraphVertex</text>
-<text x="609" y="879" class="small">Edge -&gt; GraphEdge</text>
-<text x="609" y="907" class="small">Path -&gt; GraphPath steps</text>
-<rect x="1015" y="775" width="365" height="150" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
-<rect x="1025" y="785" width="12" height="130" rx="6" fill="#8B5CF6" opacity="0.95"/>
-<text x="1037" y="815" class="label">Algorithms</text>
-<text x="1039" y="851" class="small">shortest path fallback</text>
-<text x="1039" y="879" class="small">BFS / DFS / PageRank</text>
-<text x="1039" y="907" class="small">cycle and component helpers</text>
-<rect x="180" y="965" width="1480" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
-<text x="920" y="997" text-anchor="middle" class="tiny">Source note: FalkorDB operations do not close the externally owned Driver; suspend operations isolate blocking jfalkordb calls on Dispatchers.IO.</text>
+  <rect x="0" y="0" width="1840" height="1080" fill="#F8FAFC"/>
+  <rect x="24" y="24" width="1792" height="1032" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
+  <circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
+  <circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
+  <circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
+
+  <text x="72" y="82" class="title">FalkorDB Backend Overview</text>
+  <text x="74" y="118" class="subtitle">graph-falkordb adapts graph-core operations to jfalkordb, Redis-module storage, schema indexes, merge, and coroutine IO isolation.</text>
+
+  <rect x="70" y="150" width="1700" height="790" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+
+  <text x="275" y="215" text-anchor="middle" class="section">graph-core Contract</text>
+  <text x="835" y="215" text-anchor="middle" class="section">FalkorDB Adapter</text>
+  <text x="1435" y="215" text-anchor="middle" class="section">Redis Graph Runtime</text>
+
+  <rect x="135" y="270" width="330" height="150" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+  <text x="170" y="318" class="label">Repository APIs</text>
+  <text x="170" y="354" class="small">GraphOperations</text>
+  <text x="170" y="382" class="small">GraphMergeOperations</text>
+  <text x="170" y="410" class="small">GraphSchemaManager</text>
+
+  <rect x="135" y="500" width="330" height="150" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
+  <text x="170" y="548" class="label">Coroutine APIs</text>
+  <text x="170" y="584" class="small">GraphSuspendOperations</text>
+  <text x="170" y="612" class="small">Flow results</text>
+  <text x="170" y="640" class="small">cancellation-aware wrappers</text>
+
+  <rect x="620" y="250" width="430" height="175" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
+  <text x="655" y="298" class="label">FalkorDBGraphOperations</text>
+  <text x="655" y="334" class="small">driver.graph(graphName).use { ... }</text>
+  <text x="655" y="362" class="small">CREATE uses named properties</text>
+  <text x="655" y="390" class="small">id(n) = toInteger($id)</text>
+
+  <rect x="620" y="475" width="430" height="175" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
+  <text x="655" y="523" class="label">Suspend Adapter</text>
+  <text x="655" y="559" class="small">withContext(Dispatchers.IO)</text>
+  <text x="655" y="587" class="small">queryListIO and flowQuery</text>
+  <text x="655" y="615" class="small">sync delegate for merge/schema</text>
+
+  <rect x="620" y="725" width="430" height="120" rx="14" fill="#F8FAFC" stroke="#94A3B8" stroke-width="3" class="card"/>
+  <text x="655" y="773" class="label">Record Mapping</text>
+  <text x="655" y="809" class="small">Node / Edge / Path to graph-core model</text>
+  <text x="655" y="837" class="small">integer IDs become GraphElementId strings</text>
+
+  <rect x="1195" y="250" width="440" height="130" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
+  <text x="1230" y="298" class="label">jfalkordb Driver</text>
+  <text x="1230" y="334" class="small">FalkorDB.driver(host, port)</text>
+  <text x="1230" y="362" class="small">ResultSet / Record from Cypher queries</text>
+
+  <g class="card">
+    <ellipse cx="1415" cy="505" rx="235" ry="48" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3"/>
+    <rect x="1180" y="505" width="470" height="230" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3"/>
+    <ellipse cx="1415" cy="735" rx="235" ry="48" fill="#A7F3D0" stroke="#14B8A6" stroke-width="3"/>
+  </g>
+  <text x="1415" y="527" text-anchor="middle" class="label">FalkorDB</text>
+  <text x="1415" y="586" text-anchor="middle" class="small">Redis module with openCypher subset</text>
+  <text x="1415" y="622" text-anchor="middle" class="small">nodes, relationships, indexes</text>
+  <text x="1415" y="658" text-anchor="middle" class="small">unique constraints need raw command path</text>
+  <text x="1415" y="684" text-anchor="middle" class="tiny">test image: falkordb/falkordb:v4.18.1</text>
+
+  <rect x="1160" y="805" width="510" height="90" rx="14" fill="#F8FAFC" stroke="#94A3B8" stroke-width="3" class="card"/>
+  <text x="1195" y="838" class="label">Test Fixture</text>
+  <text x="1195" y="866" class="small">FalkorDBServer.Launcher.falkordb</text>
+  <text x="1195" y="889" class="small">exposes host and mapped Redis port</text>
+
+  <path d="M 465 345 L 620 345" class="line"/>
+  <path d="M 465 575 L 620 575" class="line"/>
+  <path d="M 1050 338 L 1195 338" class="line"/>
+  <path d="M 1415 380 L 1415 457" class="line"/>
+  <path d="M 1050 562 L 1180 562" class="thin"/>
+  <path d="M 1050 785 L 1180 785" class="thin"/>
+  <path d="M 1415 783 L 1415 805" class="thin"/>
+
+  <text x="540" y="322" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">implements</text>
+  <text x="540" y="322" text-anchor="middle" class="tiny">implements</text>
+  <text x="1120" y="315" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">query</text>
+  <text x="1120" y="315" text-anchor="middle" class="tiny">query</text>
+  <text x="1120" y="528" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">IO isolated</text>
+  <text x="1120" y="528" text-anchor="middle" class="tiny">IO isolated</text>
+  <text x="1115" y="762" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">maps results</text>
+  <text x="1115" y="762" text-anchor="middle" class="tiny">maps results</text>
+  <text x="920" y="1032" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | module: graph-falkordb / overview</text>
 </svg>
