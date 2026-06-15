@@ -1,110 +1,75 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1080" viewBox="0 0 1840 1080">
+<svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1120" viewBox="0 0 1840 1120">
+  <defs>
+    <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+    </marker>
+  </defs>
+  <style>
+    .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
+    .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
+    .section { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
+    .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
+    .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
+    .card { filter: url(#softShadow); }
+    .line { stroke: #64748B; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+    .graphline { stroke: #2563EB; stroke-width: 5; fill: none; marker-end: url(#arrow); }
+  </style>
 
-    <defs>
-      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
-        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
-      </filter>
-      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
-      </marker>
-    </defs>
-    <style>
-      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
-      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
-      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
-      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
-      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
-      .card { filter: url(#softShadow); }
-      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
-      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
-    </style>
+  <rect x="0" y="0" width="1840" height="1120" fill="#F8FAFC"/>
+  <rect x="24" y="24" width="1792" height="1072" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
+  <circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
+  <circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
+  <circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
 
-<rect x="0" y="0" width="1840" height="1080" fill="#F8FAFC"/>
-<rect x="24" y="24" width="1792" height="1032" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
-<circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
-<circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
-<circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
-<text x="72" y="82" class="title">Neo4j Data Model Mapping</text>
-<text x="74" y="118" class="subtitle">Neo4j Node, Relationship, and Path values are mapped to graph-core Vertex, Edge, and Path models using Neo4j 5.x element IDs</text>
-<text x="920.0" y="1032" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: graph-neo4j / Data Model Mapping</text>
-<rect x="70" y="150" width="1700" height="780" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
-<path d="M 405 325 C 497.5 325, 497.5 325, 590 325" class="line"/>
-<text x="497.5" y="297.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">nodeToVertex</text>
-<text x="497.5" y="297.0" text-anchor="middle" class="tiny">nodeToVertex</text>
-<path d="M 405 585 C 497.5 585, 497.5 585, 590 585" class="line"/>
-<text x="497.5" y="557.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">relationshipToEdge</text>
-<text x="497.5" y="557.0" text-anchor="middle" class="tiny">relationshipToEdge</text>
-<path d="M 960 325 C 1047.5 325, 1047.5 325, 1135 325" class="thin"/>
-<text x="1047.5" y="297.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">GraphElementId</text>
-<text x="1047.5" y="297.0" text-anchor="middle" class="tiny">GraphElementId</text>
-<path d="M 960 585 C 1047.5 585, 1047.5 585, 1135 585" class="thin"/>
-<text x="1047.5" y="557.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">GraphElementId</text>
-<text x="1047.5" y="557.0" text-anchor="middle" class="tiny">GraphElementId</text>
-<path d="M 760 705 C 760.0 705, 760.0 730, 760 730" class="line"/>
-<path d="M 1135 825 C 1272.5 825, 1272.5 770, 1410 770" class="thin"/>
-<text x="1272.5" y="769.5" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">ordered steps</text>
-<text x="1272.5" y="769.5" text-anchor="middle" class="tiny">ordered steps</text>
-<text x="920" y="220" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">Neo4j numeric id() is not used</text>
-<text x="920" y="220" text-anchor="middle" class="tiny">Neo4j numeric id() is not used</text>
-<text x="860" y="715" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">pathToGraphPath</text>
-<text x="860" y="715" text-anchor="middle" class="tiny">pathToGraphPath</text>
-<rect x="125" y="250" width="280" height="180" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
-<rect x="135" y="260" width="12" height="160" rx="6" fill="#3B82F6" opacity="0.95"/>
-<text x="147" y="290" class="label">Neo4j Node</text>
-<text x="149" y="326" class="small">elementId()</text>
-<text x="149" y="354" class="small">labels().firstOrNull()</text>
-<text x="149" y="382" class="small">asMap() properties</text>
-<text x="149" y="410" class="small">Record key: n / neighbor</text>
-<rect x="125" y="510" width="280" height="180" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
-<rect x="135" y="520" width="12" height="160" rx="6" fill="#22C55E" opacity="0.95"/>
-<text x="147" y="550" class="label">Neo4j Relationship</text>
-<text x="149" y="586" class="small">elementId()</text>
-<text x="149" y="614" class="small">startNodeElementId()</text>
-<text x="149" y="642" class="small">endNodeElementId()</text>
-<text x="149" y="670" class="small">type() + asMap()</text>
-<rect x="590" y="250" width="370" height="180" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
-<rect x="600" y="260" width="12" height="160" rx="6" fill="#EAB308" opacity="0.95"/>
-<text x="612" y="290" class="label">GraphVertex</text>
-<text x="614" y="326" class="small">id: GraphElementId</text>
-<text x="614" y="354" class="small">label: first node label</text>
-<text x="614" y="382" class="small">Unknown when no label</text>
-<text x="614" y="410" class="small">properties: Map</text>
-<rect x="590" y="510" width="370" height="180" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
-<rect x="600" y="520" width="12" height="160" rx="6" fill="#8B5CF6" opacity="0.95"/>
-<text x="612" y="550" class="label">GraphEdge</text>
-<text x="614" y="586" class="small">id: GraphElementId</text>
-<text x="614" y="614" class="small">label: rel.type()</text>
-<text x="614" y="642" class="small">startId / endId</text>
-<text x="614" y="670" class="small">properties: Map</text>
-<rect x="1135" y="250" width="355" height="180" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="3" class="card"/>
-<rect x="1145" y="260" width="12" height="160" rx="6" fill="#EF4444" opacity="0.95"/>
-<text x="1157" y="290" class="label">Stable ID Policy</text>
-<text x="1159" y="326" class="small">GraphElementId(value)</text>
-<text x="1159" y="354" class="small">elementId-based lookup</text>
-<text x="1159" y="382" class="small">Neo4j 5.x compatible</text>
-<text x="1159" y="410" class="small">deprecated id() avoided</text>
-<rect x="1135" y="510" width="355" height="180" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
-<rect x="1145" y="520" width="12" height="160" rx="6" fill="#F97316" opacity="0.95"/>
-<text x="1157" y="550" class="label">Cypher Endpoints</text>
-<text x="1159" y="586" class="small">MATCH by elementId(a)</text>
-<text x="1159" y="614" class="small">MATCH by elementId(b)</text>
-<text x="1159" y="642" class="small">relationship endpoints use</text>
-<text x="1159" y="670" class="small">start/end element IDs</text>
-<rect x="470" y="730" width="580" height="180" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
-<rect x="480" y="740" width="12" height="160" rx="6" fill="#14B8A6" opacity="0.95"/>
-<text x="492" y="770" class="label">Neo4j Path</text>
-<text x="494" y="806" class="small">nodes().toList()</text>
-<text x="494" y="834" class="small">relationships().toList()</text>
-<text x="494" y="862" class="small">each node becomes VertexStep</text>
-<text x="494" y="890" class="small">each relationship becomes EdgeStep</text>
-<rect x="1410" y="720" width="300" height="180" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
-<rect x="1420" y="730" width="12" height="160" rx="6" fill="#3B82F6" opacity="0.95"/>
-<text x="1432" y="760" class="label">GraphPath</text>
-<text x="1434" y="796" class="small">List&lt;PathStep&gt;</text>
-<text x="1434" y="824" class="small">VertexStep</text>
-<text x="1434" y="852" class="small">EdgeStep</text>
-<text x="1434" y="880" class="small">cost + metadata defaults</text>
-<rect x="180" y="965" width="1480" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
-<text x="920" y="998" text-anchor="middle" class="tiny">Source: Neo4jRecordMapper.kt and graph-neo4j README; Path mapping preserves node/relationship order as graph-core PathStep values.</text>
+  <text x="72" y="82" class="title">Neo4j Data Model Mapping</text>
+  <text x="74" y="118" class="subtitle">Neo4j nodes, relationships, and paths are mapped to graph-core objects using elementId(), labels, endpoints, and properties.</text>
+
+  <rect x="70" y="150" width="1700" height="830" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+
+  <line x1="760" y1="405" x2="1080" y2="405" class="line"/>
+  <line x1="760" y1="665" x2="1080" y2="665" class="line"/>
+
+  <rect x="130" y="245" width="630" height="560" rx="18" fill="#F8FAFC" stroke="#94A3B8" stroke-width="3" class="card"/>
+  <text x="445" y="292" text-anchor="middle" class="tiny">&lt;&lt;Neo4j storage shape&gt;&gt;</text>
+  <text x="445" y="333" text-anchor="middle" class="section">Property Graph</text>
+
+  <path d="M 300 520 C 410 430, 510 430, 625 520" class="graphline"/>
+  <circle cx="270" cy="535" r="82" fill="#DBEAFE" stroke="#3B82F6" stroke-width="4"/>
+  <circle cx="655" cy="535" r="82" fill="#DCFCE7" stroke="#22C55E" stroke-width="4"/>
+  <text x="270" y="515" text-anchor="middle" class="section">Person</text>
+  <text x="270" y="548" text-anchor="middle" class="small">elementId</text>
+  <text x="270" y="577" text-anchor="middle" class="small">properties</text>
+  <text x="655" y="515" text-anchor="middle" class="section">Person</text>
+  <text x="655" y="548" text-anchor="middle" class="small">elementId</text>
+  <text x="655" y="577" text-anchor="middle" class="small">properties</text>
+  <rect x="405" y="432" width="160" height="72" rx="12" fill="#FEF3C7" stroke="#EAB308" stroke-width="3"/>
+  <text x="485" y="462" text-anchor="middle" class="small">KNOWS</text>
+  <text x="485" y="489" text-anchor="middle" class="tiny">rel elementId</text>
+
+  <rect x="170" y="675" width="550" height="86" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2"/>
+  <text x="445" y="712" text-anchor="middle" class="small">Path = nodes and relationships in traversal order</text>
+  <text x="445" y="742" text-anchor="middle" class="tiny">Node, Relationship, Node, Relationship, Node...</text>
+
+  <rect x="1080" y="245" width="630" height="560" rx="18" fill="#F8FAFC" stroke="#94A3B8" stroke-width="3" class="card"/>
+  <text x="1395" y="292" text-anchor="middle" class="tiny">&lt;&lt;graph-core domain shape&gt;&gt;</text>
+  <text x="1395" y="333" text-anchor="middle" class="section">Mapped Objects</text>
+
+  <rect x="1135" y="385" width="500" height="120" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+  <text x="1385" y="424" text-anchor="middle" class="section">GraphVertex</text>
+  <line x1="1135" y1="448" x2="1635" y2="448" stroke="#3B82F6" stroke-width="2"/>
+  <text x="1170" y="482" class="small">id = GraphElementId(node.elementId())</text>
+
+  <rect x="1135" y="535" width="500" height="120" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
+  <text x="1385" y="574" text-anchor="middle" class="section">GraphEdge</text>
+  <line x1="1135" y1="598" x2="1635" y2="598" stroke="#EAB308" stroke-width="2"/>
+  <text x="1170" y="632" class="small">id, type, startId, endId, properties</text>
+
+  <rect x="1135" y="685" width="500" height="120" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
+  <text x="1385" y="724" text-anchor="middle" class="section">GraphPath</text>
+  <line x1="1135" y1="748" x2="1635" y2="748" stroke="#14B8A6" stroke-width="2"/>
+  <text x="1170" y="782" class="small">VertexStep and EdgeStep preserve order</text>
+  <text x="920" y="1048" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | module: graph-neo4j / data model mapping</text>
 </svg>

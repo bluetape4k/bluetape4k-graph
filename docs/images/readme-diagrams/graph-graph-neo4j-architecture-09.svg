@@ -1,116 +1,81 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1080" viewBox="0 0 1840 1080">
+<svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1120" viewBox="0 0 1840 1120">
+  <defs>
+    <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+    </marker>
+  </defs>
+  <style>
+    .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
+    .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
+    .section { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
+    .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
+    .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
+    .card { filter: url(#softShadow); }
+    .line { stroke: #64748B; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+  </style>
 
-    <defs>
-      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
-        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
-      </filter>
-      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
-      </marker>
-    </defs>
-    <style>
-      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
-      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
-      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
-      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
-      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
-      .card { filter: url(#softShadow); }
-      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
-      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
-    </style>
+  <rect x="0" y="0" width="1840" height="1120" fill="#F8FAFC"/>
+  <rect x="24" y="24" width="1792" height="1072" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
+  <circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
+  <circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
+  <circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
 
-<rect x="0" y="0" width="1840" height="1080" fill="#F8FAFC"/>
-<rect x="24" y="24" width="1792" height="1032" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
-<circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
-<circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
-<circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
-<text x="72" y="82" class="title">Neo4j Neighbors Direction Patterns</text>
-<text x="74" y="118" class="subtitle">neighbors(startId, options) builds a safe edge pattern for OUTGOING, INCOMING, or BOTH traversal and maps DISTINCT neighbor records</text>
-<text x="920.0" y="1032" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: graph-neo4j / Neighbors Direction Patterns</text>
-<rect x="70" y="150" width="1700" height="780" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
-<path d="M 365 300 C 450.0 300, 450.0 300, 535 300" class="line"/>
-<text x="450.0" y="272.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">validate</text>
-<text x="450.0" y="272.0" text-anchor="middle" class="tiny">validate</text>
-<path d="M 365 535 C 450.0 535, 450.0 535, 535 535" class="thin"/>
-<text x="450.0" y="507.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">depth</text>
-<text x="450.0" y="507.0" text-anchor="middle" class="tiny">depth</text>
-<path d="M 830 300 C 920.0 300, 920.0 275, 1010 275" class="line"/>
-<text x="920.0" y="259.5" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">edgePart</text>
-<text x="920.0" y="259.5" text-anchor="middle" class="tiny">edgePart</text>
-<path d="M 830 535 C 920.0 535, 920.0 535, 1010 535" class="thin"/>
-<text x="920.0" y="507.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">edgePart</text>
-<text x="920.0" y="507.0" text-anchor="middle" class="tiny">edgePart</text>
-<path d="M 830 770 C 920.0 770, 920.0 795, 1010 795" class="line"/>
-<text x="920.0" y="754.5" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">edgePart</text>
-<text x="920.0" y="754.5" text-anchor="middle" class="tiny">edgePart</text>
-<path d="M 1360 275 C 1430.0 275, 1430.0 420, 1500 420" class="thin"/>
-<text x="1430.0" y="319.5" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">MATCH</text>
-<text x="1430.0" y="319.5" text-anchor="middle" class="tiny">MATCH</text>
-<path d="M 1360 535 C 1430.0 535, 1430.0 535, 1500 535" class="thin"/>
-<text x="1430.0" y="507.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">MATCH</text>
-<text x="1430.0" y="507.0" text-anchor="middle" class="tiny">MATCH</text>
-<path d="M 1360 795 C 1430.0 795, 1430.0 650, 1500 650" class="thin"/>
-<text x="1430.0" y="694.5" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">MATCH</text>
-<text x="1430.0" y="694.5" text-anchor="middle" class="tiny">MATCH</text>
-<text x="920" y="205" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">same construction in sync and suspend operations</text>
-<text x="920" y="205" text-anchor="middle" class="tiny">same construction in sync and suspend operations</text>
-<rect x="115" y="225" width="250" height="180" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
-<rect x="125" y="235" width="12" height="160" rx="6" fill="#3B82F6" opacity="0.95"/>
-<text x="137" y="265" class="label">NeighborOptions</text>
-<text x="139" y="301" class="small">startId: GraphElementId</text>
-<text x="139" y="329" class="small">edgeLabel optional</text>
-<text x="139" y="357" class="small">direction</text>
-<text x="139" y="385" class="small">maxDepth</text>
-<rect x="115" y="455" width="250" height="160" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
-<rect x="125" y="465" width="12" height="140" rx="6" fill="#22C55E" opacity="0.95"/>
-<text x="137" y="495" class="label">Depth Builder</text>
-<text x="139" y="531" class="small">maxDepth == 1 -&gt; empty</text>
-<text x="139" y="559" class="small">else *1..maxDepth</text>
-<text x="139" y="587" class="small">label + depth suffix</text>
-<rect x="535" y="215" width="295" height="170" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
-<rect x="545" y="225" width="12" height="150" rx="6" fill="#EAB308" opacity="0.95"/>
-<text x="557" y="255" class="label">OUTGOING</text>
-<text x="559" y="291" class="small">(start)-[edgePart]-&gt;</text>
-<text x="559" y="319" class="small">(neighbor)</text>
-<text x="559" y="347" class="small">follows outgoing rels</text>
-<rect x="535" y="450" width="295" height="170" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
-<rect x="545" y="460" width="12" height="150" rx="6" fill="#8B5CF6" opacity="0.95"/>
-<text x="557" y="490" class="label">INCOMING</text>
-<text x="559" y="526" class="small">(start)&lt;-[edgePart]-</text>
-<text x="559" y="554" class="small">(neighbor)</text>
-<text x="559" y="582" class="small">follows incoming rels</text>
-<rect x="535" y="685" width="295" height="170" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
-<rect x="545" y="695" width="12" height="150" rx="6" fill="#14B8A6" opacity="0.95"/>
-<text x="557" y="725" class="label">BOTH</text>
-<text x="559" y="761" class="small">(start)-[edgePart]-</text>
-<text x="559" y="789" class="small">(neighbor)</text>
-<text x="559" y="817" class="small">undirected pattern</text>
-<rect x="1010" y="205" width="350" height="160" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
-<rect x="1020" y="215" width="12" height="140" rx="6" fill="#F97316" opacity="0.95"/>
-<text x="1032" y="245" class="label">Cypher Pattern</text>
-<text x="1034" y="281" class="small">MATCH pattern</text>
-<text x="1034" y="309" class="small">WHERE elementId(start) = $startId</text>
-<text x="1034" y="337" class="small">RETURN DISTINCT neighbor</text>
-<rect x="1010" y="455" width="350" height="160" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="3" class="card"/>
-<rect x="1020" y="465" width="12" height="140" rx="6" fill="#EF4444" opacity="0.95"/>
-<text x="1032" y="495" class="label">Safe Identifier Rules</text>
-<text x="1034" y="531" class="small">edgeLabel.requireNotBlank</text>
-<text x="1034" y="559" class="small">requireSafeIdentifier</text>
-<text x="1034" y="587" class="small">params carry startId.value</text>
-<rect x="1010" y="705" width="350" height="160" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
-<rect x="1020" y="715" width="12" height="140" rx="6" fill="#3B82F6" opacity="0.95"/>
-<text x="1032" y="745" class="label">Result Mapping</text>
-<text x="1034" y="781" class="small">record key: neighbor</text>
-<text x="1034" y="809" class="small">Neo4jRecordMapper.recordToVertex</text>
-<text x="1034" y="837" class="small">GraphVertex list or Flow</text>
-<rect x="1500" y="420" width="220" height="230" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
-<rect x="1510" y="430" width="12" height="210" rx="6" fill="#22C55E" opacity="0.95"/>
-<text x="1522" y="460" class="label">Neo4j</text>
-<text x="1524" y="496" class="small">elementId(start)</text>
-<text x="1524" y="524" class="small">relationship direction</text>
-<text x="1524" y="552" class="small">distinct neighbors</text>
-<text x="1524" y="580" class="small">records returned</text>
-<rect x="180" y="965" width="1480" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
-<text x="920" y="998" text-anchor="middle" class="tiny">Source: Neo4jGraphOperations.kt and Neo4jGraphSuspendOperations.kt neighbors(); direction changes only the Cypher relationship arrows.</text>
+  <text x="72" y="82" class="title">Neo4j neighbors Cypher Patterns</text>
+  <text x="74" y="118" class="subtitle">NeighborOptions become a safe relationship pattern, then Neo4j returns distinct neighbor nodes mapped to GraphVertex.</text>
+
+  <rect x="70" y="150" width="1700" height="830" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+
+  <line x1="455" y1="350" x2="585" y2="350" class="line"/>
+  <line x1="920" y1="485" x2="920" y2="620" class="line"/>
+  <line x1="1255" y1="350" x2="1385" y2="350" class="line"/>
+
+  <rect x="130" y="260" width="325" height="210" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+  <text x="292" y="297" text-anchor="middle" class="tiny">&lt;&lt;input&gt;&gt;</text>
+  <text x="292" y="336" text-anchor="middle" class="section">NeighborOptions</text>
+  <line x1="130" y1="360" x2="455" y2="360" stroke="#3B82F6" stroke-width="2"/>
+  <text x="160" y="397" class="small">startId.value required</text>
+  <text x="160" y="426" class="small">edgeLabel safe identifier</text>
+  <text x="160" y="455" class="small">maxDepth controls *1..N</text>
+
+  <rect x="585" y="240" width="670" height="245" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
+  <text x="920" y="278" text-anchor="middle" class="tiny">&lt;&lt;pattern builder&gt;&gt;</text>
+  <text x="920" y="317" text-anchor="middle" class="section">edgePart and Direction</text>
+  <line x1="585" y1="341" x2="1255" y2="341" stroke="#8B5CF6" stroke-width="2"/>
+  <text x="625" y="378" class="small">depthStr = "" when maxDepth == 1, otherwise *1..maxDepth</text>
+  <text x="625" y="407" class="small">edgePart = :LABEL + depthStr, or depthStr without a label</text>
+  <text x="625" y="436" class="small">OUTGOING, INCOMING, BOTH choose the Cypher arrow shape</text>
+  <text x="625" y="465" class="small">query uses WHERE elementId(start) = $startId</text>
+
+  <rect x="1385" y="260" width="325" height="210" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
+  <text x="1548" y="297" text-anchor="middle" class="tiny">&lt;&lt;output&gt;&gt;</text>
+  <text x="1548" y="336" text-anchor="middle" class="section">Result Mapping</text>
+  <line x1="1385" y1="360" x2="1710" y2="360" stroke="#22C55E" stroke-width="2"/>
+  <text x="1415" y="397" class="small">RETURN DISTINCT neighbor</text>
+  <text x="1415" y="426" class="small">recordToVertex(..., "neighbor")</text>
+  <text x="1415" y="455" class="small">List or Flow&lt;GraphVertex&gt;</text>
+
+  <rect x="180" y="620" width="430" height="210" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
+  <text x="395" y="658" text-anchor="middle" class="tiny">&lt;&lt;Direction.OUTGOING&gt;&gt;</text>
+  <text x="395" y="697" text-anchor="middle" class="section">Outgoing</text>
+  <line x1="180" y1="721" x2="610" y2="721" stroke="#EAB308" stroke-width="2"/>
+  <text x="215" y="764" class="small">(start)-[edgePart]-&gt;(neighbor)</text>
+  <text x="215" y="793" class="small">from the start node to target nodes</text>
+
+  <rect x="705" y="620" width="430" height="210" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
+  <text x="920" y="658" text-anchor="middle" class="tiny">&lt;&lt;Direction.INCOMING&gt;&gt;</text>
+  <text x="920" y="697" text-anchor="middle" class="section">Incoming</text>
+  <line x1="705" y1="721" x2="1135" y2="721" stroke="#F97316" stroke-width="2"/>
+  <text x="740" y="764" class="small">(start)&lt;-[edgePart]-(neighbor)</text>
+  <text x="740" y="793" class="small">incoming relationships into start</text>
+
+  <rect x="1230" y="620" width="430" height="210" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
+  <text x="1445" y="658" text-anchor="middle" class="tiny">&lt;&lt;Direction.BOTH&gt;&gt;</text>
+  <text x="1445" y="697" text-anchor="middle" class="section">Both</text>
+  <line x1="1230" y1="721" x2="1660" y2="721" stroke="#14B8A6" stroke-width="2"/>
+  <text x="1265" y="764" class="small">(start)-[edgePart]-(neighbor)</text>
+  <text x="1265" y="793" class="small">undirected neighbor expansion</text>
+  <text x="920" y="1048" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | module: graph-neo4j / neighbors Cypher patterns</text>
 </svg>

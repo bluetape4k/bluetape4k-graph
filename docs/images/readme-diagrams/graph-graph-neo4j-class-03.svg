@@ -1,116 +1,97 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1180" viewBox="0 0 1840 1180">
+  <defs>
+    <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+    </marker>
+  </defs>
+  <style>
+    .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
+    .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
+    .section { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
+    .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
+    .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
+    .card { filter: url(#softShadow); }
+    .line { stroke: #64748B; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+  </style>
 
-    <defs>
-      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
-        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
-      </filter>
-      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
-      </marker>
-    </defs>
-    <style>
-      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
-      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
-      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
-      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
-      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
-      .card { filter: url(#softShadow); }
-      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
-      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
-    </style>
+  <rect x="0" y="0" width="1840" height="1180" fill="#F8FAFC"/>
+  <rect x="24" y="24" width="1792" height="1132" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
+  <circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
+  <circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
+  <circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
 
-<rect x="0" y="0" width="1840" height="1180" fill="#F8FAFC"/>
-<rect x="24" y="24" width="1792" height="1132" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
-<circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
-<circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
-<circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
-<text x="72" y="82" class="title">Neo4jGraphOperations Class Model</text>
-<text x="74" y="118" class="subtitle">Synchronous graph-core adapter over Neo4j Driver sessions, Cypher execution, record mapping, schema DDL, and JVM algorithm fallbacks</text>
-<text x="920.0" y="1132" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: graph-neo4j / Neo4jGraphOperations</text>
-<rect x="70" y="150" width="1700" height="880" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
-<path d="M 430 325 C 520.0 325, 520.0 395, 610 395" class="line"/>
-<text x="520.0" y="332.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">implements</text>
-<text x="520.0" y="332.0" text-anchor="middle" class="tiny">implements</text>
-<path d="M 430 535 C 520.0 535, 520.0 505, 610 505" class="line"/>
-<text x="520.0" y="492.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">implements</text>
-<text x="520.0" y="492.0" text-anchor="middle" class="tiny">implements</text>
-<path d="M 430 745 C 520.0 745, 520.0 615, 610 615" class="line"/>
-<text x="520.0" y="652.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">implements</text>
-<text x="520.0" y="652.0" text-anchor="middle" class="tiny">implements</text>
-<path d="M 970 395 C 1065.0 395, 1065.0 305, 1160 305" class="line"/>
-<text x="1065.0" y="322.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">opens</text>
-<text x="1065.0" y="322.0" text-anchor="middle" class="tiny">opens</text>
-<path d="M 970 505 C 1065.0 505, 1065.0 455, 1160 455" class="thin"/>
-<text x="1065.0" y="452.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">maps records</text>
-<text x="1065.0" y="452.0" text-anchor="middle" class="tiny">maps records</text>
-<path d="M 970 615 C 1065.0 615, 1065.0 625, 1160 625" class="thin"/>
-<text x="1065.0" y="592.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">delegates</text>
-<text x="1065.0" y="592.0" text-anchor="middle" class="tiny">delegates</text>
-<path d="M 850 710 C 850.0 710, 850.0 835, 850 835" class="thin"/>
-<text x="850.0" y="744.5" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">tx scope</text>
-<text x="850.0" y="744.5" text-anchor="middle" class="tiny">tx scope</text>
-<path d="M 1005 745 C 1082.5 745, 1082.5 845, 1160 845" class="thin"/>
-<text x="1082.5" y="767.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">fallbacks</text>
-<text x="1082.5" y="767.0" text-anchor="middle" class="tiny">fallbacks</text>
-<text x="805" y="248" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">Driver externally owned</text>
-<text x="805" y="248" text-anchor="middle" class="tiny">Driver externally owned</text>
-<rect x="120" y="240" width="310" height="170" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
-<rect x="130" y="250" width="12" height="150" rx="6" fill="#3B82F6" opacity="0.95"/>
-<text x="142" y="280" class="label">GraphOperations</text>
-<text x="144" y="316" class="small">GraphVertexRepository</text>
-<text x="144" y="344" class="small">GraphEdgeRepository</text>
-<text x="144" y="372" class="small">GraphTraversalRepository</text>
-<text x="144" y="400" class="small">GraphAlgorithmRepository</text>
-<rect x="120" y="455" width="310" height="160" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
-<rect x="130" y="465" width="12" height="140" rx="6" fill="#22C55E" opacity="0.95"/>
-<text x="142" y="495" class="label">GraphTransactional</text>
-<text x="144" y="531" class="small">transaction(block)</text>
-<text x="144" y="559" class="small">GraphTransactionScope</text>
-<text x="144" y="587" class="small">commit or rollback</text>
-<rect x="120" y="670" width="310" height="160" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
-<rect x="130" y="680" width="12" height="140" rx="6" fill="#F97316" opacity="0.95"/>
-<text x="142" y="710" class="label">Schema + Merge</text>
-<text x="144" y="746" class="small">GraphSchemaManagement</text>
-<text x="144" y="774" class="small">GraphMergeOperations</text>
-<text x="144" y="802" class="small">MERGE vertex / edge</text>
-<rect x="610" y="295" width="360" height="475" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
-<rect x="620" y="305" width="12" height="455" rx="6" fill="#EAB308" opacity="0.95"/>
-<text x="632" y="335" class="label">Neo4jGraphOperations</text>
-<text x="634" y="371" class="small">driver: Driver</text>
-<text x="634" y="399" class="small">database: String = neo4j</text>
-<text x="634" y="427" class="small">session(): Session</text>
-<text x="634" y="455" class="small">runQuery(cypher, params)</text>
-<text x="634" y="483" class="small">elementId() based IDs</text>
-<rect x="1160" y="220" width="380" height="165" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
-<rect x="1170" y="230" width="12" height="145" rx="6" fill="#8B5CF6" opacity="0.95"/>
-<text x="1182" y="260" class="label">Neo4j Driver Session</text>
-<text x="1184" y="296" class="small">SessionConfig.withDatabase</text>
-<text x="1184" y="324" class="small">blocking Session</text>
-<text x="1184" y="352" class="small">s.run(cypher, params)</text>
-<rect x="1160" y="430" width="380" height="175" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
-<rect x="1170" y="440" width="12" height="155" rx="6" fill="#14B8A6" opacity="0.95"/>
-<text x="1182" y="470" class="label">Neo4jRecordMapper</text>
-<text x="1184" y="506" class="small">recordToVertex / Edge</text>
-<text x="1184" y="534" class="small">recordToPath</text>
-<text x="1184" y="562" class="small">Node / Relationship / Path</text>
-<rect x="1160" y="650" width="380" height="160" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="3" class="card"/>
-<rect x="1170" y="660" width="12" height="140" rx="6" fill="#EF4444" opacity="0.95"/>
-<text x="1182" y="690" class="label">Neo4jGraphSchemaManager</text>
-<text x="1184" y="726" class="small">createIndex</text>
-<text x="1184" y="754" class="small">unique constraints</text>
-<text x="1184" y="782" class="small">list/drop metadata</text>
-<rect x="650" y="835" width="400" height="120" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
-<rect x="660" y="845" width="12" height="100" rx="6" fill="#22C55E" opacity="0.95"/>
-<text x="672" y="875" class="label">Neo4jGraphTransactionScope</text>
-<text x="674" y="911" class="small">uses Transaction</text>
-<text x="674" y="939" class="small">same mapper and Cypher contract</text>
-<rect x="1160" y="845" width="380" height="140" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
-<rect x="1170" y="855" width="12" height="120" rx="6" fill="#3B82F6" opacity="0.95"/>
-<text x="1182" y="885" class="label">Algorithm Fallbacks</text>
-<text x="1184" y="921" class="small">ShortestPathFallback</text>
-<text x="1184" y="949" class="small">BfsDfsRunner</text>
-<text x="1184" y="977" class="small">CycleDetector / UnionFind</text>
-<rect x="180" y="1065" width="1480" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
-<text x="920" y="1098" text-anchor="middle" class="tiny">Source: Neo4jGraphOperations.kt; labels and property keys are validated before Cypher text is assembled; close() leaves Driver ownership external.</text>
+  <text x="72" y="82" class="title">Neo4jGraphOperations Class Model</text>
+  <text x="74" y="118" class="subtitle">Synchronous graph-core implementation groups driver sessions, Cypher CRUD, traversal algorithms, schema, and transaction scope.</text>
+
+  <rect x="70" y="155" width="1700" height="880" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+
+  <line x1="510" y1="380" x2="640" y2="380" class="line"/>
+  <line x1="1200" y1="380" x2="1330" y2="380" class="line"/>
+  <line x1="760" y1="600" x2="365" y2="705" class="line"/>
+  <line x1="880" y1="600" x2="725" y2="705" class="line"/>
+  <line x1="1020" y1="600" x2="1115" y2="705" class="line"/>
+  <line x1="1115" y1="600" x2="1480" y2="705" class="line"/>
+
+  <rect x="140" y="260" width="370" height="255" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+  <text x="325" y="298" text-anchor="middle" class="tiny">&lt;&lt;constructor dependency&gt;&gt;</text>
+  <text x="325" y="337" text-anchor="middle" class="section">Neo4j Driver</text>
+  <line x1="140" y1="361" x2="510" y2="361" stroke="#3B82F6" stroke-width="2"/>
+  <text x="170" y="398" class="small">driver: Driver</text>
+  <text x="170" y="427" class="small">database = "neo4j"</text>
+  <text x="170" y="456" class="small">session(): Session</text>
+  <text x="170" y="485" class="small">driver remains caller-owned</text>
+
+  <rect x="640" y="230" width="560" height="370" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
+  <text x="920" y="268" text-anchor="middle" class="tiny">&lt;&lt;class : GraphOperations&gt;&gt;</text>
+  <text x="920" y="307" text-anchor="middle" class="section">Neo4jGraphOperations</text>
+  <line x1="640" y1="331" x2="1200" y2="331" stroke="#8B5CF6" stroke-width="2"/>
+  <text x="675" y="368" class="small">+ createGraph / dropGraph / graphExists</text>
+  <text x="675" y="397" class="small">+ schemaManager(): Neo4jGraphSchemaManager</text>
+  <text x="675" y="426" class="small">+ transaction(block): GraphTransactionScope</text>
+  <text x="675" y="455" class="small">+ vertex and edge CRUD plus batch writes</text>
+  <text x="675" y="484" class="small">+ mergeVertex / mergeEdge native Cypher MERGE</text>
+  <text x="675" y="513" class="small">+ neighbors, paths, centrality, graph algorithms</text>
+  <text x="675" y="542" class="small">- runQuery wraps session.executeRead / executeWrite</text>
+  <text x="675" y="571" class="small">- fallback BFS/DFS/cycle/component/PageRank helpers</text>
+
+  <rect x="1330" y="260" width="370" height="255" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
+  <text x="1515" y="298" text-anchor="middle" class="tiny">&lt;&lt;mapping dependency&gt;&gt;</text>
+  <text x="1515" y="337" text-anchor="middle" class="section">Neo4jRecordMapper</text>
+  <line x1="1330" y1="361" x2="1700" y2="361" stroke="#22C55E" stroke-width="2"/>
+  <text x="1360" y="398" class="small">recordToVertex</text>
+  <text x="1360" y="427" class="small">recordToEdge</text>
+  <text x="1360" y="456" class="small">recordToPath</text>
+  <text x="1360" y="485" class="small">elementId maps to GraphElementId</text>
+
+  <rect x="160" y="705" width="410" height="190" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
+  <text x="365" y="743" text-anchor="middle" class="tiny">&lt;&lt;node operations&gt;&gt;</text>
+  <text x="365" y="782" text-anchor="middle" class="section">Vertex API</text>
+  <line x1="160" y1="806" x2="570" y2="806" stroke="#EAB308" stroke-width="2"/>
+  <text x="190" y="843" class="small">create, batch, find, update/delete</text>
+  <text x="190" y="872" class="small">count, merge, label filters</text>
+
+  <rect x="620" y="705" width="410" height="190" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
+  <text x="825" y="743" text-anchor="middle" class="tiny">&lt;&lt;relationship operations&gt;&gt;</text>
+  <text x="825" y="782" text-anchor="middle" class="section">Edge API</text>
+  <line x1="620" y1="806" x2="1030" y2="806" stroke="#F97316" stroke-width="2"/>
+  <text x="650" y="843" class="small">create, batch create, find, delete</text>
+  <text x="650" y="872" class="small">start/end endpoint lookup and merge</text>
+
+  <rect x="1080" y="705" width="410" height="190" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
+  <text x="1285" y="743" text-anchor="middle" class="tiny">&lt;&lt;traversal and algorithms&gt;&gt;</text>
+  <text x="1285" y="782" text-anchor="middle" class="section">Traversal API</text>
+  <line x1="1080" y1="806" x2="1490" y2="806" stroke="#14B8A6" stroke-width="2"/>
+  <text x="1110" y="843" class="small">neighbors, shortestPath, allPaths</text>
+  <text x="1110" y="872" class="small">centrality, BFS/DFS, cycles</text>
+
+  <rect x="1515" y="705" width="190" height="190" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="3" class="card"/>
+  <text x="1610" y="743" text-anchor="middle" class="tiny">&lt;&lt;schema&gt;&gt;</text>
+  <text x="1610" y="782" text-anchor="middle" class="section">DDL</text>
+  <line x1="1515" y1="806" x2="1705" y2="806" stroke="#EF4444" stroke-width="2"/>
+  <text x="1545" y="843" class="small">indexes</text>
+  <text x="1545" y="872" class="small">constraints</text>
+  <text x="920" y="1088" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | module: graph-neo4j / Neo4jGraphOperations class model</text>
 </svg>
