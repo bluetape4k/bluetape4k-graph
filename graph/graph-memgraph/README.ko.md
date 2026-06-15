@@ -9,6 +9,12 @@ Memgraph 그래프 데이터베이스를 위한 `GraphOperations` / `GraphSuspen
 [Memgraph](https://memgraph.com/)는 Neo4j Bolt 프로토콜과 openCypher를 완전 호환하는 인메모리 그래프 DB다.
 `neo4j-java-driver`를 그대로 사용해 연결할 수 있다.
 
+## 아키텍처 다이어그램
+
+![graph-memgraph architecture](../../docs/images/readme-diagrams/graph-graph-memgraph-architecture-01.png)
+
+`graph-memgraph`는 `graph-core` repository 계약을 유지하면서 Neo4j Java Driver, Memgraph Cypher 문법, 숫자형 `id()` 값, schema DDL, JVM algorithm fallback으로 Memgraph에 연결한다.
+
 ## 주요 클래스
 
 | 클래스 | 설명 |
