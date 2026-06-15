@@ -12,6 +12,18 @@ StAX 스트리밍 파서를 이용한 GraphML (XML) 대량 임포터 및 익스�
 
 모든 구현은 대용량 GraphML 파일의 메모리 효율적인 파싱과 쓰기를 위해 StAX (Streaming API for XML)를 사용합니다.
 
+## 아키텍처
+
+![graph-io-graphml architecture](../../docs/images/readme-diagrams/graph-io-graphml-architecture-01.png)
+
+`graph-io-graphml`은 directed GraphML property-graph subset을 캐시된 StAX reader/writer로 변환합니다:
+
+- `StaxGraphMlReader`는 `<key>`, `<node>`, `<edge>`, scalar `<data>`를 graph-io record로 파싱합니다.
+- Import는 vertex를 먼저 생성하고 external ID를 기록한 뒤 directed edge를 해석합니다.
+- `StaxGraphMlWriter`는 key definition을 먼저 쓰고 graph, node, edge, data element를 씁니다.
+- `UnsupportedGraphMlElementPolicy`는 미지원 construct를 warning으로 남길지 import 실패로 처리할지 결정합니다.
+- 동기, virtual-thread, suspend API는 같은 XML contract를 공유합니다.
+
 ## 기능
 
 - **StAX 기반 스트리밍**: 메모리 효율적인 파싱 및 직렬화
@@ -181,10 +193,15 @@ data class GraphMlImportOptions(
 
 ### 익스포트 옵션
 
-`GraphMlExportOptions`는 현재 비어 있지만 향후 기능 확장을 위한 확장 포인트를 제공합니다:
+`GraphMlExportOptions`는 생성되는 GraphML metadata와 label data key를 제어합니다:
 
 ```kotlin
-data class GraphMlExportOptions : Serializable
+data class GraphMlExportOptions(
+    val labelAttrName: String = "label",
+    val edgeDefault: GraphMlEdgeDefault = GraphMlEdgeDefault.DIRECTED,
+    val graphId: String = "G",
+    val encoding: String = "UTF-8",
+) : Serializable
 ```
 
 ## 성능 참고 사항

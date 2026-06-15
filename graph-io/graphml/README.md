@@ -12,6 +12,18 @@ The `graph-io-graphml` module provides three execution models for importing and 
 
 All implementations use StAX (Streaming API for XML) for memory-efficient parsing and writing of large GraphML files.
 
+## Architecture
+
+![graph-io-graphml architecture](../../docs/images/readme-diagrams/graph-io-graphml-architecture-01.png)
+
+`graph-io-graphml` maps a directed GraphML property-graph subset through cached StAX readers and writers:
+
+- `StaxGraphMlReader` parses `<key>`, `<node>`, `<edge>`, and scalar `<data>` into graph-io records.
+- Import creates vertices first, records external IDs, then resolves directed edges.
+- `StaxGraphMlWriter` writes key definitions before graph, node, edge, and data elements.
+- `UnsupportedGraphMlElementPolicy` controls whether unsupported constructs become warnings or fail the import.
+- Sync, virtual-thread, and suspend APIs share the same XML contract.
+
 ## Features
 
 - **StAX-based streaming**: Memory-efficient parsing and serialization
@@ -181,10 +193,15 @@ Representative fixtures under `src/test/resources/fixtures/graphml/` lock this c
 
 ### Export Options
 
-`GraphMlExportOptions` is currently empty but provides extension point for future features:
+`GraphMlExportOptions` controls generated GraphML metadata and label data keys:
 
 ```kotlin
-data class GraphMlExportOptions : Serializable
+data class GraphMlExportOptions(
+    val labelAttrName: String = "label",
+    val edgeDefault: GraphMlEdgeDefault = GraphMlEdgeDefault.DIRECTED,
+    val graphId: String = "G",
+    val encoding: String = "UTF-8",
+) : Serializable
 ```
 
 ## Performance Notes
