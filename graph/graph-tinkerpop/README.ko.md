@@ -9,6 +9,8 @@ Apache TinkerPop Gremlin 기반 `GraphOperations` / `GraphSuspendOperations` 구
 TinkerGraph(in-memory JVM 그래프 DB)를 사용하여 `graph-core` 인터페이스를 구현한다.
 외부 서버 없이 단독 실행 가능하므로 테스트, 프로토타이핑에 적합하다.
 
+![graph-tinkerpop architecture](../../docs/images/readme-diagrams/graph-graph-tinkerpop-architecture-01.png)
+
 ## 주요 클래스
 
 | 클래스 | 설명 |
@@ -17,6 +19,10 @@ TinkerGraph(in-memory JVM 그래프 DB)를 사용하여 `graph-core` 인터페�
 | `TinkerGraphSuspendOperations` | 코루틴(suspend + Flow) 방식 구현 |
 | `TinkerGraphSchemaManager` | 테스트 친화적인 in-memory schema/index metadata manager |
 | `GremlinRecordMapper` | TinkerPop Vertex/Edge/Path -> GraphVertex/GraphEdge/GraphPath 변환 |
+
+## 클래스 모델
+
+![graph-tinkerpop class model](../../docs/images/readme-diagrams/graph-graph-tinkerpop-class-02.png)
 
 ## 의존성
 
@@ -82,18 +88,19 @@ ops.transaction {
 
 ## 그래프 알고리즘
 
-TinkerPop은 6개 알고리즘 모두 Gremlin 네이티브 순회로 구현 — JVM 폴백 불필요.
+TinkerPop backend는 그래프 접근에 Gremlin traversal을 사용하고, 표준 TinkerGraph에서 GraphComputer 실행 경로가
+필요한 기능은 graph-core의 JVM helper로 처리한다. Weighted shortest path와 A* path도 공통 fallback 구현을 사용한다.
 
 ### 알고리즘 지원 매트릭스
 
 | 알고리즘 | 구현 방식 |
 |----------|-----------|
-| `degreeCentrality` | Gremlin native (`g.V().bothE().count()`) |
-| `bfs` | Gremlin native (`repeat().breadthFirst()`) |
-| `dfs` | Gremlin native (`repeat().depthFirst()`) |
-| `detectCycles` | Gremlin native (cycle-path 탐지) |
-| `connectedComponents` | Gremlin native (`connectedComponent()` step) |
-| `pageRank` | Gremlin native (`pageRank()` step) |
+| `degreeCentrality` | Gremlin edge count (`inE` / `outE`) |
+| `bfs` | Gremlin으로 adjacency를 읽고 JVM helper 실행 |
+| `dfs` | Gremlin으로 adjacency를 읽고 JVM helper 실행 |
+| `detectCycles` | Gremlin으로 adjacency를 읽고 JVM cycle detector 실행 |
+| `connectedComponents` | Gremlin edge를 읽고 JVM `UnionFind` 실행 |
+| `pageRank` | JVM `PageRankCalculator` 실행 |
 
 ### 사용 예제
 

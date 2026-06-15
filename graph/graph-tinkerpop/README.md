@@ -9,6 +9,8 @@
 Implements the `graph-core` interfaces using TinkerGraph (an in-memory JVM graph DB).
 It runs standalone without an external server, making it well suited for testing and prototyping.
 
+![graph-tinkerpop architecture](../../docs/images/readme-diagrams/graph-graph-tinkerpop-architecture-01.png)
+
 ## Key Classes
 
 | Class | Description |
@@ -17,6 +19,10 @@ It runs standalone without an external server, making it well suited for testing
 | `TinkerGraphSuspendOperations` | Coroutine (suspend + Flow) implementation |
 | `TinkerGraphSchemaManager` | In-memory schema/index manager for test-friendly index metadata |
 | `GremlinRecordMapper` | Converts TinkerPop Vertex/Edge/Path into GraphVertex/GraphEdge/GraphPath |
+
+## Class Model
+
+![graph-tinkerpop class model](../../docs/images/readme-diagrams/graph-graph-tinkerpop-class-02.png)
 
 ## Dependencies
 
@@ -83,18 +89,20 @@ ops.transaction {
 
 ## Graph Algorithms
 
-TinkerPop uses native Gremlin traversals for all 6 algorithms — no JVM fallback needed.
+TinkerPop uses Gremlin traversals for graph access and local JVM helpers where TinkerGraph does not expose the
+required GraphComputer-style execution path. Weighted shortest path and A* path also use the shared graph-core
+fallback implementations.
 
 ### Algorithm Support Matrix
 
 | Algorithm | Implementation | Notes |
 |-----------|---------------|-------|
-| `degreeCentrality` | Gremlin native (`g.V().bothE().count()`) | |
-| `bfs` | Gremlin native (`repeat().breadthFirst()`) | |
-| `dfs` | Gremlin native (`repeat().depthFirst()`) | |
-| `detectCycles` | Gremlin native (cycle-path detection) | |
-| `connectedComponents` | Gremlin native (`connectedComponent()` step) | |
-| `pageRank` | Gremlin native (`pageRank()` step) | |
+| `degreeCentrality` | Gremlin edge counts | Uses `inE` / `outE` counts |
+| `bfs` | JVM helper over Gremlin-loaded adjacency | Deterministic ordering across TinkerPop versions |
+| `dfs` | JVM helper over Gremlin-loaded adjacency | Deterministic ordering across TinkerPop versions |
+| `detectCycles` | JVM helper over Gremlin-loaded adjacency | Builds `GraphCycle` from mapped vertices and edges |
+| `connectedComponents` | JVM `UnionFind` over Gremlin-loaded edges | Consistent component ordering |
+| `pageRank` | JVM `PageRankCalculator` | Avoids GraphComputer dependency in standard TinkerGraph |
 
 ### Usage Example
 
