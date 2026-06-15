@@ -1,96 +1,81 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="980" viewBox="0 0 1600 980">
+  <defs>
+    <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#334155" flood-opacity="0.13"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="10.2" markerHeight="10.2" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+    </marker>
+  </defs>
 
-    <defs>
-      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
-        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
-      </filter>
-      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
-      </marker>
-    </defs>
-    <style>
-      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
-      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
-      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
-      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
-      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
-      .card { filter: url(#softShadow); }
-      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
-      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
-    </style>
+  <style>
+    .title { font-family: 'Architects Daughter', cursive; font-size: 50px; fill: #0F172A; }
+    .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #475569; }
+    .stateTitle { font-family: 'Architects Daughter', cursive; font-size: 30px; fill: #111827; }
+    .body { font-family: 'Comic Mono', monospace; font-size: 17px; fill: #334155; }
+    .small { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #475569; }
+    .tiny { font-family: 'Comic Mono', monospace; font-size: 14px; fill: #64748B; }
+    .panel { fill: #FFFFFF; stroke: #CBD5E1; stroke-width: 1.7; }
+    .card { filter: url(#shadow); }
+    .line { stroke: #2563EB; stroke-width: 3.6; fill: none; marker-end: url(#arrow); }
+  </style>
 
-<rect x="0" y="0" width="1600" height="980" fill="#F8FAFC"/>
-<rect x="24" y="24" width="1552" height="932" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
-<circle cx="1536" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
-<circle cx="1496" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
-<circle cx="1456" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
-<text x="72" y="82" class="title">GraphPath Lifecycle</text>
-<text x="74" y="118" class="subtitle">Path construction, derived views, and traversal algorithm outputs</text>
-<text x="800.0" y="932" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: graph-core / GraphPath Lifecycle</text>
-<rect x="70" y="150" width="1460" height="690" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
-<rect x="95" y="260" width="250" height="210" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="3" class="card"/>
-<rect x="105" y="270" width="12" height="190" rx="6" fill="#EF4444" opacity="0.95"/>
-<text x="117" y="300" class="label">No path</text>
-<text x="119" y="336" class="small">emptyGraphPath()</text>
-<text x="119" y="364" class="small">GraphPath.EMPTY</text>
-<text x="119" y="392" class="small">isEmpty == true</text>
-<path d="M 345 365 C 361.5 365, 361.5 365, 378 365" class="line"/>
-<text x="361.5" y="337.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">build</text>
-<text x="361.5" y="337.0" text-anchor="middle" class="tiny">build</text>
-<rect x="380" y="260" width="250" height="210" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
-<rect x="390" y="270" width="12" height="190" rx="6" fill="#3B82F6" opacity="0.95"/>
-<text x="402" y="300" class="label">Construct</text>
-<text x="404" y="336" class="small">graphPathOf(...)</text>
-<text x="404" y="364" class="small">PathStep list</text>
-<text x="404" y="392" class="small">VertexStep / EdgeStep</text>
-<path d="M 630 365 C 646.5 365, 646.5 365, 663 365" class="line"/>
-<text x="646.5" y="337.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">view</text>
-<text x="646.5" y="337.0" text-anchor="middle" class="tiny">view</text>
-<rect x="665" y="260" width="250" height="210" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
-<rect x="675" y="270" width="12" height="190" rx="6" fill="#22C55E" opacity="0.95"/>
-<text x="687" y="300" class="label">Normalize</text>
-<text x="689" y="336" class="small">steps alternate</text>
-<text x="689" y="364" class="small">vertices derived</text>
-<text x="689" y="392" class="small">edges derived</text>
-<path d="M 915 365 C 931.5 365, 931.5 365, 948 365" class="line"/>
-<text x="931.5" y="337.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">count</text>
-<text x="931.5" y="337.0" text-anchor="middle" class="tiny">count</text>
-<rect x="950" y="260" width="250" height="210" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
-<rect x="960" y="270" width="12" height="190" rx="6" fill="#EAB308" opacity="0.95"/>
-<text x="972" y="300" class="label">Measure</text>
-<text x="974" y="336" class="small">length = edges.size</text>
-<text x="974" y="364" class="small">totalWeight default</text>
-<text x="974" y="392" class="small">weighted cost optional</text>
-<path d="M 1200 365 C 1216.5 365, 1216.5 365, 1233 365" class="line"/>
-<text x="1216.5" y="337.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">emit</text>
-<text x="1216.5" y="337.0" text-anchor="middle" class="tiny">emit</text>
-<rect x="1235" y="260" width="250" height="210" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
-<rect x="1245" y="270" width="12" height="190" rx="6" fill="#8B5CF6" opacity="0.95"/>
-<text x="1257" y="300" class="label">Return</text>
-<text x="1259" y="336" class="small">shortestPath</text>
-<text x="1259" y="364" class="small">allPaths</text>
-<text x="1259" y="392" class="small">aStarPath</text>
-<text x="800" y="570" text-anchor="middle" class="tiny">example step sequence</text>
-<rect x="135" y="605" width="240" height="58" rx="12" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2"/>
-<text x="255" y="641" text-anchor="middle" class="small">VertexStep(A)</text>
-<path d="M 375 634 C 398.0 634, 398.0 634, 421 634" class="thin"/>
-<rect x="425" y="605" width="240" height="58" rx="12" fill="#FEF3C7" stroke="#EAB308" stroke-width="2"/>
-<text x="545" y="641" text-anchor="middle" class="small">EdgeStep(KNOWS)</text>
-<path d="M 665 634 C 688.0 634, 688.0 634, 711 634" class="thin"/>
-<rect x="715" y="605" width="240" height="58" rx="12" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2"/>
-<text x="835" y="641" text-anchor="middle" class="small">VertexStep(B)</text>
-<path d="M 955 634 C 978.0 634, 978.0 634, 1001 634" class="thin"/>
-<rect x="1005" y="605" width="240" height="58" rx="12" fill="#FEF3C7" stroke="#EAB308" stroke-width="2"/>
-<text x="1125" y="641" text-anchor="middle" class="small">EdgeStep(WORKS_AT)</text>
-<path d="M 1245 634 C 1268.0 634, 1268.0 634, 1291 634" class="thin"/>
-<rect x="1295" y="605" width="240" height="58" rx="12" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2"/>
-<text x="1415" y="641" text-anchor="middle" class="small">VertexStep(Company)</text>
-<rect x="385" y="705" width="830" height="125" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
-<rect x="395" y="715" width="12" height="105" rx="6" fill="#14B8A6" opacity="0.95"/>
-<text x="407" y="745" class="label">Contract</text>
-<text x="409" y="781" class="small">GraphPath does not mutate; builders create value objects.</text>
-<text x="409" y="809" class="small">Traversal and algorithm repositories return path results.</text>
-<rect x="150" y="865" width="1300" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
-<text x="800" y="898" text-anchor="middle" class="tiny">Source: GraphPath.kt and GraphTraversalRepository; weighted runners may override totalWeight with accumulated cost.</text>
+  <rect x="0" y="0" width="1600" height="980" fill="#F8FAFC"/>
+  <rect x="26" y="26" width="1548" height="928" rx="24" fill="none" stroke="#93C5FD" stroke-width="4"/>
+  <circle cx="1504" cy="68" r="15" fill="#DBEAFE"/>
+  <circle cx="1464" cy="68" r="15" fill="#D1FAE5"/>
+  <circle cx="1424" cy="68" r="15" fill="#FDE68A"/>
+
+  <text x="72" y="82" class="title">GraphPath lifecycle</text>
+  <text x="74" y="120" class="subtitle">Path values are created once; derived views are computed from immutable steps.</text>
+
+  <rect x="72" y="158" width="1456" height="706" rx="20" class="panel"/>
+
+  <circle cx="144" cy="390" r="22" fill="#0F172A"/>
+
+  <rect x="214" y="280" width="272" height="220" rx="18" fill="#FEE2E2" stroke="#EF4444" stroke-width="3" class="card"/>
+  <text x="350" y="328" text-anchor="middle" class="stateTitle">Empty</text>
+  <line x1="250" y1="352" x2="450" y2="352" stroke="#EF4444" stroke-width="2"/>
+  <text x="350" y="386" text-anchor="middle" class="body">GraphPath.EMPTY</text>
+  <text x="350" y="416" text-anchor="middle" class="body">emptyGraphPath()</text>
+  <text x="350" y="446" text-anchor="middle" class="body">isEmpty == true</text>
+
+  <rect x="560" y="280" width="272" height="220" rx="18" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+  <text x="696" y="328" text-anchor="middle" class="stateTitle">Constructed</text>
+  <line x1="596" y1="352" x2="796" y2="352" stroke="#3B82F6" stroke-width="2"/>
+  <text x="696" y="386" text-anchor="middle" class="body">GraphPath(steps)</text>
+  <text x="696" y="416" text-anchor="middle" class="body">graphPathOf(...)</text>
+  <text x="696" y="446" text-anchor="middle" class="body">PathStep list</text>
+
+  <rect x="906" y="280" width="272" height="220" rx="18" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
+  <text x="1042" y="328" text-anchor="middle" class="stateTitle">Derived</text>
+  <line x1="942" y1="352" x2="1142" y2="352" stroke="#22C55E" stroke-width="2"/>
+  <text x="1042" y="386" text-anchor="middle" class="body">vertices from steps</text>
+  <text x="1042" y="416" text-anchor="middle" class="body">edges from steps</text>
+  <text x="1042" y="446" text-anchor="middle" class="body">length = edges.size</text>
+
+  <rect x="1252" y="280" width="272" height="220" rx="18" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="3" class="card"/>
+  <text x="1388" y="328" text-anchor="middle" class="stateTitle">Result</text>
+  <line x1="1288" y1="352" x2="1488" y2="352" stroke="#8B5CF6" stroke-width="2"/>
+  <text x="1388" y="386" text-anchor="middle" class="body">shortestPath</text>
+  <text x="1388" y="416" text-anchor="middle" class="body">allPaths</text>
+  <text x="1388" y="446" text-anchor="middle" class="body">aStarPath</text>
+
+  <path d="M 166 390 L 212 390" class="line"/>
+  <path d="M 486 390 L 558 390" class="line"/>
+  <path d="M 832 390 L 904 390" class="line"/>
+  <path d="M 1178 390 L 1250 390" class="line"/>
+
+  <text x="522" y="366" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">build</text>
+  <text x="522" y="366" text-anchor="middle" class="tiny">build</text>
+  <text x="868" y="366" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">read views</text>
+  <text x="868" y="366" text-anchor="middle" class="tiny">read views</text>
+  <text x="1214" y="366" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">return</text>
+  <text x="1214" y="366" text-anchor="middle" class="tiny">return</text>
+
+  <rect x="248" y="594" width="1104" height="112" rx="16" fill="#ECFEFF" stroke="#06B6D4" stroke-width="2.4" class="card"/>
+  <text x="800" y="634" text-anchor="middle" class="stateTitle">PathStep order</text>
+  <text x="800" y="668" text-anchor="middle" class="body">VertexStep, EdgeStep, VertexStep, ...</text>
+  <text x="800" y="696" text-anchor="middle" class="small">totalWeight defaults to edge count; weighted algorithms may supply accumulated cost.</text>
+
 </svg>

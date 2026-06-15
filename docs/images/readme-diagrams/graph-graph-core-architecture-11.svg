@@ -1,100 +1,95 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1620" height="980" viewBox="0 0 1620 980">
+  <defs>
+    <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#334155" flood-opacity="0.13"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="10.2" markerHeight="10.2" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+    </marker>
+    <marker id="softArrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="9.0" markerHeight="9.0" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748B"/>
+    </marker>
+  </defs>
 
-    <defs>
-      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
-        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
-      </filter>
-      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
-      </marker>
-    </defs>
-    <style>
-      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
-      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
-      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
-      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
-      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
-      .card { filter: url(#softShadow); }
-      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
-      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
-    </style>
+  <style>
+    .title { font-family: 'Architects Daughter', cursive; font-size: 50px; fill: #0F172A; }
+    .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #475569; }
+    .stateTitle { font-family: 'Architects Daughter', cursive; font-size: 30px; fill: #111827; }
+    .body { font-family: 'Comic Mono', monospace; font-size: 17px; fill: #334155; }
+    .small { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #475569; }
+    .tiny { font-family: 'Comic Mono', monospace; font-size: 14px; fill: #64748B; }
+    .panel { fill: #FFFFFF; stroke: #CBD5E1; stroke-width: 1.7; }
+    .card { filter: url(#shadow); }
+    .line { stroke: #2563EB; stroke-width: 3.6; fill: none; marker-end: url(#arrow); }
+    .soft { stroke: #64748B; stroke-width: 2.8; stroke-dasharray: 8 8; fill: none; marker-end: url(#softArrow); }
+  </style>
 
-<rect x="0" y="0" width="1620" height="980" fill="#F8FAFC"/>
-<rect x="24" y="24" width="1572" height="932" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
-<circle cx="1556" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
-<circle cx="1516" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
-<circle cx="1476" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
-<text x="72" y="82" class="title">GraphOperations Usage States</text>
-<text x="74" y="118" class="subtitle">A backend facade moves from lifecycle setup through CRUD, traversal, optional capabilities, and close</text>
-<text x="810.0" y="932" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: graph-core / GraphOperations Usage</text>
-<rect x="70" y="150" width="1480" height="690" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
-<rect x="100" y="245" width="250" height="205" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
-<rect x="110" y="255" width="12" height="185" rx="6" fill="#3B82F6" opacity="0.95"/>
-<text x="122" y="285" class="label">Obtain Facade</text>
-<text x="124" y="321" class="small">GraphOperations</text>
-<text x="124" y="349" class="small">backend implementation</text>
-<text x="124" y="377" class="small">same API per DB</text>
-<path d="M 350 348 C 374.0 348, 374.0 348, 398 348" class="line"/>
-<text x="374.0" y="320.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">init</text>
-<text x="374.0" y="320.0" text-anchor="middle" class="tiny">init</text>
-<rect x="400" y="245" width="250" height="205" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
-<rect x="410" y="255" width="12" height="185" rx="6" fill="#22C55E" opacity="0.95"/>
-<text x="422" y="285" class="label">Graph Lifecycle</text>
-<text x="424" y="321" class="small">createGraph(name)</text>
-<text x="424" y="349" class="small">graphExists(name)</text>
-<text x="424" y="377" class="small">dropGraph(name)</text>
-<path d="M 650 348 C 674.0 348, 674.0 348, 698 348" class="line"/>
-<text x="674.0" y="320.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">write</text>
-<text x="674.0" y="320.0" text-anchor="middle" class="tiny">write</text>
-<rect x="700" y="245" width="250" height="205" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
-<rect x="710" y="255" width="12" height="185" rx="6" fill="#EAB308" opacity="0.95"/>
-<text x="722" y="285" class="label">Vertex Ops</text>
-<text x="724" y="321" class="small">createVertex</text>
-<text x="724" y="349" class="small">find / update / delete</text>
-<text x="724" y="377" class="small">countVertices</text>
-<path d="M 950 348 C 974.0 348, 974.0 348, 998 348" class="line"/>
-<text x="974.0" y="320.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">link</text>
-<text x="974.0" y="320.0" text-anchor="middle" class="tiny">link</text>
-<rect x="1000" y="245" width="250" height="205" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
-<rect x="1010" y="255" width="12" height="185" rx="6" fill="#F97316" opacity="0.95"/>
-<text x="1022" y="285" class="label">Edge Ops</text>
-<text x="1024" y="321" class="small">createEdge</text>
-<text x="1024" y="349" class="small">find by label/start/end</text>
-<text x="1024" y="377" class="small">deleteEdge</text>
-<path d="M 1250 348 C 1274.0 348, 1274.0 348, 1298 348" class="line"/>
-<text x="1274.0" y="320.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">query</text>
-<text x="1274.0" y="320.0" text-anchor="middle" class="tiny">query</text>
-<rect x="1300" y="245" width="250" height="205" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
-<rect x="1310" y="255" width="12" height="185" rx="6" fill="#8B5CF6" opacity="0.95"/>
-<text x="1322" y="285" class="label">Traversal</text>
-<text x="1324" y="321" class="small">neighbors</text>
-<text x="1324" y="349" class="small">shortestPath</text>
-<text x="1324" y="377" class="small">allPaths / aStarPath</text>
-<rect x="250" y="585" width="360" height="150" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
-<rect x="260" y="595" width="12" height="130" rx="6" fill="#14B8A6" opacity="0.95"/>
-<text x="272" y="625" class="label">Algorithms</text>
-<text x="274" y="661" class="small">pageRank / degree</text>
-<text x="274" y="689" class="small">components</text>
-<text x="274" y="717" class="small">bfs / dfs / cycles</text>
-<rect x="690" y="585" width="360" height="150" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="3" class="card"/>
-<rect x="700" y="595" width="12" height="130" rx="6" fill="#EF4444" opacity="0.95"/>
-<text x="712" y="625" class="label">Optional Caps</text>
-<text x="714" y="661" class="small">transaction { }</text>
-<text x="714" y="689" class="small">schemaManager()</text>
-<text x="714" y="717" class="small">mergeVertex / mergeEdge</text>
-<rect x="1130" y="585" width="250" height="150" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
-<rect x="1140" y="595" width="12" height="130" rx="6" fill="#3B82F6" opacity="0.95"/>
-<text x="1152" y="625" class="label">Close</text>
-<text x="1154" y="661" class="small">AutoCloseable</text>
-<text x="1154" y="689" class="small">release resources</text>
-<path d="M 1225 450 C 827.5 450, 827.5 583, 430 583" class="thin"/>
-<text x="445" y="560" text-anchor="middle" class="tiny">algorithms</text>
-<path d="M 810 450 C 840.0 450, 840.0 583, 870 583" class="thin"/>
-<text x="900" y="560" text-anchor="middle" class="tiny">optional</text>
-<path d="M 1380 450 C 1317.5 450, 1317.5 583, 1255 583" class="thin"/>
-<text x="1317.5" y="488.5" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">finally</text>
-<text x="1317.5" y="488.5" text-anchor="middle" class="tiny">finally</text>
-<rect x="150" y="865" width="1320" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
-<text x="810" y="898" text-anchor="middle" class="tiny">Source: GraphOperations repository contracts; unsupported optional capabilities fail explicitly instead of falling back silently.</text>
+  <rect x="0" y="0" width="1620" height="980" fill="#F8FAFC"/>
+  <rect x="26" y="26" width="1568" height="928" rx="24" fill="none" stroke="#93C5FD" stroke-width="4"/>
+  <circle cx="1528" cy="68" r="15" fill="#DBEAFE"/>
+  <circle cx="1488" cy="68" r="15" fill="#D1FAE5"/>
+  <circle cx="1448" cy="68" r="15" fill="#FDE68A"/>
+
+  <text x="72" y="82" class="title">GraphOperations usage states</text>
+  <text x="74" y="120" class="subtitle">A backend facade exposes graph lifecycle, CRUD, traversal/analytics, opt-in capabilities, and close.</text>
+
+  <rect x="72" y="158" width="1476" height="704" rx="20" class="panel"/>
+
+  <circle cx="138" cy="390" r="22" fill="#0F172A"/>
+
+  <rect x="204" y="286" width="252" height="208" rx="18" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+  <text x="330" y="332" text-anchor="middle" class="stateTitle">Facade ready</text>
+  <line x1="240" y1="356" x2="420" y2="356" stroke="#3B82F6" stroke-width="2"/>
+  <text x="330" y="390" text-anchor="middle" class="body">GraphOperations</text>
+  <text x="330" y="420" text-anchor="middle" class="body">backend implementation</text>
+  <text x="330" y="450" text-anchor="middle" class="body">AutoCloseable</text>
+
+  <rect x="524" y="286" width="252" height="208" rx="18" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
+  <text x="650" y="332" text-anchor="middle" class="stateTitle">Graph selected</text>
+  <line x1="560" y1="356" x2="740" y2="356" stroke="#22C55E" stroke-width="2"/>
+  <text x="650" y="390" text-anchor="middle" class="body">createGraph</text>
+  <text x="650" y="420" text-anchor="middle" class="body">graphExists</text>
+  <text x="650" y="450" text-anchor="middle" class="body">dropGraph</text>
+
+  <rect x="844" y="286" width="252" height="208" rx="18" fill="#FEF3C7" stroke="#F59E0B" stroke-width="3" class="card"/>
+  <text x="970" y="332" text-anchor="middle" class="stateTitle">Working graph</text>
+  <line x1="880" y1="356" x2="1060" y2="356" stroke="#F59E0B" stroke-width="2"/>
+  <text x="970" y="390" text-anchor="middle" class="body">vertex CRUD</text>
+  <text x="970" y="420" text-anchor="middle" class="body">edge CRUD</text>
+  <text x="970" y="450" text-anchor="middle" class="body">batch operations</text>
+
+  <rect x="1164" y="286" width="252" height="208" rx="18" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="3" class="card"/>
+  <text x="1290" y="332" text-anchor="middle" class="stateTitle">Read results</text>
+  <line x1="1200" y1="356" x2="1380" y2="356" stroke="#8B5CF6" stroke-width="2"/>
+  <text x="1290" y="390" text-anchor="middle" class="body">neighbors, paths</text>
+  <text x="1290" y="420" text-anchor="middle" class="body">PageRank, degree</text>
+  <text x="1290" y="450" text-anchor="middle" class="body">BFS/DFS/cycles</text>
+
+  <path d="M 160 390 L 202 390" class="line"/>
+  <path d="M 456 390 L 522 390" class="line"/>
+  <path d="M 776 390 L 842 390" class="line"/>
+  <path d="M 1096 390 L 1162 390" class="line"/>
+
+  <rect x="264" y="624" width="338" height="118" rx="16" fill="#FDF2F8" stroke="#EC4899" stroke-width="2.4" class="card"/>
+  <text x="433" y="662" text-anchor="middle" class="stateTitle">Transactions</text>
+  <text x="433" y="696" text-anchor="middle" class="body">transaction { }</text>
+  <text x="433" y="724" text-anchor="middle" class="small">supported backends only</text>
+
+  <rect x="642" y="624" width="338" height="118" rx="16" fill="#ECFEFF" stroke="#06B6D4" stroke-width="2.4" class="card"/>
+  <text x="811" y="662" text-anchor="middle" class="stateTitle">Schema / merge</text>
+  <text x="811" y="696" text-anchor="middle" class="body">schemaManager()</text>
+  <text x="811" y="724" text-anchor="middle" class="body">mergeVertex / mergeEdge</text>
+
+  <rect x="1020" y="624" width="338" height="118" rx="16" fill="#FEE2E2" stroke="#EF4444" stroke-width="2.4" class="card"/>
+  <text x="1189" y="662" text-anchor="middle" class="stateTitle">Closed</text>
+  <text x="1189" y="696" text-anchor="middle" class="body">close()</text>
+  <text x="1189" y="724" text-anchor="middle" class="small">release facade resources</text>
+
+  <path d="M 970 494 L 433 624" class="soft"/>
+  <path d="M 970 494 L 811 624" class="soft"/>
+  <path d="M 1290 494 L 1189 624" class="soft"/>
+
+  <rect x="230" y="806" width="1160" height="42" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="810" y="833" text-anchor="middle" class="small">Unsupported optional capabilities throw explicitly; GraphOperations itself stays source-compatible.</text>
+
 </svg>

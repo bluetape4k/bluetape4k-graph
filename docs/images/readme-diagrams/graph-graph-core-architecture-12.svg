@@ -1,94 +1,87 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1640" height="1000" viewBox="0 0 1640 1000">
+  <defs>
+    <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#334155" flood-opacity="0.13"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="10.2" markerHeight="10.2" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+    </marker>
+    <marker id="softArrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="9.0" markerHeight="9.0" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748B"/>
+    </marker>
+  </defs>
 
-    <defs>
-      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
-        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
-      </filter>
-      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
-      </marker>
-    </defs>
-    <style>
-      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
-      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
-      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
-      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
-      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
-      .card { filter: url(#softShadow); }
-      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
-      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
-    </style>
+  <style>
+    .title { font-family: 'Architects Daughter', cursive; font-size: 50px; fill: #0F172A; }
+    .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #475569; }
+    .stepTitle { font-family: 'Architects Daughter', cursive; font-size: 29px; fill: #111827; }
+    .body { font-family: 'Comic Mono', monospace; font-size: 17px; fill: #334155; }
+    .small { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #475569; }
+    .tiny { font-family: 'Comic Mono', monospace; font-size: 14px; fill: #64748B; }
+    .panel { fill: #FFFFFF; stroke: #CBD5E1; stroke-width: 1.7; }
+    .card { filter: url(#shadow); }
+    .line { stroke: #2563EB; stroke-width: 3.6; fill: none; marker-end: url(#arrow); }
+    .soft { stroke: #64748B; stroke-width: 2.8; stroke-dasharray: 8 8; fill: none; marker-end: url(#softArrow); }
+  </style>
 
-<rect x="0" y="0" width="1640" height="1000" fill="#F8FAFC"/>
-<rect x="24" y="24" width="1592" height="952" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
-<circle cx="1576" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
-<circle cx="1536" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
-<circle cx="1496" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
-<text x="72" y="82" class="title">Schema DSL Flow</text>
-<text x="74" y="118" class="subtitle">Declare labels and properties once, then use them for schema DDL and graph operations</text>
-<text x="820.0" y="952" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: graph-core / Schema DSL Flow</text>
-<rect x="70" y="150" width="1500" height="710" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
-<rect x="130" y="245" width="285" height="205" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
-<rect x="140" y="255" width="12" height="185" rx="6" fill="#3B82F6" opacity="0.95"/>
-<text x="152" y="285" class="label">Declare Labels</text>
-<text x="154" y="321" class="small">object PersonLabel</text>
-<text x="154" y="349" class="small">object WorksAtLabel</text>
-<text x="154" y="377" class="small">VertexLabel / EdgeLabel</text>
-<path d="M 415 348 C 441.5 348, 441.5 348, 468 348" class="line"/>
-<text x="441.5" y="320.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">defs</text>
-<text x="441.5" y="320.0" text-anchor="middle" class="tiny">defs</text>
-<rect x="490" y="245" width="285" height="205" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
-<rect x="500" y="255" width="12" height="185" rx="6" fill="#22C55E" opacity="0.95"/>
-<text x="512" y="285" class="label">Collect Properties</text>
-<text x="514" y="321" class="small">PropertyHolder.properties</text>
-<text x="514" y="349" class="small">PropertyDef(name, type)</text>
-<text x="514" y="377" class="small">typed DSL functions</text>
-<path d="M 775 348 C 801.5 348, 801.5 348, 828 348" class="line"/>
-<text x="801.5" y="320.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">props</text>
-<text x="801.5" y="320.0" text-anchor="middle" class="tiny">props</text>
-<rect x="850" y="245" width="285" height="205" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
-<rect x="860" y="255" width="12" height="185" rx="6" fill="#EAB308" opacity="0.95"/>
-<text x="872" y="285" class="label">Validate Names</text>
-<text x="874" y="321" class="small">GraphSchemaNames</text>
-<text x="874" y="349" class="small">safe label/property</text>
-<text x="874" y="377" class="small">fail before backend</text>
-<path d="M 1135 348 C 1161.5 348, 1161.5 348, 1188 348" class="line"/>
-<text x="1161.5" y="320.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">ddl</text>
-<text x="1161.5" y="320.0" text-anchor="middle" class="tiny">ddl</text>
-<rect x="1210" y="245" width="285" height="205" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
-<rect x="1220" y="255" width="12" height="185" rx="6" fill="#8B5CF6" opacity="0.95"/>
-<text x="1232" y="285" class="label">Schema Manager</text>
-<text x="1234" y="321" class="small">createIndex</text>
-<text x="1234" y="349" class="small">createUniqueConstraint</text>
-<text x="1234" y="377" class="small">dropIndex / list</text>
-<rect x="190" y="585" width="380" height="170" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
-<rect x="200" y="595" width="12" height="150" rx="6" fill="#14B8A6" opacity="0.95"/>
-<text x="212" y="625" class="label">Use In Operations</text>
-<text x="214" y="661" class="small">PersonLabel.label</text>
-<text x="214" y="689" class="small">PersonLabel.email.name</text>
-<text x="214" y="717" class="small">createVertex / filters</text>
-<rect x="650" y="585" width="380" height="170" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
-<rect x="660" y="595" width="12" height="150" rx="6" fill="#F97316" opacity="0.95"/>
-<text x="672" y="625" class="label">Backend DDL</text>
-<text x="674" y="661" class="small">Neo4j / Memgraph</text>
-<text x="674" y="689" class="small">TinkerGraph recorded index</text>
-<text x="674" y="717" class="small">FalkorDB index support</text>
-<rect x="1110" y="585" width="330" height="170" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="3" class="card"/>
-<rect x="1120" y="595" width="12" height="150" rx="6" fill="#EF4444" opacity="0.95"/>
-<text x="1132" y="625" class="label">Unsupported</text>
-<text x="1134" y="661" class="small">AGE portable DDL</text>
-<text x="1134" y="689" class="small">unique constraints gaps</text>
-<text x="1134" y="717" class="small">explicit exception</text>
-<path d="M 272 450 C 326.0 450, 326.0 583, 380 583" class="thin"/>
-<text x="326.0" y="488.5" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">names</text>
-<text x="326.0" y="488.5" text-anchor="middle" class="tiny">names</text>
-<path d="M 1275 450 C 1057.5 450, 1057.5 583, 840 583" class="thin"/>
-<text x="1057.5" y="488.5" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">supported</text>
-<text x="1057.5" y="488.5" text-anchor="middle" class="tiny">supported</text>
-<path d="M 1360 450 C 1317.5 450, 1317.5 583, 1275 583" class="thin"/>
-<text x="1317.5" y="488.5" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">unsupported</text>
-<text x="1317.5" y="488.5" text-anchor="middle" class="tiny">unsupported</text>
-<rect x="150" y="885" width="1340" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
-<text x="820" y="918" text-anchor="middle" class="tiny">Source: schema package README and GraphSchemaManager.kt support matrix; no silent success for unsupported DDL.</text>
+  <rect x="0" y="0" width="1640" height="1000" fill="#F8FAFC"/>
+  <rect x="26" y="26" width="1588" height="948" rx="24" fill="none" stroke="#93C5FD" stroke-width="4"/>
+  <circle cx="1544" cy="68" r="15" fill="#DBEAFE"/>
+  <circle cx="1504" cy="68" r="15" fill="#D1FAE5"/>
+  <circle cx="1464" cy="68" r="15" fill="#FDE68A"/>
+
+  <text x="72" y="82" class="title">Schema DSL definition flow</text>
+  <text x="74" y="120" class="subtitle">Label declarations collect typed properties, then schema managers apply or reject backend DDL.</text>
+
+  <rect x="72" y="158" width="1496" height="704" rx="20" class="panel"/>
+
+  <rect x="128" y="288" width="286" height="184" rx="18" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+  <text x="271" y="332" text-anchor="middle" class="stepTitle">Declare labels</text>
+  <line x1="166" y1="356" x2="376" y2="356" stroke="#3B82F6" stroke-width="2"/>
+  <text x="271" y="390" text-anchor="middle" class="body">VertexLabel</text>
+  <text x="271" y="420" text-anchor="middle" class="body">EdgeLabel</text>
+  <text x="271" y="450" text-anchor="middle" class="small">label, from, to</text>
+
+  <rect x="502" y="288" width="286" height="184" rx="18" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
+  <text x="645" y="332" text-anchor="middle" class="stepTitle">Collect props</text>
+  <line x1="540" y1="356" x2="750" y2="356" stroke="#22C55E" stroke-width="2"/>
+  <text x="645" y="390" text-anchor="middle" class="body">PropertyHolder</text>
+  <text x="645" y="420" text-anchor="middle" class="body">PropertyDef&lt;T&gt;</text>
+  <text x="645" y="450" text-anchor="middle" class="small">immutable snapshot</text>
+
+  <rect x="876" y="288" width="286" height="184" rx="18" fill="#FEF3C7" stroke="#F59E0B" stroke-width="3" class="card"/>
+  <text x="1019" y="332" text-anchor="middle" class="stepTitle">Request schema</text>
+  <line x1="914" y1="356" x2="1124" y2="356" stroke="#F59E0B" stroke-width="2"/>
+  <text x="1019" y="390" text-anchor="middle" class="body">createIndex</text>
+  <text x="1019" y="420" text-anchor="middle" class="body">createUniqueConstraint</text>
+  <text x="1019" y="450" text-anchor="middle" class="small">label + property names</text>
+
+  <rect x="1250" y="288" width="286" height="184" rx="18" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="3" class="card"/>
+  <text x="1393" y="332" text-anchor="middle" class="stepTitle">Capability gate</text>
+  <line x1="1288" y1="356" x2="1498" y2="356" stroke="#8B5CF6" stroke-width="2"/>
+  <text x="1393" y="390" text-anchor="middle" class="body">GraphSchemaManager</text>
+  <text x="1393" y="420" text-anchor="middle" class="body">GraphSuspendSchemaManager</text>
+  <text x="1393" y="450" text-anchor="middle" class="small">backend-specific DDL</text>
+
+  <path d="M 414 380 L 500 380" class="line"/>
+  <path d="M 788 380 L 874 380" class="line"/>
+  <path d="M 1162 380 L 1248 380" class="line"/>
+
+  <rect x="322" y="616" width="360" height="124" rx="16" fill="#ECFEFF" stroke="#06B6D4" stroke-width="2.4" class="card"/>
+  <text x="502" y="656" text-anchor="middle" class="stepTitle">Operation use</text>
+  <text x="502" y="692" text-anchor="middle" class="body">label values and property names</text>
+  <text x="502" y="720" text-anchor="middle" class="small">feed create/query/filter APIs</text>
+
+  <rect x="958" y="596" width="360" height="164" rx="16" fill="#FEE2E2" stroke="#EF4444" stroke-width="2.4" class="card"/>
+  <text x="1138" y="636" text-anchor="middle" class="stepTitle">Explicit outcome</text>
+  <text x="1138" y="672" text-anchor="middle" class="body">metadata returned</text>
+  <text x="1138" y="702" text-anchor="middle" class="body">or UnsupportedOperationException</text>
+  <text x="1138" y="732" text-anchor="middle" class="small">no silent no-op for DDL gaps</text>
+
+  <path d="M 645 472 L 502 616" class="soft"/>
+  <path d="M 1393 472 L 1138 596" class="soft"/>
+
+  <rect x="220" y="806" width="1200" height="42" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="820" y="833" text-anchor="middle" class="small">Blocking schema managers can be bridged to suspend APIs through Dispatchers.IO.</text>
+
 </svg>
