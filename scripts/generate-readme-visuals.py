@@ -1768,7 +1768,7 @@ def root_backend_capability_matrix_svg() -> str:
 
 
 def code_graph_examples_architecture_svg() -> str:
-    width, height = 1840, 1180
+    width, height = 1840, 1080
     out = open_svg(
         "Code Graph Example Architecture",
         "Codebase dependency, inheritance, and call-chain scenarios exercised through backend-independent graph APIs",
@@ -1779,50 +1779,41 @@ def code_graph_examples_architecture_svg() -> str:
         f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
         f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: examples/code-graph-examples / Architecture</text>'
     )
-    out.append('<rect x="70" y="150" width="1700" height="880" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
+    out.append('<rect x="70" y="150" width="1700" height="800" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
     out.append(
         '<text x="920" y="195" text-anchor="middle" class="tiny">'
         'Source: examples/code-graph-examples README, CodeGraphSchema, CodeGraphService, CodeGraphSuspendService, and abstract backend tests.</text>'
     )
 
-    arrow(out, 405, 350, 535, 350, "model", "line")
-    arrow(out, 870, 315, 990, 315, "sync", "line")
-    arrow(out, 870, 485, 990, 485, "suspend", "line")
-    arrow(out, 870, 650, 990, 650, "schema", "thin")
-    arrow(out, 1350, 395, 1495, 395, "same contract", "line")
-    arrow(out, 405, 760, 535, 860, "scenarios", "thin")
-    arrow(out, 870, 860, 990, 840, "factory only", "thin")
+    arrow(out, 380, 340, 560, 340, "domain model", "line")
+    arrow(out, 865, 340, 1035, 340, "contracts", "line")
+    arrow(out, 1335, 340, 1505, 340, "adapters", "line")
+    arrow(out, 710, 535, 710, 655, "labels", "thin")
+    arrow(out, 250, 535, 250, 655, "fixtures", "thin")
+    arrow(out, 1185, 535, 1185, 655, "shared tests", "thin")
+    arrow(out, 1360, 760, 1505, 760, "same behavior", "thin")
+    arrow(out, 1645, 510, 1645, 655, "runtime", "dash")
 
-    card(out, 110, 250, 295, 220, "Example Questions", [
+    card(out, 120, 250, 260, 220, "Scenario Queries", [
         "dependency path",
         "impact radius",
         "inheritance chain",
         "function call chain",
     ], PALETTE["sky"])
-    card(out, 535, 245, 335, 155, "CodeGraphService", [
+    card(out, 560, 245, 305, 220, "Service Layer", [
+        "CodeGraphService",
+        "CodeGraphSuspendService",
         "GraphOperations",
-        "create vertices/edges",
-        "neighbors and paths",
+        "neighbors / paths",
     ], PALETTE["mint"])
-    card(out, 535, 430, 335, 155, "Suspend Service", [
-        "GraphSuspendOperations",
-        "Flow collection",
-        "same scenario API",
-    ], PALETTE["aqua"])
-    card(out, 535, 615, 335, 155, "CodeGraphSchema", [
-        "Module / Class / Function",
-        "DEPENDS_ON / EXTENDS",
-        "CALLS / BELONGS_TO",
-    ], PALETTE["lemon"])
-
-    card(out, 990, 245, 360, 420, "graph-core API", [
+    card(out, 1035, 245, 300, 220, "graph-core API", [
         "GraphOperations facade",
         "GraphSuspendOperations",
         "NeighborOptions",
         "PathOptions",
         "GraphVertex / GraphPath",
     ], PALETTE["lavender"])
-    card(out, 1495, 270, 280, 250, "Backends", [
+    card(out, 1505, 245, 260, 220, "Backends", [
         "Neo4j",
         "Memgraph",
         "Apache AGE",
@@ -1830,34 +1821,34 @@ def code_graph_examples_architecture_svg() -> str:
         "FalkorDB tests",
     ], PALETTE["rose"])
 
-    card(out, 110, 645, 295, 190, "Sample Graph", [
+    card(out, 120, 655, 310, 190, "Sample Codebase", [
         "app -> middle -> core",
         "Dog -> Mammal -> Animal",
         "processOrder -> saveOrder",
         "reverse impact traversal",
     ], PALETTE["peach"])
-    card(out, 535, 790, 335, 160, "Abstract Tests", [
+    card(out, 560, 655, 305, 190, "CodeGraphSchema", [
+        "Module / Class / Function",
+        "DEPENDS_ON / EXTENDS",
+        "CALLS / BELONGS_TO",
+        "properties and labels",
+    ], PALETTE["lemon"])
+    card(out, 1025, 655, 335, 190, "Abstract Tests", [
         "AbstractCodeGraphTest",
         "AbstractCodeGraphSuspendTest",
+        "same scenario assertions",
+        "clean graph per test",
     ], PALETTE["sky"])
-    card(out, 990, 745, 330, 190, "Concrete Tests", [
+    card(out, 1505, 655, 260, 190, "Validation", [
         "Neo4j / Memgraph",
         "AGE / TinkerGraph",
         "FalkorDB variants",
         "only ops factory changes",
-    ], PALETTE["mint"])
-    card(out, 1455, 710, 300, 200, "Validation Result", [
-        "same domain model",
-        "same traversal questions",
-        "backend-neutral behavior",
-        "container or in-memory",
     ], PALETTE["aqua"])
-    arrow(out, 1320, 835, 1455, 835, "verifies", "thin")
-    arrow(out, 1635, 520, 1635, 710, "runtime", "dash")
 
-    out.append('<rect x="180" y="1045" width="1480" height="52" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.4"/>')
+    out.append('<rect x="180" y="905" width="1480" height="52" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.4"/>')
     out.append(
-        '<text x="920" y="1078" text-anchor="middle" class="tiny">'
+        '<text x="920" y="938" text-anchor="middle" class="tiny">'
         'Architecture note: common service logic owns graph modeling and traversal questions; backend-specific tests only provide GraphOperations factories.</text>'
     )
     return close_svg(out)
