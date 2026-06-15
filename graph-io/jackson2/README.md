@@ -6,6 +6,17 @@ Jackson 2.x NDJSON (Newline-Delimited JSON) bulk importer and exporter for graph
 
 `graph-io-jackson2` provides efficient, high-performance graph data import/export using NDJSON format. Each line contains a complete JSON object representing either a vertex or edge, enabling streaming processing of large graphs without loading the entire dataset into memory.
 
+## Architecture
+
+![graph-io-jackson2 architecture](../../docs/images/readme-diagrams/graph-io-jackson2-architecture-01.png)
+
+The module uses a single NDJSON stream and delegates graph writes to `graph-io-core`:
+
+- `Jackson2EnvelopeCodec` maps each JSON line to a `vertex` or `edge` envelope.
+- Import creates vertices first, stores external IDs, then resolves buffered edges.
+- Export scans selected labels and writes vertex envelopes before edge envelopes.
+- Sync, virtual-thread, and suspend APIs share the same envelope contract.
+
 ## Features
 
 ### Three Execution Models
