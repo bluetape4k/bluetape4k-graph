@@ -13,12 +13,12 @@
       .tiny { font: 15px 'Comic Mono', monospace; fill: #4B5563; }
       .micro { font: 13px 'Comic Mono', monospace; fill: #4B5563; }
       .routeLabel { font: 16px 'Comic Mono', monospace; font-weight: 700; fill: #334155; }
-      .labelPill { fill: #FFFFFF; stroke: #CBD5E1; stroke-width: 1.5; filter: url(#labelShadow); }
+      .labelPill { fill: #FFFFFF; stroke: #CBD5E1; stroke-width: 1.2; filter: url(#labelShadow); }
       .card { filter: url(#softShadow); }
-      .line { fill: none; stroke: #2563EB; stroke-width: 4.4; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow); }
-      .softLine { fill: none; stroke: #64748B; stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#softArrow); }
-      .cacheLine { fill: none; stroke: #F97316; stroke-width: 4.4; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#cacheArrow); }
-      .algoLine { fill: none; stroke: #8B5CF6; stroke-width: 3.8; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#algoArrow); }
+      .line { fill: none; stroke: #2563EB; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow); }
+      .softLine { fill: none; stroke: #64748B; stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#softArrow); }
+      .cacheLine { fill: none; stroke: #F97316; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#cacheArrow); }
+      .algoLine { fill: none; stroke: #8B5CF6; stroke-width: 2.3; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#algoArrow); }
     </style>
     <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
       <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#CBD5E1" flood-opacity="0.45"/>
@@ -40,7 +40,7 @@
     </marker>
   </defs>
 
-  <rect x="24" y="24" width="1952" height="1152" rx="22" fill="#F8FBFF" stroke="#60A5FA" stroke-width="4"/>
+  <rect x="24" y="24" width="1952" height="1152" rx="22" fill="#F8FBFF" stroke="#CBD5E1" stroke-width="1.6"/>
   <circle cx="1848" cy="66" r="15" fill="#EDE9FE"/>
   <circle cx="1890" cy="66" r="15" fill="#DCFCE7"/>
   <circle cx="1932" cy="66" r="15" fill="#FED7AA"/>
@@ -48,29 +48,29 @@
   <text x="74" y="82" class="title">graph-memgraph Module Architecture</text>
   <text x="74" y="122" class="subtitle">Memgraph keeps the graph-core API while using Neo4j Driver/Bolt, Memgraph Cypher, numeric ids, and JVM fallbacks.</text>
 
-  <rect x="70" y="150" width="1860" height="930" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+  <rect x="70" y="150" width="1860" height="930" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4" filter="url(#softShadow)"/>
 
   <text x="135" y="214" class="section">Public contract</text>
-  <rect x="120" y="250" width="340" height="170" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+  <rect x="120" y="250" width="340" height="170" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="1.9" class="card"/>
   <text x="158" y="300" class="label">graph-core APIs</text>
   <text x="158" y="340" class="small">GraphOperations</text>
   <text x="158" y="370" class="small">GraphSuspendOperations</text>
   <text x="158" y="400" class="tiny">repositories, schema, algorithms</text>
 
   <text x="600" y="214" class="section">Memgraph adapter</text>
-  <rect x="600" y="250" width="420" height="170" rx="14" fill="#DCFCE7" stroke="#16A34A" stroke-width="3" class="card"/>
+  <rect x="600" y="250" width="420" height="170" rx="14" fill="#DCFCE7" stroke="#16A34A" stroke-width="1.9" class="card"/>
   <text x="640" y="300" class="label">MemgraphGraphOperations</text>
   <text x="640" y="340" class="small">sync session per query</text>
   <text x="640" y="370" class="small">database = "memgraph"</text>
   <text x="640" y="400" class="tiny">driver remains caller-owned</text>
 
-  <rect x="600" y="490" width="420" height="165" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
+  <rect x="600" y="490" width="420" height="165" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="1.9" class="card"/>
   <text x="640" y="540" class="label">MemgraphSuspendOperations</text>
   <text x="640" y="580" class="small">ReactiveSession + Flow</text>
   <text x="640" y="610" class="small">reactive transaction scope</text>
   <text x="640" y="640" class="tiny">schema via blocking adapter</text>
 
-  <rect x="120" y="510" width="340" height="175" rx="14" fill="#FFEDD5" stroke="#F97316" stroke-width="3" class="card"/>
+  <rect x="120" y="510" width="340" height="175" rx="14" fill="#FFEDD5" stroke="#F97316" stroke-width="1.9" class="card"/>
   <text x="158" y="548" class="label">Caching decorator</text>
   <text x="158" y="588" class="small">ConcurrentHashMap reads</text>
   <text x="158" y="618" class="small">write-result memoization</text>
@@ -78,19 +78,19 @@
   <text x="158" y="674" class="tiny">benchmarks and repeat reads</text>
 
   <text x="1095" y="214" class="section">Cypher translation</text>
-  <rect x="1110" y="250" width="340" height="165" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
+  <rect x="1110" y="250" width="340" height="165" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="1.9" class="card"/>
   <text x="1148" y="300" class="label">Query families</text>
   <text x="1148" y="340" class="small">CREATE / MATCH / MERGE</text>
   <text x="1148" y="370" class="small">id(n) = toInteger($id)</text>
   <text x="1148" y="400" class="tiny">shortest path via MATCH</text>
 
-  <rect x="1110" y="505" width="340" height="155" rx="14" fill="#E0F2FE" stroke="#0EA5E9" stroke-width="3" class="card"/>
+  <rect x="1110" y="505" width="340" height="155" rx="14" fill="#E0F2FE" stroke="#0EA5E9" stroke-width="1.9" class="card"/>
   <text x="1148" y="555" class="label">Record mapper</text>
   <text x="1148" y="595" class="small">Node -> GraphVertex</text>
   <text x="1148" y="625" class="small">Relationship -> GraphEdge</text>
   <text x="1148" y="655" class="tiny">numeric id string values</text>
 
-  <rect x="1110" y="720" width="340" height="140" rx="14" fill="#FCE7F3" stroke="#EC4899" stroke-width="3" class="card"/>
+  <rect x="1110" y="720" width="340" height="140" rx="14" fill="#FCE7F3" stroke="#EC4899" stroke-width="1.9" class="card"/>
   <text x="1148" y="770" class="label">Schema DDL</text>
   <text x="1148" y="810" class="small">CREATE INDEX ON</text>
   <text x="1148" y="840" class="small">SHOW INDEX / CONSTRAINT</text>
@@ -100,9 +100,9 @@
            C 1545 230, 1785 230, 1785 270
            L 1785 565
            C 1785 605, 1545 605, 1545 565
-           Z" fill="#DCFCE7" stroke="#16A34A" stroke-width="3" filter="url(#softShadow)"/>
-  <ellipse cx="1665" cy="270" rx="120" ry="38" fill="#F0FDF4" stroke="#16A34A" stroke-width="3"/>
-  <ellipse cx="1665" cy="565" rx="120" ry="38" fill="#BBF7D0" stroke="#16A34A" stroke-width="3"/>
+           Z" fill="#DCFCE7" stroke="#16A34A" stroke-width="2.2" filter="url(#softShadow)"/>
+  <ellipse cx="1665" cy="270" rx="120" ry="38" fill="#F0FDF4" stroke="#16A34A" stroke-width="2.2"/>
+  <ellipse cx="1665" cy="565" rx="120" ry="38" fill="#BBF7D0" stroke="#16A34A" stroke-width="2.2"/>
   <text x="1608" y="352" class="label">Memgraph DB</text>
   <text x="1592" y="398" class="small">Bolt protocol</text>
   <text x="1592" y="428" class="small">openCypher</text>
@@ -110,20 +110,19 @@
   <text x="1592" y="488" class="tiny">AuthTokens.none() default</text>
 
   <text x="135" y="790" class="section">Algorithm execution</text>
-  <rect x="120" y="830" width="350" height="140" rx="14" fill="#F3E8FF" stroke="#A855F7" stroke-width="3" class="card"/>
+  <rect x="120" y="830" width="350" height="140" rx="14" fill="#F3E8FF" stroke="#A855F7" stroke-width="1.9" class="card"/>
   <text x="158" y="880" class="label">Native Cypher</text>
   <text x="158" y="920" class="small">degreeCentrality</text>
   <text x="158" y="950" class="small">detectCycles when supported</text>
 
-  <rect x="600" y="830" width="420" height="140" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
+  <rect x="600" y="830" width="420" height="140" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="1.9" class="card"/>
   <text x="640" y="880" class="label">JVM fallback runners</text>
   <text x="640" y="920" class="small">BFS / DFS / components / PageRank</text>
   <text x="640" y="950" class="small">weighted shortest path and A* path</text>
 
-  <rect x="1110" y="910" width="675" height="100" rx="14" fill="#F8FAFC" stroke="#94A3B8" stroke-width="2"/>
-  <text x="1448" y="945" text-anchor="middle" class="small">MAGE is optional; current unsupported algorithms use graph-core JVM helpers.</text>
-  <text x="1448" y="975" text-anchor="middle" class="tiny">Use the cache wrapper for benchmarks or repeated reads.</text>
-  <text x="1448" y="1000" text-anchor="middle" class="tiny">Use base operations when transactional insert semantics matter.</text>
+  <rect x="120" y="1014" width="1760" height="56" rx="14" fill="#F8FAFC" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="1000" y="1038" text-anchor="middle" class="tiny">MAGE is optional; current unsupported algorithms use graph-core JVM helpers.</text>
+  <text x="1000" y="1060" text-anchor="middle" class="tiny">Use the cache wrapper for repeated reads; use base operations when transactional insert semantics matter.</text>
 
   <path d="M 460 335 L 600 335" class="line"/>
   <rect x="486" y="302" width="88" height="28" rx="9" class="labelPill"/>
