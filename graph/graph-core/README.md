@@ -73,6 +73,25 @@ GraphSuspendOperations = GraphSuspendSession
 | `GraphMergeOperations` | Optional sync merge/upsert capability used by `ops.mergeVertex()` and `ops.mergeEdge()` |
 | `GraphSuspendMergeOperations` | Optional coroutine merge/upsert capability used by suspend merge extensions |
 
+## Traversal and Algorithm APIs
+
+![Traversal and Algorithm APIs diagram](../../docs/images/readme-diagrams/graph-graph-core-traversal-algorithm-15.png)
+
+`GraphTraversalRepository` answers path-oriented questions:
+
+- `neighbors(startId, NeighborOptions)` returns nearby `GraphVertex` values.
+- `shortestPath(fromId, toId, PathOptions)` returns the best bounded `GraphPath?`.
+- `allPaths(fromId, toId, PathOptions)` returns all bounded simple `GraphPath` results.
+- A* path search via `aStarPath(fromId, toId, PathOptions, heuristic)` returns a weighted best `GraphPath?`.
+
+`GraphAlgorithmRepository` answers graph-level analytics questions:
+
+- `pageRank(PageRankOptions)` returns `PageRankScore` results sorted by score descending.
+- `degreeCentrality(vertexId, DegreeOptions)` returns a `DegreeResult` with in/out/total degree.
+- `connectedComponents(ComponentOptions)` returns `GraphComponent` groups.
+- `bfs(startId, BfsDfsOptions)` and `dfs(startId, BfsDfsOptions)` return ordered `TraversalVisit` events.
+- `detectCycles(CycleOptions)` returns `GraphCycle` paths.
+
 ### Transaction DSL
 
 Backends that implement `GraphTransactionalOperations` can expose a sync transaction block through the

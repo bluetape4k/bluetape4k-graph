@@ -13,7 +13,7 @@ Graph Database (Apache AGE, Neo4j) 공통 추상화 계층. 백엔드 독립 모
 
 ## 아키텍처 개요
 
-![graph core Architecture diagram](../../docs/images/readme-diagrams/graph-graph-core-architecture-01.png)
+![graph-core architecture overview diagram](../../docs/images/readme-diagrams/graph-graph-core-architecture-01.png)
 
 ## 주요 클래스
 
@@ -21,11 +21,11 @@ Graph Database (Apache AGE, Neo4j) 공통 추상화 계층. 백엔드 독립 모
 
 #### 기본 모델: GraphElementId, GraphVertex, GraphEdge
 
-![: GraphElementId, GraphVertex, GraphEdge diagram](../../docs/images/readme-diagrams/graph-graph-core-class-02.png)
+![GraphElementId, GraphVertex, and GraphEdge model diagram](../../docs/images/readme-diagrams/graph-graph-core-class-02.png)
 
 #### PathStep 및 GraphPath 모델
 
-![PathStep GraphPath diagram](../../docs/images/readme-diagrams/graph-graph-core-class-03.png)
+![PathStep and GraphPath model diagram](../../docs/images/readme-diagrams/graph-graph-core-class-03.png)
 
 **PathStep 교차 순서 예시**:
 ```
@@ -36,11 +36,30 @@ length = 2  (간선 개수)
 
 ### Repository 계층
 
-![Repository diagram](../../docs/images/readme-diagrams/graph-graph-core-class-04.png)
+![Repository contract diagram](../../docs/images/readme-diagrams/graph-graph-core-class-04.png)
+
+## 순회와 알고리즘 API
+
+![Traversal and algorithm API diagram](../../docs/images/readme-diagrams/graph-graph-core-traversal-algorithm-15.png)
+
+`GraphTraversalRepository`는 정점 주변이나 정점 사이의 경로를 묻는 API다.
+
+- `neighbors(startId, NeighborOptions)`: 시작 정점 주변의 `GraphVertex` 목록을 반환한다.
+- `shortestPath(fromId, toId, PathOptions)`: 제한 깊이 안에서 가장 좋은 `GraphPath?`를 반환한다.
+- `allPaths(fromId, toId, PathOptions)`: 제한 깊이 안의 단순 경로 목록을 반환한다.
+- A* path 검색은 `aStarPath(fromId, toId, PathOptions, heuristic)`로 호출하며, 가중치와 휴리스틱을 사용하는 최단 `GraphPath?`를 반환한다.
+
+`GraphAlgorithmRepository`는 그래프 전체 관점의 분석 결과를 반환하는 API다.
+
+- `pageRank(PageRankOptions)`: 점수 내림차순 `PageRankScore` 목록을 반환한다.
+- `degreeCentrality(vertexId, DegreeOptions)`: in/out/total degree를 담은 `DegreeResult`를 반환한다.
+- `connectedComponents(ComponentOptions)`: 연결 컴포넌트별 `GraphComponent` 목록을 반환한다.
+- `bfs(startId, BfsDfsOptions)` / `dfs(startId, BfsDfsOptions)`: 방문 순서를 담은 `TraversalVisit` 목록을 반환한다.
+- `detectCycles(CycleOptions)`: 순환 경로를 담은 `GraphCycle` 목록을 반환한다.
 
 ### 스키마 DSL 클래스
 
-![DSL diagram](../../docs/images/readme-diagrams/graph-graph-core-class-05.png)
+![Schema DSL metadata diagram](../../docs/images/readme-diagrams/graph-graph-core-class-05.png)
 
 ## 스키마 정의 (DSL)
 
@@ -144,29 +163,15 @@ object FollowsLabel : EdgeLabel("FOLLOWS", PersonLabel, PersonLabel) {
 
 ![createEdge diagram](../../docs/images/readme-diagrams/graph-graph-core-sequence-09.png)
 
-## 상태 다이어그램
+## 계약 및 알고리즘 다이어그램
 
-### GraphPath 라이프사이클
+### Vertex/Edge CRUD 계약
 
-![GraphPath diagram](../../docs/images/readme-diagrams/graph-graph-core-architecture-10.png)
+![Vertex and Edge CRUD contracts diagram](../../docs/images/readme-diagrams/graph-graph-core-architecture-13.png)
 
-### GraphOperations 사용 상태
+### Weighted path fallback
 
-![GraphOperations diagram](../../docs/images/readme-diagrams/graph-graph-core-architecture-11.png)
-
-## 플로우차트 다이어그램
-
-### 스키마 DSL 정의 및 사용 흐름
-
-![DSL diagram](../../docs/images/readme-diagrams/graph-graph-core-architecture-12.png)
-
-### CRUD 작업 플로우
-
-![CRUD diagram](../../docs/images/readme-diagrams/graph-graph-core-architecture-13.png)
-
-### 경로 탐색 알고리즘 플로우
-
-![graph core Architecture 14 diagram](../../docs/images/readme-diagrams/graph-graph-core-architecture-14.png)
+![Weighted path fallback diagram](../../docs/images/readme-diagrams/graph-graph-core-architecture-14.png)
 
 ## 사용 예시
 
