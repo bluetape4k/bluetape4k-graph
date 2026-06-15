@@ -8,6 +8,10 @@ Shared contracts, models, options, reports, and I/O helpers for the `graph-io` f
 
 This module is not usually consumed directly — applications depend on one of the format modules (e.g. `graph-io-csv`, `graph-io-jackson3`) which transitively expose these types.
 
+## Architecture
+
+![graph-io-core architecture diagram](../../docs/images/readme-diagrams/graph-io-core-architecture-01.png)
+
 ## What's Inside
 
 ### Execution Model Contracts (`io.bluetape4k.graph.io.contract`)

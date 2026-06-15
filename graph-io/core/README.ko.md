@@ -8,6 +8,10 @@
 
 이 모듈은 보통 직접 사용하지 않습니다. 애플리케이션은 포맷 모듈(`graph-io-csv`, `graph-io-jackson3` 등) 중 하나에 의존하며, 해당 모듈이 이 타입들을 전이적으로 노출합니다.
 
+## 아키텍처
+
+![graph-io-core architecture diagram](../../docs/images/readme-diagrams/graph-io-core-architecture-01.png)
+
 ## 포함 내용
 
 ### 실행 모델 계약 (`io.bluetape4k.graph.io.contract`)
