@@ -1,291 +1,124 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1180" viewBox="0 0 1840 1180">
-
-    <defs>
-      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
-        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
-      </filter>
-      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
-      </marker>
-    </defs>
-    <style>
-      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
-      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
-      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
-      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
-      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
-      .card { filter: url(#softShadow); }
-      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
-      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
-    </style>
-
-<rect x="0" y="0" width="1840" height="1180" fill="#F8FAFC"/>
-<rect x="24" y="24" width="1792" height="1132" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
-<circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
-<circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
-<circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
-<text x="72" y="82" class="title">Backend Capability Matrix</text>
-<text x="74" y="118" class="subtitle">Source-backed comparison of query model, runtime, driver, tests, schema, merge, transaction, async API, and backend fit</text>
-<text x="920.0" y="1132" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: root README / Backend Capability Matrix</text>
-<rect x="55" y="155" width="1730" height="915" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
-<text x="920" y="195" text-anchor="middle" class="tiny">Source: root README supported databases/backend comparison plus backend operation, schema, merge, transaction, and suspend contracts.</text>
-<rect x="70.0" y="220.0" width="220.0" height="72.0" rx="10" fill="#E0F2FE" stroke="#38BDF8" stroke-width="1.4"/>
-<text x="180.0" y="262.0" text-anchor="middle" class="small">
-<tspan x="180.0" dy="0">Capability</tspan>
-</text>
-<rect x="290.0" y="220.0" width="296.0" height="72.0" rx="10" fill="#E0F2FE" stroke="#38BDF8" stroke-width="1.4"/>
-<text x="438.0" y="250.0" text-anchor="middle" class="small">
-<tspan x="438.0" dy="0">Neo4j</tspan>
-<tspan x="438.0" dy="24">graph-neo4j</tspan>
-</text>
-<rect x="586.0" y="220.0" width="296.0" height="72.0" rx="10" fill="#E0F2FE" stroke="#38BDF8" stroke-width="1.4"/>
-<text x="734.0" y="250.0" text-anchor="middle" class="small">
-<tspan x="734.0" dy="0">Memgraph</tspan>
-<tspan x="734.0" dy="24">graph-memgraph</tspan>
-</text>
-<rect x="882.0" y="220.0" width="296.0" height="72.0" rx="10" fill="#E0F2FE" stroke="#38BDF8" stroke-width="1.4"/>
-<text x="1030.0" y="250.0" text-anchor="middle" class="small">
-<tspan x="1030.0" dy="0">Apache AGE</tspan>
-<tspan x="1030.0" dy="24">graph-age</tspan>
-</text>
-<rect x="1178.0" y="220.0" width="296.0" height="72.0" rx="10" fill="#E0F2FE" stroke="#38BDF8" stroke-width="1.4"/>
-<text x="1326.0" y="250.0" text-anchor="middle" class="small">
-<tspan x="1326.0" dy="0">TinkerGraph</tspan>
-<tspan x="1326.0" dy="24">graph-tinkerpop</tspan>
-</text>
-<rect x="1474.0" y="220.0" width="296.0" height="72.0" rx="10" fill="#E0F2FE" stroke="#38BDF8" stroke-width="1.4"/>
-<text x="1622.0" y="250.0" text-anchor="middle" class="small">
-<tspan x="1622.0" dy="0">FalkorDB</tspan>
-<tspan x="1622.0" dy="24">graph-falkordb</tspan>
-</text>
-<rect x="70.0" y="292.0" width="220.0" height="74.0" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="180.0" y="335.0" text-anchor="middle" class="small">
-<tspan x="180.0" dy="0">Query model</tspan>
-</text>
-<rect x="290.0" y="292.0" width="296.0" height="74.0" rx="10" fill="#EFF6FF" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="438.0" y="335.0" text-anchor="middle" class="tiny">
-<tspan x="438.0" dy="0">Cypher</tspan>
-</text>
-<rect x="586.0" y="292.0" width="296.0" height="74.0" rx="10" fill="#EFF6FF" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="734.0" y="335.0" text-anchor="middle" class="tiny">
-<tspan x="734.0" dy="0">Cypher</tspan>
-</text>
-<rect x="882.0" y="292.0" width="296.0" height="74.0" rx="10" fill="#EFF6FF" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="1030.0" y="335.0" text-anchor="middle" class="tiny">
-<tspan x="1030.0" dy="0">Cypher-over-SQL</tspan>
-</text>
-<rect x="1178.0" y="292.0" width="296.0" height="74.0" rx="10" fill="#EFF6FF" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="1326.0" y="335.0" text-anchor="middle" class="tiny">
-<tspan x="1326.0" dy="0">Gremlin</tspan>
-</text>
-<rect x="1474.0" y="292.0" width="296.0" height="74.0" rx="10" fill="#EFF6FF" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="1622.0" y="335.0" text-anchor="middle" class="tiny">
-<tspan x="1622.0" dy="0">openCypher subset</tspan>
-</text>
-<rect x="70.0" y="366.0" width="220.0" height="74.0" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="180.0" y="409.0" text-anchor="middle" class="small">
-<tspan x="180.0" dy="0">Runtime</tspan>
-</text>
-<rect x="290.0" y="366.0" width="296.0" height="74.0" rx="10" fill="#EFF6FF" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="438.0" y="409.0" text-anchor="middle" class="tiny">
-<tspan x="438.0" dy="0">Neo4j server</tspan>
-</text>
-<rect x="586.0" y="366.0" width="296.0" height="74.0" rx="10" fill="#EFF6FF" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="734.0" y="409.0" text-anchor="middle" class="tiny">
-<tspan x="734.0" dy="0">Memgraph server</tspan>
-</text>
-<rect x="882.0" y="366.0" width="296.0" height="74.0" rx="10" fill="#EFF6FF" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="1030.0" y="409.0" text-anchor="middle" class="tiny">
-<tspan x="1030.0" dy="0">PostgreSQL + AGE</tspan>
-</text>
-<rect x="1178.0" y="366.0" width="296.0" height="74.0" rx="10" fill="#EFF6FF" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="1326.0" y="409.0" text-anchor="middle" class="tiny">
-<tspan x="1326.0" dy="0">JVM in-memory</tspan>
-</text>
-<rect x="1474.0" y="366.0" width="296.0" height="74.0" rx="10" fill="#EFF6FF" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="1622.0" y="409.0" text-anchor="middle" class="tiny">
-<tspan x="1622.0" dy="0">Redis module</tspan>
-</text>
-<rect x="70.0" y="440.0" width="220.0" height="74.0" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="180.0" y="483.0" text-anchor="middle" class="small">
-<tspan x="180.0" dy="0">Driver</tspan>
-</text>
-<rect x="290.0" y="440.0" width="296.0" height="74.0" rx="10" fill="#EFF6FF" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="438.0" y="483.0" text-anchor="middle" class="tiny">
-<tspan x="438.0" dy="0">Neo4j Java</tspan>
-</text>
-<rect x="586.0" y="440.0" width="296.0" height="74.0" rx="10" fill="#EFF6FF" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="734.0" y="483.0" text-anchor="middle" class="tiny">
-<tspan x="734.0" dy="0">Neo4j-compatible</tspan>
-</text>
-<rect x="882.0" y="440.0" width="296.0" height="74.0" rx="10" fill="#EFF6FF" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="1030.0" y="483.0" text-anchor="middle" class="tiny">
-<tspan x="1030.0" dy="0">Exposed / JDBC</tspan>
-</text>
-<rect x="1178.0" y="440.0" width="296.0" height="74.0" rx="10" fill="#EFF6FF" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="1326.0" y="483.0" text-anchor="middle" class="tiny">
-<tspan x="1326.0" dy="0">TinkerPop</tspan>
-</text>
-<rect x="1474.0" y="440.0" width="296.0" height="74.0" rx="10" fill="#EFF6FF" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="1622.0" y="483.0" text-anchor="middle" class="tiny">
-<tspan x="1622.0" dy="0">jfalkordb 0.7.0</tspan>
-</text>
-<rect x="70.0" y="514.0" width="220.0" height="74.0" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="180.0" y="557.0" text-anchor="middle" class="small">
-<tspan x="180.0" dy="0">Local test</tspan>
-</text>
-<rect x="290.0" y="514.0" width="296.0" height="74.0" rx="10" fill="#EFF6FF" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="438.0" y="557.0" text-anchor="middle" class="tiny">
-<tspan x="438.0" dy="0">neo4j:5</tspan>
-</text>
-<rect x="586.0" y="514.0" width="296.0" height="74.0" rx="10" fill="#EFF6FF" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="734.0" y="557.0" text-anchor="middle" class="tiny">
-<tspan x="734.0" dy="0">memgraph</tspan>
-</text>
-<rect x="882.0" y="514.0" width="296.0" height="74.0" rx="10" fill="#EFF6FF" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="1030.0" y="557.0" text-anchor="middle" class="tiny">
-<tspan x="1030.0" dy="0">apache/age</tspan>
-</text>
-<rect x="1178.0" y="514.0" width="296.0" height="74.0" rx="10" fill="#EFF6FF" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="1326.0" y="557.0" text-anchor="middle" class="tiny">
-<tspan x="1326.0" dy="0">no container</tspan>
-</text>
-<rect x="1474.0" y="514.0" width="296.0" height="74.0" rx="10" fill="#EFF6FF" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="1622.0" y="557.0" text-anchor="middle" class="tiny">
-<tspan x="1622.0" dy="0">falkordb:v4.18.1</tspan>
-</text>
-<rect x="70.0" y="588.0" width="220.0" height="74.0" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="180.0" y="631.0" text-anchor="middle" class="small">
-<tspan x="180.0" dy="0">Schema/index</tspan>
-</text>
-<rect x="290.0" y="588.0" width="296.0" height="74.0" rx="10" fill="#D9FBE7" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="438.0" y="631.0" text-anchor="middle" class="tiny">
-<tspan x="438.0" dy="0">index + unique</tspan>
-</text>
-<rect x="586.0" y="588.0" width="296.0" height="74.0" rx="10" fill="#D9FBE7" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="734.0" y="631.0" text-anchor="middle" class="tiny">
-<tspan x="734.0" dy="0">index + unique</tspan>
-</text>
-<rect x="882.0" y="588.0" width="296.0" height="74.0" rx="10" fill="#FEE2E2" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="1030.0" y="621.0" text-anchor="middle" class="tiny">
-<tspan x="1030.0" dy="0">explicit</tspan>
-<tspan x="1030.0" dy="20">unsupported</tspan>
-</text>
-<rect x="1178.0" y="588.0" width="296.0" height="74.0" rx="10" fill="#FEF3C7" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="1326.0" y="631.0" text-anchor="middle" class="tiny">
-<tspan x="1326.0" dy="0">metadata only</tspan>
-</text>
-<rect x="1474.0" y="588.0" width="296.0" height="74.0" rx="10" fill="#FEF3C7" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="1622.0" y="621.0" text-anchor="middle" class="tiny">
-<tspan x="1622.0" dy="0">range index; no</tspan>
-<tspan x="1622.0" dy="20">unique</tspan>
-</text>
-<rect x="70.0" y="662.0" width="220.0" height="74.0" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="180.0" y="705.0" text-anchor="middle" class="small">
-<tspan x="180.0" dy="0">Merge/upsert</tspan>
-</text>
-<rect x="290.0" y="662.0" width="296.0" height="74.0" rx="10" fill="#D9FBE7" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="438.0" y="705.0" text-anchor="middle" class="tiny">
-<tspan x="438.0" dy="0">native MERGE</tspan>
-</text>
-<rect x="586.0" y="662.0" width="296.0" height="74.0" rx="10" fill="#D9FBE7" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="734.0" y="705.0" text-anchor="middle" class="tiny">
-<tspan x="734.0" dy="0">native MERGE</tspan>
-</text>
-<rect x="882.0" y="662.0" width="296.0" height="74.0" rx="10" fill="#FEF3C7" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="1030.0" y="695.0" text-anchor="middle" class="tiny">
-<tspan x="1030.0" dy="0">transaction</tspan>
-<tspan x="1030.0" dy="20">fallback</tspan>
-</text>
-<rect x="1178.0" y="662.0" width="296.0" height="74.0" rx="10" fill="#D9FBE7" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="1326.0" y="705.0" text-anchor="middle" class="tiny">
-<tspan x="1326.0" dy="0">Gremlin upsert</tspan>
-</text>
-<rect x="1474.0" y="662.0" width="296.0" height="74.0" rx="10" fill="#D9FBE7" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="1622.0" y="705.0" text-anchor="middle" class="tiny">
-<tspan x="1622.0" dy="0">native MERGE</tspan>
-</text>
-<rect x="70.0" y="736.0" width="220.0" height="74.0" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="180.0" y="779.0" text-anchor="middle" class="small">
-<tspan x="180.0" dy="0">Transaction DSL</tspan>
-</text>
-<rect x="290.0" y="736.0" width="296.0" height="74.0" rx="10" fill="#D9FBE7" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="438.0" y="779.0" text-anchor="middle" class="tiny">
-<tspan x="438.0" dy="0">driver tx</tspan>
-</text>
-<rect x="586.0" y="736.0" width="296.0" height="74.0" rx="10" fill="#D9FBE7" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="734.0" y="779.0" text-anchor="middle" class="tiny">
-<tspan x="734.0" dy="0">driver tx</tspan>
-</text>
-<rect x="882.0" y="736.0" width="296.0" height="74.0" rx="10" fill="#D9FBE7" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="1030.0" y="779.0" text-anchor="middle" class="tiny">
-<tspan x="1030.0" dy="0">Exposed tx</tspan>
-</text>
-<rect x="1178.0" y="736.0" width="296.0" height="74.0" rx="10" fill="#D9FBE7" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="1326.0" y="779.0" text-anchor="middle" class="tiny">
-<tspan x="1326.0" dy="0">in-memory tx</tspan>
-</text>
-<rect x="1474.0" y="736.0" width="296.0" height="74.0" rx="10" fill="#FEE2E2" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="1622.0" y="779.0" text-anchor="middle" class="tiny">
-<tspan x="1622.0" dy="0">not exposed</tspan>
-</text>
-<rect x="70.0" y="810.0" width="220.0" height="74.0" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="180.0" y="853.0" text-anchor="middle" class="small">
-<tspan x="180.0" dy="0">Async API</tspan>
-</text>
-<rect x="290.0" y="810.0" width="296.0" height="74.0" rx="10" fill="#D9FBE7" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="438.0" y="853.0" text-anchor="middle" class="tiny">
-<tspan x="438.0" dy="0">reactive bridge</tspan>
-</text>
-<rect x="586.0" y="810.0" width="296.0" height="74.0" rx="10" fill="#D9FBE7" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="734.0" y="853.0" text-anchor="middle" class="tiny">
-<tspan x="734.0" dy="0">reactive bridge</tspan>
-</text>
-<rect x="882.0" y="810.0" width="296.0" height="74.0" rx="10" fill="#D9FBE7" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="1030.0" y="853.0" text-anchor="middle" class="tiny">
-<tspan x="1030.0" dy="0">Dispatchers.IO</tspan>
-</text>
-<rect x="1178.0" y="810.0" width="296.0" height="74.0" rx="10" fill="#D9FBE7" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="1326.0" y="853.0" text-anchor="middle" class="tiny">
-<tspan x="1326.0" dy="0">delegate / IO</tspan>
-</text>
-<rect x="1474.0" y="810.0" width="296.0" height="74.0" rx="10" fill="#D9FBE7" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="1622.0" y="853.0" text-anchor="middle" class="tiny">
-<tspan x="1622.0" dy="0">delegate / IO</tspan>
-</text>
-<rect x="70.0" y="884.0" width="220.0" height="74.0" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="180.0" y="927.0" text-anchor="middle" class="small">
-<tspan x="180.0" dy="0">Best fit</tspan>
-</text>
-<rect x="290.0" y="884.0" width="296.0" height="74.0" rx="10" fill="#F5F3FF" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="438.0" y="927.0" text-anchor="middle" class="tiny">
-<tspan x="438.0" dy="0">production graph</tspan>
-</text>
-<rect x="586.0" y="884.0" width="296.0" height="74.0" rx="10" fill="#F5F3FF" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="734.0" y="927.0" text-anchor="middle" class="tiny">
-<tspan x="734.0" dy="0">low-latency graph</tspan>
-</text>
-<rect x="882.0" y="884.0" width="296.0" height="74.0" rx="10" fill="#F5F3FF" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="1030.0" y="927.0" text-anchor="middle" class="tiny">
-<tspan x="1030.0" dy="0">Postgres-first</tspan>
-</text>
-<rect x="1178.0" y="884.0" width="296.0" height="74.0" rx="10" fill="#F5F3FF" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="1326.0" y="927.0" text-anchor="middle" class="tiny">
-<tspan x="1326.0" dy="0">tests and demos</tspan>
-</text>
-<rect x="1474.0" y="884.0" width="296.0" height="74.0" rx="10" fill="#F5F3FF" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="1622.0" y="927.0" text-anchor="middle" class="tiny">
-<tspan x="1622.0" dy="0">Redis-backed graph</tspan>
-</text>
-<rect x="275" y="1010" width="30" height="22" rx="6" fill="#D9FBE7" stroke="#CBD5E1" stroke-width="1.2"/>
-<text x="317" y="1027" class="tiny">Full support</text>
-<rect x="590" y="1010" width="30" height="22" rx="6" fill="#FEF3C7" stroke="#CBD5E1" stroke-width="1.2"/>
-<text x="632" y="1027" class="tiny">Limited / fallback</text>
-<rect x="905" y="1010" width="30" height="22" rx="6" fill="#FEE2E2" stroke="#CBD5E1" stroke-width="1.2"/>
-<text x="947" y="1027" class="tiny">Unsupported / not exposed</text>
-<rect x="1220" y="1010" width="30" height="22" rx="6" fill="#EFF6FF" stroke="#CBD5E1" stroke-width="1.2"/>
-<text x="1262" y="1027" class="tiny">Informational</text>
-<rect x="180" y="1060" width="1480" height="45" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.4"/>
-<text x="920" y="1089" text-anchor="middle" class="tiny">Capability note: unsupported cells are explicit backend boundaries, not silent fallbacks; use backend READMEs for operation-specific caveats.</text>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 15.0.0 (20260523.1842)
+ -->
+<!-- Title: backend_capability_matrix Pages: 1 -->
+<svg width="1512pt" height="486pt"
+ viewBox="0.00 0.00 1512.00 486.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(18 467.75)">
+<title>backend_capability_matrix</title>
+<!-- matrix -->
+<g id="node1" class="node">
+<title>matrix</title>
+<polygon fill="#334155" stroke="none" points="0,-371 0,-449.75 1476,-449.75 1476,-371 0,-371"/>
+<text xml:space="preserve" text-anchor="start" x="268.5" y="-404.25" font-family="Comic Mono" font-size="14.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+<text xml:space="preserve" text-anchor="start" x="448.5" y="-404.25" font-family="Architects Daughter" font-size="30.00" fill="#ffffff">bluetape4k&#45;graph Backend Capability Matrix</text>
+<text xml:space="preserve" text-anchor="start" x="1057.5" y="-404.25" font-family="Comic Mono" font-size="14.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+<polygon fill="#e2e8f0" stroke="none" points="0,-335.25 0,-371 1476,-371 1476,-335.25 0,-335.25"/>
+<text xml:space="preserve" text-anchor="start" x="299.25" y="-348.7" font-family="Comic Mono" font-size="14.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+<text xml:space="preserve" text-anchor="start" x="479.25" y="-348.7" font-family="Comic Mono" font-size="14.00" fill="#334155">Shared GraphOperations contract with backend&#45;specific capability strength</text>
+<text xml:space="preserve" text-anchor="start" x="1026.75" y="-348.7" font-family="Comic Mono" font-size="14.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+<polygon fill="#f8fafc" stroke="none" points="0,-289.75 0,-335.25 189.54,-335.25 189.54,-289.75 0,-289.75"/>
+<text xml:space="preserve" text-anchor="start" x="58.77" y="-307.25" font-family="Architects Daughter" font-size="18.00" fill="#0f172a">Backend</text>
+<polygon fill="#f8fafc" stroke="none" points="189.54,-289.75 189.54,-335.25 391.82,-335.25 391.82,-289.75 189.54,-289.75"/>
+<text xml:space="preserve" text-anchor="start" x="232.18" y="-307.25" font-family="Architects Daughter" font-size="18.00" fill="#0f172a">Query + Infra</text>
+<polygon fill="#f8fafc" stroke="none" points="391.82,-289.75 391.82,-335.25 581.36,-335.25 581.36,-289.75 391.82,-289.75"/>
+<text xml:space="preserve" text-anchor="start" x="434.46" y="-307.25" font-family="Architects Daughter" font-size="18.00" fill="#0f172a">Batch Write</text>
+<polygon fill="#f8fafc" stroke="none" points="581.36,-289.75 581.36,-335.25 801.64,-335.25 801.64,-289.75 581.36,-289.75"/>
+<text xml:space="preserve" text-anchor="start" x="659.25" y="-307.25" font-family="Architects Daughter" font-size="18.00" fill="#0f172a">Schema</text>
+<polygon fill="#f8fafc" stroke="none" points="801.64,-289.75 801.64,-335.25 981.43,-335.25 981.43,-289.75 801.64,-289.75"/>
+<text xml:space="preserve" text-anchor="start" x="864.91" y="-307.25" font-family="Architects Daughter" font-size="18.00" fill="#0f172a">Merge</text>
+<polygon fill="#f8fafc" stroke="none" points="981.43,-289.75 981.43,-335.25 1201.71,-335.25 1201.71,-289.75 981.43,-289.75"/>
+<text xml:space="preserve" text-anchor="start" x="1042.45" y="-307.25" font-family="Architects Daughter" font-size="18.00" fill="#0f172a">Transaction</text>
+<polygon fill="#f8fafc" stroke="none" points="1201.71,-289.75 1201.71,-335.25 1476,-335.25 1476,-289.75 1201.71,-289.75"/>
+<text xml:space="preserve" text-anchor="start" x="1303.98" y="-307.25" font-family="Architects Daughter" font-size="18.00" fill="#0f172a">Best Fit</text>
+<polygon fill="#dbeafe" stroke="none" points="0,-239.75 0,-289.75 189.54,-289.75 189.54,-239.75 0,-239.75"/>
+<text xml:space="preserve" text-anchor="start" x="71.52" y="-263.65" font-family="Architects Daughter" font-size="18.00" fill="#1e3a8a">Neo4j</text>
+<text xml:space="preserve" text-anchor="start" x="57.64" y="-251.35" font-family="Comic Mono" font-size="12.00" fill="#1e3a8a">graph&#45;neo4j</text>
+<polygon fill="#eff6ff" stroke="none" points="189.54,-239.75 189.54,-289.75 391.82,-289.75 391.82,-239.75 189.54,-239.75"/>
+<text xml:space="preserve" text-anchor="start" x="270.43" y="-269.25" font-family="Comic Mono" font-size="12.00" fill="#1e3a8a">Cypher</text>
+<text xml:space="preserve" text-anchor="start" x="250.18" y="-255" font-family="Comic Mono" font-size="12.00" fill="#1e3a8a">Neo4j server</text>
+<polygon fill="#dcfce7" stroke="none" points="391.82,-239.75 391.82,-289.75 581.36,-289.75 581.36,-239.75 391.82,-239.75"/>
+<text xml:space="preserve" text-anchor="start" x="446.09" y="-262.12" font-family="Comic Mono" font-size="12.00" fill="#166534">Native batch</text>
+<polygon fill="#dcfce7" stroke="none" points="581.36,-239.75 581.36,-289.75 801.64,-289.75 801.64,-239.75 581.36,-239.75"/>
+<text xml:space="preserve" text-anchor="start" x="644.25" y="-262.12" font-family="Comic Mono" font-size="12.00" fill="#166534">Index + unique</text>
+<polygon fill="#dcfce7" stroke="none" points="801.64,-239.75 801.64,-289.75 981.43,-289.75 981.43,-239.75 801.64,-239.75"/>
+<text xml:space="preserve" text-anchor="start" x="851.04" y="-262.12" font-family="Comic Mono" font-size="12.00" fill="#166534">Native MERGE</text>
+<polygon fill="#dcfce7" stroke="none" points="981.43,-239.75 981.43,-289.75 1201.71,-289.75 1201.71,-239.75 981.43,-239.75"/>
+<text xml:space="preserve" text-anchor="start" x="1061.2" y="-262.12" font-family="Comic Mono" font-size="12.00" fill="#166534">Driver tx</text>
+<polygon fill="#eff6ff" stroke="none" points="1201.71,-239.75 1201.71,-289.75 1476,-289.75 1476,-239.75 1201.71,-239.75"/>
+<text xml:space="preserve" text-anchor="start" x="1247.73" y="-262.12" font-family="Comic Mono" font-size="12.00" fill="#1e3a8a">Default production graph DB</text>
+<polygon fill="#ccfbf1" stroke="none" points="0,-189.75 0,-239.75 189.54,-239.75 189.54,-189.75 0,-189.75"/>
+<text xml:space="preserve" text-anchor="start" x="52.02" y="-213.65" font-family="Architects Daughter" font-size="18.00" fill="#134e4a">Memgraph</text>
+<text xml:space="preserve" text-anchor="start" x="47.52" y="-201.35" font-family="Comic Mono" font-size="12.00" fill="#134e4a">graph&#45;memgraph</text>
+<polygon fill="#f0fdfa" stroke="none" points="189.54,-189.75 189.54,-239.75 391.82,-239.75 391.82,-189.75 189.54,-189.75"/>
+<text xml:space="preserve" text-anchor="start" x="270.43" y="-219.25" font-family="Comic Mono" font-size="12.00" fill="#134e4a">Cypher</text>
+<text xml:space="preserve" text-anchor="start" x="240.05" y="-205" font-family="Comic Mono" font-size="12.00" fill="#134e4a">Bolt&#45;compatible</text>
+<polygon fill="#dcfce7" stroke="none" points="391.82,-189.75 391.82,-239.75 581.36,-239.75 581.36,-189.75 391.82,-189.75"/>
+<text xml:space="preserve" text-anchor="start" x="446.09" y="-212.12" font-family="Comic Mono" font-size="12.00" fill="#166534">Native batch</text>
+<polygon fill="#dcfce7" stroke="none" points="581.36,-189.75 581.36,-239.75 801.64,-239.75 801.64,-189.75 581.36,-189.75"/>
+<text xml:space="preserve" text-anchor="start" x="644.25" y="-212.12" font-family="Comic Mono" font-size="12.00" fill="#166534">Index + unique</text>
+<polygon fill="#dcfce7" stroke="none" points="801.64,-189.75 801.64,-239.75 981.43,-239.75 981.43,-189.75 801.64,-189.75"/>
+<text xml:space="preserve" text-anchor="start" x="851.04" y="-212.12" font-family="Comic Mono" font-size="12.00" fill="#166534">Native MERGE</text>
+<polygon fill="#dcfce7" stroke="none" points="981.43,-189.75 981.43,-239.75 1201.71,-239.75 1201.71,-189.75 981.43,-189.75"/>
+<text xml:space="preserve" text-anchor="start" x="1061.2" y="-212.12" font-family="Comic Mono" font-size="12.00" fill="#166534">Driver tx</text>
+<polygon fill="#f0fdfa" stroke="none" points="1201.71,-189.75 1201.71,-239.75 1476,-239.75 1476,-189.75 1201.71,-189.75"/>
+<text xml:space="preserve" text-anchor="start" x="1247.73" y="-212.12" font-family="Comic Mono" font-size="12.00" fill="#134e4a">Low&#45;latency graph analytics</text>
+<polygon fill="#ede9fe" stroke="none" points="0,-139.75 0,-189.75 189.54,-189.75 189.54,-139.75 0,-139.75"/>
+<text xml:space="preserve" text-anchor="start" x="43.77" y="-163.65" font-family="Architects Daughter" font-size="18.00" fill="#4c1d95">Apache AGE</text>
+<text xml:space="preserve" text-anchor="start" x="64.39" y="-151.35" font-family="Comic Mono" font-size="12.00" fill="#4c1d95">graph&#45;age</text>
+<polygon fill="#f5f3ff" stroke="none" points="189.54,-139.75 189.54,-189.75 391.82,-189.75 391.82,-139.75 189.54,-139.75"/>
+<text xml:space="preserve" text-anchor="start" x="240.05" y="-169.25" font-family="Comic Mono" font-size="12.00" fill="#4c1d95">Cypher&#45;over&#45;SQL</text>
+<text xml:space="preserve" text-anchor="start" x="236.68" y="-155" font-family="Comic Mono" font-size="12.00" fill="#4c1d95">PostgreSQL + AGE</text>
+<polygon fill="#dcfce7" stroke="none" points="391.82,-139.75 391.82,-189.75 581.36,-189.75 581.36,-139.75 391.82,-139.75"/>
+<text xml:space="preserve" text-anchor="start" x="446.09" y="-162.12" font-family="Comic Mono" font-size="12.00" fill="#166534">Native batch</text>
+<polygon fill="#fee2e2" stroke="none" points="581.36,-139.75 581.36,-189.75 801.64,-189.75 801.64,-139.75 581.36,-139.75"/>
+<text xml:space="preserve" text-anchor="start" x="624" y="-162.12" font-family="Comic Mono" font-size="12.00" fill="#991b1b">Explicit unsupported</text>
+<polygon fill="#fef3c7" stroke="none" points="801.64,-139.75 801.64,-189.75 981.43,-189.75 981.43,-139.75 801.64,-139.75"/>
+<text xml:space="preserve" text-anchor="start" x="854.41" y="-162.12" font-family="Comic Mono" font-size="12.00" fill="#92400e">Tx fallback</text>
+<polygon fill="#dcfce7" stroke="none" points="981.43,-139.75 981.43,-189.75 1201.71,-189.75 1201.71,-139.75 981.43,-139.75"/>
+<text xml:space="preserve" text-anchor="start" x="1057.82" y="-162.12" font-family="Comic Mono" font-size="12.00" fill="#166534">Exposed tx</text>
+<polygon fill="#f5f3ff" stroke="none" points="1201.71,-139.75 1201.71,-189.75 1476,-189.75 1476,-139.75 1201.71,-139.75"/>
+<text xml:space="preserve" text-anchor="start" x="1257.86" y="-162.12" font-family="Comic Mono" font-size="12.00" fill="#4c1d95">PostgreSQL consolidation</text>
+<polygon fill="#fed7aa" stroke="none" points="0,-89.75 0,-139.75 189.54,-139.75 189.54,-89.75 0,-89.75"/>
+<text xml:space="preserve" text-anchor="start" x="42.64" y="-113.65" font-family="Architects Daughter" font-size="18.00" fill="#7c2d12">TinkerGraph</text>
+<text xml:space="preserve" text-anchor="start" x="44.14" y="-101.35" font-family="Comic Mono" font-size="12.00" fill="#7c2d12">graph&#45;tinkerpop</text>
+<polygon fill="#fff7ed" stroke="none" points="189.54,-89.75 189.54,-139.75 391.82,-139.75 391.82,-89.75 189.54,-89.75"/>
+<text xml:space="preserve" text-anchor="start" x="267.05" y="-119.25" font-family="Comic Mono" font-size="12.00" fill="#7c2d12">Gremlin</text>
+<text xml:space="preserve" text-anchor="start" x="246.8" y="-105" font-family="Comic Mono" font-size="12.00" fill="#7c2d12">JVM in&#45;memory</text>
+<polygon fill="#dcfce7" stroke="none" points="391.82,-89.75 391.82,-139.75 581.36,-139.75 581.36,-89.75 391.82,-89.75"/>
+<text xml:space="preserve" text-anchor="start" x="435.96" y="-112.12" font-family="Comic Mono" font-size="12.00" fill="#166534">In&#45;memory batch</text>
+<polygon fill="#fef3c7" stroke="none" points="581.36,-89.75 581.36,-139.75 801.64,-139.75 801.64,-89.75 581.36,-89.75"/>
+<text xml:space="preserve" text-anchor="start" x="644.25" y="-119.25" font-family="Comic Mono" font-size="12.00" fill="#92400e">Index metadata</text>
+<text xml:space="preserve" text-anchor="start" x="661.12" y="-105" font-family="Comic Mono" font-size="12.00" fill="#92400e">no unique</text>
+<polygon fill="#dcfce7" stroke="none" points="801.64,-89.75 801.64,-139.75 981.43,-139.75 981.43,-89.75 801.64,-89.75"/>
+<text xml:space="preserve" text-anchor="start" x="844.29" y="-112.12" font-family="Comic Mono" font-size="12.00" fill="#166534">Gremlin upsert</text>
+<polygon fill="#dcfce7" stroke="none" points="981.43,-89.75 981.43,-139.75 1201.71,-139.75 1201.71,-89.75 981.43,-89.75"/>
+<text xml:space="preserve" text-anchor="start" x="1051.07" y="-112.12" font-family="Comic Mono" font-size="12.00" fill="#166534">In&#45;memory tx</text>
+<polygon fill="#fff7ed" stroke="none" points="1201.71,-89.75 1201.71,-139.75 1476,-139.75 1476,-89.75 1201.71,-89.75"/>
+<text xml:space="preserve" text-anchor="start" x="1244.36" y="-112.12" font-family="Comic Mono" font-size="12.00" fill="#7c2d12">Tests, demos, local analysis</text>
+<polygon fill="#fce7f3" stroke="none" points="0,-39.75 0,-89.75 189.54,-89.75 189.54,-39.75 0,-39.75"/>
+<text xml:space="preserve" text-anchor="start" x="54.27" y="-63.65" font-family="Architects Daughter" font-size="18.00" fill="#831843">FalkorDB</text>
+<text xml:space="preserve" text-anchor="start" x="47.52" y="-51.35" font-family="Comic Mono" font-size="12.00" fill="#831843">graph&#45;falkordb</text>
+<polygon fill="#fdf2f8" stroke="none" points="189.54,-39.75 189.54,-89.75 391.82,-89.75 391.82,-39.75 189.54,-39.75"/>
+<text xml:space="preserve" text-anchor="start" x="233.3" y="-69.25" font-family="Comic Mono" font-size="12.00" fill="#831843">openCypher subset</text>
+<text xml:space="preserve" text-anchor="start" x="250.18" y="-55" font-family="Comic Mono" font-size="12.00" fill="#831843">Redis module</text>
+<polygon fill="#dcfce7" stroke="none" points="391.82,-39.75 391.82,-89.75 581.36,-89.75 581.36,-39.75 391.82,-39.75"/>
+<text xml:space="preserve" text-anchor="start" x="446.09" y="-62.12" font-family="Comic Mono" font-size="12.00" fill="#166534">Native batch</text>
+<polygon fill="#fef3c7" stroke="none" points="581.36,-39.75 581.36,-89.75 801.64,-89.75 801.64,-39.75 581.36,-39.75"/>
+<text xml:space="preserve" text-anchor="start" x="654.38" y="-69.25" font-family="Comic Mono" font-size="12.00" fill="#92400e">Range index</text>
+<text xml:space="preserve" text-anchor="start" x="661.12" y="-55" font-family="Comic Mono" font-size="12.00" fill="#92400e">no unique</text>
+<polygon fill="#dcfce7" stroke="none" points="801.64,-39.75 801.64,-89.75 981.43,-89.75 981.43,-39.75 801.64,-39.75"/>
+<text xml:space="preserve" text-anchor="start" x="851.04" y="-62.12" font-family="Comic Mono" font-size="12.00" fill="#166534">Native MERGE</text>
+<polygon fill="#fee2e2" stroke="none" points="981.43,-39.75 981.43,-89.75 1201.71,-89.75 1201.71,-39.75 981.43,-39.75"/>
+<text xml:space="preserve" text-anchor="start" x="1024.07" y="-62.12" font-family="Comic Mono" font-size="12.00" fill="#991b1b">Explicit unsupported</text>
+<polygon fill="#fdf2f8" stroke="none" points="1201.71,-39.75 1201.71,-89.75 1476,-89.75 1476,-39.75 1201.71,-39.75"/>
+<text xml:space="preserve" text-anchor="start" x="1251.11" y="-62.12" font-family="Comic Mono" font-size="12.00" fill="#831843">Redis&#45;backed graph service</text>
+<polygon fill="#f8fafc" stroke="none" points="0,0 0,-39.75 1476,-39.75 1476,0 0,0"/>
+<text xml:space="preserve" text-anchor="start" x="12" y="-15.45" font-family="Comic Mono" font-size="14.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+<text xml:space="preserve" text-anchor="start" x="192" y="-15.45" font-family="Comic Mono" font-size="11.00" fill="#475569">Source: root README backend comparison plus graph&#45;core schema, merge, and transaction support matrices. Metric direction and backend recommendations are documented in benchmark/README.md.</text>
+<text xml:space="preserve" text-anchor="start" x="1314" y="-15.45" font-family="Comic Mono" font-size="14.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+</g>
+</g>
 </svg>

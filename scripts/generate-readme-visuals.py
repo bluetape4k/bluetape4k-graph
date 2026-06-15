@@ -1658,113 +1658,6 @@ def root_class_model_svg() -> str:
     return close_svg(out)
 
 
-def root_backend_capability_matrix_svg() -> str:
-    width, height = 1840, 1180
-    out = open_svg(
-        "Backend Capability Matrix",
-        "Source-backed comparison of query model, runtime, driver, tests, schema, merge, transaction, async API, and backend fit",
-        width,
-        height,
-    )
-    out[-1] = (
-        f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
-        f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: root README / Backend Capability Matrix</text>'
-    )
-
-    x0, y0 = 70, 220
-    table_w = 1700
-    cap_w = 220
-    col_w = (table_w - cap_w) / 5
-    header_h = 72
-    row_h = 74
-    rows = [
-        ("Query model", ["Cypher", "Cypher", "Cypher-over-SQL", "Gremlin", "openCypher subset"], "info"),
-        ("Runtime", ["Neo4j server", "Memgraph server", "PostgreSQL + AGE", "JVM in-memory", "Redis module"], "info"),
-        ("Driver", ["Neo4j Java", "Neo4j-compatible", "Exposed / JDBC", "TinkerPop", "jfalkordb 0.7.0"], "info"),
-        ("Local test", ["neo4j:5", "memgraph", "apache/age", "no container", "falkordb:v4.18.1"], "info"),
-        ("Schema/index", ["index + unique", "index + unique", "explicit unsupported", "metadata only", "range index; no unique"], "status"),
-        ("Merge/upsert", ["native MERGE", "native MERGE", "transaction fallback", "Gremlin upsert", "native MERGE"], "status"),
-        ("Transaction DSL", ["driver tx", "driver tx", "Exposed tx", "in-memory tx", "not exposed"], "status"),
-        ("Async API", ["reactive bridge", "reactive bridge", "Dispatchers.IO", "delegate / IO", "delegate / IO"], "status"),
-        ("Best fit", ["production graph", "low-latency graph", "Postgres-first", "tests and demos", "Redis-backed graph"], "fit"),
-    ]
-    backends = [
-        ("Neo4j", "graph-neo4j"),
-        ("Memgraph", "graph-memgraph"),
-        ("Apache AGE", "graph-age"),
-        ("TinkerGraph", "graph-tinkerpop"),
-        ("FalkorDB", "graph-falkordb"),
-    ]
-    full = "#D9FBE7"
-    limited = "#FEF3C7"
-    unsupported = "#FEE2E2"
-    info = "#EFF6FF"
-    fit = "#F5F3FF"
-    status_colors = {
-        ("Schema/index", "Apache AGE"): unsupported,
-        ("Schema/index", "TinkerGraph"): limited,
-        ("Schema/index", "FalkorDB"): limited,
-        ("Merge/upsert", "Apache AGE"): limited,
-        ("Transaction DSL", "FalkorDB"): unsupported,
-    }
-
-    def text_block(x: float, y: float, lines: list[str], klass: str = "tiny", anchor: str = "middle", line_h: int = 21) -> None:
-        start = y - ((len(lines) - 1) * line_h / 2)
-        out.append(f'<text x="{x:.1f}" y="{start:.1f}" text-anchor="{anchor}" class="{klass}">')
-        for i, line in enumerate(lines):
-            dy = 0 if i == 0 else line_h
-            out.append(f'<tspan x="{x:.1f}" dy="{dy}">{esc(line)}</tspan>')
-        out.append("</text>")
-
-    def cell(x: float, y: float, w: float, h: float, fill: str, lines: list[str], klass: str = "tiny", stroke: str = "#CBD5E1") -> None:
-        out.append(
-            f'<rect x="{x:.1f}" y="{y:.1f}" width="{w:.1f}" height="{h:.1f}" '
-            f'rx="10" fill="{fill}" stroke="{stroke}" stroke-width="1.4"/>'
-        )
-        text_block(x + w / 2, y + h / 2 + 6, lines, klass=klass, line_h=20 if klass == "tiny" else 24)
-
-    out.append('<rect x="55" y="155" width="1730" height="915" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>')
-    out.append(
-        '<text x="920" y="195" text-anchor="middle" class="tiny">'
-        'Source: root README supported databases/backend comparison plus backend operation, schema, merge, transaction, and suspend contracts.</text>'
-    )
-
-    cell(x0, y0, cap_w, header_h, "#E0F2FE", ["Capability"], "small", "#38BDF8")
-    for i, (name, module) in enumerate(backends):
-        x = x0 + cap_w + i * col_w
-        cell(x, y0, col_w, header_h, "#E0F2FE", [name, module], "small", "#38BDF8")
-
-    for r, (capability, values, kind) in enumerate(rows):
-        y = y0 + header_h + r * row_h
-        row_fill = "#FFFFFF" if r % 2 == 0 else "#F8FAFC"
-        cell(x0, y, cap_w, row_h, row_fill, wrap(capability, 17), "small")
-        for c, value in enumerate(values):
-            backend = backends[c][0]
-            if kind == "info":
-                fill = info
-            elif kind == "fit":
-                fill = fit
-            else:
-                fill = status_colors.get((capability, backend), full)
-            x = x0 + cap_w + c * col_w
-            cell(x, y, col_w, row_h, fill, wrap(value, 18), "tiny")
-
-    legend_y = 1010
-    legend = [("Full support", full), ("Limited / fallback", limited), ("Unsupported / not exposed", unsupported), ("Informational", info)]
-    legend_x = 275
-    for label, color in legend:
-        out.append(f'<rect x="{legend_x}" y="{legend_y}" width="30" height="22" rx="6" fill="{color}" stroke="#CBD5E1" stroke-width="1.2"/>')
-        out.append(f'<text x="{legend_x + 42}" y="{legend_y + 17}" class="tiny">{esc(label)}</text>')
-        legend_x += 315
-
-    out.append('<rect x="180" y="1060" width="1480" height="45" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.4"/>')
-    out.append(
-        '<text x="920" y="1089" text-anchor="middle" class="tiny">'
-        'Capability note: unsupported cells are explicit backend boundaries, not silent fallbacks; use backend READMEs for operation-specific caveats.</text>'
-    )
-    return close_svg(out)
-
-
 def graph_age_operations_class_svg() -> str:
     width, height = 1840, 1180
     out = open_svg(
@@ -2805,8 +2698,6 @@ def graph_neo4j_record_mapper_class_svg() -> str:
 
 
 def class_svg(slug: str) -> str:
-    if slug == "root-readme-backend-capability-matrix-01":
-        return root_backend_capability_matrix_svg()
     if slug == "bluetape4k-graph-class-02":
         return root_class_model_svg()
     if slug == "graph-graph-core-class-02":
