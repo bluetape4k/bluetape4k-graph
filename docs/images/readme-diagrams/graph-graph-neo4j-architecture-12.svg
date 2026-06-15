@@ -16,12 +16,15 @@
     .small { font-family: 'Comic Mono', monospace; font-size: 17px; fill: #374151; }
     .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
     .card { filter: url(#softShadow); }
-    .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-    .thin { stroke: #64748B; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+    .line { stroke: #2563EB; stroke-width: 2.3; fill: none; marker-end: url(#arrow); stroke-linecap: round; stroke-linejoin: round; }
+    .thin { stroke: #64748B; stroke-width: 2.1; fill: none; marker-end: url(#softArrow); stroke-linecap: round; stroke-linejoin: round; }
   </style>
+  <marker id="softArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+    <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748B"/>
+  </marker>
 
   <rect x="0" y="0" width="1840" height="1080" fill="#F8FAFC"/>
-  <rect x="24" y="24" width="1792" height="1032" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
+  <rect x="24" y="24" width="1792" height="1032" rx="22" fill="none" stroke="#CBD5E1" stroke-width="1.6"/>
   <circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
   <circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
   <circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
@@ -29,50 +32,50 @@
   <text x="72" y="82" class="title">Neo4j Test Environment</text>
   <text x="74" y="118" class="subtitle">Integration tests share a Neo4j Testcontainers instance, open one driver per class, reset graph data, and verify sync and suspend APIs.</text>
 
-  <rect x="70" y="150" width="1700" height="790" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+  <rect x="70" y="150" width="1700" height="790" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4" filter="url(#softShadow)"/>
 
   <text x="270" y="210" text-anchor="middle" class="section">JUnit Test Classes</text>
   <text x="875" y="210" text-anchor="middle" class="section">Lifecycle Wiring</text>
   <text x="1445" y="210" text-anchor="middle" class="section">Neo4j Runtime</text>
 
-  <rect x="130" y="250" width="330" height="150" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+  <rect x="130" y="250" width="330" height="150" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="1.9" class="card"/>
   <text x="165" y="298" class="label">Sync Operations</text>
   <text x="165" y="334" class="small">Neo4jGraphOperationsTest</text>
   <text x="165" y="362" class="small">schema / merge / weighted path</text>
   <text x="165" y="390" class="small">algorithms and traversal</text>
 
-  <rect x="130" y="455" width="330" height="150" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
+  <rect x="130" y="455" width="330" height="150" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="1.9" class="card"/>
   <text x="165" y="503" class="label">Suspend Operations</text>
   <text x="165" y="539" class="small">Neo4jGraphSuspendOperationsTest</text>
   <text x="165" y="567" class="small">runSuspendIO test boundary</text>
   <text x="165" y="595" class="small">Flow and coroutine assertions</text>
 
-  <rect x="130" y="690" width="330" height="120" rx="14" fill="#F8FAFC" stroke="#94A3B8" stroke-width="3" class="card"/>
+  <rect x="130" y="690" width="330" height="120" rx="14" fill="#F8FAFC" stroke="#94A3B8" stroke-width="1.9" class="card"/>
   <text x="165" y="738" class="label">Dependencies</text>
   <text x="165" y="774" class="small">bluetape4k-testcontainers</text>
   <text x="165" y="802" class="small">testcontainers-neo4j</text>
 
-  <rect x="620" y="250" width="430" height="150" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
+  <rect x="620" y="250" width="430" height="150" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="1.9" class="card"/>
   <text x="655" y="298" class="label">@BeforeAll setup()</text>
   <text x="655" y="334" class="small">server = Neo4jServer.Launcher.neo4j</text>
   <text x="655" y="362" class="small">driver = GraphDatabase.driver(boltUrl)</text>
   <text x="655" y="390" class="small">AuthTokens.none()</text>
 
-  <rect x="620" y="455" width="430" height="150" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
+  <rect x="620" y="455" width="430" height="150" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="1.9" class="card"/>
   <text x="655" y="503" class="label">@BeforeEach reset</text>
   <text x="655" y="539" class="small">ops.dropGraph(&quot;default&quot;)</text>
   <text x="655" y="567" class="small">MATCH (n) DETACH DELETE n</text>
   <text x="655" y="595" class="small">each test starts from clean data</text>
 
-  <rect x="620" y="690" width="430" height="120" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="3" class="card"/>
+  <rect x="620" y="690" width="430" height="120" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="1.9" class="card"/>
   <text x="655" y="738" class="label">@AfterAll teardown()</text>
   <text x="655" y="774" class="small">driver.close()</text>
   <text x="655" y="802" class="small">operations do not own the driver</text>
 
   <g class="card">
-    <ellipse cx="1425" cy="293" rx="235" ry="48" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3"/>
-    <rect x="1190" y="293" width="470" height="310" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3"/>
-    <ellipse cx="1425" cy="603" rx="235" ry="48" fill="#A7F3D0" stroke="#14B8A6" stroke-width="3"/>
+    <ellipse cx="1425" cy="293" rx="235" ry="48" fill="#CCFBF1" stroke="#14B8A6" stroke-width="2.2"/>
+    <rect x="1190" y="293" width="470" height="310" fill="#CCFBF1" stroke="#14B8A6" stroke-width="2.2"/>
+    <ellipse cx="1425" cy="603" rx="235" ry="48" fill="#A7F3D0" stroke="#14B8A6" stroke-width="2.2"/>
   </g>
   <text x="1425" y="315" text-anchor="middle" class="label">Neo4j Container</text>
   <text x="1425" y="374" text-anchor="middle" class="small">Neo4jServer.Launcher.neo4j</text>
@@ -81,7 +84,7 @@
   <text x="1425" y="482" text-anchor="middle" class="small">nodes, relationships, indexes</text>
   <text x="1425" y="548" text-anchor="middle" class="tiny">container-backed graph state</text>
 
-  <rect x="1200" y="690" width="450" height="120" rx="14" fill="#F8FAFC" stroke="#94A3B8" stroke-width="3" class="card"/>
+  <rect x="1200" y="690" width="450" height="120" rx="14" fill="#F8FAFC" stroke="#94A3B8" stroke-width="1.9" class="card"/>
   <text x="1235" y="738" class="label">Assertions</text>
   <text x="1235" y="774" class="small">create / find / update / delete</text>
   <text x="1235" y="802" class="small">neighbors / paths / schema / merge</text>
@@ -99,5 +102,7 @@
   <text x="1120" y="302" text-anchor="middle" class="tiny">boltUrl</text>
   <text x="1120" y="510" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">cleanup</text>
   <text x="1120" y="510" text-anchor="middle" class="tiny">cleanup</text>
-  <text x="920" y="1032" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | module: graph-neo4j / test environment</text>
+  <rect x="240" y="984" width="1360" height="56" rx="12" fill="#F8FAFC" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="920" y="1008" text-anchor="middle" class="tiny">Tests reuse Neo4jServer.Launcher.neo4j and create a driver with AuthTokens.none().</text>
+  <text x="920" y="1032" text-anchor="middle" class="tiny">Each test resets graph data; operations leave driver ownership to the test lifecycle.</text>
 </svg>

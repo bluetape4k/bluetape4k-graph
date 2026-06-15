@@ -14,12 +14,12 @@
     .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
     .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
     .card { filter: url(#softShadow); }
-    .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-    .soft { stroke: #64748B; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+    .line { stroke: #2563EB; stroke-width: 2.3; fill: none; marker-end: url(#arrow); stroke-linecap: round; stroke-linejoin: round; }
+    .soft { stroke: #64748B; stroke-width: 2.1; fill: none; marker-end: url(#arrow); stroke-linecap: round; stroke-linejoin: round; }
   </style>
 
   <rect x="0" y="0" width="1840" height="1180" fill="#F8FAFC"/>
-  <rect x="24" y="24" width="1792" height="1132" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
+  <rect x="24" y="24" width="1792" height="1132" rx="22" fill="none" stroke="#CBD5E1" stroke-width="1.6"/>
   <circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
   <circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
   <circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
@@ -27,7 +27,7 @@
   <text x="72" y="82" class="title">Neo4j Graph Module Overview</text>
   <text x="74" y="118" class="subtitle">graph-neo4j implements graph-core APIs on Neo4j Driver 5.x with coroutine bridge, mapping, traversal, schema, and cache support.</text>
 
-  <rect x="70" y="155" width="1700" height="900" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+  <rect x="70" y="155" width="1700" height="900" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4" filter="url(#softShadow)"/>
 
   <line x1="420" y1="335" x2="560" y2="335" class="line"/>
   <line x1="920" y1="455" x2="920" y2="590" class="line"/>
@@ -35,63 +35,63 @@
   <line x1="650" y1="760" x2="810" y2="760" class="soft"/>
   <line x1="1030" y1="760" x2="1190" y2="760" class="soft"/>
 
-  <rect x="120" y="245" width="300" height="220" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+  <rect x="120" y="245" width="300" height="220" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="1.9" class="card"/>
   <text x="270" y="283" text-anchor="middle" class="tiny">&lt;&lt;public contract&gt;&gt;</text>
   <text x="270" y="322" text-anchor="middle" class="section">graph-core APIs</text>
-  <line x1="120" y1="346" x2="420" y2="346" stroke="#3B82F6" stroke-width="2"/>
+  <line x1="120" y1="346" x2="420" y2="346" stroke="#3B82F6" stroke-width="1.4"/>
   <text x="150" y="383" class="small">GraphOperations</text>
   <text x="150" y="412" class="small">GraphSuspendOperations</text>
   <text x="150" y="441" class="small">schema, merge, tx contracts</text>
 
-  <rect x="560" y="225" width="720" height="250" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
+  <rect x="560" y="225" width="720" height="250" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="1.9" class="card"/>
   <text x="920" y="264" text-anchor="middle" class="tiny">&lt;&lt;module facade&gt;&gt;</text>
   <text x="920" y="304" text-anchor="middle" class="section">Neo4j Operations Layer</text>
-  <line x1="560" y1="328" x2="1280" y2="328" stroke="#8B5CF6" stroke-width="2"/>
+  <line x1="560" y1="328" x2="1280" y2="328" stroke="#8B5CF6" stroke-width="1.4"/>
   <text x="600" y="366" class="small">Neo4jGraphOperations: sync API over driver sessions</text>
   <text x="600" y="395" class="small">Neo4jGraphSuspendOperations: suspend + Flow API</text>
   <text x="600" y="424" class="small">elementId() lookup, Cypher parameters, traversal queries</text>
   <text x="600" y="453" class="small">caller owns the driver; close() leaves it open</text>
 
   <g class="card">
-    <ellipse cx="1570" cy="245" rx="150" ry="38" fill="#DCFCE7" stroke="#22C55E" stroke-width="3"/>
-    <rect x="1420" y="245" width="300" height="220" fill="#DCFCE7" stroke="#22C55E" stroke-width="3"/>
-    <ellipse cx="1570" cy="465" rx="150" ry="38" fill="#DCFCE7" stroke="#22C55E" stroke-width="3"/>
-    <line x1="1420" y1="245" x2="1420" y2="465" stroke="#22C55E" stroke-width="3"/>
-    <line x1="1720" y1="245" x2="1720" y2="465" stroke="#22C55E" stroke-width="3"/>
+    <ellipse cx="1570" cy="245" rx="150" ry="38" fill="#DCFCE7" stroke="#22C55E" stroke-width="2.2"/>
+    <rect x="1420" y="245" width="300" height="220" fill="#DCFCE7" stroke="#22C55E" stroke-width="2.2"/>
+    <ellipse cx="1570" cy="465" rx="150" ry="38" fill="#DCFCE7" stroke="#22C55E" stroke-width="2.2"/>
+    <line x1="1420" y1="245" x2="1420" y2="465" stroke="#22C55E" stroke-width="2.2"/>
+    <line x1="1720" y1="245" x2="1720" y2="465" stroke="#22C55E" stroke-width="2.2"/>
   </g>
   <text x="1570" y="300" text-anchor="middle" class="section">Neo4j DB</text>
   <text x="1455" y="355" class="small">Neo4j Driver 5.x</text>
   <text x="1455" y="384" class="small">Bolt protocol</text>
   <text x="1455" y="413" class="small">nodes / rels / paths</text>
 
-  <rect x="190" y="590" width="460" height="250" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
+  <rect x="190" y="590" width="460" height="250" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="1.9" class="card"/>
   <text x="420" y="629" text-anchor="middle" class="tiny">&lt;&lt;reactive to coroutine&gt;&gt;</text>
   <text x="420" y="668" text-anchor="middle" class="section">Neo4jCoroutineSession</text>
-  <line x1="190" y1="692" x2="650" y2="692" stroke="#14B8A6" stroke-width="2"/>
+  <line x1="190" y1="692" x2="650" y2="692" stroke="#14B8A6" stroke-width="1.4"/>
   <text x="225" y="729" class="small">ReactiveSession read/write boundaries</text>
   <text x="225" y="758" class="small">Publisher.asFlow and awaitFirstOrNull</text>
   <text x="225" y="787" class="small">runReadQuery / runWriteQuery helpers</text>
   <text x="225" y="816" class="small">database name via SessionConfig</text>
 
-  <rect x="810" y="590" width="220" height="250" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
+  <rect x="810" y="590" width="220" height="250" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="1.9" class="card"/>
   <text x="920" y="629" text-anchor="middle" class="tiny">&lt;&lt;Cypher layer&gt;&gt;</text>
   <text x="920" y="668" text-anchor="middle" class="section">Queries</text>
-  <line x1="810" y1="692" x2="1030" y2="692" stroke="#EAB308" stroke-width="2"/>
+  <line x1="810" y1="692" x2="1030" y2="692" stroke="#EAB308" stroke-width="1.4"/>
   <text x="840" y="729" class="small">CREATE / MATCH</text>
   <text x="840" y="758" class="small">MERGE / DELETE</text>
   <text x="840" y="787" class="small">neighbors patterns</text>
   <text x="840" y="816" class="small">shortestPath</text>
 
-  <rect x="1190" y="590" width="460" height="250" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
+  <rect x="1190" y="590" width="460" height="250" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="1.9" class="card"/>
   <text x="1420" y="629" text-anchor="middle" class="tiny">&lt;&lt;domain mapping&gt;&gt;</text>
   <text x="1420" y="668" text-anchor="middle" class="section">Neo4jRecordMapper</text>
-  <line x1="1190" y1="692" x2="1650" y2="692" stroke="#F97316" stroke-width="2"/>
+  <line x1="1190" y1="692" x2="1650" y2="692" stroke="#F97316" stroke-width="1.4"/>
   <text x="1225" y="729" class="small">Node to GraphVertex with labels/properties</text>
   <text x="1225" y="758" class="small">Relationship to GraphEdge with endpoints</text>
   <text x="1225" y="787" class="small">Path to ordered VertexStep / EdgeStep</text>
   <text x="1225" y="816" class="small">elementId() becomes GraphElementId</text>
 
-  <rect x="220" y="890" width="1400" height="72" rx="12" fill="#F8FAFC" stroke="#94A3B8" stroke-width="2"/>
-  <text x="255" y="934" class="small">Optional support: cache wrapper for reads/writes; schema manager for indexes and unique constraints.</text>
-  <text x="920" y="1088" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | module: graph-neo4j / overview</text>
+  <rect x="220" y="890" width="1400" height="72" rx="12" fill="#F8FAFC" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="920" y="922" text-anchor="middle" class="tiny">Use the base operations for graph-core portability over Neo4j Driver sessions.</text>
+  <text x="920" y="948" text-anchor="middle" class="tiny">Add cache and schema helpers when repeated reads, indexes, or unique constraints are part of the module contract.</text>
 </svg>
