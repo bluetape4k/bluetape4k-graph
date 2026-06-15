@@ -21,6 +21,7 @@
     .cardTitle { font-family: 'Architects Daughter', cursive; font-size: 26px; fill: #111827; }
     .body { font-family: 'Comic Mono', monospace; font-size: 17px; fill: #334155; }
     .small { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #475569; }
+    .rel { font-family: 'Comic Mono', monospace; font-size: 14px; fill: #475569; }
     .tiny { font-family: 'Comic Mono', monospace; font-size: 13px; fill: #64748B; }
     .panel { fill: #FFFFFF; stroke: #CBD5E1; stroke-width: 1.6; }
     .lane { fill: #F8FAFC; stroke: #CBD5E1; stroke-width: 1.5; }
@@ -36,8 +37,24 @@
   <text x="72" y="86" class="title">graph-io-core architecture</text>
   <text x="74" y="124" class="subtitle">Shared contracts and helpers let every graph-io format import/export through the same graph-core APIs.</text>
 
-  <rect x="74" y="166" width="1612" height="782" rx="20" class="panel"/>
+  <rect x="74" y="166" width="1612" height="850" rx="20" class="panel"/>
 
+  <text x="112" y="212" class="section">Layer relationships</text>
+  <rect x="424" y="184" width="384" height="52" rx="16" fill="#DBEAFE" stroke="#3B82F6" stroke-width="1.6"/>
+  <text x="616" y="205" text-anchor="middle" class="rel">Every format module implements</text>
+  <text x="616" y="226" text-anchor="middle" class="rel">sync / suspend / virtual-thread contracts.</text>
+
+  <path d="M 820 210 L 840 210" class="line"/>
+  <rect x="852" y="184" width="366" height="52" rx="16" fill="#EEF2FF" stroke="#6366F1" stroke-width="1.6"/>
+  <text x="1035" y="205" text-anchor="middle" class="rel">Contracts exchange shared graph-io</text>
+  <text x="1035" y="226" text-anchor="middle" class="rel">sources, sinks, records, options, reports.</text>
+
+  <path d="M 1228 210 L 1240 210" class="line"/>
+  <rect x="1250" y="184" width="384" height="52" rx="16" fill="#DCFCE7" stroke="#22C55E" stroke-width="1.6"/>
+  <text x="1442" y="205" text-anchor="middle" class="rel">Core helpers call graph-core APIs</text>
+  <text x="1442" y="226" text-anchor="middle" class="rel">to read, batch-write, and map backend IDs.</text>
+
+  <g transform="translate(0 72)">
   <rect x="112" y="206" width="340" height="604" rx="18" class="lane"/>
   <text x="142" y="258" class="section">1. Format modules</text>
   <text x="144" y="290" class="small">CSV, NDJSON, and GraphML own</text>
@@ -122,21 +139,9 @@
   <text x="1505" y="658" text-anchor="middle" class="body">createVertices</text>
   <text x="1505" y="684" text-anchor="middle" class="body">createEdges</text>
   <text x="1505" y="710" text-anchor="middle" class="body">find by labels</text>
+  </g>
 
-  <path d="M 414 374 L 558 374" class="flowBlue"/>
-  <path d="M 414 483 L 558 497" class="flowBlue"/>
-  <path d="M 414 595 L 558 619" class="flowBlue"/>
-
-  <path d="M 842 375 L 986 374" class="line"/>
-  <path d="M 842 497 L 986 500" class="line"/>
-  <path d="M 842 619 L 986 596" class="line"/>
-  <path d="M 842 736 L 986 500" class="line"/>
-
-  <path d="M 1284 624 C 1334 604, 1350 424, 1394 386" class="flowGreen"/>
-  <path d="M 1284 754 L 1394 672" class="flowGreen"/>
-  <path d="M 1284 500 C 1338 500, 1352 522, 1394 522" class="line"/>
-
-  <rect x="210" y="858" width="1340" height="62" rx="16" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.6"/>
-  <text x="880" y="884" text-anchor="middle" class="small">Import: parsers emit external-id records, core helpers resolve IDs and flush label-grouped batches into graph-core operations.</text>
-  <text x="880" y="908" text-anchor="middle" class="small">Export: format modules read through graph-core operations, apply label filters, write to sinks, and return status/failure reports.</text>
+  <rect x="210" y="930" width="1340" height="62" rx="16" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.6"/>
+  <text x="880" y="956" text-anchor="middle" class="small">Import: parsers emit external-id records, core helpers resolve IDs and flush label-grouped batches into graph-core operations.</text>
+  <text x="880" y="980" text-anchor="middle" class="small">Export: format modules read through graph-core operations, apply label filters, write to sinks, and return status/failure reports.</text>
 </svg>
