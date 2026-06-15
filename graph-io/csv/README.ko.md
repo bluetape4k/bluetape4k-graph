@@ -11,7 +11,7 @@
 
 - **속성 처리 모드**
   - `PrefixedColumns`: 속성을 접두사가 붙은 별도 컬럼으로 저장 (예: `prop.name`, `prop.age`)
-  - `RawJsonColumn`: 모든 속성을 단일 JSON 컬럼으로 직렬화
+  - `RawJsonColumn`: 설정한 단일 컬럼에 JSON 속성 payload 저장
   - `None`: 속성 완전 제외
 
 - **자동 스키마 합치기**: 헤더 생성이 레코드 전체의 모든 속성 키를 자동으로 발견
@@ -27,6 +27,18 @@ dependencies {
     implementation("io.bluetape4k:graph-io-csv:$version")
 }
 ```
+
+## 아키텍처
+
+![graph-io-csv architecture](../../docs/images/readme-diagrams/graph-io-csv-architecture-01.png)
+
+CSV 모듈은 정점과 간선을 한 파일에 섞지 않고, 두 CSV 파일을 한 쌍으로 다룹니다:
+
+- `vertices.csv`는 `id`, `label`, 선택적 속성 컬럼을 저장합니다.
+- `edges.csv`는 `id`, `label`, `from`, `to`, 선택적 속성 컬럼을 저장합니다.
+- `CsvRecordCodec`은 import/export 양쪽에서 union header 생성과 속성 추출을 담당합니다.
+- Import는 2-pass 방식입니다. 먼저 정점으로 외부 ID 맵을 만든 뒤, 간선의 `from`/`to`를 해석합니다.
+- 동기, 가상 스레드, suspend API는 같은 CSV 계약을 공유하고 실행 모델만 다릅니다.
 
 ## 사용법
 
@@ -122,6 +134,66 @@ val report = runBlocking {
 println("${report.verticesWritten}개의 정점과 ${report.edgesWritten}개의 간선을 익스포트했습니다")
 ```
 
+## 임포트
+
+CSV 파일에서 그래프를 임포트합니다. 정점과 간선 CSV 파일은 각각 별도의 파일로 제공해야 합니다.
+
+### 동기식 임포트
+
+```kotlin
+import io.bluetape4k.graph.io.csv.CsvGraphBulkImporter
+import io.bluetape4k.graph.io.csv.CsvGraphImportSource
+import io.bluetape4k.graph.io.options.DuplicateVertexPolicy
+import io.bluetape4k.graph.io.options.GraphImportOptions
+import io.bluetape4k.graph.io.options.MissingEndpointPolicy
+import io.bluetape4k.graph.io.source.GraphImportSource
+import java.nio.file.Paths
+
+val importer = CsvGraphBulkImporter()
+
+val source = CsvGraphImportSource(
+    vertices = GraphImportSource.PathSource(Paths.get("vertices.csv")),
+    edges    = GraphImportSource.PathSource(Paths.get("edges.csv")),
+)
+
+val options = GraphImportOptions(
+    defaultVertexLabel    = "Node",
+    onDuplicateVertexId   = DuplicateVertexPolicy.SKIP,
+    onMissingEdgeEndpoint = MissingEndpointPolicy.SKIP_EDGE,
+)
+
+val report = importer.importGraph(source, graphOps, options)
+println("${report.verticesCreated}/${report.verticesRead}개의 정점과 " +
+        "${report.edgesCreated}/${report.edgesRead}개의 간선을 임포트했습니다: ${report.status}")
+```
+
+### 임포트 CSV 형식
+
+정점 CSV 파일:
+
+```csv
+id,label,prop.name,prop.age
+v1,Person,Alice,30
+v2,Person,Bob,25
+```
+
+간선 CSV 파일:
+
+```csv
+id,label,from,to,prop.since
+,KNOWS,v1,v2,2024
+```
+
+### 임포트 옵션
+
+| 옵션 | 타입 | 기본값 | 설명 |
+|------|------|--------|------|
+| `defaultVertexLabel` | `String` | `"Vertex"` | `label` 컬럼이 비어 있을 때 사용하는 기본 정점 레이블 |
+| `defaultEdgeLabel` | `String` | `"Edge"` | `label` 컬럼이 비어 있을 때 사용하는 기본 간선 레이블 |
+| `onDuplicateVertexId` | `DuplicateVertexPolicy` | `FAIL` | 중복 정점 ID 처리: 즉시 실패하거나 중복을 건너뜀 |
+| `onMissingEdgeEndpoint` | `MissingEndpointPolicy` | `FAIL` | 누락된 간선 끝점 처리: 즉시 실패하거나 해당 간선을 건너뜀 |
+| `preserveExternalIdProperty` | `String?` | `null` | 외부 ID를 속성으로 보존할 때 사용할 키 |
+
 ## 설정
 
 ### 속성 모드
@@ -141,7 +213,7 @@ val options = CsvGraphIoOptions(
 
 #### Raw JSON 컬럼
 
-모든 속성이 단일 JSON 컬럼으로 직렬화:
+설정한 단일 컬럼에 JSON 속성 payload를 저장:
 
 ```kotlin
 val options = CsvGraphIoOptions(
@@ -179,16 +251,6 @@ if (report.failures.isNotEmpty()) {
     }
 }
 ```
-
-## 아키텍처
-
-이 모듈은 **bluetape4k-graph**의 이중 API 패턴을 따릅니다:
-
-- **동기**: `GraphOperations`을 통한 직접 블로킹 작업
-- **가상 스레드**: `CompletableFuture<T>` 및 가상 스레드 풀을 통한 비동기
-- **Suspend**: `GraphSuspendOperations` 및 `suspend` 함수를 통한 코루틴 기반
-
-모든 익스포터는 공통 계약 인터페이스를 구현하고 동일한 내부 코덱(`CsvRecordCodec`)에 위임하여 실행 모델 전체에서 일관성을 보장합니다.
 
 ## 성능 고려사항
 

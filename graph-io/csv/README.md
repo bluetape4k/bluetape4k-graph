@@ -11,7 +11,7 @@ CSV format bulk importer/exporter for **bluetape4k-graph**. Seamlessly export gr
 
 - **Property Handling Modes**
   - `PrefixedColumns`: Store properties as separate columns with a prefix (e.g., `prop.name`, `prop.age`)
-  - `RawJsonColumn`: Serialize all properties to a single JSON column
+  - `RawJsonColumn`: Use one configured column for a JSON property payload
   - `None`: Exclude properties entirely
 
 - **Automatic Schema Union**: Header generation automatically discovers all property keys across records
@@ -30,13 +30,15 @@ dependencies {
 
 ## Architecture
 
-The module follows **bluetape4k-graph**'s dual API pattern:
+![graph-io-csv architecture](../../docs/images/readme-diagrams/graph-io-csv-architecture-01.png)
 
-- **Synchronous**: Direct blocking operations via `GraphOperations`
-- **Virtual Thread**: Async via `CompletableFuture<T>` and virtual thread pools
-- **Suspend**: Coroutine-based via `GraphSuspendOperations` and `suspend` functions
+CSV keeps graph data in a paired file contract:
 
-All exporters implement a common contract interface and delegate to the same internal codec (`CsvRecordCodec`), ensuring consistency across execution models.
+- `vertices.csv` stores `id`, `label`, and optional property columns.
+- `edges.csv` stores `id`, `label`, `from`, `to`, and optional property columns.
+- `CsvRecordCodec` owns union-header generation and property extraction for both import and export.
+- Import runs in two passes: vertices build the external-id map first, then edges resolve `from`/`to`.
+- Sync, virtual-thread, and suspend APIs reuse the same CSV contract with different execution models.
 
 ## Usage
 
@@ -134,7 +136,7 @@ println("Exported ${report.verticesWritten} vertices and ${report.edgesWritten} 
 
 ## Import
 
-CSV 파일에서 그래프를 임포트합니다. 정점과 간선 CSV 파일은 각각 별도의 파일로 제공해야 합니다.
+Import a graph from CSV files. Vertices and edges are provided as separate CSV files.
 
 ### Synchronous Import
 
@@ -156,8 +158,8 @@ val source = CsvGraphImportSource(
 
 val options = GraphImportOptions(
     defaultVertexLabel    = "Node",
-    onDuplicateVertexId   = DuplicateVertexPolicy.SKIP,   // 중복 정점 건너뜀
-    onMissingEdgeEndpoint = MissingEndpointPolicy.SKIP_EDGE, // 끝점 없는 간선 건너뜀
+    onDuplicateVertexId   = DuplicateVertexPolicy.SKIP,      // skip duplicate vertices
+    onMissingEdgeEndpoint = MissingEndpointPolicy.SKIP_EDGE,  // skip edges with missing endpoints
 )
 
 val report = importer.importGraph(source, graphOps, options)
@@ -167,7 +169,7 @@ println("Imported ${report.verticesCreated}/${report.verticesRead} vertices, " +
 
 ### Import CSV File Format
 
-정점 CSV 파일:
+Vertex CSV file:
 
 ```csv
 id,label,prop.name,prop.age
@@ -175,7 +177,7 @@ v1,Person,Alice,30
 v2,Person,Bob,25
 ```
 
-간선 CSV 파일:
+Edge CSV file:
 
 ```csv
 id,label,from,to,prop.since
@@ -184,17 +186,17 @@ id,label,from,to,prop.since
 
 ### Import Options
 
-| 옵션 | 타입 | 기본값 | 설명 |
+| Option | Type | Default | Description |
 |------|------|--------|------|
-| `defaultVertexLabel` | `String` | `"Vertex"` | `label` 컬럼이 비어있을 때 사용하는 기본 레이블 |
-| `defaultEdgeLabel` | `String` | `"Edge"` | `label` 컬럼이 비어있을 때 사용하는 기본 레이블 |
-| `onDuplicateVertexId` | `DuplicateVertexPolicy` | `FAIL` | 중복 정점 ID 처리: `FAIL` (즉시 실패) 또는 `SKIP` (건너뜀) |
-| `onMissingEdgeEndpoint` | `MissingEndpointPolicy` | `FAIL` | 끝점 없는 간선 처리: `FAIL` (즉시 실패) 또는 `SKIP_EDGE` (건너뜀) |
-| `preserveExternalIdProperty` | `String?` | `null` | 외부 ID를 속성으로 보존할 키 이름 (예: `"_externalId"`) |
+| `defaultVertexLabel` | `String` | `"Vertex"` | Default label when the `label` column is blank |
+| `defaultEdgeLabel` | `String` | `"Edge"` | Default label when the `label` column is blank |
+| `onDuplicateVertexId` | `DuplicateVertexPolicy` | `FAIL` | Duplicate vertex handling: `FAIL` immediately or `SKIP` the duplicate |
+| `onMissingEdgeEndpoint` | `MissingEndpointPolicy` | `FAIL` | Missing edge endpoint handling: `FAIL` immediately or `SKIP_EDGE` |
+| `preserveExternalIdProperty` | `String?` | `null` | Property key used to preserve external IDs, such as `"_externalId"` |
 
 ### Import Report
 
-임포트 결과에서 통계와 실패 목록을 확인할 수 있습니다:
+Inspect the import report for counts and failures:
 
 ```kotlin
 val report = importer.importGraph(source, graphOps, options)
@@ -247,7 +249,7 @@ val options = CsvGraphIoOptions(
 
 #### Raw JSON Column
 
-All properties serialized as a single JSON column:
+Use one configured column for the JSON property payload:
 
 ```kotlin
 val options = CsvGraphIoOptions(
