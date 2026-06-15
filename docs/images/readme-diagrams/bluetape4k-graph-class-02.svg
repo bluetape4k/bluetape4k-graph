@@ -1,118 +1,100 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1080" viewBox="0 0 1840 1080">
+<svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1060" viewBox="0 0 1840 1060">
+  <defs>
+    <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.13"/>
+    </filter>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+    </marker>
+    <marker id="arrowSlate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748B"/>
+    </marker>
+  </defs>
+  <style>
+    .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
+    .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
+    .section { font-family: 'Architects Daughter', cursive; font-size: 28px; fill: #111827; }
+    .small { font-family: 'Comic Mono', monospace; font-size: 17px; fill: #374151; }
+    .tiny { font-family: 'Comic Mono', monospace; font-size: 14px; fill: #4B5563; }
+    .micro { font-family: 'Comic Mono', monospace; font-size: 13px; fill: #64748B; }
+    .card { filter: url(#softShadow); }
+    .arrow { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrowBlue); }
+    .softArrow { stroke: #64748B; stroke-width: 2.4; fill: none; marker-end: url(#arrowSlate); }
+  </style>
 
-    <defs>
-      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
-        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
-      </filter>
-      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
-      </marker>
-    </defs>
-    <style>
-      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
-      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
-      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
-      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
-      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
-      .card { filter: url(#softShadow); }
-      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
-      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
-    </style>
+  <rect x="0" y="0" width="1840" height="1060" fill="#F8FAFC"/>
+  <rect x="24" y="24" width="1792" height="1012" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
+  <circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
+  <circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
+  <circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
 
-<rect x="0" y="0" width="1840" height="1080" fill="#F8FAFC"/>
-<rect x="24" y="24" width="1792" height="1032" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
-<circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
-<circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
-<circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
-<text x="72" y="82" class="title">Bluetape4k Graph Class Model</text>
-<text x="74" y="118" class="subtitle">Root class view of graph-core contracts, optional capabilities, models, adapter implementations, and async variants</text>
-<text x="920.0" y="1032" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: root README / Class Model</text>
-<rect x="70" y="150" width="1700" height="800" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
-<text x="920" y="205" text-anchor="middle" class="tiny">Source: graph-core repository/model/schema contracts plus AGE, Neo4j, Memgraph, TinkerGraph, and FalkorDB operation classes</text>
-<path d="M 410 335 C 492.5 335, 492.5 335, 575 335" class="line"/>
-<text x="492.5" y="307.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">extends</text>
-<text x="492.5" y="307.0" text-anchor="middle" class="tiny">extends</text>
-<path d="M 905 335 C 995.0 335, 995.0 335, 1085 335" class="line"/>
-<text x="995.0" y="307.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">uses</text>
-<text x="995.0" y="307.0" text-anchor="middle" class="tiny">uses</text>
-<path d="M 905 580 C 995.0 580, 995.0 580, 1085 580" class="thin"/>
-<text x="995.0" y="552.0" text-anchor="middle" class="tiny" stroke="#F8FAFC" stroke-width="7" stroke-linejoin="round">optional</text>
-<text x="995.0" y="552.0" text-anchor="middle" class="tiny">optional</text>
-<path d="M 740 455 C 740.0 455, 740.0 700, 740 700" class="line"/>
-<path d="M 740 455 C 585.0 455, 585.0 700, 430 700" class="thin"/>
-<path d="M 740 455 C 915.0 455, 915.0 700, 1090 700" class="thin"/>
-<text x="748" y="615" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">implemented by</text>
-<text x="748" y="615" text-anchor="middle" class="tiny">implemented by</text>
-<text x="500" y="632" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">sync backends</text>
-<text x="500" y="632" text-anchor="middle" class="tiny">sync backends</text>
-<text x="1095" y="632" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">async variants</text>
-<text x="1095" y="632" text-anchor="middle" class="tiny">async variants</text>
-<rect x="120" y="250" width="290" height="205" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
-<rect x="130" y="260" width="12" height="185" rx="6" fill="#3B82F6" opacity="0.95"/>
-<text x="142" y="290" class="label">Repository Pieces</text>
-<text x="144" y="326" class="small">GraphSession</text>
-<text x="144" y="354" class="small">Vertex / Edge repositories</text>
-<text x="144" y="382" class="small">Traversal repository</text>
-<text x="144" y="410" class="small">Algorithm repository</text>
-<rect x="575" y="250" width="330" height="205" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
-<rect x="585" y="260" width="12" height="185" rx="6" fill="#22C55E" opacity="0.95"/>
-<text x="597" y="290" class="label">GraphOperations</text>
-<text x="599" y="326" class="small">sync facade</text>
-<text x="599" y="354" class="small">AutoCloseable</text>
-<text x="599" y="382" class="small">CRUD / traversal / algorithms</text>
-<text x="599" y="410" class="small">backend-independent contract</text>
-<rect x="1085" y="250" width="310" height="205" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
-<rect x="1095" y="260" width="12" height="185" rx="6" fill="#EAB308" opacity="0.95"/>
-<text x="1107" y="290" class="label">Model Classes</text>
-<text x="1109" y="326" class="small">GraphElementId</text>
-<text x="1109" y="354" class="small">GraphVertex</text>
-<text x="1109" y="382" class="small">GraphEdge</text>
-<text x="1109" y="410" class="small">GraphPath / PathStep</text>
-<rect x="1460" y="250" width="260" height="205" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
-<rect x="1470" y="260" width="12" height="185" rx="6" fill="#14B8A6" opacity="0.95"/>
-<text x="1482" y="290" class="label">Schema DSL</text>
-<text x="1484" y="326" class="small">VertexLabel</text>
-<text x="1484" y="354" class="small">EdgeLabel</text>
-<text x="1484" y="382" class="small">PropertyDef</text>
-<text x="1484" y="410" class="small">GraphSchemaManager</text>
-<rect x="575" y="520" width="330" height="170" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
-<rect x="585" y="530" width="12" height="150" rx="6" fill="#8B5CF6" opacity="0.95"/>
-<text x="597" y="560" class="label">Optional Capabilities</text>
-<text x="599" y="596" class="small">GraphMergeOperations</text>
-<text x="599" y="624" class="small">GraphTransactionalOperations</text>
-<text x="599" y="652" class="small">Schema management</text>
-<rect x="1085" y="520" width="340" height="170" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
-<rect x="1095" y="530" width="12" height="150" rx="6" fill="#F97316" opacity="0.95"/>
-<text x="1107" y="560" class="label">Async Variants</text>
-<text x="1109" y="596" class="small">GraphSuspendOperations</text>
-<text x="1109" y="624" class="small">GraphVirtualThreadOperations</text>
-<text x="1109" y="652" class="small">Flow and CompletableFuture</text>
-<rect x="120" y="730" width="330" height="185" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="3" class="card"/>
-<rect x="130" y="740" width="12" height="165" rx="6" fill="#EF4444" opacity="0.95"/>
-<text x="142" y="770" class="label">Sync Backends</text>
-<text x="144" y="806" class="small">AgeGraphOperations</text>
-<text x="144" y="834" class="small">Neo4jGraphOperations</text>
-<text x="144" y="862" class="small">MemgraphGraphOperations</text>
-<text x="144" y="890" class="small">TinkerGraphOperations</text>
-<rect x="520" y="745" width="330" height="165" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
-<rect x="530" y="755" width="12" height="145" rx="6" fill="#3B82F6" opacity="0.95"/>
-<text x="542" y="785" class="label">Redis Backend</text>
-<text x="544" y="821" class="small">FalkorDBGraphOperations</text>
-<text x="544" y="849" class="small">FalkorDBGraphSuspendOps</text>
-<text x="544" y="877" class="small">jfalkordb Driver</text>
-<rect x="920" y="745" width="330" height="165" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
-<rect x="930" y="755" width="12" height="145" rx="6" fill="#22C55E" opacity="0.95"/>
-<text x="942" y="785" class="label">Wrappers</text>
-<text x="944" y="821" class="small">Caching*GraphOperations</text>
-<text x="944" y="849" class="small">VirtualThread adapters</text>
-<text x="944" y="877" class="small">Suspend schema manager</text>
-<rect x="1320" y="745" width="330" height="165" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
-<rect x="1330" y="755" width="12" height="145" rx="6" fill="#EAB308" opacity="0.95"/>
-<text x="1342" y="785" class="label">Validation Surface</text>
-<text x="1344" y="821" class="small">batch validation</text>
-<text x="1344" y="849" class="small">safe identifiers</text>
-<text x="1344" y="877" class="small">explicit unsupported ops</text>
-<rect x="180" y="965" width="1480" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
-<text x="920" y="997" text-anchor="middle" class="tiny">Source note: GraphOperations composes repository contracts; backend classes implement the same model-facing API with optional capability interfaces.</text>
+  <text x="72" y="82" class="title">Bluetape4k Graph Class Structure</text>
+  <text x="74" y="118" class="subtitle">GraphOperations composes repository contracts; backends implement the same model-facing API.</text>
+
+  <rect x="70" y="150" width="1700" height="765" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+
+  <rect x="125" y="230" width="330" height="230" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+  <text x="155" y="278" class="section">Repository Contracts</text>
+  <text x="155" y="318" class="small">GraphSession</text>
+  <text x="155" y="347" class="small">GraphVertexRepository</text>
+  <text x="155" y="376" class="small">GraphEdgeRepository</text>
+  <text x="155" y="405" class="small">GraphGenericRepository</text>
+  <text x="155" y="434" class="tiny">Traversal + Algorithm repositories</text>
+
+  <rect x="570" y="230" width="355" height="230" rx="14" fill="#DCFCE7" stroke="#16A34A" stroke-width="3" class="card"/>
+  <text x="600" y="278" class="section">GraphOperations</text>
+  <text x="600" y="318" class="small">sync facade</text>
+  <text x="600" y="347" class="small">CRUD, traversal, algorithms</text>
+  <text x="600" y="376" class="small">backend-independent contract</text>
+  <text x="600" y="405" class="tiny">implemented by graph database modules</text>
+
+  <rect x="1040" y="230" width="310" height="230" rx="14" fill="#FEF3C7" stroke="#D97706" stroke-width="3" class="card"/>
+  <text x="1070" y="278" class="section">Model Surface</text>
+  <text x="1070" y="318" class="small">GraphElementId</text>
+  <text x="1070" y="347" class="small">GraphVertex / GraphEdge</text>
+  <text x="1070" y="376" class="small">GraphPath / PathStep</text>
+  <text x="1070" y="405" class="tiny">Options and result DTOs</text>
+
+  <rect x="1440" y="230" width="260" height="230" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
+  <text x="1470" y="278" class="section">Schema DSL</text>
+  <text x="1470" y="318" class="small">VertexLabel</text>
+  <text x="1470" y="347" class="small">EdgeLabel</text>
+  <text x="1470" y="376" class="small">PropertyDef</text>
+  <text x="1470" y="405" class="small">GraphSchemaManager</text>
+
+  <rect x="150" y="565" width="350" height="185" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
+  <text x="180" y="613" class="section">Optional Capabilities</text>
+  <text x="180" y="653" class="small">GraphMergeOperations</text>
+  <text x="180" y="682" class="small">GraphTransactionalOperations</text>
+  <text x="180" y="711" class="small">Suspend variants mirror them</text>
+
+  <rect x="600" y="565" width="355" height="185" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
+  <text x="630" y="613" class="section">Async Facades</text>
+  <text x="630" y="653" class="small">GraphSuspendOperations</text>
+  <text x="630" y="682" class="small">GraphVirtualThreadOperations</text>
+  <text x="630" y="711" class="tiny">Flow and CompletableFuture adapters</text>
+
+  <rect x="1080" y="565" width="565" height="185" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="3" class="card"/>
+  <text x="1110" y="613" class="section">Backend Implementations</text>
+  <text x="1110" y="653" class="small">AgeGraphOperations / Neo4jGraphOperations</text>
+  <text x="1110" y="682" class="small">MemgraphGraphOperations / TinkerGraphOperations</text>
+  <text x="1110" y="711" class="small">FalkorDBGraphOperations</text>
+
+  <rect x="235" y="805" width="1370" height="70" rx="14" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="2"/>
+  <text x="920" y="858" text-anchor="middle" class="tiny">The root README class view stays API-focused; example, benchmark, and BOM details belong in their own README diagrams.</text>
+
+  <path d="M 455 345 L 568 345" class="arrow"/>
+  <text x="512" y="329" text-anchor="middle" class="micro">composes</text>
+  <path d="M 925 345 L 1038 345" class="arrow"/>
+  <text x="982" y="329" text-anchor="middle" class="micro">uses</text>
+  <path d="M 1350 345 L 1438 345" class="softArrow"/>
+  <text x="1394" y="329" text-anchor="middle" class="micro">defines</text>
+  <path d="M 748 460 L 748 563" class="softArrow"/>
+  <text x="780" y="520" class="micro">async forms</text>
+  <path d="M 748 460 L 1355 563" class="arrow"/>
+  <text x="1110" y="512" class="micro">implemented by</text>
+  <path d="M 570 395 L 500 565" class="softArrow"/>
+  <text x="523" y="510" class="micro">optional</text>
+
+  <text x="920" y="1012" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | root README / class structure</text>
 </svg>
