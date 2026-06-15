@@ -1,117 +1,108 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1180" viewBox="0 0 1840 1180">
+<svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1120" viewBox="0 0 1840 1120">
+  <defs>
+    <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.13"/>
+    </filter>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+    </marker>
+    <marker id="arrowSlate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748B"/>
+    </marker>
+  </defs>
+  <style>
+    .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
+    .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
+    .section { font-family: 'Architects Daughter', cursive; font-size: 28px; fill: #111827; }
+    .small { font-family: 'Comic Mono', monospace; font-size: 17px; fill: #374151; }
+    .tiny { font-family: 'Comic Mono', monospace; font-size: 14px; fill: #4B5563; }
+    .micro { font-family: 'Comic Mono', monospace; font-size: 13px; fill: #64748B; }
+    .card { filter: url(#softShadow); }
+    .arrow { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrowBlue); }
+    .softArrow { stroke: #64748B; stroke-width: 2.4; fill: none; marker-end: url(#arrowSlate); }
+  </style>
 
-    <defs>
-      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
-        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
-      </filter>
-      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
-      </marker>
-    </defs>
-    <style>
-      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
-      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
-      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
-      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
-      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
-      .card { filter: url(#softShadow); }
-      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
-      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
-    </style>
+  <rect x="0" y="0" width="1840" height="1120" fill="#F8FAFC"/>
+  <rect x="24" y="24" width="1792" height="1072" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
+  <circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
+  <circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
+  <circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
 
-<rect x="0" y="0" width="1840" height="1180" fill="#F8FAFC"/>
-<rect x="24" y="24" width="1792" height="1132" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
-<circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
-<circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
-<circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
-<text x="72" y="82" class="title">AgeSql Class Model</text>
-<text x="74" y="118" class="subtitle">Apache AGE Cypher-over-SQL factory for graph setup, CRUD, batch rows, traversal, and algorithm helpers</text>
-<text x="920.0" y="1132" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: graph-age / AgeSql</text>
-<rect x="70" y="150" width="1700" height="890" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
-<path d="M 480 315 C 577.5 315, 577.5 390, 675 390" class="thin"/>
-<path d="M 1360 315 C 1262.5 315, 1262.5 390, 1165 390" class="thin"/>
-<text x="920" y="285" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">builds SQL strings for ag_catalog.cypher</text>
-<text x="920" y="285" text-anchor="middle" class="tiny">builds SQL strings for ag_catalog.cypher</text>
-<path d="M 650 520 C 580.0 520, 580.0 610, 510 610" class="thin"/>
-<path d="M 1190 520 C 1260.0 520, 1260.0 610, 1330 610" class="thin"/>
-<text x="560" y="565" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">vertex SQL</text>
-<text x="560" y="565" text-anchor="middle" class="tiny">vertex SQL</text>
-<text x="1280" y="565" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">edge SQL</text>
-<text x="1280" y="565" text-anchor="middle" class="tiny">edge SQL</text>
-<path d="M 760 620 C 605.0 620, 605.0 800, 450 800" class="thin"/>
-<path d="M 920 620 C 920.0 620, 920.0 800, 920 800" class="thin"/>
-<path d="M 1080 620 C 1235.0 620, 1235.0 800, 1390 800" class="thin"/>
-<text x="600" y="760" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">batch rows</text>
-<text x="600" y="760" text-anchor="middle" class="tiny">batch rows</text>
-<text x="920" y="760" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">serializes props</text>
-<text x="920" y="760" text-anchor="middle" class="tiny">serializes props</text>
-<text x="1240" y="760" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">path helpers</text>
-<text x="1240" y="760" text-anchor="middle" class="tiny">path helpers</text>
-<rect x="120" y="220" width="360" height="225" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
-<text x="300.0" y="254" text-anchor="middle" dominant-baseline="middle" class="tiny">&lt;&lt;functions&gt;&gt;</text>
-<text x="300.0" y="288" text-anchor="middle" dominant-baseline="middle" class="label">Setup + Graph DDL</text>
-<line x1="120" y1="308" x2="480" y2="308" stroke="#3B82F6" stroke-width="2"/>
-<text x="144" y="342" class="small">loadAge()</text>
-<text x="144" y="368" class="small">setSearchPath()</text>
-<text x="144" y="394" class="small">createExtension()</text>
-<text x="144" y="420" class="small">create/drop/exists graph</text>
-<rect x="650" y="345" width="540" height="275" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
-<text x="920.0" y="379" text-anchor="middle" dominant-baseline="middle" class="tiny">&lt;&lt;object&gt;&gt;</text>
-<text x="920.0" y="413" text-anchor="middle" dominant-baseline="middle" class="label">AgeSql</text>
-<line x1="650" y1="433" x2="1190" y2="433" stroke="#8B5CF6" stroke-width="2"/>
-<text x="674" y="467" class="small">+ cypher(graph, query, columns)</text>
-<text x="674" y="493" class="small">+ vertex + edge CRUD factories</text>
-<text x="674" y="519" class="small">+ batch create and endpoint match</text>
-<text x="674" y="545" class="small">+ neighbors / shortestPath / allPaths</text>
-<text x="674" y="571" class="small">+ degreeCentrality / match all</text>
-<text x="674" y="597" class="small">- commonSortedPropertyKeys / row props</text>
-<rect x="1360" y="220" width="360" height="190" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
-<text x="1540.0" y="254" text-anchor="middle" dominant-baseline="middle" class="tiny">&lt;&lt;SQL shape&gt;&gt;</text>
-<text x="1540.0" y="288" text-anchor="middle" dominant-baseline="middle" class="label">Cypher Wrapper</text>
-<line x1="1360" y1="308" x2="1720" y2="308" stroke="#22C55E" stroke-width="2"/>
-<text x="1384" y="342" class="small">SELECT * FROM ag_catalog.cypher</text>
-<text x="1384" y="368" class="small">graphName + $$ query $$</text>
-<text x="1384" y="394" class="small">typed agtype column list</text>
-<rect x="120" y="550" width="390" height="210" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
-<text x="315.0" y="584" text-anchor="middle" dominant-baseline="middle" class="tiny">&lt;&lt;factory group&gt;&gt;</text>
-<text x="315.0" y="618" text-anchor="middle" dominant-baseline="middle" class="label">Vertex SQL</text>
-<line x1="120" y1="638" x2="510" y2="638" stroke="#EAB308" stroke-width="2"/>
-<text x="144" y="672" class="small">createVertex / createVerticesBatch</text>
-<text x="144" y="698" class="small">matchVertices / matchVertexById</text>
-<text x="144" y="724" class="small">updateVertex / deleteVertex</text>
-<text x="144" y="750" class="small">countVertices</text>
-<rect x="1330" y="550" width="390" height="210" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="3" class="card"/>
-<text x="1525.0" y="584" text-anchor="middle" dominant-baseline="middle" class="tiny">&lt;&lt;factory group&gt;&gt;</text>
-<text x="1525.0" y="618" text-anchor="middle" dominant-baseline="middle" class="label">Edge SQL</text>
-<line x1="1330" y1="638" x2="1720" y2="638" stroke="#EF4444" stroke-width="2"/>
-<text x="1354" y="672" class="small">createEdge / createEdgesBatch</text>
-<text x="1354" y="698" class="small">matchEdgeBetween</text>
-<text x="1354" y="724" class="small">match by label/start/end id</text>
-<text x="1354" y="750" class="small">updateEdge / deleteEdge</text>
-<rect x="250" y="800" width="400" height="220" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
-<text x="450.0" y="834" text-anchor="middle" dominant-baseline="middle" class="tiny">&lt;&lt;data classes&gt;&gt;</text>
-<text x="450.0" y="868" text-anchor="middle" dominant-baseline="middle" class="label">Batch Row Models</text>
-<line x1="250" y1="888" x2="650" y2="888" stroke="#14B8A6" stroke-width="2"/>
-<text x="274" y="922" class="small">BatchVertexRow(index, props)</text>
-<text x="274" y="948" class="small">BatchEdgeRow(index, from, to)</text>
-<text x="274" y="974" class="small">shared sorted property keys</text>
-<rect x="720" y="800" width="400" height="220" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
-<text x="920.0" y="834" text-anchor="middle" dominant-baseline="middle" class="tiny">&lt;&lt;dependency&gt;&gt;</text>
-<text x="920.0" y="868" text-anchor="middle" dominant-baseline="middle" class="label">AgePropertySerializer</text>
-<line x1="720" y1="888" x2="1120" y2="888" stroke="#F97316" stroke-width="2"/>
-<text x="744" y="922" class="small">toCypherProps(properties)</text>
-<text x="744" y="948" class="small">toCypherAssignments(variable)</text>
-<text x="744" y="974" class="small">toCypherValue(value)</text>
-<text x="744" y="1000" class="small">escape strings + safe keys</text>
-<rect x="1190" y="800" width="400" height="220" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
-<text x="1390.0" y="834" text-anchor="middle" dominant-baseline="middle" class="tiny">&lt;&lt;factory group&gt;&gt;</text>
-<text x="1390.0" y="868" text-anchor="middle" dominant-baseline="middle" class="label">Traversal + Algorithms</text>
-<line x1="1190" y1="888" x2="1590" y2="888" stroke="#3B82F6" stroke-width="2"/>
-<text x="1214" y="922" class="small">neighbors(direction, depth)</text>
-<text x="1214" y="948" class="small">shortestPath / allPaths</text>
-<text x="1214" y="974" class="small">degreeCentrality</text>
-<text x="1214" y="1000" class="small">matchAllVertices / matchAllEdges</text>
-<rect x="180" y="1060" width="1480" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
-<text x="920" y="1093" text-anchor="middle" class="tiny">Source: AgeSql.kt and AgePropertySerializer.kt; graphName/label/property inputs are converted into AGE Cypher-over-SQL strings.</text>
+  <text x="72" y="82" class="title">AgeSql Class Model</text>
+  <text x="74" y="118" class="subtitle">AgeSql groups AGE setup, Cypher wrapping, CRUD factories, batch rows, traversal helpers, and property serialization.</text>
+
+  <rect x="70" y="150" width="1700" height="820" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+
+  <rect x="125" y="225" width="340" height="165" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+  <text x="295" y="260" text-anchor="middle" class="tiny">&lt;&lt;setup&gt;&gt;</text>
+  <text x="295" y="298" text-anchor="middle" class="section">AGE Setup</text>
+  <line x1="125" y1="318" x2="465" y2="318" stroke="#3B82F6" stroke-width="2"/>
+  <text x="155" y="350" class="small">loadAge / setSearchPath</text>
+  <text x="155" y="378" class="small">createExtension / graph DDL</text>
+
+  <rect x="575" y="225" width="690" height="220" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
+  <text x="920" y="260" text-anchor="middle" class="tiny">&lt;&lt;object&gt;&gt;</text>
+  <text x="920" y="298" text-anchor="middle" class="section">AgeSql</text>
+  <line x1="575" y1="320" x2="1265" y2="320" stroke="#8B5CF6" stroke-width="2"/>
+  <text x="605" y="355" class="small">+ cypher(graphName, cypherQuery, columns)</text>
+  <text x="605" y="384" class="small">+ vertex and edge CRUD factories</text>
+  <text x="605" y="413" class="small">+ batch rows, traversal helpers, graph reads</text>
+
+  <rect x="1375" y="225" width="340" height="165" rx="14" fill="#DCFCE7" stroke="#16A34A" stroke-width="3" class="card"/>
+  <text x="1545" y="260" text-anchor="middle" class="tiny">&lt;&lt;SQL shape&gt;&gt;</text>
+  <text x="1545" y="298" text-anchor="middle" class="section">Cypher Wrapper</text>
+  <line x1="1375" y1="318" x2="1715" y2="318" stroke="#16A34A" stroke-width="2"/>
+  <text x="1405" y="350" class="small">SELECT * FROM ag_catalog.cypher</text>
+  <text x="1405" y="378" class="small">typed agtype result columns</text>
+
+  <rect x="125" y="530" width="365" height="175" rx="14" fill="#FEF3C7" stroke="#D97706" stroke-width="3" class="card"/>
+  <text x="308" y="565" text-anchor="middle" class="tiny">&lt;&lt;factory group&gt;&gt;</text>
+  <text x="308" y="603" text-anchor="middle" class="section">Vertex SQL</text>
+  <line x1="125" y1="625" x2="490" y2="625" stroke="#D97706" stroke-width="2"/>
+  <text x="155" y="659" class="small">createVertex / createVerticesBatch</text>
+  <text x="155" y="688" class="small">match, update, delete, count</text>
+
+  <rect x="555" y="530" width="365" height="175" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="3" class="card"/>
+  <text x="738" y="565" text-anchor="middle" class="tiny">&lt;&lt;factory group&gt;&gt;</text>
+  <text x="738" y="603" text-anchor="middle" class="section">Edge SQL</text>
+  <line x1="555" y1="625" x2="920" y2="625" stroke="#EF4444" stroke-width="2"/>
+  <text x="585" y="659" class="small">createEdge / createEdgesBatch</text>
+  <text x="585" y="688" class="small">match by label, endpoints, id</text>
+
+  <rect x="985" y="530" width="365" height="175" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
+  <text x="1168" y="565" text-anchor="middle" class="tiny">&lt;&lt;factory group&gt;&gt;</text>
+  <text x="1168" y="603" text-anchor="middle" class="section">Traversal SQL</text>
+  <line x1="985" y1="625" x2="1350" y2="625" stroke="#14B8A6" stroke-width="2"/>
+  <text x="1015" y="659" class="small">neighbors / shortestPath</text>
+  <text x="1015" y="688" class="small">allPaths / degreeCentrality</text>
+
+  <rect x="1415" y="530" width="270" height="175" rx="14" fill="#F1F5F9" stroke="#64748B" stroke-width="3" class="card"/>
+  <text x="1550" y="565" text-anchor="middle" class="tiny">&lt;&lt;read helpers&gt;&gt;</text>
+  <text x="1550" y="603" text-anchor="middle" class="section">Graph Reads</text>
+  <line x1="1415" y1="625" x2="1685" y2="625" stroke="#64748B" stroke-width="2"/>
+  <text x="1445" y="659" class="small">matchAllVertices</text>
+  <text x="1445" y="688" class="small">matchAllEdges</text>
+
+  <rect x="285" y="790" width="390" height="140" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+  <text x="480" y="825" text-anchor="middle" class="tiny">&lt;&lt;data classes&gt;&gt;</text>
+  <text x="480" y="862" text-anchor="middle" class="section">Batch Rows</text>
+  <line x1="285" y1="882" x2="675" y2="882" stroke="#3B82F6" stroke-width="2"/>
+  <text x="315" y="916" class="small">BatchVertexRow / BatchEdgeRow</text>
+
+  <rect x="800" y="790" width="455" height="160" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
+  <text x="1028" y="825" text-anchor="middle" class="tiny">&lt;&lt;dependency&gt;&gt;</text>
+  <text x="1028" y="862" text-anchor="middle" class="section">AgePropertySerializer</text>
+  <line x1="800" y1="882" x2="1255" y2="882" stroke="#F97316" stroke-width="2"/>
+  <text x="830" y="910" class="small">safe keys + escaped literals</text>
+  <text x="830" y="936" class="small">Cypher property maps and assignments</text>
+  <text x="920" y="1072" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | module: graph-age / AgeSql class model</text>
+
+  <path d="M 465 308 L 573 330" class="softArrow"/>
+  <path d="M 1265 330 L 1373 308" class="arrow"/>
+  <path d="M 740 445 L 308 528" class="softArrow"/>
+  <path d="M 840 445 L 738 528" class="softArrow"/>
+  <path d="M 1000 445 L 1168 528" class="softArrow"/>
+  <path d="M 1140 445 L 1550 528" class="softArrow"/>
+  <path d="M 690 705 L 505 788" class="softArrow"/>
+  <path d="M 920 705 L 1028 788" class="softArrow"/>
 </svg>

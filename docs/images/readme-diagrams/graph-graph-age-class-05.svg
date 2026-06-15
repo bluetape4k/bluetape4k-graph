@@ -1,119 +1,93 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1280" viewBox="0 0 1840 1280">
+<svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1120" viewBox="0 0 1840 1120">
+  <defs>
+    <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
+    </filter>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+    </marker>
+    <marker id="arrowGray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748B"/>
+    </marker>
+  </defs>
+  <style>
+    .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
+    .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
+    .section { font-family: 'Architects Daughter', cursive; font-size: 28px; fill: #111827; }
+    .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
+    .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
+    .card { filter: url(#softShadow); }
+    .blue { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrowBlue); }
+    .gray { stroke: #64748B; stroke-width: 2.5; fill: none; marker-end: url(#arrowGray); }
+  </style>
 
-    <defs>
-      <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
-        <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
-      </filter>
-      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
-      </marker>
-    </defs>
-    <style>
-      .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
-      .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
-      .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
-      .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
-      .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
-      .card { filter: url(#softShadow); }
-      .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-      .thin { stroke: #60A5FA; stroke-width: 2; fill: none; marker-end: url(#arrow); }
-      .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
-    </style>
+  <rect x="0" y="0" width="1840" height="1120" fill="#F8FAFC"/>
+  <rect x="24" y="24" width="1792" height="1072" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
+  <circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
+  <circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
+  <circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
 
-<rect x="0" y="0" width="1840" height="1280" fill="#F8FAFC"/>
-<rect x="24" y="24" width="1792" height="1232" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
-<circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
-<circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
-<circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
-<text x="72" y="82" class="title">AgeTypeParser Class Model</text>
-<text x="74" y="118" class="subtitle">Apache AGE agtype parser converts vertex, edge, path, and lightweight JSON strings into graph-core models</text>
-<text x="920.0" y="1232" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: graph-age / AgeTypeParser</text>
-<rect x="70" y="150" width="1700" height="990" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
-<path d="M 520 325 C 585.0 325, 585.0 400, 650 400" class="thin"/>
-<path d="M 1220 400 C 1275.0 400, 1275.0 325, 1330 325" class="thin"/>
-<text x="920" y="285" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">agtype suffix selects parser branch</text>
-<text x="920" y="285" text-anchor="middle" class="tiny">agtype suffix selects parser branch</text>
-<path d="M 650 610 C 507.5 610, 507.5 690, 365 690" class="thin"/>
-<path d="M 760 635 C 607.5 635, 607.5 895, 455 895" class="thin"/>
-<path d="M 920 635 C 920.0 635, 920.0 895, 920 895" class="thin"/>
-<path d="M 1080 635 C 1232.5 635, 1232.5 895, 1385 895" class="thin"/>
-<path d="M 1220 610 C 1347.5 610, 1347.5 690, 1475 690" class="thin"/>
-<text x="560" y="660" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">vertex</text>
-<text x="560" y="660" text-anchor="middle" class="tiny">vertex</text>
-<text x="690" y="850" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">path scan</text>
-<text x="690" y="850" text-anchor="middle" class="tiny">path scan</text>
-<text x="920" y="850" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">JSON values</text>
-<text x="920" y="850" text-anchor="middle" class="tiny">JSON values</text>
-<text x="1150" y="850" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">model steps</text>
-<text x="1150" y="850" text-anchor="middle" class="tiny">model steps</text>
-<text x="1280" y="660" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">edge</text>
-<text x="1280" y="660" text-anchor="middle" class="tiny">edge</text>
-<rect x="120" y="220" width="400" height="210" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
-<text x="320.0" y="254" text-anchor="middle" dominant-baseline="middle" class="tiny">&lt;&lt;strings&gt;&gt;</text>
-<text x="320.0" y="288" text-anchor="middle" dominant-baseline="middle" class="label">AGE agtype Input</text>
-<line x1="120" y1="308" x2="520" y2="308" stroke="#3B82F6" stroke-width="2"/>
-<text x="144" y="342" class="small">{...}::vertex</text>
-<text x="144" y="368" class="small">{...}::edge</text>
-<text x="144" y="394" class="small">[...]::path</text>
-<text x="144" y="420" class="small">JSON object / array payload</text>
-<rect x="650" y="355" width="570" height="280" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
-<text x="935.0" y="389" text-anchor="middle" dominant-baseline="middle" class="tiny">&lt;&lt;object : KLogging&gt;&gt;</text>
-<text x="935.0" y="423" text-anchor="middle" dominant-baseline="middle" class="label">AgeTypeParser</text>
-<line x1="650" y1="443" x2="1220" y2="443" stroke="#8B5CF6" stroke-width="2"/>
-<text x="674" y="477" class="small">+ parseVertex(agtype)</text>
-<text x="674" y="503" class="small">+ parseEdge(agtype)</text>
-<text x="674" y="529" class="small">+ parsePath(agtype)</text>
-<text x="674" y="555" class="small">+ isVertex / isEdge / isPath</text>
-<text x="674" y="581" class="small">+ parseJsonObject / parseJsonArray</text>
-<text x="674" y="607" class="small">- parseValue / findClosing / agtype scan</text>
-<rect x="1330" y="220" width="400" height="210" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
-<text x="1530.0" y="254" text-anchor="middle" dominant-baseline="middle" class="tiny">&lt;&lt;outputs&gt;&gt;</text>
-<text x="1530.0" y="288" text-anchor="middle" dominant-baseline="middle" class="label">Graph Core Models</text>
-<line x1="1330" y1="308" x2="1730" y2="308" stroke="#22C55E" stroke-width="2"/>
-<text x="1354" y="342" class="small">GraphVertex(id, label, props)</text>
-<text x="1354" y="368" class="small">GraphEdge(id, start, end)</text>
-<text x="1354" y="394" class="small">GraphPath(PathStep list)</text>
-<text x="1354" y="420" class="small">GraphElementId.of(Long)</text>
-<rect x="120" y="650" width="390" height="210" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
-<text x="315.0" y="684" text-anchor="middle" dominant-baseline="middle" class="tiny">&lt;&lt;branch&gt;&gt;</text>
-<text x="315.0" y="718" text-anchor="middle" dominant-baseline="middle" class="label">Vertex Parser</text>
-<line x1="120" y1="738" x2="510" y2="738" stroke="#EAB308" stroke-width="2"/>
-<text x="144" y="772" class="small">removeSuffix(::vertex)</text>
-<text x="144" y="798" class="small">parse id / label / properties</text>
-<text x="144" y="824" class="small">GraphElementId.of(id)</text>
-<text x="144" y="850" class="small">return GraphVertex</text>
-<rect x="1330" y="650" width="390" height="210" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="3" class="card"/>
-<text x="1525.0" y="684" text-anchor="middle" dominant-baseline="middle" class="tiny">&lt;&lt;branch&gt;&gt;</text>
-<text x="1525.0" y="718" text-anchor="middle" dominant-baseline="middle" class="label">Edge Parser</text>
-<line x1="1330" y1="738" x2="1720" y2="738" stroke="#EF4444" stroke-width="2"/>
-<text x="1354" y="772" class="small">removeSuffix(::edge)</text>
-<text x="1354" y="798" class="small">parse id / label</text>
-<text x="1354" y="824" class="small">parse start_id / end_id</text>
-<text x="1354" y="850" class="small">return GraphEdge</text>
-<rect x="250" y="895" width="410" height="215" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
-<text x="455.0" y="929" text-anchor="middle" dominant-baseline="middle" class="tiny">&lt;&lt;branch&gt;&gt;</text>
-<text x="455.0" y="963" text-anchor="middle" dominant-baseline="middle" class="label">Path Parser</text>
-<line x1="250" y1="983" x2="660" y2="983" stroke="#14B8A6" stroke-width="2"/>
-<text x="274" y="1017" class="small">removeSuffix(::path)</text>
-<text x="274" y="1043" class="small">parseAgtypeElements(content)</text>
-<text x="274" y="1069" class="small">VertexStep / EdgeStep</text>
-<text x="274" y="1095" class="small">warn unknown agtype element</text>
-<rect x="715" y="895" width="410" height="215" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
-<text x="920.0" y="929" text-anchor="middle" dominant-baseline="middle" class="tiny">&lt;&lt;private helpers&gt;&gt;</text>
-<text x="920.0" y="963" text-anchor="middle" dominant-baseline="middle" class="small">Lightweight JSON Parser</text>
-<line x1="715" y1="983" x2="1125" y2="983" stroke="#F97316" stroke-width="2"/>
-<text x="739" y="1017" class="small">parseJsonObject(json)</text>
-<text x="739" y="1043" class="small">parseJsonArray(json)</text>
-<text x="739" y="1069" class="small">parseValue(content, start)</text>
-<text x="739" y="1095" class="small">findClosing(open, close)</text>
-<rect x="1180" y="895" width="410" height="215" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
-<text x="1385.0" y="929" text-anchor="middle" dominant-baseline="middle" class="tiny">&lt;&lt;graph-core&gt;&gt;</text>
-<text x="1385.0" y="963" text-anchor="middle" dominant-baseline="middle" class="label">Path Steps</text>
-<line x1="1180" y1="983" x2="1590" y2="983" stroke="#3B82F6" stroke-width="2"/>
-<text x="1204" y="1017" class="small">PathStep.VertexStep</text>
-<text x="1204" y="1043" class="small">PathStep.EdgeStep</text>
-<text x="1204" y="1069" class="small">GraphPath(steps)</text>
-<text x="1204" y="1095" class="small">preserves vertex/edge order</text>
-<rect x="180" y="1160" width="1480" height="52" rx="12" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
-<text x="920" y="1193" text-anchor="middle" class="tiny">Source: AgeTypeParser.kt; AGE agtype suffixes are stripped, JSON payloads parsed, and graph-core model objects returned.</text>
+  <text x="72" y="82" class="title">AgeTypeParser Class Model</text>
+  <text x="74" y="118" class="subtitle">Parses Apache AGE agtype strings into graph-core vertices, edges, paths, and JSON values.</text>
+
+  <rect x="70" y="150" width="1700" height="820" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+
+  <line x1="520" y1="400" x2="635" y2="400" class="blue"/>
+  <line x1="1205" y1="400" x2="1320" y2="400" class="blue"/>
+  <line x1="780" y1="602" x2="455" y2="700" class="gray"/>
+  <line x1="920" y1="602" x2="920" y2="700" class="gray"/>
+  <line x1="1060" y1="602" x2="1385" y2="700" class="gray"/>
+
+  <rect x="130" y="280" width="390" height="240" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+  <text x="325" y="315" text-anchor="middle" class="tiny">&lt;&lt;input strings&gt;&gt;</text>
+  <text x="325" y="352" text-anchor="middle" class="section">AGE agtype</text>
+  <line x1="130" y1="374" x2="520" y2="374" stroke="#3B82F6" stroke-width="2"/>
+  <text x="160" y="410" class="small">{...}::vertex</text>
+  <text x="160" y="438" class="small">{...}::edge</text>
+  <text x="160" y="466" class="small">[...]::path</text>
+  <text x="160" y="494" class="small">JSON object / array payload</text>
+
+  <rect x="635" y="250" width="570" height="352" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
+  <text x="920" y="287" text-anchor="middle" class="tiny">&lt;&lt;object : KLogging&gt;&gt;</text>
+  <text x="920" y="326" text-anchor="middle" class="section">AgeTypeParser</text>
+  <line x1="635" y1="350" x2="1205" y2="350" stroke="#8B5CF6" stroke-width="2"/>
+  <text x="670" y="386" class="small">+ parseVertex(agtype): GraphVertex</text>
+  <text x="670" y="414" class="small">+ parseEdge(agtype): GraphEdge</text>
+  <text x="670" y="442" class="small">+ parsePath(agtype): GraphPath</text>
+  <text x="670" y="470" class="small">+ isVertex / isEdge / isPath</text>
+  <text x="670" y="498" class="small">+ parseJsonObject(json): Map</text>
+  <text x="670" y="526" class="small">+ parseJsonArray(json): List</text>
+  <text x="670" y="554" class="small">- parseValue / findClosing</text>
+  <text x="670" y="582" class="small">- parseAgtypeElements for path arrays</text>
+
+  <rect x="1320" y="280" width="390" height="240" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
+  <text x="1515" y="315" text-anchor="middle" class="tiny">&lt;&lt;graph-core output&gt;&gt;</text>
+  <text x="1515" y="352" text-anchor="middle" class="section">Model Objects</text>
+  <line x1="1320" y1="374" x2="1710" y2="374" stroke="#22C55E" stroke-width="2"/>
+  <text x="1350" y="410" class="small">GraphVertex(id, label, props)</text>
+  <text x="1350" y="438" class="small">GraphEdge(id, start, end)</text>
+  <text x="1350" y="466" class="small">GraphPath(PathStep list)</text>
+  <text x="1350" y="494" class="small">GraphElementId.of(Long)</text>
+
+  <rect x="210" y="700" width="490" height="180" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
+  <text x="455" y="735" text-anchor="middle" class="tiny">&lt;&lt;suffix branches&gt;&gt;</text>
+  <text x="455" y="772" text-anchor="middle" class="section">Typed Parsers</text>
+  <line x1="210" y1="794" x2="700" y2="794" stroke="#EAB308" stroke-width="2"/>
+  <text x="240" y="830" class="small">strip ::vertex, ::edge, or ::path suffix</text>
+  <text x="240" y="858" class="small">extract id, label, endpoints, properties</text>
+
+  <rect x="735" y="700" width="370" height="180" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
+  <text x="920" y="735" text-anchor="middle" class="tiny">&lt;&lt;lightweight parser&gt;&gt;</text>
+  <text x="920" y="772" text-anchor="middle" class="section">JSON Reader</text>
+  <line x1="735" y1="794" x2="1105" y2="794" stroke="#F97316" stroke-width="2"/>
+  <text x="765" y="830" class="small">maps, arrays, strings, numbers</text>
+  <text x="765" y="858" class="small">null, true, false, nested blocks</text>
+
+  <rect x="1140" y="700" width="490" height="180" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
+  <text x="1385" y="735" text-anchor="middle" class="tiny">&lt;&lt;path assembly&gt;&gt;</text>
+  <text x="1385" y="772" text-anchor="middle" class="section">Path Steps</text>
+  <line x1="1140" y1="794" x2="1630" y2="794" stroke="#14B8A6" stroke-width="2"/>
+  <text x="1170" y="830" class="small">PathStep.VertexStep / EdgeStep</text>
+  <text x="1170" y="858" class="small">preserves AGE vertex-edge order</text>
+  <text x="920" y="1048" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | module: graph-age / AgeTypeParser class model</text>
 </svg>
