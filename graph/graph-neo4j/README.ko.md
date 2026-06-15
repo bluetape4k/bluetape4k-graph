@@ -370,25 +370,22 @@ testImplementation(Libs.testcontainers_neo4j)
 testImplementation(Libs.kotlinx_coroutines_test)
 ```
 
-### 싱글턴 컨테이너 패턴
+### 공유 Launcher 패턴
 
 ```kotlin
-import org.testcontainers.containers.Neo4jContainer
+import io.bluetape4k.testcontainers.graphdb.Neo4jServer
 import kotlinx.coroutines.test.runTest
+import org.neo4j.driver.AuthTokens
+import org.neo4j.driver.GraphDatabase
 
 class Neo4jGraphOperationsTest {
     companion object {
-        @JvmStatic
-        val neo4jContainer = Neo4jContainer("neo4j:5.18")
-            .withoutAuthentication()
-            .start()
-
-        fun getBoltUrl() = neo4jContainer.getBoltUrl()
+        private val server = Neo4jServer.Launcher.neo4j
     }
 
     @Test
     fun `should create and find vertex`() = runTest {
-        val driver = GraphDatabase.driver(getBoltUrl())
+        val driver = GraphDatabase.driver(server.boltUrl, AuthTokens.none())
         val graphOps = Neo4jGraphOperations(driver)
 
         try {

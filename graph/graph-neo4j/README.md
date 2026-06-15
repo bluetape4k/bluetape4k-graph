@@ -25,6 +25,20 @@ It bridges the Reactive Streams API through `kotlinx-coroutines-reactive` to pro
 | `Neo4jCoroutineSession` | Bridges `ReactiveSession` and Kotlin Coroutines |
 | `Neo4jRecordMapper` | Converts Neo4j `Record`, `Node`, `Relationship`, and `Path` to graph-core domain types |
 
+## Class Model
+
+### Neo4jGraphOperations Implementation
+
+![Neo4jGraphOperations diagram](../../docs/images/readme-diagrams/graph-graph-neo4j-class-03.png)
+
+### Neo4jCoroutineSession Bridge
+
+![Neo4jCoroutineSession diagram](../../docs/images/readme-diagrams/graph-graph-neo4j-class-04.png)
+
+### Neo4jRecordMapper Conversion Methods
+
+![Neo4jRecordMapper diagram](../../docs/images/readme-diagrams/graph-graph-neo4j-class-05.png)
+
 ## Key Methods
 
 ### Vertex Management
@@ -136,23 +150,22 @@ testImplementation(Libs.testcontainers_neo4j)
 testImplementation(Libs.kotlinx_coroutines_test)
 ```
 
-### Singleton Container Pattern
+### Shared Launcher Pattern
 
 ```kotlin
-import org.testcontainers.containers.Neo4jContainer
+import io.bluetape4k.testcontainers.graphdb.Neo4jServer
 import kotlinx.coroutines.test.runTest
+import org.neo4j.driver.AuthTokens
+import org.neo4j.driver.GraphDatabase
 
 class Neo4jGraphOperationsTest {
     companion object {
-        @JvmStatic
-        val neo4jContainer = Neo4jContainer("neo4j:5.18")
-            .withoutAuthentication()
-            .apply { start() }
+        private val server = Neo4jServer.Launcher.neo4j
     }
 
     @Test
     fun `should create and find vertex`() = runTest {
-        val driver = GraphDatabase.driver(neo4jContainer.boltUrl)
+        val driver = GraphDatabase.driver(server.boltUrl, AuthTokens.none())
         val graphOps = Neo4jGraphOperations(driver)
         try {
             val vertex = graphOps.createVertex("User", mapOf("name" to "Test"))

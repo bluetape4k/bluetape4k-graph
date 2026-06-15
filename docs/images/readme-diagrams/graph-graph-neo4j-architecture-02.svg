@@ -14,12 +14,12 @@
     .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
     .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
     .card { filter: url(#softShadow); }
-    .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-    .soft { stroke: #64748B; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+    .line { stroke: #2563EB; stroke-width: 2.3; fill: none; marker-end: url(#arrow); stroke-linecap: round; stroke-linejoin: round; }
+    .soft { stroke: #64748B; stroke-width: 2.1; fill: none; marker-end: url(#arrow); stroke-linecap: round; stroke-linejoin: round; }
   </style>
 
   <rect x="0" y="0" width="1840" height="1120" fill="#F8FAFC"/>
-  <rect x="24" y="24" width="1792" height="1072" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
+  <rect x="24" y="24" width="1792" height="1072" rx="22" fill="none" stroke="#CBD5E1" stroke-width="1.6"/>
   <circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
   <circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
   <circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
@@ -27,52 +27,54 @@
   <text x="72" y="82" class="title">Reactive to Coroutine Bridge</text>
   <text x="74" y="118" class="subtitle">Neo4j reactive publishers are materialized through kotlinx-coroutines-reactive and closed safely after each query.</text>
 
-  <rect x="70" y="150" width="1700" height="820" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+  <rect x="70" y="150" width="1700" height="820" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4" filter="url(#softShadow)"/>
 
   <line x1="430" y1="365" x2="555" y2="365" class="line"/>
   <line x1="855" y1="365" x2="980" y2="365" class="line"/>
   <line x1="1280" y1="365" x2="1405" y2="365" class="line"/>
   <line x1="920" y1="530" x2="920" y2="650" class="soft"/>
 
-  <rect x="110" y="265" width="320" height="210" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+  <rect x="110" y="265" width="320" height="210" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="1.9" class="card"/>
   <text x="270" y="302" text-anchor="middle" class="tiny">&lt;&lt;suspend caller&gt;&gt;</text>
   <text x="270" y="341" text-anchor="middle" class="section">Query Request</text>
-  <line x1="110" y1="365" x2="430" y2="365" stroke="#3B82F6" stroke-width="2"/>
+  <line x1="110" y1="365" x2="430" y2="365" stroke="#3B82F6" stroke-width="1.4"/>
   <text x="140" y="402" class="small">runReadQuery / runWriteQuery</text>
   <text x="140" y="431" class="small">read { } / write { }</text>
   <text x="140" y="460" class="small">Cypher + params validated</text>
 
-  <rect x="555" y="245" width="300" height="250" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
+  <rect x="555" y="245" width="300" height="250" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="1.9" class="card"/>
   <text x="705" y="282" text-anchor="middle" class="tiny">&lt;&lt;Neo4j driver&gt;&gt;</text>
   <text x="705" y="321" text-anchor="middle" class="section">ReactiveSession</text>
-  <line x1="555" y1="345" x2="855" y2="345" stroke="#8B5CF6" stroke-width="2"/>
+  <line x1="555" y1="345" x2="855" y2="345" stroke="#8B5CF6" stroke-width="1.4"/>
   <text x="585" y="382" class="small">driver.session(...)</text>
   <text x="585" y="411" class="small">SessionConfig(database)</text>
   <text x="585" y="440" class="small">session.run(Query)</text>
   <text x="585" y="469" class="small">returns Publisher result</text>
 
-  <rect x="980" y="245" width="300" height="250" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
+  <rect x="980" y="245" width="300" height="250" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="1.9" class="card"/>
   <text x="1130" y="282" text-anchor="middle" class="tiny">&lt;&lt;kotlinx-coroutines-reactive&gt;&gt;</text>
   <text x="1130" y="321" text-anchor="middle" class="section">Bridge</text>
-  <line x1="980" y1="345" x2="1280" y2="345" stroke="#EAB308" stroke-width="2"/>
+  <line x1="980" y1="345" x2="1280" y2="345" stroke="#EAB308" stroke-width="1.4"/>
   <text x="1010" y="382" class="small">awaitSingle()</text>
   <text x="1010" y="411" class="small">records().asFlow()</text>
   <text x="1010" y="440" class="small">asReactiveFlow()</text>
   <text x="1010" y="469" class="small">toList() or emitAll()</text>
 
-  <rect x="1405" y="265" width="320" height="210" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
+  <rect x="1405" y="265" width="320" height="210" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="1.9" class="card"/>
   <text x="1565" y="302" text-anchor="middle" class="tiny">&lt;&lt;coroutine result&gt;&gt;</text>
   <text x="1565" y="341" text-anchor="middle" class="section">Records / Flow</text>
-  <line x1="1405" y1="365" x2="1725" y2="365" stroke="#22C55E" stroke-width="2"/>
+  <line x1="1405" y1="365" x2="1725" y2="365" stroke="#22C55E" stroke-width="1.4"/>
   <text x="1435" y="402" class="small">List&lt;Record&gt; for single calls</text>
   <text x="1435" y="431" class="small">Flow&lt;T&gt; for streaming reads</text>
   <text x="1435" y="460" class="small">mapped by Neo4jRecordMapper</text>
 
-  <rect x="270" y="650" width="1300" height="200" rx="14" fill="#F8FAFC" stroke="#94A3B8" stroke-width="3" class="card"/>
+  <rect x="270" y="650" width="1300" height="200" rx="14" fill="#F8FAFC" stroke="#94A3B8" stroke-width="1.9" class="card"/>
   <text x="920" y="688" text-anchor="middle" class="tiny">&lt;&lt;resource boundary&gt;&gt;</text>
   <text x="920" y="727" text-anchor="middle" class="section">Session Close Is Part of the Bridge</text>
-  <line x1="270" y1="750" x2="1570" y2="750" stroke="#94A3B8" stroke-width="2"/>
+  <line x1="270" y1="750" x2="1570" y2="750" stroke="#94A3B8" stroke-width="1.4"/>
   <text x="315" y="790" class="small">Neo4jCoroutineSession closes the ReactiveSession in finally with awaitFirstOrNull().</text>
   <text x="315" y="820" class="small">Neo4jGraphSuspendOperations uses NonCancellable close so cancellation does not leak sessions.</text>
-  <text x="920" y="1048" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | module: graph-neo4j / reactive-coroutine bridge</text>
+  <rect x="230" y="1000" width="1380" height="56" rx="12" fill="#F8FAFC" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="920" y="1024" text-anchor="middle" class="tiny">The driver remains caller-owned; each reactive session is closed after records are materialized.</text>
+  <text x="920" y="1048" text-anchor="middle" class="tiny">Suspend operations use NonCancellable cleanup around transactions so cancellation does not leak sessions.</text>
 </svg>
