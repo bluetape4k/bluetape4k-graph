@@ -10,13 +10,17 @@
 - **Exposed + JDBC**: Data access via JetBrains Exposed transactions and the PostgreSQL JDBC driver
 - **SQL Builder**: The `AgeSql` object generates Cypher-over-SQL query strings
 - **agtype Parsing**: Converts PostgreSQL `agtype` results into graph domain models
-- **Coroutine-Based**: All methods are `suspend` functions and run on `Dispatchers.IO`
+- **Coroutine Variant**: `AgeGraphSuspendOperations` exposes `suspend` and `Flow` APIs over Exposed JDBC work
 
 ## Architecture
 
 ### Module Layer Structure
 
-![Module Layer Structure diagram](../../docs/images/readme-diagrams/graph-graph-age-architecture-01.png)
+![graph-age architecture](../../docs/images/readme-diagrams/graph-graph-age-architecture-01.png)
+
+### Cypher-over-SQL Execution Flow
+
+![Apache AGE Cypher-over-SQL flow](../../docs/images/readme-diagrams/graph-graph-age-architecture-02.png)
 
 ## Key Classes
 
@@ -29,6 +33,18 @@
 | `AgeSql` | Produces SQL strings that wrap Cypher queries for Apache AGE |
 | `AgePropertySerializer` | Serializes Kotlin values into AGE-compatible literals |
 | `AgeTypeParser` | Parses `agtype` results into `GraphVertex`, `GraphEdge`, and `GraphPath` |
+
+### AgeGraphOperations Class Model
+
+![AgeGraphOperations class model](../../docs/images/readme-diagrams/graph-graph-age-class-03.png)
+
+### AgeSql Class Model
+
+![AgeSql class model](../../docs/images/readme-diagrams/graph-graph-age-class-04.png)
+
+### AgeTypeParser Class Model
+
+![AgeTypeParser class model](../../docs/images/readme-diagrams/graph-graph-age-class-05.png)
 
 ## Dependencies
 
@@ -163,6 +179,10 @@ val afterDelete = ops.findVertexById("Person", aliceId)  // null (cache miss →
 ### ID Type
 Apache AGE stores vertex/edge IDs as `agtype` (BIGINT). The abstraction wraps them as strings in `GraphElementId`.
 
+### agtype Parsing Flow
+
+![agtype parsing flow](../../docs/images/readme-diagrams/graph-graph-age-architecture-10.png)
+
 ### agtype Parsing Limitations
 Nested JSON structures inside AGE results are parsed by `AgeTypeParser`. Extremely deep or exotic types may require custom handling.
 
@@ -170,11 +190,13 @@ Nested JSON structures inside AGE results are parsed by `AgeTypeParser`. Extreme
 The `LOAD 'age'` and `search_path` statement **must** be set via `connectionInitSql` — otherwise each connection pulled from the pool will fail to recognize AGE functions.
 
 ### Transaction Isolation
-All operations run inside Exposed transactions. For long-running traversals, consider using the coroutine variant with `Dispatchers.IO`.
+Synchronous operations run inside independent Exposed transactions. The coroutine variant uses Exposed suspended transactions for direct AGE queries and delegates selected blocking fallback algorithms to an IO dispatcher.
 
 ## Testing
 
 Integration tests use Testcontainers with the `apache/age:PG16_latest` image.
+
+![graph-age test environment](../../docs/images/readme-diagrams/graph-graph-age-architecture-12.png)
 
 ```bash
 ./gradlew :graph-age:test
