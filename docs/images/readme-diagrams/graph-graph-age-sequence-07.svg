@@ -37,7 +37,7 @@
 <text x="590.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">AgeGraphOperations</text>
 <line x1="590.0" y1="282" x2="590.0" y2="1028" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="795.0" y="190" width="270" height="74" rx="12" fill="#FEF3C7" stroke="#D97706" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="930.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">Dispatchers.IO</text>
+<text x="930.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">AgeSql</text>
 <line x1="930.0" y1="282" x2="930.0" y2="1028" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="1135.0" y="190" width="270" height="74" rx="12" fill="#FEE2E2" stroke="#DB2777" stroke-width="2.2" filter="url(#softShadow)"/>
 <text x="1270.0" y="215.0" text-anchor="middle" dominant-baseline="middle" class="label">Exposed</text>
@@ -68,17 +68,17 @@
 <rect x="607.5" y="371" width="305" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="631.5" cy="386" r="13" fill="#2F9E6B"/>
 <text x="631.5" y="386" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">2</text>
-<text x="655.5" y="386" dominant-baseline="middle" class="tiny">withContext(Dispatchers.IO)</text>
+<text x="655.5" y="386" dominant-baseline="middle" class="tiny">build createEdge SQL</text>
 <line x1="940.0" y1="500" x2="1260.0" y2="500" stroke="#D6A441" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="972.5" y="456" width="255" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="996.5" cy="471" r="13" fill="#D6A441"/>
 <text x="996.5" y="471" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">3</text>
-<text x="1020.5" y="471" dominant-baseline="middle" class="tiny">transaction(database)</text>
+<text x="1020.5" y="471" dominant-baseline="middle" class="tiny">SQL statement</text>
 <line x1="1280.0" y1="585" x2="1600.0" y2="585" stroke="#D6A441" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="1260.0" y="541" width="360" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="1284.0" cy="556" r="13" fill="#D6A441"/>
 <text x="1284.0" y="556" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">4</text>
-<text x="1308.0" y="556" dominant-baseline="middle" class="tiny">MATCH vertices and CREATE edge</text>
+<text x="1308.0" y="556" dominant-baseline="middle" class="tiny">exec createEdge SQL</text>
 <line x1="1600.0" y1="670" x2="1280.0" y2="670" stroke="#2E9C9B" stroke-width="2.7" stroke-dasharray="10 8" marker-end="url(#seqArrow)"/>
 <rect x="1327.5" y="626" width="225" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="1351.5" cy="641" r="13" fill="#2E9C9B"/>
@@ -105,5 +105,5 @@
 <text x="349.0" y="981" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">9</text>
 <text x="373.0" y="981" dominant-baseline="middle" class="tiny">GraphEdge</text>
 <rect x="150" y="1045" width="2240" height="42" rx="11" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
-<text x="1270.0" y="1066" text-anchor="middle" dominant-baseline="middle" class="tiny">Numbered labels sit above message lines; lifelines and activations stay separated from participant cards.</text>
+<text x="1270.0" y="1066" text-anchor="middle" dominant-baseline="middle" class="tiny">Result: AGE matches endpoint IDs, creates the relationship, and returns one GraphEdge.</text>
 </svg>

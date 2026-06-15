@@ -27,7 +27,7 @@
 <circle cx="2436" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
 <circle cx="2396" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
 <text x="72" y="82" class="title">createVertex</text>
-<text x="74" y="118" class="subtitle">AGE adapter runs blocking PostgreSQL AGE work on Dispatchers.IO and parses agtype into GraphVertex.</text>
+<text x="74" y="118" class="subtitle">AGE adapter builds Cypher-over-SQL, executes it in an Exposed transaction, and maps agtype to GraphVertex.</text>
 <text x="1270.0" y="1297" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: graph-age / createVertex</text>
 <rect x="70" y="150" width="2400" height="1055" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
 <rect x="115.0" y="190" width="270" height="74" rx="12" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2.2" filter="url(#softShadow)"/>
@@ -37,7 +37,7 @@
 <text x="590.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">AgeGraphOperations</text>
 <line x1="590.0" y1="282" x2="590.0" y2="1113" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="795.0" y="190" width="270" height="74" rx="12" fill="#FEF3C7" stroke="#D97706" stroke-width="2.2" filter="url(#softShadow)"/>
-<text x="930.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">Dispatchers.IO</text>
+<text x="930.0" y="227.0" text-anchor="middle" dominant-baseline="middle" class="label">AgeSql</text>
 <line x1="930.0" y1="282" x2="930.0" y2="1113" stroke="#B8C6D6" stroke-width="2.1" stroke-dasharray="8 8"/>
 <rect x="1135.0" y="190" width="270" height="74" rx="12" fill="#FEE2E2" stroke="#DB2777" stroke-width="2.2" filter="url(#softShadow)"/>
 <text x="1270.0" y="215.0" text-anchor="middle" dominant-baseline="middle" class="label">Exposed</text>
@@ -68,17 +68,17 @@
 <rect x="607.5" y="371" width="305" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="631.5" cy="386" r="13" fill="#2F9E6B"/>
 <text x="631.5" y="386" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">2</text>
-<text x="655.5" y="386" dominant-baseline="middle" class="tiny">withContext(Dispatchers.IO)</text>
+<text x="655.5" y="386" dominant-baseline="middle" class="tiny">build createVertex SQL</text>
 <line x1="940.0" y1="500" x2="1260.0" y2="500" stroke="#D6A441" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="972.5" y="456" width="255" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="996.5" cy="471" r="13" fill="#D6A441"/>
 <text x="996.5" y="471" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">3</text>
-<text x="1020.5" y="471" dominant-baseline="middle" class="tiny">transaction(database)</text>
+<text x="1020.5" y="471" dominant-baseline="middle" class="tiny">SQL statement</text>
 <line x1="1280.0" y1="585" x2="1600.0" y2="585" stroke="#D6A441" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="1275.0" y="541" width="330" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="1299.0" cy="556" r="13" fill="#D6A441"/>
 <text x="1299.0" y="556" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">4</text>
-<text x="1323.0" y="556" dominant-baseline="middle" class="tiny">LOAD age and SET search_path</text>
+<text x="1323.0" y="556" dominant-baseline="middle" class="tiny">exec createVertex SQL</text>
 <line x1="1280.0" y1="670" x2="1600.0" y2="670" stroke="#D6A441" stroke-width="2.7" marker-end="url(#seqArrow)"/>
 <rect x="1270.0" y="626" width="340" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="1294.0" cy="641" r="13" fill="#D6A441"/>
@@ -110,5 +110,5 @@
 <text x="341.5" y="1066" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">10</text>
 <text x="365.5" y="1066" dominant-baseline="middle" class="tiny">GraphVertex</text>
 <rect x="150" y="1130" width="2240" height="42" rx="11" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
-<text x="1270.0" y="1151" text-anchor="middle" dominant-baseline="middle" class="tiny">Numbered labels sit above message lines; lifelines and activations stay separated from participant cards.</text>
+<text x="1270.0" y="1151" text-anchor="middle" dominant-baseline="middle" class="tiny">Result: PostgreSQL AGE returns one agtype vertex row, which becomes a GraphVertex for the caller.</text>
 </svg>

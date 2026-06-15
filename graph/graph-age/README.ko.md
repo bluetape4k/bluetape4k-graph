@@ -10,31 +10,31 @@ Apache AGE (PostgreSQL 그래프 확장)를 기반으로 한 `GraphOperations` �
 - **Exposed + JDBC**: JetBrains Exposed 트랜잭션과 PostgreSQL JDBC 드라이버로 데이터 접근
 - **SQL 빌더**: `AgeSql` 객체로 Cypher-over-SQL 쿼리 문자열 생성
 - **agtype 파싱**: PostgreSQL의 `agtype` 결과를 Graph 모델로 변환
-- **코루틴 기반**: 모든 메서드가 `suspend` 함수이며 `Dispatchers.IO`에서 실행
+- **코루틴 변형 제공**: `AgeGraphSuspendOperations`가 Exposed JDBC 작업 위에 `suspend` / `Flow` API를 제공
 
 ## 아키텍처
 
 ### 모듈 레이어 구조
 
-![graph age Architecture diagram](../../docs/images/readme-diagrams/graph-graph-age-architecture-01.png)
+![graph-age architecture](../../docs/images/readme-diagrams/graph-graph-age-architecture-01.png)
 
 ### Apache AGE 동작 흐름
 
-![Apache AGE diagram](../../docs/images/readme-diagrams/graph-graph-age-architecture-02.png)
+![Apache AGE Cypher-over-SQL flow](../../docs/images/readme-diagrams/graph-graph-age-architecture-02.png)
 
 ## 주요 클래스
 
 ### AgeGraphOperations 클래스 다이어그램
 
-![AgeGraphOperations diagram](../../docs/images/readme-diagrams/graph-graph-age-class-03.png)
+![AgeGraphOperations class model](../../docs/images/readme-diagrams/graph-graph-age-class-03.png)
 
 ### AgeSql 클래스 다이어그램
 
-![AgeSql diagram](../../docs/images/readme-diagrams/graph-graph-age-class-04.png)
+![AgeSql class model](../../docs/images/readme-diagrams/graph-graph-age-class-04.png)
 
 ### AgeTypeParser 클래스 다이어그램
 
-![AgeTypeParser diagram](../../docs/images/readme-diagrams/graph-graph-age-class-05.png)
+![AgeTypeParser class model](../../docs/images/readme-diagrams/graph-graph-age-class-05.png)
 
 ## 시퀀스 다이어그램
 
@@ -56,7 +56,7 @@ Apache AGE (PostgreSQL 그래프 확장)를 기반으로 한 `GraphOperations` �
 
 ## agtype 파싱 플로우
 
-![agtype diagram](../../docs/images/readme-diagrams/graph-graph-age-architecture-10.png)
+![agtype parsing flow](../../docs/images/readme-diagrams/graph-graph-age-architecture-10.png)
 
 ## HikariCP 연결 초기화
 
@@ -64,7 +64,7 @@ Apache AGE (PostgreSQL 그래프 확장)를 기반으로 한 `GraphOperations` �
 
 ## 테스트 환경 구성
 
-![graph age Architecture 12 diagram](../../docs/images/readme-diagrams/graph-graph-age-architecture-12.png)
+![graph-age test environment](../../docs/images/readme-diagrams/graph-graph-age-architecture-12.png)
 
 ## 코드 예시
 
@@ -515,10 +515,10 @@ connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"${'$'}user\", p
 
 ### 트랜잭션 격리
 
-모든 메서드는 `withContext(Dispatchers.IO) { transaction { ... } }` 내에서 실행:
+동기 API의 각 연산은 독립적인 Exposed 트랜잭션 안에서 실행된다. 코루틴 API는 직접 AGE 쿼리에 Exposed suspended transaction을 사용하고, 일부 blocking fallback 알고리즘만 IO dispatcher로 위임한다.
 
 - 각 메서드는 독립적인 트랜잭션
-- 외부 트랜잭션 관리 불가
+- 명시적 `transaction { ... }` API로 여러 연산을 하나의 graph transaction으로 묶을 수 있음
 - 멀티 쿼리 원자성 필요 시 별도 API 확장 필요
 
 ## 의존성
