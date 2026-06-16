@@ -11,6 +11,10 @@ Supplier, part, warehouse, route, carrier, customer order를 작은 supply-chain
 route 장애가 어떤 order에 영향을 주는지, 실패 route를 대체할 active route가 무엇인지, 어떤 part가 bottleneck이거나
 substitution cycle에 속하는지 답합니다.
 
+## 아키텍처
+
+![supply-chain graph examples architecture](../../docs/images/readme-diagrams/examples-supply-chain-graph-examples-architecture-01.png)
+
 ## Graph Model
 
 | 요소 | Label | 주요 속성 | 목적 |
