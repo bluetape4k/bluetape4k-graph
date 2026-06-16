@@ -32,7 +32,7 @@
   <circle cx="1700" cy="78" r="15" fill="#DCFCE7"/>
   <circle cx="1740" cy="78" r="15" fill="#FED7AA"/>
 
-  <rect x="70" y="160" width="1660" height="760" rx="18" class="panel"/>
+  <rect x="70" y="160" width="1660" height="790" rx="18" class="panel"/>
 
   <text x="150" y="230" class="section">Runtime Signals</text>
   <text x="605" y="230" class="section">Typed Incident Graph</text>
