@@ -18,6 +18,13 @@ kotlinx-benchmark module for graph performance comparison. It now contains nine 
 
 ![graph-benchmark Architecture diagram](../../docs/images/readme-diagrams/benchmark/graph-benchmark-architecture-01.png)
 
+`graph-benchmark` separates benchmark harness concerns from result interpretation:
+
+- Gradle benchmark configurations choose the JMH matrix, parameters, warmups, and iterations.
+- Track classes measure API model overhead, backend contract latency, domain-shaped graph workloads, sustained writes, PostgreSQL decision workloads, and graph-io formats.
+- Fixtures are deterministic and rebuilt for measured iterations so each backend sees the same graph shape.
+- Container-backed backend and PostgreSQL runs should be executed serially; charts are summaries generated from raw JMH JSON.
+
 ## What It Measures
 
 - `GraphDbComparisonBenchmark`: `tinkergraph`, `neo4j`, `memgraph`, `age`, and `falkordb` backends.

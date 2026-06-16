@@ -1,96 +1,117 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1080" viewBox="0 0 1840 1080">
+<svg xmlns="http://www.w3.org/2000/svg" width="1760" height="1040" viewBox="0 0 1760 1040">
   <defs>
-    <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
-      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.13"/>
+    <filter id="shadow" x="-6%" y="-6%" width="112%" height="112%">
+      <feDropShadow dx="0" dy="7" stdDeviation="5" flood-color="#334155" flood-opacity="0.09"/>
     </filter>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+    <marker id="arrow-blue" viewBox="0 0 24 24" refX="22" refY="12" markerWidth="20" markerHeight="20" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 3 3 L 22 12 L 3 21 Z" fill="#2563EB"/>
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 24 24" refX="22" refY="12" markerWidth="20" markerHeight="20" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 3 3 L 22 12 L 3 21 Z" fill="#059669"/>
+    </marker>
+    <marker id="arrow-orange" viewBox="0 0 24 24" refX="22" refY="12" markerWidth="20" markerHeight="20" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 3 3 L 22 12 L 3 21 Z" fill="#EA580C"/>
     </marker>
   </defs>
 
   <style>
-    .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
-    .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
-    .section { font-family: 'Architects Daughter', cursive; font-size: 30px; fill: #111827; }
-    .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
-    .small { font-family: 'Comic Mono', monospace; font-size: 17px; fill: #374151; }
-    .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
-    .card { filter: url(#softShadow); }
-    .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-    .thin { stroke: #64748B; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+    .title { font-family: 'Architects Daughter', cursive; font-size: 50px; fill: #0F172A; }
+    .subtitle { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #475569; }
+    .section { font-family: 'Architects Daughter', cursive; font-size: 28px; fill: #111827; }
+    .cardTitle { font-family: 'Architects Daughter', cursive; font-size: 24px; fill: #111827; }
+    .body { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #334155; }
+    .small { font-family: 'Comic Mono', monospace; font-size: 13px; fill: #475569; }
+    .panel { fill: #FFFFFF; stroke: #CBD5E1; stroke-width: 1.5; }
+    .lane { fill: #F8FAFC; stroke: #CBD5E1; stroke-width: 1.4; }
+    .card { filter: url(#shadow); }
+    .flow { fill: none; stroke: #2563EB; stroke-width: 3.0; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow-blue); }
+    .format { fill: none; stroke: #059669; stroke-width: 3.0; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow-green); }
+    .file { fill: none; stroke: #EA580C; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow-orange); }
   </style>
 
-  <rect x="0" y="0" width="1840" height="1080" fill="#F8FAFC"/>
-  <rect x="24" y="24" width="1792" height="1032" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
-  <circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
-  <circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
-  <circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
+  <rect x="0" y="0" width="1760" height="1040" fill="#F8FAFC"/>
+  <rect x="30" y="30" width="1700" height="980" rx="22" fill="none" stroke="#BFDBFE" stroke-width="2.0"/>
 
-  <text x="72" y="82" class="title">graph-io Benchmark Architecture</text>
-  <text x="74" y="118" class="subtitle">JMH measures graph bulk import, export, and round-trip paths over a TinkerGraph fixture and trial-scoped temporary files.</text>
+  <text x="72" y="84" class="title">graph-io-benchmark architecture</text>
+  <text x="74" y="120" class="subtitle">JMH compares graph bulk import/export formats over an in-memory TinkerGraph dataset and temporary file paths.</text>
 
-  <rect x="70" y="150" width="1700" height="790" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+  <rect x="72" y="160" width="1616" height="772" rx="20" class="panel"/>
 
-  <text x="280" y="215" text-anchor="middle" class="section">Dataset State</text>
-  <text x="835" y="215" text-anchor="middle" class="section">I/O Benchmarks</text>
-  <text x="1430" y="215" text-anchor="middle" class="section">Files and Reports</text>
+  <rect x="112" y="214" width="318" height="604" rx="18" class="lane"/>
+  <text x="142" y="264" class="section">1. Dataset state</text>
+  <text x="144" y="296" class="small">Trial setup creates graph data and files.</text>
 
-  <rect x="130" y="270" width="360" height="160" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
-  <text x="165" y="318" class="label">Benchmark State</text>
-  <text x="165" y="354" class="small">sizeName: smoke / small / medium</text>
-  <text x="165" y="382" class="small">temp directory per trial</text>
-  <text x="165" y="410" class="small">teardown removes all files</text>
+  <rect x="144" y="350" width="254" height="112" rx="16" fill="#DCFCE7" stroke="#10B981" stroke-width="1.8" class="card"/>
+  <text x="271" y="386" text-anchor="middle" class="cardTitle">TinkerGraph</text>
+  <text x="271" y="416" text-anchor="middle" class="body">Person / KNOWS fixture</text>
+  <text x="271" y="439" text-anchor="middle" class="small">smoke, small, medium sizes</text>
 
-  <rect x="130" y="545" width="360" height="150" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
-  <text x="165" y="593" class="label">TinkerGraph Fixture</text>
-  <text x="165" y="629" class="small">Person vertices: 1k / 10k</text>
-  <text x="165" y="657" class="small">KNOWS edges: 2k / 20k</text>
-  <text x="165" y="685" class="small">Random(42) deterministic topology</text>
+  <rect x="144" y="542" width="254" height="112" rx="16" fill="#DBEAFE" stroke="#3B82F6" stroke-width="1.8" class="card"/>
+  <text x="271" y="578" text-anchor="middle" class="cardTitle">Temp directory</text>
+  <text x="271" y="608" text-anchor="middle" class="body">Files.createTempDirectory</text>
+  <text x="271" y="631" text-anchor="middle" class="small">deleted at trial teardown</text>
 
-  <rect x="615" y="245" width="450" height="150" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
-  <text x="650" y="293" class="label">java.io Bulk Paths</text>
-  <text x="650" y="329" class="small">CSV, Jackson2 NDJSON, Jackson3 NDJSON</text>
-  <text x="650" y="357" class="small">GraphML import, export, round-trip</text>
-  <text x="650" y="385" class="small">sync, virtual-thread, suspend adapters</text>
+  <rect x="506" y="214" width="412" height="604" rx="18" class="lane"/>
+  <text x="536" y="264" class="section">2. I/O families</text>
+  <text x="538" y="296" class="small">Each path measures export, import, and round-trip.</text>
 
-  <rect x="615" y="470" width="450" height="150" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
-  <text x="650" y="518" class="label">OkIO Bulk Paths</text>
-  <text x="650" y="554" class="small">OkioGraphBulkExporter / Importer</text>
-  <text x="650" y="582" class="small">Jackson3 NDJSON and GraphML</text>
-  <text x="650" y="610" class="small">GZIP NDJSON and virtual-thread adapter</text>
+  <rect x="540" y="328" width="342" height="94" rx="16" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1.8" class="card"/>
+  <text x="711" y="361" text-anchor="middle" class="cardTitle">CSV</text>
+  <text x="711" y="391" text-anchor="middle" class="small">paired vertices.csv and edges.csv</text>
 
-  <rect x="615" y="715" width="450" height="120" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
-  <text x="650" y="763" class="label">Smoke Benchmark</text>
-  <text x="650" y="799" class="small">csvSyncRoundTrip</text>
-  <text x="650" y="827" class="small">Jackson3 OkIO and GraphML OkIO round trips</text>
+  <rect x="540" y="466" width="342" height="94" rx="16" fill="#ECFDF5" stroke="#10B981" stroke-width="1.8" class="card"/>
+  <text x="711" y="499" text-anchor="middle" class="cardTitle">NDJSON</text>
+  <text x="711" y="529" text-anchor="middle" class="small">Jackson2 and Jackson3 one-file streams</text>
 
-  <rect x="1200" y="260" width="450" height="145" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
-  <text x="1235" y="308" class="label">Temporary Files</text>
-  <text x="1235" y="344" class="small">v.csv / e.csv pairs</text>
-  <text x="1235" y="372" class="small">g2.ndjson, g3.ndjson, g.graphml</text>
-  <text x="1235" y="400" class="small">OkIO path sinks and sources</text>
+  <rect x="540" y="604" width="342" height="94" rx="16" fill="#E0F2FE" stroke="#06B6D4" stroke-width="1.8" class="card"/>
+  <text x="711" y="637" text-anchor="middle" class="cardTitle">GraphML</text>
+  <text x="711" y="667" text-anchor="middle" class="small">XML graph document import/export</text>
 
-  <rect x="1200" y="500" width="450" height="135" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="3" class="card"/>
-  <text x="1235" y="548" class="label">Measurement Focus</text>
-  <text x="1235" y="584" class="small">file I/O plus in-memory graph creation</text>
-  <text x="1235" y="612" class="small">no external database containers</text>
+  <rect x="540" y="742" width="342" height="58" rx="16" fill="#FFF7ED" stroke="#F97316" stroke-width="1.8" class="card"/>
+  <text x="711" y="779" text-anchor="middle" class="cardTitle">OkIO adapters and GZIP</text>
 
-  <rect x="1200" y="715" width="450" height="120" rx="14" fill="#F8FAFC" stroke="#94A3B8" stroke-width="3" class="card"/>
-  <text x="1235" y="763" class="label">JMH JSON</text>
-  <text x="1235" y="799" class="small">build/reports/benchmarks/**/main.json</text>
-  <text x="1235" y="827" class="small">charts derive from raw benchmark reports</text>
+  <rect x="1004" y="214" width="326" height="604" rx="18" class="lane"/>
+  <text x="1034" y="264" class="section">3. Execution models</text>
+  <text x="1036" y="296" class="small">The same formats run through API variants.</text>
 
-  <path d="M 490 350 L 615 320" class="line"/>
-  <path d="M 490 620 L 615 545" class="line"/>
-  <path d="M 1065 320 L 1200 332" class="line"/>
-  <path d="M 1065 545 L 1200 332" class="thin"/>
-  <path d="M 1065 775 L 1200 775" class="line"/>
-  <path d="M 1425 405 L 1425 500" class="line"/>
-  <path d="M 1425 635 L 1425 715" class="line"/>
+  <rect x="1038" y="342" width="258" height="94" rx="16" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.6" class="card"/>
+  <text x="1167" y="376" text-anchor="middle" class="cardTitle">Sync</text>
+  <text x="1167" y="406" text-anchor="middle" class="small">java.io path sinks and sources</text>
 
-  <text x="545" y="324" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">graph data</text>
-  <text x="545" y="324" text-anchor="middle" class="tiny">graph data</text>
-  <text x="1125" y="306" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">writes/reads</text>
-  <text x="1125" y="306" text-anchor="middle" class="tiny">writes/reads</text>
-  <text x="920" y="1032" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | module: graph-io-benchmark / architecture</text>
+  <rect x="1038" y="500" width="258" height="94" rx="16" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="1.8" class="card"/>
+  <text x="1167" y="534" text-anchor="middle" class="cardTitle">Virtual thread</text>
+  <text x="1167" y="564" text-anchor="middle" class="small">async adapters with Future.get()</text>
+
+  <rect x="1038" y="658" width="258" height="94" rx="16" fill="#ECFDF5" stroke="#10B981" stroke-width="1.8" class="card"/>
+  <text x="1167" y="692" text-anchor="middle" class="cardTitle">Coroutine</text>
+  <text x="1167" y="722" text-anchor="middle" class="small">suspend import/export paths</text>
+
+  <rect x="1410" y="214" width="238" height="604" rx="18" class="lane"/>
+  <text x="1440" y="264" class="section">4. Output</text>
+  <text x="1442" y="296" class="small">Results are file I/O plus graph writes.</text>
+
+  <rect x="1432" y="350" width="194" height="102" rx="16" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.6" class="card"/>
+  <text x="1529" y="385" text-anchor="middle" class="cardTitle">JMH JSON</text>
+  <text x="1529" y="415" text-anchor="middle" class="small">benchmark report</text>
+
+  <rect x="1432" y="542" width="194" height="102" rx="16" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.6" class="card"/>
+  <text x="1529" y="577" text-anchor="middle" class="cardTitle">Charts</text>
+  <text x="1529" y="606" text-anchor="middle" class="small">export and import</text>
+  <text x="1529" y="628" text-anchor="middle" class="small">round-trip summaries</text>
+
+  <rect x="1432" y="720" width="194" height="58" rx="16" fill="#FFF7ED" stroke="#F97316" stroke-width="1.6" class="card"/>
+  <text x="1529" y="756" text-anchor="middle" class="small">no database containers</text>
+
+  <path d="M 398 406 L 540 375" class="flow"/>
+  <path d="M 398 598 C 454 580 500 512 540 513" class="file"/>
+  <path d="M 398 598 C 462 650 500 650 540 651" class="file"/>
+  <path d="M 882 375 C 942 380 984 388 1038 389" class="format"/>
+  <path d="M 882 513 C 946 514 986 546 1038 547" class="format"/>
+  <path d="M 882 651 C 946 660 986 704 1038 705" class="format"/>
+  <path d="M 882 771 C 978 730 1014 610 1038 547" class="file"/>
+  <path d="M 1296 389 C 1352 392 1394 400 1432 401" class="flow"/>
+  <path d="M 1296 547 C 1356 548 1394 592 1432 593" class="flow"/>
+
+  <rect x="336" y="868" width="1088" height="42" rx="14" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="880" y="895" text-anchor="middle" class="small">Use this module for serializer and adapter changes; use graph-benchmark for backend database comparisons.</text>
 </svg>

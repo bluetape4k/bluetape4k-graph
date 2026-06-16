@@ -1,102 +1,125 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1080" viewBox="0 0 1840 1080">
+<svg xmlns="http://www.w3.org/2000/svg" width="1760" height="1080" viewBox="0 0 1760 1080">
   <defs>
-    <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
-      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.13"/>
+    <filter id="shadow" x="-6%" y="-6%" width="112%" height="112%">
+      <feDropShadow dx="0" dy="7" stdDeviation="5" flood-color="#334155" flood-opacity="0.09"/>
     </filter>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+    <marker id="arrow-blue" viewBox="0 0 24 24" refX="22" refY="12" markerWidth="20" markerHeight="20" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 3 3 L 22 12 L 3 21 Z" fill="#2563EB"/>
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 24 24" refX="22" refY="12" markerWidth="20" markerHeight="20" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 3 3 L 22 12 L 3 21 Z" fill="#059669"/>
+    </marker>
+    <marker id="arrow-orange" viewBox="0 0 24 24" refX="22" refY="12" markerWidth="20" markerHeight="20" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 3 3 L 22 12 L 3 21 Z" fill="#EA580C"/>
+    </marker>
+    <marker id="arrow-gray" viewBox="0 0 24 24" refX="22" refY="12" markerWidth="18" markerHeight="18" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 3 3 L 22 12 L 3 21 Z" fill="#64748B"/>
     </marker>
   </defs>
 
   <style>
-    .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
-    .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
-    .section { font-family: 'Architects Daughter', cursive; font-size: 30px; fill: #111827; }
-    .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
-    .small { font-family: 'Comic Mono', monospace; font-size: 17px; fill: #374151; }
-    .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
-    .card { filter: url(#softShadow); }
-    .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-    .thin { stroke: #64748B; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+    .title { font-family: 'Architects Daughter', cursive; font-size: 50px; fill: #0F172A; }
+    .subtitle { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #475569; }
+    .section { font-family: 'Architects Daughter', cursive; font-size: 28px; fill: #111827; }
+    .cardTitle { font-family: 'Architects Daughter', cursive; font-size: 24px; fill: #111827; }
+    .body { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #334155; }
+    .small { font-family: 'Comic Mono', monospace; font-size: 13px; fill: #475569; }
+    .panel { fill: #FFFFFF; stroke: #CBD5E1; stroke-width: 1.5; }
+    .lane { fill: #F8FAFC; stroke: #CBD5E1; stroke-width: 1.4; }
+    .card { filter: url(#shadow); }
+    .flow { fill: none; stroke: #2563EB; stroke-width: 3.0; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow-blue); }
+    .track { fill: none; stroke: #059669; stroke-width: 3.0; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow-green); }
+    .data { fill: none; stroke: #EA580C; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow-orange); }
+    .report { fill: none; stroke: #64748B; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow-gray); }
   </style>
 
-  <rect x="0" y="0" width="1840" height="1080" fill="#F8FAFC"/>
-  <rect x="24" y="24" width="1792" height="1032" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
-  <circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
-  <circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
-  <circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
+  <rect x="0" y="0" width="1760" height="1080" fill="#F8FAFC"/>
+  <rect x="30" y="30" width="1700" height="1020" rx="22" fill="none" stroke="#BFDBFE" stroke-width="2.0"/>
 
-  <text x="72" y="82" class="title">graph-benchmark Architecture</text>
-  <text x="74" y="118" class="subtitle">kotlinx-benchmark drives focused graph tracks over deterministic fixtures and backend matrices, then writes JMH JSON reports.</text>
+  <text x="72" y="84" class="title">graph-benchmark architecture</text>
+  <text x="74" y="120" class="subtitle">kotlinx-benchmark drives source-backed graph tracks over deterministic fixtures, backend matrices, and JMH JSON reports.</text>
 
-  <rect x="70" y="150" width="1700" height="790" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+  <rect x="72" y="160" width="1616" height="840" rx="20" class="panel"/>
 
-  <text x="280" y="215" text-anchor="middle" class="section">Benchmark Entrypoints</text>
-  <text x="835" y="215" text-anchor="middle" class="section">Measured Tracks</text>
-  <text x="1430" y="215" text-anchor="middle" class="section">Fixtures and Output</text>
+  <rect x="112" y="212" width="312" height="600" rx="18" class="lane"/>
+  <text x="142" y="262" class="section">1. Run target</text>
+  <text x="144" y="294" class="small">Gradle config selects one benchmark matrix.</text>
 
-  <rect x="135" y="275" width="350" height="150" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
-  <text x="170" y="323" class="label">Gradle Tasks</text>
-  <text x="170" y="359" class="small">:graph-benchmark:benchmark</text>
-  <text x="170" y="387" class="small">mainGraphDbSmallBenchmark</text>
-  <text x="170" y="415" class="small">domain, write, authz, abuser tasks</text>
+  <rect x="142" y="342" width="252" height="118" rx="16" fill="#DBEAFE" stroke="#3B82F6" stroke-width="1.8" class="card"/>
+  <text x="268" y="378" text-anchor="middle" class="cardTitle">Gradle tasks</text>
+  <text x="268" y="408" text-anchor="middle" class="body">:graph-benchmark:...</text>
+  <text x="268" y="432" text-anchor="middle" class="small">main, graphDb, domain, write</text>
 
-  <rect x="135" y="545" width="350" height="145" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
-  <text x="170" y="593" class="label">kotlinx-benchmark</text>
-  <text x="170" y="629" class="small">JMH runtime</text>
-  <text x="170" y="657" class="small">warmups / iterations / params</text>
-  <text x="170" y="685" class="small">JSON report format</text>
+  <rect x="142" y="528" width="252" height="118" rx="16" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="1.8" class="card"/>
+  <text x="268" y="564" text-anchor="middle" class="cardTitle">JMH runtime</text>
+  <text x="268" y="594" text-anchor="middle" class="body">warmup / iteration</text>
+  <text x="268" y="618" text-anchor="middle" class="small">params define matrix scope</text>
 
-  <rect x="615" y="235" width="450" height="135" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
-  <text x="650" y="283" class="label">Graph API Tracks</text>
-  <text x="650" y="319" class="small">sync, virtual-thread, coroutine API model</text>
-  <text x="650" y="347" class="small">legacy vertex, neighbor, path, traversal ops</text>
+  <rect x="500" y="212" width="444" height="680" rx="18" class="lane"/>
+  <text x="530" y="262" class="section">2. Benchmark tracks</text>
+  <text x="532" y="294" class="small">Each class answers a different performance question.</text>
 
-  <rect x="615" y="415" width="450" height="145" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
-  <text x="650" y="463" class="label">Backend and Domain Tracks</text>
-  <text x="650" y="499" class="small">GraphDbComparisonBenchmark</text>
-  <text x="650" y="527" class="small">DomainWorkload and WriteIngestion</text>
-  <text x="650" y="555" class="small">tinkergraph, neo4j, memgraph, age, falkordb</text>
+  <rect x="536" y="320" width="372" height="94" rx="16" fill="#ECFDF5" stroke="#10B981" stroke-width="1.8" class="card"/>
+  <text x="722" y="354" text-anchor="middle" class="cardTitle">API model</text>
+  <text x="722" y="384" text-anchor="middle" class="small">sync vs virtual-thread vs coroutine on TinkerGraph</text>
 
-  <rect x="615" y="605" width="450" height="145" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
-  <text x="650" y="653" class="label">PostgreSQL Decision Tracks</text>
-  <text x="650" y="689" class="small">AuthzInheritanceBenchmark</text>
-  <text x="650" y="717" class="small">AbuserDetectionBenchmark</text>
-  <text x="650" y="745" class="small">AGE/Cypher, CTE, iterative, JPA</text>
+  <rect x="536" y="452" width="372" height="94" rx="16" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1.8" class="card"/>
+  <text x="722" y="486" text-anchor="middle" class="cardTitle">Backend contract</text>
+  <text x="722" y="516" text-anchor="middle" class="small">GraphDbComparison and write ingestion</text>
 
-  <rect x="615" y="795" width="450" height="95" rx="14" fill="#F8FAFC" stroke="#94A3B8" stroke-width="3" class="card"/>
-  <text x="650" y="835" class="label">graph-io Track</text>
-  <text x="650" y="867" class="small">csv, graphml, jackson2/3, okio formats</text>
+  <rect x="536" y="584" width="372" height="94" rx="16" fill="#E0F2FE" stroke="#06B6D4" stroke-width="1.8" class="card"/>
+  <text x="722" y="618" text-anchor="middle" class="cardTitle">Domain workload</text>
+  <text x="722" y="648" text-anchor="middle" class="small">social, IAM, fraud, and code graph queries</text>
 
-  <rect x="1200" y="270" width="455" height="150" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
-  <text x="1235" y="318" class="label">Deterministic Fixtures</text>
-  <text x="1235" y="354" class="small">social, IAM, fraud, code graph shapes</text>
-  <text x="1235" y="382" class="small">user/group/role/resource authz graph</text>
-  <text x="1235" y="410" class="small">account-transfer abuser data</text>
+  <rect x="536" y="700" width="372" height="94" rx="16" fill="#FFF7ED" stroke="#F97316" stroke-width="1.8" class="card"/>
+  <text x="722" y="734" text-anchor="middle" class="cardTitle">Decision tracks</text>
+  <text x="722" y="764" text-anchor="middle" class="small">authz inheritance, abuser detection, graph-io</text>
 
-  <rect x="1200" y="500" width="455" height="135" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="3" class="card"/>
-  <text x="1235" y="548" class="label">Runtime Backends</text>
-  <text x="1235" y="584" class="small">TinkerGraph for in-memory tracks</text>
-  <text x="1235" y="612" class="small">Testcontainers for graph DB and PostgreSQL</text>
+  <rect x="1018" y="212" width="356" height="680" rx="18" class="lane"/>
+  <text x="1048" y="262" class="section">3. Fixtures and runtimes</text>
+  <text x="1050" y="294" class="small">Data is rebuilt for measured iterations.</text>
 
-  <rect x="1200" y="715" width="455" height="135" rx="14" fill="#F8FAFC" stroke="#94A3B8" stroke-width="3" class="card"/>
-  <text x="1235" y="763" class="label">Reports</text>
-  <text x="1235" y="799" class="small">build/reports/benchmarks/**/main.json</text>
-  <text x="1235" y="827" class="small">charts are generated from raw JMH JSON</text>
+  <rect x="1052" y="336" width="286" height="110" rx="16" fill="#DCFCE7" stroke="#10B981" stroke-width="1.8" class="card"/>
+  <text x="1195" y="372" text-anchor="middle" class="cardTitle">GraphOperations</text>
+  <text x="1195" y="402" text-anchor="middle" class="small">TinkerGraph, Neo4j, Memgraph</text>
+  <text x="1195" y="424" text-anchor="middle" class="small">AGE and FalkorDB; containers serial</text>
 
-  <path d="M 485 350 L 615 302" class="line"/>
-  <path d="M 485 618 L 615 488" class="line"/>
-  <path d="M 1065 302 L 1200 345" class="line"/>
-  <path d="M 1065 488 L 1200 568" class="line"/>
-  <path d="M 1065 678 L 1200 568" class="thin"/>
-  <path d="M 1065 842 L 1200 782" class="line"/>
-  <path d="M 1427 635 L 1427 715" class="line"/>
+  <rect x="1052" y="500" width="286" height="110" rx="16" fill="#E0F2FE" stroke="#06B6D4" stroke-width="1.8" class="card"/>
+  <text x="1195" y="536" text-anchor="middle" class="cardTitle">Deterministic data</text>
+  <text x="1195" y="566" text-anchor="middle" class="small">fixed social, IAM, fraud, code fixtures</text>
+  <text x="1195" y="588" text-anchor="middle" class="small">small, medium, large scopes</text>
 
-  <text x="545" y="318" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">runs</text>
-  <text x="545" y="318" text-anchor="middle" class="tiny">runs</text>
-  <text x="1130" y="325" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">loads data</text>
-  <text x="1130" y="325" text-anchor="middle" class="tiny">loads data</text>
-  <text x="1130" y="545" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">measures</text>
-  <text x="1130" y="545" text-anchor="middle" class="tiny">measures</text>
-  <text x="920" y="1032" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | module: graph-benchmark / architecture</text>
+  <rect x="1052" y="664" width="286" height="110" rx="16" fill="#FEE2E2" stroke="#EF4444" stroke-width="1.8" class="card"/>
+  <text x="1195" y="700" text-anchor="middle" class="cardTitle">PostgreSQL engines</text>
+  <text x="1195" y="730" text-anchor="middle" class="small">AGE/Cypher, recursive CTE, iterative</text>
+  <text x="1195" y="752" text-anchor="middle" class="small">Exposed and JPA variants</text>
+
+  <rect x="1450" y="212" width="198" height="680" rx="18" class="lane"/>
+  <text x="1480" y="262" class="section">4. Output</text>
+  <text x="1482" y="294" class="small">Charts come from JSON.</text>
+
+  <rect x="1470" y="380" width="158" height="102" rx="16" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.6" class="card"/>
+  <text x="1549" y="414" text-anchor="middle" class="cardTitle">JMH JSON</text>
+  <text x="1549" y="444" text-anchor="middle" class="small">main.json</text>
+
+  <rect x="1470" y="560" width="158" height="102" rx="16" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.6" class="card"/>
+  <text x="1549" y="594" text-anchor="middle" class="cardTitle">Docs charts</text>
+  <text x="1549" y="624" text-anchor="middle" class="small">PNG summaries</text>
+
+  <path d="M 394 401 L 536 367" class="flow"/>
+  <path d="M 394 587 C 448 582 484 524 536 499" class="flow"/>
+  <path d="M 394 587 C 448 610 484 626 536 631" class="flow"/>
+  <path d="M 394 587 C 446 664 480 728 536 747" class="flow"/>
+
+  <path d="M 908 367 L 1052 391" class="track"/>
+  <path d="M 908 499 L 1052 391" class="track"/>
+  <path d="M 908 631 L 1052 555" class="data"/>
+  <path d="M 908 747 L 1052 719" class="data"/>
+
+  <path d="M 1338 391 C 1382 398 1428 418 1470 431" class="report"/>
+  <path d="M 1338 555 C 1392 560 1428 598 1470 611" class="report"/>
+  <path d="M 1338 719 C 1400 700 1426 648 1470 611" class="report"/>
+
+  <rect x="306" y="916" width="1148" height="58" rx="14" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="880" y="952" text-anchor="middle" class="small">The architecture separates benchmark harness decisions from chart interpretation; rerun raw JSON before release-grade claims.</text>
 </svg>

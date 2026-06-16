@@ -18,6 +18,13 @@
 
 ![graph-benchmark Architecture diagram](../../docs/images/readme-diagrams/benchmark/graph-benchmark-architecture-01.png)
 
+`graph-benchmark`는 benchmark harness와 결과 해석을 분리한다:
+
+- Gradle benchmark configuration이 JMH matrix, parameter, warmup, iteration을 선택한다.
+- Track class는 API model overhead, backend contract latency, domain-shaped graph workload, sustained write, PostgreSQL decision workload, graph-io format을 각각 측정한다.
+- Fixture는 deterministic하게 생성되며 measured iteration마다 다시 구성되어 각 backend가 같은 graph shape을 보게 한다.
+- Container 기반 backend와 PostgreSQL run은 순차 실행해야 하며, chart는 raw JMH JSON에서 생성한 요약이다.
+
 ## 측정 대상
 
 - `GraphDbComparisonBenchmark`: `tinkergraph`, `neo4j`, `memgraph`, `age`, `falkordb` backend.
