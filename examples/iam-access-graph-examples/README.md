@@ -12,6 +12,10 @@ An engineering user inherits staging deploy access through a group, then inherit
 nested privileged group. An auditor receives a direct read-only role, an operations user receives a temporary break-glass
 grant, and a contractor is blocked by a deny policy.
 
+## Architecture
+
+![iam access graph examples architecture](../../docs/images/readme-diagrams/examples-iam-access-graph-examples-architecture-01.png)
+
 ## Graph Model
 
 | Element | Label | Key properties | Purpose |
