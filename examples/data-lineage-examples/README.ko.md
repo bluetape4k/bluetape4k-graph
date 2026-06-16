@@ -12,6 +12,10 @@ Dataset, table, column, pipeline job, dashboard, owner, data quality check를 �
 무엇인지, broken job과 영향받는 dashboard의 owner가 누구인지, failing data quality check가 business metric에 왜
 영향을 주는지 답합니다.
 
+## 아키텍처
+
+![data-lineage examples architecture](../../docs/images/readme-diagrams/examples-data-lineage-examples-architecture-01.png)
+
 ## Graph Model
 
 | 요소 | Label | 주요 속성 | 목적 |
