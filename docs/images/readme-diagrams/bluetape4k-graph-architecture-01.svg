@@ -14,7 +14,7 @@
   </style>
 </defs>
 <rect class="bg" width="1580" height="980"/>
-<rect x="30" y="28" width="1520" height="920" rx="20" fill="none" stroke="#d6e2ed" stroke-width="1.5"/>
+<rect x="30" y="30" width="1520" height="920" rx="20" fill="none" stroke="#d6e2ed" stroke-width="1.5"/>
 <desc>Root README runtime architecture: application entry points call graph-core contracts; backend adapters translate those contracts into native database runtimes; Graph I/O and framework modules remain supporting integration surfaces around the same core.</desc>
 <text class="title" x="70" y="78">Bluetape4k Graph Architecture</text>
 <text class="subtitle" x="74" y="112">Application entry points target graph-core; adapters translate the same contracts to native graph database runtimes.</text>
@@ -123,5 +123,5 @@
   <line x1="440" y1="8" x2="474" y2="8" class="edge-orange"/><text class="legend" x="486" y="12">backend query translation</text>
   <line x1="730" y1="8" x2="764" y2="8" class="edge-purple"/><text class="legend" x="776" y="12">bulk graph data path</text>
 </g>
-<text class="note" x="790" y="948" text-anchor="middle">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: root</text>
+<text class="note" x="790" y="934" text-anchor="middle">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: root</text>
 </svg>

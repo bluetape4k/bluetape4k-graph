@@ -89,8 +89,8 @@
   <text x="1350" y="764" class="small">AGE: PostgreSQL consolidation</text>
   <text x="1350" y="796" class="small">Tinker/Falkor: local or Redis</text>
 
-  <rect x="245" y="860" width="1310" height="58" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"/>
-  <text x="900" y="889" text-anchor="middle" class="small">Capability labels summarize README-backed support: schema, merge, transaction, infrastructure, and strongest local role.</text>
+  <rect x="245" y="842" width="1310" height="58" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"/>
+  <text x="900" y="871" text-anchor="middle" class="small">Capability labels summarize README-backed support: schema, merge, transaction, infrastructure, and strongest local role.</text>
 
   <text x="900" y="1000" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | root README / backend capability matrix</text>
 </svg>
