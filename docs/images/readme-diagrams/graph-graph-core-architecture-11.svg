@@ -35,61 +35,61 @@
 
   <rect x="72" y="158" width="1476" height="704" rx="20" class="panel"/>
 
-  <circle cx="138" cy="390" r="22" fill="#0F172A"/>
+  <circle cx="138" cy="330" r="22" fill="#0F172A"/>
 
-  <rect x="204" y="286" width="252" height="208" rx="18" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
-  <text x="330" y="332" text-anchor="middle" class="stateTitle">Facade ready</text>
-  <line x1="240" y1="356" x2="420" y2="356" stroke="#3B82F6" stroke-width="2"/>
-  <text x="330" y="390" text-anchor="middle" class="body">GraphOperations</text>
-  <text x="330" y="420" text-anchor="middle" class="body">backend implementation</text>
-  <text x="330" y="450" text-anchor="middle" class="body">AutoCloseable</text>
+  <rect x="204" y="226" width="252" height="208" rx="18" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+  <text x="330" y="272" text-anchor="middle" class="stateTitle">Facade ready</text>
+  <line x1="240" y1="296" x2="420" y2="296" stroke="#3B82F6" stroke-width="2"/>
+  <text x="330" y="330" text-anchor="middle" class="body">GraphOperations</text>
+  <text x="330" y="360" text-anchor="middle" class="body">backend implementation</text>
+  <text x="330" y="390" text-anchor="middle" class="body">AutoCloseable</text>
 
-  <rect x="524" y="286" width="252" height="208" rx="18" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
-  <text x="650" y="332" text-anchor="middle" class="stateTitle">Graph selected</text>
-  <line x1="560" y1="356" x2="740" y2="356" stroke="#22C55E" stroke-width="2"/>
-  <text x="650" y="390" text-anchor="middle" class="body">createGraph</text>
-  <text x="650" y="420" text-anchor="middle" class="body">graphExists</text>
-  <text x="650" y="450" text-anchor="middle" class="body">dropGraph</text>
+  <rect x="524" y="226" width="252" height="208" rx="18" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
+  <text x="650" y="272" text-anchor="middle" class="stateTitle">Graph selected</text>
+  <line x1="560" y1="296" x2="740" y2="296" stroke="#22C55E" stroke-width="2"/>
+  <text x="650" y="330" text-anchor="middle" class="body">createGraph</text>
+  <text x="650" y="360" text-anchor="middle" class="body">graphExists</text>
+  <text x="650" y="390" text-anchor="middle" class="body">dropGraph</text>
 
-  <rect x="844" y="286" width="252" height="208" rx="18" fill="#FEF3C7" stroke="#F59E0B" stroke-width="3" class="card"/>
-  <text x="970" y="332" text-anchor="middle" class="stateTitle">Working graph</text>
-  <line x1="880" y1="356" x2="1060" y2="356" stroke="#F59E0B" stroke-width="2"/>
-  <text x="970" y="390" text-anchor="middle" class="body">vertex CRUD</text>
-  <text x="970" y="420" text-anchor="middle" class="body">edge CRUD</text>
-  <text x="970" y="450" text-anchor="middle" class="body">batch operations</text>
+  <rect x="844" y="226" width="252" height="208" rx="18" fill="#FEF3C7" stroke="#F59E0B" stroke-width="3" class="card"/>
+  <text x="970" y="272" text-anchor="middle" class="stateTitle">Working graph</text>
+  <line x1="880" y1="296" x2="1060" y2="296" stroke="#F59E0B" stroke-width="2"/>
+  <text x="970" y="330" text-anchor="middle" class="body">vertex CRUD</text>
+  <text x="970" y="360" text-anchor="middle" class="body">edge CRUD</text>
+  <text x="970" y="390" text-anchor="middle" class="body">batch operations</text>
 
-  <rect x="1164" y="286" width="252" height="208" rx="18" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="3" class="card"/>
-  <text x="1290" y="332" text-anchor="middle" class="stateTitle">Read results</text>
-  <line x1="1200" y1="356" x2="1380" y2="356" stroke="#8B5CF6" stroke-width="2"/>
-  <text x="1290" y="390" text-anchor="middle" class="body">neighbors, paths</text>
-  <text x="1290" y="420" text-anchor="middle" class="body">PageRank, degree</text>
-  <text x="1290" y="450" text-anchor="middle" class="body">BFS/DFS/cycles</text>
+  <rect x="1164" y="226" width="252" height="208" rx="18" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="3" class="card"/>
+  <text x="1290" y="272" text-anchor="middle" class="stateTitle">Read results</text>
+  <line x1="1200" y1="296" x2="1380" y2="296" stroke="#8B5CF6" stroke-width="2"/>
+  <text x="1290" y="330" text-anchor="middle" class="body">neighbors, paths</text>
+  <text x="1290" y="360" text-anchor="middle" class="body">PageRank, degree</text>
+  <text x="1290" y="390" text-anchor="middle" class="body">BFS/DFS/cycles</text>
 
-  <path d="M 160 390 L 202 390" class="line"/>
-  <path d="M 456 390 L 522 390" class="line"/>
-  <path d="M 776 390 L 842 390" class="line"/>
-  <path d="M 1096 390 L 1162 390" class="line"/>
+  <path d="M 160 330 L 202 330" class="line"/>
+  <path d="M 456 330 L 522 330" class="line"/>
+  <path d="M 776 330 L 842 330" class="line"/>
+  <path d="M 1096 330 L 1162 330" class="line"/>
 
-  <rect x="264" y="624" width="338" height="118" rx="16" fill="#FDF2F8" stroke="#EC4899" stroke-width="2.4" class="card"/>
-  <text x="433" y="662" text-anchor="middle" class="stateTitle">Transactions</text>
-  <text x="433" y="696" text-anchor="middle" class="body">transaction { }</text>
-  <text x="433" y="724" text-anchor="middle" class="small">supported backends only</text>
+  <rect x="264" y="564" width="338" height="118" rx="16" fill="#FDF2F8" stroke="#EC4899" stroke-width="2.4" class="card"/>
+  <text x="433" y="602" text-anchor="middle" class="stateTitle">Transactions</text>
+  <text x="433" y="636" text-anchor="middle" class="body">transaction { }</text>
+  <text x="433" y="664" text-anchor="middle" class="small">supported backends only</text>
 
-  <rect x="642" y="624" width="338" height="118" rx="16" fill="#ECFEFF" stroke="#06B6D4" stroke-width="2.4" class="card"/>
-  <text x="811" y="662" text-anchor="middle" class="stateTitle">Schema / merge</text>
-  <text x="811" y="696" text-anchor="middle" class="body">schemaManager()</text>
-  <text x="811" y="724" text-anchor="middle" class="body">mergeVertex / mergeEdge</text>
+  <rect x="642" y="564" width="338" height="118" rx="16" fill="#ECFEFF" stroke="#06B6D4" stroke-width="2.4" class="card"/>
+  <text x="811" y="602" text-anchor="middle" class="stateTitle">Schema / merge</text>
+  <text x="811" y="636" text-anchor="middle" class="body">schemaManager()</text>
+  <text x="811" y="664" text-anchor="middle" class="body">mergeVertex / mergeEdge</text>
 
-  <rect x="1020" y="624" width="338" height="118" rx="16" fill="#FEE2E2" stroke="#EF4444" stroke-width="2.4" class="card"/>
-  <text x="1189" y="662" text-anchor="middle" class="stateTitle">Closed</text>
-  <text x="1189" y="696" text-anchor="middle" class="body">close()</text>
-  <text x="1189" y="724" text-anchor="middle" class="small">release facade resources</text>
+  <rect x="1020" y="564" width="338" height="118" rx="16" fill="#FEE2E2" stroke="#EF4444" stroke-width="2.4" class="card"/>
+  <text x="1189" y="602" text-anchor="middle" class="stateTitle">Closed</text>
+  <text x="1189" y="636" text-anchor="middle" class="body">close()</text>
+  <text x="1189" y="664" text-anchor="middle" class="small">release facade resources</text>
 
-  <path d="M 970 494 L 433 624" class="soft"/>
-  <path d="M 970 494 L 811 624" class="soft"/>
-  <path d="M 1290 494 L 1189 624" class="soft"/>
+  <path d="M 970 434 L 433 564" class="soft"/>
+  <path d="M 970 434 L 811 564" class="soft"/>
+  <path d="M 1290 434 L 1189 564" class="soft"/>
 
-  <rect x="230" y="806" width="1160" height="42" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
-  <text x="810" y="833" text-anchor="middle" class="small">Unsupported optional capabilities throw explicitly; GraphOperations itself stays source-compatible.</text>
+  <rect x="230" y="746" width="1160" height="42" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="810" y="773" text-anchor="middle" class="small">Unsupported optional capabilities throw explicitly; GraphOperations itself stays source-compatible.</text>
 
 </svg>
