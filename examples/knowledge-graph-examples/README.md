@@ -39,9 +39,9 @@ This example focuses on small, explainable graphs so learners can see why the pa
 
 ![knowledge graph examples Architecture diagram](../../docs/images/readme-diagrams/examples-knowledge-graph-examples-architecture-01.png)
 
-## ERD / Domain UML
+## Domain Model Diagram
 
-![Domain UML diagram](../../docs/images/readme-diagrams/examples-knowledge-graph-examples-class-02.png)
+![Knowledge graph domain model diagram](../../docs/images/readme-diagrams/examples-knowledge-graph-examples-class-02.png)
 
 ## Data Flow
 
