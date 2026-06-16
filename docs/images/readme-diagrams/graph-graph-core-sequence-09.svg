@@ -76,6 +76,4 @@
 <circle cx="362.3" cy="776" r="13" fill="#2E9C9B"/>
 <text x="362.3" y="776" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">6</text>
 <text x="386.3" y="776" dominant-baseline="middle" class="tiny">GraphEdge</text>
-<rect x="150" y="840" width="1300" height="42" rx="11" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
-<text x="800.0" y="861" text-anchor="middle" dominant-baseline="middle" class="tiny">Numbered labels sit above message lines; lifelines and activations stay separated from participant cards.</text>
 </svg>

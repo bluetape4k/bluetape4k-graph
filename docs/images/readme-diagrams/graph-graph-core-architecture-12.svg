@@ -35,53 +35,53 @@
 
   <rect x="72" y="158" width="1496" height="704" rx="20" class="panel"/>
 
-  <rect x="128" y="288" width="286" height="184" rx="18" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
-  <text x="271" y="332" text-anchor="middle" class="stepTitle">Declare labels</text>
-  <line x1="166" y1="356" x2="376" y2="356" stroke="#3B82F6" stroke-width="2"/>
-  <text x="271" y="390" text-anchor="middle" class="body">VertexLabel</text>
-  <text x="271" y="420" text-anchor="middle" class="body">EdgeLabel</text>
-  <text x="271" y="450" text-anchor="middle" class="small">label, from, to</text>
+  <rect x="128" y="228" width="286" height="184" rx="18" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+  <text x="271" y="272" text-anchor="middle" class="stepTitle">Declare labels</text>
+  <line x1="166" y1="296" x2="376" y2="296" stroke="#3B82F6" stroke-width="2"/>
+  <text x="271" y="330" text-anchor="middle" class="body">VertexLabel</text>
+  <text x="271" y="360" text-anchor="middle" class="body">EdgeLabel</text>
+  <text x="271" y="390" text-anchor="middle" class="small">label, from, to</text>
 
-  <rect x="502" y="288" width="286" height="184" rx="18" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
-  <text x="645" y="332" text-anchor="middle" class="stepTitle">Collect props</text>
-  <line x1="540" y1="356" x2="750" y2="356" stroke="#22C55E" stroke-width="2"/>
-  <text x="645" y="390" text-anchor="middle" class="body">PropertyHolder</text>
-  <text x="645" y="420" text-anchor="middle" class="body">PropertyDef&lt;T&gt;</text>
-  <text x="645" y="450" text-anchor="middle" class="small">immutable snapshot</text>
+  <rect x="502" y="228" width="286" height="184" rx="18" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
+  <text x="645" y="272" text-anchor="middle" class="stepTitle">Collect props</text>
+  <line x1="540" y1="296" x2="750" y2="296" stroke="#22C55E" stroke-width="2"/>
+  <text x="645" y="330" text-anchor="middle" class="body">PropertyHolder</text>
+  <text x="645" y="360" text-anchor="middle" class="body">PropertyDef&lt;T&gt;</text>
+  <text x="645" y="390" text-anchor="middle" class="small">immutable snapshot</text>
 
-  <rect x="876" y="288" width="286" height="184" rx="18" fill="#FEF3C7" stroke="#F59E0B" stroke-width="3" class="card"/>
-  <text x="1019" y="332" text-anchor="middle" class="stepTitle">Request schema</text>
-  <line x1="914" y1="356" x2="1124" y2="356" stroke="#F59E0B" stroke-width="2"/>
-  <text x="1019" y="390" text-anchor="middle" class="body">createIndex</text>
-  <text x="1019" y="420" text-anchor="middle" class="body">createUniqueConstraint</text>
-  <text x="1019" y="450" text-anchor="middle" class="small">label + property names</text>
+  <rect x="876" y="228" width="286" height="184" rx="18" fill="#FEF3C7" stroke="#F59E0B" stroke-width="3" class="card"/>
+  <text x="1019" y="272" text-anchor="middle" class="stepTitle">Request schema</text>
+  <line x1="914" y1="296" x2="1124" y2="296" stroke="#F59E0B" stroke-width="2"/>
+  <text x="1019" y="330" text-anchor="middle" class="body">createIndex</text>
+  <text x="1019" y="360" text-anchor="middle" class="body">createUniqueConstraint</text>
+  <text x="1019" y="390" text-anchor="middle" class="small">label + property names</text>
 
-  <rect x="1250" y="288" width="286" height="184" rx="18" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="3" class="card"/>
-  <text x="1393" y="332" text-anchor="middle" class="stepTitle">Capability gate</text>
-  <line x1="1288" y1="356" x2="1498" y2="356" stroke="#8B5CF6" stroke-width="2"/>
-  <text x="1393" y="390" text-anchor="middle" class="body">GraphSchemaManager</text>
-  <text x="1393" y="420" text-anchor="middle" class="body">GraphSuspendSchemaManager</text>
-  <text x="1393" y="450" text-anchor="middle" class="small">backend-specific DDL</text>
+  <rect x="1250" y="228" width="286" height="184" rx="18" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="3" class="card"/>
+  <text x="1393" y="272" text-anchor="middle" class="stepTitle">Capability gate</text>
+  <line x1="1288" y1="296" x2="1498" y2="296" stroke="#8B5CF6" stroke-width="2"/>
+  <text x="1393" y="330" text-anchor="middle" class="body">GraphSchemaManager</text>
+  <text x="1393" y="360" text-anchor="middle" class="body">GraphSuspendSchemaManager</text>
+  <text x="1393" y="390" text-anchor="middle" class="small">backend-specific DDL</text>
 
-  <path d="M 414 380 L 500 380" class="line"/>
-  <path d="M 788 380 L 874 380" class="line"/>
-  <path d="M 1162 380 L 1248 380" class="line"/>
+  <path d="M 414 320 L 500 320" class="line"/>
+  <path d="M 788 320 L 874 320" class="line"/>
+  <path d="M 1162 320 L 1248 320" class="line"/>
 
-  <rect x="322" y="616" width="360" height="124" rx="16" fill="#ECFEFF" stroke="#06B6D4" stroke-width="2.4" class="card"/>
-  <text x="502" y="656" text-anchor="middle" class="stepTitle">Operation use</text>
-  <text x="502" y="692" text-anchor="middle" class="body">label values and property names</text>
-  <text x="502" y="720" text-anchor="middle" class="small">feed create/query/filter APIs</text>
+  <rect x="322" y="556" width="360" height="124" rx="16" fill="#ECFEFF" stroke="#06B6D4" stroke-width="2.4" class="card"/>
+  <text x="502" y="596" text-anchor="middle" class="stepTitle">Operation use</text>
+  <text x="502" y="632" text-anchor="middle" class="body">label values and property names</text>
+  <text x="502" y="660" text-anchor="middle" class="small">feed create/query/filter APIs</text>
 
-  <rect x="958" y="596" width="360" height="164" rx="16" fill="#FEE2E2" stroke="#EF4444" stroke-width="2.4" class="card"/>
-  <text x="1138" y="636" text-anchor="middle" class="stepTitle">Explicit outcome</text>
-  <text x="1138" y="672" text-anchor="middle" class="body">metadata returned</text>
-  <text x="1138" y="702" text-anchor="middle" class="body">or UnsupportedOperationException</text>
-  <text x="1138" y="732" text-anchor="middle" class="small">no silent no-op for DDL gaps</text>
+  <rect x="958" y="536" width="360" height="164" rx="16" fill="#FEE2E2" stroke="#EF4444" stroke-width="2.4" class="card"/>
+  <text x="1138" y="576" text-anchor="middle" class="stepTitle">Explicit outcome</text>
+  <text x="1138" y="612" text-anchor="middle" class="body">metadata returned</text>
+  <text x="1138" y="642" text-anchor="middle" class="body">or UnsupportedOperationException</text>
+  <text x="1138" y="672" text-anchor="middle" class="small">no silent no-op for DDL gaps</text>
 
-  <path d="M 645 472 L 502 616" class="soft"/>
-  <path d="M 1393 472 L 1138 596" class="soft"/>
+  <path d="M 645 412 L 502 556" class="soft"/>
+  <path d="M 1393 412 L 1138 536" class="soft"/>
 
-  <rect x="220" y="806" width="1200" height="42" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
-  <text x="820" y="833" text-anchor="middle" class="small">Blocking schema managers can be bridged to suspend APIs through Dispatchers.IO.</text>
+  <rect x="220" y="746" width="1200" height="42" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="820" y="773" text-anchor="middle" class="small">Blocking schema managers can be bridged to suspend APIs through Dispatchers.IO.</text>
 
 </svg>
