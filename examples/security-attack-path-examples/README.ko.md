@@ -15,6 +15,10 @@ backend-independent traversal을 보여줍니다.
 pivot하고, admin credential을 발견해 customer database에 도달하는 흐름을 모델링합니다. backup vault는 도달할 수
 없는 crown jewel로 둬서 reachable/unreachable target을 테스트합니다.
 
+## 아키텍처
+
+![security attack path examples architecture](../../docs/images/readme-diagrams/examples-security-attack-path-examples-architecture-01.png)
+
 ## Graph Model
 
 | 요소 | Label | 주요 속성 | 목적 |

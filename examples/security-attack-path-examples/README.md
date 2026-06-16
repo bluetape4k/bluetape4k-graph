@@ -15,6 +15,10 @@ The sample graph starts from an internet-facing entry asset, reaches a public we
 service account, discovers an admin credential, and reaches a customer database through an admin permission. A backup
 vault is modeled as an unreachable crown jewel so tests can distinguish reachable and unreachable targets.
 
+## Architecture
+
+![security attack path examples architecture](../../docs/images/readme-diagrams/examples-security-attack-path-examples-architecture-01.png)
+
 ## Graph Model
 
 | Element | Label | Key properties | Purpose |
