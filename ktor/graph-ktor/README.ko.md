@@ -9,6 +9,14 @@
 
 ![graph ktor Architecture diagram](../../docs/images/readme-diagrams/ktor-graph-ktor-architecture-01.png)
 
+`graph-ktor`는 Ktor application에 명시적으로 선택한 backend 하나를 설치하고, 해석된 graph state를 application attribute에 저장합니다:
+
+- `install(GraphPlugin) { ... }`은 sync/suspend graph facade를 구성하는 backend helper가 없으면 install 시점에 실패합니다.
+- Backend helper는 caller-owned resource를 감싸거나 managed DSL을 통해 plugin-owned driver/pool을 생성합니다.
+- `GraphPluginState`는 `GraphOperations`와 `GraphSuspendOperations`를 함께 노출합니다.
+- `Application` / `ApplicationCall` extension은 Ktor attribute에서 state를 읽으며, route handler에서는 suspend facade를 우선 사용합니다.
+- `ApplicationStopped`에서는 등록된 close action만 실행하므로 caller-owned driver와 `DataSource`는 plugin lifecycle 밖에 남습니다.
+
 ## 주요 기능
 
 - Ktor `createApplicationPlugin(...)` 기반 integration.

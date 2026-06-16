@@ -1,102 +1,123 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1080" viewBox="0 0 1840 1080">
+<svg xmlns="http://www.w3.org/2000/svg" width="1760" height="1080" viewBox="0 0 1760 1080">
   <defs>
-    <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
-      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.13"/>
+    <filter id="shadow" x="-6%" y="-6%" width="112%" height="112%">
+      <feDropShadow dx="0" dy="7" stdDeviation="5" flood-color="#334155" flood-opacity="0.10"/>
     </filter>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+    <marker id="arrow-blue" viewBox="0 0 24 24" refX="22" refY="12" markerWidth="22" markerHeight="22" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 3 3 L 22 12 L 3 21 Z" fill="#2563EB"/>
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 24 24" refX="22" refY="12" markerWidth="22" markerHeight="22" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 3 3 L 22 12 L 3 21 Z" fill="#059669"/>
+    </marker>
+    <marker id="arrow-amber" viewBox="0 0 24 24" refX="22" refY="12" markerWidth="20" markerHeight="20" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 3 3 L 22 12 L 3 21 Z" fill="#D97706"/>
     </marker>
   </defs>
 
   <style>
-    .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
-    .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
-    .section { font-family: 'Architects Daughter', cursive; font-size: 30px; fill: #111827; }
-    .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
-    .small { font-family: 'Comic Mono', monospace; font-size: 17px; fill: #374151; }
-    .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
-    .card { filter: url(#softShadow); }
-    .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-    .thin { stroke: #64748B; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+    .title { font-family: 'Architects Daughter', cursive; font-size: 52px; fill: #0F172A; }
+    .subtitle { font-family: 'Comic Mono', monospace; font-size: 19px; fill: #475569; }
+    .section { font-family: 'Architects Daughter', cursive; font-size: 29px; fill: #111827; }
+    .cardTitle { font-family: 'Architects Daughter', cursive; font-size: 25px; fill: #111827; }
+    .body { font-family: 'Comic Mono', monospace; font-size: 17px; fill: #334155; }
+    .small { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #475569; }
+    .tiny { font-family: 'Comic Mono', monospace; font-size: 13px; fill: #475569; }
+    .panel { fill: #FFFFFF; stroke: #CBD5E1; stroke-width: 1.6; }
+    .lane { fill: #F8FAFC; stroke: #CBD5E1; stroke-width: 1.5; }
+    .card { filter: url(#shadow); }
+    .flow { fill: none; stroke: #2563EB; stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow-blue); }
+    .route { fill: none; stroke: #059669; stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow-green); }
+    .life { fill: none; stroke: #D97706; stroke-width: 3.0; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow-amber); }
   </style>
 
-  <rect x="0" y="0" width="1840" height="1080" fill="#F8FAFC"/>
-  <rect x="24" y="24" width="1792" height="1032" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
-  <circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
-  <circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
-  <circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
+  <rect x="0" y="0" width="1760" height="1080" fill="#F8FAFC"/>
+  <rect x="28" y="28" width="1704" height="1024" rx="22" fill="none" stroke="#BFDBFE" stroke-width="2.2"/>
 
-  <text x="72" y="82" class="title">graph-ktor Plugin Architecture</text>
-  <text x="74" y="118" class="subtitle">Ktor installs one explicit graph backend, stores resolved state in Application attributes, exposes route helpers, and closes only plugin-owned resources.</text>
+  <text x="72" y="86" class="title">graph-ktor architecture</text>
+  <text x="74" y="124" class="subtitle">GraphPlugin installs one explicit graph backend and exposes sync plus coroutine facades to Ktor routes.</text>
 
-  <rect x="70" y="150" width="1700" height="790" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+  <rect x="74" y="166" width="1612" height="808" rx="20" class="panel"/>
 
-  <text x="275" y="215" text-anchor="middle" class="section">Ktor Application</text>
-  <text x="835" y="215" text-anchor="middle" class="section">GraphPlugin Core</text>
-  <text x="1430" y="215" text-anchor="middle" class="section">Backend Selection</text>
+  <rect x="112" y="214" width="350" height="610" rx="18" class="lane"/>
+  <text x="142" y="264" class="section">1. Install contract</text>
+  <text x="144" y="296" class="small">One backend is selected at install time.</text>
 
-  <rect x="130" y="265" width="340" height="150" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
-  <text x="165" y="313" class="label">install(GraphPlugin)</text>
-  <text x="165" y="349" class="small">createApplicationPlugin("Graph")</text>
-  <text x="165" y="377" class="small">configuration block selects backend</text>
-  <text x="165" y="405" class="small">fails when no backend is selected</text>
+  <rect x="148" y="336" width="278" height="112" rx="16" fill="#DBEAFE" stroke="#3B82F6" stroke-width="1.9" class="card"/>
+  <text x="287" y="372" text-anchor="middle" class="cardTitle">install(GraphPlugin)</text>
+  <text x="287" y="402" text-anchor="middle" class="body">createApplicationPlugin</text>
+  <text x="287" y="427" text-anchor="middle" class="small">fails if no backend is selected</text>
 
-  <rect x="130" y="515" width="340" height="150" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
-  <text x="165" y="563" class="label">Route Handlers</text>
-  <text x="165" y="599" class="small">call.graphOperations()</text>
-  <text x="165" y="627" class="small">call.graphSuspendOperations()</text>
-  <text x="165" y="655" class="small">Application extension lookup</text>
+  <rect x="148" y="496" width="278" height="118" rx="16" fill="#ECFDF5" stroke="#10B981" stroke-width="1.9" class="card"/>
+  <text x="287" y="532" text-anchor="middle" class="cardTitle">Backend helpers</text>
+  <text x="287" y="562" text-anchor="middle" class="body">tinkerGraph / operations</text>
+  <text x="287" y="587" text-anchor="middle" class="small">neo4j, memgraph, age, falkorDB</text>
 
-  <rect x="620" y="250" width="430" height="155" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
-  <text x="655" y="298" class="label">GraphPluginConfig</text>
-  <text x="655" y="334" class="small">exactly one backend helper</text>
-  <text x="655" y="362" class="small">operations(sync, suspend)</text>
-  <text x="655" y="390" class="small">closeActions for owned resources</text>
+  <rect x="148" y="662" width="278" height="94" rx="16" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1.9" class="card"/>
+  <text x="287" y="696" text-anchor="middle" class="cardTitle">Managed DSLs</text>
+  <text x="287" y="724" text-anchor="middle" class="small">plugin-created driver or pool</text>
 
-  <rect x="620" y="475" width="430" height="155" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
-  <text x="655" y="523" class="label">GraphPluginState</text>
-  <text x="655" y="559" class="small">GraphOperations</text>
-  <text x="655" y="587" class="small">GraphSuspendOperations</text>
-  <text x="655" y="615" class="small">stored in Application.attributes</text>
+  <rect x="520" y="214" width="350" height="610" rx="18" class="lane"/>
+  <text x="550" y="264" class="section">2. Resolve state</text>
+  <text x="552" y="296" class="small">Factories create the Ktor graph state.</text>
 
-  <rect x="620" y="725" width="430" height="120" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="3" class="card"/>
-  <text x="655" y="773" class="label">ApplicationStopped</text>
-  <text x="655" y="809" class="small">state.close() runs close actions</text>
-  <text x="655" y="837" class="small">close failures do not block the rest</text>
+  <rect x="558" y="336" width="274" height="122" rx="16" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="1.9" class="card"/>
+  <text x="695" y="372" text-anchor="middle" class="cardTitle">GraphPluginConfig</text>
+  <text x="695" y="402" text-anchor="middle" class="body">exactly one configure()</text>
+  <text x="695" y="427" text-anchor="middle" class="small">sync and suspend factories</text>
 
-  <rect x="1200" y="245" width="450" height="170" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
-  <text x="1235" y="293" class="label">In-memory / Existing Ops</text>
-  <text x="1235" y="329" class="small">tinkerGraph()</text>
-  <text x="1235" y="357" class="small">operations(syncOps, suspendOps)</text>
-  <text x="1235" y="385" class="small">closeOnStop is explicit</text>
+  <rect x="558" y="500" width="274" height="112" rx="16" fill="#DCFCE7" stroke="#10B981" stroke-width="1.9" class="card"/>
+  <text x="695" y="536" text-anchor="middle" class="cardTitle">GraphPluginState</text>
+  <text x="695" y="566" text-anchor="middle" class="body">GraphOperations</text>
+  <text x="695" y="591" text-anchor="middle" class="body">GraphSuspendOperations</text>
 
-  <rect x="1200" y="465" width="450" height="170" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
-  <text x="1235" y="513" class="label">Driver-backed Databases</text>
-  <text x="1235" y="549" class="small">neo4j(driver), memgraph(driver)</text>
-  <text x="1235" y="577" class="small">falkorDB(driver, graphName)</text>
-  <text x="1235" y="605" class="small">caller-owned drivers remain external</text>
+  <rect x="558" y="664" width="274" height="94" rx="16" fill="#E0F2FE" stroke="#06B6D4" stroke-width="1.9" class="card"/>
+  <text x="695" y="698" text-anchor="middle" class="cardTitle">Application attributes</text>
+  <text x="695" y="727" text-anchor="middle" class="small">GraphPluginStateKey stores state</text>
 
-  <rect x="1200" y="705" width="450" height="150" rx="14" fill="#F8FAFC" stroke="#94A3B8" stroke-width="3" class="card"/>
-  <text x="1235" y="753" class="label">Managed Resources</text>
-  <text x="1235" y="789" class="small">neo4j { uri; user; password }</text>
-  <text x="1235" y="817" class="small">memgraph { ... } / falkorDB { ... }</text>
-  <text x="1235" y="845" class="small">ageDataSource { Hikari + Exposed }</text>
+  <rect x="928" y="214" width="350" height="610" rx="18" class="lane"/>
+  <text x="958" y="264" class="section">3. Route access</text>
+  <text x="960" y="296" class="small">ApplicationCall delegates to Application.</text>
 
-  <path d="M 470 340 L 620 340" class="line"/>
-  <path d="M 835 405 L 835 475" class="line"/>
-  <path d="M 470 590 L 620 552" class="line"/>
-  <path d="M 1050 327 L 1200 327" class="line"/>
-  <path d="M 1050 552 L 1200 550" class="thin"/>
-  <path d="M 1050 785 L 1200 780" class="thin"/>
-  <path d="M 835 630 L 835 725" class="thin"/>
+  <rect x="966" y="342" width="274" height="112" rx="16" fill="#DBEAFE" stroke="#3B82F6" stroke-width="1.9" class="card"/>
+  <text x="1103" y="378" text-anchor="middle" class="cardTitle">Application extensions</text>
+  <text x="1103" y="408" text-anchor="middle" class="small">graphOperations()</text>
+  <text x="1103" y="430" text-anchor="middle" class="small">graphSuspendOperations()</text>
 
-  <text x="545" y="318" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">resolveState</text>
-  <text x="545" y="318" text-anchor="middle" class="tiny">resolveState</text>
-  <text x="1115" y="305" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">select one</text>
-  <text x="1115" y="305" text-anchor="middle" class="tiny">select one</text>
-  <text x="1115" y="528" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">construct ops</text>
-  <text x="1115" y="528" text-anchor="middle" class="tiny">construct ops</text>
-  <text x="1115" y="756" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">register close</text>
-  <text x="1115" y="756" text-anchor="middle" class="tiny">register close</text>
-  <text x="920" y="1032" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | module: graph-ktor / architecture</text>
+  <rect x="966" y="506" width="274" height="112" rx="16" fill="#ECFDF5" stroke="#10B981" stroke-width="1.9" class="card"/>
+  <text x="1103" y="542" text-anchor="middle" class="cardTitle">Route handlers</text>
+  <text x="1103" y="572" text-anchor="middle" class="body">ApplicationCall helpers</text>
+  <text x="1103" y="597" text-anchor="middle" class="small">prefer suspend facade in routes</text>
+
+  <rect x="966" y="668" width="274" height="94" rx="16" fill="#F1F5F9" stroke="#64748B" stroke-width="1.9" class="card"/>
+  <text x="1103" y="702" text-anchor="middle" class="cardTitle">Backend modules</text>
+  <text x="1103" y="730" text-anchor="middle" class="small">application declares dependency</text>
+
+  <rect x="1336" y="214" width="310" height="610" rx="18" class="lane"/>
+  <text x="1366" y="264" class="section">4. Lifecycle boundary</text>
+  <text x="1368" y="296" class="small">Only plugin-owned resources close.</text>
+
+  <rect x="1370" y="340" width="242" height="112" rx="16" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1.9" class="card"/>
+  <text x="1491" y="376" text-anchor="middle" class="cardTitle">ApplicationStarted</text>
+  <text x="1491" y="406" text-anchor="middle" class="small">state is ready for routes</text>
+
+  <rect x="1370" y="506" width="242" height="122" rx="16" fill="#FFF7ED" stroke="#F97316" stroke-width="1.9" class="card"/>
+  <text x="1491" y="542" text-anchor="middle" class="cardTitle">ApplicationStopped</text>
+  <text x="1491" y="572" text-anchor="middle" class="body">close actions run</text>
+  <text x="1491" y="597" text-anchor="middle" class="small">failures do not stop cleanup</text>
+
+  <rect x="1370" y="678" width="242" height="84" rx="16" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.6"/>
+  <text x="1491" y="710" text-anchor="middle" class="small">Caller-owned drivers and</text>
+  <text x="1491" y="734" text-anchor="middle" class="small">DataSources stay open.</text>
+
+  <path d="M 426 392 L 558 397" class="flow"/>
+  <path d="M 426 555 L 558 397" class="route"/>
+  <path d="M 426 710 L 558 397" class="life"/>
+  <path d="M 695 458 L 695 500" class="flow"/>
+  <path d="M 695 612 L 695 664" class="route"/>
+  <path d="M 832 711 L 966 398" class="route"/>
+  <path d="M 1103 454 L 1103 506" class="route"/>
+
+  <rect x="228" y="858" width="1304" height="76" rx="16" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.6"/>
+  <text x="880" y="887" text-anchor="middle" class="small">The plugin never picks a production backend implicitly; install fails until exactly one backend helper configures state.</text>
+  <text x="880" y="914" text-anchor="middle" class="small">Route code reads GraphOperations from Application attributes, while ApplicationStopped runs only registered close actions.</text>
 </svg>
