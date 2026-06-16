@@ -72,5 +72,6 @@
   <text x="1230" y="744" class="small">shortestPath(Seoul, Busan)</text>
 
   <rect x="185" y="850" width="1470" height="45" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"/>
+  <text x="920" y="879" text-anchor="middle" class="small">The model is deliberately small so route tests can verify count and shortest-path behavior without external setup.</text>
   <text x="920" y="1032" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | module: ktor-graph-examples / ERD</text>
 </svg>
