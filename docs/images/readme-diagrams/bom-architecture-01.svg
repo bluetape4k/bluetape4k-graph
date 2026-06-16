@@ -1,94 +1,109 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1080" viewBox="0 0 1840 1080">
+<svg xmlns="http://www.w3.org/2000/svg" width="1760" height="980" viewBox="0 0 1760 980">
   <defs>
-    <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
-      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.13"/>
+    <filter id="shadow" x="-6%" y="-6%" width="112%" height="112%">
+      <feDropShadow dx="0" dy="7" stdDeviation="5" flood-color="#334155" flood-opacity="0.09"/>
     </filter>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+    <marker id="arrow-blue" viewBox="0 0 24 24" refX="22" refY="12" markerWidth="20" markerHeight="20" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 3 3 L 22 12 L 3 21 Z" fill="#2563EB"/>
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 24 24" refX="22" refY="12" markerWidth="20" markerHeight="20" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 3 3 L 22 12 L 3 21 Z" fill="#059669"/>
+    </marker>
+    <marker id="arrow-amber" viewBox="0 0 24 24" refX="22" refY="12" markerWidth="20" markerHeight="20" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 3 3 L 22 12 L 3 21 Z" fill="#D97706"/>
+    </marker>
+    <marker id="arrow-gray" viewBox="0 0 24 24" refX="22" refY="12" markerWidth="18" markerHeight="18" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 3 3 L 22 12 L 3 21 Z" fill="#64748B"/>
     </marker>
   </defs>
 
   <style>
-    .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
-    .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
-    .section { font-family: 'Architects Daughter', cursive; font-size: 30px; fill: #111827; }
-    .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
-    .small { font-family: 'Comic Mono', monospace; font-size: 17px; fill: #374151; }
-    .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
-    .card { filter: url(#softShadow); }
-    .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-    .thin { stroke: #64748B; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+    .title { font-family: 'Architects Daughter', cursive; font-size: 50px; fill: #0F172A; }
+    .subtitle { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #475569; }
+    .section { font-family: 'Architects Daughter', cursive; font-size: 29px; fill: #111827; }
+    .cardTitle { font-family: 'Architects Daughter', cursive; font-size: 25px; fill: #111827; }
+    .body { font-family: 'Comic Mono', monospace; font-size: 16px; fill: #334155; }
+    .small { font-family: 'Comic Mono', monospace; font-size: 14px; fill: #475569; }
+    .tiny { font-family: 'Comic Mono', monospace; font-size: 12px; fill: #64748B; }
+    .panel { fill: #FFFFFF; stroke: #CBD5E1; stroke-width: 1.5; }
+    .lane { fill: #F8FAFC; stroke: #CBD5E1; stroke-width: 1.4; }
+    .card { filter: url(#shadow); }
+    .flow { fill: none; stroke: #2563EB; stroke-width: 3.0; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow-blue); }
+    .constraint { fill: none; stroke: #059669; stroke-width: 3.0; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow-green); }
+    .filterLine { fill: none; stroke: #D97706; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow-amber); }
+    .metaLine { fill: none; stroke: #64748B; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow-gray); }
   </style>
 
-  <rect x="0" y="0" width="1840" height="1080" fill="#F8FAFC"/>
-  <rect x="24" y="24" width="1792" height="1032" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
-  <circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
-  <circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
-  <circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
+  <rect x="0" y="0" width="1760" height="980" fill="#F8FAFC"/>
+  <rect x="30" y="30" width="1700" height="920" rx="22" fill="none" stroke="#BFDBFE" stroke-width="2.0"/>
 
-  <text x="72" y="82" class="title">bluetape4k-graph BOM Architecture</text>
-  <text x="74" y="118" class="subtitle">The BOM is a Gradle java-platform artifact that publishes dependency constraints only; it does not contain runtime classes.</text>
+  <text x="72" y="84" class="title">bluetape4k-graph BOM architecture</text>
+  <text x="74" y="120" class="subtitle">A Gradle java-platform publishes dependencyManagement constraints for graph modules; it ships no runtime classes.</text>
 
-  <rect x="70" y="150" width="1700" height="790" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+  <rect x="72" y="160" width="1616" height="708" rx="20" class="panel"/>
 
-  <text x="285" y="215" text-anchor="middle" class="section">Consumer Build</text>
-  <text x="835" y="215" text-anchor="middle" class="section">Published BOM</text>
-  <text x="1430" y="215" text-anchor="middle" class="section">Managed Constraints</text>
+  <rect x="112" y="210" width="348" height="536" rx="18" class="lane"/>
+  <text x="142" y="262" class="section">1. Consumer import</text>
+  <text x="144" y="294" class="small">Applications import the BOM once.</text>
 
-  <rect x="135" y="295" width="340" height="150" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
-  <text x="170" y="343" class="label">Gradle / Maven Import</text>
-  <text x="170" y="379" class="small">platform("bluetape4k-graph-bom")</text>
-  <text x="170" y="407" class="small">or Maven dependencyManagement</text>
-  <text x="170" y="435" class="small">module versions can be omitted</text>
+  <rect x="142" y="346" width="288" height="126" rx="16" fill="#DBEAFE" stroke="#3B82F6" stroke-width="1.8" class="card"/>
+  <text x="286" y="382" text-anchor="middle" class="cardTitle">Gradle platform</text>
+  <text x="286" y="414" text-anchor="middle" class="body">platform(...graph-bom)</text>
+  <text x="286" y="442" text-anchor="middle" class="small">module versions omitted</text>
 
-  <rect x="135" y="575" width="340" height="120" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
-  <text x="170" y="623" class="label">Upstream Aggregation</text>
-  <text x="170" y="659" class="small">bluetape4k-dependencies</text>
-  <text x="170" y="687" class="small">can import this graph BOM</text>
+  <rect x="142" y="538" width="288" height="126" rx="16" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="1.8" class="card"/>
+  <text x="286" y="574" text-anchor="middle" class="cardTitle">Maven import</text>
+  <text x="286" y="606" text-anchor="middle" class="body">dependencyManagement</text>
+  <text x="286" y="634" text-anchor="middle" class="small">import scoped POM</text>
 
-  <rect x="610" y="270" width="450" height="185" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
-  <text x="645" y="318" class="label">Gradle java-platform</text>
-  <text x="645" y="354" class="small">plugins: java-platform, maven-publish</text>
-  <text x="645" y="382" class="small">constraints { rootProject.subprojects }</text>
-  <text x="645" y="410" class="small">publishes POM dependencyManagement</text>
-  <text x="645" y="438" class="small">no implementation or runtime classes</text>
+  <rect x="540" y="210" width="404" height="536" rx="18" class="lane"/>
+  <text x="570" y="262" class="section">2. BOM project</text>
+  <text x="572" y="294" class="small">The bom module owns published constraints.</text>
 
-  <rect x="610" y="545" width="450" height="165" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
-  <text x="645" y="593" class="label">Publication Filter</text>
-  <text x="645" y="629" class="small">excludes examples/* and benchmark/*</text>
-  <text x="645" y="657" class="small">excludes *-demo and *-benchmark names</text>
-  <text x="645" y="685" class="small">excludes the BOM module itself</text>
+  <rect x="580" y="326" width="324" height="144" rx="16" fill="#DCFCE7" stroke="#10B981" stroke-width="1.8" class="card"/>
+  <text x="742" y="365" text-anchor="middle" class="cardTitle">java-platform</text>
+  <text x="742" y="397" text-anchor="middle" class="body">constraints { api(project) }</text>
+  <text x="742" y="423" text-anchor="middle" class="small">generated from rootProject.subprojects</text>
+  <text x="742" y="447" text-anchor="middle" class="small">publishes dependencyManagement only</text>
 
-  <rect x="1200" y="240" width="450" height="145" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
-  <text x="1235" y="288" class="label">Graph Backends</text>
-  <text x="1235" y="324" class="small">graph-core, graph-neo4j, graph-memgraph</text>
-  <text x="1235" y="352" class="small">graph-age, graph-tinkerpop, graph-falkordb</text>
+  <rect x="580" y="536" width="324" height="124" rx="16" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1.8" class="card"/>
+  <text x="742" y="574" text-anchor="middle" class="cardTitle">Publication filter</text>
+  <text x="742" y="606" text-anchor="middle" class="small">skips examples and benchmarks</text>
+  <text x="742" y="632" text-anchor="middle" class="small">skips demo / benchmark project names</text>
 
-  <rect x="1200" y="445" width="450" height="145" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
-  <text x="1235" y="493" class="label">Graph IO Modules</text>
-  <text x="1235" y="529" class="small">graph-io-core, csv, graphml</text>
-  <text x="1235" y="557" class="small">jackson2, jackson3, okio</text>
+  <rect x="1024" y="210" width="624" height="536" rx="18" class="lane"/>
+  <text x="1054" y="262" class="section">3. Managed modules</text>
+  <text x="1056" y="294" class="small">Only published library modules are covered.</text>
 
-  <rect x="1200" y="650" width="450" height="145" rx="14" fill="#F8FAFC" stroke="#94A3B8" stroke-width="3" class="card"/>
-  <text x="1235" y="698" class="label">Framework Integrations</text>
-  <text x="1235" y="734" class="small">graph-spring-boot</text>
-  <text x="1235" y="762" class="small">graph-ktor</text>
+  <rect x="1060" y="330" width="548" height="98" rx="16" fill="#ECFDF5" stroke="#10B981" stroke-width="1.8" class="card"/>
+  <text x="1334" y="363" text-anchor="middle" class="cardTitle">Graph APIs</text>
+  <text x="1334" y="393" text-anchor="middle" class="small">core, Neo4j, Memgraph, AGE, TinkerPop, FalkorDB</text>
 
-  <path d="M 475 370 L 610 370" class="line"/>
-  <path d="M 835 455 L 835 545" class="line"/>
-  <path d="M 1060 355 L 1200 312" class="line"/>
-  <path d="M 1060 590 L 1200 518" class="line"/>
-  <path d="M 1060 670 L 1200 722" class="thin"/>
-  <path d="M 475 635 L 610 635" class="thin"/>
+  <rect x="1060" y="472" width="548" height="98" rx="16" fill="#E0F2FE" stroke="#06B6D4" stroke-width="1.8" class="card"/>
+  <text x="1334" y="505" text-anchor="middle" class="cardTitle">Graph I/O</text>
+  <text x="1334" y="535" text-anchor="middle" class="small">core, CSV, GraphML, Jackson2, Jackson3, OkIO</text>
 
-  <text x="545" y="347" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">imports</text>
-  <text x="545" y="347" text-anchor="middle" class="tiny">imports</text>
-  <text x="1125" y="290" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">api constraints</text>
-  <text x="1125" y="290" text-anchor="middle" class="tiny">api constraints</text>
-  <text x="1125" y="493" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">published only</text>
-  <text x="1125" y="493" text-anchor="middle" class="tiny">published only</text>
+  <rect x="1060" y="614" width="548" height="98" rx="16" fill="#F1F5F9" stroke="#64748B" stroke-width="1.8" class="card"/>
+  <text x="1334" y="647" text-anchor="middle" class="cardTitle">Integrations</text>
+  <text x="1334" y="677" text-anchor="middle" class="small">Spring Boot and Ktor modules</text>
 
-  <rect x="250" y="835" width="1340" height="54" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"/>
-  <text x="920" y="868" text-anchor="middle" class="small">Excluded from constraints: examples/*, benchmark/*, *-demo, and *-benchmark modules.</text>
-  <text x="920" y="1032" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | module: bluetape4k-graph-bom / architecture</text>
+  <rect x="112" y="748" width="1536" height="70" rx="18" fill="#FFF7ED" stroke="#FED7AA" stroke-width="1.5"/>
+  <text x="148" y="791" class="section">4. Outside BOM</text>
+  <text x="426" y="791" class="small">Runnable samples and measurement modules are intentionally not constrained.</text>
+
+  <rect x="1290" y="766" width="150" height="36" rx="12" fill="#FFFFFF" stroke="#F97316" stroke-width="1.5"/>
+  <text x="1365" y="791" text-anchor="middle" class="small">examples/*</text>
+
+  <rect x="1462" y="766" width="150" height="36" rx="12" fill="#FFFFFF" stroke="#EF4444" stroke-width="1.5"/>
+  <text x="1537" y="791" text-anchor="middle" class="small">benchmark/*</text>
+
+  <path d="M 430 408 L 580 398" class="flow"/>
+  <path d="M 430 600 L 580 600" class="flow"/>
+  <path d="M 904 398 L 1060 379" class="constraint"/>
+  <path d="M 904 398 C 960 440 994 500 1060 521" class="constraint"/>
+  <path d="M 904 598 C 966 648 994 664 1060 664" class="constraint"/>
+  <path d="M 742 660 L 742 748" class="filterLine"/>
+
+  <rect x="372" y="888" width="1016" height="48" rx="14" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="880" y="919" text-anchor="middle" class="small">Importing the BOM aligns versions, but each application still chooses which graph modules to depend on.</text>
 </svg>
