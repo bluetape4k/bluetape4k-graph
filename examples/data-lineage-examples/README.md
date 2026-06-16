@@ -12,6 +12,10 @@ The sample graph traces `raw.orders` through ingestion and revenue mart jobs int
 It answers which dashboards a source table or column change can affect, which upstream tables feed a dashboard metric,
 who owns a broken job and its impacted dashboards, and why a failing data quality check reaches a business metric.
 
+## Architecture
+
+![data-lineage examples architecture](../../docs/images/readme-diagrams/examples-data-lineage-examples-architecture-01.png)
+
 ## Graph Model
 
 | Element | Label | Key properties | Purpose |
