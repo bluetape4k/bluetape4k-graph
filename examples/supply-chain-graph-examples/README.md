@@ -12,6 +12,10 @@ A blocked ocean route and a sole-source GPS module can delay customer orders. Th
 impacted by a supplier, part, or route failure, which active routes can replace a failed route, and which parts are
 bottlenecks or part of substitution cycles.
 
+## Architecture
+
+![supply-chain graph examples architecture](../../docs/images/readme-diagrams/examples-supply-chain-graph-examples-architecture-01.png)
+
 ## Graph Model
 
 | Element | Label | Key properties | Purpose |
