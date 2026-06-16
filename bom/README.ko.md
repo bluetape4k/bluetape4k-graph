@@ -11,6 +11,11 @@
 
 BOM은 Gradle `java-platform` 으로 `<dependencyManagement>` constraint 만 게시한다.
 
+- 소비자는 BOM을 한 번 import한 뒤 graph module 의존성에 버전을 반복하지 않는다.
+- `bom/build.gradle.kts`는 published subproject를 `api(project)` constraint로 자동 수집한다.
+- `examples/*`, `benchmark/*`, `*-demo`, `*-benchmark` 모듈은 의도적으로 제외된다.
+- 여러 bluetape4k 생태계를 함께 쓰는 서비스에서는 `bluetape4k-dependencies`가 이 BOM을 상위에서 통합할 수 있다.
+
 ## 핵심 기능
 
 - 모든 `bluetape4k-graph` 모듈 버전 중앙 관리

@@ -12,6 +12,11 @@ individual versions.
 
 The BOM is a Gradle `java-platform` that publishes only `<dependencyManagement>` constraints — no runtime classes.
 
+- Consumers import the BOM once, then declare graph modules without repeating versions.
+- `bom/build.gradle.kts` creates constraints from published subprojects with `api(project)`.
+- `examples/*`, `benchmark/*`, `*-demo`, and `*-benchmark` modules are intentionally excluded.
+- `bluetape4k-dependencies` can aggregate this BOM when a service consumes several bluetape4k ecosystems.
+
 ## Core Features
 
 - Centralized version management for all `bluetape4k-graph` modules
