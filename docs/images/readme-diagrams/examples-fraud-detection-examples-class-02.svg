@@ -49,8 +49,8 @@
   <text x="800" y="474" class="small">amount: long, occurredAt: string</text>
 
   <path d="M 590 410 L 760 410" class="line"/>
-  <text x="675" y="392" text-anchor="middle" class="rel" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">directed money transfer</text>
-  <text x="675" y="392" text-anchor="middle" class="rel">directed money transfer</text>
+  <text x="675" y="374" text-anchor="middle" class="rel" stroke="#FFFFFF" stroke-width="8" stroke-linejoin="round">TRANSFERRED_TO</text>
+  <text x="675" y="374" text-anchor="middle" class="rel">TRANSFERRED_TO</text>
 
   <rect x="160" y="625" width="430" height="150" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
   <text x="200" y="673" class="label">Sample Dataset</text>
@@ -70,7 +70,7 @@
   <text x="1360" y="393" class="small">addAccount(accountId, ownerName)</text>
   <text x="1360" y="421" class="small">recordTransfer(from, to, amount)</text>
   <text x="1360" y="449" class="small">detectCircularTransfers()</text>
-  <text x="1360" y="477" class="small">rankHighRiskAccounts(limit)</text>
+  <text x="1360" y="477" class="small">connectedComponents(), pageRank()</text>
 
   <rect x="1320" y="610" width="400" height="170" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
   <text x="1360" y="658" class="label">Suspend Service</text>
@@ -83,5 +83,6 @@
   <path d="M 1190 700 L 1320 695" class="line"/>
 
   <rect x="185" y="845" width="1470" height="45" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"/>
+  <text x="920" y="873" text-anchor="middle" class="small">Account and TRANSFERRED_TO labels are the only persisted schema; services translate them into cycle, cluster, and PageRank queries.</text>
   <text x="920" y="1032" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | module: fraud-detection-examples / domain UML</text>
 </svg>
