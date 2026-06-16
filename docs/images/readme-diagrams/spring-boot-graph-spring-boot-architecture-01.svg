@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1760" height="1080" viewBox="0 0 1760 1080">
+  <defs>
+    <filter id="shadow" x="-6%" y="-6%" width="112%" height="112%">
+      <feDropShadow dx="0" dy="7" stdDeviation="5" flood-color="#334155" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow-blue" viewBox="0 0 24 24" refX="22" refY="12" markerWidth="22" markerHeight="22" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 3 3 L 22 12 L 3 21 Z" fill="#2563EB"/>
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 24 24" refX="22" refY="12" markerWidth="22" markerHeight="22" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 3 3 L 22 12 L 3 21 Z" fill="#059669"/>
+    </marker>
+    <marker id="arrow-amber" viewBox="0 0 24 24" refX="22" refY="12" markerWidth="20" markerHeight="20" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 3 3 L 22 12 L 3 21 Z" fill="#D97706"/>
+    </marker>
+  </defs>
+
+  <style>
+    .title { font-family: 'Architects Daughter', cursive; font-size: 52px; fill: #0F172A; }
+    .subtitle { font-family: 'Comic Mono', monospace; font-size: 19px; fill: #475569; }
+    .section { font-family: 'Architects Daughter', cursive; font-size: 29px; fill: #111827; }
+    .cardTitle { font-family: 'Architects Daughter', cursive; font-size: 25px; fill: #111827; }
+    .body { font-family: 'Comic Mono', monospace; font-size: 17px; fill: #334155; }
+    .small { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #475569; }
+    .tiny { font-family: 'Comic Mono', monospace; font-size: 13px; fill: #475569; }
+    .panel { fill: #FFFFFF; stroke: #CBD5E1; stroke-width: 1.6; }
+    .lane { fill: #F8FAFC; stroke: #CBD5E1; stroke-width: 1.5; }
+    .card { filter: url(#shadow); }
+    .flow { fill: none; stroke: #2563EB; stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow-blue); }
+    .bean { fill: none; stroke: #059669; stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow-green); }
+    .health { fill: none; stroke: #D97706; stroke-width: 3.0; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow-amber); }
+  </style>
+
+  <rect x="0" y="0" width="1760" height="1080" fill="#F8FAFC"/>
+  <rect x="28" y="28" width="1704" height="1024" rx="22" fill="none" stroke="#BFDBFE" stroke-width="2.2"/>
+
+  <text x="72" y="86" class="title">graph-spring-boot architecture</text>
+  <text x="74" y="124" class="subtitle">Spring Boot 4 auto-configuration selects one backend and registers graph operation beans conditionally.</text>
+
+  <rect x="74" y="166" width="1612" height="808" rx="20" class="panel"/>
+
+  <rect x="112" y="214" width="348" height="610" rx="18" class="lane"/>
+  <text x="142" y="264" class="section">1. Boot entry</text>
+  <text x="144" y="296" class="small">AutoConfiguration imports load in order.</text>
+
+  <rect x="140" y="336" width="292" height="116" rx="16" fill="#DBEAFE" stroke="#3B82F6" stroke-width="1.9" class="card"/>
+  <text x="286" y="369" text-anchor="middle" class="cardTitle">AutoConfiguration</text>
+  <text x="286" y="397" text-anchor="middle" class="cardTitle">imports</text>
+  <text x="286" y="424" text-anchor="middle" class="small">root first, then backends</text>
+
+  <rect x="140" y="500" width="292" height="112" rx="16" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="1.9" class="card"/>
+  <text x="286" y="536" text-anchor="middle" class="cardTitle">GraphProperties</text>
+  <text x="286" y="566" text-anchor="middle" class="body">bluetape4k.graph.backend</text>
+  <text x="286" y="591" text-anchor="middle" class="small">missing value means TinkerGraph</text>
+
+  <rect x="140" y="664" width="292" height="94" rx="16" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.6"/>
+  <text x="286" y="697" text-anchor="middle" class="cardTitle">Class guards</text>
+  <text x="286" y="726" text-anchor="middle" class="small">backend jars must be present</text>
+
+  <rect x="520" y="214" width="382" height="610" rx="18" class="lane"/>
+  <text x="550" y="264" class="section">2. Backend branch</text>
+  <text x="552" y="296" class="small">Only the selected backend creates beans.</text>
+
+  <rect x="560" y="328" width="302" height="112" rx="16" fill="#ECFDF5" stroke="#10B981" stroke-width="1.9" class="card"/>
+  <text x="711" y="364" text-anchor="middle" class="cardTitle">TinkerGraph</text>
+  <text x="711" y="394" text-anchor="middle" class="body">default in-memory backend</text>
+  <text x="711" y="419" text-anchor="middle" class="small">GraphOperations owns close</text>
+
+  <rect x="560" y="480" width="302" height="128" rx="16" fill="#DBEAFE" stroke="#3B82F6" stroke-width="1.9" class="card"/>
+  <text x="711" y="516" text-anchor="middle" class="cardTitle">Neo4j / Memgraph</text>
+  <text x="711" y="546" text-anchor="middle" class="body">Bolt driver bean</text>
+  <text x="711" y="571" text-anchor="middle" class="small">reuse existing Driver or create one</text>
+  <text x="711" y="594" text-anchor="middle" class="small">Spring closes auto-created driver</text>
+
+  <rect x="560" y="648" width="142" height="92" rx="16" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1.9" class="card"/>
+  <text x="631" y="681" text-anchor="middle" class="cardTitle">AGE</text>
+  <text x="631" y="708" text-anchor="middle" class="tiny">DataSource</text>
+  <text x="631" y="728" text-anchor="middle" class="tiny">Exposed DB</text>
+
+  <rect x="720" y="648" width="142" height="92" rx="16" fill="#E0F2FE" stroke="#06B6D4" stroke-width="1.9" class="card"/>
+  <text x="791" y="681" text-anchor="middle" class="cardTitle">FalkorDB</text>
+  <text x="791" y="708" text-anchor="middle" class="tiny">jfalkordb</text>
+  <text x="791" y="728" text-anchor="middle" class="tiny">driver bean</text>
+
+  <rect x="960" y="214" width="338" height="610" rx="18" class="lane"/>
+  <text x="990" y="264" class="section">3. Bean surface</text>
+  <text x="992" y="296" class="small">All beans are override-friendly.</text>
+
+  <rect x="996" y="336" width="266" height="112" rx="16" fill="#DCFCE7" stroke="#10B981" stroke-width="1.9" class="card"/>
+  <text x="1129" y="372" text-anchor="middle" class="cardTitle">GraphOperations</text>
+  <text x="1129" y="402" text-anchor="middle" class="body">sync facade</text>
+  <text x="1129" y="427" text-anchor="middle" class="small">@ConditionalOnMissingBean</text>
+
+  <rect x="996" y="500" width="266" height="112" rx="16" fill="#ECFDF5" stroke="#10B981" stroke-width="1.9" class="card"/>
+  <text x="1129" y="531" text-anchor="middle" class="cardTitle">GraphSuspend</text>
+  <text x="1129" y="557" text-anchor="middle" class="cardTitle">Operations</text>
+  <text x="1129" y="583" text-anchor="middle" class="small">registered by default</text>
+  <text x="1129" y="604" text-anchor="middle" class="tiny">register-suspend=false disables</text>
+
+  <rect x="996" y="664" width="266" height="94" rx="16" fill="#F1F5F9" stroke="#64748B" stroke-width="1.9" class="card"/>
+  <text x="1129" y="698" text-anchor="middle" class="cardTitle">Virtual thread</text>
+  <text x="1129" y="726" text-anchor="middle" class="small">ops.asVirtualThread()</text>
+
+  <rect x="1356" y="214" width="290" height="610" rx="18" class="lane"/>
+  <text x="1386" y="264" class="section">4. Optional health</text>
+  <text x="1388" y="296" class="small">Isolated from non-Actuator apps.</text>
+
+  <rect x="1390" y="344" width="222" height="116" rx="16" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1.9" class="card"/>
+  <text x="1501" y="379" text-anchor="middle" class="cardTitle">HealthConfig</text>
+  <text x="1501" y="409" text-anchor="middle" class="small">loads only when</text>
+  <text x="1501" y="431" text-anchor="middle" class="small">HealthIndicator exists</text>
+
+  <rect x="1390" y="512" width="222" height="116" rx="16" fill="#FFF7ED" stroke="#F97316" stroke-width="1.9" class="card"/>
+  <text x="1501" y="542" text-anchor="middle" class="cardTitle">Connectivity</text>
+  <text x="1501" y="570" text-anchor="middle" class="cardTitle">check</text>
+  <text x="1501" y="596" text-anchor="middle" class="small">verify driver, DataSource,</text>
+  <text x="1501" y="618" text-anchor="middle" class="small">or in-memory backend</text>
+
+  <rect x="1390" y="680" width="222" height="82" rx="16" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.6"/>
+  <text x="1501" y="710" text-anchor="middle" class="small">Boot 4 health package</text>
+  <text x="1501" y="734" text-anchor="middle" class="tiny">boot.health.contributor</text>
+
+  <path d="M 432 394 L 560 384" class="flow"/>
+  <path d="M 432 556 L 560 544" class="flow"/>
+  <path d="M 432 711 L 560 694" class="flow"/>
+  <path d="M 862 384 L 996 392" class="bean"/>
+  <path d="M 862 544 L 996 556" class="bean"/>
+  <path d="M 862 694 L 996 711" class="bean"/>
+  <path d="M 1262 392 C 1308 390 1340 392 1390 402" class="health"/>
+  <path d="M 1262 556 C 1310 550 1340 552 1390 570" class="health"/>
+
+  <rect x="228" y="858" width="1304" height="76" rx="16" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.6"/>
+  <text x="880" y="887" text-anchor="middle" class="small">Applications choose one backend with bluetape4k.graph.backend; TinkerGraph is the only match-if-missing backend.</text>
+  <text x="880" y="914" text-anchor="middle" class="small">Backend configs create sync, suspend, virtual-thread, and optional health beans only when classes and properties match.</text>
+</svg>

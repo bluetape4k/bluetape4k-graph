@@ -7,6 +7,19 @@ for the selected backend via a single property.
 
 > **Spring Boot 4 note:** This module targets Spring Boot 4.x. Spring Boot 3.x support has been removed.
 
+## Architecture
+
+![graph-spring-boot architecture](../../docs/images/readme-diagrams/spring-boot-graph-spring-boot-architecture-01.png)
+
+`graph-spring-boot` uses Spring Boot auto-configuration conditions to activate exactly one graph backend:
+
+- `GraphAutoConfiguration` loads shared `GraphProperties` and orders backend-specific auto-configurations.
+- `bluetape4k.graph.backend` selects the backend; when the value is absent, only TinkerGraph matches by default.
+- Backend auto-configurations are guarded by both backend property values and required runtime classes.
+- Each backend registers `GraphOperations`, optional `GraphSuspendOperations`, and optional `GraphVirtualThreadOperations` with `@ConditionalOnMissingBean`.
+- AGE reuses a single Spring `DataSource` and connects Exposed before creating AGE operations.
+- Health indicators load only when Spring Boot 4 health classes are on the classpath.
+
 ## Supported Backends
 
 | Backend | Property value | Required runtime dependency |
