@@ -8,6 +8,14 @@ Ktor 3.x plugin integration for `bluetape4k-graph`. It exposes `GraphOperations`
 
 ![graph ktor Architecture diagram](../../docs/images/readme-diagrams/ktor-graph-ktor-architecture-01.png)
 
+`graph-ktor` installs one explicit backend into Ktor and stores the resolved graph state in application attributes:
+
+- `install(GraphPlugin) { ... }` fails during install if no backend helper configures sync and suspend graph facades.
+- Backend helpers either wrap caller-owned resources or create plugin-owned drivers and pools through managed DSLs.
+- `GraphPluginState` exposes both `GraphOperations` and `GraphSuspendOperations`.
+- `Application` and `ApplicationCall` extensions read the state from Ktor attributes; route handlers should prefer the suspend facade.
+- On `ApplicationStopped`, only registered close actions run, so caller-owned drivers and `DataSource` instances remain outside the plugin lifecycle.
+
 ## Features
 
 - Ktor `createApplicationPlugin(...)` based integration.
