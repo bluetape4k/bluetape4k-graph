@@ -7,6 +7,19 @@
 
 > **Spring Boot 4 전용:** 이 모듈은 Spring Boot 4.x를 대상으로 한다. Spring Boot 3.x 지원은 제거되었다.
 
+## 아키텍처
+
+![graph-spring-boot architecture](../../docs/images/readme-diagrams/spring-boot-graph-spring-boot-architecture-01.png)
+
+`graph-spring-boot`는 Spring Boot auto-configuration 조건으로 정확히 하나의 graph backend를 활성화한다:
+
+- `GraphAutoConfiguration`은 공통 `GraphProperties`를 로드하고 backend별 auto-configuration 실행 순서를 정한다.
+- `bluetape4k.graph.backend`가 backend를 선택하며, 값이 없으면 TinkerGraph만 기본으로 매칭된다.
+- Backend auto-configuration은 backend property 값과 필요한 runtime class 조건을 모두 만족할 때만 동작한다.
+- 각 backend는 `@ConditionalOnMissingBean`으로 `GraphOperations`, optional `GraphSuspendOperations`, optional `GraphVirtualThreadOperations`를 등록한다.
+- AGE는 단일 Spring `DataSource`를 재사용하고, AGE operation 생성 전에 Exposed를 연결한다.
+- Health indicator는 Spring Boot 4 health class가 classpath에 있을 때만 로드된다.
+
 ## 지원 백엔드
 
 | 백엔드 | 프로퍼티 값 | 필요한 런타임 의존성 |
