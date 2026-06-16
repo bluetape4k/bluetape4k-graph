@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1760" height="1080" viewBox="0 0 1760 1080">
+  <defs>
+    <filter id="shadow" x="-6%" y="-6%" width="112%" height="112%">
+      <feDropShadow dx="0" dy="7" stdDeviation="5" flood-color="#334155" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow-green" viewBox="0 0 24 24" refX="22" refY="12" markerWidth="22" markerHeight="22" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 3 3 L 22 12 L 3 21 Z" fill="#059669"/>
+    </marker>
+    <marker id="arrow-blue" viewBox="0 0 24 24" refX="22" refY="12" markerWidth="22" markerHeight="22" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 3 3 L 22 12 L 3 21 Z" fill="#2563EB"/>
+    </marker>
+    <marker id="arrow-amber" viewBox="0 0 24 24" refX="22" refY="12" markerWidth="20" markerHeight="20" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 3 3 L 22 12 L 3 21 Z" fill="#D97706"/>
+    </marker>
+  </defs>
+
+  <style>
+    .title { font-family: 'Architects Daughter', cursive; font-size: 52px; fill: #0F172A; }
+    .subtitle { font-family: 'Comic Mono', monospace; font-size: 19px; fill: #475569; }
+    .section { font-family: 'Architects Daughter', cursive; font-size: 29px; fill: #111827; }
+    .cardTitle { font-family: 'Architects Daughter', cursive; font-size: 26px; fill: #111827; }
+    .body { font-family: 'Comic Mono', monospace; font-size: 17px; fill: #334155; }
+    .small { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #475569; }
+    .tiny { font-family: 'Comic Mono', monospace; font-size: 13px; fill: #475569; }
+    .panel { fill: #FFFFFF; stroke: #CBD5E1; stroke-width: 1.6; }
+    .lane { fill: #F8FAFC; stroke: #CBD5E1; stroke-width: 1.5; }
+    .card { filter: url(#shadow); }
+    .flow { fill: none; stroke: #059669; stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow-green); }
+    .format { fill: none; stroke: #2563EB; stroke-width: 3.3; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow-blue); }
+    .guard { fill: none; stroke: #D97706; stroke-width: 3.0; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow-amber); }
+  </style>
+
+  <rect x="0" y="0" width="1760" height="1080" fill="#F8FAFC"/>
+  <rect x="28" y="28" width="1704" height="1024" rx="22" fill="none" stroke="#BFDBFE" stroke-width="2.2"/>
+
+  <text x="72" y="86" class="title">graph-okio architecture</text>
+  <text x="74" y="124" class="subtitle">OkIO sources and sinks add streaming, ownership, compression, encryption, and atomic file safety.</text>
+
+  <rect x="74" y="166" width="1612" height="808" rx="20" class="panel"/>
+
+  <rect x="112" y="214" width="342" height="608" rx="18" class="lane"/>
+  <text x="142" y="264" class="section">1. Entry contract</text>
+  <text x="144" y="296" class="small">Caller selects source, sink, and format.</text>
+
+  <rect x="136" y="338" width="294" height="104" rx="16" fill="#DBEAFE" stroke="#3B82F6" stroke-width="1.9" class="card"/>
+  <text x="283" y="372" text-anchor="middle" class="cardTitle">PathSource / PathSink</text>
+  <text x="283" y="402" text-anchor="middle" class="body">FileSystem aware</text>
+  <text x="283" y="427" text-anchor="middle" class="small">library opens and closes files</text>
+
+  <rect x="136" y="494" width="294" height="104" rx="16" fill="#ECFDF5" stroke="#10B981" stroke-width="1.9" class="card"/>
+  <text x="283" y="528" text-anchor="middle" class="cardTitle">Source / Sink</text>
+  <text x="283" y="558" text-anchor="middle" class="body">caller-owned by default</text>
+  <text x="283" y="583" text-anchor="middle" class="small">ownsXxx=true transfers close</text>
+
+  <rect x="136" y="650" width="294" height="96" rx="16" fill="#FFF7ED" stroke="#F97316" stroke-width="1.9" class="card"/>
+  <text x="283" y="683" text-anchor="middle" class="cardTitle">Input / OutputStream</text>
+  <text x="283" y="713" text-anchor="middle" class="body">bridge for existing APIs</text>
+
+  <rect x="512" y="214" width="360" height="608" rx="18" class="lane"/>
+  <text x="542" y="264" class="section">2. OkIO boundary</text>
+  <text x="544" y="296" class="small">GraphIoOkioPaths owns wrappers.</text>
+
+  <rect x="552" y="332" width="280" height="112" rx="16" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="1.9" class="card"/>
+  <text x="692" y="368" text-anchor="middle" class="cardTitle">GraphIoOkioPaths</text>
+  <text x="692" y="398" text-anchor="middle" class="body">openSource / openSink</text>
+  <text x="692" y="423" text-anchor="middle" class="small">non-closing wrappers when caller owns</text>
+
+  <rect x="552" y="490" width="280" height="118" rx="16" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1.9" class="card"/>
+  <text x="692" y="526" text-anchor="middle" class="cardTitle">Streaming wrappers</text>
+  <text x="692" y="556" text-anchor="middle" class="body">GZIP / DEFLATE / optional</text>
+  <text x="692" y="581" text-anchor="middle" class="small">BombGuard caps decompressed bytes</text>
+
+  <rect x="552" y="654" width="280" height="112" rx="16" fill="#E0F2FE" stroke="#06B6D4" stroke-width="1.9" class="card"/>
+  <text x="692" y="689" text-anchor="middle" class="cardTitle">DAEAD + atomic write</text>
+  <text x="692" y="719" text-anchor="middle" class="body">chunk encryption frames</text>
+  <text x="692" y="744" text-anchor="middle" class="small">tmp file then atomicMove</text>
+
+  <rect x="930" y="214" width="374" height="608" rx="18" class="lane"/>
+  <text x="960" y="264" class="section">3. API facade</text>
+  <text x="962" y="296" class="small">Sync core; VT and suspend wrap it.</text>
+
+  <rect x="970" y="334" width="294" height="112" rx="16" fill="#DBEAFE" stroke="#3B82F6" stroke-width="1.9" class="card"/>
+  <text x="1117" y="370" text-anchor="middle" class="cardTitle">OkioGraphBulk</text>
+  <text x="1117" y="400" text-anchor="middle" class="body">Importer / Exporter</text>
+  <text x="1117" y="425" text-anchor="middle" class="small">explicit GraphIoFormat</text>
+
+  <rect x="970" y="498" width="294" height="108" rx="16" fill="#ECFDF5" stroke="#10B981" stroke-width="1.9" class="card"/>
+  <text x="1117" y="533" text-anchor="middle" class="cardTitle">Virtual thread</text>
+  <text x="1117" y="562" text-anchor="middle" class="body">CompletableFuture</text>
+  <text x="1117" y="587" text-anchor="middle" class="small">virtualFutureOf wraps sync core</text>
+
+  <rect x="970" y="662" width="294" height="104" rx="16" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="1.9" class="card"/>
+  <text x="1117" y="696" text-anchor="middle" class="cardTitle">Suspend / Flow</text>
+  <text x="1117" y="724" text-anchor="middle" class="body">runInterruptible</text>
+  <text x="1117" y="748" text-anchor="middle" class="small">start and completion progress</text>
+
+  <rect x="1364" y="214" width="282" height="608" rx="18" class="lane"/>
+  <text x="1394" y="264" class="section">4. Format delegation</text>
+  <text x="1396" y="296" class="small">Calls graph-io modules.</text>
+
+  <rect x="1386" y="346" width="238" height="104" rx="16" fill="#DCFCE7" stroke="#10B981" stroke-width="1.9" class="card"/>
+  <text x="1505" y="380" text-anchor="middle" class="cardTitle">Single stream</text>
+  <text x="1505" y="408" text-anchor="middle" class="small">Jackson2 / Jackson3</text>
+  <text x="1505" y="430" text-anchor="middle" class="small">GraphML</text>
+
+  <rect x="1386" y="504" width="238" height="104" rx="16" fill="#FFF7ED" stroke="#F97316" stroke-width="1.9" class="card"/>
+  <text x="1505" y="538" text-anchor="middle" class="cardTitle">CSV pair</text>
+  <text x="1505" y="566" text-anchor="middle" class="small">vertices + edges paths</text>
+  <text x="1505" y="588" text-anchor="middle" class="small">stream-backed CSV rejected</text>
+
+  <rect x="1386" y="666" width="238" height="96" rx="16" fill="#F1F5F9" stroke="#64748B" stroke-width="1.9" class="card"/>
+  <text x="1505" y="700" text-anchor="middle" class="cardTitle">Stream bridge</text>
+  <text x="1505" y="728" text-anchor="middle" class="small">InputStream / OutputStream</text>
+
+  <path d="M 430 390 L 552 388" class="flow"/>
+  <path d="M 430 546 L 552 388" class="flow"/>
+  <path d="M 430 698 L 552 388" class="flow"/>
+  <path d="M 832 388 L 970 390" class="format"/>
+  <path d="M 832 550 L 970 390" class="format"/>
+  <path d="M 832 710 L 970 390" class="guard"/>
+  <path d="M 1264 390 L 1386 398" class="flow"/>
+  <path d="M 1264 390 C 1318 430 1326 516 1386 556" class="format"/>
+  <path d="M 1264 390 C 1318 482 1326 656 1386 714" class="guard"/>
+
+  <rect x="228" y="858" width="1304" height="76" rx="16" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.6"/>
+  <text x="880" y="887" text-anchor="middle" class="small">NDJSON and GraphML are single-stream formats, so compression and DAEAD can wrap the same byte flow.</text>
+  <text x="880" y="914" text-anchor="middle" class="small">CSV stays a paired-file contract; high-level encrypted helpers reject it and point to low-level path wrappers.</text>
+</svg>

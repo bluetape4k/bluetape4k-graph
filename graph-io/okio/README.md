@@ -7,6 +7,19 @@ OkIO-based graph I/O layer. Fully compatible with the existing `graph-io-csv`,
 adding OkIO segment-based streaming, compression chaining, and `FileSystem`
 abstraction.
 
+## Architecture
+
+![graph-okio architecture](../../docs/images/readme-diagrams/graph-io-okio-architecture-01.png)
+
+`graph-okio` is an adapter layer around existing graph-io formats, not a new graph serialization format:
+
+- `OkioGraphImportSource` and `OkioGraphExportSink` define path, OkIO source/sink, and stream entry points with explicit ownership.
+- `GraphIoOkioPaths` opens buffered OkIO sources and sinks, then applies compression, DAEAD chunk encryption, decompression guards, and atomic file writes.
+- `OkioGraphBulkImporter` and `OkioGraphBulkExporter` require an explicit `GraphIoFormat`; they do not infer format from file extensions.
+- NDJSON and GraphML are single-stream formats and can use compression and encrypted helper APIs directly.
+- CSV remains a paired-file contract, so high-level encrypted helpers reject it and low-level path wrappers must be composed manually for custom layouts.
+- Virtual-thread and suspend adapters wrap the same sync core and return the same graph-io reports.
+
 ## Why OkIO
 
 | java.io approach | OkIO approach |
@@ -356,5 +369,4 @@ dependencies {
 
 ## Roadmap
 
-- **v2**: Tink encryption support (`bluetape4k-projects #240`) — AES-GCM based, small-file only (`TinkEncryptSink` / `TinkDecryptSource`)
 - **v2**: Stream-based CSV without `PathSource`/`PathSink` constraint
