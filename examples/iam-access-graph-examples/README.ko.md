@@ -12,6 +12,10 @@ Engineering 사용자는 group을 통해 staging deploy 권한을 받고, nested
 권한까지 상속받습니다. Auditor는 direct read-only role을 받고, operations 사용자는 임시 break-glass grant를 받으며,
 contractor는 deny policy로 차단됩니다.
 
+## 아키텍처
+
+![iam access graph examples architecture](../../docs/images/readme-diagrams/examples-iam-access-graph-examples-architecture-01.png)
+
 ## Graph Model
 
 | 요소 | Label | 주요 속성 | 목적 |
