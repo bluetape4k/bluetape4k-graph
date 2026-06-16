@@ -122,6 +122,4 @@
 <circle cx="2366.5" cy="1236" r="13" fill="#2E9C9B"/>
 <text x="2366.5" y="1236" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">12</text>
 <text x="2390.5" y="1236" dominant-baseline="middle" class="tiny">popular products</text>
-<rect x="150" y="1300" width="2580" height="42" rx="11" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
-<text x="1440.0" y="1321" text-anchor="middle" dominant-baseline="middle" class="tiny">Numbered labels sit above message lines; lifelines and activations stay separated from participant cards.</text>
 </svg>

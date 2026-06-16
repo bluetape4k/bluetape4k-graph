@@ -99,8 +99,8 @@
   <path d="M 1290 392 L 1390 538" class="line"/>
   <path d="M 1290 392 L 1390 748" class="line"/>
 
-  <rect x="235" y="850" width="1330" height="62" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"/>
-  <text x="900" y="880" text-anchor="middle" class="small">Abstract tests define the recommendation behavior once; concrete backend tests only provide GraphOperations setup.</text>
+  <rect x="235" y="830" width="1330" height="62" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"/>
+  <text x="900" y="860" text-anchor="middle" class="small">Abstract tests define the recommendation behavior once; concrete backend tests only provide GraphOperations setup.</text>
 
   <text x="900" y="1000" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | module: recommendation-examples / architecture</text>
 </svg>
