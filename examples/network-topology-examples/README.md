@@ -12,6 +12,10 @@ The sample graph connects a core router to two edge routers, redundant access sw
 lab segment. It answers which path reaches a service, which services become unreachable after a failed device or link,
 which segments are isolated from the core, and whether redundant route candidates exist.
 
+## Architecture
+
+![network topology examples architecture](../../docs/images/readme-diagrams/examples-network-topology-examples-architecture-01.png)
+
 ## Graph Model
 
 | Element | Label | Key properties | Purpose |
