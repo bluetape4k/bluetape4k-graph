@@ -1,101 +1,113 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1080" viewBox="0 0 1840 1080">
+<svg xmlns="http://www.w3.org/2000/svg" width="1760" height="980" viewBox="0 0 1760 980">
   <defs>
-    <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
-      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.13"/>
+    <filter id="shadow" x="-6%" y="-6%" width="112%" height="112%">
+      <feDropShadow dx="0" dy="7" stdDeviation="5" flood-color="#334155" flood-opacity="0.09"/>
     </filter>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+    <marker id="arrow-blue" viewBox="0 0 24 24" refX="22" refY="12" markerWidth="20" markerHeight="20" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 3 3 L 22 12 L 3 21 Z" fill="#2563EB"/>
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 24 24" refX="22" refY="12" markerWidth="20" markerHeight="20" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 3 3 L 22 12 L 3 21 Z" fill="#059669"/>
+    </marker>
+    <marker id="arrow-orange" viewBox="0 0 24 24" refX="22" refY="12" markerWidth="20" markerHeight="20" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M 3 3 L 22 12 L 3 21 Z" fill="#EA580C"/>
     </marker>
   </defs>
 
   <style>
-    .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
-    .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
-    .section { font-family: 'Architects Daughter', cursive; font-size: 30px; fill: #111827; }
-    .label { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
-    .small { font-family: 'Comic Mono', monospace; font-size: 17px; fill: #374151; }
-    .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
-    .card { filter: url(#softShadow); }
-    .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-    .thin { stroke: #64748B; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+    .title { font-family: 'Architects Daughter', cursive; font-size: 50px; fill: #0F172A; }
+    .subtitle { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #475569; }
+    .section { font-family: 'Architects Daughter', cursive; font-size: 28px; fill: #111827; }
+    .cardTitle { font-family: 'Architects Daughter', cursive; font-size: 24px; fill: #111827; }
+    .body { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #334155; }
+    .small { font-family: 'Comic Mono', monospace; font-size: 13px; fill: #475569; }
+    .panel { fill: #FFFFFF; stroke: #CBD5E1; stroke-width: 1.5; }
+    .lane { fill: #F8FAFC; stroke: #CBD5E1; stroke-width: 1.4; }
+    .card { filter: url(#shadow); }
+    .flow { fill: none; stroke: #2563EB; stroke-width: 3.0; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow-blue); }
+    .measure { fill: none; stroke: #059669; stroke-width: 3.0; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow-green); }
+    .lifecycle { fill: none; stroke: #EA580C; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow-orange); }
   </style>
 
-  <rect x="0" y="0" width="1840" height="1080" fill="#F8FAFC"/>
-  <rect x="24" y="24" width="1792" height="1032" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
-  <circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
-  <circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
-  <circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
+  <rect x="0" y="0" width="1760" height="980" fill="#F8FAFC"/>
+  <rect x="30" y="30" width="1700" height="920" rx="22" fill="none" stroke="#BFDBFE" stroke-width="2.0"/>
 
-  <text x="72" y="82" class="title">Neo4j Benchmark Architecture</text>
-  <text x="74" y="118" class="subtitle">JMH measures Neo4jGraphOperations against a Testcontainers Neo4j server seeded by Neo4jBenchmarkState.</text>
+  <text x="72" y="84" class="title">graph-neo4j-benchmark architecture</text>
+  <text x="74" y="120" class="subtitle">JMH measures Neo4j operations over a containerized Neo4j server, Bolt driver sessions, and a benchmark-only cache wrapper.</text>
 
-  <rect x="70" y="150" width="1700" height="790" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+  <rect x="72" y="160" width="1616" height="708" rx="20" class="panel"/>
 
-  <text x="280" y="215" text-anchor="middle" class="section">JMH State</text>
-  <text x="835" y="215" text-anchor="middle" class="section">Operations Under Test</text>
-  <text x="1430" y="215" text-anchor="middle" class="section">Neo4j Runtime</text>
+  <rect x="112" y="212" width="344" height="536" rx="18" class="lane"/>
+  <text x="142" y="262" class="section">1. Benchmark harness</text>
+  <text x="144" y="294" class="small">kotlinx-benchmark runs JMH states.</text>
 
-  <rect x="130" y="275" width="360" height="155" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
-  <text x="165" y="323" class="label">Neo4jBenchmarkState</text>
-  <text x="165" y="359" class="small">@State(Scope.Benchmark)</text>
-  <text x="165" y="387" class="small">starts Neo4jServer.Launcher.neo4j</text>
-  <text x="165" y="415" class="small">opens GraphDatabase.driver(boltUrl)</text>
+  <rect x="144" y="344" width="280" height="108" rx="16" fill="#DBEAFE" stroke="#3B82F6" stroke-width="1.8" class="card"/>
+  <text x="284" y="379" text-anchor="middle" class="cardTitle">Gradle benchmark</text>
+  <text x="284" y="408" text-anchor="middle" class="body">:graph-neo4j-benchmark</text>
+  <text x="284" y="431" text-anchor="middle" class="small">JSON report format</text>
 
-  <rect x="130" y="555" width="360" height="150" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
-  <text x="165" y="603" class="label">Seeded Fixture</text>
-  <text x="165" y="639" class="small">Person: Alice, Bob, Charlie, Dave</text>
-  <text x="165" y="667" class="small">KNOWS chain plus FOLLOWS shortcut</text>
-  <text x="165" y="695" class="small">dropGraph before and after runs</text>
+  <rect x="144" y="532" width="280" height="108" rx="16" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="1.8" class="card"/>
+  <text x="284" y="567" text-anchor="middle" class="cardTitle">JMH state</text>
+  <text x="284" y="596" text-anchor="middle" class="body">Neo4jBenchmarkState</text>
+  <text x="284" y="619" text-anchor="middle" class="small">setup and teardown own server</text>
 
-  <rect x="620" y="260" width="445" height="155" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
-  <text x="655" y="308" class="label">Neo4jGraphOperations</text>
-  <text x="655" y="344" class="small">wrapped by benchmark-only cache</text>
-  <text x="655" y="372" class="small">single-thread HashMap lookup cache</text>
-  <text x="655" y="400" class="small">production cache is not benchmarked here</text>
+  <rect x="536" y="212" width="366" height="536" rx="18" class="lane"/>
+  <text x="566" y="262" class="section">2. Neo4j runtime</text>
+  <text x="568" y="294" class="small">One Bolt connection is created for the trial.</text>
 
-  <rect x="620" y="485" width="445" height="150" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
-  <text x="655" y="533" class="label">Vertex Benchmarks</text>
-  <text x="655" y="569" class="small">create, find by label, find by id</text>
-  <text x="655" y="597" class="small">neighbors and createEdge</text>
-  <text x="655" y="625" class="small">10k loop writes vs batch APIs</text>
+  <rect x="570" y="328" width="298" height="112" rx="16" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="1.8" class="card"/>
+  <text x="719" y="365" text-anchor="middle" class="cardTitle">Neo4j container</text>
+  <text x="719" y="395" text-anchor="middle" class="body">Testcontainers singleton</text>
+  <text x="719" y="418" text-anchor="middle" class="small">Neo4jServer.Launcher.neo4j</text>
 
-  <rect x="620" y="710" width="445" height="125" rx="14" fill="#FED7AA" stroke="#F97316" stroke-width="3" class="card"/>
-  <text x="655" y="758" class="label">Traversal Benchmarks</text>
-  <text x="655" y="794" class="small">shortestPath(alice, dave)</text>
-  <text x="655" y="822" class="small">allPaths(alice, dave, maxDepth=4)</text>
+  <rect x="570" y="496" width="298" height="112" rx="16" fill="#DBEAFE" stroke="#3B82F6" stroke-width="1.8" class="card"/>
+  <text x="719" y="533" text-anchor="middle" class="cardTitle">Bolt driver</text>
+  <text x="719" y="563" text-anchor="middle" class="body">GraphDatabase.driver</text>
+  <text x="719" y="586" text-anchor="middle" class="small">Neo4jGraphOperations(driver)</text>
 
-  <rect x="1200" y="250" width="450" height="125" rx="14" fill="#F8FAFC" stroke="#94A3B8" stroke-width="3" class="card"/>
-  <text x="1235" y="298" class="label">Neo4j Java Driver</text>
-  <text x="1235" y="334" class="small">Bolt connection opened in setup()</text>
-  <text x="1235" y="362" class="small">driver.close() in teardown()</text>
+  <rect x="570" y="664" width="298" height="72" rx="16" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.6"/>
+  <text x="719" y="695" text-anchor="middle" class="cardTitle">neo4j database</text>
+  <text x="719" y="721" text-anchor="middle" class="small">4 Person vertices, 4 edges</text>
 
-  <g class="card">
-    <ellipse cx="1425" cy="520" rx="235" ry="48" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3"/>
-    <rect x="1190" y="520" width="470" height="215" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3"/>
-    <ellipse cx="1425" cy="735" rx="235" ry="48" fill="#A7F3D0" stroke="#14B8A6" stroke-width="3"/>
-  </g>
-  <text x="1425" y="542" text-anchor="middle" class="label">Neo4j Container</text>
-  <text x="1425" y="601" text-anchor="middle" class="small">Testcontainers launcher</text>
-  <text x="1425" y="637" text-anchor="middle" class="small">Person and KNOWS graph state</text>
-  <text x="1425" y="673" text-anchor="middle" class="small">Bolt runtime modules</text>
+  <rect x="982" y="212" width="336" height="536" rx="18" class="lane"/>
+  <text x="1012" y="262" class="section">3. Measured surface</text>
+  <text x="1014" y="294" class="small">The wrapper removes repeated lookup overhead.</text>
 
-  <rect x="1200" y="815" width="450" height="80" rx="14" fill="#F8FAFC" stroke="#94A3B8" stroke-width="3" class="card"/>
-  <text x="1235" y="848" class="label">JMH JSON</text>
-  <text x="1235" y="878" class="small">average-time reports from kotlinx-benchmark</text>
+  <rect x="1018" y="328" width="264" height="108" rx="16" fill="#DCFCE7" stroke="#10B981" stroke-width="1.8" class="card"/>
+  <text x="1150" y="364" text-anchor="middle" class="cardTitle">Neo4jGraphOperations</text>
+  <text x="1150" y="394" text-anchor="middle" class="small">create, find, neighbors</text>
+  <text x="1150" y="416" text-anchor="middle" class="small">shortestPath, allPaths</text>
 
-  <path d="M 490 352 L 620 337" class="line"/>
-  <path d="M 490 630 L 620 560" class="line"/>
-  <path d="M 1065 337 L 1200 312" class="line"/>
-  <path d="M 1425 375 L 1425 472" class="line"/>
-  <path d="M 1065 560 L 1190 590" class="line"/>
-  <path d="M 1065 773 L 1190 660" class="thin"/>
-  <path d="M 1425 783 L 1425 815" class="line"/>
+  <rect x="1018" y="494" width="264" height="108" rx="16" fill="#ECFDF5" stroke="#10B981" stroke-width="1.8" class="card"/>
+  <text x="1150" y="530" text-anchor="middle" class="cardTitle">Benchmark cache</text>
+  <text x="1150" y="560" text-anchor="middle" class="small">single-threaded HashMap caches</text>
+  <text x="1150" y="582" text-anchor="middle" class="small">not production code</text>
 
-  <text x="555" y="330" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">creates ops</text>
-  <text x="555" y="330" text-anchor="middle" class="tiny">creates ops</text>
-  <text x="1125" y="292" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">uses driver</text>
-  <text x="1125" y="292" text-anchor="middle" class="tiny">uses driver</text>
-  <text x="1125" y="542" text-anchor="middle" class="tiny" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">measures</text>
-  <text x="1125" y="542" text-anchor="middle" class="tiny">measures</text>
-  <text x="920" y="1032" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | module: graph-neo4j-benchmark / architecture</text>
+  <rect x="1018" y="660" width="264" height="76" rx="16" fill="#FFF7ED" stroke="#F97316" stroke-width="1.8" class="card"/>
+  <text x="1150" y="692" text-anchor="middle" class="cardTitle">10k batch paths</text>
+  <text x="1150" y="718" text-anchor="middle" class="small">loop writes vs batch APIs</text>
+
+  <rect x="1400" y="212" width="220" height="536" rx="18" class="lane"/>
+  <text x="1430" y="262" class="section">4. Results</text>
+  <text x="1432" y="294" class="small">Operation latency rows.</text>
+
+  <rect x="1422" y="382" width="176" height="104" rx="16" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.6" class="card"/>
+  <text x="1510" y="417" text-anchor="middle" class="cardTitle">JMH JSON</text>
+  <text x="1510" y="447" text-anchor="middle" class="small">benchmark reports</text>
+
+  <rect x="1422" y="572" width="176" height="104" rx="16" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.6" class="card"/>
+  <text x="1510" y="607" text-anchor="middle" class="cardTitle">README chart</text>
+  <text x="1510" y="637" text-anchor="middle" class="small">cross-backend context</text>
+
+  <path d="M 424 398 L 570 384" class="flow"/>
+  <path d="M 424 586 C 476 574 516 552 570 552" class="flow"/>
+  <path d="M 719 440 L 719 496" class="lifecycle"/>
+  <path d="M 719 608 L 719 664" class="lifecycle"/>
+  <path d="M 868 552 L 1018 382" class="measure"/>
+  <path d="M 868 700 C 930 650 972 548 1018 548" class="measure"/>
+  <path d="M 1282 382 C 1340 390 1376 418 1422 434" class="measure"/>
+  <path d="M 1282 698 C 1344 676 1376 638 1422 624" class="measure"/>
+
+  <rect x="316" y="800" width="1128" height="48" rx="14" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="880" y="831" text-anchor="middle" class="small">This module is Neo4j-specific; use graph-benchmark for cross-backend adoption comparisons.</text>
 </svg>
