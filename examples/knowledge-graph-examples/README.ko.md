@@ -37,9 +37,9 @@ Graph DB를 사용하면 다음을 직접 표현할 수 있습니다.
 
 ![knowledge graph examples Architecture diagram](../../docs/images/readme-diagrams/examples-knowledge-graph-examples-architecture-01.png)
 
-## ERD / 도메인 UML
+## 도메인 모델 다이어그램
 
-![UML diagram](../../docs/images/readme-diagrams/examples-knowledge-graph-examples-class-02.png)
+![Knowledge graph domain model diagram](../../docs/images/readme-diagrams/examples-knowledge-graph-examples-class-02.png)
 
 ## Data Flow
 
