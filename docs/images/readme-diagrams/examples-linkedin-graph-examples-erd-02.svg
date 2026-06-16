@@ -55,8 +55,8 @@
   <text x="620" y="365" text-anchor="middle" class="rel">WORKS_AT role, isCurrent</text>
 
   <path d="M 520 505 L 1320 505" class="line"/>
-  <text x="920" y="486" text-anchor="middle" class="rel" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">HAS_SKILL level</text>
-  <text x="920" y="486" text-anchor="middle" class="rel">HAS_SKILL level</text>
+  <text x="920" y="536" text-anchor="middle" class="rel" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">HAS_SKILL level</text>
+  <text x="920" y="536" text-anchor="middle" class="rel">HAS_SKILL level</text>
 
   <path d="M 325 525 L 325 665 L 130 665 L 130 525" class="line"/>
   <text x="225" y="646" text-anchor="middle" class="rel" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">KNOWS both directions</text>
