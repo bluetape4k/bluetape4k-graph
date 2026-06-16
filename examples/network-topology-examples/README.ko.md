@@ -11,6 +11,10 @@ Site, device, routed segment, reachable service를 작은 network topology graph
 서비스까지 도달하는 path, device/link 장애 후 새로 unreachable이 되는 service, core에서 고립된 segment, redundant
 route candidate를 확인합니다.
 
+## 아키텍처
+
+![network topology examples architecture](../../docs/images/readme-diagrams/examples-network-topology-examples-architecture-01.png)
+
 ## Graph Model
 
 | 요소 | Label | 주요 속성 | 목적 |
