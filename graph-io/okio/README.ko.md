@@ -4,6 +4,19 @@
 
 OkIO 기반 그래프 I/O 레이어. 기존 `graph-io-csv`, `graph-io-jackson2`, `graph-io-jackson3`, `graph-io-graphml` 모듈과 완벽하게 호환되면서 OkIO의 세그먼트 기반 스트리밍, 압축 체이닝, FileSystem 추상화를 제공한다.
 
+## 아키텍처
+
+![graph-okio architecture](../../docs/images/readme-diagrams/graph-io-okio-architecture-01.png)
+
+`graph-okio`는 새로운 graph serialization format이 아니라 기존 graph-io format을 OkIO로 감싸는 adapter layer입니다:
+
+- `OkioGraphImportSource`와 `OkioGraphExportSink`는 path, OkIO source/sink, stream 진입점과 명시적 ownership을 정의합니다.
+- `GraphIoOkioPaths`는 buffered OkIO source/sink를 열고 compression, DAEAD chunk encryption, decompression guard, atomic file write를 적용합니다.
+- `OkioGraphBulkImporter`와 `OkioGraphBulkExporter`는 명시적인 `GraphIoFormat`을 요구하며 file extension으로 format을 추론하지 않습니다.
+- NDJSON과 GraphML은 single-stream format이므로 compression과 encrypted helper API를 직접 사용할 수 있습니다.
+- CSV는 paired-file contract를 유지하므로 high-level encrypted helper는 CSV를 거부하고, custom layout은 low-level path wrapper를 직접 조합해야 합니다.
+- Virtual-thread와 suspend adapter는 같은 sync core를 감싸며 동일한 graph-io report를 반환합니다.
+
 ## OkIO를 선택하는 이유
 
 | java.io 방식 | OkIO 방식 |
@@ -338,5 +351,4 @@ dependencies {
 
 ## 로드맵
 
-- **v2**: Tink 암호화 지원 (`bluetape4k-projects #240`) — AES-GCM 기반, 소용량 파일 전용 (`TinkEncryptSink` / `TinkDecryptSource`)
 - **v2**: CSV PathSource/PathSink 없이도 스트림 기반 CSV 지원 검토
