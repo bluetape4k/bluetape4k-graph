@@ -5,16 +5,16 @@
     <filter id="shadow" x="-5%" y="-5%" width="110%" height="112%">
       <feDropShadow dx="0" dy="7" stdDeviation="5" flood-color="#334155" flood-opacity="0.10"/>
     </filter>
-    <marker id="arrowBlue" viewBox="0 0 22 16" refX="20" refY="8" markerWidth="14" markerHeight="14" orient="auto" markerUnits="userSpaceOnUse">
+    <marker id="arrowBlue" viewBox="0 0 22 16" refX="20" refY="8" markerWidth="16" markerHeight="16" orient="auto" markerUnits="userSpaceOnUse">
       <path d="M 2 2 L 20 8 L 2 14 Z" fill="#2563EB"/>
     </marker>
-    <marker id="arrowTeal" viewBox="0 0 22 16" refX="20" refY="8" markerWidth="14" markerHeight="14" orient="auto" markerUnits="userSpaceOnUse">
+    <marker id="arrowTeal" viewBox="0 0 22 16" refX="20" refY="8" markerWidth="16" markerHeight="16" orient="auto" markerUnits="userSpaceOnUse">
       <path d="M 2 2 L 20 8 L 2 14 Z" fill="#0F766E"/>
     </marker>
-    <marker id="arrowAmber" viewBox="0 0 22 16" refX="20" refY="8" markerWidth="14" markerHeight="14" orient="auto" markerUnits="userSpaceOnUse">
+    <marker id="arrowAmber" viewBox="0 0 22 16" refX="20" refY="8" markerWidth="16" markerHeight="16" orient="auto" markerUnits="userSpaceOnUse">
       <path d="M 2 2 L 20 8 L 2 14 Z" fill="#B45309"/>
     </marker>
-    <marker id="arrowRose" viewBox="0 0 22 16" refX="20" refY="8" markerWidth="14" markerHeight="14" orient="auto" markerUnits="userSpaceOnUse">
+    <marker id="arrowRose" viewBox="0 0 22 16" refX="20" refY="8" markerWidth="16" markerHeight="16" orient="auto" markerUnits="userSpaceOnUse">
       <path d="M 2 2 L 20 8 L 2 14 Z" fill="#E11D48"/>
     </marker>
   </defs>
