@@ -2,7 +2,7 @@
   <title id="title">Observability graph examples ERD</title>
   <desc id="desc">Vertex labels, key properties, and relationships for the observability incident graph model.</desc>
   <defs>
-    <marker id="arrow" markerWidth="14" markerHeight="14" refX="10" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+    <marker id="arrow" markerWidth="16" markerHeight="16" refX="10" refY="4" orient="auto" markerUnits="userSpaceOnUse">
       <path d="M0,0 L0,8 L10,4 z" fill="#2563EB"/>
     </marker>
     <marker id="arrowSoft" markerWidth="14" markerHeight="14" refX="10" refY="4" orient="auto" markerUnits="userSpaceOnUse">

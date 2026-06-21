@@ -8,13 +8,13 @@
     <marker id="arrowSlate" viewBox="0 0 18 14" refX="16" refY="7" markerWidth="14" markerHeight="14" orient="auto" markerUnits="userSpaceOnUse">
       <path d="M 2 2 L 16 7 L 2 12 Z" fill="#64748B"/>
     </marker>
-    <marker id="arrowBlue" viewBox="0 0 18 14" refX="16" refY="7" markerWidth="14" markerHeight="14" orient="auto" markerUnits="userSpaceOnUse">
+    <marker id="arrowBlue" viewBox="0 0 18 14" refX="16" refY="7" markerWidth="16" markerHeight="16" orient="auto" markerUnits="userSpaceOnUse">
       <path d="M 2 2 L 16 7 L 2 12 Z" fill="#2563EB"/>
     </marker>
-    <marker id="arrowTeal" viewBox="0 0 18 14" refX="16" refY="7" markerWidth="14" markerHeight="14" orient="auto" markerUnits="userSpaceOnUse">
+    <marker id="arrowTeal" viewBox="0 0 18 14" refX="16" refY="7" markerWidth="16" markerHeight="16" orient="auto" markerUnits="userSpaceOnUse">
       <path d="M 2 2 L 16 7 L 2 12 Z" fill="#0F766E"/>
     </marker>
-    <marker id="arrowAmber" viewBox="0 0 18 14" refX="16" refY="7" markerWidth="14" markerHeight="14" orient="auto" markerUnits="userSpaceOnUse">
+    <marker id="arrowAmber" viewBox="0 0 18 14" refX="16" refY="7" markerWidth="16" markerHeight="16" orient="auto" markerUnits="userSpaceOnUse">
       <path d="M 2 2 L 16 7 L 2 12 Z" fill="#B45309"/>
     </marker>
   </defs>

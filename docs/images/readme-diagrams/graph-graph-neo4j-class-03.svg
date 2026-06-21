@@ -8,7 +8,7 @@
     <marker id="openArrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="14" markerHeight="14" orient="auto" markerUnits="userSpaceOnUse">
       <path d="M 2 2 L 10 6 L 2 10" fill="none" stroke="#64748B" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
     </marker>
-    <marker id="hollowTriangle" viewBox="0 0 16 14" refX="14" refY="7" markerWidth="14" markerHeight="14" orient="auto" markerUnits="userSpaceOnUse">
+    <marker id="hollowTriangle" viewBox="0 0 16 14" refX="14" refY="7" markerWidth="18" markerHeight="16" orient="auto" markerUnits="userSpaceOnUse">
       <path d="M 2 2 L 14 7 L 2 12 Z" fill="#FFFFFF" stroke="#64748B" stroke-width="1.5" stroke-linejoin="round"/>
     </marker>
   </defs>
