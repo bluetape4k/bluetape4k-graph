@@ -46,8 +46,8 @@
   <text class="label" x="710" y="685" text-anchor="middle">query model</text>
   <path d="M 1120 616 L 1120 675 Q 1120 693 1102 693 L 998 693 Q 980 693 980 711 L 980 770" stroke="#9333ea" stroke-width="2.1" fill="none" marker-end="url(#arrow-purple)" stroke-linecap="round" stroke-linejoin="round"/>
   <text class="label" x="1050" y="685" text-anchor="middle">bulk data</text>
-  <path d="M 1530 616 L 1530 675 Q 1530 693 1512 693 L 1438 693 Q 1420 693 1420 711 L 1420 770" stroke="#16a34a" stroke-width="2.1" fill="none" marker-end="url(#arrow-green)" stroke-linecap="round" stroke-linejoin="round"/>
-  <text class="label" x="1476" y="685" text-anchor="middle">service use</text>
+  <path d="M 1530 616 L 1530 770" stroke="#16a34a" stroke-width="2.1" fill="none" marker-end="url(#arrow-green)" stroke-linecap="round" stroke-linejoin="round"/>
+  <text class="label" x="1572" y="700" text-anchor="middle">service use</text>
 </g>
 
 <g id="nodes">

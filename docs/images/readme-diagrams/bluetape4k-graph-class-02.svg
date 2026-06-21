@@ -94,7 +94,7 @@
   <text x="780" y="520" class="micro">async forms</text>
   <path d="M 748 460 L 748 493.5 Q 748 511.5 766 511.5 L 1337 511.5 Q 1355 511.5 1355 529.5 L 1355 563" class="arrow"/>
   <text x="1110" y="512" class="micro">implemented by</text>
-  <path d="M 570 395 L 548 395 Q 535 395 535 408 L 535 532 Q 535 545 522 545 L 513 545 Q 500 545 500 558 L 500 565" class="softArrow"/>
+  <path d="M 570 395 L 548 395 Q 535 395 535 408 L 535 532 Q 535 545 522 545 L 488 545 Q 475 545 475 558 L 475 565" class="softArrow"/>
   <text x="523" y="510" class="micro">optional</text>
 
   <text x="920" y="1012" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | root README / class structure</text>
