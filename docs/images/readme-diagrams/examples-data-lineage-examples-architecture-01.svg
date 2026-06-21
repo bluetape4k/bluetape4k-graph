@@ -70,8 +70,8 @@
 
   <rect x="1030" y="610" width="380" height="120" rx="14" fill="#F8FAFC" stroke="#94A3B8" stroke-width="2" class="card"/>
   <text x="1070" y="658" class="label">Suspend Variant</text>
-  <text x="1070" y="696" class="small">same questions through</text>
-  <text x="1070" y="724" class="small">GraphSuspendOperations</text>
+  <text x="1070" y="688" class="small">same questions through</text>
+  <text x="1070" y="716" class="small">GraphSuspendOperations</text>
 
   <rect x="1450" y="285" width="280" height="150" rx="14" fill="#FCE7F3" stroke="#EC4899" stroke-width="2" class="card"/>
   <text x="1485" y="332" class="label">Impact</text>
@@ -83,12 +83,12 @@
   <text x="1485" y="605" class="small">bounded path shows</text>
   <text x="1485" y="633" class="small">why the dashboard changes</text>
 
-  <path d="M 455 385 C 505 385 515 385 565 385" class="flow"/>
-  <path d="M 455 650 C 505 650 515 650 565 650" class="flow"/>
-  <path d="M 945 385 C 985 385 990 385 1030 385" class="flow"/>
-  <path d="M 945 655 C 985 655 990 655 1030 655" class="use"/>
-  <path d="M 1410 385 C 1430 385 1435 360 1450 360" class="flow"/>
-  <path d="M 1410 430 C 1430 470 1435 590 1450 595" class="flow"/>
+  <path d="M 455 385 L 565 385" class="flow"/>
+  <path d="M 455 650 L 565 650" class="flow"/>
+  <path d="M 945 385 L 1030 385" class="flow"/>
+  <path d="M 945 655 L 1030 655" class="use"/>
+  <path d="M 1410 360 L 1450 360" class="flow"/>
+  <path d="M 1410 430 L 1412 430 Q 1430 430 1430 448 L 1430 577 Q 1430 595 1448 595 L 1450 595" class="flow"/>
   <path d="M 1220 510 L 1220 610" class="use"/>
 
   <rect x="300" y="840" width="1240" height="52" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"/>

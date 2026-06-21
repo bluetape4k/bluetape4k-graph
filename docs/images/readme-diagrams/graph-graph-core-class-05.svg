@@ -3,12 +3,13 @@
     <filter id="shadow" x="-6%" y="-6%" width="112%" height="112%">
       <feDropShadow dx="0" dy="7" stdDeviation="5" flood-color="#334155" flood-opacity="0.10"/>
     </filter>
-    <marker id="arrow" viewBox="0 0 10 10" refX="8.6" refY="5" markerWidth="5.6" markerHeight="5.6" orient="auto">
+    <marker markerUnits="userSpaceOnUse" id="arrow" viewBox="0 0 10 10" refX="8.6" refY="5" markerWidth="10" markerHeight="10" orient="auto">
       <path d="M 1.2 1.4 L 8.6 5 L 1.2 8.6 Z" fill="#64748B"/>
     </marker>
   </defs>
 
   <style>
+    marker path, marker polygon, marker polyline { stroke-dasharray: none !important; }
     .title { font-family: 'Architects Daughter', cursive; font-size: 50px; fill: #0F172A; }
     .subtitle { font-family: 'Comic Mono', monospace; font-size: 19px; fill: #475569; }
     .section { font-family: 'Architects Daughter', cursive; font-size: 29px; fill: #111827; }

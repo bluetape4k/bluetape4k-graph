@@ -103,11 +103,11 @@
   <text x="520" y="856" class="small">JVM helpers handle weighted path, A* path, PageRank, BFS/DFS, cycles, and components.</text>
 
   <path d="M 388 338 L 484 338" class="flow"/>
-  <path d="M 388 564 L 484 628" class="flow"/>
+  <path d="M 388 564 L 418 564 Q 436 564 436 582 L 436 610 Q 436 628 454 628 L 484 628" class="flow"/>
   <path d="M 922 338 L 1002 338" class="flow"/>
   <path d="M 703 550 L 703 482" class="dep"/>
-  <path d="M 842 482 L 1068 548" class="dep"/>
-  <path d="M 882 482 L 1328 548" class="dep"/>
+  <path d="M 842 482 L 842 497 Q 842 515 860 515 L 1050 515 Q 1068 515 1068 533 L 1068 548" class="dep"/>
+  <path d="M 882 482 L 882 497 Q 882 515 900 515 L 1310 515 Q 1328 515 1328 533 L 1328 548" class="dep"/>
 
   <text x="436" y="326" text-anchor="middle" class="label">calls</text>
   <text x="424" y="584" text-anchor="middle" class="label">calls</text>

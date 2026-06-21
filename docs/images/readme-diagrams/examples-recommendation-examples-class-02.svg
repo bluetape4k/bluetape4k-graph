@@ -9,6 +9,7 @@
       <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#0F172A" flood-opacity="0.12"/>
     </filter>
     <style>
+    marker path, marker polygon, marker polyline { stroke-dasharray: none !important; }
       .canvas { fill: #F8FAFC; }
       .outer { fill: none; stroke: #60A5FA; stroke-width: 4; }
       .panel { fill: #FFFFFF; stroke: #CBD5E1; stroke-width: 2; filter: url(#shadow); }
@@ -79,11 +80,11 @@
   <rect x="492" y="356" width="92" height="34" rx="17" class="pill"/>
   <text x="538" y="379" text-anchor="middle" class="tiny">buys</text>
 
-  <path d="M 295 590 C 230 540 230 510 295 505" class="soft"/>
+  <path d="M 295 590 L 295 505" class="soft"/>
   <rect x="185" y="535" width="125" height="34" rx="17" class="pill"/>
   <text x="248" y="558" text-anchor="middle" class="tiny">follows</text>
 
-  <path d="M 790 590 C 720 545 720 515 790 505" class="soft"/>
+  <path d="M 790 590 L 790 505" class="soft"/>
   <rect x="688" y="535" width="135" height="34" rx="17" class="pill"/>
   <text x="756" y="558" text-anchor="middle" class="tiny">purchased</text>
 

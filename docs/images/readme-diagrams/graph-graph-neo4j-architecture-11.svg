@@ -3,7 +3,7 @@
     <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
       <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
     </filter>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+    <marker markerUnits="userSpaceOnUse" id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto">
       <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748B"/>
     </marker>
   </defs>
@@ -13,11 +13,11 @@
     .section { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #111827; }
     .small { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #374151; }
     .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
-    .card { filter: url(#softShadow); }
+    .card, .panel { filter: url(#softShadow); }
     .line { stroke: #64748B; stroke-width: 2.1; fill: none; marker-end: url(#arrow); stroke-linecap: round; stroke-linejoin: round; }
     .graphline { stroke: #2563EB; stroke-width: 2.6; fill: none; marker-end: url(#graphArrow); stroke-linecap: round; stroke-linejoin: round; }
   </style>
-  <marker id="graphArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto">
+  <marker markerUnits="userSpaceOnUse" id="graphArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto">
     <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
   </marker>
 
@@ -35,11 +35,11 @@
   <line x1="760" y1="405" x2="1080" y2="405" class="line"/>
   <line x1="760" y1="665" x2="1080" y2="665" class="line"/>
 
-  <rect x="130" y="245" width="630" height="560" rx="18" fill="#F8FAFC" stroke="#94A3B8" stroke-width="1.9" class="card"/>
+  <rect x="130" y="245" width="630" height="560" rx="18" fill="#F8FAFC" stroke="#94A3B8" stroke-width="1.9" class="panel"/>
   <text x="445" y="292" text-anchor="middle" class="tiny">&lt;&lt;Neo4j storage shape&gt;&gt;</text>
   <text x="445" y="333" text-anchor="middle" class="section">Property Graph</text>
 
-  <path d="M 300 520 C 410 430, 510 430, 625 520" class="graphline"/>
+  <path d="M 300 520 L 345 520 Q 363 520 363 502 L 363 450 Q 363 432 381 432 L 544 432 Q 562 432 562 450 L 562 502 Q 562 520 580 520 L 625 520" class="graphline"/>
   <circle cx="270" cy="535" r="82" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2.2"/>
   <circle cx="655" cy="535" r="82" fill="#DCFCE7" stroke="#22C55E" stroke-width="2.2"/>
   <text x="270" y="515" text-anchor="middle" class="section">Person</text>
@@ -56,7 +56,7 @@
   <text x="445" y="712" text-anchor="middle" class="small">Path = nodes and relationships in traversal order</text>
   <text x="445" y="742" text-anchor="middle" class="tiny">Node, Relationship, Node, Relationship, Node...</text>
 
-  <rect x="1080" y="245" width="630" height="560" rx="18" fill="#F8FAFC" stroke="#94A3B8" stroke-width="1.9" class="card"/>
+  <rect x="1080" y="245" width="630" height="560" rx="18" fill="#F8FAFC" stroke="#94A3B8" stroke-width="1.9" class="panel"/>
   <text x="1395" y="292" text-anchor="middle" class="tiny">&lt;&lt;graph-core domain shape&gt;&gt;</text>
   <text x="1395" y="333" text-anchor="middle" class="section">Mapped Objects</text>
 

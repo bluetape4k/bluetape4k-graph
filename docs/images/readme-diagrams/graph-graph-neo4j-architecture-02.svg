@@ -3,8 +3,11 @@
     <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
       <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
     </filter>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+    <marker markerUnits="userSpaceOnUse" id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto">
       <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+    </marker>
+    <marker markerUnits="userSpaceOnUse" id="arrowSoft" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748B"/>
     </marker>
   </defs>
   <style>
@@ -15,7 +18,7 @@
     .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
     .card { filter: url(#softShadow); }
     .line { stroke: #2563EB; stroke-width: 2.3; fill: none; marker-end: url(#arrow); stroke-linecap: round; stroke-linejoin: round; }
-    .soft { stroke: #64748B; stroke-width: 2.1; fill: none; marker-end: url(#arrow); stroke-linecap: round; stroke-linejoin: round; }
+    .soft { stroke: #64748B; stroke-width: 2.1; fill: none; marker-end: url(#arrowSoft); stroke-linecap: round; stroke-linejoin: round; }
   </style>
 
   <rect x="0" y="0" width="1840" height="1120" fill="#F8FAFC"/>
@@ -29,10 +32,13 @@
 
   <rect x="70" y="150" width="1700" height="820" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4" filter="url(#softShadow)"/>
 
+  <rect x="90" y="220" width="1655" height="315" rx="18" fill="#EFF6FF" fill-opacity="0.45" stroke="#93C5FD" stroke-width="1.5"/>
+  <text x="120" y="250" class="small">Layer: reactive query flow</text>
+
   <line x1="430" y1="365" x2="555" y2="365" class="line"/>
   <line x1="855" y1="365" x2="980" y2="365" class="line"/>
   <line x1="1280" y1="365" x2="1405" y2="365" class="line"/>
-  <line x1="920" y1="530" x2="920" y2="650" class="soft"/>
+  <line x1="920" y1="535" x2="920" y2="650" class="soft"/>
 
   <rect x="110" y="265" width="320" height="210" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="1.9" class="card"/>
   <text x="270" y="302" text-anchor="middle" class="tiny">&lt;&lt;suspend caller&gt;&gt;</text>

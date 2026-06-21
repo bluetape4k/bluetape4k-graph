@@ -3,7 +3,7 @@
     <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
       <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
     </filter>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+    <marker markerUnits="userSpaceOnUse" id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto">
       <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
     </marker>
   </defs>
@@ -52,17 +52,12 @@
   <text x="600" y="424" class="small">elementId() lookup, Cypher parameters, traversal queries</text>
   <text x="600" y="453" class="small">caller owns the driver; close() leaves it open</text>
 
-  <g class="card">
-    <ellipse cx="1570" cy="245" rx="150" ry="38" fill="#DCFCE7" stroke="#22C55E" stroke-width="2.2"/>
-    <rect x="1420" y="245" width="300" height="220" fill="#DCFCE7" stroke="#22C55E" stroke-width="2.2"/>
-    <ellipse cx="1570" cy="465" rx="150" ry="38" fill="#DCFCE7" stroke="#22C55E" stroke-width="2.2"/>
-    <line x1="1420" y1="245" x2="1420" y2="465" stroke="#22C55E" stroke-width="2.2"/>
-    <line x1="1720" y1="245" x2="1720" y2="465" stroke="#22C55E" stroke-width="2.2"/>
-  </g>
-  <text x="1570" y="300" text-anchor="middle" class="section">Neo4j DB</text>
-  <text x="1455" y="355" class="small">Neo4j Driver 5.x</text>
-  <text x="1455" y="384" class="small">Bolt protocol</text>
-  <text x="1455" y="413" class="small">nodes / rels / paths</text>
+  <rect x="1420" y="245" width="300" height="220" rx="16" fill="#DCFCE7" stroke="#22C55E" stroke-width="2.2" class="card"/>
+  <image data-bluetape4k-icon="neo4j" href="data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjNDU4MUMzIiByb2xlPSJpbWciIHZpZXdCb3g9IjAgMCAyNCAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGl0bGU+TmVvNGo8L3RpdGxlPjxwYXRoIGQ9Ik05LjYyOSAxMy4yMjdjLS41OTMgMC0xLjEzOS4yLTEuNTguNTMzbC0yLjg5Mi0xLjk3NmEyLjYxIDIuNjEgMCAwIDAgLjEwMS0uNzExIDIuNjMzIDIuNjMzIDAgMCAwLTIuNjI5LTIuNjI5QTIuNjMyIDIuNjMyIDAgMCAwIDAgMTEuMDczYTIuNjMyIDIuNjMyIDAgMCAwIDIuNjI5IDIuNjI5Yy41OTMgMCAxLjEzOS0uMiAxLjU3OS0uNTMzTDcuMSAxNS4xNDVjLS4wNjMuMjI2LS4xLjQ2NS0uMS43MTEgMCAuMjQ3LjAzNy40ODQuMS43MTFsLTIuODkyIDEuOTc2YTIuNjA4IDIuNjA4IDAgMCAwLTEuNTc5LS41MzNBMi42MzIgMi42MzIgMCAwIDAgMCAyMC42MzlhMi42MzIgMi42MzIgMCAwIDAgMi42MjkgMi42MjkgMi42MzIgMi42MzIgMCAwIDAgMi42MjktMi42MjljMC0uMjQ3LS4wMzctLjQ4NS0uMTAxLS43MTFsMi44OTItMS45NzZjLjQ0MS4zMzMuOTg3LjUzMyAxLjU4LjUzM2EyLjYzMyAyLjYzMyAwIDAgMCAyLjYyOS0yLjYyOWMwLTEuNDUtMS4xOC0yLjYyOS0yLjYyOS0yLjYyOVpNMTYuMTEyLjczMmMtNC43MiAwLTcuODg4IDIuNzQ4LTcuODg4IDguMDgydjMuODAyYTMuNTI1IDMuNTI1IDAgMCAxIDMuMDcxLjAwOHYtMy44MWMwLTMuNDU5IDEuOTA3LTUuMjM3IDQuODE3LTUuMjM3czQuODE3IDEuNzc4IDQuODE3IDUuMjM3djguMzA5SDI0VjguODE0QzI0IDMuNDQ4IDIwLjgzMi43MzIgMTYuMTEyLjczMloiLz48L3N2Zz4=" x="1536" y="276" width="68" height="48" preserveAspectRatio="xMidYMid meet"/>
+  <text x="1570" y="354" text-anchor="middle" class="section">Neo4j DB</text>
+  <text x="1455" y="386" class="small">Neo4j Driver 5.x</text>
+  <text x="1455" y="415" class="small">Bolt protocol</text>
+  <text x="1455" y="444" class="small">nodes / rels / paths</text>
 
   <rect x="190" y="590" width="460" height="250" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="1.9" class="card"/>
   <text x="420" y="629" text-anchor="middle" class="tiny">&lt;&lt;reactive to coroutine&gt;&gt;</text>

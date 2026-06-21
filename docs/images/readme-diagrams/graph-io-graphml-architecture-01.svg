@@ -107,10 +107,10 @@
   <text x="1523" y="670" text-anchor="middle" class="cardTitle">Virtual thread</text>
   <text x="1523" y="698" text-anchor="middle" class="small">CompletableFuture</text>
 
-  <path d="M 426 394 L 568 403" class="import"/>
-  <path d="M 846 403 L 992 408" class="import"/>
-  <path d="M 992 588 L 846 581" class="export"/>
-  <path d="M 568 581 L 426 558" class="export"/>
+  <path d="M 426 403 L 568 403" class="import"/>
+  <path d="M 846 408 L 992 408" class="import"/>
+  <path d="M 992 581 L 846 581" class="export"/>
+  <path d="M 568 558 L 426 558" class="export"/>
 
   <rect x="228" y="858" width="1304" height="72" rx="16" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.6"/>
   <text x="880" y="886" text-anchor="middle" class="small">Import reads keys, nodes, and edges with StAX, then writes vertices before resolving directed edges.</text>

@@ -1,20 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1080" viewBox="0 0 1840 1080">
   <defs>
     <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
-      <feDropShadow dx="0" dy="7" stdDeviation="5" flood-color="#0F172A" flood-opacity="0.10"/>
+      <feDropShadow dx="0" dy="7" stdDeviation="5" flood-color="#0F172A" flood-opacity="0.10" />
     </filter>
     <marker id="blueArrow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="18" markerHeight="18" markerUnits="userSpaceOnUse" orient="auto">
-      <path d="M 0 0 L 12 6 L 0 12 Z" fill="#2563EB" stroke-dasharray="none"/>
+      <path d="M 0 0 L 12 6 L 0 12 Z" fill="#2563EB" stroke-dasharray="none" />
     </marker>
     <marker id="greenArrow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="18" markerHeight="18" markerUnits="userSpaceOnUse" orient="auto">
-      <path d="M 0 0 L 12 6 L 0 12 Z" fill="#059669" stroke-dasharray="none"/>
+      <path d="M 0 0 L 12 6 L 0 12 Z" fill="#059669" stroke-dasharray="none" />
     </marker>
     <marker id="amberArrow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="18" markerHeight="18" markerUnits="userSpaceOnUse" orient="auto">
-      <path d="M 0 0 L 12 6 L 0 12 Z" fill="#D97706" stroke-dasharray="none"/>
+      <path d="M 0 0 L 12 6 L 0 12 Z" fill="#D97706" stroke-dasharray="none" />
     </marker>
   </defs>
 
   <style>
+    marker path, marker polygon, marker polyline { stroke-dasharray: none !important; }
     .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
     .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
     .section { font-family: 'Architects Daughter', cursive; font-size: 30px; fill: #111827; }
@@ -28,58 +29,58 @@
     .amberLine { stroke: #D97706; stroke-width: 3.2; fill: none; marker-end: url(#amberArrow); }
   </style>
 
-  <rect x="0" y="0" width="1840" height="1080" fill="#F8FAFC"/>
-  <rect x="24" y="24" width="1792" height="1032" rx="22" fill="none" stroke="#93C5FD" stroke-width="3"/>
-  <circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
-  <circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
-  <circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
+  <rect x="0" y="0" width="1840" height="1080" fill="#F8FAFC" />
+  <rect x="24" y="24" width="1792" height="1032" rx="22" fill="none" stroke="#93C5FD" stroke-width="3" />
+  <circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95" />
+  <circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95" />
+  <circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95" />
 
   <text x="72" y="82" class="title">Knowledge Graph Domain Model</text>
   <text x="74" y="118" class="subtitle">A small property graph schema: three vertex labels, three edge labels, and service methods that query paths.</text>
 
-  <rect x="70" y="150" width="1700" height="790" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2"/>
+  <rect x="70" y="150" width="1700" height="790" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" />
 
   <text x="920" y="214" text-anchor="middle" class="section">Property Graph Schema</text>
 
-  <rect x="120" y="270" width="360" height="190" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2" class="card"/>
+  <rect x="120" y="270" width="360" height="190" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2" class="card" />
   <text x="155" y="318" class="label">Document</text>
   <text x="155" y="358" class="small">documentId: string</text>
   <text x="155" y="386" class="small">title: string</text>
   <text x="155" y="414" class="small">source: string</text>
 
-  <rect x="740" y="270" width="360" height="190" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="2" class="card"/>
+  <rect x="740" y="270" width="360" height="190" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="2" class="card" />
   <text x="775" y="318" class="label">Entity</text>
   <text x="775" y="358" class="small">entityId: string</text>
   <text x="775" y="386" class="small">name: string</text>
   <text x="775" y="414" class="small">entityType: string</text>
 
-  <rect x="1360" y="270" width="360" height="190" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="2" class="card"/>
+  <rect x="1360" y="270" width="360" height="190" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="2" class="card" />
   <text x="1395" y="318" class="label">Concept</text>
   <text x="1395" y="358" class="small">conceptId: string</text>
   <text x="1395" y="386" class="small">name: string</text>
   <text x="1395" y="414" class="small">domain: string</text>
 
-  <rect x="525" y="320" width="170" height="92" rx="12" fill="#EFF6FF" stroke="#2563EB" stroke-width="2"/>
+  <rect x="525" y="320" width="170" height="92" rx="12" fill="#EFF6FF" stroke="#2563EB" stroke-width="2" />
   <text x="610" y="356" text-anchor="middle" class="edgeLabel">MENTIONS</text>
   <text x="610" y="386" text-anchor="middle" class="tiny">confidence: int</text>
 
-  <rect x="1145" y="320" width="170" height="92" rx="12" fill="#FFFBEB" stroke="#D97706" stroke-width="2"/>
+  <rect x="1145" y="320" width="170" height="92" rx="12" fill="#FFFBEB" stroke="#D97706" stroke-width="2" />
   <text x="1230" y="356" text-anchor="middle" class="edgeLabel">IS_A</text>
   <text x="1230" y="386" text-anchor="middle" class="tiny">classification</text>
 
-  <rect x="740" y="555" width="360" height="112" rx="12" fill="#ECFDF5" stroke="#059669" stroke-width="2"/>
+  <rect x="740" y="555" width="360" height="112" rx="12" fill="#ECFDF5" stroke="#059669" stroke-width="2" />
   <text x="920" y="595" text-anchor="middle" class="edgeLabel">RELATED_TO</text>
   <text x="920" y="626" text-anchor="middle" class="tiny">relationType: string</text>
-  <text x="920" y="648" text-anchor="middle" class="tiny">Entity -> Entity</text>
+  <text x="920" y="648" text-anchor="middle" class="tiny">Entity -&gt; Entity</text>
 
-  <path d="M 480 365 L 525 365" class="blueLine"/>
-  <path d="M 695 365 L 740 365" class="blueLine"/>
+  <path d="M 480 365 L 525 365" class="blueLine" />
+  <path d="M 695 365 L 740 365" class="blueLine" />
 
-  <path d="M 1100 365 L 1145 365" class="amberLine"/>
-  <path d="M 1315 365 L 1360 365" class="amberLine"/>
+  <path d="M 1100 365 L 1145 365" class="amberLine" />
+  <path d="M 1315 365 L 1360 365" class="amberLine" />
 
-  <path d="M 920 460 L 920 555" class="greenLine"/>
-  <path d="M 1100 610 C 1210 610 1210 500 1080 450" class="greenLine"/>
+  <path d="M 920 460 L 920 555" class="greenLine" />
+  <path d="M 1100 610 L 1118.6 610 Q 1130 610 1130 598.6 L 1130 508 Q 1130 490 1112 490 L 931.4 490 Q 920 490 920 478.6 L 920 460" class="greenLine" />
 
   <text x="300" y="515" text-anchor="middle" class="section">Document lookup</text>
   <text x="300" y="550" text-anchor="middle" class="small">findMentionedEntities(document)</text>
@@ -91,15 +92,15 @@
   <text x="920" y="755" text-anchor="middle" class="small">inferRelationshipPaths(from, to) uses allPaths(PathOptions(edgeLabel = RELATED_TO, maxDepth))</text>
   <text x="920" y="786" text-anchor="middle" class="tiny">The sync service, suspend service, and CSV loader all use the same labels through GraphOperations contracts.</text>
 
-  <rect x="140" y="830" width="460" height="92" rx="12" fill="#E0F2FE" stroke="#0284C7" stroke-width="2"/>
+  <rect x="140" y="830" width="460" height="92" rx="12" fill="#E0F2FE" stroke="#0284C7" stroke-width="2" />
   <text x="370" y="867" text-anchor="middle" class="edgeLabel">KnowledgeGraphService</text>
   <text x="370" y="897" text-anchor="middle" class="tiny">sync GraphOperations facade</text>
 
-  <rect x="690" y="830" width="460" height="92" rx="12" fill="#CCFBF1" stroke="#14B8A6" stroke-width="2"/>
+  <rect x="690" y="830" width="460" height="92" rx="12" fill="#CCFBF1" stroke="#14B8A6" stroke-width="2" />
   <text x="920" y="867" text-anchor="middle" class="edgeLabel">KnowledgeGraphSuspendService</text>
   <text x="920" y="897" text-anchor="middle" class="tiny">same schema, Flow results</text>
 
-  <rect x="1240" y="830" width="460" height="92" rx="12" fill="#F1F5F9" stroke="#64748B" stroke-width="2"/>
+  <rect x="1240" y="830" width="460" height="92" rx="12" fill="#F1F5F9" stroke="#64748B" stroke-width="2" />
   <text x="1470" y="867" text-anchor="middle" class="edgeLabel">SampleDatasetLoader</text>
   <text x="1470" y="897" text-anchor="middle" class="tiny">imports vertices.csv and edges.csv</text>
 

@@ -3,7 +3,7 @@
     <filter id="shadow" x="-6%" y="-6%" width="112%" height="112%">
       <feDropShadow dx="0" dy="7" stdDeviation="5" flood-color="#334155" flood-opacity="0.10"/>
     </filter>
-    <marker id="arrow" viewBox="0 0 10 10" refX="8.6" refY="5" markerWidth="5.8" markerHeight="5.8" orient="auto">
+    <marker markerUnits="userSpaceOnUse" id="arrow" viewBox="0 0 10 10" refX="8.6" refY="5" markerWidth="10" markerHeight="10" orient="auto">
       <path d="M 1.2 1.4 L 8.6 5 L 1.2 8.6 Z" fill="#64748B"/>
     </marker>
   </defs>
@@ -90,9 +90,9 @@
   <rect x="76" y="978" width="1608" height="80" rx="18" class="stage"/>
   <text x="106" y="1028" class="section">Backend modules implement these contracts for Neo4j, Memgraph, AGE, TinkerPop, and FalkorDB.</text>
 
-  <path d="M 622 252 L 622 300 L 880 300 L 880 326" class="hint"/>
+  <path d="M 622 252 L 622 282 Q 622 300 640 300 L 862 300 Q 880 300 880 318 L 880 326" class="hint"/>
   <path d="M 970 252 L 970 326" class="flow"/>
-  <path d="M 1373 252 L 1373 300 L 880 300 L 880 326" class="hint"/>
+  <path d="M 1373 252 L 1373 282 Q 1373 300 1355 300 L 898 300 Q 880 300 880 318 L 880 326" class="hint"/>
   <path d="M 880 512 L 880 558" class="flow"/>
   <path d="M 880 730 L 880 776" class="flow"/>
   <path d="M 880 932 L 880 978" class="flow"/>

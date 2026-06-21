@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1080" viewBox="0 0 1840 1080">
   <defs>
     <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
-      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.13"/>
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.13" />
     </filter>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+    <marker markerUnits="userSpaceOnUse" id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB" />
     </marker>
   </defs>
 
@@ -20,77 +20,78 @@
     .thin { stroke: #64748B; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
   </style>
 
-  <rect x="0" y="0" width="1840" height="1080" fill="#F8FAFC"/>
-  <rect x="24" y="24" width="1792" height="1032" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
-  <circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
-  <circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95"/>
-  <circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95"/>
+  <rect x="0" y="0" width="1840" height="1080" fill="#F8FAFC" />
+  <rect x="24" y="24" width="1792" height="1032" rx="22" fill="none" stroke="#60A5FA" stroke-width="4" />
+  <circle cx="1776" cy="64" r="15" fill="#FED7AA" opacity="0.95" />
+  <circle cx="1736" cy="64" r="15" fill="#DCFCE7" opacity="0.95" />
+  <circle cx="1696" cy="64" r="15" fill="#EDE9FE" opacity="0.95" />
 
   <text x="72" y="82" class="title">Ktor Graph Example Data Flow</text>
   <text x="74" y="118" class="subtitle">Requests enter Ktor routes, resolve plugin operations from the call, and read or rewrite the demo graph.</text>
 
-  <rect x="70" y="150" width="1700" height="790" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+  <rect x="70" y="150" width="1700" height="790" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)" />
 
   <text x="270" y="214" text-anchor="middle" class="section">Client Requests</text>
   <text x="695" y="214" text-anchor="middle" class="section">Route Handler</text>
   <text x="1115" y="214" text-anchor="middle" class="section">Graph Operation</text>
   <text x="1515" y="214" text-anchor="middle" class="section">HTTP Response</text>
 
-  <rect x="125" y="280" width="330" height="130" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card"/>
+  <rect x="125" y="280" width="330" height="130" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="3" class="card" />
   <text x="160" y="328" class="label">POST /demo/reset</text>
   <text x="160" y="364" class="small">client asks for seeded graph</text>
   <text x="160" y="392" class="small">used before count/path checks</text>
 
-  <rect x="125" y="525" width="330" height="155" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card"/>
+  <rect x="125" y="525" width="330" height="155" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="3" class="card" />
   <text x="160" y="573" class="label">GET Requests</text>
   <text x="160" y="609" class="small">GET /health and /readyz</text>
   <text x="160" y="637" class="small">GET /cities/count</text>
   <text x="160" y="665" class="small">GET /cities/path</text>
 
-  <rect x="555" y="280" width="330" height="130" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card"/>
+  <rect x="555" y="280" width="330" height="130" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="3" class="card" />
   <text x="590" y="328" class="label">Reset Handler</text>
   <text x="590" y="364" class="small">call.graphOperations()</text>
   <text x="590" y="392" class="small">DemoCityGraph.reset(ops)</text>
 
-  <rect x="555" y="525" width="330" height="155" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card"/>
+  <rect x="524" y="525" width="361" height="155" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="3" class="card" />
   <text x="590" y="573" class="label">Read Handlers</text>
   <text x="590" y="609" class="small">count uses GraphOperations</text>
   <text x="590" y="637" class="small">path uses GraphSuspendOperations</text>
-  <text x="590" y="665" class="small">health uses Ktor core</text>
+  <image data-bluetape4k-icon="ktor" href="data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjMDg3Q0ZBIiByb2xlPSJpbWciIHZpZXdCb3g9IjAgMCAyNCAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGl0bGU+S3RvcjwvdGl0bGU+PHBhdGggZD0iTTggMCAwIDhsOCA4VjhoOHptOCA4djhIOGw4IDggOC04eiIvPjwvc3ZnPg==" x="540" y="604" width="42" height="42" preserveAspectRatio="xMidYMid meet" />
+      <text x="590" y="665" class="small">health uses Ktor core</text>
 
-  <rect x="985" y="280" width="340" height="145" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card"/>
+  <rect x="985" y="280" width="340" height="145" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="3" class="card" />
   <text x="1020" y="328" class="label">Rewrite demo Graph</text>
   <text x="1020" y="364" class="small">dropGraph and createGraph(demo)</text>
   <text x="1020" y="392" class="small">insert City vertices plus routes</text>
 
   <g class="card">
-    <ellipse cx="1155" cy="610" rx="170" ry="38" fill="#FDE68A" stroke="#F59E0B" stroke-width="3"/>
-    <rect x="985" y="610" width="340" height="155" fill="#FDE68A" stroke="#F59E0B" stroke-width="3"/>
-    <ellipse cx="1155" cy="765" rx="170" ry="38" fill="#FDBA74" stroke="#F59E0B" stroke-width="3"/>
+    <ellipse cx="1155" cy="610" rx="170" ry="38" fill="#FDE68A" stroke="#F59E0B" stroke-width="3" />
+    <rect x="985" y="610" width="340" height="155" fill="#FDE68A" stroke="#F59E0B" stroke-width="3" />
+    <ellipse cx="1155" cy="765" rx="170" ry="38" fill="#FDBA74" stroke="#F59E0B" stroke-width="3" />
   </g>
   <text x="1155" y="632" text-anchor="middle" class="label">demo Graph</text>
   <text x="1155" y="672" text-anchor="middle" class="small">City vertices: Seoul, Daejeon, Busan</text>
   <text x="1155" y="702" text-anchor="middle" class="small">ROUTE_TO edges form the path</text>
 
-  <rect x="1410" y="280" width="330" height="130" rx="14" fill="#FCE7F3" stroke="#EC4899" stroke-width="3" class="card"/>
+  <rect x="1410" y="280" width="330" height="130" rx="14" fill="#FCE7F3" stroke="#EC4899" stroke-width="3" class="card" />
   <text x="1445" y="328" class="label">Reset Response</text>
   <text x="1445" y="364" class="small">plain text: reset</text>
   <text x="1445" y="392" class="small">status: 200 OK</text>
 
-  <rect x="1410" y="525" width="330" height="155" rx="14" fill="#F8FAFC" stroke="#94A3B8" stroke-width="3" class="card"/>
+  <rect x="1410" y="525" width="330" height="155" rx="14" fill="#F8FAFC" stroke="#94A3B8" stroke-width="3" class="card" />
   <text x="1445" y="573" class="label">Read Responses</text>
   <text x="1445" y="609" class="small">health and readyz: UP</text>
   <text x="1445" y="637" class="small">count: 3</text>
   <text x="1445" y="665" class="small">path: Seoul to Busan</text>
 
-  <path d="M 455 345 L 555 345" class="line"/>
-  <path d="M 455 600 L 555 600" class="line"/>
-  <path d="M 885 345 L 985 352" class="line"/>
-  <path d="M 885 600 L 985 675" class="line"/>
-  <path d="M 1325 352 L 1410 345" class="line"/>
-  <path d="M 1325 675 L 1410 600" class="line"/>
+  <path d="M 455 345 L 555 345" class="line" />
+  <path d="M 455 600 L 524 600" class="line" />
+  <path d="M 885 352 L 985 352" class="line" />
+  <path d="M 885 600 L 917 600 Q 935 600 935 618 L 935 657 Q 935 675 953 675 L 985 675" class="line" />
+  <path d="M 1325 345 L 1410 345" class="line" />
+  <path d="M 1325 675 L 1349.5 675 Q 1367.5 675 1367.5 657 L 1367.5 618 Q 1367.5 600 1385.5 600 L 1410 600" class="line" />
 
-  <rect x="190" y="820" width="1460" height="62" rx="14" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"/>
+  <rect x="190" y="820" width="1460" height="62" rx="14" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2" />
   <text x="920" y="848" text-anchor="middle" class="small">The test flow posts reset first, then verifies count and path through the same app module.</text>
 
   <text x="920" y="1032" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | module: ktor-graph-examples / data flow</text>

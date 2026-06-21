@@ -112,15 +112,15 @@
   <text x="1505" y="700" text-anchor="middle" class="cardTitle">Stream bridge</text>
   <text x="1505" y="728" text-anchor="middle" class="small">InputStream / OutputStream</text>
 
-  <path d="M 430 390 L 552 388" class="flow"/>
-  <path d="M 430 546 L 552 388" class="flow"/>
-  <path d="M 430 698 L 552 388" class="flow"/>
-  <path d="M 832 388 L 970 390" class="format"/>
-  <path d="M 832 550 L 970 390" class="format"/>
-  <path d="M 832 710 L 970 390" class="guard"/>
-  <path d="M 1264 390 L 1386 398" class="flow"/>
-  <path d="M 1264 390 C 1318 430 1326 516 1386 556" class="format"/>
-  <path d="M 1264 390 C 1318 482 1326 656 1386 714" class="guard"/>
+  <path d="M 430 388 L 552 388" class="flow"/>
+  <path d="M 430 546 L 473 546 Q 491 546 491 528 L 491 406 Q 491 388 509 388 L 552 388" class="flow"/>
+  <path d="M 430 698 L 473 698 Q 491 698 491 680 L 491 406 Q 491 388 509 388 L 552 388" class="flow"/>
+  <path d="M 832 390 L 970 390" class="format"/>
+  <path d="M 832 550 L 883 550 Q 901 550 901 532 L 901 408 Q 901 390 919 390 L 970 390" class="format"/>
+  <path d="M 832 710 L 883 710 Q 901 710 901 692 L 901 408 Q 901 390 919 390 L 970 390" class="guard"/>
+  <path d="M 1264 398 L 1386 398" class="flow"/>
+  <path d="M 1264 390 L 1307 390 Q 1325 390 1325 408 L 1325 538 Q 1325 556 1343 556 L 1386 556" class="format"/>
+  <path d="M 1264 390 L 1307 390 Q 1325 390 1325 408 L 1325 696 Q 1325 714 1343 714 L 1386 714" class="guard"/>
 
   <rect x="228" y="858" width="1304" height="76" rx="16" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.6"/>
   <text x="880" y="887" text-anchor="middle" class="small">NDJSON and GraphML are single-stream formats, so compression and DAEAD can wrap the same byte flow.</text>

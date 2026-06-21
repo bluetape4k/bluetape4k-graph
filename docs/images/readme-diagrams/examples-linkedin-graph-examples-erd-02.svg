@@ -3,7 +3,7 @@
     <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
       <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.13"/>
     </filter>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+    <marker markerUnits="userSpaceOnUse" id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
       <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
     </marker>
   </defs>
@@ -15,7 +15,7 @@
     .small { font-family: 'Comic Mono', monospace; font-size: 17px; fill: #374151; }
     .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
     .card { filter: url(#softShadow); }
-    .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+    .line { stroke: #2563EB; stroke-width: 3; fill: none; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow); }
     .rel { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #1E40AF; }
   </style>
 
@@ -50,7 +50,7 @@
   <text x="1360" y="548" class="small">category: string</text>
   <text x="1360" y="576" class="small">level stored on HAS_SKILL edge</text>
 
-  <path d="M 520 395 L 725 380" class="line"/>
+  <path d="M 520 395 L 725 395" class="line"/>
   <text x="620" y="365" text-anchor="middle" class="rel" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">WORKS_AT role, isCurrent</text>
   <text x="620" y="365" text-anchor="middle" class="rel">WORKS_AT role, isCurrent</text>
 
@@ -58,7 +58,7 @@
   <text x="920" y="536" text-anchor="middle" class="rel" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">HAS_SKILL level</text>
   <text x="920" y="536" text-anchor="middle" class="rel">HAS_SKILL level</text>
 
-  <path d="M 325 525 L 325 665 L 130 665 L 130 525" class="line"/>
+  <path d="M 325 525 L 325 647 Q 325 665 307 665 L 148 665 Q 130 665 130 647 L 130 525" class="line"/>
   <text x="225" y="646" text-anchor="middle" class="rel" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">KNOWS both directions</text>
   <text x="225" y="646" text-anchor="middle" class="rel">KNOWS both directions</text>
 

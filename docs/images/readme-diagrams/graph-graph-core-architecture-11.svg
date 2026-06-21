@@ -85,9 +85,9 @@
   <text x="1189" y="636" text-anchor="middle" class="body">close()</text>
   <text x="1189" y="664" text-anchor="middle" class="small">release facade resources</text>
 
-  <path d="M 970 434 L 433 564" class="soft"/>
-  <path d="M 970 434 L 811 564" class="soft"/>
-  <path d="M 1290 434 L 1189 564" class="soft"/>
+  <path d="M 970 434 L 970 481 Q 970 499 952 499 L 451 499 Q 433 499 433 517 L 433 564" class="soft"/>
+  <path d="M 970 434 L 970 481 Q 970 499 952 499 L 829 499 Q 811 499 811 517 L 811 564" class="soft"/>
+  <path d="M 1290 434 L 1290 481 Q 1290 499 1272 499 L 1207 499 Q 1189 499 1189 517 L 1189 564" class="soft"/>
 
   <rect x="230" y="746" width="1160" height="42" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
   <text x="810" y="773" text-anchor="middle" class="small">Unsupported optional capabilities throw explicitly; GraphOperations itself stays source-compatible.</text>

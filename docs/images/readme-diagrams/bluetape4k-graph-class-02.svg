@@ -3,14 +3,15 @@
     <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
       <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.13"/>
     </filter>
-    <marker id="arrowBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+    <marker markerUnits="userSpaceOnUse" id="arrowBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto">
       <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
     </marker>
-    <marker id="arrowSlate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+    <marker markerUnits="userSpaceOnUse" id="arrowSlate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto">
       <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748B"/>
     </marker>
   </defs>
   <style>
+    marker path, marker polygon, marker polyline { stroke-dasharray: none !important; }
     .title { font-family: 'Architects Daughter', cursive; font-size: 48px; fill: #111827; }
     .subtitle { font-family: 'Comic Mono', monospace; font-size: 20px; fill: #4B5563; }
     .section { font-family: 'Architects Daughter', cursive; font-size: 28px; fill: #111827; }
@@ -91,9 +92,9 @@
   <text x="1394" y="329" text-anchor="middle" class="micro">defines</text>
   <path d="M 748 460 L 748 563" class="softArrow"/>
   <text x="780" y="520" class="micro">async forms</text>
-  <path d="M 748 460 L 1355 563" class="arrow"/>
+  <path d="M 748 460 L 748 493.5 Q 748 511.5 766 511.5 L 1337 511.5 Q 1355 511.5 1355 529.5 L 1355 563" class="arrow"/>
   <text x="1110" y="512" class="micro">implemented by</text>
-  <path d="M 570 395 L 500 565" class="softArrow"/>
+  <path d="M 570 395 L 548 395 Q 535 395 535 408 L 535 532 Q 535 545 522 545 L 513 545 Q 500 545 500 558 L 500 565" class="softArrow"/>
   <text x="523" y="510" class="micro">optional</text>
 
   <text x="920" y="1012" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | root README / class structure</text>
