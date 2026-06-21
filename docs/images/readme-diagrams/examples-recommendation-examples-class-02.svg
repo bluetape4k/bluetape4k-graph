@@ -5,6 +5,9 @@
     <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto" markerUnits="userSpaceOnUse">
       <path d="M0,0 L0,8 L10,4 z" fill="#2563EB"/>
     </marker>
+    <marker id="arrowSoft" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L0,8 L10,4 z" fill="#94A3B8"/>
+    </marker>
     <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#0F172A" flood-opacity="0.12"/>
     </filter>
@@ -19,7 +22,7 @@
       .small { font-family: "Comic Mono", "Comic Sans MS", "Helvetica", sans-serif; font-size: 17px; fill: #374151; }
       .tiny { font-family: "Comic Mono", "Comic Sans MS", "Helvetica", sans-serif; font-size: 15px; fill: #4B5563; }
       .line { fill: none; stroke: #2563EB; stroke-width: 4; marker-end: url(#arrow); }
-      .soft { fill: none; stroke: #94A3B8; stroke-width: 3; marker-end: url(#arrow); }
+      .soft { fill: none; stroke: #94A3B8; stroke-width: 3; marker-end: url(#arrowSoft); }
       .pill { fill: #FFFFFF; stroke: #CBD5E1; stroke-width: 2; }
       .card { filter: url(#shadow); }
     </style>
