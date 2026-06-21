@@ -12,7 +12,7 @@
     <marker id="arrow-amber" viewBox="0 0 24 24" refX="22" refY="12" markerWidth="20" markerHeight="20" markerUnits="userSpaceOnUse" orient="auto">
       <path d="M 3 3 L 22 12 L 3 21 Z" fill="#D97706"/>
     </marker>
-    <marker id="arrow-gray" viewBox="0 0 24 24" refX="22" refY="12" markerWidth="18" markerHeight="18" markerUnits="userSpaceOnUse" orient="auto">
+    <marker id="arrow-gray" viewBox="0 0 24 24" refX="22" refY="12" markerWidth="20" markerHeight="20" markerUnits="userSpaceOnUse" orient="auto">
       <path d="M 3 3 L 22 12 L 3 21 Z" fill="#64748B"/>
     </marker>
   </defs>

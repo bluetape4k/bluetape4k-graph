@@ -20,7 +20,7 @@
       .dash { stroke: #64748B; stroke-width: 2; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
     </style>
 
-<defs><marker id="seqArrow" markerUnits="userSpaceOnUse" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#2E9C9B" stroke="#2E9C9B"/></marker></defs>
+<defs><marker id="seqArrow-blue" markerUnits="userSpaceOnUse" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#4F83BF" stroke="#4F83BF"/></marker><marker id="seqArrow-green" markerUnits="userSpaceOnUse" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#2F9E6B" stroke="#2F9E6B"/></marker><marker id="seqArrow-amber" markerUnits="userSpaceOnUse" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#D6A441" stroke="#D6A441"/></marker><marker id="seqArrow-teal" markerUnits="userSpaceOnUse" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#2E9C9B" stroke="#2E9C9B"/></marker></defs>
 <rect x="0" y="0" width="1600" height="1055" fill="#F8FAFC"/>
 <rect x="24" y="24" width="1552" height="1007" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
 <circle cx="1536" cy="64" r="15" fill="#FED7AA" opacity="0.95"/>
@@ -46,32 +46,32 @@
 <rect x="608.6666666666667" y="312" width="16" height="511" rx="6" fill="#DCFCE7" stroke="#22C55E" stroke-width="1.5"/>
 <rect x="975.3333333333334" y="402" width="16" height="321" rx="6" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5"/>
 <rect x="1342.0" y="497" width="16" height="131" rx="6" fill="#FEE2E2" stroke="#DB2777" stroke-width="1.5"/>
-<line x1="260.0" y1="330" x2="606.6666666666667" y2="330" stroke="#4F83BF" stroke-width="2.7" marker-end="url(#seqArrow)"/>
+<line x1="260.0" y1="330" x2="606.6666666666667" y2="330" stroke="#4F83BF" stroke-width="2.7" marker-end="url(#seqArrow-blue)"/>
 <rect x="238.3" y="286" width="390" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="262.3" cy="301" r="13" fill="#4F83BF"/>
 <text x="262.3" y="301" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">1</text>
 <text x="286.3" y="301" dominant-baseline="middle" class="tiny">neighbors(startId, label, direction, depth)</text>
-<line x1="626.6666666666667" y1="420" x2="973.3333333333334" y2="420" stroke="#2F9E6B" stroke-width="2.7" marker-end="url(#seqArrow)"/>
+<line x1="626.6666666666667" y1="420" x2="973.3333333333334" y2="420" stroke="#2F9E6B" stroke-width="2.7" marker-end="url(#seqArrow-green)"/>
 <rect x="667.5" y="376" width="265" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="691.5" cy="391" r="13" fill="#2F9E6B"/>
 <text x="691.5" y="391" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">2</text>
 <text x="715.5" y="391" dominant-baseline="middle" class="tiny">build traversal query</text>
-<line x1="993.3333333333334" y1="515" x2="1340.0" y2="515" stroke="#D6A441" stroke-width="2.7" marker-end="url(#seqArrow)"/>
+<line x1="993.3333333333334" y1="515" x2="1340.0" y2="515" stroke="#D6A441" stroke-width="2.7" marker-end="url(#seqArrow-amber)"/>
 <rect x="1014.2" y="471" width="305" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="1038.2" cy="486" r="13" fill="#D6A441"/>
 <text x="1038.2" y="486" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">3</text>
 <text x="1062.2" y="486" dominant-baseline="middle" class="tiny">relationship traversal query</text>
-<line x1="1340.0" y1="610" x2="993.3333333333334" y2="610" stroke="#2E9C9B" stroke-width="2.7" stroke-dasharray="10 8" marker-end="url(#seqArrow)"/>
+<line x1="1340.0" y1="610" x2="993.3333333333334" y2="610" stroke="#2E9C9B" stroke-width="2.7" stroke-dasharray="10 8" marker-end="url(#seqArrow-teal)"/>
 <rect x="1041.7" y="566" width="250" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="1065.7" cy="581" r="13" fill="#2E9C9B"/>
 <text x="1065.7" y="581" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">4</text>
 <text x="1089.7" y="581" dominant-baseline="middle" class="tiny">neighboring vertices</text>
-<line x1="973.3333333333334" y1="705" x2="626.6666666666667" y2="705" stroke="#2E9C9B" stroke-width="2.7" stroke-dasharray="10 8" marker-end="url(#seqArrow)"/>
+<line x1="973.3333333333334" y1="705" x2="626.6666666666667" y2="705" stroke="#2E9C9B" stroke-width="2.7" stroke-dasharray="10 8" marker-end="url(#seqArrow-teal)"/>
 <rect x="677.5" y="661" width="245" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="701.5" cy="676" r="13" fill="#2E9C9B"/>
 <text x="701.5" y="676" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">5</text>
 <text x="725.5" y="676" dominant-baseline="middle" class="tiny">List&lt;GraphVertex&gt;</text>
-<line x1="606.6666666666667" y1="805" x2="260.0" y2="805" stroke="#2E9C9B" stroke-width="2.7" stroke-dasharray="10 8" marker-end="url(#seqArrow)"/>
+<line x1="606.6666666666667" y1="805" x2="260.0" y2="805" stroke="#2E9C9B" stroke-width="2.7" stroke-dasharray="10 8" marker-end="url(#seqArrow-teal)"/>
 <rect x="310.8" y="761" width="245" height="30" rx="8" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="1.4"/>
 <circle cx="334.8" cy="776" r="13" fill="#2E9C9B"/>
 <text x="334.8" y="776" text-anchor="middle" dominant-baseline="middle" class="tiny" style="fill:#FFFFFF">6</text>

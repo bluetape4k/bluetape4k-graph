@@ -112,13 +112,13 @@
 
   <path d="M 490 546 L 675 546" class="lineAmber"/>
   <path d="M 1005 546 L 1190 546" class="lineTeal"/>
-  <path d="M 840 596 L 840 682 Q 840 700 822 700 L 638 700 Q 620 700 620 718 L 620 764" class="lineTeal"/>
+  <path d="M 840 596 L 840 672 Q 840 690 822 690 L 438 690 Q 420 690 420 708 L 420 764" class="lineTeal"/>
   <path d="M 1355 596 L 1355 682 Q 1355 700 1337 700 L 1128 700 Q 1110 700 1110 718 L 1110 776" class="lineTeal"/>
   <path d="M 610 832 L 790 832" class="lineAmber"/>
 
   <text x="580" y="528" text-anchor="middle" class="label">jdbcUrl / credentials</text>
   <text x="1098" y="528" text-anchor="middle" class="label">connects</text>
-  <text x="706" y="690" text-anchor="middle" class="label">AGE-ready pool</text>
+  <text x="630" y="676" text-anchor="middle" class="label">AGE-ready pool</text>
   <text x="1180" y="690" text-anchor="middle" class="label">transactions</text>
   <text x="700" y="814" text-anchor="middle" class="label">stores graphs</text>
 
