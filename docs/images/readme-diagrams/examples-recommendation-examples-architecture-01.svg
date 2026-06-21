@@ -2,7 +2,7 @@
   <title id="title">Recommendation examples architecture</title>
   <desc id="desc">Recommendation service architecture for product recommendations, follow recommendations, PageRank ranking, CSV import, and portable graph backends.</desc>
   <defs>
-    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+    <marker id="arrow" markerWidth="14" markerHeight="14" refX="10" refY="4" orient="auto" markerUnits="userSpaceOnUse">
       <path d="M0,0 L0,8 L10,4 z" fill="#2563EB" />
     </marker>
     <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
