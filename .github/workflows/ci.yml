@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -70,7 +70,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: gradle/actions/wrapper-validation@v6
 
   # ── 2. paths-filter ───────────────────────────────────────────────────────
@@ -92,7 +92,7 @@ jobs:
       graph-ktor: ${{ steps.filter.outputs.graph-ktor }}
       common: ${{ steps.filter.outputs.common }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dorny/paths-filter@v4
         id: filter
         with:
@@ -130,7 +130,7 @@ jobs:
     timeout-minutes: 10
     needs: [validate-wrapper, changes]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-java@v5
         with:
@@ -181,7 +181,7 @@ jobs:
       needs.changes.outputs.common == 'true' ||
       github.event_name == 'workflow_dispatch'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-java@v5
         with:
@@ -263,7 +263,7 @@ jobs:
       needs.changes.outputs.common == 'true' ||
       github.event_name == 'workflow_dispatch'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-java@v5
         with:
@@ -332,7 +332,7 @@ jobs:
       needs.changes.outputs.common == 'true' ||
       github.event_name == 'workflow_dispatch'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-java@v5
         with:
@@ -407,7 +407,7 @@ jobs:
       needs.changes.outputs.common == 'true' ||
       github.event_name == 'workflow_dispatch'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-java@v5
         with:
@@ -482,7 +482,7 @@ jobs:
       needs.changes.outputs.common == 'true' ||
       github.event_name == 'workflow_dispatch'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-java@v5
         with:
@@ -557,7 +557,7 @@ jobs:
       needs.changes.outputs.common == 'true' ||
       github.event_name == 'workflow_dispatch'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-java@v5
         with:
@@ -632,7 +632,7 @@ jobs:
       needs.changes.outputs.common == 'true' ||
       github.event_name == 'workflow_dispatch'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-java@v5
         with:
@@ -710,7 +710,7 @@ jobs:
       - test-graph-falkordb
     if: always()
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-java@v5
         with:
