@@ -2,10 +2,10 @@
   <title id="title">Recommendation examples domain UML</title>
   <desc id="desc">Domain labels and service operations for product, follow, and ranking recommendation examples.</desc>
   <defs>
-    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+    <marker id="arrow" markerWidth="14" markerHeight="14" refX="10" refY="4" orient="auto" markerUnits="userSpaceOnUse">
       <path d="M0,0 L0,8 L10,4 z" fill="#2563EB"/>
     </marker>
-    <marker id="arrowSoft" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+    <marker id="arrowSoft" markerWidth="14" markerHeight="14" refX="10" refY="4" orient="auto" markerUnits="userSpaceOnUse">
       <path d="M0,0 L0,8 L10,4 z" fill="#94A3B8"/>
     </marker>
     <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
