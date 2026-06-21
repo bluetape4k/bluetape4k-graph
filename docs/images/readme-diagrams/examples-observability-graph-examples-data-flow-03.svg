@@ -89,11 +89,11 @@
   <text x="1570" y="657" class="small">payment svc</text>
   <text x="1570" y="685" class="small">payments-team</text>
 
-  <path d="M 425 384 L 490 430" class="line"/>
-  <path d="M 425 638 L 490 478" class="line"/>
+  <path d="M 425 384 L 452 384 Q 470 384 470 402 L 470 412 Q 470 430 488 430 L 490 430" class="line"/>
+  <path d="M 425 638 L 452 638 Q 470 638 470 620 L 470 496 Q 470 478 488 478 L 490 478" class="line"/>
   <path d="M 780 448 L 810 448" class="line"/>
-  <path d="M 1110 448 L 1170 370" class="line"/>
-  <path d="M 1110 530 L 1170 630" class="line"/>
+  <path d="M 1110 448 L 1122 448 Q 1140 448 1140 430 L 1140 388 Q 1140 370 1158 370 L 1170 370" class="line"/>
+  <path d="M 1110 530 L 1122 530 Q 1140 530 1140 548 L 1140 612 Q 1140 630 1158 630 L 1170 630" class="line"/>
   <path d="M 1495 370 L 1525 370" class="line"/>
   <path d="M 1495 630 L 1525 630" class="line"/>
 

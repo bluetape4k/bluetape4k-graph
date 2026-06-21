@@ -1,49 +1,49 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1080" viewBox="0 0 1840 1080">
   <defs>
-    <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.13"/></filter>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="14" markerHeight="14" orient="auto" markerUnits="userSpaceOnUse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563EB"/></marker>
-    <marker id="arrowGray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="12" markerHeight="12" orient="auto" markerUnits="userSpaceOnUse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#64748B"/></marker>
+    <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.13" /></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="14" markerHeight="14" orient="auto" markerUnits="userSpaceOnUse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563EB" /></marker>
+    <marker id="arrowGray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="12" markerHeight="12" orient="auto" markerUnits="userSpaceOnUse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#64748B" /></marker>
   </defs>
   <style>
     .title{font-family:'Architects Daughter',cursive;font-size:48px;fill:#111827}.subtitle{font-family:'Comic Mono',monospace;font-size:20px;fill:#4B5563}.section{font-family:'Architects Daughter',cursive;font-size:30px;fill:#111827}.label{font-family:'Architects Daughter',cursive;font-size:28px;fill:#111827}.small{font-family:'Comic Mono',monospace;font-size:17px;fill:#374151}.tiny{font-family:'Comic Mono',monospace;font-size:15px;fill:#4B5563}.card{filter:url(#softShadow)}.flow{stroke:#2563EB;stroke-width:3.2;fill:none;marker-end:url(#arrow)}.use{stroke:#64748B;stroke-width:2.6;fill:none;marker-end:url(#arrowGray)}
   </style>
-  <rect width="1840" height="1080" fill="#F8FAFC"/>
-  <rect x="24" y="24" width="1792" height="1032" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
-  <circle cx="1776" cy="64" r="15" fill="#FED7AA"/><circle cx="1736" cy="64" r="15" fill="#DCFCE7"/><circle cx="1696" cy="64" r="15" fill="#EDE9FE"/>
+  <rect width="1840" height="1080" fill="#F8FAFC" />
+  <rect x="24" y="24" width="1792" height="1032" rx="22" fill="none" stroke="#60A5FA" stroke-width="4" />
+  <circle cx="1776" cy="64" r="15" fill="#FED7AA" /><circle cx="1736" cy="64" r="15" fill="#DCFCE7" /><circle cx="1696" cy="64" r="15" fill="#EDE9FE" />
   <text x="72" y="82" class="title">Supply Chain Graph Example Architecture</text>
   <text x="74" y="118" class="subtitle">CSV fixtures model supplier, part, route, carrier, and order impact without an optimization solver.</text>
-  <rect x="70" y="150" width="1700" height="790" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+  <rect x="70" y="150" width="1700" height="790" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)" />
 
   <text x="255" y="220" text-anchor="middle" class="section">Risk Inputs</text>
   <text x="690" y="220" text-anchor="middle" class="section">Supply Graph</text>
   <text x="1150" y="220" text-anchor="middle" class="section">Impact Service</text>
   <text x="1560" y="220" text-anchor="middle" class="section">Operational Answers</text>
 
-  <rect x="130" y="300" width="340" height="160" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2" class="card"/>
+  <rect x="130" y="300" width="340" height="160" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2" class="card" />
   <text x="170" y="348" class="label">Failure Cases</text>
   <text x="170" y="388" class="small">supplier-alpha impact</text>
   <text x="170" y="416" class="small">gps-module sole-source</text>
   <text x="170" y="444" class="small">route-pacific blocked</text>
 
-  <rect x="130" y="600" width="340" height="145" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="2" class="card"/>
+  <rect x="130" y="600" width="340" height="145" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="2" class="card" />
   <text x="170" y="648" class="label">CSV Loader</text>
   <text x="170" y="686" class="small">vertices.csv + edges.csv</text>
   <text x="170" y="714" class="small">GraphOperations import</text>
 
-  <rect x="570" y="270" width="380" height="230" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="2" class="card"/>
+  <rect x="570" y="270" width="380" height="230" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="2" class="card" />
   <text x="610" y="318" class="label">Demand Path</text>
-  <text x="610" y="358" class="small">Supplier -> Part</text>
-  <text x="610" y="386" class="small">Part -> CustomerOrder</text>
-  <text x="610" y="414" class="small">Part -> Warehouse -> Route</text>
-  <text x="610" y="442" class="small">Route -> CustomerOrder</text>
-  <text x="610" y="470" class="small">Carrier -> Route</text>
+  <text x="610" y="358" class="small">Supplier -&gt; Part</text>
+  <text x="610" y="386" class="small">Part -&gt; CustomerOrder</text>
+  <text x="610" y="414" class="small">Part -&gt; Warehouse -&gt; Route</text>
+  <text x="610" y="442" class="small">Route -&gt; CustomerOrder</text>
+  <text x="610" y="470" class="small">Carrier -&gt; Route</text>
 
-  <rect x="570" y="610" width="380" height="130" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="2" class="card"/>
+  <rect x="570" y="610" width="380" height="130" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="2" class="card" />
   <text x="610" y="658" class="label">Substitution Path</text>
-  <text x="610" y="696" class="small">battery-cell -> battery-module</text>
-  <text x="610" y="724" class="small">battery-module -> battery-cell</text>
+  <text x="610" y="696" class="small">battery-cell -&gt; battery-module</text>
+  <text x="610" y="724" class="small">battery-module -&gt; battery-cell</text>
 
-  <rect x="1040" y="285" width="370" height="245" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="2" class="card"/>
+  <rect x="1040" y="285" width="370" height="245" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="2" class="card" />
   <text x="1080" y="333" class="label">SupplyChainImpactService</text>
   <text x="1080" y="373" class="small">impactedOrdersBySupplier</text>
   <text x="1080" y="401" class="small">impactedOrdersByPart</text>
@@ -51,34 +51,34 @@
   <text x="1080" y="457" class="small">alternateRoutesForOrder</text>
   <text x="1080" y="485" class="small">bottleneckParts, substitutionCycles</text>
 
-  <rect x="1040" y="635" width="370" height="110" rx="14" fill="#F8FAFC" stroke="#94A3B8" stroke-width="2" class="card"/>
+  <rect x="1040" y="635" width="370" height="110" rx="14" fill="#F8FAFC" stroke="#94A3B8" stroke-width="2" class="card" />
   <text x="1080" y="683" class="label">Suspend Service</text>
   <text x="1080" y="721" class="small">same contract for coroutine callers</text>
 
-  <rect x="1450" y="285" width="280" height="135" rx="14" fill="#FCE7F3" stroke="#EC4899" stroke-width="2" class="card"/>
+  <rect x="1450" y="285" width="280" height="135" rx="14" fill="#FCE7F3" stroke="#EC4899" stroke-width="2" class="card" />
   <text x="1485" y="332" class="label">Order Impact</text>
-  <text x="1485" y="370" class="small">gps-module -> 1001, 1002</text>
-  <text x="1485" y="398" class="small">route-pacific -> 1001</text>
+  <text x="1485" y="370" class="small">gps-module -&gt; 1001, 1002</text>
+  <text x="1485" y="398" class="small">route-pacific -&gt; 1001</text>
 
-  <rect x="1450" y="500" width="280" height="130" rx="14" fill="#FFEDD5" stroke="#F97316" stroke-width="2" class="card"/>
+  <rect x="1450" y="500" width="280" height="130" rx="14" fill="#FFEDD5" stroke="#F97316" stroke-width="2" class="card" />
   <text x="1485" y="547" class="label">Recovery</text>
   <text x="1485" y="585" class="small">order-1001 alternate:</text>
   <text x="1485" y="613" class="small">route-air-express</text>
 
-  <rect x="1450" y="700" width="280" height="125" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="2" class="card"/>
+  <rect x="1450" y="700" width="280" height="125" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="2" class="card" />
   <text x="1485" y="747" class="label">Bottleneck</text>
   <text x="1485" y="785" class="small">gps-module is sole-source</text>
 
-  <path d="M 470 390 C 520 390 525 385 570 385" class="flow"/>
-  <path d="M 470 675 C 520 675 525 675 570 675" class="flow"/>
-  <path d="M 950 390 C 990 390 1000 405 1040 405" class="flow"/>
-  <path d="M 950 675 C 990 675 1000 690 1040 690" class="use"/>
-  <path d="M 1410 390 C 1430 390 1435 352 1450 352" class="flow"/>
-  <path d="M 1410 445 C 1430 480 1435 565 1450 565" class="flow"/>
-  <path d="M 1410 490 C 1430 560 1435 765 1450 765" class="flow"/>
-  <path d="M 1220 530 L 1220 635" class="use"/>
+  <path d="M 470 385 L 570 385" class="flow" />
+  <path d="M 470 675 L 570 675" class="flow" />
+  <path d="M 950 405 L 1040 405" class="flow" />
+  <path d="M 950 690 L 1040 690" class="use" />
+  <path d="M 1410 390 L 1412 390 Q 1430 390 1430 372 L 1430 370 Q 1430 352 1448 352 L 1450 352" class="flow" />
+  <path d="M 1410 445 L 1412 445 Q 1430 445 1430 463 L 1430 547 Q 1430 565 1448 565 L 1450 565" class="flow" />
+  <path d="M 1410 490 L 1412 490 Q 1430 490 1430 508 L 1430 747 Q 1430 765 1448 765 L 1450 765" class="flow" />
+  <path d="M 1220 530 L 1220 635" class="use" />
 
-  <rect x="310" y="850" width="1220" height="52" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"/>
+  <rect x="310" y="850" width="1220" height="52" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2" />
   <text x="920" y="883" text-anchor="middle" class="small">The service answers deterministic impact and alternate-route questions from explicit graph relationships.</text>
   <text x="920" y="1032" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | module: supply-chain-graph-examples / architecture</text>
 </svg>

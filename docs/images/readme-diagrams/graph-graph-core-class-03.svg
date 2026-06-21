@@ -3,15 +3,16 @@
     <filter id="shadow" x="-6%" y="-6%" width="112%" height="112%">
       <feDropShadow dx="0" dy="7" stdDeviation="5" flood-color="#334155" flood-opacity="0.10"/>
     </filter>
-    <marker id="arrow" viewBox="0 0 10 10" refX="8.6" refY="5" markerWidth="5.6" markerHeight="5.6" orient="auto">
+    <marker markerUnits="userSpaceOnUse" id="arrow" viewBox="0 0 10 10" refX="8.6" refY="5" markerWidth="10" markerHeight="10" orient="auto">
       <path d="M 1.2 1.4 L 8.6 5 L 1.2 8.6 Z" fill="#64748B"/>
     </marker>
-    <marker id="inheritanceArrow" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+    <marker markerUnits="userSpaceOnUse" id="inheritanceArrow" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="10" markerHeight="10" orient="auto">
       <path d="M 1.5 1.5 L 10.5 6 L 1.5 10.5 Z" fill="#FFFFFF" stroke="#64748B" stroke-width="1.5"/>
     </marker>
   </defs>
 
   <style>
+    marker path, marker polygon, marker polyline { stroke-dasharray: none !important; }
     .title { font-family: 'Architects Daughter', cursive; font-size: 50px; fill: #0F172A; }
     .subtitle { font-family: 'Comic Mono', monospace; font-size: 19px; fill: #475569; }
     .section { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #334155; }
@@ -72,8 +73,8 @@
   <text x="1177" y="712" text-anchor="middle" class="small">edge: GraphEdge</text>
 
   <path d="M 570 617 L 646 617" class="flow"/>
-  <path d="M 1070 571 C 1032 571, 1026 617, 994 617" class="inheritLine"/>
-  <path d="M 1070 693 C 1032 693, 1026 617, 994 617" class="inheritLine"/>
+  <path d="M 1070 571 L 1050 571 Q 1032 571 1032 589 L 1032 599 Q 1032 617 1014 617 L 994 617" class="inheritLine"/>
+  <path d="M 1070 693 L 1050 693 Q 1032 693 1032 675 L 1032 635 Q 1032 617 1014 617 L 994 617" class="inheritLine"/>
 
   <rect x="156" y="790" width="1328" height="94" rx="16" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.6"/>
   <text x="820" y="824" text-anchor="middle" class="small">Derived views keep caller code simple: vertices, edges, length, isEmpty.</text>

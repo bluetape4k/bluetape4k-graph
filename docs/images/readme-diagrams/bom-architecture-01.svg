@@ -97,11 +97,11 @@
   <rect x="1462" y="766" width="150" height="36" rx="12" fill="#FFFFFF" stroke="#EF4444" stroke-width="1.5"/>
   <text x="1537" y="791" text-anchor="middle" class="small">benchmark/*</text>
 
-  <path d="M 430 408 L 580 398" class="flow"/>
+  <path d="M 430 398 L 580 398" class="flow"/>
   <path d="M 430 600 L 580 600" class="flow"/>
-  <path d="M 904 398 L 1060 379" class="constraint"/>
-  <path d="M 904 398 C 960 440 994 500 1060 521" class="constraint"/>
-  <path d="M 904 598 C 966 648 994 664 1060 664" class="constraint"/>
+  <path d="M 904 379 L 1060 379" class="constraint"/>
+  <path d="M 904 398 L 964 398 Q 982 398 982 416 L 982 503 Q 982 521 1000 521 L 1060 521" class="constraint"/>
+  <path d="M 904 598 L 964 598 Q 982 598 982 616 L 982 646 Q 982 664 1000 664 L 1060 664" class="constraint"/>
   <path d="M 742 660 L 742 748" class="filterLine"/>
 
   <rect x="372" y="888" width="1016" height="48" rx="14" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>

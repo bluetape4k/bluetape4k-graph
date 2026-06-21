@@ -78,8 +78,8 @@
   <text x="1138" y="642" text-anchor="middle" class="body">or UnsupportedOperationException</text>
   <text x="1138" y="672" text-anchor="middle" class="small">no silent no-op for DDL gaps</text>
 
-  <path d="M 645 412 L 502 556" class="soft"/>
-  <path d="M 1393 412 L 1138 536" class="soft"/>
+  <path d="M 645 412 L 645 466 Q 645 484 627 484 L 520 484 Q 502 484 502 502 L 502 556" class="soft"/>
+  <path d="M 1393 412 L 1393 456 Q 1393 474 1375 474 L 1156 474 Q 1138 474 1138 492 L 1138 536" class="soft"/>
 
   <rect x="220" y="746" width="1200" height="42" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
   <text x="820" y="773" text-anchor="middle" class="small">Blocking schema managers can be bridged to suspend APIs through Dispatchers.IO.</text>

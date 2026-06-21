@@ -106,10 +106,10 @@
   <text x="1523" y="670" text-anchor="middle" class="cardTitle">Virtual thread</text>
   <text x="1523" y="698" text-anchor="middle" class="small">CompletableFuture</text>
 
-  <path d="M 426 410 L 568 404" class="import"/>
-  <path d="M 846 404 L 992 408" class="import"/>
-  <path d="M 992 588 L 846 718" class="export"/>
-  <path d="M 568 718 L 426 592" class="export"/>
+  <path d="M 426 404 L 568 404" class="import"/>
+  <path d="M 846 408 L 992 408" class="import"/>
+  <path d="M 992 588 L 937 588 Q 919 588 919 606 L 919 700 Q 919 718 901 718 L 846 718" class="export"/>
+  <path d="M 568 718 L 515 718 Q 497 718 497 700 L 497 610 Q 497 592 479 592 L 426 592" class="export"/>
 
   <rect x="228" y="858" width="1304" height="72" rx="16" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.6"/>
   <text x="880" y="886" text-anchor="middle" class="small">Jackson3 keeps Jackson2-compatible envelope fields while switching the mapper implementation to tools.jackson.</text>

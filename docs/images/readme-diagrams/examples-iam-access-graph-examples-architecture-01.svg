@@ -1,13 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1080" viewBox="0 0 1840 1080">
   <defs>
     <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
-      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.13"/>
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.13" />
     </filter>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="14" markerHeight="14" orient="auto" markerUnits="userSpaceOnUse">
-      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563EB"/>
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563EB" />
     </marker>
     <marker id="arrowGray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="12" markerHeight="12" orient="auto" markerUnits="userSpaceOnUse">
-      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#64748B"/>
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#64748B" />
     </marker>
   </defs>
   <style>
@@ -21,44 +21,44 @@
     .flow { stroke: #2563EB; stroke-width: 3.2; fill: none; marker-end: url(#arrow); }
     .use { stroke: #64748B; stroke-width: 2.6; fill: none; marker-end: url(#arrowGray); }
   </style>
-  <rect width="1840" height="1080" fill="#F8FAFC"/>
-  <rect x="24" y="24" width="1792" height="1032" rx="22" fill="none" stroke="#60A5FA" stroke-width="4"/>
-  <circle cx="1776" cy="64" r="15" fill="#FED7AA"/>
-  <circle cx="1736" cy="64" r="15" fill="#DCFCE7"/>
-  <circle cx="1696" cy="64" r="15" fill="#EDE9FE"/>
+  <rect width="1840" height="1080" fill="#F8FAFC" />
+  <rect x="24" y="24" width="1792" height="1032" rx="22" fill="none" stroke="#60A5FA" stroke-width="4" />
+  <circle cx="1776" cy="64" r="15" fill="#FED7AA" />
+  <circle cx="1736" cy="64" r="15" fill="#DCFCE7" />
+  <circle cx="1696" cy="64" r="15" fill="#EDE9FE" />
   <text x="72" y="82" class="title">IAM Access Graph Example Architecture</text>
   <text x="74" y="118" class="subtitle">Users, groups, roles, policies, and temporary grants become explainable access paths.</text>
-  <rect x="70" y="150" width="1700" height="790" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)"/>
+  <rect x="70" y="150" width="1700" height="790" rx="18" fill="#FFFFFF" stroke="#D6E2ED" stroke-width="2" filter="url(#softShadow)" />
 
   <text x="260" y="220" text-anchor="middle" class="section">Seeded Scenario</text>
   <text x="700" y="220" text-anchor="middle" class="section">IAM Graph Model</text>
   <text x="1150" y="220" text-anchor="middle" class="section">Access Service</text>
   <text x="1560" y="220" text-anchor="middle" class="section">Decisions</text>
 
-  <rect x="130" y="300" width="340" height="180" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2" class="card"/>
+  <rect x="130" y="300" width="340" height="180" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2" class="card" />
   <text x="170" y="348" class="label">Principal Cases</text>
   <text x="170" y="388" class="small">alice: engineering group</text>
   <text x="170" y="416" class="small">bob: readonly-role</text>
   <text x="170" y="444" class="small">carol: break-glass grant</text>
 
-  <rect x="130" y="590" width="340" height="150" rx="14" fill="#FCE7F3" stroke="#EC4899" stroke-width="2" class="card"/>
+  <rect x="130" y="590" width="340" height="150" rx="14" fill="#FCE7F3" stroke="#EC4899" stroke-width="2" class="card" />
   <text x="170" y="638" class="label">Guardrail Case</text>
   <text x="170" y="676" class="small">eve: contractor-role</text>
   <text x="170" y="704" class="small">deny-prod-delete-policy</text>
 
-  <rect x="580" y="275" width="360" height="215" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="2" class="card"/>
+  <rect x="580" y="275" width="360" height="215" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="2" class="card" />
   <text x="620" y="323" class="label">Standing RBAC Path</text>
-  <text x="620" y="363" class="small">IamUser -> IamGroup</text>
-  <text x="620" y="391" class="small">IamGroup -> IamRole</text>
-  <text x="620" y="419" class="small">IamRole -> IamPolicy</text>
-  <text x="620" y="447" class="small">Policy -> Permission -> Resource</text>
+  <text x="620" y="363" class="small">IamUser -&gt; IamGroup</text>
+  <text x="620" y="391" class="small">IamGroup -&gt; IamRole</text>
+  <text x="620" y="419" class="small">IamRole -&gt; IamPolicy</text>
+  <text x="620" y="447" class="small">Policy -&gt; Permission -&gt; Resource</text>
 
-  <rect x="580" y="590" width="360" height="150" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="2" class="card"/>
+  <rect x="580" y="590" width="360" height="150" rx="14" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="2" class="card" />
   <text x="620" y="638" class="label">Session Grant Path</text>
-  <text x="620" y="676" class="small">IamUser -> IamSessionGrant</text>
-  <text x="620" y="704" class="small">grant -> Permission -> Resource</text>
+  <text x="620" y="676" class="small">IamUser -&gt; IamSessionGrant</text>
+  <text x="620" y="704" class="small">grant -&gt; Permission -&gt; Resource</text>
 
-  <rect x="1040" y="285" width="360" height="230" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="2" class="card"/>
+  <rect x="1040" y="285" width="360" height="230" rx="14" fill="#CCFBF1" stroke="#14B8A6" stroke-width="2" class="card" />
   <text x="1080" y="333" class="label">IamAccessGraphService</text>
   <text x="1080" y="373" class="small">explainAccess(user, resource, action)</text>
   <text x="1080" y="401" class="small">deny path wins first</text>
@@ -66,35 +66,35 @@
   <text x="1080" y="457" class="small">riskyPrivilegeChains(user)</text>
   <text x="1080" y="485" class="small">excessivePermissions(...)</text>
 
-  <rect x="1040" y="625" width="360" height="120" rx="14" fill="#F8FAFC" stroke="#94A3B8" stroke-width="2" class="card"/>
+  <rect x="1040" y="625" width="360" height="120" rx="14" fill="#F8FAFC" stroke="#94A3B8" stroke-width="2" class="card" />
   <text x="1080" y="673" class="label">Suspend Service</text>
   <text x="1080" y="711" class="small">same traversal contract</text>
   <text x="1080" y="739" class="small">for async callers</text>
 
-  <rect x="1450" y="285" width="280" height="145" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="2" class="card"/>
+  <rect x="1450" y="285" width="280" height="145" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="2" class="card" />
   <text x="1485" y="332" class="label">Allowed</text>
   <text x="1485" y="370" class="small">bob reads dashboard</text>
   <text x="1485" y="398" class="small">alice deploys staging</text>
 
-  <rect x="1450" y="500" width="280" height="145" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="2" class="card"/>
+  <rect x="1450" y="500" width="280" height="145" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="2" class="card" />
   <text x="1485" y="547" class="label">Denied / Missing</text>
   <text x="1485" y="585" class="small">eve blocked by deny</text>
   <text x="1485" y="613" class="small">bob has no prod delete</text>
 
-  <rect x="1450" y="705" width="280" height="120" rx="14" fill="#FFEDD5" stroke="#F97316" stroke-width="2" class="card"/>
+  <rect x="1450" y="705" width="280" height="120" rx="14" fill="#FFEDD5" stroke="#F97316" stroke-width="2" class="card" />
   <text x="1485" y="752" class="label">Review Queue</text>
   <text x="1485" y="790" class="small">alice nested admin chain</text>
 
-  <path d="M 470 390 C 520 390 530 385 580 385" class="flow"/>
-  <path d="M 470 665 C 520 665 530 665 580 665" class="flow"/>
-  <path d="M 940 390 C 985 390 995 395 1040 395" class="flow"/>
-  <path d="M 940 665 C 985 665 995 685 1040 685" class="use"/>
-  <path d="M 1400 385 C 1425 385 1435 355 1450 355" class="flow"/>
-  <path d="M 1400 425 C 1425 465 1435 565 1450 575" class="flow"/>
-  <path d="M 1400 485 C 1425 565 1435 765 1450 765" class="flow"/>
-  <path d="M 1220 515 L 1220 625" class="use"/>
+  <path d="M 470 385 L 580 385" class="flow" />
+  <path d="M 470 665 L 580 665" class="flow" />
+  <path d="M 940 395 L 1040 395" class="flow" />
+  <path d="M 940 685 L 1040 685" class="use" />
+  <path d="M 1400 355 L 1450 355" class="flow" />
+  <path d="M 1400 425 L 1407 425 Q 1425 425 1425 443 L 1425 557 Q 1425 575 1443 575 L 1450 575" class="flow" />
+  <path d="M 1400 485 L 1407 485 Q 1425 485 1425 503 L 1425 747 Q 1425 765 1443 765 L 1450 765" class="flow" />
+  <path d="M 1220 515 L 1220 625" class="use" />
 
-  <rect x="300" y="850" width="1240" height="52" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"/>
+  <rect x="300" y="850" width="1240" height="52" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2" />
   <text x="920" y="883" text-anchor="middle" class="small">The diagram separates standing RBAC, temporary grants, deny policies, and review-only privilege-chain findings.</text>
   <text x="920" y="1032" text-anchor="middle" class="tiny">https://github.com/bluetape4k/bluetape4k-graph | module: iam-access-graph-examples / architecture</text>
 </svg>

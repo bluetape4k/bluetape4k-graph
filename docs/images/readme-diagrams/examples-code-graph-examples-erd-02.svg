@@ -3,7 +3,7 @@
     <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
       <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.13"/>
     </filter>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+    <marker markerUnits="userSpaceOnUse" id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
       <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
     </marker>
   </defs>
@@ -16,7 +16,7 @@
     .small { font-family: 'Comic Mono', monospace; font-size: 17px; fill: #374151; }
     .tiny { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #4B5563; }
     .card { filter: url(#softShadow); }
-    .line { stroke: #2563EB; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+    .line { stroke: #2563EB; stroke-width: 3; fill: none; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow); }
     .rel { font-family: 'Comic Mono', monospace; font-size: 15px; fill: #1E40AF; }
   </style>
 
@@ -59,19 +59,19 @@
   <text x="632" y="356" text-anchor="middle" class="rel" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">BELONGS_TO</text>
   <text x="632" y="356" text-anchor="middle" class="rel">BELONGS_TO</text>
 
-  <path d="M 1495 510 L 1495 670 L 1275 670 L 1275 510" class="line"/>
+  <path d="M 1495 510 L 1495 652 Q 1495 670 1477 670 L 1293 670 Q 1275 670 1275 652 L 1275 510" class="line"/>
   <text x="1385" y="652" text-anchor="middle" class="rel" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">CALLS</text>
   <text x="1385" y="652" text-anchor="middle" class="rel">CALLS</text>
 
-  <path d="M 345 510 L 345 675 L 920 675 L 920 490" class="line"/>
+  <path d="M 345 510 L 345 657 Q 345 675 363 675 L 902 675 Q 920 675 920 657 L 920 490" class="line"/>
   <text x="630" y="655" text-anchor="middle" class="rel" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">DEPENDS_ON</text>
   <text x="630" y="655" text-anchor="middle" class="rel">DEPENDS_ON</text>
 
-  <path d="M 920 490 L 920 600 L 700 600 L 700 490" class="line"/>
+  <path d="M 920 490 L 920 582 Q 920 600 902 600 L 718 600 Q 700 600 700 582 L 700 490" class="line"/>
   <text x="810" y="582" text-anchor="middle" class="rel" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">EXTENDS</text>
   <text x="810" y="582" text-anchor="middle" class="rel">EXTENDS</text>
 
-  <path d="M 1005 490 L 1005 620 L 1140 620 L 1140 490" class="line"/>
+  <path d="M 1005 490 L 1005 602 Q 1005 620 1023 620 L 1122 620 Q 1140 620 1140 602 L 1140 490" class="line"/>
   <text x="1075" y="602" text-anchor="middle" class="rel" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round">IMPLEMENTS</text>
   <text x="1075" y="602" text-anchor="middle" class="rel">IMPLEMENTS</text>
 

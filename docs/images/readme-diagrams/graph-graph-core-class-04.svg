@@ -10,6 +10,7 @@
   </defs>
 
   <style>
+    marker path, marker polygon, marker polyline { stroke-dasharray: none !important; }
     .title { font-family: 'Architects Daughter', cursive; font-size: 50px; fill: #0F172A; }
     .subtitle { font-family: 'Comic Mono', monospace; font-size: 19px; fill: #475569; }
     .section { font-family: 'Architects Daughter', cursive; font-size: 27px; fill: #334155; }

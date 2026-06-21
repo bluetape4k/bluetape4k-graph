@@ -55,8 +55,9 @@
   <text x="566" y="262" class="section">2. Neo4j runtime</text>
   <text x="568" y="294" class="small">One Bolt connection is created for the trial.</text>
 
-  <rect x="570" y="328" width="298" height="112" rx="16" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="1.8" class="card"/>
-  <text x="719" y="365" text-anchor="middle" class="cardTitle">Neo4j container</text>
+  <rect x="570" y="276" width="298" height="164" rx="16" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="1.8" class="card"/>
+  <image data-bluetape4k-icon="neo4j" href="data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjNDU4MUMzIiByb2xlPSJpbWciIHZpZXdCb3g9IjAgMCAyNCAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGl0bGU+TmVvNGo8L3RpdGxlPjxwYXRoIGQ9Ik05LjYyOSAxMy4yMjdjLS41OTMgMC0xLjEzOS4yLTEuNTguNTMzbC0yLjg5Mi0xLjk3NmEyLjYxIDIuNjEgMCAwIDAgLjEwMS0uNzExIDIuNjMzIDIuNjMzIDAgMCAwLTIuNjI5LTIuNjI5QTIuNjMyIDIuNjMyIDAgMCAwIDAgMTEuMDczYTIuNjMyIDIuNjMyIDAgMCAwIDIuNjI5IDIuNjI5Yy41OTMgMCAxLjEzOS0uMiAxLjU3OS0uNTMzTDcuMSAxNS4xNDVjLS4wNjMuMjI2LS4xLjQ2NS0uMS43MTEgMCAuMjQ3LjAzNy40ODQuMS43MTFsLTIuODkyIDEuOTc2YTIuNjA4IDIuNjA4IDAgMCAwLTEuNTc5LS41MzNBMi42MzIgMi42MzIgMCAwIDAgMCAyMC42MzlhMi42MzIgMi42MzIgMCAwIDAgMi42MjkgMi42MjkgMi42MzIgMi42MzIgMCAwIDAgMi42MjktMi42MjljMC0uMjQ3LS4wMzctLjQ4NS0uMTAxLS43MTFsMi44OTItMS45NzZjLjQ0MS4zMzMuOTg3LjUzMyAxLjU4LjUzM2EyLjYzMyAyLjYzMyAwIDAgMCAyLjYyOS0yLjYyOWMwLTEuNDUtMS4xOC0yLjYyOS0yLjYyOS0yLjYyOVpNMTYuMTEyLjczMmMtNC43MiAwLTcuODg4IDIuNzQ4LTcuODg4IDguMDgydjMuODAyYTMuNTI1IDMuNTI1IDAgMCAxIDMuMDcxLjAwOHYtMy44MWMwLTMuNDU5IDEuOTA3LTUuMjM3IDQuODE3LTUuMjM3czQuODE3IDEuNzc4IDQuODE3IDUuMjM3djguMzA5SDI0VjguODE0QzI0IDMuNDQ4IDIwLjgzMi43MzIgMTYuMTEyLjczMloiLz48L3N2Zz4=" x="690" y="292" width="58" height="42" preserveAspectRatio="xMidYMid meet"/>
+      <text x="719" y="365" text-anchor="middle" class="cardTitle">Neo4j container</text>
   <text x="719" y="395" text-anchor="middle" class="body">Testcontainers singleton</text>
   <text x="719" y="418" text-anchor="middle" class="small">Neo4jServer.Launcher.neo4j</text>
 
@@ -66,7 +67,7 @@
   <text x="719" y="586" text-anchor="middle" class="small">Neo4jGraphOperations(driver)</text>
 
   <rect x="570" y="664" width="298" height="72" rx="16" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.6"/>
-  <text x="719" y="695" text-anchor="middle" class="cardTitle">neo4j database</text>
+      <text x="719" y="695" text-anchor="middle" class="cardTitle">neo4j database</text>
   <text x="719" y="721" text-anchor="middle" class="small">4 Person vertices, 4 edges</text>
 
   <rect x="982" y="212" width="336" height="536" rx="18" class="lane"/>
@@ -99,14 +100,14 @@
   <text x="1510" y="607" text-anchor="middle" class="cardTitle">README chart</text>
   <text x="1510" y="637" text-anchor="middle" class="small">cross-backend context</text>
 
-  <path d="M 424 398 L 570 384" class="flow"/>
-  <path d="M 424 586 C 476 574 516 552 570 552" class="flow"/>
+  <path d="M 424 384 L 570 384" class="flow"/>
+  <path d="M 424 552 L 570 552" class="flow"/>
   <path d="M 719 440 L 719 496" class="lifecycle"/>
   <path d="M 719 608 L 719 664" class="lifecycle"/>
-  <path d="M 868 552 L 1018 382" class="measure"/>
-  <path d="M 868 700 C 930 650 972 548 1018 548" class="measure"/>
-  <path d="M 1282 382 C 1340 390 1376 418 1422 434" class="measure"/>
-  <path d="M 1282 698 C 1344 676 1376 638 1422 624" class="measure"/>
+  <path d="M 868 552 L 925 552 Q 943 552 943 534 L 943 400 Q 943 382 961 382 L 1018 382" class="measure"/>
+  <path d="M 868 700 L 943 700 Q 961 700 961 682 L 961 566 Q 961 548 979 548 L 1018 548" class="measure"/>
+  <path d="M 1282 382 L 1334 382 Q 1352 382 1352 400 L 1352 416 Q 1352 434 1370 434 L 1422 434" class="measure"/>
+  <path d="M 1282 698 L 1334 698 Q 1352 698 1352 680 L 1352 642 Q 1352 624 1370 624 L 1422 624" class="measure"/>
 
   <rect x="316" y="800" width="1128" height="48" rx="14" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
   <text x="880" y="831" text-anchor="middle" class="small">This module is Neo4j-specific; use graph-benchmark for cross-backend adoption comparisons.</text>

@@ -14,6 +14,7 @@
   </defs>
 
   <style>
+    marker path, marker polygon, marker polyline { stroke-dasharray: none !important; }
     .title { font-family: 'Architects Daughter', cursive; font-size: 52px; fill: #0F172A; }
     .subtitle { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #475569; }
     .className { font-family: 'Architects Daughter', cursive; font-size: 29px; fill: #111827; }
@@ -30,8 +31,8 @@
     .green { fill: #DCFCE7; stroke: #22C55E; stroke-width: 1.8; }
     .amber { fill: #FEF3C7; stroke: #EAB308; stroke-width: 1.8; }
     .gray { fill: #F8FAFC; stroke: #94A3B8; stroke-width: 1.7; }
-    .realize { fill: none; stroke: #64748B; stroke-width: 1.9; stroke-dasharray: 8 7; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#hollowTriangle); }
-    .use { fill: none; stroke: #64748B; stroke-width: 1.9; stroke-dasharray: 7 7; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#openArrow); }
+    .realize { fill: none; stroke: #64748B; stroke-width: 1.9; stroke-dasharray: 8 7; stroke-linecap: round; stroke-linejoin: round;  }
+    .use { fill: none; stroke: #64748B; stroke-width: 1.9; stroke-dasharray: 7 7; stroke-linecap: round; stroke-linejoin: round;  }
     .assoc { fill: none; stroke: #64748B; stroke-width: 2.0; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#openArrow); }
   </style>
 
@@ -103,24 +104,39 @@
   <line x1="1290" y1="872" x2="1530" y2="872" stroke="#CBD5E1" stroke-width="1.3"/>
   <text x="1292" y="892" class="small">Dijkstra, A*, BFS/DFS, PageRank</text>
 
-  <path d="M 660 444 L 270 342" class="realize"/>
-  <path d="M 760 444 L 650 342" class="realize"/>
-  <path d="M 920 444 L 1030 342" class="realize"/>
-  <path d="M 1020 444 L 1410 342" class="realize"/>
+  <path d="M 660 444 L 660 411 Q 660 393 642 393 L 288 393 Q 270 393 270 375 L 270 342" class="realize" style="marker-end:none"/>
+  <polygon points="276,357 270,342 264,357" fill="#FFFFFF" stroke="#64748B" stroke-width="1.7" stroke-linejoin="round" stroke-dasharray="none" style="stroke-dasharray:none!important" data-direct-solid-head="true"/>
+  <path d="M 760 444 L 760 411 Q 760 393 742 393 L 668 393 Q 650 393 650 375 L 650 342" class="realize" style="marker-end:none"/>
+  <polygon points="656,357 650,342 644,357" fill="#FFFFFF" stroke="#64748B" stroke-width="1.7" stroke-linejoin="round" stroke-dasharray="none" style="stroke-dasharray:none!important" data-direct-solid-head="true"/>
+  <path d="M 920 444 L 920 411 Q 920 393 938 393 L 1012 393 Q 1030 393 1030 375 L 1030 342" class="realize" style="marker-end:none"/>
+  <polygon points="1036,357 1030,342 1024,357" fill="#FFFFFF" stroke="#64748B" stroke-width="1.7" stroke-linejoin="round" stroke-dasharray="none" style="stroke-dasharray:none!important" data-direct-solid-head="true"/>
+  <path d="M 1020 444 L 1020 411 Q 1020 393 1038 393 L 1392 393 Q 1410 393 1410 375 L 1410 342" class="realize" style="marker-end:none"/>
+  <polygon points="1416,357 1410,342 1404,357" fill="#FFFFFF" stroke="#64748B" stroke-width="1.7" stroke-linejoin="round" stroke-dasharray="none" style="stroke-dasharray:none!important" data-direct-solid-head="true"/>
 
-  <path d="M 665 698 L 270 780" class="use"/>
-  <path d="M 780 698 L 650 780" class="use"/>
-  <path d="M 900 698 L 1030 780" class="assoc"/>
-  <path d="M 1016 698 L 1410 780" class="use"/>
+  <path d="M 665 698 L 665 721 Q 665 739 647 739 L 288 739 Q 270 739 270 757 L 270 780" class="use" style="marker-end:none"/>
+  <polyline points="265,769 270,780 275,769" fill="none" stroke="#64748B" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="none" style="stroke-dasharray:none!important" data-direct-solid-head="true"/>
+  <path d="M 780 698 L 780 721 Q 780 739 762 739 L 668 739 Q 650 739 650 757 L 650 780" class="use" style="marker-end:none"/>
+  <polyline points="645,769 650,780 655,769" fill="none" stroke="#64748B" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="none" style="stroke-dasharray:none!important" data-direct-solid-head="true"/>
+  <path d="M 900 698 L 900 721 Q 900 739 918 739 L 1012 739 Q 1030 739 1030 757 L 1030 780" class="assoc"/>
+  <path d="M 1016 698 L 1016 721 Q 1016 739 1034 739 L 1392 739 Q 1410 739 1410 757 L 1410 780" class="use" style="marker-end:none"/>
+  <polyline points="1405,769 1410,780 1415,769" fill="none" stroke="#64748B" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="none" style="stroke-dasharray:none!important" data-direct-solid-head="true"/>
 
+  <rect x="374" y="385" width="80" height="24" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.1"/>
   <text x="414" y="402" text-anchor="middle" class="label">realizes</text>
+  <rect x="582" y="379" width="80" height="24" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.1"/>
   <text x="622" y="396" text-anchor="middle" class="label">realizes</text>
+  <rect x="1018" y="379" width="80" height="24" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.1"/>
   <text x="1058" y="396" text-anchor="middle" class="label">realizes</text>
+  <rect x="1224" y="385" width="80" height="24" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.1"/>
   <text x="1264" y="402" text-anchor="middle" class="label">realizes</text>
 
+  <rect x="400" y="727" width="88" height="24" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.1"/>
   <text x="444" y="744" text-anchor="middle" class="label">builds SQL</text>
+  <rect x="640" y="727" width="96" height="24" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.1"/>
   <text x="688" y="744" text-anchor="middle" class="label">parses rows</text>
+  <rect x="928" y="727" width="72" height="24" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.1"/>
   <text x="964" y="744" text-anchor="middle" class="label">returns</text>
+  <rect x="1168" y="727" width="88" height="24" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.1"/>
   <text x="1212" y="744" text-anchor="middle" class="label">fallbacks</text>
 
   <rect x="180" y="976" width="1320" height="46" rx="14" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.3"/>

@@ -14,6 +14,7 @@
   </defs>
 
   <style>
+    marker path, marker polygon, marker polyline { stroke-dasharray: none !important; }
     .title { font-family: 'Architects Daughter', cursive; font-size: 50px; fill: #0F172A; }
     .subtitle { font-family: 'Comic Mono', monospace; font-size: 18px; fill: #475569; }
     .className { font-family: 'Architects Daughter', cursive; font-size: 28px; fill: #111827; }
@@ -24,8 +25,8 @@
     .label { font-family: 'Comic Mono', monospace; font-size: 13px; fill: #475569; font-weight: 700; }
     .panel { fill: #FFFFFF; stroke: #CBD5E1; stroke-width: 1.5; }
     .card { filter: url(#shadow); }
-    .realize { fill: none; stroke: #64748B; stroke-width: 1.9; stroke-dasharray: 8 7; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#hollowTriangle); }
-    .use { fill: none; stroke: #64748B; stroke-width: 1.9; stroke-dasharray: 7 7; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#openArrow); }
+    .realize { fill: none; stroke: #64748B; stroke-width: 1.9; stroke-dasharray: 8 7; stroke-linecap: round; stroke-linejoin: round;  }
+    .use { fill: none; stroke: #64748B; stroke-width: 1.9; stroke-dasharray: 7 7; stroke-linecap: round; stroke-linejoin: round;  }
     .assoc { fill: none; stroke: #64748B; stroke-width: 2.0; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#openArrow); }
   </style>
 
@@ -102,15 +103,22 @@
   <text x="1394" y="890" text-anchor="middle" class="classNameSmall">TransactionScope</text>
   <text x="1272" y="916" class="small">wraps Transaction</text>
 
-  <path d="M 666 404 L 296 356" class="realize"/>
-  <path d="M 752 404 L 642 356" class="realize"/>
-  <path d="M 928 404 L 1018 356" class="realize"/>
-  <path d="M 1014 404 L 1394 356" class="realize"/>
+  <path d="M 666 404 L 666 398 Q 666 380 648 380 L 314 380 Q 296 380 296 362 L 296 356" class="realize" style="marker-end:none"/>
+  <polygon points="302,371 296,356 290,371" fill="#FFFFFF" stroke="#64748B" stroke-width="1.7" stroke-linejoin="round" stroke-dasharray="none" style="stroke-dasharray:none!important" data-direct-solid-head="true"/>
+  <path d="M 752 404 L 752 398 Q 752 380 734 380 L 660 380 Q 642 380 642 362 L 642 356" class="realize" style="marker-end:none"/>
+  <polygon points="648,371 642,356 636,371" fill="#FFFFFF" stroke="#64748B" stroke-width="1.7" stroke-linejoin="round" stroke-dasharray="none" style="stroke-dasharray:none!important" data-direct-solid-head="true"/>
+  <path d="M 928 404 L 928 398 Q 928 380 946 380 L 1000 380 Q 1018 380 1018 362 L 1018 356" class="realize" style="marker-end:none"/>
+  <polygon points="1024,371 1018,356 1012,371" fill="#FFFFFF" stroke="#64748B" stroke-width="1.7" stroke-linejoin="round" stroke-dasharray="none" style="stroke-dasharray:none!important" data-direct-solid-head="true"/>
+  <path d="M 1014 404 L 1014 398 Q 1014 380 1032 380 L 1376 380 Q 1394 380 1394 362 L 1394 356" class="realize" style="marker-end:none"/>
+  <polygon points="1400,371 1394,356 1388,371" fill="#FFFFFF" stroke="#64748B" stroke-width="1.7" stroke-linejoin="round" stroke-dasharray="none" style="stroke-dasharray:none!important" data-direct-solid-head="true"/>
 
-  <path d="M 640 690 L 296 790" class="assoc"/>
-  <path d="M 756 690 L 642 790" class="use"/>
-  <path d="M 930 690 L 1018 790" class="use"/>
-  <path d="M 1042 690 L 1394 790" class="use"/>
+  <path d="M 640 690 L 640 722 Q 640 740 622 740 L 314 740 Q 296 740 296 758 L 296 790" class="assoc"/>
+  <path d="M 756 690 L 756 722 Q 756 740 738 740 L 660 740 Q 642 740 642 758 L 642 790" class="use" style="marker-end:none"/>
+  <polyline points="637,779 642,790 647,779" fill="none" stroke="#64748B" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="none" style="stroke-dasharray:none!important" data-direct-solid-head="true"/>
+  <path d="M 930 690 L 930 722 Q 930 740 948 740 L 1000 740 Q 1018 740 1018 758 L 1018 790" class="use" style="marker-end:none"/>
+  <polyline points="1013,779 1018,790 1023,779" fill="none" stroke="#64748B" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="none" style="stroke-dasharray:none!important" data-direct-solid-head="true"/>
+  <path d="M 1042 690 L 1042 722 Q 1042 740 1060 740 L 1376 740 Q 1394 740 1394 758 L 1394 790" class="use" style="marker-end:none"/>
+  <polyline points="1389,779 1394,790 1399,779" fill="none" stroke="#64748B" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="none" style="stroke-dasharray:none!important" data-direct-solid-head="true"/>
 
   <rect x="402" y="738" width="116" height="28" rx="9" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
   <text x="460" y="757" text-anchor="middle" class="label">has session</text>
