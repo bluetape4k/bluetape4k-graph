@@ -166,7 +166,7 @@ suspend fun allPaths(
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation(project(":graph-neo4j"))
+    implementation("io.github.bluetape4k.graph:bluetape4k-graph-neo4j:${bluetape4kVersion}")
     implementation(Libs.neo4j_java_driver)
     implementation(Libs.kotlinx_coroutines_reactive)
 }

@@ -111,11 +111,11 @@ TinkerGraph 테스트는 메모리에서 실행됩니다. Neo4j, Memgraph, Apach
 ## 의존성
 
 ```kotlin
-implementation(project(":bluetape4k-graph-core"))
-implementation(project(":bluetape4k-graph-neo4j"))
-implementation(project(":bluetape4k-graph-memgraph"))
-implementation(project(":bluetape4k-graph-age"))
-implementation(project(":bluetape4k-graph-falkordb"))
-implementation(project(":bluetape4k-graph-tinkerpop"))
-implementation(project(":bluetape4k-graph-io-csv"))
+implementation("io.github.bluetape4k.graph:bluetape4k-graph-core:${bluetape4kVersion}")
+implementation("io.github.bluetape4k.graph:bluetape4k-graph-neo4j:${bluetape4kVersion}")
+implementation("io.github.bluetape4k.graph:bluetape4k-graph-memgraph:${bluetape4kVersion}")
+implementation("io.github.bluetape4k.graph:bluetape4k-graph-age:${bluetape4kVersion}")
+implementation("io.github.bluetape4k.graph:bluetape4k-graph-falkordb:${bluetape4kVersion}")
+implementation("io.github.bluetape4k.graph:bluetape4k-graph-tinkerpop:${bluetape4kVersion}")
+implementation("io.github.bluetape4k.graph:bluetape4k-graph-io-csv:${bluetape4kVersion}")
 ```

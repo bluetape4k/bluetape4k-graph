@@ -50,7 +50,7 @@
 
 ```kotlin
 dependencies {
-    api(project(":graph-core"))
+    api("io.github.bluetape4k.graph:bluetape4k-graph-core:${bluetape4kVersion}")
     api(Libs.exposed_core)
     api(Libs.exposed_jdbc)
     api(Libs.postgresql_driver)
