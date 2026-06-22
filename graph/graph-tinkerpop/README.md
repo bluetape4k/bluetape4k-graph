@@ -28,7 +28,7 @@ It runs standalone without an external server, making it well suited for testing
 
 ```kotlin
 dependencies {
-    api(project(":graph-core"))
+    api("io.github.bluetape4k.graph:bluetape4k-graph-core:${bluetape4kVersion}")
     api(Libs.tinkerpop_gremlin_core)
     api(Libs.tinkergraph_gremlin)
 }

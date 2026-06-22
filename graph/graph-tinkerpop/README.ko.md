@@ -28,7 +28,7 @@ TinkerGraph(in-memory JVM 그래프 DB)를 사용하여 `graph-core` 인터페�
 
 ```kotlin
 dependencies {
-    api(project(":graph-core"))
+    api("io.github.bluetape4k.graph:bluetape4k-graph-core:${bluetape4kVersion}")
     api(Libs.tinkerpop_gremlin_core)
     api(Libs.tinkergraph_gremlin)
 }

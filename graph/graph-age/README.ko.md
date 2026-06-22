@@ -73,7 +73,7 @@ Apache AGE (PostgreSQL 그래프 확장)를 기반으로 한 `GraphOperations` �
 ```kotlin
 // build.gradle.kts
 dependencies {
-    api(project(":graph-core"))
+    api("io.github.bluetape4k.graph:bluetape4k-graph-core:${bluetape4kVersion}")
     api(Libs.exposed_core)
     api(Libs.exposed_dao)
     api(Libs.exposed_jdbc)
@@ -525,7 +525,7 @@ connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"${'$'}user\", p
 
 ```kotlin
 // 필수
-api(project(":graph-core"))
+api("io.github.bluetape4k.graph:bluetape4k-graph-core:${bluetape4kVersion}")
 api(Libs.exposed_core)
 api(Libs.exposed_jdbc)
 api(Libs.postgresql_driver)
