@@ -396,7 +396,7 @@ subprojects {
             dependency("jakarta.xml.bind:jakarta.xml.bind-api:${bt4kVersion("jakarta-xml-bind")}")
 
             // Jackson
-            dependency(rootLibs.jackson.annotations.get().toString())
+            dependency("com.fasterxml.jackson.core:jackson-annotations:${bt4kVersion("jackson-annotations")}")
             dependency(rootLibs.jackson.core.get().toString())
             dependency(rootLibs.jackson3.core.get().toString())
 
