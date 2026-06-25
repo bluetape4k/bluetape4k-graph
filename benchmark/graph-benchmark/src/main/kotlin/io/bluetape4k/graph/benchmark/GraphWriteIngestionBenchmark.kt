@@ -32,8 +32,6 @@ import org.openjdk.jmh.annotations.Setup
 import org.openjdk.jmh.annotations.State
 import org.openjdk.jmh.annotations.TearDown
 import org.openjdk.jmh.annotations.Warmup
-import redis.clients.jedis.JedisPool
-import redis.clients.jedis.JedisPoolConfig
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 
@@ -173,14 +171,7 @@ open class GraphWriteIngestionState {
                     start()
                 }
                 falkorServer = server
-                val driver = DriverImpl(
-                    JedisPool(
-                        JedisPoolConfig().apply { maxTotal = 4 },
-                        server.host,
-                        server.port,
-                        60_000,
-                    ),
-                )
+                val driver = DriverImpl(server.host, server.port)
                 falkorDriver = driver
                 FalkorDBGraphOperations(driver, GRAPH_NAME)
             }

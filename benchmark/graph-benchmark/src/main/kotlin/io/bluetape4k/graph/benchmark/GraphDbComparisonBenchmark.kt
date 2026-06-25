@@ -34,8 +34,6 @@ import org.openjdk.jmh.annotations.Setup
 import org.openjdk.jmh.annotations.State
 import org.openjdk.jmh.annotations.TearDown
 import org.openjdk.jmh.annotations.Warmup
-import redis.clients.jedis.JedisPool
-import redis.clients.jedis.JedisPoolConfig
 import java.util.concurrent.TimeUnit
 
 /**
@@ -140,14 +138,7 @@ open class GraphDbComparisonState {
                     start()
                 }
                 falkorServer = server
-                falkorDriver = DriverImpl(
-                    JedisPool(
-                        JedisPoolConfig().apply { maxTotal = 4 },
-                        server.host,
-                        server.port,
-                        60_000,
-                    ),
-                )
+                falkorDriver = DriverImpl(server.host, server.port)
                 FalkorDBGraphOperations(falkorDriver!!, GRAPH_NAME)
             }
             else -> error("Unsupported graph benchmark backend: $backend")

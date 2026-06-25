@@ -25,11 +25,6 @@ fun resolveBluetape4kDependenciesCatalogFile(): File {
         ?.let(::file)
         ?.let { return it }
 
-    listOf(
-        "../bluetape4k-dependencies/gradle/libs.versions.toml",
-        "bluetape4k-dependencies/gradle/libs.versions.toml",
-    ).map(::file).firstOrNull { it.isFile }?.let { return it }
-
     val catalogFile = file(".gradle/bluetape4k-dependencies/$bluetape4kDependenciesCatalogCacheKey/libs.versions.toml")
     if (!catalogFile.isFile) {
         catalogFile.parentFile.mkdirs()
@@ -46,7 +41,7 @@ val bluetape4kDependenciesCatalogFile = resolveBluetape4kDependenciesCatalogFile
 
 require(bluetape4kDependenciesCatalogFile.isFile) {
     "bluetape4k-dependencies catalog not found: $bluetape4kDependenciesCatalogFile. " +
-        "Checkout bluetape4k-dependencies at the release-train tag or set bluetape4kDependenciesCatalogPath."
+        "Verify bluetape4kDependenciesCatalogRef or set bluetape4kDependenciesCatalogPath."
 }
 
 dependencyResolutionManagement {
