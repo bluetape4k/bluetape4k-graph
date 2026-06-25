@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Opened the `0.6.0` development line after the `0.5.0` stable release.
 - Aligned the local `bluetape4k-bom` reference to `1.11.0-SNAPSHOT`.
+- Documented backend-native graph-io bulk loader feasibility and deferred
+  backend-specific fast paths from the `0.6.0` implementation lane
+  ([#234](https://github.com/bluetape4k/bluetape4k-graph/issues/234)).
 
 ## [0.5.0] - 2026-06-01
 
