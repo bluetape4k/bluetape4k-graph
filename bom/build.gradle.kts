@@ -26,7 +26,7 @@ dependencies {
     constraints {
         rootProject.subprojects {
             if (name != "bluetape4k-graph-bom" && !isNonPublishedModule()) {
-                api(this)
+                api(project(mapOf("path" to path)))
             }
         }
     }

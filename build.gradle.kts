@@ -97,7 +97,7 @@ fun Project.isNonPublishedModule(): Boolean {
 
 val detektBaselineFile = layout.projectDirectory.file("config/detekt/baseline.xml")
 
-val detektProjectBaseline by tasks.registering(DetektCreateBaselineTask::class) {
+val detektProjectBaseline = tasks.register<DetektCreateBaselineTask>("detektProjectBaseline") {
     description = "Regenerates the shared Detekt baseline for existing findings."
     ignoreFailures.set(true)
     parallel.set(true)
@@ -443,44 +443,35 @@ subprojects {
     }
 
     dependencies {
-        val api by configurations
-        val testApi by configurations
-        val implementation by configurations
-        val testImplementation by configurations
+        add("compileOnly", platform(rootLibs.bluetape4k.bom))
+        add("compileOnly", platform(rootLibs.jackson.bom))
+        add("compileOnly", platform(rootLibs.kotlinx.coroutines.bom))
 
-        val compileOnly by configurations
-        val testCompileOnly by configurations
-        val testRuntimeOnly by configurations
+        add("implementation", rootLibs.kotlin.stdlib)
+        add("implementation", rootLibs.kotlin.reflect)
+        add("testImplementation", rootLibs.kotlin.test.api)
+        add("testImplementation", rootLibs.kotlin.test.junit5)
 
-        compileOnly(platform(rootLibs.bluetape4k.bom))
-        compileOnly(platform(rootLibs.jackson.bom))
-        compileOnly(platform(rootLibs.kotlinx.coroutines.bom))
+        add("implementation", rootLibs.kotlinx.coroutines.core.lib)
+        add("implementation", rootLibs.kotlinx.atomicfu)
 
-        implementation(rootLibs.kotlin.stdlib)
-        implementation(rootLibs.kotlin.reflect)
-        testImplementation(rootLibs.kotlin.test.api)
-        testImplementation(rootLibs.kotlin.test.junit5)
-
-        implementation(rootLibs.kotlinx.coroutines.core.lib)
-        implementation(rootLibs.kotlinx.atomicfu)
-
-        implementation(rootLibs.slf4j.api)
-        implementation(rootLibs.bluetape4k.logging)
-        implementation(rootLibs.logback.classic)
-        testImplementation(rootLibs.jcl.over.slf4j)
-        testImplementation(rootLibs.jul.to.slf4j)
-        testImplementation(rootLibs.log4j.over.slf4j)
+        add("implementation", rootLibs.slf4j.api)
+        add("implementation", rootLibs.bluetape4k.logging)
+        add("implementation", rootLibs.logback.classic)
+        add("testImplementation", rootLibs.jcl.over.slf4j)
+        add("testImplementation", rootLibs.jul.to.slf4j)
+        add("testImplementation", rootLibs.log4j.over.slf4j)
 
         // JUnit 5
-        testImplementation(rootLibs.bluetape4k.junit5)
-        testImplementation(rootLibs.junit.jupiter.all)
-        testRuntimeOnly(rootLibs.junit.platform.engine)
+        add("testImplementation", rootLibs.bluetape4k.junit5)
+        add("testImplementation", rootLibs.junit.jupiter.all)
+        add("testRuntimeOnly", rootLibs.junit.platform.engine)
 
-        testImplementation(rootLibs.mockk)
-        testImplementation(rootLibs.awaitility.kotlin)
+        add("testImplementation", rootLibs.mockk)
+        add("testImplementation", rootLibs.awaitility.kotlin)
 
-        testImplementation(rootLibs.datafaker)
-        testImplementation(rootLibs.random.beans)
+        add("testImplementation", rootLibs.datafaker)
+        add("testImplementation", rootLibs.random.beans)
     }
 
     /*
@@ -497,12 +488,12 @@ subprojects {
                 create<MavenPublication>("BluetapeGraph") {
                     val binaryJar = components["java"]
 
-                    val sourcesJar by tasks.registering(Jar::class) {
+                    val sourcesJar = tasks.register<Jar>("sourcesJar") {
                         archiveClassifier.set("sources")
                         from(sourceSets["main"].allSource)
                     }
 
-                    val javadocJar by tasks.registering(Jar::class) {
+                    val javadocJar = tasks.register<Jar>("javadocJar") {
                         archiveClassifier.set("javadoc")
                         val javadocDir = layout.buildDirectory.asFile.get().resolve("javadoc")
                         from(javadocDir.path)
