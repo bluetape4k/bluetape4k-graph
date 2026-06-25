@@ -11,7 +11,7 @@ kotlinx-atomicfu = "0.32.1"  # https://mvnrepository.com/artifact/org.jetbrains.
 kotlinx-benchmark = "0.4.17"  # https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-benchmark-runtime
 ktor = "3.5.0"  # https://mvnrepository.com/artifact/io.ktor/ktor-bom
 
-spring-boot4 = "4.0.6"  # https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-dependencies
+spring-boot4 = "4.1.0"  # https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-dependencies
 
 neo4j-java-driver = "6.1.0"  # https://mvnrepository.com/artifact/org.neo4j.driver/neo4j-java-driver
 neo4j-bolt-connection = "11.0.2"  # https://mvnrepository.com/artifact/org.neo4j.bolt/neo4j-bolt-connection-bom
@@ -22,8 +22,8 @@ okio = "3.17.0"  # https://mvnrepository.com/artifact/com.squareup.okio/okio-fak
 okhttp3 = "5.3.2"  # https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp-bom
 
 jackson-annotations = "2.21"  # https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations
-jackson = "2.21.4"  # https://mvnrepository.com/artifact/com.fasterxml.jackson/jackson-bom
-jackson3 = "3.1.4"  # https://mvnrepository.com/artifact/tools.jackson/jackson-bom
+jackson = "2.22.0"  # https://mvnrepository.com/artifact/com.fasterxml.jackson/jackson-bom
+jackson3 = "3.2.0"  # https://mvnrepository.com/artifact/tools.jackson/jackson-bom
 
 feign = "13.12"  # https://mvnrepository.com/artifact/io.github.openfeign/feign-bom
 netty = "4.2.15.Final"  # https://mvnrepository.com/artifact/io.netty/netty-bom
@@ -55,9 +55,9 @@ dependency-management = "1.1.7"  # https://mvnrepository.com/artifact/io.spring.
 dokka = "2.2.0"  # https://mvnrepository.com/artifact/org.jetbrains.dokka/dokka-gradle-plugin
 kover = "0.9.8"  # https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kover-gradle-plugin
 test-logger = "4.0.0"  # https://mvnrepository.com/artifact/com.adarshr/gradle-test-logger-plugin
-shadow = "9.4.1"  # https://mvnrepository.com/artifact/com.gradleup.shadow/shadow-gradle-plugin
-gatling = "3.15.0"  # https://mvnrepository.com/artifact/io.gatling/gatling-app
-nmcp = "1.5.0"  # https://mvnrepository.com/artifact/com.gradleup.nmcp/nmcp
+shadow = "9.4.2"  # https://mvnrepository.com/artifact/com.gradleup.shadow/shadow-gradle-plugin
+gatling = "3.15.1"  # https://mvnrepository.com/artifact/io.gatling/gatling-app
+nmcp = "1.6.0"  # https://mvnrepository.com/artifact/com.gradleup.nmcp/nmcp
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
