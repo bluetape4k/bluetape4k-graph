@@ -121,6 +121,20 @@ class TinkerGraphOperationsTest {
     }
 
     @Test
+    @Order(251)
+    fun `label로 정점을 chunk 단위로 조회한다`() {
+        (1..5).forEach { index ->
+            ops.createVertex("Person", mapOf("name" to "Person-$index"))
+        }
+
+        val chunks = ops.findVerticesByLabelChunked("Person", chunkSize = 2).toList()
+
+        chunks.map { it.size } shouldBeEqualTo listOf(2, 2, 1)
+        chunks.flatten().map { it.properties["name"] }.toSet() shouldBeEqualTo
+                setOf("Person-1", "Person-2", "Person-3", "Person-4", "Person-5")
+    }
+
+    @Test
     @Order(26)
     fun `정점의 properties를 업데이트한다`() {
         val vertex = ops.createVertex("Person", mapOf("name" to "Charlie", "age" to 25L))
@@ -181,6 +195,22 @@ class TinkerGraphOperationsTest {
         val knowsEdges = ops.findEdgesByLabel("KNOWS")
         knowsEdges.shouldHaveSize(2)
         knowsEdges.all { it.label == "KNOWS" }.shouldBeTrue()
+    }
+
+    @Test
+    @Order(311)
+    fun `label로 간선을 chunk 단위로 조회한다`() {
+        val vertices = (1..4).map { index ->
+            ops.createVertex("Person", mapOf("name" to "Person-$index"))
+        }
+        (0..2).forEach { index ->
+            ops.createEdge(vertices[index].id, vertices[index + 1].id, "KNOWS", mapOf("rank" to index))
+        }
+
+        val chunks = ops.findEdgesByLabelChunked("KNOWS", chunkSize = 2).toList()
+
+        chunks.map { it.size } shouldBeEqualTo listOf(2, 1)
+        chunks.flatten().map { it.properties["rank"] }.toSet() shouldBeEqualTo setOf(0, 1, 2)
     }
 
     @Test

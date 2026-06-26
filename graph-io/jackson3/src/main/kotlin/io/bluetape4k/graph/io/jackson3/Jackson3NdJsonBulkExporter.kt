@@ -55,20 +55,24 @@ class Jackson3NdJsonBulkExporter : GraphBulkExporter<GraphExportSink> {
         GraphIoPaths.openWriter(sink).use { writer ->
             // 정점 쓰기
             for (label in options.vertexLabels) {
-                for (v in operations.findVerticesByLabel(label)) {
-                    val rec = GraphIoVertexRecord(v.id.value, v.label, v.properties)
-                    writer.write(codec.writeVertex(rec))
-                    writer.newLine()
-                    vWritten++
+                for (chunk in operations.findVerticesByLabelChunked(label, chunkSize = options.exportChunkSize)) {
+                    for (v in chunk) {
+                        val rec = GraphIoVertexRecord(v.id.value, v.label, v.properties)
+                        writer.write(codec.writeVertex(rec))
+                        writer.newLine()
+                        vWritten++
+                    }
                 }
             }
             // 간선 쓰기
             for (label in options.edgeLabels) {
-                for (e in operations.findEdgesByLabel(label)) {
-                    val rec = GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties)
-                    writer.write(codec.writeEdge(rec))
-                    writer.newLine()
-                    eWritten++
+                for (chunk in operations.findEdgesByLabelChunked(label, chunkSize = options.exportChunkSize)) {
+                    for (e in chunk) {
+                        val rec = GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties)
+                        writer.write(codec.writeEdge(rec))
+                        writer.newLine()
+                        eWritten++
+                    }
                 }
             }
         }

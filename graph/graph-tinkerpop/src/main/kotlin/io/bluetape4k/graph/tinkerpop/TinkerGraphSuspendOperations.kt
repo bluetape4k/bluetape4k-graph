@@ -193,6 +193,22 @@ class TinkerGraphSuspendOperations(
         list.forEach { emit(it) }
     }
 
+    override fun findVerticesByLabelChunked(
+        label: String,
+        filter: Map<String, Any?>,
+        chunkSize: Int,
+    ): Flow<List<GraphVertex>> = flow {
+        val iterator = withContext(Dispatchers.IO) {
+            delegate.findVerticesByLabelChunked(label, filter, chunkSize).iterator()
+        }
+        while (true) {
+            val chunk = withContext(Dispatchers.IO) {
+                if (iterator.hasNext()) iterator.next() else null
+            } ?: break
+            emit(chunk)
+        }
+    }
+
     override suspend fun updateVertex(label: String, id: GraphElementId, properties: Map<String, Any?>): GraphVertex? =
         withContext(Dispatchers.IO) {
             delegate.updateVertex(label, id, properties)
@@ -229,6 +245,22 @@ class TinkerGraphSuspendOperations(
             delegate.findEdgesByLabel(label, filter)
         }
         list.forEach { emit(it) }
+    }
+
+    override fun findEdgesByLabelChunked(
+        label: String,
+        filter: Map<String, Any?>,
+        chunkSize: Int,
+    ): Flow<List<GraphEdge>> = flow {
+        val iterator = withContext(Dispatchers.IO) {
+            delegate.findEdgesByLabelChunked(label, filter, chunkSize).iterator()
+        }
+        while (true) {
+            val chunk = withContext(Dispatchers.IO) {
+                if (iterator.hasNext()) iterator.next() else null
+            } ?: break
+            emit(chunk)
+        }
     }
 
     override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): Flow<GraphEdge> = flow {

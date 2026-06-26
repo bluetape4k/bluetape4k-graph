@@ -15,6 +15,7 @@ Jackson3 uses the same NDJSON envelope contract as the Jackson2 module while swi
 - `Jackson3EnvelopeCodec` maps each JSON line to a `vertex` or `edge` envelope.
 - Import creates vertices first, stores external IDs, then resolves buffered edges.
 - Export scans selected labels and writes vertex envelopes before edge envelopes.
+- Export reads selected labels through chunk-aware repository APIs so cursor-capable backends can avoid whole-label materialization.
 - Sync, virtual-thread, and suspend APIs share the same envelope contract.
 
 ## Key Features
@@ -60,6 +61,7 @@ The module offers three distinct execution models to fit different runtime envir
 ### Flexible Configuration
 
 - Selective vertex/edge label filtering
+- Chunk-aware export via `GraphExportOptions.exportChunkSize`
 - External ID preservation in properties
 - Configurable edge buffer size
 - Per-operation progress reporting
@@ -201,6 +203,12 @@ val report = future.join()
 - `vertexLabels: Set<String>` - Specific labels to export (empty = all)
 - `edgeLabels: Set<String>` - Specific labels to export (empty = all)
 - `includeEmptyProperties: Boolean` - Emit records even when properties are empty (default `true`)
+- `exportChunkSize: Int` - Maximum records per repository export chunk for streaming-capable exporters (default `1_000`)
+
+Jackson3 export consumes `findVerticesByLabelChunked` and
+`findEdgesByLabelChunked`. Backends that do not override those repository
+methods use the compatible list/Flow fallback, while cursor-aware backends can
+stream bounded chunks to the NDJSON writer.
 
 ## Dependencies
 

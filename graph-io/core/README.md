@@ -70,6 +70,7 @@ data class GraphExportOptions(
     val vertexLabels: Set<String> = emptySet(),  // empty = all labels
     val edgeLabels: Set<String> = emptySet(),    // empty = all labels
     val includeEmptyProperties: Boolean = true,
+    val exportChunkSize: Int = 1_000,
 )
 
 enum class DuplicateVertexPolicy { FAIL, SKIP }
@@ -77,6 +78,13 @@ enum class MissingEndpointPolicy { FAIL, SKIP_EDGE }
 ```
 
 `batchSize` controls backend write flushing during imports. Importers group pending vertices and edges by label, call `createVertices`/`createEdges` when a label buffer reaches this size, and flush final partial buffers at the end. It does not change duplicate-ID or missing-endpoint policy semantics.
+
+`exportChunkSize` controls how many records streaming-capable exporters request
+from chunk-aware repository methods such as `findVerticesByLabelChunked` and
+`findEdgesByLabelChunked`. Backends that do not override those methods use the
+compatible list/Flow fallback, while cursor-aware backends can avoid
+whole-label materialization. Formats that need global headers, such as CSV, may
+still perform format-specific pre-scans.
 
 `requireNotBlank` is enforced on label fields and on every element of label sets.
 

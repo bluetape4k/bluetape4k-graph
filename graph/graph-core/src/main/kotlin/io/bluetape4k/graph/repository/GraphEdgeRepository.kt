@@ -79,6 +79,33 @@ interface GraphEdgeRepository {
     fun findEdgesByLabel(label: String, filter: Map<String, Any?> = emptyMap()): List<GraphEdge>
 
     /**
+     * Finds edges by label and property filter as bounded chunks.
+     *
+     * ## Contract
+     *
+     * - The default implementation splits the [findEdgesByLabel] result into chunks for compatibility.
+     * - Backends that must avoid whole-label materialization during large exports should override this method.
+     * - [chunkSize] must be positive.
+     *
+     * ```kotlin
+     * for (chunk in ops.findEdgesByLabelChunked("KNOWS", chunkSize = 500)) {
+     *     chunk.forEach { edge -> println(edge.id) }
+     * }
+     * ```
+     *
+     * @param label edge label to query.
+     * @param filter property-name to value conditions. An empty map returns the full label.
+     * @param chunkSize maximum number of edges per chunk.
+     * @return chunk sequence containing matching [GraphEdge] values.
+     */
+    fun findEdgesByLabelChunked(
+        label: String,
+        filter: Map<String, Any?> = emptyMap(),
+        chunkSize: Int = DEFAULT_GRAPH_EXPORT_CHUNK_SIZE,
+    ): Sequence<List<GraphEdge>> =
+        findEdgesByLabel(label, filter).asGraphExportChunks(chunkSize)
+
+    /**
      * 특정 정점에서 출발하는 간선 목록을 조회한다.
      *
      * Dijkstra/A* 알고리즘의 인접 간선 수집에 사용된다.
