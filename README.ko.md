@@ -214,6 +214,12 @@ SuspendGraphMlBulkExporter().exportGraphSuspending(
 
 임포터는 `GraphImportOptions.batchSize`를 백엔드 쓰기 플러시 크기로 사용합니다. 대기 중인 정점과 간선을 라벨별로 묶어 `createVertices`/`createEdges`로 플러시하며, 중복 ID와 누락 엔드포인트 정책의 의미는 그대로 유지됩니다.
 
+스트리밍 가능한 exporter는 `GraphExportOptions.exportChunkSize`와 chunk-aware
+repository API를 사용합니다. `Jackson3NdJsonBulkExporter`와
+`SuspendJackson3NdJsonBulkExporter`는 `findVerticesByLabelChunked`,
+`findEdgesByLabelChunked`를 소비합니다. Cursor 구현이 없는 백엔드는 기존
+list/Flow fallback을 유지하고, TinkerGraph는 reference chunked path를 제공합니다.
+
 | 모듈 | 포맷 | 문서 |
 |------|------|------|
 | `graph-io-core` | 공유 계약·모델·옵션·헬퍼 (`GraphBulkImporter`, `GraphBulkExporter`, `GraphIoPaths`, `GraphIoExternalIdMap`) | [README](graph-io/core/README.ko.md) |

@@ -2,7 +2,7 @@
 
 Snapshot: 2026-06-26 KST
 Scope: open GitHub issues assigned to `debop`.
-Open count after merging pending research PR: 3 issues.
+Open count after merging the issue #233/#234 PRs: 2 issues.
 
 ## Current Direction
 
@@ -14,7 +14,6 @@ The `0.5.0` stable line has been published and consumed by
 
 | Priority | Issue | Milestone | Notes |
 |---|---|---|---|
-| P1 | [#233](https://github.com/bluetape4k/bluetape4k-graph/issues/233) feat: add chunked graph export cursor API for graph-io streaming | 0.6.0 | Next graph-io streaming feature lane after 0.5.0 release. |
 | P3 | [#215](https://github.com/bluetape4k/bluetape4k-graph/issues/215) research: revalidate Amazon Neptune backend feasibility | backlog | Required before reviving #30. |
 | P3 | [#30](https://github.com/bluetape4k/bluetape4k-graph/issues/30) [Epic] Amazon Neptune 그래프 DB 백엔드 구현 (graph-neptune) | backlog | Keep blocked while marked `invalid`/research; do not implement against mocks only. |
 
@@ -29,6 +28,9 @@ The `0.5.0` stable line has been published and consumed by
   Neo4j/Memgraph/AGE/FalkorDB native fast paths from `0.6.0`, reject
   TinkerPop/TinkerGraph as a native-loader lane, and keep issue #233 as the
   next separate graph-io implementation PR.
+- [#233](https://github.com/bluetape4k/bluetape4k-graph/issues/233)
+  chunked graph export cursor API is implemented with a TinkerGraph reference
+  path and Jackson3 NDJSON exporter proof.
 - Root README English/Korean module lists and example test commands already
   include the 0.5.0 example modules.
 - Aligned Ktor examples with shared bluetape4k-ktor-core modules.

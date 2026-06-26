@@ -70,6 +70,7 @@ data class GraphExportOptions(
     val vertexLabels: Set<String> = emptySet(),  // 비어있으면 전체 레이블
     val edgeLabels: Set<String> = emptySet(),    // 비어있으면 전체 레이블
     val includeEmptyProperties: Boolean = true,
+    val exportChunkSize: Int = 1_000,
 )
 
 enum class DuplicateVertexPolicy { FAIL, SKIP }
@@ -77,6 +78,13 @@ enum class MissingEndpointPolicy { FAIL, SKIP_EDGE }
 ```
 
 `batchSize`는 임포트 중 백엔드 쓰기 플러시 크기를 제어합니다. 임포터는 대기 중인 정점과 간선을 라벨별로 묶고, 라벨별 버퍼가 이 크기에 도달하면 `createVertices`/`createEdges`를 호출하며, 마지막 부분 버퍼는 종료 시 플러시합니다. 중복 ID나 누락 엔드포인트 정책의 의미는 바꾸지 않습니다.
+
+`exportChunkSize`는 스트리밍 가능한 exporter가 `findVerticesByLabelChunked`,
+`findEdgesByLabelChunked` 같은 chunk-aware repository API에서 한 번에 요청하는
+레코드 수를 제어합니다. 이 메서드를 override하지 않은 백엔드는 기존 list/Flow
+fallback을 사용하고, cursor-aware 백엔드는 전체 label materialization을 피할 수
+있습니다. CSV처럼 전역 헤더가 필요한 포맷은 여전히 포맷별 pre-scan을 수행할 수
+있습니다.
 
 레이블 필드와 레이블 세트의 모든 원소에 `requireNotBlank` 검증이 적용됩니다.
 

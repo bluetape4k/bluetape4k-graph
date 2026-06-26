@@ -11,6 +11,8 @@ import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.toList
 import org.junit.jupiter.api.Test
 
 class GraphBatchOperationsTest {
@@ -66,6 +68,50 @@ class GraphBatchOperationsTest {
     }
 
     @Test
+    fun `default findVerticesByLabelChunked splits list fallback`() {
+        val repo = ListingVertexRepository(
+            (1..5).map { index ->
+                GraphVertex(GraphElementId.of("v$index"), "Person", mapOf("index" to index))
+            }
+        )
+
+        val chunks = repo.findVerticesByLabelChunked("Person", chunkSize = 2).toList()
+
+        chunks.map { it.size } shouldBeEqualTo listOf(2, 2, 1)
+        chunks.flatten().map { it.id.value } shouldBeEqualTo listOf("v1", "v2", "v3", "v4", "v5")
+    }
+
+    @Test
+    fun `default findEdgesByLabelChunked splits list fallback`() {
+        val repo = ListingEdgeRepository(
+            (1..3).map { index ->
+                GraphEdge(
+                    GraphElementId.of("e$index"),
+                    "KNOWS",
+                    GraphElementId.of("v$index"),
+                    GraphElementId.of("v${index + 1}"),
+                )
+            }
+        )
+
+        val chunks = repo.findEdgesByLabelChunked("KNOWS", chunkSize = 2).toList()
+
+        chunks.map { it.size } shouldBeEqualTo listOf(2, 1)
+        chunks.flatten().map { it.id.value } shouldBeEqualTo listOf("e1", "e2", "e3")
+    }
+
+    @Test
+    fun `default chunked lookup rejects non-positive chunk size`() {
+        val repo = ListingVertexRepository(emptyList())
+
+        val ex = assertFailsWith<IllegalArgumentException> {
+            repo.findVerticesByLabelChunked("Person", chunkSize = 0).toList()
+        }
+
+        ex.message shouldContain "chunkSize"
+    }
+
+    @Test
     fun `suspend default createVertices preserves order`() = runSuspendIO {
         val repo = RecordingSuspendVertexRepository()
         val rows = listOf(mapOf("name" to "Alice"), mapOf("name" to "Bob"))
@@ -88,6 +134,39 @@ class GraphBatchOperationsTest {
 
         edges.map { it.properties["since"] } shouldBeEqualTo listOf(2024, 2025)
         repo.createdEdges shouldBeEqualTo rows
+    }
+
+    @Test
+    fun `suspend default findVerticesByLabelChunked splits Flow fallback`() = runSuspendIO {
+        val repo = ListingSuspendVertexRepository(
+            (1..5).map { index ->
+                GraphVertex(GraphElementId.of("v$index"), "Person", mapOf("index" to index))
+            }
+        )
+
+        val chunks = repo.findVerticesByLabelChunked("Person", chunkSize = 2).toList()
+
+        chunks.map { it.size } shouldBeEqualTo listOf(2, 2, 1)
+        chunks.flatten().map { it.id.value } shouldBeEqualTo listOf("v1", "v2", "v3", "v4", "v5")
+    }
+
+    @Test
+    fun `suspend default findEdgesByLabelChunked splits Flow fallback`() = runSuspendIO {
+        val repo = ListingSuspendEdgeRepository(
+            (1..3).map { index ->
+                GraphEdge(
+                    GraphElementId.of("e$index"),
+                    "KNOWS",
+                    GraphElementId.of("v$index"),
+                    GraphElementId.of("v${index + 1}"),
+                )
+            }
+        )
+
+        val chunks = repo.findEdgesByLabelChunked("KNOWS", chunkSize = 2).toList()
+
+        chunks.map { it.size } shouldBeEqualTo listOf(2, 1)
+        chunks.flatten().map { it.id.value } shouldBeEqualTo listOf("e1", "e2", "e3")
     }
 
     @Test
@@ -178,6 +257,34 @@ class GraphBatchOperationsTest {
         override fun deleteEdge(label: String, id: GraphElementId): Boolean = unsupported()
     }
 
+    private class ListingVertexRepository(
+        private val vertices: List<GraphVertex>,
+    ) : GraphVertexRepository {
+        override fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex = unsupported()
+        override fun findVertexById(label: String, id: GraphElementId): GraphVertex? = unsupported()
+        override fun findVertexById(id: GraphElementId): GraphVertex? = unsupported()
+        override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> = vertices
+        override fun updateVertex(label: String, id: GraphElementId, properties: Map<String, Any?>): GraphVertex? =
+            unsupported()
+        override fun deleteVertex(label: String, id: GraphElementId): Boolean = unsupported()
+        override fun countVertices(label: String): Long = vertices.size.toLong()
+    }
+
+    private class ListingEdgeRepository(
+        private val edges: List<GraphEdge>,
+    ) : GraphEdgeRepository {
+        override fun createEdge(
+            fromId: GraphElementId,
+            toId: GraphElementId,
+            label: String,
+            properties: Map<String, Any?>,
+        ): GraphEdge = unsupported()
+        override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): List<GraphEdge> = edges
+        override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): List<GraphEdge> = unsupported()
+        override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): List<GraphEdge> = unsupported()
+        override fun deleteEdge(label: String, id: GraphElementId): Boolean = unsupported()
+    }
+
     private class RecordingSuspendVertexRepository : GraphSuspendVertexRepository {
         val createdProperties = mutableListOf<Map<String, Any?>>()
 
@@ -212,6 +319,39 @@ class GraphBatchOperationsTest {
         }
 
         override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphEdge> = unsupported()
+        override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): Flow<GraphEdge> = unsupported()
+        override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): Flow<GraphEdge> = unsupported()
+        override suspend fun deleteEdge(label: String, id: GraphElementId): Boolean = unsupported()
+    }
+
+    private class ListingSuspendVertexRepository(
+        private val vertices: List<GraphVertex>,
+    ) : GraphSuspendVertexRepository {
+        override suspend fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex = unsupported()
+        override suspend fun findVertexById(label: String, id: GraphElementId): GraphVertex? = unsupported()
+        override suspend fun findVertexById(id: GraphElementId): GraphVertex? = unsupported()
+        override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphVertex> =
+            vertices.asFlow()
+        override suspend fun updateVertex(
+            label: String,
+            id: GraphElementId,
+            properties: Map<String, Any?>,
+        ): GraphVertex? = unsupported()
+        override suspend fun deleteVertex(label: String, id: GraphElementId): Boolean = unsupported()
+        override suspend fun countVertices(label: String): Long = vertices.size.toLong()
+    }
+
+    private class ListingSuspendEdgeRepository(
+        private val edges: List<GraphEdge>,
+    ) : GraphSuspendEdgeRepository {
+        override suspend fun createEdge(
+            fromId: GraphElementId,
+            toId: GraphElementId,
+            label: String,
+            properties: Map<String, Any?>,
+        ): GraphEdge = unsupported()
+        override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphEdge> =
+            edges.asFlow()
         override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): Flow<GraphEdge> = unsupported()
         override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): Flow<GraphEdge> = unsupported()
         override suspend fun deleteEdge(label: String, id: GraphElementId): Boolean = unsupported()

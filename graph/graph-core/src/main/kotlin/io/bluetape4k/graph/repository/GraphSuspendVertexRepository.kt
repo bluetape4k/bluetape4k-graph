@@ -100,6 +100,30 @@ interface GraphSuspendVertexRepository {
     fun findVerticesByLabel(label: String, filter: Map<String, Any?> = emptyMap()): Flow<GraphVertex>
 
     /**
+     * Finds vertices by label and property filter as a Flow of bounded chunks.
+     *
+     * The default implementation groups the record Flow from [findVerticesByLabel].
+     * Backends with driver cursors or paging APIs can override this method so the
+     * backend query itself runs chunk-by-chunk.
+     *
+     * ```kotlin
+     * ops.findVerticesByLabelChunked("Person", chunkSize = 500)
+     *     .collect { chunk -> println(chunk.size) }
+     * ```
+     *
+     * @param label vertex label to query.
+     * @param filter property-name to value conditions. An empty map returns the full label.
+     * @param chunkSize maximum number of vertices per chunk.
+     * @return Flow of chunks containing matching [GraphVertex] values.
+     */
+    fun findVerticesByLabelChunked(
+        label: String,
+        filter: Map<String, Any?> = emptyMap(),
+        chunkSize: Int = DEFAULT_GRAPH_EXPORT_CHUNK_SIZE,
+    ): Flow<List<GraphVertex>> =
+        findVerticesByLabel(label, filter).asGraphExportChunks(chunkSize)
+
+    /**
      * 기존 정점의 속성을 갱신하고 갱신된 정점을 반환한다.
      *
      * ```kotlin

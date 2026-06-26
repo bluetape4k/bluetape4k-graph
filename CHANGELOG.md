@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Chunked graph export cursor API**: graph repositories now expose sync and
+  coroutine chunked label lookups, TinkerGraph provides the reference chunked
+  traversal implementation, and Jackson3 NDJSON export consumes the chunked path
+  through `GraphExportOptions.exportChunkSize`
+  ([#233](https://github.com/bluetape4k/bluetape4k-graph/issues/233)).
+
 ### Changed
 
 - Opened the `0.6.0` development line after the `0.5.0` stable release.

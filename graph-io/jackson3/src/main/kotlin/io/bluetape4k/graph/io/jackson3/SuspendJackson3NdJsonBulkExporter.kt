@@ -16,7 +16,6 @@ import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withContext
 
 /**
@@ -54,19 +53,23 @@ class SuspendJackson3NdJsonBulkExporter : GraphSuspendBulkExporter<GraphExportSi
 
         GraphIoPaths.openWriter(sink).use { writer ->
             for (label in options.vertexLabels) {
-                for (v in operations.findVerticesByLabel(label).toList()) {
-                    val rec = GraphIoVertexRecord(v.id.value, v.label, v.properties)
-                    writer.write(codec.writeVertex(rec))
-                    writer.newLine()
-                    vWritten++
+                operations.findVerticesByLabelChunked(label, chunkSize = options.exportChunkSize).collect { chunk ->
+                    for (v in chunk) {
+                        val rec = GraphIoVertexRecord(v.id.value, v.label, v.properties)
+                        writer.write(codec.writeVertex(rec))
+                        writer.newLine()
+                        vWritten++
+                    }
                 }
             }
             for (label in options.edgeLabels) {
-                for (e in operations.findEdgesByLabel(label).toList()) {
-                    val rec = GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties)
-                    writer.write(codec.writeEdge(rec))
-                    writer.newLine()
-                    eWritten++
+                operations.findEdgesByLabelChunked(label, chunkSize = options.exportChunkSize).collect { chunk ->
+                    for (e in chunk) {
+                        val rec = GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties)
+                        writer.write(codec.writeEdge(rec))
+                        writer.newLine()
+                        eWritten++
+                    }
                 }
             }
         }

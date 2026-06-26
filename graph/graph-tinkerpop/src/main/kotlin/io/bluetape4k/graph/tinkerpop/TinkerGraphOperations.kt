@@ -24,6 +24,7 @@ import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.repository.GraphAlgorithmRepository
 import io.bluetape4k.graph.repository.GraphBatchValidation
 import io.bluetape4k.graph.repository.GraphEdgeRepository
+import io.bluetape4k.graph.repository.DEFAULT_GRAPH_EXPORT_CHUNK_SIZE
 import io.bluetape4k.graph.repository.GraphMergeOperations
 import io.bluetape4k.graph.repository.GraphMergeValidation
 import io.bluetape4k.graph.repository.GraphOperations
@@ -36,6 +37,7 @@ import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.warn
 import io.bluetape4k.support.requireNotBlank
+import io.bluetape4k.support.requirePositiveNumber
 import org.apache.tinkerpop.gremlin.process.traversal.P
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
@@ -218,6 +220,23 @@ class TinkerGraphOperations :
         return traversal.toList().map { GremlinRecordMapper.vertexToGraphVertex(it) }
     }
 
+    override fun findVerticesByLabelChunked(
+        label: String,
+        filter: Map<String, Any?>,
+        chunkSize: Int,
+    ): Sequence<List<GraphVertex>> {
+        label.requireNotBlank("label")
+        chunkSize.requirePositiveNumber("chunkSize")
+
+        return sequence {
+            val traversal = g.V().hasLabel(label)
+            filter.forEach { (key, value) ->
+                traversal.has(key, value)
+            }
+            yieldMappedChunks(traversal, chunkSize, GremlinRecordMapper::vertexToGraphVertex)
+        }
+    }
+
     override fun updateVertex(label: String, id: GraphElementId, properties: Map<String, Any?>): GraphVertex? {
         label.requireNotBlank("label")
 
@@ -357,6 +376,23 @@ class TinkerGraphOperations :
             traversal.has(key, value)
         }
         return traversal.toList().map { GremlinRecordMapper.edgeToGraphEdge(it) }
+    }
+
+    override fun findEdgesByLabelChunked(
+        label: String,
+        filter: Map<String, Any?>,
+        chunkSize: Int,
+    ): Sequence<List<GraphEdge>> {
+        label.requireNotBlank("label")
+        chunkSize.requirePositiveNumber("chunkSize")
+
+        return sequence {
+            val traversal = g.E().hasLabel(label)
+            filter.forEach { (key, value) ->
+                traversal.has(key, value)
+            }
+            yieldMappedChunks(traversal, chunkSize, GremlinRecordMapper::edgeToGraphEdge)
+        }
     }
 
     override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
@@ -566,6 +602,28 @@ class TinkerGraphOperations :
         }
 
         return GraphPath(steps)
+    }
+
+    private suspend fun <E, R> SequenceScope<List<R>>.yieldMappedChunks(
+        traversal: Traversal<*, E>,
+        chunkSize: Int = DEFAULT_GRAPH_EXPORT_CHUNK_SIZE,
+        mapper: (E) -> R,
+    ) {
+        val chunk = ArrayList<R>(chunkSize)
+        try {
+            while (traversal.hasNext()) {
+                chunk += mapper(traversal.next())
+                if (chunk.size == chunkSize) {
+                    yield(chunk.toList())
+                    chunk.clear()
+                }
+            }
+            if (chunk.isNotEmpty()) {
+                yield(chunk.toList())
+            }
+        } finally {
+            traversal.close()
+        }
     }
 
     // -- GraphAlgorithmRepository --

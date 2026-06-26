@@ -214,6 +214,13 @@ SuspendGraphMlBulkExporter().exportGraphSuspending(
 
 Importers use `GraphImportOptions.batchSize` as the backend write flush size. Pending vertices and edges are grouped by label and flushed through `createVertices`/`createEdges`; duplicate-ID and missing-endpoint policies keep their existing semantics.
 
+Streaming-capable exporters use `GraphExportOptions.exportChunkSize` with
+chunk-aware repository methods. `Jackson3NdJsonBulkExporter` and
+`SuspendJackson3NdJsonBulkExporter` consume `findVerticesByLabelChunked` and
+`findEdgesByLabelChunked`; backends without a cursor implementation keep the
+compatible list/Flow fallback, while TinkerGraph provides the reference chunked
+path.
+
 | Module | Format | Docs |
 |--------|--------|------|
 | `graph-io-core` | Shared contracts, models, options, and helpers (`GraphBulkImporter`, `GraphBulkExporter`, `GraphIoPaths`, `GraphIoExternalIdMap`) | [README](graph-io/core/README.md) |

@@ -15,6 +15,7 @@ Jackson3는 mapper 구현을 `tools.jackson`으로 전환하면서도 Jackson2 �
 - `Jackson3EnvelopeCodec`이 각 JSON 라인을 `vertex` 또는 `edge` envelope로 매핑합니다.
 - Import는 먼저 정점을 생성하고 외부 ID를 저장한 뒤, 버퍼링한 간선을 해석합니다.
 - Export는 선택한 label을 스캔하고 정점 envelope를 간선 envelope보다 먼저 씁니다.
+- Export는 선택한 label을 chunk-aware repository API로 읽어 cursor-capable 백엔드가 전체 label materialization을 피할 수 있게 합니다.
 - 동기, 가상 스레드, suspend API는 같은 envelope 계약을 공유합니다.
 
 ## 핵심 기능
@@ -60,6 +61,7 @@ Jackson3는 mapper 구현을 `tools.jackson`으로 전환하면서도 Jackson2 �
 ### 유연한 설정
 
 - 선택적 정점/간선 라벨 필터링
+- `GraphExportOptions.exportChunkSize` 기반 chunk-aware export
 - 속성에 외부 ID 보존
 - 설정 가능한 간선 버퍼 크기
 - 작업별 진행 상황 보고
@@ -201,6 +203,12 @@ val report = future.join()
 - `vertexLabels: Set<String>` - 익스포트할 특정 라벨 (비어있으면 모두)
 - `edgeLabels: Set<String>` - 익스포트할 특정 라벨 (비어있으면 모두)
 - `includeEmptyProperties: Boolean` - 속성이 비어있어도 레코드 방출 (기본 `true`)
+- `exportChunkSize: Int` - streaming-capable exporter가 repository에서 한 번에 읽는 최대 레코드 수 (기본 `1_000`)
+
+Jackson3 export는 `findVerticesByLabelChunked`, `findEdgesByLabelChunked`를
+소비합니다. 이 repository 메서드를 override하지 않은 백엔드는 호환 가능한
+list/Flow fallback을 사용하고, cursor-aware 백엔드는 bounded chunk를 NDJSON
+writer로 바로 흘릴 수 있습니다.
 
 ## 의존성
 
