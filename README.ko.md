@@ -235,7 +235,7 @@ SuspendGraphMlBulkExporter().exportGraphSuspending(
 // build.gradle.kts
 dependencyManagement {
     imports {
-        mavenBom("io.github.bluetape4k.graph:bluetape4k-graph-bom:<version>")
+        mavenBom("io.github.bluetape4k.graph:bluetape4k-graph-bom:0.5.1")
     }
 }
 
@@ -249,8 +249,8 @@ dependencies {
 
 ```kotlin
 dependencies {
-    implementation("io.github.bluetape4k.graph:bluetape4k-graph-core:<version>")
-    implementation("io.github.bluetape4k.graph:bluetape4k-graph-neo4j:<version>")
+    implementation("io.github.bluetape4k.graph:bluetape4k-graph-core:0.5.1")
+    implementation("io.github.bluetape4k.graph:bluetape4k-graph-neo4j:0.5.1")
     // graph-age | graph-memgraph | graph-tinkerpop | graph-ktor
 }
 ```

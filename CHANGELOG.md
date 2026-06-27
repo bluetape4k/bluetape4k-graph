@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-06-27
+
+### Changed
+
+- Prepared a patch release line from the published `0.5.0` source boundary for
+  the coordinated dependencies train. The branch intentionally excludes the
+  `0.6.0` chunked export development work and remains limited to release-line
+  alignment.
+
 ## [0.5.0] - 2026-06-01
 
 ### Added
