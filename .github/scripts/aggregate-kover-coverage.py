@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Kover XML 리포트를 집계해서 GitHub Step Summary 에 모듈별 coverage 표를 출력한다.
+Aggregate Kover XML reports and print a module coverage table to GitHub Step Summary.
 
 Usage:
     aggregate-kover-coverage.py <coverage-root>
@@ -95,6 +95,9 @@ def main() -> int:
         with open(summary_path, "a", encoding="utf-8") as fp:
             fp.write(output)
     print(output)
+    if not rows:
+        print(f"error: no Kover XML reports found under {root_dir}", file=sys.stderr)
+        return 1
     return 0
 
 
