@@ -4,20 +4,24 @@
 [versions]
 bluetape4k = "1.11.1-SNAPSHOT"  # https://mvnrepository.com/artifact/io.github.bluetape4k/bluetape4k-bom
 
+# Versions that also exist in bt4k remain only for local plugin/library aliases
+# that the central catalog does not expose in the shape this repository needs.
 kotlin = "2.4.0"  # https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-bom
 kotlinx-coroutines = "1.11.0"  # https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-bom
 kotlinx-serialization = "1.11.0"  # https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-serialization-json
 kotlinx-atomicfu = "0.32.1"  # https://mvnrepository.com/artifact/org.jetbrains.kotlinx/atomicfu
 kotlinx-benchmark = "0.4.17"  # https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-benchmark-runtime
-ktor = "3.5.0"  # https://mvnrepository.com/artifact/io.ktor/ktor-bom
 
+# Local Spring Boot plugin and dependency aliases mirror bt4k catalog versions.
 spring-boot4 = "4.1.0"  # https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-dependencies
 
 neo4j-java-driver = "6.1.0"  # https://mvnrepository.com/artifact/org.neo4j.driver/neo4j-java-driver
 neo4j-bolt-connection = "11.0.2"  # https://mvnrepository.com/artifact/org.neo4j.bolt/neo4j-bolt-connection-bom
 
+# Local Exposed aliases keep modules that are not exposed by the bt4k catalog.
 exposed = "1.3.0"  # https://mvnrepository.com/artifact/org.jetbrains.exposed/exposed-core
 
+# Local Okio/Jackson aliases keep graph-io-specific companion modules.
 okio = "3.17.0"  # https://mvnrepository.com/artifact/com.squareup.okio/okio-fakefilesystem
 okhttp3 = "5.3.2"  # https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp-bom
 
@@ -25,41 +29,32 @@ jackson = "2.22.0"  # https://mvnrepository.com/artifact/com.fasterxml.jackson/j
 jackson3 = "3.2.0"  # https://mvnrepository.com/artifact/tools.jackson/jackson-bom
 
 feign = "13.12"  # https://mvnrepository.com/artifact/io.github.openfeign/feign-bom
-netty = "4.2.15.Final"  # https://mvnrepository.com/artifact/io.netty/netty-bom
 
 slf4j = "2.0.18"  # https://mvnrepository.com/artifact/org.slf4j/slf4j-api
 logback = "1.5.32"  # https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
-log4j = "2.26.0"  # https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-bom
 
 micrometer = "1.16.5"  # https://mvnrepository.com/artifact/io.micrometer/micrometer-bom
 micrometer-tracing = "1.6.5"  # https://mvnrepository.com/artifact/io.micrometer/micrometer-tracing-bom
 
 caffeine = "3.2.4"  # https://mvnrepository.com/artifact/com.github.ben-manes.caffeine/caffeine
 
-reflectasm = "1.11.9"  # https://mvnrepository.com/artifact/com.esotericsoftware/reflectasm
-
 junit-jupiter = "6.0.3"  # https://mvnrepository.com/artifact/org.junit/junit-bom
 junit-platform = "6.0.3"  # https://mvnrepository.com/artifact/org.junit.platform/junit-platform-commons
-assertj-core = "3.27.7"  # https://mvnrepository.com/artifact/org.assertj/assertj-core
 mockk = "1.14.9"  # https://mvnrepository.com/artifact/io.mockk/mockk
-awaitility = "4.3.0"  # https://mvnrepository.com/artifact/org.awaitility/awaitility-kotlin
+# Local Testcontainers aliases keep module-level test fixtures not exposed by the bt4k catalog.
 testcontainers = "2.0.5"  # https://mvnrepository.com/artifact/org.testcontainers/testcontainers-bom
 
 datafaker = "2.5.4"  # https://mvnrepository.com/artifact/net.datafaker/datafaker
-random-beans = "3.9.0"  # https://mvnrepository.com/artifact/io.github.benas/random-beans
 
 # Plugin versions
 detekt = "2.0.0-alpha.3"  # https://plugins.gradle.org/plugin/dev.detekt
-dependency-management = "1.1.7"  # https://mvnrepository.com/artifact/io.spring.gradle/dependency-management-plugin
-dokka = "2.2.0"  # https://mvnrepository.com/artifact/org.jetbrains.dokka/dokka-gradle-plugin
+# Local Kover/Shadow/Gatling plugin aliases are not exposed by the bt4k catalog.
 kover = "0.9.8"  # https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kover-gradle-plugin
 test-logger = "4.0.0"  # https://mvnrepository.com/artifact/com.adarshr/gradle-test-logger-plugin
 shadow = "9.4.2"  # https://mvnrepository.com/artifact/com.gradleup.shadow/shadow-gradle-plugin
 gatling = "3.15.1"  # https://mvnrepository.com/artifact/io.gatling/gatling-app
-nmcp = "1.6.0"  # https://mvnrepository.com/artifact/com.gradleup.nmcp/nmcp
 
 [plugins]
-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" }
 kotlin-allopen = { id = "org.jetbrains.kotlin.plugin.allopen", version.ref = "kotlin" }
 kotlin-noarg = { id = "org.jetbrains.kotlin.plugin.noarg", version.ref = "kotlin" }
@@ -69,15 +64,11 @@ kotlinx-atomicfu = { id = "org.jetbrains.kotlinx.atomicfu", version.ref = "kotli
 kotlinx-benchmark = { id = "org.jetbrains.kotlinx.benchmark", version.ref = "kotlinx-benchmark" }
 
 detekt = { id = "dev.detekt", version.ref = "detekt" }
-dependency-management = { id = "io.spring.dependency-management", version.ref = "dependency-management" }
 spring-boot = { id = "org.springframework.boot" }
 spring-boot4 = { id = "org.springframework.boot", version.ref = "spring-boot4" }
-dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 test-logger = { id = "com.adarshr.test-logger", version.ref = "test-logger" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
 gatling = { id = "io.gatling.gradle", version.ref = "gatling" }
-nmcp = { id = "com.gradleup.nmcp", version.ref = "nmcp" }
-nmcp-aggregation = { id = "com.gradleup.nmcp.aggregation", version.ref = "nmcp" }
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 
 [libraries]
@@ -163,9 +154,6 @@ log4j-over-slf4j = { module = "org.slf4j:log4j-over-slf4j", version.ref = "slf4j
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 logback-core = { module = "ch.qos.logback:logback-core", version.ref = "logback" }
 
-# Log4j
-log4j-bom = { module = "org.apache.logging.log4j:log4j-bom", version.ref = "log4j" }
-
 findbugs = { module = "com.google.code.findbugs:jsr305", version = "3.0.2" }  # https://mvnrepository.com/artifact/com.google.code.findbugs/jsr305
 guava = { module = "com.google.guava:guava" }  # version from bt4k catalog
 
@@ -206,11 +194,7 @@ snappy-java = { module = "org.xerial.snappy:snappy-java", version = "1.1.10.8" }
 lz4-java = { module = "org.lz4:lz4-java", version = "1.8.0" }  # https://mvnrepository.com/artifact/org.lz4/lz4-java
 zstd-jni = { module = "com.github.luben:zstd-jni" }  # version from bt4k catalog
 
-# Netty
-netty-bom = { module = "io.netty:netty-bom", version.ref = "netty" }
-
 # Ktor
-ktor-bom = { module = "io.ktor:ktor-bom", version.ref = "ktor" }
 ktor-server-core = { module = "io.ktor:ktor-server-core" }
 ktor-server-cio = { module = "io.ktor:ktor-server-cio" }
 ktor-server-test-host = { module = "io.ktor:ktor-server-test-host" }
@@ -222,8 +206,6 @@ micrometer-bom = { module = "io.micrometer:micrometer-bom", version.ref = "micro
 
 # Micrometer Tracing
 micrometer-tracing-bom = { module = "io.micrometer:micrometer-tracing-bom", version.ref = "micrometer-tracing" }
-
-reflectasm = { module = "com.esotericsoftware:reflectasm", version.ref = "reflectasm" }
 
 hikaricp = { module = "com.zaxxer:HikariCP", version = "7.0.2" }  # https://mvnrepository.com/artifact/com.zaxxer/HikariCP
 
@@ -240,10 +222,7 @@ tinkerpop-gremlin-core = { module = "org.apache.tinkerpop:gremlin-core", version
 tinkergraph-gremlin = { module = "org.apache.tinkerpop:tinkergraph-gremlin", version = "3.8.1" }  # https://mvnrepository.com/artifact/org.apache.tinkerpop/tinkergraph-gremlin
 
 # Exposed
-exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }
 exposed-dao = { module = "org.jetbrains.exposed:exposed-dao", version.ref = "exposed" }
-exposed-java-time = { module = "org.jetbrains.exposed:exposed-java-time", version.ref = "exposed" }
-exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed" }
 
 # Caffeine (caffeine-core avoids prefix/leaf conflict with caffeine-jcache)
 caffeine-core = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
@@ -264,14 +243,9 @@ junit-platform-engine = { module = "org.junit.platform:junit-platform-engine", v
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit-platform" }
 junit-platform-runner = { module = "org.junit.platform:junit-platform-runner", version.ref = "junit-platform" }
 
-assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj-core" }
-
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 
-awaitility-kotlin = { module = "org.awaitility:awaitility-kotlin", version.ref = "awaitility" }
-
 datafaker = { module = "net.datafaker:datafaker", version.ref = "datafaker" }
-random-beans = { module = "io.github.benas:random-beans", version.ref = "random-beans" }
 
 # Testcontainers (testcontainers-core avoids prefix/leaf conflict)
 testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
