@@ -8,7 +8,7 @@ import io.bluetape4k.graph.model.MissingWeightPolicy
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.logging.KLogging
-import io.bluetape4k.assertions.invoking
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeNear
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldContainAll
@@ -167,7 +167,7 @@ class AStarRunnerTest {
 
     @Test
     fun `weightProperty 없으면 IllegalArgumentException 발생`() {
-        invoking { runner().run(id("A"), id("C"), PathOptions()) } shouldThrow IllegalArgumentException::class
+        assertFailsWith<IllegalArgumentException> { runner().run(id("A"), id("C"), PathOptions()) }
     }
 
     // ─── Direction.BOTH ───────────────────────────────────────────────────────────

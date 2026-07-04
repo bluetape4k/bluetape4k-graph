@@ -10,7 +10,7 @@ import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.assertions.shouldBeNear
 import io.bluetape4k.assertions.shouldBeNull
-import io.bluetape4k.assertions.invoking
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldContainAll
 import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.assertions.shouldNotBeNull
@@ -170,7 +170,7 @@ class DijkstraRunnerTest {
 
     @Test
     fun `weightProperty가 null이면 IllegalArgumentException을 던진다`() {
-        invoking { runner().run(id("A"), id("C"), PathOptions()) } shouldThrow IllegalArgumentException::class
+        assertFailsWith<IllegalArgumentException> { runner().run(id("A"), id("C"), PathOptions()) }
     }
 
     // ─── fetchVertex mid-traversal null ──────────────────────────────────────────

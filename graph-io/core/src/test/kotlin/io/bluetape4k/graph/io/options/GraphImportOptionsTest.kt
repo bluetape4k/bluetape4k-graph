@@ -1,6 +1,6 @@
 package io.bluetape4k.graph.io.options
 
-import io.bluetape4k.assertions.invoking
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import org.junit.jupiter.api.Test
 
@@ -20,23 +20,23 @@ class GraphImportOptionsTest {
 
     @Test
     fun `batchSize must be positive`() {
-        invoking { GraphImportOptions(batchSize = 0) } shouldThrow IllegalArgumentException::class
-        invoking { GraphImportOptions(batchSize = -1) } shouldThrow IllegalArgumentException::class
+        assertFailsWith<IllegalArgumentException> { GraphImportOptions(batchSize = 0) }
+        assertFailsWith<IllegalArgumentException> { GraphImportOptions(batchSize = -1) }
     }
 
     @Test
     fun `maxEdgeBufferSize must be positive`() {
-        invoking { GraphImportOptions(maxEdgeBufferSize = 0) } shouldThrow IllegalArgumentException::class
+        assertFailsWith<IllegalArgumentException> { GraphImportOptions(maxEdgeBufferSize = 0) }
     }
 
     @Test
     fun `defaultVertexLabel must not be blank`() {
-        invoking { GraphImportOptions(defaultVertexLabel = " ") } shouldThrow IllegalArgumentException::class
+        assertFailsWith<IllegalArgumentException> { GraphImportOptions(defaultVertexLabel = " ") }
     }
 
     @Test
     fun `defaultEdgeLabel must not be blank`() {
-        invoking { GraphImportOptions(defaultEdgeLabel = " ") } shouldThrow IllegalArgumentException::class
+        assertFailsWith<IllegalArgumentException> { GraphImportOptions(defaultEdgeLabel = " ") }
     }
 
     @Test
@@ -47,6 +47,6 @@ class GraphImportOptionsTest {
 
     @Test
     fun `preserveExternalIdProperty must not be blank when set`() {
-        invoking { GraphImportOptions(preserveExternalIdProperty = " ") } shouldThrow IllegalArgumentException::class
+        assertFailsWith<IllegalArgumentException> { GraphImportOptions(preserveExternalIdProperty = " ") }
     }
 }
