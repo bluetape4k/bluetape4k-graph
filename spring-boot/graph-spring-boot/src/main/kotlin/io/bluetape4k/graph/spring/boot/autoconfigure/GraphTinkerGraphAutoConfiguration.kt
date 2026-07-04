@@ -41,7 +41,7 @@ import org.springframework.context.annotation.Configuration
  * ```
  */
 @AutoConfiguration
-@ConditionalOnClass(TinkerGraphOperations::class)
+@ConditionalOnClass(name = ["io.bluetape4k.graph.tinkerpop.TinkerGraphOperations"])
 @ConditionalOnProperty(
     prefix = "bluetape4k.graph",
     name = ["backend"],

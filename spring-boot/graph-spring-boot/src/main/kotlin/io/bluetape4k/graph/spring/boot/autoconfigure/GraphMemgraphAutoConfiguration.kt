@@ -47,7 +47,12 @@ import java.util.concurrent.TimeUnit
  * ```
  */
 @AutoConfiguration
-@ConditionalOnClass(Driver::class, MemgraphGraphOperations::class)
+@ConditionalOnClass(
+    name = [
+        "org.neo4j.driver.Driver",
+        "io.bluetape4k.graph.memgraph.MemgraphGraphOperations",
+    ]
+)
 @ConditionalOnProperty(prefix = "bluetape4k.graph", name = ["backend"], havingValue = "memgraph")
 @EnableConfigurationProperties(MemgraphGraphProperties::class)
 class GraphMemgraphAutoConfiguration {

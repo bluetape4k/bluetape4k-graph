@@ -46,7 +46,12 @@ import java.util.concurrent.TimeUnit
  * ```
  */
 @AutoConfiguration
-@ConditionalOnClass(Driver::class, Neo4jGraphOperations::class)
+@ConditionalOnClass(
+    name = [
+        "org.neo4j.driver.Driver",
+        "io.bluetape4k.graph.neo4j.Neo4jGraphOperations",
+    ]
+)
 @ConditionalOnProperty(prefix = "bluetape4k.graph", name = ["backend"], havingValue = "neo4j")
 @EnableConfigurationProperties(Neo4jGraphProperties::class)
 class GraphNeo4jAutoConfiguration {

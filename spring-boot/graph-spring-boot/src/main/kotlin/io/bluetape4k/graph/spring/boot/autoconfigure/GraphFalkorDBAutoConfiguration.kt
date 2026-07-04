@@ -43,7 +43,12 @@ import org.springframework.context.annotation.Configuration
  * ```
  */
 @AutoConfiguration
-@ConditionalOnClass(com.falkordb.Driver::class, FalkorDBGraphOperations::class)
+@ConditionalOnClass(
+    name = [
+        "com.falkordb.Driver",
+        "io.bluetape4k.graph.falkordb.FalkorDBGraphOperations",
+    ]
+)
 @ConditionalOnProperty(prefix = "bluetape4k.graph", name = ["backend"], havingValue = "falkordb")
 @EnableConfigurationProperties(FalkorDBGraphProperties::class)
 class GraphFalkorDBAutoConfiguration {
