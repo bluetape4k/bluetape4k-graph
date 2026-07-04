@@ -59,7 +59,7 @@ class GraphNeo4jAutoConfiguration {
     companion object : KLogging()
 
     /**
-     * Neo4j Driver 빈. 이미 등록된 Driver 빈이 있으면 재사용한다.
+     * Creates the Neo4j [Driver] when the application has not provided one.
      */
     @Bean(name = ["neo4jDriver"], destroyMethod = "close")
     @ConditionalOnMissingBean(Driver::class)
@@ -76,7 +76,7 @@ class GraphNeo4jAutoConfiguration {
     }
 
     /**
-     * Neo4j 기반 `GraphOperations` 빈.
+     * Registers Neo4j-backed [GraphOperations] for the configured database.
      */
     @Bean
     @ConditionalOnMissingBean(GraphOperations::class)
@@ -84,7 +84,7 @@ class GraphNeo4jAutoConfiguration {
         Neo4jGraphOperations(driver, props.database)
 
     /**
-     * Neo4j 기반 `GraphSuspendOperations` 빈 (코루틴).
+     * Registers coroutine-friendly Neo4j graph operations when suspend support is enabled.
      */
     @Bean
     @ConditionalOnMissingBean(GraphSuspendOperations::class)
@@ -98,7 +98,7 @@ class GraphNeo4jAutoConfiguration {
         Neo4jGraphSuspendOperations(driver, props.database)
 
     /**
-     * Virtual Thread 기반 `GraphVirtualThreadOperations` 빈.
+     * Registers virtual-thread graph operations backed by the synchronous Neo4j operations.
      */
     @Bean
     @ConditionalOnMissingBean(GraphVirtualThreadOperations::class)
@@ -112,8 +112,8 @@ class GraphNeo4jAutoConfiguration {
         ops.asVirtualThread()
 
     /**
-     * Actuator HealthIndicator — nested class로 격리.
-     * Actuator 미사용 앱에서 `NoClassDefFoundError` 방지.
+     * Isolates the Actuator health indicator so non-Actuator applications avoid
+     * `NoClassDefFoundError`.
      */
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(name = ["org.springframework.boot.health.contributor.HealthIndicator"])

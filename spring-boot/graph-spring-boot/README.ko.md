@@ -1,5 +1,7 @@
 # graph-spring-boot
 
+[English](README.md) | 한국어
+
 [bluetape4k-graph](../../README.ko.md)용 Spring Boot 4 Auto-configuration 통합 모듈.
 
 단일 설정 프로퍼티로 원하는 그래프 백엔드를 선택하면, `GraphOperations`, `GraphSuspendOperations`,

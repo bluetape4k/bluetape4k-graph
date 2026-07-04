@@ -80,7 +80,7 @@ class GraphMemgraphAutoConfiguration {
     }
 
     /**
-     * Memgraph 기반 `GraphOperations` 빈.
+     * Registers Memgraph-backed [GraphOperations] for the configured database.
      */
     @Bean
     @ConditionalOnMissingBean(GraphOperations::class)
@@ -91,7 +91,7 @@ class GraphMemgraphAutoConfiguration {
         MemgraphGraphOperations(driver, props.database)
 
     /**
-     * Memgraph 기반 `GraphSuspendOperations` 빈 (코루틴).
+     * Registers coroutine-friendly Memgraph graph operations when suspend support is enabled.
      */
     @Bean
     @ConditionalOnMissingBean(GraphSuspendOperations::class)
@@ -108,7 +108,7 @@ class GraphMemgraphAutoConfiguration {
         MemgraphGraphSuspendOperations(driver, props.database)
 
     /**
-     * Virtual Thread 기반 `GraphVirtualThreadOperations` 빈.
+     * Registers virtual-thread graph operations backed by the synchronous Memgraph operations.
      */
     @Bean
     @ConditionalOnMissingBean(GraphVirtualThreadOperations::class)
@@ -122,8 +122,8 @@ class GraphMemgraphAutoConfiguration {
         ops.asVirtualThread()
 
     /**
-     * Actuator HealthIndicator — nested class로 격리.
-     * Actuator 미사용 앱에서 `NoClassDefFoundError` 방지.
+     * Isolates the Actuator health indicator so non-Actuator applications avoid
+     * `NoClassDefFoundError`.
      */
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(name = ["org.springframework.boot.health.contributor.HealthIndicator"])
