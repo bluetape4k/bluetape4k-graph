@@ -1,5 +1,7 @@
 # graph-io-core
 
+English | [한국어](README.ko.md)
+
 Shared contracts, models, options, reports, and I/O helpers for the `graph-io` family of bulk importers and exporters.
 
 ## Overview
