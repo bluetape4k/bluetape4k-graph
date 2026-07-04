@@ -29,12 +29,12 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
  * ```
  */
 @AutoConfiguration(
-    before = [
-        GraphTinkerGraphAutoConfiguration::class,
-        GraphNeo4jAutoConfiguration::class,
-        GraphMemgraphAutoConfiguration::class,
-        GraphAgeAutoConfiguration::class,
-        GraphFalkorDBAutoConfiguration::class,
+    beforeName = [
+        "io.bluetape4k.graph.spring.boot.autoconfigure.GraphTinkerGraphAutoConfiguration",
+        "io.bluetape4k.graph.spring.boot.autoconfigure.GraphNeo4jAutoConfiguration",
+        "io.bluetape4k.graph.spring.boot.autoconfigure.GraphMemgraphAutoConfiguration",
+        "io.bluetape4k.graph.spring.boot.autoconfigure.GraphAgeAutoConfiguration",
+        "io.bluetape4k.graph.spring.boot.autoconfigure.GraphFalkorDBAutoConfiguration",
     ],
 )
 @EnableConfigurationProperties(GraphProperties::class)

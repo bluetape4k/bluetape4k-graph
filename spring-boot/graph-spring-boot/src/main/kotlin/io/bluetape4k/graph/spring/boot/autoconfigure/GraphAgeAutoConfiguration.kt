@@ -18,7 +18,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate
-import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -49,8 +48,13 @@ import javax.sql.DataSource
  * val operations = context.getBean(GraphOperations::class.java)
  * ```
  */
-@AutoConfiguration(after = [DataSourceAutoConfiguration::class])
-@ConditionalOnClass(AgeGraphOperations::class, DataSource::class)
+@AutoConfiguration(afterName = ["org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration"])
+@ConditionalOnClass(
+    name = [
+        "io.bluetape4k.graph.age.AgeGraphOperations",
+        "javax.sql.DataSource",
+    ]
+)
 @ConditionalOnProperty(prefix = "bluetape4k.graph", name = ["backend"], havingValue = "age")
 @ConditionalOnSingleCandidate(DataSource::class)
 @EnableConfigurationProperties(AgeGraphProperties::class)
