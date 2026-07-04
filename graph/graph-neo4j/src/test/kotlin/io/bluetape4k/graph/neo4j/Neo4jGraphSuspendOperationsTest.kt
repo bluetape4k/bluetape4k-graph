@@ -13,7 +13,10 @@ import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
 import io.bluetape4k.testcontainers.graphdb.Neo4jServer
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.withTimeout
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
 import io.bluetape4k.assertions.shouldBeNull
@@ -204,6 +207,52 @@ class Neo4jGraphSuspendOperationsTest {
 
     @Test
     @Order(31)
+    fun `suspendTransaction은 scoped vertex와 edge CRUD를 지원한다`() = runSuspendIO {
+        val result = ops.suspendTransaction {
+            val alice = createVertex("Person", mapOf("name" to "Alice"))
+            val bob = createVertex("Person", mapOf("name" to "Bob"))
+
+            findVertexById("Person", alice.id)?.properties?.get("name") shouldBeEqualTo "Alice"
+            findVertexById(bob.id)?.properties?.get("name") shouldBeEqualTo "Bob"
+            countVertices("Person") shouldBeEqualTo 2L
+
+            updateVertex("Person", alice.id, mapOf("age" to 30L))?.properties?.get("age") shouldBeEqualTo 30L
+
+            val edge = createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to 2026L))
+            findEdgesByLabel("KNOWS", mapOf("since" to 2026L)).toList().shouldHaveSize(1)
+            findEdgesByStartId(alice.id, "KNOWS").toList().shouldHaveSize(1)
+            findEdgesByEndId(bob.id).toList().shouldHaveSize(1)
+
+            deleteEdge("KNOWS", edge.id).shouldBeTrue()
+            deleteVertex("Person", bob.id).shouldBeTrue()
+
+            countVertices("Person")
+        }
+
+        result shouldBeEqualTo 1L
+        ops.countVertices("Person") shouldBeEqualTo 1L
+    }
+
+    @Test
+    @Order(32)
+    fun `suspendTransaction은 취소 시 빠르게 반환하고 rollback한다`() = runSuspendIO {
+        val existing = ops.createVertex("Person", mapOf("name" to "Existing"))
+
+        assertFailsWith<TimeoutCancellationException> {
+            withTimeout(500) {
+                ops.suspendTransaction {
+                    createVertex("Person", mapOf("name" to "Cancelled"))
+                    awaitCancellation()
+                }
+            }
+        }
+
+        ops.findVertexById("Person", existing.id)?.properties?.get("name") shouldBeEqualTo "Existing"
+        ops.countVertices("Person") shouldBeEqualTo 1L
+    }
+
+    @Test
+    @Order(33)
     fun `unsafe Cypher identifiers are rejected before query execution`() = runSuspendIO {
         assertFailsWith<IllegalArgumentException> {
             ops.findVerticesByLabel("Person", mapOf("name) RETURN n MATCH (m" to "Alice")).toList()
@@ -216,7 +265,7 @@ class Neo4jGraphSuspendOperationsTest {
     // ----- 간선(Edge) CRUD -----
 
     @Test
-    @Order(32)
+    @Order(34)
     fun `createEdge로 간선을 생성한다`() = runSuspendIO {
         val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
         val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
