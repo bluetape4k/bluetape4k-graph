@@ -4,9 +4,14 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEmpty
+import io.bluetape4k.graph.model.BfsDfsOptions
+import io.bluetape4k.graph.model.ComponentOptions
+import io.bluetape4k.graph.model.CycleOptions
+import io.bluetape4k.graph.model.DegreeOptions
 import io.bluetape4k.graph.model.Direction
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.NeighborOptions
+import io.bluetape4k.graph.model.PageRankOptions
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.repository.suspendTransaction
 import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
@@ -220,6 +225,34 @@ class AgeGraphSuspendOperationsTest {
 
     @Test
     @Order(31)
+    fun `suspendTransaction은 scoped vertex와 edge CRUD를 지원한다`() = runSuspendIO {
+        val result = ops.suspendTransaction {
+            val alice = createVertex("Person", mapOf("name" to "Alice"))
+            val bob = createVertex("Person", mapOf("name" to "Bob"))
+
+            findVertexById("Person", alice.id)?.properties?.get("name") shouldBeEqualTo "Alice"
+            findVertexById(bob.id)?.properties?.get("name") shouldBeEqualTo "Bob"
+            countVertices("Person") shouldBeEqualTo 2L
+
+            updateVertex("Person", alice.id, mapOf("age" to 30L))?.properties?.get("age") shouldBeEqualTo 30L
+
+            val edge = createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to 2026L))
+            findEdgesByLabel("KNOWS", mapOf("since" to 2026L)).toList().shouldNotBeEmpty()
+            findEdgesByStartId(alice.id, "KNOWS").toList().shouldNotBeEmpty()
+            findEdgesByEndId(bob.id).toList().shouldNotBeEmpty()
+
+            deleteEdge("KNOWS", edge.id).shouldBeTrue()
+            deleteVertex("Person", bob.id).shouldBeTrue()
+
+            countVertices("Person")
+        }
+
+        result shouldBeEqualTo 1L
+        ops.countVertices("Person") shouldBeEqualTo 1L
+    }
+
+    @Test
+    @Order(32)
     fun `suspendTransaction은 반환된 Flow를 commit 전에 materialize한다`() = runSuspendIO {
         val people = ops.suspendTransaction {
             createVertex("Person", mapOf("name" to "Alice"))
@@ -233,7 +266,7 @@ class AgeGraphSuspendOperationsTest {
     // ───────────────────────── 간선(Edge) CRUD ─────────────────────────
 
     @Test
-    @Order(32)
+    @Order(33)
     fun `두 정점 사이에 간선을 생성한다`() = runSuspendIO {
         val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
         val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
@@ -244,7 +277,7 @@ class AgeGraphSuspendOperationsTest {
     }
 
     @Test
-    @Order(33)
+    @Order(34)
     fun `label로 간선 목록을 조회한다`() = runSuspendIO {
         val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
         val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
@@ -257,7 +290,7 @@ class AgeGraphSuspendOperationsTest {
     }
 
     @Test
-    @Order(34)
+    @Order(35)
     fun `간선을 삭제한다`() = runSuspendIO {
         val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
         val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
@@ -367,5 +400,37 @@ class AgeGraphSuspendOperationsTest {
             .toList()
         paths.shouldNotBeEmpty()
         paths.size shouldBeGreaterThan 1
+    }
+
+    // ───────────────────────── 알고리즘 (Algorithm) ─────────────────────────
+
+    @Test
+    @Order(60)
+    fun `suspend algorithms return Flow results`() = runSuspendIO {
+        val a = ops.createVertex("Node", mapOf("name" to "A"))
+        val b = ops.createVertex("Node", mapOf("name" to "B"))
+        val c = ops.createVertex("Node", mapOf("name" to "C"))
+        val d = ops.createVertex("Node", mapOf("name" to "D"))
+
+        ops.createEdge(a.id, b.id, "E")
+        ops.createEdge(b.id, c.id, "E")
+        ops.createEdge(c.id, a.id, "E")
+        ops.createEdge(c.id, d.id, "E")
+
+        val degree = ops.degreeCentrality(a.id, DegreeOptions(edgeLabel = "E"))
+        degree.outDegree shouldBeEqualTo 1
+        degree.inDegree shouldBeEqualTo 1
+
+        val bfs = ops.bfs(a.id, BfsDfsOptions(edgeLabel = "E", maxDepth = 3)).toList()
+        bfs.first().vertex.id shouldBeEqualTo a.id
+        bfs.size shouldBeGreaterThan 2
+
+        val dfs = ops.dfs(a.id, BfsDfsOptions(edgeLabel = "E", maxDepth = 3)).toList()
+        dfs.first().vertex.id shouldBeEqualTo a.id
+        dfs.size shouldBeGreaterThan 2
+
+        ops.detectCycles(CycleOptions(edgeLabel = "E", maxDepth = 5)).toList().shouldNotBeEmpty()
+        ops.connectedComponents(ComponentOptions(vertexLabel = "Node", edgeLabel = "E")).toList().shouldNotBeEmpty()
+        ops.pageRank(PageRankOptions(vertexLabel = "Node", iterations = 20)).toList().shouldNotBeEmpty()
     }
 }
