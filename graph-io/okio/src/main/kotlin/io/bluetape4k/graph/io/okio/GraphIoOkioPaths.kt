@@ -89,17 +89,24 @@ object GraphIoOkioPaths : KLogging() {
      * @throws IOException when the path cannot be opened for writing
      */
     @Throws(IOException::class)
-    fun openSink(sink: OkioGraphExportSink): BufferedSink = when (sink) {
+    fun openSink(sink: OkioGraphExportSink): BufferedSink =
+        openSinkHandle(sink).sink
+
+    private fun openSinkHandle(sink: OkioGraphExportSink): OpenedSink = when (sink) {
         is OkioGraphExportSink.PathSink -> openPathSink(sink)
 
         is OkioGraphExportSink.SinkBased ->
-            if (sink.ownsSink) sink.sink.buffer()
-            else nonClosingSink(sink.sink).buffer()
+            OpenedSink(
+                if (sink.ownsSink) sink.sink.buffer()
+                else nonClosingSink(sink.sink).buffer()
+            )
 
         is OkioGraphExportSink.OutputStreamBased -> {
             val rawSink = sink.outputStream.sink()
-            if (sink.ownsStream) rawSink.buffer()
-            else nonClosingSink(rawSink).buffer()
+            OpenedSink(
+                if (sink.ownsStream) rawSink.buffer()
+                else nonClosingSink(rawSink).buffer()
+            )
         }
     }
 
@@ -192,10 +199,12 @@ object GraphIoOkioPaths : KLogging() {
      */
     @Throws(IOException::class)
     fun openGzipSink(sink: OkioGraphExportSink): BufferedSink {
-        val bs = openSink(sink)
+        val opened = openSinkHandle(sink)
+        val bs = opened.sink
         return try {
             openCompressedSink(bs, Compressor.GZIP)
         } catch (e: Throwable) {
+            opened.abort()
             try { bs.close() } catch (ce: Throwable) { log.warn(ce) { "Failed to close sink after gzip init failure" } }
             throw e
         }
@@ -213,10 +222,12 @@ object GraphIoOkioPaths : KLogging() {
         chunkSize: Int = DEFAULT_DAEAD_CHUNK_SIZE,
         associatedData: ByteArray = ByteArray(0),
     ): BufferedSink {
-        val bs = openSink(sink)
+        val opened = openSinkHandle(sink)
+        val bs = opened.sink
         return try {
             openDaeadEncryptedSink(bs, daead, chunkSize, associatedData)
         } catch (e: Throwable) {
+            opened.abort()
             try { bs.close() } catch (ce: Throwable) { log.warn(ce) { "Failed to close sink after DAEAD init failure" } }
             throw e
         }
@@ -234,11 +245,13 @@ object GraphIoOkioPaths : KLogging() {
         chunkSize: Int = DEFAULT_DAEAD_CHUNK_SIZE,
         associatedData: ByteArray = ByteArray(0),
     ): BufferedSink {
-        val bs = openSink(sink)
+        val opened = openSinkHandle(sink)
+        val bs = opened.sink
         return try {
             val encrypted = openDaeadEncryptedSink(bs, daead, chunkSize, associatedData)
             openCompressedSink(encrypted, Compressor.GZIP)
         } catch (e: Throwable) {
+            opened.abort()
             try { bs.close() } catch (ce: Throwable) { log.warn(ce) { "Failed to close sink after gzip+DAEAD init failure" } }
             throw e
         }
@@ -311,7 +324,7 @@ object GraphIoOkioPaths : KLogging() {
 
     /** Opens a [OkioGraphExportSink.PathSink] and applies the atomic-write strategy when requested. */
     @Throws(IOException::class)
-    private fun openPathSink(sink: OkioGraphExportSink.PathSink): BufferedSink {
+    private fun openPathSink(sink: OkioGraphExportSink.PathSink): OpenedSink {
         val fs = sink.fileSystem
         val target = sink.path
 
@@ -326,7 +339,7 @@ object GraphIoOkioPaths : KLogging() {
         }
 
         if (!sink.atomicWrite) {
-            return fs.sink(target, mustCreate = false).buffer()
+            return OpenedSink(fs.sink(target, mustCreate = false).buffer())
         }
 
         // atomicWrite=true: temporary path, then atomicMove.
@@ -335,7 +348,11 @@ object GraphIoOkioPaths : KLogging() {
             ?: ("${target}.tmp.${UUID.randomUUID()}".toPath())
 
         val rawSink = fs.sink(tmpPath, mustCreate = false)
-        return AtomicMoveSink(rawSink, tmpPath, target, fs).buffer()
+        val atomicSink = AtomicMoveSink(rawSink, tmpPath, target, fs)
+        return OpenedSink(
+            sink = atomicSink.buffer(),
+            abort = atomicSink::abort,
+        )
     }
 
     /** Wrapper that does not close the underlying caller-owned source. */
@@ -372,6 +389,15 @@ object GraphIoOkioPaths : KLogging() {
         }
     }
 
+    private data class OpenedSink(
+        val sink: BufferedSink,
+        private val abort: (() -> Unit)? = null,
+    ) {
+        fun abort() {
+            abort?.invoke()
+        }
+    }
+
     /**
      * Sink wrapper that atomically moves a temporary file to the target path on close.
      *
@@ -385,6 +411,10 @@ object GraphIoOkioPaths : KLogging() {
     ) : ForwardingSink(delegate) {
         @Volatile
         private var failed = false
+
+        fun abort() {
+            failed = true
+        }
 
         override fun write(source: Buffer, byteCount: Long) {
             try {

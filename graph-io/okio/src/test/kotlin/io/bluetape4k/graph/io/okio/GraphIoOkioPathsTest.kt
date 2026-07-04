@@ -167,6 +167,24 @@ class GraphIoOkioPathsTest {
     }
 
     @Test
+    fun `atomicWrite DAEAD setup failure leaves target unchanged and deletes tmp`() {
+        ensureTmpDir()
+        val path = "/tmp/graph-setup-fail.enc".toPath()
+        fakeFs.write(path) { writeUtf8("ORIGINAL") }
+
+        assertFailsWith<IllegalArgumentException> {
+            GraphIoOkioPaths.openDaeadEncryptedSink(
+                sink = OkioGraphExportSink.PathSink(path, fakeFs, atomicWrite = true),
+                daead = TinkDaeads.AES256_SIV,
+                chunkSize = 0,
+            )
+        }
+
+        fakeFs.read(path) { readUtf8() } shouldBeEqualTo "ORIGINAL"
+        tempFilesFor(path) shouldBeEqualTo emptyList()
+    }
+
+    @Test
     fun `gzip DAEAD chunk round trip with FakeFileSystem`() {
         ensureTmpDir()
         val path = "/tmp/graph.ndjson.gz.enc".toPath()
@@ -186,6 +204,24 @@ class GraphIoOkioPathsTest {
         ).use { bs -> bs.readUtf8() }
 
         result shouldBeEqualTo data.repeat(100)
+    }
+
+    @Test
+    fun `atomicWrite gzip DAEAD setup failure leaves target unchanged and deletes tmp`() {
+        ensureTmpDir()
+        val path = "/tmp/graph-setup-fail.ndjson.gz.enc".toPath()
+        fakeFs.write(path) { writeUtf8("ORIGINAL") }
+
+        assertFailsWith<IllegalArgumentException> {
+            GraphIoOkioPaths.openGzipDaeadEncryptedSink(
+                sink = OkioGraphExportSink.PathSink(path, fakeFs, atomicWrite = true),
+                daead = TinkDaeads.AES256_SIV,
+                chunkSize = 0,
+            )
+        }
+
+        fakeFs.read(path) { readUtf8() } shouldBeEqualTo "ORIGINAL"
+        tempFilesFor(path) shouldBeEqualTo emptyList()
     }
 
     @Test
@@ -274,4 +310,8 @@ class GraphIoOkioPathsTest {
 
         result shouldBeEqualTo data
     }
+
+    private fun tempFilesFor(path: okio.Path): List<okio.Path> =
+        fakeFs.list(path.parent ?: "/".toPath())
+            .filter { it.segments.last().startsWith("${path.segments.last()}.tmp.") }
 }
