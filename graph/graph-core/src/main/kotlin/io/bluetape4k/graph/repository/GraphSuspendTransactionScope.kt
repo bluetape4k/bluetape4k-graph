@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 
 /**
- * 코루틴 그래프 트랜잭션 블록에서 사용할 수 있는 연산 범위.
+ * Operation scope available inside a coroutine graph transaction block.
  *
  * ```kotlin
  * val edge = ops.suspendTransaction {
@@ -17,8 +17,8 @@ import kotlinx.coroutines.flow.asFlow
  * }
  * ```
  *
- * 이번 API는 capability contract를 먼저 제공한다. 각 백엔드는 실제 코루틴 트랜잭션 의미를
- * 보장할 수 있을 때 [GraphSuspendTransactionalOperations]를 구현한다.
+ * This API exposes the capability contract first. Each backend implements
+ * [GraphSuspendTransactionalOperations] only when it can provide real coroutine transaction semantics.
  */
 @GraphTransactionDsl
 interface GraphSuspendTransactionScope :
@@ -26,11 +26,11 @@ interface GraphSuspendTransactionScope :
     GraphSuspendEdgeRepository
 
 /**
- * 동기 [GraphTransactionScope]를 코루틴 트랜잭션 범위로 노출하는 어댑터.
+ * Adapter that exposes a synchronous [GraphTransactionScope] as a coroutine transaction scope.
  *
- * Neo4j Java Driver, Memgraph Bolt, TinkerGraph처럼 동기 트랜잭션 API가 원자성의 실제 소유자인
- * 백엔드에서 suspend DSL을 제공할 때 사용한다. 호출자는 이 타입을 직접 생성하기보다
- * [asSuspendTransactionScope]를 사용한다.
+ * Use this when a backend, such as the Neo4j Java Driver, Memgraph Bolt, or TinkerGraph,
+ * owns atomicity through a synchronous transaction API but still exposes a suspend DSL.
+ * Callers should use [asSuspendTransactionScope] instead of constructing this type directly.
  */
 class BlockingGraphSuspendTransactionScope(
     private val delegate: GraphTransactionScope,
@@ -83,28 +83,28 @@ class BlockingGraphSuspendTransactionScope(
 }
 
 /**
- * 동기 트랜잭션 범위를 코루틴 트랜잭션 범위로 변환한다.
+ * Converts a synchronous transaction scope into a coroutine transaction scope.
  */
 fun GraphTransactionScope.asSuspendTransactionScope(): GraphSuspendTransactionScope =
     BlockingGraphSuspendTransactionScope(this)
 
 /**
- * 코루틴 트랜잭션을 실제로 지원하는 [GraphSuspendOperations] 구현체가 구현하는 capability interface.
+ * Capability interface implemented by [GraphSuspendOperations] implementations with real coroutine transactions.
  */
 interface GraphSuspendTransactionalOperations {
     /**
-     * [block]을 하나의 백엔드 트랜잭션으로 실행한다.
+     * Runs [block] as one backend transaction.
      *
-     * 구현체는 성공 시 commit, 실패 시 rollback 후 원래 예외를 다시 던져야 한다.
+     * Implementations must commit on success, roll back on failure, and rethrow the original exception.
      */
     suspend fun <T> suspendTransaction(block: suspend GraphSuspendTransactionScope.() -> T): T
 }
 
 /**
- * [GraphSuspendOperations]에서 코루틴 트랜잭션 DSL을 실행한다.
+ * Executes the coroutine transaction DSL on [GraphSuspendOperations].
  *
- * 구현체가 [GraphSuspendTransactionalOperations]를 구현하지 않으면 auto-commit fallback을 사용하지 않고
- * 명시적으로 [UnsupportedOperationException]을 던진다.
+ * If the implementation does not implement [GraphSuspendTransactionalOperations], this function
+ * explicitly throws [UnsupportedOperationException] instead of using an auto-commit fallback.
  */
 suspend fun <T> GraphSuspendOperations.suspendTransaction(
     block: suspend GraphSuspendTransactionScope.() -> T,

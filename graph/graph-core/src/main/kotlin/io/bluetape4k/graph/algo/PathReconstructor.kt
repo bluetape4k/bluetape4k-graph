@@ -11,16 +11,16 @@ import io.bluetape4k.logging.warn
 private val log = KotlinLogging.logger {}
 
 /**
- * 탐색 완료 후 predecessor 맵에서 [GraphPath]를 역추적하여 재구성한다.
+ * Reconstructs a [GraphPath] by walking a predecessor map after traversal completes.
  *
- * Dijkstra/A* 탐색이 끝난 뒤 `cameFrom` 테이블에서 경로를 역추적한다.
- * `totalWeight`는 탐색 과정에서 계산된 누적 비용을 그대로 사용한다.
+ * Dijkstra/A* runners fill `cameFrom`; this function walks it backward and preserves
+ * the already computed [totalWeight].
  *
- * @param targetId 도착 정점 ID.
- * @param cameFrom 정점 ID → (부모 정점, 연결 간선) 맵.
- * @param vertexLookup 정점 ID → [GraphVertex] 조회 함수.
- * @param totalWeight 경로의 총 가중치.
- * @return 재구성된 [GraphPath]. 경로가 없으면 `null`.
+ * @param targetId target vertex ID.
+ * @param cameFrom vertex ID to parent vertex and connecting edge map.
+ * @param vertexLookup vertex ID to [GraphVertex] lookup.
+ * @param totalWeight total path weight.
+ * @return reconstructed [GraphPath], or `null` when no path exists.
  */
 internal fun reconstructPath(
     targetId: GraphElementId,
@@ -43,7 +43,7 @@ internal fun reconstructPath(
         currentId = parentVertex.id
     }
 
-    // 출발 정점 추가
+    // Add the source vertex.
     val startVertex = vertexLookup(currentId) ?: run {
         log.warn { "PathReconstructor: start vertex $currentId not found during reconstruction" }
         return null

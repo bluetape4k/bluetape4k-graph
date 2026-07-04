@@ -1,11 +1,10 @@
 package io.bluetape4k.graph.schema
 
 /**
- * 그래프 정점(Vertex) 스키마 정의. Exposed Table 스타일의 DSL.
- * 백엔드(AGE, Neo4j)에 무관하게 사용 가능.
+ * Graph vertex schema definition with an Exposed Table-style DSL.
+ * It is backend-independent and can be used with AGE, Neo4j, and other graph backends.
  *
- * `object`로 상속하여 정점 타입별 스키마를 선언하고, 각 DSL 함수 호출 결과인
- * [PropertyDef]를 프로퍼티로 보유한다.
+ * Subclass it as an `object` per vertex type and keep each DSL call result as a [PropertyDef] property.
  *
  * ```kotlin
  * object PersonLabel : VertexLabel("Person") {
@@ -14,6 +13,6 @@ package io.bluetape4k.graph.schema
  * }
  * ```
  *
- * @property label 정점 레이블 이름 (예: `"Person"`, `"Company"`).
+ * @property label vertex label name, such as `"Person"` or `"Company"`.
  */
 abstract class VertexLabel(val label: String) : PropertyHolder()

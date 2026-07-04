@@ -1,10 +1,10 @@
 package io.bluetape4k.graph.repository
 
 /**
- * 그래프 데이터베이스 세션 관리 (코루틴 방식).
+ * Coroutine graph database session management.
  *
- * 소유권: 외부에서 주입된 Database/Driver를 [close]에서 닫지 않는다.
- * 연결 풀/드라이버 생명주기는 Spring 컨테이너 또는 호출자가 관리한다.
+ * Ownership: [close] does not close externally injected databases or drivers.
+ * Connection pool and driver lifecycles are owned by the Spring container or caller.
  *
  * ```kotlin
  * runBlocking {
@@ -15,43 +15,43 @@ package io.bluetape4k.graph.repository
  * }
  * ```
  *
- * @see GraphSession 동기(blocking) 방식
+ * @see GraphSession synchronous blocking variant
  */
 interface GraphSuspendSession : AutoCloseable {
     /**
-     * 지정한 이름의 그래프를 생성한다.
+     * Creates a graph with the given name.
      *
      * ```kotlin
      * ops.createGraph("social")
      * ```
      *
-     * @param name 생성할 그래프 이름.
-     * @see GraphSession.createGraph 동기 버전
+     * @param name graph name to create.
+     * @see GraphSession.createGraph synchronous version
      */
     suspend fun createGraph(name: String)
 
     /**
-     * 지정한 이름의 그래프를 삭제한다.
+     * Drops a graph with the given name.
      *
      * ```kotlin
      * ops.dropGraph("social")
      * ```
      *
-     * @param name 삭제할 그래프 이름.
-     * @see GraphSession.dropGraph 동기 버전
+     * @param name graph name to drop.
+     * @see GraphSession.dropGraph synchronous version
      */
     suspend fun dropGraph(name: String)
 
     /**
-     * 지정한 이름의 그래프가 존재하는지 확인한다.
+     * Checks whether a graph with the given name exists.
      *
      * ```kotlin
      * val exists = ops.graphExists("social")  // true / false
      * ```
      *
-     * @param name 확인할 그래프 이름.
-     * @return 그래프가 존재하면 `true`, 그렇지 않으면 `false`.
-     * @see GraphSession.graphExists 동기 버전
+     * @param name graph name to check.
+     * @return `true` when the graph exists, otherwise `false`.
+     * @see GraphSession.graphExists synchronous version
      */
     suspend fun graphExists(name: String): Boolean
 }

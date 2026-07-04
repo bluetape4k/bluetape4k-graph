@@ -48,9 +48,9 @@ import org.neo4j.driver.SessionConfig
 import org.neo4j.driver.Transaction
 
 /**
- * Neo4j Java Driver 기반 [GraphOperations] 구현체 (동기 방식).
+ * Blocking [GraphOperations] implementation backed by the Neo4j Java Driver.
  *
- * blocking [Session]을 사용한다.
+ * It uses blocking [Session] instances and does not own the supplied [Driver].
  *
  *
  * ```kotlin
@@ -66,8 +66,8 @@ import org.neo4j.driver.Transaction
  * driver.close()
  * ```
  *
- * @param driver Neo4j Java Driver (외부 소유)
- * @param database 데이터베이스 이름 (기본: "neo4j")
+ * @param driver externally owned Neo4j Java Driver.
+ * @param database Neo4j database name, defaulting to `"neo4j"`.
  */
 class Neo4jGraphOperations(
     private val driver: Driver,
@@ -113,7 +113,7 @@ class Neo4jGraphOperations(
         }
     }
 
-    override fun close() { /* driver는 외부 소유 */
+    override fun close() { /* driver is externally owned */
     }
 
     override fun schemaManager(): GraphSchemaManager =

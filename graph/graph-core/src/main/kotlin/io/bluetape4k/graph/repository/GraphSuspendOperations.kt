@@ -1,14 +1,14 @@
 package io.bluetape4k.graph.repository
 
 /**
- * 그래프 데이터베이스의 통합 Facade (코루틴 방식).
- * AGE, Neo4j 등 각 백엔드가 이 인터페이스를 구현한다.
+ * Coroutine facade for graph databases.
+ * Backends such as AGE and Neo4j implement this interface.
  *
- * @see GraphOperations 동기(blocking) 방식
+ * @see GraphOperations synchronous blocking variant
  *
- * ### 사용 예제
+ * ### Usage
  * ```kotlin
- * // ops는 AgeGraphSuspendOperations, Neo4jGraphSuspendOperations 등
+ * // ops may be AgeGraphSuspendOperations, Neo4jGraphSuspendOperations, and so on.
  * val ops: GraphSuspendOperations = ...
  *
  * ops.createGraph("social")
@@ -17,7 +17,7 @@ package io.bluetape4k.graph.repository
  * val bob   = ops.createVertex("Person", mapOf("name" to "Bob"))
  * ops.createEdge(alice.id, bob.id, "FOLLOWS")
  *
- * val neighbors = ops.neighbors(alice.id).toList()  // Flow → List
+ * val neighbors = ops.neighbors(alice.id).toList()  // Flow to List
  * ```
  */
 interface GraphSuspendOperations :

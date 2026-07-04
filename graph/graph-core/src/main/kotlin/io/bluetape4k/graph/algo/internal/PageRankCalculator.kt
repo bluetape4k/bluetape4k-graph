@@ -7,12 +7,12 @@ import kotlin.math.abs
 
 
 /**
- * 정규화된 PageRank 반복 계산기 (JVM 폴백).
+ * Normalized iterative PageRank calculator used as a JVM fallback.
  *
- * 결과 점수의 합 ≈ 1.0 으로 정규화된다.
- * dangling node (out-degree 0)의 질량은 다음 반복 시 모든 정점에 균등 분배된다.
+ * Result scores are normalized to a total near `1.0`. Dangling-node mass from out-degree-zero
+ * vertices is redistributed evenly to all vertices on the next iteration.
  *
- * ### 사용 예제
+ * ### Usage
  * ```kotlin
  * val scores = PageRankCalculator.compute(
  *     vertices = vertexIds,
@@ -28,14 +28,14 @@ object PageRankCalculator : KLogging() {
     private const val HASH_LOAD_FACTOR = 0.75
 
     /**
-     * 정규화된 PageRank 점수를 계산한다.
-     *
-     * @param vertices 전체 정점 ID 집합.
-     * @param outAdjacency out-edge 인접 리스트. 집합에 없는 정점을 참조해서는 안 된다.
-     * @param iterations 최대 반복 횟수. 양수여야 한다.
-     * @param dampingFactor 감쇠 계수. [0.0, 1.0] 범위. 보통 0.85.
-     * @param tolerance 조기 종료 L1-norm 허용치. 양수여야 한다.
-     * @return 정점별 PageRank 점수 맵. 합계 ≈ 1.0.
+     * Computes normalized PageRank scores.
+	*
+     * @param vertices complete vertex ID set.
+     * @param outAdjacency out-edge adjacency list. It must not reference vertices outside [vertices].
+     * @param iterations maximum iteration count. Must be positive.
+     * @param dampingFactor damping factor in the `[0.0, 1.0]` range, typically `0.85`.
+     * @param tolerance positive L1-norm threshold for early termination.
+     * @return vertex-to-PageRank score map, normalized to a total near `1.0`.
      */
     fun compute(
         vertices: Set<GraphElementId>,
@@ -51,13 +51,13 @@ object PageRankCalculator : KLogging() {
         if (vertices.isEmpty()) return emptyMap()
 
         val n = vertices.size
-        // HashMap rehash 방지: Double 나눗셈으로 정밀도 확보 (0.75f 는 n≥25M 에서 under-provision)
+        // Avoid HashMap rehashing; Double division preserves precision for very large graphs.
         val mapCapacity = ((n / HASH_LOAD_FACTOR) + 1).toInt()
         val initial = 1.0 / n
         var ranks = HashMap<GraphElementId, Double>(mapCapacity)
         vertices.forEach { ranks[it] = initial }
 
-        // dangling node 집합은 그래프 구조가 고정되므로 루프 밖에서 1회 계산
+        // The graph structure is fixed, so dangling nodes are computed once outside the loop.
         val danglingNodes = vertices.filter { outAdjacency[it].isNullOrEmpty() }
 
         repeat(iterations) {
@@ -75,7 +75,7 @@ object PageRankCalculator : KLogging() {
                 if (outs.isNotEmpty()) {
                     val share = dampingFactor * ranks.getOrDefault(src, 0.0) / outs.size
                     outs.forEach { dst ->
-                        // merge로 단일 해시 탐색으로 읽기+쓰기 처리 (이중 맵 조회 방지)
+                        // merge performs read+write with one hash lookup.
                         newRanks.merge(dst, share, Double::plus)
                     }
                 }

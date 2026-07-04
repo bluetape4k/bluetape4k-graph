@@ -6,11 +6,11 @@ import io.bluetape4k.graph.model.TraversalVisit
 import java.util.ArrayDeque
 
 /**
- * 인접 리스트 기반 BFS/DFS JVM 폴백 러너.
+ * Adjacency-list BFS/DFS runner used as a JVM fallback.
  *
- * 백엔드 native 미지원 시 사용한다 (AGE 등).
+ * Used when the backend has no native traversal support.
  *
- * ### 사용 예제
+ * ### Usage
  * ```kotlin
  * val adjacency: Map<GraphElementId, List<GraphElementId>> = ...
  * val visits = BfsDfsRunner.bfs(start.id, adjacency, maxDepth = 3, maxVertices = 1000)
@@ -19,13 +19,13 @@ import java.util.ArrayDeque
 object BfsDfsRunner {
 
     /**
-     * BFS 방문 결과를 반환한다 (레벨 순).
-     *
-     * @param startId 시작 정점 ID.
-     * @param adjacency 인접 리스트 (out-edges).
-     * @param maxDepth 최대 탐색 깊이.
-     * @param maxVertices 반환할 최대 정점 수.
-     * @param vertexResolver 정점 ID → [GraphVertex] 변환기 (기본: 빈 properties 정점).
+     * Returns BFS visit results in level order.
+	*
+     * @param startId start vertex ID.
+     * @param adjacency adjacency list of out-edges.
+     * @param maxDepth maximum traversal depth.
+     * @param maxVertices maximum number of vertices to return.
+     * @param vertexResolver vertex ID to [GraphVertex] resolver, defaulting to empty-property vertices.
      */
     fun bfs(
         startId: GraphElementId,
@@ -56,7 +56,7 @@ object BfsDfsRunner {
     }
 
     /**
-     * DFS 방문 결과를 반환한다 (깊이 우선, pre-order).
+     * Returns DFS visit results in depth-first preorder.
      */
     fun dfs(
         startId: GraphElementId,

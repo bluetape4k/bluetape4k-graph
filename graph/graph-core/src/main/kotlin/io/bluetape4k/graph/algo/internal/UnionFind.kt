@@ -3,16 +3,16 @@ package io.bluetape4k.graph.algo.internal
 /**
  * Path compression + union-by-rank Union-Find (Disjoint Set Union).
  *
- * Connected Components 폴백 알고리즘에서 사용한다.
+ * Union-find structure used by connected-components fallback algorithms.
  *
- * ### 사용 예제
+ * ### Usage
  * ```kotlin
  * val uf = UnionFind(listOf("a", "b", "c"))
  * uf.union("a", "b")
  * uf.connected("a", "b")  // true
  * ```
  *
- * @param elements 초기 원소 컬렉션.
+ * @param elements initial element collection.
  */
 class UnionFind<T>(elements: Iterable<T>) {
 
@@ -26,7 +26,7 @@ class UnionFind<T>(elements: Iterable<T>) {
         }
     }
 
-    /** 원소 [x] 가 속한 컴포넌트의 대표(루트) 원소를 반환한다. */
+    /** Returns the representative root element for the component containing [x]. */
     fun componentOf(x: T): T {
         var root = x
         while (parent[root] != root) {
@@ -42,7 +42,7 @@ class UnionFind<T>(elements: Iterable<T>) {
         return root
     }
 
-    /** 두 원소를 같은 컴포넌트로 병합한다. */
+    /** Merges two elements into the same component. */
     fun union(x: T, y: T) {
         val rx = componentOf(x)
         val ry = componentOf(y)
@@ -60,13 +60,13 @@ class UnionFind<T>(elements: Iterable<T>) {
         }
     }
 
-    /** 두 원소가 같은 컴포넌트인지 확인한다. */
+    /** Returns whether two elements belong to the same component. */
     fun connected(x: T, y: T): Boolean = componentOf(x) == componentOf(y)
 
-    /** 현재 컴포넌트 수. */
+    /** Current component count. */
     fun componentCount(): Int = parent.keys.map { componentOf(it) }.toSet().size
 
-    /** 대표 원소 → 컴포넌트 멤버 목록 매핑. */
+    /** Mapping from representative root element to component members. */
     fun groups(): Map<T, List<T>> =
         parent.keys.groupBy { componentOf(it) }
 }

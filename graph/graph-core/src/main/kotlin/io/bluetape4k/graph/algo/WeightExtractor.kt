@@ -7,18 +7,18 @@ import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 
 /**
- * 간선 속성에서 가중치(Double)를 추출한다.
+ * Extracts a `Double` weight from edge properties.
  *
- * [MissingWeightPolicy]에 따라 결측 속성 처리 방식이 결정된다.
- * - [MissingWeightPolicy.Fail]: 결측 시 [MissingWeightException] 발생
- * - [MissingWeightPolicy.Skip]: `null` 반환 (호출자가 간선 건너뜀)
- * - [MissingWeightPolicy.UseDefault]: [MissingWeightPolicy.UseDefault.value] 반환
+ * [MissingWeightPolicy] controls missing property handling:
+ * - [MissingWeightPolicy.Fail]: throws [MissingWeightException].
+ * - [MissingWeightPolicy.Skip]: returns `null` so the caller can skip the edge.
+ * - [MissingWeightPolicy.UseDefault]: returns [MissingWeightPolicy.UseDefault.value].
  *
- * 속성이 존재하더라도 `NaN`, `Infinity`, 음수, 0.0인 경우 [IllegalArgumentException]을 발생시킨다.
+ * Existing values that are `NaN`, infinite, negative, or zero throw [IllegalArgumentException].
  *
  * ```kotlin
  * val extractor = WeightExtractor("cost", MissingWeightPolicy.UseDefault(1.0))
- * val weight = extractor.extract(edge)  // null이면 호출자가 skip
+ * val weight = extractor.extract(edge)  // caller skips when null
  * ```
  */
 class WeightExtractor(
@@ -28,11 +28,11 @@ class WeightExtractor(
     companion object : KLogging()
 
     /**
-     * [edge]에서 가중치를 추출한다.
-     *
-     * @return 가중치 값. [MissingWeightPolicy.Skip]이고 속성이 없으면 `null`.
-     * @throws MissingWeightException [MissingWeightPolicy.Fail]이고 속성이 없는 경우.
-     * @throws IllegalArgumentException 추출된 값이 유효하지 않은 경우 (NaN, Infinity, <= 0).
+     * Extracts the weight from [edge].
+	*
+     * @return weight value, or `null` when [MissingWeightPolicy.Skip] is active and the property is absent.
+     * @throws MissingWeightException when [MissingWeightPolicy.Fail] is active and the property is absent.
+     * @throws IllegalArgumentException when the extracted value is invalid (`NaN`, infinity, or <= 0).
      */
     fun extract(edge: GraphEdge): Double? {
         val raw = edge.properties[weightProperty]

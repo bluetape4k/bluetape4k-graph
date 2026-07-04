@@ -18,18 +18,18 @@ import io.bluetape4k.logging.KLogging
 import java.util.concurrent.CompletableFuture
 
 /**
- * [GraphAlgorithmRepository] 의 모든 메서드를 Virtual Thread 위에서 실행하는 어댑터.
+ * Adapter that runs all [GraphAlgorithmRepository] methods on virtual threads.
  *
- * 단일 작업에는 `virtualFutureOf { }` 를 사용한다.
+ * Single operations use `virtualFutureOf { }`.
  *
- * ### 사용 예제
+ * ### Usage
  * ```kotlin
  * val ops: GraphOperations = Neo4jGraphOperations(driver)
  * val vtOps = ops.asVirtualThread()
  * val scores = vtOps.pageRankAsync().join()
  * ```
  *
- * @param delegate 위임할 동기 [GraphAlgorithmRepository].
+ * @param delegate synchronous [GraphAlgorithmRepository] to delegate to.
  */
 class VirtualThreadAlgorithmAdapter(
     private val delegate: GraphAlgorithmRepository,
@@ -66,7 +66,7 @@ class VirtualThreadAlgorithmAdapter(
 }
 
 /**
- * [GraphAlgorithmRepository] 를 Virtual Thread 어댑터로 감싸는 확장 함수.
+ * Wraps [GraphAlgorithmRepository] in a virtual-thread adapter.
  *
  * ```kotlin
  * val vtOps = ops.asVirtualThread()

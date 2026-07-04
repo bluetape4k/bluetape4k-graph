@@ -5,9 +5,9 @@ import io.bluetape4k.graph.model.GraphVertex
 import kotlinx.coroutines.flow.Flow
 
 /**
- * 그래프 정점(Vertex) CRUD 저장소 (코루틴 방식).
+ * Coroutine graph vertex CRUD repository.
  *
- * 컬렉션 반환은 [Flow]로 제공하여 대량 데이터 스트리밍을 지원한다.
+ * Collection-returning operations expose [Flow] so large result sets can stream.
  *
  * ```kotlin
  * runBlocking {
@@ -19,35 +19,35 @@ import kotlinx.coroutines.flow.Flow
  * }
  * ```
  *
- * @see GraphVertexRepository 동기(blocking) 방식
+ * @see GraphVertexRepository synchronous blocking variant
  */
 interface GraphSuspendVertexRepository {
     /**
-     * 새 정점을 생성하고 반환한다.
+     * Creates and returns a new vertex.
      *
      * ```kotlin
      * val vertex = ops.createVertex("Person", mapOf("name" to "Alice", "age" to 30))
      * ```
      *
-     * @param label 정점 레이블.
-     * @param properties 정점에 저장할 속성 맵. 기본값은 빈 맵.
-     * @return 백엔드에서 생성된 [GraphVertex] (ID가 채워진 상태).
+     * @param label vertex label.
+     * @param properties properties to store on the vertex; defaults to an empty map.
+     * @return backend-created [GraphVertex] with its ID populated.
      */
     suspend fun createVertex(label: String, properties: Map<String, Any?> = emptyMap()): GraphVertex
 
     /**
-     * 같은 레이블의 정점을 여러 개 생성하고 입력 순서와 같은 순서로 반환한다.
+     * Creates multiple vertices with the same label and returns them in input order.
      *
-     * ## 동작/계약
+     * ## Contract
      *
-     * - 빈 입력은 백엔드를 호출하지 않고 `emptyList()`를 반환한다.
-     * - 기본 구현은 [createVertex]를 순차 호출하는 호환성 fallback이다.
-     * - 기본 구현은 중간 실패 시 앞서 생성된 정점이 남을 수 있다.
-     * - 성능 및 all-or-fail 의미가 필요한 프로덕션 백엔드는 이 메서드를 override해야 한다.
+     * - Empty input returns `emptyList()` without calling the backend.
+     * - The default implementation is a compatibility fallback that calls [createVertex] sequentially.
+     * - If the default implementation fails mid-batch, previously created vertices may remain.
+     * - Production backends that need performance or all-or-fail semantics should override this method.
      *
-     * @param label 정점 레이블.
-     * @param propertiesList 각 정점에 저장할 속성 맵 목록.
-     * @return 백엔드에서 생성된 [GraphVertex] 목록.
+     * @param label vertex label.
+     * @param propertiesList property maps to store on each vertex.
+     * @return backend-created [GraphVertex] values.
      */
     suspend fun createVertices(
         label: String,
@@ -59,43 +59,43 @@ interface GraphSuspendVertexRepository {
     }
 
     /**
-     * ID로 단일 정점을 조회한다.
+     * Finds one vertex by label and ID.
      *
      * ```kotlin
      * val found = ops.findVertexById("Person", vertex.id)  // non-null
      * ```
      *
-     * @param label 정점 레이블.
-     * @param id 조회할 정점 ID.
-     * @return 존재하면 [GraphVertex], 없으면 `null`.
+     * @param label vertex label.
+     * @param id vertex ID to query.
+     * @return [GraphVertex] when found, otherwise `null`.
      */
     suspend fun findVertexById(label: String, id: GraphElementId): GraphVertex?
 
     /**
-     * 레이블 없이 ID로 단일 정점을 조회한다.
+     * Finds one vertex by ID without a label.
      *
      * ```kotlin
      * val found = ops.findVertexById(vertex.id)
      * ```
      *
-     * @param id 조회할 정점 ID.
-     * @return 존재하면 [GraphVertex], 없으면 `null`.
+     * @param id vertex ID to query.
+     * @return [GraphVertex] when found, otherwise `null`.
      */
     suspend fun findVertexById(id: GraphElementId): GraphVertex?
 
     /**
-     * 레이블과 속성 필터로 정점 목록을 스트림으로 조회한다.
+     * Finds vertices by label and property filter as a stream.
      *
-     * 대량 데이터에 적합한 [Flow] 기반 조회이다.
+     * This [Flow]-based query is suitable for large result sets.
      *
      * ```kotlin
      * val all  = ops.findVerticesByLabel("Person").toList()
      * val aged = ops.findVerticesByLabel("Person", mapOf("age" to 30)).toList()
      * ```
      *
-     * @param label 조회할 정점 레이블.
-     * @param filter 속성 이름→값 조건 맵. 빈 맵이면 레이블 전체를 반환.
-     * @return 조건에 맞는 [GraphVertex] Flow.
+     * @param label vertex label to query.
+     * @param filter property-name to value conditions. An empty map returns the full label.
+     * @return [Flow] of matching [GraphVertex] values.
      */
     fun findVerticesByLabel(label: String, filter: Map<String, Any?> = emptyMap()): Flow<GraphVertex>
 
@@ -124,41 +124,41 @@ interface GraphSuspendVertexRepository {
         findVerticesByLabel(label, filter).asGraphExportChunks(chunkSize)
 
     /**
-     * 기존 정점의 속성을 갱신하고 갱신된 정점을 반환한다.
+     * Updates an existing vertex and returns the updated vertex.
      *
      * ```kotlin
      * val updated = ops.updateVertex("Person", vertex.id, mapOf("age" to 31))
      * ```
      *
-     * @param label 정점 레이블.
-     * @param id 갱신할 정점 ID.
-     * @param properties 새 속성 맵 (기존 속성을 대체한다).
-     * @return 갱신된 [GraphVertex], 해당 ID가 없으면 `null`.
+     * @param label vertex label.
+     * @param id vertex ID to update.
+     * @param properties new property map, replacing existing properties.
+     * @return updated [GraphVertex], or `null` when the ID is absent.
      */
     suspend fun updateVertex(label: String, id: GraphElementId, properties: Map<String, Any?>): GraphVertex?
 
     /**
-     * 정점을 삭제한다.
+     * Deletes a vertex.
      *
      * ```kotlin
      * val deleted = ops.deleteVertex("Person", vertex.id)  // true
      * ```
      *
-     * @param label 정점 레이블.
-     * @param id 삭제할 정점 ID.
-     * @return 삭제 성공이면 `true`, 해당 ID가 없으면 `false`.
+     * @param label vertex label.
+     * @param id vertex ID to delete.
+     * @return `true` when deleted, or `false` when the ID is absent.
      */
     suspend fun deleteVertex(label: String, id: GraphElementId): Boolean
 
     /**
-     * 레이블로 정점 수를 반환한다.
+     * Counts vertices by label.
      *
      * ```kotlin
      * val count = ops.countVertices("Person")  // 1L
      * ```
      *
-     * @param label 카운트할 정점 레이블.
-     * @return 해당 레이블의 정점 총 수.
+     * @param label vertex label to count.
+     * @return total vertex count for the label.
      */
     suspend fun countVertices(label: String): Long
 }

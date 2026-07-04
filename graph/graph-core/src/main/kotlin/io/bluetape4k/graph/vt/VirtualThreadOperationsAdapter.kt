@@ -11,11 +11,11 @@ import io.bluetape4k.graph.repository.GraphVirtualThreadVertexRepository
 import io.bluetape4k.logging.KLogging
 
 /**
- * [GraphOperations] 의 모든 기능을 Virtual Thread 위에서 제공하는 통합 어댑터.
+ * Unified adapter that exposes all [GraphOperations] capabilities on virtual threads.
  *
- * Kotlin `by` 위임으로 5개 어댑터를 합성한다.
+ * It composes five focused adapters through Kotlin `by` delegation.
  *
- * ### 사용 예제
+ * ### Usage
  * ```kotlin
  * val ops: GraphOperations = TinkerGraphOperations()
  * val vtOps = VirtualThreadOperationsAdapter(ops)
@@ -24,7 +24,7 @@ import io.bluetape4k.logging.KLogging
  * val scores = vtOps.pageRankAsync().join()
  * ```
  *
- * @param delegate 위임할 동기 [GraphOperations].
+ * @param delegate synchronous [GraphOperations] to delegate to.
  */
 class VirtualThreadOperationsAdapter(
     private val delegate: GraphOperations,
@@ -38,6 +38,6 @@ class VirtualThreadOperationsAdapter(
     companion object: KLogging()
 
     override fun close() {
-        // 소유권 원칙상 delegate를 닫지 않는다. delegate 생명주기는 호출자가 관리한다.
+        // The delegate is externally owned; callers manage its lifecycle.
     }
 }

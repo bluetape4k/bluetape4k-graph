@@ -3,13 +3,13 @@ package io.bluetape4k.graph.model
 import java.io.Serializable
 
 /**
- * Degree Centrality(연결 중심성) 결과.
+ * Degree centrality result.
  *
- * @property vertexId 측정 대상 정점 ID.
- * @property inDegree 들어오는 간선 수.
- * @property outDegree 나가는 간선 수.
+ * @property vertexId ID of the measured vertex.
+ * @property inDegree Number of incoming edges.
+ * @property outDegree Number of outgoing edges.
  *
- * ### 사용 예제
+ * ### Usage
  * ```kotlin
  * val degree = ops.degreeCentrality(alice.id)
  * println("in=${degree.inDegree} out=${degree.outDegree} total=${degree.total}")
@@ -20,7 +20,7 @@ data class DegreeResult(
     val inDegree: Int,
     val outDegree: Int,
 ): Serializable {
-    /** in + out 간선 수 합계. */
+    /** Sum of incoming and outgoing edges. */
     val total: Int get() = inDegree + outDegree
 
     companion object {

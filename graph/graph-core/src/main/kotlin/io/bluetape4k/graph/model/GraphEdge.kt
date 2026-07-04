@@ -3,19 +3,19 @@ package io.bluetape4k.graph.model
 import java.io.Serializable
 
 /**
- * 그래프의 간선(Edge/Relationship).
+ * Graph edge or relationship.
  *
- * 두 정점 사이의 관계를 나타내는 불변 모델이다.
- * 방향 그래프에서는 [startId] → [endId] 방향으로 간선이 향한다.
- * `startId == endId`인 자기 참조(self-loop) 간선도 허용된다.
+ * Immutable model for a relationship between two vertices.
+ * In directed graphs, the edge points from [startId] to [endId].
+ * Self-loop edges with `startId == endId` are allowed.
  *
- * @property id 백엔드 독립적인 간선 ID.
- * @property label 관계의 타입을 나타내는 레이블 (예: `"KNOWS"`, `"WORKS_AT"`).
- * @property startId 간선의 시작 정점 ID.
- * @property endId 간선의 종료 정점 ID.
- * @property properties 간선에 첨부된 속성 맵. 값은 `null`을 포함할 수 있다.
+ * @property id Backend-independent edge ID.
+ * @property label Label that describes the relationship type, such as `"KNOWS"` or `"WORKS_AT"`.
+ * @property startId Start vertex ID.
+ * @property endId End vertex ID.
+ * @property properties Property map attached to the edge. Values may contain `null`.
  *
- * ### 사용 예제
+ * ### Usage
  * ```kotlin
  * val edge = GraphEdge(
  *     id = GraphElementId.of("e-1"),

@@ -10,11 +10,11 @@ import io.bluetape4k.logging.KLogging
 import java.util.concurrent.CompletableFuture
 
 /**
- * [GraphEdgeRepository] 의 모든 메서드를 Virtual Thread 위에서 실행하는 어댑터.
+ * Adapter that runs all [GraphEdgeRepository] methods on virtual threads.
  *
- * 단일 작업에는 `virtualFutureOf { }` 를 사용한다.
+ * Single operations use `virtualFutureOf { }`.
  *
- * @param delegate 위임할 동기 [GraphEdgeRepository].
+ * @param delegate synchronous [GraphEdgeRepository] to delegate to.
  */
 class VirtualThreadEdgeAdapter(
     private val delegate: GraphEdgeRepository,
@@ -59,7 +59,7 @@ class VirtualThreadEdgeAdapter(
 }
 
 /**
- * [GraphEdgeRepository] 를 Virtual Thread 어댑터로 감싸는 확장 함수.
+ * Wraps [GraphEdgeRepository] in a virtual-thread adapter.
  */
 fun GraphEdgeRepository.asVirtualThreadEdge(): GraphVirtualThreadEdgeRepository =
     VirtualThreadEdgeAdapter(this)

@@ -1,11 +1,11 @@
 package io.bluetape4k.graph.repository
 
 /**
- * 순회(traversal) + 분석(algorithm) 을 묶은 동기 합성 인터페이스.
+ * Synchronous composite interface for traversal and algorithm operations.
  *
- * [GraphOperations] 의존성을 좁히고 싶을 때 이 타입을 직접 주입할 수 있다.
+ * Inject this type directly when callers need a narrower dependency than [GraphOperations].
  *
- * ### 사용 예제
+ * ### Usage
  * ```kotlin
  * fun analyze(repo: GraphGenericRepository) {
  *     val path = repo.shortestPath(a, b)

@@ -14,29 +14,29 @@ import org.neo4j.driver.SessionConfig
 import org.neo4j.driver.reactivestreams.ReactiveSession
 
 /**
- * Neo4j Java Driver의 Reactive API를 Kotlin Coroutine으로 브릿지.
+ * Bridges the Neo4j Java Driver reactive API to Kotlin coroutines.
  *
- * `org.neo4j.driver.reactivestreams.ReactiveSession`이 반환하는
- * `org.reactivestreams.Publisher<T>`를 `kotlinx-coroutines-reactive`로 변환합니다.
+ * It converts `org.reactivestreams.Publisher<T>` values returned by
+ * `org.neo4j.driver.reactivestreams.ReactiveSession` through `kotlinx-coroutines-reactive`.
  *
- * 소유권: 외부에서 주입된 [Driver]를 [close]에서 닫지 않습니다.
+ * Ownership: [close] does not close the externally provided [Driver].
  *
  * ```kotlin
  * val session = Neo4jCoroutineSession(driver)
  *
- * // 쓰기 쿼리
+ * // Write query
  * val records = session.runWriteQuery(
  *     "CREATE (n:Person {name: $name}) RETURN n",
  *     mapOf("name" to "Alice")
  * )
  *
- * // 읽기 쿼리
+ * // Read query
  * val results = session.runReadQuery("MATCH (n:Person) RETURN n")
  * val vertices = results.map { Neo4jRecordMapper.recordToVertex(it) }
  * ```
  *
- * @param driver Neo4j Java Driver (외부 소유)
- * @param database Neo4j 데이터베이스 이름 (기본: "neo4j")
+ * @param driver externally owned Neo4j Java Driver.
+ * @param database Neo4j database name, defaulting to `"neo4j"`.
  */
 class Neo4jCoroutineSession(
     private val driver: Driver,
@@ -46,7 +46,7 @@ class Neo4jCoroutineSession(
     companion object: KLoggingChannel()
 
     /**
-     * 읽기 전용 트랜잭션 실행.
+     * Runs a read-only reactive session block.
      *
      * ```kotlin
      * val vertices = session.read { s ->
@@ -66,7 +66,7 @@ class Neo4jCoroutineSession(
     }
 
     /**
-     * 쓰기 트랜잭션 실행.
+     * Runs a write reactive session block.
      *
      * ```kotlin
      * session.write { s ->
@@ -86,7 +86,7 @@ class Neo4jCoroutineSession(
     }
 
     /**
-     * 읽기 쿼리를 Flow로 실행하여 Record 목록을 반환합니다.
+     * Runs a read query and returns the materialized records.
      *
      * ```kotlin
      * val records = session.runReadQuery(
@@ -110,7 +110,7 @@ class Neo4jCoroutineSession(
     }
 
     /**
-     * 쓰기 쿼리를 실행하고 Record 목록을 반환합니다.
+     * Runs a write query and returns the materialized records.
      *
      * ```kotlin
      * val records = session.runWriteQuery(
@@ -126,7 +126,7 @@ class Neo4jCoroutineSession(
     }
 
     override fun close() {
-        // driver는 외부 소유이므로 닫지 않음
+        // The driver is externally owned.
     }
 
     private fun sessionConfig(): SessionConfig =

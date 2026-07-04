@@ -14,12 +14,12 @@ import io.bluetape4k.graph.model.TraversalVisit
 import kotlinx.coroutines.flow.Flow
 
 /**
- * 그래프 분석(Analytics) 알고리즘 저장소 (코루틴/Flow 방식).
+ * Graph analytics algorithm repository for the coroutine and Flow API.
  *
- * Flow 순서 계약은 [GraphAlgorithmRepository] 와 동일하다.
- * [pageRank] Flow 는 score 내림차순으로 emit 된다.
+ * Flow ordering matches [GraphAlgorithmRepository].
+ * The [pageRank] Flow emits scores in descending order.
  *
- * ### 사용 예제
+ * ### Usage
  * ```kotlin
  * runBlocking {
  *     val top10 = ops.pageRank(PageRankOptions(topK = 10)).toList()
@@ -28,17 +28,17 @@ import kotlinx.coroutines.flow.Flow
  * }
  * ```
  *
- * @see GraphAlgorithmRepository 동기 방식
+ * @see GraphAlgorithmRepository blocking API
  */
 interface GraphSuspendAlgorithmRepository {
 
     /**
-     * PageRank 점수를 Flow 로 emit 한다 (score 내림차순).
+     * Emits PageRank scores as a Flow in descending score order.
      */
     fun pageRank(options: PageRankOptions = PageRankOptions.Default): Flow<PageRankScore>
 
     /**
-     * 단일 정점의 Degree Centrality 를 계산한다.
+     * Computes degree centrality for one vertex.
      */
     suspend fun degreeCentrality(
         vertexId: GraphElementId,
@@ -46,14 +46,14 @@ interface GraphSuspendAlgorithmRepository {
     ): DegreeResult
 
     /**
-     * 연결 컴포넌트를 Flow 로 emit 한다.
+     * Emits connected components as a Flow.
      */
     fun connectedComponents(
         options: ComponentOptions = ComponentOptions.Default,
     ): Flow<GraphComponent>
 
     /**
-     * BFS 방문 이벤트를 Flow 로 emit 한다.
+     * Emits BFS visit events as a Flow.
      */
     fun bfs(
         startId: GraphElementId,
@@ -61,7 +61,7 @@ interface GraphSuspendAlgorithmRepository {
     ): Flow<TraversalVisit>
 
     /**
-     * DFS 방문 이벤트를 Flow 로 emit 한다.
+     * Emits DFS visit events as a Flow.
      */
     fun dfs(
         startId: GraphElementId,
@@ -69,7 +69,7 @@ interface GraphSuspendAlgorithmRepository {
     ): Flow<TraversalVisit>
 
     /**
-     * 탐지된 순환을 Flow 로 emit 한다.
+     * Emits detected cycles as a Flow.
      */
     fun detectCycles(
         options: CycleOptions = CycleOptions.Default,

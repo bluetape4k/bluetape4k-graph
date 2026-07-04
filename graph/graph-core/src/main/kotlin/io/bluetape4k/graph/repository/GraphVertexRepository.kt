@@ -4,7 +4,7 @@ import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphVertex
 
 /**
- * 그래프 정점(Vertex) CRUD 저장소 (동기 방식).
+ * Synchronous graph vertex CRUD repository.
  *
  * ```kotlin
  * val vertex = ops.createVertex("Person", mapOf("name" to "Alice", "age" to 30))
@@ -17,7 +17,7 @@ import io.bluetape4k.graph.model.GraphVertex
  */
 interface GraphVertexRepository {
     /**
-     * 새 정점을 생성하고 반환한다.
+     * Creates and returns a new vertex.
      *
      * ```kotlin
      * val vertex = ops.createVertex("Person", mapOf("name" to "Alice", "age" to 30))
@@ -25,21 +25,21 @@ interface GraphVertexRepository {
      * println(vertex.label) // "Person"
      * ```
      *
-     * @param label 정점 레이블.
-     * @param properties 정점에 저장할 속성 맵. 기본값은 빈 맵.
-     * @return 백엔드에서 생성된 [GraphVertex] (ID가 채워진 상태).
+     * @param label vertex label.
+     * @param properties properties to store on the vertex; defaults to an empty map.
+     * @return backend-created [GraphVertex] with its ID populated.
      */
     fun createVertex(label: String, properties: Map<String, Any?> = emptyMap()): GraphVertex
 
     /**
-     * 같은 레이블의 정점을 여러 개 생성하고 입력 순서와 같은 순서로 반환한다.
-     *
-     * ## 동작/계약
-     *
-     * - 빈 입력은 백엔드를 호출하지 않고 `emptyList()`를 반환한다.
-     * - 기본 구현은 [createVertex]를 순차 호출하는 호환성 fallback이다.
-     * - 기본 구현은 중간 실패 시 앞서 생성된 정점이 남을 수 있다.
-     * - 성능 및 all-or-fail 의미가 필요한 프로덕션 백엔드는 이 메서드를 override해야 한다.
+     * Creates multiple vertices with the same label and returns them in input order.
+	*
+     * ## Contract
+	*
+     * - Empty input returns `emptyList()` without calling the backend.
+     * - The default implementation is a compatibility fallback that calls [createVertex] sequentially.
+     * - If the default implementation fails mid-batch, previously created vertices may remain.
+     * - Production backends that need performance or all-or-fail semantics should override this method.
      *
      * ```kotlin
      * val vertices = ops.createVertices(
@@ -51,9 +51,9 @@ interface GraphVertexRepository {
      * )
      * ```
      *
-     * @param label 정점 레이블.
-     * @param propertiesList 각 정점에 저장할 속성 맵 목록.
-     * @return 백엔드에서 생성된 [GraphVertex] 목록.
+     * @param label vertex label.
+     * @param propertiesList property maps to store on each vertex.
+     * @return backend-created [GraphVertex] values.
      */
     fun createVertices(
         label: String,
@@ -65,45 +65,45 @@ interface GraphVertexRepository {
     }
 
     /**
-     * ID로 단일 정점을 조회한다.
+     * Finds one vertex by label and ID.
      *
      * ```kotlin
      * val found = ops.findVertexById("Person", vertex.id)  // non-null
      * val none  = ops.findVertexById("Person", GraphElementId.of("unknown"))  // null
      * ```
      *
-     * @param label 정점 레이블.
-     * @param id 조회할 정점 ID.
-     * @return 존재하면 [GraphVertex], 없으면 `null`.
+     * @param label vertex label.
+     * @param id vertex ID to query.
+     * @return [GraphVertex] when found, otherwise `null`.
      */
     fun findVertexById(label: String, id: GraphElementId): GraphVertex?
 
     /**
-     * 레이블 없이 ID로 단일 정점을 조회한다.
-     *
-     * 백엔드가 ID로만 정점을 조회할 수 있는 경우에 사용한다.
-     * Dijkstra/A* 알고리즘에서 레이블 없이 ID만 알고 있을 때 필요하다.
+     * Finds one vertex by ID without a label.
+	*
+     * Use this when the backend can query vertices by ID alone. Dijkstra/A* algorithms need it
+     * when only the vertex ID is known.
      *
      * ```kotlin
-     * val found = ops.findVertexById(vertex.id)  // 레이블 불필요
+     * val found = ops.findVertexById(vertex.id)  // label not required
      * ```
      *
-     * @param id 조회할 정점 ID.
-     * @return 존재하면 [GraphVertex], 없으면 `null`.
+     * @param id vertex ID to query.
+     * @return [GraphVertex] when found, otherwise `null`.
      */
     fun findVertexById(id: GraphElementId): GraphVertex?
 
     /**
-     * 레이블과 속성 필터로 정점 목록을 조회한다.
+     * Finds vertices by label and property filter.
      *
      * ```kotlin
      * val all   = ops.findVerticesByLabel("Person")
      * val aged  = ops.findVerticesByLabel("Person", mapOf("age" to 30))
      * ```
      *
-     * @param label 조회할 정점 레이블.
-     * @param filter 속성 이름→값 조건 맵. 빈 맵이면 레이블 전체를 반환.
-     * @return 조건에 맞는 [GraphVertex] 목록.
+     * @param label vertex label to query.
+     * @param filter property-name to value conditions. An empty map returns the full label.
+     * @return matching [GraphVertex] values.
      */
     fun findVerticesByLabel(label: String, filter: Map<String, Any?> = emptyMap()): List<GraphVertex>
 
@@ -135,41 +135,41 @@ interface GraphVertexRepository {
         findVerticesByLabel(label, filter).asGraphExportChunks(chunkSize)
 
     /**
-     * 기존 정점의 속성을 갱신하고 갱신된 정점을 반환한다.
+     * Updates an existing vertex and returns the updated vertex.
      *
      * ```kotlin
      * val updated = ops.updateVertex("Person", vertex.id, mapOf("age" to 31))
      * ```
      *
-     * @param label 정점 레이블.
-     * @param id 갱신할 정점 ID.
-     * @param properties 새 속성 맵 (기존 속성을 대체한다).
-     * @return 갱신된 [GraphVertex], 해당 ID가 없으면 `null`.
+     * @param label vertex label.
+     * @param id vertex ID to update.
+     * @param properties new property map, replacing existing properties.
+     * @return updated [GraphVertex], or `null` when the ID is absent.
      */
     fun updateVertex(label: String, id: GraphElementId, properties: Map<String, Any?>): GraphVertex?
 
     /**
-     * 정점을 삭제한다.
+     * Deletes a vertex.
      *
      * ```kotlin
      * val deleted = ops.deleteVertex("Person", vertex.id)  // true
      * ```
      *
-     * @param label 정점 레이블.
-     * @param id 삭제할 정점 ID.
-     * @return 삭제 성공이면 `true`, 해당 ID가 없으면 `false`.
+     * @param label vertex label.
+     * @param id vertex ID to delete.
+     * @return `true` when deleted, or `false` when the ID is absent.
      */
     fun deleteVertex(label: String, id: GraphElementId): Boolean
 
     /**
-     * 레이블로 정점 수를 반환한다.
+     * Counts vertices by label.
      *
      * ```kotlin
      * val count = ops.countVertices("Person")  // 1L
      * ```
      *
-     * @param label 카운트할 정점 레이블.
-     * @return 해당 레이블의 정점 총 수.
+     * @param label vertex label to count.
+     * @return total vertex count for the label.
      */
     fun countVertices(label: String): Long
 }

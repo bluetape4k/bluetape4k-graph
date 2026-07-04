@@ -1,15 +1,15 @@
 package io.bluetape4k.graph
 
 /**
- * Graph 모듈 최상위 예외.
+ * Base exception for the graph module.
  *
  * ```kotlin
  * try {
  *     ops.createGraph("existing")
  * } catch (e: GraphAlreadyExistsException) {
- *     // 이미 존재하는 그래프 처리
+ *     // Handle an existing graph.
  * } catch (e: GraphQueryException) {
- *     // Cypher/SQL 실행 오류 처리
+ *     // Handle Cypher/SQL execution errors.
  * }
  * ```
  */
@@ -21,7 +21,7 @@ open class GraphException: RuntimeException {
 }
 
 /**
- * 지정한 그래프를 찾을 수 없을 때 발생하는 예외.
+ * Thrown when a graph cannot be found.
  *
  * ```kotlin
  * throw GraphNotFoundException("social")
@@ -35,7 +35,7 @@ class GraphNotFoundException: GraphException {
 }
 
 /**
- * 동일한 이름의 그래프가 이미 존재할 때 발생하는 예외.
+ * Thrown when a graph with the same name already exists.
  *
  * ```kotlin
  * throw GraphAlreadyExistsException("social")
@@ -49,7 +49,7 @@ class GraphAlreadyExistsException: GraphException {
 }
 
 /**
- * 그래프 쿼리 실행 실패 시 발생하는 예외.
+ * Thrown when graph query execution fails.
  *
  * ```kotlin
  * throw GraphQueryException("Failed to create vertex: Person")
@@ -63,7 +63,7 @@ class GraphQueryException: GraphException {
 }
 
 /**
- * 그래프가 초기화되지 않은 상태에서 접근할 때 발생하는 예외.
+ * Thrown when a graph is accessed before initialization.
  *
  * ```kotlin
  * throw GraphNotInitializedException("social graph is not initialized")

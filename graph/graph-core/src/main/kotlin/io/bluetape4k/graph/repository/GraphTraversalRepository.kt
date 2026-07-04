@@ -7,34 +7,34 @@ import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
 
 /**
- * 그래프 순회(Traversal) 저장소 (동기 방식).
+ * Synchronous graph traversal repository.
  *
  * ```kotlin
- * // 1단계 아웃고잉 이웃 탐색
+ * // One-hop outgoing neighbor traversal.
  * val friends = ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS"))
  *
- * // 최단 경로 (최대 10홉)
+ * // Shortest path with at most 10 hops.
  * val path = ops.shortestPath(alice.id, carol.id, PathOptions(edgeLabel = "KNOWS", maxDepth = 10))
  *
- * // 모든 경로
+ * // All paths.
  * val paths = ops.allPaths(alice.id, carol.id, PathOptions(maxDepth = 5))
  * ```
  */
 interface GraphTraversalRepository {
     /**
-     * 시작 정점의 인접 정점(이웃)을 탐색한다.
-     *
-     * [NeighborOptions.direction]에 따라 나가는 방향, 들어오는 방향, 또는 양방향으로 탐색한다.
-     * [NeighborOptions.maxDepth]가 2 이상이면 다단계 이웃까지 탐색한다.
+     * Finds adjacent neighbor vertices from the start vertex.
+	*
+     * [NeighborOptions.direction] selects outgoing, incoming, or bidirectional traversal.
+     * [NeighborOptions.maxDepth] values of 2 or more include multi-hop neighbors.
      *
      * ```kotlin
      * val friends = ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS"))
      * val all3hop = ops.neighbors(alice.id, NeighborOptions(maxDepth = 3))
      * ```
      *
-     * @param startId 탐색을 시작할 정점 ID.
-     * @param options 탐색 옵션 (레이블 필터, 방향, 최대 깊이).
-     * @return 인접 [GraphVertex] 목록.
+     * @param startId vertex ID to start traversal from.
+     * @param options traversal options for label filtering, direction, and maximum depth.
+     * @return adjacent [GraphVertex] values.
      */
     fun neighbors(
         startId: GraphElementId,
@@ -42,20 +42,20 @@ interface GraphTraversalRepository {
     ): List<GraphVertex>
 
     /**
-     * 두 정점 사이의 최단 경로를 찾는다.
-     *
-     * [PathOptions.maxDepth]까지만 탐색한다.
-     * 경로가 없거나 최대 깊이를 초과하면 `null`을 반환한다.
+     * Finds the shortest path between two vertices.
+	*
+     * Traversal is limited by [PathOptions.maxDepth]. Returns `null` when no path exists
+     * or the shortest path exceeds the maximum depth.
      *
      * ```kotlin
      * val path = ops.shortestPath(alice.id, carol.id, PathOptions(edgeLabel = "KNOWS", maxDepth = 10))
      * println(path?.length)  // 2 (alice→bob→carol)
      * ```
      *
-     * @param fromId 출발 정점 ID.
-     * @param toId 도착 정점 ID.
-     * @param options 탐색 옵션 (레이블 필터, 최대 깊이).
-     * @return 최단 [GraphPath], 경로가 없으면 `null`.
+     * @param fromId source vertex ID.
+     * @param toId target vertex ID.
+     * @param options traversal options for label filtering and maximum depth.
+     * @return shortest [GraphPath], or `null` when no path exists.
      */
     fun shortestPath(
         fromId: GraphElementId,
@@ -64,20 +64,19 @@ interface GraphTraversalRepository {
     ): GraphPath?
 
     /**
-     * 두 정점 사이의 모든 경로를 찾는다.
-     *
-     * [PathOptions.maxDepth]까지의 모든 단순 경로를 반환한다.
-     * 경로가 없으면 빈 목록을 반환한다.
+     * Finds all paths between two vertices.
+	*
+     * Returns all simple paths up to [PathOptions.maxDepth], or an empty list when no paths exist.
      *
      * ```kotlin
      * val paths = ops.allPaths(alice.id, carol.id, PathOptions(maxDepth = 5))
-     * println(paths.size)  // 경로 수
+     * println(paths.size)  // path count
      * ```
      *
-     * @param fromId 출발 정점 ID.
-     * @param toId 도착 정점 ID.
-     * @param options 탐색 옵션 (레이블 필터, 최대 깊이).
-     * @return [GraphPath] 목록.
+     * @param fromId source vertex ID.
+     * @param toId target vertex ID.
+     * @param options traversal options for label filtering and maximum depth.
+     * @return [GraphPath] values.
      */
     fun allPaths(
         fromId: GraphElementId,
@@ -86,25 +85,24 @@ interface GraphTraversalRepository {
     ): List<GraphPath>
 
     /**
-     * A* 알고리즘으로 가중치 최단 경로를 찾는다.
-     *
-     * `options.weightProperty`가 반드시 설정되어야 한다.
-     * [heuristic]은 목표 정점까지의 예상 비용을 반환하는 비허용 불가(admissible) 함수여야 한다.
-     * 동기 함수만 허용하며 `suspend` 함수는 지원하지 않는다.
+     * Finds a weighted shortest path with the A* algorithm.
+	*
+     * `options.weightProperty` must be set. [heuristic] must be an admissible synchronous
+     * function that estimates cost to the target vertex; suspend heuristics are not supported.
      *
      * ```kotlin
      * val opts = PathOptions(weightProperty = "distance", direction = Direction.OUTGOING)
      * val path = ops.aStarPath(a.id, b.id, opts) { vertex ->
-     *     // 유클리드 거리 등 허용 가능한 휴리스틱
+     *     // Admissible heuristic such as Euclidean distance.
      *     euclidean(vertex, goal)
      * }
      * ```
      *
-     * @param fromId 출발 정점 ID.
-     * @param toId 도착 정점 ID.
-     * @param options 탐색 옵션 ([PathOptions.weightProperty] 필수).
-     * @param heuristic 목표까지의 예상 비용 함수. 허용 가능(admissible)해야 한다.
-     * @return 가중치 최단 [GraphPath], 경로가 없으면 `null`.
+     * @param fromId source vertex ID.
+     * @param toId target vertex ID.
+     * @param options traversal options; [PathOptions.weightProperty] is required.
+     * @param heuristic admissible estimated cost function to the target.
+     * @return weighted shortest [GraphPath], or `null` when no path exists.
      */
     fun aStarPath(
         fromId: GraphElementId,

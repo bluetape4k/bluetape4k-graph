@@ -3,16 +3,15 @@ package io.bluetape4k.graph.model
 import java.io.Serializable
 
 /**
- * 그래프의 정점(Vertex/Node).
+ * Graph vertex or node.
  *
- * 모든 그래프 백엔드(AGE, Neo4j, Memgraph, TinkerGraph)에서 공통으로 사용하는
- * 불변 정점 모델이다.
+ * Immutable vertex model shared by all graph backends: AGE, Neo4j, Memgraph, and TinkerGraph.
  *
- * @property id 백엔드 독립적인 정점 ID.
- * @property label 정점의 타입을 나타내는 레이블 (예: `"Person"`, `"Company"`).
- * @property properties 정점에 첨부된 속성 맵. 값은 `null`을 포함할 수 있다.
+ * @property id Backend-independent vertex ID.
+ * @property label Label that describes the vertex type, such as `"Person"` or `"Company"`.
+ * @property properties Property map attached to the vertex. Values may contain `null`.
  *
- * ### 사용 예제
+ * ### Usage
  * ```kotlin
  * val person = GraphVertex(
  *     id = GraphElementId.of("v-1"),
@@ -33,32 +32,32 @@ data class GraphVertex(
 }
 
 /**
- * [GraphElementId]와 레이블로 정점을 생성한다.
+ * Creates a vertex from a [GraphElementId] and label.
  *
  * ```kotlin
  * val v = graphVertexOf(GraphElementId.of("v-1"), "Person", mapOf("name" to "Alice"))
  * ```
  *
- * @param id 정점 ID.
- * @param label 정점 레이블.
- * @param properties 정점 속성 맵. 기본값은 빈 맵.
+ * @param id Vertex ID.
+ * @param label Vertex label.
+ * @param properties Vertex property map. Defaults to an empty map.
  */
 fun graphVertexOf(id: GraphElementId, label: String, properties: Map<String, Any?> = emptyMap()) =
     GraphVertex(id, label, properties)
 
 /**
- * 임의 타입의 ID 값으로 정점을 생성한다.
+ * Creates a vertex from an ID value of any type.
  *
- * ID 변환에 [graphElementIdOf]를 사용하므로 [GraphElementId]를 그대로 전달해도 이중 변환이 발생하지 않는다.
+ * Uses [graphElementIdOf] for ID conversion, so passing a [GraphElementId] does not convert it again.
  *
  * ```kotlin
  * val v = graphVertexOf("v-1", "Person")
  * val v2 = graphVertexOf(42L, "Item", mapOf("name" to "Foo"))
  * ```
  *
- * @param id 정점 ID. [GraphElementId], [Long], 또는 `toString()` 결과를 사용하는 임의 타입.
- * @param label 정점 레이블.
- * @param properties 정점 속성 맵. 기본값은 빈 맵.
+ * @param id Vertex ID. Accepts [GraphElementId], [Long], or any type whose `toString()` result is used.
+ * @param label Vertex label.
+ * @param properties Vertex property map. Defaults to an empty map.
  */
 fun graphVertexOf(id: Any, label: String, properties: Map<String, Any?> = emptyMap()): GraphVertex =
     graphVertexOf(graphElementIdOf(id), label, properties)

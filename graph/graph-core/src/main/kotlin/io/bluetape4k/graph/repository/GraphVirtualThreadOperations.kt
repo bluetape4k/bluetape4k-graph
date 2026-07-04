@@ -1,10 +1,10 @@
 package io.bluetape4k.graph.repository
 
 /**
- * Virtual Thread 기반 그래프 통합 Facade.
+ * Unified graph facade for the Virtual Thread API.
  *
- * 비동기 Virtual Thread API(`*Async` 메서드)를 하나의 인터페이스로 제공한다.
- * 동기 블로킹 메서드([GraphSession])는 포함하지 않는다. 세션 lifecycle은 [close]로 관리한다.
+ * Provides the asynchronous Virtual Thread API (`*Async` methods) as one interface.
+ * It does not include blocking [GraphSession] methods. Manage the session lifecycle with [close].
  *
  * ```kotlin
  * val vtOps: GraphVirtualThreadOperations = ops.asVirtualThread()
