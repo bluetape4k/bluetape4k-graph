@@ -1,5 +1,7 @@
 # graph-io-csv
 
+English | [한국어](README.ko.md)
+
 CSV format bulk importer/exporter for **bluetape4k-graph**. Seamlessly export graph vertices and edges to CSV files, with support for three execution models: synchronous, virtual thread-based, and Kotlin coroutine-based suspend operations.
 
 ## Features

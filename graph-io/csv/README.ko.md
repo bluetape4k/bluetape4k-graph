@@ -1,5 +1,7 @@
 # graph-io-csv
 
+[English](README.md) | 한국어
+
 **bluetape4k-graph** 을 위한 CSV 포맷 벌크 임포터/익스포터. 그래프 정점과 간선을 CSV 파일로 원활하게 내보낼 수 있으며, 동기, 가상 스레드, Kotlin 코루틴 기반 suspend의 세 가지 실행 모델을 지원합니다.
 
 ## 기능
