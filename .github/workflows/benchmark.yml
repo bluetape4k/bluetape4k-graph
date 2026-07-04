@@ -45,21 +45,22 @@ jobs:
       - name: Run JMH benchmarks
         run: ./gradlew :graph-benchmark:benchmark
 
-      - name: Locate JMH JSON result
-        id: locate
+      - name: Locate JMH JSON results
         run: |
-          JSON_PATH=$(find benchmark/graph-benchmark/build/reports/benchmarks -name 'main.json' | head -n 1)
-          if [ -z "$JSON_PATH" ]; then
-            echo "ERROR: JMH JSON result not found" >&2
+          find benchmark/graph-benchmark/build/reports/benchmarks -name 'main.json' | sort > benchmark-json-files.txt
+          if [ ! -s benchmark-json-files.txt ]; then
+            echo "ERROR: JMH JSON results not found" >&2
             exit 1
           fi
-          echo "json_path=$JSON_PATH" >> "$GITHUB_OUTPUT"
+          cat benchmark-json-files.txt
 
       - name: Render SVG charts
-        env:
-          JSON_PATH: ${{ steps.locate.outputs.json_path }}
         run: |
-          python3 benchmark/scripts/render_benchmark_svg.py "${JSON_PATH}"
+          while IFS= read -r json_path; do
+            result_name="$(basename "$(dirname "$json_path")")"
+            safe_name="$(printf '%s' "$result_name" | tr -c 'A-Za-z0-9._-' '-')"
+            BENCHMARK_CHART_PREFIX="${safe_name}-" python3 benchmark/scripts/render_benchmark_svg.py "$json_path"
+          done < benchmark-json-files.txt
 
       - name: Upload benchmark artifacts
         uses: actions/upload-artifact@v7
@@ -68,16 +69,18 @@ jobs:
           path: |
             benchmark/graph-benchmark/build/reports/benchmarks/**/main.json
             docs/benchmark-results/*.svg
+            docs/benchmark-results/*.png
           retention-days: 30
 
       - name: Summary
-        env:
-          JSON_PATH: ${{ steps.locate.outputs.json_path }}
         run: |
           {
             echo "## graph-benchmark results"
             echo ""
-            echo "JMH JSON: \`${JSON_PATH}\`"
+            echo "### JMH JSON results"
+            while IFS= read -r json_path; do
+              echo "- \`$json_path\`"
+            done < benchmark-json-files.txt
             echo ""
             echo "### Rendered SVG charts"
             for svg in docs/benchmark-results/*.svg; do
