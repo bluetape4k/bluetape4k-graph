@@ -122,6 +122,11 @@ jobs:
             ./gradlew --no-configuration-cache \
               :bluetape4k-graph-core:koverXmlReport \
               :bluetape4k-graph-tinkerpop:koverXmlReport \
+              :bluetape4k-graph-io-core:koverXmlReport \
+              :bluetape4k-graph-io-csv:koverXmlReport \
+              :bluetape4k-graph-io-jackson2:koverXmlReport \
+              :bluetape4k-graph-io-jackson3:koverXmlReport \
+              :bluetape4k-graph-io-graphml:koverXmlReport \
               :bluetape4k-graph-okio:koverXmlReport \
               --no-daemon && break
             echo "Attempt $attempt failed"
