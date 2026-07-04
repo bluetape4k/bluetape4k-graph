@@ -5,6 +5,11 @@ import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.graph.io.options.DuplicateVertexPolicy
 import io.bluetape4k.graph.io.testsupport.FakeGraphOperations
+import io.bluetape4k.graph.repository.GraphSuspendOperations
+import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockk
 import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphElementId
@@ -88,5 +93,83 @@ class GraphIoBatchWriterTest {
         writer.flushVertices(idMap) shouldBeEqualTo 0
         writer.flushEdges() shouldBeEqualTo 0
         idMap.resolve("missing").shouldBeNull()
+    }
+
+    @Test
+    fun `suspend vertex writer flushes by label and maps returned ids in input order`() = runSuspendIO {
+        val operations = mockk<GraphSuspendOperations>()
+        val calls = mutableListOf<List<Map<String, Any?>>>()
+        var sequence = 0
+        coEvery { operations.createVertices("Person", any()) } coAnswers {
+            val rows = secondArg<List<Map<String, Any?>>>()
+            calls += rows
+            rows.map { properties ->
+                sequence++
+                GraphVertex(GraphElementId.of("sv$sequence"), "Person", properties)
+            }
+        }
+        val idMap = GraphIoExternalIdMap(DuplicateVertexPolicy.FAIL)
+        val writer = SuspendGraphIoBatchWriter(operations, batchSize = 2)
+
+        listOf("a", "b", "c").forEach { id ->
+            idMap.putFirstOrFail(id, GraphElementId.of(id))
+            writer.addVertex(id, "Person", mapOf("name" to id.uppercase()), idMap)
+        }
+
+        calls.shouldHaveSize(1)
+        calls.single().map { it["name"] } shouldBeEqualTo listOf("A", "B")
+        idMap.resolve("a") shouldBeEqualTo GraphElementId.of("sv1")
+        idMap.resolve("b") shouldBeEqualTo GraphElementId.of("sv2")
+        idMap.resolve("c") shouldBeEqualTo GraphElementId.of("c")
+
+        writer.flushVertices(idMap) shouldBeEqualTo 1
+        calls.shouldHaveSize(2)
+        calls.last().map { it["name"] } shouldBeEqualTo listOf("C")
+        idMap.resolve("c") shouldBeEqualTo GraphElementId.of("sv3")
+        coVerify(exactly = 2) { operations.createVertices("Person", any()) }
+    }
+
+    @Test
+    fun `suspend edge writer flushes by label and batch size`() = runSuspendIO {
+        val operations = mockk<GraphSuspendOperations>()
+        val calls = mutableListOf<List<BatchEdge>>()
+        var sequence = 0
+        coEvery { operations.createEdges("KNOWS", any()) } coAnswers {
+            val edges = secondArg<List<BatchEdge>>()
+            calls += edges
+            edges.map { edge ->
+                sequence++
+                GraphEdge(GraphElementId.of("se$sequence"), "KNOWS", edge.fromId, edge.toId, edge.properties)
+            }
+        }
+        val writer = SuspendGraphIoBatchWriter(operations, batchSize = 2)
+        val a = GraphElementId.of("a")
+        val b = GraphElementId.of("b")
+        val c = GraphElementId.of("c")
+
+        writer.addEdge("KNOWS", a, b, mapOf("rank" to 1))
+        writer.addEdge("KNOWS", b, c, mapOf("rank" to 2))
+        writer.addEdge("KNOWS", c, a, mapOf("rank" to 3))
+
+        calls.shouldHaveSize(1)
+        calls.single().map { it.properties["rank"] } shouldBeEqualTo listOf(1, 2)
+
+        writer.flushEdges() shouldBeEqualTo 1
+        calls.shouldHaveSize(2)
+        calls.last().map { it.properties["rank"] } shouldBeEqualTo listOf(3)
+        coVerify(exactly = 2) { operations.createEdges("KNOWS", any()) }
+    }
+
+    @Test
+    fun `suspend flush on empty buffers is a no-op`() = runSuspendIO {
+        val operations = mockk<GraphSuspendOperations>()
+        val writer = SuspendGraphIoBatchWriter(operations, batchSize = 2)
+        val idMap = GraphIoExternalIdMap(DuplicateVertexPolicy.FAIL)
+
+        writer.flushVertices(idMap) shouldBeEqualTo 0
+        writer.flushEdges() shouldBeEqualTo 0
+        idMap.resolve("missing").shouldBeNull()
+        coVerify(exactly = 0) { operations.createVertices(any(), any()) }
+        coVerify(exactly = 0) { operations.createEdges(any(), any()) }
     }
 }
