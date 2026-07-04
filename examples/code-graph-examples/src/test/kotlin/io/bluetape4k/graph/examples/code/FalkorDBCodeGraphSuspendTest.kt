@@ -3,8 +3,8 @@ package io.bluetape4k.graph.examples.code
 import com.falkordb.FalkorDB
 import io.bluetape4k.graph.falkordb.FalkorDBGraphSuspendOperations
 import io.bluetape4k.graph.falkordb.FalkorDBServer
+import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.warn
-import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import java.util.UUID
@@ -23,7 +23,7 @@ class FalkorDBCodeGraphSuspendTest : AbstractCodeGraphSuspendTest() {
 
     @AfterAll
     fun stopServer() {
-        runCatching { runBlocking { ops.dropGraph(graphName) } }
+        runCatching { runSuspendIO { ops.dropGraph(graphName) } }
             .onFailure { log.warn(it) { "Failed to drop graph $graphName" } }
         driver.close()
     }

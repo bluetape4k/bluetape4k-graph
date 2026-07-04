@@ -12,7 +12,9 @@ import io.bluetape4k.logging.debug
 import kotlinx.coroutines.flow.toList
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AbstractCodeGraphSuspendTest {
 
     companion object : KLogging()
