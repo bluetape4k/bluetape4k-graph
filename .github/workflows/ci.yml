@@ -732,7 +732,6 @@ jobs:
           pattern: coverage-*
           path: coverage-artifacts
           merge-multiple: false
-        continue-on-error: true
 
       - name: Aggregate Kover coverage summary
         if: always()
