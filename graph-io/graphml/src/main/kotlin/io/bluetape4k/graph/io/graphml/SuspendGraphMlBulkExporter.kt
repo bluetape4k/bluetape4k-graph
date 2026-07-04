@@ -20,11 +20,10 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withContext
 
 /**
- * GraphML 코루틴(suspend) 벌크 익스포터.
- * Flow로 정점/간선을 수집한 뒤 StAX 라이터로 XML 파일에 기록한다.
- */
-/**
  * Coroutine bulk exporter for GraphML.
+ *
+ * Graph reads stay in the caller coroutine context while blocking StAX writes
+ * are isolated on [Dispatchers.IO].
  *
  * Example:
  *
@@ -57,7 +56,7 @@ class SuspendGraphMlBulkExporter : GraphSuspendBulkExporter<GraphExportSink> {
         operations: GraphSuspendOperations,
         options: GraphExportOptions = GraphExportOptions(),
         graphMlOptions: GraphMlExportOptions = GraphMlExportOptions(),
-    ): GraphExportReport = withContext(Dispatchers.IO) {
+    ): GraphExportReport {
         log.debug { "Starting GRAPHML suspend export" }
         val watch = GraphIoStopwatch()
         val failures = mutableListOf<GraphIoFailure>()
@@ -73,11 +72,13 @@ class SuspendGraphMlBulkExporter : GraphSuspendBulkExporter<GraphExportSink> {
             }
         }
 
-        GraphIoPaths.openOutputStream(sink).use { output ->
-            writer.write(output, vertices, edges, graphMlOptions)
+        withContext(Dispatchers.IO) {
+            GraphIoPaths.openOutputStream(sink).use { output ->
+                writer.write(output, vertices, edges, graphMlOptions)
+            }
         }
 
-        GraphExportReport(
+        return GraphExportReport(
             status = if (failures.isEmpty()) GraphIoStatus.COMPLETED else GraphIoStatus.PARTIAL,
             format = GraphIoFormat.GRAPHML,
             verticesWritten = vertices.size.toLong(),

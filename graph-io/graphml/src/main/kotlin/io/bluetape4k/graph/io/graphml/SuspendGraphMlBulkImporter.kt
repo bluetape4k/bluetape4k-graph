@@ -27,8 +27,9 @@ import kotlinx.coroutines.withContext
 /**
  * Coroutine bulk importer for GraphML.
  *
- * StAX parsing runs on [Dispatchers.IO], and vertex/edge creation is delegated
- * to the provided suspend graph operations.
+ * StAX parsing runs on [Dispatchers.IO]. Vertex and edge creation stays in the
+ * caller coroutine context so backend implementations keep control over their
+ * own dispatcher policy.
  *
  * Example:
  *
@@ -61,11 +62,13 @@ class SuspendGraphMlBulkImporter : GraphSuspendBulkImporter<GraphImportSource> {
         operations: GraphSuspendOperations,
         options: GraphImportOptions = GraphImportOptions(),
         graphMlOptions: GraphMlImportOptions = GraphMlImportOptions(),
-    ): GraphImportReport = withContext(Dispatchers.IO) {
+    ): GraphImportReport {
         log.debug { "Starting GRAPHML suspend import" }
         val watch = GraphIoStopwatch()
 
-        val parsed = GraphIoPaths.openInputStream(source).use { reader.read(it, graphMlOptions) }
+        val parsed = withContext(Dispatchers.IO) {
+            GraphIoPaths.openInputStream(source).use { reader.read(it, graphMlOptions) }
+        }
 
         val idMap = GraphIoExternalIdMap(options.onDuplicateVertexId)
         val batchWriter = SuspendGraphIoBatchWriter(operations, options.batchSize)
@@ -84,7 +87,7 @@ class SuspendGraphMlBulkImporter : GraphSuspendBulkImporter<GraphImportSource> {
         }
 
         if (status == GraphIoStatus.FAILED) {
-            return@withContext GraphImportReport(
+            return GraphImportReport(
                 status, GraphIoFormat.GRAPHML, vr, vc, er, ec, sv, se, watch.elapsed(), failures
             )
         }
@@ -153,7 +156,7 @@ class SuspendGraphMlBulkImporter : GraphSuspendBulkImporter<GraphImportSource> {
             ec += batchWriter.flushEdges()
         }
 
-        GraphImportReport(status, GraphIoFormat.GRAPHML, vr, vc, er, ec, sv, se, watch.elapsed(), failures)
+        return GraphImportReport(status, GraphIoFormat.GRAPHML, vr, vc, er, ec, sv, se, watch.elapsed(), failures)
             .also { log.debug { "Suspend import completed: vertices=$vc/$vr, edges=$ec/$er, status=$status" } }
     }
 

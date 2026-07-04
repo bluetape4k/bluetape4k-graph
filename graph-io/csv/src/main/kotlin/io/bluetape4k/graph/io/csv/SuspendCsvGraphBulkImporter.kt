@@ -25,10 +25,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * CSV 코루틴(suspend) 벌크 임포터.
+ * Coroutine bulk importer for CSV graph data.
  *
- * [SuspendCsvRecordReader]로 정점과 간선을 Flow로 스트리밍하여 처리하는 2-패스 방식이다.
- * Kotlin 코루틴 구조적 동시성을 활용하며 `Dispatchers.IO`에서 실행된다.
+ * The CSV reader performs blocking file reads on [Dispatchers.IO]. Batched
+ * graph writes stay in the caller coroutine context so backend implementations
+ * keep control over their own dispatcher policy.
  *
  * ```kotlin
  * val importer = SuspendCsvGraphBulkImporter()
@@ -37,7 +38,7 @@ import kotlinx.coroutines.withContext
  *     edges    = GraphImportSource.PathSource(Paths.get("edges.csv")),
  * )
  * val report = importer.importGraphSuspending(source, suspendOps, GraphImportOptions())
- * println("imported ${report.verticesCreated} vertices — ${report.status}")
+ * println("imported ${report.verticesCreated} vertices - ${report.status}")
  * ```
  */
 class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSource> {
@@ -53,7 +54,7 @@ class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSourc
         operations: GraphSuspendOperations,
         options: GraphImportOptions = GraphImportOptions(),
         csvOptions: CsvGraphIoOptions = CsvGraphIoOptions(),
-    ): GraphImportReport = withContext(Dispatchers.IO) {
+    ): GraphImportReport {
         log.debug { "Starting CSV import (suspend): defaultVertexLabel=${options.defaultVertexLabel}, defaultEdgeLabel=${options.defaultEdgeLabel}" }
         val watch = GraphIoStopwatch()
         val codec = CsvRecordCodec(csvOptions.propertyMode)
@@ -70,7 +71,7 @@ class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSourc
 
         // --- 정점 패스 ---
         SuspendCsvRecordReader().read(
-            GraphIoPaths.openInputStream(source.vertices),
+            withContext(Dispatchers.IO) { GraphIoPaths.openInputStream(source.vertices) },
             skipHeaders = true,
         ) { it }.collect { record ->
             if (status == GraphIoStatus.FAILED) return@collect
@@ -110,7 +111,7 @@ class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSourc
 
         if (status == GraphIoStatus.FAILED) {
             log.warn { "CSV import (suspend) failed during vertex pass: vertices=$verticesCreated/$verticesRead, elapsed=${watch.elapsed()}" }
-            return@withContext buildReport(
+            return buildReport(
                 watch, failures, GraphIoStatus.FAILED,
                 verticesRead, verticesCreated, edgesRead, edgesCreated, skippedVertices, skippedEdges
             )
@@ -120,7 +121,7 @@ class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSourc
 
         // --- 엣지 패스 ---
         SuspendCsvRecordReader().read(
-            GraphIoPaths.openInputStream(source.edges),
+            withContext(Dispatchers.IO) { GraphIoPaths.openInputStream(source.edges) },
             skipHeaders = true,
         ) { it }.collect { record ->
             if (status == GraphIoStatus.FAILED) return@collect
@@ -170,7 +171,7 @@ class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSourc
             edgesCreated += batchWriter.flushEdges()
         }
 
-        buildReport(
+        return buildReport(
             watch, failures, status,
             verticesRead, verticesCreated, edgesRead, edgesCreated, skippedVertices, skippedEdges
         ).also {
