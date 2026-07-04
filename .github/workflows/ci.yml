@@ -708,7 +708,15 @@ jobs:
       - test-graph-memgraph
       - test-graph-age
       - test-graph-falkordb
-    if: always()
+    if: >
+      always() &&
+      (needs.test-core.result == 'success' ||
+       needs.test-spring-starters.result == 'success' ||
+       needs.test-graph-ktor.result == 'success' ||
+       needs.test-graph-neo4j.result == 'success' ||
+       needs.test-graph-memgraph.result == 'success' ||
+       needs.test-graph-age.result == 'success' ||
+       needs.test-graph-falkordb.result == 'success')
     steps:
       - uses: actions/checkout@v7
 
