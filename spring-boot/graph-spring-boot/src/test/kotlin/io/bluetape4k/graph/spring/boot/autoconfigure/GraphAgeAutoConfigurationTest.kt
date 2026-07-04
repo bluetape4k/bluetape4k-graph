@@ -2,12 +2,16 @@ package io.bluetape4k.graph.spring.boot.autoconfigure
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
-import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
 import io.bluetape4k.logging.KLogging
-import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -16,6 +20,8 @@ import org.springframework.boot.autoconfigure.AutoConfigurations
 import org.springframework.boot.test.context.runner.ApplicationContextRunner
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import java.sql.Connection
+import java.sql.Statement
 import javax.sql.DataSource
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -83,5 +89,42 @@ class GraphAgeAutoConfigurationTest {
             assertThatThrownBy { ctx.getBean(GraphVirtualThreadOperations::class.java) }
                 .isInstanceOf(NoSuchBeanDefinitionException::class.java)
         }
+    }
+
+    @Test
+    fun `AGE health indicator reports UP when validation query succeeds`() {
+        val dataSource = mockk<DataSource>()
+        val connection = mockk<Connection>(relaxed = true)
+        val statement = mockk<Statement>(relaxed = true)
+
+        every { dataSource.connection } returns connection
+        every { connection.createStatement() } returns statement
+        every { statement.execute("SELECT 1") } returns true
+
+        val health = GraphAgeAutoConfiguration.HealthConfig()
+            .ageHealthIndicator(dataSource)
+            .health()
+            .shouldNotBeNull()
+
+        health.status.code shouldBeEqualTo "UP"
+        health.details["backend"] shouldBeEqualTo "age"
+        verify {
+            statement.execute("SELECT 1")
+            connection.close()
+        }
+    }
+
+    @Test
+    fun `AGE health indicator reports DOWN when validation query fails`() {
+        val dataSource = mockk<DataSource>()
+
+        every { dataSource.connection } throws IllegalStateException("age is unavailable")
+
+        val health = GraphAgeAutoConfiguration.HealthConfig()
+            .ageHealthIndicator(dataSource)
+            .health()
+            .shouldNotBeNull()
+
+        health.status.code shouldBeEqualTo "DOWN"
     }
 }
