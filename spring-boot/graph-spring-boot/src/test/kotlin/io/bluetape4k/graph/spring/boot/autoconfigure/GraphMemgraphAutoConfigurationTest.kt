@@ -6,6 +6,8 @@ import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
 import io.bluetape4k.testcontainers.graphdb.MemgraphServer
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.mockk.mockk
+import org.neo4j.driver.Driver
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -34,6 +36,13 @@ class GraphMemgraphAutoConfigurationTest {
             "bluetape4k.graph.memgraph.password=",
         )
 
+    private val localMemgraphProperties = arrayOf(
+        "bluetape4k.graph.backend=memgraph",
+        "bluetape4k.graph.memgraph.uri=bolt://localhost:7687",
+        "bluetape4k.graph.memgraph.username=",
+        "bluetape4k.graph.memgraph.password=",
+    )
+
     @Test
     fun `backend=memgraph 이면 GraphOperations 빈 등록`() {
         runner.withPropertyValues(*memgraphProperties)
@@ -41,6 +50,19 @@ class GraphMemgraphAutoConfigurationTest {
                 ctx.getBean(GraphOperations::class.java).shouldNotBeNull()
                 ctx.getBean(GraphSuspendOperations::class.java).shouldNotBeNull()
                 ctx.getBean(GraphVirtualThreadOperations::class.java).shouldNotBeNull()
+            }
+    }
+
+    @Test
+    fun `unrelated Driver bean 이 있어도 memgraphDriver 를 별도로 등록한다`() {
+        runner
+            .withBean("neo4jDriver", Driver::class.java, { mockk(relaxed = true) })
+            .withPropertyValues(*localMemgraphProperties)
+            .run { ctx ->
+                ctx.getBean("neo4jDriver", Driver::class.java).shouldNotBeNull()
+                ctx.getBean("memgraphDriver", Driver::class.java).shouldNotBeNull()
+                ctx.getBean(GraphOperations::class.java).shouldNotBeNull()
+                ctx.getBean(GraphSuspendOperations::class.java).shouldNotBeNull()
             }
     }
 
