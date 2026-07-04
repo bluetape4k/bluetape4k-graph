@@ -34,13 +34,5 @@ fun GraphPluginConfig.memgraph(
         backendName = "memgraph",
         graphOperationsFactory = { graphOperations },
         graphSuspendOperationsFactory = { graphSuspendOperations },
-        closeActions = listOf(
-            GraphPluginCloseAction("MemgraphGraphOperations") {
-                graphOperations.close()
-            },
-            GraphPluginCloseAction("MemgraphGraphSuspendOperations") {
-                graphSuspendOperations.close()
-            },
-        ),
     )
 }
