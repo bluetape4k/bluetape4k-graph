@@ -81,6 +81,14 @@ class AgeGraphSuspendOperationsTest {
 
     @Test
     @Order(11)
+    fun `이미 존재하는 그래프 생성은 호환성 duplicate로 허용한다`() = runSuspendIO {
+        ops.createGraph(graphName)
+
+        ops.graphExists(graphName).shouldBeTrue()
+    }
+
+    @Test
+    @Order(12)
     fun `그래프를 삭제하면 존재 여부가 false 반환`() = runSuspendIO {
         ops.dropGraph(graphName)
         ops.graphExists(graphName).shouldBeFalse()

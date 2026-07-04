@@ -31,6 +31,7 @@ import io.bluetape4k.graph.schema.asSuspendSchemaManager
 import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.support.requireNotBlank
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
@@ -129,9 +130,14 @@ class AgeGraphSuspendOperations(
         newSuspendedTransaction {
             try {
                 exec(AgeSql.createGraph(name))
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
-                // 이미 존재하는 경우 무시
-                log.debug("Graph '$name' may already exist: ${e.message}")
+                if (e.isDuplicateGraphFailure()) {
+                    log.debug("Graph '$name' already exists: ${e.message}")
+                } else {
+                    throw e.asCreateGraphFailure(name)
+                }
             }
         }
     }

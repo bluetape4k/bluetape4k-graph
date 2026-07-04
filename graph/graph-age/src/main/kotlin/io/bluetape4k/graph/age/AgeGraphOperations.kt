@@ -105,8 +105,11 @@ class AgeGraphOperations(
             try {
                 exec(AgeSql.createGraph(name))
             } catch (e: Exception) {
-                // 이미 존재하는 경우 무시
-                log.debug("Graph '$name' may already exist: ${e.message}")
+                if (e.isDuplicateGraphFailure()) {
+                    log.debug("Graph '$name' already exists: ${e.message}")
+                } else {
+                    throw e.asCreateGraphFailure(name)
+                }
             }
         }
     }
