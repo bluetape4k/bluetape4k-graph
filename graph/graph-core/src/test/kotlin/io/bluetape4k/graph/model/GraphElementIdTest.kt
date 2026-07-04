@@ -1,6 +1,8 @@
 package io.bluetape4k.graph.model
 
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldNotBeEqualTo
 import org.junit.jupiter.api.Test
 
@@ -32,8 +34,21 @@ class GraphElementIdTest {
     }
 
     @Test
-    fun `빈 문자열도 허용된다`() {
-        GraphElementId("").value shouldBeEqualTo ""
+    fun `빈 문자열은 허용되지 않는다`() {
+        val ex = assertFailsWith<IllegalArgumentException> {
+            GraphElementId("")
+        }
+
+        ex.message shouldContain "value"
+    }
+
+    @Test
+    fun `공백 문자열은 허용되지 않는다`() {
+        val ex = assertFailsWith<IllegalArgumentException> {
+            GraphElementId("   ")
+        }
+
+        ex.message shouldContain "value"
     }
 
     @Test
