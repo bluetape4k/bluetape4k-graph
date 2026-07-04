@@ -1,11 +1,16 @@
 package io.bluetape4k.graph.spring.boot.autoconfigure
 
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
-import io.bluetape4k.testcontainers.graphdb.Neo4jServer
 import io.bluetape4k.logging.KLogging
-import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.testcontainers.graphdb.Neo4jServer
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
+import org.neo4j.driver.Driver
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -63,5 +68,36 @@ class GraphNeo4jAutoConfigurationTest {
             assertThatThrownBy { ctx.getBean(GraphVirtualThreadOperations::class.java) }
                 .isInstanceOf(NoSuchBeanDefinitionException::class.java)
         }
+    }
+
+    @Test
+    fun `Neo4j health indicator reports UP when connectivity succeeds`() {
+        val driver = mockk<Driver>()
+
+        every { driver.verifyConnectivity() } returns Unit
+
+        val health = GraphNeo4jAutoConfiguration.HealthConfig()
+            .neo4jHealthIndicator(driver)
+            .health()
+            .shouldNotBeNull()
+
+        health.status.code shouldBeEqualTo "UP"
+        health.details["backend"] shouldBeEqualTo "neo4j"
+        verify { driver.verifyConnectivity() }
+    }
+
+    @Test
+    fun `Neo4j health indicator reports DOWN when connectivity fails`() {
+        val driver = mockk<Driver>()
+
+        every { driver.verifyConnectivity() } throws IllegalStateException("neo4j is unavailable")
+
+        val health = GraphNeo4jAutoConfiguration.HealthConfig()
+            .neo4jHealthIndicator(driver)
+            .health()
+            .shouldNotBeNull()
+
+        health.status.code shouldBeEqualTo "DOWN"
+        verify { driver.verifyConnectivity() }
     }
 }

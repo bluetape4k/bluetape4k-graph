@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.spring.boot.autoconfigure
 
+import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
@@ -69,5 +70,16 @@ class GraphTinkerGraphAutoConfigurationTest {
             assertThatThrownBy { ctx.getBean(GraphVirtualThreadOperations::class.java) }
                 .isInstanceOf(NoSuchBeanDefinitionException::class.java)
         }
+    }
+
+    @Test
+    fun `TinkerGraph health indicator reports UP`() {
+        val health = GraphTinkerGraphAutoConfiguration.HealthConfig()
+            .tinkerGraphHealthIndicator()
+            .health()
+            .shouldNotBeNull()
+
+        health.status.code shouldBeEqualTo "UP"
+        health.details["backend"] shouldBeEqualTo "tinkergraph"
     }
 }

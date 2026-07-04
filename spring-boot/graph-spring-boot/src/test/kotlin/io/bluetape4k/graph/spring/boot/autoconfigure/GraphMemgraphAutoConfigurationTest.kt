@@ -1,12 +1,15 @@
 package io.bluetape4k.graph.spring.boot.autoconfigure
 
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
-import io.bluetape4k.testcontainers.graphdb.MemgraphServer
 import io.bluetape4k.logging.KLogging
-import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.testcontainers.graphdb.MemgraphServer
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import org.neo4j.driver.Driver
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
@@ -86,5 +89,36 @@ class GraphMemgraphAutoConfigurationTest {
             assertThatThrownBy { ctx.getBean(GraphVirtualThreadOperations::class.java) }
                 .isInstanceOf(NoSuchBeanDefinitionException::class.java)
         }
+    }
+
+    @Test
+    fun `Memgraph health indicator reports UP when connectivity succeeds`() {
+        val driver = mockk<Driver>()
+
+        every { driver.verifyConnectivity() } returns Unit
+
+        val health = GraphMemgraphAutoConfiguration.HealthConfig()
+            .memgraphHealthIndicator(driver)
+            .health()
+            .shouldNotBeNull()
+
+        health.status.code shouldBeEqualTo "UP"
+        health.details["backend"] shouldBeEqualTo "memgraph"
+        verify { driver.verifyConnectivity() }
+    }
+
+    @Test
+    fun `Memgraph health indicator reports DOWN when connectivity fails`() {
+        val driver = mockk<Driver>()
+
+        every { driver.verifyConnectivity() } throws IllegalStateException("memgraph is unavailable")
+
+        val health = GraphMemgraphAutoConfiguration.HealthConfig()
+            .memgraphHealthIndicator(driver)
+            .health()
+            .shouldNotBeNull()
+
+        health.status.code shouldBeEqualTo "DOWN"
+        verify { driver.verifyConnectivity() }
     }
 }
