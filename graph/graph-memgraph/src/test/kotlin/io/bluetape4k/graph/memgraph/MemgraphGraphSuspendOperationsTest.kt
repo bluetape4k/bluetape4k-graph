@@ -1,6 +1,7 @@
 package io.bluetape4k.graph.memgraph
 
 import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.model.Direction
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.NeighborOptions
@@ -20,8 +21,11 @@ import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.assertions.shouldBeInstanceOf
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.mockk.every
+import io.mockk.mockk
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -32,6 +36,9 @@ import org.junit.jupiter.api.TestMethodOrder
 import org.neo4j.driver.AuthTokens
 import org.neo4j.driver.Driver
 import org.neo4j.driver.GraphDatabase
+import org.neo4j.driver.SessionConfig
+import org.neo4j.driver.exceptions.ServiceUnavailableException
+import org.neo4j.driver.reactivestreams.ReactiveSession
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 class MemgraphGraphSuspendOperationsTest {
@@ -67,6 +74,23 @@ class MemgraphGraphSuspendOperationsTest {
 
     @Test
     @Order(11)
+    fun `graphExists preserves driver failures`() = runSuspendIO {
+        val failingDriver = mockk<Driver>()
+        every {
+            failingDriver.session(ReactiveSession::class.java, any<SessionConfig>())
+        } throws ServiceUnavailableException("memgraph unavailable")
+        val failingOps = MemgraphGraphSuspendOperations(failingDriver)
+
+        val ex = assertFailsWith<GraphQueryException> {
+            failingOps.graphExists("default")
+        }
+
+        ex.message shouldContain "Memgraph graphExists failed"
+        ex.cause shouldBeInstanceOf ServiceUnavailableException::class
+    }
+
+    @Test
+    @Order(12)
     fun `dropGraph로 전체 데이터를 삭제한다`() = runSuspendIO {
         ops.createVertex("Person", mapOf("name" to "Alice"))
         ops.countVertices("Person") shouldBeGreaterOrEqualTo 1L

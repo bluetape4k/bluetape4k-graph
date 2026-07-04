@@ -132,11 +132,11 @@ class FalkorDBGraphOperations(
 
     override fun graphExists(name: String): Boolean {
         name.requireNotBlank("name")
-        return runCatching { driver.listGraphs().contains(name) }
-            .getOrElse {
-                log.warn(it) { "graphExists($name) failed; treating as false" }
-                false
-            }
+        return try {
+            driver.listGraphs().contains(name)
+        } catch (e: Exception) {
+            throw GraphQueryException("FalkorDB graphExists failed: graph=$name", e)
+        }
     }
 
     override fun close() { /* driver는 외부 소유 */ }
