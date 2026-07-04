@@ -3,49 +3,49 @@ package io.bluetape4k.graph.model
 import java.io.Serializable
 
 /**
- * 그래프 스키마 객체가 적용되는 엔티티 종류.
+ * Entity type a graph schema object applies to.
  *
  * ```kotlin
  * val target = GraphSchemaEntityType.VERTEX
  * ```
  */
 enum class GraphSchemaEntityType {
-    /** 정점/노드 레이블에 적용되는 스키마 객체. */
+    /** Schema object for a vertex/node label. */
     VERTEX,
 
-    /** 간선/관계 타입에 적용되는 스키마 객체. */
+    /** Schema object for an edge/relationship type. */
     EDGE,
 
-    /** 백엔드 메타데이터에서 엔티티 종류를 판별할 수 없는 스키마 객체. */
+    /** Schema object whose entity type cannot be determined from backend metadata. */
     UNKNOWN,
 }
 
 /**
- * 그래프 제약조건 종류.
+ * Graph constraint type.
  *
  * ```kotlin
  * val type = GraphConstraintType.UNIQUE
  * ```
  */
 enum class GraphConstraintType {
-    /** 특정 레이블과 속성 조합의 값이 유일해야 함을 나타낸다. */
+    /** Requires unique values for a specific label and property combination. */
     UNIQUE,
 
-    /** 특정 속성이 반드시 존재해야 함을 나타낸다. */
+    /** Requires a specific property to exist. */
     EXISTS,
 
-    /** 백엔드 고유 제약조건이거나 아직 공통 타입으로 매핑하지 않은 종류. */
+    /** Backend-specific constraint, or one not yet mapped to a common type. */
     UNKNOWN,
 }
 
 /**
- * 그래프 백엔드에 정의된 인덱스 메타데이터.
+ * Index metadata defined in a graph backend.
  *
- * @property name 백엔드 인덱스 이름. 이름이 없는 백엔드는 안정적인 합성 이름을 사용할 수 있다.
- * @property label 인덱스가 적용되는 정점 레이블 또는 간선 타입.
- * @property property 인덱스 속성 이름. label-only 인덱스는 `null`일 수 있다.
- * @property entityType 인덱스 대상 엔티티 종류.
- * @property unique 인덱스가 유니크 제약조건을 뒷받침하는지 여부.
+ * @property name Backend index name. Backends without names may use a stable synthetic name.
+ * @property label Vertex label or edge type the index applies to.
+ * @property property Indexed property name. Label-only indexes may be `null`.
+ * @property entityType Target entity type for the index.
+ * @property unique Whether the index backs a unique constraint.
  *
  * ```kotlin
  * val index = GraphIndex(
@@ -68,13 +68,13 @@ data class GraphIndex(
 }
 
 /**
- * 그래프 백엔드에 정의된 제약조건 메타데이터.
+ * Constraint metadata defined in a graph backend.
  *
- * @property name 백엔드 제약조건 이름. 이름이 없는 백엔드는 안정적인 합성 이름을 사용할 수 있다.
- * @property label 제약조건이 적용되는 정점 레이블 또는 간선 타입.
- * @property property 제약조건 속성 이름.
- * @property type 공통 제약조건 종류.
- * @property entityType 제약조건 대상 엔티티 종류.
+ * @property name Backend constraint name. Backends without names may use a stable synthetic name.
+ * @property label Vertex label or edge type the constraint applies to.
+ * @property property Constraint property name.
+ * @property type Common constraint type.
+ * @property entityType Target entity type for the constraint.
  *
  * ```kotlin
  * val constraint = GraphConstraint(

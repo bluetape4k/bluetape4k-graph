@@ -10,15 +10,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * 그래프 백엔드의 인덱스와 제약조건을 관리하는 동기 API.
+ * Synchronous API for graph backend indexes and constraints.
  *
- * 구현체는 백엔드 DDL 차이를 숨기되, 지원하지 않는 제약조건을 성공한 것처럼 처리하지 않고
- * 명시적으로 [UnsupportedOperationException]을 던져야 한다.
+ * Implementations hide backend DDL differences, but unsupported constraints must fail explicitly
+ * with [UnsupportedOperationException] rather than pretending to succeed.
  *
- * ## 동작/계약
- * - label과 property는 backend query에 안전한 identifier여야 한다.
- * - 지원하지 않는 schema DDL은 silent no-op 대신 [UnsupportedOperationException]으로 실패해야 한다.
- * - [listIndexes]와 [listConstraints]는 backend metadata를 공통 모델로 변환해 반환한다.
+ * ## Contract
+ * - Labels and properties must be safe backend query identifiers.
+ * - Unsupported schema DDL must fail with [UnsupportedOperationException], not a silent no-op.
+ * - [listIndexes] and [listConstraints] return backend metadata mapped to common model types.
  *
  * ```kotlin
  * import io.bluetape4k.graph.schema.schemaManager
@@ -32,46 +32,46 @@ import kotlinx.coroutines.withContext
 interface GraphSchemaManager {
 
     /**
-     * 지정한 정점 레이블과 속성에 조회 인덱스를 생성한다.
-     *
-     * @param label 정점 레이블.
-     * @param property 인덱싱할 속성 이름.
+     * Creates a lookup index for the given vertex label and property.
+	*
+     * @param label vertex label.
+     * @param property property name to index.
      */
     fun createIndex(label: String, property: String)
 
     /**
-     * 지정한 정점 레이블과 속성에 유니크 제약조건을 생성한다.
-     *
-     * @param label 정점 레이블.
-     * @param property 유일해야 하는 속성 이름.
+     * Creates a unique constraint for the given vertex label and property.
+	*
+     * @param label vertex label.
+     * @param property property name that must be unique.
      */
     fun createUniqueConstraint(label: String, property: String)
 
     /**
-     * 지정한 정점 레이블과 속성에 연결된 조회 인덱스를 제거한다.
-     *
-     * @param label 정점 레이블.
-     * @param property 인덱싱된 속성 이름.
+     * Drops the lookup index for the given vertex label and property.
+	*
+     * @param label vertex label.
+     * @param property indexed property name.
      */
     fun dropIndex(label: String, property: String)
 
     /**
-     * 현재 그래프에 정의된 공통 인덱스 메타데이터를 반환한다.
+     * Returns common index metadata defined in the current graph.
      */
     fun listIndexes(): List<GraphIndex>
 
     /**
-     * 현재 그래프에 정의된 공통 제약조건 메타데이터를 반환한다.
+     * Returns common constraint metadata defined in the current graph.
      */
     fun listConstraints(): List<GraphConstraint>
 }
 
 /**
- * 그래프 백엔드의 인덱스와 제약조건을 관리하는 코루틴 API.
+ * Coroutine API for graph backend indexes and constraints.
  *
- * ## 동작/계약
- * - [GraphSchemaManager]와 같은 schema metadata semantics를 suspend API로 제공한다.
- * - blocking backend adapter는 [BlockingGraphSuspendSchemaManager]를 통해 [Dispatchers.IO]에서 실행한다.
+ * ## Contract
+ * - Provides the same schema metadata semantics as [GraphSchemaManager].
+ * - Blocking backend adapters run through [BlockingGraphSuspendSchemaManager] on [Dispatchers.IO].
  *
  * ```kotlin
  * import io.bluetape4k.graph.schema.schemaManager
@@ -83,24 +83,24 @@ interface GraphSchemaManager {
  */
 interface GraphSuspendSchemaManager {
 
-    /** 지정한 정점 레이블과 속성에 조회 인덱스를 생성한다. */
+    /** Creates a lookup index for the given vertex label and property. */
     suspend fun createIndex(label: String, property: String)
 
-    /** 지정한 정점 레이블과 속성에 유니크 제약조건을 생성한다. */
+    /** Creates a unique constraint for the given vertex label and property. */
     suspend fun createUniqueConstraint(label: String, property: String)
 
-    /** 지정한 정점 레이블과 속성에 연결된 조회 인덱스를 제거한다. */
+    /** Drops the lookup index for the given vertex label and property. */
     suspend fun dropIndex(label: String, property: String)
 
-    /** 현재 그래프에 정의된 공통 인덱스 메타데이터를 반환한다. */
+    /** Returns common index metadata defined in the current graph. */
     suspend fun listIndexes(): List<GraphIndex>
 
-    /** 현재 그래프에 정의된 공통 제약조건 메타데이터를 반환한다. */
+    /** Returns common constraint metadata defined in the current graph. */
     suspend fun listConstraints(): List<GraphConstraint>
 }
 
 /**
- * 동기 그래프 구현체가 스키마 관리 기능을 제공할 때 구현하는 capability interface.
+ * Capability interface for synchronous graph implementations that provide schema management.
  *
  * ```kotlin
  * val schema = ops.schemaManager()
@@ -108,12 +108,12 @@ interface GraphSuspendSchemaManager {
  * ```
  */
 interface GraphSchemaManagementOperations {
-    /** 이 그래프 구현체의 스키마 관리자를 반환한다. */
+    /** Returns the schema manager for this graph implementation. */
     fun schemaManager(): GraphSchemaManager
 }
 
 /**
- * 코루틴 그래프 구현체가 스키마 관리 기능을 제공할 때 구현하는 capability interface.
+ * Capability interface for coroutine graph implementations that provide schema management.
  *
  * ```kotlin
  * val schema = suspendOps.schemaManager()
@@ -121,12 +121,12 @@ interface GraphSchemaManagementOperations {
  * ```
  */
 interface GraphSuspendSchemaManagementOperations {
-    /** 이 그래프 구현체의 코루틴 스키마 관리자를 반환한다. */
+    /** Returns the coroutine schema manager for this graph implementation. */
     fun schemaManager(): GraphSuspendSchemaManager
 }
 
 /**
- * 동기 스키마 관리자를 [Dispatchers.IO]에서 실행하는 코루틴 어댑터.
+ * Coroutine adapter that runs a synchronous schema manager on [Dispatchers.IO].
  *
  * ```kotlin
  * val suspendSchema = ops.schemaManager().asSuspendSchemaManager()
@@ -167,7 +167,7 @@ class BlockingGraphSuspendSchemaManager(
 }
 
 /**
- * 동기 스키마 관리자를 코루틴 API로 노출한다.
+ * Exposes a synchronous schema manager as a coroutine API.
  *
  * ```kotlin
  * val schema = ops.schemaManager().asSuspendSchemaManager()
@@ -177,11 +177,11 @@ fun GraphSchemaManager.asSuspendSchemaManager(): GraphSuspendSchemaManager =
     BlockingGraphSuspendSchemaManager(this)
 
 /**
- * 백엔드가 현재 schema DDL을 안전하게 지원하지 않을 때 사용하는 명시적 실패 관리자.
+ * Explicit-failure manager for backends that cannot safely support schema DDL yet.
  *
- * ## 동작/계약
- * - [listIndexes]와 [listConstraints]는 빈 목록을 반환한다.
- * - mutation API는 identifier validation 후 [UnsupportedOperationException]을 던진다.
+ * ## Contract
+ * - [listIndexes] and [listConstraints] return empty lists.
+ * - Mutation APIs validate identifiers and then throw [UnsupportedOperationException].
  *
  * ```kotlin
  * val schema = UnsupportedGraphSchemaManager("AGE", "portable AGE index DDL is not available")
@@ -217,10 +217,10 @@ class UnsupportedGraphSchemaManager(
 }
 
 /**
- * [GraphOperations]에서 스키마 관리자를 얻는다.
+ * Returns the schema manager for [GraphOperations].
  *
- * 구현체가 [GraphSchemaManagementOperations]를 구현하지 않으면 auto no-op fallback을 사용하지 않고
- * 명시적으로 [UnsupportedOperationException]을 던진다.
+ * If the implementation does not implement [GraphSchemaManagementOperations], this throws
+ * [UnsupportedOperationException] instead of using an automatic no-op fallback.
  *
  * ```kotlin
  * import io.bluetape4k.graph.schema.schemaManager
@@ -238,10 +238,10 @@ fun GraphOperations.schemaManager(): GraphSchemaManager {
 }
 
 /**
- * [GraphSuspendOperations]에서 코루틴 스키마 관리자를 얻는다.
+ * Returns the coroutine schema manager for [GraphSuspendOperations].
  *
- * 구현체가 [GraphSuspendSchemaManagementOperations]를 구현하지 않으면 명시적으로
- * [UnsupportedOperationException]을 던진다.
+ * If the implementation does not implement [GraphSuspendSchemaManagementOperations], this throws
+ * [UnsupportedOperationException].
  *
  * ```kotlin
  * import io.bluetape4k.graph.schema.schemaManager
@@ -258,32 +258,32 @@ fun GraphSuspendOperations.schemaManager(): GraphSuspendSchemaManager {
     return management.schemaManager()
 }
 
-/** [VertexLabel]과 [PropertyDef]로 조회 인덱스를 생성한다. */
+/** Creates a lookup index from [VertexLabel] and [PropertyDef]. */
 fun GraphSchemaManager.createIndex(label: VertexLabel, property: PropertyDef<*>) =
     createIndex(label.label, property.name)
 
-/** [VertexLabel]과 [PropertyDef]로 유니크 제약조건을 생성한다. */
+/** Creates a unique constraint from [VertexLabel] and [PropertyDef]. */
 fun GraphSchemaManager.createUniqueConstraint(label: VertexLabel, property: PropertyDef<*>) =
     createUniqueConstraint(label.label, property.name)
 
-/** [VertexLabel]과 [PropertyDef]로 조회 인덱스를 제거한다. */
+/** Drops a lookup index from [VertexLabel] and [PropertyDef]. */
 fun GraphSchemaManager.dropIndex(label: VertexLabel, property: PropertyDef<*>) =
     dropIndex(label.label, property.name)
 
-/** [VertexLabel]과 [PropertyDef]로 조회 인덱스를 생성한다. */
+/** Creates a lookup index from [VertexLabel] and [PropertyDef]. */
 suspend fun GraphSuspendSchemaManager.createIndex(label: VertexLabel, property: PropertyDef<*>) =
     createIndex(label.label, property.name)
 
-/** [VertexLabel]과 [PropertyDef]로 유니크 제약조건을 생성한다. */
+/** Creates a unique constraint from [VertexLabel] and [PropertyDef]. */
 suspend fun GraphSuspendSchemaManager.createUniqueConstraint(label: VertexLabel, property: PropertyDef<*>) =
     createUniqueConstraint(label.label, property.name)
 
-/** [VertexLabel]과 [PropertyDef]로 조회 인덱스를 제거한다. */
+/** Drops a lookup index from [VertexLabel] and [PropertyDef]. */
 suspend fun GraphSuspendSchemaManager.dropIndex(label: VertexLabel, property: PropertyDef<*>) =
     dropIndex(label.label, property.name)
 
 /**
- * 공통 스키마 객체 이름을 생성한다.
+ * Builds common schema object names.
  *
  * ```kotlin
  * val index = GraphSchemaNames.indexName("Person", "email")
@@ -293,19 +293,19 @@ suspend fun GraphSuspendSchemaManager.dropIndex(label: VertexLabel, property: Pr
 object GraphSchemaNames {
 
     /**
-     * 공통 인덱스 이름을 생성한다.
+     * Builds a common index name.
      */
     fun indexName(label: String, property: String): String =
         buildName("bt4k_idx", label, property)
 
     /**
-     * 공통 유니크 제약조건 이름을 생성한다.
+     * Builds a common unique constraint name.
      */
     fun uniqueConstraintName(label: String, property: String): String =
         buildName("bt4k_uc", label, property)
 
     /**
-     * 레이블과 속성 식별자를 검증한다.
+     * Validates label and property identifiers.
      */
     fun validateLabelAndProperty(label: String, property: String): Pair<String, String> {
         val safeLabel = label.requireNotBlank("label").requireSafeIdentifier("label")

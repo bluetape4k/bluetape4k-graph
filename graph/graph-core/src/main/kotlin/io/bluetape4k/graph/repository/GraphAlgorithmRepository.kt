@@ -13,18 +13,18 @@ import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.TraversalVisit
 
 /**
- * 그래프 분석(Analytics) 알고리즘 저장소 (동기 방식).
+ * Graph analytics algorithm repository for the blocking API.
  *
- * 결과 순서 계약:
- * - [pageRank]: score 내림차순 정렬.
- * - [connectedComponents]: componentId 오름차순. 내부 정점은 임의 순서.
- * - [bfs]: BFS 방문 순서 (레벨 순).
- * - [dfs]: DFS 방문 순서 (깊이 우선).
- * - [detectCycles]: 임의 순서.
+ * Result ordering contract:
+ * - [pageRank]: sorted by descending score.
+ * - [connectedComponents]: ascending componentId; vertices inside each component are unordered.
+ * - [bfs]: BFS visit order, level by level.
+ * - [dfs]: DFS visit order, depth first.
+ * - [detectCycles]: arbitrary order.
  *
- * 백엔드 미지원 알고리즘은 `UnsupportedOperationException` 을 던질 수 있다.
+ * Backend implementations may throw `UnsupportedOperationException` for unsupported algorithms.
  *
- * ### 사용 예제
+ * ### Usage
  * ```kotlin
  * val ops: GraphOperations = TinkerGraphOperations()
  * val top10 = ops.pageRank(PageRankOptions(topK = 10))
@@ -32,25 +32,25 @@ import io.bluetape4k.graph.model.TraversalVisit
  * val visits = ops.bfs(start.id, BfsDfsOptions(maxDepth = 3))
  * ```
  *
- * @see GraphSuspendAlgorithmRepository 코루틴 방식
+ * @see GraphSuspendAlgorithmRepository coroutine API
  */
 interface GraphAlgorithmRepository {
 
     /**
-     * PageRank 알고리즘을 실행해 점수 목록을 반환한다.
+     * Runs PageRank and returns the score list.
      *
-     * 반환 결과는 score 내림차순으로 정렬된다.
+     * Results are sorted by descending score.
      *
-     * @param options PageRank 옵션.
-     * @return [PageRankScore] 목록.
+     * @param options PageRank options.
+     * @return list of [PageRankScore] values.
      */
     fun pageRank(options: PageRankOptions = PageRankOptions.Default): List<PageRankScore>
 
     /**
-     * 단일 정점의 Degree Centrality 를 계산한다.
+     * Computes degree centrality for one vertex.
      *
-     * @param vertexId 측정 대상 정점 ID.
-     * @param options Degree 옵션.
+     * @param vertexId target vertex ID.
+     * @param options degree options.
      * @return [DegreeResult].
      */
     fun degreeCentrality(
@@ -59,21 +59,21 @@ interface GraphAlgorithmRepository {
     ): DegreeResult
 
     /**
-     * 연결 컴포넌트를 탐지한다.
+     * Detects connected components.
      *
-     * @param options Component 옵션.
-     * @return [GraphComponent] 목록 (componentId 오름차순).
+     * @param options component options.
+     * @return list of [GraphComponent] values, sorted by ascending componentId.
      */
     fun connectedComponents(
         options: ComponentOptions = ComponentOptions.Default,
     ): List<GraphComponent>
 
     /**
-     * BFS 탐색을 실행한다.
+     * Runs BFS traversal.
      *
-     * @param startId 시작 정점 ID.
-     * @param options BFS 옵션.
-     * @return [TraversalVisit] 목록 (방문 순서).
+     * @param startId start vertex ID.
+     * @param options BFS options.
+     * @return list of [TraversalVisit] values in visit order.
      */
     fun bfs(
         startId: GraphElementId,
@@ -81,11 +81,11 @@ interface GraphAlgorithmRepository {
     ): List<TraversalVisit>
 
     /**
-     * DFS 탐색을 실행한다.
+     * Runs DFS traversal.
      *
-     * @param startId 시작 정점 ID.
-     * @param options DFS 옵션.
-     * @return [TraversalVisit] 목록 (방문 순서).
+     * @param startId start vertex ID.
+     * @param options DFS options.
+     * @return list of [TraversalVisit] values in visit order.
      */
     fun dfs(
         startId: GraphElementId,
@@ -93,10 +93,10 @@ interface GraphAlgorithmRepository {
     ): List<TraversalVisit>
 
     /**
-     * 순환을 탐지한다.
+     * Detects cycles.
      *
-     * @param options Cycle 옵션.
-     * @return [GraphCycle] 목록.
+     * @param options cycle options.
+     * @return list of [GraphCycle] values.
      */
     fun detectCycles(
         options: CycleOptions = CycleOptions.Default,

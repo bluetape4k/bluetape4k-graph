@@ -8,15 +8,15 @@ import io.bluetape4k.graph.model.PathOptions
 import java.util.concurrent.CompletableFuture
 
 /**
- * Virtual Thread 기반 그래프 순회(Traversal) 저장소.
+ * Virtual-thread graph traversal repository.
  *
- * Java 25 Project Loom 의 Virtual Thread 위에서 동기 [GraphTraversalRepository] 를 실행해
- * `CompletableFuture<T>` 로 결과를 반환한다. Java 코드 또는 CompletableFuture 기반 파이프라인과의
- * 상호운용을 위해 제공된다.
+ * Runs the synchronous [GraphTraversalRepository] on Java 25 Project Loom virtual threads
+ * and returns results as `CompletableFuture<T>`. This supports interop with Java code
+ * and CompletableFuture-based pipelines.
  *
- * Kotlin 코드에서는 [GraphSuspendTraversalRepository] 사용을 권장한다.
+ * Kotlin code should prefer [GraphSuspendTraversalRepository].
  *
- * ### 사용 예제
+ * ### Usage
  * ```kotlin
  * val ops: GraphOperations = TinkerGraphOperations()
  * val vtOps = ops.asVirtualThreadTraversal()
@@ -27,11 +27,11 @@ import java.util.concurrent.CompletableFuture
 interface GraphVirtualThreadTraversalRepository {
 
     /**
-     * 시작 정점의 인접 정점(이웃)을 Virtual Thread 에서 탐색한다.
+     * Finds adjacent neighbor vertices from the start vertex on a virtual thread.
      *
-     * @param startId 탐색을 시작할 정점 ID.
-     * @param options 탐색 옵션 (레이블 필터, 방향, 최대 깊이).
-     * @return 인접 [GraphVertex] 목록을 담은 [CompletableFuture].
+     * @param startId vertex ID to start traversal from.
+     * @param options traversal options for label filtering, direction, and maximum depth.
+     * @return [CompletableFuture] containing adjacent [GraphVertex] values.
      */
     fun neighborsAsync(
         startId: GraphElementId,
@@ -39,12 +39,12 @@ interface GraphVirtualThreadTraversalRepository {
     ): CompletableFuture<List<GraphVertex>>
 
     /**
-     * 두 정점 사이의 최단 경로를 Virtual Thread 에서 찾는다.
+     * Finds the shortest path between two vertices on a virtual thread.
      *
-     * @param fromId 출발 정점 ID.
-     * @param toId 도착 정점 ID.
-     * @param options 탐색 옵션 (레이블 필터, 최대 깊이).
-     * @return 최단 [GraphPath] 를 담은 [CompletableFuture]. 경로가 없으면 `null`.
+     * @param fromId source vertex ID.
+     * @param toId target vertex ID.
+     * @param options traversal options for label filtering and maximum depth.
+     * @return [CompletableFuture] containing the shortest [GraphPath], or `null` when no path exists.
      */
     fun shortestPathAsync(
         fromId: GraphElementId,
@@ -53,12 +53,12 @@ interface GraphVirtualThreadTraversalRepository {
     ): CompletableFuture<GraphPath?>
 
     /**
-     * 두 정점 사이의 모든 경로를 Virtual Thread 에서 찾는다.
+     * Finds all paths between two vertices on a virtual thread.
      *
-     * @param fromId 출발 정점 ID.
-     * @param toId 도착 정점 ID.
-     * @param options 탐색 옵션 (레이블 필터, 최대 깊이).
-     * @return [GraphPath] 목록을 담은 [CompletableFuture].
+     * @param fromId source vertex ID.
+     * @param toId target vertex ID.
+     * @param options traversal options for label filtering and maximum depth.
+     * @return [CompletableFuture] containing [GraphPath] values.
      */
     fun allPathsAsync(
         fromId: GraphElementId,
@@ -67,13 +67,13 @@ interface GraphVirtualThreadTraversalRepository {
     ): CompletableFuture<List<GraphPath>>
 
     /**
-     * A* 알고리즘으로 가중치 최단 경로를 Virtual Thread 에서 찾는다.
+     * Finds a weighted shortest path with the A* algorithm on a virtual thread.
      *
-     * @param fromId 출발 정점 ID.
-     * @param toId 도착 정점 ID.
-     * @param options 탐색 옵션 ([PathOptions.weightProperty] 필수).
-     * @param heuristic 목표까지의 예상 비용 함수 (동기).
-     * @return 가중치 최단 [GraphPath] 를 담은 [CompletableFuture]. 경로가 없으면 `null`.
+     * @param fromId source vertex ID.
+     * @param toId target vertex ID.
+     * @param options traversal options; [PathOptions.weightProperty] is required.
+     * @param heuristic synchronous estimated cost function to the target.
+     * @return [CompletableFuture] containing the weighted shortest [GraphPath], or `null` when no path exists.
      */
     fun aStarPathAsync(
         fromId: GraphElementId,

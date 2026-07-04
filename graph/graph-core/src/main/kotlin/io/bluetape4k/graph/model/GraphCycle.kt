@@ -3,14 +3,14 @@ package io.bluetape4k.graph.model
 import java.io.Serializable
 
 /**
- * 탐지된 그래프 순환(Cycle).
+ * Detected graph cycle.
  *
- * [path] 의 첫 번째 정점과 마지막 정점은 동일하다 (first == last 보장).
- * [length] 는 [path] 의 간선 수로 계산되는 computed property.
+ * The first and last vertices in [path] are the same (`first == last`).
+ * [length] is a computed property based on the number of edges in [path].
  *
- * @property path 순환 경로. 시작과 끝이 같은 [GraphPath].
+ * @property path Cyclic path whose start and end are the same.
  *
- * ### 사용 예제
+ * ### Usage
  * ```kotlin
  * val cycles = ops.detectCycles(CycleOptions(maxDepth = 5))
  * cycles.forEach { println("cycle length=${it.length}") }
@@ -19,7 +19,7 @@ import java.io.Serializable
 data class GraphCycle(
     val path: GraphPath,
 ): Serializable {
-    /** 순환 경로의 간선 수. */
+    /** Number of edges in the cycle path. */
     val length: Int get() = path.edges.size
 
     companion object {
@@ -28,10 +28,10 @@ data class GraphCycle(
 }
 
 /**
- * 이 경로를 [GraphCycle]로 변환한다.
+ * Converts this path to a [GraphCycle].
  *
- * 경로의 첫 번째 정점과 마지막 정점이 동일한 순환 경로를 표현할 때 사용한다.
- * 호출 전에 순환 여부를 직접 검증해야 한다 — 이 함수는 단순 래핑만 수행한다.
+ * Use this when the first and last vertices in the path are the same.
+ * Verify the cycle before calling this function; it only wraps the path.
  *
  * ```kotlin
  * val cycle = detectedPath.toCycle()

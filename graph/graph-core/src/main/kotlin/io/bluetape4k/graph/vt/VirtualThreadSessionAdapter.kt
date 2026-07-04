@@ -7,11 +7,11 @@ import io.bluetape4k.logging.KLogging
 import java.util.concurrent.CompletableFuture
 
 /**
- * [GraphSession] 의 lifecycle 조작을 Virtual Thread 위에서 실행하는 어댑터.
+ * Adapter that runs [GraphSession] lifecycle operations on virtual threads.
  *
- * 모든 작업에 `virtualFutureOf { }` 를 사용한다.
+ * All operations use `virtualFutureOf { }`.
  *
- * @param delegate 위임할 동기 [GraphSession].
+ * @param delegate synchronous [GraphSession] to delegate to.
  */
 class VirtualThreadSessionAdapter(
     private val delegate: GraphSession,
@@ -30,7 +30,7 @@ class VirtualThreadSessionAdapter(
 }
 
 /**
- * [GraphSession] 을 Virtual Thread 세션 어댑터로 감싸는 확장 함수.
+ * Wraps [GraphSession] in a virtual-thread session adapter.
  */
 fun GraphSession.asVirtualThreadSession(): GraphVirtualThreadSession =
     VirtualThreadSessionAdapter(this)

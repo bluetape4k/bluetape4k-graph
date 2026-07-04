@@ -11,17 +11,17 @@ import io.bluetape4k.logging.warn
 import java.util.*
 
 /**
- * A* 알고리즘으로 휴리스틱 유도 최단 경로를 계산한다.
+ * Computes a heuristic-guided shortest path with the A* algorithm.
  *
- * ## 설계 결정
- * - [heuristic]은 동기 함수만 허용한다 (`suspend` 불가). 코루틴 컨텍스트 내에서도 동기 호출.
- * - 허용 가능(admissible) 휴리스틱: `h(n) <= 실제_비용(n, goal)`. 위반 시 최적성 보장 불가.
- * - tie-break은 DijkstraRunner와 동일하게 vertexId 사전순.
+ * ## Design decisions
+ * - [heuristic] is synchronous only; suspend heuristics are not supported.
+ * - Admissible heuristic: `h(n) <= actualCost(n, goal)`. Violating this loses optimality guarantees.
+ * - Tie-breaks use the same lexicographic vertex ID ordering as [DijkstraRunner].
  *
- * ### 사용 예제
+ * ### Usage
  *
  * ```kotlin
- * // 좌표 기반 유클리드 휴리스틱 — 2D 격자에서 admissible
+ * // Coordinate-based Euclidean heuristic, admissible on a 2D grid.
  * val coords: Map<String, Pair<Double, Double>> = ...
  * val goalId = "C"
  *
@@ -42,9 +42,9 @@ import java.util.*
  * )
  * ```
  *
- * @param fetchEdges 정점 ID → 인접 간선 목록 조회 함수.
- * @param fetchVertex 정점 ID → [GraphVertex] 조회 함수.
- * @param heuristic 목표 정점까지의 예상 비용 함수. 반드시 허용 가능해야 한다.
+ * @param fetchEdges vertex ID to adjacent edges lookup.
+ * @param fetchVertex vertex ID to [GraphVertex] lookup.
+ * @param heuristic estimated cost to the target vertex. It must be admissible.
  */
 class AStarRunner(
     private val fetchEdges: (GraphElementId) -> List<GraphEdge>,
@@ -53,7 +53,7 @@ class AStarRunner(
 ) {
     companion object : KLogging()
 
-    /** PriorityQueue 엔트리 — Triple 대비 박싱 2회 절감 */
+    /** PriorityQueue entry; avoids two boxing operations compared with Triple. */
     private data class AStarNode(val f: Double, val g: Double, val id: GraphElementId) : Comparable<AStarNode> {
         override fun compareTo(other: AStarNode): Int {
             val cmp = f.compareTo(other.f)
@@ -62,13 +62,13 @@ class AStarRunner(
     }
 
     /**
-     * A* 알고리즘으로 [fromId] → [toId] 최단 경로를 계산한다.
-     *
-     * @param fromId 출발 정점 ID.
-     * @param toId 도착 정점 ID.
-     * @param options 탐색 옵션 (weightProperty, missingWeightPolicy, maxVisited).
-     * @return 최단 [GraphPath], 경로가 없으면 `null`.
-     * @throws IllegalArgumentException [PathOptions.weightProperty]가 null인 경우.
+     * Computes the shortest path from [fromId] to [toId] with the A* algorithm.
+	*
+     * @param fromId source vertex ID.
+     * @param toId target vertex ID.
+     * @param options traversal options (`weightProperty`, `missingWeightPolicy`, `maxVisited`).
+     * @return shortest [GraphPath], or `null` when no path exists.
+     * @throws IllegalArgumentException when [PathOptions.weightProperty] is null.
      */
     fun run(
         fromId: GraphElementId,
@@ -80,7 +80,7 @@ class AStarRunner(
         }
         val extractor = WeightExtractor(weightProperty, options.missingWeightPolicy)
 
-        // f = g + h; AStarNode: Comparable — Comparator 불필요
+        // f = g + h; AStarNode is Comparable, so no Comparator is needed.
         val pq = PriorityQueue<AStarNode>()
         val gScore = mutableMapOf<GraphElementId, Double>()
         val cameFrom = mutableMapOf<GraphElementId, Pair<GraphVertex, GraphEdge>>()

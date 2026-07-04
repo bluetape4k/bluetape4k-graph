@@ -1,24 +1,24 @@
 package io.bluetape4k.graph.model
 
 /**
- * 그래프 간선 탐색 방향.
+ * Graph edge traversal direction.
  *
  * ```kotlin
- * // OUTGOING: alice가 아는 사람들
+ * // OUTGOING: people Alice knows
  * val friends = ops.neighbors(alice.id, NeighborOptions(direction = Direction.OUTGOING, edgeLabel = "KNOWS"))
  *
- * // INCOMING: alice를 아는 사람들
+ * // INCOMING: people who know Alice
  * val followers = ops.neighbors(alice.id, NeighborOptions(direction = Direction.INCOMING, edgeLabel = "KNOWS"))
  *
- * // BOTH: 양방향
+ * // BOTH: both directions
  * val all = ops.neighbors(alice.id, NeighborOptions(direction = Direction.BOTH))
  * ```
  */
 enum class Direction {
-    /** 출발 정점 -> 도착 정점 방향 */
+    /** From start vertex to end vertex. */
     OUTGOING,
-    /** 도착 정점 -> 출발 정점 방향 */
+    /** From end vertex to start vertex. */
     INCOMING,
-    /** 양방향 */
+    /** Both directions. */
     BOTH,
 }

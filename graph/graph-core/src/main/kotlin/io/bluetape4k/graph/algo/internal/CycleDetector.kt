@@ -3,14 +3,14 @@ package io.bluetape4k.graph.algo.internal
 import io.bluetape4k.graph.model.GraphElementId
 
 /**
- * DFS 기반 단순 순환 탐지기 (JVM 폴백).
+ * DFS-based simple cycle detector used as a JVM fallback.
  *
- * 모든 정점에서 DFS 를 시작해 백엣지(back edge)를 탐지한다.
- * 동일 시작 정점에서 발생한 순환은 한 번만 보고된다.
+ * It starts DFS from every vertex and detects back edges. Cycles from the same start
+ * vertex are reported once.
  *
- * 반환되는 각 순환은 정점 ID 목록으로, 첫 번째와 마지막이 같다.
+ * Each returned cycle is a vertex ID list where the first and last IDs are equal.
  *
- * ### 사용 예제
+ * ### Usage
  * ```kotlin
  * val cycles = CycleDetector.findCycles(adjacency, maxDepth = 6, maxCycles = 50)
  * cycles.forEach { println("cycle: ${it.joinToString(" -> ")}") }
@@ -19,10 +19,10 @@ import io.bluetape4k.graph.model.GraphElementId
 object CycleDetector {
 
     /**
-     * @param adjacency 인접 리스트 (out-edges).
-     * @param maxDepth 순환 경로 최대 길이 (간선 수).
-     * @param maxCycles 반환할 최대 순환 수.
-     * @return 정점 ID 목록의 목록. 각 항목은 first == last.
+     * @param adjacency adjacency list of out-edges.
+     * @param maxDepth maximum cycle path length in edges.
+     * @param maxCycles maximum number of cycles to return.
+     * @return lists of vertex IDs, each with `first == last`.
      */
     fun findCycles(
         adjacency: Map<GraphElementId, List<GraphElementId>>,
@@ -50,11 +50,11 @@ object CycleDetector {
         result: MutableList<List<GraphElementId>>,
         seenSignatures: MutableSet<List<GraphElementId>>,
     ) {
-        // Frame: (정점, 아직 방문하지 않은 이웃 목록)
+        // Frame: current vertex and neighbors not yet visited from it.
         data class Frame(val vertex: GraphElementId, val remaining: ArrayDeque<GraphElementId>)
 
-        val path = ArrayList<GraphElementId>()  // 현재 탐색 경로 (= 원래 recursive dfs의 stack)
-        val onPath = HashSet<GraphElementId>()  // 경로 내 정점 집합 (빠른 조회용)
+        val path = ArrayList<GraphElementId>()  // Current traversal path, equivalent to recursive DFS stack.
+        val onPath = HashSet<GraphElementId>()  // Vertices on the current path for fast lookup.
 
         path.add(start)
         onPath.add(start)
@@ -65,11 +65,11 @@ object CycleDetector {
             if (result.size >= maxCycles) break
 
             val frame = callStack.last()
-            // 경로 깊이(간선 수) = callStack.size - 1
+            // Path depth in edges is callStack.size - 1.
             val depth = callStack.size - 1
 
             if (depth >= maxDepth || frame.remaining.isEmpty()) {
-                // 이 프레임 종료 — path/onPath에서 현재 정점 제거
+                // End this frame and remove the current vertex from path/onPath.
                 callStack.removeLast()
                 val popped = path.removeAt(path.size - 1)
                 onPath.remove(popped)
@@ -91,14 +91,14 @@ object CycleDetector {
 
             if (next in onPath) continue
 
-            // 새 프레임 push
+            // Push the next frame.
             path.add(next)
             onPath.add(next)
             callStack.addLast(Frame(next, ArrayDeque(adjacency[next].orEmpty())))
         }
     }
 
-    /** 회전 등가 순환을 동일 시그니처로 정규화 (가장 작은 회전 시작). */
+    /** Normalizes rotationally equivalent cycles to the same signature by starting at the smallest rotation. */
     private fun canonicalSignature(cycle: List<GraphElementId>): List<GraphElementId> {
         // cycle has first == last; drop the trailing duplicate
         val core = cycle.dropLast(1)

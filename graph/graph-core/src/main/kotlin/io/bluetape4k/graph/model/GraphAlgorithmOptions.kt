@@ -3,12 +3,12 @@ package io.bluetape4k.graph.model
 import java.io.Serializable
 
 /**
- * Analytics 알고리즘 옵션의 공통 sealed 클래스.
+ * Base sealed class for analytics algorithm options.
  *
- * `maxDepth` 개념이 없는 알고리즘(PageRank / Degree / ConnectedComponents) 전용이다.
- * 탐색 깊이가 의미 있는 알고리즘은 [GraphTraversalOptions] 하위를 사용한다.
+ * Use this for algorithms without a `maxDepth` concept, such as PageRank, degree centrality,
+ * and connected components. Use [GraphTraversalOptions] for algorithms where traversal depth matters.
  *
- * ### 사용 예제
+ * ### Usage
  * ```kotlin
  * val opts: GraphAlgorithmOptions = PageRankOptions(iterations = 20)
  * ```
@@ -20,18 +20,18 @@ sealed class GraphAlgorithmOptions: Serializable {
 }
 
 /**
- * PageRank 옵션.
+ * PageRank options.
  *
- * @param vertexLabel `null` 이면 전체 정점 대상.
- * @param edgeLabel `null` 이면 모든 간선 포함.
- * @param iterations 반복 횟수 (기본 20).
- * @param dampingFactor 감쇠 인수 (기본 0.85). 백엔드별 지원 여부 상이.
- * @param tolerance 수렴 허용 오차 (기본 1e-4). 백엔드별 지원 여부 상이.
- * @param topK 상위 K개 결과만 반환. `Int.MAX_VALUE` = 전체 반환.
+ * @param vertexLabel Targets all vertices when `null`.
+ * @param edgeLabel Includes all edges when `null`.
+ * @param iterations Number of iterations. Defaults to `20`.
+ * @param dampingFactor Damping factor. Defaults to `0.85`; backend support varies.
+ * @param tolerance Convergence tolerance. Defaults to `1e-4`; backend support varies.
+ * @param topK Returns only the top K results. `Int.MAX_VALUE` returns all results.
  *
- * 결과 순서: score 내림차순 정렬 보장.
+ * Result order is guaranteed to be descending by score.
  *
- * ### 사용 예제
+ * ### Usage
  * ```kotlin
  * val opts = PageRankOptions(vertexLabel = "Person", iterations = 30, topK = 10)
  * val top10 = ops.pageRank(opts)
@@ -57,12 +57,12 @@ data class PageRankOptions(
 }
 
 /**
- * Degree Centrality 옵션.
+ * Degree centrality options.
  *
- * @param edgeLabel `null` 이면 모든 간선 포함.
- * @param direction 방향 (BOTH / OUTGOING / INCOMING).
+ * @param edgeLabel Includes all edges when `null`.
+ * @param direction Traversal direction: `BOTH`, `OUTGOING`, or `INCOMING`.
  *
- * ### 사용 예제
+ * ### Usage
  * ```kotlin
  * val opts = DegreeOptions(edgeLabel = "KNOWS", direction = Direction.BOTH)
  * val degree = ops.degreeCentrality(alice.id, opts)
@@ -79,14 +79,14 @@ data class DegreeOptions(
 }
 
 /**
- * Connected Components 옵션.
+ * Connected components options.
  *
- * @param vertexLabel `null` 이면 전체 정점.
- * @param edgeLabel `null` 이면 모든 간선.
- * @param weakly `true` = Weakly Connected (방향 무시), `false` = Strongly Connected.
- * @param minSize 반환할 최소 컴포넌트 크기 (기본 1).
+ * @param vertexLabel Targets all vertices when `null`.
+ * @param edgeLabel Includes all edges when `null`.
+ * @param weakly `true` for weakly connected components, ignoring direction; `false` for strongly connected components.
+ * @param minSize Minimum component size to return. Defaults to `1`.
  *
- * ### 사용 예제
+ * ### Usage
  * ```kotlin
  * val opts = ComponentOptions(weakly = true, minSize = 2)
  * val components = ops.connectedComponents(opts)

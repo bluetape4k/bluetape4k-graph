@@ -3,9 +3,9 @@ package io.bluetape4k.graph.model
 import java.io.Serializable
 
 /**
- * 그래프 경로의 단계 (정점 또는 간선).
+ * Step in a graph path, either a vertex or an edge.
  *
- * 경로는 `[VertexStep, EdgeStep, VertexStep, ...]` 형태로 교차 배치된다.
+ * Paths alternate as `[VertexStep, EdgeStep, VertexStep, ...]`.
  *
  * ```kotlin
  * val step: PathStep = PathStep.VertexStep(vertex)
@@ -15,41 +15,41 @@ import java.io.Serializable
  */
 sealed class PathStep {
     /**
-     * 경로 내 정점 단계.
+     * Vertex step in a path.
      *
      * ```kotlin
      * val step = PathStep.VertexStep(GraphVertex(GraphElementId.of("v1"), "Person", mapOf("name" to "Alice")))
      * println(step.vertex.label)  // "Person"
      * ```
      *
-     * @property vertex 해당 단계의 정점.
+     * @property vertex Vertex for this step.
      */
     data class VertexStep(val vertex: GraphVertex): PathStep()
 
     /**
-     * 경로 내 간선 단계.
+     * Edge step in a path.
      *
      * ```kotlin
      * val step = PathStep.EdgeStep(edge)
      * println(step.edge.label)  // "KNOWS"
      * ```
      *
-     * @property edge 해당 단계의 간선.
+     * @property edge Edge for this step.
      */
     data class EdgeStep(val edge: GraphEdge): PathStep()
 }
 
 /**
- * 그래프 경로.
+ * Graph path.
  *
- * [PathStep] 목록으로 구성되며, `[VertexStep, EdgeStep, VertexStep, ...]`
- * 교차 순서를 따른다. 두 정점 사이의 최단 경로 또는 모든 경로 탐색 결과를 표현한다.
+ * Consists of [PathStep] values ordered as `[VertexStep, EdgeStep, VertexStep, ...]`.
+ * Represents a shortest path or all-paths traversal result between two vertices.
  *
- * @property steps 경로를 구성하는 단계 목록.
- * @property totalWeight 경로의 총 가중치. 비가중치 탐색 결과는 간선 수(hop count)가 기본값.
- *   Dijkstra/A* 결과에는 실제 누적 비용이 설정된다.
+ * @property steps Steps that make up the path.
+ * @property totalWeight Total path weight. Unweighted traversal defaults to edge count (hop count).
+ *   Dijkstra/A* results set the actual accumulated cost.
  *
- * ### 사용 예제
+ * ### Usage
  * ```kotlin
  * val v1 = GraphVertex(GraphElementId.of("1"), "Person")
  * val v2 = GraphVertex(GraphElementId.of("2"), "Person")
@@ -67,39 +67,39 @@ data class GraphPath(
     val steps: List<PathStep>,
     val totalWeight: Double = steps.filterIsInstance<PathStep.EdgeStep>().size.toDouble(),
 ): Serializable {
-    /** 경로 내 모든 정점을 순서대로 반환한다. */
+    /** Returns all vertices in path order. */
     val vertices: List<GraphVertex>
         get() = steps.filterIsInstance<PathStep.VertexStep>().map { it.vertex }
 
-    /** 경로 내 모든 간선을 순서대로 반환한다. */
+    /** Returns all edges in path order. */
     val edges: List<GraphEdge>
         get() = steps.filterIsInstance<PathStep.EdgeStep>().map { it.edge }
 
-    /** 경로의 길이 (간선 수). 정점만 있는 경로는 0이다. */
+    /** Path length as the number of edges. Vertex-only paths have length 0. */
     val length: Int
         get() = edges.size
 
-    /** 경로에 단계가 없으면 `true`를 반환한다. */
+    /** Returns `true` when the path has no steps. */
     val isEmpty: Boolean
         get() = steps.isEmpty()
 
     companion object {
         private const val serialVersionUID: Long = 1L
 
-        /** 단계가 없는 빈 경로. 탐색 결과가 없을 때 사용한다. */
+        /** Empty path with no steps. Use when traversal has no result. */
         val EMPTY = GraphPath(emptyList())
 
         /**
-         * 정점들만으로 구성된 경로를 만든다 (간선 없음).
+         * Creates a vertex-only path with no edges.
          *
-         * 주로 단일 정점 경로 또는 인접 정점 목록을 경로로 표현할 때 사용한다.
+         * Use this for a single-vertex path or to represent adjacent vertices as a path.
          *
          * ```kotlin
          * val path = GraphPath.of(alice, bob, carol)
          * println(path.length)  // 3
          * ```
          *
-         * @param vertices 경로에 포함할 정점들.
+         * @param vertices Vertices to include in the path.
          */
         fun of(vararg vertices: GraphVertex): GraphPath =
             GraphPath(vertices.map { PathStep.VertexStep(it) })
@@ -107,7 +107,7 @@ data class GraphPath(
 }
 
 /**
- * [PathStep] 목록으로 경로를 생성한다.
+ * Creates a path from [PathStep] values.
  *
  * ```kotlin
  * val path = graphPathOf(PathStep.VertexStep(v1), PathStep.EdgeStep(e1), PathStep.VertexStep(v2))
@@ -117,7 +117,7 @@ data class GraphPath(
 fun graphPathOf(vararg steps: PathStep): GraphPath = GraphPath(steps.toList())
 
 /**
- * [PathStep] 리스트로 경로를 생성한다.
+ * Creates a path from a [PathStep] list.
  *
  * ```kotlin
  * val path = graphPathOf(listOf(PathStep.VertexStep(v1), PathStep.EdgeStep(e1)))
@@ -127,18 +127,18 @@ fun graphPathOf(vararg steps: PathStep): GraphPath = GraphPath(steps.toList())
 fun graphPathOf(steps: List<PathStep>): GraphPath = GraphPath(steps)
 
 /**
- * 정점 목록으로 정점만 있는 경로를 생성한다 (간선 없음).
+ * Creates a vertex-only path from vertices, with no edges.
  *
  * ```kotlin
  * val path = graphPathOf(v1, v2, v3)
- * println(path.length) // 0 (간선 없음)
+ * println(path.length) // 0 (no edges)
  * ```
  */
 @JvmName("graphPathOfGraphVertices")
 fun graphPathOf(vararg vertices: GraphVertex): GraphPath = GraphPath(vertices.map { PathStep.VertexStep(it) })
 
 /**
- * 정점 리스트로 정점만 있는 경로를 생성한다 (간선 없음).
+ * Creates a vertex-only path from a vertex list, with no edges.
  *
  * ```kotlin
  * val path = graphPathOf(listOf(v1, v2, v3))
@@ -148,7 +148,7 @@ fun graphPathOf(vararg vertices: GraphVertex): GraphPath = GraphPath(vertices.ma
 fun graphPathOf(vertices: List<GraphVertex>): GraphPath = GraphPath(vertices.map { PathStep.VertexStep(it) })
 
 /**
- * 간선 목록으로 간선만 있는 경로를 생성한다 (정점 없음).
+ * Creates an edge-only path from edges, with no vertices.
  *
  * ```kotlin
  * val path = graphPathOf(e1, e2)
@@ -159,7 +159,7 @@ fun graphPathOf(vertices: List<GraphVertex>): GraphPath = GraphPath(vertices.map
 fun graphPathOf(vararg edges: GraphEdge): GraphPath = GraphPath(edges.map { PathStep.EdgeStep(it) })
 
 /**
- * 간선 리스트로 간선만 있는 경로를 생성한다 (정점 없음).
+ * Creates an edge-only path from an edge list, with no vertices.
  *
  * ```kotlin
  * val path = graphPathOf(listOf(e1, e2))
@@ -169,7 +169,7 @@ fun graphPathOf(vararg edges: GraphEdge): GraphPath = GraphPath(edges.map { Path
 fun graphPathOf(edges: List<GraphEdge>): GraphPath = GraphPath(edges.map { PathStep.EdgeStep(it) })
 
 /**
- * 빈 경로 ([GraphPath.EMPTY])를 반환한다.
+ * Returns the empty path ([GraphPath.EMPTY]).
  *
  * ```kotlin
  * val path = emptyGraphPath()

@@ -5,7 +5,7 @@ import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphElementId
 
 /**
- * 그래프 간선(Edge) CRUD 저장소 (동기 방식).
+ * Synchronous graph edge CRUD repository.
  *
  * ```kotlin
  * val edge = ops.createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to 2024))
@@ -15,17 +15,17 @@ import io.bluetape4k.graph.model.GraphElementId
  */
 interface GraphEdgeRepository {
     /**
-     * 두 정점 사이에 새 간선을 생성하고 반환한다.
+     * Creates and returns a new edge between two vertices.
      *
      * ```kotlin
      * val edge = ops.createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to 2024))
      * ```
      *
-     * @param fromId 시작 정점 ID.
-     * @param toId 종료 정점 ID.
-     * @param label 간선 레이블 (예: `"KNOWS"`, `"WORKS_AT"`).
-     * @param properties 간선에 저장할 속성 맵. 기본값은 빈 맵.
-     * @return 백엔드에서 생성된 [GraphEdge] (ID가 채워진 상태).
+     * @param fromId start vertex ID.
+     * @param toId end vertex ID.
+     * @param label edge label, such as `"KNOWS"` or `"WORKS_AT"`.
+     * @param properties properties to store on the edge; defaults to an empty map.
+     * @return backend-created [GraphEdge] with its ID populated.
      */
     fun createEdge(
         fromId: GraphElementId,
@@ -35,14 +35,14 @@ interface GraphEdgeRepository {
     ): GraphEdge
 
     /**
-     * 같은 레이블의 간선을 여러 개 생성하고 입력 순서와 같은 순서로 반환한다.
-     *
-     * ## 동작/계약
-     *
-     * - 빈 입력은 백엔드를 호출하지 않고 `emptyList()`를 반환한다.
-     * - 기본 구현은 [createEdge]를 순차 호출하는 호환성 fallback이다.
-     * - 기본 구현은 중간 실패 시 앞서 생성된 간선이 남을 수 있다.
-     * - 성능 및 all-or-fail 의미가 필요한 프로덕션 백엔드는 이 메서드를 override해야 한다.
+     * Creates multiple edges with the same label and returns them in input order.
+	*
+     * ## Contract
+	*
+     * - Empty input returns `emptyList()` without calling the backend.
+     * - The default implementation is a compatibility fallback that calls [createEdge] sequentially.
+     * - If the default implementation fails mid-batch, previously created edges may remain.
+     * - Production backends that need performance or all-or-fail semantics should override this method.
      *
      * ```kotlin
      * val edges = ops.createEdges(
@@ -51,9 +51,9 @@ interface GraphEdgeRepository {
      * )
      * ```
      *
-     * @param label 간선 레이블.
-     * @param edges 간선 endpoint와 속성 목록.
-     * @return 백엔드에서 생성된 [GraphEdge] 목록.
+     * @param label edge label.
+     * @param edges edge endpoints and property rows.
+     * @return backend-created [GraphEdge] values.
      */
     fun createEdges(
         label: String,
@@ -65,16 +65,16 @@ interface GraphEdgeRepository {
     }
 
     /**
-     * 레이블과 속성 필터로 간선 목록을 조회한다.
+     * Finds edges by label and property filter.
      *
      * ```kotlin
      * val all    = ops.findEdgesByLabel("KNOWS")
      * val recent = ops.findEdgesByLabel("KNOWS", mapOf("since" to 2024))
      * ```
      *
-     * @param label 조회할 간선 레이블.
-     * @param filter 속성 이름→값 조건 맵. 빈 맵이면 레이블 전체를 반환.
-     * @return 조건에 맞는 [GraphEdge] 목록.
+     * @param label edge label to query.
+     * @param filter property-name to value conditions. An empty map returns the full label.
+     * @return matching [GraphEdge] values.
      */
     fun findEdgesByLabel(label: String, filter: Map<String, Any?> = emptyMap()): List<GraphEdge>
 
@@ -106,46 +106,46 @@ interface GraphEdgeRepository {
         findEdgesByLabel(label, filter).asGraphExportChunks(chunkSize)
 
     /**
-     * 특정 정점에서 출발하는 간선 목록을 조회한다.
-     *
-     * Dijkstra/A* 알고리즘의 인접 간선 수집에 사용된다.
+     * Finds edges that start at a specific vertex.
+	*
+     * Used to collect adjacent edges for Dijkstra/A* algorithms.
      *
      * ```kotlin
      * val outEdges = ops.findEdgesByStartId(alice.id)
      * val typed    = ops.findEdgesByStartId(alice.id, edgeLabel = "KNOWS")
      * ```
      *
-     * @param startId 시작 정점 ID.
-     * @param edgeLabel 간선 레이블 필터. null이면 모든 레이블 반환.
-     * @return 해당 정점에서 출발하는 [GraphEdge] 목록.
+     * @param startId start vertex ID.
+     * @param edgeLabel optional edge-label filter; `null` returns all labels.
+     * @return [GraphEdge] values that start at the vertex.
      */
     fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String? = null): List<GraphEdge>
 
     /**
-     * 특정 정점으로 도착하는 간선 목록을 조회한다.
-     *
-     * `Direction.INCOMING` / `Direction.BOTH` 탐색에 사용된다.
+     * Finds edges that end at a specific vertex.
+	*
+     * Used for `Direction.INCOMING` and `Direction.BOTH` traversal.
      *
      * ```kotlin
      * val inEdges = ops.findEdgesByEndId(alice.id)
      * ```
      *
-     * @param endId 종료 정점 ID.
-     * @param edgeLabel 간선 레이블 필터. null이면 모든 레이블 반환.
-     * @return 해당 정점으로 도착하는 [GraphEdge] 목록.
+     * @param endId end vertex ID.
+     * @param edgeLabel optional edge-label filter; `null` returns all labels.
+     * @return [GraphEdge] values that end at the vertex.
      */
     fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String? = null): List<GraphEdge>
 
     /**
-     * 간선을 삭제한다.
+     * Deletes an edge.
      *
      * ```kotlin
      * val deleted = ops.deleteEdge("KNOWS", edge.id)  // true
      * ```
      *
-     * @param label 간선 레이블.
-     * @param id 삭제할 간선 ID.
-     * @return 삭제 성공이면 `true`, 해당 ID가 없으면 `false`.
+     * @param label edge label.
+     * @param id edge ID to delete.
+     * @return `true` when deleted, or `false` when the ID is absent.
      */
     fun deleteEdge(label: String, id: GraphElementId): Boolean
 }

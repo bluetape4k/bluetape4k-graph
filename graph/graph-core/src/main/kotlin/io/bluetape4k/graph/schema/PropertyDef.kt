@@ -3,20 +3,20 @@ package io.bluetape4k.graph.schema
 import kotlin.reflect.KClass
 
 /**
- * 그래프 속성(Property) 정의.
+ * Graph property definition.
  *
- * [VertexLabel] 또는 [EdgeLabel]의 DSL 메서드가 반환하는 타입 안전 속성 메타데이터이다.
- * 컴파일 타임에 속성 이름과 Kotlin 타입을 함께 추적한다.
+ * This type-safe metadata is returned by [VertexLabel] and [EdgeLabel] DSL methods.
+ * It tracks the graph property name and Kotlin value type together.
  *
  * ```kotlin
  * val nameDef = PropertyDef<String>("name")      // inline factory
- * val ageDef  = PropertyDef("age", Int::class)   // 명시적
+ * val ageDef  = PropertyDef("age", Int::class)   // explicit
  * println(nameDef.name)  // "name"
  * println(nameDef.type)  // class kotlin.String
  * ```
  *
- * @property name 속성 이름 (그래프 백엔드에 저장되는 키).
- * @property type 속성 값의 Kotlin [KClass].
+ * @property name property key stored in the graph backend.
+ * @property type Kotlin [KClass] for the property value.
  */
 data class PropertyDef<T: Any>(
     val name: String,
@@ -24,15 +24,15 @@ data class PropertyDef<T: Any>(
 )
 
 /**
- * reified 타입 파라미터를 사용하여 [PropertyDef]를 생성하는 인라인 팩토리 함수.
+ * Inline factory that creates a [PropertyDef] from a reified type parameter.
  *
  * ```kotlin
  * val nameDef: PropertyDef<String> = PropertyDef("name")       // inline factory
- * val ageDef: PropertyDef<Int>    = PropertyDef("age", Int::class)  // 명시적
+ * val ageDef: PropertyDef<Int>    = PropertyDef("age", Int::class)  // explicit
  * println(nameDef.name)  // "name"
  * println(nameDef.type)  // class kotlin.String
  * ```
  *
- * @param name 속성 이름.
+ * @param name property name.
  */
 inline fun <reified T: Any> PropertyDef(name: String): PropertyDef<T> = PropertyDef(name, T::class)

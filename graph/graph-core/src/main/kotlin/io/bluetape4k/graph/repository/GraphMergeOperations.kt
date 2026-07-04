@@ -7,15 +7,15 @@ import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.support.requireNotBlank
 
 /**
- * 검증을 통과한 merge/upsert 속성 묶음.
+ * Validated merge/upsert property bundle.
  *
- * `matchProperties`는 요소를 찾는 안정적인 식별자이고, `setProperties`는 생성되었거나
- * 이미 존재하는 요소에 적용할 갱신 속성이다.
+ * `matchProperties` are stable identifiers used to find an element, while `setProperties`
+ * are updates applied to a newly created or existing element.
  *
- * ## 동작/계약
- * - `matchProperties`의 값은 `null`일 수 없다. null identity key는 backend별 query 의미가
- *   달라질 수 있기 때문이다.
- * - `setProperties`는 `matchProperties`와 같은 key를 덮어쓸 수 없다.
+ * ## Contract
+ * - `matchProperties` values must not be `null`; null identity values can have
+ *   backend-specific query semantics.
+ * - `setProperties` must not overwrite keys from `matchProperties`.
  *
  * ```kotlin
  * val props = GraphMergeValidation.validateVertex(
@@ -31,14 +31,14 @@ data class GraphMergeProperties(
 )
 
 /**
- * merge/upsert API가 모든 백엔드에서 공유하는 입력 검증 규칙.
+ * Shared input validation rules for backend merge/upsert APIs.
  *
- * 백엔드 구현체는 쿼리 문자열을 만들기 전에 이 검증을 먼저 호출해야 한다.
+ * Backend implementations should call this validator before building query strings.
  *
- * ## 동작/계약
- * - label과 property key는 backend query에 안전한 identifier여야 한다.
- * - vertex merge는 [validateVertex]에서 non-empty `matchProperties`를 요구한다.
- * - edge merge는 endpoint id와 label이 identity를 이루므로 empty `matchProperties`를 허용한다.
+ * ## Contract
+ * - Labels and property keys must be backend-query-safe identifiers.
+ * - Vertex merges require non-empty `matchProperties` through [validateVertex].
+ * - Edge merges allow empty `matchProperties` because endpoint IDs and label form the identity.
  *
  * ```kotlin
  * val validated = GraphMergeValidation.validateEdge(
@@ -53,10 +53,10 @@ data class GraphMergeProperties(
 object GraphMergeValidation {
 
     /**
-     * 정점 merge 입력을 검증한다.
+     * Validates vertex merge input.
      *
-     * 정점은 레이블만으로 merge 하면 여러 기존 정점이 매칭될 수 있으므로
-     * `matchProperties`가 비어 있으면 거부한다.
+     * Vertices reject empty `matchProperties` because merging by label alone can match
+     * multiple existing vertices.
      */
     fun validateVertex(
         label: String,
@@ -71,10 +71,10 @@ object GraphMergeValidation {
     }
 
     /**
-     * 간선 merge 입력을 검증한다.
+     * Validates edge merge input.
      *
-     * 간선은 시작 정점 ID, 종료 정점 ID, 레이블이 기본 식별자이므로
-     * `matchProperties`가 비어 있어도 허용한다.
+     * Edges allow empty `matchProperties` because start vertex ID, end vertex ID,
+     * and label form the primary identity.
      */
     fun validateEdge(
         fromId: GraphElementId,
@@ -117,15 +117,16 @@ object GraphMergeValidation {
 }
 
 /**
- * 동기 그래프 구현체가 merge/upsert 기능을 제공할 때 구현하는 capability interface.
+ * Capability interface for synchronous graph implementations that support merge/upsert.
  *
- * [GraphOperations] 자체에 멤버를 추가하지 않아 기존 구현체와 테스트 fake의 source compatibility를 유지한다.
+ * This keeps source compatibility for existing implementations and test fakes by
+ * avoiding new members on [GraphOperations].
  *
- * ## 동작/계약
- * - 구현체는 [GraphMergeValidation]으로 입력을 검증한 뒤 backend-native `MERGE` 또는
- *   transactional match/update/create path를 사용해야 한다.
- * - unsupported backend는 이 interface를 구현하지 않고 extension function에서
- *   [UnsupportedOperationException]으로 fail fast 하도록 둔다.
+ * ## Contract
+ * - Implementations should validate input with [GraphMergeValidation], then use a
+ *   backend-native `MERGE` or transactional match/update/create path.
+ * - Unsupported backends should not implement this interface; extension functions
+ *   then fail fast with [UnsupportedOperationException].
  *
  * ```kotlin
  * val alice = ops.mergeVertex(
@@ -138,7 +139,7 @@ object GraphMergeValidation {
 interface GraphMergeOperations {
 
     /**
-     * `matchProperties`로 정점을 찾고, 없으면 생성한 뒤 `setProperties`를 적용해 반환한다.
+     * Finds a vertex by `matchProperties`, creates it when absent, applies `setProperties`, and returns it.
      */
     fun mergeVertex(
         label: String,
@@ -147,8 +148,8 @@ interface GraphMergeOperations {
     ): GraphVertex
 
     /**
-     * 시작/종료 정점, 간선 레이블, `matchProperties`로 간선을 찾고, 없으면 생성한 뒤
-     * `setProperties`를 적용해 반환한다.
+     * Finds an edge by endpoints, label, and `matchProperties`, creates it when absent,
+     * applies `setProperties`, and returns it.
      */
     fun mergeEdge(
         fromId: GraphElementId,
@@ -160,11 +161,11 @@ interface GraphMergeOperations {
 }
 
 /**
- * 코루틴 그래프 구현체가 merge/upsert 기능을 제공할 때 구현하는 capability interface.
+ * Capability interface for coroutine graph implementations that support merge/upsert.
  *
- * ## 동작/계약
- * - [GraphMergeOperations]와 같은 identity/set semantics를 suspend API로 제공한다.
- * - cancellation은 backend implementation에서 삼키지 않아야 한다.
+ * ## Contract
+ * - Provides the same identity/set semantics as [GraphMergeOperations] through suspend APIs.
+ * - Backend implementations must not swallow cancellation.
  *
  * ```kotlin
  * val alice = suspendOps.mergeVertex(
@@ -176,14 +177,14 @@ interface GraphMergeOperations {
  */
 interface GraphSuspendMergeOperations {
 
-    /** `matchProperties`로 정점을 찾고, 없으면 생성한 뒤 `setProperties`를 적용해 반환한다. */
+    /** Finds a vertex by `matchProperties`, creates it when absent, applies `setProperties`, and returns it. */
     suspend fun mergeVertex(
         label: String,
         matchProperties: Map<String, Any?>,
         setProperties: Map<String, Any?> = emptyMap(),
     ): GraphVertex
 
-    /** 시작/종료 정점, 간선 레이블, `matchProperties`로 간선을 찾고, 없으면 생성한 뒤 `setProperties`를 적용한다. */
+    /** Finds or creates an edge by endpoints, label, and `matchProperties`, then applies `setProperties`. */
     suspend fun mergeEdge(
         fromId: GraphElementId,
         toId: GraphElementId,
@@ -194,10 +195,10 @@ interface GraphSuspendMergeOperations {
 }
 
 /**
- * [GraphOperations]에서 정점 merge/upsert를 실행한다.
+ * Executes vertex merge/upsert on [GraphOperations].
  *
- * 구현체가 [GraphMergeOperations]를 구현하지 않으면 read-then-write fallback을 사용하지 않고
- * 명시적으로 [UnsupportedOperationException]을 던진다.
+ * If the implementation does not implement [GraphMergeOperations], this function
+ * explicitly throws [UnsupportedOperationException] instead of using a read-then-write fallback.
  *
  * ```kotlin
  * import io.bluetape4k.graph.repository.mergeVertex
@@ -222,9 +223,10 @@ fun GraphOperations.mergeVertex(
 }
 
 /**
- * [GraphOperations]에서 간선 merge/upsert를 실행한다.
+ * Executes edge merge/upsert on [GraphOperations].
  *
- * 구현체가 [GraphMergeOperations]를 구현하지 않으면 명시적으로 [UnsupportedOperationException]을 던진다.
+ * If the implementation does not implement [GraphMergeOperations], this function
+ * explicitly throws [UnsupportedOperationException].
  *
  * ```kotlin
  * import io.bluetape4k.graph.repository.mergeEdge
@@ -252,7 +254,7 @@ fun GraphOperations.mergeEdge(
 }
 
 /**
- * [GraphSuspendOperations]에서 코루틴 정점 merge/upsert를 실행한다.
+ * Executes coroutine vertex merge/upsert on [GraphSuspendOperations].
  *
  * ```kotlin
  * import io.bluetape4k.graph.repository.mergeVertex
@@ -276,7 +278,7 @@ suspend fun GraphSuspendOperations.mergeVertex(
 }
 
 /**
- * [GraphSuspendOperations]에서 코루틴 간선 merge/upsert를 실행한다.
+ * Executes coroutine edge merge/upsert on [GraphSuspendOperations].
  *
  * ```kotlin
  * import io.bluetape4k.graph.repository.mergeEdge

@@ -73,8 +73,8 @@ import org.neo4j.driver.reactivestreams.ReactiveTransaction
  * }
  * ```
  *
- * @param driver Neo4j Java Driver (외부 소유)
- * @param database 데이터베이스 이름 (기본: "neo4j")
+ * @param driver externally owned Neo4j Java Driver.
+ * @param database Neo4j database name, defaulting to `"neo4j"`.
  */
 class Neo4jGraphSuspendOperations(
     private val driver: Driver,
@@ -202,7 +202,7 @@ class Neo4jGraphSuspendOperations(
         }
 
     /**
-     * 단일값/삭제 등 suspend 메서드용 쿼리 헬퍼.
+     * Query helper for suspend methods that materialize records immediately.
      */
     private suspend fun <T> runQuery(
         cypher: String,
@@ -221,9 +221,9 @@ class Neo4jGraphSuspendOperations(
     }
 
     /**
-     * 컬렉션 [Flow] 반환용 쿼리 헬퍼.
-     *
-     * 취소 시에도 세션이 안전하게 닫히도록 [NonCancellable]을 사용한다.
+     * Query helper for methods that return [Flow] collections.
+	*
+     * Uses [NonCancellable] so the session closes safely even when the caller is cancelled.
      */
     private fun <T> flowQuery(
         cypher: String,
@@ -269,7 +269,7 @@ class Neo4jGraphSuspendOperations(
         }
     }
 
-    override fun close() { /* driver는 외부 소유 */
+    override fun close() { /* driver is externally owned */
     }
 
     // -- GraphSuspendVertexRepository --

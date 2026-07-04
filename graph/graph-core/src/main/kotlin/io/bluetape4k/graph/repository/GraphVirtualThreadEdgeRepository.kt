@@ -6,10 +6,10 @@ import io.bluetape4k.graph.model.GraphElementId
 import java.util.concurrent.CompletableFuture
 
 /**
- * Virtual Thread 기반 그래프 간선(Edge) CRUD 저장소.
+ * Virtual-thread graph edge CRUD repository.
  *
- * 모든 메서드는 동기 [GraphEdgeRepository] 를 Virtual Thread 위에서 실행한
- * 결과를 `CompletableFuture<T>` 로 반환한다. Java interop 목적이다.
+ * Every method runs the synchronous [GraphEdgeRepository] on a virtual thread and
+ * returns the result as `CompletableFuture<T>` for Java interop.
  */
 interface GraphVirtualThreadEdgeRepository {
 

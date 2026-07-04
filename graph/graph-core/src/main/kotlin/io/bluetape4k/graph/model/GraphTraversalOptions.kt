@@ -3,39 +3,39 @@ package io.bluetape4k.graph.model
 import java.io.Serializable
 
 /**
- * 그래프 순회 옵션의 기반 sealed class.
+ * Base sealed class for graph traversal options.
  *
- * ### 사용 예제
+ * ### Usage
  * ```kotlin
- * // 1단계 OUTGOING 이웃 탐색
+ * // Find OUTGOING neighbors one hop away.
  * val neighborOpts = NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING)
  *
- * // 최대 5홉의 최단/전체 경로 탐색
+ * // Find shortest or all paths up to five hops.
  * val pathOpts = PathOptions(edgeLabel = "KNOWS", maxDepth = 5)
  * ```
  */
 sealed class GraphTraversalOptions: Serializable {
     /**
-     * 최대 탐색 깊이. 서브클래스별 기본값이 다르다 ([NeighborOptions]: 1, [PathOptions]: 10).
+     * Maximum traversal depth. Defaults vary by subclass: [NeighborOptions] uses `1`, [PathOptions] uses `10`.
      *
      * ```kotlin
-     * val opts = NeighborOptions(maxDepth = 3)  // 3홉까지 탐색
+     * val opts = NeighborOptions(maxDepth = 3)  // Traverse up to 3 hops.
      * ```
      */
     abstract val maxDepth: Int
 }
 
 /**
- * `GraphTraversalRepository.neighbors` 호출 옵션.
+ * Options for `GraphTraversalRepository.neighbors`.
  *
  * ```kotlin
  * val opts = NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING, maxDepth = 2)
  * val friends = ops.neighbors(alice.id, opts)
  * ```
  *
- * @param edgeLabel 탐색할 엣지 레이블. null이면 모든 레이블 탐색.
- * @param direction 탐색 방향 (OUTGOING, INCOMING, BOTH)
- * @param maxDepth 최대 탐색 깊이 (기본값: 1)
+ * @param edgeLabel Edge label to traverse. `null` traverses all labels.
+ * @param direction Traversal direction: `OUTGOING`, `INCOMING`, or `BOTH`.
+ * @param maxDepth Maximum traversal depth. Defaults to `1`.
  */
 data class NeighborOptions(
     val edgeLabel: String? = null,
@@ -49,16 +49,16 @@ data class NeighborOptions(
 }
 
 /**
- * `GraphTraversalRepository.shortestPath` / `GraphTraversalRepository.allPaths` 호출 옵션.
+ * Options for `GraphTraversalRepository.shortestPath` and `GraphTraversalRepository.allPaths`.
  *
- * [weightProperty]를 지정하면 Dijkstra/A* 알고리즘으로 가중치 최단 경로를 탐색한다.
- * `null`(기본)이면 백엔드 네이티브 BFS 최단 경로를 사용한다.
+ * When [weightProperty] is set, weighted shortest-path search uses Dijkstra/A*.
+ * When it is `null` (default), backend-native BFS shortest-path search is used.
  *
  * ```kotlin
- * // 비가중치 최단 경로 (기본)
+ * // Unweighted shortest path (default).
  * val opts = PathOptions(edgeLabel = "KNOWS", maxDepth = 5)
  *
- * // 가중치 최단 경로 (Dijkstra)
+ * // Weighted shortest path (Dijkstra).
  * val opts = PathOptions(
  *     edgeLabel = "ROAD",
  *     weightProperty = "distance",
@@ -68,12 +68,12 @@ data class NeighborOptions(
  * )
  * ```
  *
- * @param edgeLabel 탐색할 엣지 레이블. null이면 모든 레이블 탐색.
- * @param maxDepth 최대 탐색 깊이 (기본값: 10).
- * @param weightProperty 간선의 가중치 속성 키. null이면 비가중치 탐색.
- * @param missingWeightPolicy [weightProperty]가 없는 간선에 대한 처리 정책 (기본: [MissingWeightPolicy.Fail]).
- * @param direction 탐색 방향. [weightProperty]가 지정된 경우에만 적용 (기본: [Direction.OUTGOING]).
- * @param maxVisited 가중치 탐색 시 최대 방문 정점 수. 무한 그래프 보호 (기본: 100_000).
+ * @param edgeLabel Edge label to traverse. `null` traverses all labels.
+ * @param maxDepth Maximum traversal depth. Defaults to `10`.
+ * @param weightProperty Edge weight property key. `null` uses unweighted traversal.
+ * @param missingWeightPolicy Policy for edges missing [weightProperty]. Defaults to [MissingWeightPolicy.Fail].
+ * @param direction Traversal direction. Applies only when [weightProperty] is set. Defaults to [Direction.OUTGOING].
+ * @param maxVisited Maximum visited vertices during weighted traversal. Protects against unbounded graphs. Defaults to `100_000`.
  */
 data class PathOptions(
     val edgeLabel: String? = null,
@@ -94,9 +94,9 @@ data class PathOptions(
 }
 
 /**
- * `GraphTraversalRepository.bfs` / `GraphTraversalRepository.dfs` 호출 옵션.
+ * Options for `GraphTraversalRepository.bfs` and `GraphTraversalRepository.dfs`.
  *
- * ### 사용 예제
+ * ### Usage
  * ```kotlin
  * val opts = BfsDfsOptions(edgeLabel = "KNOWS", maxDepth = 3, maxVertices = 1_000)
  * val visits = ops.bfs(alice.id, opts)
@@ -119,12 +119,12 @@ data class BfsDfsOptions(
 }
 
 /**
- * `GraphTraversalRepository.detectCycles` 호출 옵션.
+ * Options for `GraphTraversalRepository.detectCycles`.
  *
- * @param vertexLabel 탐색할 정점 레이블. null이면 모든 레이블 탐색.
- * @param edgeLabel 탐색할 엣지 레이블. null이면 모든 레이블 탐색.
- * @param maxDepth 최대 탐색 깊이 (기본값: 10)
- * @param maxCycles 반환할 최대 순환 개수 (기본값: 100)
+ * @param vertexLabel Vertex label to traverse. `null` traverses all labels.
+ * @param edgeLabel Edge label to traverse. `null` traverses all labels.
+ * @param maxDepth Maximum traversal depth. Defaults to `10`.
+ * @param maxCycles Maximum number of cycles to return. Defaults to `100`.
  */
 data class CycleOptions(
     val vertexLabel: String? = null,

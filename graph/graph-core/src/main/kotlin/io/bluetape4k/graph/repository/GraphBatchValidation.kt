@@ -5,16 +5,17 @@ import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.support.requireNotBlank
 
 /**
- * 배치 insert API가 모든 백엔드에서 공유하는 입력 검증 규칙.
+ * Shared input validation rules for backend batch insert APIs.
  *
- * 백엔드 구현체는 쿼리 문자열이나 Gremlin traversal을 만들기 전에 이 검증을 먼저 호출해야 한다.
+ * Backend implementations should call this validator before building query strings
+ * or Gremlin traversals.
  */
 object GraphBatchValidation {
 
     /**
-     * 정점 배치 입력을 검증한다.
+     * Validates vertex batch input.
      *
-     * @return 검증된 입력 그대로의 [propertiesList].
+     * @return the validated [propertiesList] unchanged.
      */
     fun validateVertexBatch(
         label: String,
@@ -26,9 +27,9 @@ object GraphBatchValidation {
     }
 
     /**
-     * 간선 배치 입력을 검증한다.
+     * Validates edge batch input.
      *
-     * @return 검증된 입력 그대로의 [edges].
+     * @return the validated [edges] unchanged.
      */
     fun validateEdgeBatch(
         label: String,

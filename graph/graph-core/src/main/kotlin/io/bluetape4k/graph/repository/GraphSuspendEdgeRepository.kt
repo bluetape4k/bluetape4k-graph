@@ -6,9 +6,9 @@ import io.bluetape4k.graph.model.GraphElementId
 import kotlinx.coroutines.flow.Flow
 
 /**
- * 그래프 간선(Edge) CRUD 저장소 (코루틴 방식).
+ * Coroutine graph edge CRUD repository.
  *
- * 컬렉션 반환은 [Flow]로 제공하여 대량 데이터 스트리밍을 지원한다.
+ * Collection-returning operations expose [Flow] so large result sets can stream.
  *
  * ```kotlin
  * runBlocking {
@@ -18,21 +18,21 @@ import kotlinx.coroutines.flow.Flow
  * }
  * ```
  *
- * @see GraphEdgeRepository 동기(blocking) 방식
+ * @see GraphEdgeRepository synchronous blocking variant
  */
 interface GraphSuspendEdgeRepository {
     /**
-     * 두 정점 사이에 새 간선을 생성하고 반환한다.
+     * Creates and returns a new edge between two vertices.
      *
      * ```kotlin
      * val edge = ops.createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to 2024))
      * ```
      *
-     * @param fromId 시작 정점 ID.
-     * @param toId 종료 정점 ID.
-     * @param label 간선 레이블 (예: `"KNOWS"`, `"WORKS_AT"`).
-     * @param properties 간선에 저장할 속성 맵. 기본값은 빈 맵.
-     * @return 백엔드에서 생성된 [GraphEdge] (ID가 채워진 상태).
+     * @param fromId start vertex ID.
+     * @param toId end vertex ID.
+     * @param label edge label, such as `"KNOWS"` or `"WORKS_AT"`.
+     * @param properties properties to store on the edge; defaults to an empty map.
+     * @return backend-created [GraphEdge] with its ID populated.
      */
     suspend fun createEdge(
         fromId: GraphElementId,
@@ -42,18 +42,18 @@ interface GraphSuspendEdgeRepository {
     ): GraphEdge
 
     /**
-     * 같은 레이블의 간선을 여러 개 생성하고 입력 순서와 같은 순서로 반환한다.
+     * Creates multiple edges with the same label and returns them in input order.
      *
-     * ## 동작/계약
+     * ## Contract
      *
-     * - 빈 입력은 백엔드를 호출하지 않고 `emptyList()`를 반환한다.
-     * - 기본 구현은 [createEdge]를 순차 호출하는 호환성 fallback이다.
-     * - 기본 구현은 중간 실패 시 앞서 생성된 간선이 남을 수 있다.
-     * - 성능 및 all-or-fail 의미가 필요한 프로덕션 백엔드는 이 메서드를 override해야 한다.
+     * - Empty input returns `emptyList()` without calling the backend.
+     * - The default implementation is a compatibility fallback that calls [createEdge] sequentially.
+     * - If the default implementation fails mid-batch, previously created edges may remain.
+     * - Production backends that need performance or all-or-fail semantics should override this method.
      *
-     * @param label 간선 레이블.
-     * @param edges 간선 endpoint와 속성 목록.
-     * @return 백엔드에서 생성된 [GraphEdge] 목록.
+     * @param label edge label.
+     * @param edges edge endpoints and property rows.
+     * @return backend-created [GraphEdge] values.
      */
     suspend fun createEdges(
         label: String,
@@ -65,18 +65,18 @@ interface GraphSuspendEdgeRepository {
     }
 
     /**
-     * 레이블과 속성 필터로 간선 목록을 스트림으로 조회한다.
+     * Finds edges by label and property filter as a stream.
      *
-     * 대량 데이터에 적합한 [Flow] 기반 조회이다.
+     * This [Flow]-based query is suitable for large result sets.
      *
      * ```kotlin
      * val edges = ops.findEdgesByLabel("KNOWS").toList()
      * val filtered = ops.findEdgesByLabel("KNOWS", mapOf("since" to 2024)).toList()
      * ```
      *
-     * @param label 조회할 간선 레이블.
-     * @param filter 속성 이름→값 조건 맵. 빈 맵이면 레이블 전체를 반환.
-     * @return 조건에 맞는 [GraphEdge] Flow.
+     * @param label edge label to query.
+     * @param filter property-name to value conditions. An empty map returns the full label.
+     * @return [Flow] of matching [GraphEdge] values.
      */
     fun findEdgesByLabel(label: String, filter: Map<String, Any?> = emptyMap()): Flow<GraphEdge>
 
@@ -105,41 +105,41 @@ interface GraphSuspendEdgeRepository {
         findEdgesByLabel(label, filter).asGraphExportChunks(chunkSize)
 
     /**
-     * 특정 정점에서 출발하는 간선 목록을 스트림으로 조회한다.
+     * Finds edges that start at a specific vertex as a stream.
      *
      * ```kotlin
      * val outEdges = ops.findEdgesByStartId(alice.id).toList()
      * ```
      *
-     * @param startId 시작 정점 ID.
-     * @param edgeLabel 간선 레이블 필터. null이면 모든 레이블 반환.
-     * @return 해당 정점에서 출발하는 [GraphEdge] Flow.
+     * @param startId start vertex ID.
+     * @param edgeLabel optional edge-label filter; `null` returns all labels.
+     * @return [Flow] of [GraphEdge] values that start at the vertex.
      */
     fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String? = null): Flow<GraphEdge>
 
     /**
-     * 특정 정점으로 도착하는 간선 목록을 스트림으로 조회한다.
+     * Finds edges that end at a specific vertex as a stream.
      *
      * ```kotlin
      * val inEdges = ops.findEdgesByEndId(alice.id).toList()
      * ```
      *
-     * @param endId 종료 정점 ID.
-     * @param edgeLabel 간선 레이블 필터. null이면 모든 레이블 반환.
-     * @return 해당 정점으로 도착하는 [GraphEdge] Flow.
+     * @param endId end vertex ID.
+     * @param edgeLabel optional edge-label filter; `null` returns all labels.
+     * @return [Flow] of [GraphEdge] values that end at the vertex.
      */
     fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String? = null): Flow<GraphEdge>
 
     /**
-     * 간선을 삭제한다.
+     * Deletes an edge.
      *
      * ```kotlin
      * val deleted = ops.deleteEdge("KNOWS", edge.id)  // true
      * ```
      *
-     * @param label 간선 레이블.
-     * @param id 삭제할 간선 ID.
-     * @return 삭제 성공이면 `true`, 해당 ID가 없으면 `false`.
+     * @param label edge label.
+     * @param id edge ID to delete.
+     * @return `true` when deleted, or `false` when the ID is absent.
      */
     suspend fun deleteEdge(label: String, id: GraphElementId): Boolean
 }

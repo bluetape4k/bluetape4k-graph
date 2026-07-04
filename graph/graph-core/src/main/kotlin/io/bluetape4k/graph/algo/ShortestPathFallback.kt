@@ -10,14 +10,14 @@ import io.bluetape4k.graph.repository.GraphEdgeRepository
 import io.bluetape4k.graph.repository.GraphOperations
 
 /**
- * JVM 구현 기반의 가중치 최단 경로 탐색 헬퍼 (동기 전용).
+ * JVM weighted shortest-path helper for synchronous backends.
  *
- * 모든 백엔드(Neo4j/Memgraph/AGE/TinkerPop/FalkorDB)의 동기 [GraphOperations]에서
- * Dijkstra/A* 최단 경로 계산에 사용된다.
+ * Synchronous [GraphOperations] implementations for Neo4j, Memgraph, AGE, TinkerPop, and FalkorDB
+ * use it for Dijkstra and A* shortest-path computation.
  *
- * ## 사용 패턴
+ * ## Usage pattern
  *
- * **동기 백엔드:**
+ * **Synchronous backend:**
  * ```kotlin
  * override fun shortestPath(...): GraphPath? =
  *     if (options.weightProperty != null) ShortestPathFallback.dijkstra(this, ...)
@@ -27,7 +27,7 @@ import io.bluetape4k.graph.repository.GraphOperations
  *     ShortestPathFallback.aStar(this, ...)
  * ```
  *
- * **코루틴 백엔드** (syncDelegate 위임):
+ * **Coroutine backend** (through a sync delegate):
  * ```kotlin
  * override suspend fun shortestPath(...): GraphPath? =
  *     if (options.weightProperty != null) withContext(Dispatchers.IO) {
@@ -35,15 +35,14 @@ import io.bluetape4k.graph.repository.GraphOperations
  *     } else ...
  * ```
  *
- * ## 인터페이스 기본 메서드를 사용하지 않는 이유
- * 탐색 알고리즘이 [GraphOperations] 전체(정점+간선 조회)를 필요로 하는데,
- * `GraphTraversalRepository` 인터페이스의 `this`는 해당 타입을 만족하지 않는다.
- * 따라서 각 백엔드 `override`에서 이 오브젝트를 직접 호출한다.
+ * ## Why this is not an interface default method
+ * The traversal algorithms need full [GraphOperations] access for vertex and edge lookup, but
+ * `GraphTraversalRepository.this` does not satisfy that type. Backend overrides call this object directly.
  */
 object ShortestPathFallback {
 
     /**
-     * [GraphOperations]를 사용해 Dijkstra 가중치 최단 경로를 계산한다.
+     * Computes a weighted Dijkstra shortest path using [GraphOperations].
      */
     fun dijkstra(
         ops: GraphOperations,
@@ -59,7 +58,7 @@ object ShortestPathFallback {
     }
 
     /**
-     * [GraphOperations]를 사용해 A* 가중치 최단 경로를 계산한다.
+     * Computes a weighted A* shortest path using [GraphOperations].
      */
     fun aStar(
         ops: GraphOperations,
