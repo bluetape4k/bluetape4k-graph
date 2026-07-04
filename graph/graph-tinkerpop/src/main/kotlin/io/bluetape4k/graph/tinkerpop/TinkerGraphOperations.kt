@@ -113,7 +113,7 @@ class TinkerGraphOperations :
 
     override fun <T> transaction(block: GraphTransactionScope.() -> T): T =
         withTransactionGate {
-            synchronized(graph) {
+            writeLock.withLock {
                 val snapshot = snapshot()
                 try {
                     block(TinkerGraphTransactionScope(this))
@@ -136,12 +136,12 @@ class TinkerGraphOperations :
     }
 
     internal fun createTransactionSnapshot(): Any =
-        synchronized(graph) {
+        writeLock.withLock {
             snapshot()
         }
 
     internal fun restoreTransactionSnapshot(snapshot: Any) {
-        synchronized(graph) {
+        writeLock.withLock {
             restore(snapshot as TinkerGraphSnapshot)
         }
     }
@@ -277,7 +277,7 @@ class TinkerGraphOperations :
         setProperties: Map<String, Any?>,
     ): GraphVertex =
         withTransactionGate {
-            synchronized(graph) {
+            writeLock.withLock {
                 val properties = GraphMergeValidation.validateVertex(label, matchProperties, setProperties)
                 val traversal = g.V().hasLabel(label)
                 properties.matchProperties.forEach { (key, value) ->
@@ -426,7 +426,7 @@ class TinkerGraphOperations :
         setProperties: Map<String, Any?>,
     ): GraphEdge =
         withTransactionGate {
-            synchronized(graph) {
+            writeLock.withLock {
                 val properties = GraphMergeValidation.validateEdge(fromId, toId, label, matchProperties, setProperties)
                 val fromIdValue = fromId.value.toLongOrNull()
                     ?: throw GraphQueryException("Invalid fromId: ${fromId.value}")
