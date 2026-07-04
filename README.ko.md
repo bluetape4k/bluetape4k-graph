@@ -65,7 +65,7 @@ graph/
   graph-neo4j      # Neo4j Java Driver 구현
   graph-memgraph   # Memgraph (Neo4j 프로토콜 호환) 구현
   graph-tinkerpop  # Apache TinkerPop / TinkerGraph 인메모리 구현
-  graph-falkordb   # FalkorDB (Redis 기반) 구현 — jfalkordb 0.7.0
+  graph-falkordb   # FalkorDB (Redis 기반) 구현 - jfalkordb 0.8.0
 graph-io/
   core             # 공유 계약·모델·옵션·헬퍼
   csv              # CSV 벌크 임포트/익스포트 (Sync / VirtualThread / Coroutine)
@@ -325,7 +325,7 @@ driver.close()
 |------|-----------|-------------|----------------|-----------------|----------------|
 | 쿼리 언어 | Cypher-over-SQL | Cypher | Cypher | Gremlin | openCypher (부분집합) |
 | 인프라 | PostgreSQL + AGE | Neo4j | Memgraph | JVM 인메모리 | Redis 모듈 |
-| 드라이버 | JDBC + Exposed | Neo4j Java Driver | Neo4j Java Driver (호환) | TinkerPop | jfalkordb 0.7.0 |
+| 드라이버 | JDBC + Exposed | Neo4j Java Driver | Neo4j Java Driver (호환) | TinkerPop | jfalkordb 0.8.0 |
 | 테스트 컨테이너 | `apache/age:PG16_latest` | `neo4j:5` | `memgraph/memgraph:latest` | 불필요 | `falkordb/falkordb:v4.18.1` |
 | 가장 강한 로컬 역할 | PostgreSQL-native graph | 성숙한 graph server | low-latency Cypher server | unit/integration tests | Redis-backed graph service |
 
@@ -338,8 +338,8 @@ driver.close()
 ./gradlew test
 
 # 특정 모듈 테스트
-./gradlew :graph-neo4j:test
-./gradlew :graph-age:test
+./gradlew :bluetape4k-graph-neo4j:test
+./gradlew :bluetape4k-graph-age:test
 ./gradlew :code-graph-examples:test
 ./gradlew :linkedin-graph-examples:test
 ./gradlew :fraud-detection-examples:test
@@ -353,7 +353,7 @@ driver.close()
 ./gradlew :security-attack-path-examples:test
 
 # 특정 클래스
-./gradlew :graph-neo4j:test --tests "io.bluetape4k.graph.neo4j.Neo4jGraphOperationsTest"
+./gradlew :bluetape4k-graph-neo4j:test --tests "io.bluetape4k.graph.neo4j.Neo4jGraphOperationsTest"
 ```
 
 GitHub Actions는 전용 `Examples` workflow도 실행한다. 이 workflow는 매일 한 번, 그리고 example, graph, graph-io, Ktor, Gradle, workflow 파일 변경 시 실행된다. 예제 검증은 Nightly에서 제외해 backend/integration smoke coverage와 별도 신호로 관리한다.
@@ -391,19 +391,19 @@ GitHub Actions는 전용 `Examples` workflow도 실행한다. 이 workflow는 �
 ## 요구 사항
 
 - Java 21 (preview 기능 활성화)
-- Kotlin 2.3
+- Kotlin 2.4.0
 - Docker (통합 테스트용)
 
 ## 기술 스택
 
-- **Kotlin** 2.3 + Coroutines 1.10
+- **Kotlin** 2.4.0 + Coroutines 1.11.0
 - **Neo4j Java Driver** 5.x
 - **JetBrains Exposed** (Apache AGE용 JDBC)
 - **Apache TinkerPop** (Gremlin)
 - **Ktor** 3.x (ApplicationPlugin integration)
-- **jfalkordb** 0.7.0 (FalkorDB / Redis 모듈 그래프)
+- **jfalkordb** 0.8.0 (FalkorDB / Redis 모듈 그래프)
 - **Testcontainers** (통합 테스트)
-- **bluetape4k** 1.7.x (공통 유틸리티)
+- **bluetape4k** 1.11.1-SNAPSHOT (공통 유틸리티)
 
 ## 문서
 
