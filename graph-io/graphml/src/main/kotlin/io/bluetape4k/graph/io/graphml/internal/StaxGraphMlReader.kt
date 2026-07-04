@@ -123,13 +123,22 @@ internal class StaxGraphMlReader {
 
         var label = options.defaultVertexLabel
         val props = mutableMapOf<String, Any?>()
-        for ((keyId, rawValue) in dataMap) {
+        for ((keyId, data) in dataMap) {
             val attrName = keyIdToName[keyId] ?: keyId
             val attrType = keyIdToType[keyId] ?: GraphMlAttrType.STRING
             if (attrName == options.labelAttrName) {
-                label = rawValue
+                label = data.value
             } else {
-                props[attrName] = attrType.coerce(rawValue)
+                coerceDataValue(
+                    attrType = attrType,
+                    rawValue = data.value,
+                    phase = GraphIoPhase.READ_VERTEX,
+                    elementName = "node",
+                    recordId = nodeId,
+                    columnName = attrName,
+                    location = data.location,
+                    failures = failures,
+                )?.let { props[attrName] = it }
             }
         }
         vertices += GraphIoVertexRecord(externalId = nodeId, label = label, properties = props)
@@ -169,13 +178,22 @@ internal class StaxGraphMlReader {
 
         var label = options.defaultEdgeLabel
         val props = mutableMapOf<String, Any?>()
-        for ((keyId, rawValue) in dataMap) {
+        for ((keyId, data) in dataMap) {
             val attrName = keyIdToName[keyId] ?: keyId
             val attrType = keyIdToType[keyId] ?: GraphMlAttrType.STRING
             if (attrName == options.labelAttrName) {
-                label = rawValue
+                label = data.value
             } else {
-                props[attrName] = attrType.coerce(rawValue)
+                coerceDataValue(
+                    attrType = attrType,
+                    rawValue = data.value,
+                    phase = GraphIoPhase.READ_EDGE,
+                    elementName = "edge",
+                    recordId = edgeId,
+                    columnName = attrName,
+                    location = data.location,
+                    failures = failures,
+                )?.let { props[attrName] = it }
             }
         }
         edges += GraphIoEdgeRecord(
@@ -187,21 +205,51 @@ internal class StaxGraphMlReader {
         )
     }
 
+    private fun coerceDataValue(
+        attrType: GraphMlAttrType,
+        rawValue: String,
+        phase: GraphIoPhase,
+        elementName: String,
+        recordId: String?,
+        columnName: String,
+        location: String?,
+        failures: MutableList<GraphIoFailure>,
+    ): Any? {
+        val coerced = attrType.coerce(rawValue)
+        if (attrType != GraphMlAttrType.STRING && coerced == rawValue) {
+            failures += GraphIoFailure(
+                phase = phase,
+                severity = GraphIoFailureSeverity.ERROR,
+                location = location,
+                fileRole = GraphIoFileRole.UNIFIED,
+                recordId = recordId,
+                columnName = columnName,
+                elementName = elementName,
+                message = "Invalid GraphML ${attrType.xmlName} value for '$columnName': $rawValue",
+            )
+            return null
+        }
+        return coerced
+    }
+
     /** 현재 요소의 `<data key="...">text</data>` 자식들을 읽어 keyId→value 맵으로 반환한다. */
     private fun readDataChildren(
         reader: XMLStreamReader,
         parentLocalName: String,
         options: GraphMlImportOptions,
         failures: MutableList<GraphIoFailure>,
-    ): Map<String, String> {
-        val result = mutableMapOf<String, String>()
+    ): Map<String, GraphMlDataValue> {
+        val result = mutableMapOf<String, GraphMlDataValue>()
         while (reader.hasNext()) {
             when (reader.next()) {
                 XMLStreamConstants.START_ELEMENT -> {
                     if (reader.localName == "data") {
                         val key = reader.getAttributeValue(null, "key") ?: continue
+                        val location = reader.location.lineNumber
+                            .takeIf { it > 0 }
+                            ?.let { "line:$it" }
                         val value = reader.elementText ?: ""
-                        result[key] = value
+                        result[key] = GraphMlDataValue(value, location)
                     } else {
                         when (reader.localName) {
                             "graph" -> recordUnsupportedElement(
@@ -219,6 +267,11 @@ internal class StaxGraphMlReader {
         }
         return result
     }
+
+    private data class GraphMlDataValue(
+        val value: String,
+        val location: String?,
+    )
 
     private fun skipElement(reader: XMLStreamReader, localName: String) {
         var depth = 1
