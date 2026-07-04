@@ -24,7 +24,11 @@ import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.warn
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
+import java.util.concurrent.CancellationException
 
 /**
  * Coroutine NDJSON bulk importer backed by Jackson 2.
@@ -63,56 +67,98 @@ class SuspendJackson2NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
         var vr = 0L; var vc = 0L; var er = 0L; var ec = 0L; var sv = 0L; var se = 0L
         var status = GraphIoStatus.COMPLETED
 
-        val lines = withContext(Dispatchers.IO) {
-            GraphIoPaths.openReader(source).use { it.readLines() }
-        }
-
-        for ((index, raw) in lines.withIndex()) {
-            if (status == GraphIoStatus.FAILED) break
-            val lineNo = index + 1
-            val line = raw.trim().ifBlank { continue }
-            val env = runCatching { codec.parseLine(line) }.getOrElse { e ->
-                log.warn(e) { "Malformed JSON at line $lineNo: ${e.message}" }
-                failures += GraphIoFailure(
-                    phase = GraphIoPhase.READ_VERTEX,
-                    fileRole = GraphIoFileRole.UNIFIED,
-                    location = "line:$lineNo",
-                    message = "Malformed JSON: ${e.message}",
-                )
-                status = GraphIoStatus.FAILED
-                break
-            }
-            when (env.type) {
-                NdJsonEnvelope.TYPE_VERTEX -> {
-                    vr++
-                    val rec = codec.toVertex(env, options.defaultVertexLabel)
-                    val props = options.preserveExternalIdProperty
-                        ?.let { rec.properties + (it to rec.externalId) } ?: rec.properties
-                    when (idMap.putFirstOrFail(rec.externalId, GraphElementId(rec.externalId))) {
-                        GraphIoExternalIdMap.PutResult.CREATED -> {
-                            vc += batchWriter.addVertex(rec.externalId, rec.label, props, idMap)
+        val coroutineContext = currentCoroutineContext()
+        val reader = withContext(Dispatchers.IO) { GraphIoPaths.openReader(source) }
+        try {
+            var lineNo = 0
+            while (status != GraphIoStatus.FAILED) {
+                coroutineContext.ensureActive()
+                val raw = withContext(Dispatchers.IO) { reader.readLine() } ?: break
+                lineNo++
+                val line = raw.trim().ifBlank { continue }
+                val env = try {
+                    codec.parseLine(line)
+                } catch (e: Exception) {
+                    if (e is CancellationException) throw e
+                    log.warn(e) { "Malformed JSON at line $lineNo: ${e.message}" }
+                    failures += GraphIoFailure(
+                        phase = GraphIoPhase.READ_VERTEX,
+                        fileRole = GraphIoFileRole.UNIFIED,
+                        location = "line:$lineNo",
+                        message = "Malformed JSON: ${e.message}",
+                    )
+                    status = GraphIoStatus.FAILED
+                    break
+                }
+                when (env.type) {
+                    NdJsonEnvelope.TYPE_VERTEX -> {
+                        val rec = try {
+                            codec.toVertex(env, options.defaultVertexLabel)
+                        } catch (e: Exception) {
+                            if (e is CancellationException) throw e
+                            failures += GraphIoFailure(
+                                phase = GraphIoPhase.READ_VERTEX,
+                                fileRole = GraphIoFileRole.UNIFIED,
+                                location = "line:$lineNo",
+                                message = "Invalid vertex envelope: ${e.message}",
+                            )
+                            status = GraphIoStatus.FAILED
+                            break
                         }
-                        GraphIoExternalIdMap.PutResult.SKIPPED -> {
-                            sv++
-                            status = GraphIoStatus.PARTIAL
+                        vr++
+                        val props = options.preserveExternalIdProperty
+                            ?.let { rec.properties + (it to rec.externalId) } ?: rec.properties
+                        when (idMap.putFirstOrFail(rec.externalId, GraphElementId(rec.externalId))) {
+                            GraphIoExternalIdMap.PutResult.CREATED -> {
+                                vc += batchWriter.addVertex(rec.externalId, rec.label, props, idMap)
+                            }
+                            GraphIoExternalIdMap.PutResult.SKIPPED -> {
+                                sv++
+                                status = GraphIoStatus.PARTIAL
+                            }
                         }
                     }
-                }
-                NdJsonEnvelope.TYPE_EDGE -> {
-                    er++
-                    bufferedEdges += codec.toEdge(env, options.defaultEdgeLabel)
-                    if (bufferedEdges.size > options.maxEdgeBufferSize) {
+                    NdJsonEnvelope.TYPE_EDGE -> {
+                        val rec = try {
+                            codec.toEdge(env, options.defaultEdgeLabel)
+                        } catch (e: Exception) {
+                            if (e is CancellationException) throw e
+                            failures += GraphIoFailure(
+                                phase = GraphIoPhase.READ_EDGE,
+                                fileRole = GraphIoFileRole.UNIFIED,
+                                location = "line:$lineNo",
+                                message = "Invalid edge envelope: ${e.message}",
+                            )
+                            status = GraphIoStatus.FAILED
+                            break
+                        }
+                        er++
+                        bufferedEdges += rec
+                        if (bufferedEdges.size > options.maxEdgeBufferSize) {
+                            failures += GraphIoFailure(
+                                phase = GraphIoPhase.READ_EDGE,
+                                fileRole = GraphIoFileRole.UNIFIED,
+                                location = "line:$lineNo",
+                                message = "Edge buffer exceeded maxEdgeBufferSize=${options.maxEdgeBufferSize}; " +
+                                    "verticesCreated=$vc remain in graph as partial state",
+                            )
+                            status = GraphIoStatus.FAILED
+                        }
+                    }
+                    else -> {
                         failures += GraphIoFailure(
-                            phase = GraphIoPhase.READ_EDGE,
+                            phase = GraphIoPhase.READ_VERTEX,
+                            severity = GraphIoFailureSeverity.WARN,
                             fileRole = GraphIoFileRole.UNIFIED,
                             location = "line:$lineNo",
-                            message = "Edge buffer exceeded maxEdgeBufferSize=${options.maxEdgeBufferSize}",
+                            message = "Unknown envelope type=${env.type}",
                         )
-                        status = GraphIoStatus.FAILED
+                        status = GraphIoStatus.PARTIAL
                     }
                 }
-                else -> {}
             }
+        } finally {
+            withContext(NonCancellable + Dispatchers.IO) { reader.close() }
         }
 
         vc += batchWriter.flushVertices(idMap)
@@ -143,6 +189,13 @@ class SuspendJackson2NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
                     MissingEndpointPolicy.SKIP_EDGE -> {
                         se++
                         status = GraphIoStatus.PARTIAL
+                        failures += GraphIoFailure(
+                            phase = GraphIoPhase.READ_EDGE,
+                            severity = GraphIoFailureSeverity.WARN,
+                            fileRole = GraphIoFileRole.UNIFIED,
+                            recordId = e.externalId,
+                            message = "Missing endpoint skipped from=${e.fromExternalId} to=${e.toExternalId}",
+                        )
                         continue
                     }
                 }
