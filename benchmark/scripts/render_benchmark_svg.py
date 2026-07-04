@@ -22,6 +22,9 @@ Input JSON format (JMH / kotlinx-benchmark):
 Output:
     One SVG file per benchmark class under docs/benchmark-results/<ClassName>.svg.
     Paths of generated files are printed to stdout.
+
+Environment:
+    BENCHMARK_CHART_PREFIX: optional filename prefix for generated charts.
 """
 
 import json
@@ -271,10 +274,11 @@ def main() -> None:
 
     out_dir = os.path.join("docs", "benchmark-results")
     os.makedirs(out_dir, exist_ok=True)
+    filename_prefix = os.environ.get("BENCHMARK_CHART_PREFIX", "")
 
     for class_name, entries in sorted(groups.items()):
         svg_content = render_group_svg(class_name, entries)
-        out_path = os.path.join(out_dir, f"{class_name}.svg")
+        out_path = os.path.join(out_dir, f"{filename_prefix}{class_name}.svg")
         with open(out_path, "w", encoding="utf-8") as f:
             f.write(svg_content)
         print(out_path)
