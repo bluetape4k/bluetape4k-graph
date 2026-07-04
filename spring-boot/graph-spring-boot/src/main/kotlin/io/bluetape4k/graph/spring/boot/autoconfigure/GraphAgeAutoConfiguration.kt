@@ -63,16 +63,18 @@ class GraphAgeAutoConfiguration {
     companion object : KLogging()
 
     /**
-     * Exposed Database 빈 — AGE DataSource에 연결.
+     * Connects an Exposed [Database] to the AGE-backed [DataSource].
      *
-     * **필수**: `application.yml`에 아래 설정을 추가해야 AGE extension이 올바르게 로드된다.
+     * Applications must configure the Hikari connection initialization SQL so
+     * the AGE extension is loaded before graph operations run:
      * ```yaml
      * spring:
      *   datasource:
      *     hikari:
      *       connection-init-sql: "LOAD 'age'; SET search_path = ag_catalog, \"$user\", public;"
      * ```
-     * HikariCP 풀은 시작 후 설정이 봉인(seal)되므로 AutoConfiguration에서 직접 설정할 수 없다.
+     * HikariCP seals pool configuration after startup, so this auto-configuration
+     * documents the required setting instead of mutating the pool at runtime.
      */
     @Bean(name = ["ageExposedDatabase"])
     @DependsOn("dataSource")
@@ -83,9 +85,8 @@ class GraphAgeAutoConfiguration {
     }
 
     /**
-     * AGE 기반 `GraphOperations` 빈. 구체 타입 `AgeGraphOperations`를 반환한다.
-     *
-     * 사용자가 `GraphOperations` 빈을 직접 등록하면 이 빈은 생성되지 않는다.
+     * Registers AGE-backed [GraphOperations] when the application has not
+     * provided its own graph operations bean.
      */
     @Bean
     @ConditionalOnMissingBean(GraphOperations::class)
@@ -96,7 +97,7 @@ class GraphAgeAutoConfiguration {
     }
 
     /**
-     * AGE 그래프 초기화 빈 — `createGraph()` API로 그래프를 생성한다.
+     * Initializes the configured AGE graph with `createGraph()` when auto-create is enabled.
      */
     @Bean(name = ["ageGraphInitializer"])
     @DependsOn("graphOperations")
@@ -121,7 +122,7 @@ class GraphAgeAutoConfiguration {
         }
 
     /**
-     * AGE 기반 `GraphSuspendOperations` 빈 (코루틴).
+     * Registers coroutine-friendly AGE graph operations when suspend support is enabled.
      */
     @Bean
     @ConditionalOnMissingBean(GraphSuspendOperations::class)
@@ -138,7 +139,7 @@ class GraphAgeAutoConfiguration {
     }
 
     /**
-     * Virtual Thread 기반 `GraphVirtualThreadOperations` 빈.
+     * Registers virtual-thread graph operations backed by the synchronous AGE operations.
      */
     @Bean
     @ConditionalOnMissingBean(GraphVirtualThreadOperations::class)
@@ -153,8 +154,8 @@ class GraphAgeAutoConfiguration {
         ops.asVirtualThread()
 
     /**
-     * Actuator HealthIndicator — nested class로 격리.
-     * Actuator 미사용 앱에서 `NoClassDefFoundError` 방지.
+     * Isolates the Actuator health indicator so non-Actuator applications avoid
+     * `NoClassDefFoundError`.
      */
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(name = ["org.springframework.boot.health.contributor.HealthIndicator"])

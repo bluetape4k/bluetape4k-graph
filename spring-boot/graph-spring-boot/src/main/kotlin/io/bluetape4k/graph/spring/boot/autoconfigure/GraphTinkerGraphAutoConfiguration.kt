@@ -54,9 +54,8 @@ class GraphTinkerGraphAutoConfiguration {
     companion object : KLogging()
 
     /**
-     * TinkerGraph 기반 `GraphOperations` 빈.
-     *
-     * 사용자가 `GraphOperations` 빈을 직접 등록하면 이 빈은 생성되지 않는다.
+     * Registers in-memory TinkerGraph operations when the application has not
+     * provided its own graph operations bean.
      */
     @Bean(destroyMethod = "close")
     @ConditionalOnMissingBean(GraphOperations::class)
@@ -66,7 +65,7 @@ class GraphTinkerGraphAutoConfiguration {
     }
 
     /**
-     * TinkerGraph 기반 `GraphSuspendOperations` 빈.
+     * Registers coroutine-friendly TinkerGraph operations when suspend support is enabled.
      */
     @Bean
     @ConditionalOnMissingBean(GraphSuspendOperations::class)
@@ -80,7 +79,7 @@ class GraphTinkerGraphAutoConfiguration {
         TinkerGraphSuspendOperations(ops)
 
     /**
-     * Virtual Thread 기반 `GraphVirtualThreadOperations` 빈.
+     * Registers virtual-thread graph operations backed by the synchronous TinkerGraph operations.
      */
     @Bean
     @ConditionalOnMissingBean(GraphVirtualThreadOperations::class)
@@ -94,8 +93,8 @@ class GraphTinkerGraphAutoConfiguration {
         ops.asVirtualThread()
 
     /**
-     * Actuator HealthIndicator — nested class로 격리.
-     * Actuator 미사용 앱에서 `NoClassDefFoundError` 방지.
+     * Isolates the Actuator health indicator so non-Actuator applications avoid
+     * `NoClassDefFoundError`.
      */
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(name = ["org.springframework.boot.health.contributor.HealthIndicator"])

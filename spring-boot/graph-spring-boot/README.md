@@ -1,5 +1,7 @@
 # graph-spring-boot
 
+English | [한국어](README.ko.md)
+
 Spring Boot 4 auto-configuration integration for [bluetape4k-graph](../../README.md).
 
 Registers `GraphOperations`, `GraphSuspendOperations`, and `GraphVirtualThreadOperations` beans
