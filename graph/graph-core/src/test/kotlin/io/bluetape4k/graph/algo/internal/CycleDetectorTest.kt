@@ -1,7 +1,7 @@
 package io.bluetape4k.graph.algo.internal
 
 import io.bluetape4k.graph.model.GraphElementId
-import io.bluetape4k.assertions.invoking
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldHaveSize
@@ -88,11 +88,11 @@ class CycleDetectorTest {
 
     @Test
     fun `maxDepth가 0 이하이면 IllegalArgumentException을 던진다`() {
-        invoking { CycleDetector.findCycles(emptyMap(), maxDepth = 0, maxCycles = 1) } shouldThrow IllegalArgumentException::class
+        assertFailsWith<IllegalArgumentException> { CycleDetector.findCycles(emptyMap(), maxDepth = 0, maxCycles = 1) }
     }
 
     @Test
     fun `maxCycles가 0 이하이면 IllegalArgumentException을 던진다`() {
-        invoking { CycleDetector.findCycles(emptyMap(), maxDepth = 1, maxCycles = 0) } shouldThrow IllegalArgumentException::class
+        assertFailsWith<IllegalArgumentException> { CycleDetector.findCycles(emptyMap(), maxDepth = 1, maxCycles = 0) }
     }
 }

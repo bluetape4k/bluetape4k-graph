@@ -10,10 +10,10 @@ import io.bluetape4k.graph.io.report.GraphIoFormat
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.testsupport.FakeGraphOperations
 import io.bluetape4k.graph.repository.GraphOperations
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeInstanceOf
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import java.time.Duration
 import java.util.concurrent.ExecutionException
 
@@ -64,7 +64,7 @@ class VirtualThreadGraphBulkAdapterTest {
         val boom = RuntimeException("boom")
         val importer = stubImporter { _, _, _ -> throw boom }
         val vt = VirtualThreadGraphBulkAdapter.wrapImporter(importer)
-        val ee = assertThrows<ExecutionException> {
+        val ee = assertFailsWith<ExecutionException> {
             vt.importGraphAsync("x", FakeGraphOperations(), GraphImportOptions()).get()
         }
         ee.cause shouldBeInstanceOf RuntimeException::class
@@ -92,7 +92,7 @@ class VirtualThreadGraphBulkAdapterTest {
         val boom = RuntimeException("export boom")
         val exporter = stubExporter { _, _, _ -> throw boom }
         val vt = VirtualThreadGraphBulkAdapter.wrapExporter(exporter)
-        val ee = assertThrows<ExecutionException> {
+        val ee = assertFailsWith<ExecutionException> {
             vt.exportGraphAsync("sink", FakeGraphOperations(), GraphExportOptions()).get()
         }
         ee.cause shouldBeInstanceOf RuntimeException::class

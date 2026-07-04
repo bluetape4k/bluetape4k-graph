@@ -1,6 +1,6 @@
 package io.bluetape4k.graph.io.report
 
-import io.bluetape4k.assertions.invoking
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeTrue
 import org.junit.jupiter.api.Test
@@ -10,7 +10,7 @@ class GraphIoReportTest {
 
     @Test
     fun `GraphIoFailure requires non-blank message`() {
-        invoking { GraphIoFailure(phase = GraphIoPhase.READ_VERTEX, message = " ") } shouldThrow IllegalArgumentException::class
+        assertFailsWith<IllegalArgumentException> { GraphIoFailure(phase = GraphIoPhase.READ_VERTEX, message = " ") }
     }
 
     @Test
@@ -52,20 +52,20 @@ class GraphIoReportTest {
 
     @Test
     fun `GraphImportReport rejects negative counts`() {
-        invoking { GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, -1L, 0L, 0L, 0L, elapsed = Duration.ZERO) } shouldThrow IllegalArgumentException::class
-        invoking { GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, -1L, 0L, 0L, elapsed = Duration.ZERO) } shouldThrow IllegalArgumentException::class
-        invoking { GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, -1L, 0L, elapsed = Duration.ZERO) } shouldThrow IllegalArgumentException::class
-        invoking { GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, 0L, -1L, elapsed = Duration.ZERO) } shouldThrow IllegalArgumentException::class
-        invoking { GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, 0L, 0L, skippedVertices = -1L, elapsed = Duration.ZERO) } shouldThrow IllegalArgumentException::class
-        invoking { GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, 0L, 0L, skippedEdges = -1L, elapsed = Duration.ZERO) } shouldThrow IllegalArgumentException::class
+        assertFailsWith<IllegalArgumentException> { GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, -1L, 0L, 0L, 0L, elapsed = Duration.ZERO) }
+        assertFailsWith<IllegalArgumentException> { GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, -1L, 0L, 0L, elapsed = Duration.ZERO) }
+        assertFailsWith<IllegalArgumentException> { GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, -1L, 0L, elapsed = Duration.ZERO) }
+        assertFailsWith<IllegalArgumentException> { GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, 0L, -1L, elapsed = Duration.ZERO) }
+        assertFailsWith<IllegalArgumentException> { GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, 0L, 0L, skippedVertices = -1L, elapsed = Duration.ZERO) }
+        assertFailsWith<IllegalArgumentException> { GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, 0L, 0L, skippedEdges = -1L, elapsed = Duration.ZERO) }
     }
 
     @Test
     fun `GraphExportReport rejects negative counts`() {
-        invoking { GraphExportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, -1L, 0L, elapsed = Duration.ZERO) } shouldThrow IllegalArgumentException::class
-        invoking { GraphExportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, -1L, elapsed = Duration.ZERO) } shouldThrow IllegalArgumentException::class
-        invoking { GraphExportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, skippedVertices = -1L, elapsed = Duration.ZERO) } shouldThrow IllegalArgumentException::class
-        invoking { GraphExportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, skippedEdges = -1L, elapsed = Duration.ZERO) } shouldThrow IllegalArgumentException::class
+        assertFailsWith<IllegalArgumentException> { GraphExportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, -1L, 0L, elapsed = Duration.ZERO) }
+        assertFailsWith<IllegalArgumentException> { GraphExportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, -1L, elapsed = Duration.ZERO) }
+        assertFailsWith<IllegalArgumentException> { GraphExportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, skippedVertices = -1L, elapsed = Duration.ZERO) }
+        assertFailsWith<IllegalArgumentException> { GraphExportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, skippedEdges = -1L, elapsed = Duration.ZERO) }
     }
 
     @Test

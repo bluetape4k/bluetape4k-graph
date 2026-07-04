@@ -1,7 +1,7 @@
 package io.bluetape4k.graph.algo.internal
 
 import io.bluetape4k.graph.model.GraphElementId
-import io.bluetape4k.assertions.invoking
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeGreaterThan
@@ -72,30 +72,30 @@ class PageRankCalculatorTest {
 
     @Test
     fun `iterations가 0 이하이면 IllegalArgumentException을 던진다`() {
-        invoking {
+        assertFailsWith<IllegalArgumentException> {
             compute(vertices = setOf(id("a")), outAdjacency = emptyMap(), iterations = 0)
-        } shouldThrow IllegalArgumentException::class
+        }
     }
 
     @Test
     fun `dampingFactor가 1 초과이면 IllegalArgumentException을 던진다`() {
-        invoking {
+        assertFailsWith<IllegalArgumentException> {
             compute(vertices = setOf(id("a")), outAdjacency = emptyMap(), dampingFactor = 1.5)
-        } shouldThrow IllegalArgumentException::class
+        }
     }
 
     @Test
     fun `dampingFactor가 음수이면 IllegalArgumentException을 던진다`() {
-        invoking {
+        assertFailsWith<IllegalArgumentException> {
             compute(vertices = setOf(id("a")), outAdjacency = emptyMap(), dampingFactor = -0.1)
-        } shouldThrow IllegalArgumentException::class
+        }
     }
 
     @Test
     fun `tolerance가 0 이하이면 IllegalArgumentException을 던진다`() {
-        invoking {
+        assertFailsWith<IllegalArgumentException> {
             compute(vertices = setOf(id("a")), outAdjacency = emptyMap(), tolerance = 0.0)
-        } shouldThrow IllegalArgumentException::class
+        }
     }
 
     // ─── dangling node ────────────────────────────────────────────────────────────
