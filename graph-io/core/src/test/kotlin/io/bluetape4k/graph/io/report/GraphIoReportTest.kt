@@ -52,20 +52,72 @@ class GraphIoReportTest {
 
     @Test
     fun `GraphImportReport rejects negative counts`() {
-        assertFailsWith<IllegalArgumentException> { GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, -1L, 0L, 0L, 0L, elapsed = Duration.ZERO) }
-        assertFailsWith<IllegalArgumentException> { GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, -1L, 0L, 0L, elapsed = Duration.ZERO) }
-        assertFailsWith<IllegalArgumentException> { GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, -1L, 0L, elapsed = Duration.ZERO) }
-        assertFailsWith<IllegalArgumentException> { GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, 0L, -1L, elapsed = Duration.ZERO) }
-        assertFailsWith<IllegalArgumentException> { GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, 0L, 0L, skippedVertices = -1L, elapsed = Duration.ZERO) }
-        assertFailsWith<IllegalArgumentException> { GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, 0L, 0L, skippedEdges = -1L, elapsed = Duration.ZERO) }
+        assertFailsWith<IllegalArgumentException> {
+            GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, -1L, 0L, 0L, 0L, elapsed = Duration.ZERO)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, -1L, 0L, 0L, elapsed = Duration.ZERO)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, -1L, 0L, elapsed = Duration.ZERO)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            GraphImportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, 0L, -1L, elapsed = Duration.ZERO)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            GraphImportReport(
+                GraphIoStatus.COMPLETED,
+                GraphIoFormat.CSV,
+                0L,
+                0L,
+                0L,
+                0L,
+                skippedVertices = -1L,
+                elapsed = Duration.ZERO,
+            )
+        }
+        assertFailsWith<IllegalArgumentException> {
+            GraphImportReport(
+                GraphIoStatus.COMPLETED,
+                GraphIoFormat.CSV,
+                0L,
+                0L,
+                0L,
+                0L,
+                skippedEdges = -1L,
+                elapsed = Duration.ZERO,
+            )
+        }
     }
 
     @Test
     fun `GraphExportReport rejects negative counts`() {
-        assertFailsWith<IllegalArgumentException> { GraphExportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, -1L, 0L, elapsed = Duration.ZERO) }
-        assertFailsWith<IllegalArgumentException> { GraphExportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, -1L, elapsed = Duration.ZERO) }
-        assertFailsWith<IllegalArgumentException> { GraphExportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, skippedVertices = -1L, elapsed = Duration.ZERO) }
-        assertFailsWith<IllegalArgumentException> { GraphExportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, skippedEdges = -1L, elapsed = Duration.ZERO) }
+        assertFailsWith<IllegalArgumentException> {
+            GraphExportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, -1L, 0L, elapsed = Duration.ZERO)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            GraphExportReport(GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, -1L, elapsed = Duration.ZERO)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            GraphExportReport(
+                GraphIoStatus.COMPLETED,
+                GraphIoFormat.CSV,
+                0L,
+                0L,
+                skippedVertices = -1L,
+                elapsed = Duration.ZERO,
+            )
+        }
+        assertFailsWith<IllegalArgumentException> {
+            GraphExportReport(
+                GraphIoStatus.COMPLETED,
+                GraphIoFormat.CSV,
+                0L,
+                0L,
+                skippedEdges = -1L,
+                elapsed = Duration.ZERO,
+            )
+        }
     }
 
     @Test

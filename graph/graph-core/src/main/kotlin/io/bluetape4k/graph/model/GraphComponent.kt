@@ -7,7 +7,8 @@ import java.io.Serializable
  *
  * Represents vertices that share the same [componentId].
  *
- * @property componentId Component identifier. The value is implementation-defined; vertices in the same component share it.
+ * @property componentId Component identifier. The value is implementation-defined;
+ * vertices in the same component share it.
  * @property vertices Vertices in the component.
  *
  * ### Usage

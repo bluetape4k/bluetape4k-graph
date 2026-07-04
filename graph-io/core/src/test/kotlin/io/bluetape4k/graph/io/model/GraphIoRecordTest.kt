@@ -13,9 +13,15 @@ class GraphIoRecordTest {
 
     @Test
     fun `edge record requires non-blank label and endpoints`() {
-        assertFailsWith<IllegalArgumentException> { GraphIoEdgeRecord(label = " ", fromExternalId = "v1", toExternalId = "v2") }
-        assertFailsWith<IllegalArgumentException> { GraphIoEdgeRecord(label = "KNOWS", fromExternalId = " ", toExternalId = "v2") }
-        assertFailsWith<IllegalArgumentException> { GraphIoEdgeRecord(label = "KNOWS", fromExternalId = "v1", toExternalId = " ") }
+        assertFailsWith<IllegalArgumentException> {
+            GraphIoEdgeRecord(label = " ", fromExternalId = "v1", toExternalId = "v2")
+        }
+        assertFailsWith<IllegalArgumentException> {
+            GraphIoEdgeRecord(label = "KNOWS", fromExternalId = " ", toExternalId = "v2")
+        }
+        assertFailsWith<IllegalArgumentException> {
+            GraphIoEdgeRecord(label = "KNOWS", fromExternalId = "v1", toExternalId = " ")
+        }
     }
 
     @Test
