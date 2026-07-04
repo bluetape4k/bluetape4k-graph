@@ -596,8 +596,12 @@ class Neo4jGraphOperations(
                 GraphCycle(GraphPath(orderedSteps))
             }
         } catch (e: Exception) {
-            log.debug(e) { "detectCycles via Cypher failed; using JVM fallback" }
-            detectCyclesViaFallback(options)
+            if (e.supportsJvmCycleFallback()) {
+                log.debug(e) { "detectCycles via Cypher is unsupported; using JVM fallback" }
+                detectCyclesViaFallback(options)
+            } else {
+                throw e.asCycleDetectionFailure("Neo4j", options)
+            }
         }
     }
 

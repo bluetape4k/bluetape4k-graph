@@ -578,9 +578,15 @@ class FalkorDBGraphSuspendOperations(
             queryListIO(cypher) { rec ->
                 GraphCycle(rec.toPath())
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
-            log.debug(e) { "detectCycles via Cypher failed; using JVM fallback" }
-            detectCyclesViaFallback(options)
+            if (e.supportsJvmCycleFallback()) {
+                log.debug(e) { "detectCycles via Cypher is unsupported; using JVM fallback" }
+                detectCyclesViaFallback(options)
+            } else {
+                throw e.asCycleDetectionFailure("FalkorDB", options)
+            }
         }
         cycles.forEach { emit(it) }
     }

@@ -521,8 +521,7 @@ class TinkerGraphOperations :
                 .limit(1)
                 .toList()
         } catch (e: Exception) {
-            log.warn(e) { "shortestPath traversal failed: from=$fromId to=$toId options=$options" }
-            emptyList()
+            throw tinkerGraphTraversalFailure("shortestPath", fromId, toId, options, e)
         }
 
         // Post-process: vertex-only paths from both() need edges inserted between consecutive vertices.
@@ -561,8 +560,7 @@ class TinkerGraphOperations :
                 .path()
                 .toList()
         } catch (e: Exception) {
-            log.warn(e) { "allPaths traversal failed: from=$fromId to=$toId options=$options" }
-            emptyList()
+            throw tinkerGraphTraversalFailure("allPaths", fromId, toId, options, e)
         }
 
         // Post-process: vertex-only paths from both() need edges inserted between consecutive vertices.
