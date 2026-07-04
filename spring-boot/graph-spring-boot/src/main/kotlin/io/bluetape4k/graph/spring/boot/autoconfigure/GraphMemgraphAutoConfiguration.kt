@@ -13,6 +13,7 @@ import org.neo4j.driver.AuthTokens
 import org.neo4j.driver.Config
 import org.neo4j.driver.Driver
 import org.neo4j.driver.GraphDatabase
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -54,11 +55,13 @@ class GraphMemgraphAutoConfiguration {
     companion object : KLogging()
 
     /**
-     * Memgraph Driver 빈. 이미 등록된 Driver 빈이 있으면 재사용한다.
-     * Memgraph는 Neo4j Bolt 프로토콜 호환이므로 Neo4j `GraphDatabase.driver()`를 사용한다.
+     * Memgraph driver bean.
+     *
+     * Memgraph uses the Neo4j Bolt-compatible Java driver. Only a bean explicitly named
+     * `memgraphDriver` is reused, because a generic [Driver] bean may belong to a Neo4j backend.
      */
     @Bean(name = ["memgraphDriver"], destroyMethod = "close")
-    @ConditionalOnMissingBean(Driver::class)
+    @ConditionalOnMissingBean(name = ["memgraphDriver"])
     fun memgraphDriver(props: MemgraphGraphProperties): Driver {
         val auth = if (props.username.isBlank() || props.password.isBlank()) AuthTokens.none()
                    else AuthTokens.basic(props.username, props.password)
@@ -76,7 +79,10 @@ class GraphMemgraphAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean(GraphOperations::class)
-    fun graphOperations(driver: Driver, props: MemgraphGraphProperties): GraphOperations =
+    fun graphOperations(
+        @Qualifier("memgraphDriver") driver: Driver,
+        props: MemgraphGraphProperties,
+    ): GraphOperations =
         MemgraphGraphOperations(driver, props.database)
 
     /**
@@ -90,7 +96,10 @@ class GraphMemgraphAutoConfiguration {
         havingValue = "true",
         matchIfMissing = true,
     )
-    fun graphSuspendOperations(driver: Driver, props: MemgraphGraphProperties): GraphSuspendOperations =
+    fun graphSuspendOperations(
+        @Qualifier("memgraphDriver") driver: Driver,
+        props: MemgraphGraphProperties,
+    ): GraphSuspendOperations =
         MemgraphGraphSuspendOperations(driver, props.database)
 
     /**
@@ -119,7 +128,9 @@ class GraphMemgraphAutoConfiguration {
 
         @Bean
         @ConditionalOnMissingBean
-        fun memgraphHealthIndicator(driver: Driver): org.springframework.boot.health.contributor.HealthIndicator =
+        fun memgraphHealthIndicator(
+            @Qualifier("memgraphDriver") driver: Driver,
+        ): org.springframework.boot.health.contributor.HealthIndicator =
             org.springframework.boot.health.contributor.HealthIndicator {
                 try {
                     driver.verifyConnectivity()
