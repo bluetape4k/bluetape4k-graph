@@ -1,8 +1,10 @@
 package io.bluetape4k.graph.model
 
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeInstanceOf
 import io.bluetape4k.assertions.shouldBeNull
+import io.bluetape4k.assertions.shouldContain
 import org.junit.jupiter.api.Test
 
 class GraphTraversalOptionsTest {
@@ -102,5 +104,112 @@ class GraphTraversalOptionsTest {
 
         neighbor shouldBeInstanceOf java.io.Serializable::class
         path shouldBeInstanceOf java.io.Serializable::class
+    }
+
+    @Test
+    fun `BfsDfsOptions 기본값은 OUTGOING-depth 5-maxVertices 10000이다`() {
+        val opts = BfsDfsOptions()
+
+        opts.edgeLabel.shouldBeNull()
+        opts.direction shouldBeEqualTo Direction.OUTGOING
+        opts.maxDepth shouldBeEqualTo 5
+        opts.maxVertices shouldBeEqualTo 10_000
+    }
+
+    @Test
+    fun `BfsDfsOptions Default 상수는 기본 생성자와 동일하다`() {
+        BfsDfsOptions.Default shouldBeEqualTo BfsDfsOptions()
+    }
+
+    @Test
+    fun `BfsDfsOptions는 모든 필드를 명시해서 생성할 수 있다`() {
+        val opts = BfsDfsOptions(
+            edgeLabel = "TRANSFERRED_TO",
+            direction = Direction.BOTH,
+            maxDepth = 7,
+            maxVertices = 250,
+        )
+
+        opts.edgeLabel shouldBeEqualTo "TRANSFERRED_TO"
+        opts.direction shouldBeEqualTo Direction.BOTH
+        opts.maxDepth shouldBeEqualTo 7
+        opts.maxVertices shouldBeEqualTo 250
+    }
+
+    @Test
+    fun `BfsDfsOptions는 음수 maxDepth를 거부한다`() {
+        val ex = assertFailsWith<IllegalArgumentException> {
+            BfsDfsOptions(maxDepth = -1)
+        }
+
+        ex.message shouldContain "maxDepth"
+    }
+
+    @Test
+    fun `BfsDfsOptions는 0 이하 maxVertices를 거부한다`() {
+        val ex = assertFailsWith<IllegalArgumentException> {
+            BfsDfsOptions(maxVertices = 0)
+        }
+
+        ex.message shouldContain "maxVertices"
+    }
+
+    @Test
+    fun `CycleOptions 기본값은 depth 10-maxCycles 100이다`() {
+        val opts = CycleOptions()
+
+        opts.vertexLabel.shouldBeNull()
+        opts.edgeLabel.shouldBeNull()
+        opts.maxDepth shouldBeEqualTo 10
+        opts.maxCycles shouldBeEqualTo 100
+    }
+
+    @Test
+    fun `CycleOptions Default 상수는 기본 생성자와 동일하다`() {
+        CycleOptions.Default shouldBeEqualTo CycleOptions()
+    }
+
+    @Test
+    fun `CycleOptions는 모든 필드를 명시해서 생성할 수 있다`() {
+        val opts = CycleOptions(
+            vertexLabel = "Account",
+            edgeLabel = "TRANSFERRED_TO",
+            maxDepth = 4,
+            maxCycles = 12,
+        )
+
+        opts.vertexLabel shouldBeEqualTo "Account"
+        opts.edgeLabel shouldBeEqualTo "TRANSFERRED_TO"
+        opts.maxDepth shouldBeEqualTo 4
+        opts.maxCycles shouldBeEqualTo 12
+    }
+
+    @Test
+    fun `CycleOptions는 음수 maxDepth를 거부한다`() {
+        val ex = assertFailsWith<IllegalArgumentException> {
+            CycleOptions(maxDepth = -1)
+        }
+
+        ex.message shouldContain "maxDepth"
+    }
+
+    @Test
+    fun `CycleOptions는 0 이하 maxCycles를 거부한다`() {
+        val ex = assertFailsWith<IllegalArgumentException> {
+            CycleOptions(maxCycles = 0)
+        }
+
+        ex.message shouldContain "maxCycles"
+    }
+
+    @Test
+    fun `BfsDfsOptions와 CycleOptions는 GraphTraversalOptions의 하위 타입이며 Serializable이다`() {
+        val bfsDfs: GraphTraversalOptions = BfsDfsOptions()
+        val cycle: GraphTraversalOptions = CycleOptions()
+
+        bfsDfs shouldBeInstanceOf BfsDfsOptions::class
+        cycle shouldBeInstanceOf CycleOptions::class
+        bfsDfs shouldBeInstanceOf java.io.Serializable::class
+        cycle shouldBeInstanceOf java.io.Serializable::class
     }
 }
