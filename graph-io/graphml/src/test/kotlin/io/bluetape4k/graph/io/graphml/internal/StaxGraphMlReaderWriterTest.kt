@@ -141,6 +141,57 @@ class StaxGraphMlReaderWriterTest {
     }
 
     @Test
+    fun `reader records errors for invalid typed data values`() {
+        val xml = """<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/graphml">
+  <key id="age" for="node" attr.name="age" attr.type="int"/>
+  <key id="score" for="edge" attr.name="score" attr.type="double"/>
+  <graph id="G" edgedefault="directed">
+    <node id="n1"><data key="age">not-an-int</data></node>
+    <node id="n2"><data key="age">42</data></node>
+    <edge id="e1" source="n1" target="n2"><data key="score">not-a-double</data></edge>
+  </graph>
+</graphml>"""
+
+        val result = reader.read(ByteArrayInputStream(xml.toByteArray()))
+
+        result.vertices shouldHaveSize 2
+        result.edges shouldHaveSize 1
+        result.failures shouldHaveSize 2
+        result.failures.map { it.severity }.toSet() shouldBeEqualTo setOf(GraphIoFailureSeverity.ERROR)
+        result.failures.map { it.columnName } shouldContain "age"
+        result.failures.map { it.columnName } shouldContain "score"
+        result.failures.map { it.message } shouldContain "Invalid GraphML int value for 'age': not-an-int"
+        result.failures.map { it.message } shouldContain "Invalid GraphML double value for 'score': not-a-double"
+        result.vertices[0].properties.containsKey("age") shouldBeEqualTo false
+        result.vertices[1].properties["age"] shouldBeEqualTo 42
+        result.edges[0].properties.containsKey("score") shouldBeEqualTo false
+    }
+
+    @Test
+    fun `bulk importer fails before writes for invalid typed data values`() {
+        val xml = """<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/graphml">
+  <key id="age" for="node" attr.name="age" attr.type="int"/>
+  <graph id="G" edgedefault="directed">
+    <node id="n1"><data key="age">not-an-int</data></node>
+  </graph>
+</graphml>"""
+
+        val report = GraphMlBulkImporter().importGraph(
+            GraphImportSource.InputStreamSource(ByteArrayInputStream(xml.toByteArray()), closeInput = true),
+            TinkerGraphOperations(),
+            GraphImportOptions(),
+        )
+
+        report.status shouldBeEqualTo GraphIoStatus.FAILED
+        report.verticesRead shouldBeEqualTo 1L
+        report.verticesCreated shouldBeEqualTo 0L
+        report.failures shouldHaveSize 1
+        report.failures.single().columnName shouldBeEqualTo "age"
+    }
+
+    @Test
     fun `reader records warnings for unsupported graphml fixture with SKIP policy`() {
         val result = fixture("unsupported-constructs.graphml").use { reader.read(it) }
 
