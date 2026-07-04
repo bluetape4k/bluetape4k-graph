@@ -14,11 +14,11 @@ import io.bluetape4k.graph.neo4j.Neo4jGraphOperations
 import io.bluetape4k.graph.neo4j.Neo4jGraphSuspendOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
+import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.warn
 import io.bluetape4k.testcontainers.graphdb.MemgraphServer
 import io.bluetape4k.testcontainers.graphdb.Neo4jServer
 import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
-import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -173,7 +173,7 @@ class FalkorDBRecommendationSuspendTest : AbstractRecommendationSuspendTest() {
 
     @AfterAll
     fun stopServer() {
-        runCatching { runBlocking { ops.dropGraph(graphName) } }
+        runCatching { runSuspendIO { ops.dropGraph(graphName) } }
             .onFailure { log.warn(it) { "Failed to drop graph $graphName" } }
         driver.close()
     }
