@@ -188,15 +188,12 @@ class GraphBatchOperationsTest {
     }
 
     @Test
-    fun `batch validation rejects blank edge endpoint`() {
+    fun `blank edge endpoint cannot be constructed before batch validation`() {
         val ex = assertFailsWith<IllegalArgumentException> {
-            GraphBatchValidation.validateEdgeBatch(
-                "KNOWS",
-                listOf(BatchEdge(GraphElementId(""), GraphElementId.of("v2"))),
-            )
+            GraphElementId("")
         }
 
-        ex.message shouldContain "fromId.value"
+        ex.message shouldContain "value"
     }
 
     @Test

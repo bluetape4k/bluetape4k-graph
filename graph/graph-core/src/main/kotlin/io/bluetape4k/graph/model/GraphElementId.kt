@@ -23,6 +23,10 @@ import java.io.Serializable
  */
 @JvmInline
 value class GraphElementId(val value: String): Serializable {
+    init {
+        value.requireNotBlank("value")
+    }
+
     companion object {
         private const val serialVersionUID: Long = 1L
 
@@ -36,7 +40,6 @@ value class GraphElementId(val value: String): Serializable {
          * @param value ID 문자열 값.
          */
         fun of(value: String): GraphElementId {
-            value.requireNotBlank("value")
             return GraphElementId(value)
         }
 
