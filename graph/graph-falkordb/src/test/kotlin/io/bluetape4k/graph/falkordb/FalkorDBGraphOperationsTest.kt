@@ -1,6 +1,7 @@
 package io.bluetape4k.graph.falkordb
 
 import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.model.Direction
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.NeighborOptions
@@ -12,8 +13,11 @@ import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.assertions.shouldBeInstanceOf
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.mockk.every
+import io.mockk.mockk
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.MethodOrderer
@@ -61,6 +65,21 @@ class FalkorDBGraphOperationsTest : AbstractFalkorDBTest() {
         val result = ops.graphExists("non_existent_graph_xyz_12345")
         // 존재하지 않으면 false
         result shouldBeEqualTo false
+    }
+
+    @Test
+    @Order(13)
+    fun `graphExists preserves driver failures`() {
+        val failingDriver = mockk<com.falkordb.Driver>()
+        every { failingDriver.listGraphs() } throws IllegalStateException("redis unavailable")
+        val failingOps = FalkorDBGraphOperations(failingDriver, graphName)
+
+        val ex = assertFailsWith<GraphQueryException> {
+            failingOps.graphExists(graphName)
+        }
+
+        ex.message shouldContain "FalkorDB graphExists failed"
+        ex.cause shouldBeInstanceOf IllegalStateException::class
     }
 
     // ----- 정점(Vertex) CRUD -----

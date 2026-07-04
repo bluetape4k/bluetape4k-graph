@@ -32,6 +32,7 @@ import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.warn
 import io.bluetape4k.support.requireNotBlank
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
@@ -265,20 +266,21 @@ class MemgraphGraphSuspendOperations(
     override suspend fun graphExists(name: String): Boolean {
         name.requireNotBlank("name")
 
-        val s = session()
+        var s: ReactiveSession? = null
         return try {
+            s = session()
             val result = s.run(Query("RETURN 1")).awaitSingle()
             result.records().awaitFirstOrNull() != null
-        } catch (e: org.neo4j.driver.exceptions.ServiceUnavailableException) {
-            log.warn(e) { "Memgraph service unavailable for database: $name" }
-            false
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: org.neo4j.driver.exceptions.DatabaseException) {
-            false
+            if (e.isMissingDatabaseFailure()) false else throw e.asGraphExistsFailure("Memgraph", name)
         } catch (e: Exception) {
-            log.warn(e) { "Unexpected error checking graphExists for: $name" }
-            false
+            throw e.asGraphExistsFailure("Memgraph", name)
         } finally {
-            withContext(NonCancellable) { s.close<Void>().awaitFirstOrNull() }
+            s?.let { session ->
+                withContext(NonCancellable) { session.close<Void>().awaitFirstOrNull() }
+            }
         }
     }
 

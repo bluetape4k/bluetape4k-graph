@@ -106,15 +106,10 @@ class Neo4jGraphOperations(
                 s.run("RETURN 1")
                 true
             }
-        } catch (e: org.neo4j.driver.exceptions.ServiceUnavailableException) {
-            log.warn(e) { "Neo4j service unavailable for database: $name" }
-            false
         } catch (e: org.neo4j.driver.exceptions.DatabaseException) {
-            log.warn(e) { "Neo4j database error checking graphExists for: $name" }
-            false
+            if (e.isMissingDatabaseFailure()) false else throw e.asGraphExistsFailure("Neo4j", name)
         } catch (e: Exception) {
-            log.warn(e) { "Unexpected error checking graphExists for: $name" }
-            false
+            throw e.asGraphExistsFailure("Neo4j", name)
         }
     }
 
