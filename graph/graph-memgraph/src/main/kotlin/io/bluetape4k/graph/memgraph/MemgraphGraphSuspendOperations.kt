@@ -100,6 +100,9 @@ class MemgraphGraphSuspendOperations(
             SessionConfig.builder().withDatabase(database).build(),
         )
 
+    private fun failGraphExists(e: Exception, name: String): Nothing =
+        throw e.asGraphExistsFailure("Memgraph", name)
+
     override fun schemaManager(): GraphSuspendSchemaManager =
         MemgraphGraphSchemaManager(driver, database).asSuspendSchemaManager()
 
@@ -274,9 +277,9 @@ class MemgraphGraphSuspendOperations(
         } catch (e: CancellationException) {
             throw e
         } catch (e: org.neo4j.driver.exceptions.DatabaseException) {
-            if (e.isMissingDatabaseFailure()) false else throw e.asGraphExistsFailure("Memgraph", name)
+            if (e.isMissingDatabaseFailure()) false else failGraphExists(e, name)
         } catch (e: Exception) {
-            throw e.asGraphExistsFailure("Memgraph", name)
+            failGraphExists(e, name)
         } finally {
             s?.let { session ->
                 withContext(NonCancellable) { session.close<Void>().awaitFirstOrNull() }

@@ -73,7 +73,8 @@ data class NeighborOptions(
  * @param weightProperty Edge weight property key. `null` uses unweighted traversal.
  * @param missingWeightPolicy Policy for edges missing [weightProperty]. Defaults to [MissingWeightPolicy.Fail].
  * @param direction Traversal direction. Applies only when [weightProperty] is set. Defaults to [Direction.OUTGOING].
- * @param maxVisited Maximum visited vertices during weighted traversal. Protects against unbounded graphs. Defaults to `100_000`.
+ * @param maxVisited Maximum visited vertices during weighted traversal.
+ * Protects against unbounded graphs. Defaults to `100_000`.
  */
 data class PathOptions(
     val edgeLabel: String? = null,
