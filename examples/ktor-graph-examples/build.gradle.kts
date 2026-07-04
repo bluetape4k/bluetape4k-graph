@@ -12,7 +12,7 @@ configurations {
 
 dependencyManagement {
     imports {
-        mavenBom(libs.ktor.bom.get().toString())
+        mavenBom(bt4k.ktor.bom.get().toString())
     }
 }
 

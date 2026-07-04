@@ -12,7 +12,7 @@ plugins {
     base
     `maven-publish`
     signing
-    alias(libs.plugins.kotlin.jvm)
+    alias(bt4k.plugins.kotlin.jvm)
 
     // see: https://kotlinlang.org/docs/reference/compiler-plugins.html
     alias(libs.plugins.kotlin.spring) apply false
@@ -24,15 +24,15 @@ plugins {
 
     alias(libs.plugins.detekt)
 
-    alias(libs.plugins.dependency.management)
+    alias(bt4k.plugins.dependency.management)
 
-    alias(libs.plugins.dokka)
+    alias(bt4k.plugins.dokka)
     alias(libs.plugins.test.logger)
     alias(libs.plugins.shadow) apply false
     alias(libs.plugins.gatling) apply false
 
-    alias(libs.plugins.nmcp.aggregation)
-    alias(libs.plugins.nmcp) apply false
+    alias(bt4k.plugins.nmcp.aggregation)
+    alias(bt4k.plugins.nmcp) apply false
 
     // 테스트 커버리지 (Kotlin inline/suspend 정확 지원)
     alias(libs.plugins.kover)
@@ -332,11 +332,11 @@ subprojects {
             mavenBom(rootLibs.feign.bom.get().toString())
             mavenBom(rootLibs.micrometer.bom.get().toString())
             mavenBom(rootLibs.micrometer.tracing.bom.get().toString())
-            mavenBom(rootLibs.log4j.bom.get().toString())
+            mavenBom("org.apache.logging.log4j:log4j-bom:${bt4kVersion("log4j")}")
             mavenBom(rootLibs.testcontainers.bom.get().toString())
             mavenBom(rootLibs.junit.bom.get().toString())
             mavenBom(rootLibs.okhttp3.bom.get().toString())
-            mavenBom(rootLibs.netty.bom.get().toString())
+            mavenBom("io.netty:netty-bom:${bt4kVersion("netty")}")
             mavenBom(rootLibs.jackson.bom.get().toString())
             mavenBom(rootLibs.jackson3.bom.get().toString())
             mavenBom(rootLibs.neo4j.bolt.connection.bom.get().toString())
@@ -417,7 +417,7 @@ subprojects {
             dependency(rootLibs.objenesis.get().toString())
             dependency("org.ow2.asm:asm:${bt4kVersion("ow2-asm")}")
 
-            dependency(rootLibs.reflectasm.get().toString())
+            dependency("com.esotericsoftware:reflectasm:${bt4kVersion("reflectasm")}")
 
             dependency(rootLibs.junit.bom.get().toString())
             dependency(rootLibs.junit.jupiter.all.get().toString())
@@ -430,11 +430,11 @@ subprojects {
             dependency(rootLibs.junit.platform.launcher.get().toString())
             dependency(rootLibs.junit.platform.runner.get().toString())
 
-            dependency(rootLibs.assertj.core.get().toString())
+            dependency("org.assertj:assertj-core:${bt4kVersion("assertj-core")}")
 
             dependency(rootLibs.mockk.get().toString())
             dependency(rootLibs.datafaker.get().toString())
-            dependency(rootLibs.random.beans.get().toString())
+            dependency("io.github.benas:random-beans:${bt4kVersion("random-beans")}")
 
             dependency(rootLibs.jsonpath.get().toString())
             dependency(rootLibs.jsonassert.get().toString())
@@ -468,10 +468,10 @@ subprojects {
         add("testRuntimeOnly", rootLibs.junit.platform.engine)
 
         add("testImplementation", rootLibs.mockk)
-        add("testImplementation", rootLibs.awaitility.kotlin)
+        add("testImplementation", "org.awaitility:awaitility-kotlin:${bt4kVersion("awaitility")}")
 
         add("testImplementation", rootLibs.datafaker)
-        add("testImplementation", rootLibs.random.beans)
+        add("testImplementation", "io.github.benas:random-beans:${bt4kVersion("random-beans")}")
     }
 
     /*

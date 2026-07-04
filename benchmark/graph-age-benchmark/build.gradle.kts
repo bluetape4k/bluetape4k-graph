@@ -33,8 +33,8 @@ dependencies {
     implementation(libs.bluetape4k.coroutines)
     implementation(libs.kotlinx.coroutines.core.lib)
 
-    implementation(libs.exposed.core)
-    implementation(libs.exposed.jdbc)
+    implementation(bt4k.exposed.core)
+    implementation(bt4k.exposed.jdbc)
     implementation(libs.postgresql.driver)
     implementation(libs.hikaricp)
 
