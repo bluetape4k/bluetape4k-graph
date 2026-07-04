@@ -136,6 +136,40 @@ class GraphPluginTest {
     }
 
     @Test
+    fun `caller owned backend helper 는 close action 을 등록하지 않는다`() {
+        GraphPluginConfig()
+            .neo4j(mockk(), database = "neo4j")
+            .closeActions.size shouldBeEqualTo 0
+
+        GraphPluginConfig()
+            .memgraph(mockk(), database = "memgraph")
+            .closeActions.size shouldBeEqualTo 0
+
+        GraphPluginConfig()
+            .falkorDB(mockk(), graphName = "graph")
+            .closeActions.size shouldBeEqualTo 0
+
+        GraphPluginConfig()
+            .age("graph")
+            .closeActions.size shouldBeEqualTo 0
+    }
+
+    @Test
+    fun `managed backend DSL 은 plugin owned close action 을 등록한다`() {
+        val neo4jConfig = GraphPluginConfig().neo4j {
+            uri = "bolt://localhost:7687"
+        }
+        neo4jConfig.closeActions.size shouldBeEqualTo 3
+        neo4jConfig.resolveState().close()
+
+        val memgraphConfig = GraphPluginConfig().memgraph {
+            uri = "bolt://localhost:7687"
+        }
+        memgraphConfig.closeActions.size shouldBeEqualTo 3
+        memgraphConfig.resolveState().close()
+    }
+
+    @Test
     fun `managed backend DSL 은 잘못된 property 를 fail fast 한다`() {
         assertFailsWith<IllegalArgumentException> {
             GraphPluginConfig().neo4j {

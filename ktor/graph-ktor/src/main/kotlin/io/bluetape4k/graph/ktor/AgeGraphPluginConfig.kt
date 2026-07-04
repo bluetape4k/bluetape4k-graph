@@ -33,13 +33,5 @@ fun GraphPluginConfig.age(
         backendName = "age",
         graphOperationsFactory = { graphOperations },
         graphSuspendOperationsFactory = { graphSuspendOperations },
-        closeActions = listOf(
-            GraphPluginCloseAction("AgeGraphOperations") {
-                graphOperations.close()
-            },
-            GraphPluginCloseAction("AgeGraphSuspendOperations") {
-                graphSuspendOperations.close()
-            },
-        ),
     )
 }

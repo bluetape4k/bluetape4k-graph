@@ -33,13 +33,5 @@ fun GraphPluginConfig.neo4j(
         backendName = "neo4j",
         graphOperationsFactory = { graphOperations },
         graphSuspendOperationsFactory = { graphSuspendOperations },
-        closeActions = listOf(
-            GraphPluginCloseAction("Neo4jGraphOperations") {
-                graphOperations.close()
-            },
-            GraphPluginCloseAction("Neo4jGraphSuspendOperations") {
-                graphSuspendOperations.close()
-            },
-        ),
     )
 }

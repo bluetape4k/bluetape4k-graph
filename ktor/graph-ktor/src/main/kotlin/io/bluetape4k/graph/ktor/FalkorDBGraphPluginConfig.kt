@@ -33,13 +33,5 @@ fun GraphPluginConfig.falkorDB(
         backendName = "falkorDB",
         graphOperationsFactory = { graphOperations },
         graphSuspendOperationsFactory = { graphSuspendOperations },
-        closeActions = listOf(
-            GraphPluginCloseAction("FalkorDBGraphOperations") {
-                graphOperations.close()
-            },
-            GraphPluginCloseAction("FalkorDBGraphSuspendOperations") {
-                graphSuspendOperations.close()
-            },
-        ),
     )
 }
