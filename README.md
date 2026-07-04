@@ -65,7 +65,7 @@ graph/
   graph-neo4j      # Neo4j Java Driver implementation
   graph-memgraph   # Memgraph (Neo4j protocol compatible) implementation
   graph-tinkerpop  # Apache TinkerPop / TinkerGraph in-memory implementation
-  graph-falkordb   # FalkorDB (Redis-based) implementation — jfalkordb 0.7.0
+  graph-falkordb   # FalkorDB (Redis-based) implementation - jfalkordb 0.8.0
 graph-io/
   core             # Shared contracts, models, options, and helpers for bulk I/O
   csv              # CSV bulk import/export (Sync / VirtualThread / Coroutine)
@@ -326,7 +326,7 @@ driver.close()
 |------|-----------|-------------|----------------|-----------------|----------------|
 | Query Language | Cypher-over-SQL | Cypher | Cypher | Gremlin | openCypher (subset) |
 | Infrastructure | PostgreSQL + AGE | Neo4j | Memgraph | JVM in-memory | Redis module |
-| Driver | JDBC + Exposed | Neo4j Java Driver | Neo4j Java Driver (compatible) | TinkerPop | jfalkordb 0.7.0 |
+| Driver | JDBC + Exposed | Neo4j Java Driver | Neo4j Java Driver (compatible) | TinkerPop | jfalkordb 0.8.0 |
 | Test Container | `apache/age:PG16_latest` | `neo4j:5` | `memgraph/memgraph:latest` | not required | `falkordb/falkordb:v4.18.1` |
 | Strongest local role | PostgreSQL-native graph | Mature graph server | Low-latency Cypher server | Unit/integration tests | Redis-backed graph service |
 
@@ -339,8 +339,8 @@ Tests automatically launch Docker containers via Testcontainers. Docker is requi
 ./gradlew test
 
 # Specific module tests
-./gradlew :graph-neo4j:test
-./gradlew :graph-age:test
+./gradlew :bluetape4k-graph-neo4j:test
+./gradlew :bluetape4k-graph-age:test
 ./gradlew :code-graph-examples:test
 ./gradlew :linkedin-graph-examples:test
 ./gradlew :fraud-detection-examples:test
@@ -354,7 +354,7 @@ Tests automatically launch Docker containers via Testcontainers. Docker is requi
 ./gradlew :security-attack-path-examples:test
 
 # Specific class
-./gradlew :graph-neo4j:test --tests "io.bluetape4k.graph.neo4j.Neo4jGraphOperationsTest"
+./gradlew :bluetape4k-graph-neo4j:test --tests "io.bluetape4k.graph.neo4j.Neo4jGraphOperationsTest"
 ```
 
 GitHub Actions also runs a dedicated `Examples` workflow daily and on changes to example, graph, graph-io, Ktor, Gradle, or workflow files. The examples are intentionally excluded from the Nightly workflow so the daily example signal stays separate from backend/integration smoke coverage.
@@ -392,19 +392,19 @@ Concrete classes only need to implement `ops` (`GraphOperations` or `GraphSuspen
 ## Requirements
 
 - Java 21 (with preview features enabled)
-- Kotlin 2.3
+- Kotlin 2.4.0
 - Docker (for integration tests)
 
 ## Tech Stack
 
-- **Kotlin** 2.3 + Coroutines 1.10
+- **Kotlin** 2.4.0 + Coroutines 1.11.0
 - **Neo4j Java Driver** 5.x
 - **JetBrains Exposed** (JDBC for Apache AGE)
 - **Apache TinkerPop** (Gremlin)
 - **Ktor** 3.x (ApplicationPlugin integration)
-- **jfalkordb** 0.7.0 (FalkorDB / Redis-module graph)
+- **jfalkordb** 0.8.0 (FalkorDB / Redis-module graph)
 - **Testcontainers** (integration tests)
-- **bluetape4k** 1.7.x (common utilities)
+- **bluetape4k** 1.11.1-SNAPSHOT (common utilities)
 
 ## Documentation
 
