@@ -9,3 +9,18 @@ internal object BenchmarkContainerReuse {
     private fun isCi(environment: Map<String, String>): Boolean =
         !environment["CI"].isNullOrBlank() || !environment["GITHUB_ACTIONS"].isNullOrBlank()
 }
+
+internal object BenchmarkFalkorLifecycle {
+    fun close(
+        reusableServer: Boolean,
+        closeOperations: () -> Unit,
+        closeDriver: () -> Unit,
+        closeServer: () -> Unit,
+    ) {
+        runCatching(closeOperations)
+        runCatching(closeDriver)
+        if (!reusableServer) {
+            runCatching(closeServer)
+        }
+    }
+}

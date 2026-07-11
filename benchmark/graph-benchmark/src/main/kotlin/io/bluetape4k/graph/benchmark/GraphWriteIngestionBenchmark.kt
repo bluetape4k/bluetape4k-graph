@@ -136,6 +136,7 @@ open class GraphWriteIngestionState {
     private var neo4jDriver: Driver? = null
     private var falkorDriver: com.falkordb.Driver? = null
     private var falkorServer: FalkorDBServer? = null
+    private var falkorServerReusable: Boolean = false
 
     @Setup(Level.Trial)
     fun setupBackend() {
@@ -166,7 +167,8 @@ open class GraphWriteIngestionState {
                 AgeGraphOperations(GRAPH_NAME)
             }
             "falkordb" -> {
-                val server = FalkorDBServer(reuse = BenchmarkContainerReuse.isEnabled()).apply {
+                falkorServerReusable = BenchmarkContainerReuse.isEnabled()
+                val server = FalkorDBServer(reuse = falkorServerReusable).apply {
                     withEnv("FALKORDB_ARGS", "MAX_QUEUED_QUERIES 25 TIMEOUT 60000 RESULTSET_SIZE 100000")
                     start()
                 }
@@ -194,10 +196,13 @@ open class GraphWriteIngestionState {
     @TearDown(Level.Trial)
     fun teardownBackend() {
         runCatching { ops.dropGraph(GRAPH_NAME) }
-        runCatching { ops.close() }
         runCatching { neo4jDriver?.close() }
-        runCatching { falkorDriver?.close() }
-        runCatching { falkorServer?.close() }
+        BenchmarkFalkorLifecycle.close(
+            reusableServer = falkorServerReusable,
+            closeOperations = { ops.close() },
+            closeDriver = { falkorDriver?.close() },
+            closeServer = { falkorServer?.close() },
+        )
         runCatching { dataSource?.close() }
     }
 
