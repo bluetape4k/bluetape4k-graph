@@ -38,6 +38,15 @@
 
 컨테이너 기반 backend benchmark는 bluetape4k Testcontainers launcher 또는 wrapper를 사용합니다. 순차 실행해야 하며 초기 기동 시간이 더 깁니다.
 
+CI를 포함한 기본 실행에서는 컨테이너 재사용을 비활성화합니다. 개발자가 로컬 benchmark에서만 재사용하려면 로컬 Testcontainers 설정에서 reusable container를 활성화하고 다음 환경 변수를 명시적으로 지정합니다.
+
+```bash
+BLUETAPE4K_TESTCONTAINERS_REUSE=true \
+  ./gradlew :graph-benchmark:mainGraphDbSmallBenchmark
+```
+
+`CI` 또는 `GITHUB_ACTIONS`가 존재하면 benchmark가 이 opt-in을 무시합니다. 테스트와 예제는 컨테이너 재사용을 암묵적으로 활성화하지 않습니다.
+
 ## 실행
 
 ```bash
