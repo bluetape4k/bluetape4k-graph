@@ -7,7 +7,7 @@ internal object BenchmarkContainerReuse {
         environment[ENV_NAME].toBoolean() && !isCi(environment)
 
     private fun isCi(environment: Map<String, String>): Boolean =
-        !environment["CI"].isNullOrBlank() || !environment["GITHUB_ACTIONS"].isNullOrBlank()
+        "CI" in environment || "GITHUB_ACTIONS" in environment
 }
 
 internal object BenchmarkFalkorLifecycle {

@@ -47,6 +47,20 @@ class BenchmarkContainerLifecycleContractTest {
     }
 
     @Test
+    fun `empty CI marker still disables container reuse`() {
+        BenchmarkContainerReuse.isEnabled(
+            environment = mapOf(BenchmarkContainerReuse.ENV_NAME to "true", "CI" to ""),
+        ).shouldBeFalse()
+    }
+
+    @Test
+    fun `empty GitHub Actions marker still disables container reuse`() {
+        BenchmarkContainerReuse.isEnabled(
+            environment = mapOf(BenchmarkContainerReuse.ENV_NAME to "true", "GITHUB_ACTIONS" to ""),
+        ).shouldBeFalse()
+    }
+
+    @Test
     fun `reusable FalkorDB servers survive trial teardown while clients close`() {
         var operationsCloseCount = 0
         var driverCloseCount = 0
