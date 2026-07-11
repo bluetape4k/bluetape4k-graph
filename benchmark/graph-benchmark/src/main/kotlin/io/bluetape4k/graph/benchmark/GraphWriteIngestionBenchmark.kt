@@ -166,7 +166,7 @@ open class GraphWriteIngestionState {
                 AgeGraphOperations(GRAPH_NAME)
             }
             "falkordb" -> {
-                val server = FalkorDBServer(reuse = true).apply {
+                val server = FalkorDBServer(reuse = BenchmarkContainerReuse.isEnabled()).apply {
                     withEnv("FALKORDB_ARGS", "MAX_QUEUED_QUERIES 25 TIMEOUT 60000 RESULTSET_SIZE 100000")
                     start()
                 }

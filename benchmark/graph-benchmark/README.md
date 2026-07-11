@@ -38,6 +38,15 @@ kotlinx-benchmark module for graph performance comparison. It now contains nine 
 
 Container-backed backend benchmarks use bluetape4k Testcontainers launchers or wrappers. Run them serially and expect longer startup time.
 
+Container reuse is disabled by default, including in CI. A developer may opt in only for a local benchmark run by setting the environment variable below and enabling reusable containers in the local Testcontainers configuration:
+
+```bash
+BLUETAPE4K_TESTCONTAINERS_REUSE=true \
+  ./gradlew :graph-benchmark:mainGraphDbSmallBenchmark
+```
+
+The benchmark ignores this opt-in whenever `CI` or `GITHUB_ACTIONS` is present. Tests and examples never enable reuse implicitly.
+
 ## Running
 
 ```bash
