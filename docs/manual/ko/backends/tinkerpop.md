@@ -1,5 +1,7 @@
 # TinkerPop과 TinkerGraph
 
+![백엔드 선택 지도](../../assets/backends/backend-decision-map.png)
+
 0.5.1 모듈은 TinkerGraph를 프로세스 안에 띄우고 공통 repository 계약을 TinkerPop/Gremlin에 연결한다. 로컬 검증과 알고리즘 테스트는 빠르지만, 원격 서버의 지연·내구성·클러스터·트랜잭션을 재현하지는 않는다.
 
 동기 코드는 [`TinkerGraphOperations.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-tinkerpop/src/main/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphOperations.kt), 코루틴 연동은 [`TinkerGraphSuspendOperations.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-tinkerpop/src/main/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphSuspendOperations.kt)에서 시작한다. CRUD와 순회는 [`TinkerGraphOperationsTest.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-tinkerpop/src/test/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphOperationsTest.kt), commit과 rollback은 [`TinkerGraphTransactionTest.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-tinkerpop/src/test/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphTransactionTest.kt)가 검증한다.

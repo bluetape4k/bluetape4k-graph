@@ -1,5 +1,7 @@
 # OkIO 압축과 파일 보안
 
+![graph-io 처리 흐름](../../assets/graph-io/graph-io-pipeline.png)
+
 `graph-okio`는 graph 형식을 OkIO `Source`, `Sink`, `Path`, `FileSystem`에 연결한다. [`Compressor.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/okio/src/main/kotlin/io/bluetape4k/graph/io/okio/Compressor.kt)에 정의된 GZIP, DEFLATE, LZ4, SNAPPY, ZSTD, BZIP2를 streaming 방식으로 처리한다.
 
 단일 스트림인 NDJSON과 GraphML은 DAEAD chunk 도우미로 인증·암호화할 수 있다. 내보낼 때는 먼저 압축하고 암호화하며, 가져올 때는 복호화한 다음 압축을 푼다. associated data는 양쪽이 같아야 한다. 결정적 암호화는 같은 키와 문맥에서 같은 평문 chunk의 동일성을 드러낼 수 있으므로 사용 전에 이 특성을 받아들일지 결정한다. 정확한 순서와 크기 제한은 [`GraphIoOkioPaths.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/okio/src/main/kotlin/io/bluetape4k/graph/io/okio/GraphIoOkioPaths.kt)에 있다.

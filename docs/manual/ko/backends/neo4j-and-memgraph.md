@@ -1,5 +1,7 @@
 # Neo4j와 Memgraph
 
+![백엔드 선택 지도](../../assets/backends/backend-decision-map.png)
+
 두 모듈은 Neo4j 드라이버와 호환되는 Bolt·Cypher를 사용하므로 애플리케이션 코드를 상당 부분 공유할 수 있다. 그렇다고 같은 백엔드는 아니다. 지원 Cypher, 스키마 DDL, 배포 방식, 운영 지표가 다르다.
 
 이미 Neo4j를 운영하거나 그 트랜잭션·스키마 의미론이 기준이라면 Neo4j를 고른다. [`Neo4jGraphOperations.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt)를 읽고, 인접한 [`Neo4jGraphSuspendOperationsTest.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/src/test/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphSuspendOperationsTest.kt)에서 batch, merge, schema, transaction을 확인한다.

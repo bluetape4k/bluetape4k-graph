@@ -1,5 +1,7 @@
 # Formats and external IDs
 
+![graph-io pipeline](../../assets/graph-io/graph-io-pipeline.png)
+
 | Format | Boundary | Good fit | Evidence |
 |---|---|---|---|
 | CSV | paired vertex/edge files | tabular exchange and inspection | [`CsvRoundTripTest.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/csv/src/test/kotlin/io/bluetape4k/graph/io/csv/CsvRoundTripTest.kt) |

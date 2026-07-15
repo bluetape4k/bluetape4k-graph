@@ -1,5 +1,7 @@
 # Neo4j and Memgraph
 
+![Backend decision map](../../assets/backends/backend-decision-map.png)
+
 Both modules use Neo4j-driver-compatible Bolt and Cypher, so they share much application code. They remain separate backends because server behavior, supported Cypher, schema DDL, deployment, and operational signals differ.
 
 Choose Neo4j when Neo4j is already operated or its transaction/schema behavior is the reference requirement. Start at [`Neo4jGraphOperations.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt), then verify batch, merge, schema, and suspend transaction behavior in the neighboring [tests](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/src/test/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphSuspendOperationsTest.kt).

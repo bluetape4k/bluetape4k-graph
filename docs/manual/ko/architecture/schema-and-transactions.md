@@ -1,5 +1,7 @@
 # 스키마와 쓰기·트랜잭션 경계
 
+![핵심 추상화 지도](../../assets/architecture/core-abstraction-map.png)
+
 `VertexLabel`과 `EdgeLabel`은 이름과 속성 정의를 재사용하는 Exposed 방식 선언이다. 도메인을 표현할 뿐, 실제 스키마 DDL은 `GraphSchemaManager`가 실행한다. [`VertexLabel.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/src/main/kotlin/io/bluetape4k/graph/schema/VertexLabel.kt), [`EdgeLabel.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/src/main/kotlin/io/bluetape4k/graph/schema/EdgeLabel.kt), [`CodeGraphSchema.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/code-graph-examples/src/main/kotlin/io/bluetape4k/graph/examples/code/schema/CodeGraphSchema.kt)를 차례로 읽으면 선언과 사용이 연결된다.
 
 ```kotlin

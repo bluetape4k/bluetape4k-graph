@@ -2,7 +2,7 @@
 
 ## 문제와 백엔드
 
-이 예제는 도메인 질문을 경로, 개수, 순위, 진단 집합으로 확인합니다. **TinkerGraph**를 써서 컨테이너와 네트워크 편차를 빼고 모델부터 검증합니다. 먼저 [핵심 모델](../architecture/core-model.md)과 [TinkerPop](../backends/tinkerpop.md)을 읽고, 운영 전에는 [선택 가이드](../backends/selection-guide.md)를 적용하십시오.
+그래프 초기화, 개수 조회, 경로 탐색을 Ktor plugin과 HTTP 경계로 노출합니다. **TinkerGraph**를 써서 저장소 모델과 웹 계층을 나누어 검증합니다. 먼저 [핵심 모델](../architecture/core-model.md), [TinkerPop](../backends/tinkerpop.md), [Ktor 연동](../frameworks/ktor.md)을 읽습니다.
 
 ## 그래프 모델
 
@@ -20,7 +20,7 @@ JDK 21, 커밋 `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, 저장소의 Gradle W
 ./gradlew :ktor-graph-examples:test --tests "io.bluetape4k.graph.examples.ktor.KtorGraphAppTest"
 ```
 
-`BUILD SUCCESSFUL`과 함께 지정 테스트가 통과해야 합니다. 초기화는 reset, 도시 수는 3, 경로는 Seoul -> Daejeon -> Busan입니다. 결과가 다르면 고정 데이터, 간선 방향, 탐색 깊이를 확인하십시오.
+라우트 테스트는 초기화 응답이 `reset`인지, 도시가 세 개인지, 경로가 `Seoul -> Daejeon -> Busan`인지 검증합니다. 실패하면 plugin 초기화, 응답 직렬화, 그래프 고정 데이터와 탐색을 나누어 진단합니다.
 
 ## 코드 읽는 순서
 

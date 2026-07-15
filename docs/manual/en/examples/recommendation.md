@@ -2,7 +2,7 @@
 
 ## Problem and backend
 
-This example turns a domain question into an inspectable path, count, ranking, or diagnostic set. It uses **TinkerGraph** to isolate modeling from container and network variance. Read [core model](../architecture/core-model.md) and [TinkerPop](../backends/tinkerpop.md) first; use the [selection guide](../backends/selection-guide.md) before production.
+This example turns user-item interactions into candidates and a deterministic ranking that tests can explain. It uses **TinkerGraph** to isolate modeling from container and network variance. Read [core model](../architecture/core-model.md) and [TinkerPop](../backends/tinkerpop.md) first; use the [selection guide](../backends/selection-guide.md) before production.
 
 ## Model
 
@@ -20,7 +20,7 @@ Use JDK 21, commit `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, and the checked-i
 ./gradlew :recommendation-examples:test --tests "io.bluetape4k.graph.examples.recommendation.TinkerGraphRecommendationTest"
 ```
 
-Expect `BUILD SUCCESSFUL`; p-tripod and u-carol are recommended; p-camera appears in the top three. A different result points to changed fixture data, edge direction, or traversal depth.
+The tests assert that `p-tripod` and `u-carol` are recommended and that `p-camera` remains in the top three. A failure usually reflects changed interaction weights, candidate filtering, or ranking order.
 
 ## Reading order
 

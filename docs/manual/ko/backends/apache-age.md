@@ -1,5 +1,7 @@
 # Apache AGE
 
+![백엔드 선택 지도](../../assets/backends/backend-decision-map.png)
+
 그래프 데이터를 기존 PostgreSQL 운영 경계 안에 둬야 한다면 Apache AGE가 후보가 된다. 질의가 SQL 안의 Cypher 계층을 지나므로 JDBC 연결 상태, graph context, PostgreSQL 트랜잭션, AGE 자료형까지 함께 진단해야 한다.
 
 동기·코루틴 구현은 [`AgeGraphOperations.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/AgeGraphOperations.kt)와 [`AgeGraphSuspendOperations.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/AgeGraphSuspendOperations.kt)에 있다. [`JdbcTransactionExtensions.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/JdbcTransactionExtensions.kt)에서 트랜잭션 연결을 보고, [`AgeGraphSuspendOperationsTest.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/src/test/kotlin/io/bluetape4k/graph/age/AgeGraphSuspendOperationsTest.kt)에서 rollback과 취소를 확인한다.

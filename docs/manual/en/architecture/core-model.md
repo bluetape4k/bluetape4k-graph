@@ -1,5 +1,7 @@
 # Core model
 
+![Core abstraction map](../../assets/architecture/core-abstraction-map.png)
+
 `GraphElementId` is a nonblank string value class used across backends. Long and arbitrary driver IDs are normalized, but the value remains opaque to application code. See [`GraphElementId.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/src/main/kotlin/io/bluetape4k/graph/model/GraphElementId.kt) and its [`tests`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/src/test/kotlin/io/bluetape4k/graph/model/GraphElementIdTest.kt).
 
 `GraphVertex(id, label, properties)` and `GraphEdge(id, label, startId, endId, properties)` are immutable, serializable snapshots. Property values may be null; supported runtime types still depend on the backend or format. Sources: [`GraphVertex.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/src/main/kotlin/io/bluetape4k/graph/model/GraphVertex.kt), [`GraphEdge.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/src/main/kotlin/io/bluetape4k/graph/model/GraphEdge.kt).

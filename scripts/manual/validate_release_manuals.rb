@@ -16,6 +16,7 @@ module ManualDocs
         repository_root: @repository_root,
         tag: @tag,
         expected_sha: @expected_sha,
+        manifest_path: @manifest_path,
       )
     end
 
@@ -41,6 +42,10 @@ module ManualDocs
     def checked_link_count
       @release_contract.validate.checked_count
     end
+
+    def checked_source_path_count
+      @release_contract.validate.source_path_count || 0
+    end
   end
 end
 
@@ -57,5 +62,5 @@ if $PROGRAM_NAME == __FILE__
   )
   errors = validator.errors
   abort(errors.join("\n")) unless errors.empty?
-  puts "Strict release manual contract valid: annotated tag #{tag} -> #{sha}; #{validator.checked_link_count} source links checked."
+  puts "Strict release manual contract valid: annotated tag #{tag} -> #{sha}; #{validator.checked_source_path_count} manifest source paths and #{validator.checked_link_count} release-local links checked."
 end

@@ -2,7 +2,7 @@
 
 ## Problem and backend
 
-This example turns a domain question into an inspectable path, count, ranking, or diagnostic set. It uses **TinkerGraph** to isolate modeling from container and network variance. Read [core model](../architecture/core-model.md) and [TinkerPop](../backends/tinkerpop.md) first; use the [selection guide](../backends/selection-guide.md) before production.
+This example separates reachability, service impact, and isolated components in a network topology. It uses **TinkerGraph** to isolate modeling from container and network variance. Read [core model](../architecture/core-model.md) and [TinkerPop](../backends/tinkerpop.md) first; use the [selection guide](../backends/selection-guide.md) before production.
 
 ## Model
 
@@ -20,7 +20,7 @@ Use JDK 21, commit `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, and the checked-i
 ./gradlew :network-topology-examples:test --tests "io.bluetape4k.graph.examples.networktopology.TinkerGraphNetworkTopologyImpactTest"
 ```
 
-Expect `BUILD SUCCESSFUL`; reachable devices, affected services, and isolated components match the fixture. A different result points to changed fixture data, edge direction, or traversal depth.
+The test asserts that reachable devices, affected services, and isolated components match the topology fixture. A failure usually means a connectivity edge changed direction, an isolation edge is missing, or the impact traversal exceeded its intended boundary.
 
 ## Reading order
 

@@ -1,5 +1,7 @@
 # graph-io 실행 모델
 
+![graph-io 처리 흐름](../../assets/graph-io/graph-io-pipeline.png)
+
 graph-io는 자료 계약과 실행 방식을 분리한다. `GraphBulkImporter`/`GraphBulkExporter`는 동기 방식, `GraphVirtualThreadBulkImporter`/`Exporter`는 blocking 작업을 virtual thread에서 실행하는 방식, suspend 계열은 코루틴 범위에 맞춘 방식이다. 계약 소스: [`GraphBulkImporter.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphBulkImporter.kt), [`GraphSuspendBulkImporter.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphSuspendBulkImporter.kt), [`GraphVirtualThreadBulkImporter.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphVirtualThreadBulkImporter.kt).
 
 범위가 분명한 blocking 작업에는 동기 방식을 쓴다. 서로 독립된 blocking 전송이 많으면 virtual thread를 검토하고, 취소를 코루틴 범위가 책임지면 suspend 방식을 고른다. 어떤 방식을 골라도 백엔드 제한이 사라지거나 codec이 저절로 non-blocking이 되지는 않는다.

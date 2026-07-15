@@ -24,15 +24,24 @@ class ReleaseInventoryTest < Minitest::Test
 
   def build(rows, **options)
     Dir.mktmpdir do |root|
-      input = File.join(root, "input.json")
       output = File.join(root, "output.json")
-      File.write(input, JSON.generate(rows))
       return yield ManualDocs::ReleaseInventory.new(repository_root: root, tag: "0.5.1", expected_sha: SHA,
-        inventory_path: input, output_path: output, expected_count: options.fetch(:expected_count, rows.length),
+        output_path: output, expected_count: options.fetch(:expected_count, rows.length),
         expected_kinds: options.fetch(:expected_kinds, { "library" => rows.length }),
         inventory_exporter: options.fetch(:inventory_exporter, ->(_sha) { rows }),
         git_runner: options.fetch(:git_runner, runner))
     end
+  end
+
+  def test_parses_canonical_four_argument_cli
+    parsed = ManualDocs::ReleaseInventory.parse_cli(%w[0.5.1 abc output.json 31])
+    assert_equal({ tag: "0.5.1", sha: "abc", output: "output.json", count: "31", legacy_input: nil }, parsed)
+  end
+
+  def test_preserves_documented_five_argument_cli_as_legacy_compatibility
+    parsed = ManualDocs::ReleaseInventory.parse_cli(%w[0.5.1 abc ignored-input.json output.json 31])
+    assert_equal "ignored-input.json", parsed.fetch(:legacy_input)
+    assert_equal "output.json", parsed.fetch(:output)
   end
 
 

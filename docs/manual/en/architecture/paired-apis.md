@@ -1,5 +1,7 @@
 # Paired APIs and capabilities
 
+![Core abstraction map](../../assets/architecture/core-abstraction-map.png)
+
 `GraphOperations` combines `GraphSession`, vertex and edge repositories, and `GraphGenericRepository`; the latter combines traversal and algorithms. The coroutine counterpart mirrors this shape with suspending calls and `Flow`. See [`GraphOperations.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphOperations.kt), [`GraphSuspendOperations.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphSuspendOperations.kt), and [`GraphGenericRepository.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphGenericRepository.kt).
 
 `GraphSession` owns graph create/drop/existence operations, but closing an operations object does not imply ownership of an injected driver or data source. Driver lifetime remains with the caller or framework container; the contract is documented in [`GraphSession.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphSession.kt).

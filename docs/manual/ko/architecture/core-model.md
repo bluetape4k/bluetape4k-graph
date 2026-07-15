@@ -1,5 +1,7 @@
 # 핵심 모델
 
+![핵심 추상화 지도](../../assets/architecture/core-abstraction-map.png)
+
 `GraphElementId`는 비어 있지 않은 문자열을 감싼 값 클래스다. Long이나 드라이버 ID를 공통 형태로 바꾸지만, 애플리케이션은 그 값을 해석하지 말고 불투명한 식별자로 다뤄야 한다. 구현과 검증: [`GraphElementId.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/src/main/kotlin/io/bluetape4k/graph/model/GraphElementId.kt), [`GraphElementIdTest.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/src/test/kotlin/io/bluetape4k/graph/model/GraphElementIdTest.kt).
 
 `GraphVertex(id, label, properties)`와 `GraphEdge(id, label, startId, endId, properties)`는 불변 스냅샷이다. 속성 값은 null일 수 있지만 실제로 저장할 수 있는 형식은 백엔드와 파일 형식에 따라 달라진다. 소스: [`GraphVertex.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/src/main/kotlin/io/bluetape4k/graph/model/GraphVertex.kt), [`GraphEdge.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/src/main/kotlin/io/bluetape4k/graph/model/GraphEdge.kt).

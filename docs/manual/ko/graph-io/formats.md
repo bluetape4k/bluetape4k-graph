@@ -1,5 +1,7 @@
 # 파일 형식과 외부 ID
 
+![graph-io 처리 흐름](../../assets/graph-io/graph-io-pipeline.png)
+
 | 형식 | 파일 경계 | 알맞은 용도 | 검증 근거 |
 |---|---|---|---|
 | CSV | 정점·간선 파일 한 쌍 | 표 형태 교환과 육안 확인 | [`CsvRoundTripTest.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/csv/src/test/kotlin/io/bluetape4k/graph/io/csv/CsvRoundTripTest.kt) |

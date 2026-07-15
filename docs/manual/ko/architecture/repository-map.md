@@ -11,7 +11,7 @@
 | `examples` | 도메인 문제와 백엔드 공통 테스트 | [`AbstractCodeGraphTest.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/code-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/code/AbstractCodeGraphTest.kt) |
 | `benchmark` | 제한된 작업 부하의 측정 근거 | [`benchmark/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/benchmark/README.md) |
 
-<!-- diagram: repository learning map -->
+![저장소 학습 지도](../../assets/overview/repository-learning-map.png)
 
 공통 계약을 읽고, 연산 하나를 골라 구현과 테스트까지 따라간다. 예제 모듈은 배포 대상이 아니다. 설계와 검증 방법은 참고해도 예제의 배포 전제를 그대로 가져오면 안 된다.
 

@@ -2,7 +2,7 @@
 
 ## Problem and backend
 
-This example turns a domain question into an inspectable path, count, ranking, or diagnostic set. It uses **TinkerGraph** to isolate modeling from container and network variance. Read [core model](../architecture/core-model.md) and [TinkerPop](../backends/tinkerpop.md) first; use the [selection guide](../backends/selection-guide.md) before production.
+This example correlates dependencies, owners, alerts, and causes instead of treating telemetry as unrelated records. It uses **TinkerGraph** to isolate modeling from container and network variance. Read [core model](../architecture/core-model.md) and [TinkerPop](../backends/tinkerpop.md) first; use the [selection guide](../backends/selection-guide.md) before production.
 
 ## Model
 
@@ -20,7 +20,7 @@ Use JDK 21, commit `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, and the checked-i
 ./gradlew :observability-graph-examples:test --tests "io.bluetape4k.graph.examples.observability.TinkerGraphObservabilityIncidentTest"
 ```
 
-Expect `BUILD SUCCESSFUL`; dependency impact, owner, alert, and root-cause identifiers are returned. A different result points to changed fixture data, edge direction, or traversal depth.
+The test asserts dependency impact, owner lookup, alert correlation, and root-cause identifiers independently. A failure should be read as a broken telemetry relation or correlation path, not as proof that the whole observability model failed.
 
 ## Reading order
 
