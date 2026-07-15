@@ -12,14 +12,7 @@
 
 ## 준비와 릴리스 경계
 
-JDK 21, 커밋 `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, 저장소의 Gradle Wrapper가 필요합니다. 예제는 배포되지 않으므로 릴리스 고정 데이터로 실행합니다. 배포 모듈 사용자는 BOM을 가져오고 개별 모듈 버전을 생략합니다.
-
-```kotlin
-dependencies {
-    implementation(platform("io.bluetape4k:bluetape4k-graph-bom:0.5.1"))
-    implementation("io.bluetape4k:bluetape4k-graph-core")
-}
-```
+JDK 21, 커밋 `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, 저장소의 Gradle Wrapper가 필요합니다. 예제는 배포되지 않으므로 릴리스 소스를 체크아웃하고 Gradle 프로젝트로 실행합니다. 소비자 애플리케이션에서는 `bluetape4k-dependencies:<ecosystem-version>`만 선택하고 필요한 그래프 모듈은 개별 버전 없이 추가합니다.
 
 ## 실행과 관찰
 
@@ -33,8 +26,9 @@ dependencies {
 
 1. [스키마](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/data-lineage-examples/src/main/kotlin/io/bluetape4k/graph/examples/datalineage/schema/DataLineageGraphSchema.kt)
 2. [서비스](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/data-lineage-examples/src/main/kotlin/io/bluetape4k/graph/examples/datalineage/service/DataLineageImpactService.kt)
-3. [완전한 실행 테스트](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/data-lineage-examples/src/test/kotlin/io/bluetape4k/graph/examples/datalineage/AbstractDataLineageImpactTest.kt)
-4. [빌드 파일](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/data-lineage-examples/build.gradle.kts)
+3. [공통 실행 계약](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/data-lineage-examples/src/test/kotlin/io/bluetape4k/graph/examples/datalineage/AbstractDataLineageImpactTest.kt)
+4. [TinkerGraph 구체 테스트](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/data-lineage-examples/src/test/kotlin/io/bluetape4k/graph/examples/datalineage/DataLineageBackendTests.kt)
+5. [빌드 파일](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/data-lineage-examples/build.gradle.kts)
 
 [observability-graph](./observability-graph.md) 다음에 읽고 [supply-chain-graph](./supply-chain-graph.md)로 이어가십시오. [동기·코루틴 API](../architecture/paired-apis.md), [테스트](../guides/testing.md), [운영](../guides/operations.md)도 함께 보십시오.
 

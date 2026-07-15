@@ -12,14 +12,7 @@
 
 ## 준비와 릴리스 경계
 
-JDK 21, 커밋 `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, 저장소의 Gradle Wrapper가 필요합니다. 예제는 배포되지 않으므로 릴리스 고정 데이터로 실행합니다. 배포 모듈 사용자는 BOM을 가져오고 개별 모듈 버전을 생략합니다.
-
-```kotlin
-dependencies {
-    implementation(platform("io.bluetape4k:bluetape4k-graph-bom:0.5.1"))
-    implementation("io.bluetape4k:bluetape4k-graph-core")
-}
-```
+JDK 21, 커밋 `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, 저장소의 Gradle Wrapper가 필요합니다. 예제는 배포되지 않으므로 릴리스 소스를 체크아웃하고 Gradle 프로젝트로 실행합니다. 소비자 애플리케이션에서는 `bluetape4k-dependencies:<ecosystem-version>`만 선택하고 필요한 그래프 모듈은 개별 버전 없이 추가합니다.
 
 ## 실행과 관찰
 
