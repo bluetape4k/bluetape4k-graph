@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1040" viewBox="0 0 1600 1040" role="img" aria-labelledby="title desc">
+  <title id="title">Choose a Backend You Can Verify</title>
+  <desc id="desc">A backend decision map comparing Neo4j, Memgraph, Apache AGE, TinkerGraph, and FalkorDB, with Amazon Neptune explicitly unavailable in Graph 0.5.1.</desc>
+  <defs>
+    <marker id="arrow-cyan" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 14 14">
+  <polygon points="0,1 14,7 0,13" fill="#8bd5ff" stroke="none"/>
+</marker>
+<marker id="arrow-teal" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 14 14">
+  <polygon points="0,1 14,7 0,13" fill="#4fe0cf" stroke="none"/>
+</marker>
+<marker id="arrow-purple" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 14 14">
+  <polygon points="0,1 14,7 0,13" fill="#b8a1ff" stroke="none"/>
+</marker>
+<marker id="arrow-amber" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 14 14">
+  <polygon points="0,1 14,7 0,13" fill="#ffc857" stroke="none"/>
+</marker>
+<marker id="arrow-rose" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 14 14">
+  <polygon points="0,1 14,7 0,13" fill="#ff9aae" stroke="none"/>
+</marker>
+
+    <filter id="shadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#07101f" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+  <style>
+    .frame { fill: #111a2b; stroke: #53657d; stroke-width: 5; }
+    .card { filter: url(#shadow); }
+    .card-title, .heading { font-family: 'Architects Daughter', 'Comic Sans MS', cursive; }
+    .detail, .subtitle, .legend { font-family: 'Comic Mono', 'SFMono-Regular', monospace; fill: #cbd5e5; }
+    .connector { opacity: 0.98; }
+  </style>
+  <rect width="1600" height="1040" fill="#0b1322"/>
+  <rect class="frame" x="34" y="34" width="1532" height="972" rx="36"/>
+  <text class="heading" x="800" y="100" text-anchor="middle" font-size="52" fill="#f4f7fb">Choose a Backend You Can Verify</text>
+  <text class="subtitle" x="800" y="142" text-anchor="middle" font-size="20">Feature counts do not replace infrastructure fit, semantic checks, or local failure evidence</text>
+  <g id="criteria">
+  <rect class="card " data-card-id="criteria" x="150" y="180" width="1300" height="150" rx="28" fill="#172238" stroke="#b8a1ff" stroke-width="5"/>
+  <text class="card-title" x="800" y="235" text-anchor="middle" font-size="34" fill="#b8a1ff">Start from operated infrastructure and required semantics</text>
+  <text class="detail" x="800" y="272" text-anchor="middle" font-size="21">query language • transaction boundary • schema/index capability • local verification</text>
+</g>
+<g id="neo4j">
+  <rect class="card " data-card-id="neo4j" x="60" y="500" width="280" height="300" rx="28" fill="#172238" stroke="#8bd5ff" stroke-width="5"/>
+  <text class="card-title" x="200" y="555" text-anchor="middle" font-size="30" fill="#8bd5ff">Neo4j</text>
+  <text class="detail" x="200" y="592" text-anchor="middle" font-size="18">Bolt + Cypher</text>
+<text class="detail" x="200" y="626" text-anchor="middle" font-size="18">native transactions</text>
+<text class="detail" x="200" y="660" text-anchor="middle" font-size="18">indexes + constraints</text>
+<text class="detail" x="200" y="694" text-anchor="middle" font-size="18">Neo4j 5 container</text>
+</g>
+<g id="memgraph">
+  <rect class="card " data-card-id="memgraph" x="360" y="500" width="280" height="300" rx="28" fill="#172238" stroke="#4fe0cf" stroke-width="5"/>
+  <text class="card-title" x="500" y="555" text-anchor="middle" font-size="30" fill="#4fe0cf">Memgraph</text>
+  <text class="detail" x="500" y="592" text-anchor="middle" font-size="18">Bolt-compatible Cypher</text>
+<text class="detail" x="500" y="626" text-anchor="middle" font-size="18">native transactions</text>
+<text class="detail" x="500" y="660" text-anchor="middle" font-size="18">backend-specific DDL</text>
+<text class="detail" x="500" y="694" text-anchor="middle" font-size="18">Memgraph container</text>
+</g>
+<g id="age">
+  <rect class="card " data-card-id="age" x="660" y="500" width="280" height="300" rx="28" fill="#172238" stroke="#b8a1ff" stroke-width="5"/>
+  <text class="card-title" x="800" y="555" text-anchor="middle" font-size="30" fill="#b8a1ff">Apache AGE</text>
+  <text class="detail" x="800" y="592" text-anchor="middle" font-size="18">PostgreSQL + Cypher/SQL</text>
+<text class="detail" x="800" y="626" text-anchor="middle" font-size="18">JDBC / Exposed boundary</text>
+<text class="detail" x="800" y="660" text-anchor="middle" font-size="18">limited portable DDL</text>
+<text class="detail" x="800" y="694" text-anchor="middle" font-size="18">AGE PG16 container</text>
+</g>
+<g id="tinker">
+  <rect class="card " data-card-id="tinker" x="960" y="500" width="280" height="300" rx="28" fill="#172238" stroke="#ffc857" stroke-width="5"/>
+  <text class="card-title" x="1100" y="555" text-anchor="middle" font-size="30" fill="#ffc857">TinkerGraph</text>
+  <text class="detail" x="1100" y="592" text-anchor="middle" font-size="18">in-process Gremlin</text>
+<text class="detail" x="1100" y="626" text-anchor="middle" font-size="18">in-memory semantics</text>
+<text class="detail" x="1100" y="660" text-anchor="middle" font-size="18">limited manager</text>
+<text class="detail" x="1100" y="694" text-anchor="middle" font-size="18">no container</text>
+</g>
+<g id="falkor">
+  <rect class="card " data-card-id="falkor" x="1260" y="500" width="280" height="300" rx="28" fill="#172238" stroke="#ff9aae" stroke-width="5"/>
+  <text class="card-title" x="1400" y="555" text-anchor="middle" font-size="30" fill="#ff9aae">FalkorDB</text>
+  <text class="detail" x="1400" y="592" text-anchor="middle" font-size="18">Redis-shaped service</text>
+<text class="detail" x="1400" y="626" text-anchor="middle" font-size="18">openCypher subset</text>
+<text class="detail" x="1400" y="660" text-anchor="middle" font-size="18">backend-specific indexes</text>
+<text class="detail" x="1400" y="694" text-anchor="middle" font-size="18">FalkorDB container</text>
+</g>
+<g id="neptune">
+  <rect class="card " data-card-id="neptune" x="430" y="880" width="740" height="80" rx="28" fill="#172238" stroke="#ff9aae" stroke-width="5"/>
+  <text class="card-title" x="800" y="935" text-anchor="middle" font-size="27" fill="#ff9aae">Amazon Neptune: unavailable in Graph 0.5.1</text>
+
+</g>
+<path id="choose-neo4j" class="connector" data-start-card="criteria" data-end-card="neo4j" data-route="260,330 260,410 200,410 200,500" d="M 260 330 V 390 Q 260 410 240 410 H 220 Q 200 410 200 430 V 500" fill="none" stroke="#8bd5ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-cyan)"/>
+<path id="choose-memgraph" class="connector" data-start-card="criteria" data-end-card="memgraph" data-route="560,330 560,410 500,410 500,500" d="M 560 330 V 390 Q 560 410 540 410 H 520 Q 500 410 500 430 V 500" fill="none" stroke="#4fe0cf" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-teal)"/>
+<path id="choose-age" class="connector" data-start-card="criteria" data-end-card="age" data-route="800,330 800,500" d="M 800 330 V 500" fill="none" stroke="#b8a1ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-purple)"/>
+<path id="choose-tinker" class="connector" data-start-card="criteria" data-end-card="tinker" data-route="1040,330 1040,410 1100,410 1100,500" d="M 1040 330 V 390 Q 1040 410 1060 410 H 1080 Q 1100 410 1100 430 V 500" fill="none" stroke="#ffc857" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-amber)"/>
+<path id="choose-falkor" class="connector" data-start-card="criteria" data-end-card="falkor" data-route="1340,330 1340,410 1400,410 1400,500" d="M 1340 330 V 390 Q 1340 410 1360 410 H 1380 Q 1400 410 1400 430 V 500" fill="none" stroke="#ff9aae" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-rose)"/>
+
+</svg>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1040" viewBox="0 0 1600 1040" role="img" aria-labelledby="title desc">
+  <title id="title">One Model, Three Execution Surfaces</title>
+  <desc id="desc">A static abstraction map connecting immutable graph snapshots and session contracts to synchronous, coroutine, and virtual-thread operation families and optional capability boundaries.</desc>
+  <defs>
+    <marker id="arrow-cyan" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 14 14">
+  <polygon points="0,1 14,7 0,13" fill="#8bd5ff" stroke="none"/>
+</marker>
+<marker id="arrow-teal" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 14 14">
+  <polygon points="0,1 14,7 0,13" fill="#4fe0cf" stroke="none"/>
+</marker>
+<marker id="arrow-purple" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 14 14">
+  <polygon points="0,1 14,7 0,13" fill="#b8a1ff" stroke="none"/>
+</marker>
+<marker id="arrow-amber" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 14 14">
+  <polygon points="0,1 14,7 0,13" fill="#ffc857" stroke="none"/>
+</marker>
+<marker id="arrow-rose" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 14 14">
+  <polygon points="0,1 14,7 0,13" fill="#ff9aae" stroke="none"/>
+</marker>
+
+    <filter id="shadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#07101f" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+  <style>
+    .frame { fill: #111a2b; stroke: #53657d; stroke-width: 5; }
+    .card { filter: url(#shadow); }
+    .card-title, .heading { font-family: 'Architects Daughter', 'Comic Sans MS', cursive; }
+    .detail, .subtitle, .legend { font-family: 'Comic Mono', 'SFMono-Regular', monospace; fill: #cbd5e5; }
+    .connector { opacity: 0.98; }
+  </style>
+  <rect width="1600" height="1040" fill="#0b1322"/>
+  <rect class="frame" x="34" y="34" width="1532" height="972" rx="36"/>
+  <text class="heading" x="800" y="100" text-anchor="middle" font-size="52" fill="#f4f7fb">One Model, Three Execution Surfaces</text>
+  <text class="subtitle" x="800" y="142" text-anchor="middle" font-size="20">The facade is portable; optional capabilities and resource ownership remain explicit</text>
+  <g id="core-contract">
+  <rect class="card " data-card-id="core-contract" x="230" y="190" width="1140" height="170" rx="28" fill="#172238" stroke="#8bd5ff" stroke-width="5"/>
+  <text class="card-title" x="800" y="245" text-anchor="middle" font-size="34" fill="#8bd5ff">Immutable snapshots + GraphSession</text>
+  <text class="detail" x="800" y="282" text-anchor="middle" font-size="21">GraphElementId • GraphVertex • GraphEdge • GraphPath</text>
+<text class="detail" x="800" y="316" text-anchor="middle" font-size="21">create / drop / exists; injected driver or data source stays caller-owned</text>
+</g>
+<g id="sync-ops">
+  <rect class="card " data-card-id="sync-ops" x="130" y="500" width="360" height="190" rx="28" fill="#172238" stroke="#4fe0cf" stroke-width="5"/>
+  <text class="card-title" x="310" y="555" text-anchor="middle" font-size="34" fill="#4fe0cf">GraphOperations</text>
+  <text class="detail" x="310" y="592" text-anchor="middle" font-size="21">blocking call chains</text>
+<text class="detail" x="310" y="626" text-anchor="middle" font-size="21">session + CRUD + traversal</text>
+</g>
+<g id="suspend-ops">
+  <rect class="card " data-card-id="suspend-ops" x="620" y="500" width="360" height="190" rx="28" fill="#172238" stroke="#b8a1ff" stroke-width="5"/>
+  <text class="card-title" x="800" y="555" text-anchor="middle" font-size="30" fill="#b8a1ff">GraphSuspendOperations</text>
+  <text class="detail" x="800" y="592" text-anchor="middle" font-size="21">suspend calls + Flow</text>
+<text class="detail" x="800" y="626" text-anchor="middle" font-size="21">coroutine-owned cancellation</text>
+</g>
+<g id="vt-ops">
+  <rect class="card " data-card-id="vt-ops" x="1110" y="500" width="360" height="190" rx="28" fill="#172238" stroke="#ffc857" stroke-width="5"/>
+  <text class="card-title" x="1290" y="555" text-anchor="middle" font-size="30" fill="#ffc857">Virtual-thread adapter</text>
+  <text class="detail" x="1290" y="592" text-anchor="middle" font-size="21">async blocking isolation</text>
+<text class="detail" x="1290" y="626" text-anchor="middle" font-size="21">GraphVirtualThreadOperations</text>
+</g>
+<g id="capabilities">
+  <rect class="card " data-card-id="capabilities" x="230" y="800" width="1140" height="170" rx="28" fill="#172238" stroke="#ff9aae" stroke-width="5"/>
+  <text class="card-title" x="800" y="855" text-anchor="middle" font-size="34" fill="#ff9aae">Optional capability boundaries</text>
+  <text class="detail" x="800" y="892" text-anchor="middle" font-size="18">merge + batch • schema manager • transaction / suspendTransaction</text>
+<text class="detail" x="800" y="926" text-anchor="middle" font-size="18">unsupported capability means explicit failure</text>
+</g>
+<path id="core-sync" class="connector" data-start-card="core-contract" data-end-card="sync-ops" data-route="500,360 500,440 310,440 310,500" d="M 500 360 V 420 Q 500 440 480 440 H 330 Q 310 440 310 460 V 500" fill="none" stroke="#8bd5ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-cyan)"/>
+<path id="core-suspend" class="connector" data-start-card="core-contract" data-end-card="suspend-ops" data-route="800,360 800,500" d="M 800 360 V 500" fill="none" stroke="#8bd5ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-cyan)"/>
+<path id="core-vt" class="connector" data-start-card="core-contract" data-end-card="vt-ops" data-route="1100,360 1100,440 1290,440 1290,500" d="M 1100 360 V 420 Q 1100 440 1120 440 H 1270 Q 1290 440 1290 460 V 500" fill="none" stroke="#8bd5ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-cyan)"/>
+<path id="sync-cap" class="connector" data-start-card="sync-ops" data-end-card="capabilities" data-route="310,690 310,750 620,750 620,800" d="M 310 690 V 730 Q 310 750 330 750 H 600 Q 620 750 620 770 V 800" fill="none" stroke="#4fe0cf" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-teal)"/>
+<path id="suspend-cap" class="connector" data-start-card="suspend-ops" data-end-card="capabilities" data-route="800,690 800,800" d="M 800 690 V 800" fill="none" stroke="#b8a1ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-purple)"/>
+<path id="vt-cap" class="connector" data-start-card="vt-ops" data-end-card="capabilities" data-route="1290,690 1290,750 980,750 980,800" d="M 1290 690 V 730 Q 1290 750 1270 750 H 1000 Q 980 750 980 770 V 800" fill="none" stroke="#ffc857" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-amber)"/>
+
+</svg>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1040" viewBox="0 0 1600 1040" role="img" aria-labelledby="title desc">
+  <title id="title">Learn the Graph Repository by Responsibility</title>
+  <desc id="desc">A repository learning map from core foundations through backends, transfer and framework integration, examples, benchmarks, and operating guidance.</desc>
+  <defs>
+    <marker id="arrow-cyan" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 14 14">
+  <polygon points="0,1 14,7 0,13" fill="#8bd5ff" stroke="none"/>
+</marker>
+<marker id="arrow-teal" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 14 14">
+  <polygon points="0,1 14,7 0,13" fill="#4fe0cf" stroke="none"/>
+</marker>
+<marker id="arrow-purple" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 14 14">
+  <polygon points="0,1 14,7 0,13" fill="#b8a1ff" stroke="none"/>
+</marker>
+<marker id="arrow-amber" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 14 14">
+  <polygon points="0,1 14,7 0,13" fill="#ffc857" stroke="none"/>
+</marker>
+<marker id="arrow-rose" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 14 14">
+  <polygon points="0,1 14,7 0,13" fill="#ff9aae" stroke="none"/>
+</marker>
+
+    <filter id="shadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#07101f" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+  <style>
+    .frame { fill: #111a2b; stroke: #53657d; stroke-width: 5; }
+    .card { filter: url(#shadow); }
+    .card-title, .heading { font-family: 'Architects Daughter', 'Comic Sans MS', cursive; }
+    .detail, .subtitle, .legend { font-family: 'Comic Mono', 'SFMono-Regular', monospace; fill: #cbd5e5; }
+    .connector { opacity: 0.98; }
+  </style>
+  <rect width="1600" height="1040" fill="#0b1322"/>
+  <rect class="frame" x="34" y="34" width="1532" height="972" rx="36"/>
+  <text class="heading" x="800" y="100" text-anchor="middle" font-size="52" fill="#f4f7fb">Learn the Graph Repository by Responsibility</text>
+  <text class="subtitle" x="800" y="142" text-anchor="middle" font-size="20">Graph 0.5.1 • move outward only after the inner contract is understood</text>
+  <g id="foundation">
+  <rect class="card " data-card-id="foundation" x="70" y="265" width="280" height="360" rx="28" fill="#172238" stroke="#8bd5ff" stroke-width="5"/>
+  <text class="card-title" x="210" y="320" text-anchor="middle" font-size="34" fill="#8bd5ff">Foundation</text>
+  <text class="detail" x="210" y="357" text-anchor="middle" font-size="21">models + opaque IDs</text>
+<text class="detail" x="210" y="391" text-anchor="middle" font-size="21">GraphSession</text>
+<text class="detail" x="210" y="425" text-anchor="middle" font-size="21">paired operation APIs</text>
+<text class="detail" x="210" y="459" text-anchor="middle" font-size="21">schema + transactions</text>
+</g>
+<g id="backends">
+  <rect class="card " data-card-id="backends" x="390" y="265" width="280" height="360" rx="28" fill="#172238" stroke="#4fe0cf" stroke-width="5"/>
+  <text class="card-title" x="530" y="320" text-anchor="middle" font-size="34" fill="#4fe0cf">Backends</text>
+  <text class="detail" x="530" y="357" text-anchor="middle" font-size="21">Neo4j + Memgraph</text>
+<text class="detail" x="530" y="391" text-anchor="middle" font-size="21">Apache AGE</text>
+<text class="detail" x="530" y="425" text-anchor="middle" font-size="21">TinkerGraph</text>
+<text class="detail" x="530" y="459" text-anchor="middle" font-size="21">FalkorDB</text>
+</g>
+<g id="io-frameworks">
+  <rect class="card " data-card-id="io-frameworks" x="710" y="265" width="280" height="360" rx="28" fill="#172238" stroke="#b8a1ff" stroke-width="5"/>
+  <text class="card-title" x="850" y="320" text-anchor="middle" font-size="34" fill="#b8a1ff">Transfer + Apps</text>
+  <text class="detail" x="850" y="357" text-anchor="middle" font-size="21">CSV / NDJSON / GraphML</text>
+<text class="detail" x="850" y="391" text-anchor="middle" font-size="21">OkIO + DAEAD</text>
+<text class="detail" x="850" y="425" text-anchor="middle" font-size="21">Ktor plugin</text>
+<text class="detail" x="850" y="459" text-anchor="middle" font-size="21">Spring auto-config</text>
+</g>
+<g id="evidence">
+  <rect class="card " data-card-id="evidence" x="1030" y="265" width="280" height="360" rx="28" fill="#172238" stroke="#ffc857" stroke-width="5"/>
+  <text class="card-title" x="1170" y="320" text-anchor="middle" font-size="34" fill="#ffc857">Evidence</text>
+  <text class="detail" x="1170" y="357" text-anchor="middle" font-size="21">domain examples</text>
+<text class="detail" x="1170" y="391" text-anchor="middle" font-size="21">backend tests</text>
+<text class="detail" x="1170" y="425" text-anchor="middle" font-size="21">benchmarks</text>
+<text class="detail" x="1170" y="459" text-anchor="middle" font-size="21">failure injection</text>
+</g>
+<g id="manual">
+  <rect class="card " data-card-id="manual" x="1110" y="760" width="400" height="150" rx="28" fill="#172238" stroke="#ff9aae" stroke-width="5"/>
+  <text class="card-title" x="1310" y="815" text-anchor="middle" font-size="27" fill="#ff9aae">Operate from the manual</text>
+  <text class="detail" x="1310" y="852" text-anchor="middle" font-size="18">select • test • diagnose • recover</text>
+</g>
+<path id="learn-1" class="connector" data-start-card="foundation" data-end-card="backends" data-route="350,445 390,445" d="M 350 445 H 390" fill="none" stroke="#8bd5ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-cyan)"/>
+<path id="learn-2" class="connector" data-start-card="backends" data-end-card="io-frameworks" data-route="670,445 710,445" d="M 670 445 H 710" fill="none" stroke="#4fe0cf" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-teal)"/>
+<path id="learn-3" class="connector" data-start-card="io-frameworks" data-end-card="evidence" data-route="990,445 1030,445" d="M 990 445 H 1030" fill="none" stroke="#b8a1ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-purple)"/>
+<path id="learn-4" class="connector" data-start-card="evidence" data-end-card="manual" data-route="1170,625 1170,710 1310,710 1310,760" d="M 1170 625 V 690 Q 1170 710 1190 710 H 1290 Q 1310 710 1310 730 V 760" fill="none" stroke="#ffc857" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-amber)"/>
+<text class="legend" x="90" y="930" font-size="18">Reading path: contract &gt; implementation &gt; integration &gt; evidence &gt; operating guidance</text>
+
+</svg>

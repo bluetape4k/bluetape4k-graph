@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1040" viewBox="0 0 1600 1040" role="img" aria-labelledby="title desc">
+  <title id="title">Framework Convenience Must Preserve Ownership</title>
+  <desc id="desc">A framework integration architecture map from an application through Ktor or Spring to the graph operation family and selected backend, including closeOnStop ownership and conditional backoff.</desc>
+  <defs>
+    <marker id="arrow-cyan" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 14 14">
+  <polygon points="0,1 14,7 0,13" fill="#8bd5ff" stroke="none"/>
+</marker>
+<marker id="arrow-teal" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 14 14">
+  <polygon points="0,1 14,7 0,13" fill="#4fe0cf" stroke="none"/>
+</marker>
+<marker id="arrow-purple" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 14 14">
+  <polygon points="0,1 14,7 0,13" fill="#b8a1ff" stroke="none"/>
+</marker>
+<marker id="arrow-amber" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 14 14">
+  <polygon points="0,1 14,7 0,13" fill="#ffc857" stroke="none"/>
+</marker>
+<marker id="arrow-rose" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 14 14">
+  <polygon points="0,1 14,7 0,13" fill="#ff9aae" stroke="none"/>
+</marker>
+
+    <filter id="shadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#07101f" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+  <style>
+    .frame { fill: #111a2b; stroke: #53657d; stroke-width: 5; }
+    .card { filter: url(#shadow); }
+    .card-title, .heading { font-family: 'Architects Daughter', 'Comic Sans MS', cursive; }
+    .detail, .subtitle, .legend { font-family: 'Comic Mono', 'SFMono-Regular', monospace; fill: #cbd5e5; }
+    .connector { opacity: 0.98; }
+  </style>
+  <rect width="1600" height="1040" fill="#0b1322"/>
+  <rect class="frame" x="34" y="34" width="1532" height="972" rx="36"/>
+  <text class="heading" x="800" y="100" text-anchor="middle" font-size="52" fill="#f4f7fb">Framework Convenience Must Preserve Ownership</text>
+  <text class="subtitle" x="800" y="142" text-anchor="middle" font-size="20">Ktor and Spring expose the same operation family while shutdown authority stays explicit</text>
+  <g id="application">
+  <rect class="card " data-card-id="application" x="500" y="175" width="600" height="130" rx="28" fill="#172238" stroke="#b8a1ff" stroke-width="5"/>
+  <text class="card-title" x="800" y="230" text-anchor="middle" font-size="34" fill="#b8a1ff">Application-owned boundary</text>
+  <text class="detail" x="800" y="267" text-anchor="middle" font-size="21">configuration + request/coroutine scope</text>
+</g>
+<g id="ktor">
+  <rect class="card " data-card-id="ktor" x="100" y="420" width="520" height="220" rx="28" fill="#172238" stroke="#ffc857" stroke-width="5"/>
+  <text class="card-title" x="360" y="475" text-anchor="middle" font-size="34" fill="#ffc857">Ktor GraphPlugin</text>
+  <text class="detail" x="360" y="512" text-anchor="middle" font-size="19">Application / ApplicationCall access</text>
+<text class="detail" x="360" y="546" text-anchor="middle" font-size="19">closeOnStop=false: caller owns</text>
+<text class="detail" x="360" y="580" text-anchor="middle" font-size="19">closeOnStop=true: plugin closes once</text>
+</g>
+<g id="spring">
+  <rect class="card " data-card-id="spring" x="980" y="420" width="520" height="220" rx="28" fill="#172238" stroke="#8bd5ff" stroke-width="5"/>
+  <text class="card-title" x="1240" y="475" text-anchor="middle" font-size="30" fill="#8bd5ff">Spring auto-configuration</text>
+  <text class="detail" x="1240" y="512" text-anchor="middle" font-size="19">classpath + properties + conditions</text>
+<text class="detail" x="1240" y="546" text-anchor="middle" font-size="19">user beans trigger backoff</text>
+<text class="detail" x="1240" y="580" text-anchor="middle" font-size="19">container closes created resources</text>
+</g>
+<g id="ops-family">
+  <rect class="card " data-card-id="ops-family" x="490" y="710" width="620" height="130" rx="28" fill="#172238" stroke="#4fe0cf" stroke-width="5"/>
+  <text class="card-title" x="800" y="765" text-anchor="middle" font-size="34" fill="#4fe0cf">GraphOperations family</text>
+  <text class="detail" x="800" y="802" text-anchor="middle" font-size="21">sync • suspend + Flow • virtual-thread adapter</text>
+</g>
+<g id="selected-backend">
+  <rect class="card " data-card-id="selected-backend" x="550" y="890" width="500" height="80" rx="28" fill="#172238" stroke="#ff9aae" stroke-width="5"/>
+  <text class="card-title" x="800" y="945" text-anchor="middle" font-size="29" fill="#ff9aae">One selected backend</text>
+
+</g>
+<path id="app-ktor" class="connector" data-start-card="application" data-end-card="ktor" data-route="650,305 650,370 360,370 360,420" d="M 650 305 V 350 Q 650 370 630 370 H 380 Q 360 370 360 390 V 420" fill="none" stroke="#ffc857" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-amber)"/>
+<path id="app-spring" class="connector" data-start-card="application" data-end-card="spring" data-route="950,305 950,370 1240,370 1240,420" d="M 950 305 V 350 Q 950 370 970 370 H 1220 Q 1240 370 1240 390 V 420" fill="none" stroke="#8bd5ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-cyan)"/>
+<path id="ktor-ops" class="connector" data-start-card="ktor" data-end-card="ops-family" data-route="360,640 360,675 670,675 670,710" d="M 360 640 V 655 Q 360 675 380 675 H 650 Q 670 675 670 695 V 710" fill="none" stroke="#ffc857" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-amber)"/>
+<path id="spring-ops" class="connector" data-start-card="spring" data-end-card="ops-family" data-route="1240,640 1240,675 930,675 930,710" d="M 1240 640 V 655 Q 1240 675 1220 675 H 950 Q 930 675 930 695 V 710" fill="none" stroke="#8bd5ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-cyan)"/>
+<path id="ops-backend" class="connector" data-start-card="ops-family" data-end-card="selected-backend" data-route="800,840 800,890" d="M 800 840 V 890" fill="none" stroke="#4fe0cf" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-teal)"/>
+
+</svg>
