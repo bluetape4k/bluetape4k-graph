@@ -1,10 +1,13 @@
 # bluetape4k-graph-neo4j
 
-## Choose or avoid
+## Before you run
 
 Use this module for Neo4j Java Driver, Bolt, Cypher, native sessions, schema management, merge, traversal, and paired sync/suspend APIs. Choose it when Neo4j is the operational authority. Avoid it for an embedded graph or when PostgreSQL/AGE must own the data boundary. Entry points are [Neo4jGraphOperations.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt) and [Neo4jGraphSuspendOperations.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphSuspendOperations.kt).
 
-## Dependency and quick start
+
+Execution mode: **release-fixture linked**. The snippet assumes `password` comes from `NEO4J_PASSWORD`; the linked test creates the container, Driver, `ops`, test data, and closes operations before Driver/container.
+
+## Run
 
 ```kotlin
 dependencies {
@@ -24,6 +27,8 @@ ops.close()
 driver.close()
 ```
 
+## Expected result
+
 Expected: native merge preserves Alice's identity, traversal returns Bob, and the caller closes the injected Driver.
 
 ## Transactions, capabilities, and ownership
@@ -32,7 +37,16 @@ Expected: native merge preserves Alice's identity, traversal returns Bob, and th
 
 The operations object closes its sessions, not an injected Driver. Framework-managed constructors may own both; follow the Ktor or Spring page for that path.
 
-## Failure diagnosis and operations
+## Operations checklist
+
+- Record server/image version and selected graph/database.
+- Watch connection-pool pressure and query latency.
+- Verify transaction rollback and schema capability separately.
+- Close operations before caller-owned Driver/DataSource.
+
+## Failure and recovery
+
+Symptom: authentication/service-unavailable differs from Cypher or schema errors. Repair credentials/network first, then query/index state; clear partial test data before rerunning transaction assertions.
 
 Separate authentication/service-unavailable errors from Cypher, schema, and transaction errors. Observe driver pool acquisition, retry count, query latency, server logs, database name, indexes, and transaction rollback. Parameterize values; labels and relationship types require validated identifiers.
 
@@ -42,6 +56,16 @@ Separate authentication/service-unavailable errors from Cypher, schema, and tran
 
 Expected: the Neo4j 5 fixture passes CRUD, traversal, merge, and rollback. A Memgraph pass is not equivalent evidence because schema DDL and supported Cypher differ.
 
-## Related pages and non-goals
+## Complete release example
+
+The pinned [Neo4jGraphOperationsTest](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/src/test/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperationsTest.kt) defines the fixture values and is the complete executable release example. Run:
+
+```bash
+./gradlew :bluetape4k-graph-neo4j:test --tests '*Neo4jGraphOperationsTest'
+```
+
+Expected: the fixture starts, assertions pass, and owned resources close in the documented order.
+
+## Non-goals and related guides
 
 See [Neo4j and Memgraph](../backends/neo4j-and-memgraph.md), [testing](../guides/testing.md), and [operations](../guides/operations.md). This module does not provision Neo4j, own injected drivers, or guarantee that every Cypher statement is portable to another Bolt server.

@@ -1,17 +1,21 @@
 # bluetape4k-graph-core
 
-## What it provides
+## Before you run
 
 Core defines backend-neutral models and paired synchronous, virtual-thread, and coroutine repository contracts. It supplies `GraphVertex`, `GraphEdge`, `GraphPath`, traversal options, merge interfaces, schema DSL types, transaction scopes, and fallback algorithms. Source anchors: [GraphOperations.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphOperations.kt), [GraphVertexRepository.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphVertexRepository.kt), and [GraphTraversalRepository.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphTraversalRepository.kt).
 
 Use it when implementing against the common contract or building a backend adapter. Do not select it alone when an application needs a concrete graph; it has no storage engine or network driver.
 
-## Dependency
+
+Execution mode: **standalone in-memory example**. `bluetape4k-graph-tinkerpop` supplies an executable `GraphOperations`; core-API consumers must select the concrete graph module required by deployment.
+
+## Run
 
 ```kotlin
 dependencies {
     implementation(platform("io.github.bluetape4k:bluetape4k-dependencies:<ecosystem-version>"))
     implementation("io.github.bluetape4k:bluetape4k-graph-core")
+    implementation("io.github.bluetape4k:bluetape4k-graph-tinkerpop") // executable implementation
 }
 ```
 
@@ -22,6 +26,9 @@ Backend modules already bring core transitively; direct application dependencies
 A runnable in-memory start needs the TinkerPop adapter in addition to core:
 
 ```kotlin
+import io.bluetape4k.graph.model.NeighborOptions
+import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
+
 TinkerGraphOperations().use { ops ->
     val alice = ops.createVertex("Person", mapOf("email" to "a@example.com"))
     val bob = ops.mergeVertex("Person", mapOf("email" to "b@example.com"), mapOf("name" to "Bob"))
@@ -29,6 +36,8 @@ TinkerGraphOperations().use { ops ->
     check(ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS")).single().id == bob.id)
 }
 ```
+
+## Expected result
 
 Expected: two vertices, one directed edge, and one outgoing neighbor. `mergeVertex` is a capability interface implemented per backend; it is not a universal SQL-like semantic guarantee.
 
@@ -38,7 +47,16 @@ The facade combines session, vertex, edge, and traversal repositories. Transacti
 
 Core owns no server resource. The concrete operations object, injected driver, data source, and framework container define ownership.
 
-## Failure modes and diagnosis
+## Operations checklist
+
+- Treat `GraphElementId` as opaque.
+- Record the concrete graph implementation beside test results.
+- Check transaction and schema capabilities before optional extensions.
+- Bound traversal depth and batch size.
+
+## Failure and recovery
+
+Symptom: an extension throws an unsupported-capability exception. Select an implementation that provides the interface or remove the call; never turn it into silent success.
 
 - Unsupported transaction/schema/algorithm calls mean the adapter lacks that capability; do not catch and pretend success.
 - Missing edge endpoints and duplicate external identities must be handled at the caller or graph-io policy boundary.
@@ -51,6 +69,14 @@ Core owns no server resource. The concrete operations object, injected driver, d
 
 Expected: merge helpers and capability guards pass. If only a backend fails, move diagnosis to that adapter's query mapping and transaction implementation.
 
-## Operations, related pages, and non-goals
+## Complete release example
+
+The release-pinned [`TinkerGraphOperationsTest`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-tinkerpop/src/test/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphOperationsTest.kt) is a complete in-memory example that constructs the graph, owns its lifecycle, and exercises the core operations through the TinkerPop adapter.
+
+```bash
+./gradlew :bluetape4k-graph-tinkerpop:test --tests '*TinkerGraphOperationsTest'
+```
+
+## Non-goals and related guides
 
 Track query latency, traversal depth, batch size, error type, and backend counts around multi-step work. See [core model](../architecture/core-model.md), [paired APIs](../architecture/paired-apis.md), [schema and transactions](../architecture/schema-and-transactions.md), and [operations](../guides/operations.md). Core does not normalize all backend features, provision databases, or make multi-call workflows atomic.

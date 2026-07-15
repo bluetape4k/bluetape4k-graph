@@ -1,10 +1,13 @@
 # bluetape4k-graph-ktor
 
-## Install and select
+## Before you run
 
 `GraphPlugin` stores application-scoped sync/suspend operations in Ktor attributes. Choose one managed backend or supply existing operations. Avoid request-scoped installation and avoid selecting multiple backends. Source: [GraphPlugin.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/ktor/graph-ktor/src/main/kotlin/io/bluetape4k/graph/ktor/GraphPlugin.kt).
 
-## Dependency and quick start
+
+Execution mode: **release-fixture linked**. `testApplication` supplies the Ktor application and HTTP test client; the linked test installs the plugin, accesses state, stops the application, and verifies the exact `closeOnStop` branch.
+
+## Run
 
 ```kotlin
 dependencies {
@@ -25,6 +28,8 @@ fun Application.module() {
 }
 ```
 
+## Expected result
+
 Expected: state is available after installation and the route accesses the application-scoped facade. Empty configuration fails at startup.
 
 ## Lifetime and shutdown ownership
@@ -39,7 +44,16 @@ install(GraphPlugin) {
 
 The default is exactly `closeOnStop = false`: the caller or DI container closes both objects. Set true only to hand their ownership to the plugin. Close actions deduplicate identical instances. An injected Driver remains separately caller-owned unless a managed DSL created it.
 
-## Failures and operations
+## Operations checklist
+
+- Record the selected graph configuration.
+- Watch request latency and Driver/DataSource pool state.
+- Observe `ApplicationStopped` and close-once evidence.
+- Keep `closeOnStop=false` for caller-owned operations.
+
+## Failure and recovery
+
+Symptom: startup says no graph was selected or route access says the plugin is missing. Fix installation before routing; on shutdown leaks, identify managed versus injected ownership and rerun the close-once test.
 
 Diagnose plugin installation and backend creation before route lookup. Missing installation, no selected backend, duplicate installation, connection creation, request cancellation, and shutdown ownership are separate failures. Observe application stop events, pool metrics, request latency, and close-once evidence.
 
@@ -49,6 +63,16 @@ Diagnose plugin installation and backend creation before route lookup. Missing i
 
 Expected: startup/access pass, empty configuration fails, default existing operations stay open, and managed/explicit-close paths close exactly once.
 
-## Related pages and non-goals
+## Complete release example
+
+The pinned [GraphPluginTest](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/ktor/graph-ktor/src/test/kotlin/io/bluetape4k/graph/ktor/GraphPluginTest.kt) defines the fixture values and is the complete executable release example. Run:
+
+```bash
+./gradlew :bluetape4k-graph-ktor:test --tests '*GraphPluginTest'
+```
+
+Expected: the fixture starts, assertions pass, and owned resources close in the documented order.
+
+## Non-goals and related guides
 
 See [Ktor integration](../frameworks/ktor.md), [paired APIs](../architecture/paired-apis.md), and [operations](../guides/operations.md). The plugin does not create request transactions, close caller-owned resources by default, or make blocking calls nonblocking.

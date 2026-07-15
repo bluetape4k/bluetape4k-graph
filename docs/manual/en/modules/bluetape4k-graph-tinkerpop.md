@@ -1,10 +1,13 @@
 # bluetape4k-graph-tinkerpop
 
-## Choose or avoid
+## Before you run
 
 This module maps the common contract to embedded TinkerGraph and Gremlin. Choose it for unit tests, tutorials, algorithm baselines, and a first domain model. Avoid treating an in-memory pass as evidence for remote latency, durability, clustering, or another vendor's transaction semantics. Source: [TinkerGraphOperations.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-tinkerpop/src/main/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphOperations.kt).
 
-## Dependency and runnable quick start
+
+Execution mode: **standalone in-memory example**. `use` creates and closes `TinkerGraphOperations`; no server, fixture, Driver, or DataSource is required.
+
+## Run
 
 ```kotlin
 dependencies {
@@ -14,6 +17,9 @@ dependencies {
 ```
 
 ```kotlin
+import io.bluetape4k.graph.model.NeighborOptions
+import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
+
 TinkerGraphOperations().use { ops ->
     val a = ops.createVertex("Person", mapOf("name" to "Alice"))
     val b = ops.mergeVertex("Person", mapOf("email" to "b@example.com"), mapOf("name" to "Bob"))
@@ -21,6 +27,8 @@ TinkerGraphOperations().use { ops ->
     check(ops.neighbors(a.id, NeighborOptions(edgeLabel = "KNOWS")).single().id == b.id)
 }
 ```
+
+## Expected result
 
 Expected: no server is started, and the traversal returns one neighbor.
 
@@ -30,7 +38,16 @@ The transaction DSL uses a snapshot/restore boundary guarded inside the embedded
 
 `use` owns only the created TinkerGraph operations object.
 
-## Failures and operations
+## Operations checklist
+
+- Watch heap growth and graph cardinality.
+- Record traversal depth and elapsed time.
+- Rerun merge and transaction checks on the production graph implementation.
+- Discard the graph after each isolated test.
+
+## Failure and recovery
+
+Symptom: rollback assertions fail after an injected exception. Close the object, create a fresh graph, and rerun `TinkerGraphTransactionTest`.
 
 A later backend can disagree on property types, IDs, schema, merge, or transaction behavior even when this module passes. Use it as a domain baseline, then rerun the candidate backend's tests. Watch graph size and traversal depth in long-lived test processes; the graph is heap-resident.
 
@@ -40,6 +57,16 @@ A later backend can disagree on property types, IDs, schema, merge, or transacti
 
 Expected: CRUD/traversal passes and an injected transaction failure restores the snapshot.
 
-## Related pages and non-goals
+## Complete release example
+
+The pinned [TinkerGraphOperationsTest](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-tinkerpop/src/test/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphOperationsTest.kt) is complete executable release evidence. Run:
+
+```bash
+./gradlew :bluetape4k-graph-tinkerpop:test --tests '*TinkerGraphOperationsTest'
+```
+
+Expected: the release test or build completes with the ownership and capability assertions above.
+
+## Non-goals and related guides
 
 See [TinkerPop guide](../backends/tinkerpop.md), [backend selection](../backends/selection-guide.md), and [benchmark-based selection](../guides/benchmark-based-selection.md). This module does not emulate database outages, remote Gremlin servers, persistence, or clustering.
