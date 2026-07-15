@@ -16,13 +16,14 @@ The unversioned coordinate is intentional: the ecosystem BOM keeps graph and its
 ## 2. Run a local graph
 
 ```kotlin
-val ops: GraphOperations = TinkerGraphOperations()
-val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
-val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
-ops.createEdge(alice.id, bob.id, "KNOWS")
+TinkerGraphOperations().use { ops ->
+    val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
+    val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
+    ops.createEdge(alice.id, bob.id, "KNOWS")
 
-val neighbors = ops.neighbors(alice.id)
-check(neighbors.single().id == bob.id)
+    val neighbors = ops.neighbors(alice.id)
+    check(neighbors.single().id == bob.id)
+}
 ```
 
 The facade composition is visible in [`GraphOperations.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphOperations.kt), while the in-memory implementation and its behavior tests live in [`TinkerGraphOperations.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-tinkerpop/src/main/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphOperations.kt) and [`TinkerGraphOperationsTest.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-tinkerpop/src/test/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphOperationsTest.kt).

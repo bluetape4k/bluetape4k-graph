@@ -16,11 +16,12 @@ dependencies {
 ## 2. 로컬 그래프를 실행한다
 
 ```kotlin
-val ops: GraphOperations = TinkerGraphOperations()
-val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
-val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
-ops.createEdge(alice.id, bob.id, "KNOWS")
-check(ops.neighbors(alice.id).single().id == bob.id)
+TinkerGraphOperations().use { ops ->
+    val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
+    val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
+    ops.createEdge(alice.id, bob.id, "KNOWS")
+    check(ops.neighbors(alice.id).single().id == bob.id)
+}
 ```
 
 ## 3. 결과를 보고 실패를 가른다
