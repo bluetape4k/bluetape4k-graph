@@ -12,14 +12,7 @@ This example turns a domain question into an inspectable path, count, ranking, o
 
 ## Prerequisites and release boundary
 
-Use JDK 21, commit `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, and the checked-in wrapper. Examples are not published; this is an explicit release-fixture boundary. Consumers of published modules import the BOM and omit module versions.
-
-```kotlin
-dependencies {
-    implementation(platform("io.bluetape4k:bluetape4k-graph-bom:0.5.1"))
-    implementation("io.bluetape4k:bluetape4k-graph-core")
-}
-```
+Use JDK 21, commit `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, and the checked-in wrapper. Examples are not published; run this release fixture as a Gradle project from the release source checkout. In a consumer application, select only `bluetape4k-dependencies:<ecosystem-version>` and add the required graph module without an individual version.
 
 ## Run and observe
 

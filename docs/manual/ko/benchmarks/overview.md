@@ -26,4 +26,4 @@ JDK 21, 커밋 `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, 컨테이너 실행�
 
 근거는 [백엔드 결과](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/benchmark/2026-05-21-graph-db-testcontainers-results.md), [graph-io 결과](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/benchmark/2026-04-18-graph-io-bulk-results.md), [API 실행 방식 JSON](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/benchmark/2026-05-21-api-model-jmh.json)입니다. 서로 다른 조건의 결과로 백엔드 순위를 만들 수 없습니다. 이 결과는 수평 확장, 장애 전환, 내구성, 비용을 증명하지 않습니다.
 
-[그래프 연산](./graph-operations.md), [그래프 입출력](./graph-io.md), [AGE와 Neo4j](./age-and-neo4j.md)로 이어가십시오. 라이브러리 사용자는 `bluetape4k-graph-bom:0.5.1`을 가져오고 모듈별 버전을 생략합니다.
+[그래프 연산](./graph-operations.md), [그래프 입출력](./graph-io.md), [AGE와 Neo4j](./age-and-neo4j.md)로 이어가십시오. 벤치마크 프로젝트는 배포 라이브러리가 아니라 릴리스 고정 데이터입니다. 소비자 애플리케이션에서는 `bluetape4k-dependencies:<ecosystem-version>`을 선택하고 필요한 그래프 모듈은 개별 버전 없이 추가합니다.
