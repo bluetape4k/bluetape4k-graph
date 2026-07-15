@@ -1,0 +1,230 @@
+---
+schemaVersion: 2
+repository: bluetape4k/bluetape4k-graph
+releaseRef: 0.5.1
+releaseCommit: 3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907
+publication:
+  manualVersion: '0.5'
+  sourceRoot: docs/manual
+  locales:
+  - en
+  - ko
+  contentStatus: inventory-only
+modules:
+- id: bluetape4k-graph-age
+  gradlePath: ":bluetape4k-graph-age"
+  projectName: bluetape4k-graph-age
+  sourceDir: graph/graph-age
+  kind: library
+  artifact: io.github.bluetape4k.graph:bluetape4k-graph-age
+  status: stable
+- id: bluetape4k-graph-bom
+  gradlePath: ":bluetape4k-graph-bom"
+  projectName: bluetape4k-graph-bom
+  sourceDir: bom
+  kind: library
+  artifact: io.github.bluetape4k.graph:bluetape4k-graph-bom
+  status: stable
+- id: bluetape4k-graph-core
+  gradlePath: ":bluetape4k-graph-core"
+  projectName: bluetape4k-graph-core
+  sourceDir: graph/graph-core
+  kind: library
+  artifact: io.github.bluetape4k.graph:bluetape4k-graph-core
+  status: stable
+- id: bluetape4k-graph-falkordb
+  gradlePath: ":bluetape4k-graph-falkordb"
+  projectName: bluetape4k-graph-falkordb
+  sourceDir: graph/graph-falkordb
+  kind: library
+  artifact: io.github.bluetape4k.graph:bluetape4k-graph-falkordb
+  status: stable
+- id: bluetape4k-graph-io-core
+  gradlePath: ":bluetape4k-graph-io-core"
+  projectName: bluetape4k-graph-io-core
+  sourceDir: graph-io/core
+  kind: library
+  artifact: io.github.bluetape4k.graph:bluetape4k-graph-io-core
+  status: stable
+- id: bluetape4k-graph-io-csv
+  gradlePath: ":bluetape4k-graph-io-csv"
+  projectName: bluetape4k-graph-io-csv
+  sourceDir: graph-io/csv
+  kind: library
+  artifact: io.github.bluetape4k.graph:bluetape4k-graph-io-csv
+  status: stable
+- id: bluetape4k-graph-io-graphml
+  gradlePath: ":bluetape4k-graph-io-graphml"
+  projectName: bluetape4k-graph-io-graphml
+  sourceDir: graph-io/graphml
+  kind: library
+  artifact: io.github.bluetape4k.graph:bluetape4k-graph-io-graphml
+  status: stable
+- id: bluetape4k-graph-io-jackson2
+  gradlePath: ":bluetape4k-graph-io-jackson2"
+  projectName: bluetape4k-graph-io-jackson2
+  sourceDir: graph-io/jackson2
+  kind: library
+  artifact: io.github.bluetape4k.graph:bluetape4k-graph-io-jackson2
+  status: stable
+- id: bluetape4k-graph-io-jackson3
+  gradlePath: ":bluetape4k-graph-io-jackson3"
+  projectName: bluetape4k-graph-io-jackson3
+  sourceDir: graph-io/jackson3
+  kind: library
+  artifact: io.github.bluetape4k.graph:bluetape4k-graph-io-jackson3
+  status: stable
+- id: bluetape4k-graph-ktor
+  gradlePath: ":bluetape4k-graph-ktor"
+  projectName: bluetape4k-graph-ktor
+  sourceDir: ktor/graph-ktor
+  kind: library
+  artifact: io.github.bluetape4k.graph:bluetape4k-graph-ktor
+  status: stable
+- id: bluetape4k-graph-memgraph
+  gradlePath: ":bluetape4k-graph-memgraph"
+  projectName: bluetape4k-graph-memgraph
+  sourceDir: graph/graph-memgraph
+  kind: library
+  artifact: io.github.bluetape4k.graph:bluetape4k-graph-memgraph
+  status: stable
+- id: bluetape4k-graph-neo4j
+  gradlePath: ":bluetape4k-graph-neo4j"
+  projectName: bluetape4k-graph-neo4j
+  sourceDir: graph/graph-neo4j
+  kind: library
+  artifact: io.github.bluetape4k.graph:bluetape4k-graph-neo4j
+  status: stable
+- id: bluetape4k-graph-okio
+  gradlePath: ":bluetape4k-graph-okio"
+  projectName: bluetape4k-graph-okio
+  sourceDir: graph-io/okio
+  kind: library
+  artifact: io.github.bluetape4k.graph:bluetape4k-graph-okio
+  status: stable
+- id: bluetape4k-graph-spring-boot
+  gradlePath: ":bluetape4k-graph-spring-boot"
+  projectName: bluetape4k-graph-spring-boot
+  sourceDir: spring-boot/graph-spring-boot
+  kind: library
+  artifact: io.github.bluetape4k.graph:bluetape4k-graph-spring-boot
+  status: stable
+- id: bluetape4k-graph-tinkerpop
+  gradlePath: ":bluetape4k-graph-tinkerpop"
+  projectName: bluetape4k-graph-tinkerpop
+  sourceDir: graph/graph-tinkerpop
+  kind: library
+  artifact: io.github.bluetape4k.graph:bluetape4k-graph-tinkerpop
+  status: stable
+- id: code-graph-examples
+  gradlePath: ":code-graph-examples"
+  projectName: code-graph-examples
+  sourceDir: examples/code-graph-examples
+  kind: example
+  artifact:
+  status: stable
+- id: data-lineage-examples
+  gradlePath: ":data-lineage-examples"
+  projectName: data-lineage-examples
+  sourceDir: examples/data-lineage-examples
+  kind: example
+  artifact:
+  status: stable
+- id: fraud-detection-examples
+  gradlePath: ":fraud-detection-examples"
+  projectName: fraud-detection-examples
+  sourceDir: examples/fraud-detection-examples
+  kind: example
+  artifact:
+  status: stable
+- id: graph-age-benchmark
+  gradlePath: ":graph-age-benchmark"
+  projectName: graph-age-benchmark
+  sourceDir: benchmark/graph-age-benchmark
+  kind: benchmark
+  artifact:
+  status: stable
+- id: graph-benchmark
+  gradlePath: ":graph-benchmark"
+  projectName: graph-benchmark
+  sourceDir: benchmark/graph-benchmark
+  kind: benchmark
+  artifact:
+  status: stable
+- id: graph-io-benchmark
+  gradlePath: ":graph-io-benchmark"
+  projectName: graph-io-benchmark
+  sourceDir: benchmark/graph-io-benchmark
+  kind: benchmark
+  artifact:
+  status: stable
+- id: graph-neo4j-benchmark
+  gradlePath: ":graph-neo4j-benchmark"
+  projectName: graph-neo4j-benchmark
+  sourceDir: benchmark/graph-neo4j-benchmark
+  kind: benchmark
+  artifact:
+  status: stable
+- id: iam-access-graph-examples
+  gradlePath: ":iam-access-graph-examples"
+  projectName: iam-access-graph-examples
+  sourceDir: examples/iam-access-graph-examples
+  kind: example
+  artifact:
+  status: stable
+- id: knowledge-graph-examples
+  gradlePath: ":knowledge-graph-examples"
+  projectName: knowledge-graph-examples
+  sourceDir: examples/knowledge-graph-examples
+  kind: example
+  artifact:
+  status: stable
+- id: ktor-graph-examples
+  gradlePath: ":ktor-graph-examples"
+  projectName: ktor-graph-examples
+  sourceDir: examples/ktor-graph-examples
+  kind: example
+  artifact:
+  status: stable
+- id: linkedin-graph-examples
+  gradlePath: ":linkedin-graph-examples"
+  projectName: linkedin-graph-examples
+  sourceDir: examples/linkedin-graph-examples
+  kind: example
+  artifact:
+  status: stable
+- id: network-topology-examples
+  gradlePath: ":network-topology-examples"
+  projectName: network-topology-examples
+  sourceDir: examples/network-topology-examples
+  kind: example
+  artifact:
+  status: stable
+- id: observability-graph-examples
+  gradlePath: ":observability-graph-examples"
+  projectName: observability-graph-examples
+  sourceDir: examples/observability-graph-examples
+  kind: example
+  artifact:
+  status: stable
+- id: recommendation-examples
+  gradlePath: ":recommendation-examples"
+  projectName: recommendation-examples
+  sourceDir: examples/recommendation-examples
+  kind: example
+  artifact:
+  status: stable
+- id: security-attack-path-examples
+  gradlePath: ":security-attack-path-examples"
+  projectName: security-attack-path-examples
+  sourceDir: examples/security-attack-path-examples
+  kind: example
+  artifact:
+  status: stable
+- id: supply-chain-graph-examples
+  gradlePath: ":supply-chain-graph-examples"
+  projectName: supply-chain-graph-examples
+  sourceDir: examples/supply-chain-graph-examples
+  kind: example
+  artifact:
+  status: stable

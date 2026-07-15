@@ -1,0 +1,296 @@
+{
+  "modules": [
+    {
+      "artifact": "io.github.bluetape4k.graph:bluetape4k-graph-age",
+      "gradlePath": ":bluetape4k-graph-age",
+      "id": "bluetape4k-graph-age",
+      "kind": "library",
+      "projectName": "bluetape4k-graph-age",
+      "sourceDir": "graph/graph-age",
+      "status": "stable"
+    },
+    {
+      "artifact": "io.github.bluetape4k.graph:bluetape4k-graph-bom",
+      "gradlePath": ":bluetape4k-graph-bom",
+      "id": "bluetape4k-graph-bom",
+      "kind": "library",
+      "projectName": "bluetape4k-graph-bom",
+      "sourceDir": "bom",
+      "status": "stable"
+    },
+    {
+      "artifact": "io.github.bluetape4k.graph:bluetape4k-graph-core",
+      "gradlePath": ":bluetape4k-graph-core",
+      "id": "bluetape4k-graph-core",
+      "kind": "library",
+      "projectName": "bluetape4k-graph-core",
+      "sourceDir": "graph/graph-core",
+      "status": "stable"
+    },
+    {
+      "artifact": "io.github.bluetape4k.graph:bluetape4k-graph-falkordb",
+      "gradlePath": ":bluetape4k-graph-falkordb",
+      "id": "bluetape4k-graph-falkordb",
+      "kind": "library",
+      "projectName": "bluetape4k-graph-falkordb",
+      "sourceDir": "graph/graph-falkordb",
+      "status": "stable"
+    },
+    {
+      "artifact": "io.github.bluetape4k.graph:bluetape4k-graph-io-core",
+      "gradlePath": ":bluetape4k-graph-io-core",
+      "id": "bluetape4k-graph-io-core",
+      "kind": "library",
+      "projectName": "bluetape4k-graph-io-core",
+      "sourceDir": "graph-io/core",
+      "status": "stable"
+    },
+    {
+      "artifact": "io.github.bluetape4k.graph:bluetape4k-graph-io-csv",
+      "gradlePath": ":bluetape4k-graph-io-csv",
+      "id": "bluetape4k-graph-io-csv",
+      "kind": "library",
+      "projectName": "bluetape4k-graph-io-csv",
+      "sourceDir": "graph-io/csv",
+      "status": "stable"
+    },
+    {
+      "artifact": "io.github.bluetape4k.graph:bluetape4k-graph-io-graphml",
+      "gradlePath": ":bluetape4k-graph-io-graphml",
+      "id": "bluetape4k-graph-io-graphml",
+      "kind": "library",
+      "projectName": "bluetape4k-graph-io-graphml",
+      "sourceDir": "graph-io/graphml",
+      "status": "stable"
+    },
+    {
+      "artifact": "io.github.bluetape4k.graph:bluetape4k-graph-io-jackson2",
+      "gradlePath": ":bluetape4k-graph-io-jackson2",
+      "id": "bluetape4k-graph-io-jackson2",
+      "kind": "library",
+      "projectName": "bluetape4k-graph-io-jackson2",
+      "sourceDir": "graph-io/jackson2",
+      "status": "stable"
+    },
+    {
+      "artifact": "io.github.bluetape4k.graph:bluetape4k-graph-io-jackson3",
+      "gradlePath": ":bluetape4k-graph-io-jackson3",
+      "id": "bluetape4k-graph-io-jackson3",
+      "kind": "library",
+      "projectName": "bluetape4k-graph-io-jackson3",
+      "sourceDir": "graph-io/jackson3",
+      "status": "stable"
+    },
+    {
+      "artifact": "io.github.bluetape4k.graph:bluetape4k-graph-ktor",
+      "gradlePath": ":bluetape4k-graph-ktor",
+      "id": "bluetape4k-graph-ktor",
+      "kind": "library",
+      "projectName": "bluetape4k-graph-ktor",
+      "sourceDir": "ktor/graph-ktor",
+      "status": "stable"
+    },
+    {
+      "artifact": "io.github.bluetape4k.graph:bluetape4k-graph-memgraph",
+      "gradlePath": ":bluetape4k-graph-memgraph",
+      "id": "bluetape4k-graph-memgraph",
+      "kind": "library",
+      "projectName": "bluetape4k-graph-memgraph",
+      "sourceDir": "graph/graph-memgraph",
+      "status": "stable"
+    },
+    {
+      "artifact": "io.github.bluetape4k.graph:bluetape4k-graph-neo4j",
+      "gradlePath": ":bluetape4k-graph-neo4j",
+      "id": "bluetape4k-graph-neo4j",
+      "kind": "library",
+      "projectName": "bluetape4k-graph-neo4j",
+      "sourceDir": "graph/graph-neo4j",
+      "status": "stable"
+    },
+    {
+      "artifact": "io.github.bluetape4k.graph:bluetape4k-graph-okio",
+      "gradlePath": ":bluetape4k-graph-okio",
+      "id": "bluetape4k-graph-okio",
+      "kind": "library",
+      "projectName": "bluetape4k-graph-okio",
+      "sourceDir": "graph-io/okio",
+      "status": "stable"
+    },
+    {
+      "artifact": "io.github.bluetape4k.graph:bluetape4k-graph-spring-boot",
+      "gradlePath": ":bluetape4k-graph-spring-boot",
+      "id": "bluetape4k-graph-spring-boot",
+      "kind": "library",
+      "projectName": "bluetape4k-graph-spring-boot",
+      "sourceDir": "spring-boot/graph-spring-boot",
+      "status": "stable"
+    },
+    {
+      "artifact": "io.github.bluetape4k.graph:bluetape4k-graph-tinkerpop",
+      "gradlePath": ":bluetape4k-graph-tinkerpop",
+      "id": "bluetape4k-graph-tinkerpop",
+      "kind": "library",
+      "projectName": "bluetape4k-graph-tinkerpop",
+      "sourceDir": "graph/graph-tinkerpop",
+      "status": "stable"
+    },
+    {
+      "artifact": null,
+      "gradlePath": ":code-graph-examples",
+      "id": "code-graph-examples",
+      "kind": "example",
+      "projectName": "code-graph-examples",
+      "sourceDir": "examples/code-graph-examples",
+      "status": "stable"
+    },
+    {
+      "artifact": null,
+      "gradlePath": ":data-lineage-examples",
+      "id": "data-lineage-examples",
+      "kind": "example",
+      "projectName": "data-lineage-examples",
+      "sourceDir": "examples/data-lineage-examples",
+      "status": "stable"
+    },
+    {
+      "artifact": null,
+      "gradlePath": ":fraud-detection-examples",
+      "id": "fraud-detection-examples",
+      "kind": "example",
+      "projectName": "fraud-detection-examples",
+      "sourceDir": "examples/fraud-detection-examples",
+      "status": "stable"
+    },
+    {
+      "artifact": null,
+      "gradlePath": ":graph-age-benchmark",
+      "id": "graph-age-benchmark",
+      "kind": "benchmark",
+      "projectName": "graph-age-benchmark",
+      "sourceDir": "benchmark/graph-age-benchmark",
+      "status": "stable"
+    },
+    {
+      "artifact": null,
+      "gradlePath": ":graph-benchmark",
+      "id": "graph-benchmark",
+      "kind": "benchmark",
+      "projectName": "graph-benchmark",
+      "sourceDir": "benchmark/graph-benchmark",
+      "status": "stable"
+    },
+    {
+      "artifact": null,
+      "gradlePath": ":graph-io-benchmark",
+      "id": "graph-io-benchmark",
+      "kind": "benchmark",
+      "projectName": "graph-io-benchmark",
+      "sourceDir": "benchmark/graph-io-benchmark",
+      "status": "stable"
+    },
+    {
+      "artifact": null,
+      "gradlePath": ":graph-neo4j-benchmark",
+      "id": "graph-neo4j-benchmark",
+      "kind": "benchmark",
+      "projectName": "graph-neo4j-benchmark",
+      "sourceDir": "benchmark/graph-neo4j-benchmark",
+      "status": "stable"
+    },
+    {
+      "artifact": null,
+      "gradlePath": ":iam-access-graph-examples",
+      "id": "iam-access-graph-examples",
+      "kind": "example",
+      "projectName": "iam-access-graph-examples",
+      "sourceDir": "examples/iam-access-graph-examples",
+      "status": "stable"
+    },
+    {
+      "artifact": null,
+      "gradlePath": ":knowledge-graph-examples",
+      "id": "knowledge-graph-examples",
+      "kind": "example",
+      "projectName": "knowledge-graph-examples",
+      "sourceDir": "examples/knowledge-graph-examples",
+      "status": "stable"
+    },
+    {
+      "artifact": null,
+      "gradlePath": ":ktor-graph-examples",
+      "id": "ktor-graph-examples",
+      "kind": "example",
+      "projectName": "ktor-graph-examples",
+      "sourceDir": "examples/ktor-graph-examples",
+      "status": "stable"
+    },
+    {
+      "artifact": null,
+      "gradlePath": ":linkedin-graph-examples",
+      "id": "linkedin-graph-examples",
+      "kind": "example",
+      "projectName": "linkedin-graph-examples",
+      "sourceDir": "examples/linkedin-graph-examples",
+      "status": "stable"
+    },
+    {
+      "artifact": null,
+      "gradlePath": ":network-topology-examples",
+      "id": "network-topology-examples",
+      "kind": "example",
+      "projectName": "network-topology-examples",
+      "sourceDir": "examples/network-topology-examples",
+      "status": "stable"
+    },
+    {
+      "artifact": null,
+      "gradlePath": ":observability-graph-examples",
+      "id": "observability-graph-examples",
+      "kind": "example",
+      "projectName": "observability-graph-examples",
+      "sourceDir": "examples/observability-graph-examples",
+      "status": "stable"
+    },
+    {
+      "artifact": null,
+      "gradlePath": ":recommendation-examples",
+      "id": "recommendation-examples",
+      "kind": "example",
+      "projectName": "recommendation-examples",
+      "sourceDir": "examples/recommendation-examples",
+      "status": "stable"
+    },
+    {
+      "artifact": null,
+      "gradlePath": ":security-attack-path-examples",
+      "id": "security-attack-path-examples",
+      "kind": "example",
+      "projectName": "security-attack-path-examples",
+      "sourceDir": "examples/security-attack-path-examples",
+      "status": "stable"
+    },
+    {
+      "artifact": null,
+      "gradlePath": ":supply-chain-graph-examples",
+      "id": "supply-chain-graph-examples",
+      "kind": "example",
+      "projectName": "supply-chain-graph-examples",
+      "sourceDir": "examples/supply-chain-graph-examples",
+      "status": "stable"
+    }
+  ],
+  "publication": {
+    "contentStatus": "inventory-only",
+    "locales": [
+      "en",
+      "ko"
+    ],
+    "manualVersion": "0.5",
+    "sourceRoot": "docs/manual"
+  },
+  "releaseCommit": "3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907",
+  "releaseRef": "0.5.1",
+  "repository": "bluetape4k/bluetape4k-graph",
+  "schemaVersion": 2
+}

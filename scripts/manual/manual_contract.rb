@@ -1,0 +1,128 @@
+require "pathname"
+require "yaml"
+
+module ManualDocs
+  SUPPORTED_SCHEMA_VERSION = 2
+  VALID_KINDS = %w[library benchmark example].freeze
+
+  class Validator
+    REQUIRED_FIELDS = %w[id gradlePath projectName sourceDir kind artifact status].freeze
+    LOCALES = { "en" => "English", "ko" => "Korean" }.freeze
+    attr_reader :errors
+
+    def initialize(inventory:, manifest_path:, repository_root:, expected_release:, strict: false)
+      @inventory = inventory
+      @manifest_path = File.expand_path(manifest_path)
+      @repository_root = File.expand_path(repository_root)
+      @expected_release = expected_release
+      @strict = strict
+      @errors = validate.sort
+    end
+
+    private
+
+    def validate
+      return ["manual manifest not found"] unless File.file?(@manifest_path)
+      manifest = YAML.safe_load(File.read(@manifest_path))
+      return ["manual manifest must be a mapping"] unless manifest.is_a?(Hash)
+      errors = validate_header(manifest)
+      modules = manifest["modules"]
+      return errors << "manual manifest modules must be an array" unless modules.is_a?(Array)
+      entries = modules.select { |entry| entry.is_a?(Hash) }
+      errors.concat(duplicates(entries, "id").map { |id| "duplicate id #{id}" })
+      errors.concat(duplicates(entries, "gradlePath").map { |path| "duplicate gradlePath #{path}" })
+      errors.concat(validate_inventory(entries))
+      entries.each { |entry| errors.concat(validate_entry(entry)) }
+      errors
+    rescue Psych::SyntaxError => error
+      ["manual manifest YAML is invalid: #{error.problem}"]
+    end
+
+    def validate_header(manifest)
+      errors = []
+      errors << "manual manifest schemaVersion must be #{SUPPORTED_SCHEMA_VERSION}" unless manifest["schemaVersion"] == SUPPORTED_SCHEMA_VERSION
+      errors << "manual manifest releaseRef must be #{@expected_release.fetch('ref')}" unless manifest["releaseRef"] == @expected_release.fetch("ref")
+      errors << "manual manifest releaseCommit must be #{@expected_release.fetch('commit')}" unless manifest["releaseCommit"] == @expected_release.fetch("commit")
+      locales = manifest.dig("publication", "locales")
+      errors << "manual publication locales must be en and ko" unless locales == %w[en ko]
+      errors
+    end
+
+    def validate_inventory(entries)
+      return ["module inventory must be an array"] unless @inventory.is_a?(Array)
+      by_inventory = @inventory.to_h { |row| [row["gradlePath"], row] }
+      by_manifest = entries.to_h { |row| [row["gradlePath"], row] }
+      errors = duplicates(@inventory, "gradlePath").map { |path| "inventory: duplicate gradlePath #{path}" }
+      (by_inventory.keys - by_manifest.keys).sort.each { |path| errors << "#{path}: missing from manifest" }
+      (by_manifest.keys - by_inventory.keys).sort.each { |path| errors << "#{path}: not present in inventory" }
+      entries.each do |entry|
+        row = by_inventory[entry["gradlePath"]]
+        next unless row
+        %w[projectName sourceDir kind].each { |field| errors << "#{entry['id']}: #{field} does not match inventory" unless entry[field] == row[field] }
+      end
+      errors
+    end
+
+    def validate_entry(entry)
+      errors = []
+      REQUIRED_FIELDS.each { |field| errors << "#{entry['id'] || 'module'}: missing manifest field #{field}" unless entry.key?(field) }
+      errors << "#{entry['id']}: invalid kind #{entry['kind'].inspect}" unless VALID_KINDS.include?(entry["kind"])
+      errors << "#{entry['id']}: library artifact must be present" if entry["kind"] == "library" && blank?(entry["artifact"])
+      errors << "#{entry['id']}: #{entry['kind']} artifact must be null" if %w[benchmark example].include?(entry["kind"]) && !entry["artifact"].nil?
+      errors << "#{entry['id']}: missing manifest field sourcePaths" if @strict && !entry.key?("sourcePaths")
+      errors.concat(validate_paths(entry, "sourcePaths")) if entry.key?("sourcePaths")
+      errors.concat(validate_routes(entry)) if entry.key?("routes") || @strict
+      errors
+    end
+
+    def validate_routes(entry)
+      routes = entry["routes"]
+      return ["#{entry['id']}: routes must be a mapping"] unless routes.is_a?(Hash)
+      errors = []
+      LOCALES.each do |locale, language|
+        path = routes[locale]
+        if blank?(path)
+          errors << "#{entry['id']}: missing #{language} route"
+          next
+        end
+        unless safe_relative?(path) && path.start_with?("#{locale}/")
+          errors << "#{entry['id']}: unsafe #{language} route"
+          next
+        end
+        absolute = File.expand_path(path, File.dirname(@manifest_path))
+        errors << "#{entry['id']}: missing #{language} document" unless within?(absolute, File.dirname(@manifest_path)) && File.file?(absolute)
+      end
+      if routes["en"].is_a?(String) && routes["ko"].is_a?(String)
+        errors << "#{entry['id']}: English/Korean route differs" unless routes["en"].delete_prefix("en/") == routes["ko"].delete_prefix("ko/")
+      end
+      errors
+    end
+
+    def validate_paths(entry, field)
+      paths = entry[field]
+      return ["#{entry['id']}: #{field} must be an array"] unless paths.is_a?(Array)
+      paths.each_with_object([]) do |path, errors|
+        absolute = File.expand_path(path.to_s, @repository_root)
+        unless safe_relative?(path) && within?(absolute, @repository_root) && File.file?(absolute)
+          errors << "#{entry['id']}: missing #{field} path #{path}"
+        end
+      end
+    end
+
+    def duplicates(rows, field)
+      rows.grep(Hash).group_by { |row| row[field] }.select { |value, matches| value && matches.length > 1 }.keys
+    end
+
+    def safe_relative?(value)
+      value.is_a?(String) && !value.empty? && !Pathname.new(value).absolute? && Pathname.new(value).each_filename.none? { |part| part == ".." }
+    end
+
+    def within?(path, root)
+      path == root || path.start_with?(root + File::SEPARATOR)
+    end
+
+    def blank?(value)
+      value.nil? || (value.respond_to?(:empty?) && value.empty?)
+    end
+  end
+end

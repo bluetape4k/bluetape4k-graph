@@ -1,4 +1,5 @@
 import dev.detekt.gradle.DetektCreateBaselineTask
+import groovy.json.JsonOutput
 import io.bluetape4k.gradle.applyBluetape4kPomMetadata
 import io.bluetape4k.gradle.centralSnapshotsRepository
 import io.bluetape4k.gradle.configurePublishingSigning
@@ -557,6 +558,40 @@ extensions.configure<NmcpAggregationExtension>("nmcpAggregation") {
 dependencies {
     publishableProjects.forEach { publishableProject ->
         add("nmcpAggregation", project(publishableProject.path))
+    }
+}
+
+val manualModuleInventory = subprojects
+    .map { subproject ->
+        val sourceDir = rootProject.projectDir.toPath()
+            .relativize(subproject.projectDir.toPath())
+            .toString()
+            .replace(File.separatorChar, '/')
+        val kind = when {
+            sourceDir.startsWith("benchmark/") -> "benchmark"
+            sourceDir.startsWith("examples/") -> "example"
+            else -> "library"
+        }
+        linkedMapOf(
+            "gradlePath" to subproject.path,
+            "projectName" to subproject.name,
+            "sourceDir" to sourceDir,
+            "kind" to kind,
+        )
+    }
+    .sortedBy { it.getValue("gradlePath") }
+
+tasks.register("exportManualModuleInventory") {
+    group = "documentation"
+    description = "Exports the deterministic manual project inventory."
+    val outputFile = layout.buildDirectory.file("manual/module-inventory.json")
+    outputs.file(outputFile)
+    inputs.property("manualModuleInventoryJson", JsonOutput.prettyPrint(JsonOutput.toJson(manualModuleInventory)) + "\n")
+
+    doLast {
+        val target = outputs.files.singleFile
+        target.parentFile.mkdirs()
+        target.writeText(inputs.properties.getValue("manualModuleInventoryJson").toString())
     }
 }
 
