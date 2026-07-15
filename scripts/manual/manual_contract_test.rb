@@ -78,6 +78,16 @@ class ManualContractTest < Minitest::Test
     end
   end
 
+  def test_rejects_non_mapping_publication_in_all_modes
+    [nil, "complete", []].each do |publication|
+      [false, true].each do |strict|
+        validate({}, { "publication" => publication }, strict: strict) do |validator|
+          assert_includes validator.errors, "manual publication must be a mapping"
+        end
+      end
+    end
+  end
+
   def test_strict_mode_rejects_missing_declared_asset
     validate({
       "routes" => { "en" => "en/modules/core.md", "ko" => "ko/modules/core.md" },
