@@ -59,6 +59,25 @@ class ManualContractTest < Minitest::Test
     end
   end
 
+  def test_strict_mode_requires_exact_source_dir_ownership
+    validate({ "sourcePaths" => [] }, {}, strict: true) do |validator|
+      assert validator.errors.any? { |e| e.include?("sourcePaths must equal [sourceDir]") }
+    end
+    validate({ "sourcePaths" => ["graph/neo4j"] }, {}, strict: true) do |validator|
+      assert validator.errors.any? { |e| e.include?("sourcePaths must equal [sourceDir]") }
+    end
+  end
+
+  def test_strict_mode_requires_complete_publication_header
+    validate({}, {
+      "publication" => { "manualVersion" => "0.4", "sourceRoot" => "manual", "locales" => %w[en ko], "contentStatus" => "inventory-only" },
+    }, strict: true) do |validator|
+      assert validator.errors.any? { |e| e.include?("manualVersion must be 0.5") }
+      assert validator.errors.any? { |e| e.include?("sourceRoot must be docs/manual") }
+      assert validator.errors.any? { |e| e.include?("contentStatus must be complete") }
+    end
+  end
+
   def test_strict_mode_rejects_missing_declared_asset
     validate({
       "routes" => { "en" => "en/modules/core.md", "ko" => "ko/modules/core.md" },
@@ -102,6 +121,42 @@ class ManualContractTest < Minitest::Test
         strict: true,
       )
       assert refreshed.errors.any? { |e| e.include?("unregistered manual document en/unregistered.md") }
+    end
+  end
+
+  def test_strict_mode_allows_two_projects_to_share_one_benchmark_route
+    Dir.mktmpdir do |root|
+      manual_root = File.join(root, "docs/manual")
+      %w[en ko].each do |locale|
+        FileUtils.mkdir_p(File.join(manual_root, locale, "benchmarks"))
+        File.write(File.join(manual_root, locale, "index.md"), "# index\n")
+        File.write(File.join(manual_root, locale, "benchmarks/age-and-neo4j.md"), "# comparison\n")
+      end
+      rows = [
+        { "id" => "age", "gradlePath" => ":age", "projectName" => "age", "sourceDir" => "benchmark/age", "kind" => "benchmark", "artifact" => nil, "status" => "stable" },
+        { "id" => "neo4j", "gradlePath" => ":neo4j", "projectName" => "neo4j", "sourceDir" => "benchmark/neo4j", "kind" => "benchmark", "artifact" => nil, "status" => "stable" },
+      ]
+      rows.each { |row| FileUtils.mkdir_p(File.join(root, row.fetch("sourceDir"))) }
+      modules = rows.map do |row|
+        row.merge("sourcePaths" => [row.fetch("sourceDir")], "routes" => {
+          "en" => "en/benchmarks/age-and-neo4j.md", "ko" => "ko/benchmarks/age-and-neo4j.md",
+        })
+      end
+      manifest = {
+        "schemaVersion" => 2, "repository" => "bluetape4k-graph", "releaseRef" => RELEASE["ref"],
+        "stableVersion" => RELEASE["ref"], "stableMinor" => "0.5", "releaseTag" => RELEASE["ref"],
+        "releaseCommit" => RELEASE["commit"], "publication" => {
+          "manualVersion" => "0.5", "sourceRoot" => "docs/manual", "locales" => %w[en ko], "contentStatus" => "complete",
+        },
+        "overview" => { "documents" => { "en" => ["en/index.md"], "ko" => ["ko/index.md"] }, "assets" => [] },
+        "modules" => modules,
+      }
+      path = File.join(manual_root, "manifest.yaml")
+      File.write(path, YAML.dump(manifest))
+      inventory = rows.map { |row| row.slice("gradlePath", "projectName", "sourceDir", "kind") }
+      validator = ManualDocs::Validator.new(inventory: inventory, manifest_path: path, repository_root: root,
+        expected_release: RELEASE, strict: true)
+      assert_empty validator.errors
     end
   end
 end

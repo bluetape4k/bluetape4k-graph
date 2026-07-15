@@ -20,7 +20,7 @@ Use JDK 21, commit `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, and the checked-i
 ./gradlew :recommendation-examples:test --tests "io.bluetape4k.graph.examples.recommendation.TinkerGraphRecommendationTest"
 ```
 
-The tests assert that `p-tripod` and `u-carol` are recommended and that `p-camera` remains in the top three. A failure usually reflects changed interaction weights, candidate filtering, or ranking order.
+The tests assert three separate results: product recommendations include `p-tripod`, follow recommendations include `u-carol`, and the ranked product result includes `p-camera`. A failure usually reflects changed interaction weights, candidate filtering, or ranking order.
 
 ## Reading order
 

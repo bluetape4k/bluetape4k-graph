@@ -58,6 +58,40 @@ class ReleaseContractTest < Minitest::Test
     end
   end
 
+  def test_rejects_empty_or_swapped_manifest_source_ownership
+    Dir.mktmpdir do |root|
+      FileUtils.mkdir_p(File.join(root, "docs/manual"))
+      manifest = File.join(root, "docs/manual/manifest.yaml")
+      File.write(manifest, YAML.dump("modules" => [
+        { "id" => "core", "sourceDir" => "graph/core", "sourcePaths" => [] },
+        { "id" => "neo4j", "sourceDir" => "graph/neo4j", "sourcePaths" => ["graph/core"] },
+      ]))
+      contract = ManualDocs::ReleaseContract.new(repository_root: root, tag: "0.5.1", expected_sha: SHA,
+        manifest_path: manifest, git_runner: runner(tree: ["graph/core/build.gradle.kts", "graph/neo4j/build.gradle.kts"]))
+      errors = contract.errors
+      assert errors.any? { |e| e.include?("core: sourcePaths must equal [sourceDir]") }
+      assert errors.any? { |e| e.include?("neo4j: sourcePaths must equal [sourceDir]") }
+    end
+  end
+
+  def test_reports_malformed_manifest_shapes_without_type_error
+    malformed = [
+      [["not", "a", "mapping"], "manual manifest must be a mapping"],
+      [{ "modules" => "not-an-array" }, "manual manifest modules must be an array"],
+      [{ "modules" => ["not-a-mapping"] }, "manual manifest module entry must be a mapping"],
+    ]
+    malformed.each do |document, expected|
+      Dir.mktmpdir do |root|
+        FileUtils.mkdir_p(File.join(root, "docs/manual"))
+        manifest = File.join(root, "docs/manual/manifest.yaml")
+        File.write(manifest, YAML.dump(document))
+        contract = ManualDocs::ReleaseContract.new(repository_root: root, tag: "0.5.1", expected_sha: SHA,
+          manifest_path: manifest, git_runner: runner(tree: []))
+        assert contract.errors.any? { |e| e.include?(expected) }
+      end
+    end
+  end
+
 
   def test_final_validation_rejects_missing_inventory_file
     Dir.mktmpdir do |root|

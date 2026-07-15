@@ -30,6 +30,7 @@ overview_documents = %w[
   guides/operations.md
   guides/failure-and-cancellation.md
   guides/benchmark-based-selection.md
+  benchmarks/overview.md
 ].freeze
 
 assets = %w[
@@ -49,7 +50,7 @@ benchmark_routes = {
   "graph-benchmark" => "benchmarks/graph-operations.md",
   "graph-io-benchmark" => "benchmarks/graph-io.md",
   "graph-age-benchmark" => "benchmarks/age-and-neo4j.md",
-  "graph-neo4j-benchmark" => "benchmarks/overview.md",
+  "graph-neo4j-benchmark" => "benchmarks/age-and-neo4j.md",
 }.freeze
 
 def route_for(row, benchmark_routes)

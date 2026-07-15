@@ -20,7 +20,7 @@ JDK 21, 커밋 `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, 저장소의 Gradle W
 ./gradlew :iam-access-graph-examples:test --tests "io.bluetape4k.graph.examples.iam.TinkerGraphIamAccessGraphTest"
 ```
 
-테스트는 허용된 접근 경로가 `group:engineering`, `role:deployer-role`, 비상 권한 부여를 차례로 지나는지 검증합니다. 실패하면 사용자·그룹·역할의 연결 방향, 정책 확장, 거부 경계를 확인합니다.
+테스트는 그룹에서 상속한 접근 경로가 `group:engineering`과 `role:deployer-role`을 지나는지, 임시 비상 접근 경로가 `grant:break-glass-1001`을 지나는지를 따로 검증합니다. 실패하면 사용자·그룹·역할의 연결 방향, 정책 확장, 거부 경계를 확인합니다.
 
 ## 코드 읽는 순서
 

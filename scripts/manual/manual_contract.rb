@@ -51,6 +51,11 @@ module ManualDocs
       errors << "manual manifest releaseCommit must be #{@expected_release.fetch('commit')}" unless manifest["releaseCommit"] == @expected_release.fetch("commit")
       locales = manifest.dig("publication", "locales")
       errors << "manual publication locales must be en and ko" unless locales == %w[en ko]
+      if @strict
+        errors << "manual publication manualVersion must be 0.5" unless manifest.dig("publication", "manualVersion") == "0.5"
+        errors << "manual publication sourceRoot must be docs/manual" unless manifest.dig("publication", "sourceRoot") == "docs/manual"
+        errors << "manual publication contentStatus must be complete" unless manifest.dig("publication", "contentStatus") == "complete"
+      end
       errors
     end
 
@@ -76,6 +81,9 @@ module ManualDocs
       errors << "#{entry['id']}: library artifact must be present" if entry["kind"] == "library" && blank?(entry["artifact"])
       errors << "#{entry['id']}: #{entry['kind']} artifact must be null" if %w[benchmark example].include?(entry["kind"]) && !entry["artifact"].nil?
       errors << "#{entry['id']}: missing manifest field sourcePaths" if @strict && !entry.key?("sourcePaths")
+      if @strict && entry.key?("sourcePaths") && entry["sourcePaths"] != [entry["sourceDir"]]
+        errors << "#{entry['id']}: sourcePaths must equal [sourceDir]"
+      end
       errors.concat(validate_paths(entry, "sourcePaths")) if entry.key?("sourcePaths")
       errors.concat(validate_routes(entry)) if entry.key?("routes") || @strict
       errors.concat(validate_assets(entry.fetch("assets", []), entry["id"]))
@@ -165,6 +173,7 @@ module ManualDocs
     def validate_paths(entry, field)
       paths = entry[field]
       return ["#{entry['id']}: #{field} must be an array"] unless paths.is_a?(Array)
+      return ["#{entry['id']}: #{field} must contain non-empty strings"] unless paths.all? { |path| path.is_a?(String) && !path.empty? }
       paths.each_with_object([]) do |path, errors|
         absolute = File.expand_path(path.to_s, @repository_root)
         unless safe_relative?(path) && within?(absolute, @repository_root) && File.exist?(absolute) && within?(File.realpath(absolute), File.realpath(@repository_root))

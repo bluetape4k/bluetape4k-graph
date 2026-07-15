@@ -42,7 +42,7 @@ Java 21을 준비하고 아래 테스트를 실행한다.
 ./gradlew :code-graph-examples:test --tests '*Neo4jCodeGraphTest'
 ```
 
-도메인 assertion과 경로·개수는 같고 ID와 백엔드 로그만 달라야 한다. Neo4j 컨테이너를 멈춰 연결 실패를 주입한다. TinkerGraph만 통과하고 Neo4j가 assertion 전에 실패하면 fixture·서버·Driver를 본다. 둘 다 assertion까지 왔는데 결과가 다르면 속성·질의 의미를 비교한다.
+도메인 검증 조건과 경로·개수는 같고 ID와 백엔드 로그만 달라야 한다. Neo4j 컨테이너를 멈춰 연결 실패를 주입한다. TinkerGraph만 통과하고 Neo4j가 검증 전에 실패하면 픽스처·서버·Driver를 본다. 둘 다 검증까지 왔는데 결과가 다르면 속성·질의 의미를 비교한다.
 
 ### 3단계 — 쓰기 보장을 확인한다
 
@@ -69,4 +69,4 @@ Java 21을 준비하고 아래 테스트를 실행한다.
 ./gradlew :bluetape4k-graph-okio:test --tests '*OkioRoundTripTest' --tests '*NegativePathTest'
 ```
 
-왕복 개수는 같고, 이른 간선 overflow는 메모리를 제한하며, 잘못된 DAEAD 문맥과 잘린 입력은 실패해야 한다. atomic write 오류 뒤 기존 파일은 남아야 한다. `NegativePathTest`를 여는 이유는 소유권과 정리 규칙이 파일시스템 assertion으로 보이기 때문이다. 이 단계를 통과한 뒤 남은 후보에 맞는 benchmark를 실행하고 환경을 함께 기록한다.
+왕복 개수는 같고, 이른 간선 초과는 메모리를 제한하며, 잘못된 DAEAD 문맥과 잘린 입력은 실패해야 한다. 원자적 쓰기 오류 뒤 기존 파일은 남아야 한다. `NegativePathTest`를 여는 이유는 소유권과 정리 규칙을 파일 시스템 검증 조건으로 확인할 수 있기 때문이다. 이 단계를 통과한 뒤 남은 후보에 맞는 벤치마크를 실행하고 환경을 함께 기록한다.

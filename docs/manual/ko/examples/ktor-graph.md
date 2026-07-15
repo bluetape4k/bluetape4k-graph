@@ -2,7 +2,7 @@
 
 ## 문제와 백엔드
 
-그래프 초기화, 개수 조회, 경로 탐색을 Ktor plugin과 HTTP 경계로 노출합니다. **TinkerGraph**를 써서 저장소 모델과 웹 계층을 나누어 검증합니다. 먼저 [핵심 모델](../architecture/core-model.md), [TinkerPop](../backends/tinkerpop.md), [Ktor 연동](../frameworks/ktor.md)을 읽습니다.
+그래프 초기화, 개수 조회, 경로 탐색을 Ktor 플러그인과 HTTP 경계로 노출합니다. **TinkerGraph**를 써서 저장소 모델과 웹 계층을 나누어 검증합니다. 먼저 [핵심 모델](../architecture/core-model.md), [TinkerPop](../backends/tinkerpop.md), [Ktor 연동](../frameworks/ktor.md)을 읽습니다.
 
 ## 그래프 모델
 
@@ -20,7 +20,7 @@ JDK 21, 커밋 `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, 저장소의 Gradle W
 ./gradlew :ktor-graph-examples:test --tests "io.bluetape4k.graph.examples.ktor.KtorGraphAppTest"
 ```
 
-라우트 테스트는 초기화 응답이 `reset`인지, 도시가 세 개인지, 경로가 `Seoul -> Daejeon -> Busan`인지 검증합니다. 실패하면 plugin 초기화, 응답 직렬화, 그래프 고정 데이터와 탐색을 나누어 진단합니다.
+라우트 테스트는 초기화 응답이 `reset`인지, 도시가 세 개인지, 경로가 `Seoul -> Daejeon -> Busan`인지 검증합니다. 실패하면 플러그인 초기화, 응답 직렬화, 그래프 고정 데이터와 탐색을 나누어 진단합니다.
 
 ## 코드 읽는 순서
 

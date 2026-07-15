@@ -20,7 +20,7 @@ JDK 21, 커밋 `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, 저장소의 Gradle W
 ./gradlew :knowledge-graph-examples:test --tests "io.bluetape4k.graph.examples.knowledge.TinkerGraphKnowledgeGraphTest"
 ```
 
-테스트는 관련 개체를 고르고 문서에서 개념으로 이어지는 설명 경로를 찾는지 검증합니다. 실패하면 관계 방향, 개념 연결, 설명 경로의 탐색 한도를 확인합니다.
+테스트는 문서가 예상 개체를 언급하는지, 개체가 예상 개념으로 분류되는지를 서로 나눠 검증합니다. 실패하면 언급 관계의 방향, 개념 분류, 탐색 범위를 확인합니다.
 
 ## 코드 읽는 순서
 

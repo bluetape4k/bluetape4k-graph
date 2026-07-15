@@ -8,7 +8,7 @@
 
 고수준 DAEAD 함수는 파일 두 개가 필요한 CSV를 거부한다. 두 파일의 키, associated data, 이름, 원자적 공개 방식을 직접 정한 경우에만 저수준 wrapper를 조합한다. [`OkioRoundTripTest.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/okio/src/test/kotlin/io/bluetape4k/graph/io/okio/OkioRoundTripTest.kt)가 이 실패 경계를 검증한다.
 
-잘못된 associated data, 잘린 암호문과 압축 스트림, 압축 해제 한도, XXE 차단, source/sink 소유권, atomic write 정리를 반드시 시험한다. 릴리스 근거는 [`GraphIoOkioPathsTest.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/okio/src/test/kotlin/io/bluetape4k/graph/io/okio/GraphIoOkioPathsTest.kt)와 [`NegativePathTest.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/okio/src/test/kotlin/io/bluetape4k/graph/io/okio/NegativePathTest.kt)다.
+잘못된 연관 데이터, 잘린 암호문과 압축 스트림, 압축 해제 한도, XXE 차단, 입출력 소유권, 원자적 쓰기 정리를 반드시 시험한다. 릴리스 근거는 [`GraphIoOkioPathsTest.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/okio/src/test/kotlin/io/bluetape4k/graph/io/okio/GraphIoOkioPathsTest.kt)와 [`NegativePathTest.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/okio/src/test/kotlin/io/bluetape4k/graph/io/okio/NegativePathTest.kt)다.
 
 ## 압축하고 인증 암호화한다
 
@@ -36,7 +36,7 @@ check(out.verticesWritten == input.verticesCreated)
 
 ## 음수 경로를 확인한다
 
-associated data를 `wrong`으로 바꾸면 record를 받기 전에 인증 실패가 나야 한다. 암호문이나 gzip을 자르면 I/O·인증 오류가 나야 하고, 두 크기 제한을 payload보다 작게 잡으면 메모리를 계속 늘리지 않고 실패해야 한다. `atomicWrite=true`에서 sink 쓰기 오류를 주입하면 기존 대상은 그대로이고 임시 파일은 없어야 한다. 결과가 다르면 DB 재시도부터 하지 말고 wrapper 순서와 자원 소유권을 확인한다.
+연관 데이터를 `wrong`으로 바꾸면 레코드를 받기 전에 인증 실패가 나야 한다. 암호문이나 gzip을 자르면 I/O·인증 오류가 나야 하고, 두 크기 제한을 페이로드보다 작게 잡으면 메모리를 계속 늘리지 않고 실패해야 한다. `atomicWrite=true`에서 출력 쓰기 오류를 주입하면 기존 대상은 그대로이고 임시 파일은 없어야 한다. 결과가 다르면 DB 재시도부터 하지 말고 래퍼 순서와 자원 소유권을 확인한다.
 
 ```bash
 ./gradlew :bluetape4k-graph-okio:test --tests '*GraphIoOkioPathsTest' --tests '*NegativePathTest' --tests '*OkioRoundTripTest'

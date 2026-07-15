@@ -20,7 +20,7 @@ JDK 21, 커밋 `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, 저장소의 Gradle W
 ./gradlew :recommendation-examples:test --tests "io.bluetape4k.graph.examples.recommendation.TinkerGraphRecommendationTest"
 ```
 
-테스트는 `p-tripod`과 `u-carol`이 추천되고 `p-camera`가 상위 세 개 안에 남는지 검증합니다. 실패하면 상호작용 가중치, 후보 필터, 순위 계산 순서를 확인합니다.
+테스트는 상품 추천에 `p-tripod`이 포함되는지, 팔로우 추천에 `u-carol`이 포함되는지, 상품 순위 결과에 `p-camera`가 포함되는지를 각각 검증합니다. 실패하면 상호작용 가중치, 후보 필터, 순위 계산 순서를 확인합니다.
 
 ## 코드 읽는 순서
 

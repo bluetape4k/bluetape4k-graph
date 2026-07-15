@@ -20,7 +20,7 @@ Use JDK 21, commit `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, and the checked-i
 ./gradlew :knowledge-graph-examples:test --tests "io.bluetape4k.graph.examples.knowledge.TinkerGraphKnowledgeGraphTest"
 ```
 
-The test asserts that related entities are selected and that a document-to-concept explanation path exists. A failure usually comes from relation direction, concept linking, or the explanation traversal limit.
+The tests assert two distinct relations: a document mentions the expected entities, and an entity is classified under the expected concept. A failure usually comes from mention direction, concept classification, or the traversal bound.
 
 ## Reading order
 

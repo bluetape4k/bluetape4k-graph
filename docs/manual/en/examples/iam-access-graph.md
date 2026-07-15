@@ -20,7 +20,7 @@ Use JDK 21, commit `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, and the checked-i
 ./gradlew :iam-access-graph-examples:test --tests "io.bluetape4k.graph.examples.iam.TinkerGraphIamAccessGraphTest"
 ```
 
-The test asserts that the allowed access path passes through `group:engineering`, `role:deployer-role`, and the break-glass grant. A failure means the principal-to-role direction, policy expansion, or deny boundary needs inspection.
+The tests assert two independent grants: inherited group access passes through `group:engineering` and `role:deployer-role`, while temporary emergency access passes through `grant:break-glass-1001`. A failure means the principal-to-role direction, policy expansion, or deny boundary needs inspection.
 
 ## Reading order
 

@@ -2,7 +2,7 @@
 
 ## 문제와 백엔드
 
-의존성, 담당 팀, 경보, 원인을 연결해 흩어진 telemetry를 하나의 진단 경로로 만듭니다. **TinkerGraph**를 써서 컨테이너와 네트워크 편차를 빼고 모델부터 검증합니다. 먼저 [핵심 모델](../architecture/core-model.md)과 [TinkerPop](../backends/tinkerpop.md)을 읽고, 운영 전에는 [선택 가이드](../backends/selection-guide.md)를 적용합니다.
+의존성, 담당 팀, 경보를 연결해 흩어진 텔레메트리를 하나의 진단 경로로 만듭니다. **TinkerGraph**를 써서 컨테이너와 네트워크 편차를 빼고 모델부터 검증합니다. 먼저 [핵심 모델](../architecture/core-model.md)과 [TinkerPop](../backends/tinkerpop.md)을 읽고, 운영 전에는 [선택 가이드](../backends/selection-guide.md)를 적용합니다.
 
 ## 그래프 모델
 
@@ -20,7 +20,7 @@ JDK 21, 커밋 `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, 저장소의 Gradle W
 ./gradlew :observability-graph-examples:test --tests "io.bluetape4k.graph.examples.observability.TinkerGraphObservabilityIncidentTest"
 ```
 
-테스트는 의존성 영향, 담당 팀 조회, 경보 연결, 근본 원인 식별자를 각각 검증합니다. 실패한 항목에 해당하는 telemetry 관계나 correlation 경로부터 확인하면 전체 모델 문제와 국소 연결 문제를 구분할 수 있습니다.
+테스트는 하류 의존성, 영향을 받는 상류 서비스와 공개 API, 여러 경보가 만나는 서비스 경계, 담당 팀을 각각 검증합니다. 실패한 항목에 해당하는 텔레메트리 관계나 상관 경로부터 확인하면 전체 모델 문제와 일부 연결 문제를 구분할 수 있습니다.
 
 ## 코드 읽는 순서
 
