@@ -78,370 +78,370 @@ modules:
   projectName: bluetape4k-graph-age
   sourceDir: graph/graph-age
   kind: library
+  group: backends
   artifact: io.github.bluetape4k.graph:bluetape4k-graph-age
   status: stable
   sourcePaths:
   - graph/graph-age
-  routes:
-    en: en/modules/bluetape4k-graph-age.md
-    ko: ko/modules/bluetape4k-graph-age.md
+  en: en/modules/bluetape4k-graph-age.md
+  ko: ko/modules/bluetape4k-graph-age.md
 - id: bluetape4k-graph-bom
   gradlePath: ":bluetape4k-graph-bom"
   projectName: bluetape4k-graph-bom
   sourceDir: bom
   kind: library
+  group: foundation
   artifact: io.github.bluetape4k.graph:bluetape4k-graph-bom
   status: stable
   sourcePaths:
   - bom
-  routes:
-    en: en/modules/bluetape4k-graph-bom.md
-    ko: ko/modules/bluetape4k-graph-bom.md
+  en: en/modules/bluetape4k-graph-bom.md
+  ko: ko/modules/bluetape4k-graph-bom.md
 - id: bluetape4k-graph-core
   gradlePath: ":bluetape4k-graph-core"
   projectName: bluetape4k-graph-core
   sourceDir: graph/graph-core
   kind: library
+  group: foundation
   artifact: io.github.bluetape4k.graph:bluetape4k-graph-core
   status: stable
   sourcePaths:
   - graph/graph-core
-  routes:
-    en: en/modules/bluetape4k-graph-core.md
-    ko: ko/modules/bluetape4k-graph-core.md
+  en: en/modules/bluetape4k-graph-core.md
+  ko: ko/modules/bluetape4k-graph-core.md
 - id: bluetape4k-graph-falkordb
   gradlePath: ":bluetape4k-graph-falkordb"
   projectName: bluetape4k-graph-falkordb
   sourceDir: graph/graph-falkordb
   kind: library
+  group: backends
   artifact: io.github.bluetape4k.graph:bluetape4k-graph-falkordb
   status: stable
   sourcePaths:
   - graph/graph-falkordb
-  routes:
-    en: en/modules/bluetape4k-graph-falkordb.md
-    ko: ko/modules/bluetape4k-graph-falkordb.md
+  en: en/modules/bluetape4k-graph-falkordb.md
+  ko: ko/modules/bluetape4k-graph-falkordb.md
 - id: bluetape4k-graph-io-core
   gradlePath: ":bluetape4k-graph-io-core"
   projectName: bluetape4k-graph-io-core
   sourceDir: graph-io/core
   kind: library
+  group: graph-io
   artifact: io.github.bluetape4k.graph:bluetape4k-graph-io-core
   status: stable
   sourcePaths:
   - graph-io/core
-  routes:
-    en: en/modules/bluetape4k-graph-io-core.md
-    ko: ko/modules/bluetape4k-graph-io-core.md
+  en: en/modules/bluetape4k-graph-io-core.md
+  ko: ko/modules/bluetape4k-graph-io-core.md
 - id: bluetape4k-graph-io-csv
   gradlePath: ":bluetape4k-graph-io-csv"
   projectName: bluetape4k-graph-io-csv
   sourceDir: graph-io/csv
   kind: library
+  group: graph-io
   artifact: io.github.bluetape4k.graph:bluetape4k-graph-io-csv
   status: stable
   sourcePaths:
   - graph-io/csv
-  routes:
-    en: en/modules/bluetape4k-graph-io-csv.md
-    ko: ko/modules/bluetape4k-graph-io-csv.md
+  en: en/modules/bluetape4k-graph-io-csv.md
+  ko: ko/modules/bluetape4k-graph-io-csv.md
 - id: bluetape4k-graph-io-graphml
   gradlePath: ":bluetape4k-graph-io-graphml"
   projectName: bluetape4k-graph-io-graphml
   sourceDir: graph-io/graphml
   kind: library
+  group: graph-io
   artifact: io.github.bluetape4k.graph:bluetape4k-graph-io-graphml
   status: stable
   sourcePaths:
   - graph-io/graphml
-  routes:
-    en: en/modules/bluetape4k-graph-io-graphml.md
-    ko: ko/modules/bluetape4k-graph-io-graphml.md
+  en: en/modules/bluetape4k-graph-io-graphml.md
+  ko: ko/modules/bluetape4k-graph-io-graphml.md
 - id: bluetape4k-graph-io-jackson2
   gradlePath: ":bluetape4k-graph-io-jackson2"
   projectName: bluetape4k-graph-io-jackson2
   sourceDir: graph-io/jackson2
   kind: library
+  group: graph-io
   artifact: io.github.bluetape4k.graph:bluetape4k-graph-io-jackson2
   status: stable
   sourcePaths:
   - graph-io/jackson2
-  routes:
-    en: en/modules/bluetape4k-graph-io-jackson2.md
-    ko: ko/modules/bluetape4k-graph-io-jackson2.md
+  en: en/modules/bluetape4k-graph-io-jackson2.md
+  ko: ko/modules/bluetape4k-graph-io-jackson2.md
 - id: bluetape4k-graph-io-jackson3
   gradlePath: ":bluetape4k-graph-io-jackson3"
   projectName: bluetape4k-graph-io-jackson3
   sourceDir: graph-io/jackson3
   kind: library
+  group: graph-io
   artifact: io.github.bluetape4k.graph:bluetape4k-graph-io-jackson3
   status: stable
   sourcePaths:
   - graph-io/jackson3
-  routes:
-    en: en/modules/bluetape4k-graph-io-jackson3.md
-    ko: ko/modules/bluetape4k-graph-io-jackson3.md
+  en: en/modules/bluetape4k-graph-io-jackson3.md
+  ko: ko/modules/bluetape4k-graph-io-jackson3.md
 - id: bluetape4k-graph-ktor
   gradlePath: ":bluetape4k-graph-ktor"
   projectName: bluetape4k-graph-ktor
   sourceDir: ktor/graph-ktor
   kind: library
+  group: frameworks
   artifact: io.github.bluetape4k.graph:bluetape4k-graph-ktor
   status: stable
   sourcePaths:
   - ktor/graph-ktor
-  routes:
-    en: en/modules/bluetape4k-graph-ktor.md
-    ko: ko/modules/bluetape4k-graph-ktor.md
+  en: en/modules/bluetape4k-graph-ktor.md
+  ko: ko/modules/bluetape4k-graph-ktor.md
 - id: bluetape4k-graph-memgraph
   gradlePath: ":bluetape4k-graph-memgraph"
   projectName: bluetape4k-graph-memgraph
   sourceDir: graph/graph-memgraph
   kind: library
+  group: backends
   artifact: io.github.bluetape4k.graph:bluetape4k-graph-memgraph
   status: stable
   sourcePaths:
   - graph/graph-memgraph
-  routes:
-    en: en/modules/bluetape4k-graph-memgraph.md
-    ko: ko/modules/bluetape4k-graph-memgraph.md
+  en: en/modules/bluetape4k-graph-memgraph.md
+  ko: ko/modules/bluetape4k-graph-memgraph.md
 - id: bluetape4k-graph-neo4j
   gradlePath: ":bluetape4k-graph-neo4j"
   projectName: bluetape4k-graph-neo4j
   sourceDir: graph/graph-neo4j
   kind: library
+  group: backends
   artifact: io.github.bluetape4k.graph:bluetape4k-graph-neo4j
   status: stable
   sourcePaths:
   - graph/graph-neo4j
-  routes:
-    en: en/modules/bluetape4k-graph-neo4j.md
-    ko: ko/modules/bluetape4k-graph-neo4j.md
+  en: en/modules/bluetape4k-graph-neo4j.md
+  ko: ko/modules/bluetape4k-graph-neo4j.md
 - id: bluetape4k-graph-okio
   gradlePath: ":bluetape4k-graph-okio"
   projectName: bluetape4k-graph-okio
   sourceDir: graph-io/okio
   kind: library
+  group: graph-io
   artifact: io.github.bluetape4k.graph:bluetape4k-graph-okio
   status: stable
   sourcePaths:
   - graph-io/okio
-  routes:
-    en: en/modules/graph-okio.md
-    ko: ko/modules/graph-okio.md
+  en: en/modules/graph-okio.md
+  ko: ko/modules/graph-okio.md
 - id: bluetape4k-graph-spring-boot
   gradlePath: ":bluetape4k-graph-spring-boot"
   projectName: bluetape4k-graph-spring-boot
   sourceDir: spring-boot/graph-spring-boot
   kind: library
+  group: frameworks
   artifact: io.github.bluetape4k.graph:bluetape4k-graph-spring-boot
   status: stable
   sourcePaths:
   - spring-boot/graph-spring-boot
-  routes:
-    en: en/modules/bluetape4k-graph-spring-boot.md
-    ko: ko/modules/bluetape4k-graph-spring-boot.md
+  en: en/modules/bluetape4k-graph-spring-boot.md
+  ko: ko/modules/bluetape4k-graph-spring-boot.md
 - id: bluetape4k-graph-tinkerpop
   gradlePath: ":bluetape4k-graph-tinkerpop"
   projectName: bluetape4k-graph-tinkerpop
   sourceDir: graph/graph-tinkerpop
   kind: library
+  group: backends
   artifact: io.github.bluetape4k.graph:bluetape4k-graph-tinkerpop
   status: stable
   sourcePaths:
   - graph/graph-tinkerpop
-  routes:
-    en: en/modules/bluetape4k-graph-tinkerpop.md
-    ko: ko/modules/bluetape4k-graph-tinkerpop.md
+  en: en/modules/bluetape4k-graph-tinkerpop.md
+  ko: ko/modules/bluetape4k-graph-tinkerpop.md
 - id: code-graph-examples
   gradlePath: ":code-graph-examples"
   projectName: code-graph-examples
   sourceDir: examples/code-graph-examples
   kind: example
+  group: examples
   artifact:
   status: stable
   sourcePaths:
   - examples/code-graph-examples
-  routes:
-    en: en/examples/code-graph.md
-    ko: ko/examples/code-graph.md
+  en: en/examples/code-graph.md
+  ko: ko/examples/code-graph.md
 - id: data-lineage-examples
   gradlePath: ":data-lineage-examples"
   projectName: data-lineage-examples
   sourceDir: examples/data-lineage-examples
   kind: example
+  group: examples
   artifact:
   status: stable
   sourcePaths:
   - examples/data-lineage-examples
-  routes:
-    en: en/examples/data-lineage.md
-    ko: ko/examples/data-lineage.md
+  en: en/examples/data-lineage.md
+  ko: ko/examples/data-lineage.md
 - id: fraud-detection-examples
   gradlePath: ":fraud-detection-examples"
   projectName: fraud-detection-examples
   sourceDir: examples/fraud-detection-examples
   kind: example
+  group: examples
   artifact:
   status: stable
   sourcePaths:
   - examples/fraud-detection-examples
-  routes:
-    en: en/examples/fraud-detection.md
-    ko: ko/examples/fraud-detection.md
+  en: en/examples/fraud-detection.md
+  ko: ko/examples/fraud-detection.md
 - id: graph-age-benchmark
   gradlePath: ":graph-age-benchmark"
   projectName: graph-age-benchmark
   sourceDir: benchmark/graph-age-benchmark
   kind: benchmark
+  group: benchmarks
   artifact:
   status: stable
   sourcePaths:
   - benchmark/graph-age-benchmark
-  routes:
-    en: en/benchmarks/age-and-neo4j.md
-    ko: ko/benchmarks/age-and-neo4j.md
+  en: en/benchmarks/age-and-neo4j.md
+  ko: ko/benchmarks/age-and-neo4j.md
 - id: graph-benchmark
   gradlePath: ":graph-benchmark"
   projectName: graph-benchmark
   sourceDir: benchmark/graph-benchmark
   kind: benchmark
+  group: benchmarks
   artifact:
   status: stable
   sourcePaths:
   - benchmark/graph-benchmark
-  routes:
-    en: en/benchmarks/graph-operations.md
-    ko: ko/benchmarks/graph-operations.md
+  en: en/benchmarks/graph-operations.md
+  ko: ko/benchmarks/graph-operations.md
 - id: graph-io-benchmark
   gradlePath: ":graph-io-benchmark"
   projectName: graph-io-benchmark
   sourceDir: benchmark/graph-io-benchmark
   kind: benchmark
+  group: benchmarks
   artifact:
   status: stable
   sourcePaths:
   - benchmark/graph-io-benchmark
-  routes:
-    en: en/benchmarks/graph-io.md
-    ko: ko/benchmarks/graph-io.md
+  en: en/benchmarks/graph-io.md
+  ko: ko/benchmarks/graph-io.md
 - id: graph-neo4j-benchmark
   gradlePath: ":graph-neo4j-benchmark"
   projectName: graph-neo4j-benchmark
   sourceDir: benchmark/graph-neo4j-benchmark
   kind: benchmark
+  group: benchmarks
   artifact:
   status: stable
   sourcePaths:
   - benchmark/graph-neo4j-benchmark
-  routes:
-    en: en/benchmarks/age-and-neo4j.md
-    ko: ko/benchmarks/age-and-neo4j.md
+  en: en/benchmarks/age-and-neo4j.md
+  ko: ko/benchmarks/age-and-neo4j.md
 - id: iam-access-graph-examples
   gradlePath: ":iam-access-graph-examples"
   projectName: iam-access-graph-examples
   sourceDir: examples/iam-access-graph-examples
   kind: example
+  group: examples
   artifact:
   status: stable
   sourcePaths:
   - examples/iam-access-graph-examples
-  routes:
-    en: en/examples/iam-access-graph.md
-    ko: ko/examples/iam-access-graph.md
+  en: en/examples/iam-access-graph.md
+  ko: ko/examples/iam-access-graph.md
 - id: knowledge-graph-examples
   gradlePath: ":knowledge-graph-examples"
   projectName: knowledge-graph-examples
   sourceDir: examples/knowledge-graph-examples
   kind: example
+  group: examples
   artifact:
   status: stable
   sourcePaths:
   - examples/knowledge-graph-examples
-  routes:
-    en: en/examples/knowledge-graph.md
-    ko: ko/examples/knowledge-graph.md
+  en: en/examples/knowledge-graph.md
+  ko: ko/examples/knowledge-graph.md
 - id: ktor-graph-examples
   gradlePath: ":ktor-graph-examples"
   projectName: ktor-graph-examples
   sourceDir: examples/ktor-graph-examples
   kind: example
+  group: examples
   artifact:
   status: stable
   sourcePaths:
   - examples/ktor-graph-examples
-  routes:
-    en: en/examples/ktor-graph.md
-    ko: ko/examples/ktor-graph.md
+  en: en/examples/ktor-graph.md
+  ko: ko/examples/ktor-graph.md
 - id: linkedin-graph-examples
   gradlePath: ":linkedin-graph-examples"
   projectName: linkedin-graph-examples
   sourceDir: examples/linkedin-graph-examples
   kind: example
+  group: examples
   artifact:
   status: stable
   sourcePaths:
   - examples/linkedin-graph-examples
-  routes:
-    en: en/examples/linkedin-graph.md
-    ko: ko/examples/linkedin-graph.md
+  en: en/examples/linkedin-graph.md
+  ko: ko/examples/linkedin-graph.md
 - id: network-topology-examples
   gradlePath: ":network-topology-examples"
   projectName: network-topology-examples
   sourceDir: examples/network-topology-examples
   kind: example
+  group: examples
   artifact:
   status: stable
   sourcePaths:
   - examples/network-topology-examples
-  routes:
-    en: en/examples/network-topology.md
-    ko: ko/examples/network-topology.md
+  en: en/examples/network-topology.md
+  ko: ko/examples/network-topology.md
 - id: observability-graph-examples
   gradlePath: ":observability-graph-examples"
   projectName: observability-graph-examples
   sourceDir: examples/observability-graph-examples
   kind: example
+  group: examples
   artifact:
   status: stable
   sourcePaths:
   - examples/observability-graph-examples
-  routes:
-    en: en/examples/observability-graph.md
-    ko: ko/examples/observability-graph.md
+  en: en/examples/observability-graph.md
+  ko: ko/examples/observability-graph.md
 - id: recommendation-examples
   gradlePath: ":recommendation-examples"
   projectName: recommendation-examples
   sourceDir: examples/recommendation-examples
   kind: example
+  group: examples
   artifact:
   status: stable
   sourcePaths:
   - examples/recommendation-examples
-  routes:
-    en: en/examples/recommendation.md
-    ko: ko/examples/recommendation.md
+  en: en/examples/recommendation.md
+  ko: ko/examples/recommendation.md
 - id: security-attack-path-examples
   gradlePath: ":security-attack-path-examples"
   projectName: security-attack-path-examples
   sourceDir: examples/security-attack-path-examples
   kind: example
+  group: examples
   artifact:
   status: stable
   sourcePaths:
   - examples/security-attack-path-examples
-  routes:
-    en: en/examples/security-attack-path.md
-    ko: ko/examples/security-attack-path.md
+  en: en/examples/security-attack-path.md
+  ko: ko/examples/security-attack-path.md
 - id: supply-chain-graph-examples
   gradlePath: ":supply-chain-graph-examples"
   projectName: supply-chain-graph-examples
   sourceDir: examples/supply-chain-graph-examples
   kind: example
+  group: examples
   artifact:
   status: stable
   sourcePaths:
   - examples/supply-chain-graph-examples
-  routes:
-    en: en/examples/supply-chain-graph.md
-    ko: ko/examples/supply-chain-graph.md
+  en: en/examples/supply-chain-graph.md
+  ko: ko/examples/supply-chain-graph.md
