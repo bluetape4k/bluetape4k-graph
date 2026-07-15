@@ -10,6 +10,20 @@
 | TinkerPop | JVM 안의 TinkerGraph, Gremlin | 메모리 구현 의미론 | 제한된 manager capability | 컨테이너 없음 | 원격 서버를 대신하지 않음 |
 | FalkorDB | Redis 형태 서비스, openCypher 일부 | 라이브러리·서버 제약 | 전용 인덱스 | FalkorDB 컨테이너 | 미지원 트랜잭션 경로 확인 |
 
-구현 근거: [Neo4j](../../../../graph/graph-neo4j/src/test/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperationsTest.kt), [Memgraph](../../../../graph/graph-memgraph/src/test/kotlin/io/bluetape4k/graph/memgraph/MemgraphGraphOperationsTest.kt), [AGE](../../../../graph/graph-age/src/test/kotlin/io/bluetape4k/graph/age/AgeGraphOperationsTest.kt), [TinkerGraph](../../../../graph/graph-tinkerpop/src/test/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphOperationsTest.kt), [FalkorDB](../../../../graph/graph-falkordb/src/test/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphOperationsTest.kt).
+구현 근거: [Neo4j](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/src/test/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperationsTest.kt), [Memgraph](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-memgraph/src/test/kotlin/io/bluetape4k/graph/memgraph/MemgraphGraphOperationsTest.kt), [AGE](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/src/test/kotlin/io/bluetape4k/graph/age/AgeGraphOperationsTest.kt), [TinkerGraph](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-tinkerpop/src/test/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphOperationsTest.kt), [FalkorDB](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-falkordb/src/test/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphOperationsTest.kt).
 
 Amazon Neptune은 Graph 0.5.1에서 구현되지 않았고 지원 대상도 아니다. 계획이나 백로그를 지원 근거로 삼지 않는다. 이식성이 필요하면 후보마다 트랜잭션, 스키마, ID, 속성 형식, 순회 결과를 기록한다.
+
+## 최종 후보 둘을 검증한다
+
+0.5.1 테스트를 백엔드별로 따로 실행한다.
+
+```bash
+./gradlew :bluetape4k-graph-neo4j:test --tests '*Neo4jGraphMergeOperationsTest' --tests '*Neo4jGraphSchemaManagerTest'
+./gradlew :bluetape4k-graph-memgraph:test --tests '*MemgraphGraphMergeOperationsTest' --tests '*MemgraphGraphSchemaManagerTest'
+./gradlew :bluetape4k-graph-age:test --tests '*AgeGraphMergeOperationsTest' --tests '*AgeGraphSchemaManagerTest'
+./gradlew :bluetape4k-graph-tinkerpop:test --tests '*TinkerGraphMergeOperationsTest' --tests '*TinkerGraphTransactionTest'
+./gradlew :bluetape4k-graph-falkordb:test --tests '*FalkorDBGraphMergeOperationsTest' --tests '*FalkorDBGraphSchemaManagerTest'
+```
+
+컨테이너 이미지나 메모리 fixture, 생성된 정점·간선 수, 중복 merge 결과, rollback 뒤 개수, index/constraint 목록, `shortestPath` 하나를 표로 남긴다. 잘못된 identifier와 트랜잭션 예외도 일부러 넣는다. 실패 유형과 실패 뒤 개수가 복구 설계에 맞는 후보만 남긴다. 마지막으로 운영 서버 버전에서 같은 검증을 반복하고 fixture와 호출자의 자원 소유권에 맞춰 종료한다.

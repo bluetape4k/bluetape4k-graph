@@ -7,8 +7,19 @@ Build a test pyramid around semantics:
 3. Use the release's Testcontainers fixtures for backend query, schema, transaction, merge, and batch behavior.
 4. Add graph-io round trips and negative paths for every format used in production.
 
-The examples demonstrate abstract shared tests plus concrete backend lifecycles; see [`AbstractRecommendationTest.kt`](../../../../examples/recommendation-examples/src/test/kotlin/io/bluetape4k/graph/examples/recommendation/AbstractRecommendationTest.kt) and [`RecommendationBackendTests.kt`](../../../../examples/recommendation-examples/src/test/kotlin/io/bluetape4k/graph/examples/recommendation/RecommendationBackendTests.kt).
+The examples demonstrate abstract shared tests plus concrete backend lifecycles; see [`AbstractRecommendationTest.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/recommendation-examples/src/test/kotlin/io/bluetape4k/graph/examples/recommendation/AbstractRecommendationTest.kt) and [`RecommendationBackendTests.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/recommendation-examples/src/test/kotlin/io/bluetape4k/graph/examples/recommendation/RecommendationBackendTests.kt).
 
 Assert IDs only for presence/equality, not backend syntax. Test direction and depth limits, duplicate merge keys, empty and failing batches, transaction rollback/cancellation, unsupported schema operations, malformed import records, unresolved external IDs, and resource closure.
 
 Container success is local evidence, not production equivalence. Record image/version, configuration, retries, and lifecycle timing so a pass-after-retry does not hide startup or resource conflicts.
+
+## Run, observe, and diagnose
+
+```bash
+./gradlew :bluetape4k-graph-core:test --tests '*GraphMergeOperationsTest' --tests '*GraphBatchOperationsTest'
+./gradlew :bluetape4k-graph-tinkerpop:test --tests '*TinkerGraphTransactionTest'
+./gradlew :bluetape4k-graph-neo4j:test --tests '*Neo4jGraphOperationsTest'
+./gradlew :graph-okio:test --tests '*NegativePathTest'
+```
+
+Expected evidence is ordered batch output, one ID after duplicate merge, unchanged count after forced rollback, matching container CRUD counts, and preserved files after OkIO failures. Inject an unsafe label, transaction exception, stopped container, and truncated gzip. Classify failures by the first failing layer: core validation, repository capability, server lifecycle/query, then file codec/security. Do not rerun a container until green without recording startup timing and the first error.
