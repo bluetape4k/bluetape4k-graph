@@ -43,7 +43,21 @@ Expected: plugin state is available after installation and the route returns the
 
 ## Verify shutdown and diagnose ownership
 
-The managed `neo4j { ... }` DSL creates and closes operations plus Driver on `ApplicationStopped`. For a caller-owned Driver, construct sync/suspend operations and use `operations(sync, suspend)`; plugin close is deduplicated for those operations, but Driver ownership remains with the caller. Test both alternatives:
+The managed `neo4j { ... }` DSL creates and closes operations plus Driver on `ApplicationStopped`. A preconstructed pair follows the separate [`GraphPluginConfig.operations`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/ktor/graph-ktor/src/main/kotlin/io/bluetape4k/graph/ktor/GraphPluginConfig.kt) contract:
+
+```kotlin
+// Default: the caller or DI container closes both operations.
+install(GraphPlugin) {
+    operations(sync, suspend) // closeOnStop = false
+}
+
+// Explicit handoff: the plugin closes the operations on ApplicationStopped.
+install(GraphPlugin) {
+    operations(sync, suspend, closeOnStop = true)
+}
+```
+
+Only the `closeOnStop = true` branch registers close actions and deduplicates the two operations by object identity before closing each object once. With the default `false`, the plugin closes neither operations object. In both branches, a Driver used to construct those operations remains separately caller-owned because graph operations do not close an injected Driver. Test both alternatives:
 
 ```bash
 ./gradlew :bluetape4k-graph-ktor:test --tests '*GraphPluginTest' --tests '*BackendGraphPluginRuntimeTest'
