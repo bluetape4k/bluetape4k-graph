@@ -49,12 +49,17 @@ module ManualDocs
       errors << "manual manifest stableMinor must be #{@expected_release.fetch('ref').split('.')[0, 2].join('.')}" unless manifest["stableMinor"] == @expected_release.fetch("ref").split(".")[0, 2].join(".")
       errors << "manual manifest releaseTag must be #{@expected_release.fetch('ref')}" unless manifest["releaseTag"] == @expected_release.fetch("ref")
       errors << "manual manifest releaseCommit must be #{@expected_release.fetch('commit')}" unless manifest["releaseCommit"] == @expected_release.fetch("commit")
-      locales = manifest.dig("publication", "locales")
+      publication = manifest["publication"]
+      unless publication.is_a?(Hash)
+        errors << "manual publication must be a mapping"
+        return errors
+      end
+      locales = publication["locales"]
       errors << "manual publication locales must be en and ko" unless locales == %w[en ko]
       if @strict
-        errors << "manual publication manualVersion must be 0.5" unless manifest.dig("publication", "manualVersion") == "0.5"
-        errors << "manual publication sourceRoot must be docs/manual" unless manifest.dig("publication", "sourceRoot") == "docs/manual"
-        errors << "manual publication contentStatus must be complete" unless manifest.dig("publication", "contentStatus") == "complete"
+        errors << "manual publication manualVersion must be 0.5" unless publication["manualVersion"] == "0.5"
+        errors << "manual publication sourceRoot must be docs/manual" unless publication["sourceRoot"] == "docs/manual"
+        errors << "manual publication contentStatus must be complete" unless publication["contentStatus"] == "complete"
       end
       errors
     end
