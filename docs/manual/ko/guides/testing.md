@@ -19,7 +19,7 @@ ID의 모양을 단정하지 말고 존재와 동일성만 검증한다. 방향�
 ./gradlew :bluetape4k-graph-core:test --tests '*GraphMergeOperationsTest' --tests '*GraphBatchOperationsTest'
 ./gradlew :bluetape4k-graph-tinkerpop:test --tests '*TinkerGraphTransactionTest'
 ./gradlew :bluetape4k-graph-neo4j:test --tests '*Neo4jGraphOperationsTest'
-./gradlew :graph-okio:test --tests '*NegativePathTest'
+./gradlew :bluetape4k-graph-okio:test --tests '*NegativePathTest'
 ```
 
 batch 반환 순서, 중복 merge 뒤 ID 하나, 강제 rollback 뒤 그대로인 개수, 컨테이너 CRUD 개수, OkIO 실패 뒤 보존된 파일이 기대 결과다. 안전하지 않은 label, 트랜잭션 예외, 멈춘 컨테이너, 잘린 gzip을 넣는다. 첫 실패 계층을 core 검증, repository capability, 서버 생명주기·질의, 파일 codec·보안 순서로 가른다. 컨테이너를 재실행해 통과시키기 전에 첫 오류와 시작 시간을 기록한다.

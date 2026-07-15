@@ -66,7 +66,7 @@ Open each schema manager because the common API intentionally does not hide unsu
 
 ```bash
 ./gradlew :bluetape4k-graph-io-jackson3:test --tests '*Jackson3RoundTripTest' --tests '*Jackson3EdgeBufferOverflowTest'
-./gradlew :graph-okio:test --tests '*OkioRoundTripTest' --tests '*NegativePathTest'
+./gradlew :bluetape4k-graph-okio:test --tests '*OkioRoundTripTest' --tests '*NegativePathTest'
 ```
 
 Expect round-trip counts to match, early-edge overflow to stay bounded, wrong DAEAD context/truncation to fail, and atomic write failure to preserve the old target. Open `NegativePathTest` because it turns ownership and cleanup rules into observable file-system assertions. Only after these gates, run the benchmark module that matches the surviving decision and record its environment.

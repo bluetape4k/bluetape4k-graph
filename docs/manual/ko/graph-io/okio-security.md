@@ -37,5 +37,5 @@ check(out.verticesWritten == input.verticesCreated)
 associated data를 `wrong`으로 바꾸면 record를 받기 전에 인증 실패가 나야 한다. 암호문이나 gzip을 자르면 I/O·인증 오류가 나야 하고, 두 크기 제한을 payload보다 작게 잡으면 메모리를 계속 늘리지 않고 실패해야 한다. `atomicWrite=true`에서 sink 쓰기 오류를 주입하면 기존 대상은 그대로이고 임시 파일은 없어야 한다. 결과가 다르면 DB 재시도부터 하지 말고 wrapper 순서와 자원 소유권을 확인한다.
 
 ```bash
-./gradlew :graph-okio:test --tests '*GraphIoOkioPathsTest' --tests '*NegativePathTest' --tests '*OkioRoundTripTest'
+./gradlew :bluetape4k-graph-okio:test --tests '*GraphIoOkioPathsTest' --tests '*NegativePathTest' --tests '*OkioRoundTripTest'
 ```
