@@ -66,6 +66,18 @@ def route_for(row, benchmark_routes)
   end
 end
 
+def group_for(row)
+  return "examples" if row.fetch("kind") == "example"
+  return "benchmarks" if row.fetch("kind") == "benchmark"
+
+  source_dir = row.fetch("sourceDir")
+  return "foundation" if ["bom", "graph/graph-core"].include?(source_dir)
+  return "graph-io" if source_dir.start_with?("graph-io/")
+  return "frameworks" if source_dir.start_with?("ktor/", "spring-boot/")
+
+  "backends"
+end
+
 modules = rows.map do |row|
   kind = row.fetch("kind")
   {
@@ -74,13 +86,12 @@ modules = rows.map do |row|
     "projectName" => row.fetch("projectName"),
     "sourceDir" => row.fetch("sourceDir"),
     "kind" => kind,
+    "group" => group_for(row),
     "artifact" => kind == "library" ? "io.github.bluetape4k.graph:#{row.fetch('projectName')}" : nil,
     "status" => "stable",
     "sourcePaths" => [row.fetch("sourceDir")],
-    "routes" => {
-      "en" => "en/#{route_for(row, benchmark_routes)}",
-      "ko" => "ko/#{route_for(row, benchmark_routes)}",
-    },
+    "en" => "en/#{route_for(row, benchmark_routes)}",
+    "ko" => "ko/#{route_for(row, benchmark_routes)}",
   }
 end.sort_by { |row| row.fetch("id") }
 

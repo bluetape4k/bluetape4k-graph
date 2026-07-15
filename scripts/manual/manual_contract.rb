@@ -4,9 +4,10 @@ require "yaml"
 module ManualDocs
   SUPPORTED_SCHEMA_VERSION = 2
   VALID_KINDS = %w[library benchmark example].freeze
+  VALID_GROUPS = %w[foundation backends graph-io frameworks benchmarks examples].freeze
 
   class Validator
-    REQUIRED_FIELDS = %w[id gradlePath projectName sourceDir kind artifact status].freeze
+    REQUIRED_FIELDS = %w[id gradlePath projectName sourceDir kind group artifact status].freeze
     LOCALES = { "en" => "English", "ko" => "Korean" }.freeze
     attr_reader :errors
 
@@ -81,8 +82,12 @@ module ManualDocs
 
     def validate_entry(entry)
       errors = []
-      REQUIRED_FIELDS.each { |field| errors << "#{entry['id'] || 'module'}: missing manifest field #{field}" unless entry.key?(field) }
+      REQUIRED_FIELDS.each do |field|
+        missing = !entry.key?(field) || (field == "group" && entry[field].nil?)
+        errors << "#{entry['id'] || 'module'}: missing manifest field #{field}" if missing
+      end
       errors << "#{entry['id']}: invalid kind #{entry['kind'].inspect}" unless VALID_KINDS.include?(entry["kind"])
+      errors << "#{entry['id']}: invalid group #{entry['group'].inspect}" if !entry["group"].nil? && !VALID_GROUPS.include?(entry["group"])
       errors << "#{entry['id']}: library artifact must be present" if entry["kind"] == "library" && blank?(entry["artifact"])
       errors << "#{entry['id']}: #{entry['kind']} artifact must be null" if %w[benchmark example].include?(entry["kind"]) && !entry["artifact"].nil?
       errors << "#{entry['id']}: missing manifest field sourcePaths" if @strict && !entry.key?("sourcePaths")
@@ -90,7 +95,7 @@ module ManualDocs
         errors << "#{entry['id']}: sourcePaths must equal [sourceDir]"
       end
       errors.concat(validate_paths(entry, "sourcePaths")) if entry.key?("sourcePaths")
-      errors.concat(validate_routes(entry)) if entry.key?("routes") || @strict
+      errors.concat(validate_routes(entry)) if LOCALES.keys.any? { |locale| entry.key?(locale) } || @strict
       errors.concat(validate_assets(entry.fetch("assets", []), entry["id"]))
       errors
     end
@@ -139,7 +144,7 @@ module ManualDocs
     def validate_registered_documents(entries, locale_paths)
       manual_root = File.dirname(@manifest_path)
       LOCALES.keys.flat_map do |locale|
-        registered = Array(locale_paths[locale]) + entries.map { |entry| entry.dig("routes", locale) }.compact
+        registered = Array(locale_paths[locale]) + entries.map { |entry| entry[locale] }.compact
         actual = Dir.glob(File.join(manual_root, locale, "**/*.md")).map do |path|
           Pathname.new(path).relative_path_from(Pathname.new(manual_root)).to_s
         end
@@ -149,11 +154,9 @@ module ManualDocs
     end
 
     def validate_routes(entry)
-      routes = entry["routes"]
-      return ["#{entry['id']}: routes must be a mapping"] unless routes.is_a?(Hash)
       errors = []
       LOCALES.each do |locale, language|
-        path = routes[locale]
+        path = entry[locale]
         if blank?(path)
           errors << "#{entry['id']}: missing #{language} route"
           next
@@ -169,8 +172,8 @@ module ManualDocs
           errors.concat(validate_document_references(absolute, entry["id"]))
         end
       end
-      if routes["en"].is_a?(String) && routes["ko"].is_a?(String)
-        errors << "#{entry['id']}: English/Korean route differs" unless routes["en"].delete_prefix("en/") == routes["ko"].delete_prefix("ko/")
+      if entry["en"].is_a?(String) && entry["ko"].is_a?(String)
+        errors << "#{entry['id']}: English/Korean route differs" unless entry["en"].delete_prefix("en/") == entry["ko"].delete_prefix("ko/")
       end
       errors
     end

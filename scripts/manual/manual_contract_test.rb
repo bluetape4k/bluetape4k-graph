@@ -14,7 +14,7 @@ class ManualContractTest < Minitest::Test
       FileUtils.mkdir_p(source)
       File.write(File.join(source, "build.gradle.kts"), "")
       row = { "id" => "core", "gradlePath" => ":core", "projectName" => "core", "sourceDir" => "graph/core",
-              "kind" => "library", "artifact" => "g:core", "status" => "stable" }.merge(module_overrides)
+              "kind" => "library", "group" => "foundation", "artifact" => "g:core", "status" => "stable" }.merge(module_overrides)
       manifest = { "schemaVersion" => 2, "repository" => "bluetape4k-graph", "releaseRef" => RELEASE["ref"],
                    "stableVersion" => RELEASE["ref"], "stableMinor" => "0.5", "releaseTag" => RELEASE["ref"],
                    "releaseCommit" => RELEASE["commit"], "publication" => { "manualVersion" => "0.5", "locales" => %w[en ko] },
@@ -32,7 +32,7 @@ class ManualContractTest < Minitest::Test
   end
 
   def test_rejects_missing_locale_route_when_routes_are_declared
-    validate("routes" => { "en" => "en/modules/core.md" }) { |validator| assert validator.errors.any? { |e| e.include?("missing Korean route") } }
+    validate("en" => "en/modules/core.md") { |validator| assert validator.errors.any? { |e| e.include?("missing Korean route") } }
   end
 
   def test_rejects_missing_source_file
@@ -41,6 +41,12 @@ class ManualContractTest < Minitest::Test
 
   def test_rejects_release_mismatch
     validate({}, "releaseRef" => "0.5.0") { |validator| assert validator.errors.any? { |e| e.include?("releaseRef must be 0.5.1") } }
+  end
+
+  def test_rejects_missing_blank_or_unknown_module_group
+    validate({ "group" => nil }) { |validator| assert validator.errors.any? { |e| e.include?("missing manifest field group") } }
+    validate({ "group" => "" }) { |validator| assert validator.errors.any? { |e| e.include?("invalid group") } }
+    validate({ "group" => "other" }) { |validator| assert validator.errors.any? { |e| e.include?("invalid group") } }
   end
 
   def test_rejects_missing_canonical_release_header
@@ -54,7 +60,8 @@ class ManualContractTest < Minitest::Test
 
   def test_strict_mode_requires_routes_and_source_paths
     validate({}, {}, strict: true) do |validator|
-      assert validator.errors.any? { |e| e.include?("routes must be a mapping") }
+      assert validator.errors.any? { |e| e.include?("missing English route") }
+      assert validator.errors.any? { |e| e.include?("missing Korean route") }
       assert validator.errors.any? { |e| e.include?("missing manifest field sourcePaths") }
     end
   end
@@ -90,7 +97,7 @@ class ManualContractTest < Minitest::Test
 
   def test_strict_mode_rejects_missing_declared_asset
     validate({
-      "routes" => { "en" => "en/modules/core.md", "ko" => "ko/modules/core.md" },
+      "en" => "en/modules/core.md", "ko" => "ko/modules/core.md",
       "sourcePaths" => ["graph/core/build.gradle.kts"],
       "assets" => ["assets/missing.svg"],
     }, {}, strict: true) do |validator|
@@ -101,7 +108,7 @@ class ManualContractTest < Minitest::Test
 
   def test_strict_mode_requires_complete_locale_matched_overview_documents
     validate({
-      "routes" => { "en" => "en/modules/core.md", "ko" => "ko/modules/core.md" },
+      "en" => "en/modules/core.md", "ko" => "ko/modules/core.md",
       "sourcePaths" => ["graph/core/build.gradle.kts"],
     }, {
       "overview" => { "documents" => { "en" => ["en/index.md"], "ko" => ["ko/getting-started.md"] }, "assets" => [] },
@@ -112,7 +119,7 @@ class ManualContractTest < Minitest::Test
 
   def test_strict_mode_rejects_unregistered_manual_document
     validate({
-      "routes" => { "en" => "en/modules/core.md", "ko" => "ko/modules/core.md" },
+      "en" => "en/modules/core.md", "ko" => "ko/modules/core.md",
       "sourcePaths" => ["graph/core/build.gradle.kts"],
     }, {
       "overview" => { "documents" => { "en" => ["en/index.md"], "ko" => ["ko/index.md"] }, "assets" => [] },
@@ -143,14 +150,13 @@ class ManualContractTest < Minitest::Test
         File.write(File.join(manual_root, locale, "benchmarks/age-and-neo4j.md"), "# comparison\n")
       end
       rows = [
-        { "id" => "age", "gradlePath" => ":age", "projectName" => "age", "sourceDir" => "benchmark/age", "kind" => "benchmark", "artifact" => nil, "status" => "stable" },
-        { "id" => "neo4j", "gradlePath" => ":neo4j", "projectName" => "neo4j", "sourceDir" => "benchmark/neo4j", "kind" => "benchmark", "artifact" => nil, "status" => "stable" },
+        { "id" => "age", "gradlePath" => ":age", "projectName" => "age", "sourceDir" => "benchmark/age", "kind" => "benchmark", "group" => "benchmarks", "artifact" => nil, "status" => "stable" },
+        { "id" => "neo4j", "gradlePath" => ":neo4j", "projectName" => "neo4j", "sourceDir" => "benchmark/neo4j", "kind" => "benchmark", "group" => "benchmarks", "artifact" => nil, "status" => "stable" },
       ]
       rows.each { |row| FileUtils.mkdir_p(File.join(root, row.fetch("sourceDir"))) }
       modules = rows.map do |row|
-        row.merge("sourcePaths" => [row.fetch("sourceDir")], "routes" => {
-          "en" => "en/benchmarks/age-and-neo4j.md", "ko" => "ko/benchmarks/age-and-neo4j.md",
-        })
+        row.merge("sourcePaths" => [row.fetch("sourceDir")],
+          "en" => "en/benchmarks/age-and-neo4j.md", "ko" => "ko/benchmarks/age-and-neo4j.md")
       end
       manifest = {
         "schemaVersion" => 2, "repository" => "bluetape4k-graph", "releaseRef" => RELEASE["ref"],
