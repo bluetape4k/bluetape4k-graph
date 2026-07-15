@@ -2,7 +2,13 @@
 # frozen_string_literal: true
 
 require "fileutils"
+require "cgi"
 require "open3"
+require "rexml/document"
+require "tempfile"
+
+module ManualDiagrams
+  extend self
 
 ROOT = File.expand_path("../..", __dir__)
 WIDTH = 1600
@@ -24,6 +30,10 @@ ASSETS = {
   "framework-integration-flow" => "docs/manual/assets/frameworks/framework-integration-flow",
 }.freeze
 
+def xml(value)
+  CGI.escapeHTML(value.to_s)
+end
+
 def marker_defs
   COLORS.map do |name, color|
     <<~SVG
@@ -38,12 +48,12 @@ def card(id:, x:, y:, w:, h:, color:, title:, lines:, title_size: 34, line_size:
   line_gap = 34
   first_line = y + 92
   details = lines.each_with_index.map do |line, index|
-    %(<text class="detail" x="#{x + w / 2}" y="#{first_line + index * line_gap}" text-anchor="middle" font-size="#{line_size}">#{line}</text>)
+    %(<text class="detail" x="#{x + w / 2}" y="#{first_line + index * line_gap}" text-anchor="middle" font-size="#{line_size}">#{xml(line)}</text>)
   end.join("\n")
   <<~SVG
-    <g id="#{id}">
-      <rect class="card #{extra_class}" data-card-id="#{id}" x="#{x}" y="#{y}" width="#{w}" height="#{h}" rx="28" fill="#172238" stroke="#{COLORS.fetch(color)}" stroke-width="5"/>
-      <text class="card-title" x="#{x + w / 2}" y="#{y + 55}" text-anchor="middle" font-size="#{title_size}" fill="#{COLORS.fetch(color)}">#{title}</text>
+    <g id="#{xml(id)}">
+      <rect class="card #{xml(extra_class)}" data-card-id="#{xml(id)}" x="#{x}" y="#{y}" width="#{w}" height="#{h}" rx="28" fill="#172238" stroke="#{COLORS.fetch(color)}" stroke-width="5"/>
+      <text class="card-title" x="#{x + w / 2}" y="#{y + 55}" text-anchor="middle" font-size="#{title_size}" fill="#{COLORS.fetch(color)}">#{xml(title)}</text>
       #{details}
     </g>
   SVG
@@ -51,7 +61,7 @@ end
 
 def connector(id:, d:, route:, from:, to:, color:)
   <<~SVG
-    <path id="#{id}" class="connector" data-start-card="#{from}" data-end-card="#{to}" data-route="#{route}" d="#{d}" fill="none" stroke="#{COLORS.fetch(color)}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-#{color})"/>
+    <path id="#{xml(id)}" class="connector" data-start-card="#{xml(from)}" data-end-card="#{xml(to)}" data-route="#{xml(route)}" d="#{xml(d)}" fill="none" stroke="#{COLORS.fetch(color)}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-#{xml(color)})"/>
   SVG
 end
 
@@ -59,8 +69,8 @@ def svg(title:, subtitle:, body:, description:)
   <<~SVG
     <?xml version="1.0" encoding="UTF-8"?>
     <svg xmlns="http://www.w3.org/2000/svg" width="#{WIDTH}" height="#{HEIGHT}" viewBox="0 0 #{WIDTH} #{HEIGHT}" role="img" aria-labelledby="title desc">
-      <title id="title">#{title}</title>
-      <desc id="desc">#{description}</desc>
+      <title id="title">#{xml(title)}</title>
+      <desc id="desc">#{xml(description)}</desc>
       <defs>
         #{marker_defs}
         <filter id="shadow" x="-15%" y="-15%" width="130%" height="130%">
@@ -76,8 +86,8 @@ def svg(title:, subtitle:, body:, description:)
       </style>
       <rect width="1600" height="1040" fill="#0b1322"/>
       <rect class="frame" x="34" y="34" width="1532" height="972" rx="36"/>
-      <text class="heading" x="800" y="100" text-anchor="middle" font-size="52" fill="#f4f7fb">#{title}</text>
-      <text class="subtitle" x="800" y="142" text-anchor="middle" font-size="20">#{subtitle}</text>
+      <text class="heading" x="800" y="100" text-anchor="middle" font-size="52" fill="#f4f7fb">#{xml(title)}</text>
+      <text class="subtitle" x="800" y="142" text-anchor="middle" font-size="20">#{xml(subtitle)}</text>
       #{body}
     </svg>
   SVG
@@ -239,17 +249,98 @@ BUILDERS = {
   "framework-integration-flow" => method(:framework_integration_flow),
 }.freeze
 
-names = ARGV.empty? ? ASSETS.keys : ARGV
-unknown = names - ASSETS.keys
-abort "Unknown asset(s): #{unknown.join(', ')}" unless unknown.empty?
+class Renderer
+  PNG_SIGNATURE = "\x89PNG\r\n\x1a\n".b
 
-names.each do |name|
-  base = File.join(ROOT, ASSETS.fetch(name))
-  svg_path = "#{base}.svg"
-  png_path = "#{base}.png"
-  FileUtils.mkdir_p(File.dirname(base))
-  File.write(svg_path, BUILDERS.fetch(name).call.gsub(/[ \t]+$/, ""))
-  stdout, stderr, status = Open3.capture3("cairosvg", svg_path, "-o", png_path, "-s", "2")
-  abort "CairoSVG failed for #{name}: #{stdout}#{stderr}" unless status.success?
-  puts "rendered #{name}: #{svg_path} -> #{png_path}"
+  def initialize(root: ROOT, assets: ASSETS, builders: BUILDERS, cairo_binary: "cairosvg", command_runner: Open3.method(:capture3))
+    @root = root
+    @assets = assets
+    @builders = builders
+    @cairo_binary = cairo_binary
+    @command_runner = command_runner
+  end
+
+  def render(name)
+    relative = @assets.fetch(name)
+    builder = @builders.fetch(name)
+    base = File.join(@root, relative)
+    directory = File.dirname(base)
+    FileUtils.mkdir_p(directory)
+    svg_path = "#{base}.svg"
+    png_path = "#{base}.png"
+    svg_temp = Tempfile.new([".#{File.basename(base)}-", ".svg"], directory)
+    png_temp = Tempfile.new([".#{File.basename(base)}-", ".png"], directory)
+
+    begin
+      svg_temp.binmode
+      svg_temp.write(builder.call.gsub(/[ \t]+$/, ""))
+      svg_temp.flush
+      validate_svg!(svg_temp.path)
+      png_temp.close
+      stdout, stderr, status = @command_runner.call(@cairo_binary, svg_temp.path, "-o", png_temp.path, "-s", "2")
+      raise "CairoSVG failed for #{name}: #{stdout}#{stderr}" unless status.success?
+
+      validate_png!(png_temp.path)
+      install_pair!(svg_temp.path, png_temp.path, svg_path, png_path)
+      puts "rendered #{name}: #{svg_path} -> #{png_path}"
+    ensure
+      svg_temp.close!
+      png_temp.close!
+    end
+  end
+
+  private
+
+  def validate_svg!(path)
+    root = REXML::Document.new(File.binread(path)).root
+    valid = root&.name == "svg" && root.attributes["width"] == WIDTH.to_s &&
+            root.attributes["height"] == HEIGHT.to_s && root.attributes["viewBox"] == "0 0 #{WIDTH} #{HEIGHT}"
+    raise "generated SVG must be #{WIDTH}x#{HEIGHT}" unless valid
+  rescue REXML::ParseException => error
+    raise "generated SVG is invalid XML: #{error.message}"
+  end
+
+  def validate_png!(path)
+    data = File.binread(path, 24)
+    valid = data.start_with?(PNG_SIGNATURE) && data.bytesize >= 24 && data.byteslice(16, 8).unpack("NN") == [WIDTH * 2, HEIGHT * 2]
+    raise "generated PNG must be #{WIDTH * 2}x#{HEIGHT * 2}" unless valid
+  end
+
+  def install_pair!(svg_temp, png_temp, svg_path, png_path)
+    token = "#{Process.pid}-#{rand(1_000_000)}"
+    backups = {
+      svg_path => "#{svg_path}.#{token}.backup",
+      png_path => "#{png_path}.#{token}.backup",
+    }
+    installed = []
+
+    begin
+      backups.each { |path, backup| File.rename(path, backup) if File.exist?(path) }
+      File.rename(svg_temp, svg_path)
+      installed << svg_path
+      File.rename(png_temp, png_path)
+      installed << png_path
+      backups.each_value { |backup| FileUtils.rm_f(backup) }
+    rescue StandardError
+      installed.each { |path| FileUtils.rm_f(path) }
+      backups.each { |path, backup| File.rename(backup, path) if File.exist?(backup) }
+      raise
+    ensure
+      backups.each_value { |backup| FileUtils.rm_f(backup) }
+    end
+  end
+end
+
+def run(names)
+  selected = names.empty? ? ASSETS.keys : names
+  unknown = selected - ASSETS.keys
+  raise ArgumentError, "Unknown asset(s): #{unknown.join(', ')}" unless unknown.empty?
+
+  renderer = Renderer.new
+  selected.each { |name| renderer.render(name) }
+end
+end
+
+if $PROGRAM_NAME == __FILE__
+  ManualDiagrams.run(ARGV)
 end
