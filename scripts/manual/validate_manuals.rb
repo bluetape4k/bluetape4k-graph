@@ -16,4 +16,9 @@ validator = ManualDocs::Validator.new(
   strict: ENV["MANUAL_STRICT"] == "1",
 )
 abort(validator.errors.join("\n")) unless validator.errors.empty?
-puts "Manual contract valid (#{ENV['MANUAL_STRICT'] == '1' ? 'strict' : 'partial'} mode)."
+mode = if ENV["MANUAL_STRICT"] == "1"
+         "strict final mode"
+       else
+         "partial inventory-only mode; routes, sourcePaths, and assets are not required until content integration"
+       end
+puts "Manual contract valid (#{mode})."

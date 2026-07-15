@@ -23,7 +23,10 @@ end.sort_by { |row| row.fetch("id") }
 
 manifest = {
   "schemaVersion" => 2,
-  "repository" => "bluetape4k/bluetape4k-graph",
+  "repository" => "bluetape4k-graph",
+  "stableVersion" => "0.5.1",
+  "stableMinor" => "0.5",
+  "releaseTag" => "0.5.1",
   "releaseRef" => "0.5.1",
   "releaseCommit" => "3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907",
   "publication" => {

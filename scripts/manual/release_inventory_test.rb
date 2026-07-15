@@ -30,7 +30,19 @@ class ReleaseInventoryTest < Minitest::Test
       return yield ManualDocs::ReleaseInventory.new(repository_root: root, tag: "0.5.1", expected_sha: SHA,
         inventory_path: input, output_path: output, expected_count: options.fetch(:expected_count, rows.length),
         expected_kinds: options.fetch(:expected_kinds, { "library" => rows.length }),
+        inventory_exporter: options.fetch(:inventory_exporter, ->(_sha) { rows }),
         git_runner: options.fetch(:git_runner, runner))
+    end
+  end
+
+
+  def test_uses_release_export_instead_of_working_tree_inventory
+    release_row = row(path: ":release", source: "graph/release")
+    exporter = ->(_sha) { [release_row] }
+    build([row(path: ":head", source: "graph/head")], inventory_exporter: exporter,
+      git_runner: runner(tree: ["graph/release/build.gradle.kts"])) do |inventory|
+      written = inventory.write
+      assert_equal [":release"], written.map { |entry| entry.fetch("gradlePath") }
     end
   end
 
