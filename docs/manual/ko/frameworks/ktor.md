@@ -15,7 +15,7 @@ fun Application.module() {
 
 경로 처리 오류를 보기 전에 설치 오류부터 확인한다. 운영에서는 stop event, driver pool, 요청 취소, handler가 blocking/코루틴 모델에 맞는 API를 쓰는지 관찰한다.
 
-## 의존성과 plugin을 설정한다
+## 의존성과 플러그인을 설정한다
 
 ```kotlin
 dependencies {
@@ -43,7 +43,7 @@ fun Application.module() {
 
 ## 시작과 요청 결과를 확인한다
 
-설치가 끝나면 plugin state가 생기고 경로는 현재 정점 수를 문자열로 돌려줘야 한다. `install(GraphPlugin) {}`처럼 백엔드를 빼면 시작 단계에서 `A graph backend must be selected...`로 실패해야 한다. plugin을 설치하지 않고 accessor를 부르면 `GraphPlugin is not installed...`가 나와야 한다.
+설치가 끝나면 플러그인 상태가 생기고 라우트는 현재 정점 수를 문자열로 돌려줘야 한다. `install(GraphPlugin) {}`처럼 백엔드를 빼면 시작 단계에서 `A graph backend must be selected...`로 실패해야 한다. 플러그인을 설치하지 않고 접근자를 부르면 `GraphPlugin is not installed...`가 나와야 한다.
 
 managed `neo4j { ... }`는 operations와 Driver를 만들고 `ApplicationStopped`에서 닫는다. 이미 만든 operations 한 쌍을 넘길 때는 [`GraphPluginConfig.operations`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/ktor/graph-ktor/src/main/kotlin/io/bluetape4k/graph/ktor/GraphPluginConfig.kt)의 별도 계약을 따른다.
 
@@ -53,13 +53,13 @@ install(GraphPlugin) {
     operations(sync, suspend) // closeOnStop = false
 }
 
-// 명시적 위임: ApplicationStopped 때 plugin이 operations를 닫는다.
+// 명시적 위임: ApplicationStopped 때 플러그인이 operations를 닫는다.
 install(GraphPlugin) {
     operations(sync, suspend, closeOnStop = true)
 }
 ```
 
-`closeOnStop = true`일 때만 close action을 등록하고 두 operations를 객체 identity로 중복 제거해 각각 한 번 닫는다. 기본값 `false`에서는 plugin이 두 operations를 닫지 않는다. 어느 쪽이든 operations를 만들 때 사용한 Driver는 별도의 호출자 소유 자원이다. graph operations는 주입받은 Driver를 닫지 않으므로 호출자가 직접 관리한다.
+`closeOnStop = true`일 때만 종료 작업을 등록하고 두 operations를 객체 정체성으로 중복 제거해 각각 한 번 닫는다. 기본값 `false`에서는 플러그인이 두 operations를 닫지 않는다. 어느 쪽이든 operations를 만들 때 사용한 Driver는 별도의 호출자 소유 자원이다. graph operations는 주입받은 Driver를 닫지 않으므로 호출자가 직접 관리한다.
 
 ```bash
 ./gradlew :bluetape4k-graph-ktor:test --tests '*GraphPluginTest' --tests '*BackendGraphPluginRuntimeTest'

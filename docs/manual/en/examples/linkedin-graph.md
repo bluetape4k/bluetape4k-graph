@@ -20,7 +20,7 @@ Use JDK 21, commit `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, and the checked-i
 ./gradlew :linkedin-graph-examples:test --tests "io.bluetape4k.graph.examples.linkedin.TinkerGraphLinkedInGraphTest"
 ```
 
-The tests assert non-empty connection, employer, skill, endorsement, and traversal results. A failure identifies which social-graph relation or lookup direction no longer matches the fixture, so inspect that assertion before widening traversal depth.
+The tests assert direct connections, a multi-hop connection path, second-degree connections, employer lookup, and follower lookup. A failure identifies which social relation or lookup direction no longer matches the fixture, so inspect that assertion before widening traversal depth.
 
 ## Reading order
 

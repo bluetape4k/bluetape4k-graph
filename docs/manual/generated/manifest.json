@@ -343,8 +343,8 @@
       "kind": "benchmark",
       "projectName": "graph-neo4j-benchmark",
       "routes": {
-        "en": "en/benchmarks/overview.md",
-        "ko": "ko/benchmarks/overview.md"
+        "en": "en/benchmarks/age-and-neo4j.md",
+        "ko": "ko/benchmarks/age-and-neo4j.md"
       },
       "sourceDir": "benchmark/graph-neo4j-benchmark",
       "sourcePaths": [
@@ -532,7 +532,8 @@
         "en/guides/testing.md",
         "en/guides/operations.md",
         "en/guides/failure-and-cancellation.md",
-        "en/guides/benchmark-based-selection.md"
+        "en/guides/benchmark-based-selection.md",
+        "en/benchmarks/overview.md"
       ],
       "ko": [
         "ko/index.md",
@@ -555,7 +556,8 @@
         "ko/guides/testing.md",
         "ko/guides/operations.md",
         "ko/guides/failure-and-cancellation.md",
-        "ko/guides/benchmark-based-selection.md"
+        "ko/guides/benchmark-based-selection.md",
+        "ko/benchmarks/overview.md"
       ]
     }
   },

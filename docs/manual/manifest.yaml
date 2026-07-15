@@ -37,6 +37,7 @@ overview:
     - en/guides/operations.md
     - en/guides/failure-and-cancellation.md
     - en/guides/benchmark-based-selection.md
+    - en/benchmarks/overview.md
     ko:
     - ko/index.md
     - ko/getting-started.md
@@ -59,6 +60,7 @@ overview:
     - ko/guides/operations.md
     - ko/guides/failure-and-cancellation.md
     - ko/guides/benchmark-based-selection.md
+    - ko/benchmarks/overview.md
   assets:
   - assets/overview/repository-learning-map.svg
   - assets/overview/repository-learning-map.png
@@ -333,8 +335,8 @@ modules:
   sourcePaths:
   - benchmark/graph-neo4j-benchmark
   routes:
-    en: en/benchmarks/overview.md
-    ko: ko/benchmarks/overview.md
+    en: en/benchmarks/age-and-neo4j.md
+    ko: ko/benchmarks/age-and-neo4j.md
 - id: iam-access-graph-examples
   gradlePath: ":iam-access-graph-examples"
   projectName: iam-access-graph-examples

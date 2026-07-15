@@ -5,7 +5,7 @@
 
 ## 실행 전 준비
 
-이 모듈은 형식에 독립적인 importer/exporter 계약, record, option, report, progress, path source/sink, 외부 ID mapping을 정의한다. 새 파일 형식을 구현하거나 공통 report 타입이 필요할 때 선택한다. 실제 파일을 읽으려면 CSV, Jackson, GraphML 중 하나를 함께 고른다. 근거는 [GraphBulkImporter.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphBulkImporter.kt)다.
+이 모듈은 형식에 독립적인 가져오기·내보내기 계약, 레코드, 옵션, 보고서, 진행 상태, 경로 기반 입출력, 외부 ID 매핑을 정의한다. 새 파일 형식을 구현하거나 공통 보고서 타입이 필요할 때 선택한다. 실제 파일을 읽으려면 CSV, Jackson, GraphML 중 하나를 함께 고른다. 근거는 [GraphBulkImporter.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphBulkImporter.kt)다.
 
 ## 실행
 

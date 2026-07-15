@@ -14,4 +14,4 @@ scripts/benchmark-neo4j-age.sh
 
 통제된 단독 맞대결 결과 파일은 0.5.1에 커밋되어 있지 않으므로 숫자를 적지 않습니다. 같은 한가한 장비에서 직렬로 재현하고 두 원본 보고서와 요약을 보관하십시오. 공통 [small 실행](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/benchmark/graph-db-testcontainers-2026-05-21.json)은 조건이 같을 때만 대표 근거로 쓸 수 있습니다.
 
-연산, 매개변수, 단위, warmup, 반복, fork, 고정 데이터, 장비가 같은 행만 비교하십시오. 서로 다른 연산의 산술 평균은 전송 형식이지 백엔드 순위가 아닙니다. 종료 시 연산 객체, JDBC 풀·드라이버, 컨테이너가 닫혀야 합니다. 기동·확장 초기화·Bolt 준비·JSON 생성 실패는 점수가 아닙니다. 이 실행은 장애 복구, 고가용성, 운영 쿼리 계획, 비용을 증명하지 않습니다. [AGE](../backends/apache-age.md), [Neo4j](../backends/neo4j-and-memgraph.md), [개요](./overview.md)를 보십시오.
+연산, 매개변수, 단위, 준비 실행, 반복, 포크, 고정 데이터, 장비가 같은 행만 비교하십시오. 서로 다른 연산의 점수를 단순 평균 내면 의미가 뒤섞입니다. 그 값으로 백엔드 순위를 매기지 마십시오. 종료 시 연산 객체, JDBC 풀·드라이버, 컨테이너가 닫혀야 합니다. 기동·확장 초기화·Bolt 준비·JSON 생성 실패는 점수가 아닙니다. 이 실행은 장애 복구, 고가용성, 운영 쿼리 계획, 비용을 증명하지 않습니다. [AGE](../backends/apache-age.md), [Neo4j](../backends/neo4j-and-memgraph.md), [개요](./overview.md)를 보십시오.

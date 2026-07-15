@@ -20,7 +20,7 @@ JDK 21, 커밋 `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, 저장소의 Gradle W
 ./gradlew :fraud-detection-examples:test --tests "io.bluetape4k.graph.examples.fraud.TinkerGraphFraudDetectionTest"
 ```
 
-테스트는 `acct-bob`에 위험 점수가 매겨지는지, 송금 경로가 순환하는지, sink 분석이 `acct-sink`까지 도달하는지 검증합니다. 실패하면 Gradle 출력이 아니라 송금 방향, 위험 가중치, 순환·깊이 제한을 확인합니다.
+테스트는 `acct-bob`에 위험 점수가 매겨지는지, 송금 경로가 순환하는지, 자금이 모이는 계정 분석이 `acct-sink`까지 도달하는지 검증합니다. 실패하면 Gradle 출력이 아니라 송금 방향, 위험 가중치, 순환·깊이 제한을 확인합니다.
 
 ## 코드 읽는 순서
 

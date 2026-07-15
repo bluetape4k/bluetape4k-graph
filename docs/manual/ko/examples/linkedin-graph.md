@@ -20,7 +20,7 @@ JDK 21, 커밋 `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, 저장소의 Gradle W
 ./gradlew :linkedin-graph-examples:test --tests "io.bluetape4k.graph.examples.linkedin.TinkerGraphLinkedInGraphTest"
 ```
 
-테스트는 인맥, 회사, 기술, 추천, 탐색 결과가 각각 비어 있지 않은지 검증합니다. 실패한 assertion이 어느 사회 관계를 가리키는지 확인한 뒤, 해당 간선 방향과 조회 조건을 살펴봅니다.
+테스트는 직접 인맥, 여러 단계를 거치는 인맥 경로, 2촌 인맥, 회사별 직원, 팔로워 조회 결과를 각각 검증합니다. 실패한 검증 조건이 가리키는 관계를 확인한 뒤, 해당 간선 방향과 조회 조건을 살펴봅니다.
 
 ## 코드 읽는 순서
 

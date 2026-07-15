@@ -1,7 +1,7 @@
 # bluetape4k-graph-ktor
 
 
-실행 방식: **release test fixture 연계형**이다. `testApplication`이 Ktor application과 HTTP test client를 제공한다. 아래 테스트가 plugin 설치, 상태 접근, application 종료, 정확한 `closeOnStop` 분기를 검증한다.
+실행 방식: **릴리스 테스트 픽스처 연계형**이다. `testApplication`이 Ktor 애플리케이션과 HTTP 테스트 클라이언트를 제공한다. 아래 테스트가 플러그인 설치, 상태 접근, 애플리케이션 종료, 정확한 `closeOnStop` 분기를 검증한다.
 
 ## 실행 전 준비
 
@@ -42,7 +42,7 @@ install(GraphPlugin) {
 }
 ```
 
-기본 설정에서는 호출자나 DI container가 두 객체를 닫는다. true로 지정할 때만 plugin에 종료 책임을 넘긴다. 같은 객체는 한 번만 닫는다. 주입한 Driver는 관리형 DSL이 만든 경우가 아니면 별도로 호출자가 소유한다. 계약은 [GraphPluginConfig.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/ktor/graph-ktor/src/main/kotlin/io/bluetape4k/graph/ktor/GraphPluginConfig.kt)에 있다.
+기본 설정에서는 호출자나 DI 컨테이너가 두 객체를 닫는다. `true`로 지정할 때만 플러그인에 종료 책임을 넘긴다. 같은 객체는 한 번만 닫는다. 주입한 Driver는 관리형 DSL이 만든 경우가 아니면 별도로 호출자가 소유한다. 계약은 [GraphPluginConfig.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/ktor/graph-ktor/src/main/kotlin/io/bluetape4k/graph/ktor/GraphPluginConfig.kt)에 있다.
 
 ## 운영 점검
 
@@ -53,13 +53,13 @@ install(GraphPlugin) {
 
 ## 실패와 복구
 
-증상: 시작할 때 그래프를 선택하지 않았다는 오류가 나거나 route에서 plugin이 없다고 한다. routing보다 설치를 먼저 고친다. 종료 뒤 자원이 남으면 관리형/주입형 소유권을 확인하고 한 번만 닫히는 테스트를 다시 실행한다.
+증상: 시작할 때 그래프를 선택하지 않았다는 오류가 나거나 라우트에서 플러그인이 없다고 한다. 라우팅보다 설치를 먼저 고친다. 종료 뒤 자원이 남으면 관리형·주입형 소유권을 확인하고 한 번만 닫히는 테스트를 다시 실행한다.
 
 ```bash
 ./gradlew :bluetape4k-graph-ktor:test --tests '*GraphPluginTest' --tests '*BackendGraphPluginRuntimeTest'
 ```
 
-예상 결과는 설치·접근, 빈 설정 실패, 기본 미종료, 관리형/명시적 종료가 각각 검증되는 것이다. route 오류보다 plugin 설치와 그래프 생성 오류를 먼저 본다. stop event, pool 상태, request latency, 한 번만 닫혔는지 기록한다.
+예상 결과는 설치·접근, 빈 설정 실패, 기본 미종료, 관리형·명시적 종료가 각각 검증되는 것이다. 라우트 오류보다 플러그인 설치와 그래프 생성 오류를 먼저 본다. 종료 이벤트, 풀 상태, 요청 지연 시간, 한 번만 닫혔는지 기록한다.
 
 ## 완전한 release 예제
 
@@ -73,4 +73,4 @@ install(GraphPlugin) {
 
 ## 하지 않는 일과 관련 문서
 
-[Ktor 연동](../frameworks/ktor.md), [짝을 이루는 API](../architecture/paired-apis.md), [운영](../guides/operations.md)을 참고한다. plugin은 request 트랜잭션을 만들거나 호출자 자원을 기본으로 닫지 않는다.
+[Ktor 연동](../frameworks/ktor.md), [짝을 이루는 API](../architecture/paired-apis.md), [운영](../guides/operations.md)을 참고한다. 플러그인은 요청 트랜잭션을 만들거나 호출자 자원을 기본으로 닫지 않는다.

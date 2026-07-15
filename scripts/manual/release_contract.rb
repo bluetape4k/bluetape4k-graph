@@ -84,14 +84,31 @@ module ManualDocs
     def validate_manifest_source_paths(tree)
       return [[], 0] unless @manifest_path && File.file?(@manifest_path)
       manifest = YAML.safe_load(File.read(@manifest_path))
-      paths = Array(manifest["modules"]).flat_map do |entry|
-        Array(entry["sourcePaths"]).map do |path|
+      return [["manual manifest must be a mapping"], 0] unless manifest.is_a?(Hash)
+      modules = manifest["modules"]
+      return [["manual manifest modules must be an array"], 0] unless modules.is_a?(Array)
+      errors = []
+      entries = modules.each_with_object([]) do |entry, result|
+        unless entry.is_a?(Hash)
+          errors << "manual manifest module entry must be a mapping"
+          next
+        end
+        result << entry
+      end
+      paths = entries.flat_map do |entry|
+        source_paths = entry["sourcePaths"]
+        unless source_paths.is_a?(Array) && source_paths.all? { |path| path.is_a?(String) && !path.empty? }
+          errors << "#{entry['id'] || 'module'}: sourcePaths must contain non-empty strings"
+          next []
+        end
+        errors << "#{entry['id'] || 'module'}: sourcePaths must equal [sourceDir]" unless source_paths == [entry["sourceDir"]]
+        source_paths.map do |path|
           unsafe = path.to_s.empty? || Pathname.new(path.to_s).absolute? || Pathname.new(path.to_s).each_filename.any? { |part| part == ".." }
           present = !unsafe && tree.any? { |release_path| release_path == path || release_path.start_with?("#{path}/") }
           "#{entry['id']}: sourcePath not found in release tree: #{path}" unless present
         end.compact
       end
-      [paths, Array(manifest["modules"]).sum { |entry| Array(entry["sourcePaths"]).length }]
+      [errors + paths, entries.sum { |entry| Array(entry["sourcePaths"]).length }]
     rescue Psych::SyntaxError => error
       [["manual manifest YAML is invalid: #{error.problem}"], 0]
     end

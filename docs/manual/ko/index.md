@@ -18,7 +18,7 @@ API의 중심은 [`GraphOperations`](https://github.com/bluetape4k/bluetape4k-gr
 - 아키텍처: 저장소 구성, 모델, API 조합, 스키마, merge·batch, 순회, 트랜잭션
 - 백엔드: Neo4j, Memgraph, Apache AGE, TinkerPop/TinkerGraph, FalkorDB
 - graph-io: 파일 경계, 실행 모델, OkIO 압축과 인증 암호화
-- 프레임워크: Ktor plugin과 Spring Boot auto-configuration의 생명주기
+- 프레임워크: Ktor 플러그인과 Spring Boot 자동 설정의 생명주기
 - 가이드: 단계별 학습, 테스트, 운영, 취소, benchmark 해석
 
 소비자가 선택할 버전은 개별 graph 라이브러리나 graph BOM 버전이 아니라 `bluetape4k-dependencies` 버전 하나다. 이 매뉴얼의 의존성 예제는 생태계 BOM을 불러오고 모듈 좌표에는 버전을 쓰지 않는다.
