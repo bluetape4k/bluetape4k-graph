@@ -33,6 +33,7 @@ module ManualDocs
       errors.concat(duplicates(entries, "gradlePath").map { |path| "duplicate gradlePath #{path}" })
       errors.concat(validate_inventory(entries))
       entries.each { |entry| errors.concat(validate_entry(entry)) }
+      errors.concat(validate_assets(manifest.fetch("assets", []), "manifest"))
       errors
     rescue Psych::SyntaxError => error
       ["manual manifest YAML is invalid: #{error.problem}"]
@@ -41,7 +42,11 @@ module ManualDocs
     def validate_header(manifest)
       errors = []
       errors << "manual manifest schemaVersion must be #{SUPPORTED_SCHEMA_VERSION}" unless manifest["schemaVersion"] == SUPPORTED_SCHEMA_VERSION
+      errors << "manual manifest repository must be bluetape4k-graph" unless manifest["repository"] == "bluetape4k-graph"
       errors << "manual manifest releaseRef must be #{@expected_release.fetch('ref')}" unless manifest["releaseRef"] == @expected_release.fetch("ref")
+      errors << "manual manifest stableVersion must be #{@expected_release.fetch('ref')}" unless manifest["stableVersion"] == @expected_release.fetch("ref")
+      errors << "manual manifest stableMinor must be #{@expected_release.fetch('ref').split('.')[0, 2].join('.')}" unless manifest["stableMinor"] == @expected_release.fetch("ref").split(".")[0, 2].join(".")
+      errors << "manual manifest releaseTag must be #{@expected_release.fetch('ref')}" unless manifest["releaseTag"] == @expected_release.fetch("ref")
       errors << "manual manifest releaseCommit must be #{@expected_release.fetch('commit')}" unless manifest["releaseCommit"] == @expected_release.fetch("commit")
       locales = manifest.dig("publication", "locales")
       errors << "manual publication locales must be en and ko" unless locales == %w[en ko]
@@ -72,6 +77,7 @@ module ManualDocs
       errors << "#{entry['id']}: missing manifest field sourcePaths" if @strict && !entry.key?("sourcePaths")
       errors.concat(validate_paths(entry, "sourcePaths")) if entry.key?("sourcePaths")
       errors.concat(validate_routes(entry)) if entry.key?("routes") || @strict
+      errors.concat(validate_assets(entry.fetch("assets", []), entry["id"]))
       errors
     end
 
@@ -90,7 +96,11 @@ module ManualDocs
           next
         end
         absolute = File.expand_path(path, File.dirname(@manifest_path))
-        errors << "#{entry['id']}: missing #{language} document" unless within?(absolute, File.dirname(@manifest_path)) && File.file?(absolute)
+        if !within?(absolute, File.dirname(@manifest_path)) || !File.file?(absolute)
+          errors << "#{entry['id']}: missing #{language} document"
+        else
+          errors.concat(validate_document_references(absolute, entry["id"]))
+        end
       end
       if routes["en"].is_a?(String) && routes["ko"].is_a?(String)
         errors << "#{entry['id']}: English/Korean route differs" unless routes["en"].delete_prefix("en/") == routes["ko"].delete_prefix("ko/")
@@ -103,8 +113,30 @@ module ManualDocs
       return ["#{entry['id']}: #{field} must be an array"] unless paths.is_a?(Array)
       paths.each_with_object([]) do |path, errors|
         absolute = File.expand_path(path.to_s, @repository_root)
-        unless safe_relative?(path) && within?(absolute, @repository_root) && File.file?(absolute)
+        unless safe_relative?(path) && within?(absolute, @repository_root) && File.exist?(absolute) && within?(File.realpath(absolute), File.realpath(@repository_root))
           errors << "#{entry['id']}: missing #{field} path #{path}"
+        end
+      end
+    end
+
+    def validate_assets(assets, label)
+      return ["#{label}: assets must be an array"] unless assets.is_a?(Array)
+      assets.each_with_object([]) do |path, errors|
+        absolute = File.expand_path(path.to_s, File.dirname(@manifest_path))
+        manual_root = File.dirname(@manifest_path)
+        unless safe_relative?(path) && path.start_with?("assets/") && within?(absolute, manual_root) && File.file?(absolute) && within?(File.realpath(absolute), File.realpath(manual_root))
+          errors << "#{label}: missing asset #{path}"
+        end
+      end
+    end
+
+    def validate_document_references(document, label)
+      File.read(document).scan(/!?\[[^\]]*\]\(([^)]+)\)/).flatten.each_with_object([]) do |raw, errors|
+        target = raw.to_s.strip.split(/[?#]/, 2).first
+        next if target.empty? || target.start_with?("#", "/") || target.match?(/\A[a-z][a-z0-9+.-]*:/i)
+        absolute = File.expand_path(target, File.dirname(document))
+        unless within?(absolute, @repository_root) && File.exist?(absolute) && within?(File.realpath(absolute), File.realpath(@repository_root))
+          errors << "#{label}: missing or unsafe document reference #{raw}"
         end
       end
     end

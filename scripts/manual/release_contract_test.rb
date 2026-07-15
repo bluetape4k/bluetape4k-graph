@@ -3,6 +3,7 @@ require "minitest/autorun"
 require "tmpdir"
 
 require_relative "release_contract"
+require_relative "validate_release_manuals"
 
 class ReleaseContractTest < Minitest::Test
   SHA = "3" * 40
@@ -32,5 +33,20 @@ class ReleaseContractTest < Minitest::Test
     contract = ManualDocs::ReleaseContract.new(repository_root: Dir.pwd, tag: "0.5.1", expected_sha: SHA,
       git_runner: runner(tree: [], type: "commit"))
     assert contract.errors.any? { |e| e.include?("annotated") }
+  end
+
+
+  def test_final_validation_rejects_missing_inventory_file
+    Dir.mktmpdir do |root|
+      validator = ManualDocs::ReleaseManualValidator.new(
+        repository_root: root,
+        tag: "0.5.1",
+        expected_sha: SHA,
+        inventory_path: File.join(root, "missing.json"),
+        manifest_path: File.join(root, "docs/manual/manifest.yaml"),
+        release_contract: Struct.new(:validate).new(ManualDocs::ReleaseContract::ValidationResult.new(errors: [], checked_count: 0)),
+      )
+      assert validator.errors.any? { |error| error.include?("release inventory not found") }
+    end
   end
 end

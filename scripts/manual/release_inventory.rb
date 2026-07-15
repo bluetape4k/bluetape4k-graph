@@ -4,23 +4,85 @@ require "fileutils"
 require "json"
 require "open3"
 require "pathname"
+require "tmpdir"
 
 module ManualDocs
   class ReleaseInventoryError < StandardError; end
+
+  class DetachedReleaseInventory
+    INIT_SCRIPT = <<~'GROOVY'
+      import groovy.json.JsonOutput
+
+      gradle.projectsLoaded {
+          def releaseRoot = gradle.rootProject
+          releaseRoot.tasks.register("exportReleaseManualModuleInventory") {
+              doLast {
+                  def rootPath = releaseRoot.projectDir.toPath()
+                  def rows = releaseRoot.allprojects
+                      .findAll { project -> project != releaseRoot && project.name != "buildSrc" }
+                      .collect { project ->
+                          def sourceDir = rootPath.relativize(project.projectDir.toPath()).toString().replace('\\', '/')
+                          def kind = sourceDir.startsWith("benchmark/") ? "benchmark" :
+                              (sourceDir.startsWith("examples/") ? "example" : "library")
+                          [gradlePath: project.path, projectName: project.name, sourceDir: sourceDir, kind: kind]
+                      }
+                      .sort { left, right -> left.gradlePath <=> right.gradlePath }
+                  def output = new File(System.getProperty("manual.inventory.output"))
+                  output.parentFile.mkdirs()
+                  output.setText(JsonOutput.prettyPrint(JsonOutput.toJson(rows)) + "\n", "UTF-8")
+              }
+          }
+      }
+    GROOVY
+
+    def initialize(repository_root:)
+      @repository_root = File.expand_path(repository_root)
+    end
+
+    def call(sha)
+      parent = Dir.mktmpdir("graph-release-inventory-")
+      checkout = File.join(parent, "release")
+      init_script = File.join(parent, "release-inventory.gradle")
+      output = File.join(parent, "release-module-inventory.json")
+      added = false
+      File.write(init_script, INIT_SCRIPT)
+      _stdout, stderr, status = Open3.capture3("git", "-C", @repository_root, "worktree", "add", "--detach", "--quiet", checkout, sha)
+      raise ReleaseInventoryError, "temporary release worktree could not be created: #{stderr.strip}" unless status.success?
+      added = true
+      command = [File.join(checkout, "gradlew"), "--no-configuration-cache", "--console=plain",
+                 "-Dmanual.inventory.output=#{output}", "-I", init_script, "exportReleaseManualModuleInventory"]
+      _stdout, stderr, status = Open3.capture3(*command, chdir: checkout)
+      unless status.success?
+        detail = stderr.lines.last(20).join.strip
+        raise ReleaseInventoryError, "release Gradle inventory export failed at #{sha}: #{detail}"
+      end
+      raise ReleaseInventoryError, "release Gradle inventory export produced no JSON" unless File.file?(output)
+      JSON.parse(File.read(output))
+    rescue JSON::ParserError => error
+      raise ReleaseInventoryError, "release Gradle inventory JSON is invalid: #{error.message}"
+    ensure
+      Open3.capture3("git", "-C", @repository_root, "worktree", "remove", "--force", checkout) if added
+      FileUtils.remove_entry(parent) if parent && File.exist?(parent)
+      Open3.capture3("git", "-C", @repository_root, "worktree", "prune") if @repository_root
+    end
+  end
 
   class ReleaseInventory
     VALID_KINDS = %w[library benchmark example].freeze
 
     def initialize(repository_root:, tag:, expected_sha:, inventory_path:, output_path:, expected_count:,
-                   expected_kinds: { "library" => 15, "benchmark" => 4, "example" => 12 }, git_runner: nil)
+                   expected_kinds: { "library" => 15, "benchmark" => 4, "example" => 12 }, git_runner: nil,
+                   inventory_exporter: nil)
       @repository_root = File.expand_path(repository_root)
       @tag = tag
       @expected_sha = expected_sha
-      @inventory_path = inventory_path
+      # inventory_path is kept only for compatibility with the documented
+      # five-argument command. Detached release rows are always authoritative.
       @output_path = output_path
       @expected_count = Integer(expected_count)
       @expected_kinds = expected_kinds
       @git_runner = git_runner || method(:run_git)
+      @inventory_exporter = inventory_exporter || DetachedReleaseInventory.new(repository_root: @repository_root)
     end
 
     def write
@@ -33,13 +95,10 @@ module ManualDocs
       sha = sha.strip
       raise ReleaseInventoryError, "release tag #{@tag} resolves to #{sha}, expected #{@expected_sha}" unless sha.casecmp?(@expected_sha)
 
-      tree_output, found = @git_runner.call(["ls-tree", "-r", "--name-only", sha])
-      raise ReleaseInventoryError, "release tree could not be read: #{sha}" unless found
-      tree = tree_output.lines(chomp: true).to_h { |path| [path, true] }
-      rows = JSON.parse(File.read(@inventory_path))
+      rows = @inventory_exporter.call(sha)
       raise ReleaseInventoryError, "module inventory must be an array" unless rows.is_a?(Array)
 
-      validate_rows(rows, tree)
+      validate_rows(rows)
       rows = rows.sort_by { |row| row.fetch("gradlePath") }
       FileUtils.mkdir_p(File.dirname(@output_path))
       File.binwrite(@output_path, JSON.pretty_generate(rows.map { |row| sort_keys(row) }) + "\n")
@@ -50,7 +109,7 @@ module ManualDocs
 
     private
 
-    def validate_rows(rows, tree)
+    def validate_rows(rows)
       raise ReleaseInventoryError, "release inventory count #{rows.length}, expected #{@expected_count}" unless rows.length == @expected_count
       duplicates = rows.group_by { |row| row["gradlePath"] }.select { |_path, matches| matches.length > 1 }.keys
       raise ReleaseInventoryError, "duplicate gradlePath: #{duplicates.sort.join(', ')}" unless duplicates.empty?
@@ -60,8 +119,6 @@ module ManualDocs
         source = row.fetch("sourceDir")
         raise ReleaseInventoryError, "unsafe sourceDir: #{source}" unless safe_relative?(source)
         raise ReleaseInventoryError, "invalid kind: #{row['kind']}" unless VALID_KINDS.include?(row["kind"])
-        build_file = "#{source}/build.gradle.kts"
-        raise ReleaseInventoryError, "sourceDir not present in release tree: #{source}" unless tree[build_file]
       end
       actual = rows.group_by { |row| row.fetch("kind") }.transform_values(&:length)
       raise ReleaseInventoryError, "release inventory classification #{actual}, expected #{@expected_kinds}" unless actual == @expected_kinds
