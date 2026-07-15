@@ -2,7 +2,7 @@ plugins {
     kotlin("jvm")
     kotlin("plugin.spring")
     kotlin("plugin.serialization")
-    alias(libs.plugins.spring.boot4) apply false
+    alias(bt4k.plugins.spring.boot4) apply false
     id("io.spring.dependency-management")
 }
 
@@ -28,7 +28,7 @@ dependencies {
     compileOnly("org.springframework.boot:spring-boot-actuator-autoconfigure")
 
     // Annotation processor
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:${libs.versions.spring.boot4.get()}")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:${bt4k.versions.spring.boot4.get()}")
 
     // Test
     testImplementation(project(":bluetape4k-graph-tinkerpop"))
@@ -37,12 +37,12 @@ dependencies {
     testImplementation(project(":bluetape4k-graph-age"))
     testImplementation(project(":bluetape4k-graph-falkordb"))
     testImplementation(testFixtures(project(":bluetape4k-graph-falkordb")))
-    testImplementation(libs.bluetape4k.testcontainers)
+    testImplementation(bt4k.bluetape4k.testcontainers)
     testImplementation(libs.testcontainers.neo4j)
     testImplementation(libs.testcontainers.postgresql)
     testImplementation(libs.neo4j.java.driver)
-    testRuntimeOnly(libs.postgresql.driver)
-    testImplementation(libs.hikaricp)
+    testRuntimeOnly(bt4k.postgresql)
+    testImplementation(bt4k.hikaricp)
     testImplementation("org.springframework.boot:spring-boot-health")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-starter-web")

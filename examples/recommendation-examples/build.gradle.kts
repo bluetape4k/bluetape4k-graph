@@ -7,17 +7,17 @@ dependencies {
     implementation(project(":bluetape4k-graph-falkordb"))
     implementation(project(":bluetape4k-graph-io-csv"))
 
-    implementation(libs.bluetape4k.coroutines)
+    implementation(bt4k.bluetape4k.coroutines)
     implementation(libs.kotlinx.coroutines.core.lib)
 
-    testImplementation(libs.bluetape4k.junit5)
-    testImplementation(libs.bluetape4k.testcontainers)
+    testImplementation(bt4k.bluetape4k.junit5)
+    testImplementation(bt4k.bluetape4k.testcontainers)
     testImplementation(libs.testcontainers.core)
     testImplementation(libs.testcontainers.neo4j)
     testImplementation(libs.testcontainers.postgresql)
     testImplementation(libs.neo4j.java.driver)       // bluetape4k-testcontainers는 compileOnly로 선언
-    testRuntimeOnly(libs.postgresql.driver)           // bluetape4k-testcontainers는 compileOnly로 선언
-    testImplementation(libs.hikaricp)
+    testRuntimeOnly(bt4k.postgresql)           // bluetape4k-testcontainers는 compileOnly로 선언
+    testImplementation(bt4k.hikaricp)
     testImplementation(libs.kotlinx.coroutines.test.lib)
     testImplementation(project(":bluetape4k-graph-falkordb"))
     testImplementation(testFixtures(project(":bluetape4k-graph-falkordb")))
