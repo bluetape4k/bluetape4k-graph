@@ -1,0 +1,43 @@
+# Network topology graph
+
+## Problem and backend
+
+This example turns a domain question into an inspectable path, count, ranking, or diagnostic set. It uses **TinkerGraph** to isolate modeling from container and network variance. Read [core model](../architecture/core-model.md) and [TinkerPop](../backends/tinkerpop.md) first; use the [selection guide](../backends/selection-guide.md) before production.
+
+## Model
+
+- Nodes: Site/Device/Segment/Service
+- Edges: CONTAINS_DEVICE/CONNECTED_TO/MEMBER_OF_SEGMENT/HOSTS_SERVICE
+- Key properties: siteId, deviceId, segmentId, serviceId, cidr, tier, status
+
+## Prerequisites and release boundary
+
+Use JDK 21, commit `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, and the checked-in wrapper. Examples are not published; this is an explicit release-fixture boundary. Consumers of published modules import the BOM and omit module versions.
+
+```kotlin
+dependencies {
+    implementation(platform("io.bluetape4k:bluetape4k-graph-bom:0.5.1"))
+    implementation("io.bluetape4k:bluetape4k-graph-core")
+}
+```
+
+## Run and observe
+
+```bash
+./gradlew :network-topology-examples:test --tests "io.bluetape4k.graph.examples.networktopology.TinkerGraphNetworkTopologyImpactTest"
+```
+
+Expect `BUILD SUCCESSFUL`; reachable devices, affected services, and isolated components match the fixture. A different result points to changed fixture data, edge direction, or traversal depth.
+
+## Reading order
+
+1. [Schema](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/network-topology-examples/src/main/kotlin/io/bluetape4k/graph/examples/networktopology/schema/NetworkTopologyGraphSchema.kt)
+2. [Service](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/network-topology-examples/src/main/kotlin/io/bluetape4k/graph/examples/networktopology/service/NetworkTopologyImpactService.kt)
+3. [Complete executable test](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/network-topology-examples/src/test/kotlin/io/bluetape4k/graph/examples/networktopology/AbstractNetworkTopologyImpactTest.kt)
+4. [Build file](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/network-topology-examples/build.gradle.kts)
+
+Continue [from security-attack-path](./security-attack-path.md), then read [observability-graph](./observability-graph.md). Also see [paired APIs](../architecture/paired-apis.md), [testing](../guides/testing.md), and [operations](../guides/operations.md).
+
+## Exercises and production gaps
+
+Add one result-changing edge and assertion; repeat through the suspend API; then run a persistent-backend concrete test serially. Add disconnected and malformed inputs as diagnostics. This fixture does not prove throughput, clustering, authorization, tenant isolation, migration, backup, remote-driver timeout, or index quality.
