@@ -1,0 +1,47 @@
+# bluetape4k-graph-neo4j
+
+## Choose or avoid
+
+Use this module for Neo4j Java Driver, Bolt, Cypher, native sessions, schema management, merge, traversal, and paired sync/suspend APIs. Choose it when Neo4j is the operational authority. Avoid it for an embedded graph or when PostgreSQL/AGE must own the data boundary. Entry points are [Neo4jGraphOperations.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt) and [Neo4jGraphSuspendOperations.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphSuspendOperations.kt).
+
+## Dependency and quick start
+
+```kotlin
+dependencies {
+    implementation(platform("io.github.bluetape4k:bluetape4k-dependencies:<ecosystem-version>"))
+    implementation("io.github.bluetape4k:bluetape4k-graph-neo4j")
+}
+```
+
+```kotlin
+val driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.basic("neo4j", password))
+val ops = Neo4jGraphOperations(driver, database = "neo4j")
+val alice = ops.mergeVertex("Person", mapOf("email" to "a@example.com"), mapOf("name" to "Alice"))
+val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
+ops.createEdge(alice.id, bob.id, "KNOWS")
+check(ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS")).single().id == bob.id)
+ops.close()
+driver.close()
+```
+
+Expected: native merge preserves Alice's identity, traversal returns Bob, and the caller closes the injected Driver.
+
+## Transactions, capabilities, and ownership
+
+`transaction { }` executes through a Neo4j transaction; an exception must roll back writes. Schema/index operations are implemented by [Neo4jGraphSchemaManager.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphSchemaManager.kt). Element IDs use Neo4j `elementId()`; do not treat them as stable numeric IDs.
+
+The operations object closes its sessions, not an injected Driver. Framework-managed constructors may own both; follow the Ktor or Spring page for that path.
+
+## Failure diagnosis and operations
+
+Separate authentication/service-unavailable errors from Cypher, schema, and transaction errors. Observe driver pool acquisition, retry count, query latency, server logs, database name, indexes, and transaction rollback. Parameterize values; labels and relationship types require validated identifiers.
+
+```bash
+./gradlew :bluetape4k-graph-neo4j:test --tests '*Neo4jGraphOperationsTest' --tests '*Neo4jGraphMergeOperationsTest'
+```
+
+Expected: the Neo4j 5 fixture passes CRUD, traversal, merge, and rollback. A Memgraph pass is not equivalent evidence because schema DDL and supported Cypher differ.
+
+## Related pages and non-goals
+
+See [Neo4j and Memgraph](../backends/neo4j-and-memgraph.md), [testing](../guides/testing.md), and [operations](../guides/operations.md). This module does not provision Neo4j, own injected drivers, or guarantee that every Cypher statement is portable to another Bolt server.
