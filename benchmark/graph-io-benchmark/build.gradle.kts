@@ -38,10 +38,10 @@ dependencies {
     implementation(project(":bluetape4k-graph-io-graphml"))
     implementation(project(":bluetape4k-graph-okio"))
     implementation(project(":bluetape4k-graph-tinkerpop"))
-    implementation(libs.bluetape4k.coroutines)
-    implementation(libs.bluetape4k.virtualthread.api)
-    implementation(libs.bluetape4k.virtualthread.jdk21)
+    implementation(bt4k.bluetape4k.coroutines)
+    implementation(bt4k.bluetape4k.virtualthread.api)
+    implementation(bt4k.bluetape4k.virtualthread.jdk21)
     implementation(libs.kotlinx.benchmark.runtime)
 
-    testImplementation(libs.bluetape4k.junit5)
+    testImplementation(bt4k.bluetape4k.junit5)
 }

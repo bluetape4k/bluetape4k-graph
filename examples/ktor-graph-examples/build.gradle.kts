@@ -21,9 +21,9 @@ dependencies {
     implementation(project(":bluetape4k-graph-tinkerpop"))
     implementation(project(":bluetape4k-graph-falkordb"))
 
-    implementation(libs.bluetape4k.coroutines)
-    implementation(libs.bluetape4k.ktor.core)
-    implementation(libs.bluetape4k.logging)
+    implementation(bt4k.bluetape4k.coroutines)
+    implementation(bt4k.bluetape4k.ktor.core)
+    implementation(bt4k.bluetape4k.logging)
     implementation(libs.kotlinx.coroutines.core.lib)
 
     implementation(libs.ktor.server.core)
@@ -31,8 +31,8 @@ dependencies {
 
     runtimeOnly(libs.logback.classic)
 
-    testImplementation(libs.bluetape4k.junit5)
-    testImplementation(libs.bluetape4k.ktor.testing)
+    testImplementation(bt4k.bluetape4k.junit5)
+    testImplementation(bt4k.bluetape4k.ktor.testing)
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlinx.coroutines.test.lib)
     testImplementation(testFixtures(project(":bluetape4k-graph-falkordb")))

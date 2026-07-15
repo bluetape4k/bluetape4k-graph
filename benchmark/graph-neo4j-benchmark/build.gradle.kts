@@ -28,9 +28,9 @@ dependencies {
     implementation(project(":bluetape4k-graph-neo4j"))
 
     implementation(libs.kotlinx.benchmark.runtime)
-    implementation(libs.bluetape4k.core)
-    implementation(libs.bluetape4k.logging)
-    implementation(libs.bluetape4k.coroutines)
+    implementation(bt4k.bluetape4k.core)
+    implementation(bt4k.bluetape4k.logging)
+    implementation(bt4k.bluetape4k.coroutines)
     implementation(libs.kotlinx.coroutines.core.lib)
 
     implementation(libs.neo4j.java.driver)
@@ -38,9 +38,9 @@ dependencies {
     runtimeOnly(libs.neo4j.bolt.connection.pooled)
 
     // Testcontainers 를 main 에서 사용 (벤치마크 라이프사이클이 JMH @Setup 에서 기동)
-    implementation(libs.bluetape4k.testcontainers)
+    implementation(bt4k.bluetape4k.testcontainers)
     implementation(libs.testcontainers.core)
     implementation(libs.testcontainers.neo4j)
 
-    testImplementation(libs.bluetape4k.junit5)
+    testImplementation(bt4k.bluetape4k.junit5)
 }

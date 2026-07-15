@@ -11,7 +11,7 @@ dependencyManagement {
 dependencies {
     api(project(":bluetape4k-graph-core"))
 
-    api(libs.bluetape4k.coroutines)
+    api(bt4k.bluetape4k.coroutines)
     implementation(libs.kotlinx.coroutines.core.lib)
 
     // Ktor 3.x — application/plugin DSL
@@ -23,16 +23,16 @@ dependencies {
     compileOnly(project(":bluetape4k-graph-memgraph"))
     compileOnly(project(":bluetape4k-graph-age"))
     compileOnly(project(":bluetape4k-graph-falkordb"))
-    compileOnly(libs.hikaricp)
+    compileOnly(bt4k.hikaricp)
 
     // Logging
-    implementation(libs.bluetape4k.logging)
+    implementation(bt4k.bluetape4k.logging)
 
     // Testing
     testImplementation(libs.ktor.server.core)
     testImplementation(libs.ktor.server.cio)
     testImplementation(libs.ktor.server.test.host)
-    testImplementation(libs.bluetape4k.ktor.testing)
+    testImplementation(bt4k.bluetape4k.ktor.testing)
 
     testImplementation(project(":bluetape4k-graph-tinkerpop"))
     testImplementation(project(":bluetape4k-graph-neo4j"))
@@ -41,12 +41,12 @@ dependencies {
     testImplementation(project(":bluetape4k-graph-falkordb"))
     testImplementation(testFixtures(project(":bluetape4k-graph-falkordb")))
 
-    testImplementation(libs.bluetape4k.testcontainers)
+    testImplementation(bt4k.bluetape4k.testcontainers)
     testImplementation(libs.testcontainers.core)
     testImplementation(libs.testcontainers.neo4j)
     testImplementation(libs.testcontainers.postgresql)
-    testImplementation(libs.hikaricp)
+    testImplementation(bt4k.hikaricp)
 
-    testImplementation(libs.bluetape4k.junit5)
+    testImplementation(bt4k.bluetape4k.junit5)
     testImplementation(libs.kotlinx.coroutines.test.lib)
 }
