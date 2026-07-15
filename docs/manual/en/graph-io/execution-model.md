@@ -1,5 +1,7 @@
 # graph-io execution model
 
+![graph-io pipeline](../../assets/graph-io/graph-io-pipeline.png)
+
 graph-io separates the data contract from execution. `GraphBulkImporter`/`GraphBulkExporter` are synchronous; `GraphVirtualThreadBulkImporter`/`Exporter` isolate blocking work on virtual threads; suspend variants fit coroutine scopes. Contracts: [`GraphBulkImporter.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphBulkImporter.kt), [`GraphSuspendBulkImporter.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphSuspendBulkImporter.kt), [`GraphVirtualThreadBulkImporter.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphVirtualThreadBulkImporter.kt).
 
 Choose sync for a bounded blocking job, virtual threads for many independent blocking transfers, and suspend for coroutine-owned cancellation. None removes backend limits or makes a codec nonblocking.

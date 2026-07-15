@@ -1,5 +1,7 @@
 # Spring Boot integration
 
+![Framework integration flow](../../assets/frameworks/framework-integration-flow.png)
+
 `GraphAutoConfiguration` binds `GraphProperties` and orders backend-specific configurations; it does not create a graph bean by itself. Backend configurations are registered separately and activate from classpath, properties, and missing-bean conditions. Root source: [`GraphAutoConfiguration.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/spring-boot/graph-spring-boot/src/main/kotlin/io/bluetape4k/graph/spring/boot/autoconfigure/GraphAutoConfiguration.kt).
 
 Use the ecosystem BOM and an unversioned `bluetape4k-graph-spring-boot` coordinate. Configure exactly one intended backend, then inspect the condition report if beans are absent or ambiguous. Backend examples include [`GraphNeo4jAutoConfiguration.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/spring-boot/graph-spring-boot/src/main/kotlin/io/bluetape4k/graph/spring/boot/autoconfigure/GraphNeo4jAutoConfiguration.kt) and [`GraphAgeAutoConfiguration.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/spring-boot/graph-spring-boot/src/main/kotlin/io/bluetape4k/graph/spring/boot/autoconfigure/GraphAgeAutoConfiguration.kt).

@@ -2,7 +2,7 @@
 
 ## 문제와 백엔드
 
-이 예제는 도메인 질문을 경로, 개수, 순위, 진단 집합으로 확인합니다. **TinkerGraph**를 써서 컨테이너와 네트워크 편차를 빼고 모델부터 검증합니다. 먼저 [핵심 모델](../architecture/core-model.md)과 [TinkerPop](../backends/tinkerpop.md)을 읽고, 운영 전에는 [선택 가이드](../backends/selection-guide.md)를 적용하십시오.
+주문, 운송 경로, 부품, 순환 의존성을 공급망 그래프에서 추적합니다. **TinkerGraph**를 써서 컨테이너와 네트워크 편차를 빼고 모델부터 검증합니다. 먼저 [핵심 모델](../architecture/core-model.md)과 [TinkerPop](../backends/tinkerpop.md)을 읽고, 운영 전에는 [선택 가이드](../backends/selection-guide.md)를 적용합니다.
 
 ## 그래프 모델
 
@@ -20,7 +20,7 @@ JDK 21, 커밋 `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, 저장소의 Gradle W
 ./gradlew :supply-chain-graph-examples:test --tests "io.bluetape4k.graph.examples.supplychain.TinkerGraphSupplyChainImpactTest"
 ```
 
-`BUILD SUCCESSFUL`과 함께 지정 테스트가 통과해야 합니다. order-1001, route-air-express, gps-module, 배터리 의존 순환이 발견됩니다. 결과가 다르면 고정 데이터, 간선 방향, 탐색 깊이를 확인하십시오.
+테스트는 `order-1001`, `route-air-express`, `gps-module`을 찾고 배터리 의존 순환을 감지하는지 검증합니다. 실패하면 공급 관계 누락, 의존 방향, 순환 탐지 범위를 확인합니다.
 
 ## 코드 읽는 순서
 

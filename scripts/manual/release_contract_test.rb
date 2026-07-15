@@ -29,10 +29,33 @@ class ReleaseContractTest < Minitest::Test
     end
   end
 
+  def test_rejects_github_source_link_with_wrong_release_commit
+    Dir.mktmpdir do |root|
+      FileUtils.mkdir_p(File.join(root, "docs/manual/en"))
+      File.write(File.join(root, "docs/manual/en/index.md"),
+        "[source](https://github.com/bluetape4k/bluetape4k-graph/blob/#{'4' * 40}/graph/Present.kt)\n")
+      contract = ManualDocs::ReleaseContract.new(repository_root: root, tag: "0.5.1", expected_sha: SHA,
+        git_runner: runner(tree: ["graph/Present.kt"]))
+      assert contract.errors.any? { |e| e.include?("source link commit") }
+    end
+  end
+
   def test_rejects_non_annotated_tag
     contract = ManualDocs::ReleaseContract.new(repository_root: Dir.pwd, tag: "0.5.1", expected_sha: SHA,
       git_runner: runner(tree: [], type: "commit"))
     assert contract.errors.any? { |e| e.include?("annotated") }
+  end
+
+  def test_rejects_manifest_source_path_outside_release_tree
+    Dir.mktmpdir do |root|
+      FileUtils.mkdir_p(File.join(root, "docs/manual"))
+      manifest = File.join(root, "docs/manual/manifest.yaml")
+      File.write(manifest, YAML.dump("modules" => [{ "id" => "core", "sourcePaths" => ["graph/missing"] }]))
+      contract = ManualDocs::ReleaseContract.new(repository_root: root, tag: "0.5.1", expected_sha: SHA,
+        manifest_path: manifest, git_runner: runner(tree: ["graph/present/build.gradle.kts"]))
+      assert contract.errors.any? { |e| e.include?("sourcePath not found in release tree: graph/missing") }
+      assert_equal 1, contract.validate.source_path_count
+    end
   end
 
 

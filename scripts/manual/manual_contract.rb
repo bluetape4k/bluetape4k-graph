@@ -34,6 +34,7 @@ module ManualDocs
       errors.concat(validate_inventory(entries))
       entries.each { |entry| errors.concat(validate_entry(entry)) }
       errors.concat(validate_assets(manifest.fetch("assets", []), "manifest"))
+      errors.concat(validate_overview(manifest, entries))
       errors
     rescue Psych::SyntaxError => error
       ["manual manifest YAML is invalid: #{error.problem}"]
@@ -79,6 +80,59 @@ module ManualDocs
       errors.concat(validate_routes(entry)) if entry.key?("routes") || @strict
       errors.concat(validate_assets(entry.fetch("assets", []), entry["id"]))
       errors
+    end
+
+    def validate_overview(manifest, entries)
+      overview = manifest["overview"]
+      return @strict ? ["manual manifest overview must be a mapping"] : [] unless overview.is_a?(Hash)
+      documents = overview["documents"]
+      return ["manual overview documents must be a mapping"] unless documents.is_a?(Hash)
+
+      errors = []
+      locale_paths = {}
+      LOCALES.each do |locale, language|
+        paths = documents[locale]
+        unless paths.is_a?(Array)
+          errors << "manual overview #{language} documents must be an array"
+          next
+        end
+        locale_paths[locale] = paths
+        duplicates(paths.map { |path| { "path" => path } }, "path").each do |path|
+          errors << "manual overview duplicate #{language} document #{path}"
+        end
+        paths.each do |path|
+          unless safe_relative?(path) && path.start_with?("#{locale}/")
+            errors << "manual overview unsafe #{language} document #{path}"
+            next
+          end
+          absolute = File.expand_path(path, File.dirname(@manifest_path))
+          if !within?(absolute, File.dirname(@manifest_path)) || !File.file?(absolute)
+            errors << "manual overview missing #{language} document #{path}"
+          else
+            errors.concat(validate_document_references(absolute, "overview"))
+          end
+        end
+      end
+      if locale_paths.keys.sort == LOCALES.keys.sort
+        en_slugs = locale_paths.fetch("en").map { |path| path.delete_prefix("en/") }
+        ko_slugs = locale_paths.fetch("ko").map { |path| path.delete_prefix("ko/") }
+        errors << "manual overview English/Korean routes differ" unless en_slugs == ko_slugs
+      end
+      errors.concat(validate_assets(overview.fetch("assets", []), "overview"))
+      errors.concat(validate_registered_documents(entries, locale_paths)) if @strict
+      errors
+    end
+
+    def validate_registered_documents(entries, locale_paths)
+      manual_root = File.dirname(@manifest_path)
+      LOCALES.keys.flat_map do |locale|
+        registered = Array(locale_paths[locale]) + entries.map { |entry| entry.dig("routes", locale) }.compact
+        actual = Dir.glob(File.join(manual_root, locale, "**/*.md")).map do |path|
+          Pathname.new(path).relative_path_from(Pathname.new(manual_root)).to_s
+        end
+        (actual - registered).sort.map { |path| "unregistered manual document #{path}" } +
+          (registered - actual).sort.map { |path| "registered manual document not found #{path}" }
+      end
     end
 
     def validate_routes(entry)

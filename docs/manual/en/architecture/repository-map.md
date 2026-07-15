@@ -11,7 +11,7 @@ The repository is organized by responsibility, not by one monolithic driver.
 | `examples` | domain-shaped use and cross-backend tests | [`AbstractCodeGraphTest.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/code-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/code/AbstractCodeGraphTest.kt) |
 | `benchmark` | workload evidence, not API promises | [`benchmark/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/benchmark/README.md) |
 
-<!-- diagram: repository learning map -->
+![Repository learning map](../../assets/overview/repository-learning-map.png)
 
 Read core contracts before a backend implementation. Then trace one operation from interface to backend test. Example projects are deliberately unpublished; copy their design ideas, not their dependency coordinates or deployment assumptions.
 

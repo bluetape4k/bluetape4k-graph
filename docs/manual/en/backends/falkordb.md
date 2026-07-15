@@ -1,5 +1,7 @@
 # FalkorDB
 
+![Backend decision map](../../assets/backends/backend-decision-map.png)
+
 Choose FalkorDB when a Redis-shaped deployed service and its openCypher subset match the system boundary. The module uses jfalkordb; do not treat it as a drop-in Neo4j server merely because both accept Cypher-like queries.
 
 Read [`FalkorDBGraphOperations.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-falkordb/src/main/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphOperations.kt) and [`FalkorDBGraphSchemaManager.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-falkordb/src/main/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphSchemaManager.kt). Container-backed CRUD, merge, batch, and schema evidence is in [`FalkorDBGraphOperationsTest.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-falkordb/src/test/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphOperationsTest.kt) and neighboring tests.

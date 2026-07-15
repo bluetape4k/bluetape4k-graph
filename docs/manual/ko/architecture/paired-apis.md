@@ -1,5 +1,7 @@
 # 동기·코루틴 API와 capability
 
+![핵심 추상화 지도](../../assets/architecture/core-abstraction-map.png)
+
 `GraphOperations`는 `GraphSession`, 정점·간선 repository, `GraphGenericRepository`를 합친다. `GraphGenericRepository`에는 순회와 알고리즘이 들어 있다. 코루틴 쪽은 같은 구성을 suspend 함수와 `Flow`로 제공한다. 소스: [`GraphOperations.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphOperations.kt), [`GraphSuspendOperations.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphSuspendOperations.kt), [`GraphGenericRepository.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphGenericRepository.kt).
 
 `GraphSession`은 그래프 생성·삭제·존재 확인을 맡는다. 다만 외부에서 주입한 Driver나 DataSource까지 `close()`가 소유한다는 뜻은 아니다. 자원 생명주기는 호출자나 프레임워크 컨테이너가 관리한다. 이 경계는 [`GraphSession.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphSession.kt)에 명시돼 있다.

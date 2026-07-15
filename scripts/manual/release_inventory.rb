@@ -70,14 +70,25 @@ module ManualDocs
   class ReleaseInventory
     VALID_KINDS = %w[library benchmark example].freeze
 
-    def initialize(repository_root:, tag:, expected_sha:, inventory_path:, output_path:, expected_count:,
+    def self.parse_cli(arguments)
+      case arguments.length
+      when 4
+        tag, sha, output, count = arguments
+        { tag: tag, sha: sha, output: output, count: count, legacy_input: nil }
+      when 5
+        tag, sha, legacy_input, output, count = arguments
+        { tag: tag, sha: sha, output: output, count: count, legacy_input: legacy_input }
+      else
+        raise ArgumentError, "usage: ruby scripts/manual/release_inventory.rb TAG EXPECTED_SHA [LEGACY_INPUT] OUTPUT EXPECTED_COUNT"
+      end
+    end
+
+    def initialize(repository_root:, tag:, expected_sha:, output_path:, expected_count:,
                    expected_kinds: { "library" => 15, "benchmark" => 4, "example" => 12 }, git_runner: nil,
                    inventory_exporter: nil)
       @repository_root = File.expand_path(repository_root)
       @tag = tag
       @expected_sha = expected_sha
-      # inventory_path is kept only for compatibility with the documented
-      # five-argument command. Detached release rows are always authoritative.
       @output_path = output_path
       @expected_count = Integer(expected_count)
       @expected_kinds = expected_kinds
@@ -141,10 +152,14 @@ module ManualDocs
 end
 
 if $PROGRAM_NAME == __FILE__
-  abort("usage: ruby scripts/manual/release_inventory.rb TAG EXPECTED_SHA INPUT OUTPUT EXPECTED_COUNT") unless ARGV.length == 5
-  tag, sha, input, output, count = ARGV
-  rows = ManualDocs::ReleaseInventory.new(repository_root: Dir.pwd, tag: tag, expected_sha: sha,
-    inventory_path: input, output_path: output, expected_count: count).write
+  begin
+    arguments = ManualDocs::ReleaseInventory.parse_cli(ARGV)
+  rescue ArgumentError => error
+    abort(error.message)
+  end
+  warn("Ignoring legacy working-tree inventory argument #{arguments[:legacy_input]}; the detached release export is authoritative.") if arguments[:legacy_input]
+  rows = ManualDocs::ReleaseInventory.new(repository_root: Dir.pwd, tag: arguments.fetch(:tag), expected_sha: arguments.fetch(:sha),
+    output_path: arguments.fetch(:output), expected_count: arguments.fetch(:count)).write
   counts = rows.group_by { |row| row.fetch("kind") }.transform_values(&:length)
   puts "Release inventory written: #{rows.length} projects (#{counts['library']} libraries, #{counts['benchmark']} benchmarks, #{counts['example']} examples)."
 end

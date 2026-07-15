@@ -1,5 +1,7 @@
 # Ktor integration
 
+![Framework integration flow](../../assets/frameworks/framework-integration-flow.png)
+
 Install `GraphPlugin` once in a Ktor application and select a backend or supply sync/suspend operations. Installation fails if configuration resolves no backend. The resulting `GraphPluginState` is stored in application attributes: [`GraphPlugin.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/ktor/graph-ktor/src/main/kotlin/io/bluetape4k/graph/ktor/GraphPlugin.kt), [`GraphPluginConfig.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/ktor/graph-ktor/src/main/kotlin/io/bluetape4k/graph/ktor/GraphPluginConfig.kt).
 
 ```kotlin

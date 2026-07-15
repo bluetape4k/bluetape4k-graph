@@ -2,7 +2,7 @@
 
 ## Problem and backend
 
-This example turns a domain question into an inspectable path, count, ranking, or diagnostic set. It uses **TinkerGraph** to isolate modeling from container and network variance. Read [core model](../architecture/core-model.md) and [TinkerPop](../backends/tinkerpop.md) first; use the [selection guide](../backends/selection-guide.md) before production.
+This example models modules, declarations, and calls so dependency and call paths can be inspected directly. It uses **TinkerGraph** to isolate modeling from container and network variance. Read [core model](../architecture/core-model.md) and [TinkerPop](../backends/tinkerpop.md) first; use the [selection guide](../backends/selection-guide.md) before production.
 
 ## Model
 
@@ -20,7 +20,7 @@ Use JDK 21, commit `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, and the checked-i
 ./gradlew :code-graph-examples:test --tests "io.bluetape4k.graph.examples.code.TinkerGraphCodeGraphTest"
 ```
 
-Expect `BUILD SUCCESSFUL`; path has more than one vertex and a disconnected pair returns null. A different result points to changed fixture data, edge direction, or traversal depth.
+The test asserts that the call path contains more than one vertex and that a disconnected pair has no path. A failure usually means the fixture edges, their direction, or the traversal depth no longer matches the code-graph model.
 
 ## Reading order
 

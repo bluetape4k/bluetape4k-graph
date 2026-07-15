@@ -1,5 +1,7 @@
 # OkIO, compression, and file security
 
+![graph-io pipeline](../../assets/graph-io/graph-io-pipeline.png)
+
 `graph-okio` connects graph formats to OkIO `Source`, `Sink`, `Path`, and `FileSystem`. It supports GZIP, DEFLATE, LZ4, SNAPPY, ZSTD, and BZIP2 through streaming compressors defined in [`Compressor.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/okio/src/main/kotlin/io/bluetape4k/graph/io/okio/Compressor.kt).
 
 For single-stream NDJSON or GraphML, DAEAD chunk helpers authenticate and encrypt data. Compression is applied before encryption; import reverses the order. Associated data must match. Deterministic encryption leaks equality of identical chunks under the same key/context, so decide whether that property is acceptable. The exact chain and size limits are in [`GraphIoOkioPaths.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/okio/src/main/kotlin/io/bluetape4k/graph/io/okio/GraphIoOkioPaths.kt).

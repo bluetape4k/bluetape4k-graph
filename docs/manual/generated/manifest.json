@@ -6,7 +6,14 @@
       "id": "bluetape4k-graph-age",
       "kind": "library",
       "projectName": "bluetape4k-graph-age",
+      "routes": {
+        "en": "en/modules/bluetape4k-graph-age.md",
+        "ko": "ko/modules/bluetape4k-graph-age.md"
+      },
       "sourceDir": "graph/graph-age",
+      "sourcePaths": [
+        "graph/graph-age"
+      ],
       "status": "stable"
     },
     {
@@ -15,7 +22,14 @@
       "id": "bluetape4k-graph-bom",
       "kind": "library",
       "projectName": "bluetape4k-graph-bom",
+      "routes": {
+        "en": "en/modules/bluetape4k-graph-bom.md",
+        "ko": "ko/modules/bluetape4k-graph-bom.md"
+      },
       "sourceDir": "bom",
+      "sourcePaths": [
+        "bom"
+      ],
       "status": "stable"
     },
     {
@@ -24,7 +38,14 @@
       "id": "bluetape4k-graph-core",
       "kind": "library",
       "projectName": "bluetape4k-graph-core",
+      "routes": {
+        "en": "en/modules/bluetape4k-graph-core.md",
+        "ko": "ko/modules/bluetape4k-graph-core.md"
+      },
       "sourceDir": "graph/graph-core",
+      "sourcePaths": [
+        "graph/graph-core"
+      ],
       "status": "stable"
     },
     {
@@ -33,7 +54,14 @@
       "id": "bluetape4k-graph-falkordb",
       "kind": "library",
       "projectName": "bluetape4k-graph-falkordb",
+      "routes": {
+        "en": "en/modules/bluetape4k-graph-falkordb.md",
+        "ko": "ko/modules/bluetape4k-graph-falkordb.md"
+      },
       "sourceDir": "graph/graph-falkordb",
+      "sourcePaths": [
+        "graph/graph-falkordb"
+      ],
       "status": "stable"
     },
     {
@@ -42,7 +70,14 @@
       "id": "bluetape4k-graph-io-core",
       "kind": "library",
       "projectName": "bluetape4k-graph-io-core",
+      "routes": {
+        "en": "en/modules/bluetape4k-graph-io-core.md",
+        "ko": "ko/modules/bluetape4k-graph-io-core.md"
+      },
       "sourceDir": "graph-io/core",
+      "sourcePaths": [
+        "graph-io/core"
+      ],
       "status": "stable"
     },
     {
@@ -51,7 +86,14 @@
       "id": "bluetape4k-graph-io-csv",
       "kind": "library",
       "projectName": "bluetape4k-graph-io-csv",
+      "routes": {
+        "en": "en/modules/bluetape4k-graph-io-csv.md",
+        "ko": "ko/modules/bluetape4k-graph-io-csv.md"
+      },
       "sourceDir": "graph-io/csv",
+      "sourcePaths": [
+        "graph-io/csv"
+      ],
       "status": "stable"
     },
     {
@@ -60,7 +102,14 @@
       "id": "bluetape4k-graph-io-graphml",
       "kind": "library",
       "projectName": "bluetape4k-graph-io-graphml",
+      "routes": {
+        "en": "en/modules/bluetape4k-graph-io-graphml.md",
+        "ko": "ko/modules/bluetape4k-graph-io-graphml.md"
+      },
       "sourceDir": "graph-io/graphml",
+      "sourcePaths": [
+        "graph-io/graphml"
+      ],
       "status": "stable"
     },
     {
@@ -69,7 +118,14 @@
       "id": "bluetape4k-graph-io-jackson2",
       "kind": "library",
       "projectName": "bluetape4k-graph-io-jackson2",
+      "routes": {
+        "en": "en/modules/bluetape4k-graph-io-jackson2.md",
+        "ko": "ko/modules/bluetape4k-graph-io-jackson2.md"
+      },
       "sourceDir": "graph-io/jackson2",
+      "sourcePaths": [
+        "graph-io/jackson2"
+      ],
       "status": "stable"
     },
     {
@@ -78,7 +134,14 @@
       "id": "bluetape4k-graph-io-jackson3",
       "kind": "library",
       "projectName": "bluetape4k-graph-io-jackson3",
+      "routes": {
+        "en": "en/modules/bluetape4k-graph-io-jackson3.md",
+        "ko": "ko/modules/bluetape4k-graph-io-jackson3.md"
+      },
       "sourceDir": "graph-io/jackson3",
+      "sourcePaths": [
+        "graph-io/jackson3"
+      ],
       "status": "stable"
     },
     {
@@ -87,7 +150,14 @@
       "id": "bluetape4k-graph-ktor",
       "kind": "library",
       "projectName": "bluetape4k-graph-ktor",
+      "routes": {
+        "en": "en/modules/bluetape4k-graph-ktor.md",
+        "ko": "ko/modules/bluetape4k-graph-ktor.md"
+      },
       "sourceDir": "ktor/graph-ktor",
+      "sourcePaths": [
+        "ktor/graph-ktor"
+      ],
       "status": "stable"
     },
     {
@@ -96,7 +166,14 @@
       "id": "bluetape4k-graph-memgraph",
       "kind": "library",
       "projectName": "bluetape4k-graph-memgraph",
+      "routes": {
+        "en": "en/modules/bluetape4k-graph-memgraph.md",
+        "ko": "ko/modules/bluetape4k-graph-memgraph.md"
+      },
       "sourceDir": "graph/graph-memgraph",
+      "sourcePaths": [
+        "graph/graph-memgraph"
+      ],
       "status": "stable"
     },
     {
@@ -105,7 +182,14 @@
       "id": "bluetape4k-graph-neo4j",
       "kind": "library",
       "projectName": "bluetape4k-graph-neo4j",
+      "routes": {
+        "en": "en/modules/bluetape4k-graph-neo4j.md",
+        "ko": "ko/modules/bluetape4k-graph-neo4j.md"
+      },
       "sourceDir": "graph/graph-neo4j",
+      "sourcePaths": [
+        "graph/graph-neo4j"
+      ],
       "status": "stable"
     },
     {
@@ -114,7 +198,14 @@
       "id": "bluetape4k-graph-okio",
       "kind": "library",
       "projectName": "bluetape4k-graph-okio",
+      "routes": {
+        "en": "en/modules/graph-okio.md",
+        "ko": "ko/modules/graph-okio.md"
+      },
       "sourceDir": "graph-io/okio",
+      "sourcePaths": [
+        "graph-io/okio"
+      ],
       "status": "stable"
     },
     {
@@ -123,7 +214,14 @@
       "id": "bluetape4k-graph-spring-boot",
       "kind": "library",
       "projectName": "bluetape4k-graph-spring-boot",
+      "routes": {
+        "en": "en/modules/bluetape4k-graph-spring-boot.md",
+        "ko": "ko/modules/bluetape4k-graph-spring-boot.md"
+      },
       "sourceDir": "spring-boot/graph-spring-boot",
+      "sourcePaths": [
+        "spring-boot/graph-spring-boot"
+      ],
       "status": "stable"
     },
     {
@@ -132,7 +230,14 @@
       "id": "bluetape4k-graph-tinkerpop",
       "kind": "library",
       "projectName": "bluetape4k-graph-tinkerpop",
+      "routes": {
+        "en": "en/modules/bluetape4k-graph-tinkerpop.md",
+        "ko": "ko/modules/bluetape4k-graph-tinkerpop.md"
+      },
       "sourceDir": "graph/graph-tinkerpop",
+      "sourcePaths": [
+        "graph/graph-tinkerpop"
+      ],
       "status": "stable"
     },
     {
@@ -141,7 +246,14 @@
       "id": "code-graph-examples",
       "kind": "example",
       "projectName": "code-graph-examples",
+      "routes": {
+        "en": "en/examples/code-graph.md",
+        "ko": "ko/examples/code-graph.md"
+      },
       "sourceDir": "examples/code-graph-examples",
+      "sourcePaths": [
+        "examples/code-graph-examples"
+      ],
       "status": "stable"
     },
     {
@@ -150,7 +262,14 @@
       "id": "data-lineage-examples",
       "kind": "example",
       "projectName": "data-lineage-examples",
+      "routes": {
+        "en": "en/examples/data-lineage.md",
+        "ko": "ko/examples/data-lineage.md"
+      },
       "sourceDir": "examples/data-lineage-examples",
+      "sourcePaths": [
+        "examples/data-lineage-examples"
+      ],
       "status": "stable"
     },
     {
@@ -159,7 +278,14 @@
       "id": "fraud-detection-examples",
       "kind": "example",
       "projectName": "fraud-detection-examples",
+      "routes": {
+        "en": "en/examples/fraud-detection.md",
+        "ko": "ko/examples/fraud-detection.md"
+      },
       "sourceDir": "examples/fraud-detection-examples",
+      "sourcePaths": [
+        "examples/fraud-detection-examples"
+      ],
       "status": "stable"
     },
     {
@@ -168,7 +294,14 @@
       "id": "graph-age-benchmark",
       "kind": "benchmark",
       "projectName": "graph-age-benchmark",
+      "routes": {
+        "en": "en/benchmarks/age-and-neo4j.md",
+        "ko": "ko/benchmarks/age-and-neo4j.md"
+      },
       "sourceDir": "benchmark/graph-age-benchmark",
+      "sourcePaths": [
+        "benchmark/graph-age-benchmark"
+      ],
       "status": "stable"
     },
     {
@@ -177,7 +310,14 @@
       "id": "graph-benchmark",
       "kind": "benchmark",
       "projectName": "graph-benchmark",
+      "routes": {
+        "en": "en/benchmarks/graph-operations.md",
+        "ko": "ko/benchmarks/graph-operations.md"
+      },
       "sourceDir": "benchmark/graph-benchmark",
+      "sourcePaths": [
+        "benchmark/graph-benchmark"
+      ],
       "status": "stable"
     },
     {
@@ -186,7 +326,14 @@
       "id": "graph-io-benchmark",
       "kind": "benchmark",
       "projectName": "graph-io-benchmark",
+      "routes": {
+        "en": "en/benchmarks/graph-io.md",
+        "ko": "ko/benchmarks/graph-io.md"
+      },
       "sourceDir": "benchmark/graph-io-benchmark",
+      "sourcePaths": [
+        "benchmark/graph-io-benchmark"
+      ],
       "status": "stable"
     },
     {
@@ -195,7 +342,14 @@
       "id": "graph-neo4j-benchmark",
       "kind": "benchmark",
       "projectName": "graph-neo4j-benchmark",
+      "routes": {
+        "en": "en/benchmarks/overview.md",
+        "ko": "ko/benchmarks/overview.md"
+      },
       "sourceDir": "benchmark/graph-neo4j-benchmark",
+      "sourcePaths": [
+        "benchmark/graph-neo4j-benchmark"
+      ],
       "status": "stable"
     },
     {
@@ -204,7 +358,14 @@
       "id": "iam-access-graph-examples",
       "kind": "example",
       "projectName": "iam-access-graph-examples",
+      "routes": {
+        "en": "en/examples/iam-access-graph.md",
+        "ko": "ko/examples/iam-access-graph.md"
+      },
       "sourceDir": "examples/iam-access-graph-examples",
+      "sourcePaths": [
+        "examples/iam-access-graph-examples"
+      ],
       "status": "stable"
     },
     {
@@ -213,7 +374,14 @@
       "id": "knowledge-graph-examples",
       "kind": "example",
       "projectName": "knowledge-graph-examples",
+      "routes": {
+        "en": "en/examples/knowledge-graph.md",
+        "ko": "ko/examples/knowledge-graph.md"
+      },
       "sourceDir": "examples/knowledge-graph-examples",
+      "sourcePaths": [
+        "examples/knowledge-graph-examples"
+      ],
       "status": "stable"
     },
     {
@@ -222,7 +390,14 @@
       "id": "ktor-graph-examples",
       "kind": "example",
       "projectName": "ktor-graph-examples",
+      "routes": {
+        "en": "en/examples/ktor-graph.md",
+        "ko": "ko/examples/ktor-graph.md"
+      },
       "sourceDir": "examples/ktor-graph-examples",
+      "sourcePaths": [
+        "examples/ktor-graph-examples"
+      ],
       "status": "stable"
     },
     {
@@ -231,7 +406,14 @@
       "id": "linkedin-graph-examples",
       "kind": "example",
       "projectName": "linkedin-graph-examples",
+      "routes": {
+        "en": "en/examples/linkedin-graph.md",
+        "ko": "ko/examples/linkedin-graph.md"
+      },
       "sourceDir": "examples/linkedin-graph-examples",
+      "sourcePaths": [
+        "examples/linkedin-graph-examples"
+      ],
       "status": "stable"
     },
     {
@@ -240,7 +422,14 @@
       "id": "network-topology-examples",
       "kind": "example",
       "projectName": "network-topology-examples",
+      "routes": {
+        "en": "en/examples/network-topology.md",
+        "ko": "ko/examples/network-topology.md"
+      },
       "sourceDir": "examples/network-topology-examples",
+      "sourcePaths": [
+        "examples/network-topology-examples"
+      ],
       "status": "stable"
     },
     {
@@ -249,7 +438,14 @@
       "id": "observability-graph-examples",
       "kind": "example",
       "projectName": "observability-graph-examples",
+      "routes": {
+        "en": "en/examples/observability-graph.md",
+        "ko": "ko/examples/observability-graph.md"
+      },
       "sourceDir": "examples/observability-graph-examples",
+      "sourcePaths": [
+        "examples/observability-graph-examples"
+      ],
       "status": "stable"
     },
     {
@@ -258,7 +454,14 @@
       "id": "recommendation-examples",
       "kind": "example",
       "projectName": "recommendation-examples",
+      "routes": {
+        "en": "en/examples/recommendation.md",
+        "ko": "ko/examples/recommendation.md"
+      },
       "sourceDir": "examples/recommendation-examples",
+      "sourcePaths": [
+        "examples/recommendation-examples"
+      ],
       "status": "stable"
     },
     {
@@ -267,7 +470,14 @@
       "id": "security-attack-path-examples",
       "kind": "example",
       "projectName": "security-attack-path-examples",
+      "routes": {
+        "en": "en/examples/security-attack-path.md",
+        "ko": "ko/examples/security-attack-path.md"
+      },
       "sourceDir": "examples/security-attack-path-examples",
+      "sourcePaths": [
+        "examples/security-attack-path-examples"
+      ],
       "status": "stable"
     },
     {
@@ -276,12 +486,81 @@
       "id": "supply-chain-graph-examples",
       "kind": "example",
       "projectName": "supply-chain-graph-examples",
+      "routes": {
+        "en": "en/examples/supply-chain-graph.md",
+        "ko": "ko/examples/supply-chain-graph.md"
+      },
       "sourceDir": "examples/supply-chain-graph-examples",
+      "sourcePaths": [
+        "examples/supply-chain-graph-examples"
+      ],
       "status": "stable"
     }
   ],
+  "overview": {
+    "assets": [
+      "assets/overview/repository-learning-map.svg",
+      "assets/overview/repository-learning-map.png",
+      "assets/architecture/core-abstraction-map.svg",
+      "assets/architecture/core-abstraction-map.png",
+      "assets/backends/backend-decision-map.svg",
+      "assets/backends/backend-decision-map.png",
+      "assets/graph-io/graph-io-pipeline.svg",
+      "assets/graph-io/graph-io-pipeline.png",
+      "assets/frameworks/framework-integration-flow.svg",
+      "assets/frameworks/framework-integration-flow.png"
+    ],
+    "documents": {
+      "en": [
+        "en/index.md",
+        "en/getting-started.md",
+        "en/architecture/repository-map.md",
+        "en/architecture/core-model.md",
+        "en/architecture/paired-apis.md",
+        "en/architecture/schema-and-transactions.md",
+        "en/backends/selection-guide.md",
+        "en/backends/neo4j-and-memgraph.md",
+        "en/backends/apache-age.md",
+        "en/backends/tinkerpop.md",
+        "en/backends/falkordb.md",
+        "en/graph-io/formats.md",
+        "en/graph-io/execution-model.md",
+        "en/graph-io/okio-security.md",
+        "en/frameworks/spring-boot.md",
+        "en/frameworks/ktor.md",
+        "en/guides/learning-path.md",
+        "en/guides/testing.md",
+        "en/guides/operations.md",
+        "en/guides/failure-and-cancellation.md",
+        "en/guides/benchmark-based-selection.md"
+      ],
+      "ko": [
+        "ko/index.md",
+        "ko/getting-started.md",
+        "ko/architecture/repository-map.md",
+        "ko/architecture/core-model.md",
+        "ko/architecture/paired-apis.md",
+        "ko/architecture/schema-and-transactions.md",
+        "ko/backends/selection-guide.md",
+        "ko/backends/neo4j-and-memgraph.md",
+        "ko/backends/apache-age.md",
+        "ko/backends/tinkerpop.md",
+        "ko/backends/falkordb.md",
+        "ko/graph-io/formats.md",
+        "ko/graph-io/execution-model.md",
+        "ko/graph-io/okio-security.md",
+        "ko/frameworks/spring-boot.md",
+        "ko/frameworks/ktor.md",
+        "ko/guides/learning-path.md",
+        "ko/guides/testing.md",
+        "ko/guides/operations.md",
+        "ko/guides/failure-and-cancellation.md",
+        "ko/guides/benchmark-based-selection.md"
+      ]
+    }
+  },
   "publication": {
-    "contentStatus": "inventory-only",
+    "contentStatus": "complete",
     "locales": [
       "en",
       "ko"

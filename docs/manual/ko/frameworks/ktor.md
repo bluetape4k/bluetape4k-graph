@@ -1,5 +1,7 @@
 # Ktor 연동
 
+![프레임워크 연동 흐름](../../assets/frameworks/framework-integration-flow.png)
+
 Ktor 애플리케이션에 `GraphPlugin`을 한 번 설치하고 백엔드를 고르거나 동기·코루틴 operations를 넘긴다. 아무 백엔드도 정하지 않으면 설치 단계에서 실패한다. 만들어진 `GraphPluginState`는 application attributes에 저장된다. 소스: [`GraphPlugin.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/ktor/graph-ktor/src/main/kotlin/io/bluetape4k/graph/ktor/GraphPlugin.kt), [`GraphPluginConfig.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/ktor/graph-ktor/src/main/kotlin/io/bluetape4k/graph/ktor/GraphPluginConfig.kt).
 
 ```kotlin

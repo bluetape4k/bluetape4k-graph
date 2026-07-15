@@ -2,7 +2,7 @@
 
 ## Problem and backend
 
-This example turns a domain question into an inspectable path, count, ranking, or diagnostic set. It uses **TinkerGraph** to isolate modeling from container and network variance. Read [core model](../architecture/core-model.md) and [TinkerPop](../backends/tinkerpop.md) first; use the [selection guide](../backends/selection-guide.md) before production.
+This example exposes graph reset, count, and route queries through a Ktor plugin and HTTP boundary. It uses **TinkerGraph** to isolate modeling from container and network variance. Read [core model](../architecture/core-model.md), [TinkerPop](../backends/tinkerpop.md), and [Ktor integration](../frameworks/ktor.md) first.
 
 ## Model
 
@@ -20,7 +20,7 @@ Use JDK 21, commit `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, and the checked-i
 ./gradlew :ktor-graph-examples:test --tests "io.bluetape4k.graph.examples.ktor.KtorGraphAppTest"
 ```
 
-Expect `BUILD SUCCESSFUL`; reset returns reset, city count is 3, and the path is Seoul -> Daejeon -> Busan. A different result points to changed fixture data, edge direction, or traversal depth.
+The route tests assert that reset reports `reset`, the fixture contains three cities, and the path is `Seoul -> Daejeon -> Busan`. A failure should be split between plugin initialization, route serialization, and graph fixture/traversal behavior.
 
 ## Reading order
 

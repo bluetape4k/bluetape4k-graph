@@ -2,7 +2,7 @@
 
 ## Problem and backend
 
-This example turns a domain question into an inspectable path, count, ranking, or diagnostic set. It uses **TinkerGraph** to isolate modeling from container and network variance. Read [core model](../architecture/core-model.md) and [TinkerPop](../backends/tinkerpop.md) first; use the [selection guide](../backends/selection-guide.md) before production.
+This example follows upstream sources and downstream impact across datasets, jobs, and reports. It uses **TinkerGraph** to isolate modeling from container and network variance. Read [core model](../architecture/core-model.md) and [TinkerPop](../backends/tinkerpop.md) first; use the [selection guide](../backends/selection-guide.md) before production.
 
 ## Model
 
@@ -20,7 +20,7 @@ Use JDK 21, commit `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, and the checked-i
 ./gradlew :data-lineage-examples:test --tests "io.bluetape4k.graph.examples.datalineage.TinkerGraphDataLineageImpactTest"
 ```
 
-Expect `BUILD SUCCESSFUL`; impact includes exec-revenue and ops-quality plus the expected upstream tables. A different result points to changed fixture data, edge direction, or traversal depth.
+The test asserts that downstream impact reaches `exec-revenue` and `ops-quality` and that upstream traversal finds the expected source tables. A failure points first to lineage direction, missing transformation edges, or a changed traversal bound.
 
 ## Reading order
 

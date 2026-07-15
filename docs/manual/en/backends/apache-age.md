@@ -1,5 +1,7 @@
 # Apache AGE
 
+![Backend decision map](../../assets/backends/backend-decision-map.png)
+
 Apache AGE is the choice when graph data must live inside an existing PostgreSQL operational boundary. Queries cross a Cypher-over-SQL layer, so JDBC connection state, graph context, PostgreSQL transactions, and AGE types are part of diagnosis.
 
 The synchronous and coroutine adapters are [`AgeGraphOperations.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/AgeGraphOperations.kt) and [`AgeGraphSuspendOperations.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/AgeGraphSuspendOperations.kt). Transaction wiring is visible in [`JdbcTransactionExtensions.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/JdbcTransactionExtensions.kt), with rollback/cancellation evidence in [`AgeGraphSuspendOperationsTest.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/src/test/kotlin/io/bluetape4k/graph/age/AgeGraphSuspendOperationsTest.kt).

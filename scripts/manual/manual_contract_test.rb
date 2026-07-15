@@ -68,4 +68,40 @@ class ManualContractTest < Minitest::Test
       assert validator.errors.any? { |e| e.include?("missing asset assets/missing.svg") }
     end
   end
+
+
+  def test_strict_mode_requires_complete_locale_matched_overview_documents
+    validate({
+      "routes" => { "en" => "en/modules/core.md", "ko" => "ko/modules/core.md" },
+      "sourcePaths" => ["graph/core/build.gradle.kts"],
+    }, {
+      "overview" => { "documents" => { "en" => ["en/index.md"], "ko" => ["ko/getting-started.md"] }, "assets" => [] },
+    }, strict: true) do |validator|
+      assert validator.errors.any? { |e| e.include?("overview English/Korean routes differ") }
+    end
+  end
+
+  def test_strict_mode_rejects_unregistered_manual_document
+    validate({
+      "routes" => { "en" => "en/modules/core.md", "ko" => "ko/modules/core.md" },
+      "sourcePaths" => ["graph/core/build.gradle.kts"],
+    }, {
+      "overview" => { "documents" => { "en" => ["en/index.md"], "ko" => ["ko/index.md"] }, "assets" => [] },
+    }, strict: true) do |validator|
+      manual_root = File.dirname(validator.instance_variable_get(:@manifest_path))
+      FileUtils.mkdir_p(File.join(manual_root, "en/modules"))
+      FileUtils.mkdir_p(File.join(manual_root, "ko/modules"))
+      File.write(File.join(manual_root, "en/modules/core.md"), "# core\n")
+      File.write(File.join(manual_root, "ko/modules/core.md"), "# core\n")
+      File.write(File.join(manual_root, "en/unregistered.md"), "# missing\n")
+      refreshed = ManualDocs::Validator.new(
+        inventory: validator.instance_variable_get(:@inventory),
+        manifest_path: validator.instance_variable_get(:@manifest_path),
+        repository_root: validator.instance_variable_get(:@repository_root),
+        expected_release: RELEASE,
+        strict: true,
+      )
+      assert refreshed.errors.any? { |e| e.include?("unregistered manual document en/unregistered.md") }
+    end
+  end
 end

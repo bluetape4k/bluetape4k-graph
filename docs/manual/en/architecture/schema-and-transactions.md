@@ -1,5 +1,7 @@
 # Schema, writes, and transaction boundaries
 
+![Core abstraction map](../../assets/architecture/core-abstraction-map.png)
+
 `VertexLabel` and `EdgeLabel` are Exposed-style declarations for reusable names and property definitions. They describe the domain; schema DDL is performed by `GraphSchemaManager`. Sources: [`VertexLabel.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/src/main/kotlin/io/bluetape4k/graph/schema/VertexLabel.kt), [`EdgeLabel.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/src/main/kotlin/io/bluetape4k/graph/schema/EdgeLabel.kt), and the [`code graph schema`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/code-graph-examples/src/main/kotlin/io/bluetape4k/graph/examples/code/schema/CodeGraphSchema.kt).
 
 ```kotlin

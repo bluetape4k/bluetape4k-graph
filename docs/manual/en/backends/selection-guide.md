@@ -1,5 +1,7 @@
 # Backend selection guide
 
+![Backend decision map](../../assets/backends/backend-decision-map.png)
+
 Select from existing infrastructure and required semantics, then verify locally. Feature count alone is a poor decision rule.
 
 | Backend | Existing infrastructure / language | Transactions | Schema/index | Local verification | Portability note |

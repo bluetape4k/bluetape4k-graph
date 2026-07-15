@@ -2,7 +2,7 @@
 
 ## 문제와 백엔드
 
-이 예제는 도메인 질문을 경로, 개수, 순위, 진단 집합으로 확인합니다. **TinkerGraph**를 써서 컨테이너와 네트워크 편차를 빼고 모델부터 검증합니다. 먼저 [핵심 모델](../architecture/core-model.md)과 [TinkerPop](../backends/tinkerpop.md)을 읽고, 운영 전에는 [선택 가이드](../backends/selection-guide.md)를 적용하십시오.
+사람, 회사, 기술, 추천 관계를 연결해 여러 형태의 사회 관계 조회를 연습합니다. **TinkerGraph**를 써서 컨테이너와 네트워크 편차를 빼고 모델부터 검증합니다. 먼저 [핵심 모델](../architecture/core-model.md)과 [TinkerPop](../backends/tinkerpop.md)을 읽고, 운영 전에는 [선택 가이드](../backends/selection-guide.md)를 적용합니다.
 
 ## 그래프 모델
 
@@ -20,7 +20,7 @@ JDK 21, 커밋 `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, 저장소의 Gradle W
 ./gradlew :linkedin-graph-examples:test --tests "io.bluetape4k.graph.examples.linkedin.TinkerGraphLinkedInGraphTest"
 ```
 
-`BUILD SUCCESSFUL`과 함께 지정 테스트가 통과해야 합니다. 인맥, 회사, 기술, 추천, 탐색 결과가 비어 있지 않습니다. 결과가 다르면 고정 데이터, 간선 방향, 탐색 깊이를 확인하십시오.
+테스트는 인맥, 회사, 기술, 추천, 탐색 결과가 각각 비어 있지 않은지 검증합니다. 실패한 assertion이 어느 사회 관계를 가리키는지 확인한 뒤, 해당 간선 방향과 조회 조건을 살펴봅니다.
 
 ## 코드 읽는 순서
 

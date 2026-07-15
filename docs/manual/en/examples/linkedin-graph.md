@@ -2,7 +2,7 @@
 
 ## Problem and backend
 
-This example turns a domain question into an inspectable path, count, ranking, or diagnostic set. It uses **TinkerGraph** to isolate modeling from container and network variance. Read [core model](../architecture/core-model.md) and [TinkerPop](../backends/tinkerpop.md) first; use the [selection guide](../backends/selection-guide.md) before production.
+This example connects people, employers, skills, and endorsements to exercise several social-graph lookup shapes. It uses **TinkerGraph** to isolate modeling from container and network variance. Read [core model](../architecture/core-model.md) and [TinkerPop](../backends/tinkerpop.md) first; use the [selection guide](../backends/selection-guide.md) before production.
 
 ## Model
 
@@ -20,7 +20,7 @@ Use JDK 21, commit `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, and the checked-i
 ./gradlew :linkedin-graph-examples:test --tests "io.bluetape4k.graph.examples.linkedin.TinkerGraphLinkedInGraphTest"
 ```
 
-Expect `BUILD SUCCESSFUL`; connection, employer, skill, endorsement, and traversal results are non-empty. A different result points to changed fixture data, edge direction, or traversal depth.
+The tests assert non-empty connection, employer, skill, endorsement, and traversal results. A failure identifies which social-graph relation or lookup direction no longer matches the fixture, so inspect that assertion before widening traversal depth.
 
 ## Reading order
 

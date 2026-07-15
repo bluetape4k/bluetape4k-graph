@@ -1,5 +1,7 @@
 # FalkorDB
 
+![백엔드 선택 지도](../../assets/backends/backend-decision-map.png)
+
 Redis 형태로 운영하는 서비스와 openCypher 일부가 시스템 경계에 맞으면 FalkorDB를 검토한다. 두 제품 모두 Cypher와 비슷한 질의를 받는다는 이유로 Neo4j 대체품처럼 취급하면 안 된다.
 
 구현은 [`FalkorDBGraphOperations.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-falkordb/src/main/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphOperations.kt), 스키마 처리는 [`FalkorDBGraphSchemaManager.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-falkordb/src/main/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphSchemaManager.kt)에 있다. CRUD, merge, batch, schema는 [`FalkorDBGraphOperationsTest.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-falkordb/src/test/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphOperationsTest.kt)와 인접 테스트가 컨테이너로 검증한다.

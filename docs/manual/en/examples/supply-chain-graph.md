@@ -2,7 +2,7 @@
 
 ## Problem and backend
 
-This example turns a domain question into an inspectable path, count, ranking, or diagnostic set. It uses **TinkerGraph** to isolate modeling from container and network variance. Read [core model](../architecture/core-model.md) and [TinkerPop](../backends/tinkerpop.md) first; use the [selection guide](../backends/selection-guide.md) before production.
+This example traces orders, routes, parts, and dependency cycles across a supply network. It uses **TinkerGraph** to isolate modeling from container and network variance. Read [core model](../architecture/core-model.md) and [TinkerPop](../backends/tinkerpop.md) first; use the [selection guide](../backends/selection-guide.md) before production.
 
 ## Model
 
@@ -20,7 +20,7 @@ Use JDK 21, commit `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, and the checked-i
 ./gradlew :supply-chain-graph-examples:test --tests "io.bluetape4k.graph.examples.supplychain.TinkerGraphSupplyChainImpactTest"
 ```
 
-Expect `BUILD SUCCESSFUL`; order-1001, route-air-express, gps-module, and the battery dependency cycle are found. A different result points to changed fixture data, edge direction, or traversal depth.
+The tests assert visibility of `order-1001`, `route-air-express`, and `gps-module`, and detect the battery dependency cycle. A failure points to a missing supply relation, reversed dependency, or cycle-detection boundary.
 
 ## Reading order
 

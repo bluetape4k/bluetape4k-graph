@@ -2,7 +2,7 @@
 
 ## 문제와 백엔드
 
-이 예제는 도메인 질문을 경로, 개수, 순위, 진단 집합으로 확인합니다. **TinkerGraph**를 써서 컨테이너와 네트워크 편차를 빼고 모델부터 검증합니다. 먼저 [핵심 모델](../architecture/core-model.md)과 [TinkerPop](../backends/tinkerpop.md)을 읽고, 운영 전에는 [선택 가이드](../backends/selection-guide.md)를 적용하십시오.
+데이터셋, 작업, 보고서 사이에서 상류 원본과 하류 영향 범위를 추적합니다. **TinkerGraph**를 써서 컨테이너와 네트워크 편차를 빼고 모델부터 검증합니다. 먼저 [핵심 모델](../architecture/core-model.md)과 [TinkerPop](../backends/tinkerpop.md)을 읽고, 운영 전에는 [선택 가이드](../backends/selection-guide.md)를 적용합니다.
 
 ## 그래프 모델
 
@@ -20,7 +20,7 @@ JDK 21, 커밋 `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, 저장소의 Gradle W
 ./gradlew :data-lineage-examples:test --tests "io.bluetape4k.graph.examples.datalineage.TinkerGraphDataLineageImpactTest"
 ```
 
-`BUILD SUCCESSFUL`과 함께 지정 테스트가 통과해야 합니다. 영향에 exec-revenue, ops-quality와 예상 상류 테이블이 포함됩니다. 결과가 다르면 고정 데이터, 간선 방향, 탐색 깊이를 확인하십시오.
+테스트는 하류 영향 범위에 `exec-revenue`와 `ops-quality`가 들어가는지, 상류 탐색이 예상 원본 테이블까지 닿는지 검증합니다. 실패하면 계보 방향, 변환 간선 누락, 탐색 범위를 차례로 살펴봅니다.
 
 ## 코드 읽는 순서
 

@@ -2,7 +2,7 @@
 
 ## 문제와 백엔드
 
-이 예제는 도메인 질문을 경로, 개수, 순위, 진단 집합으로 확인합니다. **TinkerGraph**를 써서 컨테이너와 네트워크 편차를 빼고 모델부터 검증합니다. 먼저 [핵심 모델](../architecture/core-model.md)과 [TinkerPop](../backends/tinkerpop.md)을 읽고, 운영 전에는 [선택 가이드](../backends/selection-guide.md)를 적용하십시오.
+송금 경로, 순환 거래, 위험 신호를 묶어 계정이 의심스러운 이유를 설명합니다. **TinkerGraph**를 써서 컨테이너와 네트워크 편차를 빼고 모델부터 검증합니다. 먼저 [핵심 모델](../architecture/core-model.md)과 [TinkerPop](../backends/tinkerpop.md)을 읽고, 운영 전에는 [선택 가이드](../backends/selection-guide.md)를 적용합니다.
 
 ## 그래프 모델
 
@@ -20,7 +20,7 @@ JDK 21, 커밋 `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, 저장소의 Gradle W
 ./gradlew :fraud-detection-examples:test --tests "io.bluetape4k.graph.examples.fraud.TinkerGraphFraudDetectionTest"
 ```
 
-`BUILD SUCCESSFUL`과 함께 지정 테스트가 통과해야 합니다. 점수에 acct-bob, 순환 경로, 도착점 acct-sink가 포함됩니다. 결과가 다르면 고정 데이터, 간선 방향, 탐색 깊이를 확인하십시오.
+테스트는 `acct-bob`에 위험 점수가 매겨지는지, 송금 경로가 순환하는지, sink 분석이 `acct-sink`까지 도달하는지 검증합니다. 실패하면 Gradle 출력이 아니라 송금 방향, 위험 가중치, 순환·깊이 제한을 확인합니다.
 
 ## 코드 읽는 순서
 
