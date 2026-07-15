@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1040" viewBox="0 0 1600 1040" role="img" aria-labelledby="title desc">
+  <title id="title">Graph I/O Preserves Boundaries, Not Backend Identity</title>
+  <desc id="desc">A graph I/O architecture pipeline from model snapshots through format, optional compression and DAEAD, transport, import policies and external ID mapping, to target operations and negative-path guardrails.</desc>
+  <defs>
+    <marker id="arrow-cyan" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 14 14">
+  <polygon points="0,1 14,7 0,13" fill="#8bd5ff" stroke="none"/>
+</marker>
+<marker id="arrow-teal" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 14 14">
+  <polygon points="0,1 14,7 0,13" fill="#4fe0cf" stroke="none"/>
+</marker>
+<marker id="arrow-purple" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 14 14">
+  <polygon points="0,1 14,7 0,13" fill="#b8a1ff" stroke="none"/>
+</marker>
+<marker id="arrow-amber" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 14 14">
+  <polygon points="0,1 14,7 0,13" fill="#ffc857" stroke="none"/>
+</marker>
+<marker id="arrow-rose" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 14 14">
+  <polygon points="0,1 14,7 0,13" fill="#ff9aae" stroke="none"/>
+</marker>
+
+    <filter id="shadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#07101f" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+  <style>
+    .frame { fill: #111a2b; stroke: #53657d; stroke-width: 5; }
+    .card { filter: url(#shadow); }
+    .card-title, .heading { font-family: 'Architects Daughter', 'Comic Sans MS', cursive; }
+    .detail, .subtitle, .legend { font-family: 'Comic Mono', 'SFMono-Regular', monospace; fill: #cbd5e5; }
+    .connector { opacity: 0.98; }
+  </style>
+  <rect width="1600" height="1040" fill="#0b1322"/>
+  <rect class="frame" x="34" y="34" width="1532" height="972" rx="36"/>
+  <text class="heading" x="800" y="100" text-anchor="middle" font-size="52" fill="#f4f7fb">Graph I/O Preserves Boundaries, Not Backend Identity</text>
+  <text class="subtitle" x="800" y="142" text-anchor="middle" font-size="20">Export and import share records; policies, protection, ownership, and failure handling stay explicit</text>
+  <g id="snapshot">
+  <rect class="card " data-card-id="snapshot" x="90" y="230" width="360" height="210" rx="28" fill="#172238" stroke="#8bd5ff" stroke-width="5"/>
+  <text class="card-title" x="270" y="285" text-anchor="middle" font-size="34" fill="#8bd5ff">Model snapshot</text>
+  <text class="detail" x="270" y="322" text-anchor="middle" font-size="21">vertices + directed edges</text>
+<text class="detail" x="270" y="356" text-anchor="middle" font-size="21">opaque backend IDs</text>
+</g>
+<g id="format">
+  <rect class="card " data-card-id="format" x="620" y="230" width="360" height="210" rx="28" fill="#172238" stroke="#4fe0cf" stroke-width="5"/>
+  <text class="card-title" x="800" y="285" text-anchor="middle" font-size="34" fill="#4fe0cf">Export format</text>
+  <text class="detail" x="800" y="322" text-anchor="middle" font-size="21">CSV pair • NDJSON</text>
+<text class="detail" x="800" y="356" text-anchor="middle" font-size="21">GraphML document</text>
+</g>
+<g id="protect">
+  <rect class="card " data-card-id="protect" x="1150" y="230" width="360" height="210" rx="28" fill="#172238" stroke="#b8a1ff" stroke-width="5"/>
+  <text class="card-title" x="1330" y="285" text-anchor="middle" font-size="34" fill="#b8a1ff">Optional protection</text>
+  <text class="detail" x="1330" y="322" text-anchor="middle" font-size="21">compress, then DAEAD</text>
+<text class="detail" x="1330" y="356" text-anchor="middle" font-size="21">single-stream formats</text>
+</g>
+<g id="transport">
+  <rect class="card " data-card-id="transport" x="1150" y="600" width="360" height="190" rx="28" fill="#172238" stroke="#ffc857" stroke-width="5"/>
+  <text class="card-title" x="1330" y="655" text-anchor="middle" font-size="34" fill="#ffc857">Owned transport</text>
+  <text class="detail" x="1330" y="692" text-anchor="middle" font-size="21">Path / Source / Sink</text>
+<text class="detail" x="1330" y="726" text-anchor="middle" font-size="21">atomic temporary write</text>
+</g>
+<g id="policy">
+  <rect class="card " data-card-id="policy" x="620" y="600" width="360" height="190" rx="28" fill="#172238" stroke="#ff9aae" stroke-width="5"/>
+  <text class="card-title" x="800" y="655" text-anchor="middle" font-size="29" fill="#ff9aae">Import policy + ID map</text>
+  <text class="detail" x="800" y="692" text-anchor="middle" font-size="21">duplicate FAIL / SKIP</text>
+<text class="detail" x="800" y="726" text-anchor="middle" font-size="21">missing endpoint FAIL / SKIP</text>
+</g>
+<g id="target">
+  <rect class="card " data-card-id="target" x="90" y="600" width="360" height="190" rx="28" fill="#172238" stroke="#8bd5ff" stroke-width="5"/>
+  <text class="card-title" x="270" y="655" text-anchor="middle" font-size="34" fill="#8bd5ff">Target operations</text>
+  <text class="detail" x="270" y="692" text-anchor="middle" font-size="21">sync / suspend / VT</text>
+<text class="detail" x="270" y="726" text-anchor="middle" font-size="21">batch writes + report</text>
+</g>
+<g id="guardrails">
+  <rect class="card " data-card-id="guardrails" x="250" y="870" width="1100" height="100" rx="28" fill="#172238" stroke="#ff9aae" stroke-width="5"/>
+  <text class="card-title" x="800" y="925" text-anchor="middle" font-size="25" fill="#ff9aae">Guardrails: auth mismatch • truncation • size bounds • edge-buffer overflow • partial writes</text>
+
+</g>
+<path id="io-1" class="connector" data-start-card="snapshot" data-end-card="format" data-route="450,335 620,335" d="M 450 335 H 620" fill="none" stroke="#8bd5ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-cyan)"/>
+<path id="io-2" class="connector" data-start-card="format" data-end-card="protect" data-route="980,335 1150,335" d="M 980 335 H 1150" fill="none" stroke="#4fe0cf" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-teal)"/>
+<path id="io-3" class="connector" data-start-card="protect" data-end-card="transport" data-route="1330,440 1330,600" d="M 1330 440 V 600" fill="none" stroke="#b8a1ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-purple)"/>
+<path id="io-4" class="connector" data-start-card="transport" data-end-card="policy" data-route="1150,695 980,695" d="M 1150 695 H 980" fill="none" stroke="#ffc857" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-amber)"/>
+<path id="io-5" class="connector" data-start-card="policy" data-end-card="target" data-route="620,695 450,695" d="M 620 695 H 450" fill="none" stroke="#ff9aae" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-rose)"/>
+<path id="io-guard" class="connector" data-start-card="policy" data-end-card="guardrails" data-route="800,790 800,840 850,840 850,870" d="M 800 790 V 820 Q 800 840 820 840 H 830 Q 850 840 850 860 V 870" fill="none" stroke="#ff9aae" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-rose)"/>
+
+</svg>
