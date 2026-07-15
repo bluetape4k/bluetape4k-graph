@@ -35,5 +35,5 @@ The write chain is graph bytes → GZip → DAEAD chunks → atomic temporary fi
 ## Run the negative-path evidence
 
 ```bash
-./gradlew :graph-okio:test --tests '*GraphIoOkioPathsTest' --tests '*NegativePathTest' --tests '*OkioRoundTripTest'
+./gradlew :bluetape4k-graph-okio:test --tests '*GraphIoOkioPathsTest' --tests '*NegativePathTest' --tests '*OkioRoundTripTest'
 ```

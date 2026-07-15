@@ -66,7 +66,7 @@ Java 21을 준비하고 아래 테스트를 실행한다.
 
 ```bash
 ./gradlew :bluetape4k-graph-io-jackson3:test --tests '*Jackson3RoundTripTest' --tests '*Jackson3EdgeBufferOverflowTest'
-./gradlew :graph-okio:test --tests '*OkioRoundTripTest' --tests '*NegativePathTest'
+./gradlew :bluetape4k-graph-okio:test --tests '*OkioRoundTripTest' --tests '*NegativePathTest'
 ```
 
 왕복 개수는 같고, 이른 간선 overflow는 메모리를 제한하며, 잘못된 DAEAD 문맥과 잘린 입력은 실패해야 한다. atomic write 오류 뒤 기존 파일은 남아야 한다. `NegativePathTest`를 여는 이유는 소유권과 정리 규칙이 파일시스템 assertion으로 보이기 때문이다. 이 단계를 통과한 뒤 남은 후보에 맞는 benchmark를 실행하고 환경을 함께 기록한다.

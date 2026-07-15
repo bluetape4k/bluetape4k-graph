@@ -19,7 +19,7 @@ Container success is local evidence, not production equivalence. Record image/ve
 ./gradlew :bluetape4k-graph-core:test --tests '*GraphMergeOperationsTest' --tests '*GraphBatchOperationsTest'
 ./gradlew :bluetape4k-graph-tinkerpop:test --tests '*TinkerGraphTransactionTest'
 ./gradlew :bluetape4k-graph-neo4j:test --tests '*Neo4jGraphOperationsTest'
-./gradlew :graph-okio:test --tests '*NegativePathTest'
+./gradlew :bluetape4k-graph-okio:test --tests '*NegativePathTest'
 ```
 
 Expected evidence is ordered batch output, one ID after duplicate merge, unchanged count after forced rollback, matching container CRUD counts, and preserved files after OkIO failures. Inject an unsafe label, transaction exception, stopped container, and truncated gzip. Classify failures by the first failing layer: core validation, repository capability, server lifecycle/query, then file codec/security. Do not rerun a container until green without recording startup timing and the first error.
