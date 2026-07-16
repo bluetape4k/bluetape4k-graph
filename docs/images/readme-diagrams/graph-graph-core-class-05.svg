@@ -27,7 +27,8 @@
     .codePanel { fill: #F8FAFC; stroke: #94A3B8; stroke-width: 1.6; }
     .card { filter: url(#shadow); }
     .line { fill: none; stroke: #64748B; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow); }
-  </style>
+
+    .syntax-keyword{fill:#7E22CE}.syntax-type{fill:#0F766E}.syntax-function{fill:#1D4ED8}.syntax-string{fill:#B45309}.syntax-number{fill:#C2410C}.syntax-comment{fill:#64748B}.syntax-operator{fill:#BE123C}</style>
 
   <rect x="0" y="0" width="1700" height="1060" fill="#F8FAFC"/>
   <rect x="28" y="28" width="1644" height="1004" rx="22" fill="none" stroke="#BFDBFE" stroke-width="2.2"/>
@@ -59,17 +60,17 @@
   <text x="930" y="224" class="section">2. graph-core records metadata</text>
   <rect x="930" y="254" width="610" height="178" rx="18" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2.2" class="card"/>
   <text x="1235" y="294" text-anchor="middle" class="cardTitle">Vertex labels</text>
-  <text x="970" y="330" class="body">Person.label = "Person"</text>
-  <text x="970" y="360" class="body">Person.properties = [email:String, name:String]</text>
-  <text x="970" y="390" class="body">Person.properties += [joinedAt:LocalDate]</text>
-  <text x="970" y="420" class="body">Company.properties = [name:String]</text>
+  <text x="970" y="330" class="body" data-code-snippet="kotlin"><tspan class="syntax-type">Person</tspan>.label <tspan class="syntax-operator">=</tspan> <tspan class="syntax-string">"Person"</tspan></text>
+  <text x="970" y="360" class="body" data-code-snippet="kotlin"><tspan class="syntax-type">Person</tspan>.properties <tspan class="syntax-operator">=</tspan> [email<tspan class="syntax-operator">:</tspan><tspan class="syntax-type">String</tspan>, name<tspan class="syntax-operator">:</tspan><tspan class="syntax-type">String</tspan>]</text>
+  <text x="970" y="390" class="body" data-code-snippet="kotlin"><tspan class="syntax-type">Person</tspan>.properties <tspan class="syntax-operator">+</tspan><tspan class="syntax-operator">=</tspan> [joinedAt<tspan class="syntax-operator">:</tspan><tspan class="syntax-type">LocalDate</tspan>]</text>
+  <text x="970" y="420" class="body" data-code-snippet="kotlin"><tspan class="syntax-type">Company</tspan>.properties <tspan class="syntax-operator">=</tspan> [name<tspan class="syntax-operator">:</tspan><tspan class="syntax-type">String</tspan>]</text>
 
   <rect x="930" y="472" width="610" height="178" rx="18" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2.2" class="card"/>
   <text x="1235" y="512" text-anchor="middle" class="cardTitle">Edge labels</text>
-  <text x="970" y="548" class="body">WorksAt.label = "WORKS_AT"</text>
-  <text x="970" y="578" class="body">WorksAt.from = PersonLabel</text>
-  <text x="970" y="608" class="body">WorksAt.to = CompanyLabel</text>
-  <text x="970" y="638" class="body">WorksAt.properties = [since:LocalDate]</text>
+  <text x="970" y="548" class="body" data-code-snippet="kotlin"><tspan class="syntax-type">WorksAt</tspan>.label <tspan class="syntax-operator">=</tspan> <tspan class="syntax-string">"WORKS_AT"</tspan></text>
+  <text x="970" y="578" class="body" data-code-snippet="kotlin"><tspan class="syntax-type">WorksAt</tspan>.<tspan class="syntax-keyword">from</tspan> <tspan class="syntax-operator">=</tspan> <tspan class="syntax-type">PersonLabel</tspan></text>
+  <text x="970" y="608" class="body" data-code-snippet="kotlin"><tspan class="syntax-type">WorksAt</tspan>.to <tspan class="syntax-operator">=</tspan> <tspan class="syntax-type">CompanyLabel</tspan></text>
+  <text x="970" y="638" class="body" data-code-snippet="kotlin"><tspan class="syntax-type">WorksAt</tspan>.properties <tspan class="syntax-operator">=</tspan> [since<tspan class="syntax-operator">:</tspan><tspan class="syntax-type">LocalDate</tspan>]</text>
 
   <rect x="930" y="690" width="610" height="120" rx="18" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="2.2" class="card"/>
   <text x="1235" y="730" text-anchor="middle" class="cardTitle">PropertyDef&lt;T&gt;</text>

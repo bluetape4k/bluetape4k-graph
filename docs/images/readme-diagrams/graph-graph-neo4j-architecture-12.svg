@@ -18,7 +18,8 @@
     .card { filter: url(#softShadow); }
     .line { stroke: #2563EB; stroke-width: 2.3; fill: none; marker-end: url(#arrow); stroke-linecap: round; stroke-linejoin: round; }
     .thin { stroke: #64748B; stroke-width: 2.1; fill: none; marker-end: url(#softArrow); stroke-linecap: round; stroke-linejoin: round; }
-  </style>
+
+    .syntax-keyword{fill:#7E22CE}.syntax-type{fill:#0F766E}.syntax-function{fill:#1D4ED8}.syntax-string{fill:#B45309}.syntax-number{fill:#C2410C}.syntax-comment{fill:#64748B}.syntax-operator{fill:#BE123C}</style>
   <marker markerUnits="userSpaceOnUse" id="softArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="14" markerHeight="14" orient="auto">
     <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748B"/>
   </marker>
@@ -63,8 +64,8 @@
 
   <rect x="620" y="455" width="430" height="150" rx="14" fill="#FEF3C7" stroke="#EAB308" stroke-width="1.9" class="card"/>
   <text x="655" y="503" class="label">@BeforeEach reset</text>
-  <text x="655" y="539" class="small">ops.dropGraph(&quot;default&quot;)</text>
-  <text x="655" y="567" class="small">MATCH (n) DETACH DELETE n</text>
+  <text x="655" y="539" class="small" data-code-snippet="kotlin">ops.<tspan class="syntax-function">dropGraph</tspan>(<tspan class="syntax-string">"default"</tspan>)</text>
+  <text x="655" y="567" class="small" data-code-snippet="cypher"><tspan class="syntax-keyword">MATCH</tspan> (n) <tspan class="syntax-type">DETACH</tspan> <tspan class="syntax-keyword">DELETE</tspan> n</text>
   <text x="655" y="595" class="small">each test starts from clean data</text>
 
   <rect x="620" y="690" width="430" height="120" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="1.9" class="card"/>
