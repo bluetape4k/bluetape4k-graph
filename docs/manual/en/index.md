@@ -2,6 +2,15 @@
 
 This manual describes the stable `0.5.1` contract at commit `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`. It covers the common model, paired synchronous/coroutine APIs, five supported backends, graph-io, and framework integration. Amazon Neptune is **not supported** in 0.5.1; backlog issues are not part of this contract.
 
+## Core capabilities
+
+- **Backend-independent graph model:** The [core model](architecture/core-model.md) gives every backend the same vertex, edge, path, and element-ID vocabulary.
+- **Synchronous and coroutine APIs:** [Paired APIs](architecture/paired-apis.md) keep repository, traversal, batch, merge, and transaction operations aligned across blocking and suspending execution.
+- **Five database backends:** The [backend selection guide](backends/selection-guide.md) compares Neo4j, Memgraph, Apache AGE, TinkerPop/TinkerGraph, and FalkorDB by query language, transaction behavior, and operational fit.
+- **Schema, traversal, and transactions:** [Schema and transactions](architecture/schema-and-transactions.md) explains labels, indexes, constraints, merge semantics, paths, and ownership boundaries.
+- **Graph import and export:** [graph-io formats](graph-io/formats.md), [execution models](graph-io/execution-model.md), and [OkIO security](graph-io/okio-security.md) cover CSV, NDJSON, GraphML, compression, and authenticated encryption.
+- **Application integration and examples:** [Spring Boot](frameworks/spring-boot.md), [Ktor](frameworks/ktor.md), and the [learning path](guides/learning-path.md) connect the common API to runnable domain examples and production checks.
+
 ## Start with a decision
 
 1. Follow [Getting started](getting-started.md) to import the ecosystem BOM and run one operation.
