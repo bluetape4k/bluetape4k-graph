@@ -39,6 +39,12 @@ jobs:
         with:
           gradle-version: wrapper
           cache-read-only: true
+      - name: Validate publication POMs
+        run: |
+          ./gradlew generatePomFileForBluetapeGraphPublication -PsnapshotVersion=-SNAPSHOT \
+            --no-daemon --no-configuration-cache --no-build-cache
+          ruby scripts/publication/validate_poms.rb
+
       - name: Publish SNAPSHOT
         run: |
           ./gradlew publishAggregationToCentralSnapshots -PsnapshotVersion=-SNAPSHOT \
