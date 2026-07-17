@@ -76,3 +76,16 @@ Expected: the fixture starts, assertions pass, and owned resources close in the 
 ## Non-goals and related guides
 
 See [Ktor integration](../frameworks/ktor.md), [paired APIs](../architecture/paired-apis.md), and [operations](../guides/operations.md). The plugin does not create request transactions, close caller-owned resources by default, or make blocking calls nonblocking.
+
+<!-- release-readme-diagrams:start -->
+## Release diagrams {#release-diagrams}
+
+These diagrams are copied byte-for-byte from README assets in the `0.5.1` release tag. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG source.
+
+### graph ktor Architecture diagram
+
+[![graph ktor Architecture diagram](../../assets/readme-diagrams/ktor-graph-ktor-architecture-01.png)](../../assets/readme-diagrams/ktor-graph-ktor-architecture-01.svg)
+
+_Release README: [`ktor/graph-ktor/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/ktor/graph-ktor/README.md)_
+
+<!-- release-readme-diagrams:end -->

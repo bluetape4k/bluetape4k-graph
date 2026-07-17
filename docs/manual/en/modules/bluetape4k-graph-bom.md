@@ -67,3 +67,16 @@ Expected: the release test or build completes with the ownership and capability 
 ## Non-goals and related guides
 
 See [repository map](../architecture/repository-map.md), [getting started](../getting-started.md), and the page for each selected module. This page does not recommend a standalone graph version, document backend APIs, or promise compatibility for examples and benchmark projects.
+
+<!-- release-readme-diagrams:start -->
+## Release diagrams {#release-diagrams}
+
+These diagrams are copied byte-for-byte from README assets in the `0.5.1` release tag. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG source.
+
+### bom Architecture diagram
+
+[![bom Architecture diagram](../../assets/readme-diagrams/bom-architecture-01.png)](../../assets/readme-diagrams/bom-architecture-01.svg)
+
+_Release README: [`bom/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/bom/README.md)_
+
+<!-- release-readme-diagrams:end -->

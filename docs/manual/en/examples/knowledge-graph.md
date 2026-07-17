@@ -35,3 +35,28 @@ Continue [from code-graph](./code-graph.md), then read [recommendation](./recomm
 ## Exercises and production gaps
 
 Add one result-changing edge and assertion; repeat through the suspend API; then run a persistent-backend concrete test serially. Add disconnected and malformed inputs as diagnostics. This fixture does not prove throughput, clustering, authorization, tenant isolation, migration, backup, remote-driver timeout, or index quality.
+
+<!-- release-readme-diagrams:start -->
+## Release diagrams {#release-diagrams}
+
+These diagrams are copied byte-for-byte from README assets in the `0.5.1` release tag. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG source.
+
+### knowledge graph examples Architecture diagram
+
+[![knowledge graph examples Architecture diagram](../../assets/readme-diagrams/examples-knowledge-graph-examples-architecture-01.png)](../../assets/readme-diagrams/examples-knowledge-graph-examples-architecture-01.svg)
+
+_Release README: [`examples/knowledge-graph-examples/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/knowledge-graph-examples/README.md)_
+
+### Domain UML diagram
+
+[![Domain UML diagram](../../assets/readme-diagrams/examples-knowledge-graph-examples-class-02.png)](../../assets/readme-diagrams/examples-knowledge-graph-examples-class-02.svg)
+
+_Release README: [`examples/knowledge-graph-examples/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/knowledge-graph-examples/README.md)_
+
+### Path Inference Flow diagram
+
+[![Path Inference Flow diagram](../../assets/readme-diagrams/examples-knowledge-graph-examples-sequence-03.png)](../../assets/readme-diagrams/examples-knowledge-graph-examples-sequence-03.svg)
+
+_Release README: [`examples/knowledge-graph-examples/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/knowledge-graph-examples/README.md)_
+
+<!-- release-readme-diagrams:end -->

@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1754" height="617" viewBox="0 0 1754 617" role="img" aria-label=": GraphElementId, GraphVertex, GraphEdge">
+<defs>
+  <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="8" stdDeviation="9" flood-color="#1f2937" flood-opacity="0.10"/></filter>
+  <marker id="openArrow" markerWidth="10" markerHeight="8" refX="8.5" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M 1 1 L 8.5 4 L 1 7" fill="none" stroke="#758297" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></marker>
+  <marker id="inherit" markerWidth="11" markerHeight="10" refX="9.5" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M 0.5 1 L 9.5 5 L 0.5 9 Z" fill="#ffffff" stroke="#758297" stroke-width="1.7"/></marker>
+  <style>
+    .canvas{fill:#f7f9fc}.frame{fill:#fff;stroke:#d8e0ea;stroke-width:1.5}
+    .title{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:43px;font-weight:400;fill:#102033}
+    .subtitle{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:15px;font-weight:400;fill:#536273}
+    .label{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:25px;font-weight:400;fill:#102033}
+    .smallLabel{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:21px;font-weight:400;fill:#102033}
+    .mono{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:12px;font-weight:400;fill:#102033}
+    .small{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:12px;font-weight:400;fill:#536273}
+    .strong{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:13px;font-weight:400;fill:#102033}
+    .card{stroke-width:2.1;filter:url(#shadow)}.compartment{stroke-width:1.5;fill:none}
+    .line{stroke:#758297;stroke-width:2.1;fill:none;marker-end:url(#openArrow)}
+    .plainLine{stroke:#758297;stroke-width:2.1;fill:none}
+    .dashed{stroke:#758297;stroke-width:2.1;stroke-dasharray:7 6;fill:none;marker-end:url(#openArrow)}
+    .inheritLine{stroke:#758297;stroke-width:2.2;fill:none;marker-end:url(#inherit)}
+    .implLine{stroke:#758297;stroke-width:2.2;stroke-dasharray:8 7;fill:none;marker-end:url(#inherit)}
+  </style>
+</defs>
+<rect class="canvas" width="1754" height="617"/>
+<rect class="frame" x="32" y="28" width="1690" height="561" rx="28"/>
+<text class="title" x="66" y="82">: GraphElementId, GraphVertex, GraphEdge</text>
+<text class="subtitle" x="70" y="118">UML classes from the original Mermaid source</text>
+<path class="line" d="M1082 180 L1082 132 L672 132 L672 355"/>
+<path class="line" d="M262 355 L262 435 L672 435 L672 180"/>
+<g transform="translate(92,180)">
+  <rect class="card" x="0" y="0" width="340" height="175" rx="5" fill="#E8F3FF" stroke="#5B8DEF"/>
+  <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#5B8DEF"/>
+  <text class="small" x="170" y="26" text-anchor="middle"></text>
+  <text class="label" x="170" y="61" text-anchor="middle">GraphVertex</text>
+  <text class="mono" x="18" y="108">-GraphElementId id</text>
+<text class="mono" x="18" y="129">-String label</text>
+<text class="mono" x="18" y="150">-Map~String, Any?~ properties</text>
+</g>
+<g transform="translate(502,180)">
+  <rect class="card" x="0" y="0" width="340" height="175" rx="5" fill="#EAF7EF" stroke="#58A978"/>
+  <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#58A978"/>
+  <text class="small" x="170" y="26" text-anchor="middle"></text>
+  <text class="label" x="170" y="61" text-anchor="middle">GraphElementId</text>
+  <text class="mono" x="18" y="108">-String value</text>
+<text class="mono" x="18" y="129">+of(String) GraphElementId$</text>
+<text class="mono" x="18" y="150">+of(Long) GraphElementId$</text>
+</g>
+<g transform="translate(912,180)">
+  <rect class="card" x="0" y="0" width="340" height="217" rx="5" fill="#FFF3D9" stroke="#D6A441"/>
+  <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#D6A441"/>
+  <text class="small" x="170" y="26" text-anchor="middle"></text>
+  <text class="label" x="170" y="61" text-anchor="middle">GraphEdge</text>
+  <text class="mono" x="18" y="108">-GraphElementId id</text>
+<text class="mono" x="18" y="129">-String label</text>
+<text class="mono" x="18" y="150">-GraphElementId startId</text>
+<text class="mono" x="18" y="171">-GraphElementId endId</text>
+<text class="mono" x="18" y="192">-Map~String, Any?~ properties</text>
+</g>
+<g transform="translate(1322,180)">
+  <rect class="card" x="0" y="0" width="340" height="175" rx="5" fill="#FDECEF" stroke="#DC6B82"/>
+  <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#DC6B82"/>
+  <text class="small" x="170" y="26" text-anchor="middle">«enumeration»</text>
+  <text class="label" x="170" y="61" text-anchor="middle">Direction</text>
+  <text class="mono" x="18" y="108">OUTGOING</text>
+<text class="mono" x="18" y="129">INCOMING</text>
+<text class="mono" x="18" y="150">BOTH</text>
+</g>
+</svg>

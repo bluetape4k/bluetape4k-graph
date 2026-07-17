@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1370" height="1070" viewBox="0 0 1370 1070" role="img" aria-label="Analysis Flow">
+<defs>
+  <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="7" stdDeviation="8" flood-color="#1f2937" flood-opacity="0.10"/></filter>
+  <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth"><path d="M1,1 L8,4.5 L1,8 Z" fill="#758297"/></marker>
+  <style>
+    .canvas{fill:#f7f9fc}.frame{fill:#fff;stroke:#d8e0ea;stroke-width:1.5}
+    .title{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:40px;font-weight:400;fill:#102033}
+    .subtitle{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:14px;font-weight:400;fill:#536273}
+    .label{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:21px;font-weight:400;fill:#102033}
+    .small{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:12px;font-weight:400;fill:#536273}
+    .strong{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:13px;font-weight:400;fill:#102033}
+    .card{stroke-width:2.0;filter:url(#shadow)}
+    .line{stroke:#758297;stroke-width:2.1;fill:none;marker-end:url(#arrow)}
+    .dashed{stroke:#758297;stroke-width:2.1;stroke-dasharray:7 6;fill:none;marker-end:url(#arrow)}
+    .lifeline{stroke:#b7c2d1;stroke-width:1.8;stroke-dasharray:9 9}
+  </style>
+</defs>
+<rect class="canvas" width="1370" height="1070"/>
+<rect class="frame" x="44" y="30" width="1282" height="1010" rx="28"/>
+<text class="title" x="76" y="84">Analysis Flow</text>
+<text class="subtitle" x="80" y="116">Graphviz actor layout with compact message lanes and wider outer margins</text>
+<rect class="card" x="120.0" y="156" width="230" height="58" rx="16" fill="#E8F3FF" stroke="#5B8DEF"/>
+<text class="label" x="235.0" y="185.0" text-anchor="middle">Learner</text>
+<line class="lifeline" x1="235.0" y1="230" x2="235.0" y2="1004"/>
+<rect class="card" x="420.0" y="156" width="230" height="58" rx="16" fill="#EAF7EF" stroke="#58A978"/>
+<text class="label" x="535.0" y="175.0" text-anchor="middle">Fraud Detection</text>
+<text class="label" x="535.0" y="195.0" text-anchor="middle">Service</text>
+<line class="lifeline" x1="535.0" y1="230" x2="535.0" y2="1004"/>
+<rect class="card" x="720.0" y="156" width="230" height="58" rx="16" fill="#FFF3D9" stroke="#D6A441"/>
+<text class="label" x="835.0" y="185.0" text-anchor="middle">GraphOperations</text>
+<line class="lifeline" x1="835.0" y1="230" x2="835.0" y2="1004"/>
+<rect class="card" x="1020.0" y="156" width="230" height="58" rx="16" fill="#FDECEF" stroke="#DC6B82"/>
+<text class="label" x="1135.0" y="185.0" text-anchor="middle">Graph DB</text>
+<line class="lifeline" x1="1135.0" y1="230" x2="1135.0" y2="1004"/>
+<rect x="310.0" y="232.0" width="150.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="320.0" y="252.0">1. addAccount(...)</text>
+<path class="line" d="M235.0 262.0 L535.0 262.0"/>
+<rect x="581.4" y="308.0" width="207.2" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="591.4" y="328.0">2. createVertex(Account, ...)</text>
+<path class="line" d="M535.0 338.0 L835.0 338.0"/>
+<rect x="910.0" y="384.0" width="150.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="920.0" y="404.0">3. persist account</text>
+<path class="line" d="M835.0 414.0 L1135.0 414.0"/>
+<rect x="306.6" y="460.0" width="156.8" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="316.6" y="480.0">4. recordTransfer(...)</text>
+<path class="line" d="M235.0 490.0 L535.0 490.0"/>
+<rect x="546.0" y="536.0" width="278.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="556.0" y="556.0">5. createEdge(..., TRANSFERRED_TO, ...)</text>
+<path class="line" d="M535.0 566.0 L835.0 566.0"/>
+<rect x="910.0" y="612.0" width="150.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="920.0" y="632.0">6. persist transfer</text>
+<path class="line" d="M835.0 642.0 L1135.0 642.0"/>
+<rect x="285.0" y="688.0" width="200.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="295.0" y="708.0">7. detectCircularTransfers()</text>
+<path class="line" d="M235.0 718.0 L535.0 718.0"/>
+<rect x="581.4" y="764.0" width="207.2" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="591.4" y="784.0">8. detectCycles(CycleOptions)</text>
+<path class="line" d="M535.0 794.0 L835.0 794.0"/>
+<rect x="892.2" y="840.0" width="185.6" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="902.2" y="860.0">9. traverse transfer graph</text>
+<path class="line" d="M835.0 870.0 L1135.0 870.0"/>
+<rect x="610.0" y="916.0" width="150.0" height="30" rx="10" fill="#ffffff" opacity="0.96"/>
+<text class="strong" x="620.0" y="936.0">10. suspicious cycles</text>
+<path class="dashed" d="M1135.0 946.0 L235.0 946.0"/>
+</svg>

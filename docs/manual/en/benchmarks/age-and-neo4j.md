@@ -21,3 +21,22 @@ No standalone 0.5.1 result file is committed for a controlled head-to-head run, 
 Compare only matching operation, parameters, unit, warmup, iterations, fork, fixture, and host. An arithmetic mean across unlike operations is a transport summary, not a backend ranking. Teardown must close operations, JDBC pool/driver, and container. After cancellation, remove only containers created by the run after identifying them.
 
 Container startup failure, AGE extension initialization failure, Bolt readiness failure, or missing JSON is a failed run, not a score. These benchmarks do not prove PostgreSQL consolidation value, Neo4j operational maturity, HA, recovery, cloud network cost, or production query plans. Read [AGE backend](../backends/apache-age.md), [Neo4j/Memgraph](../backends/neo4j-and-memgraph.md), and [overview](./overview.md).
+
+<!-- release-readme-diagrams:start -->
+## Release diagrams {#release-diagrams}
+
+These diagrams are copied byte-for-byte from README assets in the `0.5.1` release tag. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG source.
+
+### graph-age-benchmark Architecture diagram
+
+[![graph-age-benchmark Architecture diagram](../../assets/readme-diagrams/benchmark/graph-age-benchmark-architecture-01.png)](../../assets/readme-diagrams/benchmark/graph-age-benchmark-architecture-01.svg)
+
+_Release README: [`benchmark/graph-age-benchmark/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/benchmark/graph-age-benchmark/README.md)_
+
+### graph-neo4j-benchmark Architecture diagram
+
+[![graph-neo4j-benchmark Architecture diagram](../../assets/readme-diagrams/benchmark/graph-neo4j-benchmark-architecture-01.png)](../../assets/readme-diagrams/benchmark/graph-neo4j-benchmark-architecture-01.svg)
+
+_Release README: [`benchmark/graph-neo4j-benchmark/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/benchmark/graph-neo4j-benchmark/README.md)_
+
+<!-- release-readme-diagrams:end -->

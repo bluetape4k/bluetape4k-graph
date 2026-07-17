@@ -65,3 +65,16 @@ core, 데이터베이스 연동, graph-io, OkIO, Ktor, Spring Boot 모듈을 제
 ## 하지 않는 일과 관련 문서
 
 [저장소 구성](../architecture/repository-map.md), [시작하기](../getting-started.md), 실제로 선택한 모듈 문서를 이어서 읽는다. 이 페이지는 독립 그래프 버전을 추천하지 않으며, 데이터베이스 운영 호환성도 보장하지 않는다.
+
+<!-- release-readme-diagrams:start -->
+## 배포본 다이어그램 {#release-diagrams}
+
+아래 그림은 현재 개발 브랜치가 아니라 `0.5.1` 배포 태그의 README 자산을 바이트 단위로 그대로 옮긴 것입니다. 따라서 이후 SNAPSHOT 변경이 아니라 이 매뉴얼 버전의 구조와 실행 흐름을 보여 줍니다. 미리보기를 누르면 SVG 원본이 열립니다.
+
+### bom 아키텍처
+
+[![bom 아키텍처](../../assets/readme-diagrams/bom-architecture-01.png)](../../assets/readme-diagrams/bom-architecture-01.svg)
+
+_배포본 README: [`bom/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/bom/README.ko.md)_
+
+<!-- release-readme-diagrams:end -->

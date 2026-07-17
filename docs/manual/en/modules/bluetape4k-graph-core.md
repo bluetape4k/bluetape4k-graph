@@ -80,3 +80,94 @@ The release-pinned [`TinkerGraphOperationsTest`](https://github.com/bluetape4k/b
 ## Non-goals and related guides
 
 Track query latency, traversal depth, batch size, error type, and backend counts around multi-step work. See [core model](../architecture/core-model.md), [paired APIs](../architecture/paired-apis.md), [schema and transactions](../architecture/schema-and-transactions.md), and [operations](../guides/operations.md). Core does not normalize all backend features, provision databases, or make multi-call workflows atomic.
+
+<!-- release-readme-diagrams:start -->
+## Release diagrams {#release-diagrams}
+
+These diagrams are copied byte-for-byte from README assets in the `0.5.1` release tag. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG source.
+
+### Architecture Overview diagram
+
+[![Architecture Overview diagram](../../assets/readme-diagrams/graph-graph-core-architecture-01.png)](../../assets/readme-diagrams/graph-graph-core-architecture-01.svg)
+
+_Release README: [`graph/graph-core/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/README.md)_
+
+### GraphPath diagram
+
+[![GraphPath diagram](../../assets/readme-diagrams/graph-graph-core-architecture-10.png)](../../assets/readme-diagrams/graph-graph-core-architecture-10.svg)
+
+_Release README: [`graph/graph-core/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/README.ko.md)_
+
+### GraphOperations diagram
+
+[![GraphOperations diagram](../../assets/readme-diagrams/graph-graph-core-architecture-11.png)](../../assets/readme-diagrams/graph-graph-core-architecture-11.svg)
+
+_Release README: [`graph/graph-core/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/README.ko.md)_
+
+### DSL diagram
+
+[![DSL diagram](../../assets/readme-diagrams/graph-graph-core-architecture-12.png)](../../assets/readme-diagrams/graph-graph-core-architecture-12.svg)
+
+_Release README: [`graph/graph-core/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/README.ko.md)_
+
+### CRUD diagram
+
+[![CRUD diagram](../../assets/readme-diagrams/graph-graph-core-architecture-13.png)](../../assets/readme-diagrams/graph-graph-core-architecture-13.svg)
+
+_Release README: [`graph/graph-core/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/README.ko.md)_
+
+### graph core Architecture 14 diagram
+
+[![graph core Architecture 14 diagram](../../assets/readme-diagrams/graph-graph-core-architecture-14.png)](../../assets/readme-diagrams/graph-graph-core-architecture-14.svg)
+
+_Release README: [`graph/graph-core/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/README.ko.md)_
+
+### : GraphElementId, GraphVertex, GraphEdge diagram
+
+[![: GraphElementId, GraphVertex, GraphEdge diagram](../../assets/readme-diagrams/graph-graph-core-class-02.png)](../../assets/readme-diagrams/graph-graph-core-class-02.svg)
+
+_Release README: [`graph/graph-core/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/README.ko.md)_
+
+### PathStep GraphPath diagram
+
+[![PathStep GraphPath diagram](../../assets/readme-diagrams/graph-graph-core-class-03.png)](../../assets/readme-diagrams/graph-graph-core-class-03.svg)
+
+_Release README: [`graph/graph-core/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/README.ko.md)_
+
+### Repository diagram
+
+[![Repository diagram](../../assets/readme-diagrams/graph-graph-core-class-04.png)](../../assets/readme-diagrams/graph-graph-core-class-04.svg)
+
+_Release README: [`graph/graph-core/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/README.ko.md)_
+
+### DSL diagram
+
+[![DSL diagram](../../assets/readme-diagrams/graph-graph-core-class-05.png)](../../assets/readme-diagrams/graph-graph-core-class-05.svg)
+
+_Release README: [`graph/graph-core/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/README.ko.md)_
+
+### createVertex diagram
+
+[![createVertex diagram](../../assets/readme-diagrams/graph-graph-core-sequence-06.png)](../../assets/readme-diagrams/graph-graph-core-sequence-06.svg)
+
+_Release README: [`graph/graph-core/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/README.ko.md)_
+
+### shortestPath diagram
+
+[![shortestPath diagram](../../assets/readme-diagrams/graph-graph-core-sequence-07.png)](../../assets/readme-diagrams/graph-graph-core-sequence-07.svg)
+
+_Release README: [`graph/graph-core/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/README.ko.md)_
+
+### neighbors diagram
+
+[![neighbors diagram](../../assets/readme-diagrams/graph-graph-core-sequence-08.png)](../../assets/readme-diagrams/graph-graph-core-sequence-08.svg)
+
+_Release README: [`graph/graph-core/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/README.ko.md)_
+
+### createEdge diagram
+
+[![createEdge diagram](../../assets/readme-diagrams/graph-graph-core-sequence-09.png)](../../assets/readme-diagrams/graph-graph-core-sequence-09.svg)
+
+_Release README: [`graph/graph-core/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/README.ko.md)_
+
+<!-- release-readme-diagrams:end -->

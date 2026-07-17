@@ -15,3 +15,22 @@ scripts/benchmark-neo4j-age.sh
 통제된 단독 맞대결 결과 파일은 0.5.1에 커밋되어 있지 않으므로 숫자를 적지 않습니다. 같은 한가한 장비에서 직렬로 재현하고 두 원본 보고서와 요약을 보관하십시오. 공통 [small 실행](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/benchmark/graph-db-testcontainers-2026-05-21.json)은 조건이 같을 때만 대표 근거로 쓸 수 있습니다.
 
 연산, 매개변수, 단위, 준비 실행, 반복, 포크, 고정 데이터, 장비가 같은 행만 비교하십시오. 서로 다른 연산의 점수를 단순 평균 내면 의미가 뒤섞입니다. 그 값으로 백엔드 순위를 매기지 마십시오. 종료 시 연산 객체, JDBC 풀·드라이버, 컨테이너가 닫혀야 합니다. 기동·확장 초기화·Bolt 준비·JSON 생성 실패는 점수가 아닙니다. 이 실행은 장애 복구, 고가용성, 운영 쿼리 계획, 비용을 증명하지 않습니다. [AGE](../backends/apache-age.md), [Neo4j](../backends/neo4j-and-memgraph.md), [개요](./overview.md)를 보십시오.
+
+<!-- release-readme-diagrams:start -->
+## 배포본 다이어그램 {#release-diagrams}
+
+아래 그림은 현재 개발 브랜치가 아니라 `0.5.1` 배포 태그의 README 자산을 바이트 단위로 그대로 옮긴 것입니다. 따라서 이후 SNAPSHOT 변경이 아니라 이 매뉴얼 버전의 구조와 실행 흐름을 보여 줍니다. 미리보기를 누르면 SVG 원본이 열립니다.
+
+### Bluetape4k Graph-age-benchmark 아키텍처
+
+[![Bluetape4k Graph-age-benchmark 아키텍처](../../assets/readme-diagrams/benchmark/graph-age-benchmark-architecture-01.png)](../../assets/readme-diagrams/benchmark/graph-age-benchmark-architecture-01.svg)
+
+_배포본 README: [`benchmark/graph-age-benchmark/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/benchmark/graph-age-benchmark/README.ko.md)_
+
+### Bluetape4k Graph-neo4j-benchmark 아키텍처
+
+[![Bluetape4k Graph-neo4j-benchmark 아키텍처](../../assets/readme-diagrams/benchmark/graph-neo4j-benchmark-architecture-01.png)](../../assets/readme-diagrams/benchmark/graph-neo4j-benchmark-architecture-01.svg)
+
+_배포본 README: [`benchmark/graph-neo4j-benchmark/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/benchmark/graph-neo4j-benchmark/README.ko.md)_
+
+<!-- release-readme-diagrams:end -->

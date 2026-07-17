@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1112" height="944" viewBox="0 0 1112 944" role="img" aria-label="Overview">
+<defs>
+  <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="7" stdDeviation="8" flood-color="#1f2937" flood-opacity="0.10"/></filter>
+  <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth"><path d="M1,1 L8,4.5 L1,8 Z" fill="#758297"/></marker>
+  <style>
+    .canvas{fill:#f7f9fc}.frame{fill:#fff;stroke:#d8e0ea;stroke-width:1.5}
+    .title{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:40px;font-weight:400;fill:#102033}
+    .subtitle{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:14px;font-weight:400;fill:#536273}
+    .label{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:21px;font-weight:400;fill:#102033}
+    .small{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:12px;font-weight:400;fill:#536273}
+    .strong{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:13px;font-weight:400;fill:#102033}
+    .card{stroke-width:2.0;filter:url(#shadow)}
+    .line{stroke:#758297;stroke-width:2.1;fill:none;marker-end:url(#arrow)}
+    .dashed{stroke:#758297;stroke-width:2.1;stroke-dasharray:7 6;fill:none;marker-end:url(#arrow)}
+    .lifeline{stroke:#b7c2d1;stroke-width:1.8;stroke-dasharray:9 9}
+  </style>
+</defs>
+<rect class="canvas" width="1112" height="944"/>
+<rect class="frame" x="32" y="28" width="1048" height="888" rx="28"/>
+<text class="title" x="66" y="82">Overview</text>
+<text class="subtitle" x="70" y="116">Graphviz-derived layout and orthogonal route evidence</text>
+<path class="line" d="M221.2 205.7 L221.2 205.7 L221.2 288.0 L221.2 288.0"/>
+<path class="line" d="M686.1 205.7 L686.1 205.7 L686.1 288.0 L686.1 288.0"/>
+<path class="line" d="M856.4 205.7 L856.4 205.7 L856.4 288.0 L856.4 288.0"/>
+<path class="line" d="M599.8 366.3 L599.8 366.3 L599.8 448.6 L599.8 448.6"/>
+<path class="line" d="M599.8 526.9 L599.8 526.9 L599.8 609.2 L599.8 609.2"/>
+<path class="line" d="M599.8 687.5 L599.8 687.5 L599.8 769.8 L599.8 769.8"/>
+<g transform="translate(116.2,133.5)">
+<rect class="card" x="0" y="0" width="210.0" height="84.0" rx="14" fill="#E8F3FF" stroke="#5B8DEF"/>
+<text class="label" x="105.0" y="42.0" text-anchor="middle">Application</text>
+</g>
+<g transform="translate(50.0,289.1)">
+<rect class="card" x="0" y="0" width="342.4" height="94.0" rx="14" fill="#EAF7EF" stroke="#58A978"/>
+<text class="label" x="171.2" y="35.0" text-anchor="middle">GraphOperations</text>
+<text class="label" x="171.2" y="59.0" text-anchor="middle">(graph-core)</text>
+</g>
+<g transform="translate(628.3,133.5)">
+<rect class="card" x="0" y="0" width="277.3" height="84.0" rx="14" fill="#FFF3D9" stroke="#D6A441"/>
+<text class="label" x="138.6" y="42.0" text-anchor="middle">Neo4jGraphOperations</text>
+</g>
+<g transform="translate(455.6,294.1)">
+<rect class="card" x="0" y="0" width="288.3" height="84.0" rx="14" fill="#FDECEF" stroke="#DC6B82"/>
+<text class="label" x="144.2" y="42.0" text-anchor="middle">Neo4j Coroutine Session</text>
+</g>
+<g transform="translate(807.2,294.1)">
+<rect class="card" x="0" y="0" width="253.9" height="84.0" rx="14" fill="#E9F7F6" stroke="#45A7A1"/>
+<text class="label" x="127.0" y="42.0" text-anchor="middle">Neo4jRecordMapper</text>
+</g>
+<g transform="translate(422.4,449.7)">
+<rect class="card" x="0" y="0" width="354.7" height="94.0" rx="14" fill="#F1ECFF" stroke="#8A72D6"/>
+<text class="label" x="177.4" y="35.0" text-anchor="middle">ReactiveSession (Neo4j</text>
+<text class="label" x="177.4" y="59.0" text-anchor="middle">Driver)</text>
+</g>
+<g transform="translate(475.9,615.3)">
+<rect class="card" x="0" y="0" width="247.8" height="84.0" rx="14" fill="#F4F7FA" stroke="#8CA0B8"/>
+<text class="label" x="123.9" y="42.0" text-anchor="middle">Cypher query engine</text>
+</g>
+<g transform="translate(493.7,775.9)">
+<rect class="card" x="0" y="0" width="212.1" height="84.0" rx="14" fill="#FFF0E4" stroke="#D98A4A"/>
+<text class="label" x="106.1" y="42.0" text-anchor="middle">Neo4j Database</text>
+</g>
+</svg>
