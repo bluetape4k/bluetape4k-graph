@@ -78,77 +78,77 @@ See [Apache AGE guide](../backends/apache-age.md), [backend selection](../backen
 <!-- release-readme-diagrams:start -->
 ## Release diagrams {#release-diagrams}
 
-These diagrams are copied byte-for-byte from README assets in the `0.5.1` release tag. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG source.
+These diagrams are loaded directly from README assets published with the `0.5.1` release and pinned to its immutable commit. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG at the same release commit.
 
 ### Module Layer Structure diagram
 
-[![Module Layer Structure diagram](../../assets/readme-diagrams/graph-graph-age-architecture-01.png)](../../assets/readme-diagrams/graph-graph-age-architecture-01.svg)
+[![Module Layer Structure diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-architecture-01.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-architecture-01.svg)
 
 _Release README: [`graph/graph-age/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.md)_
 
 ### Apache AGE diagram
 
-[![Apache AGE diagram](../../assets/readme-diagrams/graph-graph-age-architecture-02.png)](../../assets/readme-diagrams/graph-graph-age-architecture-02.svg)
+[![Apache AGE diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-architecture-02.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-architecture-02.svg)
 
 _Release README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
 
 ### agtype diagram
 
-[![agtype diagram](../../assets/readme-diagrams/graph-graph-age-architecture-10.png)](../../assets/readme-diagrams/graph-graph-age-architecture-10.svg)
+[![agtype diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-architecture-10.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-architecture-10.svg)
 
 _Release README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
 
 ### graph age Architecture 12 diagram
 
-[![graph age Architecture 12 diagram](../../assets/readme-diagrams/graph-graph-age-architecture-12.png)](../../assets/readme-diagrams/graph-graph-age-architecture-12.svg)
+[![graph age Architecture 12 diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-architecture-12.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-architecture-12.svg)
 
 _Release README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
 
 ### AgeGraphOperations diagram
 
-[![AgeGraphOperations diagram](../../assets/readme-diagrams/graph-graph-age-class-03.png)](../../assets/readme-diagrams/graph-graph-age-class-03.svg)
+[![AgeGraphOperations diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-class-03.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-class-03.svg)
 
 _Release README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
 
 ### AgeSql diagram
 
-[![AgeSql diagram](../../assets/readme-diagrams/graph-graph-age-class-04.png)](../../assets/readme-diagrams/graph-graph-age-class-04.svg)
+[![AgeSql diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-class-04.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-class-04.svg)
 
 _Release README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
 
 ### AgeTypeParser diagram
 
-[![AgeTypeParser diagram](../../assets/readme-diagrams/graph-graph-age-class-05.png)](../../assets/readme-diagrams/graph-graph-age-class-05.svg)
+[![AgeTypeParser diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-class-05.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-class-05.svg)
 
 _Release README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
 
 ### createVertex diagram
 
-[![createVertex diagram](../../assets/readme-diagrams/graph-graph-age-sequence-06.png)](../../assets/readme-diagrams/graph-graph-age-sequence-06.svg)
+[![createVertex diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-sequence-06.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-sequence-06.svg)
 
 _Release README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
 
 ### createEdge diagram
 
-[![createEdge diagram](../../assets/readme-diagrams/graph-graph-age-sequence-07.png)](../../assets/readme-diagrams/graph-graph-age-sequence-07.svg)
+[![createEdge diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-sequence-07.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-sequence-07.svg)
 
 _Release README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
 
 ### shortestPath diagram
 
-[![shortestPath diagram](../../assets/readme-diagrams/graph-graph-age-sequence-08.png)](../../assets/readme-diagrams/graph-graph-age-sequence-08.svg)
+[![shortestPath diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-sequence-08.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-sequence-08.svg)
 
 _Release README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
 
 ### neighbors () diagram
 
-[![neighbors () diagram](../../assets/readme-diagrams/graph-graph-age-sequence-09.png)](../../assets/readme-diagrams/graph-graph-age-sequence-09.svg)
+[![neighbors () diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-sequence-09.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-sequence-09.svg)
 
 _Release README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
 
 ### HikariCP diagram
 
-[![HikariCP diagram](../../assets/readme-diagrams/graph-graph-age-sequence-11.png)](../../assets/readme-diagrams/graph-graph-age-sequence-11.svg)
+[![HikariCP diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-sequence-11.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-sequence-11.svg)
 
 _Release README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
 

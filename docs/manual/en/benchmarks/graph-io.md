@@ -24,11 +24,11 @@ If import counts differ, treat it as correctness failure before reading latency.
 <!-- release-readme-diagrams:start -->
 ## Release diagrams {#release-diagrams}
 
-These diagrams are copied byte-for-byte from README assets in the `0.5.1` release tag. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG source.
+These diagrams are loaded directly from README assets published with the `0.5.1` release and pinned to its immutable commit. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG at the same release commit.
 
 ### graph-io-benchmark Architecture diagram
 
-[![graph-io-benchmark Architecture diagram](../../assets/readme-diagrams/benchmark/graph-io-benchmark-architecture-01.png)](../../assets/readme-diagrams/benchmark/graph-io-benchmark-architecture-01.svg)
+[![graph-io-benchmark Architecture diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/benchmark/graph-io-benchmark-architecture-01.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/benchmark/graph-io-benchmark-architecture-01.svg)
 
 _Release README: [`benchmark/graph-io-benchmark/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/benchmark/graph-io-benchmark/README.md)_
 

@@ -73,77 +73,77 @@ See [Neo4j and Memgraph](../backends/neo4j-and-memgraph.md), [testing](../guides
 <!-- release-readme-diagrams:start -->
 ## Release diagrams {#release-diagrams}
 
-These diagrams are copied byte-for-byte from README assets in the `0.5.1` release tag. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG source.
+These diagrams are loaded directly from README assets published with the `0.5.1` release and pinned to its immutable commit. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG at the same release commit.
 
 ### Overview diagram
 
-[![Overview diagram](../../assets/readme-diagrams/graph-graph-neo4j-architecture-01.png)](../../assets/readme-diagrams/graph-graph-neo4j-architecture-01.svg)
+[![Overview diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-neo4j-architecture-01.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-neo4j-architecture-01.svg)
 
 _Release README: [`graph/graph-neo4j/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.md)_
 
 ### Reactive-Coroutine diagram
 
-[![Reactive-Coroutine diagram](../../assets/readme-diagrams/graph-graph-neo4j-architecture-02.png)](../../assets/readme-diagrams/graph-graph-neo4j-architecture-02.svg)
+[![Reactive-Coroutine diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-neo4j-architecture-02.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-neo4j-architecture-02.svg)
 
 _Release README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
 
 ### neighbors Cypher diagram
 
-[![neighbors Cypher diagram](../../assets/readme-diagrams/graph-graph-neo4j-architecture-09.png)](../../assets/readme-diagrams/graph-graph-neo4j-architecture-09.svg)
+[![neighbors Cypher diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-neo4j-architecture-09.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-neo4j-architecture-09.svg)
 
 _Release README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
 
 ### Neo4j diagram
 
-[![Neo4j diagram](../../assets/readme-diagrams/graph-graph-neo4j-architecture-11.png)](../../assets/readme-diagrams/graph-graph-neo4j-architecture-11.svg)
+[![Neo4j diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-neo4j-architecture-11.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-neo4j-architecture-11.svg)
 
 _Release README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
 
 ### graph neo4j Architecture 12 diagram
 
-[![graph neo4j Architecture 12 diagram](../../assets/readme-diagrams/graph-graph-neo4j-architecture-12.png)](../../assets/readme-diagrams/graph-graph-neo4j-architecture-12.svg)
+[![graph neo4j Architecture 12 diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-neo4j-architecture-12.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-neo4j-architecture-12.svg)
 
 _Release README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
 
 ### Neo4jGraphOperations diagram
 
-[![Neo4jGraphOperations diagram](../../assets/readme-diagrams/graph-graph-neo4j-class-03.png)](../../assets/readme-diagrams/graph-graph-neo4j-class-03.svg)
+[![Neo4jGraphOperations diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-neo4j-class-03.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-neo4j-class-03.svg)
 
 _Release README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
 
 ### Neo4jCoroutineSession diagram
 
-[![Neo4jCoroutineSession diagram](../../assets/readme-diagrams/graph-graph-neo4j-class-04.png)](../../assets/readme-diagrams/graph-graph-neo4j-class-04.svg)
+[![Neo4jCoroutineSession diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-neo4j-class-04.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-neo4j-class-04.svg)
 
 _Release README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
 
 ### Neo4jRecordMapper diagram
 
-[![Neo4jRecordMapper diagram](../../assets/readme-diagrams/graph-graph-neo4j-class-05.png)](../../assets/readme-diagrams/graph-graph-neo4j-class-05.svg)
+[![Neo4jRecordMapper diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-neo4j-class-05.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-neo4j-class-05.svg)
 
 _Release README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
 
 ### createVertex diagram
 
-[![createVertex diagram](../../assets/readme-diagrams/graph-graph-neo4j-sequence-06.png)](../../assets/readme-diagrams/graph-graph-neo4j-sequence-06.svg)
+[![createVertex diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-neo4j-sequence-06.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-neo4j-sequence-06.svg)
 
 _Release README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
 
 ### createEdge diagram
 
-[![createEdge diagram](../../assets/readme-diagrams/graph-graph-neo4j-sequence-07.png)](../../assets/readme-diagrams/graph-graph-neo4j-sequence-07.svg)
+[![createEdge diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-neo4j-sequence-07.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-neo4j-sequence-07.svg)
 
 _Release README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
 
 ### shortestPath diagram
 
-[![shortestPath diagram](../../assets/readme-diagrams/graph-graph-neo4j-sequence-08.png)](../../assets/readme-diagrams/graph-graph-neo4j-sequence-08.svg)
+[![shortestPath diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-neo4j-sequence-08.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-neo4j-sequence-08.svg)
 
 _Release README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
 
 ### Publisher → Coroutine diagram
 
-[![Publisher → Coroutine diagram](../../assets/readme-diagrams/graph-graph-neo4j-sequence-10.png)](../../assets/readme-diagrams/graph-graph-neo4j-sequence-10.svg)
+[![Publisher → Coroutine diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-neo4j-sequence-10.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-neo4j-sequence-10.svg)
 
 _Release README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
 
