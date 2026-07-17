@@ -39,23 +39,23 @@ Add one result-changing edge and assertion; repeat through the suspend API; then
 <!-- release-readme-diagrams:start -->
 ## Release diagrams {#release-diagrams}
 
-These diagrams are copied byte-for-byte from README assets in the `0.5.1` release tag. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG source.
+These diagrams are loaded directly from README assets published with the `0.5.1` release and pinned to its immutable commit. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG at the same release commit.
 
 ### linkedin graph examples architecture
 
-[![linkedin graph examples architecture](../../assets/readme-diagrams/examples-linkedin-graph-examples-architecture-01.png)](../../assets/readme-diagrams/examples-linkedin-graph-examples-architecture-01.svg)
+[![linkedin graph examples architecture](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/examples-linkedin-graph-examples-architecture-01.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/examples-linkedin-graph-examples-architecture-01.svg)
 
 _Release README: [`examples/linkedin-graph-examples/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/linkedin-graph-examples/README.md)_
 
 ### linkedin graph examples data flow
 
-[![linkedin graph examples data flow](../../assets/readme-diagrams/examples-linkedin-graph-examples-data-flow-03.png)](../../assets/readme-diagrams/examples-linkedin-graph-examples-data-flow-03.svg)
+[![linkedin graph examples data flow](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/examples-linkedin-graph-examples-data-flow-03.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/examples-linkedin-graph-examples-data-flow-03.svg)
 
 _Release README: [`examples/linkedin-graph-examples/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/linkedin-graph-examples/README.md)_
 
 ### linkedin graph examples ERD
 
-[![linkedin graph examples ERD](../../assets/readme-diagrams/examples-linkedin-graph-examples-erd-02.png)](../../assets/readme-diagrams/examples-linkedin-graph-examples-erd-02.svg)
+[![linkedin graph examples ERD](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/examples-linkedin-graph-examples-erd-02.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/examples-linkedin-graph-examples-erd-02.svg)
 
 _Release README: [`examples/linkedin-graph-examples/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/linkedin-graph-examples/README.md)_
 

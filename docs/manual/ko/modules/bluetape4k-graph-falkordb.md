@@ -69,11 +69,11 @@ merge와 schema는 FalkorDB 전용 구현을 따른다. 0.5.1의 공통 suspend 
 <!-- release-readme-diagrams:start -->
 ## 배포본 다이어그램 {#release-diagrams}
 
-아래 그림은 현재 개발 브랜치가 아니라 `0.5.1` 배포 태그의 README 자산을 바이트 단위로 그대로 옮긴 것입니다. 따라서 이후 SNAPSHOT 변경이 아니라 이 매뉴얼 버전의 구조와 실행 흐름을 보여 줍니다. 미리보기를 누르면 SVG 원본이 열립니다.
+아래 그림은 `0.5.1` 배포본의 README 자산을 해당 배포 커밋에서 직접 불러옵니다. 이후 SNAPSHOT이 아니라 이 매뉴얼 버전의 구조와 실행 흐름을 보여 줍니다. 미리보기를 누르면 같은 배포 커밋의 SVG 원본이 열립니다.
 
 ### Bluetape4k Graph falkordb 아키텍처
 
-[![Bluetape4k Graph falkordb 아키텍처](../../assets/readme-diagrams/graph-graph-falkordb-architecture-01.png)](../../assets/readme-diagrams/graph-graph-falkordb-architecture-01.svg)
+[![Bluetape4k Graph falkordb 아키텍처](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-falkordb-architecture-01.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-falkordb-architecture-01.svg)
 
 _배포본 README: [`graph/graph-falkordb/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-falkordb/README.ko.md)_
 

@@ -30,29 +30,29 @@ Expected: the contract appears in core, backend implementations or fallbacks sup
 <!-- release-readme-diagrams:start -->
 ## Release diagrams {#release-diagrams}
 
-These diagrams are copied byte-for-byte from README assets in the `0.5.1` release tag. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG source.
+These diagrams are loaded directly from README assets published with the `0.5.1` release and pinned to its immutable commit. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG at the same release commit.
 
 ### graph Architecture diagram
 
-[![graph Architecture diagram](../../assets/readme-diagrams/bluetape4k-graph-architecture-01.png)](../../assets/readme-diagrams/bluetape4k-graph-architecture-01.svg)
+[![graph Architecture diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/bluetape4k-graph-architecture-01.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/bluetape4k-graph-architecture-01.svg)
 
 _Release README: [`README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/README.md)_
 
 ### graph Class Structure 2 diagram
 
-[![graph Class Structure 2 diagram](../../assets/readme-diagrams/bluetape4k-graph-class-02.png)](../../assets/readme-diagrams/bluetape4k-graph-class-02.svg)
+[![graph Class Structure 2 diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/bluetape4k-graph-class-02.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/bluetape4k-graph-class-02.svg)
 
 _Release README: [`README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/README.md)_
 
 ### Backend capability matrix
 
-[![Backend capability matrix](../../assets/readme-diagrams/root-readme-backend-capability-matrix-01.png)](../../assets/readme-diagrams/root-readme-backend-capability-matrix-01.svg)
+[![Backend capability matrix](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/root-readme-backend-capability-matrix-01.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/root-readme-backend-capability-matrix-01.svg)
 
 _Release README: [`README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/README.md)_
 
 ### Bluetape4k Graph overview diagram
 
-[![Bluetape4k Graph overview diagram](../../assets/readme-diagrams/root-readme-overview-01.png)](../../assets/readme-diagrams/root-readme-overview-01.svg)
+[![Bluetape4k Graph overview diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/root-readme-overview-01.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/root-readme-overview-01.svg)
 
 _Release README: [`README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/README.md)_
 

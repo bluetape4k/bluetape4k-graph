@@ -76,77 +76,77 @@ DataSource는 호출자가 닫는다.
 <!-- release-readme-diagrams:start -->
 ## 배포본 다이어그램 {#release-diagrams}
 
-아래 그림은 현재 개발 브랜치가 아니라 `0.5.1` 배포 태그의 README 자산을 바이트 단위로 그대로 옮긴 것입니다. 따라서 이후 SNAPSHOT 변경이 아니라 이 매뉴얼 버전의 구조와 실행 흐름을 보여 줍니다. 미리보기를 누르면 SVG 원본이 열립니다.
+아래 그림은 `0.5.1` 배포본의 README 자산을 해당 배포 커밋에서 직접 불러옵니다. 이후 SNAPSHOT이 아니라 이 매뉴얼 버전의 구조와 실행 흐름을 보여 줍니다. 미리보기를 누르면 같은 배포 커밋의 SVG 원본이 열립니다.
 
 ### Bluetape4k Graph age 아키텍처
 
-[![Bluetape4k Graph age 아키텍처](../../assets/readme-diagrams/graph-graph-age-architecture-01.png)](../../assets/readme-diagrams/graph-graph-age-architecture-01.svg)
+[![Bluetape4k Graph age 아키텍처](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-architecture-01.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-architecture-01.svg)
 
 _배포본 README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
 
 ### Apache AGE 다이어그램
 
-[![Apache AGE 다이어그램](../../assets/readme-diagrams/graph-graph-age-architecture-02.png)](../../assets/readme-diagrams/graph-graph-age-architecture-02.svg)
+[![Apache AGE 다이어그램](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-architecture-02.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-architecture-02.svg)
 
 _배포본 README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
 
 ### agtype 다이어그램
 
-[![agtype 다이어그램](../../assets/readme-diagrams/graph-graph-age-architecture-10.png)](../../assets/readme-diagrams/graph-graph-age-architecture-10.svg)
+[![agtype 다이어그램](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-architecture-10.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-architecture-10.svg)
 
 _배포본 README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
 
 ### Bluetape4k Graph age 아키텍처 12 다이어그램
 
-[![Bluetape4k Graph age 아키텍처 12 다이어그램](../../assets/readme-diagrams/graph-graph-age-architecture-12.png)](../../assets/readme-diagrams/graph-graph-age-architecture-12.svg)
+[![Bluetape4k Graph age 아키텍처 12 다이어그램](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-architecture-12.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-architecture-12.svg)
 
 _배포본 README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
 
 ### AgeGraphOperations 다이어그램
 
-[![AgeGraphOperations 다이어그램](../../assets/readme-diagrams/graph-graph-age-class-03.png)](../../assets/readme-diagrams/graph-graph-age-class-03.svg)
+[![AgeGraphOperations 다이어그램](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-class-03.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-class-03.svg)
 
 _배포본 README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
 
 ### AgeSql 다이어그램
 
-[![AgeSql 다이어그램](../../assets/readme-diagrams/graph-graph-age-class-04.png)](../../assets/readme-diagrams/graph-graph-age-class-04.svg)
+[![AgeSql 다이어그램](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-class-04.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-class-04.svg)
 
 _배포본 README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
 
 ### AgeTypeParser 다이어그램
 
-[![AgeTypeParser 다이어그램](../../assets/readme-diagrams/graph-graph-age-class-05.png)](../../assets/readme-diagrams/graph-graph-age-class-05.svg)
+[![AgeTypeParser 다이어그램](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-class-05.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-class-05.svg)
 
 _배포본 README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
 
 ### createVertex 다이어그램
 
-[![createVertex 다이어그램](../../assets/readme-diagrams/graph-graph-age-sequence-06.png)](../../assets/readme-diagrams/graph-graph-age-sequence-06.svg)
+[![createVertex 다이어그램](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-sequence-06.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-sequence-06.svg)
 
 _배포본 README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
 
 ### createEdge 다이어그램
 
-[![createEdge 다이어그램](../../assets/readme-diagrams/graph-graph-age-sequence-07.png)](../../assets/readme-diagrams/graph-graph-age-sequence-07.svg)
+[![createEdge 다이어그램](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-sequence-07.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-sequence-07.svg)
 
 _배포본 README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
 
 ### shortestPath 다이어그램
 
-[![shortestPath 다이어그램](../../assets/readme-diagrams/graph-graph-age-sequence-08.png)](../../assets/readme-diagrams/graph-graph-age-sequence-08.svg)
+[![shortestPath 다이어그램](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-sequence-08.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-sequence-08.svg)
 
 _배포본 README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
 
 ### neighbors () 다이어그램
 
-[![neighbors () 다이어그램](../../assets/readme-diagrams/graph-graph-age-sequence-09.png)](../../assets/readme-diagrams/graph-graph-age-sequence-09.svg)
+[![neighbors () 다이어그램](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-sequence-09.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-sequence-09.svg)
 
 _배포본 README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
 
 ### HikariCP 다이어그램
 
-[![HikariCP 다이어그램](../../assets/readme-diagrams/graph-graph-age-sequence-11.png)](../../assets/readme-diagrams/graph-graph-age-sequence-11.svg)
+[![HikariCP 다이어그램](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-sequence-11.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-age-sequence-11.svg)
 
 _배포본 README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
 
