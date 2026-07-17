@@ -7,7 +7,7 @@ plugins {
 }
 
 dependencies {
-    implementation(platform(libs.spring.boot4.dependencies))
+    implementation(platform(bt4k.spring.boot4.dependencies))
 
     // graph-core는 api로 전이 노출 — GraphOperations 등 공개 API 타입이 전이 노출 필요
     api(project(":bluetape4k-graph-core"))
