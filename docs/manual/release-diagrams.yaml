@@ -1,0 +1,599 @@
+---
+schemaVersion: 1
+sourcePolicy: release-readme
+diagrams:
+- id: benchmark-graph-age-benchmark-architecture-01
+  canonical: benchmark/graph-age-benchmark-architecture-01
+  target: graph-age-benchmark
+  manualPages:
+    en: docs/manual/en/benchmarks/age-and-neo4j.md
+    ko: docs/manual/ko/benchmarks/age-and-neo4j.md
+  releaseReadmes:
+  - benchmark/graph-age-benchmark/README.ko.md
+  - benchmark/graph-age-benchmark/README.md
+- id: benchmark-graph-benchmark-architecture-01
+  canonical: benchmark/graph-benchmark-architecture-01
+  target: graph-benchmark
+  manualPages:
+    en: docs/manual/en/benchmarks/graph-operations.md
+    ko: docs/manual/ko/benchmarks/graph-operations.md
+  releaseReadmes:
+  - benchmark/graph-benchmark/README.ko.md
+  - benchmark/graph-benchmark/README.md
+- id: benchmark-graph-io-benchmark-architecture-01
+  canonical: benchmark/graph-io-benchmark-architecture-01
+  target: graph-io-benchmark
+  manualPages:
+    en: docs/manual/en/benchmarks/graph-io.md
+    ko: docs/manual/ko/benchmarks/graph-io.md
+  releaseReadmes:
+  - benchmark/graph-io-benchmark/README.ko.md
+  - benchmark/graph-io-benchmark/README.md
+- id: benchmark-graph-neo4j-benchmark-architecture-01
+  canonical: benchmark/graph-neo4j-benchmark-architecture-01
+  target: graph-neo4j-benchmark
+  manualPages:
+    en: docs/manual/en/benchmarks/age-and-neo4j.md
+    ko: docs/manual/ko/benchmarks/age-and-neo4j.md
+  releaseReadmes:
+  - benchmark/graph-neo4j-benchmark/README.ko.md
+  - benchmark/graph-neo4j-benchmark/README.md
+- id: bluetape4k-graph-architecture-01
+  canonical: bluetape4k-graph-architecture-01
+  target: overview
+  manualPages:
+    en: docs/manual/en/architecture/repository-map.md
+    ko: docs/manual/ko/architecture/repository-map.md
+  releaseReadmes:
+  - README.ko.md
+  - README.md
+- id: bluetape4k-graph-class-02
+  canonical: bluetape4k-graph-class-02
+  target: overview
+  manualPages:
+    en: docs/manual/en/architecture/repository-map.md
+    ko: docs/manual/ko/architecture/repository-map.md
+  releaseReadmes:
+  - README.ko.md
+  - README.md
+- id: bom-architecture-01
+  canonical: bom-architecture-01
+  target: bluetape4k-graph-bom
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-bom.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-bom.md
+  releaseReadmes:
+  - bom/README.ko.md
+  - bom/README.md
+- id: examples-code-graph-examples-architecture-01
+  canonical: examples-code-graph-examples-architecture-01
+  target: code-graph-examples
+  manualPages:
+    en: docs/manual/en/examples/code-graph.md
+    ko: docs/manual/ko/examples/code-graph.md
+  releaseReadmes:
+  - examples/code-graph-examples/README.ko.md
+  - examples/code-graph-examples/README.md
+- id: examples-code-graph-examples-data-flow-03
+  canonical: examples-code-graph-examples-data-flow-03
+  target: code-graph-examples
+  manualPages:
+    en: docs/manual/en/examples/code-graph.md
+    ko: docs/manual/ko/examples/code-graph.md
+  releaseReadmes:
+  - examples/code-graph-examples/README.ko.md
+  - examples/code-graph-examples/README.md
+- id: examples-code-graph-examples-erd-02
+  canonical: examples-code-graph-examples-erd-02
+  target: code-graph-examples
+  manualPages:
+    en: docs/manual/en/examples/code-graph.md
+    ko: docs/manual/ko/examples/code-graph.md
+  releaseReadmes:
+  - examples/code-graph-examples/README.ko.md
+  - examples/code-graph-examples/README.md
+- id: examples-fraud-detection-examples-architecture-01
+  canonical: examples-fraud-detection-examples-architecture-01
+  target: fraud-detection-examples
+  manualPages:
+    en: docs/manual/en/examples/fraud-detection.md
+    ko: docs/manual/ko/examples/fraud-detection.md
+  releaseReadmes:
+  - examples/fraud-detection-examples/README.ko.md
+  - examples/fraud-detection-examples/README.md
+- id: examples-fraud-detection-examples-class-02
+  canonical: examples-fraud-detection-examples-class-02
+  target: fraud-detection-examples
+  manualPages:
+    en: docs/manual/en/examples/fraud-detection.md
+    ko: docs/manual/ko/examples/fraud-detection.md
+  releaseReadmes:
+  - examples/fraud-detection-examples/README.ko.md
+  - examples/fraud-detection-examples/README.md
+- id: examples-fraud-detection-examples-sequence-03
+  canonical: examples-fraud-detection-examples-sequence-03
+  target: fraud-detection-examples
+  manualPages:
+    en: docs/manual/en/examples/fraud-detection.md
+    ko: docs/manual/ko/examples/fraud-detection.md
+  releaseReadmes:
+  - examples/fraud-detection-examples/README.ko.md
+  - examples/fraud-detection-examples/README.md
+- id: examples-knowledge-graph-examples-architecture-01
+  canonical: examples-knowledge-graph-examples-architecture-01
+  target: knowledge-graph-examples
+  manualPages:
+    en: docs/manual/en/examples/knowledge-graph.md
+    ko: docs/manual/ko/examples/knowledge-graph.md
+  releaseReadmes:
+  - examples/knowledge-graph-examples/README.ko.md
+  - examples/knowledge-graph-examples/README.md
+- id: examples-knowledge-graph-examples-class-02
+  canonical: examples-knowledge-graph-examples-class-02
+  target: knowledge-graph-examples
+  manualPages:
+    en: docs/manual/en/examples/knowledge-graph.md
+    ko: docs/manual/ko/examples/knowledge-graph.md
+  releaseReadmes:
+  - examples/knowledge-graph-examples/README.ko.md
+  - examples/knowledge-graph-examples/README.md
+- id: examples-knowledge-graph-examples-sequence-03
+  canonical: examples-knowledge-graph-examples-sequence-03
+  target: knowledge-graph-examples
+  manualPages:
+    en: docs/manual/en/examples/knowledge-graph.md
+    ko: docs/manual/ko/examples/knowledge-graph.md
+  releaseReadmes:
+  - examples/knowledge-graph-examples/README.ko.md
+  - examples/knowledge-graph-examples/README.md
+- id: examples-ktor-graph-examples-architecture-01
+  canonical: examples-ktor-graph-examples-architecture-01
+  target: ktor-graph-examples
+  manualPages:
+    en: docs/manual/en/examples/ktor-graph.md
+    ko: docs/manual/ko/examples/ktor-graph.md
+  releaseReadmes:
+  - examples/ktor-graph-examples/README.ko.md
+  - examples/ktor-graph-examples/README.md
+- id: examples-ktor-graph-examples-data-flow-03
+  canonical: examples-ktor-graph-examples-data-flow-03
+  target: ktor-graph-examples
+  manualPages:
+    en: docs/manual/en/examples/ktor-graph.md
+    ko: docs/manual/ko/examples/ktor-graph.md
+  releaseReadmes:
+  - examples/ktor-graph-examples/README.ko.md
+  - examples/ktor-graph-examples/README.md
+- id: examples-ktor-graph-examples-erd-02
+  canonical: examples-ktor-graph-examples-erd-02
+  target: ktor-graph-examples
+  manualPages:
+    en: docs/manual/en/examples/ktor-graph.md
+    ko: docs/manual/ko/examples/ktor-graph.md
+  releaseReadmes:
+  - examples/ktor-graph-examples/README.ko.md
+  - examples/ktor-graph-examples/README.md
+- id: examples-linkedin-graph-examples-architecture-01
+  canonical: examples-linkedin-graph-examples-architecture-01
+  target: linkedin-graph-examples
+  manualPages:
+    en: docs/manual/en/examples/linkedin-graph.md
+    ko: docs/manual/ko/examples/linkedin-graph.md
+  releaseReadmes:
+  - examples/linkedin-graph-examples/README.ko.md
+  - examples/linkedin-graph-examples/README.md
+- id: examples-linkedin-graph-examples-data-flow-03
+  canonical: examples-linkedin-graph-examples-data-flow-03
+  target: linkedin-graph-examples
+  manualPages:
+    en: docs/manual/en/examples/linkedin-graph.md
+    ko: docs/manual/ko/examples/linkedin-graph.md
+  releaseReadmes:
+  - examples/linkedin-graph-examples/README.ko.md
+  - examples/linkedin-graph-examples/README.md
+- id: examples-linkedin-graph-examples-erd-02
+  canonical: examples-linkedin-graph-examples-erd-02
+  target: linkedin-graph-examples
+  manualPages:
+    en: docs/manual/en/examples/linkedin-graph.md
+    ko: docs/manual/ko/examples/linkedin-graph.md
+  releaseReadmes:
+  - examples/linkedin-graph-examples/README.ko.md
+  - examples/linkedin-graph-examples/README.md
+- id: examples-observability-graph-examples-architecture-01
+  canonical: examples-observability-graph-examples-architecture-01
+  target: observability-graph-examples
+  manualPages:
+    en: docs/manual/en/examples/observability-graph.md
+    ko: docs/manual/ko/examples/observability-graph.md
+  releaseReadmes:
+  - examples/observability-graph-examples/README.ko.md
+  - examples/observability-graph-examples/README.md
+- id: examples-observability-graph-examples-data-flow-03
+  canonical: examples-observability-graph-examples-data-flow-03
+  target: observability-graph-examples
+  manualPages:
+    en: docs/manual/en/examples/observability-graph.md
+    ko: docs/manual/ko/examples/observability-graph.md
+  releaseReadmes:
+  - examples/observability-graph-examples/README.ko.md
+  - examples/observability-graph-examples/README.md
+- id: examples-observability-graph-examples-erd-02
+  canonical: examples-observability-graph-examples-erd-02
+  target: observability-graph-examples
+  manualPages:
+    en: docs/manual/en/examples/observability-graph.md
+    ko: docs/manual/ko/examples/observability-graph.md
+  releaseReadmes:
+  - examples/observability-graph-examples/README.ko.md
+  - examples/observability-graph-examples/README.md
+- id: examples-recommendation-examples-architecture-01
+  canonical: examples-recommendation-examples-architecture-01
+  target: recommendation-examples
+  manualPages:
+    en: docs/manual/en/examples/recommendation.md
+    ko: docs/manual/ko/examples/recommendation.md
+  releaseReadmes:
+  - examples/recommendation-examples/README.ko.md
+  - examples/recommendation-examples/README.md
+- id: examples-recommendation-examples-class-02
+  canonical: examples-recommendation-examples-class-02
+  target: recommendation-examples
+  manualPages:
+    en: docs/manual/en/examples/recommendation.md
+    ko: docs/manual/ko/examples/recommendation.md
+  releaseReadmes:
+  - examples/recommendation-examples/README.ko.md
+  - examples/recommendation-examples/README.md
+- id: examples-recommendation-examples-sequence-03
+  canonical: examples-recommendation-examples-sequence-03
+  target: recommendation-examples
+  manualPages:
+    en: docs/manual/en/examples/recommendation.md
+    ko: docs/manual/ko/examples/recommendation.md
+  releaseReadmes:
+  - examples/recommendation-examples/README.ko.md
+  - examples/recommendation-examples/README.md
+- id: graph-graph-age-architecture-01
+  canonical: graph-graph-age-architecture-01
+  target: bluetape4k-graph-age
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-age.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-age.md
+  releaseReadmes:
+  - graph/graph-age/README.ko.md
+  - graph/graph-age/README.md
+- id: graph-graph-age-architecture-02
+  canonical: graph-graph-age-architecture-02
+  target: bluetape4k-graph-age
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-age.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-age.md
+  releaseReadmes:
+  - graph/graph-age/README.ko.md
+- id: graph-graph-age-architecture-10
+  canonical: graph-graph-age-architecture-10
+  target: bluetape4k-graph-age
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-age.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-age.md
+  releaseReadmes:
+  - graph/graph-age/README.ko.md
+- id: graph-graph-age-architecture-12
+  canonical: graph-graph-age-architecture-12
+  target: bluetape4k-graph-age
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-age.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-age.md
+  releaseReadmes:
+  - graph/graph-age/README.ko.md
+- id: graph-graph-age-class-03
+  canonical: graph-graph-age-class-03
+  target: bluetape4k-graph-age
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-age.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-age.md
+  releaseReadmes:
+  - graph/graph-age/README.ko.md
+- id: graph-graph-age-class-04
+  canonical: graph-graph-age-class-04
+  target: bluetape4k-graph-age
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-age.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-age.md
+  releaseReadmes:
+  - graph/graph-age/README.ko.md
+- id: graph-graph-age-class-05
+  canonical: graph-graph-age-class-05
+  target: bluetape4k-graph-age
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-age.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-age.md
+  releaseReadmes:
+  - graph/graph-age/README.ko.md
+- id: graph-graph-age-sequence-06
+  canonical: graph-graph-age-sequence-06
+  target: bluetape4k-graph-age
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-age.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-age.md
+  releaseReadmes:
+  - graph/graph-age/README.ko.md
+- id: graph-graph-age-sequence-07
+  canonical: graph-graph-age-sequence-07
+  target: bluetape4k-graph-age
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-age.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-age.md
+  releaseReadmes:
+  - graph/graph-age/README.ko.md
+- id: graph-graph-age-sequence-08
+  canonical: graph-graph-age-sequence-08
+  target: bluetape4k-graph-age
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-age.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-age.md
+  releaseReadmes:
+  - graph/graph-age/README.ko.md
+- id: graph-graph-age-sequence-09
+  canonical: graph-graph-age-sequence-09
+  target: bluetape4k-graph-age
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-age.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-age.md
+  releaseReadmes:
+  - graph/graph-age/README.ko.md
+- id: graph-graph-age-sequence-11
+  canonical: graph-graph-age-sequence-11
+  target: bluetape4k-graph-age
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-age.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-age.md
+  releaseReadmes:
+  - graph/graph-age/README.ko.md
+- id: graph-graph-core-architecture-01
+  canonical: graph-graph-core-architecture-01
+  target: bluetape4k-graph-core
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-core.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-core.md
+  releaseReadmes:
+  - graph/graph-core/README.ko.md
+  - graph/graph-core/README.md
+- id: graph-graph-core-architecture-10
+  canonical: graph-graph-core-architecture-10
+  target: bluetape4k-graph-core
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-core.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-core.md
+  releaseReadmes:
+  - graph/graph-core/README.ko.md
+- id: graph-graph-core-architecture-11
+  canonical: graph-graph-core-architecture-11
+  target: bluetape4k-graph-core
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-core.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-core.md
+  releaseReadmes:
+  - graph/graph-core/README.ko.md
+- id: graph-graph-core-architecture-12
+  canonical: graph-graph-core-architecture-12
+  target: bluetape4k-graph-core
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-core.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-core.md
+  releaseReadmes:
+  - graph/graph-core/README.ko.md
+- id: graph-graph-core-architecture-13
+  canonical: graph-graph-core-architecture-13
+  target: bluetape4k-graph-core
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-core.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-core.md
+  releaseReadmes:
+  - graph/graph-core/README.ko.md
+- id: graph-graph-core-architecture-14
+  canonical: graph-graph-core-architecture-14
+  target: bluetape4k-graph-core
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-core.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-core.md
+  releaseReadmes:
+  - graph/graph-core/README.ko.md
+- id: graph-graph-core-class-02
+  canonical: graph-graph-core-class-02
+  target: bluetape4k-graph-core
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-core.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-core.md
+  releaseReadmes:
+  - graph/graph-core/README.ko.md
+- id: graph-graph-core-class-03
+  canonical: graph-graph-core-class-03
+  target: bluetape4k-graph-core
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-core.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-core.md
+  releaseReadmes:
+  - graph/graph-core/README.ko.md
+- id: graph-graph-core-class-04
+  canonical: graph-graph-core-class-04
+  target: bluetape4k-graph-core
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-core.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-core.md
+  releaseReadmes:
+  - graph/graph-core/README.ko.md
+- id: graph-graph-core-class-05
+  canonical: graph-graph-core-class-05
+  target: bluetape4k-graph-core
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-core.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-core.md
+  releaseReadmes:
+  - graph/graph-core/README.ko.md
+- id: graph-graph-core-sequence-06
+  canonical: graph-graph-core-sequence-06
+  target: bluetape4k-graph-core
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-core.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-core.md
+  releaseReadmes:
+  - graph/graph-core/README.ko.md
+- id: graph-graph-core-sequence-07
+  canonical: graph-graph-core-sequence-07
+  target: bluetape4k-graph-core
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-core.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-core.md
+  releaseReadmes:
+  - graph/graph-core/README.ko.md
+- id: graph-graph-core-sequence-08
+  canonical: graph-graph-core-sequence-08
+  target: bluetape4k-graph-core
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-core.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-core.md
+  releaseReadmes:
+  - graph/graph-core/README.ko.md
+- id: graph-graph-core-sequence-09
+  canonical: graph-graph-core-sequence-09
+  target: bluetape4k-graph-core
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-core.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-core.md
+  releaseReadmes:
+  - graph/graph-core/README.ko.md
+- id: graph-graph-falkordb-architecture-01
+  canonical: graph-graph-falkordb-architecture-01
+  target: bluetape4k-graph-falkordb
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-falkordb.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-falkordb.md
+  releaseReadmes:
+  - graph/graph-falkordb/README.ko.md
+  - graph/graph-falkordb/README.md
+- id: graph-graph-neo4j-architecture-01
+  canonical: graph-graph-neo4j-architecture-01
+  target: bluetape4k-graph-neo4j
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-neo4j.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-neo4j.md
+  releaseReadmes:
+  - graph/graph-neo4j/README.ko.md
+  - graph/graph-neo4j/README.md
+- id: graph-graph-neo4j-architecture-02
+  canonical: graph-graph-neo4j-architecture-02
+  target: bluetape4k-graph-neo4j
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-neo4j.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-neo4j.md
+  releaseReadmes:
+  - graph/graph-neo4j/README.ko.md
+- id: graph-graph-neo4j-architecture-09
+  canonical: graph-graph-neo4j-architecture-09
+  target: bluetape4k-graph-neo4j
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-neo4j.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-neo4j.md
+  releaseReadmes:
+  - graph/graph-neo4j/README.ko.md
+- id: graph-graph-neo4j-architecture-11
+  canonical: graph-graph-neo4j-architecture-11
+  target: bluetape4k-graph-neo4j
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-neo4j.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-neo4j.md
+  releaseReadmes:
+  - graph/graph-neo4j/README.ko.md
+- id: graph-graph-neo4j-architecture-12
+  canonical: graph-graph-neo4j-architecture-12
+  target: bluetape4k-graph-neo4j
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-neo4j.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-neo4j.md
+  releaseReadmes:
+  - graph/graph-neo4j/README.ko.md
+- id: graph-graph-neo4j-class-03
+  canonical: graph-graph-neo4j-class-03
+  target: bluetape4k-graph-neo4j
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-neo4j.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-neo4j.md
+  releaseReadmes:
+  - graph/graph-neo4j/README.ko.md
+- id: graph-graph-neo4j-class-04
+  canonical: graph-graph-neo4j-class-04
+  target: bluetape4k-graph-neo4j
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-neo4j.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-neo4j.md
+  releaseReadmes:
+  - graph/graph-neo4j/README.ko.md
+- id: graph-graph-neo4j-class-05
+  canonical: graph-graph-neo4j-class-05
+  target: bluetape4k-graph-neo4j
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-neo4j.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-neo4j.md
+  releaseReadmes:
+  - graph/graph-neo4j/README.ko.md
+- id: graph-graph-neo4j-sequence-06
+  canonical: graph-graph-neo4j-sequence-06
+  target: bluetape4k-graph-neo4j
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-neo4j.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-neo4j.md
+  releaseReadmes:
+  - graph/graph-neo4j/README.ko.md
+- id: graph-graph-neo4j-sequence-07
+  canonical: graph-graph-neo4j-sequence-07
+  target: bluetape4k-graph-neo4j
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-neo4j.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-neo4j.md
+  releaseReadmes:
+  - graph/graph-neo4j/README.ko.md
+- id: graph-graph-neo4j-sequence-08
+  canonical: graph-graph-neo4j-sequence-08
+  target: bluetape4k-graph-neo4j
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-neo4j.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-neo4j.md
+  releaseReadmes:
+  - graph/graph-neo4j/README.ko.md
+- id: graph-graph-neo4j-sequence-10
+  canonical: graph-graph-neo4j-sequence-10
+  target: bluetape4k-graph-neo4j
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-neo4j.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-neo4j.md
+  releaseReadmes:
+  - graph/graph-neo4j/README.ko.md
+- id: ktor-graph-ktor-architecture-01
+  canonical: ktor-graph-ktor-architecture-01
+  target: bluetape4k-graph-ktor
+  manualPages:
+    en: docs/manual/en/modules/bluetape4k-graph-ktor.md
+    ko: docs/manual/ko/modules/bluetape4k-graph-ktor.md
+  releaseReadmes:
+  - ktor/graph-ktor/README.ko.md
+  - ktor/graph-ktor/README.md
+- id: root-readme-backend-capability-matrix-01
+  canonical: root-readme-backend-capability-matrix-01
+  target: overview
+  manualPages:
+    en: docs/manual/en/architecture/repository-map.md
+    ko: docs/manual/ko/architecture/repository-map.md
+  releaseReadmes:
+  - README.ko.md
+  - README.md
+- id: root-readme-overview-01
+  canonical: root-readme-overview-01
+  target: overview
+  manualPages:
+    en: docs/manual/en/architecture/repository-map.md
+    ko: docs/manual/ko/architecture/repository-map.md
+  releaseReadmes:
+  - README.ko.md
+  - README.md

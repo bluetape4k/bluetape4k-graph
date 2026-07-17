@@ -26,3 +26,34 @@ rg -n 'fun shortestPath' graph/graph-core graph/graph-neo4j graph/graph-memgraph
 ```
 
 core에는 계약이, 각 백엔드에는 구현이나 fallback이, 도메인 예제에는 구체 경로 검증이 보여야 한다. core는 통과하는데 예제가 실패하면 schema와 자료 준비를 본다. 한 백엔드만 실패하면 질의 변환과 capability 테스트를 확인한다. 구현은 모두 통과하는데 애플리케이션 경로만 실패하면 프레임워크 생명주기와 자원 소유권으로 진단 범위를 옮긴다.
+
+<!-- release-readme-diagrams:start -->
+## 배포본 다이어그램 {#release-diagrams}
+
+아래 그림은 현재 개발 브랜치가 아니라 `0.5.1` 배포 태그의 README 자산을 바이트 단위로 그대로 옮긴 것입니다. 따라서 이후 SNAPSHOT 변경이 아니라 이 매뉴얼 버전의 구조와 실행 흐름을 보여 줍니다. 미리보기를 누르면 SVG 원본이 열립니다.
+
+### Bluetape4k Graph 아키텍처
+
+[![Bluetape4k Graph 아키텍처](../../assets/readme-diagrams/bluetape4k-graph-architecture-01.png)](../../assets/readme-diagrams/bluetape4k-graph-architecture-01.svg)
+
+_배포본 README: [`README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/README.ko.md)_
+
+### Bluetape4k Graph 클래스 구조도 2
+
+[![Bluetape4k Graph 클래스 구조도 2](../../assets/readme-diagrams/bluetape4k-graph-class-02.png)](../../assets/readme-diagrams/bluetape4k-graph-class-02.svg)
+
+_배포본 README: [`README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/README.ko.md)_
+
+### 백엔드 기능 비교표
+
+[![백엔드 기능 비교표](../../assets/readme-diagrams/root-readme-backend-capability-matrix-01.png)](../../assets/readme-diagrams/root-readme-backend-capability-matrix-01.svg)
+
+_배포본 README: [`README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/README.ko.md)_
+
+### Bluetape4k Graph 개요
+
+[![Bluetape4k Graph 개요](../../assets/readme-diagrams/root-readme-overview-01.png)](../../assets/readme-diagrams/root-readme-overview-01.svg)
+
+_배포본 README: [`README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/README.ko.md)_
+
+<!-- release-readme-diagrams:end -->

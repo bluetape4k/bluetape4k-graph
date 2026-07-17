@@ -14,3 +14,16 @@ smoke는 `sizeName=smoke`, warmup 1회, 200ms 측정 1회로 배선만 확인합
 전체 실행을 세 번 반복하고 구간을 비교하십시오. 파일 시스템 캐시, 압축, 디스크 경합은 warmup으로 없어지지 않습니다. 종료 단계가 임시 디렉터리를 지우며, 중단했다면 모듈 빌드 디렉터리와 운영체제 임시 공간을 확인하십시오.
 
 가져온 정점·간선 수가 다르면 지연 시간보다 정확성 실패를 먼저 고쳐야 합니다. 이 결과는 원격 데이터베이스 처리량, 대규모 그래프 메모리 한계, 암호화 저장소, 장애 복구를 증명하지 않습니다. [graph-io 실행 방식](../graph-io/execution-model.md)과 [개요](./overview.md)를 보십시오.
+
+<!-- release-readme-diagrams:start -->
+## 배포본 다이어그램 {#release-diagrams}
+
+아래 그림은 현재 개발 브랜치가 아니라 `0.5.1` 배포 태그의 README 자산을 바이트 단위로 그대로 옮긴 것입니다. 따라서 이후 SNAPSHOT 변경이 아니라 이 매뉴얼 버전의 구조와 실행 흐름을 보여 줍니다. 미리보기를 누르면 SVG 원본이 열립니다.
+
+### Bluetape4k Graph-io-benchmark 아키텍처
+
+[![Bluetape4k Graph-io-benchmark 아키텍처](../../assets/readme-diagrams/benchmark/graph-io-benchmark-architecture-01.png)](../../assets/readme-diagrams/benchmark/graph-io-benchmark-architecture-01.svg)
+
+_배포본 README: [`benchmark/graph-io-benchmark/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/benchmark/graph-io-benchmark/README.ko.md)_
+
+<!-- release-readme-diagrams:end -->

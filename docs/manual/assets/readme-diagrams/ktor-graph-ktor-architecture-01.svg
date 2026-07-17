@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="944" viewBox="0 0 980 944" role="img" aria-label="graph ktor Architecture">
+<defs>
+  <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="7" stdDeviation="8" flood-color="#1f2937" flood-opacity="0.10"/></filter>
+  <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth"><path d="M1,1 L8,4.5 L1,8 Z" fill="#758297"/></marker>
+  <style>
+    .canvas{fill:#f7f9fc}.frame{fill:#fff;stroke:#d8e0ea;stroke-width:1.5}
+    .title{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:40px;font-weight:400;fill:#102033}
+    .subtitle{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:14px;font-weight:400;fill:#536273}
+    .label{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:21px;font-weight:400;fill:#102033}
+    .small{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:12px;font-weight:400;fill:#536273}
+    .strong{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:13px;font-weight:400;fill:#102033}
+    .card{stroke-width:2.0;filter:url(#shadow)}
+    .line{stroke:#758297;stroke-width:2.1;fill:none;marker-end:url(#arrow)}
+    .dashed{stroke:#758297;stroke-width:2.1;stroke-dasharray:7 6;fill:none;marker-end:url(#arrow)}
+    .lifeline{stroke:#b7c2d1;stroke-width:1.8;stroke-dasharray:9 9}
+  </style>
+</defs>
+<rect class="canvas" width="980" height="944"/>
+<rect class="frame" x="32" y="28" width="916" height="888" rx="28"/>
+<text class="title" x="66" y="82">graph ktor Architecture</text>
+<text class="subtitle" x="70" y="116">Graphviz-derived layout and orthogonal route evidence</text>
+<path class="line" d="M168.4 205.7 L168.4 205.7 L168.4 288.0 L168.4 288.0"/>
+<path class="line" d="M168.4 366.3 L168.4 366.3 L168.4 448.6 L168.4 448.6"/>
+<path class="line" d="M168.4 526.9 L168.4 526.9 L168.4 609.2 L168.4 609.2"/>
+<path class="line" d="M168.4 687.5 L168.4 687.5 L168.4 769.8 L168.4 769.8"/>
+<path class="line" d="M265.4 657.3 L292.7 657.3 L315.0 657.3 L315.0 657.3 L315.0 657.3 L315.0 817.9 L315.0 817.9 L315.0 817.9 L350.0 817.9 L350.0 817.9"/>
+<path class="line" d="M520.7 526.9 L520.7 526.9 L520.7 609.2 L520.7 609.2"/>
+<path class="line" d="M509.2 687.5 L509.2 687.5 L509.2 769.8 L509.2 769.8"/>
+<g transform="translate(62.3,133.5)">
+<rect class="card" x="0" y="0" width="212.1" height="84.0" rx="14" fill="#E8F3FF" stroke="#5B8DEF"/>
+<text class="label" x="106.1" y="42.0" text-anchor="middle">Ktor Application</text>
+</g>
+<g transform="translate(50.0,294.1)">
+<rect class="card" x="0" y="0" width="236.7" height="84.0" rx="14" fill="#EAF7EF" stroke="#58A978"/>
+<text class="label" x="118.4" y="42.0" text-anchor="middle">install(GraphPlugin)</text>
+</g>
+<g transform="translate(56.1,454.7)">
+<rect class="card" x="0" y="0" width="224.4" height="84.0" rx="14" fill="#FFF3D9" stroke="#D6A441"/>
+<text class="label" x="112.2" y="42.0" text-anchor="middle">GraphPluginConfig</text>
+</g>
+<g transform="translate(57.4,615.3)">
+<rect class="card" x="0" y="0" width="222.0" height="84.0" rx="14" fill="#FDECEF" stroke="#DC6B82"/>
+<text class="label" x="111.0" y="42.0" text-anchor="middle">GraphPluginState</text>
+</g>
+<g transform="translate(58.0,775.9)">
+<rect class="card" x="0" y="0" width="220.7" height="84.0" rx="14" fill="#E9F7F6" stroke="#45A7A1"/>
+<text class="label" x="110.4" y="42.0" text-anchor="middle">GraphOperations</text>
+</g>
+<g transform="translate(354.6,775.9)">
+<rect class="card" x="0" y="0" width="309.2" height="84.0" rx="14" fill="#F1ECFF" stroke="#8A72D6"/>
+<text class="label" x="154.6" y="42.0" text-anchor="middle">Graph Suspend Operations</text>
+</g>
+<g transform="translate(415.7,454.7)">
+<rect class="card" x="0" y="0" width="210.0" height="84.0" rx="14" fill="#F4F7FA" stroke="#8CA0B8"/>
+<text class="label" x="105.0" y="42.0" text-anchor="middle">Route Handler</text>
+</g>
+<g transform="translate(343.4,610.3)">
+<rect class="card" x="0" y="0" width="354.7" height="94.0" rx="14" fill="#FFF0E4" stroke="#D98A4A"/>
+<text class="label" x="177.4" y="35.0" text-anchor="middle">call.graph Suspend</text>
+<text class="label" x="177.4" y="59.0" text-anchor="middle">Operations()</text>
+</g>
+</svg>

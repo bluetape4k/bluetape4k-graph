@@ -35,3 +35,28 @@ JDK 21, 커밋 `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, 저장소의 Gradle W
 ## 확장과 운영 진단
 
 결과를 바꾸는 간선과 단언을 하나 추가하고 suspend API로 반복하십시오. 영속 백엔드 테스트는 직렬로 실행하고 끊어진 경로와 잘못된 입력도 검증하십시오. 이 고정 데이터는 처리량, 군집, 권한, 테넌트 격리, 마이그레이션, 백업, 원격 드라이버 제한 시간, 인덱스 품질을 증명하지 않습니다.
+
+<!-- release-readme-diagrams:start -->
+## 배포본 다이어그램 {#release-diagrams}
+
+아래 그림은 현재 개발 브랜치가 아니라 `0.5.1` 배포 태그의 README 자산을 바이트 단위로 그대로 옮긴 것입니다. 따라서 이후 SNAPSHOT 변경이 아니라 이 매뉴얼 버전의 구조와 실행 흐름을 보여 줍니다. 미리보기를 누르면 SVG 원본이 열립니다.
+
+### knowledge graph examples 아키텍처
+
+[![knowledge graph examples 아키텍처](../../assets/readme-diagrams/examples-knowledge-graph-examples-architecture-01.png)](../../assets/readme-diagrams/examples-knowledge-graph-examples-architecture-01.svg)
+
+_배포본 README: [`examples/knowledge-graph-examples/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/knowledge-graph-examples/README.ko.md)_
+
+### UML 다이어그램
+
+[![UML 다이어그램](../../assets/readme-diagrams/examples-knowledge-graph-examples-class-02.png)](../../assets/readme-diagrams/examples-knowledge-graph-examples-class-02.svg)
+
+_배포본 README: [`examples/knowledge-graph-examples/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/knowledge-graph-examples/README.ko.md)_
+
+### knowledge graph examples 처리 순서 흐름 3 다이어그램
+
+[![knowledge graph examples 처리 순서 흐름 3 다이어그램](../../assets/readme-diagrams/examples-knowledge-graph-examples-sequence-03.png)](../../assets/readme-diagrams/examples-knowledge-graph-examples-sequence-03.svg)
+
+_배포본 README: [`examples/knowledge-graph-examples/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/knowledge-graph-examples/README.ko.md)_
+
+<!-- release-readme-diagrams:end -->

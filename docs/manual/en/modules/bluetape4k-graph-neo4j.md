@@ -69,3 +69,82 @@ Expected: the fixture starts, assertions pass, and owned resources close in the 
 ## Non-goals and related guides
 
 See [Neo4j and Memgraph](../backends/neo4j-and-memgraph.md), [testing](../guides/testing.md), and [operations](../guides/operations.md). This module does not provision Neo4j, own injected drivers, or guarantee that every Cypher statement is portable to another Bolt server.
+
+<!-- release-readme-diagrams:start -->
+## Release diagrams {#release-diagrams}
+
+These diagrams are copied byte-for-byte from README assets in the `0.5.1` release tag. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG source.
+
+### Overview diagram
+
+[![Overview diagram](../../assets/readme-diagrams/graph-graph-neo4j-architecture-01.png)](../../assets/readme-diagrams/graph-graph-neo4j-architecture-01.svg)
+
+_Release README: [`graph/graph-neo4j/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.md)_
+
+### Reactive-Coroutine diagram
+
+[![Reactive-Coroutine diagram](../../assets/readme-diagrams/graph-graph-neo4j-architecture-02.png)](../../assets/readme-diagrams/graph-graph-neo4j-architecture-02.svg)
+
+_Release README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
+
+### neighbors Cypher diagram
+
+[![neighbors Cypher diagram](../../assets/readme-diagrams/graph-graph-neo4j-architecture-09.png)](../../assets/readme-diagrams/graph-graph-neo4j-architecture-09.svg)
+
+_Release README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
+
+### Neo4j diagram
+
+[![Neo4j diagram](../../assets/readme-diagrams/graph-graph-neo4j-architecture-11.png)](../../assets/readme-diagrams/graph-graph-neo4j-architecture-11.svg)
+
+_Release README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
+
+### graph neo4j Architecture 12 diagram
+
+[![graph neo4j Architecture 12 diagram](../../assets/readme-diagrams/graph-graph-neo4j-architecture-12.png)](../../assets/readme-diagrams/graph-graph-neo4j-architecture-12.svg)
+
+_Release README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
+
+### Neo4jGraphOperations diagram
+
+[![Neo4jGraphOperations diagram](../../assets/readme-diagrams/graph-graph-neo4j-class-03.png)](../../assets/readme-diagrams/graph-graph-neo4j-class-03.svg)
+
+_Release README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
+
+### Neo4jCoroutineSession diagram
+
+[![Neo4jCoroutineSession diagram](../../assets/readme-diagrams/graph-graph-neo4j-class-04.png)](../../assets/readme-diagrams/graph-graph-neo4j-class-04.svg)
+
+_Release README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
+
+### Neo4jRecordMapper diagram
+
+[![Neo4jRecordMapper diagram](../../assets/readme-diagrams/graph-graph-neo4j-class-05.png)](../../assets/readme-diagrams/graph-graph-neo4j-class-05.svg)
+
+_Release README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
+
+### createVertex diagram
+
+[![createVertex diagram](../../assets/readme-diagrams/graph-graph-neo4j-sequence-06.png)](../../assets/readme-diagrams/graph-graph-neo4j-sequence-06.svg)
+
+_Release README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
+
+### createEdge diagram
+
+[![createEdge diagram](../../assets/readme-diagrams/graph-graph-neo4j-sequence-07.png)](../../assets/readme-diagrams/graph-graph-neo4j-sequence-07.svg)
+
+_Release README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
+
+### shortestPath diagram
+
+[![shortestPath diagram](../../assets/readme-diagrams/graph-graph-neo4j-sequence-08.png)](../../assets/readme-diagrams/graph-graph-neo4j-sequence-08.svg)
+
+_Release README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
+
+### Publisher → Coroutine diagram
+
+[![Publisher → Coroutine diagram](../../assets/readme-diagrams/graph-graph-neo4j-sequence-10.png)](../../assets/readme-diagrams/graph-graph-neo4j-sequence-10.svg)
+
+_Release README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
+
+<!-- release-readme-diagrams:end -->

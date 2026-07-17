@@ -69,3 +69,16 @@ Expected: the fixture starts, assertions pass, and owned resources close in the 
 ## Non-goals and related guides
 
 See [FalkorDB guide](../backends/falkordb.md), [backend selection](../backends/selection-guide.md), and [operations](../guides/operations.md). This module does not provision Redis/FalkorDB, make openCypher implementations interchangeable, or provide a hidden transaction fallback.
+
+<!-- release-readme-diagrams:start -->
+## Release diagrams {#release-diagrams}
+
+These diagrams are copied byte-for-byte from README assets in the `0.5.1` release tag. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG source.
+
+### Overview diagram
+
+[![Overview diagram](../../assets/readme-diagrams/graph-graph-falkordb-architecture-01.png)](../../assets/readme-diagrams/graph-graph-falkordb-architecture-01.svg)
+
+_Release README: [`graph/graph-falkordb/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-falkordb/README.md)_
+
+<!-- release-readme-diagrams:end -->

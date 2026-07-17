@@ -65,3 +65,82 @@ driver.close()
 ## 하지 않는 일과 관련 문서
 
 [Neo4j와 Memgraph](../backends/neo4j-and-memgraph.md), [테스트](../guides/testing.md), [운영](../guides/operations.md)을 참고한다. 이 모듈은 Neo4j를 설치하거나 주입받은 Driver를 소유하지 않으며, 같은 query가 다른 Bolt 서버에서도 같다고 보장하지 않는다.
+
+<!-- release-readme-diagrams:start -->
+## 배포본 다이어그램 {#release-diagrams}
+
+아래 그림은 현재 개발 브랜치가 아니라 `0.5.1` 배포 태그의 README 자산을 바이트 단위로 그대로 옮긴 것입니다. 따라서 이후 SNAPSHOT 변경이 아니라 이 매뉴얼 버전의 구조와 실행 흐름을 보여 줍니다. 미리보기를 누르면 SVG 원본이 열립니다.
+
+### Bluetape4k Graph neo4j 아키텍처
+
+[![Bluetape4k Graph neo4j 아키텍처](../../assets/readme-diagrams/graph-graph-neo4j-architecture-01.png)](../../assets/readme-diagrams/graph-graph-neo4j-architecture-01.svg)
+
+_배포본 README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
+
+### Reactive-Coroutine 다이어그램
+
+[![Reactive-Coroutine 다이어그램](../../assets/readme-diagrams/graph-graph-neo4j-architecture-02.png)](../../assets/readme-diagrams/graph-graph-neo4j-architecture-02.svg)
+
+_배포본 README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
+
+### neighbors Cypher 다이어그램
+
+[![neighbors Cypher 다이어그램](../../assets/readme-diagrams/graph-graph-neo4j-architecture-09.png)](../../assets/readme-diagrams/graph-graph-neo4j-architecture-09.svg)
+
+_배포본 README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
+
+### Neo4j 다이어그램
+
+[![Neo4j 다이어그램](../../assets/readme-diagrams/graph-graph-neo4j-architecture-11.png)](../../assets/readme-diagrams/graph-graph-neo4j-architecture-11.svg)
+
+_배포본 README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
+
+### Bluetape4k Graph neo4j 아키텍처 12 다이어그램
+
+[![Bluetape4k Graph neo4j 아키텍처 12 다이어그램](../../assets/readme-diagrams/graph-graph-neo4j-architecture-12.png)](../../assets/readme-diagrams/graph-graph-neo4j-architecture-12.svg)
+
+_배포본 README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
+
+### Neo4jGraphOperations 다이어그램
+
+[![Neo4jGraphOperations 다이어그램](../../assets/readme-diagrams/graph-graph-neo4j-class-03.png)](../../assets/readme-diagrams/graph-graph-neo4j-class-03.svg)
+
+_배포본 README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
+
+### Neo4jCoroutineSession 다이어그램
+
+[![Neo4jCoroutineSession 다이어그램](../../assets/readme-diagrams/graph-graph-neo4j-class-04.png)](../../assets/readme-diagrams/graph-graph-neo4j-class-04.svg)
+
+_배포본 README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
+
+### Neo4jRecordMapper 다이어그램
+
+[![Neo4jRecordMapper 다이어그램](../../assets/readme-diagrams/graph-graph-neo4j-class-05.png)](../../assets/readme-diagrams/graph-graph-neo4j-class-05.svg)
+
+_배포본 README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
+
+### createVertex 다이어그램
+
+[![createVertex 다이어그램](../../assets/readme-diagrams/graph-graph-neo4j-sequence-06.png)](../../assets/readme-diagrams/graph-graph-neo4j-sequence-06.svg)
+
+_배포본 README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
+
+### createEdge 다이어그램
+
+[![createEdge 다이어그램](../../assets/readme-diagrams/graph-graph-neo4j-sequence-07.png)](../../assets/readme-diagrams/graph-graph-neo4j-sequence-07.svg)
+
+_배포본 README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
+
+### shortestPath 다이어그램
+
+[![shortestPath 다이어그램](../../assets/readme-diagrams/graph-graph-neo4j-sequence-08.png)](../../assets/readme-diagrams/graph-graph-neo4j-sequence-08.svg)
+
+_배포본 README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
+
+### Publisher → Coroutine 다이어그램
+
+[![Publisher → Coroutine 다이어그램](../../assets/readme-diagrams/graph-graph-neo4j-sequence-10.png)](../../assets/readme-diagrams/graph-graph-neo4j-sequence-10.svg)
+
+_배포본 README: [`graph/graph-neo4j/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/README.ko.md)_
+
+<!-- release-readme-diagrams:end -->

@@ -13,3 +13,16 @@ JDK 21과 Docker가 필요하며 다른 Testcontainers 작업과 겹치면 안 �
 한가한 장비에서 세 번 반복하고 원본 JSON과 오차 구간을 보관하십시오. warmup과 fork로도 컨테이너, GC, 발열 편차는 사라지지 않습니다. 종료 단계가 연산 객체, 드라이버·풀, 컨테이너를 닫아야 합니다. 중단했다면 남은 컨테이너를 확인한 뒤 다시 실행하십시오.
 
 JSON이 없거나 제한 시간이 끝났다면 점수를 만들지 말고 실패 기록을 보관하십시오. 이 실행은 군집 장애 전환, 내구성, 운영 인덱스, 권한, 비용을 증명하지 않습니다. [개요](./overview.md)와 [선택 가이드](../guides/benchmark-based-selection.md)를 함께 보십시오.
+
+<!-- release-readme-diagrams:start -->
+## 배포본 다이어그램 {#release-diagrams}
+
+아래 그림은 현재 개발 브랜치가 아니라 `0.5.1` 배포 태그의 README 자산을 바이트 단위로 그대로 옮긴 것입니다. 따라서 이후 SNAPSHOT 변경이 아니라 이 매뉴얼 버전의 구조와 실행 흐름을 보여 줍니다. 미리보기를 누르면 SVG 원본이 열립니다.
+
+### Bluetape4k Graph-benchmark 아키텍처
+
+[![Bluetape4k Graph-benchmark 아키텍처](../../assets/readme-diagrams/benchmark/graph-benchmark-architecture-01.png)](../../assets/readme-diagrams/benchmark/graph-benchmark-architecture-01.svg)
+
+_배포본 README: [`benchmark/graph-benchmark/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/benchmark/graph-benchmark/README.ko.md)_
+
+<!-- release-readme-diagrams:end -->

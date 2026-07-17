@@ -74,3 +74,82 @@ Expected: the fixture starts, assertions pass, and owned resources close in the 
 ## Non-goals and related guides
 
 See [Apache AGE guide](../backends/apache-age.md), [backend selection](../backends/selection-guide.md), and [schema and transactions](../architecture/schema-and-transactions.md). This module does not manage PostgreSQL, hide AGE type limits, or promise Bolt/Cypher parity.
+
+<!-- release-readme-diagrams:start -->
+## Release diagrams {#release-diagrams}
+
+These diagrams are copied byte-for-byte from README assets in the `0.5.1` release tag. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG source.
+
+### Module Layer Structure diagram
+
+[![Module Layer Structure diagram](../../assets/readme-diagrams/graph-graph-age-architecture-01.png)](../../assets/readme-diagrams/graph-graph-age-architecture-01.svg)
+
+_Release README: [`graph/graph-age/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.md)_
+
+### Apache AGE diagram
+
+[![Apache AGE diagram](../../assets/readme-diagrams/graph-graph-age-architecture-02.png)](../../assets/readme-diagrams/graph-graph-age-architecture-02.svg)
+
+_Release README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
+
+### agtype diagram
+
+[![agtype diagram](../../assets/readme-diagrams/graph-graph-age-architecture-10.png)](../../assets/readme-diagrams/graph-graph-age-architecture-10.svg)
+
+_Release README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
+
+### graph age Architecture 12 diagram
+
+[![graph age Architecture 12 diagram](../../assets/readme-diagrams/graph-graph-age-architecture-12.png)](../../assets/readme-diagrams/graph-graph-age-architecture-12.svg)
+
+_Release README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
+
+### AgeGraphOperations diagram
+
+[![AgeGraphOperations diagram](../../assets/readme-diagrams/graph-graph-age-class-03.png)](../../assets/readme-diagrams/graph-graph-age-class-03.svg)
+
+_Release README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
+
+### AgeSql diagram
+
+[![AgeSql diagram](../../assets/readme-diagrams/graph-graph-age-class-04.png)](../../assets/readme-diagrams/graph-graph-age-class-04.svg)
+
+_Release README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
+
+### AgeTypeParser diagram
+
+[![AgeTypeParser diagram](../../assets/readme-diagrams/graph-graph-age-class-05.png)](../../assets/readme-diagrams/graph-graph-age-class-05.svg)
+
+_Release README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
+
+### createVertex diagram
+
+[![createVertex diagram](../../assets/readme-diagrams/graph-graph-age-sequence-06.png)](../../assets/readme-diagrams/graph-graph-age-sequence-06.svg)
+
+_Release README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
+
+### createEdge diagram
+
+[![createEdge diagram](../../assets/readme-diagrams/graph-graph-age-sequence-07.png)](../../assets/readme-diagrams/graph-graph-age-sequence-07.svg)
+
+_Release README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
+
+### shortestPath diagram
+
+[![shortestPath diagram](../../assets/readme-diagrams/graph-graph-age-sequence-08.png)](../../assets/readme-diagrams/graph-graph-age-sequence-08.svg)
+
+_Release README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
+
+### neighbors () diagram
+
+[![neighbors () diagram](../../assets/readme-diagrams/graph-graph-age-sequence-09.png)](../../assets/readme-diagrams/graph-graph-age-sequence-09.svg)
+
+_Release README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
+
+### HikariCP diagram
+
+[![HikariCP diagram](../../assets/readme-diagrams/graph-graph-age-sequence-11.png)](../../assets/readme-diagrams/graph-graph-age-sequence-11.svg)
+
+_Release README: [`graph/graph-age/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/README.ko.md)_
+
+<!-- release-readme-diagrams:end -->

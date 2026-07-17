@@ -35,3 +35,28 @@ Continue [from iam-access-graph](./iam-access-graph.md), then read [security-att
 ## Exercises and production gaps
 
 Add one result-changing edge and assertion; repeat through the suspend API; then run a persistent-backend concrete test serially. Add disconnected and malformed inputs as diagnostics. This fixture does not prove throughput, clustering, authorization, tenant isolation, migration, backup, remote-driver timeout, or index quality.
+
+<!-- release-readme-diagrams:start -->
+## Release diagrams {#release-diagrams}
+
+These diagrams are copied byte-for-byte from README assets in the `0.5.1` release tag. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG source.
+
+### fraud detection examples Architecture diagram
+
+[![fraud detection examples Architecture diagram](../../assets/readme-diagrams/examples-fraud-detection-examples-architecture-01.png)](../../assets/readme-diagrams/examples-fraud-detection-examples-architecture-01.svg)
+
+_Release README: [`examples/fraud-detection-examples/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/fraud-detection-examples/README.md)_
+
+### Domain UML diagram
+
+[![Domain UML diagram](../../assets/readme-diagrams/examples-fraud-detection-examples-class-02.png)](../../assets/readme-diagrams/examples-fraud-detection-examples-class-02.svg)
+
+_Release README: [`examples/fraud-detection-examples/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/fraud-detection-examples/README.md)_
+
+### Analysis Flow diagram
+
+[![Analysis Flow diagram](../../assets/readme-diagrams/examples-fraud-detection-examples-sequence-03.png)](../../assets/readme-diagrams/examples-fraud-detection-examples-sequence-03.svg)
+
+_Release README: [`examples/fraud-detection-examples/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/fraud-detection-examples/README.md)_
+
+<!-- release-readme-diagrams:end -->

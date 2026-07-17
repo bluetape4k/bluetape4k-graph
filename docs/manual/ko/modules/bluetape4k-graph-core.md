@@ -75,3 +75,94 @@ core는 서버 자원을 소유하지 않는다. 연산 객체, Driver, DataSour
 ## 하지 않는 일과 관련 문서
 
 [core model](../architecture/core-model.md), [짝을 이루는 API](../architecture/paired-apis.md), [schema와 트랜잭션](../architecture/schema-and-transactions.md)을 참고한다. core는 모든 그래프 제품의 기능을 하나로 합치거나 데이터베이스를 설치하지 않는다.
+
+<!-- release-readme-diagrams:start -->
+## 배포본 다이어그램 {#release-diagrams}
+
+아래 그림은 현재 개발 브랜치가 아니라 `0.5.1` 배포 태그의 README 자산을 바이트 단위로 그대로 옮긴 것입니다. 따라서 이후 SNAPSHOT 변경이 아니라 이 매뉴얼 버전의 구조와 실행 흐름을 보여 줍니다. 미리보기를 누르면 SVG 원본이 열립니다.
+
+### Bluetape4k Graph core 아키텍처
+
+[![Bluetape4k Graph core 아키텍처](../../assets/readme-diagrams/graph-graph-core-architecture-01.png)](../../assets/readme-diagrams/graph-graph-core-architecture-01.svg)
+
+_배포본 README: [`graph/graph-core/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/README.ko.md)_
+
+### GraphPath 다이어그램
+
+[![GraphPath 다이어그램](../../assets/readme-diagrams/graph-graph-core-architecture-10.png)](../../assets/readme-diagrams/graph-graph-core-architecture-10.svg)
+
+_배포본 README: [`graph/graph-core/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/README.ko.md)_
+
+### GraphOperations 다이어그램
+
+[![GraphOperations 다이어그램](../../assets/readme-diagrams/graph-graph-core-architecture-11.png)](../../assets/readme-diagrams/graph-graph-core-architecture-11.svg)
+
+_배포본 README: [`graph/graph-core/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/README.ko.md)_
+
+### DSL 다이어그램
+
+[![DSL 다이어그램](../../assets/readme-diagrams/graph-graph-core-architecture-12.png)](../../assets/readme-diagrams/graph-graph-core-architecture-12.svg)
+
+_배포본 README: [`graph/graph-core/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/README.ko.md)_
+
+### CRUD 다이어그램
+
+[![CRUD 다이어그램](../../assets/readme-diagrams/graph-graph-core-architecture-13.png)](../../assets/readme-diagrams/graph-graph-core-architecture-13.svg)
+
+_배포본 README: [`graph/graph-core/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/README.ko.md)_
+
+### Bluetape4k Graph core 아키텍처 14 다이어그램
+
+[![Bluetape4k Graph core 아키텍처 14 다이어그램](../../assets/readme-diagrams/graph-graph-core-architecture-14.png)](../../assets/readme-diagrams/graph-graph-core-architecture-14.svg)
+
+_배포본 README: [`graph/graph-core/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/README.ko.md)_
+
+### : GraphElementId, GraphVertex, GraphEdge 다이어그램
+
+[![: GraphElementId, GraphVertex, GraphEdge 다이어그램](../../assets/readme-diagrams/graph-graph-core-class-02.png)](../../assets/readme-diagrams/graph-graph-core-class-02.svg)
+
+_배포본 README: [`graph/graph-core/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/README.ko.md)_
+
+### PathStep GraphPath 다이어그램
+
+[![PathStep GraphPath 다이어그램](../../assets/readme-diagrams/graph-graph-core-class-03.png)](../../assets/readme-diagrams/graph-graph-core-class-03.svg)
+
+_배포본 README: [`graph/graph-core/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/README.ko.md)_
+
+### Repository 다이어그램
+
+[![Repository 다이어그램](../../assets/readme-diagrams/graph-graph-core-class-04.png)](../../assets/readme-diagrams/graph-graph-core-class-04.svg)
+
+_배포본 README: [`graph/graph-core/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/README.ko.md)_
+
+### DSL 다이어그램
+
+[![DSL 다이어그램](../../assets/readme-diagrams/graph-graph-core-class-05.png)](../../assets/readme-diagrams/graph-graph-core-class-05.svg)
+
+_배포본 README: [`graph/graph-core/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/README.ko.md)_
+
+### createVertex 다이어그램
+
+[![createVertex 다이어그램](../../assets/readme-diagrams/graph-graph-core-sequence-06.png)](../../assets/readme-diagrams/graph-graph-core-sequence-06.svg)
+
+_배포본 README: [`graph/graph-core/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/README.ko.md)_
+
+### shortestPath 다이어그램
+
+[![shortestPath 다이어그램](../../assets/readme-diagrams/graph-graph-core-sequence-07.png)](../../assets/readme-diagrams/graph-graph-core-sequence-07.svg)
+
+_배포본 README: [`graph/graph-core/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/README.ko.md)_
+
+### neighbors 다이어그램
+
+[![neighbors 다이어그램](../../assets/readme-diagrams/graph-graph-core-sequence-08.png)](../../assets/readme-diagrams/graph-graph-core-sequence-08.svg)
+
+_배포본 README: [`graph/graph-core/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/README.ko.md)_
+
+### createEdge 다이어그램
+
+[![createEdge 다이어그램](../../assets/readme-diagrams/graph-graph-core-sequence-09.png)](../../assets/readme-diagrams/graph-graph-core-sequence-09.svg)
+
+_배포본 README: [`graph/graph-core/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/README.ko.md)_
+
+<!-- release-readme-diagrams:end -->
