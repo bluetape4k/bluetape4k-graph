@@ -4,7 +4,7 @@ package io.bluetape4k.graph.io.graphml
 /**
  * GraphML attribute value type.
  *
- * Example:
+ * 예제:
  *
  * ```kotlin
  * import io.bluetape4k.graph.io.graphml.GraphMlAttrType

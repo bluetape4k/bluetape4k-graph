@@ -5,7 +5,7 @@ import java.io.Serializable
 /**
  * GraphML export options.
  *
- * Example:
+ * 예제:
  *
  * ```kotlin
  * import io.bluetape4k.graph.io.graphml.GraphMlEdgeDefault

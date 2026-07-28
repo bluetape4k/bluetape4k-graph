@@ -28,7 +28,7 @@ import io.bluetape4k.logging.warn
  * The importer reads the XML document with StAX, creates all vertices first,
  * and then connects edges once endpoint ids are known.
  *
- * Example:
+ * 예제:
  *
  * ```kotlin
  * import io.bluetape4k.graph.io.graphml.GraphMlBulkImporter

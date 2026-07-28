@@ -31,9 +31,9 @@ import kotlinx.coroutines.withContext
 import tools.jackson.core.JacksonException
 
 /**
- * Coroutine NDJSON bulk importer backed by Jackson 3.
+ * Jackson 3 기반 coroutine NDJSON bulk importer.
  *
- * Example:
+ * 예제:
  *
  * ```kotlin
  * import io.bluetape4k.graph.io.jackson3.SuspendJackson3NdJsonBulkImporter

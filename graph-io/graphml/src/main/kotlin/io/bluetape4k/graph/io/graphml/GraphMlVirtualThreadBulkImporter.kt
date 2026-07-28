@@ -14,7 +14,7 @@ import java.util.concurrent.CompletableFuture
 /**
  * Virtual-thread bulk importer for GraphML.
  *
- * Example:
+ * 예제:
  *
  * ```kotlin
  * import io.bluetape4k.graph.io.graphml.GraphMlVirtualThreadBulkImporter
