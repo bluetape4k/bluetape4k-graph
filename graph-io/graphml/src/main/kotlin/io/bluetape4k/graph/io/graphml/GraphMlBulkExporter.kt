@@ -22,7 +22,7 @@ import io.bluetape4k.logging.debug
  * The exporter collects matching vertices and edges, then writes a single XML
  * document through the StAX writer.
  *
- * Example:
+ * 예제:
  *
  * ```kotlin
  * import io.bluetape4k.graph.io.graphml.GraphMlBulkExporter

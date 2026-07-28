@@ -31,9 +31,9 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 
 /**
- * Coroutine NDJSON bulk importer backed by Jackson 2.
+ * Jackson 2 기반 coroutine NDJSON bulk importer.
  *
- * Example:
+ * 예제:
  *
  * ```kotlin
  * import io.bluetape4k.graph.io.jackson2.SuspendJackson2NdJsonBulkImporter

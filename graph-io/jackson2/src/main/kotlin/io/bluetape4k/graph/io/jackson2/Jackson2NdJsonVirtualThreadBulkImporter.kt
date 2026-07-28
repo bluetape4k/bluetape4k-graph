@@ -10,9 +10,9 @@ import io.bluetape4k.logging.KLogging
 import java.util.concurrent.CompletableFuture
 
 /**
- * Virtual-thread NDJSON bulk importer backed by Jackson 2.
+ * Jackson 2 기반 virtual-thread NDJSON bulk importer.
  *
- * Example:
+ * 예제:
  *
  * ```kotlin
  * import io.bluetape4k.graph.io.jackson2.Jackson2NdJsonVirtualThreadBulkImporter

@@ -25,12 +25,12 @@ import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.warn
 
 /**
- * Blocking NDJSON bulk importer backed by Jackson 2.
+ * Jackson 2 기반 blocking NDJSON bulk importer.
  *
- * The importer detects vertex and edge envelopes from a single file, buffers
- * edges, and writes them after vertices are created.
+ * importer는 단일 file에서 vertex와 edge envelope를 감지하고 edge를 buffer한 뒤,
+ * vertex 생성 이후 edge를 쓴다.
  *
- * Example:
+ * 예제:
  *
  * ```kotlin
  * import io.bluetape4k.graph.io.jackson2.Jackson2NdJsonBulkImporter

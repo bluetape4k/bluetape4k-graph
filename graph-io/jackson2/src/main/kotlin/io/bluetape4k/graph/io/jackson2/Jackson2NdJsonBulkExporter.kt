@@ -17,12 +17,12 @@ import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 
 /**
- * Blocking NDJSON bulk exporter backed by Jackson 2.
+ * Jackson 2 기반 blocking NDJSON bulk exporter.
  *
- * Vertices are written before edges, and each graph record occupies one JSON
- * line.
+ * vertex를 edge보다 먼저 쓰며, 각 graph record는 하나의 JSON
+ * 한 줄을 차지한다.
  *
- * Example:
+ * 예제:
  *
  * ```kotlin
  * import io.bluetape4k.graph.io.jackson2.Jackson2NdJsonBulkExporter

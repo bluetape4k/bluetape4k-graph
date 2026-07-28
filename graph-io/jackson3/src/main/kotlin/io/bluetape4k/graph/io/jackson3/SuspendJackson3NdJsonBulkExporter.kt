@@ -19,9 +19,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * Coroutine NDJSON bulk exporter backed by Jackson 3.
+ * Jackson 3 기반 coroutine NDJSON bulk exporter.
  *
- * Example:
+ * 예제:
  *
  * ```kotlin
  * import io.bluetape4k.graph.io.jackson3.SuspendJackson3NdJsonBulkExporter

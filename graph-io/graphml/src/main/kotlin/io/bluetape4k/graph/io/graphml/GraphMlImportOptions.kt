@@ -5,7 +5,7 @@ import java.io.Serializable
 /**
  * GraphML import options.
  *
- * Example:
+ * 예제:
  *
  * ```kotlin
  * import io.bluetape4k.graph.io.graphml.GraphMlImportOptions

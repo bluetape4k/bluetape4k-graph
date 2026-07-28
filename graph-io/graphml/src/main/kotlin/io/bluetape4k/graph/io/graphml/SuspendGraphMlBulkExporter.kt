@@ -25,7 +25,7 @@ import kotlinx.coroutines.withContext
  * Graph reads stay in the caller coroutine context while blocking StAX writes
  * are isolated on [Dispatchers.IO].
  *
- * Example:
+ * 예제:
  *
  * ```kotlin
  * import io.bluetape4k.graph.io.graphml.SuspendGraphMlBulkExporter

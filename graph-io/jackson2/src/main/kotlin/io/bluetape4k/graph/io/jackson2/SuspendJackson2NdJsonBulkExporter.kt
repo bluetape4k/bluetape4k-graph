@@ -20,9 +20,9 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withContext
 
 /**
- * Coroutine NDJSON bulk exporter backed by Jackson 2.
+ * Jackson 2 기반 coroutine NDJSON bulk exporter.
  *
- * Example:
+ * 예제:
  *
  * ```kotlin
  * import io.bluetape4k.graph.io.jackson2.SuspendJackson2NdJsonBulkExporter

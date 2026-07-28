@@ -31,7 +31,7 @@ import kotlinx.coroutines.withContext
  * caller coroutine context so backend implementations keep control over their
  * own dispatcher policy.
  *
- * Example:
+ * 예제:
  *
  * ```kotlin
  * import io.bluetape4k.graph.io.graphml.SuspendGraphMlBulkImporter

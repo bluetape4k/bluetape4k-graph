@@ -4,7 +4,7 @@ package io.bluetape4k.graph.io.graphml
 /**
  * Policy for GraphML elements not supported by the importer.
  *
- * Example:
+ * 예제:
  *
  * ```kotlin
  * import io.bluetape4k.graph.io.graphml.GraphMlImportOptions

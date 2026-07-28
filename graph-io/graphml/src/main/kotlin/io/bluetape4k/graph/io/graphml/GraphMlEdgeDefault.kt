@@ -4,7 +4,7 @@ package io.bluetape4k.graph.io.graphml
 /**
  * GraphML edge direction default for a `<graph>` element.
  *
- * Example:
+ * 예제:
  *
  * ```kotlin
  * import io.bluetape4k.graph.io.graphml.GraphMlEdgeDefault
