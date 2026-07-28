@@ -1,8 +1,8 @@
-# Graph DB Medium Testcontainers Benchmark Results
+# Graph DB Medium Testcontainers Benchmark 결과
 
-Run date: 2026-05-21
+실행일: 2026-05-21
 
-Command:
+명령:
 
 ```bash
 java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-0.3.1-SNAPSHOT-JMH.jar \
@@ -14,18 +14,18 @@ java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-m
   -rff docs/benchmark/graph-db-medium-testcontainers-2026-05-21.json
 ```
 
-FalkorDB medium rows were rerun after switching the benchmark driver to a 60 second Jedis read timeout. The default `jfalkordb` driver timed out on the medium fixture during the first full matrix run.
+FalkorDB medium row는 benchmark driver를 60초 Jedis read timeout으로 전환한 뒤 재실행했다. 기본 `jfalkordb` driver는 첫 full matrix run 중 medium fixture에서 timeout되었다.
 
-All values are `ms/op`; lower is better.
+모든 값은 `ms/op`이며 낮을수록 좋다.
 
-| Operation | TinkerGraph | Neo4j | Memgraph | AGE | FalkorDB |
+| 작업 | TinkerGraph | Neo4j | Memgraph | AGE | FalkorDB |
 |---|---:|---:|---:|---:|---:|
 | `batchInsertCycle` | 44.967 | 15.690 | **11.364** | 309.090 | 1929.180 |
 | `countPersons` | 0.308 | 0.528 | 1.341 | 2.176 | **0.197** |
 | `oneHopNeighbors` | **0.003** | 0.665 | 0.308 | 10.175 | 1.046 |
 | `shortestPath` | **0.019** | 0.700 | 0.386 | 12.420 | 0.512 |
 
-## Detailed Rows
+## 상세 행
 
 | Benchmark | Parameters | Score | Error | Unit |
 |---|---|---:|---:|---|
