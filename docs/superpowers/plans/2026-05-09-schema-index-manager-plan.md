@@ -1,9 +1,9 @@
-# Schema / Index Manager Implementation Plan
+# Schema / Index manager 구현 계획
 
 ## Related Spec
 
 - Spec: `docs/superpowers/specs/2026-05-09-schema-index-manager-design.md`
-- Issue: #32
+- 이슈: #32
 - Branch/worktree: `feat/issue-32-schema-index-manager`
 
 ## Task List
@@ -43,7 +43,7 @@
 - Compatibility: caching wrappers should not expose schema management unless intentionally implemented.
 - Performance: DDL helpers are cold path; avoid repeated runtime regex construction by reusing existing `requireSafeIdentifier`.
 
-## Step 3-R Review Notes
+## Step 3-R 리뷰 메모
 
 | Perspective | Finding | Plan Change |
 |-------------|---------|-------------|

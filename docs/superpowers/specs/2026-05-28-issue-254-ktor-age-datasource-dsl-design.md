@@ -1,10 +1,10 @@
-# Issue 254 - graph-ktor Managed AGE DataSource DSL Design
+# 이슈 254 - graph-ktor managed AGE DataSource DSL 설계
 
-## Context
+## 맥락
 
 Issue #232 added managed-driver DSLs for Neo4j, Memgraph, and FalkorDB. Apache AGE was split out because it uses Exposed's global JDBC transaction manager and a JDBC `DataSource`, not a backend-local driver object.
 
-## Decision
+## 결정
 
 Add a dedicated `ageDataSource { ... }` DSL in `graph-ktor`.
 
@@ -14,11 +14,11 @@ Add a dedicated `ageDataSource { ... }` DSL in `graph-ktor`.
 - It closes only the Hikari pool created by the DSL on `ApplicationStopped`.
 - It leaves the existing `age(graphName)` helper as caller-owned for DI-managed Exposed setups.
 
-## Dependency Boundary
+## Dependency 경계
 
 `graph-ktor` keeps backend helpers compile-only. HikariCP follows the same optional runtime boundary: the DSL implementation compiles against Hikari, and applications using `ageDataSource { ... }` must include HikariCP with `graph-age`.
 
-## Defaults
+## 기본값
 
 - `jdbcUrl`: `jdbc:postgresql://localhost:5432/postgres`
 - `username`: `postgres`
@@ -27,7 +27,7 @@ Add a dedicated `ageDataSource { ... }` DSL in `graph-ktor`.
 - `driverClassName`: `org.postgresql.Driver`
 - `maximumPoolSize`: `4`
 
-## Non-Goals
+## 비목표
 
 - Do not replace Exposed's global transaction manager.
 - Do not close caller-owned `Database` or `DataSource` instances.

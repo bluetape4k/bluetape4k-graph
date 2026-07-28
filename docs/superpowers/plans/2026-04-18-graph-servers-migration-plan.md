@@ -1,12 +1,12 @@
-# graph-servers Migration Implementation Plan
+# graph-servers migration 구현 계획
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **Agentic worker용:** 필수 sub-skill: 이 계획을 task 단위로 구현할 때는 superpowers:subagent-driven-development(권장) 또는 superpowers:executing-plans를 사용한다. Step은 tracking을 위해 checkbox(`- [ ]`) syntax를 사용한다.
 
-**Goal:** Replace the in-repo `graph/graph-servers/` module with the `io.bluetape4k.testcontainers.graphdb` package from `bluetape4k-testcontainers`, then delete the module.
+**목표:** Replace the in-repo `graph/graph-servers/` module with the `io.bluetape4k.testcontainers.graphdb` package from `bluetape4k-testcontainers`, then delete the module.
 
-**Architecture:** Every test module currently depends on `project(":graph-servers")` and imports `io.bluetape4k.graph.servers.*` singletons. We migrate in three backend groups (Neo4j → Memgraph → AGE), fixing `build.gradle.kts` transitive deps (because `bluetape4k-testcontainers` declares graphdb deps as `compileOnly`) and re-pointing imports/call-sites to the new `*.Launcher.<server>` accessors. Memgraph drops its singleton driver, so driver lifecycle moves into test classes via `@BeforeAll`/`@AfterAll`. After compile + test green, we remove `graph/graph-servers/` and update docs.
+**아키텍처:** Every test module currently depends on `project(":graph-servers")` and imports `io.bluetape4k.graph.servers.*` singletons. We migrate in three backend groups (Neo4j → Memgraph → AGE), fixing `build.gradle.kts` transitive deps (because `bluetape4k-testcontainers` declares graphdb deps as `compileOnly`) and re-pointing imports/call-sites to the new `*.Launcher.<server>` accessors. Memgraph drops its singleton driver, so driver lifecycle moves into test classes via `@BeforeAll`/`@AfterAll`. After compile + test green, we remove `graph/graph-servers/` and update docs.
 
-**Tech Stack:** Kotlin 2.3, Gradle Kotlin DSL, JUnit 5 (PER_CLASS lifecycle), Neo4j Java Driver, HikariCP, Testcontainers, `bluetape4k-testcontainers` graphdb package.
+**기술 스택:** Kotlin 2.3, Gradle Kotlin DSL, JUnit 5 (PER_CLASS lifecycle), Neo4j Java Driver, HikariCP, Testcontainers, `bluetape4k-testcontainers` graphdb package.
 
 **Spec:** `docs/superpowers/specs/2026-04-18-graph-servers-migration-design.md`
 
@@ -98,7 +98,7 @@ HikariCP AGE `connectionInitSql` **must remain unchanged** — new `PostgreSQLAg
 
 ## Task 0: Preflight — spec/plan 커밋
 
-**Complexity:** low
+**복잡도:** low
 
 `git worktree add`는 HEAD 기준으로 새 worktree를 생성한다. 현재 untracked 상태인 spec/plan 파일이 커밋되지 않으면 새 worktree에 해당 파일이 없어 구현 에이전트가 참조할 수 없다.
 
@@ -116,10 +116,10 @@ Expected: 커밋 성공. 이 커밋이 worktree의 시작점이 된다.
 
 ## Task 1: Worktree Setup
 
-**Complexity:** low
+**복잡도:** low
 
-**Files:**
-- Create: worktree at `/Users/debop/work/bluetape4k/bluetape4k-graph-wt-migration` (branch `feature/graph-servers-migration`)
+**파일:**
+- 생성: worktree at `/Users/debop/work/bluetape4k/bluetape4k-graph-wt-migration` (branch `feature/graph-servers-migration`)
 
 - [ ] **Step 1: Create worktree and branch**
 
@@ -147,9 +147,9 @@ All following tasks run with cwd `/Users/debop/work/bluetape4k/bluetape4k-graph-
 
 ## Task 2: Verify `Libs.bluetape4k_testcontainers` exposes the new API
 
-**Complexity:** low
+**복잡도:** low
 
-**Files:**
+**파일:**
 - Read: `/Users/debop/work/bluetape4k/bluetape4k-graph-wt-migration/buildSrc/src/main/kotlin/Libs.kt`
 
 - [ ] **Step 1: Confirm dependency coordinate + version**
@@ -179,10 +179,10 @@ No commit. Move on.
 
 ## Task 3: `graph-neo4j` build script
 
-**Complexity:** low
+**복잡도:** low
 
-**Files:**
-- Modify: `graph/graph-neo4j/build.gradle.kts`
+**파일:**
+- 수정: `graph/graph-neo4j/build.gradle.kts`
 
 Current `testImplementation(project(":graph-servers"))` is on line 3. `bluetape4k-testcontainers`, `testcontainers_neo4j` are already present. We only need to add `neo4j_java_driver` as `testImplementation` (it's already in `api` — transitive — but we make test-use explicit) and drop the project dep.
 
@@ -228,10 +228,10 @@ git commit -m "refactor(graph-neo4j): drop :graph-servers test dep"
 
 ## Task 4: `graph-memgraph` build script
 
-**Complexity:** low
+**복잡도:** low
 
-**Files:**
-- Modify: `graph/graph-memgraph/build.gradle.kts`
+**파일:**
+- 수정: `graph/graph-memgraph/build.gradle.kts`
 
 - [ ] **Step 1: Edit `graph/graph-memgraph/build.gradle.kts`**
 
@@ -277,11 +277,11 @@ git commit -m "refactor(graph-memgraph): drop :graph-servers test dep"
 
 ## Task 5: `graph-age` and `graph-tinkerpop` build scripts
 
-**Complexity:** low
+**복잡도:** low
 
-**Files:**
-- Modify: `graph/graph-age/build.gradle.kts`
-- Modify: `graph/graph-tinkerpop/build.gradle.kts`
+**파일:**
+- 수정: `graph/graph-age/build.gradle.kts`
+- 수정: `graph/graph-tinkerpop/build.gradle.kts`
 
 - [ ] **Step 1: Edit `graph/graph-age/build.gradle.kts`**
 
@@ -350,12 +350,12 @@ git commit -m "refactor(graph-age,graph-tinkerpop): drop :graph-servers test dep
 
 ## Task 6: Neo4j test files — import/call-site migration
 
-**Complexity:** medium
+**복잡도:** medium
 
-**Files:**
-- Modify: `graph/graph-neo4j/src/test/kotlin/io/bluetape4k/graph/neo4j/Neo4jAlgorithmTest.kt`
-- Modify: `graph/graph-neo4j/src/test/kotlin/io/bluetape4k/graph/neo4j/Neo4jAlgorithmSuspendTest.kt`
-- Modify: `graph/graph-neo4j/src/test/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperationsTest.kt`
+**파일:**
+- 수정: `graph/graph-neo4j/src/test/kotlin/io/bluetape4k/graph/neo4j/Neo4jAlgorithmTest.kt`
+- 수정: `graph/graph-neo4j/src/test/kotlin/io/bluetape4k/graph/neo4j/Neo4jAlgorithmSuspendTest.kt`
+- 수정: `graph/graph-neo4j/src/test/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperationsTest.kt`
 
 - [ ] **Step 1: For each of the three files, change the import**
 
@@ -428,14 +428,14 @@ git commit -m "refactor(graph-neo4j): migrate tests to bluetape4k-testcontainers
 
 ## Task 7: Memgraph test files — driver lifecycle migration
 
-**Complexity:** high
+**복잡도:** high
 
 This is the most delicate step. The old `MemgraphServer.driver` singleton no longer exists; each test class must own its `Driver` and close it in `@AfterAll`.
 
-**Files:**
-- Modify: `graph/graph-memgraph/src/test/kotlin/io/bluetape4k/graph/memgraph/MemgraphGraphOperationsTest.kt`
-- Modify: `graph/graph-memgraph/src/test/kotlin/io/bluetape4k/graph/memgraph/MemgraphGraphSuspendOperationsTest.kt`
-- Modify: `graph/graph-memgraph/src/test/kotlin/io/bluetape4k/graph/memgraph/MemgraphAlgorithmTest.kt`
+**파일:**
+- 수정: `graph/graph-memgraph/src/test/kotlin/io/bluetape4k/graph/memgraph/MemgraphGraphOperationsTest.kt`
+- 수정: `graph/graph-memgraph/src/test/kotlin/io/bluetape4k/graph/memgraph/MemgraphGraphSuspendOperationsTest.kt`
+- 수정: `graph/graph-memgraph/src/test/kotlin/io/bluetape4k/graph/memgraph/MemgraphAlgorithmTest.kt`
 
 - [ ] **Step 1: Update `MemgraphGraphOperationsTest.kt`**
 
@@ -512,12 +512,12 @@ git commit -m "refactor(graph-memgraph): migrate tests to bluetape4k-testcontain
 
 ## Task 8: AGE test files — import/call-site migration (keep HikariCP init SQL)
 
-**Complexity:** medium
+**복잡도:** medium
 
-**Files:**
-- Modify: `graph/graph-age/src/test/kotlin/io/bluetape4k/graph/age/AgeGraphOperationsTest.kt`
-- Modify: `graph/graph-age/src/test/kotlin/io/bluetape4k/graph/age/AgeGraphSuspendOperationsTest.kt`
-- Modify: `graph/graph-age/src/test/kotlin/io/bluetape4k/graph/age/AgeAlgorithmTest.kt`
+**파일:**
+- 수정: `graph/graph-age/src/test/kotlin/io/bluetape4k/graph/age/AgeGraphOperationsTest.kt`
+- 수정: `graph/graph-age/src/test/kotlin/io/bluetape4k/graph/age/AgeGraphSuspendOperationsTest.kt`
+- 수정: `graph/graph-age/src/test/kotlin/io/bluetape4k/graph/age/AgeAlgorithmTest.kt`
 
 - [ ] **Step 1: In each file, change import**
 
@@ -580,10 +580,10 @@ git commit -m "refactor(graph-age): migrate tests to bluetape4k-testcontainers g
 
 ## Task 9: `code-graph-examples` build script
 
-**Complexity:** low
+**복잡도:** low
 
-**Files:**
-- Modify: `examples/code-graph-examples/build.gradle.kts`
+**파일:**
+- 수정: `examples/code-graph-examples/build.gradle.kts`
 
 - [ ] **Step 1: Edit dependencies block**
 
@@ -625,15 +625,15 @@ git commit -m "refactor(code-graph-examples): drop :graph-servers test dep"
 
 ## Task 10: `code-graph-examples` test files
 
-**Complexity:** medium
+**복잡도:** medium
 
-**Files:**
-- Modify: `examples/code-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/code/Neo4jCodeGraphTest.kt`
-- Modify: `examples/code-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/code/Neo4jCodeGraphSuspendTest.kt`
-- Modify: `examples/code-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/code/MemgraphCodeGraphTest.kt`
-- Modify: `examples/code-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/code/MemgraphCodeGraphSuspendTest.kt`
-- Modify: `examples/code-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/code/AgeCodeGraphTest.kt`
-- Modify: `examples/code-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/code/AgeCodeGraphSuspendTest.kt`
+**파일:**
+- 수정: `examples/code-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/code/Neo4jCodeGraphTest.kt`
+- 수정: `examples/code-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/code/Neo4jCodeGraphSuspendTest.kt`
+- 수정: `examples/code-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/code/MemgraphCodeGraphTest.kt`
+- 수정: `examples/code-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/code/MemgraphCodeGraphSuspendTest.kt`
+- 수정: `examples/code-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/code/AgeCodeGraphTest.kt`
+- 수정: `examples/code-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/code/AgeCodeGraphSuspendTest.kt`
 
 - [ ] **Step 1: Update Neo4j sibling tests** (`Neo4jCodeGraphTest.kt`, `Neo4jCodeGraphSuspendTest.kt`)
 
@@ -770,16 +770,16 @@ git commit -m "refactor(code-graph-examples): migrate tests to bluetape4k-testco
 
 ## Task 11: `linkedin-graph-examples` build script + test files
 
-**Complexity:** medium
+**복잡도:** medium
 
-**Files:**
-- Modify: `examples/linkedin-graph-examples/build.gradle.kts`
-- Modify: `examples/linkedin-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/linkedin/Neo4jLinkedInGraphTest.kt`
-- Modify: `examples/linkedin-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/linkedin/Neo4jLinkedInGraphSuspendTest.kt`
-- Modify: `examples/linkedin-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/linkedin/MemgraphLinkedInGraphTest.kt`
-- Modify: `examples/linkedin-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/linkedin/MemgraphLinkedInGraphSuspendTest.kt`
-- Modify: `examples/linkedin-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/linkedin/AgeLinkedInGraphTest.kt`
-- Modify: `examples/linkedin-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/linkedin/AgeLinkedInGraphSuspendTest.kt`
+**파일:**
+- 수정: `examples/linkedin-graph-examples/build.gradle.kts`
+- 수정: `examples/linkedin-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/linkedin/Neo4jLinkedInGraphTest.kt`
+- 수정: `examples/linkedin-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/linkedin/Neo4jLinkedInGraphSuspendTest.kt`
+- 수정: `examples/linkedin-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/linkedin/MemgraphLinkedInGraphTest.kt`
+- 수정: `examples/linkedin-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/linkedin/MemgraphLinkedInGraphSuspendTest.kt`
+- 수정: `examples/linkedin-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/linkedin/AgeLinkedInGraphTest.kt`
+- 수정: `examples/linkedin-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/linkedin/AgeLinkedInGraphSuspendTest.kt`
 
 - [ ] **Step 1: Edit `examples/linkedin-graph-examples/build.gradle.kts`**
 
@@ -809,13 +809,13 @@ git commit -m "refactor(linkedin-graph-examples): migrate tests to bluetape4k-te
 
 ## Task 12: `graph-spring-boot3-starter` build + tests
 
-**Complexity:** medium
+**복잡도:** medium
 
-**Files:**
-- Modify: `spring-boot3/graph-spring-boot3-starter/build.gradle.kts`
-- Modify: `spring-boot3/graph-spring-boot3-starter/src/test/**/GraphNeo4jAutoConfigurationTest.kt`
-- Modify: `spring-boot3/graph-spring-boot3-starter/src/test/**/GraphMemgraphAutoConfigurationTest.kt`
-- Modify: `spring-boot3/graph-spring-boot3-starter/src/test/**/GraphAgeAutoConfigurationTest.kt`
+**파일:**
+- 수정: `spring-boot3/graph-spring-boot3-starter/build.gradle.kts`
+- 수정: `spring-boot3/graph-spring-boot3-starter/src/test/**/GraphNeo4jAutoConfigurationTest.kt`
+- 수정: `spring-boot3/graph-spring-boot3-starter/src/test/**/GraphMemgraphAutoConfigurationTest.kt`
+- 수정: `spring-boot3/graph-spring-boot3-starter/src/test/**/GraphAgeAutoConfigurationTest.kt`
 
 - [ ] **Step 1: Edit `build.gradle.kts`**
 
@@ -864,13 +864,13 @@ git commit -m "refactor(graph-spring-boot3-starter): migrate tests to bluetape4k
 
 ## Task 13: `graph-spring-boot4-starter` build + tests
 
-**Complexity:** medium
+**복잡도:** medium
 
-**Files:**
-- Modify: `spring-boot4/graph-spring-boot4-starter/build.gradle.kts`
-- Modify: `spring-boot4/graph-spring-boot4-starter/src/test/**/GraphNeo4jAutoConfigurationTest.kt`
-- Modify: `spring-boot4/graph-spring-boot4-starter/src/test/**/GraphMemgraphAutoConfigurationTest.kt`
-- Modify: `spring-boot4/graph-spring-boot4-starter/src/test/**/GraphAgeAutoConfigurationTest.kt`
+**파일:**
+- 수정: `spring-boot4/graph-spring-boot4-starter/build.gradle.kts`
+- 수정: `spring-boot4/graph-spring-boot4-starter/src/test/**/GraphNeo4jAutoConfigurationTest.kt`
+- 수정: `spring-boot4/graph-spring-boot4-starter/src/test/**/GraphMemgraphAutoConfigurationTest.kt`
+- 수정: `spring-boot4/graph-spring-boot4-starter/src/test/**/GraphAgeAutoConfigurationTest.kt`
 
 Repeat Task 12, substituting `spring-boot3` → `spring-boot4`. Build script edits identical (add the same nine test deps, drop `:graph-servers`).
 
@@ -894,7 +894,7 @@ git commit -m "refactor(graph-spring-boot4-starter): migrate tests to bluetape4k
 
 ## Task 14: Whole-project compile check
 
-**Complexity:** low
+**복잡도:** low
 
 - [ ] **Step 1: Full compile**
 
@@ -924,9 +924,9 @@ No commit.
 
 ## Task 15: Delete `graph-servers` module
 
-**Complexity:** low
+**복잡도:** low
 
-**Files:**
+**파일:**
 - Delete: `graph/graph-servers/` (entire directory)
 
 - [ ] **Step 1: Delete the directory**
@@ -962,14 +962,14 @@ git commit -m "chore: remove graph/graph-servers module (superseded by bluetape4
 
 ## Task 16: Documentation updates
 
-**Complexity:** medium
+**복잡도:** medium
 
-**Files:**
-- Modify: `CLAUDE.md`
-- Modify: `README.md`, `README.ko.md`
-- Modify: `examples/code-graph-examples/README.md`, `README.ko.md`
-- Modify: `examples/linkedin-graph-examples/README.md`, `README.ko.md`
-- Modify: `TODO.md` (if contains stale refs)
+**파일:**
+- 수정: `CLAUDE.md`
+- 수정: `README.md`, `README.ko.md`
+- 수정: `examples/code-graph-examples/README.md`, `README.ko.md`
+- 수정: `examples/linkedin-graph-examples/README.md`, `README.ko.md`
+- 수정: `TODO.md` (if contains stale refs)
 
 - [ ] **Step 1: `CLAUDE.md`**
 
@@ -1015,7 +1015,7 @@ git commit -m "docs: update module references after graph-servers removal"
 
 ## Task 17: Stale reference sweep
 
-**Complexity:** low
+**복잡도:** low
 
 - [ ] **Step 1: Run the narrow stale-ref regex**
 
@@ -1023,7 +1023,7 @@ Use the Grep tool with this exact pattern (narrow, excludes new `*.Launcher` API
 
 Pattern: `project\(":graph-servers"\)|io\.bluetape4k\.graph\.servers|Neo4jServer\.(boltUrl|instance)|MemgraphServer\.(boltUrl|driver|instance)|PostgreSQLAgeServer\.instance`
 
-Scope: `README.md`, `README.ko.md`, `CLAUDE.md`, `TODO.md`, `examples/`, `graph/`, `spring-boot3/`, `spring-boot4/`.
+범위: `README.md`, `README.ko.md`, `CLAUDE.md`, `TODO.md`, `examples/`, `graph/`, `spring-boot3/`, `spring-boot4/`.
 
 Expected: **0 hits**. Skip `docs/superpowers/` (spec/plan) and `CHANGELOG.md` (history) — they keep the old names intentionally.
 
@@ -1046,7 +1046,7 @@ git commit -m "refactor: clean up remaining graph-servers references"
 
 ## Task 17.5: bluetape4k-patterns 체크리스트 스캔
 
-**Complexity:** low
+**복잡도:** low
 
 본 마이그레이션은 import/빌드스크립트 변경이 대부분이나, Memgraph `@BeforeAll`/`@AfterAll` 추가 코드에 대해 패턴 준수 여부를 확인한다.
 
@@ -1074,7 +1074,7 @@ Path: graph/graph-age/src/test/, examples/, spring-boot3/, spring-boot4/
 
 ## Task 18: Final build + test verification
 
-**Complexity:** low
+**복잡도:** low
 
 - [ ] **Step 1: Clean build**
 
@@ -1119,7 +1119,7 @@ git commit -m "docs: record graph-servers migration test results"
 
 ## Task 19: PR creation
 
-**Complexity:** low
+**복잡도:** low
 
 - [ ] **Step 1: Push branch**
 
@@ -1135,7 +1135,7 @@ gh pr create \
   --head feature/graph-servers-migration \
   --title "refactor: replace graph-servers module with bluetape4k-testcontainers graphdb" \
   --body "$(cat <<'EOF'
-## Summary
+## 요약
 
 Replaces the in-repo `graph/graph-servers/` module with the `io.bluetape4k.testcontainers.graphdb` package from `bluetape4k-testcontainers`. Drops the module after all consumers are migrated.
 
@@ -1171,7 +1171,7 @@ Capture the URL from `gh pr create` output. This is the handoff artifact.
 
 ## Task 20: Worktree cleanup (after PR merge)
 
-**Complexity:** low
+**복잡도:** low
 
 > Do NOT run this until the PR is merged.
 

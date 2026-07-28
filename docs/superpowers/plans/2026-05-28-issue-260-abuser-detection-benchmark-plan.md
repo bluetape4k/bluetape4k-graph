@@ -1,6 +1,6 @@
 # Issue #260 PostgreSQL Traversal Benchmark Plan
 
-## Scope
+## 범위
 
 Implement child issues #261 through #265 in one feature branch:
 

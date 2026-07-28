@@ -1,12 +1,12 @@
-# Schema / Index Manager Design
+# Schema / Index manager 설계
 
-## Related Issue
+## 관련 이슈
 
-- Issue: [#32 Schema / Index 관리 API - GraphSchemaManager 인터페이스](https://github.com/bluetape4k/bluetape4k-graph/issues/32)
+- 이슈: [#32 Schema / Index 관리 API - GraphSchemaManager 인터페이스](https://github.com/bluetape4k/bluetape4k-graph/issues/32)
 - Date: 2026-05-09
-- Scope: `graph-core`, graph backend modules, focused backend integration tests, core docs.
+- 범위: `graph-core`, graph backend modules, focused backend integration tests, core docs.
 
-## Problem
+## 문제
 
 Production graph workloads need explicit schema operations for lookup indexes and uniqueness constraints. The repository already has a declarative schema DSL through `VertexLabel`, `EdgeLabel`, and `PropertyDef`, but it has no execution API that can create, drop, or inspect backend indexes.
 
@@ -18,16 +18,16 @@ The new API must:
 - provide backend-specific implementations for Neo4j, Memgraph, AGE, TinkerGraph, and FalkorDB,
 - reject unsafe labels/properties before DDL string construction.
 
-## Research Summary
+## Research 요약
 
-### Repository Findings
+### Repository 발견 사항
 
 - `GraphOperations` and `GraphSuspendOperations` are facade interfaces in `io.bluetape4k.graph.repository`; adding members would force all fake/test implementations to change.
 - Transaction DSL avoided interface churn by adding capability interfaces plus extension accessors. Schema manager should follow the same pattern.
 - `VertexLabel`, `EdgeLabel`, and `PropertyDef` live in `io.bluetape4k.graph.schema`; `PropertyDef.name` is the natural bridge into schema DDL helpers.
 - Backends already use `requireSafeIdentifier` for Cypher identifiers. Schema DDL must use the same guard for labels, properties, index names, and constraint names.
 
-### External Documentation Findings
+### 외부 문서 발견 사항
 
 - Neo4j current Cypher supports `CREATE INDEX [name] IF NOT EXISTS FOR (n:Label) ON (n.property)`, node property uniqueness constraints through `CREATE CONSTRAINT name IF NOT EXISTS FOR (n:Label) REQUIRE n.property IS UNIQUE`, and metadata via `SHOW INDEXES` / `SHOW CONSTRAINTS`.
 - Memgraph supports label and label-property indexes with `CREATE INDEX ON :Label(property)`, removal through `DROP INDEX ON :Label(property)`, and metadata through `SHOW INDEX INFO`; uniqueness uses `CREATE CONSTRAINT ON (n:Label) ASSERT n.property IS UNIQUE`.
@@ -35,16 +35,16 @@ The new API must:
 - TinkerGraph is in-memory and has no durable schema/constraint layer for this API. It should implement explicit no-op index creation/listing and explicit unsupported uniqueness constraints, not pretend persistence.
 - FalkorDB supports Cypher index creation and metadata procedures such as `CALL db.indexes()`; unique constraints are backed by `GRAPH.CONSTRAINT CREATE` and require supporting indexes. The existing jfalkordb driver surface may require a staged implementation.
 
-## Constraints
+## 제약
 
 - Kotlin 2.3 and Java 25 preview remain unchanged.
-- No new dependency is required.
+- 새 dependency 없음 is required.
 - Public APIs need Korean KDoc.
 - Public interface changes require `README.md` and `README.ko.md` sync.
 - Backend DDL must never interpolate unchecked identifiers.
 - Metadata model must tolerate backend differences without exposing backend-specific records directly.
 
-## Architecture Options
+## Architecture option
 
 ### Option A - Add Methods Directly to `GraphOperations`
 
@@ -61,7 +61,7 @@ Cons:
 - Forces schema support onto backends/wrappers that may not support it.
 - Repeats the problem already solved by transaction capability interfaces.
 
-Decision: reject.
+결정: reject.
 
 ### Option B - Capability Interfaces + Extension Accessors
 
@@ -86,7 +86,7 @@ Cons:
 - Callers need an extension import.
 - Caching wrappers do not automatically expose schema management unless they deliberately implement the provider.
 
-Decision: adopt.
+결정: adopt.
 
 ### Option C - Backend Constructors Only
 
@@ -103,9 +103,9 @@ Cons:
 - Does not satisfy issue accessor requirement.
 - Harder for examples and Spring integrations to consume uniformly.
 
-Decision: reject.
+결정: reject.
 
-## Proposed API
+## 제안 API
 
 ### Models
 
@@ -171,7 +171,7 @@ ops.schemaManager().createIndex(PersonLabel.label, PersonLabel.email.name)
 ops.schemaManager().createIndex(PersonLabel, PersonLabel.email)
 ```
 
-## Backend Semantics
+## Backend semantics
 
 ### Neo4j
 
@@ -208,7 +208,7 @@ ops.schemaManager().createIndex(PersonLabel, PersonLabel.email)
 - List indexes: prefer `CALL db.indexes()`.
 - Unique constraint: staged. If jfalkordb exposes a reliable command path for `GRAPH.CONSTRAINT CREATE`, implement and test it. Otherwise throw explicit unsupported and document the gap.
 
-## Risks and Failure Modes
+## 리스크 and Failure Modes
 
 | Risk | Impact | Mitigation |
 |------|--------|------------|
@@ -218,7 +218,7 @@ ops.schemaManager().createIndex(PersonLabel, PersonLabel.email)
 | Duplicate create commands fail on backends without `IF NOT EXISTS` | Non-idempotent user setup | Swallow only known duplicate schema exceptions or test backend behavior before deciding |
 | TinkerGraph no-op may mislead callers | Runtime uniqueness assumptions | No-op only for indexes; constraints explicitly unsupported |
 
-## Acceptance Criteria
+## 인수 기준
 
 - `GraphSchemaManager` and `GraphSuspendSchemaManager` are public with Korean KDoc.
 - `GraphIndex` and `GraphConstraint` models are public with Korean KDoc.
@@ -239,7 +239,7 @@ ops.schemaManager().createIndex(PersonLabel, PersonLabel.email)
 - Full test passes or any failure is classified with evidence.
 - `bluetape4k-design` Step 6-R six-tier review passes before final report.
 
-## Step 2-R Review Notes
+## Step 2-R 리뷰 메모
 
 | Perspective | Finding | Resolution |
 |-------------|---------|------------|

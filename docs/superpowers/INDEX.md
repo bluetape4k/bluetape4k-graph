@@ -1,4 +1,4 @@
-# Superpowers Spec/Plan Index
+# Superpowers Spec/Plan 색인
 
 설계(Spec)와 실행계획(Plan) 전체 이력을 관리합니다.
 

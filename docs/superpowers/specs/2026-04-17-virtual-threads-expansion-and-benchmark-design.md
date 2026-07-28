@@ -1,4 +1,4 @@
-# Virtual Threads Full Expansion & graph-benchmark Module Design Spec
+# Virtual Threads 전체 확장과 graph-benchmark module 설계 spec
 
 - **Date**: 2026-04-17
 - **Status**: Draft
@@ -8,7 +8,7 @@
 
 ---
 
-## 1. Goals
+## 1. 목표
 
 본 스펙은 두 개의 독립된 기능을 하나의 일관된 작업 단위로 기술한다.
 
@@ -38,7 +38,7 @@ VT 기반 `CompletableFuture<T>` API로 노출하여 Java interop 및 CF 파이�
 
 ---
 
-## 2. Non-Goals
+## 2. 비목표
 
 - **Neo4j / AGE / Memgraph 백엔드의 VT 전용 최적화** — 어댑터 방식만 제공, 백엔드별
   커넥션 풀 튜닝은 별도 작업.
@@ -80,7 +80,7 @@ graph-core/
 
 ---
 
-## 4. Design — Feature 1 (VT Expansion)
+## 4. 설계 - Feature 1 (VT 확장)
 
 ### 4.1 패키지 배치
 
@@ -286,7 +286,7 @@ fun `suspendOps is safe under concurrent coroutines`() {
 
 ---
 
-## 5. Design — Feature 2 (Benchmark)
+## 5. 설계 - Feature 2 (benchmark)
 
 ### 5.1 모듈 구조
 

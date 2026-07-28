@@ -1,8 +1,8 @@
-# Issue #232 Ktor Managed Backend DSL Design
+# 이슈 #232 Ktor managed backend DSL 설계
 
 > Related issue: [#232](https://github.com/bluetape4k/bluetape4k-graph/issues/232)
 
-## Context
+## 맥락
 
 `graph-ktor` currently supports explicit backend selection through caller-owned resources:
 `neo4j(driver)`, `memgraph(driver)`, `falkorDB(driver)`, `age(graphName)`, and `tinkerGraph()`.
@@ -13,7 +13,7 @@ The 0.5.0 slice should add a narrowly scoped property DSL for backends where dri
 straightforward. Future example modules should prefer this latest DSL when they demonstrate Ktor
 backend setup.
 
-## Scope
+## 범위
 
 Included:
 
@@ -31,9 +31,9 @@ Excluded:
   [#254](https://github.com/bluetape4k/bluetape4k-graph/issues/254).
 - New dependencies. The DSL reuses backend driver dependencies already required by the existing helpers.
 
-## Design
+## 설계
 
-Existing helper overloads remain caller-owned:
+기존 helper overload는 caller-owned로 유지된다.
 
 ```kotlin
 install(GraphPlugin) {
@@ -67,17 +67,17 @@ Validation:
 - FalkorDB port must be positive.
 - Blank username means no-auth for Neo4j/Memgraph and unauthenticated driver creation for FalkorDB.
 
-## Acceptance Mapping
+## 인수 기준 Mapping
 
-| Acceptance criterion | Decision |
+| 인수 기준 | 결정 |
 |---|---|
 | Supports backends where lifecycle ownership is straightforward | Neo4j, Memgraph, FalkorDB managed drivers |
 | Explicit ownership and close behavior | Managed DSL closes created driver; caller-owned helpers unchanged |
 | Keeps coroutine-first access | `GraphSuspendOperations` remains resolved and exposed by `ApplicationCall.graphSuspendOperations()` |
 | Adds tests and README examples | Ktor runtime tests plus README/README.ko updates |
-| No new dependency unless justified | No new dependency |
+| 정당화되지 않은 새 dependency 없음 | 새 dependency 없음 |
 
-## Review Notes
+## 리뷰 메모
 
 Local 7-tier design review:
 

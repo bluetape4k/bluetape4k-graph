@@ -1,18 +1,18 @@
-# Graph Algorithm Extension Implementation Plan
+# Graph algorithm extension 구현 계획
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **Agentic worker용:** 필수 sub-skill: 이 계획을 task 단위로 구현할 때는 superpowers:subagent-driven-development(권장) 또는 superpowers:executing-plans를 사용한다. Step은 tracking을 위해 checkbox(`- [ ]`) syntax를 사용한다.
 
-**Goal:** Extend `bluetape4k-graph` with 6 graph analytics algorithms (PageRank, Degree Centrality, Connected Components, BFS, DFS, Cycle Detection) across 4 backends (Neo4j, Memgraph, AGE, TinkerPop) with sync, coroutine, and Virtual Thread APIs.
+**목표:** Extend `bluetape4k-graph` with 6 graph analytics algorithms (PageRank, Degree Centrality, Connected Components, BFS, DFS, Cycle Detection) across 4 backends (Neo4j, Memgraph, AGE, TinkerPop) with sync, coroutine, and Virtual Thread APIs.
 
-**Architecture:** Approach B + `GraphGenericRepository` intermediate composition. New `GraphAlgorithmRepository` / `GraphSuspendAlgorithmRepository` interfaces; new `GraphAlgorithmOptions` sealed class for non-traversal options; `BfsDfsOptions` and `CycleOptions` extend existing `GraphTraversalOptions`. Backends use native query language where supported (Cypher / Gremlin) and fall back to JVM in-memory implementations (`UnionFind`, `BfsDfsRunner`, `CycleDetector`, `PageRankCalculator`) when not. A `VirtualThreadAlgorithmAdapter` bridges sync to Java 25 Virtual Threads via `CompletableFuture`.
+**아키텍처:** Approach B + `GraphGenericRepository` intermediate composition. New `GraphAlgorithmRepository` / `GraphSuspendAlgorithmRepository` interfaces; new `GraphAlgorithmOptions` sealed class for non-traversal options; `BfsDfsOptions` and `CycleOptions` extend existing `GraphTraversalOptions`. Backends use native query language where supported (Cypher / Gremlin) and fall back to JVM in-memory implementations (`UnionFind`, `BfsDfsRunner`, `CycleDetector`, `PageRankCalculator`) when not. A `VirtualThreadAlgorithmAdapter` bridges sync to Java 25 Virtual Threads via `CompletableFuture`.
 
-**Tech Stack:** Kotlin 2.3, Java 25 (--enable-preview), Gradle 8.x, kotlinx.coroutines (Flow/suspend), JUnit 5 + Kotest assertions + bluetape4k-assertions + Testcontainers, Neo4j Java Driver, Apache TinkerPop Gremlin, Apache AGE (PostgreSQL extension), Exposed JDBC, KLogging.
+**기술 스택:** Kotlin 2.3, Java 25 (--enable-preview), Gradle 8.x, kotlinx.coroutines (Flow/suspend), JUnit 5 + Kotest assertions + bluetape4k-assertions + Testcontainers, Neo4j Java Driver, Apache TinkerPop Gremlin, Apache AGE (PostgreSQL extension), Exposed JDBC, KLogging.
 
 ---
 
-## File Structure Overview
+## 파일 구조 개요
 
-### New files in `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/`
+### 신규 파일: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/`
 
 - `model/GraphAlgorithmOptions.kt` — sealed `GraphAlgorithmOptions` + `PageRankOptions`, `DegreeOptions`, `ComponentOptions`
 - `model/PageRankScore.kt`
@@ -31,7 +31,7 @@
 - `algo/internal/PageRankCalculator.kt`
 - `algo/VirtualThreadAlgorithmAdapter.kt`
 
-### Modified files
+### 수정 파일
 
 - `graph/graph-core/.../model/GraphTraversalOptions.kt` — add `BfsDfsOptions`, `CycleOptions`
 - `graph/graph-core/.../repository/GraphOperations.kt` — replace `GraphTraversalRepository` with `GraphGenericRepository` + `GraphVirtualThreadAlgorithmRepository`
@@ -46,7 +46,7 @@
 - `graph/graph-age/.../AgeGraphOperations.kt` — implement 6 algo methods (degree native, others fallback)
 - `graph/graph-age/.../AgeGraphSuspendOperations.kt`
 
-### New tests
+### 신규 테스트
 
 - `graph/graph-core/src/test/kotlin/io/bluetape4k/graph/algo/internal/{UnionFind,BfsDfsRunner,CycleDetector,PageRankCalculator}Test.kt`
 - `graph/graph-tinkerpop/src/test/kotlin/io/bluetape4k/graph/algo/VirtualThreadAlgorithmAdapterTest.kt`
@@ -65,14 +65,14 @@
 
 ## Task 1: Add result models — `PageRankScore`, `DegreeResult`, `GraphComponent`, `TraversalVisit`, `GraphCycle`
 
-**Complexity:** low
+**복잡도:** low
 
-**Files:**
-- Create: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/model/PageRankScore.kt`
-- Create: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/model/DegreeResult.kt`
-- Create: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/model/GraphComponent.kt`
-- Create: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/model/TraversalVisit.kt`
-- Create: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/model/GraphCycle.kt`
+**파일:**
+- 생성: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/model/PageRankScore.kt`
+- 생성: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/model/DegreeResult.kt`
+- 생성: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/model/GraphComponent.kt`
+- 생성: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/model/TraversalVisit.kt`
+- 생성: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/model/GraphCycle.kt`
 
 - [ ] **Step 1: Create `PageRankScore.kt`**
 
@@ -261,10 +261,10 @@ git commit -m "feat: add graph algorithm result models (PageRankScore, DegreeRes
 
 ## Task 2: Add `GraphAlgorithmOptions` sealed class and subtypes
 
-**Complexity:** low
+**복잡도:** low
 
-**Files:**
-- Create: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/model/GraphAlgorithmOptions.kt`
+**파일:**
+- 생성: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/model/GraphAlgorithmOptions.kt`
 
 - [ ] **Step 1: Create `GraphAlgorithmOptions.kt`**
 
@@ -392,10 +392,10 @@ git commit -m "feat: add GraphAlgorithmOptions sealed class with PageRank/Degree
 
 ## Task 3: Add `BfsDfsOptions` and `CycleOptions` to existing `GraphTraversalOptions.kt`
 
-**Complexity:** low
+**복잡도:** low
 
-**Files:**
-- Modify: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/model/GraphTraversalOptions.kt`
+**파일:**
+- 수정: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/model/GraphTraversalOptions.kt`
 
 > **Note**: `GraphTraversalOptions` already extends `Serializable` in the existing file. Verify this before appending — both new subtypes inherit `Serializable` through the parent; the companion `serialVersionUID = 1L` fields in each subtype are still required for stable deserialization.
 
@@ -482,11 +482,11 @@ git commit -m "feat: add BfsDfsOptions and CycleOptions to GraphTraversalOptions
 
 ## Task 4: Add `GraphAlgorithmRepository` and `GraphSuspendAlgorithmRepository` interfaces
 
-**Complexity:** low
+**복잡도:** low
 
-**Files:**
-- Create: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphAlgorithmRepository.kt`
-- Create: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphSuspendAlgorithmRepository.kt`
+**파일:**
+- 생성: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphAlgorithmRepository.kt`
+- 생성: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphSuspendAlgorithmRepository.kt`
 
 - [ ] **Step 1: Create `GraphAlgorithmRepository.kt`**
 
@@ -696,11 +696,11 @@ git commit -m "feat: add GraphAlgorithmRepository and GraphSuspendAlgorithmRepos
 
 ## Task 5: Add `GraphGenericRepository` and `GraphSuspendGenericRepository` composite interfaces
 
-**Complexity:** low
+**복잡도:** low
 
-**Files:**
-- Create: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphGenericRepository.kt`
-- Create: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphSuspendGenericRepository.kt`
+**파일:**
+- 생성: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphGenericRepository.kt`
+- 생성: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphSuspendGenericRepository.kt`
 
 - [ ] **Step 1: Create `GraphGenericRepository.kt`**
 
@@ -763,11 +763,11 @@ git commit -m "feat: add GraphGenericRepository composite interfaces (traversal 
 
 ## Task 6: Update `GraphOperations` and `GraphSuspendOperations` to compose generic repositories
 
-**Complexity:** low
+**복잡도:** low
 
-**Files:**
-- Modify: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphOperations.kt`
-- Modify: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphSuspendOperations.kt`
+**파일:**
+- 수정: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphOperations.kt`
+- 수정: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphSuspendOperations.kt`
 
 - [ ] **Step 1: Replace `GraphOperations.kt` interface composition**
 
@@ -855,11 +855,11 @@ git commit -m "refactor: GraphOperations composes GraphGenericRepository (traver
 
 ## Task 7: JVM fallback — `UnionFind` (Connected Components)
 
-**Complexity:** medium
+**복잡도:** medium
 
-**Files:**
-- Create: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/algo/internal/UnionFind.kt`
-- Create: `graph/graph-core/src/test/kotlin/io/bluetape4k/graph/algo/internal/UnionFindTest.kt`
+**파일:**
+- 생성: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/algo/internal/UnionFind.kt`
+- 생성: `graph/graph-core/src/test/kotlin/io/bluetape4k/graph/algo/internal/UnionFindTest.kt`
 
 - [ ] **Step 1: Write failing test `UnionFindTest.kt`**
 
@@ -1008,11 +1008,11 @@ git commit -m "feat: add UnionFind JVM fallback for Connected Components"
 
 ## Task 8: JVM fallback — `BfsDfsRunner`
 
-**Complexity:** medium
+**복잡도:** medium
 
-**Files:**
-- Create: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/algo/internal/BfsDfsRunner.kt`
-- Create: `graph/graph-core/src/test/kotlin/io/bluetape4k/graph/algo/internal/BfsDfsRunnerTest.kt`
+**파일:**
+- 생성: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/algo/internal/BfsDfsRunner.kt`
+- 생성: `graph/graph-core/src/test/kotlin/io/bluetape4k/graph/algo/internal/BfsDfsRunnerTest.kt`
 
 - [ ] **Step 1: Write failing test `BfsDfsRunnerTest.kt`**
 
@@ -1188,11 +1188,11 @@ git commit -m "feat: add BfsDfsRunner JVM fallback (BFS/DFS on adjacency map)"
 
 ## Task 9: JVM fallback — `CycleDetector` (DFS-based simple cycle finder)
 
-**Complexity:** medium
+**복잡도:** medium
 
-**Files:**
-- Create: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/algo/internal/CycleDetector.kt`
-- Create: `graph/graph-core/src/test/kotlin/io/bluetape4k/graph/algo/internal/CycleDetectorTest.kt`
+**파일:**
+- 생성: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/algo/internal/CycleDetector.kt`
+- 생성: `graph/graph-core/src/test/kotlin/io/bluetape4k/graph/algo/internal/CycleDetectorTest.kt`
 
 - [ ] **Step 1: Write failing test `CycleDetectorTest.kt`**
 
@@ -1388,11 +1388,11 @@ git commit -m "feat: add CycleDetector JVM fallback (DFS-based simple cycle find
 
 ## Task 10: JVM fallback — `PageRankCalculator`
 
-**Complexity:** medium
+**복잡도:** medium
 
-**Files:**
-- Create: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/algo/internal/PageRankCalculator.kt`
-- Create: `graph/graph-core/src/test/kotlin/io/bluetape4k/graph/algo/internal/PageRankCalculatorTest.kt`
+**파일:**
+- 생성: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/algo/internal/PageRankCalculator.kt`
+- 생성: `graph/graph-core/src/test/kotlin/io/bluetape4k/graph/algo/internal/PageRankCalculatorTest.kt`
 
 - [ ] **Step 1: Write failing test `PageRankCalculatorTest.kt`**
 
@@ -1567,10 +1567,10 @@ git commit -m "feat: add PageRankCalculator JVM fallback (normalized iterative P
 
 ## Task 11: Implement 6 algorithm methods in `TinkerGraphOperations`
 
-**Complexity:** high
+**복잡도:** high
 
-**Files:**
-- Modify: `graph/graph-tinkerpop/src/main/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphOperations.kt`
+**파일:**
+- 수정: `graph/graph-tinkerpop/src/main/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphOperations.kt`
 
 - [ ] **Step 1: Add imports at top of file**
 
@@ -1795,10 +1795,10 @@ git commit -m "feat(tinkerpop): implement 6 algorithm methods (pageRank/degree/C
 
 ## Task 12: Implement coroutine `TinkerGraphSuspendOperations` for the 6 algorithm methods
 
-**Complexity:** medium
+**복잡도:** medium
 
-**Files:**
-- Modify: `graph/graph-tinkerpop/src/main/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphSuspendOperations.kt`
+**파일:**
+- 수정: `graph/graph-tinkerpop/src/main/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphSuspendOperations.kt`
 
 - [ ] **Step 1: Add imports**
 
@@ -1872,10 +1872,10 @@ git commit -m "feat(tinkerpop): implement coroutine algorithm Flow APIs via dele
 
 ## Task 13: Add `TinkerGraphAlgorithmTest` (sync, in-memory, no Docker)
 
-**Complexity:** medium
+**복잡도:** medium
 
-**Files:**
-- Create: `graph/graph-tinkerpop/src/test/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphAlgorithmTest.kt`
+**파일:**
+- 생성: `graph/graph-tinkerpop/src/test/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphAlgorithmTest.kt`
 
 > **Concurrency note**: TinkerGraph is in-memory and shared across tests in this class. Test parallelization is already serialized at the project level via the `testMutex` `BuildService` wired in the root `build.gradle.kts` (`usesService(testMutex)`), so per-class `@Execution` annotations are not required. Do NOT add `@Execution(ExecutionMode.CONCURRENT)`.
 
@@ -2020,10 +2020,10 @@ git commit -m "test(tinkerpop): add TinkerGraphAlgorithmTest covering 6 algorith
 
 ## Task 14: Add `TinkerGraphAlgorithmSuspendTest` (coroutine flow)
 
-**Complexity:** low
+**복잡도:** low
 
-**Files:**
-- Create: `graph/graph-tinkerpop/src/test/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphAlgorithmSuspendTest.kt`
+**파일:**
+- 생성: `graph/graph-tinkerpop/src/test/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphAlgorithmSuspendTest.kt`
 
 - [ ] **Step 1: Create test file**
 
@@ -2103,10 +2103,10 @@ git commit -m "test(tinkerpop): add TinkerGraphAlgorithmSuspendTest for Flow API
 
 ## Task 15: Implement 6 algorithm methods in `Neo4jGraphOperations` (Cypher + JVM fallback)
 
-**Complexity:** high
+**복잡도:** high
 
-**Files:**
-- Modify: `graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt`
+**파일:**
+- 수정: `graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperations.kt`
 
 - [ ] **Step 1: Add imports at top of file**
 
@@ -2362,10 +2362,10 @@ git commit -m "feat(neo4j): implement 6 algorithm methods (Cypher native + JVM f
 
 ## Task 15b: Verify `sanitizeLabel` rejects Cypher-injection strings
 
-**Complexity:** low
+**복잡도:** low
 
-**Files:**
-- Modify: `graph/graph-neo4j/src/test/kotlin/io/bluetape4k/graph/neo4j/Neo4jAlgorithmTest.kt`
+**파일:**
+- 수정: `graph/graph-neo4j/src/test/kotlin/io/bluetape4k/graph/neo4j/Neo4jAlgorithmTest.kt`
 
 > This task runs without Docker — `sanitizeLabel` is a pure function; no DB container needed.
 
@@ -2414,10 +2414,10 @@ git commit -m "test(neo4j): verify sanitizeLabel rejects Cypher-injection edge l
 
 ## Task 16: Implement coroutine `Neo4jGraphSuspendOperations` for the 6 algorithm methods
 
-**Complexity:** medium
+**복잡도:** medium
 
-**Files:**
-- Modify: `graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphSuspendOperations.kt`
+**파일:**
+- 수정: `graph/graph-neo4j/src/main/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphSuspendOperations.kt`
 
 - [ ] **Step 0: Read the existing constructor signature**
 
@@ -2507,10 +2507,10 @@ git commit -m "feat(neo4j): implement coroutine algorithm Flow APIs delegating t
 
 ## Task 17: Add `Neo4jAlgorithmTest` (Testcontainers)
 
-**Complexity:** medium
+**복잡도:** medium
 
-**Files:**
-- Create: `graph/graph-neo4j/src/test/kotlin/io/bluetape4k/graph/neo4j/Neo4jAlgorithmTest.kt`
+**파일:**
+- 생성: `graph/graph-neo4j/src/test/kotlin/io/bluetape4k/graph/neo4j/Neo4jAlgorithmTest.kt`
 
 - [ ] **Step 1: Create test file**
 
@@ -2647,10 +2647,10 @@ git commit -m "test(neo4j): add Neo4jAlgorithmTest covering 6 algorithm methods 
 
 ## Task 18: Add `Neo4jAlgorithmSuspendTest`
 
-**Complexity:** low
+**복잡도:** low
 
-**Files:**
-- Create: `graph/graph-neo4j/src/test/kotlin/io/bluetape4k/graph/neo4j/Neo4jAlgorithmSuspendTest.kt`
+**파일:**
+- 생성: `graph/graph-neo4j/src/test/kotlin/io/bluetape4k/graph/neo4j/Neo4jAlgorithmSuspendTest.kt`
 
 - [ ] **Step 1: Create test file**
 
@@ -2731,10 +2731,10 @@ git commit -m "test(neo4j): add Neo4jAlgorithmSuspendTest for Flow APIs"
 
 ## Task 19: Implement 6 algorithm methods in `MemgraphGraphOperations` (mirror Neo4j)
 
-**Complexity:** medium
+**복잡도:** medium
 
-**Files:**
-- Modify: `graph/graph-memgraph/src/main/kotlin/io/bluetape4k/graph/memgraph/MemgraphGraphOperations.kt`
+**파일:**
+- 수정: `graph/graph-memgraph/src/main/kotlin/io/bluetape4k/graph/memgraph/MemgraphGraphOperations.kt`
 
 - [ ] **Step 1: Add imports at top of file**
 
@@ -3003,10 +3003,10 @@ git commit -m "feat(memgraph): implement 6 algorithm methods (Cypher mirror of N
 
 ## Task 20: Implement coroutine `MemgraphGraphSuspendOperations`
 
-**Complexity:** low
+**복잡도:** low
 
-**Files:**
-- Modify: `graph/graph-memgraph/src/main/kotlin/io/bluetape4k/graph/memgraph/MemgraphGraphSuspendOperations.kt`
+**파일:**
+- 수정: `graph/graph-memgraph/src/main/kotlin/io/bluetape4k/graph/memgraph/MemgraphGraphSuspendOperations.kt`
 
 - [ ] **Step 0: Read the existing constructor signature**
 
@@ -3032,11 +3032,11 @@ git commit -m "feat(memgraph): implement coroutine algorithm Flow APIs delegatin
 
 ## Task 21: Add `MemgraphAlgorithmTest` and `MemgraphAlgorithmSuspendTest`
 
-**Complexity:** medium
+**복잡도:** medium
 
-**Files:**
-- Create: `graph/graph-memgraph/src/test/kotlin/io/bluetape4k/graph/memgraph/MemgraphAlgorithmTest.kt`
-- Create: `graph/graph-memgraph/src/test/kotlin/io/bluetape4k/graph/memgraph/MemgraphAlgorithmSuspendTest.kt`
+**파일:**
+- 생성: `graph/graph-memgraph/src/test/kotlin/io/bluetape4k/graph/memgraph/MemgraphAlgorithmTest.kt`
+- 생성: `graph/graph-memgraph/src/test/kotlin/io/bluetape4k/graph/memgraph/MemgraphAlgorithmSuspendTest.kt`
 
 - [ ] **Step 1: Create `MemgraphAlgorithmTest.kt`**
 
@@ -3070,10 +3070,10 @@ git commit -m "test(memgraph): add Memgraph algorithm tests (sync + suspend)"
 
 ## Task 22: Add degree Cypher-over-SQL helper to `AgeSql`
 
-**Complexity:** low
+**복잡도:** low
 
-**Files:**
-- Modify: `graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/sql/AgeSql.kt`
+**파일:**
+- 수정: `graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/sql/AgeSql.kt`
 
 - [ ] **Step 1: Append the helper inside the `object AgeSql` (before its closing brace)**
 
@@ -3159,10 +3159,10 @@ git commit -m "feat(age): add degreeCentrality + matchAllVertices/Edges Cypher-o
 
 ## Task 23: Implement 6 algorithm methods in `AgeGraphOperations` (degree native, rest JVM fallback)
 
-**Complexity:** high
+**복잡도:** high
 
-**Files:**
-- Modify: `graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/AgeGraphOperations.kt`
+**파일:**
+- 수정: `graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/AgeGraphOperations.kt`
 
 - [ ] **Step 1: Add imports**
 
@@ -3397,10 +3397,10 @@ git commit -m "feat(age): implement 6 algorithm methods (degree native, rest JVM
 
 ## Task 24: Implement coroutine `AgeGraphSuspendOperations`
 
-**Complexity:** low
+**복잡도:** low
 
-**Files:**
-- Modify: `graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/AgeGraphSuspendOperations.kt`
+**파일:**
+- 수정: `graph/graph-age/src/main/kotlin/io/bluetape4k/graph/age/AgeGraphSuspendOperations.kt`
 
 - [ ] **Step 0: Read the existing constructor signature**
 
@@ -3427,11 +3427,11 @@ git commit -m "feat(age): implement coroutine algorithm Flow APIs delegating to 
 
 ## Task 25: Add `AgeAlgorithmTest` and `AgeAlgorithmSuspendTest`
 
-**Complexity:** medium
+**복잡도:** medium
 
-**Files:**
-- Create: `graph/graph-age/src/test/kotlin/io/bluetape4k/graph/age/AgeAlgorithmTest.kt`
-- Create: `graph/graph-age/src/test/kotlin/io/bluetape4k/graph/age/AgeAlgorithmSuspendTest.kt`
+**파일:**
+- 생성: `graph/graph-age/src/test/kotlin/io/bluetape4k/graph/age/AgeAlgorithmTest.kt`
+- 생성: `graph/graph-age/src/test/kotlin/io/bluetape4k/graph/age/AgeAlgorithmSuspendTest.kt`
 
 - [ ] **Step 1: Create `AgeAlgorithmTest.kt`**
 
@@ -3466,19 +3466,19 @@ git commit -m "test(age): add AGE algorithm tests (sync + suspend, Testcontainer
 
 ## Task 26: Update README files for graph-core, graph-neo4j, graph-memgraph, graph-age, graph-tinkerpop
 
-**Complexity:** medium
+**복잡도:** medium
 
-**Files:**
-- Modify: `graph/graph-core/README.md`
-- Modify: `graph/graph-core/README.ko.md`
-- Modify: `graph/graph-neo4j/README.md`
-- Modify: `graph/graph-neo4j/README.ko.md`
-- Modify: `graph/graph-memgraph/README.md`
-- Modify: `graph/graph-memgraph/README.ko.md`
-- Modify: `graph/graph-age/README.md`
-- Modify: `graph/graph-age/README.ko.md`
-- Modify: `graph/graph-tinkerpop/README.md`
-- Modify: `graph/graph-tinkerpop/README.ko.md`
+**파일:**
+- 수정: `graph/graph-core/README.md`
+- 수정: `graph/graph-core/README.ko.md`
+- 수정: `graph/graph-neo4j/README.md`
+- 수정: `graph/graph-neo4j/README.ko.md`
+- 수정: `graph/graph-memgraph/README.md`
+- 수정: `graph/graph-memgraph/README.ko.md`
+- 수정: `graph/graph-age/README.md`
+- 수정: `graph/graph-age/README.ko.md`
+- 수정: `graph/graph-tinkerpop/README.md`
+- 수정: `graph/graph-tinkerpop/README.ko.md`
 
 - [ ] **Step 1: For each module README, append a "Graph Algorithms" / "그래프 알고리즘" section**
 
@@ -3527,10 +3527,10 @@ git commit -m "docs: document graph algorithm APIs and per-backend support matri
 
 ## Task 27: Run full module build and record test results
 
-**Complexity:** low
+**복잡도:** low
 
-**Files:**
-- Modify: `docs/testlogs/2026-04.md` (create if not present)
+**파일:**
+- 수정: `docs/testlogs/2026-04.md` (create if not present)
 
 - [ ] **Step 1: Run full build**
 
@@ -3542,7 +3542,7 @@ Expected: BUILD SUCCESSFUL across all modules.
 If the file does not exist, create it with the standard header. Add an entry at the top:
 
 ```markdown
-| Date       | Scope                          | Result | Notes                                  |
+| 날짜       | 범위                          | 결과 | 메모                                  |
 |------------|--------------------------------|--------|----------------------------------------|
 | 2026-04-16 | graph algorithm extension      | PASS   | 6 algos × 4 backends + JVM fallbacks   |
 ```
@@ -3560,10 +3560,10 @@ git commit -m "test: record graph algorithm extension full-build results in test
 
 ## Task 28: Add `GraphVirtualThreadAlgorithmRepository` interface
 
-**Complexity:** low
+**복잡도:** low
 
-**Files:**
-- Create: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphVirtualThreadAlgorithmRepository.kt`
+**파일:**
+- 생성: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphVirtualThreadAlgorithmRepository.kt`
 
 - [ ] **Step 1: Create the interface**
 
@@ -3647,10 +3647,10 @@ git commit -m "feat(core): add GraphVirtualThreadAlgorithmRepository interface"
 
 ## Task 29: Add `VirtualThreadAlgorithmAdapter` and `asVirtualThread()` extension function
 
-**Complexity:** low
+**복잡도:** low
 
-**Files:**
-- Create: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/algo/VirtualThreadAlgorithmAdapter.kt`
+**파일:**
+- 생성: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/algo/VirtualThreadAlgorithmAdapter.kt`
 
 - [ ] **Step 1: Create the adapter**
 
@@ -3755,10 +3755,10 @@ git commit -m "feat(core): add VirtualThreadAlgorithmAdapter and asVirtualThread
 
 ## Task 30: Add `VirtualThreadAlgorithmAdapterTest` (TinkerGraph-based, no Docker)
 
-**Complexity:** low
+**복잡도:** low
 
-**Files:**
-- Create: `graph/graph-tinkerpop/src/test/kotlin/io/bluetape4k/graph/algo/VirtualThreadAlgorithmAdapterTest.kt`
+**파일:**
+- 생성: `graph/graph-tinkerpop/src/test/kotlin/io/bluetape4k/graph/algo/VirtualThreadAlgorithmAdapterTest.kt`
 
 > **Note**: This test depends on `graph-tinkerpop` to obtain a real `GraphAlgorithmRepository`. `graph-core` must NOT depend on `graph-tinkerpop`, so the test lives in `graph-tinkerpop`.
 
@@ -3848,10 +3848,10 @@ git commit -m "test(core): add VirtualThreadAlgorithmAdapterTest using TinkerGra
 
 ## Task 31: Compose `GraphVirtualThreadAlgorithmRepository` into `GraphOperations` via default delegation
 
-**Complexity:** low
+**복잡도:** low
 
-**Files:**
-- Modify: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphOperations.kt`
+**파일:**
+- 수정: `graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphOperations.kt`
 
 > **Note**: We deliberately do NOT extend `GraphOperations` to require `GraphVirtualThreadAlgorithmRepository` directly (that would force every backend to implement async methods). Instead we provide an extension that constructs a VT adapter on demand. The extension is already in Task 29 (`asVirtualThread()`). This task verifies that `GraphOperations` instances can use it.
 
@@ -3890,7 +3890,7 @@ git commit -m "test: verify GraphOperations.asVirtualThread() integration"
 
 ## Task 32: Full project build and end-to-end smoke test
 
-**Complexity:** low
+**복잡도:** low
 
 - [ ] **Step 1: Run all tests**
 

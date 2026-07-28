@@ -1,6 +1,6 @@
 # Issue #49 Graph OkIO DAEAD Chunk Encryption Plan
 
-- Issue: #49
+- 이슈: #49
 - Spec: `docs/superpowers/specs/2026-05-13-issue-49-graph-okio-daead-design.md`
 - Branch: `feat/issue-49-graph-okio-daead`
 - Worktree: `.worktrees/feat-issue-49-graph-okio-daead`
@@ -23,7 +23,7 @@
 - [ ] `git diff --check`
 - [ ] Review touched public KDoc for English wording.
 
-## 3. Design Guardrails
+## 3. 설계 guardrail
 
 - Do not add CSV encrypted convenience helpers in this PR.
 - Do not introduce Tink `StreamingAead`.
@@ -48,7 +48,7 @@ Claude Code Opus advisor:
 
 Codex review findings:
 
-| Priority | Finding | Decision |
+| 우선순위 | 발견 사항 | 결정 |
 |---|---|---|
 | P1 | Version catalog update must precede code imports so compile errors identify real API issues, not missing aliases. | Accepted. Task order already starts with catalog/dependency. |
 | P1 | README updates must cover both locale files because this is library-user documentation. | Accepted. Plan includes both `README.md` and `README.ko.md`. |

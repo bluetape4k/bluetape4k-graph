@@ -1,4 +1,4 @@
-# graph-io Bulk Import/Export Design Spec
+# graph-io bulk import/export 설계 spec
 
 - **Date**: 2026-04-18
 - **Status**: Ready for Implementation
@@ -8,7 +8,7 @@
 
 ---
 
-## 1. Goals
+## 1. 목표
 
 `graph-io` 계열 모듈은 `GraphOperations` 위에서 대량 그래프 데이터를 파일/스트림으로
 import/export 하는 공통 기능을 제공한다.
@@ -38,7 +38,7 @@ import/export 하는 공통 기능을 제공한다.
 
 ---
 
-## 2. Non-Goals
+## 2. 비목표
 
 - 그래프 백엔드별 native bulk loader 최적화는 이번 범위가 아니다.
   - 예: Neo4j `LOAD CSV`, PostgreSQL `COPY`, Memgraph bulk import.
@@ -137,7 +137,7 @@ Virtual Threads / CompletableFuture
 
 ## 4. Brainstorming: Module Split Options
 
-### Option A - Single `graph-io` Module
+### Option A - 단일 `graph-io` module
 
 ```
 graph-io/
@@ -180,7 +180,7 @@ Cons:
 
 Verdict: 부분적으로 타당하지만 GraphML 분리 요구와 의존성 최소화 기준에는 부족하다.
 
-### Option C - Common + Format Modules (채택)
+### Option C - Common + format module (채택)
 
 ```
 graph-io/core/      ← 공통 계약 (:graph-io-core)
@@ -209,7 +209,7 @@ Verdict: 채택.
 
 ---
 
-## 5. Final Module Design
+## 5. 최종 module 설계
 
 ### 디렉터리 구조
 
@@ -1084,7 +1084,7 @@ Preserving external IDs:
 ## 10. Export Algorithm
 
 Current `GraphOperations` can list vertices by label and edges by label only when labels are known.
-Therefore export requires one of the following:
+따라서 export requires one of the following:
 
 1. caller provides `vertexLabels` and `edgeLabels`, or
 2. implementation has a label discovery strategy.
@@ -1276,7 +1276,7 @@ TODO update:
 
 ---
 
-## 15. Risks
+## 15. 리스크
 
 | Risk | Impact | Mitigation |
 |------|--------|------------|

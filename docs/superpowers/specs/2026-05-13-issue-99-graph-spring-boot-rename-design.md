@@ -1,8 +1,8 @@
-# Issue #99 graph-spring-boot Rename Design
+# 이슈 #99 graph-spring-boot rename 설계
 
-- Issue: #99 `refactor: graph-spring-boot module naming 정리`
+- 이슈: #99 `refactor: graph-spring-boot module naming 정리`
 - Date: 2026-05-13
-- Scope: Spring Boot integration module identity, package namespace, CI/Nightly, README/BOM/CHANGELOG, generated publication coordinate.
+- 범위: Spring Boot integration module identity, package namespace, CI/Nightly, README/BOM/CHANGELOG, generated publication coordinate.
 - Workflow: Type A Full Design because this freezes a public module/artifact contract before broader adoption.
 
 ## 1. Problem
@@ -23,7 +23,7 @@ This name still carries two historical implementation details:
 
 Keeping the old identity makes future `graph-ktor`, `graph-neptune`, and docs/examples work carry stale module names.
 
-## 2. Goals
+## 2. 목표
 
 - Rename the module directory to `spring-boot/graph-spring-boot`.
 - Rename the Gradle project to `:graph-spring-boot`.
@@ -33,7 +33,7 @@ Keeping the old identity makes future `graph-ktor`, `graph-neptune`, and docs/ex
 - Update current user-facing docs and BOM README snippets to `graph-spring-boot`.
 - Preserve historical docs where the old name is necessary as event history, but add current issue #99 design/plan with the new contract.
 
-## 3. Non-Goals
+## 3. 비목표
 
 - Reintroduce Spring Boot 3 support.
 - Change `bluetape4k.graph.*` runtime configuration properties.
@@ -51,7 +51,7 @@ Keeping the old identity makes future `graph-ktor`, `graph-neptune`, and docs/ex
 | CI/Nightly | Path filter already uses logical output `graph-spring-boot`, but Gradle tasks still use `:graph-spring-boot4-starter` |
 | Issue #99 | Target directory/project name is `graph-spring-boot`; package rename requires judgment |
 
-## 5. Design Decision
+## 5. 설계 결정
 
 Adopt a full identity rename:
 
@@ -70,23 +70,23 @@ The package should be renamed with the module. Leaving `boot4` in package names 
 
 ## 6. Alternatives
 
-### A. Rename only Gradle project and directory
+### A. Gradle project와 directory만 rename
 
 - Pros: smaller diff.
 - Cons: public package still says `boot4`, so users import an old naming contract.
-- Decision: rejected.
+- 결정: rejected.
 
-### B. Keep `spring-boot4/` base directory and rename only leaf module
+### B. `spring-boot4/` base directory를 유지하고 leaf module만 rename
 
 - Pros: preserves Spring Boot 4 implementation clue.
 - Cons: root README and CI still expose versioned directory layout; future users see a mixed contract.
-- Decision: rejected.
+- 결정: rejected.
 
-### C. Full rename to `spring-boot/graph-spring-boot`
+### C. `spring-boot/graph-spring-boot`로 full rename
 
 - Pros: one stable public contract; aligns with `leader-spring-boot`; avoids future churn.
 - Cons: larger mechanical diff across imports and workflows.
-- Decision: accepted.
+- 결정: accepted.
 
 ## 7. Implementation Surface
 
@@ -119,7 +119,7 @@ Historical docs from earlier completed work may keep old names if they describe 
 - `actionlint .github/workflows/ci.yml .github/workflows/nightly.yml`.
 - `rg 'graph-spring-boot4-starter|spring-boot4/graph-spring-boot4-starter|io\.bluetape4k\.graph\.spring\.boot4'` shows only historical references or none in current docs/code.
 
-## 9. Risks
+## 9. 리스크
 
 | Risk | Mitigation |
 |---|---|

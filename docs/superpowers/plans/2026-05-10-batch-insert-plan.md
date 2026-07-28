@@ -1,9 +1,9 @@
-# Batch Insert Implementation Plan
+# Batch insert 구현 계획
 
 ## Related Spec
 
 - Spec: `docs/superpowers/specs/2026-05-10-batch-insert-design.md`
-- Issue: #33
+- 이슈: #33
 - Branch/worktree: `feat/33-batch-insert` in `.worktrees/feat/33-batch-insert`
 
 ## Execution Strategy
@@ -129,7 +129,7 @@ backend edits.
 - No AGENTS.md update is expected unless implementation discovers a durable new convention.
 - `docs/superpowers/index/2026-05.md` and `docs/superpowers/INDEX.md` must be updated with this spec/plan row.
 
-## Migration Scope
+## Migration 범위
 
 This PR should include:
 
@@ -154,11 +154,11 @@ This PR should not include:
 - Compatibility: default repository methods avoid source-breaking abstract additions.
 - Coroutine correctness: suspend APIs either use native reactive query or explicit `Dispatchers.IO` delegation matching existing backend style.
 
-## Step 3-R Review Notes
+## Step 3-R 리뷰 메모
 
-### Local Perspective Reviews
+### Local perspective 리뷰
 
-| Perspective | Finding | Severity | Plan Decision |
+| 관점 | 발견 사항 | 심각도 | Plan 결정 |
 |-------------|---------|----------|---------------|
 | Implementer | Backend work depends on core defaults and validation. | high | T1/T2 are first and block backend tasks. |
 | Test engineer | Counting rows is not enough; order and missing endpoint rollback must be asserted. | high | T8 includes order and all-or-fail tests. |
@@ -166,12 +166,12 @@ This PR should not include:
 | Delivery | Container-heavy backends may slow one PR. | medium | Targeted per-backend tests and rollback points are explicit. |
 | Ops/SRE | Partial graph state during import is the main operational risk. | high | Edge batch and importer failure semantics are dedicated checks. |
 
-### Claude Code Opus Advisor
+### Claude Code Opus advisor
 
 Artifact: `.omx/artifacts/ask-claude-batch-insert-plan-20260510-135723.md`
 Model: `${CLAUDE_ADVISOR_MODEL:-claude-opus-4-7}`
 
-| Severity | Finding | Decision | Follow-up |
+| 심각도 | 발견 사항 | 결정 | 후속 작업 |
 |----------|---------|----------|-----------|
 | high | 10k benchmark evidence cannot be optional. | accepted | Promoted T11 to high and requires executed numeric evidence in testlog. |
 | high | AGE serializer hardening must be a separate precondition. | accepted | Added T6a before AGE batch SQL. |

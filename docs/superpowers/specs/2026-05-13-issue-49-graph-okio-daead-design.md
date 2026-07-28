@@ -1,11 +1,11 @@
-# Issue #49 Graph OkIO DAEAD Chunk Encryption Design
+# 이슈 #49 Graph OkIO DAEAD chunk encryption 설계
 
-- Issue: #49
+- 이슈: #49
 - Date: 2026-05-13
-- Scope: `graph-okio`
+- 범위: `graph-okio`
 - Status: Step 2-R reviewed
 
-## 1. Context
+## 1. 맥락
 
 `graph-okio` currently supports OkIO source/sink abstraction, streaming compression, and atomic path writes. The original OkIO
 spec deferred encryption because `bluetape4k-okio` only had `TinkEncryptSink` / `TinkDecryptSource`, and that path was not safe
@@ -27,7 +27,7 @@ Google Tink documentation states that Deterministic AEAD returns stable cipherte
 That property is useful for some workloads, but it leaks repeated plaintext chunks. `graph-okio` must document that trade-off
 instead of presenting DAEAD chunk encryption as general-purpose randomized streaming encryption.
 
-## 2. Decision
+## 2. 결정
 
 Implement #49 using the existing bluetape4k-okio DAEAD chunk format, not Tink `StreamingAead`.
 
@@ -85,7 +85,7 @@ file naming in the same slice. Callers can still use the low-level path helpers 
 
 ## 4. Dependency Contract
 
-`graph-okio` will expose `TinkDeterministicAead` in public signatures. Therefore `gradle/libs.versions.toml` needs a
+`graph-okio` will expose `TinkDeterministicAead` in public signatures. 따라서 `gradle/libs.versions.toml` needs a
 `bluetape4k-tink` alias, and `graph-io/okio/build.gradle.kts` should declare:
 
 ```kotlin
@@ -129,7 +129,7 @@ Update `graph-io/okio/README.md` and `README.ko.md`:
 
 New or touched public KDoc must be English.
 
-## 8. Out Of Scope
+## 8. 범위 제외
 
 - Tink `StreamingAead`.
 - CSV paired encrypted file convenience naming.
@@ -137,7 +137,7 @@ New or touched public KDoc must be English.
 - Keyset loading or key management helpers.
 - Benchmarking encryption throughput.
 
-## 9. Review Notes
+## 9. 리뷰 메모
 
 Step 2-R review must verify:
 
@@ -147,7 +147,7 @@ Step 2-R review must verify:
 - Compression/encryption order is correct and testable.
 - No mock-only validation is used.
 
-### Step 2-R Review Result
+### Step 2-R 리뷰 결과
 
 Claude Code Opus advisor:
 
@@ -156,7 +156,7 @@ Claude Code Opus advisor:
 
 Codex review findings:
 
-| Priority | Finding | Decision |
+| 우선순위 | 발견 사항 | 결정 |
 |---|---|---|
 | P1 | Public signatures expose `TinkDeterministicAead`; relying only on transitive `bluetape4k-okio` API dependency would be brittle. | Accepted. Spec requires explicit `api(libs.bluetape4k.tink)`. |
 | P1 | DAEAD is deterministic and can leak repeated chunks. | Accepted. Spec and docs tasks require explicit warning. |

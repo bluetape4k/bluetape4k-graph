@@ -1,11 +1,11 @@
-# Implementation Plan — Virtual Threads Full Expansion & graph-benchmark Module
+# 구현 계획 - Virtual Threads 전체 확장과 graph-benchmark module
 
 - **Date**: 2026-04-17
 - **Spec**: `docs/superpowers/specs/2026-04-17-virtual-threads-expansion-and-benchmark-design.md`
 - **Status**: Ready for execution
-- **Scope**: `graph/graph-core` (VT 어댑터 확장) + `graph/graph-benchmark` (신규)
+- **범위**: `graph/graph-core` (VT 어댑터 확장) + `graph/graph-benchmark` (신규)
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development` (recommended) or `superpowers:executing-plans` to implement this plan task-by-task. Each task follows TDD: failing test → run → implementation → run → commit.
+> **Agentic worker용:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development` (recommended) or `superpowers:executing-plans` to implement this plan task-by-task. Each task follows TDD: failing test → run → implementation → run → commit.
 
 ---
 

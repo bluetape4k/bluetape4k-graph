@@ -1,4 +1,4 @@
-# Graph Algorithm Extension Design Spec
+# Graph algorithm extension 설계 spec
 
 - **Date**: 2026-04-16
 - **Status**: Revised (critic 리뷰 반영 완료)
@@ -418,13 +418,13 @@ interface GraphOperations :
 
 ## 4. 설계 대안 (2-3개 접근 방식 평가)
 
-### Approach A — 단일 인터페이스 확장 (선택 권장)
+### Approach A - 단일 interface 확장 (선택 권장)
 
 기존 `GraphTraversalRepository`에 6개 메서드를 직접 추가.
 - 장점: 사용자 facade(`GraphOperations`)는 변경 없이 자동 노출. Discovery 우수.
 - 단점: 백엔드 필수 구현 부담 ↑. 미지원은 `UnsupportedOperationException`.
 
-### Approach B — `GraphAlgorithmRepository` 분리 + `GraphGenericRepository` 중간 계층 + `GraphOperations` 합성 ✅ 채택
+### Approach B - `GraphAlgorithmRepository` 분리 + `GraphGenericRepository` 중간 계층 + `GraphOperations` 합성 (채택)
 
 기존 패턴(`GraphOperations`가 여러 repository를 합성)과 동일한 방식으로 확장.
 **`GraphGenericRepository`** 중간 인터페이스를 두어 traversal + algorithm을 한 계층으로 묶는다.
@@ -456,7 +456,7 @@ interface GraphSuspendOperations :
   - 향후 `GraphSuspendGenericRepository`만 주입받으면 코루틴 API 전체 사용 가능.
 - 단점: 중간 인터페이스 파일 2개(`GraphGenericRepository`, `GraphSuspendGenericRepository`) 추가.
 
-### Approach C — 알고리즘별 plug-in (Provider/Strategy)
+### Approach C - 알고리즘별 plug-in (Provider/Strategy)
 
 ```kotlin
 interface GraphAlgorithm<O, R> { fun execute(ops: GraphOperations, opts: O): R }
@@ -573,7 +573,7 @@ Phase 1-5는 MAGE 없이 순수 Cypher로 구현. Phase 7에서 MAGE 이미지 �
 
 ## 9. 초안 태스크 목록
 
-### Phase 1 — 인터페이스/모델 골격 (graph-core)
+### Phase 1 - interface/model 골격 (graph-core)
 - [ ] T-1 모델 5종(`PageRankScore`/`DegreeResult`/`GraphComponent`/`TraversalVisit`/`GraphCycle`) 추가 (`serialVersionUID` 포함)
 - [ ] T-2a `GraphAlgorithmOptions` sealed + `PageRankOptions`/`DegreeOptions`/`ComponentOptions` 신규 파일 추가
 - [ ] T-2b `BfsDfsOptions`/`CycleOptions` 를 `GraphTraversalOptions.kt` 에 추가 (sealed 하위)
@@ -582,26 +582,26 @@ Phase 1-5는 MAGE 없이 순수 Cypher로 구현. Phase 7에서 MAGE 이미지 �
 - [ ] T-4b `GraphOperations` → `GraphGenericRepository` 합성으로 교체, `GraphSuspendOperations` 동일 적용
 - [ ] T-5 `algo/internal/` UnionFind · BfsDfsRunner · CycleDetector · PageRankCalculator 폴백 유틸 + 단위 테스트
 
-### Phase 2 — TinkerPop 구현 (가장 완전 지원)
+### Phase 2 - TinkerPop 구현 (가장 완전 지원)
 - [ ] T-6 6개 메서드 native Gremlin step 구현
 - [ ] T-7 동기/코루틴 변환 (`flow { ... }.flowOn(Dispatchers.IO)`)
 - [ ] T-8 `TinkerGraphAlgorithmTest` (PER_CLASS, 인메모리)
 
-### Phase 3 — Neo4j (Cypher 1차)
+### Phase 3 - Neo4j (Cypher 1차)
 - [ ] T-9 degreeCentrality / detectCycles / bfs / dfs Cypher 구현
 - [ ] T-10 connectedComponents · pageRank → 폴백 또는 GDS optional 분기
 - [ ] T-11 `Neo4jAlgorithmTest` (Testcontainers, Bolt)
 
-### Phase 4 — Memgraph
+### Phase 4 - Memgraph
 - [ ] T-12 Neo4j Cypher 코드 재사용 + MAGE 호출 옵션
 - [ ] T-13 `MemgraphAlgorithmTest` (이미지 변경 검토)
 
-### Phase 5 — AGE
+### Phase 5 - AGE
 - [ ] T-14 `AgeSql.kt`에 degree/cycle Cypher-over-SQL 헬퍼 추가
 - [ ] T-15 PageRank/CC/BFS/DFS — JDBC fetch + `algo/internal` 호출
 - [ ] T-16 `AgeAlgorithmTest` (Testcontainers PostgreSQL+AGE)
 
-### Phase 6 — 통합 / 문서화
+### Phase 6 - 통합 / 문서화
 - [ ] T-17 `Abstract(Suspend)AlgorithmTest` 공통화 + 4 백엔드 PER_CLASS 구체화
 - [ ] T-18 examples 모듈에 알고리즘 사용 예시 추가 (LinkedIn 그래프 — pageRank, connectedComponents)
 - [ ] T-19a `graph-core` README.md / README.ko.md — `GraphAlgorithmRepository` 인터페이스 문서 추가
@@ -611,11 +611,11 @@ Phase 1-5는 MAGE 없이 순수 Cypher로 구현. Phase 7에서 MAGE 이미지 �
 - [ ] T-19e `graph-tinkerpop` README.md / README.ko.md — TinkerPop native step 문서 추가
 - [ ] T-20 전체 테스트 통과 후 `docs/testlogs/2026-04.md` 맨 위 행에 결과 기록
 
-### Phase 7 — Optional (별도 PR)
+### Phase 7 - Optional (별도 PR)
 - [ ] T-21 `graph-neo4j-gds` sub-module 분리 검토
 - [ ] T-22 `graph-memgraph-mage` 이미지 + MAGE Provider
 
-### Phase 8 — Virtual Threads 브릿지 (graph-core)
+### Phase 8 - Virtual Threads bridge (graph-core)
 
 > Vertex/Edge/Traversal 전체로의 확장은 별도 TODO — 본 Phase는 Algorithm API만.
 
