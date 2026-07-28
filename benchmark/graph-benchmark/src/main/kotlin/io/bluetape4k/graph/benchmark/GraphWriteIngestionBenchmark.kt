@@ -36,12 +36,12 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 
 /**
- * Compares sustained write and batch ingestion profiles across graph database backends.
+ * Graph database backend 간 sustained write 및 batch ingestion profile을 비교한다.
  *
- * ## Behavior / Contract
- * - Container-backed backends use bluetape4k Testcontainers launchers or wrappers and should be run serially.
- * - Each JMH iteration starts from a fresh graph and a deterministic edge seed pool.
- * - Benchmark invocations intentionally keep inserting new batches during the iteration to model sustained writes.
+ * ## 동작/계약
+ * - Container-backed backend는 bluetape4k Testcontainers launcher 또는 wrapper를 사용하므로 serial하게 실행해야 한다.
+ * - 각 JMH iteration은 fresh graph와 deterministic edge seed pool에서 시작한다.
+ * - Benchmark invocation은 sustained write를 모델링하기 위해 iteration 동안 의도적으로 새 batch를 계속 insert한다.
  * - `repeatedMixedBatches` reports one operation as multiple vertex+edge batches; compare it separately from one-batch rows.
  *
  * ```bash

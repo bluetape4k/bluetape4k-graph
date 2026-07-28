@@ -29,13 +29,13 @@ import org.openjdk.jmh.annotations.Warmup
 import java.util.concurrent.TimeUnit
 
 /**
- * Compares domain-shaped graph workloads through the shared [GraphOperations] contract.
+ * Shared [GraphOperations] contract를 통해 domain-shaped graph workload를 비교한다.
  *
- * ## Behavior / Contract
- * - Fixture generation is deterministic and rebuilt for each JMH iteration.
- * - The backend matrix is intentionally selective: TinkerGraph as the in-memory baseline, Neo4j as the
- *   low-risk production default, and Memgraph as the low-latency persistent candidate.
- * - Workloads model domain access shapes rather than vendor-specific tuned queries.
+ * ## 동작/계약
+ * - Fixture generation은 deterministic하며 각 JMH iteration마다 다시 build된다.
+ * - Backend matrix는 의도적으로 선별되어 있다. TinkerGraph는 in-memory baseline, Neo4j는
+ *   low-risk production default, Memgraph는 low-latency persistent candidate로 둔다.
+ * - Workload는 vendor-specific tuned query가 아니라 domain access shape를 모델링한다.
  */
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)

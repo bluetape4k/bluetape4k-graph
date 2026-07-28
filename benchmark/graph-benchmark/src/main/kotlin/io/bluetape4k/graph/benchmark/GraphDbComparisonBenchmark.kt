@@ -37,9 +37,9 @@ import org.openjdk.jmh.annotations.Warmup
 import java.util.concurrent.TimeUnit
 
 /**
- * Compares graph database backends through the shared [GraphOperations] contract.
+ * Shared [GraphOperations] contract를 통해 graph database backend를 비교한다.
  *
- * Container-backed backends use bluetape4k Testcontainers singleton launchers and should be run serially.
+ * Container-backed backend는 bluetape4k Testcontainers singleton launcher를 사용하므로 serial하게 실행해야 한다.
  */
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
