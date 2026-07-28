@@ -12,7 +12,7 @@ import java.io.OutputStream
  *
  * 소유권 규칙:
  * - [PathSink]: 라이브러리 소유 — 라이브러리가 open/close 모두 책임진다.
- * - [SinkBased]: `ownsSink=false`(기본) — 호출자 소유. 라이브러리는 export 완료 후 underlying sink를 닫지 않는다.
+ * - [SinkBased]: `ownsSink=false`(기본) — 호출자 소유. 라이브러리는 export 완료 후 하위 sink를 닫지 않는다.
  *   `ownsSink=true`로 명시한 경우에만 라이브러리가 소유권을 인계받아 닫는다.
  * - [OutputStreamBased]: `ownsStream=false`(기본) — 호출자 소유. 동일 규칙 적용.
  */

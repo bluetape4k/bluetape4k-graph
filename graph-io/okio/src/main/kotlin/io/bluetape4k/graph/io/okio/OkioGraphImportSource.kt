@@ -12,7 +12,7 @@ import java.io.InputStream
  *
  * 소유권 규칙:
  * - [PathSource]: 라이브러리 소유 — 라이브러리가 open/close 모두 책임진다.
- * - [SourceBased]: `ownsSource=false`(기본) — 호출자 소유. 라이브러리는 import 완료 후 underlying source를 닫지 않는다.
+ * - [SourceBased]: `ownsSource=false`(기본) — 호출자 소유. 라이브러리는 import 완료 후 하위 source를 닫지 않는다.
  *   `ownsSource=true`로 명시한 경우에만 라이브러리가 소유권을 인계받아 닫는다.
  * - [InputStreamBased]: `ownsStream=false`(기본) — 호출자 소유. 동일 규칙 적용.
  */
