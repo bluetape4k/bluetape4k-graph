@@ -18,13 +18,11 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 /**
- * Auto-configuration for the in-memory TinkerGraph backend.
+ * In-memory TinkerGraph backend auto-configuration.
  *
- * It is active when `bluetape4k.graph.backend=tinkergraph` or when the backend
- * property is absent. TinkerGraph has no external service dependency, so it is
- * the default backend.
+ * `bluetape4k.graph.backend=tinkergraph`이거나 backend property가 없을 때 활성화된다. TinkerGraph는 외부 service dependency가 없으므로 기본 backend다.
  *
- * Example:
+ * 예제:
  *
  * ```kotlin
  * import io.bluetape4k.graph.repository.GraphOperations
@@ -54,8 +52,7 @@ class GraphTinkerGraphAutoConfiguration {
     companion object : KLogging()
 
     /**
-     * Registers in-memory TinkerGraph operations when the application has not
-     * provided its own graph operations bean.
+     * Application이 자체 graph operations bean을 제공하지 않았을 때 in-memory TinkerGraph operations를 등록한다.
      */
     @Bean(destroyMethod = "close")
     @ConditionalOnMissingBean(GraphOperations::class)
@@ -65,7 +62,7 @@ class GraphTinkerGraphAutoConfiguration {
     }
 
     /**
-     * Registers coroutine-friendly TinkerGraph operations when suspend support is enabled.
+     * Suspend 지원이 활성화되면 coroutine 친화적 TinkerGraph operations를 등록한다.
      */
     @Bean
     @ConditionalOnMissingBean(GraphSuspendOperations::class)
@@ -79,7 +76,7 @@ class GraphTinkerGraphAutoConfiguration {
         TinkerGraphSuspendOperations(ops)
 
     /**
-     * Registers virtual-thread graph operations backed by the synchronous TinkerGraph operations.
+     * 동기 TinkerGraph operations를 기반으로 virtual-thread graph operations를 등록한다.
      */
     @Bean
     @ConditionalOnMissingBean(GraphVirtualThreadOperations::class)
@@ -93,8 +90,7 @@ class GraphTinkerGraphAutoConfiguration {
         ops.asVirtualThread()
 
     /**
-     * Isolates the Actuator health indicator so non-Actuator applications avoid
-     * `NoClassDefFoundError`.
+     * Actuator health indicator를 분리해 Actuator를 사용하지 않는 application에서 `NoClassDefFoundError`를 피한다.
      */
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(name = ["org.springframework.boot.health.contributor.HealthIndicator"])

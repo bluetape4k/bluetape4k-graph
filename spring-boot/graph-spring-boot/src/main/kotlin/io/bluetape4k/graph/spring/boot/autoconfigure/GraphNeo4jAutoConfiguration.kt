@@ -23,12 +23,11 @@ import org.springframework.context.annotation.Configuration
 import java.util.concurrent.TimeUnit
 
 /**
- * Auto-configuration for the Neo4j backend.
+ * Neo4j backend auto-configuration.
  *
- * It is active when `bluetape4k.graph.backend=neo4j`. If the application
- * already provides a Neo4j [Driver], that driver is reused.
+ * `bluetape4k.graph.backend=neo4j`일 때 활성화된다. Application이 이미 Neo4j [Driver]를 제공하면 그 driver를 재사용한다.
  *
- * Example:
+ * 예제:
  *
  * ```kotlin
  * import io.bluetape4k.graph.repository.GraphOperations
@@ -59,7 +58,7 @@ class GraphNeo4jAutoConfiguration {
     companion object : KLogging()
 
     /**
-     * Creates the Neo4j [Driver] when the application has not provided one.
+     * Application이 제공한 Neo4j [Driver]가 없을 때 새 [Driver]를 생성한다.
      */
     @Bean(name = ["neo4jDriver"], destroyMethod = "close")
     @ConditionalOnMissingBean(Driver::class)
@@ -76,7 +75,7 @@ class GraphNeo4jAutoConfiguration {
     }
 
     /**
-     * Registers Neo4j-backed [GraphOperations] for the configured database.
+     * 설정된 database에 대해 Neo4j 기반 [GraphOperations]를 등록한다.
      */
     @Bean
     @ConditionalOnMissingBean(GraphOperations::class)
@@ -84,7 +83,7 @@ class GraphNeo4jAutoConfiguration {
         Neo4jGraphOperations(driver, props.database)
 
     /**
-     * Registers coroutine-friendly Neo4j graph operations when suspend support is enabled.
+     * Suspend 지원이 활성화되면 coroutine 친화적 Neo4j graph operations를 등록한다.
      */
     @Bean
     @ConditionalOnMissingBean(GraphSuspendOperations::class)
@@ -98,7 +97,7 @@ class GraphNeo4jAutoConfiguration {
         Neo4jGraphSuspendOperations(driver, props.database)
 
     /**
-     * Registers virtual-thread graph operations backed by the synchronous Neo4j operations.
+     * 동기 Neo4j operations를 기반으로 virtual-thread graph operations를 등록한다.
      */
     @Bean
     @ConditionalOnMissingBean(GraphVirtualThreadOperations::class)
@@ -112,8 +111,7 @@ class GraphNeo4jAutoConfiguration {
         ops.asVirtualThread()
 
     /**
-     * Isolates the Actuator health indicator so non-Actuator applications avoid
-     * `NoClassDefFoundError`.
+     * Actuator health indicator를 분리해 Actuator를 사용하지 않는 application에서 `NoClassDefFoundError`를 피한다.
      */
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(name = ["org.springframework.boot.health.contributor.HealthIndicator"])

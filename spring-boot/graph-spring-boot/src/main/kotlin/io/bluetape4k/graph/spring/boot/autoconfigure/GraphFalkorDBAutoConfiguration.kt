@@ -19,12 +19,12 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 /**
- * Auto-configuration for the FalkorDB backend.
+ * FalkorDB backend auto-configuration.
  *
- * It is active when `bluetape4k.graph.backend=falkordb`. FalkorDB is a Redis
- * module based graph database and uses the jfalkordb [com.falkordb.Driver].
+ * `bluetape4k.graph.backend=falkordb`일 때 활성화된다. FalkorDB는 Redis module 기반 graph database이며
+ * jfalkordb [com.falkordb.Driver]를 사용한다.
  *
- * Example:
+ * 예제:
  *
  * ```kotlin
  * import io.bluetape4k.graph.repository.GraphOperations
@@ -56,10 +56,10 @@ class GraphFalkorDBAutoConfiguration {
     companion object : KLogging()
 
     /**
-     * Creates the FalkorDB driver bean.
+     * FalkorDB driver bean을 생성한다.
      *
-     * ## Behavior / Contract
-     * - Skips registration when the application already provides a [com.falkordb.Driver] bean.
+     * ## 동작 계약
+     * - Application이 [com.falkordb.Driver] bean을 이미 제공하면 등록하지 않는다.
      * - Connects without authentication when [FalkorDBGraphProperties.username] is blank.
      * - Uses username/password authentication when a username is configured.
      * - Spring owns this auto-created driver and closes it through the bean destroy method.
@@ -76,11 +76,11 @@ class GraphFalkorDBAutoConfiguration {
     }
 
     /**
-     * Creates the synchronous FalkorDB [GraphOperations] bean.
+     * 동기 FalkorDB [GraphOperations] bean을 생성한다.
      *
-     * ## Behavior / Contract
-     * - Skips registration when another [GraphOperations] bean already exists.
-     * - Uses the configured FalkorDB graph name from [FalkorDBGraphProperties.graphName].
+     * ## 동작 계약
+     * - 다른 [GraphOperations] bean이 이미 있으면 등록하지 않는다.
+     * - [FalkorDBGraphProperties.graphName]에 설정된 FalkorDB graph 이름을 사용한다.
      */
     @Bean
     @ConditionalOnMissingBean(GraphOperations::class)
@@ -88,12 +88,12 @@ class GraphFalkorDBAutoConfiguration {
         FalkorDBGraphOperations(driver, props.graphName)
 
     /**
-     * Creates the coroutine FalkorDB [GraphSuspendOperations] bean.
+     * Coroutine FalkorDB [GraphSuspendOperations] bean을 생성한다.
      *
-     * ## Behavior / Contract
-     * - Skips registration when another [GraphSuspendOperations] bean already exists.
-     * - Registers by default and can be disabled with `bluetape4k.graph.falkordb.register-suspend=false`.
-     * - Uses the configured FalkorDB graph name from [FalkorDBGraphProperties.graphName].
+     * ## 동작 계약
+     * - 다른 [GraphSuspendOperations] bean이 이미 있으면 등록하지 않는다.
+     * - 기본적으로 등록하며 `bluetape4k.graph.falkordb.register-suspend=false`로 비활성화할 수 있다.
+     * - [FalkorDBGraphProperties.graphName]에 설정된 FalkorDB graph 이름을 사용한다.
      */
     @Bean
     @ConditionalOnMissingBean(GraphSuspendOperations::class)
@@ -107,13 +107,13 @@ class GraphFalkorDBAutoConfiguration {
         FalkorDBGraphSuspendOperations(driver, props.graphName)
 
     /**
-     * Creates the virtual-thread [GraphVirtualThreadOperations] adapter bean.
+     * Virtual-thread [GraphVirtualThreadOperations] adapter bean을 생성한다.
      *
-     * ## Behavior / Contract
-     * - Skips registration when another [GraphVirtualThreadOperations] bean already exists.
-     * - Registers by default and can be disabled with `bluetape4k.graph.falkordb.register-virtual-thread=false`.
-     * - Depends on the synchronous [GraphOperations] bean supplied to this adapter.
-     * - Adapts the synchronous [GraphOperations] bean without changing the underlying FalkorDB driver ownership.
+     * ## 동작 계약
+     * - 다른 [GraphVirtualThreadOperations] bean이 이미 있으면 등록하지 않는다.
+     * - 기본적으로 등록하며 `bluetape4k.graph.falkordb.register-virtual-thread=false`로 비활성화할 수 있다.
+     * - 이 adapter에 전달된 동기 [GraphOperations] bean에 의존한다.
+     * - 하위 FalkorDB driver 소유권을 바꾸지 않고 동기 [GraphOperations] bean을 adapter로 감싼다.
      */
     @Bean
     @ConditionalOnMissingBean(GraphVirtualThreadOperations::class)
@@ -127,11 +127,11 @@ class GraphFalkorDBAutoConfiguration {
         ops.asVirtualThread()
 
     /**
-     * Health indicator configuration for the FalkorDB backend.
+     * FalkorDB backend health indicator 설정.
      *
-     * ## Behavior / Contract
-     * - Loads only when Spring Boot Actuator's `HealthIndicator` type is present.
-     * - Keeps Actuator-only bean signatures isolated from applications that do not use Actuator.
+     * ## 동작 계약
+     * - Spring Boot Actuator의 `HealthIndicator` type이 있을 때만 load된다.
+     * - Actuator 전용 bean signature를 Actuator를 사용하지 않는 application과 분리한다.
      */
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(name = ["org.springframework.boot.health.contributor.HealthIndicator"])
@@ -140,12 +140,12 @@ class GraphFalkorDBAutoConfiguration {
         companion object : KLogging()
 
         /**
-         * Creates the FalkorDB health indicator bean.
+         * FalkorDB health indicator bean을 생성한다.
          *
-         * ## Behavior / Contract
-         * - Skips registration when a bean named `falkordbHealthIndicator` already exists.
-         * - Runs `RETURN 1` against the `__health__` graph to verify driver connectivity.
-         * - Reports `UP` with the `backend=falkordb` detail on success and `DOWN` with the thrown exception on failure.
+         * ## 동작 계약
+         * - `falkordbHealthIndicator`라는 이름의 bean이 이미 있으면 등록하지 않는다.
+         * - Driver 연결성을 확인하기 위해 `__health__` graph에 `RETURN 1`을 실행한다.
+         * - 성공 시 `backend=falkordb` detail과 함께 `UP`을 보고하고, 실패 시 던져진 예외와 함께 `DOWN`을 보고한다.
          */
         @Bean
         @ConditionalOnMissingBean(name = ["falkordbHealthIndicator"])
