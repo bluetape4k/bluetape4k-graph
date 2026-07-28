@@ -1,9 +1,9 @@
-# Merge / Upsert Implementation Plan
+# Merge / Upsert 구현 계획
 
 ## Related Spec
 
 - Spec: `docs/superpowers/specs/2026-05-09-merge-upsert-design.md`
-- Issue: #34
+- 이슈: #34
 - Branch/worktree: `feat/issue-34-merge-upsert`
 
 ## Task List
@@ -90,7 +90,7 @@ Use traversal get-or-create, then apply `setProperties` outside the `coalesce` b
 - Concurrency: backend-native MERGE is preferred; no generic read-then-write fallback in core. AGE keeps a backend-local transactional fallback because native update branches are unavailable.
 - Performance: schema/index support from #32 should be documented as the recommended companion for high-cardinality merge keys.
 
-## Step 3-R Review Notes
+## Step 3-R 리뷰 메모
 
 | Perspective | Finding | Plan Change |
 |-------------|---------|-------------|

@@ -1,14 +1,14 @@
-# graph-io Bulk Import/Export Implementation Plan
+# graph-io bulk import/export 구현 계획
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **Agentic worker용:** 필수 sub-skill: 이 계획을 task 단위로 구현할 때는 superpowers:subagent-driven-development(권장) 또는 superpowers:executing-plans를 사용한다. Step은 tracking을 위해 checkbox(`- [ ]`) syntax를 사용한다.
 
 > **코드 스니펫 규칙:** 이 플랜의 코드 블록은 **의사코드(pseudocode)** 입니다. 실제 구현 시 인터페이스 시그니처, 패키지명, API 호출 방식은 반드시 실제 소스코드를 참조하여 확인하십시오. 단, `build.gradle.kts` 내용 및 import 경로는 **실제 구현 코드**입니다.
 
-**Goal:** Ship `graph-io-core` common module plus four format modules (CSV, Jackson2 NDJSON, Jackson3 NDJSON, GraphML) on top of `GraphOperations`/`GraphSuspendOperations`, with Sync / Virtual-Thread / Coroutine APIs and a full benchmark suite under `graph-io-benchmark`.
+**목표:** Ship `graph-io-core` common module plus four format modules (CSV, Jackson2 NDJSON, Jackson3 NDJSON, GraphML) on top of `GraphOperations`/`GraphSuspendOperations`, with Sync / Virtual-Thread / Coroutine APIs and a full benchmark suite under `graph-io-benchmark`.
 
-**Architecture:** `graph-io-core` holds common data model, Source/Sink, Options, Reports, and the Sync/VT/Coroutine contracts plus the VT adapter built on `virtualFutureOf`. Each format module provides its own importer/exporter trio (Sync, VT, Suspend). NDJSON uses single-pass read with bounded edge buffering; CSV uses per-label Union-header pre-scan; GraphML uses JDK StAX. Coroutine export consumes `GraphSuspendVertexRepository.findVerticesByLabel()` / `findEdgesByLabel()` Flows directly.
+**아키텍처:** `graph-io-core` holds common data model, Source/Sink, Options, Reports, and the Sync/VT/Coroutine contracts plus the VT adapter built on `virtualFutureOf`. Each format module provides its own importer/exporter trio (Sync, VT, Suspend). NDJSON uses single-pass read with bounded edge buffering; CSV uses per-label Union-header pre-scan; GraphML uses JDK StAX. Coroutine export consumes `GraphSuspendVertexRepository.findVerticesByLabel()` / `findEdgesByLabel()` Flows directly.
 
-**Tech Stack:** Kotlin 2.3, Java 25 (preview), Gradle multi-module, `bluetape4k-io`, `bluetape4k-csv`, `bluetape4k-jackson2`, `bluetape4k-jackson3`, `bluetape4k-virtualthread-api/jdk25`, `bluetape4k-coroutines`, JDK StAX (`javax.xml.stream`), JUnit 5 + bluetape4k-assertions + MockK + kotlinx-coroutines-test, TinkerGraph (test backend).
+**기술 스택:** Kotlin 2.3, Java 25 (preview), Gradle multi-module, `bluetape4k-io`, `bluetape4k-csv`, `bluetape4k-jackson2`, `bluetape4k-jackson3`, `bluetape4k-virtualthread-api/jdk25`, `bluetape4k-coroutines`, JDK StAX (`javax.xml.stream`), JUnit 5 + bluetape4k-assertions + MockK + kotlinx-coroutines-test, TinkerGraph (test backend).
 
 **Spec Reference:** `docs/superpowers/specs/2026-04-18-graph-io-bulk-import-export-design.md`
 
@@ -141,7 +141,7 @@ README.md, README.ko.md (root update)
 
 ---
 
-## Task Summary
+## Task 요약
 
 | # | Task | Complexity | Module | Depends on |
 |---|------|------------|--------|------------|
@@ -188,14 +188,14 @@ Complexity rubric:
 
 ### Task 1: Register modules in settings + skeleton build files
 
-**Files:**
-- Modify: `settings.gradle.kts` — `graph-io/` 모듈들은 루트 레벨이므로 `includeModules("graph", ...)` 스캔 대상이 아님. `include()` + `projectDir` 명시 필요.
-- Create: `graph-io/core/build.gradle.kts`
-- Create: `graph-io/csv/build.gradle.kts`
-- Create: `graph-io/jackson2/build.gradle.kts`
-- Create: `graph-io/jackson3/build.gradle.kts`
-- Create: `graph-io/graphml/build.gradle.kts`
-- Create: `benchmark/graph-io-benchmark/build.gradle.kts`
+**파일:**
+- 수정: `settings.gradle.kts` — `graph-io/` 모듈들은 루트 레벨이므로 `includeModules("graph", ...)` 스캔 대상이 아님. `include()` + `projectDir` 명시 필요.
+- 생성: `graph-io/core/build.gradle.kts`
+- 생성: `graph-io/csv/build.gradle.kts`
+- 생성: `graph-io/jackson2/build.gradle.kts`
+- 생성: `graph-io/jackson3/build.gradle.kts`
+- 생성: `graph-io/graphml/build.gradle.kts`
+- 생성: `benchmark/graph-io-benchmark/build.gradle.kts`
 
 Complexity: low. Dependencies: none. Module: settings + all new modules.
 
@@ -347,9 +347,9 @@ git commit -m "chore: graph-io 모듈 스켈레톤 추가 (graph-io, csv, jackso
 
 ### Task 2: `graph-io` records + validation
 
-**Files:**
-- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/model/GraphIoVertexRecord.kt`
-- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/model/GraphIoEdgeRecord.kt`
+**파일:**
+- 생성: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/model/GraphIoVertexRecord.kt`
+- 생성: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/model/GraphIoEdgeRecord.kt`
 - Test: `graph-io/core/src/test/kotlin/io/bluetape4k/graph/io/model/GraphIoRecordTest.kt`
 
 Complexity: low. Dependencies: 1. Module: `graph-io`.
@@ -458,9 +458,9 @@ git commit -m "feat(graph-io): GraphIoVertexRecord, GraphIoEdgeRecord 추가 (�
 
 ### Task 3: `graph-io` Source/Sink sealed hierarchy
 
-**Files:**
-- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/source/GraphImportSource.kt`
-- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/source/GraphExportSink.kt`
+**파일:**
+- 생성: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/source/GraphImportSource.kt`
+- 생성: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/source/GraphExportSink.kt`
 - Test: `graph-io/core/src/test/kotlin/io/bluetape4k/graph/io/source/GraphImportSourceTest.kt`
 - Test: `graph-io/core/src/test/kotlin/io/bluetape4k/graph/io/source/GraphExportSinkTest.kt`
 
@@ -599,11 +599,11 @@ git commit -m "feat(graph-io): GraphImportSource, GraphExportSink sealed 계층 
 
 ### Task 4: `graph-io` Options + policy enums
 
-**Files:**
-- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/options/DuplicateVertexPolicy.kt`
-- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/options/MissingEndpointPolicy.kt`
-- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/options/GraphImportOptions.kt`
-- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/options/GraphExportOptions.kt`
+**파일:**
+- 생성: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/options/DuplicateVertexPolicy.kt`
+- 생성: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/options/MissingEndpointPolicy.kt`
+- 생성: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/options/GraphImportOptions.kt`
+- 생성: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/options/GraphExportOptions.kt`
 - Test: `graph-io/core/src/test/kotlin/io/bluetape4k/graph/io/options/GraphImportOptionsTest.kt`
 - Test: `graph-io/core/src/test/kotlin/io/bluetape4k/graph/io/options/GraphExportOptionsTest.kt`
 
@@ -766,15 +766,15 @@ git commit -m "feat(graph-io): GraphImportOptions, GraphExportOptions 및 정책
 
 ### Task 5: `graph-io` Report + Failure + enums
 
-**Files:**
-- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/report/GraphIoStatus.kt`
-- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/report/GraphIoFormat.kt`
-- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/report/GraphIoPhase.kt`
-- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/report/GraphIoFailureSeverity.kt`
-- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/report/GraphIoFileRole.kt`
-- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/report/GraphIoFailure.kt`
-- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/report/GraphImportReport.kt`
-- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/report/GraphExportReport.kt`
+**파일:**
+- 생성: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/report/GraphIoStatus.kt`
+- 생성: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/report/GraphIoFormat.kt`
+- 생성: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/report/GraphIoPhase.kt`
+- 생성: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/report/GraphIoFailureSeverity.kt`
+- 생성: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/report/GraphIoFileRole.kt`
+- 생성: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/report/GraphIoFailure.kt`
+- 생성: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/report/GraphImportReport.kt`
+- 생성: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/report/GraphExportReport.kt`
 - Test: `graph-io/core/src/test/kotlin/io/bluetape4k/graph/io/report/GraphIoReportTest.kt`
 - Test: `graph-io/core/src/test/kotlin/io/bluetape4k/graph/io/report/GraphIoSerializationTest.kt`
 
@@ -949,14 +949,14 @@ git commit -m "feat(graph-io): GraphImportReport, GraphExportReport, GraphIoFail
 
 ### Task 6: `graph-io` Sync/VT/Suspend contracts + `GraphRecordFlowReader`
 
-**Files:**
-- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphBulkImporter.kt`
-- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphBulkExporter.kt`
-- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphVirtualThreadBulkImporter.kt`
-- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphVirtualThreadBulkExporter.kt`
-- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphSuspendBulkImporter.kt`
-- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphSuspendBulkExporter.kt`
-- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphRecordFlowReader.kt`
+**파일:**
+- 생성: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphBulkImporter.kt`
+- 생성: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphBulkExporter.kt`
+- 생성: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphVirtualThreadBulkImporter.kt`
+- 생성: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphVirtualThreadBulkExporter.kt`
+- 생성: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphSuspendBulkImporter.kt`
+- 생성: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphSuspendBulkExporter.kt`
+- 생성: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphRecordFlowReader.kt`
 
 Complexity: high. Dependencies: 2,3,4,5. Module: `graph-io`.
 
@@ -1112,9 +1112,9 @@ git commit -m "feat(graph-io): Sync/VT/Suspend 벌크 I/O 계약 및 GraphRecord
 
 ### Task 7: `graph-io` GraphIoPaths + GraphIoStopwatch helpers
 
-**Files:**
-- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/support/GraphIoPaths.kt`
-- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/support/GraphIoStopwatch.kt`
+**파일:**
+- 생성: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/support/GraphIoPaths.kt`
+- 생성: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/support/GraphIoStopwatch.kt`
 - Test: `graph-io/core/src/test/kotlin/io/bluetape4k/graph/io/support/GraphIoPathsTest.kt`
 
 Complexity: low. Dependencies: 3. Module: `graph-io`.
@@ -1226,8 +1226,8 @@ git commit -m "feat(graph-io): GraphIoPaths, GraphIoStopwatch 내부 헬퍼 추�
 
 ### Task 8: `graph-io` GraphIoExternalIdMap + tests
 
-**Files:**
-- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/support/GraphIoExternalIdMap.kt`
+**파일:**
+- 생성: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/support/GraphIoExternalIdMap.kt`
 - Test: `graph-io/core/src/test/kotlin/io/bluetape4k/graph/io/support/GraphIoExternalIdMapTest.kt`
 
 Complexity: medium. Dependencies: 2. Module: `graph-io`.
@@ -1327,8 +1327,8 @@ git commit -m "feat(graph-io): 외부 ID 매핑용 GraphIoExternalIdMap 추가"
 
 ### Task 9: `graph-io` VirtualThreadGraphBulkAdapter
 
-**Files:**
-- Create: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/support/VirtualThreadGraphBulkAdapter.kt`
+**파일:**
+- 생성: `graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/support/VirtualThreadGraphBulkAdapter.kt`
 - Test: `graph-io/core/src/test/kotlin/io/bluetape4k/graph/io/support/VirtualThreadGraphBulkAdapterTest.kt`
 
 Complexity: high. Dependencies: 6. Module: `graph-io`.
@@ -1421,10 +1421,10 @@ git commit -m "feat(graph-io): CompletableFuture 기반 VirtualThreadGraphBulkAd
 
 ### Task 10: `graph-io-csv` Source/Sink wrappers + `CsvGraphIoOptions` + `CsvPropertyMode`
 
-**Files:**
-- Create: `graph-io/csv/src/main/kotlin/io/bluetape4k/graph/io/csv/CsvGraphImportSource.kt`
-- Create: `graph-io/csv/src/main/kotlin/io/bluetape4k/graph/io/csv/CsvGraphExportSink.kt`
-- Create: `graph-io/csv/src/main/kotlin/io/bluetape4k/graph/io/csv/CsvGraphIoOptions.kt`
+**파일:**
+- 생성: `graph-io/csv/src/main/kotlin/io/bluetape4k/graph/io/csv/CsvGraphImportSource.kt`
+- 생성: `graph-io/csv/src/main/kotlin/io/bluetape4k/graph/io/csv/CsvGraphExportSink.kt`
+- 생성: `graph-io/csv/src/main/kotlin/io/bluetape4k/graph/io/csv/CsvGraphIoOptions.kt`
 - Test: `graph-io/csv/src/test/kotlin/io/bluetape4k/graph/io/csv/CsvGraphIoOptionsTest.kt`
 
 Complexity: low. Dependencies: 1, 6. Module: `graph-io-csv`.
@@ -1524,8 +1524,8 @@ git commit -m "feat(graph-io-csv): CsvGraphImportSource/ExportSink 및 CsvGraphI
 
 ### Task 11: `graph-io-csv` `CsvRecordCodec` (reserved columns, union header, collision)
 
-**Files:**
-- Create: `graph-io/csv/src/main/kotlin/io/bluetape4k/graph/io/csv/internal/CsvRecordCodec.kt`
+**파일:**
+- 생성: `graph-io/csv/src/main/kotlin/io/bluetape4k/graph/io/csv/internal/CsvRecordCodec.kt`
 - Test: `graph-io/csv/src/test/kotlin/io/bluetape4k/graph/io/csv/internal/CsvRecordCodecTest.kt`
 
 Complexity: medium. Dependencies: 10. Module: `graph-io-csv`.
@@ -1626,9 +1626,9 @@ git commit -m "feat(graph-io-csv): 예약 컬럼·유니온 헤더·충돌 탐�
 
 ### Task 12: `graph-io-csv` Sync CsvGraphBulkImporter + CsvGraphBulkExporter
 
-**Files:**
-- Create: `graph-io/csv/src/main/kotlin/io/bluetape4k/graph/io/csv/CsvGraphBulkImporter.kt`
-- Create: `graph-io/csv/src/main/kotlin/io/bluetape4k/graph/io/csv/CsvGraphBulkExporter.kt`
+**파일:**
+- 생성: `graph-io/csv/src/main/kotlin/io/bluetape4k/graph/io/csv/CsvGraphBulkImporter.kt`
+- 생성: `graph-io/csv/src/main/kotlin/io/bluetape4k/graph/io/csv/CsvGraphBulkExporter.kt`
 - Test: `graph-io/csv/src/test/kotlin/io/bluetape4k/graph/io/csv/CsvRoundTripTest.kt`
 
 Complexity: medium. Dependencies: 11, 8. Module: `graph-io-csv`.
@@ -1940,9 +1940,9 @@ git commit -m "feat(graph-io-csv): 유니온 헤더 기반 CsvGraphBulkImporter/
 
 ### Task 13: `graph-io-csv` VT importer/exporter
 
-**Files:**
-- Create: `graph-io/csv/src/main/kotlin/io/bluetape4k/graph/io/csv/CsvGraphVirtualThreadBulkImporter.kt`
-- Create: `graph-io/csv/src/main/kotlin/io/bluetape4k/graph/io/csv/CsvGraphVirtualThreadBulkExporter.kt`
+**파일:**
+- 생성: `graph-io/csv/src/main/kotlin/io/bluetape4k/graph/io/csv/CsvGraphVirtualThreadBulkImporter.kt`
+- 생성: `graph-io/csv/src/main/kotlin/io/bluetape4k/graph/io/csv/CsvGraphVirtualThreadBulkExporter.kt`
 - Test: `graph-io/csv/src/test/kotlin/io/bluetape4k/graph/io/csv/CsvVirtualThreadTest.kt`
 
 Complexity: medium. Dependencies: 12, 9. Module: `graph-io-csv`.
@@ -2000,9 +2000,9 @@ git commit -m "feat(graph-io-csv): 어댑터 위임 방식 CSV Virtual Thread im
 
 ### Task 14: `graph-io-csv` Suspend importer/exporter
 
-**Files:**
-- Create: `graph-io/csv/src/main/kotlin/io/bluetape4k/graph/io/csv/SuspendCsvGraphBulkImporter.kt`
-- Create: `graph-io/csv/src/main/kotlin/io/bluetape4k/graph/io/csv/SuspendCsvGraphBulkExporter.kt`
+**파일:**
+- 생성: `graph-io/csv/src/main/kotlin/io/bluetape4k/graph/io/csv/SuspendCsvGraphBulkImporter.kt`
+- 생성: `graph-io/csv/src/main/kotlin/io/bluetape4k/graph/io/csv/SuspendCsvGraphBulkExporter.kt`
 - Test: `graph-io/csv/src/test/kotlin/io/bluetape4k/graph/io/csv/CsvSuspendRoundTripTest.kt`
 
 Complexity: medium. Dependencies: 12. Module: `graph-io-csv`.
@@ -2244,7 +2244,7 @@ git commit -m "feat(graph-io-csv): Flow 기반 SuspendCsvGraphBulkImporter/Expor
 
 ### Task 15: `graph-io-csv` format-specific options overload tests
 
-**Files:**
+**파일:**
 - Test: `graph-io/csv/src/test/kotlin/io/bluetape4k/graph/io/csv/CsvFormatOptionsTest.kt`
 
 Complexity: medium. Dependencies: 12, 13, 14. Module: `graph-io-csv`.
@@ -2272,9 +2272,9 @@ git commit -m "test(graph-io-csv): CsvGraphIoOptions 오버로드 Sync/VT/Suspen
 
 ### Task 16: `graph-io-jackson2` `NdJsonEnvelope` + `Jackson2EnvelopeCodec`
 
-**Files:**
-- Create: `graph-io/jackson2/src/main/kotlin/io/bluetape4k/graph/io/jackson2/internal/NdJsonEnvelope.kt`
-- Create: `graph-io/jackson2/src/main/kotlin/io/bluetape4k/graph/io/jackson2/internal/Jackson2EnvelopeCodec.kt`
+**파일:**
+- 생성: `graph-io/jackson2/src/main/kotlin/io/bluetape4k/graph/io/jackson2/internal/NdJsonEnvelope.kt`
+- 생성: `graph-io/jackson2/src/main/kotlin/io/bluetape4k/graph/io/jackson2/internal/Jackson2EnvelopeCodec.kt`
 - Test: `graph-io/jackson2/src/test/kotlin/io/bluetape4k/graph/io/jackson2/internal/Jackson2EnvelopeCodecTest.kt`
 
 Complexity: medium. Dependencies: 6. Module: `graph-io-jackson2`.
@@ -2364,9 +2364,9 @@ git commit -m "feat(graph-io-jackson2): NDJSON 봉투 및 Jackson2 코덱 추가
 
 ### Task 17: `graph-io-jackson2` Sync importer/exporter (single-pass + edge buffer overflow)
 
-**Files:**
-- Create: `graph-io/jackson2/src/main/kotlin/io/bluetape4k/graph/io/jackson2/Jackson2NdJsonBulkImporter.kt`
-- Create: `graph-io/jackson2/src/main/kotlin/io/bluetape4k/graph/io/jackson2/Jackson2NdJsonBulkExporter.kt`
+**파일:**
+- 생성: `graph-io/jackson2/src/main/kotlin/io/bluetape4k/graph/io/jackson2/Jackson2NdJsonBulkImporter.kt`
+- 생성: `graph-io/jackson2/src/main/kotlin/io/bluetape4k/graph/io/jackson2/Jackson2NdJsonBulkExporter.kt`
 - Test: `graph-io/jackson2/src/test/kotlin/io/bluetape4k/graph/io/jackson2/Jackson2RoundTripTest.kt`
 - Test: `graph-io/jackson2/src/test/kotlin/io/bluetape4k/graph/io/jackson2/Jackson2EdgeBufferOverflowTest.kt`
 
@@ -2508,11 +2508,11 @@ git commit -m "feat(graph-io-jackson2): 엣지 버퍼링 포함 Sync NDJSON impo
 
 ### Task 18: `graph-io-jackson2` VT + Suspend importer/exporter
 
-**Files:**
-- Create: `graph-io/jackson2/src/main/kotlin/io/bluetape4k/graph/io/jackson2/Jackson2NdJsonVirtualThreadBulkImporter.kt`
-- Create: `graph-io/jackson2/src/main/kotlin/io/bluetape4k/graph/io/jackson2/Jackson2NdJsonVirtualThreadBulkExporter.kt`
-- Create: `graph-io/jackson2/src/main/kotlin/io/bluetape4k/graph/io/jackson2/SuspendJackson2NdJsonBulkImporter.kt`
-- Create: `graph-io/jackson2/src/main/kotlin/io/bluetape4k/graph/io/jackson2/SuspendJackson2NdJsonBulkExporter.kt`
+**파일:**
+- 생성: `graph-io/jackson2/src/main/kotlin/io/bluetape4k/graph/io/jackson2/Jackson2NdJsonVirtualThreadBulkImporter.kt`
+- 생성: `graph-io/jackson2/src/main/kotlin/io/bluetape4k/graph/io/jackson2/Jackson2NdJsonVirtualThreadBulkExporter.kt`
+- 생성: `graph-io/jackson2/src/main/kotlin/io/bluetape4k/graph/io/jackson2/SuspendJackson2NdJsonBulkImporter.kt`
+- 생성: `graph-io/jackson2/src/main/kotlin/io/bluetape4k/graph/io/jackson2/SuspendJackson2NdJsonBulkExporter.kt`
 - Test: `graph-io/jackson2/src/test/kotlin/io/bluetape4k/graph/io/jackson2/Jackson2VirtualThreadTest.kt`
 - Test: `graph-io/jackson2/src/test/kotlin/io/bluetape4k/graph/io/jackson2/Jackson2SuspendTest.kt`
 
@@ -2532,9 +2532,9 @@ git commit -m "feat(graph-io-jackson2): Virtual Thread 및 Suspend NDJSON import
 
 ### Task 19: `graph-io-jackson3` envelope + codec (tools.jackson.*)
 
-**Files:**
-- Create: `graph-io/jackson3/src/main/kotlin/io/bluetape4k/graph/io/jackson3/internal/NdJsonEnvelope.kt` (identical shape to Jackson2 envelope, separate file/package)
-- Create: `graph-io/jackson3/src/main/kotlin/io/bluetape4k/graph/io/jackson3/internal/Jackson3EnvelopeCodec.kt`
+**파일:**
+- 생성: `graph-io/jackson3/src/main/kotlin/io/bluetape4k/graph/io/jackson3/internal/NdJsonEnvelope.kt` (identical shape to Jackson2 envelope, separate file/package)
+- 생성: `graph-io/jackson3/src/main/kotlin/io/bluetape4k/graph/io/jackson3/internal/Jackson3EnvelopeCodec.kt`
 - Test: `graph-io/jackson3/src/test/kotlin/io/bluetape4k/graph/io/jackson3/internal/Jackson3EnvelopeCodecTest.kt`
 
 Complexity: medium. Dependencies: 6. Module: `graph-io-jackson3`.
@@ -2570,9 +2570,9 @@ git commit -m "feat(graph-io-jackson3): NDJSON 봉투 및 Jackson3 코덱 추가
 
 ### Task 20: `graph-io-jackson3` Sync importer/exporter
 
-**Files:**
-- Create: `graph-io/jackson3/src/main/kotlin/io/bluetape4k/graph/io/jackson3/Jackson3NdJsonBulkImporter.kt`
-- Create: `graph-io/jackson3/src/main/kotlin/io/bluetape4k/graph/io/jackson3/Jackson3NdJsonBulkExporter.kt`
+**파일:**
+- 생성: `graph-io/jackson3/src/main/kotlin/io/bluetape4k/graph/io/jackson3/Jackson3NdJsonBulkImporter.kt`
+- 생성: `graph-io/jackson3/src/main/kotlin/io/bluetape4k/graph/io/jackson3/Jackson3NdJsonBulkExporter.kt`
 - Test: `graph-io/jackson3/src/test/kotlin/io/bluetape4k/graph/io/jackson3/Jackson3RoundTripTest.kt`
 - Test: `graph-io/jackson3/src/test/kotlin/io/bluetape4k/graph/io/jackson3/Jackson3EdgeBufferOverflowTest.kt`
 
@@ -2590,11 +2590,11 @@ git commit -m "feat(graph-io-jackson3): tools.jackson 기반 Sync NDJSON importe
 
 ### Task 21: `graph-io-jackson3` VT + Suspend importer/exporter
 
-**Files:**
-- Create: `graph-io/jackson3/src/main/kotlin/io/bluetape4k/graph/io/jackson3/Jackson3NdJsonVirtualThreadBulkImporter.kt`
-- Create: `graph-io/jackson3/src/main/kotlin/io/bluetape4k/graph/io/jackson3/Jackson3NdJsonVirtualThreadBulkExporter.kt`
-- Create: `graph-io/jackson3/src/main/kotlin/io/bluetape4k/graph/io/jackson3/SuspendJackson3NdJsonBulkImporter.kt`
-- Create: `graph-io/jackson3/src/main/kotlin/io/bluetape4k/graph/io/jackson3/SuspendJackson3NdJsonBulkExporter.kt`
+**파일:**
+- 생성: `graph-io/jackson3/src/main/kotlin/io/bluetape4k/graph/io/jackson3/Jackson3NdJsonVirtualThreadBulkImporter.kt`
+- 생성: `graph-io/jackson3/src/main/kotlin/io/bluetape4k/graph/io/jackson3/Jackson3NdJsonVirtualThreadBulkExporter.kt`
+- 생성: `graph-io/jackson3/src/main/kotlin/io/bluetape4k/graph/io/jackson3/SuspendJackson3NdJsonBulkImporter.kt`
+- 생성: `graph-io/jackson3/src/main/kotlin/io/bluetape4k/graph/io/jackson3/SuspendJackson3NdJsonBulkExporter.kt`
 - Test: `graph-io/jackson3/src/test/kotlin/io/bluetape4k/graph/io/jackson3/Jackson3VirtualThreadTest.kt`
 - Test: `graph-io/jackson3/src/test/kotlin/io/bluetape4k/graph/io/jackson3/Jackson3SuspendTest.kt`
 
@@ -2611,12 +2611,12 @@ git commit -m "feat(graph-io-jackson3): Virtual Thread 및 Suspend NDJSON import
 
 ### Task 22: `graph-io-graphml` Options + GraphMlAttrType coercion
 
-**Files:**
-- Create: `graph-io/graphml/src/main/kotlin/io/bluetape4k/graph/io/graphml/UnsupportedGraphMlElementPolicy.kt`
-- Create: `graph-io/graphml/src/main/kotlin/io/bluetape4k/graph/io/graphml/GraphMlEdgeDefault.kt`
-- Create: `graph-io/graphml/src/main/kotlin/io/bluetape4k/graph/io/graphml/GraphMlImportOptions.kt`
-- Create: `graph-io/graphml/src/main/kotlin/io/bluetape4k/graph/io/graphml/GraphMlExportOptions.kt`
-- Create: `graph-io/graphml/src/main/kotlin/io/bluetape4k/graph/io/graphml/internal/GraphMlAttrType.kt`
+**파일:**
+- 생성: `graph-io/graphml/src/main/kotlin/io/bluetape4k/graph/io/graphml/UnsupportedGraphMlElementPolicy.kt`
+- 생성: `graph-io/graphml/src/main/kotlin/io/bluetape4k/graph/io/graphml/GraphMlEdgeDefault.kt`
+- 생성: `graph-io/graphml/src/main/kotlin/io/bluetape4k/graph/io/graphml/GraphMlImportOptions.kt`
+- 생성: `graph-io/graphml/src/main/kotlin/io/bluetape4k/graph/io/graphml/GraphMlExportOptions.kt`
+- 생성: `graph-io/graphml/src/main/kotlin/io/bluetape4k/graph/io/graphml/internal/GraphMlAttrType.kt`
 - Test: `graph-io/graphml/src/test/kotlin/io/bluetape4k/graph/io/graphml/internal/GraphMlAttrTypeTest.kt`
 
 Complexity: low. Dependencies: 6. Module: `graph-io-graphml`.
@@ -2738,8 +2738,8 @@ git commit -m "feat(graph-io-graphml): 옵션 및 GraphMlAttrType 타입 변환 
 
 ### Task 23: `graph-io-graphml` StaxGraphMlReader
 
-**Files:**
-- Create: `graph-io/graphml/src/main/kotlin/io/bluetape4k/graph/io/graphml/internal/StaxGraphMlReader.kt`
+**파일:**
+- 생성: `graph-io/graphml/src/main/kotlin/io/bluetape4k/graph/io/graphml/internal/StaxGraphMlReader.kt`
 - Test: `graph-io/graphml/src/test/kotlin/io/bluetape4k/graph/io/graphml/internal/StaxGraphMlReaderTest.kt`
 
 Complexity: high. Dependencies: 22. Module: `graph-io-graphml`.
@@ -2930,10 +2930,10 @@ git commit -m "feat(graph-io-graphml): GraphML 부분집합용 StAX 스트리밍
 
 ### Task 24: `graph-io-graphml` StaxGraphMlWriter + Sync importer/exporter
 
-**Files:**
-- Create: `graph-io/graphml/src/main/kotlin/io/bluetape4k/graph/io/graphml/internal/StaxGraphMlWriter.kt`
-- Create: `graph-io/graphml/src/main/kotlin/io/bluetape4k/graph/io/graphml/GraphMlBulkImporter.kt`
-- Create: `graph-io/graphml/src/main/kotlin/io/bluetape4k/graph/io/graphml/GraphMlBulkExporter.kt`
+**파일:**
+- 생성: `graph-io/graphml/src/main/kotlin/io/bluetape4k/graph/io/graphml/internal/StaxGraphMlWriter.kt`
+- 생성: `graph-io/graphml/src/main/kotlin/io/bluetape4k/graph/io/graphml/GraphMlBulkImporter.kt`
+- 생성: `graph-io/graphml/src/main/kotlin/io/bluetape4k/graph/io/graphml/GraphMlBulkExporter.kt`
 - Test: `graph-io/graphml/src/test/kotlin/io/bluetape4k/graph/io/graphml/GraphMlRoundTripTest.kt`
 - Test: `graph-io/graphml/src/test/kotlin/io/bluetape4k/graph/io/graphml/GraphMlStrictModeTest.kt`
 
@@ -3052,11 +3052,11 @@ git commit -m "feat(graph-io-graphml): StAX 라이터 및 Sync GraphML importer/
 
 ### Task 25: `graph-io-graphml` VT + Suspend importer/exporter + format-specific overload
 
-**Files:**
-- Create: `graph-io/graphml/src/main/kotlin/io/bluetape4k/graph/io/graphml/GraphMlVirtualThreadBulkImporter.kt`
-- Create: `graph-io/graphml/src/main/kotlin/io/bluetape4k/graph/io/graphml/GraphMlVirtualThreadBulkExporter.kt`
-- Create: `graph-io/graphml/src/main/kotlin/io/bluetape4k/graph/io/graphml/SuspendGraphMlBulkImporter.kt`
-- Create: `graph-io/graphml/src/main/kotlin/io/bluetape4k/graph/io/graphml/SuspendGraphMlBulkExporter.kt`
+**파일:**
+- 생성: `graph-io/graphml/src/main/kotlin/io/bluetape4k/graph/io/graphml/GraphMlVirtualThreadBulkImporter.kt`
+- 생성: `graph-io/graphml/src/main/kotlin/io/bluetape4k/graph/io/graphml/GraphMlVirtualThreadBulkExporter.kt`
+- 생성: `graph-io/graphml/src/main/kotlin/io/bluetape4k/graph/io/graphml/SuspendGraphMlBulkImporter.kt`
+- 생성: `graph-io/graphml/src/main/kotlin/io/bluetape4k/graph/io/graphml/SuspendGraphMlBulkExporter.kt`
 - Test: `graph-io/graphml/src/test/kotlin/io/bluetape4k/graph/io/graphml/GraphMlVirtualThreadTest.kt`
 - Test: `graph-io/graphml/src/test/kotlin/io/bluetape4k/graph/io/graphml/GraphMlSuspendTest.kt`
 
@@ -3073,7 +3073,7 @@ git commit -m "feat(graph-io-graphml): Virtual Thread 및 Suspend GraphML import
 
 ### Task 26: Cross-format TinkerGraph round-trip suite
 
-**Files:**
+**파일:**
 - Test: `graph-io/csv/src/test/kotlin/io/bluetape4k/graph/io/cross/CrossFormatCsvTest.kt`
 - Test: `graph-io/jackson2/src/test/kotlin/io/bluetape4k/graph/io/cross/CrossFormatJackson2Test.kt`
 - Test: `graph-io/jackson3/src/test/kotlin/io/bluetape4k/graph/io/cross/CrossFormatJackson3Test.kt`
@@ -3101,9 +3101,9 @@ git commit -m "test(graph-io): TinkerGraph 크로스-포맷 왕복 테스트 스
 
 ### Task 27: Jackson2/Jackson3 NDJSON logical-shape compatibility
 
-**Files:**
-- Create: `graph-io/jackson2/src/test/resources/fixtures/ndjson/graph.jsonl` (shared fixture)
-- Create: `graph-io/jackson3/src/test/resources/fixtures/ndjson/graph.jsonl` (copy)
+**파일:**
+- 생성: `graph-io/jackson2/src/test/resources/fixtures/ndjson/graph.jsonl` (shared fixture)
+- 생성: `graph-io/jackson3/src/test/resources/fixtures/ndjson/graph.jsonl` (copy)
 - Test: `graph-io/jackson2/src/test/kotlin/io/bluetape4k/graph/io/jackson2/NdJsonCompatibilityTest.kt`
 - Test: `graph-io/jackson3/src/test/kotlin/io/bluetape4k/graph/io/jackson3/NdJsonCompatibilityTest.kt`
 
@@ -3123,8 +3123,8 @@ git commit -m "test(graph-io-jackson2,graph-io-jackson3): Jackson2/3 NDJSON 논�
 
 ### Task 28: `graph-io-benchmark` dependencies for graph-io modules
 
-**Files:**
-- Modify: `benchmark/graph-io-benchmark/build.gradle.kts`
+**파일:**
+- 수정: `benchmark/graph-io-benchmark/build.gradle.kts`
 
 Complexity: low. Dependencies: 15, 18, 21, 25. Module: `graph-io-benchmark`.
 
@@ -3166,9 +3166,9 @@ git commit -m "chore(graph-io-benchmark): 전체 graph-io 포맷 모듈 의존�
 
 ### Task 29: `graph-io-benchmark` BulkGraphIoBenchmark
 
-**Files:**
-- Create: `benchmark/graph-io-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/io/BulkGraphIoBenchmarkState.kt`
-- Create: `benchmark/graph-io-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/io/BulkGraphIoBenchmark.kt`
+**파일:**
+- 생성: `benchmark/graph-io-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/io/BulkGraphIoBenchmarkState.kt`
+- 생성: `benchmark/graph-io-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/io/BulkGraphIoBenchmark.kt`
 
 Complexity: high. Dependencies: 28. Module: `graph-io-benchmark`.
 
@@ -3275,8 +3275,8 @@ git commit -m "feat(graph-io-benchmark): 전체 포맷×실행 모델 BulkGraphI
 
 ### Task 30: Run benchmark and write report
 
-**Files:**
-- Create: `docs/benchmark/2026-04-18-graph-io-bulk-results.md`
+**파일:**
+- 생성: `docs/benchmark/2026-04-18-graph-io-bulk-results.md`
 
 Complexity: medium. Dependencies: 29. Module: docs.
 
@@ -3307,12 +3307,12 @@ git commit -m "docs(benchmark): 2026-04-18 graph-io 벌크 I/O 벤치마크 결�
 
 ### Task 31: Module READMEs
 
-**Files:**
-- Create: `graph-io/README.md`, `graph-io/README.ko.md`
-- Create: `graph-io/csv/README.md`, `graph-io/csv/README.ko.md`
-- Create: `graph-io/jackson2/README.md`, `graph-io/jackson2/README.ko.md`
-- Create: `graph-io/jackson3/README.md`, `graph-io/jackson3/README.ko.md`
-- Create: `graph-io/graphml/README.md`, `graph-io/graphml/README.ko.md`
+**파일:**
+- 생성: `graph-io/README.md`, `graph-io/README.ko.md`
+- 생성: `graph-io/csv/README.md`, `graph-io/csv/README.ko.md`
+- 생성: `graph-io/jackson2/README.md`, `graph-io/jackson2/README.ko.md`
+- 생성: `graph-io/jackson3/README.md`, `graph-io/jackson3/README.ko.md`
+- 생성: `graph-io/graphml/README.md`, `graph-io/graphml/README.ko.md`
 
 Complexity: low. Dependencies: 15, 18, 21, 25. Module: all new modules.
 
@@ -3330,11 +3330,11 @@ git commit -m "docs(graph-io): add README.md and README.ko.md for each format mo
 
 ### Task 32: Root README + TODO + tradeoffs update
 
-**Files:**
-- Modify: `README.md` (root)
-- Modify: `README.ko.md` (root)
-- Modify: `TODO.md`
-- Modify: `docs/graphdb-tradeoffs.md`
+**파일:**
+- 수정: `README.md` (root)
+- 수정: `README.ko.md` (root)
+- 수정: `TODO.md`
+- 수정: `docs/graphdb-tradeoffs.md`
 
 Complexity: low. Dependencies: 30, 31. Module: root docs.
 
@@ -3361,7 +3361,7 @@ git commit -m "docs: update root README, TODO, and graph-db tradeoffs for graph-
 
 ### Task 33: Full compile/test/static-check verification
 
-**Files:** none (verification only).
+**파일:** none (verification only).
 
 Complexity: low. Dependencies: 1-32. Module: root.
 
@@ -3388,7 +3388,7 @@ git commit -m "chore(testlog): record 2026-04-18 graph-io module build + test re
 
 ---
 
-## Self-Review Notes
+## Self-review 메모
 
 - Spec coverage: all 17 spec sections map to at least one task (records §6.1 → T2; source/sink §6.2 → T3; options §6.3 → T4/T10/T22; reports §6.4 → T5; Sync/VT/Suspend contracts §7 → T6; overload pattern §7.1 → T12, T24; VT adapter §7.2 → T9; Suspend §7.3 → T14/T18/T21/T25; CSV §8.1 → T10-T15; NDJSON §8.2 → T16-T21; GraphML §8.3 → T22-T25; import algo §9 → T12/T17/T20/T24; export algo §10 → T12 exporter + all others; file handling §11 → T7; tests §12 → T2-T27; benchmark §13 → T28-T30; README §14 → T31-T32; risks §15 mentioned in README known-limitations §31 and benchmark notes §30; conventions §16 applied throughout).
 - Types: `GraphIoExternalIdMap.PutResult.CREATED/SKIPPED`, `GraphIoFailure.severity`, `GraphIoStatus.COMPLETED/FAILED/PARTIAL`, overload signatures (`importGraph(source, ops, options, csvOptions)`) are consistent across tasks.

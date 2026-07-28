@@ -1,16 +1,16 @@
-# Issue #96 graph-ktor Implementation Plan
+# 이슈 #96 graph-ktor 구현 계획
 
 > Spec: [2026-05-12-issue-96-graph-ktor-design.md](../specs/2026-05-12-issue-96-graph-ktor-design.md)
 > Related issue: [#96](https://github.com/bluetape4k/bluetape4k-graph/issues/96)
 
-## Plan Summary
+## Plan 요약
 
 `graph-ktor`를 Ktor 3.x custom plugin module로 추가한다. Core plugin state는 `GraphOperations`와
 `GraphSuspendOperations`를 저장하고, backend-specific helper는 optional dependency boundary를 유지하도록 별도 file에 둔다.
 
 ## Tasks
 
-| Task | Complexity | Scope | Verification |
+| Task | 복잡도 | 범위 | 검증 |
 |---|---:|---|---|
 | T1. Gradle/catalog/module registration | medium | `settings.gradle.kts`, `gradle/libs.versions.toml`, `ktor/graph-ktor/build.gradle.kts`, example build | `./gradlew projects`, `:graph-ktor:compileKotlin` |
 | T2. Core Ktor plugin/state/API | high | `GraphPlugin`, `GraphPluginConfig`, `GraphPluginState`, `ApplicationExt` | `:graph-ktor:compileKotlin`, plugin tests |
@@ -82,7 +82,7 @@ Rollback point: if catalog alias naming collides with existing Gradle generated 
   - `graphOperations()`
   - `graphSuspendOperations()`
 
-Verification: `GraphPluginTest` covers missing backend and extension access.
+검증: `GraphPluginTest` covers missing backend and extension access.
 
 ### T3. Backend helper functions
 
@@ -167,11 +167,11 @@ Expected PR checks:
 - Step 6-R runs security, Ops/SRE, structural, Kotlin quality, tests/types/silent failure, performance/stability tiers.
 - Claude Code Opus advisor runs for spec/plan and final code review when local CLI works.
 
-## Step 3-R Review Notes
+## Step 3-R 리뷰 메모
 
-### Iteration 1 Integrated Findings
+### Iteration 1 통합 발견 사항
 
-| Priority | Finding | Decision |
+| 우선순위 | 발견 사항 | 결정 |
 |---|---|---|
 | P1 | `GraphPluginConfig.operations(...)` must avoid double close when sync/suspend share one delegate. | accepted: close actions explicit and helper-specific. |
 | P1 | Tests must prove missing backend fails during install, not first request. | accepted: dedicated `testApplication` failure test. |
@@ -184,11 +184,11 @@ Expected PR checks:
 
 Convergence: P0 = 0, P1 = 0.
 
-### Claude Code Opus Advisor
+### Claude Code Opus advisor
 
 Artifact: `.omx/artifacts/claude-issue-96-graph-ktor-spec-plan-20260512-032751.md`
 
-| Priority | Finding | Decision | Follow-up |
+| 우선순위 | 발견 사항 | 결정 | Follow-up |
 |---|---|---|---|
 | P1 | route context API sketch mismatch | accepted | `ApplicationCall` accessors added |
 | P1 | TinkerGraph double close policy missing | accepted | helper close rule specified |
@@ -221,7 +221,7 @@ Artifact: `.omx/artifacts/claude-issue-96-graph-ktor-spec-plan-20260512-032751.m
 | Plan review complete | Done | review notes above |
 | Spec criteria map to tasks/commands | Done | acceptance criteria covered by T1-T7 |
 | Task ordering implementable | Done | Gradle -> core -> helpers -> tests -> docs |
-| Findings normalized | Done | review table |
+| 발견 사항 정규화 | 완료 | review table |
 | P0 revised/re-reviewed | N/A | no P0 |
 | P1 revised/re-reviewed | Done | T2/T4 close and fail-fast tasks |
 | Convergence verification passed | Done | P0 = 0, P1 = 0 |

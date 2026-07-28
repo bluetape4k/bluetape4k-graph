@@ -1,12 +1,12 @@
-# Issue #111 Sample Dataset Loaders Design
+# 이슈 #111 Sample dataset loaders 설계
 
-## Context
+## 맥락
 
-The fraud detection, recommendation, and knowledge graph examples already demonstrate backend-independent domain
+fraud detection, recommendation, knowledge graph example은 이미 backend-independent domain을 보여준다.
 services. Issue #111 adds graph-io backed sample import paths so learners can load realistic fixtures instead of
 building every graph imperatively in code.
 
-## Decision
+## 결정
 
 Add one small loader object per domain example module:
 
@@ -14,9 +14,9 @@ Add one small loader object per domain example module:
 - `RecommendationSampleDatasetLoader`
 - `KnowledgeGraphSampleDatasetLoader`
 
-Each loader imports bundled CSV resources through `CsvGraphBulkImporter` and `SuspendCsvGraphBulkImporter`, preserving
-the existing `GraphOperations` / `GraphSuspendOperations` split. The loaders stay in the example modules rather than a
-shared module because the resource paths and domain fixture semantics are module-specific.
+각 loader는 `CsvGraphBulkImporter`와 `SuspendCsvGraphBulkImporter`를 통해 bundled CSV resource를 import하며,
+기존 `GraphOperations` / `GraphSuspendOperations` split을 유지한다. Resource path와 domain fixture semantics가
+module-specific이므로 loader는 shared module이 아니라 example module 안에 유지한다.
 
 ## Contract
 
@@ -26,8 +26,8 @@ shared module because the resource paths and domain fixture semantics are module
 - Domain services must be able to query the imported graph immediately after import.
 - README.md and README.ko.md must describe the import flow.
 
-## Verification Strategy
+## 검증 전략
 
-Use TinkerGraph smoke tests for the loader path because the loaders exercise graph-io through the backend-independent
+loader가 backend-independent 경로로 graph-io를 실행하므로 loader path에는 TinkerGraph smoke test를 사용한다.
 `GraphOperations` contract. Container-backed backend traversal behavior remains covered by the existing domain test
 matrix, and issue #111 does not change backend-specific import behavior.

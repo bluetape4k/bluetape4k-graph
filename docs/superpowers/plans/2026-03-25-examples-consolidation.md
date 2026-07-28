@@ -1,12 +1,12 @@
 # Examples 모듈 통합 구현 계획
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **Agentic worker용:** 필수 sub-skill: 이 계획을 task 단위로 구현할 때는 superpowers:subagent-driven-development(권장) 또는 superpowers:executing-plans를 사용한다. Step은 tracking을 위해 checkbox(`- [ ]`) syntax를 사용한다.
 
-**Goal:** 8개로 분산된 examples 모듈(`code-graph-{age,neo4j,memgraph,tinkerpop}`, `linkedin-graph-{age,neo4j,memgraph,tinkerpop}`)을 `code-graph-examples`, `linkedin-graph-examples` 2개로 통합하고, 추상 테스트 클래스 패턴과 동기/suspend 양쪽 테스트를 갖춘다.
+**목표:** 8개로 분산된 examples 모듈(`code-graph-{age,neo4j,memgraph,tinkerpop}`, `linkedin-graph-{age,neo4j,memgraph,tinkerpop}`)을 `code-graph-examples`, `linkedin-graph-examples` 2개로 통합하고, 추상 테스트 클래스 패턴과 동기/suspend 양쪽 테스트를 갖춘다.
 
-**Architecture:** 각 통합 모듈은 공통 Service/Schema를 `main`에, `AbstractXxxTest`(동기) + `AbstractXxxSuspendTest`(코루틴)를 `test`에 둔다. 백엔드별 구체 클래스는 `ops`(GraphOperations / GraphSuspendOperations)와 서버 setup만 오버라이드한다.
+**아키텍처:** 각 통합 모듈은 공통 Service/Schema를 `main`에, `AbstractXxxTest`(동기) + `AbstractXxxSuspendTest`(코루틴)를 `test`에 둔다. 백엔드별 구체 클래스는 `ops`(GraphOperations / GraphSuspendOperations)와 서버 setup만 오버라이드한다.
 
-**Tech Stack:** Kotlin 2.3, JUnit 5 (`@TestInstance(PER_CLASS)`), Kotest bluetape4k-assertions assertions, kotlinx-coroutines-test (`runTest`), Testcontainers (Neo4j, Memgraph, PostgreSQL+AGE)
+**기술 스택:** Kotlin 2.3, JUnit 5 (`@TestInstance(PER_CLASS)`), Kotest bluetape4k-assertions assertions, kotlinx-coroutines-test (`runTest`), Testcontainers (Neo4j, Memgraph, PostgreSQL+AGE)
 
 ---
 
@@ -56,11 +56,11 @@ src/test/kotlin/io/bluetape4k/graph/examples/linkedin/
 
 ## Task 1: `code-graph-examples` 모듈 뼈대 + 공통 소스 이관
 
-**Files:**
-- Create: `examples/code-graph-examples/build.gradle.kts`
-- Create: `examples/code-graph-examples/src/main/kotlin/io/bluetape4k/graph/examples/code/schema/CodeGraphSchema.kt`
-- Create: `examples/code-graph-examples/src/main/kotlin/io/bluetape4k/graph/examples/code/service/CodeGraphService.kt`
-- Create: `examples/code-graph-examples/src/main/kotlin/io/bluetape4k/graph/examples/code/service/CodeGraphSuspendService.kt`
+**파일:**
+- 생성: `examples/code-graph-examples/build.gradle.kts`
+- 생성: `examples/code-graph-examples/src/main/kotlin/io/bluetape4k/graph/examples/code/schema/CodeGraphSchema.kt`
+- 생성: `examples/code-graph-examples/src/main/kotlin/io/bluetape4k/graph/examples/code/service/CodeGraphService.kt`
+- 생성: `examples/code-graph-examples/src/main/kotlin/io/bluetape4k/graph/examples/code/service/CodeGraphSuspendService.kt`
 
 - [ ] **Step 1: 디렉토리 구조 생성**
 
@@ -125,12 +125,12 @@ git commit -m "feat: add code-graph-examples module with common sources"
 
 ## Task 2: `AbstractCodeGraphTest` + 4개 동기 구체 클래스 작성
 
-**Files:**
-- Create: `examples/code-graph-examples/src/test/kotlin/.../code/AbstractCodeGraphTest.kt`
-- Create: `examples/code-graph-examples/src/test/kotlin/.../code/AgeCodeGraphTest.kt`
-- Create: `examples/code-graph-examples/src/test/kotlin/.../code/Neo4jCodeGraphTest.kt`
-- Create: `examples/code-graph-examples/src/test/kotlin/.../code/MemgraphCodeGraphTest.kt`
-- Create: `examples/code-graph-examples/src/test/kotlin/.../code/TinkerGraphCodeGraphTest.kt`
+**파일:**
+- 생성: `examples/code-graph-examples/src/test/kotlin/.../code/AbstractCodeGraphTest.kt`
+- 생성: `examples/code-graph-examples/src/test/kotlin/.../code/AgeCodeGraphTest.kt`
+- 생성: `examples/code-graph-examples/src/test/kotlin/.../code/Neo4jCodeGraphTest.kt`
+- 생성: `examples/code-graph-examples/src/test/kotlin/.../code/MemgraphCodeGraphTest.kt`
+- 생성: `examples/code-graph-examples/src/test/kotlin/.../code/TinkerGraphCodeGraphTest.kt`
 
 - [ ] **Step 1: `AbstractCodeGraphTest.kt` 작성**
 
@@ -362,9 +362,9 @@ git commit -m "feat: add AbstractCodeGraphTest and 4 backend concrete test class
 
 ## Task 3: `AbstractCodeGraphSuspendTest` + 4개 suspend 구체 클래스 작성
 
-**Files:**
-- Create: `examples/code-graph-examples/src/test/kotlin/.../code/AbstractCodeGraphSuspendTest.kt`
-- Create: `.../{Age,Neo4j,Memgraph,TinkerGraph}CodeGraphSuspendTest.kt`
+**파일:**
+- 생성: `examples/code-graph-examples/src/test/kotlin/.../code/AbstractCodeGraphSuspendTest.kt`
+- 생성: `.../{Age,Neo4j,Memgraph,TinkerGraph}CodeGraphSuspendTest.kt`
 
 - [ ] **Step 1: `AbstractCodeGraphSuspendTest.kt` 작성**
 
@@ -599,11 +599,11 @@ git commit -m "feat: add AbstractCodeGraphSuspendTest and suspend concrete test 
 
 ## Task 4: `linkedin-graph-examples` 모듈 뼈대 + 공통 소스 이관 + `LinkedInGraphSuspendService` 신규 작성
 
-**Files:**
-- Create: `examples/linkedin-graph-examples/build.gradle.kts`
-- Create: `.../linkedin/schema/LinkedInSchema.kt`
-- Create: `.../linkedin/service/LinkedInGraphService.kt`
-- Create: `.../linkedin/service/LinkedInGraphSuspendService.kt` ← **신규**
+**파일:**
+- 생성: `examples/linkedin-graph-examples/build.gradle.kts`
+- 생성: `.../linkedin/schema/LinkedInSchema.kt`
+- 생성: `.../linkedin/service/LinkedInGraphService.kt`
+- 생성: `.../linkedin/service/LinkedInGraphSuspendService.kt` ← **신규**
 
 - [ ] **Step 1: 디렉토리 구조 생성**
 
@@ -727,10 +727,10 @@ git commit -m "feat: add linkedin-graph-examples module with common sources and 
 
 ## Task 5: `AbstractLinkedInGraphTest` + 4개 동기 구체 클래스, `AbstractLinkedInGraphSuspendTest` + 4개 suspend 구체 클래스
 
-**Files:**
-- Create: `.../linkedin/AbstractLinkedInGraphTest.kt`
-- Create: `.../linkedin/AbstractLinkedInGraphSuspendTest.kt`
-- Create: `.../{Age,Neo4j,Memgraph,TinkerGraph}LinkedInGraphTest.kt` (×8)
+**파일:**
+- 생성: `.../linkedin/AbstractLinkedInGraphTest.kt`
+- 생성: `.../linkedin/AbstractLinkedInGraphSuspendTest.kt`
+- 생성: `.../{Age,Neo4j,Memgraph,TinkerGraph}LinkedInGraphTest.kt` (×8)
 
 - [ ] **Step 1: `AbstractLinkedInGraphTest.kt` 작성**
 
@@ -1185,9 +1185,9 @@ git commit -m "chore: remove 8 redundant example modules, replaced by code/linke
 
 ## Task 7: README.md + CLAUDE.md 갱신 및 Push
 
-**Files:**
-- Modify: `README.md`
-- Modify: `CLAUDE.md`
+**파일:**
+- 수정: `README.md`
+- 수정: `CLAUDE.md`
 
 - [ ] **Step 1: README.md의 모듈 구조 섹션 갱신**
 

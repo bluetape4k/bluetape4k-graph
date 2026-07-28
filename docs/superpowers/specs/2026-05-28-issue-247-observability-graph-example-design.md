@@ -1,11 +1,11 @@
-# Issue 247 Observability Graph Example Design
+# 이슈 247 Observability graph example 설계
 
-## Context
+## 맥락
 
 Issue #247 adds the first observability-oriented example module for milestone 0.5.0. The example must teach incident
 graph modeling, not only expose a smoke test.
 
-## Scope
+## 범위
 
 - Add `examples/observability-graph-examples`.
 - Model services, APIs, teams, alerts, and incidents.
@@ -15,13 +15,13 @@ graph modeling, not only expose a smoke test.
 - Update English and Korean README files with scenario, architecture diagram, graph model, traversal goals, sample data,
   and expected output.
 
-## Non-Goals
+## 비목표
 
 - No production observability backend integration.
 - No OpenTelemetry ingestion.
-- No new graph-core traversal primitives.
+- 새 graph-core traversal primitive는 추가하지 않는다.
 
-## Design
+## 설계
 
 The service exposes high-level incident-response questions:
 
@@ -31,10 +31,10 @@ The service exposes high-level incident-response questions:
 - alert-boundary correlation,
 - service owner lookup.
 
-The same scenarios run against TinkerGraph, Neo4j, Memgraph, Apache AGE, and FalkorDB through abstract test classes.
+동일 scenario는 abstract test class를 통해 TinkerGraph, Neo4j, Memgraph, Apache AGE, FalkorDB에서 실행된다.
 TinkerGraph also validates the bundled graph-io CSV loader.
 
-## Risks
+## 리스크
 
 - Backend traversal depth semantics must remain portable.
 - AGE tests still rely on the Exposed global transaction manager used by current examples.

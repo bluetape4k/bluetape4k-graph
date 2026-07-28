@@ -51,7 +51,7 @@
 - `properties()` 매핑 시 jfalkordb의 nested type 처리 (e.g. List, Map).
 - jfalkordb의 connection pooling 정책 — `Driver extends Closeable`, `Graph extends Closeable` 확인(T0). `driver.graph(name)` 매번 호출 시 Jedis 연결 취득. 풀링은 `DriverImpl` 내부 구현에 의존 — 통합 테스트에서 동시 쿼리 성능 검증 필요.
 
-### 2.3 비목표 (Out of Scope)
+### 2.3 비목표 (범위 제외)
 
 - FalkorDB 전용 알고리즘(GRAPH.RO_QUERY 등) 별도 노출.
 - Cluster/Sentinel 토폴로지 지원 — 1차는 단일 노드.

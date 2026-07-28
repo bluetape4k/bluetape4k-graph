@@ -1,13 +1,13 @@
-# Batch Insert Design
+# Batch insert 설계
 
-## Related Issue
+## 관련 이슈
 
-- Issue: [#33 Batch insert - 정점/간선 대량 생성 API](https://github.com/bluetape4k/bluetape4k-graph/issues/33)
+- 이슈: [#33 Batch insert - 정점/간선 대량 생성 API](https://github.com/bluetape4k/bluetape4k-graph/issues/33)
 - Date: 2026-05-10
 - Branch/worktree: `feat/33-batch-insert` in `.worktrees/feat/33-batch-insert`
-- Scope: `graph-core`, graph backend modules, `graph-io` importers, benchmark modules, root/module README files.
+- 범위: `graph-core`, graph backend modules, `graph-io` importers, benchmark modules, root/module README files.
 
-## Problem
+## 문제
 
 The current core graph API creates vertices and edges one record at a time:
 
@@ -24,7 +24,7 @@ driver round trips, more transaction overhead, and no common contract for backen
 The new API must give callers a simple typed batch insert surface, while preserving the existing single-record API and the
 sync / suspend / virtual-thread symmetry already used by the repository.
 
-## Goals
+## 목표
 
 - Add public batch vertex and edge create APIs that match the issue's intended call shape.
 - Preserve existing source compatibility for current backends, fakes, wrappers, and tests.
@@ -34,7 +34,7 @@ sync / suspend / virtual-thread symmetry already used by the repository.
 - Define clear failure and atomicity expectations, especially for missing edge endpoints.
 - Verify at least one 10k-vertex and one 10k-edge batch scenario.
 
-## Non-Goals
+## 비목표
 
 - No merge/upsert semantics. Batch insert always creates new elements; idempotent writes remain the responsibility of
   `mergeVertex` / `mergeEdge`.
@@ -42,7 +42,7 @@ sync / suspend / virtual-thread symmetry already used by the repository.
 - No new graph backend, dependency, or external loader.
 - No public streaming `Flow` input API in this slice. Callers pass `List` or chunk upstream.
 
-## Current Repository Findings
+## 현재 repository 발견 사항
 
 - `GraphOperations` is a facade over `GraphVertexRepository`, `GraphEdgeRepository`, and traversal/algorithm repositories.
 - `GraphSuspendOperations` mirrors sync APIs and uses `Flow` for reads, while create/update/delete methods are suspend
@@ -62,7 +62,7 @@ sync / suspend / virtual-thread symmetry already used by the repository.
   rollback.
 - `graph-io` importers currently loop over `createVertex` / `createEdge`; they should buffer by label and flush via batch.
 
-## External Documentation Findings
+## 외부 문서 발견 사항
 
 - Neo4j Cypher documents `UNWIND` for turning a parameter list into rows and warns that `UNWIND` does not guarantee row
   order by itself. Batch implementations must return an explicit row index and `ORDER BY` that index.
@@ -79,9 +79,9 @@ sync / suspend / virtual-thread symmetry already used by the repository.
   as implementation guidance and still verify with the Memgraph Testcontainer.
   Source: https://memgraph.com/blog/handling-large-graph-datasets
 
-## API Design Options
+## API 설계 option
 
-### Option A - Add Abstract Methods to Existing Repository Interfaces
+### Option A - 기존 repository interface에 abstract method 추가
 
 Add `createVertices` and `createEdges` as abstract members.
 
@@ -95,9 +95,9 @@ Cons:
 - Source-breaking for every implementation, fake, adapter, and wrapper.
 - Forces one large implementation step before `graph-core` compiles.
 
-Decision: reject.
+결정: reject.
 
-### Option B - Capability Interfaces and Extension Functions Only
+### Option B - capability interface와 extension function만 사용
 
 Add `GraphBatchOperations` / `GraphSuspendBatchOperations` plus extension functions, following merge/upsert.
 
@@ -112,9 +112,9 @@ Cons:
 - `graph-io` and callers typed as `GraphOperations` would need extension imports for a basic CRUD bulk variant.
 - A safe sequential default is available, so capability-only is heavier than needed.
 
-Decision: reject as the primary API. Backend capability markers are not required for this slice.
+결정: reject as the primary API. Backend capability markers are not required for this slice.
 
-### Option C - Default Batch Methods on Existing Repositories, Backend Overrides for Performance
+### Option C - 기존 repository의 default batch method와 성능용 backend override
 
 Add default batch methods to the sync, suspend, and virtual-thread repository interfaces. The default implementation loops
 over the existing single-record method, while production backends override with native batch behavior.
@@ -131,10 +131,10 @@ Cons:
 - The default loop is not a performance implementation.
 - Atomicity differs if a non-production fake relies on the default loop.
 
-Decision: adopt, with explicit documentation that production backends override the defaults and that the default loop is a
+결정: adopt, with explicit documentation that production backends override the defaults and that the default loop is a
 compatibility baseline.
 
-### Option D - Only Optimize `graph-io` Internals
+### Option D - `graph-io` 내부만 최적화
 
 Keep the public API unchanged and make importers call backend-specific helpers.
 
@@ -148,11 +148,11 @@ Cons:
 - Duplicates backend-specific write behavior outside graph repositories.
 - Prevents application callers from using the same performance path.
 
-Decision: reject.
+결정: reject.
 
-## Proposed Public API
+## 제안 public API
 
-### Core Input Model
+### Core input model
 
 Add one small input model in `graph-core`:
 
@@ -168,7 +168,7 @@ data class BatchEdge(
 
 There is no `BatchVertex` in this slice because vertex batch input is simply `List<Map<String, Any?>>` under one label.
 
-### Sync Repository Methods
+### Sync repository method
 
 Add default methods to existing repository interfaces:
 
@@ -190,7 +190,7 @@ interface GraphEdgeRepository {
 }
 ```
 
-### Suspend Repository Methods
+### Suspend repository method
 
 Add suspend equivalents with the same result shape:
 
@@ -209,7 +209,7 @@ suspend fun createEdges(
 The default implementation loops sequentially. Production suspend implementations may delegate to the sync native batch
 method inside `Dispatchers.IO` when that is the existing backend pattern.
 
-### Virtual Thread Methods
+### Virtual Thread method
 
 Add async wrappers:
 
@@ -225,7 +225,7 @@ fun createEdgesAsync(
 ): CompletableFuture<List<GraphEdge>>
 ```
 
-## Common Semantics
+## 공통 semantics
 
 - Empty input returns `emptyList()` and must not call the backend.
 - Size `1` still uses the batch code path in production overrides unless a backend proves the single-create fast path has
@@ -243,7 +243,7 @@ fun createEdgesAsync(
 - Batch APIs must not reuse the `createVertex` / `createEdge` write memoization result as if repeated rows were the same
   operation. Current caching wrappers memoize single create calls; every batch input row represents a new graph element.
 
-## Default Implementation Contract
+## Default implementation contract
 
 The default methods on repository interfaces are a compatibility baseline, not the production performance or atomicity
 contract.
@@ -258,7 +258,7 @@ contract.
 This tradeoff avoids source-breaking abstract methods while making the production backends responsible for stronger batch
 behavior.
 
-## Chunking and Size Limits
+## Chunking과 size limit
 
 Repository batch methods operate on one caller-provided list and do not automatically split application-level calls. This
 keeps the method-level failure contract understandable: one call is one backend batch attempt.
@@ -271,7 +271,7 @@ keeps the method-level failure contract understandable: one call is one backend 
   or document a backend limitation.
 - The implementation should add a conservative backend-local constant only when a real driver/query-size limit is observed.
 
-## Property Value Safety
+## Property value safety
 
 Property labels and keys are validated as identifiers, but property values can be arbitrary user data and must not be
 string-interpolated without a proven serializer.
@@ -287,7 +287,7 @@ string-interpolated without a proven serializer.
 AGE must not add batch SQL by ad-hoc string concatenation of property values. If `AgePropertySerializer` is insufficient,
 extend it first and lock behavior in `AgeSqlTest`.
 
-## Backend Semantics
+## Backend semantics
 
 ### Neo4j
 
@@ -361,7 +361,7 @@ validated property keys. For edges, pre-resolve every endpoint before creating a
 Use the existing transaction snapshot/restore pattern to roll back partial batch writes if an exception is thrown after
 the batch starts.
 
-## GraphElementId Backend Mapping
+## GraphElementId backend mapping
 
 | Backend | Existing ID shape | Batch row encoding |
 |---------|-------------------|--------------------|
@@ -373,7 +373,7 @@ the batch starts.
 
 Each backend test must cover edge batch creation using IDs returned by that backend's `createVertices` call.
 
-## Graph-IO Integration
+## Graph-IO integration
 
 `graph-io` should use the new API rather than continue one-record loops.
 
@@ -387,7 +387,7 @@ Each backend test must cover edge batch creation using IDs returned by that back
 - Preserve existing partial/failure report semantics. If a batch call fails, report the failure at the current phase and do
   not claim rows from that failed batch as created.
 
-## Validation and Error Behavior
+## Validation과 error behavior
 
 Add `GraphBatchValidation` or reuse an equivalent core helper:
 
@@ -403,7 +403,7 @@ Errors:
 - Backend query failure or missing endpoint in production edge batch: `GraphQueryException`
 - Empty batch: no exception
 
-## Caching Wrapper Behavior
+## Caching wrapper behavior
 
 Caching wrappers in Neo4j, Memgraph, and AGE benchmark wrappers must treat batch create as a write:
 
@@ -413,7 +413,7 @@ Caching wrappers in Neo4j, Memgraph, and AGE benchmark wrappers must treat batch
 - If a batch call fails, do not invalidate unless the backend can leave partial state; for production all-or-fail backends,
   failed batch should leave caches unchanged.
 
-## Test Strategy
+## Test strategy
 
 Core tests:
 
@@ -447,7 +447,7 @@ Benchmark / performance checks:
   backends; if the result is lower, record the measured reason rather than hiding the benchmark.
 - JMH benchmark execution can be documented as optional if local container runtime cost is too high for the PR loop.
 
-## Acceptance Criteria
+## 인수 기준
 
 - `BatchEdge` exists in core with Korean KDoc.
 - Sync, suspend, and virtual-thread repository APIs expose batch vertex and edge creation with Korean KDoc and explicit
@@ -462,7 +462,7 @@ Benchmark / performance checks:
 - Public KDoc covers `BatchEdge`, `createVertices`, `createEdges`, `createVerticesAsync`, and `createEdgesAsync`.
 - Backend tests, graph-io tests, compile checks, and `git diff --check` pass before PR.
 
-## Risks and Mitigations
+## 리스크 and Mitigations
 
 | Risk | Impact | Mitigation |
 |------|--------|------------|
@@ -475,11 +475,11 @@ Benchmark / performance checks:
 | Graph-IO batching changes partial report counts | Import regressions | Preserve report counters and add focused failure tests |
 | Null property values differ by backend | Cross-backend mismatch | Match existing single-create semantics and cover mixed/null tests where existing behavior allows |
 
-## Step 2-R Review Notes
+## Step 2-R 리뷰 메모
 
-### Local Perspective Reviews
+### Local perspective 리뷰
 
-| Perspective | Finding | Severity | Spec Decision |
+| 관점 | 발견 사항 | 심각도 | Spec 결정 |
 |-------------|---------|----------|---------------|
 | Developer | Direct abstract methods would break every implementation. | high | Use default interface methods plus backend overrides. |
 | Security | Labels/property keys are interpolated into Cypher/Gremlin. | high | Require common validation before query construction. |
@@ -487,12 +487,12 @@ Benchmark / performance checks:
 | User/caller | Returned ID order is essential for importers. | high | Require explicit row index and ordered return. |
 | Architect | `graph-io` must use the API or the core feature will not pay off. | medium | Include graph-io importer updates in acceptance criteria. |
 
-### Claude Code Opus Advisor
+### Claude Code Opus advisor
 
 Artifact: `.omx/artifacts/ask-claude-batch-insert-spec-20260510-135409.md`
 Model: `${CLAUDE_ADVISOR_MODEL:-claude-opus-4-7}`
 
-| Severity | Finding | Decision | Follow-up |
+| 심각도 | 발견 사항 | 결정 | 후속 작업 |
 |----------|---------|----------|-----------|
 | high | Default loop and all-or-fail wording could mislead callers. | accepted | Added Default Implementation Contract and production override requirement. |
 | high | Chunking vs atomicity was underspecified. | accepted | Added Chunking and Size Limits contract. |

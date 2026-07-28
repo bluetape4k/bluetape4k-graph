@@ -1,12 +1,12 @@
 # Issue 235 GraphML compatibility slice
 
-## Context
+## 맥락
 
 The first GraphML importer/exporter is intentionally a backend-neutral property-graph subset. Full GraphML includes constructs that do not map cleanly to `GraphVertex`, directed `GraphEdge`, and backend-neutral `GraphOperations`.
 
-## Compatibility decision matrix
+## Compatibility 결정 matrix
 
-| GraphML construct | Decision | Current behavior | Rationale |
+| GraphML construct | 결정 | 현재 behavior | 근거 |
 |---|---|---|---|
 | Directed `<graph>` with `<node>`, `<edge>`, scalar `<data>` | Implement | Imported/exported | Directly maps to vertices, directed edges, labels, and scalar properties. |
 | `key` definitions with scalar `attr.type` | Implement | Imported/exported | Provides stable property names and primitive coercion without backend-specific schema assumptions. |
@@ -17,7 +17,7 @@ The first GraphML importer/exporter is intentionally a backend-neutral property-
 | `<port>` | Defer | `SKIP` records `WARN`; `FAIL` returns failed report before writes | Ports are endpoint metadata, but current edge endpoints target vertices only. |
 | XML extension payloads such as yFiles graphics | Defer | Outside the contract | Visual metadata should be preserved only after a namespaced extension-property policy exists. |
 
-## Undirected and nested graph mapping
+## Undirected 및 nested graph mapping
 
 Undirected GraphML is not implemented as true undirected storage in this slice. Under `UnsupportedGraphMlElementPolicy.SKIP`, the reader reports a warning and can keep the explicit `source` to `target` edge projection for diagnostic imports. Under `FAIL`, the bulk importer returns `GraphIoStatus.FAILED` before vertex or edge writes.
 
@@ -29,7 +29,7 @@ Nested graphs remain rejected for import because the current backend-neutral ope
 
 The first two policies can be implemented in `graph-io-graphml` only after the property names, collision rules, and round-trip export contract are defined. The third is a larger `graph-core` design change.
 
-## Compatibility fixtures
+## Compatibility fixture
 
 Representative fixtures live under `graph-io/graphml/src/test/resources/fixtures/graphml/`:
 

@@ -1,13 +1,13 @@
-# Issue 10 Domain Examples Implementation Plan
+# 이슈 10 Domain examples 구현 계획
 
 ## Inputs
 
 - Spec: `docs/superpowers/specs/2026-05-13-issue-10-domain-examples-design.md`
-- Issue: #10 `[Epic] 추가 예시 모듈 — fraud-detection / recommendation / knowledge-graph`
+- 이슈: #10 `[Epic] 추가 예시 모듈 — fraud-detection / recommendation / knowledge-graph`
 - Worktree: `.worktrees/feat-issue-10-domain-examples`
 - Branch: `feat/issue-10-domain-examples`
 
-## Scope
+## 범위
 
 Implement three new example modules:
 
@@ -286,11 +286,11 @@ Lesson template:
 ```markdown
 # Issue 10 Domain Examples
 
-## Context
+## 맥락
 
-## Decision
+## 결정
 
-## Outcome
+## 결과
 
 ## Verification
 
@@ -317,7 +317,7 @@ Lesson template:
 - Before PR: full targeted module tests, build, KDoc language grep, diff check
 - After PR: full Nightly `workflow_dispatch scope=full` run URL/result
 
-## Step 3-R Review Notes
+## Step 3-R 리뷰 메모
 
 - Review artifact: `.omx/artifacts/claude-issue-10-plan-review-20260513081601.md`
 - Blocking findings addressed:

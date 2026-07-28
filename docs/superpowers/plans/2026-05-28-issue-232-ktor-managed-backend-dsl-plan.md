@@ -5,7 +5,7 @@
 
 ## Tasks
 
-| Task | Scope | Verification |
+| Task | 범위 | 검증 |
 |---|---|---|
 | T1. Managed config API | Add Neo4j, Memgraph, FalkorDB property DSL overloads under `ktor/graph-ktor` | `:bluetape4k-graph-ktor:compileKotlin` |
 | T2. Lifecycle wiring | Register operation close actions and managed driver close actions in stop order | `:bluetape4k-graph-ktor:test` |

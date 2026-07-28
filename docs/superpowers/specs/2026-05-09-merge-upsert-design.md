@@ -1,12 +1,12 @@
-# Merge / Upsert Design
+# Merge / Upsert 설계
 
-## Related Issue
+## 관련 이슈
 
-- Issue: [#34 MERGE (upsert) 정점/간선 연산 - mergeVertex / mergeEdge](https://github.com/bluetape4k/bluetape4k-graph/issues/34)
+- 이슈: [#34 MERGE (upsert) 정점/간선 연산 - mergeVertex / mergeEdge](https://github.com/bluetape4k/bluetape4k-graph/issues/34)
 - Date: 2026-05-09
-- Scope: `graph-core`, graph backend modules, focused merge/upsert tests, core and backend docs.
+- 범위: `graph-core`, graph backend modules, focused merge/upsert tests, core and backend docs.
 
-## Problem
+## 문제
 
 Graph applications frequently need "find by identity properties, create when absent, update when present" behavior. The current API forces callers to implement lookup, branch, create, and update logic repeatedly. That is error-prone under concurrency and produces duplicate vertices or relationships when callers forget backend-specific merge semantics.
 
@@ -18,9 +18,9 @@ The API must support:
 - backend-specific native `MERGE` where available,
 - explicit fallback or unsupported behavior where a backend cannot safely emulate merge.
 
-## Research Summary
+## Research 요약
 
-### Repository Findings
+### Repository 발견 사항
 
 - `GraphOperations` is a facade composed of repository interfaces. Adding methods directly to `GraphVertexRepository` and `GraphEdgeRepository` would force every fake, wrapper, and backend implementation to change at once.
 - Recent transaction and schema/index work intentionally used capability interfaces plus extension accessors to preserve source compatibility. Merge/upsert should follow the same pattern.
@@ -29,7 +29,7 @@ The API must support:
 - TinkerGraph uses direct traversal APIs and can implement get-or-create/update with Gremlin traversal steps.
 - Caching wrappers memoize `createVertex`/`createEdge`. Merge is a write operation and must invalidate read/write caches instead of reusing create memoization.
 
-### External Documentation Findings
+### 외부 문서 발견 사항
 
 - Neo4j Cypher documents `MERGE` with `ON CREATE SET` and `ON MATCH SET`, and relationship merge requires bound nodes from a preceding `MATCH` when matching/creating a relationship between existing nodes. Source: https://neo4j.com/docs/cypher-manual/3.5/clauses/merge/
 - Apache AGE documents `MERGE` as a match-or-create combination and supports merging vertices with labels and properties through the `cypher()` SQL function. Source: https://age.apache.org/age-manual/master/clauses/merge.html
@@ -37,7 +37,7 @@ The API must support:
 - FalkorDB Cypher documentation lists `MERGE` as a supported clause. Source: https://docs.falkordb.com/cypher/
 - Apache TinkerPop documentation describes vertex upsert through `fold().coalesce(unfold(), addV(...))`, and notes `mergeV()` for newer versions. The repository currently depends on TinkerPop 3.8.1, so either can work; the first slice can prefer the explicit traversal pattern if it fits current code better.
 
-## Constraints
+## 제약
 
 - Kotlin 2.3 and Java 25 preview remain unchanged.
 - No new dependencies.
@@ -47,9 +47,9 @@ The API must support:
 - Identifier validation must happen before query string interpolation.
 - `matchProperties` must be stable identity data, not mutable update data.
 
-## Architecture Options
+## Architecture option
 
-### Option A - Add Methods Directly to Repository Interfaces
+### Option A - repository interface에 method 직접 추가
 
 Add `mergeVertex` to `GraphVertexRepository` and `mergeEdge` to `GraphEdgeRepository`.
 
@@ -64,9 +64,9 @@ Cons:
 - Forces unsupported or staged backends to implement methods immediately.
 - Reverses the capability pattern established by transaction and schema manager work.
 
-Decision: reject for this slice.
+결정: reject for this slice.
 
-### Option B - Capability Interfaces + Extension Functions
+### Option B - capability interface + extension function
 
 Add:
 
@@ -94,9 +94,9 @@ Cons:
 - Requires extension imports for variables typed as `GraphOperations`.
 - Unsupported implementations fail at runtime through the extension.
 
-Decision: adopt.
+결정: adopt.
 
-### Option C - Generic Fallback via find/update/create
+### Option C - find/update/create 기반 generic fallback
 
 Implement extension defaults by calling `findVerticesByLabel`, `findEdgesByLabel`, `create*`, and `update*`.
 
@@ -112,9 +112,9 @@ Cons:
 - Edge update API does not exist, so mergeEdge would be incomplete.
 - Hides backend capability differences.
 
-Decision: reject as default. A backend may use a tested fallback only when native merge is absent and semantics remain clear.
+결정: reject as default. A backend may use a tested fallback only when native merge is absent and semantics remain clear.
 
-## Proposed API
+## 제안 API
 
 The public API lives in `io.bluetape4k.graph.repository` beside transaction scope extensions.
 
@@ -150,7 +150,7 @@ Validation rules:
 - `setProperties` must not contain any key from `matchProperties`; identity keys should not be overwritten by the upsert update branch.
 - `mergeEdge` identity is `fromId + toId + label + matchProperties`; empty edge `matchProperties` is allowed.
 
-## Backend Semantics
+## Backend semantics
 
 ### Neo4j
 
@@ -198,7 +198,7 @@ Use Gremlin get-or-create/update semantics:
 
 If the Java traversal API makes `mergeV()` / `mergeE()` simpler and tests prove equivalent behavior, it may replace the explicit `fold().coalesce()` pattern.
 
-## Risks and Failure Modes
+## 리스크 and Failure Modes
 
 | Risk | Impact | Mitigation |
 |------|--------|------------|
@@ -211,7 +211,7 @@ If the Java traversal API makes `mergeV()` / `mergeE()` simpler and tests prove 
 | TinkerGraph traversal creates duplicate edges | Idempotency failure | Dedicated repeated-call tests for vertex and edge merge |
 | Caching wrappers return stale reads | Wrong post-merge query results | Treat merge as write and invalidate caches |
 
-## Acceptance Criteria
+## 인수 기준
 
 - Core exposes sync and suspend merge/upsert capability interfaces plus extension functions with Korean KDoc.
 - Neo4j, Memgraph, FalkorDB, AGE, and TinkerGraph implement sync and suspend merge operations or fail explicitly with tests if a backend cannot support a safe operation.

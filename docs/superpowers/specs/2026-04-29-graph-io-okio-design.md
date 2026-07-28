@@ -88,7 +88,7 @@ OkIO segment 풀의 heap 이점은 **모든 포맷에 동일하게 적용되지 
 
 **현재 버전에서는 암호화 레이어를 포함하지 않는다.** 압축 체이닝(Gzip/LZ4/Snappy/Zstd 등)만 제공한다. 암호화 지원은 #240 완료 후 다음 버전에 추가된다.
 
-### 1.4 비목표 (Non-Goals)
+### 1.4 비목표 (비목표)
 
 - 기존 4개 포맷 모듈의 Java I/O 경로를 OkIO로 **대체**하지 않는다. 호환성 유지가 최우선.
 - **암호화 미지원** (현재 버전): AEAD/DAEAD 체이닝은 `bluetape4k-projects` #240 완료 후 다음 버전에서 추가된다.
@@ -1026,7 +1026,7 @@ graph-io-okio의 공개 API는 다음 예외 계층을 따른다.
 
 ---
 
-## 6. 후속 작업 (Out of Scope)
+## 6. 후속 작업 (범위 제외)
 
 - **암호화 지원**: DAEAD 청크형 스트리밍 (`DaeadChunkEncryptSink` / `DaeadChunkDecryptSource`) — `bluetape4k-projects` #240 해결 후 `graph-io-okio` 다음 버전에 추가. `openDaeadEncryptedSink`, `openDaeadDecryptedSource`, `openGzipDaeadEncryptedSink` 등 API 추가.
 - AES-GCM streaming 자체 구현 (별도 이슈).
@@ -1037,7 +1037,7 @@ graph-io-okio의 공개 API는 다음 예외 계층을 따른다.
 
 ---
 
-## 7. 결정 로그 (Decision Log)
+## 7. 결정 로그 (결정 로그)
 
 | 결정 | 선택 | 대안 | 이유 |
 |------|------|------|------|

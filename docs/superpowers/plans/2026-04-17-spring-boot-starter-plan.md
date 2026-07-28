@@ -1,10 +1,10 @@
 # Spring Boot Starter AutoConfiguration 구현 플랜 (v2 — 공식 문서 기반 재작성)
 
-> **For agentic workers:** 각 Task를 순서대로 실행한다. 각 단계는 체크박스(`- [ ]`)로 진행 상태를 추적한다. 검증 명령을 반드시 실행하고 PASS를 확인 후 다음 Task로 진행한다.
+> **Agentic worker용:** 각 Task를 순서대로 실행한다. 각 단계는 체크박스(`- [ ]`)로 진행 상태를 추적한다. 검증 명령을 반드시 실행하고 PASS를 확인 후 다음 Task로 진행한다.
 
-**Goal:** `graph-spring-boot3-starter` / `graph-spring-boot4-starter` AutoConfiguration 모듈 구현 — `application.yml`만으로 `GraphOperations`, `GraphSuspendOperations`, `GraphVirtualThreadOperations` 빈을 자동 등록.
+**목표:** `graph-spring-boot3-starter` / `graph-spring-boot4-starter` AutoConfiguration 모듈 구현 — `application.yml`만으로 `GraphOperations`, `GraphSuspendOperations`, `GraphVirtualThreadOperations` 빈을 자동 등록.
 
-**Tech Stack:** Kotlin 2.3, Java 25, Spring Boot 3.5 / 4.0, AutoConfiguration, TinkerGraph (in-memory), Testcontainers (Neo4j, Memgraph, PostgreSQL+AGE).
+**기술 스택:** Kotlin 2.3, Java 25, Spring Boot 3.5 / 4.0, AutoConfiguration, TinkerGraph (in-memory), Testcontainers (Neo4j, Memgraph, PostgreSQL+AGE).
 
 ---
 

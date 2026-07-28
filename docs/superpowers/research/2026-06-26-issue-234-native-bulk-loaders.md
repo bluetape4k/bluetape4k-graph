@@ -1,12 +1,12 @@
 # Issue #234 - Backend-Native Bulk Loader Research
 
 - Date: 2026-06-26
-- Issue: https://github.com/bluetape4k/bluetape4k-graph/issues/234
-- Scope: graph-io native-loader feasibility for Neo4j, Memgraph, Apache AGE,
+- 이슈: https://github.com/bluetape4k/bluetape4k-graph/issues/234
+- 범위: graph-io native-loader feasibility for Neo4j, Memgraph, Apache AGE,
   FalkorDB, and TinkerPop/TinkerGraph
 - Status: recommend deferring implementation from `0.6.0`
 
-## Decision
+## 결정
 
 Do not add backend-native bulk loader implementations in the `0.6.0` line.
 Keep `graph-io` focused on backend-neutral import/export contracts and proceed
@@ -70,7 +70,7 @@ by backend:
 Do not combine these with issue #233. The cursor export API is backend-neutral
 and should remain a separate PR.
 
-## Acceptance Criteria Status
+## 인수 기준 Status
 
 - Backend support, required files/streams, transaction semantics, and failure
   reporting differences: covered in the backend matrix.

@@ -2,11 +2,11 @@
 
 - Spec: `docs/superpowers/specs/2026-05-13-issue-99-graph-spring-boot-rename-design.md`
 - Branch: `refactor/issue-99-graph-spring-boot`
-- Goal: freeze the Spring Boot integration identity as `graph-spring-boot` before broader adoption.
+- 목표: freeze the Spring Boot integration identity as `graph-spring-boot` before broader adoption.
 
 ## Task List
 
-| Task | Scope | Verification |
+| Task | 범위 | 검증 |
 |---|---|---|
 | T1 | Move `spring-boot4/graph-spring-boot4-starter` to `spring-boot/graph-spring-boot` | `find spring-boot -maxdepth 2 -type d` |
 | T2 | Update `settings.gradle.kts` include base from `spring-boot4` to `spring-boot` | `./gradlew -q projects` |

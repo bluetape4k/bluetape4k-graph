@@ -1,63 +1,62 @@
-# Issue 10 Domain Examples Design
+# 이슈 10 Domain examples 설계
 
-## Context
+## 맥락
 
-Issue #10 adds three domain example modules to demonstrate graph algorithm usage:
+Issue #10은 graph algorithm 사용법을 보여주기 위해 domain example module 세 개를 추가한다.
 
 - `fraud-detection-examples`
 - `recommendation-examples`
 - `knowledge-graph-examples`
 
-Existing examples already establish the implementation shape:
+기존 example은 이미 구현 형태를 확립하고 있다.
 
 - `examples/code-graph-examples`
 - `examples/linkedin-graph-examples`
 
-The new modules should reuse the same module layout, backend matrix, service/test split, and Testcontainers singleton
-patterns rather than introducing a new example framework.
+새 module은 새 example framework를 도입하지 않고 동일한 module layout, backend matrix, service/test split, Testcontainers singleton pattern을 재사용해야 한다.
 
-## Goals
+## 목표
 
-- Add three example modules under `examples/`.
-- Demonstrate algorithm-oriented graph APIs through practical domain services.
-- Cover blocking and coroutine service variants.
-- Cover backend smoke tests for Neo4j, Memgraph, Apache AGE, FalkorDB, and TinkerGraph.
-- Keep examples excluded from Maven Central publishing by following existing `examples/` conventions.
-- Add the new modules to full Nightly example verification.
+- `examples/` 아래에 example module 세 개를 추가한다.
+- 실제 domain service를 통해 algorithm 중심 graph API를 보여준다.
+- blocking service variant와 coroutine service variant를 모두 cover한다.
+- Neo4j, Memgraph, Apache AGE, FalkorDB, TinkerGraph backend smoke test를 cover한다.
+- 기존 `examples/` convention을 따라 example module을 Maven Central publishing에서 제외한다.
+- 새 module을 full Nightly example verification에 추가한다.
 
-## Non-Goals
+## 비목표
 
-- No new graph-core API.
-- No new graph backend behavior.
-- No new production dependencies outside example modules.
-- No broad CI expansion for every pull request; container-heavy example tests stay in full Nightly.
+- 새로운 graph-core API는 추가하지 않는다.
+- 새로운 graph backend behavior는 추가하지 않는다.
+- example module 밖에는 새로운 production dependency를 추가하지 않는다.
+- 모든 pull request에 대해 broad CI를 확장하지 않는다. container-heavy example test는 full Nightly에 유지한다.
 
-## Existing Pattern Evidence
+## 기존 패턴 증거
 
-### Module Inclusion
+### 모듈 포함
 
-`settings.gradle.kts` includes every `examples/*/build.gradle.kts` directory through:
+`settings.gradle.kts`는 다음 방식으로 모든 `examples/*/build.gradle.kts` directory를 include한다.
 
 ```kotlin
 includeModules("examples", false, false)
 ```
 
-Therefore each new example needs only its own `build.gradle.kts`.
+따라서 각 새 example은 자체 `build.gradle.kts`만 있으면 된다.
 
-### Dependencies
+### 의존성
 
-`code-graph-examples` and `linkedin-graph-examples` depend on:
+`code-graph-examples`와 `linkedin-graph-examples`는 다음에 의존한다.
 
 - `:graph-core`
-- all five backend modules
+- 다섯 backend module 전체
 - `bluetape4k.coroutines`
 - `kotlinx-coroutines-core`
-- test-only Testcontainers, Neo4j driver, PostgreSQL driver, HikariCP, and coroutine test support
-- `:graph-falkordb` test fixtures for FalkorDB server support
+- test-only Testcontainers, Neo4j driver, PostgreSQL driver, HikariCP, coroutine test support
+- FalkorDB server support를 위한 `:graph-falkordb` test fixture
 
-The three new modules should copy this dependency shape.
+새 module 세 개는 이 dependency shape를 복사해야 한다.
 
-Each new module should use this dependency block shape:
+각 새 module은 다음 dependency block 형태를 사용해야 한다.
 
 ```kotlin
 dependencies {
@@ -85,15 +84,13 @@ dependencies {
 }
 ```
 
-Root `build.gradle.kts` already serializes all `test` tasks through `testMutex`, so the new module tests inherit the
-same Testcontainers conflict protection as existing examples.
+root `build.gradle.kts`는 이미 모든 `test` task를 `testMutex`로 serialize하므로, 새 module test도 기존 example과 동일한 Testcontainers conflict protection을 상속한다.
 
 ### Schema DSL
 
-Each module should define schema labels under `src/main/kotlin/.../schema`, following `CodeGraphSchema.kt` and
-`LinkedInSchema.kt`.
+각 module은 `CodeGraphSchema.kt`와 `LinkedInSchema.kt`를 따라 `src/main/kotlin/.../schema` 아래에 schema label을 정의해야 한다.
 
-Example shape:
+예시 형태:
 
 ```kotlin
 object AccountLabel : VertexLabel("Account") {
@@ -105,19 +102,19 @@ object TransferredToLabel : EdgeLabel("TRANSFERRED_TO", AccountLabel, AccountLab
 }
 ```
 
-### Backend Tests
+### Backend test
 
-Existing examples use:
+기존 example은 다음을 사용한다:
 
-- abstract blocking test class with shared scenario tests
-- abstract suspend test class with the same scenario coverage
-- backend-specific concrete classes that only provide `ops`
+- shared scenario test를 담은 abstract blocking test class
+- 동일 scenario coverage를 가진 abstract suspend test class
+- `ops`만 제공하는 backend-specific concrete class
 - AGE setup with `PostgreSQLAgeServer.Launcher.postgresqlAge`, HikariCP, and Exposed `Database.connect`
 - FalkorDB setup with random graph names and cleanup in `@AfterAll`
-- Neo4j/Memgraph setup through `Neo4jServer.Launcher` / `MemgraphServer.Launcher`
-- TinkerGraph setup with in-memory operations
+- `Neo4jServer.Launcher` / `MemgraphServer.Launcher`를 통한 Neo4j/Memgraph setup
+- in-memory operation 기반 TinkerGraph setup
 
-## Proposed Module Designs
+## 제안 모듈 설계
 
 ### fraud-detection-examples
 
@@ -127,21 +124,21 @@ Package root:
 io.bluetape4k.graph.examples.fraud
 ```
 
-Public service classes:
+Public service class:
 
 - `FraudDetectionService`
 - `FraudDetectionSuspendService`
 
-Schema labels:
+Schema label:
 
-- vertices: `Account`, `Transaction`
-- edges: `TRANSFERRED_TO`, `OWNS`
+- vertex: `Account`, `Transaction`
+- edge: `TRANSFERRED_TO`, `OWNS`
 
-Main scenarios:
+주요 scenario:
 
-- Circular transfer detection: find account-to-account transfer cycles.
-- Suspicious cluster detection: find weakly connected account components above a minimum size.
-- High-risk account lookup: rank accounts by PageRank over transfer edges.
+- Circular transfer detection: account-to-account transfer cycle을 찾는다.
+- Suspicious cluster detection: 최소 size를 넘는 weakly connected account component를 찾는다.
+- High-risk account lookup: transfer edge의 PageRank로 account 순위를 매긴다.
 
 Blocking service API:
 
@@ -183,21 +180,21 @@ Package root:
 io.bluetape4k.graph.examples.recommendation
 ```
 
-Public service classes:
+Public service class:
 
 - `RecommendationService`
 - `RecommendationSuspendService`
 
-Schema labels:
+Schema label:
 
-- vertices: `User`, `Product`, `Category`
-- edges: `PURCHASED`, `VIEWED`, `FOLLOWS`, `IN_CATEGORY`
+- vertex: `User`, `Product`, `Category`
+- edge: `PURCHASED`, `VIEWED`, `FOLLOWS`, `IN_CATEGORY`
 
-Main scenarios:
+주요 scenario:
 
-- Product recommendation from neighbor traversal over user-product relations.
-- Social follow recommendation from 2-hop `FOLLOWS` traversal.
-- Popular product ranking through PageRank over interaction edges.
+- user-product relation의 neighbor traversal로 product를 추천한다.
+- 2-hop `FOLLOWS` traversal로 social follow를 추천한다.
+- interaction edge의 PageRank로 popular product 순위를 매긴다.
 
 Blocking service API:
 
@@ -217,12 +214,11 @@ class RecommendationService(
 }
 ```
 
-Implementation constraints:
+구현 제약:
 
 - `rankPopularProducts` must use `PageRankOptions(vertexLabel = "Product", edgeLabel = "PURCHASED", topK = limit)`.
-- `recommendProducts` should use a stable two-step traversal: purchased products -> users who purchased them -> their
-  purchased products, then remove products already purchased by the source user.
-- `recommendFollows` should use `FOLLOWS` two-hop traversal and remove direct follows plus the source user.
+- `recommendProducts`는 stable two-step traversal을 사용해야 한다: purchased products -> 해당 product를 구매한 users -> 그 users의 purchased products. 이후 source user가 이미 구매한 product를 제거한다.
+- `recommendFollows`는 `FOLLOWS` two-hop traversal을 사용하고 direct follow와 source user를 제거해야 한다.
 
 Suspend service API:
 
@@ -250,21 +246,21 @@ Package root:
 io.bluetape4k.graph.examples.knowledge
 ```
 
-Public service classes:
+Public service class:
 
 - `KnowledgeGraphService`
 - `KnowledgeGraphSuspendService`
 
-Schema labels:
+Schema label:
 
-- vertices: `Entity`, `Concept`, `Document`
-- edges: `MENTIONS`, `RELATED_TO`, `IS_A`, `DERIVED_FROM`
+- vertex: `Entity`, `Concept`, `Document`
+- edge: `MENTIONS`, `RELATED_TO`, `IS_A`, `DERIVED_FROM`
 
-Main scenarios:
+주요 scenario:
 
 - Entity linking from documents to entities.
 - Concept hierarchy traversal.
-- Relationship path inference through `allPaths`.
+- `allPaths`를 통한 relationship path 추론.
 
 Blocking service API:
 
@@ -302,9 +298,9 @@ class KnowledgeGraphSuspendService(
 }
 ```
 
-## Architecture Decisions
+## 아키텍처 결정
 
-### One module per domain
+### domain마다 module 하나
 
 Each domain gets a separate Gradle module, matching issue #10 and making examples easy to run independently.
 
@@ -312,7 +308,7 @@ Rejected alternative: one `domain-graph-examples` module with three packages.
 
 Reason: one module would reduce Gradle files but weaken discoverability and make Nightly failures less attributable.
 
-### Duplicate small backend fixtures per module
+### module별 small backend fixture 중복
 
 Backend concrete test classes will mirror existing examples instead of introducing shared test-fixture modules.
 
@@ -321,22 +317,22 @@ Rejected alternative: extract a shared `examples-test-support` module.
 Reason: the existing examples intentionally keep test setup local. A shared fixture would be a larger architecture change
 than issue #10 requires and could create cross-example coupling.
 
-### Algorithm APIs stay service-facing
+### Algorithm API는 service-facing으로 유지
 
-Services expose domain methods, not raw `GraphOperations` wrappers. Tests verify outcomes through domain terms.
+Service는 raw `GraphOperations` wrapper가 아니라 domain method를 노출한다. Test는 domain term으로 outcome을 검증한다.
 
-Reason: the examples should teach users how to translate a business scenario into graph operations.
+이유: example은 business scenario를 graph operation으로 번역하는 방법을 사용자에게 가르쳐야 한다.
 
-### Full Nightly owns backend matrix verification
+### Full Nightly가 backend matrix 검증을 담당
 
-The PR build will compile all modules through `./gradlew build -x test --parallel`, but container-heavy example tests
-will be added to a new full Nightly domain example job instead of the existing `test-examples` job.
+PR build는 `./gradlew build -x test --parallel`로 모든 module을 compile하지만, container-heavy example test는
+기존 `test-examples` job이 아니라 새 full Nightly domain example job에 추가한다.
 
-Reason: existing example backend matrices already run in full Nightly only, and adding five-backend example suites to PR
-CI would increase pull request cost substantially. A separate Nightly job improves failure attribution and avoids pushing
-the existing `test-examples` job past its 30-minute timeout.
+이유: 기존 example backend matrix도 이미 full Nightly에서만 실행되며, five-backend example suite를 PR에 추가하면
+pull request 비용이 크게 증가한다. 별도 Nightly job은 failure attribution을 개선하고 기존 `test-examples` job이
+30분 timeout을 넘는 상황을 피한다.
 
-## Backend Capability Matrix
+## Backend capability matrix
 
 | Scenario | TinkerGraph | Neo4j | Memgraph | Apache AGE | FalkorDB |
 |---|---|---|---|---|---|
@@ -348,7 +344,7 @@ the existing `test-examples` job past its 30-minute timeout.
 | Knowledge related entities | run, assert related entity label | run, assert related entity label | run, assert related entity label | run, assert related entity label | run, assert related entity label |
 | Knowledge relationship paths | run, assert bounded paths | run, assert bounded paths | run, assert bounded paths | run, assert bounded paths | run, assert bounded paths |
 
-## Verification Strategy
+## 검증 전략
 
 Local verification:
 
@@ -361,23 +357,23 @@ Local verification:
 
 Remote verification:
 
-- PR CI compile-only build should include the new modules through `settings.gradle.kts`.
-- Full Nightly should run all new example tests in a new `test-domain-examples` job.
-- The Nightly status aggregation should include `test-domain-examples`.
+- PR CI compile-only build는 `settings.gradle.kts`를 통해 새 module을 포함해야 한다.
+- Full Nightly는 새 `test-domain-examples` job에서 모든 새 example test를 실행해야 한다.
+- Nightly status aggregation은 `test-domain-examples`를 포함해야 한다.
 - If practical after merge, run `workflow_dispatch` with `scope=full` and record the run URL.
 
-## Risks
+## 리스크
 
-- Backend algorithm parity may differ. Tests should assert stable, cross-backend properties such as non-empty results,
+- Backend algorithm parity는 다를 수 있다. Test는 non-empty result 같은 stable cross-backend property를 assert해야 한다.
   expected labels, and path/component existence, not backend-specific ordering.
 - AGE uses a global Exposed `Database.connect` side effect. Keep AGE tests consistent with existing examples.
 - FalkorDB graph cleanup must use unique graph names and best-effort drop in `@AfterAll`.
-- PageRank ranking can vary by score tie. Tests should check that expected vertices appear in the top result set rather
+- PageRank ranking은 score tie 때문에 달라질 수 있다. Test는 exact order보다 expected vertex가 top result set에 나타나는지 확인해야 한다.
   than asserting exact score values.
-- `allPaths` can grow quickly on dense knowledge graphs. `inferRelationshipPaths` must expose `maxPaths` and tests should
+- dense knowledge graph에서 `allPaths`는 빠르게 커질 수 있다. `inferRelationshipPaths`는 `maxPaths`를 노출해야 하고 test는
   use small fixtures.
 
-## Acceptance Criteria
+## 인수 기준
 
 - Three new example modules exist and are auto-included by Gradle.
 - Each module has blocking and suspend service classes.
@@ -391,21 +387,21 @@ Remote verification:
 - Local targeted tests pass for all three modules.
 - `./gradlew build -x test --parallel` passes.
 
-## Step 2-R Review Notes
+## Step 2-R 리뷰 메모
 
-### Claude Code Opus Advisor
+### Claude Code Opus advisor
 
 Artifact: `.omx/artifacts/claude-issue-10-spec-review-20260513081123.md`
 Model: `${CLAUDE_ADVISOR_MODEL:-claude-opus-4-7}`
 
-| Priority | Finding | Decision | Follow-up |
+| 우선순위 | 발견 사항 | 결정 | Follow-up |
 |---|---|---|---|
 | P0 | Service APIs lacked `graphName`. | Accepted | Added `graphName` to all service API sketches. |
 | P0 | Suspend service API was not specified. | Accepted | Added Flow-based suspend API sketches. |
 | P0 | Backend capability/skip policy was missing. | Accepted | Added backend capability matrix. |
 | P0 | New public KDoc language was not specified. | Accepted | Added English KDoc acceptance criterion. |
 | P0 | Recommendation PageRank edge scope was ambiguous. | Accepted | Fixed to `PageRankOptions(edgeLabel = "PURCHASED")`. |
-| P1 | Schema DSL, dependency block, testMutex, and Nightly edit location were under-specified. | Accepted | Added concrete sections and Nightly job decision. |
+| P1 | Schema DSL, dependency block, testMutex, Nightly edit location이 덜 구체화되어 있었다. | 수용 | 구체 section과 Nightly job 결정을 추가했다. |
 | P2 | Knowledge `allPaths` can explode. | Accepted | Added `maxPaths` to service API. |
 
 Latest integrated finding status: P0 = 0, P1 = 0.

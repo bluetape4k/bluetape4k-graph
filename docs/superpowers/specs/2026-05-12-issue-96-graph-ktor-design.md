@@ -1,4 +1,4 @@
-# Issue #96 graph-ktor Design
+# 이슈 #96 graph-ktor 설계
 
 > Language: Korean with English technical terms.
 > Related issue: [#96](https://github.com/bluetape4k/bluetape4k-graph/issues/96)
@@ -53,16 +53,16 @@ graph backend를 명시적으로 선택하고, `Application` extension으로 gra
 - Ktor plugin에서 DataSource, Neo4j Driver, FalkorDB Driver를 직접 생성하는 property DSL. Ktor는 DI/container가
   선택지가 다양하므로 initial version은 caller-owned resource injection을 기준으로 한다.
 
-## 4. Design Options
+## 4. 설계 option
 
-### Option A: Core injection only
+### Option A: Core injection만 사용
 
 `GraphPluginConfig.operations(graphOperations, graphSuspendOperations)`만 제공한다.
 
 - 장점: dependency surface가 가장 작고 backend class loading risk가 낮다.
 - 단점: issue의 backend parity 요구를 API 수준에서 만족하지 못하고 caller boilerplate가 크다.
 
-### Option B: Core injection + backend extension helpers
+### Option B: Core injection + backend extension helper
 
 Core plugin은 `graph-core`만 직접 의존하고, backend별 helper는 별도 source file의 extension function으로 둔다.
 Backend modules는 `compileOnly`로 참조하고 test에서는 필요한 backend를 `testImplementation`으로 검증한다.
@@ -138,7 +138,7 @@ Route handler에서 자연스럽게 사용할 수 있도록 `ApplicationCall.gra
 - AGE helper는 Exposed `Database` lifecycle을 소유하지 않으므로 operations만 close한다. 호출 전에 caller가
   `Database.connect(...)`를 완료해야 하며, 이 조건을 KDoc/README에 명시한다.
 
-## 9. Risks
+## 9. 리스크
 
 | Risk | Impact | Mitigation |
 |---|---|---|
@@ -148,7 +148,7 @@ Route handler에서 자연스럽게 사용할 수 있도록 `ApplicationCall.gra
 | Testcontainers backend 검증이 무거워짐 | PR feedback 느림 | plugin API unit tests는 TinkerGraph + fake operations 중심으로 유지하되, 기존 singleton Testcontainers가 있는 Neo4j/Memgraph/AGE/FalkorDB helper는 route-level smoke로 작게 검증 |
 | Example이 production infra를 요구함 | 사용자가 바로 실행하기 어려움 | example은 TinkerGraph in-memory로 구성 |
 
-## 10. Acceptance Criteria
+## 10. 인수 기준
 
 | Item | Status target |
 |---|---|
@@ -163,11 +163,11 @@ Route handler에서 자연스럽게 사용할 수 있도록 `ApplicationCall.gra
 | README.md / README.ko.md sync | Done |
 | BOM/root module list 갱신 | Done |
 
-## 11. Step 2-R Review Notes
+## 11. Step 2-R 리뷰 메모
 
-### Iteration 1 Integrated Findings
+### Iteration 1 통합 발견 사항
 
-| Priority | Finding | Decision |
+| 우선순위 | 발견 사항 | 결정 |
 |---|---|---|
 | P1 | Backend helper가 optional dependency class loading risk를 만든다. | accepted: helper를 backend별 source file extension으로 분리한다. |
 | P1 | Resource lifecycle contract가 불명확하면 caller-owned driver를 닫을 수 있다. | accepted: injected driver는 닫지 않고 operations close만 수행한다. |
@@ -179,11 +179,11 @@ Route handler에서 자연스럽게 사용할 수 있도록 `ApplicationCall.gra
 
 Convergence: P0 = 0, P1 = 0.
 
-### Claude Code Opus Advisor
+### Claude Code Opus advisor
 
 Artifact: `.omx/artifacts/claude-issue-96-graph-ktor-spec-plan-20260512-032751.md`
 
-| Priority | Finding | Decision | Follow-up |
+| 우선순위 | 발견 사항 | 결정 | Follow-up |
 |---|---|---|---|
 | P1 | Route context API sketch compile risk | accepted | `ApplicationCall` extensions added to design/plan |
 | P1 | TinkerGraph double close policy missing | accepted | single close action rule recorded |
@@ -194,7 +194,7 @@ Artifact: `.omx/artifacts/claude-issue-96-graph-ktor-spec-plan-20260512-032751.m
 
 ## 12. Step Checklist Completion Report
 
-### Step 0 Checklist Completion Report
+### Step 0 checklist 완료 보고
 
 | Item | Status | Notes |
 |---|---|---|
@@ -203,7 +203,7 @@ Artifact: `.omx/artifacts/claude-issue-96-graph-ktor-spec-plan-20260512-032751.m
 | Spec/plan written inside worktree | Done | this file |
 | Worktree refreshed from current `origin/develop` | Done | branch ahead 0, behind 0 at start |
 
-### Step 1 Checklist Completion Report
+### Step 1 checklist 완료 보고
 
 | Item | Status | Notes |
 |---|---|---|
@@ -214,7 +214,7 @@ Artifact: `.omx/artifacts/claude-issue-96-graph-ktor-spec-plan-20260512-032751.m
 | User intent and boundaries clear | Done | #96 plus follow-up: Spring Boot rename separate (#99) |
 | Ambiguous requirements clarified | Done | `graph-ktor` remains, Spring Boot rename separated |
 
-### Step 1-R Checklist Completion Report
+### Step 1-R checklist 완료 보고
 
 | Item | Status | Notes |
 |---|---|---|
@@ -225,7 +225,7 @@ Artifact: `.omx/artifacts/claude-issue-96-graph-ktor-spec-plan-20260512-032751.m
 | Technical constraints identified | Done | Kotlin 2.3, Java 21, Ktor 3.4.3, backend dependency boundary |
 | Research summary ready | Done | sections 2-9 |
 
-### Step 2 Checklist Completion Report
+### Step 2 checklist 완료 보고
 
 | Item | Status | Notes |
 |---|---|---|
@@ -241,7 +241,7 @@ Artifact: `.omx/artifacts/claude-issue-96-graph-ktor-spec-plan-20260512-032751.m
 | Open questions resolved/escalated | Done | Spring Boot rename separated as #99 |
 | Draft task list returned | Done | plan file |
 
-### Step 2-R Checklist Completion Report
+### Step 2-R checklist 완료 보고
 
 | Item | Status | Notes |
 |---|---|---|
@@ -249,7 +249,7 @@ Artifact: `.omx/artifacts/claude-issue-96-graph-ktor-spec-plan-20260512-032751.m
 | Claude Code Opus advisor review complete or gap recorded | Done | local Claude CLI completed |
 | Claude advisor artifact path recorded | Done | `.omx/artifacts/claude-issue-96-graph-ktor-spec-plan-20260512-032751.md` |
 | Critic integration complete | Done | section 11 |
-| Findings normalized | Done | section 11 |
+| 발견 사항 정규화 | 완료 | section 11 |
 | P0 revised/re-reviewed | N/A | no P0 |
 | P1 revised/re-reviewed | Done | design includes separate helper files and lifecycle contract |
 | Convergence verification passed | Done | P0 = 0, P1 = 0 |

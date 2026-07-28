@@ -1,12 +1,12 @@
-# Issue #260 PostgreSQL Traversal Benchmark Design
+# 이슈 #260 PostgreSQL traversal benchmark 설계
 
-## Context
+## 맥락
 
 Epic #260 compares GraphDB adoption value on PostgreSQL-backed variable-depth traversal workloads. Child issues #261 through #265 now cover shared traversal contracts, AGE/Cypher execution, PostgreSQL recursive CTE and iterative baselines, explicit ORM boundaries, and measured documentation.
 
 The work stays inside `benchmark/graph-benchmark` and uses the existing Gradle `kotlinx-benchmark` surface. It does not add benchmark code to production graph modules.
 
-## Goals
+## 목표
 
 - Define deterministic traversal fixtures and metric contracts shared by all candidates.
 - Make authorization inheritance the primary scenario: `user -> group -> role -> resource`, active edges, deny-overrides-allow semantics, public-resource filtering, and cycle-safe bounded traversal.
@@ -15,7 +15,7 @@ The work stays inside `benchmark/graph-benchmark` and uses the existing Gradle `
 - Compare native Neo4j Cypher and AGE/Cypher with PostgreSQL recursive CTE and iterative batched traversal where applicable.
 - Report latency and correctness with committed JMH JSON, Markdown tables, and README chart assets.
 
-## Non-Goals
+## 비목표
 
 - No production API changes.
 - No standalone benchmark module unless `graph-benchmark` cannot host the slice.
@@ -103,7 +103,7 @@ Benchmark documentation must include:
 
 README changes must update both `README.md` and `README.ko.md`.
 
-## Acceptance Criteria
+## 인수 기준
 
 - #261: shared fixture, result, metric, and engine contracts exist with tests.
 - #262: AGE/Cypher traversal loads and resolves the smoke fixture.
@@ -115,7 +115,7 @@ README changes must update both `README.md` and `README.ko.md`.
 - `git diff --check` passes.
 - Targeted compile/tests pass or any environment blocker is recorded with evidence.
 
-## Risks
+## 리스크
 
 - PostgreSQL AGE can express traversal more naturally without winning latency on the current fixture.
 - A native GraphDB can win one path-shaped scenario and still lose a wider scenario; the report must identify the shape, not claim a blanket GraphDB win.
