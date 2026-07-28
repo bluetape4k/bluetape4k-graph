@@ -19,10 +19,10 @@ import io.bluetape4k.logging.info
 import io.bluetape4k.support.requireNotBlank
 
 /**
- * Observability graph service built on top of [GraphOperations].
+ * [GraphOperations] 위에 구성한 observability graph service이다.
  *
- * The service models runtime services, public APIs, alerts, incidents, and team ownership.
- * It demonstrates dependency blast-radius traversal, alert boundary correlation, and ownership lookup.
+ * 이 service는 runtime service, public API, alert, incident, team ownership을 모델링한다.
+ * Dependency blast-radius traversal, alert boundary correlation, ownership lookup을 보여준다.
  */
 class ObservabilityIncidentService(
     private val ops: GraphOperations,
@@ -31,7 +31,7 @@ class ObservabilityIncidentService(
     companion object: KLogging()
 
     /**
-     * Creates the backing graph when it does not already exist.
+     * Backing graph가 아직 없으면 생성한다.
      */
     fun initialize() {
         if (!ops.graphExists(graphName)) {

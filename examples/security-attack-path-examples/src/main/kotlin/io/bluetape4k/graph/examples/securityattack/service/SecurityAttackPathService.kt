@@ -23,7 +23,7 @@ import io.bluetape4k.support.requireNotBlank
 import java.io.Serializable
 
 /**
- * One educational attack path through business identifiers.
+ * Business identifier를 지나는 하나의 educational attack path이다.
  */
 data class SecurityAttackPath(
     val nodeIds: List<String>,
@@ -36,10 +36,10 @@ data class SecurityAttackPath(
 }
 
 /**
- * Educational attack-path traversal service built on top of [GraphOperations].
+ * [GraphOperations] 위에 구성한 educational attack-path traversal service이다.
  *
- * This is not a security scanner. It demonstrates graph-shaped attack-path reasoning over a small static model:
- * reachability, exploit steps, credential pivoting, privilege escalation, and remediation impact.
+ * 이 service는 security scanner가 아니다. 작은 static model 위에서 reachability, exploit step, credential pivoting,
+ * privilege escalation, remediation impact를 graph-shaped attack-path reasoning으로 보여준다.
  */
 class SecurityAttackPathService(
     private val ops: GraphOperations,
@@ -48,7 +48,7 @@ class SecurityAttackPathService(
     companion object: KLogging()
 
     /**
-     * Creates the backing graph when it does not already exist.
+     * Backing graph가 아직 없으면 생성한다.
      */
     fun initialize() {
         if (!ops.graphExists(graphName)) {

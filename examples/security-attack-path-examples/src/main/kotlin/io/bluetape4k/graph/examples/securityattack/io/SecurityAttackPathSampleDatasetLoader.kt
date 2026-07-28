@@ -12,7 +12,7 @@ import io.bluetape4k.graph.repository.GraphSuspendOperations
 import java.io.InputStream
 
 /**
- * Imports the security attack-path sample CSV dataset with graph-io.
+ * graph-io로 security attack-path sample CSV dataset을 import한다.
  */
 object SecurityAttackPathSampleDatasetLoader {
 

@@ -8,22 +8,22 @@ import io.ktor.server.application.install
 import io.ktor.server.routing.routing
 
 /**
- * Ktor application module using a FalkorDB backend.
+ * FalkorDB backend를 사용하는 Ktor application module이다.
  *
- * ## Behavior / Contract
- * - [driver] is a caller-owned resource; this module does not close it.
- * - Installs shared bluetape4k Ktor core defaults for health/readiness and JSON.
- * - Installs [GraphPlugin] with the FalkorDB backend, bound to [DEMO_GRAPH_NAME].
- * - Exposes the same demo routes as [module] (health, readiness, reset, city count, city path).
- * - The graph name is fixed to [DEMO_GRAPH_NAME] so that [graphDemoRoutes] reset
- *   and query operations always target the same graph.
+ * ## 동작/계약
+ * - [driver]는 caller가 소유한 resource이며, 이 module은 이를 close하지 않는다.
+ * - Health/readiness와 JSON을 위한 shared bluetape4k Ktor core default를 설치한다.
+ * - [DEMO_GRAPH_NAME]에 bind된 FalkorDB backend로 [GraphPlugin]을 설치한다.
+ * - [module]과 같은 demo route(health, readiness, reset, city count, city path)를 노출한다.
+ * - Graph name은 [DEMO_GRAPH_NAME]으로 고정되어 [graphDemoRoutes]의 reset 및 query operation이
+ *   항상 같은 graph를 대상으로 삼는다.
  *
  * ```kotlin
  * val driver = FalkorDB.driver("localhost", 6379)
  * embeddedServer(CIO, port = 8080) {
  *     falkorDbModule(driver)
  * }.start(wait = true)
- * // Caller is responsible for driver.close() on shutdown.
+ * // Shutdown 시 caller가 driver.close()를 책임진다.
  * ```
  */
 fun Application.falkorDbModule(driver: Driver) {
@@ -37,9 +37,9 @@ fun Application.falkorDbModule(driver: Driver) {
 }
 
 /**
- * The graph name matched by [graphDemoRoutes] operations.
+ * [graphDemoRoutes] operation과 맞춰 쓰는 graph name이다.
  *
- * Must equal `DemoCityGraph.GRAPH_NAME` so that the FalkorDB operations instance
- * writes vertices and edges to the same Redis key that [graphDemoRoutes] queries.
+ * FalkorDB operations instance가 [graphDemoRoutes]에서 query하는 것과 같은 Redis key에 vertex와 edge를 쓰도록
+ * 반드시 `DemoCityGraph.GRAPH_NAME`과 같아야 한다.
  */
 internal const val DEMO_GRAPH_NAME: String = "demo"

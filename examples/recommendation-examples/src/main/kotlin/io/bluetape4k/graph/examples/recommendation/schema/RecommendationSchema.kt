@@ -4,7 +4,7 @@ import io.bluetape4k.graph.schema.EdgeLabel
 import io.bluetape4k.graph.schema.VertexLabel
 
 /**
- * User vertices in the recommendation example.
+ * Recommendation example의 user vertex이다.
  */
 object UserLabel : VertexLabel("User") {
     val userId = string("userId")
@@ -13,7 +13,7 @@ object UserLabel : VertexLabel("User") {
 }
 
 /**
- * Product vertices in the recommendation example.
+ * Recommendation example의 product vertex이다.
  */
 object ProductLabel : VertexLabel("Product") {
     val productId = string("productId")
@@ -22,7 +22,7 @@ object ProductLabel : VertexLabel("Product") {
 }
 
 /**
- * Purchase edges from users to products.
+ * User에서 product로 이어지는 purchase edge이다.
  */
 object PurchasedLabel : EdgeLabel("PURCHASED", UserLabel, ProductLabel) {
     val quantity = integer("quantity")
@@ -30,6 +30,6 @@ object PurchasedLabel : EdgeLabel("PURCHASED", UserLabel, ProductLabel) {
 }
 
 /**
- * Social follow edges between users.
+ * User 사이의 social follow edge이다.
  */
 object FollowsLabel : EdgeLabel("FOLLOWS", UserLabel, UserLabel)

@@ -23,7 +23,7 @@ import io.bluetape4k.support.requireNotBlank
 import java.io.Serializable
 
 /**
- * Explains one bounded data-lineage path.
+ * 하나의 bounded data-lineage path를 설명한다.
  */
 data class LineageImpactPath(
     val nodeIds: List<String>,
@@ -35,10 +35,10 @@ data class LineageImpactPath(
 }
 
 /**
- * Data-lineage impact analysis service built on top of [GraphOperations].
+ * [GraphOperations] 위에 구성한 data-lineage impact analysis service이다.
  *
- * The service keeps the example intentionally compact: it models datasets, tables, columns, jobs, dashboards, owners,
- * and checks, then answers bounded traversal questions commonly used before pipeline or schema changes.
+ * 이 service는 example을 의도적으로 compact하게 유지한다. dataset, table, column, job, dashboard, owner, check를 모델링한 뒤
+ * pipeline 또는 schema 변경 전에 자주 묻는 bounded traversal 질문에 답한다.
  */
 class DataLineageImpactService(
     private val ops: GraphOperations,
@@ -47,7 +47,7 @@ class DataLineageImpactService(
     companion object: KLogging()
 
     /**
-     * Creates the backing graph when it does not already exist.
+     * Backing graph가 아직 없으면 생성한다.
      */
     fun initialize() {
         if (!ops.graphExists(graphName)) {

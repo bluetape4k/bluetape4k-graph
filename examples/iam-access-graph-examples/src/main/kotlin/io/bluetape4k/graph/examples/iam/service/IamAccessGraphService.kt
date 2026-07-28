@@ -25,7 +25,7 @@ import io.bluetape4k.support.requireNotBlank
 import java.io.Serializable
 
 /**
- * Explains whether an IAM user can perform an action on a resource and which graph path grants or blocks it.
+ * IAM user가 resource에 action을 수행할 수 있는지, 어떤 graph path가 이를 grant 또는 block하는지 설명한다.
  */
 data class IamAccessExplanation(
     val userId: String,
@@ -41,7 +41,7 @@ data class IamAccessExplanation(
 }
 
 /**
- * Describes an inherited privileged access chain that should be reviewed.
+ * Review가 필요한 inherited privileged access chain을 설명한다.
  */
 data class IamPrivilegeChain(
     val userId: String,
@@ -55,10 +55,10 @@ data class IamPrivilegeChain(
 }
 
 /**
- * IAM access-path example service built on top of [GraphOperations].
+ * [GraphOperations] 위에 구성한 IAM access-path example service이다.
  *
- * The service is intentionally not a full policy engine. It demonstrates identity, group, role, policy, permission,
- * resource, and temporary-grant reachability as backend-independent graph traversals.
+ * 이 service는 의도적으로 full policy engine이 아니다. identity, group, role, policy, permission,
+ * resource, temporary-grant reachability를 backend-independent graph traversal로 보여준다.
  */
 class IamAccessGraphService(
     private val ops: GraphOperations,
@@ -71,7 +71,7 @@ class IamAccessGraphService(
     }
 
     /**
-     * Creates the backing graph when it does not already exist.
+     * Backing graph가 아직 없으면 생성한다.
      */
     fun initialize() {
         if (!ops.graphExists(graphName)) {
@@ -408,7 +408,7 @@ class IamAccessGraphService(
 }
 
 /**
- * Seeds a compact IAM graph used by the README walkthrough and tests.
+ * README walkthrough와 test에서 사용하는 compact IAM graph를 seed한다.
  */
 object IamAccessSampleGraph {
 

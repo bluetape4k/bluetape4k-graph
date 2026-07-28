@@ -60,7 +60,7 @@ object SkillLabel : VertexLabel("Skill") {
  * ```
  */
 object KnowsLabel : EdgeLabel("KNOWS", PersonLabel, PersonLabel) {
-    val since = string("since")         // ISO date string
+    val since = string("since")         // ISO date 문자열이다.
     val strength = integer("strength")  // 1-10
 }
 

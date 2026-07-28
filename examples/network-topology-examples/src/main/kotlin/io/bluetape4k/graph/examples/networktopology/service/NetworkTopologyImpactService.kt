@@ -17,7 +17,7 @@ import io.bluetape4k.support.requireNotBlank
 import java.io.Serializable
 
 /**
- * One bounded network route through device business identifiers.
+ * Device business identifier를 지나는 하나의 bounded network route이다.
  */
 data class NetworkRoute(
     val deviceIds: List<String>,
@@ -29,10 +29,10 @@ data class NetworkRoute(
 }
 
 /**
- * Network-topology traversal service built on top of [GraphOperations].
+ * [GraphOperations] 위에 구성한 network-topology traversal service이다.
  *
- * The service intentionally stays below network simulation complexity. It demonstrates active-link path finding,
- * service blast-radius checks, isolated segment discovery, and redundant route enumeration over a compact graph.
+ * 이 service는 의도적으로 network simulation 수준의 복잡도를 피한다. Compact graph 위에서 active-link path 탐색,
+ * service blast-radius 확인, isolated segment discovery, redundant route enumeration을 보여준다.
  */
 class NetworkTopologyImpactService(
     private val ops: GraphOperations,
@@ -41,7 +41,7 @@ class NetworkTopologyImpactService(
     companion object: KLogging()
 
     /**
-     * Creates the backing graph when it does not already exist.
+     * Backing graph가 아직 없으면 생성한다.
      */
     fun initialize() {
         if (!ops.graphExists(graphName)) {

@@ -12,18 +12,18 @@ import io.bluetape4k.graph.repository.GraphSuspendOperations
 import java.io.InputStream
 
 /**
- * Imports the knowledge graph sample CSV dataset with graph-io.
+ * graph-io로 knowledge graph sample CSV dataset을 import한다.
  *
- * The default resources model documents, entities, and concepts as vertices, then imports mention, relationship, and
- * classification edges for service-level graph traversal examples.
+ * 기본 resource는 document, entity, concept을 vertex로 모델링하고 mention, relationship,
+ * classification edge를 import하여 service-level graph traversal example에 사용한다.
  *
- * ## Behavior / Contract
+ * ## 동작/계약
  *
- * - Default resources are resolved from the current thread context class loader first, then this loader's class loader.
- * - Missing resource names are caller input errors and throw [IllegalArgumentException].
- * - The loader owns and closes the resource input streams, including failure paths before graph-io consumes both files.
- * - [GraphImportOptions] and [CsvGraphIoOptions] default to graph-io defaults unless callers override them.
- * - The loader does not create or clear graphs; callers should initialize the target operations before import.
+ * - 기본 resource는 현재 thread context class loader를 먼저 사용하고, 그다음 이 loader의 class loader로 resolve한다.
+ * - 누락된 resource name은 caller input error이며 [IllegalArgumentException]을 던진다.
+ * - Loader는 graph-io가 두 file을 모두 consume하기 전의 failure path를 포함해 resource input stream을 소유하고 close한다.
+ * - Caller가 override하지 않으면 [GraphImportOptions]와 [CsvGraphIoOptions]는 graph-io default를 따른다.
+ * - Loader는 graph를 create하거나 clear하지 않는다. Caller는 import 전에 target operations를 initialize해야 한다.
  */
 object KnowledgeGraphSampleDatasetLoader {
 
