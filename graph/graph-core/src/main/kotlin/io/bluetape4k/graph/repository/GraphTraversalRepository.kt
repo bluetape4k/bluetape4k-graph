@@ -7,7 +7,7 @@ import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
 
 /**
- * Synchronous graph traversal repository.
+ * synchronous graph traversal repository.
  *
  * ```kotlin
  * // One-hop outgoing neighbor traversal.
@@ -22,7 +22,7 @@ import io.bluetape4k.graph.model.PathOptions
  */
 interface GraphTraversalRepository {
     /**
-     * Finds adjacent neighbor vertices from the start vertex.
+     * start vertex에서 인접 neighbor vertex를 찾는다.
 	*
      * [NeighborOptions.direction] selects outgoing, incoming, or bidirectional traversal.
      * [NeighborOptions.maxDepth] values of 2 or more include multi-hop neighbors.
@@ -32,9 +32,9 @@ interface GraphTraversalRepository {
      * val all3hop = ops.neighbors(alice.id, NeighborOptions(maxDepth = 3))
      * ```
      *
-     * @param startId vertex ID to start traversal from.
-     * @param options traversal options for label filtering, direction, and maximum depth.
-     * @return adjacent [GraphVertex] values.
+     * @param startId traversal을 시작할 vertex ID.
+     * @param options label filtering, direction, maximum depth를 지정하는 traversal option.
+     * @return 인접 [GraphVertex] value 목록.
      */
     fun neighbors(
         startId: GraphElementId,
@@ -42,10 +42,10 @@ interface GraphTraversalRepository {
     ): List<GraphVertex>
 
     /**
-     * Finds the shortest path between two vertices.
+     * 두 vertex 사이의 shortest path를 찾는다.
 	*
-     * Traversal is limited by [PathOptions.maxDepth]. Returns `null` when no path exists
-     * or the shortest path exceeds the maximum depth.
+     * traversal은 [PathOptions.maxDepth]로 제한된다. path가 없거나
+     * shortest path가 maximum depth를 넘으면 `null`을 반환한다.
      *
      * ```kotlin
      * val path = ops.shortestPath(alice.id, carol.id, PathOptions(edgeLabel = "KNOWS", maxDepth = 10))
@@ -54,8 +54,8 @@ interface GraphTraversalRepository {
      *
      * @param fromId source vertex ID.
      * @param toId target vertex ID.
-     * @param options traversal options for label filtering and maximum depth.
-     * @return shortest [GraphPath], or `null` when no path exists.
+     * @param options label filtering과 maximum depth를 지정하는 traversal option.
+     * @return shortest [GraphPath]. path가 없으면 `null`.
      */
     fun shortestPath(
         fromId: GraphElementId,
@@ -64,9 +64,9 @@ interface GraphTraversalRepository {
     ): GraphPath?
 
     /**
-     * Finds all paths between two vertices.
+     * 두 vertex 사이의 모든 path를 찾는다.
 	*
-     * Returns all simple paths up to [PathOptions.maxDepth], or an empty list when no paths exist.
+     * [PathOptions.maxDepth]까지의 모든 simple path를 반환한다. path가 없으면 empty list를 반환한다.
      *
      * ```kotlin
      * val paths = ops.allPaths(alice.id, carol.id, PathOptions(maxDepth = 5))
@@ -75,7 +75,7 @@ interface GraphTraversalRepository {
      *
      * @param fromId source vertex ID.
      * @param toId target vertex ID.
-     * @param options traversal options for label filtering and maximum depth.
+     * @param options label filtering과 maximum depth를 지정하는 traversal option.
      * @return [GraphPath] values.
      */
     fun allPaths(
@@ -85,10 +85,10 @@ interface GraphTraversalRepository {
     ): List<GraphPath>
 
     /**
-     * Finds a weighted shortest path with the A* algorithm.
+     * A* algorithm으로 weighted shortest path를 찾는다.
 	*
      * `options.weightProperty` must be set. [heuristic] must be an admissible synchronous
-     * function that estimates cost to the target vertex; suspend heuristics are not supported.
+     * target vertex까지의 cost를 추정하는 function이다. suspend heuristic은 지원하지 않는다.
      *
      * ```kotlin
      * val opts = PathOptions(weightProperty = "distance", direction = Direction.OUTGOING)
@@ -100,9 +100,9 @@ interface GraphTraversalRepository {
      *
      * @param fromId source vertex ID.
      * @param toId target vertex ID.
-     * @param options traversal options; [PathOptions.weightProperty] is required.
-     * @param heuristic admissible estimated cost function to the target.
-     * @return weighted shortest [GraphPath], or `null` when no path exists.
+     * @param options traversal option. [PathOptions.weightProperty]가 필요하다.
+     * @param heuristic target까지의 admissible estimated cost function.
+     * @return weighted shortest [GraphPath]. path가 없으면 `null`.
      */
     fun aStarPath(
         fromId: GraphElementId,

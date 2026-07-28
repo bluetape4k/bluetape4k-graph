@@ -3,10 +3,10 @@ package io.bluetape4k.graph.model
 import java.io.Serializable
 
 /**
- * Input model for batch edge creation.
+ * batch edge 생성을 위한 input model.
  *
  * A single [GraphEdgeRepository.createEdges][io.bluetape4k.graph.repository.GraphEdgeRepository.createEdges]
- * call shares one edge label, so this model carries only the endpoints and per-row properties.
+ * 호출은 하나의 edge label을 공유하므로, 이 model은 endpoint와 row별 property만 가진다.
  *
  * ## Contract
  *

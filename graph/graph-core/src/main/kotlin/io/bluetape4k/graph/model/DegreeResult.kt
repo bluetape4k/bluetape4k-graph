@@ -3,11 +3,11 @@ package io.bluetape4k.graph.model
 import java.io.Serializable
 
 /**
- * Degree centrality result.
+ * Degree centrality 결과.
  *
- * @property vertexId ID of the measured vertex.
- * @property inDegree Number of incoming edges.
- * @property outDegree Number of outgoing edges.
+ * @property vertexId 측정 대상 vertex의 ID.
+ * @property inDegree 들어오는 edge 수.
+ * @property outDegree 나가는 edge 수.
  *
  * ### Usage
  * ```kotlin

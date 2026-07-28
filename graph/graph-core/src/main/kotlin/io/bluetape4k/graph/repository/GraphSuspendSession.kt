@@ -25,7 +25,7 @@ interface GraphSuspendSession : AutoCloseable {
      * ops.createGraph("social")
      * ```
      *
-     * @param name graph name to create.
+     * @param name 생성할 graph name.
      * @see GraphSession.createGraph synchronous version
      */
     suspend fun createGraph(name: String)
@@ -37,7 +37,7 @@ interface GraphSuspendSession : AutoCloseable {
      * ops.dropGraph("social")
      * ```
      *
-     * @param name graph name to drop.
+     * @param name 삭제할 graph name.
      * @see GraphSession.dropGraph synchronous version
      */
     suspend fun dropGraph(name: String)
@@ -49,7 +49,7 @@ interface GraphSuspendSession : AutoCloseable {
      * val exists = ops.graphExists("social")  // true / false
      * ```
      *
-     * @param name graph name to check.
+     * @param name 존재 여부를 확인할 graph name.
      * @return `true` when the graph exists, otherwise `false`.
      * @see GraphSession.graphExists synchronous version
      */

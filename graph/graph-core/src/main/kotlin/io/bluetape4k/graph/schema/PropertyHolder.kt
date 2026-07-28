@@ -5,20 +5,20 @@ import java.time.LocalDateTime
 import kotlin.reflect.KClass
 
 /**
- * Base property DSL shared by [VertexLabel] and [EdgeLabel].
+ * [VertexLabel]과 [EdgeLabel]이 공유하는 기본 property DSL.
  *
- * Properties are declared in an Exposed Table-style DSL and exposed through [properties].
+ * property는 Exposed Table-style DSL로 선언되고 [properties]를 통해 노출된다.
  *
  * `object` subclasses are initialized safely by JVM class loading. Non-object instances keep
- * independent property lists.
+ * 독립적인 property list를 가진다.
  */
 abstract class PropertyHolder {
     private val _properties = mutableListOf<PropertyDef<*>>()
 
     /**
-     * Immutable snapshot of all [PropertyDef] values defined on this label.
+     * 이 label에 정의된 모든 [PropertyDef] value의 immutable snapshot.
 	*
-     * Each access returns a copy, so external mutation cannot affect the source list.
+     * 접근할 때마다 copy를 반환하므로 외부 mutation이 source list에 영향을 주지 않는다.
 	 */
     val properties: List<PropertyDef<*>> get() = _properties.toList()
 
@@ -47,7 +47,7 @@ abstract class PropertyHolder {
     fun localDateTime(name: String) = PropertyDef<LocalDateTime>(name).also { _properties.add(it) }
 
     /**
-     * Defines an enum property.
+     * enum property를 정의한다.
 	*
      * @param name property name.
      * @param type enum [KClass].
