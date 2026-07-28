@@ -3,9 +3,9 @@ package io.bluetape4k.graph.spring.boot.properties
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 /**
- * Apache AGE backend properties.
+ * Apache AGE backend property.
  *
- * Example:
+ * 예제:
  *
  * ```kotlin
  * import io.bluetape4k.graph.spring.boot.properties.AgeGraphProperties

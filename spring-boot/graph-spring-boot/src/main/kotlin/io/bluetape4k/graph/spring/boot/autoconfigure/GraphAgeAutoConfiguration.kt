@@ -25,12 +25,12 @@ import org.springframework.context.annotation.DependsOn
 import javax.sql.DataSource
 
 /**
- * Auto-configuration for the Apache AGE backend.
+ * Apache AGE backend auto-configuration.
  *
- * It is active when `bluetape4k.graph.backend=age`. The configuration reuses the
- * Spring Boot [DataSource] and connects Exposed to it.
+ * `bluetape4k.graph.backend=age`일 때 활성화된다. 이 설정은 Spring Boot [DataSource]를 재사용하고
+ * Exposed를 해당 DataSource에 연결한다.
  *
- * Example:
+ * 예제:
  *
  * ```kotlin
  * import io.bluetape4k.graph.repository.GraphOperations
@@ -65,8 +65,8 @@ class GraphAgeAutoConfiguration {
     /**
      * Connects an Exposed [Database] to the AGE-backed [DataSource].
      *
-     * Applications must configure the Hikari connection initialization SQL so
-     * the AGE extension is loaded before graph operations run:
+     * Application은 graph operations 실행 전에 AGE extension이 load되도록 Hikari connection initialization SQL을
+     * 구성해야 한다:
      * ```yaml
      * spring:
      *   datasource:
@@ -85,8 +85,7 @@ class GraphAgeAutoConfiguration {
     }
 
     /**
-     * Registers AGE-backed [GraphOperations] when the application has not
-     * provided its own graph operations bean.
+     * Application이 자체 graph operations bean을 제공하지 않았을 때 AGE 기반 [GraphOperations]를 등록한다.
      */
     @Bean
     @ConditionalOnMissingBean(GraphOperations::class)
@@ -97,7 +96,7 @@ class GraphAgeAutoConfiguration {
     }
 
     /**
-     * Initializes the configured AGE graph with `createGraph()` when auto-create is enabled.
+     * Auto-create가 활성화되면 `createGraph()`로 설정된 AGE graph를 초기화한다.
      */
     @Bean(name = ["ageGraphInitializer"])
     @DependsOn("graphOperations")
@@ -122,7 +121,7 @@ class GraphAgeAutoConfiguration {
         }
 
     /**
-     * Registers coroutine-friendly AGE graph operations when suspend support is enabled.
+     * Suspend 지원이 활성화되면 coroutine 친화적 AGE graph operations를 등록한다.
      */
     @Bean
     @ConditionalOnMissingBean(GraphSuspendOperations::class)
@@ -139,7 +138,7 @@ class GraphAgeAutoConfiguration {
     }
 
     /**
-     * Registers virtual-thread graph operations backed by the synchronous AGE operations.
+     * 동기 AGE operations를 기반으로 virtual-thread graph operations를 등록한다.
      */
     @Bean
     @ConditionalOnMissingBean(GraphVirtualThreadOperations::class)
@@ -154,8 +153,7 @@ class GraphAgeAutoConfiguration {
         ops.asVirtualThread()
 
     /**
-     * Isolates the Actuator health indicator so non-Actuator applications avoid
-     * `NoClassDefFoundError`.
+     * Actuator health indicator를 분리해 Actuator를 사용하지 않는 application에서 `NoClassDefFoundError`를 피한다.
      */
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(name = ["org.springframework.boot.health.contributor.HealthIndicator"])
