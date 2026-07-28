@@ -17,50 +17,48 @@ import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * [Neo4jGraphOperations] wrapper backed by [ConcurrentHashMap] caches.
+ * [ConcurrentHashMap] 캐시를 사용하는 [Neo4jGraphOperations] wrapper.
  *
- * Read methods (`findVertexById`, `findVerticesByLabel`, `neighbors`, `shortestPath`,
- * `allPaths`, and `findEdgesByLabel`) cache their results so repeated lookups become
- * in-memory hits instead of database round trips.
+ * 읽기 메서드(`findVertexById`, `findVerticesByLabel`, `neighbors`, `shortestPath`,
+ * `allPaths`, `findEdgesByLabel`)는 결과를 캐싱한다. 같은 조회가 반복되면 database round trip 대신
+ * in-memory cache hit로 처리된다.
  *
- * Write methods (`createVertex`, `updateVertex`, `deleteVertex`, `createEdge`,
- * and `deleteEdge`) invalidate caches to keep subsequent reads consistent.
+ * 쓰기 메서드(`createVertex`, `updateVertex`, `deleteVertex`, `createEdge`, `deleteEdge`)는
+ * 이후 읽기의 일관성을 유지하기 위해 캐시를 무효화한다.
  *
- * **Write-result memoization**:
- * repeated `createVertex` and `createEdge` calls with identical arguments return the
- * previously created [GraphVertex] or [GraphEdge]. This is intended for benchmarks
- * and repeat-heavy tests; production code that needs transactional insert semantics
- * should use [Neo4jGraphOperations] directly.
+ * **쓰기 결과 메모이제이션**:
+ * 동일 인자의 `createVertex`와 `createEdge` 반복 호출은 이전에 생성된 [GraphVertex] 또는 [GraphEdge]를
+ * 반환한다. 이 동작은 benchmark와 반복 호출이 많은 test를 위한 것이다. transactional insert semantics가
+ * 필요한 production code는 [Neo4jGraphOperations]를 직접 사용한다.
  *
- * Read caches use [ConcurrentHashMap] rather than Caffeine to avoid TinyLFU bookkeeping.
- * TTL and max-size eviction are intentionally absent; explicit `clear()` calls on writes
- * maintain consistency.
+ * 읽기 캐시는 TinyLFU bookkeeping 비용을 피하기 위해 Caffeine 대신 [ConcurrentHashMap]을 사용한다.
+ * TTL과 max-size eviction은 의도적으로 제공하지 않는다. 쓰기 시 명시적인 `clear()` 호출로 일관성을 유지한다.
  *
  * ### Usage
  * ```kotlin
  * val driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.none())
  * val baseOps = Neo4jGraphOperations(driver)
  *
- * // Wrap the base operations for benchmark or repeat-read workloads.
+ * // benchmark 또는 반복 읽기 workload에 맞게 기본 operations를 감싼다.
  * val ops = CachingNeo4jGraphOperations(baseOps)
  *
- * // First lookup: database call.
+ * // 첫 번째 조회: database 호출.
  * val alice = ops.findVertexById("Person", aliceId)
  *
- * // Second lookup: cache hit, no database call.
+ * // 두 번째 조회: cache hit, database 호출 없음.
  * val aliceCached = ops.findVertexById("Person", aliceId)
  *
- * // Deleting a vertex invalidates all caches.
+ * // 정점 삭제는 모든 cache를 무효화한다.
  * ops.deleteVertex("Person", aliceId)
  *
- * // The next lookup misses the cache and reads from the database again.
+ * // 다음 조회는 cache miss 후 database에서 다시 읽는다.
  * val afterDelete = ops.findVertexById("Person", aliceId)  // null
  * ```
  */
 /**
- * @param delegate [Neo4jGraphOperations] instance that performs the actual database calls.
- * @param maxSize compatibility parameter; currently unused after the ConcurrentHashMap migration.
- * @param expireAfterWrite compatibility parameter; currently unused because writes explicitly clear caches.
+ * @param delegate 실제 database 호출을 수행할 [Neo4jGraphOperations] 인스턴스.
+ * @param maxSize 호환성 유지용 파라미터. [ConcurrentHashMap] migration 이후 현재는 사용하지 않는다.
+ * @param expireAfterWrite 호환성 유지용 파라미터. 쓰기 시 명시적으로 cache를 clear하므로 현재는 사용하지 않는다.
  */
 class CachingNeo4jGraphOperations(
     private val delegate: Neo4jGraphOperations,
@@ -86,23 +84,23 @@ class CachingNeo4jGraphOperations(
         val properties: Map<String, Any?>,
     )
 
-    // ConcurrentHashMap avoids TinyLFU bookkeeping and keeps lookup overhead low.
-    // It does not allow null values, so nullable results are wrapped in Optional.
+    // ConcurrentHashMap은 TinyLFU bookkeeping을 피하고 lookup overhead를 낮게 유지한다.
+    // null 값을 허용하지 않으므로 nullable 결과는 Optional로 감싼다.
     private val vertexByIdCache: ConcurrentHashMap<VertexKey, Optional<GraphVertex>> = ConcurrentHashMap(128)
 
     private val verticesByLabelCache: ConcurrentHashMap<LabelKey, List<GraphVertex>> = ConcurrentHashMap(128)
 
     private val neighborsCache: ConcurrentHashMap<NeighborKey, List<GraphVertex>> = ConcurrentHashMap(128)
 
-    // shortestPath can return null, so the cache stores Optional values.
+    // shortestPath는 null을 반환할 수 있으므로 cache에는 Optional 값을 저장한다.
     private val shortestPathCache: ConcurrentHashMap<PathKey, Optional<GraphPath>> = ConcurrentHashMap(128)
 
     private val allPathsCache: ConcurrentHashMap<PathKey, List<GraphPath>> = ConcurrentHashMap(128)
 
     private val edgesByLabelCache: ConcurrentHashMap<EdgeLabelKey, List<GraphEdge>> = ConcurrentHashMap(128)
 
-    // Write-result memoization avoids database round trips for repeated identical create calls.
-    // invalidateAll() clears these maps on destructive writes.
+    // 쓰기 결과 메모이제이션은 동일 create 호출 반복 시 database round trip을 피한다.
+    // invalidateAll()은 파괴적 쓰기에서 이 map들을 clear한다.
     private val createVertexMap: ConcurrentHashMap<WriteVertexKey, GraphVertex> = ConcurrentHashMap(128)
 
     private val createEdgeMap: ConcurrentHashMap<WriteEdgeKey, GraphEdge> = ConcurrentHashMap(128)
@@ -118,7 +116,7 @@ class CachingNeo4jGraphOperations(
         createEdgeMap.clear()
     }
 
-    // Invalidate only read caches so createVertex/createEdge do not clear their own write caches.
+    // createVertex/createEdge가 자신의 쓰기 cache를 지우지 않도록 읽기 cache만 무효화한다.
     private fun invalidateReads() {
         vertexByIdCache.clear()
         verticesByLabelCache.clear()
@@ -129,13 +127,13 @@ class CachingNeo4jGraphOperations(
     }
 
     /**
-     * Finds one vertex by ID and caches both hits and misses.
+     * ID로 정점 하나를 조회하고 hit와 miss를 모두 cache한다.
 	*
 	 * ```kotlin
-     * val first  = ops.findVertexById("Person", id)         // database lookup
+     * val first  = ops.findVertexById("Person", id)         // database 조회
      * val second = ops.findVertexById("Person", id)         // cache hit
-     * val absent = ops.findVertexById("Person", unknownId)  // database lookup, null cached
-     * val again  = ops.findVertexById("Person", unknownId)  // cache hit, still null
+     * val absent = ops.findVertexById("Person", unknownId)  // database 조회, null cache
+     * val again  = ops.findVertexById("Person", unknownId)  // cache hit, 여전히 null
 	 * ```
 	 */
     override fun findVertexById(label: String, id: GraphElementId): GraphVertex? {
@@ -148,14 +146,14 @@ class CachingNeo4jGraphOperations(
     }
 
     /**
-     * Finds vertices by label and property filter.
+     * label과 property filter로 정점 목록을 조회한다.
      *
-     * The `(label, filter)` pair is the cache key, so empty and non-empty filters are cached independently.
+     * `(label, filter)` 쌍을 cache key로 사용하므로 빈 filter와 비어 있지 않은 filter는 독립적으로 cache된다.
 	 *
 	 * ```kotlin
-     * val all   = ops.findVerticesByLabel("Person")                             // database lookup
+     * val all   = ops.findVerticesByLabel("Person")                             // database 조회
      * val all2  = ops.findVerticesByLabel("Person")                             // cache hit
-     * val alice = ops.findVerticesByLabel("Person", mapOf("name" to "Alice"))   // separate cache entry
+     * val alice = ops.findVerticesByLabel("Person", mapOf("name" to "Alice"))   // 별도 cache entry
 	 * ```
 	 */
     override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> {
@@ -168,10 +166,10 @@ class CachingNeo4jGraphOperations(
     }
 
     /**
-     * Finds neighbor vertices and caches by `(startId, options)`.
+     * 이웃 정점을 조회하고 `(startId, options)`로 cache한다.
 	 *
 	 * ```kotlin
-     * val first  = ops.neighbors(aliceId, NeighborOptions.Default)  // database lookup
+     * val first  = ops.neighbors(aliceId, NeighborOptions.Default)  // database 조회
      * val second = ops.neighbors(aliceId, NeighborOptions.Default)  // cache hit
 	 * ```
 	 */
@@ -185,11 +183,11 @@ class CachingNeo4jGraphOperations(
     }
 
     /**
-     * Finds the shortest path between two vertices and caches both hits and misses.
+     * 두 정점 사이의 최단 경로를 조회하고 hit와 miss를 모두 cache한다.
 	 *
 	 * ```kotlin
-     * val path  = ops.shortestPath(aId, bId, PathOptions.Default)  // database lookup
-     * val path2 = ops.shortestPath(aId, bId, PathOptions.Default)  // cache hit, including null
+     * val path  = ops.shortestPath(aId, bId, PathOptions.Default)  // database 조회
+     * val path2 = ops.shortestPath(aId, bId, PathOptions.Default)  // null 포함 cache hit
 	 * ```
 	 */
     override fun shortestPath(
@@ -206,10 +204,10 @@ class CachingNeo4jGraphOperations(
     }
 
     /**
-     * Finds all paths between two vertices and caches by `(fromId, toId, options)`.
+     * 두 정점 사이의 모든 경로를 조회하고 `(fromId, toId, options)`로 cache한다.
 	 *
 	 * ```kotlin
-     * val paths  = ops.allPaths(aId, bId, PathOptions.Default)  // database lookup
+     * val paths  = ops.allPaths(aId, bId, PathOptions.Default)  // database 조회
      * val paths2 = ops.allPaths(aId, bId, PathOptions.Default)  // cache hit
 	 * ```
 	 */
@@ -227,13 +225,13 @@ class CachingNeo4jGraphOperations(
     }
 
     /**
-     * Finds edges by label and property filter.
+     * label과 property filter로 간선 목록을 조회한다.
      *
-     * The `(label, filter)` pair is the cache key.
+     * `(label, filter)` 쌍을 cache key로 사용한다.
 	 *
 	 * ```kotlin
-     * val all      = ops.findEdgesByLabel("KNOWS")                         // database lookup
-     * val filtered = ops.findEdgesByLabel("KNOWS", mapOf("since" to 2020)) // separate cache entry
+     * val all      = ops.findEdgesByLabel("KNOWS")                         // database 조회
+     * val filtered = ops.findEdgesByLabel("KNOWS", mapOf("since" to 2020)) // 별도 cache entry
      * val cached   = ops.findEdgesByLabel("KNOWS")                         // cache hit
 	 * ```
 	 */
@@ -247,17 +245,17 @@ class CachingNeo4jGraphOperations(
     }
 
     /**
-     * Creates a vertex and stores the result in the write-result memoization cache.
+     * 정점을 생성하고 결과를 쓰기 결과 메모이제이션 cache에 저장한다.
      *
-     * Repeating the same `(label, properties)` call returns the cached [GraphVertex] without
-     * another database call. Read caches are invalidated, but write-result caches are retained.
+     * 같은 `(label, properties)` 호출을 반복하면 추가 database 호출 없이 cache된 [GraphVertex]를 반환한다.
+     * 읽기 cache는 무효화하지만 쓰기 결과 cache는 유지한다.
 	 *
 	 * ```kotlin
-     * val a = ops.createVertex("Person", props)  // database write, read caches invalidated
-     * val b = ops.createVertex("Person", props)  // memoized hit, same object as a
+     * val a = ops.createVertex("Person", props)  // database 쓰기, 읽기 cache 무효화
+     * val b = ops.createVertex("Person", props)  // memoized hit, a와 같은 객체
 	 * ```
 	 *
-     * > **Note**: use [Neo4jGraphOperations] directly when transactional insert semantics matter.
+     * > **주의**: transactional insert semantics가 중요하면 [Neo4jGraphOperations]를 직접 사용한다.
 	 */
     override fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex {
         val key = WriteVertexKey(label, properties)
@@ -273,42 +271,41 @@ class CachingNeo4jGraphOperations(
         delegate.createVertices(label, propertiesList).also { invalidateAll() }
 
     /**
-     * Updates vertex properties and invalidates all read and write caches.
+     * 정점 속성을 갱신하고 모든 읽기/쓰기 cache를 무효화한다.
 	 *
 	 * ```kotlin
 	 * ops.updateVertex("Person", id, mapOf("age" to 31))
-     * // Later findVertexById/findVerticesByLabel calls miss the cache and read fresh data.
+     * // 이후 findVertexById/findVerticesByLabel 호출은 cache miss 후 최신 데이터를 읽는다.
 	 * ```
 	 */
     override fun updateVertex(label: String, id: GraphElementId, properties: Map<String, Any?>): GraphVertex? =
         delegate.updateVertex(label, id, properties).also { invalidateAll() }
 
     /**
-     * Deletes a vertex and invalidates all read and write caches.
+     * 정점을 삭제하고 모든 읽기/쓰기 cache를 무효화한다.
      *
-     * The `createVertex` memoization cache is also cleared, so recreating with the same
-     * arguments after deletion creates a new database record.
+     * `createVertex` 메모이제이션 cache도 clear되므로, 삭제 후 같은 인자로 다시 생성하면 새 database record를 만든다.
 	 *
 	 * ```kotlin
 	 * ops.deleteVertex("Person", id)
-     * // createVertex("Person", sameProps) misses the write cache and creates a new record.
+     * // createVertex("Person", sameProps)는 write cache miss 후 새 record를 생성한다.
 	 * ```
 	 */
     override fun deleteVertex(label: String, id: GraphElementId): Boolean =
         delegate.deleteVertex(label, id).also { invalidateAll() }
 
     /**
-     * Creates an edge and stores the result in the write-result memoization cache.
+     * 간선을 생성하고 결과를 쓰기 결과 메모이제이션 cache에 저장한다.
      *
-     * Repeating the same `(fromId, toId, label, properties)` call returns the cached [GraphEdge]
-     * without another database call. Read caches are invalidated, but write-result caches are retained.
+     * 같은 `(fromId, toId, label, properties)` 호출을 반복하면 추가 database 호출 없이 cache된 [GraphEdge]를 반환한다.
+     * 읽기 cache는 무효화하지만 쓰기 결과 cache는 유지한다.
 	 *
 	 * ```kotlin
-     * val e1 = ops.createEdge(aId, bId, "KNOWS")  // database write, read caches invalidated
-     * val e2 = ops.createEdge(aId, bId, "KNOWS")  // memoized hit, same object as e1
+     * val e1 = ops.createEdge(aId, bId, "KNOWS")  // database 쓰기, 읽기 cache 무효화
+     * val e2 = ops.createEdge(aId, bId, "KNOWS")  // memoized hit, e1과 같은 객체
 	 * ```
 	 *
-     * > **Note**: use [Neo4jGraphOperations] directly when transactional insert semantics matter.
+     * > **주의**: transactional insert semantics가 중요하면 [Neo4jGraphOperations]를 직접 사용한다.
 	 */
     override fun createEdge(
         fromId: GraphElementId,
@@ -329,14 +326,13 @@ class CachingNeo4jGraphOperations(
         delegate.createEdges(label, edges).also { invalidateAll() }
 
     /**
-     * Deletes an edge and invalidates all read and write caches.
+     * 간선을 삭제하고 모든 읽기/쓰기 cache를 무효화한다.
      *
-     * The `createEdge` memoization cache is also cleared, so recreating with the same
-     * arguments after deletion creates a new database record.
+     * `createEdge` 메모이제이션 cache도 clear되므로, 삭제 후 같은 인자로 다시 생성하면 새 database record를 만든다.
 	 *
 	 * ```kotlin
 	 * ops.deleteEdge("KNOWS", edgeId)
-     * // createEdge(aId, bId, "KNOWS") misses the write cache and creates a new record.
+     * // createEdge(aId, bId, "KNOWS")는 write cache miss 후 새 record를 생성한다.
 	 * ```
 	 */
     override fun deleteEdge(label: String, id: GraphElementId): Boolean =

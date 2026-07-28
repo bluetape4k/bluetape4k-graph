@@ -52,10 +52,10 @@ import org.neo4j.driver.reactivestreams.ReactiveSession
 import org.neo4j.driver.reactivestreams.ReactiveTransaction
 
 /**
- * Coroutine-based [GraphSuspendOperations] implementation for the Neo4j Java Driver.
+ * Neo4j Java Driver용 coroutine 기반 [GraphSuspendOperations] 구현체.
  *
- * Uses [ReactiveSession] and [Flow] for non-blocking query execution. Transactional suspend blocks
- * run on Neo4j reactive transactions, so they do not bridge through `runBlocking`.
+ * [ReactiveSession]과 [Flow]를 사용해 non-blocking query를 실행한다. Transactional suspend block은
+ * Neo4j reactive transaction 위에서 실행되므로 `runBlocking`을 거치지 않는다.
  *
  * ```kotlin
  * suspend fun main() {
@@ -73,8 +73,8 @@ import org.neo4j.driver.reactivestreams.ReactiveTransaction
  * }
  * ```
  *
- * @param driver externally owned Neo4j Java Driver.
- * @param database Neo4j database name, defaulting to `"neo4j"`.
+ * @param driver 외부에서 소유하고 수명주기를 관리하는 Neo4j Java Driver.
+ * @param database Neo4j database 이름. 기본값은 `"neo4j"`.
  */
 class Neo4jGraphSuspendOperations(
     private val driver: Driver,
