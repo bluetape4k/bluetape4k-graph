@@ -1,9 +1,9 @@
-# Issue #49 DAEAD Review Follow-up
+# 이슈 #49 DAEAD Review Follow-up
 
 - Date: 2026-05-13
-- Scope: `graph-okio`, CI gitleaks installer
+- 범위: `graph-okio`, CI gitleaks installer
 
-## Context
+## 맥락
 
 PR #114 was merged after adding graph-okio DAEAD chunk encryption, but the follow-up 6-tier Codex + Claude review found two P1 gaps:
 
@@ -12,7 +12,7 @@ PR #114 was merged after adding graph-okio DAEAD chunk encryption, but the follo
 
 The same review also found a missing CSV unsupported-contract test and a CI supply-chain hardening gap for the gitleaks tarball download.
 
-## Decision
+## 결정
 
 Fix the review gaps in a narrow follow-up branch:
 
@@ -21,11 +21,11 @@ Fix the review gaps in a narrow follow-up branch:
 - add DAEAD/gzip+DAEAD CSV rejection tests for export and import
 - verify the pinned gitleaks archive against the upstream checksum file before installing it
 
-## Outcome
+## 결과
 
 The P1 review gaps were closed without changing production DAEAD behavior.
 
-## Verification
+## 검증
 
 - `actionlint .github/workflows/ci.yml`
 - `git diff --check`
@@ -34,6 +34,6 @@ The P1 review gaps were closed without changing production DAEAD behavior.
 - `./gradlew :graph-okio:test --tests 'io.bluetape4k.graph.io.okio.GraphIoOkioPathsTest' --tests 'io.bluetape4k.graph.io.okio.OkioRoundTripTest' --no-daemon`
 - `./gradlew :graph-okio:test --no-daemon` -> 101 passing
 
-## Future Guard
+## 향후 가드
 
 When a spec/plan explicitly accepts a negative-path test, grep the final test diff for that exact failure mode before merge. For touched tests, grep `kotlin.test.assertFailsWith`, `assertThrows`, `invoking`, and `shouldThrow` before review sign-off.

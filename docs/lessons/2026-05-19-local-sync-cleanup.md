@@ -1,101 +1,99 @@
-# Local Sync and Cleanup
+# Local Sync와 Cleanup
 
-## Context
+## 맥락
 
-After several sprint cycles, the local repository had accumulated 18 stale
-branches and 11 worktrees with gone remotes. The default worktree was sitting
-on a merged feature branch (`build/gradle-9.5.1-wrapper-bat`) instead of
-`develop`. Pulling `develop` was blocked by a persistent `gradlew.bat`
-modification that neither `git restore`, `git stash`, nor `git reset --hard`
-could resolve.
+여러 sprint cycle 이후 로컬 repository에는 remote가 사라진 stale branch 18개와
+worktree 11개가 누적되어 있었다. 기본 worktree는 `develop`이 아니라 이미 merge된
+feature branch인 `build/gradle-9.5.1-wrapper-bat`에 머물러 있었다. `develop` pull은
+`git restore`, `git stash`, `git reset --hard`로도 해소되지 않는 `gradlew.bat`
+변경 때문에 막혀 있었다.
 
-## Problem 1 — gradlew.bat stuck dirty after reset
+## 문제 1 - reset 이후에도 `gradlew.bat`가 dirty로 남음
 
-### Root cause
+### 원인
 
-`.gitattributes` declares `*.bat text eol=crlf`. The global git config has
-`core.autocrlf=input`. On macOS these two settings conflict: `eol=crlf`
-instructs git to write CRLF to the working tree, but `core.autocrlf=input`
-converts CRLF → LF on checkin. The index recorded CRLF content; the smudge
-filter re-applied CRLF on checkout; but git's stat cache remained desynchronised,
-causing `gradlew.bat` to appear dirty even after `git reset --hard HEAD`.
+`.gitattributes`는 `*.bat text eol=crlf`를 선언한다. 전역 git config에는
+`core.autocrlf=input`이 설정되어 있다. macOS에서는 두 설정이 충돌한다.
+`eol=crlf`는 working tree에 CRLF를 쓰도록 지시하지만, `core.autocrlf=input`은
+checkin 시 CRLF를 LF로 변환한다. index에는 CRLF content가 기록되고 checkout 때
+smudge filter가 CRLF를 다시 적용했지만 git stat cache가 어긋나면서
+`git reset --hard HEAD` 이후에도 `gradlew.bat`가 dirty로 보였다.
 
-### Fix
+### 수정
 
 ```bash
 git rm --cached gradlew.bat
 git reset --hard origin/develop
 ```
 
-Removing the index entry first breaks the cache lock, allowing `reset --hard`
-to rewrite both the index and the working tree cleanly.
+index entry를 먼저 제거하면 cache lock이 끊기고, `reset --hard`가 index와
+working tree를 모두 깨끗하게 다시 쓸 수 있다.
 
-### Future guard
+### 향후 가드
 
-Do not try to fix CRLF-attribute conflicts with `git restore`, `git stash`, or
-`git checkout -- <file>`. Those commands re-run the smudge filter and re-enter
-the same loop. Remove the file from the cache first, then hard-reset.
+CRLF attribute 충돌은 `git restore`, `git stash`, `git checkout -- <file>`로
+고치려 하지 않는다. 이 명령들은 smudge filter를 다시 실행해 같은 loop로 되돌아간다.
+먼저 파일을 cache에서 제거한 뒤 hard-reset한다.
 
 ---
 
-## Problem 2 — cannot checkout develop because it is checked out in a worktree
+## 문제 2 - `develop`이 다른 worktree에서 checkout되어 전환할 수 없음
 
-### Root cause
+### 원인
 
-`develop` was checked out in `.worktrees/fix/issue-157-schema-manager-errors`
-(issue already closed and merged). Git refuses to checkout a branch that is
-already active in another worktree.
+`develop`은 `.worktrees/fix/issue-157-schema-manager-errors`에서 checkout되어
+있었다. 해당 issue는 이미 closed/merged 상태였다. Git은 다른 worktree에서 이미
+활성화된 branch를 checkout하지 않는다.
 
-### Fix
+### 수정
 
-1. Confirm the worktree has no unique commits and no meaningful dirty files.
+1. worktree에 고유 commit이 없고 의미 있는 dirty file도 없는지 확인한다.
 2. `git worktree remove --force .worktrees/fix/issue-157-schema-manager-errors`
 3. `git checkout develop`
 
-### Future guard
+### 향후 가드
 
-After closing an issue and merging its PR, immediately remove the corresponding
-worktree. Stale worktrees block branch switching and accumulate CRLF/state
-noise.
-
----
-
-## Problem 3 — build/align-dependency-boms had an lz4 security pin
-
-The branch contained `at.yawk.lz4:lz4-java:1.11.0` as a direct version pin in
-the local catalog to address CVE GHSA-cmp6-m4wj-q63q on `org.lz4:lz4-java`.
-The correct fix is not to pin here but to consume `bluetape4k-dependencies` BOM
-where the version is governed centrally.
-
-### Decision
-
-Added `bluetape4k-dependencies = "1.0.1-SNAPSHOT"` to `gradle/libs.versions.toml`
-and imported the BOM in `build.gradle.kts` alongside `spring.boot4.dependencies`,
-matching the pattern established in `bluetape4k-experimental`. Then deleted
-`build/align-dependency-boms`.
-
-### Future guard
-
-Never pin a dependency version in this repo's catalog when the version is owned
-by `bluetape4k-dependencies`. Update the central catalog and sync here via
-`sync-shared-versions.py`.
+issue를 닫고 PR을 merge한 뒤에는 해당 worktree를 즉시 제거한다. stale worktree는
+branch 전환을 막고 CRLF/state noise를 누적시킨다.
 
 ---
 
-## Cleanup procedure used
+## 문제 3 - `build/align-dependency-boms`에 `lz4` security pin이 있었음
+
+해당 branch는 `org.lz4:lz4-java`의 CVE GHSA-cmp6-m4wj-q63q 대응을 위해
+로컬 catalog에 `at.yawk.lz4:lz4-java:1.11.0` direct version pin을 포함하고
+있었다. 올바른 수정은 이 repository에서 직접 pin하는 것이 아니라 version을 중앙에서
+관리하는 `bluetape4k-dependencies` BOM을 소비하는 것이다.
+
+### 결정
+
+`gradle/libs.versions.toml`에 `bluetape4k-dependencies = "1.0.1-SNAPSHOT"`을
+추가하고, `bluetape4k-experimental`에 확립된 pattern에 맞춰 `build.gradle.kts`에서
+`spring.boot4.dependencies`와 함께 BOM을 import했다. 이후 `build/align-dependency-boms`
+branch를 삭제했다.
+
+### 향후 가드
+
+version ownership이 `bluetape4k-dependencies`에 있으면 이 repository catalog에서
+dependency version을 직접 pin하지 않는다. 중앙 catalog를 갱신하고
+`sync-shared-versions.py`로 여기까지 동기화한다.
+
+---
+
+## 사용한 정리 절차
 
 ```bash
-# 1. Remove gone-remote worktrees
+# 1. remote가 사라진 worktree 제거
 git worktree remove --force .worktrees/<path>
 
-# 2. Delete gone-remote local branches
+# 2. remote가 사라진 local branch 삭제
 git branch -D <branch>
 
-# 3. Verify
+# 3. 검증
 git branch -vv
 git worktree list
 ```
 
-Branches are safe to delete when:
-- `git log --oneline origin/develop..HEAD` returns nothing (all commits merged), AND
-- `git status --short` shows only noise files (gradlew.bat, generated output).
+branch는 다음 조건을 만족할 때 삭제해도 안전하다.
+- `git log --oneline origin/develop..HEAD`가 아무것도 반환하지 않는다. 즉 모든 commit이 merge됐다.
+- `git status --short`가 noise file만 보여준다. 예: `gradlew.bat`, generated output.

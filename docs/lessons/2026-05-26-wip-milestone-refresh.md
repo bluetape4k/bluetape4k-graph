@@ -1,21 +1,21 @@
-# WIP Milestone Refresh
+# WIP Milestone 갱신
 
-## Context
+## 맥락
 
 The local WIP queue had a newer milestone discovery snapshot.
 
-## Decision
+## 결정
 
 Publish the WIP refresh as documentation-only repo planning state.
 
-## Outcome
+## 결과
 
 Patch and minor milestone candidates are captured for future graph work.
 
-## Verification
+## 검증
 
 Reviewed the WIP diff; no runtime files changed.
 
-## Future Notes
+## 향후 메모
 
 Keep WIP planning updates separate from feature implementation PRs.

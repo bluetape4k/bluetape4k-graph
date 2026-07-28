@@ -1,20 +1,20 @@
-# Issue 247 Observability Graph Example
+# 이슈 247 Observability Graph Example
 
-## Context
+## 맥락
 
 Milestone 0.5.0 needed the first observability-oriented graph example under the #253 example epic.
 
-## Decision
+## 결정
 
 Create a focused `observability-graph-examples` module that teaches incident graph traversal through service
 dependencies, public APIs, alerts, incidents, and ownership, while reusing the existing example backend matrix pattern.
 
-## Outcome
+## 결과
 
 The module includes sync/suspend services, graph-io CSV fixtures, TinkerGraph loader smoke tests, backend portability
 tests, English/Korean README files, and a shared architecture diagram asset.
 
-## Verification Evidence
+## 검증 증거
 
 - `./gradlew :observability-graph-examples:compileKotlin :observability-graph-examples:compileTestKotlin --no-daemon`
   passed.
@@ -24,7 +24,7 @@ tests, English/Korean README files, and a shared architecture diagram asset.
 - `actionlint .github/workflows/examples.yml` passed.
 - `git diff --check` passed.
 
-## Future Guard
+## 향후 가드
 
 For new example modules, treat README scenario, Architecture Diagram, graph model, traversal goals, sample dataset, and
 expected output as mandatory DoD items, not optional documentation polish.

@@ -1,21 +1,21 @@
 # Projects 1.10.0 BOM handoff
 
-## Context
+## 맥락
 
 `bluetape4k-projects` 1.10.0 was released and `bluetape4k-bom:1.10.0` is visible
 from Maven Central.
 
-## Decision
+## 결정
 
 Update the local catalog's projects BOM version from 1.9.2 to 1.10.0 while
 leaving this repository's own release line unchanged.
 
-## Outcome
+## 결과
 
 Graph builds now consume the stable projects 1.10.0 BOM for shared bluetape4k
 module versions.
 
-## Verification
+## 검증
 
 - Maven Central HTTP 200 for `bluetape4k-bom:1.10.0`.
 

@@ -2,7 +2,7 @@
 
 > **Issue**: #14 graph-benchmark: 백엔드별 JMH 벤치마크 (정점 삽입 / 최단경로 / 이웃 탐색)
 > **PR**: feat/issue-14-graph-benchmark
-> **Scope**: `benchmark/graph-benchmark/`, `benchmark/scripts/`, `docs/`, `.github/workflows/`
+> **범위**: `benchmark/graph-benchmark/`, `benchmark/scripts/`, `docs/`, `.github/workflows/`
 
 ## 결정 요약
 
@@ -15,21 +15,21 @@
 
 ## 외부 리뷰에서 잡은 P1/P2
 
-### P1 (HIGH) — Silent no-op workflow input
+### P1 (HIGH) - 조용히 무시되는 workflow input
 
 `benchmark.yml`에 `include_pattern` 입력을 노출했지만, `build.gradle.kts`가 `includeBenchmarks` 프로퍼티를 읽지 않았다. UI에는 정규식 필터처럼 보이지만 실제로는 전체가 실행되는 **silent no-op**.
 
 - **수정**: 입력 자체를 제거. 향후 진짜 필터링이 필요하면 별도 PR에서 `(project.findProperty("includeBenchmarks") as String?)?.let { include(it) }`로 build script에 연결.
 - **교훈**: workflow input은 실제 build/script에 연결되었는지 grep으로 확인할 것. 노출만 하고 미연결 상태는 거짓 약속이다.
 
-### P2 — ShortestPathBenchmark random pair의 측정 왜곡
+### P2 - `ShortestPathBenchmark` random pair의 측정 왜곡
 
 체인 그래프는 `0→1→…→999`의 **directed** 토폴로지인데, 무작위 (from, to) 쌍을 생성하면 약 50%가 backward pair가 되어 즉시 종료(no-path)된다. 측정값이 실제 BFS 비용을 반영하지 못함.
 
 - **수정**: `i = rng.nextInt(size - 1)`, `j = rng.nextInt(i + 1, size)`로 forward pair만 생성. KDoc에 토폴로지 제약 명시.
 - **교훈**: 합성 그래프 벤치마크에서 edge direction과 random pair 분포를 반드시 같이 검토할 것. 결과가 docs에 임베딩되는 경우 신뢰성 직결.
 
-## Codex vs Claude 리뷰 비교
+## Codex와 Claude 리뷰 비교
 
 | 항목 | Codex `review --uncommitted` | Claude `code-reviewer` |
 |------|-------------------------------|------------------------|

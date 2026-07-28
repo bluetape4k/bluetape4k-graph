@@ -1,18 +1,18 @@
-# Issue 196 medium backend benchmark
+# 이슈 196 medium backend benchmark
 
-## Context
+## 맥락
 
 Issue #196 required a medium-size `GraphDbComparisonBenchmark` run across the
 local backend matrix with real Testcontainers and README table/chart evidence.
 
-## Decision
+## 결정
 
 Keep `graph-benchmark` as the execution module and add only benchmark-specific
 support: package the main benchmark classes into the JMH jar, render a separate
 medium chart, and run FalkorDB with a 60 second Jedis read timeout for this
 fixture.
 
-## Outcome
+## 결과
 
 The medium matrix produced 20 rows: five backends times four operations.
 Memgraph was fastest for persistent `batchInsertCycle`, FalkorDB was fastest for
@@ -20,7 +20,7 @@ Memgraph was fastest for persistent `batchInsertCycle`, FalkorDB was fastest for
 guidance now distinguishes Neo4j's operational maturity from Memgraph's lower
 local write latency.
 
-## Verification
+## 검증
 
 - `GraphDbComparisonBenchmark` medium JMH run with `-wi 3 -i 5 -w 2s -r 3s -f 1`.
 - FalkorDB medium rows rerun with a 60 second Jedis read timeout after the
@@ -35,7 +35,7 @@ local write latency.
   closed after the trial.
 - Current session review found no actionable correctness issues.
 
-## Future guard
+## 향후 가드
 
 Do not trust `mainBenchmarkJar` until it is checked for the real benchmark
 classes, not only the generated JMH harness classes. For FalkorDB medium or

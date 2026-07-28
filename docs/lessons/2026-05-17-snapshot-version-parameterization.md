@@ -1,15 +1,15 @@
-# Snapshot Version Parameterization
+# Snapshot Version parameterization
 
-Context: Central Portal releases should not require editing `gradle.properties`
+맥락: Central Portal releases should not require editing `gradle.properties`
 only to remove `-SNAPSHOT`.
 
-Decision: Keep `snapshotVersion=` empty by default and let
+결정: Keep `snapshotVersion=` empty by default and let
 `publish-snapshot.yml` pass `-PsnapshotVersion=-SNAPSHOT`.
 
-Outcome: `develop` stays release-ready, while snapshot publishing remains
+결과: `develop` stays release-ready, while snapshot publishing remains
 explicit in the workflow command.
 
-Verification: `actionlint .github/workflows/publish-snapshot.yml`.
+검증: `actionlint .github/workflows/publish-snapshot.yml`.
 
-Future guard: Do not reintroduce `snapshotVersion=-SNAPSHOT` as the default in
+향후 가드: Do not reintroduce `snapshotVersion=-SNAPSHOT` as the default in
 `gradle.properties`.

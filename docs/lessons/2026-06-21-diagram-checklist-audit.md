@@ -1,6 +1,6 @@
-# Diagram Checklist Audit
+# Diagram checklist 감사
 
-## Context
+## 맥락
 
 The graph repository already had README-facing SVG/PNG pairs, but the current
 `bluetape4k-diagram` checklist is stricter than the older Graphviz-era lessons.
@@ -13,7 +13,7 @@ original script-only gate did not prove away: collapsed rounded bends,
 non-perpendicular connector endpoints, connectors crossing card interiors, card
 over card/line occlusion, and duplicate card icons.
 
-## Decision
+## 결정
 
 Keep the existing source-backed diagrams and repair checklist failures in place
 instead of regenerating the full set. Standardize SVG markers with
@@ -31,7 +31,7 @@ remain text-only unless they represent a real runtime dependency. TinkerPop /
 TinkerGraph currently has no confirmed catalog icon, so it should stay
 text-only until the shared icon catalog gains one.
 
-## Outcome
+## 결과
 
 All README-facing SVG assets parse and render with CairoSVG. Geometry audit
 reports zero collapsed or reversed rounded connector failures; remaining
@@ -47,7 +47,7 @@ size, duplicate icon tags, and high-risk full-size PNG inspection. ERD
 relationship lines are treated as the only explicit exception when the requested
 scope says not to modify them.
 
-## Verification Evidence
+## 검증 증거
 
 - SVG/XML parse and CairoSVG render: 105 SVG files.
 - Geometry audit: 105 files, 0 real failures outside deliberate sharp
@@ -63,7 +63,7 @@ scope says not to modify them.
   knowledge-graph, data-flow, and duplicate-icon diagrams; contact sheets for
   all diagrams and all charts.
 
-## Future Guard
+## 향후 가드
 
 Do not reuse the old Graphviz companion-file requirement for new README
 diagrams. Current work should follow `bluetape4k-diagram`: source-first
