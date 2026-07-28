@@ -26,43 +26,43 @@ import java.io.IOException
 import java.util.UUID
 
 /**
- * Opens OkIO graph import sources and export sinks.
+ * OkIO 그래프 임포트 소스와 익스포트 싱크를 연다.
  *
- * This helper converts [OkioGraphImportSource] and [OkioGraphExportSink] into [BufferedSource] and
- * [BufferedSink] instances, then applies optional compression, DAEAD chunk encryption, and atomic writes.
+ * 이 helper는 [OkioGraphImportSource]와 [OkioGraphExportSink]를 [BufferedSource]와 [BufferedSink]로 변환한 뒤
+ * 선택적 압축, DAEAD chunk 암호화, atomic write를 적용한다.
  *
- * ### Compression
- * All compression paths use [io.bluetape4k.io.compressor.Compressors.Streaming] variants. Batch helpers such
- * as `Compressable.Sinks.gzip()` are intentionally avoided because large graph exports must not buffer the
- * full payload in heap memory.
+ * ### 압축
+ * 모든 압축 경로는 [io.bluetape4k.io.compressor.Compressors.Streaming] 변형을 사용한다.
+ * `Compressable.Sinks.gzip()` 같은 배치 helper는 의도적으로 피한다. 큰 그래프 익스포트가 전체 payload를
+ * heap 메모리에 버퍼링하면 안 되기 때문이다.
  *
- * ### Close ownership
- * Callers must close the returned [BufferedSource] or [BufferedSink]. `PathSource` and `PathSink` are library
- * owned, so closing releases the opened file handle. Source-, sink-, input-stream-, and output-stream-backed
- * variants follow their `ownsXxx` flag.
+ * ### close 소유권
+ * 호출자는 반환된 [BufferedSource] 또는 [BufferedSink]를 닫아야 한다. `PathSource`와 `PathSink`는 라이브러리
+ * 소유이므로 close 시 열린 파일 handle을 해제한다. source, sink, input-stream, output-stream 기반 변형은
+ * 각자의 `ownsXxx` flag를 따른다.
  *
- * ### Atomic writes
- * `PathSink.atomicWrite=true` writes to a temporary path first, then atomically moves it into place on success.
- * Failed writes delete the temporary file and leave the target path untouched.
+ * ### Atomic write
+ * `PathSink.atomicWrite=true`이면 먼저 임시 경로에 쓰고, 성공 시 대상 경로로 atomic move 한다.
+ * 쓰기에 실패하면 임시 파일을 삭제하고 대상 경로는 건드리지 않는다.
  *
- * ### Encryption
- * DAEAD chunk encryption delegates to `bluetape4k-okio`'s `DaeadChunkEncryptSink` and
- * `DaeadChunkDecryptSource`. The encrypted format is deterministic: repeated plaintext chunks encrypted with
- * the same key and associated data produce repeated ciphertext chunks.
+ * ### 암호화
+ * DAEAD chunk 암호화는 `bluetape4k-okio`의 `DaeadChunkEncryptSink`와 `DaeadChunkDecryptSource`에 위임한다.
+ * 암호화 포맷은 deterministic이다. 같은 key와 associated data로 반복 plaintext chunk를 암호화하면 반복 ciphertext
+ * chunk가 생성된다.
  */
 object GraphIoOkioPaths : KLogging() {
 
-    /** Default decompression budget: 512 MiB. */
+    /** 기본 압축 해제 budget: 512 MiB. */
     const val DEFAULT_MAX_DECOMPRESSED_BYTES: Long = 512L * 1024 * 1024
 
-    // ─── Source opening ──────────────────────────────────────────────────────
+    // ─── Source 열기 ─────────────────────────────────────────────────────────
 
     /**
-     * Opens [source] as a [BufferedSource].
+     * [source]를 [BufferedSource]로 연다.
      *
-     * The caller must close the returned source.
+     * 호출자는 반환된 source를 닫아야 한다.
      *
-     * @throws IOException when the path cannot be opened for reading
+     * @throws IOException 경로를 읽기용으로 열 수 없는 경우.
      */
     @Throws(IOException::class)
     fun openSource(source: OkioGraphImportSource): BufferedSource = when (source) {
@@ -78,15 +78,15 @@ object GraphIoOkioPaths : KLogging() {
             else nonClosingSource(source.inputStream.source()).buffer()
     }
 
-    // ─── Sink opening ────────────────────────────────────────────────────────
+    // ─── Sink 열기 ───────────────────────────────────────────────────────────
 
     /**
-     * Opens [sink] as a [BufferedSink].
+     * [sink]를 [BufferedSink]로 연다.
      *
-     * `PathSink.atomicWrite=true` writes to a temporary path first and moves it atomically on success.
-     * The caller must close the returned sink.
+     * `PathSink.atomicWrite=true`이면 먼저 임시 경로에 쓰고, 성공 시 atomic move 한다.
+     * 호출자는 반환된 sink를 닫아야 한다.
      *
-     * @throws IOException when the path cannot be opened for writing
+     * @throws IOException 경로를 쓰기용으로 열 수 없는 경우.
      */
     @Throws(IOException::class)
     fun openSink(sink: OkioGraphExportSink): BufferedSink =
@@ -110,16 +110,15 @@ object GraphIoOkioPaths : KLogging() {
         }
     }
 
-    // ─── Compression chaining ────────────────────────────────────────────────
+    // ─── 압축 체이닝 ──────────────────────────────────────────────────────────
 
     /**
-     * Wraps [sink] with [compressor] and returns a compressed [BufferedSink].
+     * [sink]를 [compressor]로 감싸 압축 [BufferedSink]를 반환한다.
      *
-     * Optional compressors such as LZ4, Snappy, Zstd, and Bzip2 require their runtime dependency on the
-     * classpath.
+     * LZ4, Snappy, Zstd, Bzip2 같은 선택 압축기는 런타임 의존성이 classpath에 있어야 한다.
      *
-     * @throws IOException when the compressed stream cannot be initialized
-     * @throws IllegalStateException when an optional compressor dependency is missing
+     * @throws IOException 압축 스트림을 초기화할 수 없는 경우.
+     * @throws IllegalStateException 선택 압축기 의존성이 누락된 경우.
      */
     @Throws(IOException::class)
     fun openCompressedSink(sink: BufferedSink, compressor: Compressor): BufferedSink {
@@ -128,12 +127,12 @@ object GraphIoOkioPaths : KLogging() {
     }
 
     /**
-     * Wraps [source] with [compressor] decompression and a decompression budget guard.
+     * [source]를 [compressor] 압축 해제와 압축 해제 budget guard로 감싼다.
      *
-     * [maxDecompressedBytes] limits inflated bytes to reduce decompression-bomb risk.
+     * [maxDecompressedBytes]는 압축 해제된 byte 수를 제한해 decompression bomb 위험을 줄인다.
      *
-     * @throws IOException when decompression fails or the budget is exceeded
-     * @throws IllegalStateException when an optional compressor dependency is missing
+     * @throws IOException 압축 해제에 실패하거나 budget을 초과한 경우.
+     * @throws IllegalStateException 선택 압축기 의존성이 누락된 경우.
      */
     @Throws(IOException::class)
     fun openDecompressedSource(
@@ -147,20 +146,20 @@ object GraphIoOkioPaths : KLogging() {
         return BombGuardSource(decompressed, maxDecompressedBytes).buffer()
     }
 
-    // ─── DAEAD chunk encryption chaining ─────────────────────────────────────
+    // ─── DAEAD chunk 암호화 체이닝 ────────────────────────────────────────────
 
     /**
-     * Wraps [sink] with DAEAD chunk encryption.
+     * [sink]를 DAEAD chunk 암호화로 감싼다.
      *
-     * The returned sink writes `[8-byte ciphertext length][ciphertext]` frames through
-     * `bluetape4k-okio`'s deterministic DAEAD chunk format. This is not randomized streaming encryption:
-     * repeated plaintext chunks encrypted with the same key and [associatedData] produce repeated ciphertext chunks.
+     * 반환된 sink는 `bluetape4k-okio`의 deterministic DAEAD chunk 포맷으로
+     * `[8-byte ciphertext length][ciphertext]` frame을 쓴다. 이는 randomized streaming encryption이 아니다.
+     * 같은 key와 [associatedData]로 반복 plaintext chunk를 암호화하면 반복 ciphertext chunk가 생성된다.
      *
-     * @param sink target sink receiving encrypted frames
-     * @param daead deterministic AEAD primitive used for chunk encryption
-     * @param chunkSize plaintext chunk size before encryption
-     * @param associatedData authenticated associated data; it is not encrypted
-     * @return buffered sink accepting plaintext bytes
+     * @param sink 암호화된 frame을 받을 대상 sink.
+     * @param daead chunk 암호화에 사용할 deterministic AEAD primitive.
+     * @param chunkSize 암호화 전 plaintext chunk 크기.
+     * @param associatedData 인증에 포함되는 associated data. 암호화되지는 않는다.
+     * @return plaintext byte를 받는 buffered sink.
      */
     @Throws(IOException::class)
     fun openDaeadEncryptedSink(
@@ -172,16 +171,16 @@ object GraphIoOkioPaths : KLogging() {
         sink.asDaeadChunkEncryptSink(daead, chunkSize, associatedData).buffer()
 
     /**
-     * Wraps [source] with DAEAD chunk decryption.
+     * [source]를 DAEAD chunk 복호화로 감싼다.
      *
-     * [maxCiphertextLength] limits per-chunk allocation for untrusted input. Wrong keys, wrong associated
-     * data, truncated chunks, or corrupted ciphertext fail loudly.
+     * [maxCiphertextLength]는 신뢰할 수 없는 입력에 대해 chunk별 allocation을 제한한다. 잘못된 key,
+     * 잘못된 associated data, 잘린 chunk, 손상된 ciphertext는 명확히 실패한다.
      *
-     * @param source source containing DAEAD chunk frames
-     * @param daead deterministic AEAD primitive used for chunk decryption
-     * @param associatedData authenticated associated data used during encryption
-     * @param maxCiphertextLength maximum accepted ciphertext frame length
-     * @return buffered source yielding plaintext bytes
+     * @param source DAEAD chunk frame을 포함한 source.
+     * @param daead chunk 복호화에 사용할 deterministic AEAD primitive.
+     * @param associatedData 암호화 시 인증에 사용한 associated data.
+     * @param maxCiphertextLength 허용할 최대 ciphertext frame 길이.
+     * @return plaintext byte를 제공하는 buffered source.
      */
     @Throws(IOException::class)
     fun openDaeadDecryptedSource(
@@ -193,9 +192,9 @@ object GraphIoOkioPaths : KLogging() {
         source.asDaeadChunkDecryptSource(daead, associatedData, maxCiphertextLength).buffer()
 
     /**
-     * Opens [sink] and wraps it with GZip compression.
+     * [sink]를 열고 GZip 압축으로 감싼다.
      *
-     * The underlying sink is closed if compression setup fails.
+     * 압축 설정에 실패하면 하위 sink를 닫는다.
      */
     @Throws(IOException::class)
     fun openGzipSink(sink: OkioGraphExportSink): BufferedSink {
@@ -211,9 +210,9 @@ object GraphIoOkioPaths : KLogging() {
     }
 
     /**
-     * Opens [sink] and wraps it with DAEAD chunk encryption.
+     * [sink]를 열고 DAEAD chunk 암호화로 감싼다.
      *
-     * The returned sink accepts plaintext bytes and writes encrypted DAEAD chunk frames to [sink].
+     * 반환된 sink는 plaintext byte를 받아 암호화된 DAEAD chunk frame을 [sink]에 쓴다.
      */
     @Throws(IOException::class)
     fun openDaeadEncryptedSink(
@@ -234,9 +233,9 @@ object GraphIoOkioPaths : KLogging() {
     }
 
     /**
-     * Opens [sink] as a compress-then-encrypt GZip + DAEAD chunk sink.
+     * [sink]를 GZip 압축 후 DAEAD chunk 암호화(compress-then-encrypt) sink로 연다.
      *
-     * Write plaintext graph bytes to the returned sink. The bytes are compressed first and then encrypted.
+     * 반환된 sink에는 plaintext graph byte를 쓴다. byte는 먼저 압축되고 그다음 암호화된다.
      */
     @Throws(IOException::class)
     fun openGzipDaeadEncryptedSink(
@@ -258,11 +257,11 @@ object GraphIoOkioPaths : KLogging() {
     }
 
     /**
-     * Opens [source] and wraps it with GZip decompression.
+     * [source]를 열고 GZip 압축 해제로 감싼다.
      *
-     * The underlying source is closed if decompression setup fails.
+     * 압축 해제 설정에 실패하면 하위 source를 닫는다.
      *
-     * @param maxDecompressedBytes inflated-byte budget used to reduce decompression-bomb risk
+     * @param maxDecompressedBytes decompression bomb 위험을 줄이기 위한 압축 해제 byte budget.
      */
     @Throws(IOException::class)
     fun openGzipSource(
@@ -279,7 +278,7 @@ object GraphIoOkioPaths : KLogging() {
     }
 
     /**
-     * Opens [source] and wraps it with DAEAD chunk decryption.
+     * [source]를 열고 DAEAD chunk 복호화로 감싼다.
      */
     @Throws(IOException::class)
     fun openDaeadDecryptedSource(
@@ -298,9 +297,9 @@ object GraphIoOkioPaths : KLogging() {
     }
 
     /**
-     * Opens [source] as a decrypt-then-inflate DAEAD chunk + GZip source.
+     * [source]를 DAEAD chunk 복호화 후 GZip 압축 해제(decrypt-then-inflate) source로 연다.
      *
-     * The input must have been written by [openGzipDaeadEncryptedSink].
+     * 입력은 [openGzipDaeadEncryptedSink]로 기록된 데이터여야 한다.
      */
     @Throws(IOException::class)
     fun openDaeadDecryptedGzipSource(
@@ -320,9 +319,9 @@ object GraphIoOkioPaths : KLogging() {
         }
     }
 
-    // ─── Internal helpers ────────────────────────────────────────────────────
+    // ─── 내부 헬퍼 ────────────────────────────────────────────────────────────
 
-    /** Opens a [OkioGraphExportSink.PathSink] and applies the atomic-write strategy when requested. */
+    /** [OkioGraphExportSink.PathSink]를 열고 요청된 경우 atomic-write 전략을 적용한다. */
     @Throws(IOException::class)
     private fun openPathSink(sink: OkioGraphExportSink.PathSink): OpenedSink {
         val fs = sink.fileSystem
@@ -342,7 +341,7 @@ object GraphIoOkioPaths : KLogging() {
             return OpenedSink(fs.sink(target, mustCreate = false).buffer())
         }
 
-        // atomicWrite=true: temporary path, then atomicMove.
+        // atomicWrite=true: 임시 경로에 쓴 뒤 atomicMove 한다.
         val tmpName = "${target.filename}.tmp.${UUID.randomUUID()}"
         val tmpPath = target.parent?.let { it / tmpName }
             ?: ("${target}.tmp.${UUID.randomUUID()}".toPath())
@@ -355,20 +354,20 @@ object GraphIoOkioPaths : KLogging() {
         )
     }
 
-    /** Wrapper that does not close the underlying caller-owned source. */
+    /** 호출자가 소유한 하위 source를 닫지 않는 wrapper. */
     private fun nonClosingSource(delegate: Source): Source = object : ForwardingSource(delegate) {
-        override fun close() { /* caller owns the source — do not close */ }
+        override fun close() { /* 호출자가 source를 소유하므로 닫지 않는다 */ }
     }
 
-    /** Wrapper that does not close the underlying caller-owned sink. */
+    /** 호출자가 소유한 하위 sink를 닫지 않는 wrapper. */
     private fun nonClosingSink(delegate: Sink): Sink = object : ForwardingSink(delegate) {
-        override fun close() { /* caller owns the sink — do not close */ }
+        override fun close() { /* 호출자가 sink를 소유하므로 닫지 않는다 */ }
     }
 
     /**
-     * Source wrapper that enforces a decompression budget.
+     * 압축 해제 budget을 강제하는 source wrapper.
      *
-     * Throws [IOException] once reads exceed [maxBytes]. Intended for single-threaded reads.
+     * 읽은 byte가 [maxBytes]를 초과하면 [IOException]을 던진다. 단일 thread 읽기를 전제로 한다.
      */
     private class BombGuardSource(
         delegate: Source,
@@ -399,9 +398,9 @@ object GraphIoOkioPaths : KLogging() {
     }
 
     /**
-     * Sink wrapper that atomically moves a temporary file to the target path on close.
+     * close 시 임시 파일을 대상 경로로 atomic move 하는 sink wrapper.
      *
-     * If the write fails before close completes, the temporary path is deleted.
+     * close가 완료되기 전에 쓰기가 실패하면 임시 경로를 삭제한다.
      */
     private class AtomicMoveSink(
         delegate: Sink,
@@ -446,6 +445,6 @@ object GraphIoOkioPaths : KLogging() {
     }
 }
 
-// ─── okio.Path convenience extension ─────────────────────────────────────────
-/** Last segment of an OkIO path. */
+// ─── okio.Path 편의 확장 ─────────────────────────────────────────────────────
+/** OkIO path의 마지막 segment. */
 private val okio.Path.filename: String get() = segments.last()

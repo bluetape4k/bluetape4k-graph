@@ -14,26 +14,26 @@ import java.nio.charset.Charset
 /**
  * OkIO [BufferedSource]를 [InputStream]으로 변환한다.
  *
- * underlying [BufferedSource]는 닫지 않는다 (호출자 소유).
+ * 하위 [BufferedSource]는 닫지 않는다 (호출자 소유).
  */
 fun BufferedSource.toInputStream(): InputStream = inputStream()
 
 /**
  * OkIO [BufferedSink]를 [OutputStream]으로 변환한다.
  *
- * underlying [BufferedSink]는 닫지 않는다 (호출자 소유).
+ * 하위 [BufferedSink]는 닫지 않는다 (호출자 소유).
  */
 fun BufferedSink.toOutputStream(): OutputStream = outputStream()
 
 /**
  * OkIO [BufferedSink]를 **소유권 이전** [OutputStream]으로 변환한다.
  *
- * 반환된 [OutputStream]이 닫힐 때 underlying [BufferedSink]도 함께 닫힌다.
+ * 반환된 [OutputStream]이 닫힐 때 하위 [BufferedSink]도 함께 닫힌다.
  * Jackson/StAX처럼 라이브러리가 직접 OutputStream을 close하는 경우에 사용한다.
  *
  * 소유권 규칙:
- * - [toOutputStream]: underlying sink 미닫힘 (호출자 소유)
- * - [asClosingOutputStream]: underlying sink까지 닫힘 (라이브러리 소유)
+ * - [toOutputStream]: 하위 sink 미닫힘 (호출자 소유)
+ * - [asClosingOutputStream]: 하위 sink까지 닫힘 (라이브러리 소유)
  */
 fun BufferedSink.asClosingOutputStream(): OutputStream = object : OutputStream() {
     override fun write(b: Int) { this@asClosingOutputStream.writeByte(b) }
@@ -45,8 +45,8 @@ fun BufferedSink.asClosingOutputStream(): OutputStream = object : OutputStream()
 /**
  * OkIO [BufferedSource]를 [Reader]로 변환한다. [charset] 기본값은 UTF-8.
  *
- * 반환된 [Reader]를 닫으면 underlying [BufferedSource]도 함께 닫힌다.
- * underlying source를 닫지 않으려면 [toInputStream]을 사용하거나 non-closing 래퍼를 적용하라.
+ * 반환된 [Reader]를 닫으면 하위 [BufferedSource]도 함께 닫힌다.
+ * 하위 source를 닫지 않으려면 [toInputStream]을 사용하거나 non-closing 래퍼를 적용하라.
  */
 fun BufferedSource.toReader(charset: Charset = Charsets.UTF_8): Reader =
     inputStream().reader(charset)
@@ -54,8 +54,8 @@ fun BufferedSource.toReader(charset: Charset = Charsets.UTF_8): Reader =
 /**
  * OkIO [BufferedSink]를 [Writer]로 변환한다. [charset] 기본값은 UTF-8.
  *
- * 반환된 [Writer]를 닫으면 underlying [BufferedSink]도 함께 닫힌다.
- * underlying sink를 닫지 않으려면 [toOutputStream]을 사용하거나 non-closing 래퍼를 적용하라.
+ * 반환된 [Writer]를 닫으면 하위 [BufferedSink]도 함께 닫힌다.
+ * 하위 sink를 닫지 않으려면 [toOutputStream]을 사용하거나 non-closing 래퍼를 적용하라.
  */
 fun BufferedSink.toWriter(charset: Charset = Charsets.UTF_8): Writer =
     outputStream().writer(charset)
@@ -63,7 +63,7 @@ fun BufferedSink.toWriter(charset: Charset = Charsets.UTF_8): Writer =
 /**
  * [OkioGraphExportSink]를 열고 [OutputStream]으로 변환한 뒤 [block]을 실행한다.
  *
- * [block]이 완료(정상/예외 무관)되면 [OutputStream]과 underlying [BufferedSink] 모두 닫힌다.
+ * [block]이 완료(정상/예외 무관)되면 [OutputStream]과 하위 [BufferedSink] 모두 닫힌다.
  * `asClosingOutputStream()`을 경유하므로 Jackson/StAX close 체인이 자동으로 sink까지 전파된다.
  */
 inline fun writeAsOutputStream(sink: OkioGraphExportSink, block: (OutputStream) -> Unit) {
@@ -77,7 +77,7 @@ inline fun writeAsOutputStream(sink: OkioGraphExportSink, block: (OutputStream) 
 /**
  * [OkioGraphImportSource]를 열고 [InputStream]으로 변환한 뒤 [block]을 실행한다.
  *
- * [block]이 완료되면 [InputStream]과 underlying [BufferedSource] 모두 닫힌다.
+ * [block]이 완료되면 [InputStream]과 하위 [BufferedSource] 모두 닫힌다.
  */
 inline fun readAsInputStream(source: OkioGraphImportSource, block: (InputStream) -> Unit) {
     GraphIoOkioPaths.openSource(source).use { bs ->
