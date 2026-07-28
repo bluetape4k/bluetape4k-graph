@@ -14,10 +14,10 @@ import io.bluetape4k.graph.model.TraversalVisit
 import kotlinx.coroutines.flow.Flow
 
 /**
- * Graph analytics algorithm repository for the coroutine and Flow API.
+ * coroutine 및 Flow API용 graph analytics algorithm repository.
  *
- * Flow ordering matches [GraphAlgorithmRepository].
- * The [pageRank] Flow emits scores in descending order.
+ * Flow ordering은 [GraphAlgorithmRepository]와 동일하다.
+ * [pageRank] Flow는 score 내림차순으로 emit한다.
  *
  * ### Usage
  * ```kotlin
@@ -33,12 +33,12 @@ import kotlinx.coroutines.flow.Flow
 interface GraphSuspendAlgorithmRepository {
 
     /**
-     * Emits PageRank scores as a Flow in descending score order.
+     * PageRank score를 score 내림차순 Flow로 emit한다.
      */
     fun pageRank(options: PageRankOptions = PageRankOptions.Default): Flow<PageRankScore>
 
     /**
-     * Computes degree centrality for one vertex.
+     * 단일 vertex의 degree centrality를 계산한다.
      */
     suspend fun degreeCentrality(
         vertexId: GraphElementId,
@@ -46,14 +46,14 @@ interface GraphSuspendAlgorithmRepository {
     ): DegreeResult
 
     /**
-     * Emits connected components as a Flow.
+     * connected component를 Flow로 emit한다.
      */
     fun connectedComponents(
         options: ComponentOptions = ComponentOptions.Default,
     ): Flow<GraphComponent>
 
     /**
-     * Emits BFS visit events as a Flow.
+     * BFS visit event를 Flow로 emit한다.
      */
     fun bfs(
         startId: GraphElementId,
@@ -61,7 +61,7 @@ interface GraphSuspendAlgorithmRepository {
     ): Flow<TraversalVisit>
 
     /**
-     * Emits DFS visit events as a Flow.
+     * DFS visit event를 Flow로 emit한다.
      */
     fun dfs(
         startId: GraphElementId,
@@ -69,7 +69,7 @@ interface GraphSuspendAlgorithmRepository {
     ): Flow<TraversalVisit>
 
     /**
-     * Emits detected cycles as a Flow.
+     * 탐지된 cycle을 Flow로 emit한다.
      */
     fun detectCycles(
         options: CycleOptions = CycleOptions.Default,

@@ -5,12 +5,12 @@ import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphElementId
 
 /**
- * Computes the neighboring vertex ID shared by [DijkstraRunner] and [AStarRunner].
+ * [DijkstraRunner]와 [AStarRunner]가 공유하는 neighboring vertex ID를 계산한다.
  *
- * @param currentId currently visited vertex ID.
- * @param edge edge to inspect.
+ * @param currentId 현재 방문 중인 vertex ID.
+ * @param edge 검사할 edge.
  * @param direction traversal direction.
- * @return neighboring vertex ID, or `null` when the edge does not match [direction].
+ * @return neighboring vertex ID. edge가 [direction]과 맞지 않으면 `null`.
  */
 internal fun neighbourId(
     currentId: GraphElementId,

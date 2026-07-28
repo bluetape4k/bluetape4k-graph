@@ -14,15 +14,15 @@ import io.bluetape4k.graph.model.TraversalVisit
 import java.util.concurrent.CompletableFuture
 
 /**
- * Graph analytics algorithm repository for the Virtual Thread API.
+ * Virtual Thread API용 graph analytics algorithm repository.
  *
- * Runs the blocking [GraphAlgorithmRepository] on Java 25 Project Loom Virtual Threads
- * and returns results as `CompletableFuture<T>`. This API is intended for Java code
- * and CompletableFuture-based pipelines.
+ * blocking [GraphAlgorithmRepository]를 Java 25 Project Loom Virtual Thread에서 실행하고
+ * 결과를 `CompletableFuture<T>`로 반환한다. 이 API는 Java code와
+ * CompletableFuture 기반 pipeline을 대상으로 한다.
  *
- * Kotlin code should prefer [GraphSuspendAlgorithmRepository].
+ * Kotlin code는 [GraphSuspendAlgorithmRepository]를 우선 사용한다.
  *
- * Result ordering contract: same as [GraphAlgorithmRepository].
+ * 결과 ordering contract는 [GraphAlgorithmRepository]와 동일하다.
  *
  * ### Usage
  * ```kotlin

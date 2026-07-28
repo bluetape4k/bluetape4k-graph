@@ -47,7 +47,7 @@ interface GraphAlgorithmRepository {
     fun pageRank(options: PageRankOptions = PageRankOptions.Default): List<PageRankScore>
 
     /**
-     * Computes degree centrality for one vertex.
+     * 단일 vertex의 degree centrality를 계산한다.
      *
      * @param vertexId target vertex ID.
      * @param options degree options.

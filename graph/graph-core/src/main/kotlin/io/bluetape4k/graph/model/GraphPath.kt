@@ -3,9 +3,9 @@ package io.bluetape4k.graph.model
 import java.io.Serializable
 
 /**
- * Step in a graph path, either a vertex or an edge.
+ * graph path의 step. vertex 또는 edge 중 하나다.
  *
- * Paths alternate as `[VertexStep, EdgeStep, VertexStep, ...]`.
+ * path는 `[VertexStep, EdgeStep, VertexStep, ...]` 순서로 번갈아 구성된다.
  *
  * ```kotlin
  * val step: PathStep = PathStep.VertexStep(vertex)
@@ -15,26 +15,26 @@ import java.io.Serializable
  */
 sealed class PathStep {
     /**
-     * Vertex step in a path.
+     * path 안의 vertex step.
      *
      * ```kotlin
      * val step = PathStep.VertexStep(GraphVertex(GraphElementId.of("v1"), "Person", mapOf("name" to "Alice")))
      * println(step.vertex.label)  // "Person"
      * ```
      *
-     * @property vertex Vertex for this step.
+     * @property vertex 이 step의 vertex.
      */
     data class VertexStep(val vertex: GraphVertex): PathStep()
 
     /**
-     * Edge step in a path.
+     * path 안의 edge step.
      *
      * ```kotlin
      * val step = PathStep.EdgeStep(edge)
      * println(step.edge.label)  // "KNOWS"
      * ```
      *
-     * @property edge Edge for this step.
+     * @property edge 이 step의 edge.
      */
     data class EdgeStep(val edge: GraphEdge): PathStep()
 }
@@ -42,11 +42,11 @@ sealed class PathStep {
 /**
  * Graph path.
  *
- * Consists of [PathStep] values ordered as `[VertexStep, EdgeStep, VertexStep, ...]`.
- * Represents a shortest path or all-paths traversal result between two vertices.
+ * `[VertexStep, EdgeStep, VertexStep, ...]` 순서의 [PathStep] value로 구성된다.
+ * 두 vertex 사이의 shortest path 또는 all-paths traversal result를 표현한다.
  *
- * @property steps Steps that make up the path.
- * @property totalWeight Total path weight. Unweighted traversal defaults to edge count (hop count).
+ * @property steps path를 구성하는 step 목록.
+ * @property totalWeight 전체 path weight. unweighted traversal은 edge count(hop count)를 기본값으로 사용한다.
  *   Dijkstra/A* results set the actual accumulated cost.
  *
  * ### Usage
@@ -90,16 +90,16 @@ data class GraphPath(
         val EMPTY = GraphPath(emptyList())
 
         /**
-         * Creates a vertex-only path with no edges.
+         * edge가 없는 vertex-only path를 생성한다.
          *
-         * Use this for a single-vertex path or to represent adjacent vertices as a path.
+         * single-vertex path 또는 인접 vertex들을 path로 표현할 때 사용한다.
          *
          * ```kotlin
          * val path = GraphPath.of(alice, bob, carol)
          * println(path.length)  // 3
          * ```
          *
-         * @param vertices Vertices to include in the path.
+         * @param vertices path에 포함할 vertex 목록.
          */
         fun of(vararg vertices: GraphVertex): GraphPath =
             GraphPath(vertices.map { PathStep.VertexStep(it) })
@@ -107,7 +107,7 @@ data class GraphPath(
 }
 
 /**
- * Creates a path from [PathStep] values.
+ * [PathStep] value로 path를 생성한다.
  *
  * ```kotlin
  * val path = graphPathOf(PathStep.VertexStep(v1), PathStep.EdgeStep(e1), PathStep.VertexStep(v2))
@@ -117,7 +117,7 @@ data class GraphPath(
 fun graphPathOf(vararg steps: PathStep): GraphPath = GraphPath(steps.toList())
 
 /**
- * Creates a path from a [PathStep] list.
+ * [PathStep] list로 path를 생성한다.
  *
  * ```kotlin
  * val path = graphPathOf(listOf(PathStep.VertexStep(v1), PathStep.EdgeStep(e1)))
@@ -127,7 +127,7 @@ fun graphPathOf(vararg steps: PathStep): GraphPath = GraphPath(steps.toList())
 fun graphPathOf(steps: List<PathStep>): GraphPath = GraphPath(steps)
 
 /**
- * Creates a vertex-only path from vertices, with no edges.
+ * edge 없이 vertex만으로 path를 생성한다.
  *
  * ```kotlin
  * val path = graphPathOf(v1, v2, v3)
