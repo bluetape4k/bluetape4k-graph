@@ -3,10 +3,10 @@ package io.bluetape4k.graph.schema
 import kotlin.reflect.KClass
 
 /**
- * Graph property definition.
+ * Graph property 정의.
  *
- * This type-safe metadata is returned by [VertexLabel] and [EdgeLabel] DSL methods.
- * It tracks the graph property name and Kotlin value type together.
+ * 이 type-safe metadata는 [VertexLabel]과 [EdgeLabel] DSL method가 반환한다.
+ * graph property name과 Kotlin value type을 함께 추적한다.
  *
  * ```kotlin
  * val nameDef = PropertyDef<String>("name")      // inline factory
@@ -15,8 +15,8 @@ import kotlin.reflect.KClass
  * println(nameDef.type)  // class kotlin.String
  * ```
  *
- * @property name property key stored in the graph backend.
- * @property type Kotlin [KClass] for the property value.
+ * @property name graph backend에 저장되는 property key.
+ * @property type property value에 대응되는 Kotlin [KClass].
  */
 data class PropertyDef<T: Any>(
     val name: String,
@@ -24,7 +24,7 @@ data class PropertyDef<T: Any>(
 )
 
 /**
- * Inline factory that creates a [PropertyDef] from a reified type parameter.
+ * reified type parameter로 [PropertyDef]를 생성하는 inline factory.
  *
  * ```kotlin
  * val nameDef: PropertyDef<String> = PropertyDef("name")       // inline factory

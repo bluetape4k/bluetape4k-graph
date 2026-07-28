@@ -10,10 +10,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * Synchronous API for graph backend indexes and constraints.
+ * graph backend index와 constraint를 위한 synchronous API.
  *
- * Implementations hide backend DDL differences, but unsupported constraints must fail explicitly
- * with [UnsupportedOperationException] rather than pretending to succeed.
+ * implementation은 backend DDL 차이를 숨기지만, unsupported constraint는 성공한 척하지 않고
+ * [UnsupportedOperationException]으로 명시적으로 실패해야 한다.
  *
  * ## Contract
  * - Labels and properties must be safe backend query identifiers.
@@ -32,42 +32,42 @@ import kotlinx.coroutines.withContext
 interface GraphSchemaManager {
 
     /**
-     * Creates a lookup index for the given vertex label and property.
+     * 주어진 vertex label과 property에 lookup index를 생성한다.
 	*
      * @param label vertex label.
-     * @param property property name to index.
+     * @param property index 대상 property name.
      */
     fun createIndex(label: String, property: String)
 
     /**
-     * Creates a unique constraint for the given vertex label and property.
+     * 주어진 vertex label과 property에 unique constraint를 생성한다.
 	*
      * @param label vertex label.
-     * @param property property name that must be unique.
+     * @param property unique해야 하는 property name.
      */
     fun createUniqueConstraint(label: String, property: String)
 
     /**
-     * Drops the lookup index for the given vertex label and property.
+     * 주어진 vertex label과 property의 lookup index를 삭제한다.
 	*
      * @param label vertex label.
-     * @param property indexed property name.
+     * @param property index가 걸린 property name.
      */
     fun dropIndex(label: String, property: String)
 
     /**
-     * Returns common index metadata defined in the current graph.
+     * 현재 graph에 정의된 common index metadata를 반환한다.
      */
     fun listIndexes(): List<GraphIndex>
 
     /**
-     * Returns common constraint metadata defined in the current graph.
+     * 현재 graph에 정의된 common constraint metadata를 반환한다.
      */
     fun listConstraints(): List<GraphConstraint>
 }
 
 /**
- * Coroutine API for graph backend indexes and constraints.
+ * graph backend index와 constraint를 위한 coroutine API.
  *
  * ## Contract
  * - Provides the same schema metadata semantics as [GraphSchemaManager].
@@ -83,24 +83,24 @@ interface GraphSchemaManager {
  */
 interface GraphSuspendSchemaManager {
 
-    /** Creates a lookup index for the given vertex label and property. */
+    /** 주어진 vertex label과 property에 lookup index를 생성한다. */
     suspend fun createIndex(label: String, property: String)
 
-    /** Creates a unique constraint for the given vertex label and property. */
+    /** 주어진 vertex label과 property에 unique constraint를 생성한다. */
     suspend fun createUniqueConstraint(label: String, property: String)
 
-    /** Drops the lookup index for the given vertex label and property. */
+    /** 주어진 vertex label과 property의 lookup index를 삭제한다. */
     suspend fun dropIndex(label: String, property: String)
 
-    /** Returns common index metadata defined in the current graph. */
+    /** 현재 graph에 정의된 common index metadata를 반환한다. */
     suspend fun listIndexes(): List<GraphIndex>
 
-    /** Returns common constraint metadata defined in the current graph. */
+    /** 현재 graph에 정의된 common constraint metadata를 반환한다. */
     suspend fun listConstraints(): List<GraphConstraint>
 }
 
 /**
- * Capability interface for synchronous graph implementations that provide schema management.
+ * schema management를 제공하는 synchronous graph implementation용 capability interface.
  *
  * ```kotlin
  * val schema = ops.schemaManager()
@@ -113,7 +113,7 @@ interface GraphSchemaManagementOperations {
 }
 
 /**
- * Capability interface for coroutine graph implementations that provide schema management.
+ * schema management를 제공하는 coroutine graph implementation용 capability interface.
  *
  * ```kotlin
  * val schema = suspendOps.schemaManager()
@@ -126,7 +126,7 @@ interface GraphSuspendSchemaManagementOperations {
 }
 
 /**
- * Coroutine adapter that runs a synchronous schema manager on [Dispatchers.IO].
+ * synchronous schema manager를 [Dispatchers.IO]에서 실행하는 coroutine adapter.
  *
  * ```kotlin
  * val suspendSchema = ops.schemaManager().asSuspendSchemaManager()
@@ -167,7 +167,7 @@ class BlockingGraphSuspendSchemaManager(
 }
 
 /**
- * Exposes a synchronous schema manager as a coroutine API.
+ * synchronous schema manager를 coroutine API로 노출한다.
  *
  * ```kotlin
  * val schema = ops.schemaManager().asSuspendSchemaManager()
@@ -177,7 +177,7 @@ fun GraphSchemaManager.asSuspendSchemaManager(): GraphSuspendSchemaManager =
     BlockingGraphSuspendSchemaManager(this)
 
 /**
- * Explicit-failure manager for backends that cannot safely support schema DDL yet.
+ * schema DDL을 아직 안전하게 지원할 수 없는 backend를 위한 explicit-failure manager.
  *
  * ## Contract
  * - [listIndexes] and [listConstraints] return empty lists.
@@ -217,9 +217,9 @@ class UnsupportedGraphSchemaManager(
 }
 
 /**
- * Returns the schema manager for [GraphOperations].
+ * [GraphOperations]용 schema manager를 반환한다.
  *
- * If the implementation does not implement [GraphSchemaManagementOperations], this throws
+ * implementation이 [GraphSchemaManagementOperations]를 구현하지 않으면 이 함수는
  * [UnsupportedOperationException] instead of using an automatic no-op fallback.
  *
  * ```kotlin
@@ -238,9 +238,9 @@ fun GraphOperations.schemaManager(): GraphSchemaManager {
 }
 
 /**
- * Returns the coroutine schema manager for [GraphSuspendOperations].
+ * [GraphSuspendOperations]용 coroutine schema manager를 반환한다.
  *
- * If the implementation does not implement [GraphSuspendSchemaManagementOperations], this throws
+ * implementation이 [GraphSuspendSchemaManagementOperations]를 구현하지 않으면 이 함수는
  * [UnsupportedOperationException].
  *
  * ```kotlin
@@ -283,7 +283,7 @@ suspend fun GraphSuspendSchemaManager.dropIndex(label: VertexLabel, property: Pr
     dropIndex(label.label, property.name)
 
 /**
- * Builds common schema object names.
+ * common schema object name을 만든다.
  *
  * ```kotlin
  * val index = GraphSchemaNames.indexName("Person", "email")
@@ -293,19 +293,19 @@ suspend fun GraphSuspendSchemaManager.dropIndex(label: VertexLabel, property: Pr
 object GraphSchemaNames {
 
     /**
-     * Builds a common index name.
+     * common index name을 만든다.
      */
     fun indexName(label: String, property: String): String =
         buildName("bt4k_idx", label, property)
 
     /**
-     * Builds a common unique constraint name.
+     * common unique constraint name을 만든다.
      */
     fun uniqueConstraintName(label: String, property: String): String =
         buildName("bt4k_uc", label, property)
 
     /**
-     * Validates label and property identifiers.
+     * label과 property identifier를 검증한다.
      */
     fun validateLabelAndProperty(label: String, property: String): Pair<String, String> {
         val safeLabel = label.requireNotBlank("label").requireSafeIdentifier("label")

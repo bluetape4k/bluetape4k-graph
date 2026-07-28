@@ -3,13 +3,13 @@ package io.bluetape4k.graph.model
 import java.io.Serializable
 
 /**
- * Connected component result.
+ * Connected component 결과.
  *
- * Represents vertices that share the same [componentId].
+ * 같은 [componentId]를 공유하는 vertex들을 표현한다.
  *
- * @property componentId Component identifier. The value is implementation-defined;
- * vertices in the same component share it.
- * @property vertices Vertices in the component.
+ * @property componentId component identifier. 값은 implementation-defined이며,
+ * 같은 component의 vertex들이 공유한다.
+ * @property vertices component에 속한 vertex 목록.
  *
  * ### Usage
  * ```kotlin
