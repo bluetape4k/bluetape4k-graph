@@ -1,17 +1,17 @@
-# Issue 369 Graph AGE Coverage Review
+# 이슈 369 Graph AGE coverage review
 
-## Scope
+## 범위
 
-- Expanded `AgeGraphSuspendOperationsTest` for suspend transaction scoped vertex/edge CRUD.
-- Added suspend algorithm Flow coverage for degree centrality, BFS, DFS, cycle detection, connected components, and PageRank.
+- `AgeGraphSuspendOperationsTest`를 확장해 suspend transaction scope의 vertex/edge CRUD를 검증했다.
+- degree centrality, BFS, DFS, cycle detection, connected components, PageRank에 대한 suspend algorithm `Flow` coverage를 추가했다.
 
-## Coverage
+## 커버리지
 
 - Baseline: `6763 / 8877 = 76.19%`
 - Updated: `7739 / 8877 = 87.18%`
-- Main improvement: `AgeGraphSuspendOperations` algorithm Flow wrappers and `AgeGraphSuspendTransactionScope`.
+- 주요 개선 지점: `AgeGraphSuspendOperations` algorithm `Flow` wrapper와 `AgeGraphSuspendTransactionScope`.
 
-## Verification
+## 검증
 
 - `./gradlew :bluetape4k-graph-age:detekt :bluetape4k-graph-age:test :bluetape4k-graph-age:koverXmlReport --no-daemon --no-configuration-cache`
-- Result: `BUILD SUCCESSFUL`
+- 결과: `BUILD SUCCESSFUL`

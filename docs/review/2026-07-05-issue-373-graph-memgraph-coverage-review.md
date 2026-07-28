@@ -1,29 +1,29 @@
-# Issue 373 Graph Memgraph Coverage Review
+# 이슈 373 Graph Memgraph coverage review
 
-## Scope
+## 범위
 
-- GitHub issue: #373
-- Module: `bluetape4k-graph-memgraph`
-- Change type: test-only coverage improvement
+- GitHub 이슈: #373
+- 모듈: `bluetape4k-graph-memgraph`
+- 변경 유형: test-only coverage improvement
 
-## Findings
+## 발견 사항
 
-- P0: none
-- P1: none
+- P0: 없음
+- P1: 없음
 
-## Coverage
+## 커버리지
 
 - Baseline instruction coverage: `6508/8881 = 73.28%`
 - Updated instruction coverage: `7465/8881 = 84.06%`
-- Repository average target from coverage audit: `78.88%`
+- Coverage audit 기준 repository average target: `78.88%`
 
-## Review Notes
+## 리뷰 메모
 
-- Added focused Memgraph suspend algorithm Flow tests.
-- Added a successful `suspendTransaction` scoped CRUD test to cover reactive transaction scope behavior.
-- Kept production Memgraph implementation unchanged.
+- focused Memgraph suspend algorithm `Flow` test를 추가했다.
+- reactive transaction scope behavior를 cover하기 위해 성공 경로의 `suspendTransaction` scoped CRUD test를 추가했다.
+- Production Memgraph implementation은 변경하지 않았다.
 
-## Verification
+## 검증
 
 ```bash
 ./gradlew :bluetape4k-graph-memgraph:detekt :bluetape4k-graph-memgraph:test :bluetape4k-graph-memgraph:koverXmlReport --no-daemon --no-configuration-cache
