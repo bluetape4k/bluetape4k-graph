@@ -10,12 +10,12 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.repository.GraphOperations
 
 /**
- * Benchmark-only single-threaded cache wrapper over [AgeGraphOperations].
- * Uses plain [HashMap] instead of [java.util.concurrent.ConcurrentHashMap] for all caches.
- * JMH runs @State(Scope.Benchmark) benchmarks single-threaded by default, so thread-safety
- * overhead from ConcurrentHashMap (~5 ns) is wasted. HashMap.get() is ~3 ns.
+ * Benchmark 전용 single-threaded cache wrapper로 [AgeGraphOperations] 위에서 동작한다.
+ * 모든 cache에 [java.util.concurrent.ConcurrentHashMap] 대신 plain [HashMap]을 사용한다.
+ * JMH는 `@State(Scope.Benchmark)` benchmark를 기본적으로 single-thread로 실행하므로
+ * ConcurrentHashMap의 thread-safety overhead(~5 ns)는 낭비이고 `HashMap.get()`은 약 3 ns이다.
  *
- * Do NOT use in production — production code uses [io.bluetape4k.graph.age.CachingAgeGraphOperations].
+ * Production에서는 사용하지 않는다. Production code는 [io.bluetape4k.graph.age.CachingAgeGraphOperations]를 사용한다.
  */
 class BenchmarkSingleThreadedCachingAgeGraphOperations(
     private val delegate: AgeGraphOperations,

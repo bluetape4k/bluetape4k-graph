@@ -3,9 +3,9 @@ package io.bluetape4k.graph.benchmark.abuser
 import java.io.Serializable
 
 /**
- * PostgreSQL abuser-detection benchmark backend contract.
+ * PostgreSQL abuser-detection benchmark backend contract이다.
  *
- * Implementations load the same deterministic [AbuserDetectionFixture] and return comparable detection metrics.
+ * 구현체는 동일한 deterministic [AbuserDetectionFixture]를 load하고 비교 가능한 detection metric을 반환한다.
  */
 interface AbuserDetectionEngine: AutoCloseable {
     val implementationName: String

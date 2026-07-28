@@ -25,7 +25,7 @@ import kotlinx.benchmark.TearDown
 import kotlinx.benchmark.Warmup
 
 /**
- * Compares PostgreSQL abuser-detection implementations over a deterministic fixture.
+ * Deterministic fixture 위에서 PostgreSQL abuser-detection 구현을 비교한다.
  */
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(BenchmarkTimeUnit.MILLISECONDS)

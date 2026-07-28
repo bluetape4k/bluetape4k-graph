@@ -14,13 +14,13 @@ import kotlinx.benchmark.State
 import kotlinx.benchmark.Warmup
 
 /**
- * Single-insert loop vs batch insert throughput for 10,000 vertices and edges (TinkerGraph).
+ * 10,000개 vertex 및 edge(TinkerGraph)에 대한 single-insert loop와 batch insert throughput을 비교한다.
  *
- * ## Behavior / Contract
- * - Each benchmark method creates a fresh [TinkerGraphOperations] instance and closes it after use.
- * - Vertex rows: 10,000 `Person` nodes with `name` and `rank` properties.
- * - Edge rows: cycle topology (node[i] → node[(i+1) % n]) labelled `KNOWS`.
- * - Loop variants call `createVertex` / `createEdge` one at a time; batch variants call `createVertices` / `createEdges`.
+ * ## 동작/계약
+ * - 각 benchmark method는 fresh [TinkerGraphOperations] instance를 생성하고 사용 후 close한다.
+ * - Vertex row는 `name`, `rank` property를 가진 10,000개의 `Person` node이다.
+ * - Edge row는 `KNOWS` label의 cycle topology(node[i] → node[(i+1) % n])이다.
+ * - Loop variant는 `createVertex` / `createEdge`를 하나씩 호출하고, batch variant는 `createVertices` / `createEdges`를 호출한다.
  *
  * ```kotlin
  * // run via Gradle

@@ -1,7 +1,7 @@
 package io.bluetape4k.graph.benchmark.abuser
 
 /**
- * Builds deterministic fixtures for the PostgreSQL abuser-detection benchmark.
+ * PostgreSQL abuser-detection benchmark를 위한 deterministic fixture를 build한다.
  */
 object AbuserDetectionFixtureFactory {
 

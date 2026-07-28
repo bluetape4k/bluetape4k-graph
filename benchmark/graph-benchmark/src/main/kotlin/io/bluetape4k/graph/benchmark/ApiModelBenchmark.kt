@@ -25,12 +25,12 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
 /**
- * Compares the sync, virtual-thread, and coroutine API models on the same TinkerGraph fixture.
+ * 동일한 TinkerGraph fixture 위에서 sync, virtual-thread, coroutine API model을 비교한다.
  *
- * PageRank benchmarks use throughput (`ops/s`, higher is better). BFS, 100-way request,
- * and 100-way launch benchmarks use average latency (`us/op`, lower is better). The fixture
- * is intentionally in-memory so the numbers expose API-model overhead without Docker or
- * network I/O noise.
+ * PageRank benchmark는 throughput(`ops/s`, 높을수록 좋음)을 사용한다. BFS, 100-way request,
+ * 100-way launch benchmark는 average latency(`us/op`, 낮을수록 좋음)를 사용한다. Fixture는
+ * 의도적으로 in-memory이므로 Docker 또는 network I/O noise 없이 API-model overhead가 드러난다.
+ * network I/O noise를 제외한다.
  */
 @Fork(1)
 @Warmup(iterations = 3, time = 2, timeUnit = TimeUnit.SECONDS)

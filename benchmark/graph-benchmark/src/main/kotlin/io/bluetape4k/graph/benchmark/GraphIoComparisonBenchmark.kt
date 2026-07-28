@@ -42,7 +42,7 @@ import java.util.Random
 import java.util.concurrent.TimeUnit
 
 /**
- * Compares graph-io implementations under the `graph-benchmark` module.
+ * `graph-benchmark` module 아래에서 graph-io 구현을 비교한다.
  */
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)

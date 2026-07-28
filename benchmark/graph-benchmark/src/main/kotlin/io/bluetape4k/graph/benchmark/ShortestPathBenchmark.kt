@@ -17,13 +17,13 @@ import kotlinx.benchmark.TearDown
 import kotlinx.benchmark.Warmup
 
 /**
- * Shortest-path benchmark over a 1 000-node chain graph, comparing sync and virtual-thread execution.
+ * 1,000-node chain graph 위에서 sync와 virtual-thread execution을 비교하는 shortest-path benchmark이다.
  *
- * ## Behavior / Contract
- * - [setup] builds a linear chain 0→1→2→…→999 with edge label "LINK" and pre-generates
- *   100 forward (from, to) ID pairs using a fixed seed so results are reproducible.
- * - Pairs satisfy `from.index < to.index`; the directed chain has no reverse paths,
- *   so backward pairs would short-circuit and bias the measurement.
+ * ## 동작/계약
+ * - [setup]은 edge label "LINK"로 0→1→2→…→999 linear chain을 만들고 미리 생성한다
+ *   결과 재현성을 위해 fixed seed로 100개의 forward (from, to) ID pair를 만든다.
+ * - Pair는 `from.index < to.index`를 만족한다. Directed chain에는 reverse path가 없으므로
+ *   backward pair는 short-circuit되어 측정값을 bias할 수 있다.
  * - [syncShortestPath100Pairs] runs all 100 pairs sequentially on the calling thread.
  * - [vtShortestPath100Pairs] submits each pair to a virtual-thread pool via
  *   [VirtualThreadOperationsAdapter.shortestPathAsync] and blocks until completion.

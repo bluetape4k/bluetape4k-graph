@@ -17,13 +17,13 @@ import kotlinx.benchmark.TearDown
 import kotlinx.benchmark.Warmup
 
 /**
- * Weighted shortest-path benchmark over deterministic TinkerGraph datasets.
+ * Deterministic TinkerGraph dataset 위의 weighted shortest-path benchmark이다.
  *
- * ## Behavior / Contract
- * - [setup] builds a directed weighted graph with `vertexCount` vertices.
- * - Every vertex links to its next neighbor with cost `1.0`, making the canonical shortest path deterministic.
- * - Additional forward edges add sparse density without making shortcuts cheaper than the canonical path.
- * - [dijkstra] calls [TinkerGraphOperations.shortestPath] with `PathOptions.weightProperty`.
+ * ## 동작/계약
+ * - [setup]은 `vertexCount`개의 vertex가 있는 directed weighted graph를 build한다.
+ * - 모든 vertex는 cost `1.0`으로 다음 neighbor에 연결되어 canonical shortest path가 deterministic해진다.
+ * - Additional forward edge는 canonical path보다 저렴한 shortcut을 만들지 않으면서 sparse density를 추가한다.
+ * - [dijkstra]는 `PathOptions.weightProperty`와 함께 [TinkerGraphOperations.shortestPath]를 호출한다.
  * - [aStar] calls [TinkerGraphOperations.aStarPath] with a zero heuristic, so it is admissible and directly
  *   comparable to Dijkstra over the same weighted graph.
  *
