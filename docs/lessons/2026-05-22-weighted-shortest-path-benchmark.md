@@ -1,11 +1,11 @@
 # 2026-05-22 - Weighted Shortest Path Benchmark and First Optimization Pass
 
-## Context
+## 맥락
 
 Milestone `0.3.1` needed issue #41 as the benchmark prerequisite for #192 and #193. The benchmark harness had to use
 `kotlinx-benchmark`, not direct JMH annotations in Kotlin source.
 
-## Decisions
+## 결정
 
 - `benchmark/graph-benchmark` benchmark source now imports `kotlinx.benchmark.*` annotations and
   `BenchmarkTimeUnit`; direct `org.openjdk.jmh.annotations.*` imports are kept out of source.
@@ -14,7 +14,7 @@ Milestone `0.3.1` needed issue #41 as the benchmark prerequisite for #192 and #1
 - Benchmark main resources include WARN-level Logback configuration so algorithm DEBUG logs do not contaminate
   measurement output.
 
-## Optimization Result
+## 최적화 결과
 
 Issue #192 tested one narrow candidate: replace `DijkstraRunner` priority queue entries from
 `Pair<Double, GraphElementId>` plus comparator dispatch to a dedicated comparable `DijkstraNode`.
@@ -30,10 +30,10 @@ Chart:
 | Dijkstra 1,000 vertices | 8.072 ms/op | 7.501 ms/op | +7.1% |
 | Dijkstra 10,000 vertices | 86.092 ms/op | 83.417 ms/op | +3.1% |
 
-Decision: accept. The primary metric improved beyond the 1% threshold, and the small 100-vertex regression stayed
+결정: accept. The primary metric improved beyond the 1% threshold, and the small 100-vertex regression stayed
 inside the 5% guard.
 
-## Verification
+## 검증
 
 ```bash
 ./gradlew :graph-benchmark:test --tests "io.bluetape4k.graph.benchmark.WeightedShortestPathBenchTest"
@@ -44,7 +44,7 @@ inside the 5% guard.
 All commands passed. The first graph-core compile hit a Kotlin daemon incremental cache race while two Gradle commands
 ran concurrently; Gradle fallback compilation and later benchmark compilation both succeeded.
 
-## Future Guidance
+## 향후 지침
 
 - Keep graph benchmark execution on Gradle `kotlinx-benchmark` tasks such as `:graph-benchmark:mainBenchmark`.
 - Do not add direct JMH annotation imports to Kotlin source.

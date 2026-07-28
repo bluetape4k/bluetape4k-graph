@@ -1,11 +1,11 @@
-# Issue 126 Spring Boot FalkorDB Nightly Coverage
+# 이슈 126 Spring Boot FalkorDB Nightly Coverage
 
-## Context
+## 맥락
 
 Issue #126 asked whether `graph-spring-boot` covered the FalkorDB
 auto-configuration path in nightly CI with a live FalkorDB Testcontainer.
 
-## Decision
+## 결정
 
 Keep the normal Spring Boot test job focused on the existing TinkerGraph smoke
 path for smoke scope, and add a `scope=full` step in the same job for the
@@ -13,7 +13,7 @@ FalkorDB Spring Boot auto-configuration path. Gate the new live-container
 `@SpringBootTest` behind an environment variable so routine module tests compile
 it but do not start Docker.
 
-## Outcome
+## 결과
 
 Nightly now runs `FalkorDBSpringBootIntegrationTest` inside the `Test / Spring
 Boot` job during full scope, after the normal TinkerGraph Spring Boot test
@@ -25,7 +25,7 @@ FalkorDB health indicator against a live container. `falkordbHealthIndicator`
 now uses a bean-name missing-bean condition so other Actuator health indicators
 do not block the backend-specific health indicator.
 
-## Verification
+## 검증
 
 - `BLUETAPE4K_GRAPH_SPRING_FALKORDB_INTEGRATION=true ./gradlew :bluetape4k-graph-spring-boot:test --tests "*.FalkorDBSpringBootIntegrationTest" --rerun-tasks --no-daemon --continue`
 - `./gradlew :bluetape4k-graph-spring-boot:test --no-daemon --continue`
@@ -36,7 +36,7 @@ do not block the backend-specific health indicator.
 IDE diagnostics could not run because the graph worktree is not open in the
 IntelliJ MCP project list; Gradle compile/test and Detekt were used as fallback.
 
-## Future Guidance
+## 향후 지침
 
 For expensive Spring Boot + Testcontainers coverage, prefer a gated test plus a
 full-nightly step in the existing Spring Boot job when it can reuse the same

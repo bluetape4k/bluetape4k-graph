@@ -1,10 +1,10 @@
-# Issue 197/199/201 Gradle Benchmark Lessons
+# 이슈 197/199/201 Gradle Benchmark Lessons
 
-## Context
+## 맥락
 
 Issues #197, #199, and #201 added graph-benchmark coverage for domain workload shapes, production-grade API model latency, and selective 10k sustained ingestion. The initial implementation drifted toward direct JMH jar commands and chart styles that did not match the existing README assets.
 
-## Decision
+## 결정
 
 Use `kotlinx-benchmark` Gradle tasks as the primary benchmark entrypoint:
 
@@ -14,11 +14,11 @@ Use `kotlinx-benchmark` Gradle tasks as the primary benchmark entrypoint:
 
 Keep raw JMH jar execution only as a local diagnostic escape hatch. Testcontainers-backed runs stay serial and store raw JSON under `docs/benchmark/`.
 
-## Outcome
+## 결과
 
 Fresh local benchmark artifacts were generated for the small DB matrix, domain workload matrix, selective 10k write ingestion, and API production matrix. README files now include tables plus SVG/PNG charts with the existing hand-drawn README chart font convention: `Architects Daughter` for titles and `Comic Sans MS` / `Comic Neue` / `Chalkboard SE` fallbacks for body text.
 
-## Verification
+## 검증
 
 - `./gradlew :graph-benchmark:mainGraphDbSmallBenchmark --no-build-cache`
 - `./gradlew :graph-benchmark:mainGraphDomainWorkloadBenchmark --no-build-cache`
@@ -26,6 +26,6 @@ Fresh local benchmark artifacts were generated for the small DB matrix, domain w
 - `./gradlew :graph-benchmark:mainApiModelProductionBenchmark --no-build-cache`
 - `python3 -m py_compile` for graph-benchmark chart scripts
 
-## Future Guidance
+## 향후 지침
 
 For graph benchmarks, add a named `kotlinx.benchmark` Gradle configuration first, then document that Gradle task in both English and Korean README files. Reuse existing README chart font/style before creating new SVG/PNG assets.

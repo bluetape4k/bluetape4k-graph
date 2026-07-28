@@ -1,22 +1,22 @@
-# Issue #111 Sample Dataset Loaders
+# 이슈 #111 Sample Dataset Loaders
 
-## Context
+## 맥락
 
 Issue #111 adds graph-io backed sample data loaders for the fraud detection, recommendation, and knowledge graph
 example modules.
 
-## Decision
+## 결정
 
 Keep the loaders module-local and resource-backed. TinkerGraph smoke tests are sufficient for the import path because
 the loaders call graph-io through the common `GraphOperations` contract, while existing backend matrix tests continue to
 cover traversal behavior.
 
-## Outcome
+## 결과
 
 Added sync and suspend CSV loader entry points, bundled domain fixtures, README import examples, and TinkerGraph smoke
 tests for each module.
 
-## Verification
+## 검증
 
 - `./gradlew :fraud-detection-examples:compileKotlin :fraud-detection-examples:compileTestKotlin :fraud-detection-examples:test --tests "io.bluetape4k.graph.examples.fraud.FraudDetectionSampleDatasetLoaderTest" :recommendation-examples:compileKotlin :recommendation-examples:compileTestKotlin :recommendation-examples:test --tests "io.bluetape4k.graph.examples.recommendation.RecommendationSampleDatasetLoaderTest" :knowledge-graph-examples:compileKotlin :knowledge-graph-examples:compileTestKotlin :knowledge-graph-examples:test --tests "io.bluetape4k.graph.examples.knowledge.KnowledgeGraphSampleDatasetLoaderTest" --console=plain --no-daemon` passed with 12 sample loader tests.
 - `./gradlew :fraud-detection-examples:test :knowledge-graph-examples:test :recommendation-examples:test --tests '*SampleDatasetLoaderTest'` passed during Codex review, including the existing fraud and knowledge backend matrices plus the new loader tests.
@@ -24,7 +24,7 @@ tests for each module.
 - Codex review found no actionable bugs after the class loader fallback fix.
 - Claude review was run and the P1 findings were fixed: KDoc contract sections, verification evidence, and stream cleanup on failure paths.
 
-## Future Guard
+## 향후 가드
 
 When example modules add sample data, keep fixtures small, cover the graph-io import report counts, and assert at least
 one domain service query against the imported graph.

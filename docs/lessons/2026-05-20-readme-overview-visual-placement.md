@@ -1,26 +1,26 @@
 # 2026-05-20 — README overview visual placement
 
-## Context
+## 맥락
 
 README diagrams and charts need to be treated as source-backed documentation,
 not as decorative generated assets. The current pass used the 2026 reference
 documents and the shared README diagram style guide, but source code and build
 layout remained the authority for module names and grouping.
 
-## Decision
+## 결정
 
 Add English-only SVG+PNG README overview visuals for the root README and place
 the overview diagram before installation, usage, or build instructions. Move
 existing Architecture/Diagram sections upward when they were appended after
 usage examples.
 
-## Outcome
+## 결과
 
 `bluetape4k-graph` now has a root README overview diagram and module composition chart, and
 its README visual placement follows the overview-first rule. Generated labels
 avoid localized text inside the images.
 
-## Verification
+## 검증
 
 - Generated SVG files parsed with `xmllint --noout`.
 - Generated PNG files rendered with `rsvg-convert`.
@@ -29,7 +29,7 @@ avoid localized text inside the images.
   behind Installation, Usage, Examples, or Build headings.
 - Generated root overview SVG text contained no non-ASCII characters.
 
-## Future Note
+## 향후 메모
 
 Do not append architecture diagrams to the end of README files. Keep overview
 or architecture diagrams near the top, then place class, sequence, ERD, or flow

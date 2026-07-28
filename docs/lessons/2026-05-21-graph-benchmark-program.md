@@ -1,14 +1,14 @@
-# Graph Benchmark Program
+# Graph Benchmark 프로그램
 
-## Context
+## 맥락
 
 Issue #193 adds a single benchmark program for graph DB and graph-io performance comparison, with self-improve evidence gates.
 
-## Decision
+## 결정
 
 Use `benchmark/graph-benchmark` as the unified kotlinx-benchmark entry point instead of scattering comparison logic across backend-specific benchmark modules.
 
-## Outcome
+## 결과
 
 The benchmark harness now has DB and graph-io comparison classes plus a normalized JMH report script for before/after scoring.
 
@@ -16,10 +16,10 @@ The first real Testcontainers-backed graph DB run is stored under `docs/benchmar
 
 Independent benchmark modules under `benchmark/` should remain independent unless there is a stronger build reason to merge them. Put readable result tables and chart links in each module README instead of forcing all benchmark code into `graph-benchmark`.
 
-## Verification
+## 검증
 
 Compile, parser validation, chart rendering, `:graph-benchmark:test`, and an actual Testcontainers JMH run are the required gates before PR.
 
-## Future Guard
+## 향후 가드
 
 Do not start self-improve optimization until a fresh baseline JSON exists and sealed-file validation is passing from committed HEAD. A deliberate baseline refresh will fail the sealed validator until that refresh is committed.

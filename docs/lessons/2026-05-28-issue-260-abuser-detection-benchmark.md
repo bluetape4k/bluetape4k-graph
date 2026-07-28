@@ -1,14 +1,14 @@
-# Issue #260 PostgreSQL Traversal Benchmark
+# 이슈 #260 PostgreSQL Traversal Benchmark
 
-## Context
+## 맥락
 
 Epic #260 started as an abuser-detection comparison, but the stronger GraphDB adoption question is variable-depth traversal. The final slice keeps bounded fraud detection as a secondary scenario and makes authorization inheritance the primary measured workload.
 
-## Decision
+## 결정
 
 Use `benchmark/graph-benchmark` and `kotlinx-benchmark`. Compare native Neo4j Cypher plus AGE/Cypher with PostgreSQL recursive CTE and iterative traversal on a deterministic authorization inheritance fixture. Keep correctness evidence separate from latency ranking.
 
-## Outcome
+## 결과
 
 Added authorization inheritance fixtures, oracle, AGE/Cypher engine, PostgreSQL CTE and iterative engines, benchmark tasks, measured result JSON, Markdown tables, and README chart assets. Fraud detection was also tightened to bounded, time-windowed, risk-filtered traversal with CTE/iterative relational splits.
 
@@ -22,14 +22,14 @@ The adoption probe finally produced a qualified GraphDB signal: `large + long-ch
 
 The final adoption decision report is `docs/benchmark/2026-05-28-graphdb-adoption-decision-report.md`. Keep it as the entrypoint for this benchmark slice because it includes AGE timeout rows, Memgraph load-failure evidence, TinkerGraph scope, recommendation, artifacts, and DoD.
 
-## Verification
+## 검증
 
 - `./gradlew :graph-benchmark:compileKotlin :graph-benchmark:compileTestKotlin :graph-benchmark:test --tests "io.bluetape4k.graph.benchmark.authz.AuthzInheritanceEngineSmokeTest" --no-build-cache`
 - `./gradlew :graph-benchmark:compileKotlin :graph-benchmark:compileTestKotlin :graph-benchmark:test --tests "io.bluetape4k.graph.benchmark.abuser.AbuserDetectionContractTest" --tests "io.bluetape4k.graph.benchmark.abuser.AbuserDetectionEngineSmokeTest" --no-build-cache`
 - `./gradlew :graph-benchmark:authzInheritanceBenchmark --no-build-cache`
 - Direct JMH diagnostic runs for `authzInheritanceAdoptionBenchmark` backend isolation: Neo4j/PostgreSQL JSON plus AGE timeout and Memgraph failure logs under `docs/benchmark/`.
 
-## Future Guard
+## 향후 가드
 
 For graph benchmark comparisons, publish the `kotlinx-benchmark` task, raw JSON path, run conditions, metric direction, scenario/size matrix, chart assets, and explicit interpretation. Do not collapse recursive CTE and iterative traversal into one relational baseline, and do not claim a GraphDB win unless measured results support it.
 

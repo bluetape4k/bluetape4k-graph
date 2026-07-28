@@ -1,19 +1,15 @@
-# Lessons
+# 레슨
 
-Store durable bluetape4k-graph lessons in this directory.
+이 디렉터리에는 오래 유지할 bluetape4k-graph 레슨을 기록한다.
 
-Create or update a lesson after every completed PR or work item, even when the
-change is small. Keep it short for small work, but still record the context,
-verification, and one reusable guardrail.
+완료된 PR이나 작업 항목마다 변경이 작더라도 레슨을 생성하거나 갱신한다. 작은 작업은 짧게 유지하되, 맥락과 검증, 재사용 가능한 가드레일 하나는 반드시 기록한다.
 
-Use this structure for each lesson:
+각 레슨은 다음 구조를 사용한다:
 
-- Context
-- Decision or Finding
-- Outcome
-- Verification
-- Future Guidance
+- 맥락
+- 결정 또는 발견
+- 결과
+- 검증
+- 향후 지침
 
-Name files as `YYYY-MM-DD-{slug}.md`. Promote repeated rules to `AGENTS.md`,
-workflow docs, or a narrower skill. Keep transient `.omx` notes out of this
-directory unless they have been deliberately promoted.
+파일명은 `YYYY-MM-DD-{slug}.md` 형식을 사용한다. 반복되는 규칙은 `AGENTS.md`, workflow 문서, 더 좁은 skill로 승격한다. 의도적으로 승격한 경우가 아니면 임시 `.omx` 메모는 이 디렉터리에 두지 않는다.

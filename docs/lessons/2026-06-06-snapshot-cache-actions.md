@@ -1,28 +1,28 @@
 # Snapshot Cache Actions
 
-## Context
+## 맥락
 
 Nightly already uses a one-day changing-module cache TTL, but the workflow still
 forced dependency refreshes and disabled Gradle dependency caching for jobs.
 
-## Decision
+## 결정
 
 Remove `--refresh-dependencies` and remove Nightly `cache-disabled: true`.
 
-## Outcome
+## 결과
 
 Nightly keeps its existing graph backend task structure, but regular dependency
 resolution can use Gradle cache metadata instead of forcing Central snapshot
 metadata requests on every job.
 
-## Verification
+## 검증
 
 - `actionlint .github/workflows/*.yml`
 - `rg -n -- '--refresh-dependencies|cache-disabled: true' .github/workflows` -> no matches
 - `./gradlew help --no-daemon`
 - `git diff --check`
 
-## Future Guidance
+## 향후 지침
 
 Use explicit dependency refresh only in dedicated post-publish freshness checks.
 Ordinary CI, Nightly, and Examples workflows should rely on cached changing-module

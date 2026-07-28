@@ -1,18 +1,18 @@
-# Issue 217 backend capability diagram
+# 이슈 217 backend capability diagram
 
-## Context
+## 맥락
 
 Issue #217 asked for README-facing diagrams that map the backend capability matrix into committed SVG/PNG assets.
 
-## Decision
+## 결정
 
 The root README now embeds one shared English-label PNG for both English and Korean documents. The Graphviz DOT source captures current backend comparison data plus graph-core schema, merge, and transaction support matrices.
 
-## Outcome
+## 결과
 
 Added `root-readme-backend-capability-matrix-01.{dot,plain,svg,png}` under `docs/images/readme-diagrams/` and linked the PNG from both root README files.
 
-## Verification
+## 검증
 
 - Rendered DOT to `.plain`, `.svg`, and `.png` with Graphviz.
 - Inspected the generated PNG at readable scale.
@@ -21,6 +21,6 @@ Added `root-readme-backend-capability-matrix-01.{dot,plain,svg,png}` under `docs
 - README image links resolve to the committed PNG.
 - Checked the SVG for stale UI font names (`Inter`, `Arial`, `Helvetica`).
 
-## Future note
+## 향후 메모
 
 For capability diagrams, keep the diagram labels English and update the same PNG link in every localized README. Re-read `graph-core` capability matrices before changing support wording.

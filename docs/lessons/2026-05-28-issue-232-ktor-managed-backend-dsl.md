@@ -1,11 +1,11 @@
 # 2026-05-28 - Issue #232 Ktor Managed Backend DSL
 
-## Context
+## 맥락
 
 Issue #232 added a managed backend property DSL for `graph-ktor` so small Ktor services can let the plugin create
 Neo4j, Memgraph, or FalkorDB drivers directly.
 
-## Decision
+## 결정
 
 Keep caller-owned helpers unchanged and add managed-driver overloads:
 
@@ -16,12 +16,12 @@ Keep caller-owned helpers unchanged and add managed-driver overloads:
 Apache AGE managed `DataSource` setup is separate issue #254 because Exposed `Database.connect(...)`, global
 transaction-manager state, and pool ownership need a narrower contract.
 
-## Outcome
+## 결과
 
 Future Ktor examples should prefer the managed-driver DSL when the example owns the backend connection. Use the
 caller-owned overloads only when a test fixture, DI container, or external lifecycle clearly owns the driver.
 
-## Verification
+## 검증
 
 Planned gates:
 
@@ -29,7 +29,7 @@ Planned gates:
 - `./gradlew :bluetape4k-graph-ktor:test --no-daemon`
 - `git diff --check`
 
-## Future Guidance
+## 향후 지침
 
 When implementing example issues #247 through #252, use the latest Ktor managed-driver DSL for Ktor setup examples unless
 the example deliberately demonstrates externally owned driver lifecycle.
