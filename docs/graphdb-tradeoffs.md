@@ -1,10 +1,12 @@
-# Graph Database 장단점 및 선택 가이드
+# 그래프 데이터베이스 장단점 및 선택 가이드
 
-> bluetape4k-graph 프로젝트에서 지원하는 Neo4j, Memgraph, Apache AGE, Apache TinkerPop 백엔드를 기준으로 정리한 문서입니다.
+> `bluetape4k-graph`가 지원하는 Neo4j, Memgraph, Apache AGE, Apache TinkerPop 백엔드를 기준으로 정리한 문서입니다.
 
 ## 개요
 
-Graph Database(이하 GraphDB)는 데이터를 **정점(Vertex/Node)** 과 **간선(Edge/Relationship)** 으로 모델링하는 DBMS 카테고리입니다. 관계 자체가 1급 객체이므로 연결 중심의 데이터 도메인에서 RDBMS 대비 강점을 갖습니다.
+그래프 데이터베이스(이하 GraphDB)는 데이터를 **정점(Vertex/Node)** 과
+**간선(Edge/Relationship)** 으로 모델링하는 DBMS 카테고리입니다. 관계 자체가
+1급 객체이므로 연결 중심의 데이터 도메인에서 RDBMS 대비 강점을 갖습니다.
 
 ## 장점
 
@@ -21,7 +23,7 @@ Graph Database(이하 GraphDB)는 데이터를 **정점(Vertex/Node)** 과 **간
 
 | 항목 | 설명 |
 |------|------|
-| **집계/분석 쿼리 약세** | GROUP BY, 윈도우 함수 등 OLAP성 작업은 RDBMS/컬럼나 DB 대비 불리 |
+| **집계/분석 쿼리 약세** | GROUP BY, 윈도우 함수 등 OLAP성 작업은 RDBMS/컬럼형 DB 대비 불리 |
 | **수평 확장 난이도** | 간선이 파티션을 넘나들면 성능 저하. RDBMS보다 샤딩이 어려움 |
 | **생태계 규모** | RDBMS 대비 도구, ORM, 운영 노하우가 상대적으로 부족 |
 | **학습 곡선** | Cypher/Gremlin 숙련과 그래프 기반 모델링 철학 학습 필요 |
