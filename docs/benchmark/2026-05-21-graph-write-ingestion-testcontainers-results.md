@@ -1,10 +1,10 @@
-# Graph Write Ingestion Testcontainers Results - 2026-05-21
+# Graph Write Ingestion Testcontainers 결과 - 2026-05-21
 
-Run conditions: macOS arm64, GraalVM JDK 25.0.3, JMH 1.37, one fork, one warmup iteration, three one-second measurement iterations, real Testcontainers backends, and GC profiler enabled.
+실행 조건: macOS arm64, GraalVM JDK 25.0.3, JMH 1.37, fork 1회, warmup iteration 1회, 1초 measurement iteration 3회, 실제 Testcontainers backend, GC profiler 활성화.
 
-All latency values are `ms/op`; lower is better. Bold indicates the fastest backend in that row. `Repeated mixed batches` runs five mixed vertex+edge batches in one benchmark operation.
+모든 latency 값은 `ms/op`이며 낮을수록 좋다. 굵은 값은 해당 row의 가장 빠른 backend를 뜻한다. `Repeated mixed batches`는 하나의 benchmark operation에서 vertex+edge mixed batch를 5회 실행한다.
 
-## Latency
+## 지연 시간
 
 ![Graph write ingestion Testcontainers benchmark](../images/readme-charts/graph-write-ingestion-testcontainers-latency-chart-01.png)
 
@@ -19,9 +19,9 @@ All latency values are `ms/op`; lower is better. Bold indicates the fastest back
 | Repeated mixed batches (5x) | 100 | 32.221 | 35.181 | **11.456** | 149.935 | 263.976 |
 | Repeated mixed batches (5x) | 1,000 | 154.891 | 113.940 | **66.612** | 1428.239 | 17285.768 |
 
-## Allocation
+## 할당량
 
-All allocation values are `MiB/op`; lower is better. Allocation is from JMH `gc.alloc.rate.norm`.
+모든 allocation 값은 `MiB/op`이며 낮을수록 좋다. Allocation은 JMH `gc.alloc.rate.norm`에서 온 값이다.
 
 | Scenario | Batch | TinkerGraph | Neo4j | Memgraph | AGE | FalkorDB |
 |---|---:|---:|---:|---:|---:|---:|
@@ -34,15 +34,15 @@ All allocation values are `MiB/op`; lower is better. Allocation is from JMH `gc.
 | Repeated mixed batches (5x) | 100 | 179.34 | 10.19 | 8.47 | 8.05 | **6.87** |
 | Repeated mixed batches (5x) | 1,000 | 726.65 | 110.11 | **93.36** | 195.60 | 143.96 |
 
-## Interpretation
+## 해석
 
-Memgraph is the fastest persistent backend across every latency row in this local sustained write run. Neo4j is usually the second-best persistent backend for 1,000-row mixed and repeated mixed profiles, which supports keeping it as the low-risk production default when operational maturity matters more than raw ingestion latency.
+이 로컬 sustained write run의 모든 latency row에서 Memgraph가 가장 빠른 persistent backend다. Neo4j는 1,000-row mixed 및 repeated mixed profile에서 대체로 두 번째로 빠른 persistent backend이며, raw ingestion latency보다 운영 성숙도가 더 중요한 경우 low-risk production default로 유지할 근거가 된다.
 
-FalkorDB is competitive for vertex-only insertion but becomes impractical for edge-heavy and mixed sustained ingestion in this common contract benchmark. AGE remains a PostgreSQL consolidation choice; it does not win raw write latency once edges dominate.
+FalkorDB는 vertex-only insertion에서는 경쟁력이 있지만, 이 common contract benchmark에서는 edge-heavy 및 mixed sustained ingestion에서 비현실적으로 느려진다. AGE는 PostgreSQL consolidation 선택지로 남지만, edge가 지배적인 순간 raw write latency에서는 이기지 못한다.
 
-The full 10,000-row backend matrix was intentionally split into follow-up issue [#201](https://github.com/bluetape4k/bluetape4k-graph/issues/201). FalkorDB already reached 17.286 s/op at the 1,000-row repeated mixed profile, so a full 10k all-backend run would be too slow for a routine local benchmark.
+전체 10,000-row backend matrix는 의도적으로 후속 issue [#201](https://github.com/bluetape4k/bluetape4k-graph/issues/201)로 분리했다. FalkorDB는 1,000-row repeated mixed profile에서 이미 17.286 s/op에 도달했으므로, full 10k all-backend run은 routine local benchmark로는 너무 느리다.
 
-## Artifacts
+## 산출물
 
 - [Raw JMH JSON](graph-write-ingestion-testcontainers-2026-05-21.json)
 - [Chart PNG](../images/readme-charts/graph-write-ingestion-testcontainers-latency-chart-01.png)

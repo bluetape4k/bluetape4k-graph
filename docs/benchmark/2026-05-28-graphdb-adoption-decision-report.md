@@ -1,62 +1,62 @@
-# GraphDB Adoption Decision Report - 2026-05-28
+# GraphDB Adoption 결정 보고서 - 2026-05-28
 
-## Executive Summary
+## 요약
 
-GraphDB adoption is **not** justified by generic authorization, fraud, CRUD, short joins, or shallow traversal workloads.
+일반적인 authorization, fraud, CRUD, 짧은 join, shallow traversal workload만으로는 GraphDB adoption을 정당화할 수 없다.
 
-The only positive adoption signal in this slice is a **long, selective, path-shaped traversal**:
+이 slice에서 확인된 유일한 positive adoption signal은 **길고 선택적인 path-shaped traversal**이다.
 
-| Workload | Decision |
+| Workload | 판단 |
 |---|---|
-| PostgreSQL AGE/Cypher | Not viable for this benchmark. Both large long-path scenarios timed out locally. |
-| PostgreSQL recursive CTE | Strong baseline. Wins `deep-wide` and many small/medium scenarios. |
-| PostgreSQL iterative traversal | Strong baseline. Wins several medium scenarios and remains predictable. |
-| Neo4j Cypher | Viable candidate for long selective traversal. Wins `large + long-chain`. |
-| Memgraph | Included as failed adoption evidence. Smoke parity passed, but local large load failed before reportable latency. |
-| TinkerGraph | Excluded from this adoption decision only because it is in-memory. Existing in-memory benchmark tracks remain valid for API/contract work. |
+| PostgreSQL AGE/Cypher | 이 benchmark에서는 viable하지 않다. 두 large long-path scenario 모두 로컬에서 timeout되었다. |
+| PostgreSQL recursive CTE | 강한 baseline이다. `deep-wide`와 여러 small/medium scenario에서 이긴다. |
+| PostgreSQL iterative traversal | 강한 baseline이다. 여러 medium scenario에서 이기고 예측 가능성을 유지한다. |
+| Neo4j Cypher | long selective traversal의 viable candidate다. `large + long-chain`에서 이긴다. |
+| Memgraph | failed adoption evidence로 포함한다. Smoke parity는 통과했지만, 로컬 large load가 reportable latency 전에 실패했다. |
+| TinkerGraph | in-memory이므로 이 adoption decision에서만 제외한다. 기존 in-memory benchmark track은 API/contract 작업에는 계속 유효하다. |
 
-Adoption recommendation:
+Adoption 권고:
 
-> Do not adopt Apache AGE for the measured workload. If a persistent GraphDB is needed, continue with Neo4j-focused validation on long, selective traversal use cases. Keep PostgreSQL CTE/iterative traversal as the default relational baseline.
+> 측정한 workload에는 Apache AGE를 채택하지 않는다. persistent GraphDB가 필요하다면 long, selective traversal use case에서 Neo4j 중심 검증을 계속한다. PostgreSQL CTE/iterative traversal은 기본 relational baseline으로 유지한다.
 
-## Background
+## 배경
 
-The original issue started from abuser/fraud detection:
+원래 이슈는 abuser/fraud detection에서 시작했다.
 
-- Compare AGE + Exposed vs Exposed vs JPA.
-- Split Exposed/JPA relational baselines into recursive CTE and iterative traversal.
-- Measure both latency and detection correctness.
+- AGE + Exposed, Exposed, JPA를 비교한다.
+- Exposed/JPA relational baseline을 recursive CTE와 iterative traversal로 분리한다.
+- latency와 detection correctness를 함께 측정한다.
 
-During scenario review, the scope shifted because fraud detection can easily become a poor benchmark if it asks for all paths or unbounded traversal. The stronger adoption question became:
+Scenario review 중 fraud detection이 all paths나 unbounded traversal을 요구하면 쉽게 나쁜 benchmark가 될 수 있어 범위가 바뀌었다. 더 강한 adoption question은 다음과 같았다.
 
-- Does GraphDB help when relationship depth is variable?
-- Does it help when path shape itself is the query?
-- Does the result change when data size and traversal length grow?
+- relationship depth가 variable일 때 GraphDB가 도움이 되는가?
+- path shape 자체가 query일 때 도움이 되는가?
+- data size와 traversal length가 커지면 결과가 달라지는가?
 
-The primary scenario was therefore changed to authorization inheritance:
+따라서 primary scenario를 authorization inheritance로 바꿨다.
 
 ```text
 user -> group -> group... -> role -> resource
 ```
 
-with active edges, deny-overrides-allow, public-resource filtering, bounded traversal, and cycle-safe semantics.
+active edge, deny-overrides-allow, public-resource filtering, bounded traversal, cycle-safe semantics를 함께 적용한다.
 
-## Work Completed
+## 완료한 작업
 
-| Area | Completed Work |
+| 영역 | 완료한 작업 |
 |---|---|
-| Shared contracts | Added deterministic authz fixture, result metrics, oracle, engine interface, and smoke parity tests. |
-| PostgreSQL AGE | Added AGE/Cypher authz traversal and optimized the Cypher query shape to reduce obvious path explosion. |
-| PostgreSQL baselines | Added separate recursive CTE and iterative traversal engines. |
-| Native GraphDB baseline | Added Neo4j/Memgraph-compatible native Cypher engine and benchmark parameter. |
-| Fraud benchmark | Tightened bounded fraud/abuser benchmark and kept CTE vs iterative relational split. |
-| Long-path adoption surface | Added `long-chain` 10-hop and `deep-wide` 12-hop scenarios on `large` data. |
-| TinkerGraph scope | Excluded TinkerGraph from the persistent adoption decision only; unrelated in-memory tracks remain intact. |
-| Evidence | Committed raw JMH JSON, timeout/failure logs, README tables, and chart assets. |
+| Shared contracts | deterministic authz fixture, result metric, oracle, engine interface, smoke parity test를 추가했다. |
+| PostgreSQL AGE | AGE/Cypher authz traversal을 추가하고 명백한 path explosion을 줄이도록 Cypher query shape를 최적화했다. |
+| PostgreSQL baselines | recursive CTE와 iterative traversal engine을 분리해 추가했다. |
+| Native GraphDB baseline | Neo4j/Memgraph 호환 native Cypher engine과 benchmark parameter를 추가했다. |
+| Fraud benchmark | bounded fraud/abuser benchmark를 더 엄격히 하고 CTE vs iterative relational split을 유지했다. |
+| Long-path adoption surface | `large` data에 `long-chain` 10-hop 및 `deep-wide` 12-hop scenario를 추가했다. |
+| TinkerGraph scope | TinkerGraph는 persistent adoption decision에서만 제외했다. 무관한 in-memory track은 그대로 둔다. |
+| Evidence | raw JMH JSON, timeout/failure log, README table, chart asset을 commit했다. |
 
-## Benchmark Surface
+## Benchmark 표면
 
-Primary commands:
+주요 명령:
 
 ```bash
 ./gradlew :graph-benchmark:authzInheritanceSmokeBenchmark --no-build-cache
@@ -64,28 +64,28 @@ Primary commands:
 ./gradlew :graph-benchmark:authzInheritanceAdoptionBenchmark --no-build-cache
 ```
 
-Diagnostic JMH runs were also used to isolate backends after AGE/Memgraph blocked complete matrix execution.
+AGE/Memgraph가 complete matrix execution을 막은 뒤에는 backend를 분리하기 위해 diagnostic JMH run도 사용했다.
 
-## Scenarios
+## Scenario
 
-| Scenario | Size | Shape | Purpose |
+| Scenario | Size | 형태 | 목적 |
 |---|---:|---|---|
-| `shallow` | small/medium | Short user/group/role/resource paths | Negative control for shallow traversal |
-| `deep-inheritance` | small/medium | Deeper inheritance with cycles | Mid-depth variable traversal |
-| `deny-heavy` | small/medium | Many deny grant edges | Correctness and deny-overrides-allow semantics |
-| `wide-groups` | small/medium | Wider membership fan-out | Fan-out pressure |
-| `long-chain` | large | Forced 10-hop target chain | Long selective traversal adoption probe |
-| `deep-wide` | large | 12-hop traversal with wider fan-out/cycles | Long + wider traversal stress |
+| `shallow` | small/medium | 짧은 user/group/role/resource path | shallow traversal의 negative control |
+| `deep-inheritance` | small/medium | cycle을 포함한 더 깊은 inheritance | mid-depth variable traversal |
+| `deny-heavy` | small/medium | 많은 deny grant edge | correctness 및 deny-overrides-allow semantics |
+| `wide-groups` | small/medium | 더 넓은 membership fan-out | fan-out pressure |
+| `long-chain` | large | 강제된 10-hop target chain | long selective traversal adoption probe |
+| `deep-wide` | large | 더 넓은 fan-out/cycle을 포함한 12-hop traversal | long + wider traversal stress |
 
-## Correctness
+## 정확성
 
-Smoke tests verified result-set parity and F1 `1.0` for the implemented engines before benchmark interpretation.
+Benchmark 해석 전에 smoke test가 구현된 engine들의 result-set parity와 F1 `1.0`을 검증했다.
 
-The correctness benchmark (`resolveF1BasisPoints`) resolves the same resources and converts F1 to basis points. It is a guard for correctness-metric overhead, not a separate ranking axis.
+정확성 benchmark인 `resolveF1BasisPoints`는 같은 resource를 resolve하고 F1을 basis point로 변환한다. 이는 별도 ranking axis가 아니라 correctness-metric overhead를 확인하는 guard다.
 
-## Small/Medium PostgreSQL AGE Baseline
+## Small/Medium PostgreSQL AGE 기준선
 
-`resolveResources`, `ms/op`, lower is better:
+`resolveResources`, `ms/op`, 낮을수록 좋다.
 
 | Scenario | Size | AGE/Cypher | PostgreSQL CTE | PostgreSQL iterative | Winner |
 |---|---:|---:|---:|---:|---|
@@ -98,15 +98,15 @@ The correctness benchmark (`resolveF1BasisPoints`) resolves the same resources a
 | `wide-groups` | `small` | 29.445 | **0.551** | 1.801 | PostgreSQL CTE |
 | `wide-groups` | `medium` | 250.083 | **1.521** | 3.658 | PostgreSQL CTE |
 
-Conclusion:
+결론:
 
-- AGE/Cypher did not win any small/medium row.
-- PostgreSQL recursive CTE and iterative traversal are both viable and should remain separate baselines.
-- This result alone does not justify GraphDB adoption.
+- AGE/Cypher는 어떤 small/medium row에서도 이기지 못했다.
+- PostgreSQL recursive CTE와 iterative traversal은 둘 다 viable하며 별도 baseline으로 유지해야 한다.
+- 이 결과만으로는 GraphDB adoption을 정당화할 수 없다.
 
 ## Large Long-Path Adoption Probe
 
-`resolveResources`, `large` fixture, `ms/op`, lower is better:
+`resolveResources`, `large` fixture, `ms/op`, 낮을수록 좋다.
 
 | Scenario | Neo4j Cypher | Memgraph Cypher | AGE/Cypher | PostgreSQL CTE | PostgreSQL iterative | Winner |
 |---|---:|---:|---:|---:|---:|---|
@@ -115,82 +115,82 @@ Conclusion:
 
 ![Authorization inheritance adoption latency](../images/readme-charts/authz-inheritance-adoption-latency-chart-01.png)
 
-Interpretation:
+해석:
 
-- `long-chain` is the only measured positive GraphDB signal.
-- Neo4j Cypher is 3.74x faster than PostgreSQL iterative and 4.35x faster than PostgreSQL recursive CTE on `large + long-chain`.
-- `deep-wide` still favors PostgreSQL CTE, so GraphDB is not a blanket replacement.
-- AGE/Cypher did not complete either `large + long-chain` or `large + deep-wide` within the 75-second local diagnostic timeout.
-- Memgraph passed smoke parity, but the local large adoption diagnostic run terminated the Bolt connection during load, so it is included as failed adoption evidence rather than reportable latency.
+- `long-chain`은 측정된 유일한 positive GraphDB signal이다.
+- `large + long-chain`에서 Neo4j Cypher는 PostgreSQL iterative보다 3.74배, PostgreSQL recursive CTE보다 4.35배 빠르다.
+- `deep-wide`는 여전히 PostgreSQL CTE에 유리하므로 GraphDB는 blanket replacement가 아니다.
+- AGE/Cypher는 75초 로컬 diagnostic timeout 안에서 `large + long-chain`과 `large + deep-wide` 어느 쪽도 완료하지 못했다.
+- Memgraph는 smoke parity를 통과했지만, local large adoption diagnostic run에서 load 중 Bolt connection이 종료되었다. 따라서 reportable latency가 아니라 failed adoption evidence로 포함한다.
 
-## Why AGE Is Not Recommended
+## AGE를 권장하지 않는 이유
 
-AGE looked attractive because it keeps PostgreSQL as the storage engine while adding Cypher syntax. The benchmark result does not support adopting it for this use case.
+AGE는 PostgreSQL을 storage engine으로 유지하면서 Cypher syntax를 추가하므로 매력적으로 보였다. 그러나 benchmark 결과는 이 use case에 AGE를 채택하는 결정을 뒷받침하지 않는다.
 
-| Criterion | AGE Result |
+| 기준 | AGE 결과 |
 |---|---|
-| Expressiveness | Good. Cypher expresses variable-depth paths naturally. |
-| Small/medium latency | Poor. Lost every measured row to PostgreSQL CTE or iterative traversal. |
-| Large long-path latency | Not reportable. Timed out in both adoption scenarios. |
-| Operational simplicity | Mixed. Avoids a second database, but adds AGE extension/query semantics and Exposed connection setup constraints. |
-| Adoption verdict | Do not adopt for this benchmark. |
+| 표현력 | 좋다. Cypher는 variable-depth path를 자연스럽게 표현한다. |
+| Small/medium latency | 나쁘다. 측정된 모든 row에서 PostgreSQL CTE 또는 iterative traversal에 졌다. |
+| Large long-path latency | reportable하지 않다. 두 adoption scenario 모두 timeout되었다. |
+| 운영 단순성 | 혼재되어 있다. 두 번째 database는 피하지만 AGE extension/query semantics와 Exposed connection setup 제약이 추가된다. |
+| Adoption verdict | 이 benchmark에는 채택하지 않는다. |
 
-Practical conclusion:
+실무 결론:
 
-> AGE gives Cypher syntax inside PostgreSQL, but this benchmark needs measurable traversal performance and predictable execution. PostgreSQL CTE/iterative traversal is safer than AGE, and Neo4j is the only measured persistent GraphDB candidate with a positive long-path signal.
+> AGE는 PostgreSQL 안에서 Cypher syntax를 제공하지만, 이 benchmark에는 측정 가능한 traversal performance와 예측 가능한 execution이 필요하다. PostgreSQL CTE/iterative traversal이 AGE보다 안전하며, Neo4j는 positive long-path signal을 보인 유일한 측정된 persistent GraphDB candidate다.
 
-## When GraphDB Still Makes Sense
+## 그래도 GraphDB가 의미 있는 경우
 
-GraphDB remains worth evaluating when all of these are true:
+다음 조건이 모두 참이면 GraphDB는 여전히 평가할 가치가 있다.
 
-- Traversal depth is variable and frequently above fixed 2-3 joins.
-- The path itself is the query result or the key filter.
-- Queries are bounded, selective, and path-shaped.
-- The workload cannot be reduced to simple joins, aggregate tables, or materialized projections.
-- A native graph engine can be operated as production infrastructure.
+- Traversal depth가 variable이고 고정 2-3 join보다 자주 깊다.
+- path 자체가 query result 또는 key filter다.
+- query가 bounded, selective, path-shaped다.
+- workload를 simple join, aggregate table, materialized projection으로 줄일 수 없다.
+- native graph engine을 production infrastructure로 운영할 수 있다.
 
-Good candidates:
+좋은 후보:
 
-- Permission/organization/group inheritance with deep exception chains.
-- Dependency or impact-radius analysis.
-- Long selective recommendation paths with relationship-type filters.
-- Network/topology reachability where path existence or shortest path matters.
+- 깊은 exception chain이 있는 permission/organization/group inheritance.
+- dependency 또는 impact-radius analysis.
+- relationship-type filter가 있는 long selective recommendation path.
+- path existence 또는 shortest path가 중요한 network/topology reachability.
 
-Poor candidates:
+나쁜 후보:
 
-- Simple ID lookup.
-- 1-hop joins.
-- Fixed 2-3 table joins.
+- 단순 ID lookup.
+- 1-hop join.
+- 고정 2-3 table join.
 - CRUD-heavy OLTP.
-- Star-schema aggregation.
-- Unbounded all-path search.
+- star-schema aggregation.
+- unbounded all-path search.
 
-## Final Recommendation
+## 최종 권고
 
-| Decision | Recommendation |
+| 결정 | 권고 |
 |---|---|
-| Default implementation | PostgreSQL recursive CTE or iterative traversal, selected per query shape. |
-| AGE | Exclude from adoption candidates for this benchmark. |
-| Neo4j | Continue as the persistent GraphDB candidate for long selective traversal. |
-| Memgraph | Revisit only after resolving large fixture load stability. Current adoption evidence is a load failure, not latency. |
-| TinkerGraph | Keep for in-memory API/contract benchmarks, not adoption evidence. |
+| 기본 구현 | query shape에 따라 PostgreSQL recursive CTE 또는 iterative traversal을 선택한다. |
+| AGE | 이 benchmark의 adoption candidate에서 제외한다. |
+| Neo4j | long selective traversal을 위한 persistent GraphDB candidate로 계속 검증한다. |
+| Memgraph | large fixture load stability를 해결한 뒤에만 재검토한다. 현재 adoption evidence는 latency가 아니라 load failure다. |
+| TinkerGraph | adoption evidence가 아니라 in-memory API/contract benchmark용으로 유지한다. |
 
-Next benchmark direction:
+다음 benchmark 방향:
 
-1. Add a dependency/impact-radius workload, because it is naturally long-path and path-shaped.
-2. Keep Neo4j vs PostgreSQL CTE/iterative as the primary decision table.
-3. Treat AGE as excluded unless a new query shape or indexing strategy produces reportable latency.
-4. Add larger data only after each backend can finish the current `large` probe reliably.
+1. dependency/impact-radius workload를 추가한다. 이 workload는 자연스럽게 long-path이면서 path-shaped다.
+2. Neo4j vs PostgreSQL CTE/iterative를 primary decision table로 유지한다.
+3. 새 query shape 또는 indexing strategy가 reportable latency를 만들기 전까지 AGE는 제외된 것으로 다룬다.
+4. 각 backend가 현재 `large` probe를 안정적으로 완료한 뒤에만 더 큰 data를 추가한다.
 
-## Evidence Artifacts
+## 증거 산출물
 
-| Artifact | Purpose |
+| 산출물 | 목적 |
 |---|---|
 | [2026-05-28-authz-inheritance-main.json](2026-05-28-authz-inheritance-main.json) | Small/medium AGE vs PostgreSQL raw JMH result |
-| [2026-05-28-authz-inheritance-results.md](2026-05-28-authz-inheritance-results.md) | Small/medium result table and interpretation |
+| [2026-05-28-authz-inheritance-results.md](2026-05-28-authz-inheritance-results.md) | Small/medium result table 및 해석 |
 | [2026-05-28-authz-inheritance-adoption-neo4j.json](2026-05-28-authz-inheritance-adoption-neo4j.json) | Large Neo4j adoption probe |
 | [2026-05-28-authz-inheritance-adoption-postgres.json](2026-05-28-authz-inheritance-adoption-postgres.json) | Large PostgreSQL CTE/iterative adoption probe |
-| [2026-05-28-authz-inheritance-adoption-f1.json](2026-05-28-authz-inheritance-adoption-f1.json) | Correctness-metric benchmark probe |
+| [2026-05-28-authz-inheritance-adoption-f1.json](2026-05-28-authz-inheritance-adoption-f1.json) | 정확성 metric benchmark probe |
 | [2026-05-28-authz-inheritance-adoption-age-timeout.txt](2026-05-28-authz-inheritance-adoption-age-timeout.txt) | AGE `large + long-chain` timeout evidence |
 | [2026-05-28-authz-inheritance-adoption-age-deep-wide-timeout.txt](2026-05-28-authz-inheritance-adoption-age-deep-wide-timeout.txt) | AGE `large + deep-wide` timeout evidence |
 | [2026-05-28-authz-inheritance-adoption-memgraph-failure.txt](2026-05-28-authz-inheritance-adoption-memgraph-failure.txt) | Memgraph large load failure evidence |
@@ -199,14 +199,14 @@ Next benchmark direction:
 
 ## DoD
 
-| Item | Status | Evidence |
+| 항목 | 상태 | 증거 |
 |---|---|---|
-| Workload shift documented | Done | This report and issue #260 update |
-| AGE included in comparison | Done | Timeout rows and timeout logs |
-| TinkerGraph scope clarified | Done | Excluded only from persistent adoption decision |
-| Native GraphDB candidate measured | Done | Neo4j adoption JSON and table |
-| Memgraph adoption evidence included | Done | Smoke parity plus large load failure row and log |
-| PostgreSQL baselines separated | Done | CTE and iterative rows remain distinct |
-| Correctness captured | Done | Smoke parity tests and F1 benchmark artifact |
-| Chart and raw evidence linked | Done | PNG/SVG and JSON/log artifacts |
-| Recommendation stated | Done | AGE excluded, Neo4j retained for long selective traversal |
+| Workload shift documented | Done | 이 보고서와 issue #260 update |
+| AGE included in comparison | Done | timeout row와 timeout log |
+| TinkerGraph scope clarified | Done | persistent adoption decision에서만 제외 |
+| Native GraphDB candidate measured | Done | Neo4j adoption JSON과 table |
+| Memgraph adoption evidence included | Done | smoke parity와 large load failure row/log |
+| PostgreSQL baselines separated | Done | CTE와 iterative row를 별도로 유지 |
+| 정확성 captured | Done | smoke parity test와 F1 benchmark artifact |
+| Chart and raw evidence linked | Done | PNG/SVG 및 JSON/log artifact |
+| Recommendation stated | Done | AGE 제외, long selective traversal에는 Neo4j 유지 |

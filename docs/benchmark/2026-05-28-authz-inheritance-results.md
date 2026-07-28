@@ -1,12 +1,12 @@
 # Authorization Inheritance PostgreSQL Traversal Benchmark - 2026-05-28
 
-## Command
+## 명령
 
 ```bash
 ./gradlew :graph-benchmark:authzInheritanceBenchmark --no-build-cache
 ```
 
-## Run Conditions
+## 실행 조건
 
 - Host: macOS arm64
 - JVM: Java HotSpot(TM) 64-Bit Server VM 21.0.11
@@ -15,8 +15,8 @@
 - Warmup: 2 x 2 s
 - Measurement: 3 x 2 s
 - Database: PostgreSQL AGE Testcontainer for all targets
-- Metric direction: lower `ms/op` is better
-- Correctness: smoke tests verified F1 `1.0` for AGE/Cypher, PostgreSQL CTE, and PostgreSQL iterative traversal before this run
+- Metric direction: 낮은 `ms/op`가 더 좋다
+- 정확성: 이 실행 전에 smoke test가 AGE/Cypher, PostgreSQL CTE, PostgreSQL iterative traversal의 F1 `1.0`을 검증했다
 
 ## Scenario Matrix
 
@@ -42,7 +42,7 @@
 
 ## resolveF1BasisPoints Latency
 
-This method resolves the same resources and converts correctness to basis points. It is a guard benchmark for correctness-metric overhead, not a separate ranking axis.
+이 method는 같은 resource를 resolve하고 correctness를 basis point로 변환한다. 별도 ranking axis가 아니라 correctness-metric overhead를 지키는 guard benchmark다.
 
 | Scenario | Size | AGE/Cypher | PostgreSQL CTE | PostgreSQL iterative | Winner |
 |---|---:|---:|---:|---:|---|
@@ -55,7 +55,7 @@ This method resolves the same resources and converts correctness to basis points
 | `wide-groups` | `small` | 29.850 | 0.559 | 1.847 | **PostgreSQL CTE** |
 | `wide-groups` | `medium` | 245.779 | 1.528 | 3.486 | **PostgreSQL CTE** |
 
-## Chart
+## 차트
 
 ![Authorization inheritance traversal latency](../images/readme-charts/authz-inheritance-postgresql-latency-chart-01.png)
 
@@ -63,10 +63,10 @@ This method resolves the same resources and converts correctness to basis points
 - [Chart SVG](../images/readme-charts/authz-inheritance-postgresql-latency-chart-01.svg)
 - [Raw JMH JSON](2026-05-28-authz-inheritance-main.json)
 
-## Interpretation
+## 해석
 
-AGE/Cypher did not win latency in this PostgreSQL AGE fixture. PostgreSQL recursive CTE and iterative batched traversal were faster across the measured `small` and `medium` authorization-inheritance scenarios. AGE still expresses variable-depth graph traversal more directly, but this result does not support a speed-based GraphDB adoption claim for the current implementation and dataset.
+이 PostgreSQL AGE fixture에서 AGE/Cypher는 latency 기준으로 이기지 못했다. 측정된 `small` 및 `medium` authorization-inheritance scenario 전반에서 PostgreSQL recursive CTE와 iterative batched traversal이 더 빨랐다. AGE는 variable-depth graph traversal을 더 직접적으로 표현하지만, 이 결과는 현재 구현과 dataset에 대해 속도 기반 GraphDB adoption 주장을 뒷받침하지 않는다.
 
-The result should drive the next optimization question: whether AGE can close the gap with better Cypher shape, indexes, or graph-specific modeling, or whether PostgreSQL CTE/iterative traversal is the correct implementation for this workload.
+이 결과는 다음 최적화 질문으로 이어져야 한다. 더 나은 Cypher shape, index, graph-specific modeling으로 AGE가 격차를 줄일 수 있는지, 아니면 PostgreSQL CTE/iterative traversal이 이 workload에 맞는 구현인지 판단해야 한다.
 
-TinkerGraph is excluded only from this GraphDB adoption benchmark because it is in-memory. Existing TinkerGraph API/contract benchmark tracks remain separate and should not be used as persistent database adoption evidence.
+TinkerGraph는 in-memory이므로 이 GraphDB adoption benchmark에서만 제외한다. 기존 TinkerGraph API/contract benchmark track은 별도로 유지하며 persistent database adoption evidence로 사용하지 않는다.

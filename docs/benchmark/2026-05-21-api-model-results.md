@@ -1,6 +1,6 @@
-# API Model Benchmark Results - 2026-05-21
+# API Model Benchmark 결과 - 2026-05-21
 
-Docker-free JMH smoke run for `ApiModelBenchmark` on the shared TinkerGraph fixture.
+공유 TinkerGraph fixture에서 `ApiModelBenchmark`를 실행한 Docker-free JMH smoke run이다.
 
 - Source: `benchmark/graph-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/ApiModelBenchmark.kt`
 - Raw JSON: `docs/benchmark/2026-05-21-api-model-jmh.json`
@@ -9,11 +9,11 @@ Docker-free JMH smoke run for `ApiModelBenchmark` on the shared TinkerGraph fixt
 - JVM: GraalVM JDK 25.0.3
 - JMH: 1 fork, 1 warmup iteration, 3 measurement iterations, 1 second per iteration, `-prof gc`
 
-This run is intentionally short and suitable for smoke-scale comparison. Re-run with longer warmup and measurement windows before using the ranking as release-grade evidence.
+이 실행은 의도적으로 짧으며 smoke-scale 비교에 적합하다. 순위를 release-grade evidence로 사용하기 전에는 더 긴 warmup과 measurement window로 재실행해야 한다.
 
-## PageRank Throughput
+## PageRank 처리량
 
-Higher is better.
+높을수록 좋다.
 
 | API model | Score | Error | Allocation |
 |---|---:|---:|---:|
@@ -21,9 +21,9 @@ Higher is better.
 | Virtual Thread | 40,283.460 ops/s | ±9,678.720 | 29,456 B/op |
 | Coroutine Flow | 36,879.554 ops/s | ±85,084.781 | 29,516 B/op |
 
-## BFS And Concurrency Latency
+## BFS 및 동시성 지연
 
-Lower is better.
+낮을수록 좋다.
 
 | Scenario | API model | Score | Error | Allocation |
 |---|---|---:|---:|---:|
@@ -35,7 +35,7 @@ Lower is better.
 | 100-way launch/create | Virtual Thread | 51.042 us/op | ±173.745 | 61,464 B/op |
 | 100-way launch/create | Coroutine async | **5.916 us/op** | ±3.127 | 28,373 B/op |
 
-## Command
+## 명령
 
 ```bash
 java -jar benchmark/graph-benchmark/build/benchmarks/main/jars/graph-benchmark-main-jmh-*-JMH.jar \
