@@ -20,7 +20,7 @@ import io.bluetape4k.support.requireNotBlank
 import kotlinx.coroutines.flow.toList
 
 /**
- * Coroutine version of [ObservabilityIncidentService].
+ * [ObservabilityIncidentService]의 coroutine 버전이다.
  */
 class ObservabilityIncidentSuspendService(
     private val ops: GraphSuspendOperations,
@@ -29,7 +29,7 @@ class ObservabilityIncidentSuspendService(
     companion object: KLoggingChannel()
 
     /**
-     * Creates the backing graph when it does not already exist.
+     * Backing graph가 아직 없으면 생성한다.
      */
     suspend fun initialize() {
         if (!ops.graphExists(graphName)) {

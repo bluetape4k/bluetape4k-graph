@@ -4,7 +4,7 @@ import io.bluetape4k.graph.schema.EdgeLabel
 import io.bluetape4k.graph.schema.VertexLabel
 
 /**
- * Site vertices group devices by region or facility.
+ * Site vertex는 device를 region 또는 facility 기준으로 묶는다.
  */
 object SiteLabel: VertexLabel("Site") {
     val siteId = string("siteId")
@@ -14,7 +14,7 @@ object SiteLabel: VertexLabel("Site") {
 }
 
 /**
- * Device vertices represent routers, switches, and service attachment points.
+ * Device vertex는 router, switch, service attachment point를 표현한다.
  */
 object DeviceLabel: VertexLabel("Device") {
     val deviceId = string("deviceId")
@@ -24,7 +24,7 @@ object DeviceLabel: VertexLabel("Device") {
 }
 
 /**
- * Segment vertices represent routed or switched network zones.
+ * Segment vertex는 routed 또는 switched network zone을 표현한다.
  */
 object SegmentLabel: VertexLabel("Segment") {
     val segmentId = string("segmentId")
@@ -34,7 +34,7 @@ object SegmentLabel: VertexLabel("Segment") {
 }
 
 /**
- * Service vertices represent business services reachable over the topology.
+ * Service vertex는 topology에서 도달 가능한 business service를 표현한다.
  */
 object ServiceLabel: VertexLabel("Service") {
     val serviceId = string("serviceId")
@@ -44,14 +44,14 @@ object ServiceLabel: VertexLabel("Service") {
 }
 
 /**
- * Site-to-device ownership edge.
+ * Site에서 device로 이어지는 ownership edge이다.
  */
 object ContainsDeviceLabel: EdgeLabel("CONTAINS_DEVICE", SiteLabel, DeviceLabel) {
     val kind = string("kind")
 }
 
 /**
- * Device-to-device physical or logical link edge.
+ * Device 사이의 physical 또는 logical link edge이다.
  */
 object ConnectedToLabel: EdgeLabel("CONNECTED_TO", DeviceLabel, DeviceLabel) {
     val linkId = string("linkId")
@@ -60,14 +60,14 @@ object ConnectedToLabel: EdgeLabel("CONNECTED_TO", DeviceLabel, DeviceLabel) {
 }
 
 /**
- * Device membership in a network segment.
+ * Network segment에 속한 device membership edge이다.
  */
 object MemberOfSegmentLabel: EdgeLabel("MEMBER_OF_SEGMENT", DeviceLabel, SegmentLabel) {
     val kind = string("kind")
 }
 
 /**
- * Device-to-service hosting or attachment edge.
+ * Device에서 service로 이어지는 hosting 또는 attachment edge이다.
  */
 object HostsServiceLabel: EdgeLabel("HOSTS_SERVICE", DeviceLabel, ServiceLabel) {
     val kind = string("kind")

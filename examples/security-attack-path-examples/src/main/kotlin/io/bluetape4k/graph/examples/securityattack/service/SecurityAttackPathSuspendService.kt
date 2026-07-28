@@ -23,7 +23,7 @@ import io.bluetape4k.support.requireNotBlank
 import kotlinx.coroutines.flow.toList
 
 /**
- * Coroutine version of [SecurityAttackPathService].
+ * [SecurityAttackPathService]의 coroutine 버전이다.
  */
 class SecurityAttackPathSuspendService(
     private val ops: GraphSuspendOperations,

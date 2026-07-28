@@ -113,4 +113,4 @@ object CallsLabel : EdgeLabel("CALLS", FunctionLabel, FunctionLabel) {
  * ops.createEdge(cls.id, module.id, BelongsToLabel.label)
  * ```
  */
-object BelongsToLabel : EdgeLabel("BELONGS_TO", ClassLabel, ModuleLabel)  // Class/Function → Module
+object BelongsToLabel : EdgeLabel("BELONGS_TO", ClassLabel, ModuleLabel)  // Class/Function에서 Module로 이어진다.

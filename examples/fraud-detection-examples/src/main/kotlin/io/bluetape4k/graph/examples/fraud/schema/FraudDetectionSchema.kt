@@ -4,7 +4,7 @@ import io.bluetape4k.graph.schema.EdgeLabel
 import io.bluetape4k.graph.schema.VertexLabel
 
 /**
- * Account vertices used by the fraud detection example.
+ * Fraud detection example에서 사용하는 account vertex이다.
  *
  * ```kotlin
  * val account = ops.createVertex(AccountLabel.label, mapOf(AccountLabel.accountId.name to "acct-1"))
@@ -17,7 +17,7 @@ object AccountLabel : VertexLabel("Account") {
 }
 
 /**
- * Money transfer edges between accounts.
+ * Account 사이의 money transfer edge이다.
  *
  * ```kotlin
  * ops.createEdge(source.id, target.id, TransferredToLabel.label, mapOf(TransferredToLabel.amount.name to 100))

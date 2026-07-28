@@ -18,7 +18,7 @@ import io.bluetape4k.support.requireNotBlank
 import kotlinx.coroutines.flow.toList
 
 /**
- * Coroutine version of [SupplyChainImpactService].
+ * [SupplyChainImpactService]의 coroutine 버전이다.
  */
 class SupplyChainImpactSuspendService(
     private val ops: GraphSuspendOperations,

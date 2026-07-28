@@ -19,10 +19,10 @@ import io.bluetape4k.logging.info
 import io.bluetape4k.support.requireNotBlank
 
 /**
- * Supply-chain impact analysis service built on top of [GraphOperations].
+ * [GraphOperations] 위에 구성한 supply-chain impact analysis service이다.
  *
- * The service demonstrates deterministic impact queries and candidate discovery. It intentionally avoids optimization
- * or routing solvers; all examples are bounded graph traversals over the sample dataset.
+ * 이 service는 deterministic impact query와 candidate discovery를 보여준다. Optimization 또는 routing solver는 의도적으로 피하고,
+ * 모든 example은 sample dataset 위의 bounded graph traversal이다.
  */
 class SupplyChainImpactService(
     private val ops: GraphOperations,
@@ -31,7 +31,7 @@ class SupplyChainImpactService(
     companion object: KLogging()
 
     /**
-     * Creates the backing graph when it does not already exist.
+     * Backing graph가 아직 없으면 생성한다.
      */
     fun initialize() {
         if (!ops.graphExists(graphName)) {

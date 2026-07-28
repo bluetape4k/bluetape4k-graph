@@ -17,9 +17,9 @@ import io.bluetape4k.support.requireNotBlank
 import kotlinx.coroutines.flow.Flow
 
 /**
- * Coroutine and Flow version of [FraudDetectionService].
+ * [FraudDetectionService]의 coroutine 및 Flow 버전이다.
  *
- * Read operations return [Flow] when the underlying graph API streams results.
+ * Underlying graph API가 result를 stream하면 read operation은 [Flow]를 반환한다.
  *
  * ```kotlin
  * val service = FraudDetectionSuspendService(ops)
@@ -34,7 +34,7 @@ class FraudDetectionSuspendService(
     companion object : KLoggingChannel()
 
     /**
-     * Creates the backing graph when it does not already exist.
+     * Backing graph가 아직 없으면 생성한다.
      */
     suspend fun initialize() {
         if (!ops.graphExists(graphName)) {
@@ -44,7 +44,7 @@ class FraudDetectionSuspendService(
     }
 
     /**
-     * Adds an account vertex.
+     * Account vertex를 추가한다.
      */
     suspend fun addAccount(
         accountId: String,
@@ -64,7 +64,7 @@ class FraudDetectionSuspendService(
     }
 
     /**
-     * Records a directed transfer between two accounts.
+     * 두 account 사이의 directed transfer를 기록한다.
      */
     suspend fun recordTransfer(
         fromAccountId: GraphElementId,
@@ -82,7 +82,7 @@ class FraudDetectionSuspendService(
     }
 
     /**
-     * Detects circular transfer chains such as `A -> B -> C -> A`.
+     * `A -> B -> C -> A` 같은 circular transfer chain을 탐지한다.
      */
     fun detectCircularTransfers(maxDepth: Int = 5, maxCycles: Int = 20): Flow<GraphCycle> =
         ops.detectCycles(
@@ -95,7 +95,7 @@ class FraudDetectionSuspendService(
         )
 
     /**
-     * Finds suspicious account clusters connected by transfer activity.
+     * Transfer activity로 연결된 suspicious account cluster를 찾는다.
      */
     fun detectSuspiciousClusters(minSize: Int = 2): Flow<GraphComponent> =
         ops.connectedComponents(
@@ -107,7 +107,7 @@ class FraudDetectionSuspendService(
         )
 
     /**
-     * Ranks accounts by centrality in the transfer graph.
+     * Transfer graph의 centrality 기준으로 account 순위를 매긴다.
      */
     fun rankHighRiskAccounts(limit: Int = 10): Flow<PageRankScore> {
         require(limit > 0) { "limit must be > 0, was $limit" }

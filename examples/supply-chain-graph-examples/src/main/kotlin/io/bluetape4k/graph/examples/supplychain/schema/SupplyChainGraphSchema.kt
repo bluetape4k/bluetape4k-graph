@@ -4,7 +4,7 @@ import io.bluetape4k.graph.schema.EdgeLabel
 import io.bluetape4k.graph.schema.VertexLabel
 
 /**
- * Supplier vertices for upstream source analysis.
+ * Upstream source analysis를 위한 supplier vertex이다.
  */
 object SupplierLabel: VertexLabel("Supplier") {
     val supplierId = string("supplierId")
@@ -14,7 +14,7 @@ object SupplierLabel: VertexLabel("Supplier") {
 }
 
 /**
- * Part vertices required by orders.
+ * Order에 필요한 part vertex이다.
  */
 object PartLabel: VertexLabel("Part") {
     val partId = string("partId")
@@ -24,7 +24,7 @@ object PartLabel: VertexLabel("Part") {
 }
 
 /**
- * Warehouse vertices used for stock and fulfillment.
+ * Stock과 fulfillment에 사용하는 warehouse vertex이다.
  */
 object WarehouseLabel: VertexLabel("Warehouse") {
     val warehouseId = string("warehouseId")
@@ -34,7 +34,7 @@ object WarehouseLabel: VertexLabel("Warehouse") {
 }
 
 /**
- * Delivery route vertices.
+ * Delivery route vertex이다.
  */
 object RouteLabel: VertexLabel("Route") {
     val routeId = string("routeId")
@@ -44,7 +44,7 @@ object RouteLabel: VertexLabel("Route") {
 }
 
 /**
- * Carrier vertices operating routes.
+ * Route를 operate하는 carrier vertex이다.
  */
 object CarrierLabel: VertexLabel("Carrier") {
     val carrierId = string("carrierId")
@@ -54,7 +54,7 @@ object CarrierLabel: VertexLabel("Carrier") {
 }
 
 /**
- * Customer order vertices.
+ * Customer order vertex이다.
  */
 object CustomerOrderLabel: VertexLabel("CustomerOrder") {
     val orderId = string("orderId")
@@ -64,49 +64,49 @@ object CustomerOrderLabel: VertexLabel("CustomerOrder") {
 }
 
 /**
- * Supplier-to-part source edge.
+ * Supplier에서 part로 이어지는 source edge이다.
  */
 object SuppliesLabel: EdgeLabel("SUPPLIES", SupplierLabel, PartLabel) {
     val kind = string("kind")
 }
 
 /**
- * Part-to-order requirement edge.
+ * Part에서 order로 이어지는 requirement edge이다.
  */
 object RequiredByLabel: EdgeLabel("REQUIRED_BY", PartLabel, CustomerOrderLabel) {
     val kind = string("kind")
 }
 
 /**
- * Part-to-warehouse stock edge.
+ * Part에서 warehouse로 이어지는 stock edge이다.
  */
 object StockedAtLabel: EdgeLabel("STOCKED_AT", PartLabel, WarehouseLabel) {
     val kind = string("kind")
 }
 
 /**
- * Warehouse-to-route fulfillment edge.
+ * Warehouse에서 route로 이어지는 fulfillment edge이다.
  */
 object UsesRouteLabel: EdgeLabel("USES_ROUTE", WarehouseLabel, RouteLabel) {
     val kind = string("kind")
 }
 
 /**
- * Route-to-order delivery edge.
+ * Route에서 order로 이어지는 delivery edge이다.
  */
 object DeliversToLabel: EdgeLabel("DELIVERS_TO", RouteLabel, CustomerOrderLabel) {
     val kind = string("kind")
 }
 
 /**
- * Carrier-to-route operation edge.
+ * Carrier에서 route로 이어지는 operation edge이다.
  */
 object OperatesRouteLabel: EdgeLabel("OPERATES_ROUTE", CarrierLabel, RouteLabel) {
     val kind = string("kind")
 }
 
 /**
- * Part-to-part substitution edge.
+ * Part 사이의 substitution edge이다.
  */
 object AlternatePartLabel: EdgeLabel("ALTERNATE_PART", PartLabel, PartLabel) {
     val kind = string("kind")

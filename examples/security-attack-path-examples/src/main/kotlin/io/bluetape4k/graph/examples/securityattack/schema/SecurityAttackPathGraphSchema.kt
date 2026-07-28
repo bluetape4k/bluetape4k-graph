@@ -4,7 +4,7 @@ import io.bluetape4k.graph.schema.EdgeLabel
 import io.bluetape4k.graph.schema.VertexLabel
 
 /**
- * External or internal entry point that can start an attack path.
+ * Attack path를 시작할 수 있는 external 또는 internal entry point이다.
  */
 object EntryAssetLabel: VertexLabel("EntryAsset") {
     val assetId = string("assetId")
@@ -14,7 +14,7 @@ object EntryAssetLabel: VertexLabel("EntryAsset") {
 }
 
 /**
- * Host, workload, or data store that can participate in an attack path.
+ * Attack path에 참여할 수 있는 host, workload, data store이다.
  */
 object HostLabel: VertexLabel("Host") {
     val hostId = string("hostId")
@@ -25,7 +25,7 @@ object HostLabel: VertexLabel("Host") {
 }
 
 /**
- * Human, service, or assumed identity.
+ * Human, service, assumed identity이다.
  */
 object PrincipalLabel: VertexLabel("Principal") {
     val principalId = string("principalId")
@@ -36,7 +36,7 @@ object PrincipalLabel: VertexLabel("Principal") {
 }
 
 /**
- * Credential or token material that may unlock another identity.
+ * 다른 identity를 unlock할 수 있는 credential 또는 token material이다.
  */
 object CredentialLabel: VertexLabel("Credential") {
     val credentialId = string("credentialId")
@@ -46,7 +46,7 @@ object CredentialLabel: VertexLabel("Credential") {
 }
 
 /**
- * Vulnerability signal used only for educational risk scoring.
+ * Educational risk scoring에만 사용하는 vulnerability signal이다.
  */
 object VulnerabilityLabel: VertexLabel("Vulnerability") {
     val vulnerabilityId = string("vulnerabilityId")
@@ -56,7 +56,7 @@ object VulnerabilityLabel: VertexLabel("Vulnerability") {
 }
 
 /**
- * Permission or resource capability attached to a principal.
+ * Principal에 attach된 permission 또는 resource capability이다.
  */
 object PermissionLabel: VertexLabel("Permission") {
     val permissionId = string("permissionId")
@@ -66,7 +66,7 @@ object PermissionLabel: VertexLabel("Permission") {
 }
 
 /**
- * Reachability or lateral-movement edge.
+ * Reachability 또는 lateral-movement edge이다.
  */
 object CanReachLabel: EdgeLabel("CAN_REACH", EntryAssetLabel, HostLabel) {
     val edgeId = string("edgeId")
@@ -75,7 +75,7 @@ object CanReachLabel: EdgeLabel("CAN_REACH", EntryAssetLabel, HostLabel) {
 }
 
 /**
- * Exploit relationship from an attacker-controlled node to a vulnerability.
+ * Attacker-controlled node에서 vulnerability로 이어지는 exploit relationship이다.
  */
 object ExploitsLabel: EdgeLabel("EXPLOITS", HostLabel, VulnerabilityLabel) {
     val edgeId = string("edgeId")
@@ -84,7 +84,7 @@ object ExploitsLabel: EdgeLabel("EXPLOITS", HostLabel, VulnerabilityLabel) {
 }
 
 /**
- * Vulnerability-to-host compromise relationship.
+ * Vulnerability에서 host로 이어지는 compromise relationship이다.
  */
 object CompromisesLabel: EdgeLabel("COMPROMISES", VulnerabilityLabel, PrincipalLabel) {
     val edgeId = string("edgeId")
@@ -93,7 +93,7 @@ object CompromisesLabel: EdgeLabel("COMPROMISES", VulnerabilityLabel, PrincipalL
 }
 
 /**
- * Host-to-principal execution context.
+ * Host에서 principal로 이어지는 execution context이다.
  */
 object RunsAsLabel: EdgeLabel("RUNS_AS", HostLabel, PrincipalLabel) {
     val edgeId = string("edgeId")
@@ -102,7 +102,7 @@ object RunsAsLabel: EdgeLabel("RUNS_AS", HostLabel, PrincipalLabel) {
 }
 
 /**
- * Credential discovery edge.
+ * Credential discovery edge이다.
  */
 object HasCredentialLabel: EdgeLabel("HAS_CREDENTIAL", PrincipalLabel, CredentialLabel) {
     val edgeId = string("edgeId")
@@ -111,7 +111,7 @@ object HasCredentialLabel: EdgeLabel("HAS_CREDENTIAL", PrincipalLabel, Credentia
 }
 
 /**
- * Credential-to-principal access edge.
+ * Credential에서 principal로 이어지는 access edge이다.
  */
 object GrantsAccessLabel: EdgeLabel("GRANTS_ACCESS", CredentialLabel, PrincipalLabel) {
     val edgeId = string("edgeId")
@@ -120,7 +120,7 @@ object GrantsAccessLabel: EdgeLabel("GRANTS_ACCESS", CredentialLabel, PrincipalL
 }
 
 /**
- * Principal-to-permission edge.
+ * Principal에서 permission으로 이어지는 edge이다.
  */
 object HasPermissionLabel: EdgeLabel("HAS_PERMISSION", PrincipalLabel, PermissionLabel) {
     val edgeId = string("edgeId")
@@ -129,7 +129,7 @@ object HasPermissionLabel: EdgeLabel("HAS_PERMISSION", PrincipalLabel, Permissio
 }
 
 /**
- * Permission-to-host asset-control edge.
+ * Permission에서 host로 이어지는 asset-control edge이다.
  */
 object ControlsAssetLabel: EdgeLabel("CONTROLS_ASSET", PermissionLabel, HostLabel) {
     val edgeId = string("edgeId")

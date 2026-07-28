@@ -4,7 +4,7 @@ import io.bluetape4k.graph.schema.EdgeLabel
 import io.bluetape4k.graph.schema.VertexLabel
 
 /**
- * Human identity vertices used by the IAM access-path example.
+ * IAM access-path example에서 사용하는 human identity vertex이다.
  */
 object IamUserLabel: VertexLabel("IamUser") {
     val userId = string("userId")
@@ -13,7 +13,7 @@ object IamUserLabel: VertexLabel("IamUser") {
 }
 
 /**
- * Group vertices that can contain users or other groups.
+ * User 또는 다른 group을 포함할 수 있는 group vertex이다.
  */
 object IamGroupLabel: VertexLabel("IamGroup") {
     val groupId = string("groupId")
@@ -22,7 +22,7 @@ object IamGroupLabel: VertexLabel("IamGroup") {
 }
 
 /**
- * Role vertices assumed by users or groups.
+ * User 또는 group이 assume하는 role vertex이다.
  */
 object IamRoleLabel: VertexLabel("IamRole") {
     val roleId = string("roleId")
@@ -31,7 +31,7 @@ object IamRoleLabel: VertexLabel("IamRole") {
 }
 
 /**
- * Policy vertices attached to roles.
+ * Role에 attach되는 policy vertex이다.
  */
 object IamPolicyLabel: VertexLabel("IamPolicy") {
     val policyId = string("policyId")
@@ -40,7 +40,7 @@ object IamPolicyLabel: VertexLabel("IamPolicy") {
 }
 
 /**
- * Permission vertices that bind an action to one or more resources.
+ * Action을 하나 이상의 resource에 bind하는 permission vertex이다.
  */
 object IamPermissionLabel: VertexLabel("IamPermission") {
     val permissionId = string("permissionId")
@@ -48,7 +48,7 @@ object IamPermissionLabel: VertexLabel("IamPermission") {
 }
 
 /**
- * Protected resource vertices.
+ * Protected resource vertex이다.
  */
 object IamResourceLabel: VertexLabel("IamResource") {
     val resourceId = string("resourceId")
@@ -58,7 +58,7 @@ object IamResourceLabel: VertexLabel("IamResource") {
 }
 
 /**
- * Temporary grant vertices such as break-glass or emergency access records.
+ * Break-glass 또는 emergency access record 같은 temporary grant vertex이다.
  */
 object IamSessionGrantLabel: VertexLabel("IamSessionGrant") {
     val grantId = string("grantId")
@@ -67,49 +67,49 @@ object IamSessionGrantLabel: VertexLabel("IamSessionGrant") {
 }
 
 /**
- * User-to-group or group-to-group membership edges.
+ * User에서 group 또는 group에서 group으로 이어지는 membership edge이다.
  */
 object MemberOfLabel: EdgeLabel("MEMBER_OF", IamUserLabel, IamGroupLabel) {
     val kind = string("kind")
 }
 
 /**
- * Principal-to-role assignment edges.
+ * Principal에서 role로 이어지는 assignment edge이다.
  */
 object HasRoleLabel: EdgeLabel("HAS_ROLE", IamUserLabel, IamRoleLabel) {
     val source = string("source")
 }
 
 /**
- * Role-to-policy attachment edges.
+ * Role에서 policy로 이어지는 attachment edge이다.
  */
 object AttachedPolicyLabel: EdgeLabel("ATTACHED_POLICY", IamRoleLabel, IamPolicyLabel) {
     val scope = string("scope")
 }
 
 /**
- * Policy-to-permission grant edges.
+ * Policy에서 permission으로 이어지는 grant edge이다.
  */
 object GrantsPermissionLabel: EdgeLabel("GRANTS_PERMISSION", IamPolicyLabel, IamPermissionLabel) {
     val condition = string("condition")
 }
 
 /**
- * Permission-to-resource application edges.
+ * Permission에서 resource로 이어지는 application edge이다.
  */
 object AppliesToLabel: EdgeLabel("APPLIES_TO", IamPermissionLabel, IamResourceLabel) {
     val scope = string("scope")
 }
 
 /**
- * User-to-temporary-grant edges.
+ * User에서 temporary grant로 이어지는 edge이다.
  */
 object HasTempGrantLabel: EdgeLabel("HAS_TEMP_GRANT", IamUserLabel, IamSessionGrantLabel) {
     val state = string("state")
 }
 
 /**
- * Temporary-grant-to-permission edges.
+ * Temporary grant에서 permission으로 이어지는 edge이다.
  */
 object TemporaryPermissionLabel: EdgeLabel("TEMPORARY_PERMISSION", IamSessionGrantLabel, IamPermissionLabel) {
     val source = string("source")

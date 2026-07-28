@@ -16,11 +16,10 @@ import io.bluetape4k.logging.info
 import io.bluetape4k.support.requireNotBlank
 
 /**
- * Fraud detection graph service built on top of [GraphOperations].
+ * [GraphOperations] 위에 구성한 fraud detection graph service이다.
  *
- * The service models accounts as vertices and money transfers as directed edges. It demonstrates cycle
- * detection for circular transfers, connected components for suspicious clusters, and PageRank for accounts
- * that receive central transfer flow.
+ * 이 service는 account를 vertex로, money transfer를 directed edge로 모델링한다. Circular transfer의 cycle detection,
+ * suspicious cluster의 connected component, central transfer flow를 받는 account의 PageRank를 보여준다.
  *
  * ```kotlin
  * val service = FraudDetectionService(ops)
@@ -38,7 +37,7 @@ class FraudDetectionService(
     companion object : KLogging()
 
     /**
-     * Creates the backing graph when it does not already exist.
+     * Backing graph가 아직 없으면 생성한다.
      */
     fun initialize() {
         if (!ops.graphExists(graphName)) {
@@ -48,7 +47,7 @@ class FraudDetectionService(
     }
 
     /**
-     * Adds an account vertex.
+     * Account vertex를 추가한다.
      */
     fun addAccount(
         accountId: String,
@@ -68,7 +67,7 @@ class FraudDetectionService(
     }
 
     /**
-     * Records a directed transfer between two accounts.
+     * 두 account 사이의 directed transfer를 기록한다.
      */
     fun recordTransfer(
         fromAccountId: GraphElementId,
@@ -86,7 +85,7 @@ class FraudDetectionService(
     }
 
     /**
-     * Detects circular transfer chains such as `A -> B -> C -> A`.
+     * `A -> B -> C -> A` 같은 circular transfer chain을 탐지한다.
      */
     fun detectCircularTransfers(maxDepth: Int = 5, maxCycles: Int = 20): List<GraphCycle> =
         ops.detectCycles(
@@ -99,7 +98,7 @@ class FraudDetectionService(
         )
 
     /**
-     * Finds suspicious account clusters connected by transfer activity.
+     * Transfer activity로 연결된 suspicious account cluster를 찾는다.
      */
     fun detectSuspiciousClusters(minSize: Int = 2): List<GraphComponent> =
         ops.connectedComponents(
@@ -111,7 +110,7 @@ class FraudDetectionService(
         )
 
     /**
-     * Ranks accounts by centrality in the transfer graph.
+     * Transfer graph의 centrality 기준으로 account 순위를 매긴다.
      */
     fun rankHighRiskAccounts(limit: Int = 10): List<PageRankScore> {
         require(limit > 0) { "limit must be > 0, was $limit" }

@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.toList
 
 /**
- * Coroutine and Flow version of [RecommendationService].
+ * [RecommendationService]의 coroutine 및 Flow 버전이다.
  */
 class RecommendationSuspendService(
     private val ops: GraphSuspendOperations,
@@ -28,7 +28,7 @@ class RecommendationSuspendService(
     companion object : KLoggingChannel()
 
     /**
-     * Creates the backing graph when it does not already exist.
+     * Backing graph가 아직 없으면 생성한다.
      */
     suspend fun initialize() {
         if (!ops.graphExists(graphName)) {
@@ -38,7 +38,7 @@ class RecommendationSuspendService(
     }
 
     /**
-     * Adds a user vertex.
+     * User vertex를 추가한다.
      */
     suspend fun addUser(userId: String, displayName: String, segment: String = ""): GraphVertex {
         userId.requireNotBlank("userId")
@@ -50,7 +50,7 @@ class RecommendationSuspendService(
     }
 
     /**
-     * Adds a product vertex.
+     * Product vertex를 추가한다.
      */
     suspend fun addProduct(productId: String, name: String, category: String = ""): GraphVertex {
         productId.requireNotBlank("productId")
@@ -62,7 +62,7 @@ class RecommendationSuspendService(
     }
 
     /**
-     * Records a purchase edge from a user to a product.
+     * User에서 product로 이어지는 purchase edge를 기록한다.
      */
     suspend fun recordPurchase(userId: GraphElementId, productId: GraphElementId, quantity: Int = 1, purchasedAt: String = "") {
         require(quantity > 0) { "quantity must be > 0, was $quantity" }
@@ -75,14 +75,14 @@ class RecommendationSuspendService(
     }
 
     /**
-     * Creates a directed follow edge between users.
+     * User 사이의 directed follow edge를 생성한다.
      */
     suspend fun follow(followerId: GraphElementId, targetId: GraphElementId) {
         ops.createEdge(followerId, targetId, FollowsLabel.label, emptyMap())
     }
 
     /**
-     * Recommends products bought by users who purchased the same products as the source user.
+     * Source user와 같은 product를 구매한 user들이 산 product를 추천한다.
      */
     suspend fun recommendProducts(userId: GraphElementId, limit: Int = 10): Flow<GraphVertex> {
         require(limit > 0) { "limit must be > 0, was $limit" }
@@ -115,7 +115,7 @@ class RecommendationSuspendService(
     }
 
     /**
-     * Recommends follow targets from second-hop follow relationships.
+     * Second-hop follow relationship에서 follow target을 추천한다.
      */
     suspend fun recommendFollows(userId: GraphElementId, limit: Int = 10): Flow<GraphVertex> {
         require(limit > 0) { "limit must be > 0, was $limit" }
@@ -140,7 +140,7 @@ class RecommendationSuspendService(
     }
 
     /**
-     * Ranks products by purchase graph PageRank.
+     * Purchase graph PageRank 기준으로 product 순위를 매긴다.
      */
     fun rankPopularProducts(limit: Int = 10): Flow<PageRankScore> {
         require(limit > 0) { "limit must be > 0, was $limit" }

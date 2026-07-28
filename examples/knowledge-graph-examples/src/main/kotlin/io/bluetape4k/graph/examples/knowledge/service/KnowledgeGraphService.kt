@@ -18,10 +18,10 @@ import io.bluetape4k.logging.info
 import io.bluetape4k.support.requireNotBlank
 
 /**
- * Knowledge graph service built on top of [GraphOperations].
+ * [GraphOperations] 위에 구성한 knowledge graph service이다.
  *
- * The service models entities, concepts, and documents, then demonstrates entity lookup through document mentions,
- * related-entity traversal, and bounded relationship path inference.
+ * 이 service는 entity, concept, document를 모델링한 뒤 document mention을 통한 entity lookup,
+ * related-entity traversal, bounded relationship path inference를 보여준다.
  *
  * ```kotlin
  * val service = KnowledgeGraphService(ops)
@@ -38,7 +38,7 @@ class KnowledgeGraphService(
     companion object : KLogging()
 
     /**
-     * Creates the backing graph when it does not already exist.
+     * Backing graph가 아직 없으면 생성한다.
      */
     fun initialize() {
         if (!ops.graphExists(graphName)) {
@@ -48,7 +48,7 @@ class KnowledgeGraphService(
     }
 
     /**
-     * Adds an entity vertex.
+     * Entity vertex를 추가한다.
      */
     fun addEntity(entityId: String, name: String, entityType: String): GraphVertex {
         entityId.requireNotBlank("entityId")
@@ -61,7 +61,7 @@ class KnowledgeGraphService(
     }
 
     /**
-     * Adds a concept vertex.
+     * Concept vertex를 추가한다.
      */
     fun addConcept(conceptId: String, name: String, domain: String = ""): GraphVertex {
         conceptId.requireNotBlank("conceptId")
@@ -73,7 +73,7 @@ class KnowledgeGraphService(
     }
 
     /**
-     * Adds a document vertex.
+     * Document vertex를 추가한다.
      */
     fun addDocument(documentId: String, title: String, source: String = ""): GraphVertex {
         documentId.requireNotBlank("documentId")
@@ -85,7 +85,7 @@ class KnowledgeGraphService(
     }
 
     /**
-     * Connects a document to an entity that it mentions.
+     * Document를 그 안에서 mention한 entity에 연결한다.
      */
     fun mention(documentId: GraphElementId, entityId: GraphElementId, confidence: Int = 100) {
         require(confidence in 0..100) { "confidence must be in 0..100, was $confidence" }
@@ -93,7 +93,7 @@ class KnowledgeGraphService(
     }
 
     /**
-     * Connects two entities with a typed relationship.
+     * 두 entity를 typed relationship으로 연결한다.
      */
     fun relateEntities(fromEntityId: GraphElementId, toEntityId: GraphElementId, relationType: String = "related") {
         relationType.requireNotBlank("relationType")
@@ -106,26 +106,26 @@ class KnowledgeGraphService(
     }
 
     /**
-     * Classifies an entity under a concept.
+     * Entity를 concept 아래로 classify한다.
      */
     fun classify(entityId: GraphElementId, conceptId: GraphElementId) {
         ops.createEdge(entityId, conceptId, IsALabel.label, emptyMap())
     }
 
     /**
-     * Finds entities mentioned by a document.
+     * Document가 mention한 entity를 찾는다.
      */
     fun findMentionedEntities(documentId: GraphElementId): List<GraphVertex> =
         ops.neighbors(documentId, NeighborOptions(edgeLabel = MentionsLabel.label, direction = Direction.OUTGOING, maxDepth = 1))
 
     /**
-     * Finds entities related to the source entity.
+     * Source entity와 related된 entity를 찾는다.
      */
     fun findRelatedEntities(entityId: GraphElementId, depth: Int = 1): List<GraphVertex> =
         ops.neighbors(entityId, NeighborOptions(edgeLabel = RelatedToLabel.label, direction = Direction.OUTGOING, maxDepth = depth))
 
     /**
-     * Finds relationship paths between two entities and applies a service-side result bound.
+     * 두 entity 사이의 relationship path를 찾고 service-side result bound를 적용한다.
      */
     fun inferRelationshipPaths(
         fromEntityId: GraphElementId,

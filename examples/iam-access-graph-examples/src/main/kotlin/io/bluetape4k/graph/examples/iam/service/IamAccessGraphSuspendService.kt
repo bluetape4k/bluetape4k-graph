@@ -25,7 +25,7 @@ import io.bluetape4k.support.requireNotBlank
 import kotlinx.coroutines.flow.toList
 
 /**
- * Coroutine version of [IamAccessGraphService].
+ * [IamAccessGraphService]의 coroutine 버전이다.
  */
 class IamAccessGraphSuspendService(
     private val ops: GraphSuspendOperations,
@@ -375,7 +375,7 @@ class IamAccessGraphSuspendService(
 }
 
 /**
- * Coroutine seeding helper for the compact IAM sample graph.
+ * Compact IAM sample graph를 채우는 coroutine seeding helper이다.
  */
 object IamAccessSuspendSampleGraph {
 

@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.take
 
 /**
- * Coroutine and Flow version of [KnowledgeGraphService].
+ * [KnowledgeGraphService]의 coroutine 및 Flow 버전이다.
  */
 class KnowledgeGraphSuspendService(
     private val ops: GraphSuspendOperations,
@@ -29,7 +29,7 @@ class KnowledgeGraphSuspendService(
     companion object : KLoggingChannel()
 
     /**
-     * Creates the backing graph when it does not already exist.
+     * Backing graph가 아직 없으면 생성한다.
      */
     suspend fun initialize() {
         if (!ops.graphExists(graphName)) {
@@ -39,7 +39,7 @@ class KnowledgeGraphSuspendService(
     }
 
     /**
-     * Adds an entity vertex.
+     * Entity vertex를 추가한다.
      */
     suspend fun addEntity(entityId: String, name: String, entityType: String): GraphVertex {
         entityId.requireNotBlank("entityId")
@@ -52,7 +52,7 @@ class KnowledgeGraphSuspendService(
     }
 
     /**
-     * Adds a concept vertex.
+     * Concept vertex를 추가한다.
      */
     suspend fun addConcept(conceptId: String, name: String, domain: String = ""): GraphVertex {
         conceptId.requireNotBlank("conceptId")
@@ -64,7 +64,7 @@ class KnowledgeGraphSuspendService(
     }
 
     /**
-     * Adds a document vertex.
+     * Document vertex를 추가한다.
      */
     suspend fun addDocument(documentId: String, title: String, source: String = ""): GraphVertex {
         documentId.requireNotBlank("documentId")
@@ -76,7 +76,7 @@ class KnowledgeGraphSuspendService(
     }
 
     /**
-     * Connects a document to an entity that it mentions.
+     * Document를 그 안에서 mention한 entity에 연결한다.
      */
     suspend fun mention(documentId: GraphElementId, entityId: GraphElementId, confidence: Int = 100) {
         require(confidence in 0..100) { "confidence must be in 0..100, was $confidence" }
@@ -84,7 +84,7 @@ class KnowledgeGraphSuspendService(
     }
 
     /**
-     * Connects two entities with a typed relationship.
+     * 두 entity를 typed relationship으로 연결한다.
      */
     suspend fun relateEntities(fromEntityId: GraphElementId, toEntityId: GraphElementId, relationType: String = "related") {
         relationType.requireNotBlank("relationType")
@@ -97,26 +97,26 @@ class KnowledgeGraphSuspendService(
     }
 
     /**
-     * Classifies an entity under a concept.
+     * Entity를 concept 아래로 classify한다.
      */
     suspend fun classify(entityId: GraphElementId, conceptId: GraphElementId) {
         ops.createEdge(entityId, conceptId, IsALabel.label, emptyMap())
     }
 
     /**
-     * Finds entities mentioned by a document.
+     * Document가 mention한 entity를 찾는다.
      */
     fun findMentionedEntities(documentId: GraphElementId): Flow<GraphVertex> =
         ops.neighbors(documentId, NeighborOptions(edgeLabel = MentionsLabel.label, direction = Direction.OUTGOING, maxDepth = 1))
 
     /**
-     * Finds entities related to the source entity.
+     * Source entity와 related된 entity를 찾는다.
      */
     fun findRelatedEntities(entityId: GraphElementId, depth: Int = 1): Flow<GraphVertex> =
         ops.neighbors(entityId, NeighborOptions(edgeLabel = RelatedToLabel.label, direction = Direction.OUTGOING, maxDepth = depth))
 
     /**
-     * Finds relationship paths between two entities and applies a service-side result bound.
+     * 두 entity 사이의 relationship path를 찾고 service-side result bound를 적용한다.
      */
     fun inferRelationshipPaths(
         fromEntityId: GraphElementId,

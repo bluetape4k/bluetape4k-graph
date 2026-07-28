@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
 
 /**
- * Coroutine version of [NetworkTopologyImpactService].
+ * [NetworkTopologyImpactService]의 coroutine 버전이다.
  */
 class NetworkTopologyImpactSuspendService(
     private val ops: GraphSuspendOperations,

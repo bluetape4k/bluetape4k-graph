@@ -4,7 +4,7 @@ import io.bluetape4k.graph.schema.EdgeLabel
 import io.bluetape4k.graph.schema.VertexLabel
 
 /**
- * Dataset vertices group related physical tables.
+ * Dataset vertex는 관련 physical table을 묶는다.
  */
 object DatasetLabel: VertexLabel("Dataset") {
     val datasetId = string("datasetId")
@@ -14,7 +14,7 @@ object DatasetLabel: VertexLabel("Dataset") {
 }
 
 /**
- * Table vertices represent source, curated, and mart assets.
+ * Table vertex는 source, curated, mart asset을 표현한다.
  */
 object TableLabel: VertexLabel("Table") {
     val tableId = string("tableId")
@@ -24,7 +24,7 @@ object TableLabel: VertexLabel("Table") {
 }
 
 /**
- * Column vertices allow column-level impact examples.
+ * Column vertex는 column-level impact example을 가능하게 한다.
  */
 object ColumnLabel: VertexLabel("Column") {
     val columnId = string("columnId")
@@ -34,7 +34,7 @@ object ColumnLabel: VertexLabel("Column") {
 }
 
 /**
- * Pipeline job vertices transform upstream tables into downstream assets.
+ * Pipeline job vertex는 upstream table을 downstream asset으로 변환한다.
  */
 object PipelineJobLabel: VertexLabel("PipelineJob") {
     val jobId = string("jobId")
@@ -44,7 +44,7 @@ object PipelineJobLabel: VertexLabel("PipelineJob") {
 }
 
 /**
- * Dashboard vertices represent business-facing metrics.
+ * Dashboard vertex는 business-facing metric을 표현한다.
  */
 object DashboardLabel: VertexLabel("Dashboard") {
     val dashboardId = string("dashboardId")
@@ -54,7 +54,7 @@ object DashboardLabel: VertexLabel("Dashboard") {
 }
 
 /**
- * Owner vertices represent teams accountable for assets and jobs.
+ * Owner vertex는 asset과 job에 책임지는 team을 표현한다.
  */
 object OwnerLabel: VertexLabel("Owner") {
     val ownerId = string("ownerId")
@@ -64,7 +64,7 @@ object OwnerLabel: VertexLabel("Owner") {
 }
 
 /**
- * Data quality check vertices model failing controls.
+ * Data quality check vertex는 실패한 control을 모델링한다.
  */
 object QualityCheckLabel: VertexLabel("QualityCheck") {
     val checkId = string("checkId")
@@ -74,63 +74,63 @@ object QualityCheckLabel: VertexLabel("QualityCheck") {
 }
 
 /**
- * Dataset-to-table containment edge.
+ * Dataset에서 table로 이어지는 containment edge이다.
  */
 object ContainsTableLabel: EdgeLabel("CONTAINS_TABLE", DatasetLabel, TableLabel) {
     val kind = string("kind")
 }
 
 /**
- * Table-to-column containment edge.
+ * Table에서 column으로 이어지는 containment edge이다.
  */
 object ContainsColumnLabel: EdgeLabel("CONTAINS_COLUMN", TableLabel, ColumnLabel) {
     val kind = string("kind")
 }
 
 /**
- * Table input edge into a pipeline job.
+ * Pipeline job으로 들어가는 table input edge이다.
  */
 object TableInputToJobLabel: EdgeLabel("INPUT_TO_JOB", TableLabel, PipelineJobLabel) {
     val kind = string("kind")
 }
 
 /**
- * Column input edge into a pipeline job.
+ * Pipeline job으로 들어가는 column input edge이다.
  */
 object ColumnInputToJobLabel: EdgeLabel("COLUMN_INPUT_TO_JOB", ColumnLabel, PipelineJobLabel) {
     val kind = string("kind")
 }
 
 /**
- * Pipeline output edge to a downstream table.
+ * Downstream table로 이어지는 pipeline output edge이다.
  */
 object JobOutputsTableLabel: EdgeLabel("OUTPUTS_TABLE", PipelineJobLabel, TableLabel) {
     val kind = string("kind")
 }
 
 /**
- * Table-to-dashboard metric dependency edge.
+ * Table에서 dashboard로 이어지는 metric dependency edge이다.
  */
 object FeedsDashboardLabel: EdgeLabel("FEEDS_DASHBOARD", TableLabel, DashboardLabel) {
     val kind = string("kind")
 }
 
 /**
- * Owner-to-job accountability edge.
+ * Owner에서 job으로 이어지는 accountability edge이다.
  */
 object OwnsJobLabel: EdgeLabel("OWNS_JOB", OwnerLabel, PipelineJobLabel) {
     val kind = string("kind")
 }
 
 /**
- * Owner-to-dashboard accountability edge.
+ * Owner에서 dashboard로 이어지는 accountability edge이다.
  */
 object OwnsDashboardLabel: EdgeLabel("OWNS_DASHBOARD", OwnerLabel, DashboardLabel) {
     val kind = string("kind")
 }
 
 /**
- * Data quality check to column validation edge.
+ * Data quality check에서 column으로 이어지는 validation edge이다.
  */
 object ValidatesColumnLabel: EdgeLabel("VALIDATES_COLUMN", QualityCheckLabel, ColumnLabel) {
     val kind = string("kind")
