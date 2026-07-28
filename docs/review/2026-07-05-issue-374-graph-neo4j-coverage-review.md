@@ -1,17 +1,17 @@
-# Issue 374 Graph Neo4j Coverage Review
+# 이슈 374 Graph Neo4j coverage review
 
-## Scope
+## 범위
 
-- Added `Neo4jCoroutineSessionTest` to cover reactive read/write/query session wrappers.
-- Expanded `Neo4jGraphSuspendOperationsTest` to cover successful scoped transaction CRUD and cancellation rollback.
+- reactive read/write/query session wrapper를 cover하기 위해 `Neo4jCoroutineSessionTest`를 추가했다.
+- 성공 경로의 scoped transaction CRUD와 cancellation rollback을 cover하도록 `Neo4jGraphSuspendOperationsTest`를 확장했다.
 
-## Coverage
+## 커버리지
 
 - Baseline: `6946 / 9133 = 76.05%`
 - Updated: `7831 / 9133 = 85.74%`
-- Main improvement: `Neo4jCoroutineSession` and `Neo4jReactiveGraphSuspendTransactionScope` execution paths.
+- 주요 개선 지점: `Neo4jCoroutineSession`과 `Neo4jReactiveGraphSuspendTransactionScope` execution path.
 
-## Verification
+## 검증
 
 - `./gradlew :bluetape4k-graph-neo4j:detekt :bluetape4k-graph-neo4j:test :bluetape4k-graph-neo4j:koverXmlReport --no-daemon --no-configuration-cache`
-- Result: `BUILD SUCCESSFUL`
+- 결과: `BUILD SUCCESSFUL`
