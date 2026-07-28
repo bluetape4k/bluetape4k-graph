@@ -18,9 +18,9 @@ import io.bluetape4k.logging.KLogging
 import java.util.concurrent.CompletableFuture
 
 /**
- * Adapter that runs all [GraphAlgorithmRepository] methods on virtual threads.
+ * 모든 [GraphAlgorithmRepository] method를 virtual thread에서 실행하는 adapter.
  *
- * Single operations use `virtualFutureOf { }`.
+ * 단일 operation은 `virtualFutureOf { }`를 사용한다.
  *
  * ### Usage
  * ```kotlin
@@ -29,7 +29,7 @@ import java.util.concurrent.CompletableFuture
  * val scores = vtOps.pageRankAsync().join()
  * ```
  *
- * @param delegate synchronous [GraphAlgorithmRepository] to delegate to.
+ * @param delegate 위임 대상 synchronous [GraphAlgorithmRepository].
  */
 class VirtualThreadAlgorithmAdapter(
     private val delegate: GraphAlgorithmRepository,
@@ -66,7 +66,7 @@ class VirtualThreadAlgorithmAdapter(
 }
 
 /**
- * Wraps [GraphAlgorithmRepository] in a virtual-thread adapter.
+ * [GraphAlgorithmRepository]를 virtual-thread adapter로 감싼다.
  *
  * ```kotlin
  * val vtOps = ops.asVirtualThread()

@@ -7,14 +7,14 @@ import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 
 /**
- * Extracts a `Double` weight from edge properties.
+ * edge property에서 `Double` weight를 추출한다.
  *
  * [MissingWeightPolicy] controls missing property handling:
  * - [MissingWeightPolicy.Fail]: throws [MissingWeightException].
  * - [MissingWeightPolicy.Skip]: returns `null` so the caller can skip the edge.
  * - [MissingWeightPolicy.UseDefault]: returns [MissingWeightPolicy.UseDefault.value].
  *
- * Existing values that are `NaN`, infinite, negative, or zero throw [IllegalArgumentException].
+ * 기존 value가 `NaN`, infinite, negative, zero이면 [IllegalArgumentException]을 던진다.
  *
  * ```kotlin
  * val extractor = WeightExtractor("cost", MissingWeightPolicy.UseDefault(1.0))
@@ -28,11 +28,11 @@ class WeightExtractor(
     companion object : KLogging()
 
     /**
-     * Extracts the weight from [edge].
+     * [edge]에서 weight를 추출한다.
 	*
-     * @return weight value, or `null` when [MissingWeightPolicy.Skip] is active and the property is absent.
-     * @throws MissingWeightException when [MissingWeightPolicy.Fail] is active and the property is absent.
-     * @throws IllegalArgumentException when the extracted value is invalid (`NaN`, infinity, or <= 0).
+     * @return weight value. [MissingWeightPolicy.Skip]이 active이고 property가 없으면 `null`.
+     * @throws MissingWeightException [MissingWeightPolicy.Fail]이 active이고 property가 없을 때.
+     * @throws IllegalArgumentException 추출한 value가 invalid(`NaN`, infinity, <= 0)일 때.
      */
     fun extract(edge: GraphEdge): Double? {
         val raw = edge.properties[weightProperty]

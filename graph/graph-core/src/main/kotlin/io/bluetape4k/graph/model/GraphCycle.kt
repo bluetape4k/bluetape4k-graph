@@ -3,12 +3,12 @@ package io.bluetape4k.graph.model
 import java.io.Serializable
 
 /**
- * Detected graph cycle.
+ * 탐지된 graph cycle.
  *
- * The first and last vertices in [path] are the same (`first == last`).
+ * [path]의 첫 vertex와 마지막 vertex는 동일하다(`first == last`).
  * [length] is a computed property based on the number of edges in [path].
  *
- * @property path Cyclic path whose start and end are the same.
+ * @property path 시작과 끝이 같은 cyclic path.
  *
  * ### Usage
  * ```kotlin
@@ -28,10 +28,10 @@ data class GraphCycle(
 }
 
 /**
- * Converts this path to a [GraphCycle].
+ * 이 path를 [GraphCycle]로 변환한다.
  *
- * Use this when the first and last vertices in the path are the same.
- * Verify the cycle before calling this function; it only wraps the path.
+ * path의 첫 vertex와 마지막 vertex가 같을 때 사용한다.
+ * 이 함수는 path를 감싸기만 하므로 호출 전에 cycle 여부를 검증한다.
  *
  * ```kotlin
  * val cycle = detectedPath.toCycle()

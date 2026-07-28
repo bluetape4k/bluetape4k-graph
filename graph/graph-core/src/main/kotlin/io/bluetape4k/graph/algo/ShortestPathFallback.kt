@@ -10,10 +10,10 @@ import io.bluetape4k.graph.repository.GraphEdgeRepository
 import io.bluetape4k.graph.repository.GraphOperations
 
 /**
- * JVM weighted shortest-path helper for synchronous backends.
+ * synchronous backend를 위한 JVM weighted shortest-path helper.
  *
- * Synchronous [GraphOperations] implementations for Neo4j, Memgraph, AGE, TinkerPop, and FalkorDB
- * use it for Dijkstra and A* shortest-path computation.
+ * Neo4j, Memgraph, AGE, TinkerPop, FalkorDB의 synchronous [GraphOperations] implementation은
+ * Dijkstra와 A* shortest-path computation에 이 helper를 사용한다.
  *
  * ## Usage pattern
  *
@@ -36,13 +36,13 @@ import io.bluetape4k.graph.repository.GraphOperations
  * ```
  *
  * ## Why this is not an interface default method
- * The traversal algorithms need full [GraphOperations] access for vertex and edge lookup, but
+ * traversal algorithm은 vertex와 edge lookup을 위해 full [GraphOperations] access가 필요하지만,
  * `GraphTraversalRepository.this` does not satisfy that type. Backend overrides call this object directly.
  */
 object ShortestPathFallback {
 
     /**
-     * Computes a weighted Dijkstra shortest path using [GraphOperations].
+     * [GraphOperations]를 사용해 weighted Dijkstra shortest path를 계산한다.
      */
     fun dijkstra(
         ops: GraphOperations,
@@ -58,7 +58,7 @@ object ShortestPathFallback {
     }
 
     /**
-     * Computes a weighted A* shortest path using [GraphOperations].
+     * [GraphOperations]를 사용해 weighted A* shortest path를 계산한다.
      */
     fun aStar(
         ops: GraphOperations,

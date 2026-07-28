@@ -12,7 +12,7 @@ import java.util.concurrent.CompletableFuture
  *
  * Runs the synchronous [GraphTraversalRepository] on Java 25 Project Loom virtual threads
  * and returns results as `CompletableFuture<T>`. This supports interop with Java code
- * and CompletableFuture-based pipelines.
+ * CompletableFuture 기반 pipeline을 대상으로 한다.
  *
  * Kotlin code should prefer [GraphSuspendTraversalRepository].
  *
