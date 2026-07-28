@@ -6,12 +6,11 @@ import io.bluetape4k.support.requireNotBlank
 import org.neo4j.driver.Driver
 
 /**
- * Configures [GraphPlugin] to use a Memgraph backend.
+ * [GraphPlugin]이 Memgraph backend를 사용하도록 설정한다.
  *
- * ## Behavior / Contract
- * - [driver] is a caller-owned resource; this helper does not close it.
- * - [database] defaults to `"memgraph"`, matching the default used by `MemgraphGraphOperations`
- *   and Spring Boot properties.
+ * ## 동작 계약
+ * - [driver]는 호출자 소유 resource이며, 이 helper는 닫지 않는다.
+ * - [database]의 기본값은 `"memgraph"`이며, `MemgraphGraphOperations`와 Spring Boot properties의 기본값과 일치한다.
  *
  * ```kotlin
  * fun Application.module(driver: Driver) {

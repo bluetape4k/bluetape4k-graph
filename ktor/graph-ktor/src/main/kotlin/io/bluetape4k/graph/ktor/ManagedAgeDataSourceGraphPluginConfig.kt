@@ -10,14 +10,14 @@ import io.bluetape4k.support.requirePositiveNumber
 import org.jetbrains.exposed.v1.jdbc.Database
 
 /**
- * Ktor DSL for creating an Apache AGE JDBC pool owned by [GraphPlugin].
+ * [GraphPlugin]이 소유하는 Apache AGE JDBC pool을 생성하는 Ktor DSL.
  *
- * ## Behavior / Contract
- * - [jdbcUrl], [username], [graphName], [connectionInitSql], and [driverClassName] must not be blank.
- * - [maximumPoolSize] must be positive.
- * - The managed pool is connected to Exposed through `Database.connect(dataSource)` before AGE operations are created.
- * - The Hikari pool created by this DSL is plugin-owned and is closed on `ApplicationStopped`.
- * - The existing `age(graphName)` helper keeps its caller-owned `Database` / `DataSource` contract.
+ * ## 동작 계약
+ * - [jdbcUrl], [username], [graphName], [connectionInitSql], [driverClassName]은 blank이면 안 된다.
+ * - [maximumPoolSize]는 양수여야 한다.
+ * - 관리 pool은 AGE operations 생성 전에 `Database.connect(dataSource)`로 Exposed에 연결된다.
+ * - 이 DSL이 만든 Hikari pool은 plugin 소유이며 `ApplicationStopped`에서 닫힌다.
+ * - 기존 `age(graphName)` helper는 호출자 소유 `Database` / `DataSource` 계약을 유지한다.
  *
  * ```kotlin
  * install(GraphPlugin) {
@@ -41,7 +41,7 @@ class ManagedAgeDataSourceGraphPluginConfig {
 }
 
 /**
- * Configures [GraphPlugin] with a plugin-owned Apache AGE JDBC pool.
+ * [GraphPlugin]을 plugin 소유 Apache AGE JDBC pool로 설정한다.
  */
 fun GraphPluginConfig.ageDataSource(
     configure: ManagedAgeDataSourceGraphPluginConfig.() -> Unit,

@@ -4,12 +4,12 @@ import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
 
 /**
- * Configures [GraphPlugin] to use an in-memory TinkerGraph backend.
+ * [GraphPlugin]이 in-memory TinkerGraph backend를 사용하도록 설정한다.
  *
- * ## Behavior / Contract
- * - The plugin creates the [TinkerGraphOperations] delegate internally.
- * - [TinkerGraphSuspendOperations] shares the same delegate.
- * - The shared delegate is closed exactly once on application stop.
+ * ## 동작 계약
+ * - Plugin은 [TinkerGraphOperations] delegate를 내부에서 생성한다.
+ * - [TinkerGraphSuspendOperations]는 같은 delegate를 공유한다.
+ * - 공유 delegate는 application stop 시 정확히 한 번 닫힌다.
  *
  * ```kotlin
  * fun Application.module() {

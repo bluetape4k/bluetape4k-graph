@@ -10,14 +10,13 @@ import io.ktor.server.application.hooks.MonitoringEvent
 import io.ktor.util.AttributeKey
 
 /**
- * Entry point for installing the `bluetape4k-graph` facade as a Ktor 3.x application plugin.
+ * `bluetape4k-graph` facade를 Ktor 3.x application plugin으로 설치하는 진입점.
  *
- * ## Behavior / Contract
- * - Install with `install(GraphPlugin) { tinkerGraph() }` or `install(GraphPlugin) { operations(sync, suspend) }`.
- * - Throws [IllegalArgumentException] at install time if no backend is selected.
- * - The resolved [GraphPluginState] is stored in [Application.attributes].
- * - On stop, only close actions registered during configuration run; caller-owned drivers and `DataSource`
- *   instances are not closed.
+ * ## 동작 계약
+ * - `install(GraphPlugin) { tinkerGraph() }` 또는 `install(GraphPlugin) { operations(sync, suspend) }`로 설치한다.
+ * - backend가 선택되지 않으면 설치 시점에 [IllegalArgumentException]을 던진다.
+ * - 확정된 [GraphPluginState]는 [Application.attributes]에 저장된다.
+ * - stop 시 설정 중 등록된 종료 동작만 실행한다. 호출자 소유 driver와 `DataSource` instance는 닫지 않는다.
  *
  * ```kotlin
  * fun Application.module() {

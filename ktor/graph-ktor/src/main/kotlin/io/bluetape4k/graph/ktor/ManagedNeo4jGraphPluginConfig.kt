@@ -7,13 +7,13 @@ import org.neo4j.driver.AuthTokens
 import org.neo4j.driver.GraphDatabase
 
 /**
- * Ktor DSL for creating a Neo4j driver owned by [GraphPlugin].
+ * [GraphPlugin]이 소유하는 Neo4j driver를 생성하는 Ktor DSL.
  *
- * ## Behavior / Contract
- * - [uri] and [database] must not be blank.
- * - A blank [username] creates the driver with `AuthTokens.none()`.
- * - The driver created by this DSL is plugin-owned and is closed on `ApplicationStopped`.
- * - The existing `neo4j(driver, database)` helper keeps its caller-owned driver contract.
+ * ## 동작 계약
+ * - [uri] and [database]는 blank이면 안 된다.
+ * - Blank [username]은 `AuthTokens.none()`으로 driver를 생성한다.
+ * - 이 DSL이 만든 driver는 plugin 소유이며 `ApplicationStopped`에서 닫힌다.
+ * - 기존 `neo4j(driver, database)` helper는 호출자 소유 driver 계약을 유지한다.
  *
  * ```kotlin
  * install(GraphPlugin) {
@@ -33,7 +33,7 @@ class ManagedNeo4jGraphPluginConfig {
 }
 
 /**
- * Configures [GraphPlugin] with a plugin-owned Neo4j driver.
+ * [GraphPlugin]을 plugin 소유 Neo4j driver로 설정한다.
  */
 fun GraphPluginConfig.neo4j(
     configure: ManagedNeo4jGraphPluginConfig.() -> Unit,
