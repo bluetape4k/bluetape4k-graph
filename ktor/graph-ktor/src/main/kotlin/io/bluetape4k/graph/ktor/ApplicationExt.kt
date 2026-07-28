@@ -6,39 +6,39 @@ import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
 
 /**
- * Returns the [GraphPluginState] of the [GraphPlugin] installed in this [Application].
+ * 이 [Application]에 설치된 [GraphPlugin]의 [GraphPluginState]를 반환한다.
  *
- * ## Behavior / Contract
- * - Throws [IllegalStateException] if [GraphPlugin] has not been installed.
+ * ## 동작 계약
+ * - [GraphPlugin]이 설치되지 않았으면 [IllegalStateException]을 던진다.
  *
- * @throws IllegalStateException if the plugin is not installed
+ * @throws IllegalStateException plugin이 설치되지 않은 경우.
  */
 fun Application.graphPluginState(): GraphPluginState =
     attributes.getOrNull(GraphPluginStateKey)
         ?: error("GraphPlugin is not installed in this Application.")
 
 /**
- * Returns the blocking [GraphOperations] from the current [Application].
+ * 현재 [Application]에서 blocking [GraphOperations]를 반환한다.
  *
- * ## Behavior / Contract
- * - Prefer [graphSuspendOperations] inside Ktor route suspend contexts.
- * - Throws [IllegalStateException] if the plugin is not installed.
+ * ## 동작 계약
+ * - Ktor route suspend context에서는 [graphSuspendOperations]를 우선 사용한다.
+ * - plugin이 설치되지 않았으면 [IllegalStateException]을 던진다.
  */
 fun Application.graphOperations(): GraphOperations =
     graphPluginState().graphOperations
 
 /**
- * Returns the coroutine-first [GraphSuspendOperations] from the current [Application].
+ * 현재 [Application]에서 coroutine 우선 [GraphSuspendOperations]를 반환한다.
  *
- * ## Behavior / Contract
- * - This is the preferred facade for Ktor route handlers and coroutine services.
- * - Throws [IllegalStateException] if the plugin is not installed.
+ * ## 동작 계약
+ * - Ktor route handler와 coroutine service에서 우선 사용할 facade다.
+ * - plugin이 설치되지 않았으면 [IllegalStateException]을 던진다.
  */
 fun Application.graphSuspendOperations(): GraphSuspendOperations =
     graphPluginState().graphSuspendOperations
 
 /**
- * Returns the blocking [GraphOperations] from an [ApplicationCall] in a route handler.
+ * route handler의 [ApplicationCall]에서 blocking [GraphOperations]를 반환한다.
  *
  * ```kotlin
  * routing {
@@ -52,7 +52,7 @@ fun ApplicationCall.graphOperations(): GraphOperations =
     application.graphOperations()
 
 /**
- * Returns the coroutine-first [GraphSuspendOperations] from an [ApplicationCall] in a route handler.
+ * route handler의 [ApplicationCall]에서 coroutine 우선 [GraphSuspendOperations]를 반환한다.
  *
  * ```kotlin
  * routing {

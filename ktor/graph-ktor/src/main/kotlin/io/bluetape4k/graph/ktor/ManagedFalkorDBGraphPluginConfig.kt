@@ -7,13 +7,13 @@ import io.bluetape4k.support.requireNotBlank
 import io.bluetape4k.support.requirePositiveNumber
 
 /**
- * Ktor DSL for creating a FalkorDB driver owned by [GraphPlugin].
+ * [GraphPlugin]이 소유하는 FalkorDB driver를 생성하는 Ktor DSL.
  *
- * ## Behavior / Contract
- * - [host] and [graphName] must not be blank.
- * - [port] must be positive.
- * - A blank [username] uses unauthenticated `FalkorDB.driver(host, port)`.
- * - The driver created by this DSL is plugin-owned and is closed on `ApplicationStopped`.
+ * ## 동작 계약
+ * - [host]와 [graphName]은 blank이면 안 된다.
+ * - [port]는 양수여야 한다.
+ * - Blank [username]은 인증 없는 `FalkorDB.driver(host, port)`를 사용한다.
+ * - 이 DSL이 만든 driver는 plugin 소유이며 `ApplicationStopped`에서 닫힌다.
  *
  * ```kotlin
  * install(GraphPlugin) {
@@ -34,7 +34,7 @@ class ManagedFalkorDBGraphPluginConfig {
 }
 
 /**
- * Configures [GraphPlugin] with a plugin-owned FalkorDB driver.
+ * [GraphPlugin]을 plugin 소유 FalkorDB driver로 설정한다.
  */
 fun GraphPluginConfig.falkorDB(
     configure: ManagedFalkorDBGraphPluginConfig.() -> Unit,
