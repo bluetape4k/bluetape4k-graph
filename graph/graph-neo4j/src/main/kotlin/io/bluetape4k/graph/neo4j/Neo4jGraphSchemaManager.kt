@@ -13,9 +13,9 @@ import org.neo4j.driver.SessionConfig
 import org.neo4j.driver.Value
 
 /**
- * Schema manager backed by Neo4j Cypher DDL.
+ * Neo4j Cypher DDL 기반 schema manager.
  *
- * It manages single-property indexes and unique constraints for vertex labels.
+ * 정점 label의 단일 property index와 unique constraint를 관리한다.
  */
 class Neo4jGraphSchemaManager(
     private val driver: Driver,

@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap
  * 프로덕션 코드는 [MemgraphGraphOperations]를 직접 사용해야 한다.
  *
  * 모든 읽기 캐시는 ConcurrentHashMap 으로 구현되어 TinyLFU 북키핑 비용을 제거하고
- * lookup latency 를 ~5 ns 수준으로 유지한다. TTL/maxSize 기반 축출은 제거되었고,
+ * 조회 지연을 ~5 ns 수준으로 유지한다. TTL/maxSize 기반 축출은 제거되었고,
  * 쓰기 시 명시적 clear() 로 일관성을 유지한다.
  *
  * ### 사용 예제
@@ -84,7 +84,7 @@ class CachingMemgraphGraphOperations(
         val properties: Map<String, Any?>,
     )
 
-    // ConcurrentHashMap: ~5 ns lookup. null 값을 허용하지 않으므로 nullable 결과는 Optional 로 래핑한다.
+    // ConcurrentHashMap은 약 ~5 ns 조회 비용을 유지한다. null 값을 허용하지 않으므로 nullable 결과는 Optional로 감싼다.
     private val vertexByIdCache: ConcurrentHashMap<VertexKey, Optional<GraphVertex>> = ConcurrentHashMap(128)
 
     private val verticesByLabelCache: ConcurrentHashMap<LabelKey, List<GraphVertex>> = ConcurrentHashMap(128)
@@ -116,7 +116,7 @@ class CachingMemgraphGraphOperations(
     }
 
     // 읽기 캐시만 무효화 (쓰기 메모이제이션 캐시는 보존)
-    // createVertex/createEdge 내부에서 사용하여 write-cache self-destruct 방지
+    // createVertex/createEdge 내부에서 사용하며 write-cache 자체 삭제를 방지한다.
     private fun invalidateReads() {
         vertexByIdCache.clear()
         verticesByLabelCache.clear()

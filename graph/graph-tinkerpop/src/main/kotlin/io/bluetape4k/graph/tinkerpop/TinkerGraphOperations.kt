@@ -687,7 +687,7 @@ class TinkerGraphOperations :
         options.vertexLabel?.requireNotBlank("vertexLabel")
         options.edgeLabel?.requireNotBlank("edgeLabel")
 
-        // Use JVM fallback via UnionFind to ensure consistent behavior across TinkerPop versions
+        // TinkerPop version 간 동작을 일관되게 유지하기 위해 UnionFind 기반 JVM fallback을 사용한다.
         val vertices = (if (options.vertexLabel != null) g.V().hasLabel(options.vertexLabel) else g.V()).toList()
         val vertexMap = vertices.associate { v ->
             val gv = GremlinRecordMapper.vertexToGraphVertex(v)
@@ -705,10 +705,9 @@ class TinkerGraphOperations :
             }
         }
 
-        // Ordering contract: components are sorted by their representative GraphElementId.value (String).
-        // GraphElementId is a value class around String, so compareBy { it.value } yields lexicographic
-        // ordering of the representative IDs — this matches the GraphAlgorithmRepository.connectedComponents
-        // contract: "componentId 오름차순".
+        // 정렬 계약: component는 대표 GraphElementId.value(String) 기준으로 정렬한다.
+        // GraphElementId는 String value class이므로 compareBy { it.value }는 대표 ID의 사전식 정렬을 만든다.
+        // 이는 GraphAlgorithmRepository.connectedComponents의 "componentId 오름차순" 계약과 일치한다.
         return uf.groups()
             .filter { it.value.size >= options.minSize }
             .toSortedMap(compareBy { it.value })

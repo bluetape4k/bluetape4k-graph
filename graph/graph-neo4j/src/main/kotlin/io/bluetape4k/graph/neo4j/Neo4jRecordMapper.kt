@@ -13,15 +13,15 @@ import org.neo4j.driver.types.Path
 import org.neo4j.driver.types.Relationship
 
 /**
- * Converts Neo4j Driver [Record] values to graph model objects.
+ * Neo4j Driver [Record] 값을 graph model 객체로 변환한다.
  *
  * ```kotlin
- * // Record-level helpers
+ * // Record 수준 helper
  * val vertex: GraphVertex = Neo4jRecordMapper.recordToVertex(record)          // key="n"
  * val edge: GraphEdge     = Neo4jRecordMapper.recordToEdge(record, key="r")
  * val path: GraphPath     = Neo4jRecordMapper.recordToPath(record, key="p")
  *
- * // Direct Node/Relationship helpers
+ * // 직접 Node/Relationship helper
  * val node: Node = record["n"].asNode()
  * val vertex = Neo4jRecordMapper.nodeToVertex(node)
  * ```
@@ -29,18 +29,18 @@ import org.neo4j.driver.types.Relationship
 object Neo4jRecordMapper: KLogging() {
 
     /**
-     * Converts a Neo4j [Node] to a [GraphVertex].
+     * Neo4j [Node]를 [GraphVertex]로 변환한다.
 	*
-     * The first node label becomes [GraphVertex.label]; nodes without labels use `"Unknown"`.
+     * 첫 번째 node label을 [GraphVertex.label]로 사용한다. label이 없는 node는 `"Unknown"`을 사용한다.
      *
      * ```kotlin
      * val node = record["n"].asNode()
      * val vertex = Neo4jRecordMapper.nodeToVertex(node)
-     * println(vertex.label)  // first node label
+     * println(vertex.label)  // 첫 번째 node label
      * ```
      *
      * @param node Neo4j Driver node.
-     * @return converted [GraphVertex].
+     * @return 변환된 [GraphVertex].
      */
     fun nodeToVertex(node: Node): GraphVertex {
         val id = GraphElementId(node.elementId())
@@ -50,7 +50,7 @@ object Neo4jRecordMapper: KLogging() {
     }
 
     /**
-     * Converts a Neo4j [Relationship] to a [GraphEdge].
+     * Neo4j [Relationship]을 [GraphEdge]로 변환한다.
      *
      * ```kotlin
      * val rel = record["r"].asRelationship()
@@ -59,7 +59,7 @@ object Neo4jRecordMapper: KLogging() {
      * ```
      *
      * @param rel Neo4j Driver relationship.
-     * @return converted [GraphEdge].
+     * @return 변환된 [GraphEdge].
      */
     fun relationshipToEdge(rel: Relationship): GraphEdge {
         val id = GraphElementId(rel.elementId())
@@ -69,17 +69,17 @@ object Neo4jRecordMapper: KLogging() {
     }
 
     /**
-     * Converts a Neo4j [Path] to a [GraphPath].
+     * Neo4j [Path]를 [GraphPath]로 변환한다.
 	*
-     * Nodes and relationships are converted to alternating [PathStep.VertexStep] and [PathStep.EdgeStep] values.
+     * Node와 relationship을 [PathStep.VertexStep]과 [PathStep.EdgeStep]이 교차하는 값으로 변환한다.
      *
      * ```kotlin
      * val path = Neo4jRecordMapper.pathToGraphPath(record["p"].asPath())
-     * println(path.length)  // number of path steps
+     * println(path.length)  // path step 수
      * ```
      *
      * @param path Neo4j Driver path.
-     * @return converted [GraphPath].
+     * @return 변환된 [GraphPath].
      */
     fun pathToGraphPath(path: Path): GraphPath {
         val steps = mutableListOf<PathStep>()
@@ -96,16 +96,16 @@ object Neo4jRecordMapper: KLogging() {
     }
 
     /**
-     * Extracts a [GraphVertex] from a [Record].
+     * [Record]에서 [GraphVertex]를 추출한다.
      *
      * ```kotlin
      * val vertex = Neo4jRecordMapper.recordToVertex(record)        // key="n"
      * val vertex2 = Neo4jRecordMapper.recordToVertex(record, "node")
      * ```
      *
-     * @param record Cypher query result record.
-     * @param key key used to extract the node, defaulting to `"n"`.
-     * @return converted [GraphVertex].
+     * @param record Cypher query 결과 record.
+     * @param key node를 추출할 key. 기본값은 `"n"`.
+     * @return 변환된 [GraphVertex].
      */
     fun recordToVertex(record: Record, key: String = "n"): GraphVertex {
         key.requireNotBlank("key")
@@ -114,16 +114,16 @@ object Neo4jRecordMapper: KLogging() {
 
 
     /**
-     * Extracts a [GraphEdge] from a [Record].
+     * [Record]에서 [GraphEdge]를 추출한다.
      *
      * ```kotlin
      * val edge = Neo4jRecordMapper.recordToEdge(record)        // key="r"
      * val edge2 = Neo4jRecordMapper.recordToEdge(record, "rel")
      * ```
      *
-     * @param record Cypher query result record.
-     * @param key key used to extract the relationship, defaulting to `"r"`.
-     * @return converted [GraphEdge].
+     * @param record Cypher query 결과 record.
+     * @param key relationship을 추출할 key. 기본값은 `"r"`.
+     * @return 변환된 [GraphEdge].
      */
     fun recordToEdge(record: Record, key: String = "r"): GraphEdge {
         key.requireNotBlank("key")
@@ -131,15 +131,15 @@ object Neo4jRecordMapper: KLogging() {
     }
 
     /**
-     * Extracts a [GraphPath] from a [Record].
+     * [Record]에서 [GraphPath]를 추출한다.
      *
      * ```kotlin
      * val path = Neo4jRecordMapper.recordToPath(record)        // key="p"
      * ```
      *
-     * @param record Cypher query result record.
-     * @param key key used to extract the path, defaulting to `"p"`.
-     * @return converted [GraphPath].
+     * @param record Cypher query 결과 record.
+     * @param key path를 추출할 key. 기본값은 `"p"`.
+     * @return 변환된 [GraphPath].
      */
     fun recordToPath(record: Record, key: String = "p"): GraphPath {
         key.requireNotBlank("key")
