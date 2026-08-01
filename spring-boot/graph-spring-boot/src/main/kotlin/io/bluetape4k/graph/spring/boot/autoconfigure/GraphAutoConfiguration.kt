@@ -8,7 +8,9 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 /**
  * bluetape4k Graph root auto-configuration.
  *
- * 이 class는 [GraphProperties]를 노출하고 backend별 auto-configuration class의 순서를 정한다. 자체적으로 graph bean을 만들지는 않으며, backend auto-configuration은 `AutoConfiguration.imports`에 별도로 등록된다.
+ * 이 class는 [GraphProperties]를 노출하고 backend별 auto-configuration class의 순서를 정한다.
+ * 자체적으로 graph bean을 만들지는 않으며, backend auto-configuration은
+ * `AutoConfiguration.imports`에 별도로 등록된다.
  *
  * 예제:
  *

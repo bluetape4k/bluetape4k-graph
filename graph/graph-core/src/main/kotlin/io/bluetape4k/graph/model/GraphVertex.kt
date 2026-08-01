@@ -9,7 +9,9 @@ import java.io.Serializable
  *
  * @property id Backend-independent vertex ID.
  * @property label Label that describes the vertex type, such as `"Person"` or `"Company"`.
- * @property properties Property map attached to the vertex. Values may contain `null`.
+ * @property properties Property map attached to the vertex. Values may contain `null`. When a
+ *   containing [GraphPath] is written with Java serialization, every non-null value (including
+ *   nested map/collection values) must implement [java.io.Serializable].
  *
  * ### Usage
  * ```kotlin

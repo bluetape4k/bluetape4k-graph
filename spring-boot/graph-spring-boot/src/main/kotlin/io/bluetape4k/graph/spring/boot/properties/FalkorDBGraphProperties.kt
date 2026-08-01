@@ -5,7 +5,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 /**
  * FalkorDB backend connection property.
  *
- * `bluetape4k.graph.backend=falkordb`일 때 backend가 활성화된다. FalkorDB는 Redis module 기반 graph database이며 jfalkordb driver로 접근한다.
+ * `bluetape4k.graph.backend=falkordb`일 때 backend가 활성화된다.
+ * FalkorDB는 Redis module 기반 graph database이며 jfalkordb driver로 접근한다.
  *
  * 예제:
  *

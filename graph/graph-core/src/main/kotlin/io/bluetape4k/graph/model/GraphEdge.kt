@@ -13,7 +13,9 @@ import java.io.Serializable
  * @property label Label that describes the relationship type, such as `"KNOWS"` or `"WORKS_AT"`.
  * @property startId Start vertex ID.
  * @property endId End vertex ID.
- * @property properties Property map attached to the edge. Values may contain `null`.
+ * @property properties Property map attached to the edge. Values may contain `null`. When a
+ *   containing [GraphPath] is written with Java serialization, every non-null value (including
+ *   nested map/collection values) must implement [java.io.Serializable].
  *
  * ### Usage
  * ```kotlin

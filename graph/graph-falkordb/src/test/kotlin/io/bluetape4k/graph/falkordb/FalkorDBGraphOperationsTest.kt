@@ -82,6 +82,23 @@ class FalkorDBGraphOperationsTest : AbstractFalkorDBTest() {
         ex.cause shouldBeInstanceOf IllegalStateException::class
     }
 
+    @Test
+    @Order(14)
+    fun `dropGraph preserves driver failures`() {
+        val failingDriver = mockk<com.falkordb.Driver>()
+        val failingGraph = mockk<com.falkordb.GraphContextGenerator>(relaxed = true)
+        every { failingDriver.graph(graphName) } returns failingGraph
+        every { failingGraph.deleteGraph() } throws IllegalStateException("redis unavailable")
+        val failingOps = FalkorDBGraphOperations(failingDriver, graphName)
+
+        val ex = assertFailsWith<GraphQueryException> {
+            failingOps.dropGraph(graphName)
+        }
+
+        ex.message shouldContain "FalkorDB dropGraph failed"
+        ex.cause shouldBeInstanceOf IllegalStateException::class
+    }
+
     // ----- 정점(Vertex) CRUD -----
 
     @Test

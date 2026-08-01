@@ -44,6 +44,8 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow as asReactiveFlow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import org.neo4j.driver.Driver
 import org.neo4j.driver.Query
@@ -60,6 +62,10 @@ import org.neo4j.driver.reactivestreams.ReactiveTransaction
  *
  * Memgraph는 `elementId()` 대신 정수형 `id()`를 사용한다.
  * Cypher 쿼리에서 `id(n) = toInteger($id)` 형태로 노드를 조회한다.
+ *
+ * Memgraph의 named graph catalog는 사용하지 않으므로 `createGraph(name)`은 logical current
+ * name만 선택한다. `dropGraph(name)`은 선택된 이름과 일치할 때만 해당 database의 모든
+ * node와 edge를 비우며, 다른 이름은 [GraphQueryException]으로 거부한다.
  *
  * [ReactiveSession] + [Flow]를 사용한다. Transactional suspend blocks run on Memgraph
  * reactive transactions, so they do not bridge through a blocking coroutine adapter.
@@ -92,7 +98,18 @@ class MemgraphGraphSuspendOperations(
    GraphSuspendSchemaManagementOperations,
    GraphSuspendMergeOperations {
 
-    companion object: KLoggingChannel()
+    companion object: KLoggingChannel() {
+        private const val DEFAULT_GRAPH_NAME = "default"
+    }
+
+    @Volatile
+    private var currentGraphName: String = DEFAULT_GRAPH_NAME
+    private val graphLifecycleMutex = Mutex()
+
+    private fun isCurrentGraph(name: String): Boolean {
+        val current = currentGraphName
+        return name == current || (current == DEFAULT_GRAPH_NAME && name == database)
+    }
 
     private fun session(): ReactiveSession =
         driver.session(
@@ -258,31 +275,45 @@ class MemgraphGraphSuspendOperations(
 
     override suspend fun createGraph(name: String) {
         name.requireNotBlank("name")
-        log.debug { "Memgraph graph session initialized for database: $name" }
+        graphLifecycleMutex.withLock {
+            currentGraphName = name
+        }
+        log.debug { "Memgraph logical graph selected for database '$database': $name" }
     }
 
     override suspend fun dropGraph(name: String) {
         name.requireNotBlank("name")
-        runQuery("MATCH (n) DETACH DELETE n") { it }
+        graphLifecycleMutex.withLock {
+            val current = currentGraphName
+            if (!isCurrentGraph(name)) {
+                throw GraphQueryException(
+                    "Memgraph cannot drop graph '$name': current graph is '$current'. " +
+                        "Call createGraph('$name') before dropping it."
+                )
+            }
+            runQuery("MATCH (n) DETACH DELETE n") { it }
+        }
     }
 
     override suspend fun graphExists(name: String): Boolean {
         name.requireNotBlank("name")
 
-        var s: ReactiveSession? = null
-        return try {
-            s = session()
-            val result = s.run(Query("RETURN 1")).awaitSingle()
-            result.records().awaitFirstOrNull() != null
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: org.neo4j.driver.exceptions.DatabaseException) {
-            if (e.isMissingDatabaseFailure()) false else failGraphExists(e, name)
-        } catch (e: Exception) {
-            failGraphExists(e, name)
-        } finally {
-            s?.let { session ->
-                withContext(NonCancellable) { session.close<Void>().awaitFirstOrNull() }
+        return graphLifecycleMutex.withLock {
+            var s: ReactiveSession? = null
+            try {
+                s = session()
+                val result = s.run(Query("RETURN 1")).awaitSingle()
+                result.records().awaitFirstOrNull() != null && isCurrentGraph(name)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: org.neo4j.driver.exceptions.DatabaseException) {
+                if (e.isMissingDatabaseFailure()) false else failGraphExists(e, name)
+            } catch (e: Exception) {
+                failGraphExists(e, name)
+            } finally {
+                s?.let { session ->
+                    withContext(NonCancellable) { session.close<Void>().awaitFirstOrNull() }
+                }
             }
         }
     }

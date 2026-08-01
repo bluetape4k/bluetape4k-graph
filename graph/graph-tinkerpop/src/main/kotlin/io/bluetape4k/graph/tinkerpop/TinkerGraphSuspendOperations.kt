@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.tinkerpop
 
+import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.algo.ShortestPathFallback
 import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.BatchEdge
@@ -42,6 +43,9 @@ import kotlinx.coroutines.withContext
  *
  * TinkerGraph는 in-process이므로 [Dispatchers.IO]로 래핑한다.
  * 동기 [TinkerGraphOperations]에 위임하고 suspend/Flow로 감싼다.
+ * named graph catalog는 제공하지 않으므로 `createGraph(name)`은 logical current name을
+ * 선택한다. `dropGraph(name)`은 선택된 이름과 일치할 때만 현재 graph를 비우며, 다른 이름은
+ * [GraphQueryException]으로 거부한다.
  *
  * ```kotlin
  * val ops = TinkerGraphSuspendOperations()

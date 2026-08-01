@@ -1,6 +1,7 @@
 package io.bluetape4k.graph.tinkerpop
 
 import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.model.Direction
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.NeighborOptions
@@ -18,6 +19,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withTimeout
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldBeTrue
@@ -46,6 +48,7 @@ class TinkerGraphSuspendOperationsTest {
 
     @BeforeEach
     fun clearGraph() = runSuspendIO {
+        ops.createGraph("default")
         ops.dropGraph("default")
     }
 
@@ -53,8 +56,24 @@ class TinkerGraphSuspendOperationsTest {
 
     @Test
     @Order(10)
-    fun `graphExists는 항상 true 반환`() = runSuspendIO {
+    fun `기본 current graph가 존재하면 true 반환`() = runSuspendIO {
         ops.graphExists("default").shouldBeTrue()
+    }
+
+    @Test
+    @Order(12)
+    fun `다른 graph name으로 dropGraph하면 현재 graph를 삭제하지 않는다`() = runSuspendIO {
+        ops.createGraph("current")
+        ops.createVertex("Person", mapOf("name" to "Alice"))
+        ops.graphExists("current").shouldBeTrue()
+        ops.graphExists("other").shouldBeFalse()
+
+        val ex = assertFailsWith<GraphQueryException> {
+            ops.dropGraph("other")
+        }
+
+        ex.message shouldContain "current"
+        ops.countVertices("Person") shouldBeEqualTo 1L
     }
 
     @Test

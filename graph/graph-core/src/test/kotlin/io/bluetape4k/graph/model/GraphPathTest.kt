@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.model
 
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
@@ -8,6 +9,11 @@ import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContainSame
 import io.bluetape4k.assertions.shouldHaveSize
 import org.junit.jupiter.api.Test
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.NotSerializableException
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
 
 class GraphPathTest {
 
@@ -106,6 +112,57 @@ class GraphPathTest {
     fun `EMPTY는 싱글턴이다`() {
         GraphPath.EMPTY shouldBeEqualTo GraphPath(emptyList())
         GraphPath.EMPTY.isEmpty.shouldBeTrue()
+    }
+
+    @Test
+    fun `채워진 경로는 Java serialization round-trip을 지원한다`() {
+        val v1 = GraphVertex(
+            GraphElementId("1"),
+            "Person",
+            linkedMapOf("profile" to linkedMapOf("skills" to arrayListOf("kotlin", "graph")), "active" to true),
+        )
+        val v2 = GraphVertex(
+            GraphElementId("2"),
+            "Person",
+            linkedMapOf("profile" to linkedMapOf("skills" to arrayListOf("java")), "active" to null),
+        )
+        val e1 = GraphEdge(
+            GraphElementId("e1"),
+            "KNOWS",
+            GraphElementId("1"),
+            GraphElementId("2"),
+            linkedMapOf("metadata" to linkedMapOf("since" to 2024L, "trusted" to true)),
+        )
+        val path = GraphPath(
+            steps = listOf(
+                PathStep.VertexStep(v1),
+                PathStep.EdgeStep(e1),
+                PathStep.VertexStep(v2),
+            ),
+            totalWeight = 2.5,
+        )
+
+        val bytes = ByteArrayOutputStream().use { output ->
+            ObjectOutputStream(output).use { it.writeObject(path) }
+            output.toByteArray()
+        }
+
+        val restored = ObjectInputStream(ByteArrayInputStream(bytes)).use {
+            it.readObject() as GraphPath
+        }
+
+        restored shouldBeEqualTo path
+    }
+
+    @Test
+    fun `지원하지 않는 property 값은 Java serialization 계약 밖이다`() {
+        val path = GraphPath.of(
+            GraphVertex(GraphElementId("1"), "Person", mapOf("unsupported" to Any())),
+        )
+
+        assertFailsWith<NotSerializableException> {
+            ObjectOutputStream(ByteArrayOutputStream()).use { it.writeObject(path) }
+        }
     }
 
     @Test

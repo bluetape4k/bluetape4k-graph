@@ -109,8 +109,8 @@ private object DemoCityGraph {
     const val ROUTE_LABEL: String = "ROUTE_TO"
 
     fun reset(ops: GraphOperations) {
-        ops.dropGraph(GRAPH_NAME)
         ops.createGraph(GRAPH_NAME)
+        ops.dropGraph(GRAPH_NAME)
 
         val seoul = ops.createVertex(CITY_LABEL, mapOf("name" to "Seoul"))
         val daejeon = ops.createVertex(CITY_LABEL, mapOf("name" to "Daejeon"))

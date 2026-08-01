@@ -56,6 +56,34 @@ module Publication
       Result.new(errors: errors.sort, file_count: @paths.length, dependency_count: dependency_count)
     end
 
+    def validate_compile_scope(required_coordinates)
+      required = Array(required_coordinates).to_set
+      return [] if required.empty?
+
+      errors = []
+      @paths.each do |path|
+        document = REXML::Document.new(File.read(path))
+        dependencies = REXML::XPath.match(document, "/project/dependencies/dependency")
+        dependencies_by_coordinate = dependencies.to_h do |dependency|
+          scope = dependency.elements["scope"]&.text.to_s.strip
+          [coordinate(dependency), scope.empty? ? "compile" : scope]
+        end
+
+        required.each do |dependency_coordinate|
+          scope = dependencies_by_coordinate[dependency_coordinate]
+          if scope.nil?
+            errors << "#{path}: required compile dependency missing: #{dependency_coordinate}"
+          elsif scope != "compile"
+            errors << "#{path}: public ABI dependency must use compile scope: #{dependency_coordinate} (#{scope})"
+          end
+        end
+      rescue REXML::ParseException => error
+        errors << "#{path}: invalid XML: #{error.message.lines.first.to_s.strip}"
+      end
+
+      errors.sort
+    end
+
     private
 
     def coordinate(dependency)

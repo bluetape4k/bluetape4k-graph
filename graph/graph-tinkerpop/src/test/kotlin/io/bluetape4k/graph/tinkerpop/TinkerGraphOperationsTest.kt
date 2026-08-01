@@ -1,11 +1,14 @@
 package io.bluetape4k.graph.tinkerpop
 
+import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.model.Direction
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldBeTrue
@@ -20,6 +23,9 @@ import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 class TinkerGraphOperationsTest {
@@ -35,6 +41,7 @@ class TinkerGraphOperationsTest {
 
     @BeforeEach
     fun clearGraph() {
+        ops.createGraph("default")
         ops.dropGraph("default")
     }
 
@@ -42,8 +49,60 @@ class TinkerGraphOperationsTest {
 
     @Test
     @Order(10)
-    fun `graphExists는 항상 true 반환`() {
+    fun `기본 current graph가 존재하면 true 반환`() {
         ops.graphExists("default").shouldBeTrue()
+    }
+
+    @Test
+    @Order(12)
+    fun `다른 graph name으로 dropGraph하면 현재 graph를 삭제하지 않는다`() {
+        ops.createGraph("current")
+        ops.createVertex("Person", mapOf("name" to "Alice"))
+        ops.graphExists("current").shouldBeTrue()
+        ops.graphExists("other").shouldBeFalse()
+
+        val ex = assertFailsWith<GraphQueryException> {
+            ops.dropGraph("other")
+        }
+
+        ex.message shouldContain "current"
+        ops.countVertices("Person") shouldBeEqualTo 1L
+    }
+
+    @Test
+    @Order(13)
+    fun `동시에 graph를 선택하고 삭제해도 다른 logical graph의 데이터는 지우지 않는다`() {
+        repeat(200) { iteration ->
+            ops.createGraph("A")
+            ops.dropGraph("A")
+
+            val ready = CountDownLatch(2)
+            val start = CountDownLatch(1)
+            val executor = Executors.newFixedThreadPool(2)
+            try {
+                val drop = executor.submit {
+                    ready.countDown()
+                    start.await()
+                    runCatching { ops.dropGraph("A") }
+                }
+                val select = executor.submit {
+                    ready.countDown()
+                    start.await()
+                    ops.createGraph("B")
+                    ops.createVertex("Person", mapOf("iteration" to iteration))
+                }
+
+                ready.await(5, TimeUnit.SECONDS)
+                start.countDown()
+                drop.get(5, TimeUnit.SECONDS)
+                select.get(5, TimeUnit.SECONDS)
+
+                ops.countVertices("Person") shouldBeEqualTo 1L
+            } finally {
+                executor.shutdownNow()
+                executor.awaitTermination(5, TimeUnit.SECONDS)
+            }
+        }
     }
 
     @Test

@@ -1,6 +1,7 @@
 package io.bluetape4k.graph.memgraph
 
 import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.model.Direction
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.NeighborOptions
@@ -9,10 +10,12 @@ import io.bluetape4k.graph.repository.transaction
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.testcontainers.graphdb.MemgraphServer
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
+import io.bluetape4k.assertions.shouldBeInstanceOf
 import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotBeNull
@@ -27,6 +30,10 @@ import org.junit.jupiter.api.TestMethodOrder
 import org.neo4j.driver.AuthTokens
 import org.neo4j.driver.Driver
 import org.neo4j.driver.GraphDatabase
+import org.neo4j.driver.SessionConfig
+import org.neo4j.driver.exceptions.ServiceUnavailableException
+import io.mockk.every
+import io.mockk.mockk
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
@@ -48,6 +55,7 @@ class MemgraphGraphOperationsTest {
 
     @BeforeEach
     fun clearGraph() = runSuspendIO {
+        ops.createGraph("default")
         ops.dropGraph("default")
     }
 
@@ -55,12 +63,46 @@ class MemgraphGraphOperationsTest {
 
     @Test
     @Order(10)
-    fun `graphExists는 항상 true 반환`() = runSuspendIO {
+    fun `기본 current graph가 존재하면 true 반환`() = runSuspendIO {
         ops.graphExists("default").shouldBeTrue()
     }
 
     @Test
     @Order(11)
+    fun `graphExists preserves driver failures`() {
+        val failingDriver = mockk<Driver>()
+        every { failingDriver.session(any<SessionConfig>()) } throws ServiceUnavailableException("memgraph unavailable")
+        val failingOps = MemgraphGraphOperations(failingDriver)
+
+        val ex = assertFailsWith<GraphQueryException> {
+            failingOps.graphExists("default")
+        }
+
+        ex.message shouldContain "Memgraph graphExists failed"
+        ex.cause shouldBeInstanceOf ServiceUnavailableException::class
+    }
+
+    @Test
+    @Order(13)
+    fun `다른 graph name으로 dropGraph하면 현재 graph를 삭제하지 않는다`() = runSuspendIO {
+        ops.createGraph("current")
+        ops.createVertex("Person", mapOf("name" to "Alice"))
+        ops.graphExists("current").shouldBeTrue()
+        ops.graphExists("other").shouldBeFalse()
+
+        val ex = assertFailsWith<GraphQueryException> {
+            ops.dropGraph("other")
+        }
+
+        ex.message shouldContain "current"
+        ops.countVertices("Person") shouldBeEqualTo 1L
+
+        ops.dropGraph("current")
+        ops.countVertices("Person") shouldBeEqualTo 0L
+    }
+
+    @Test
+    @Order(12)
     fun `dropGraph로 전체 데이터를 삭제한다`() = runSuspendIO {
         ops.createVertex("Person", mapOf("name" to "Alice"))
         ops.countVertices("Person") shouldBeGreaterOrEqualTo 1L

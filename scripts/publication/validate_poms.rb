@@ -14,6 +14,12 @@ paths = if ARGV.empty?
         end
 
 result = Publication::PomAudit.new(paths).validate
+graph_core_paths = paths.select { |path| path.include?("graph/graph-core/") }
+result.errors.concat(
+  Publication::PomAudit.new(graph_core_paths).validate_compile_scope(
+    ["org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"],
+  ),
+)
 unless result.errors.empty?
   warn(result.errors.join("\n"))
   abort("publication-poms: failures=#{result.errors.length} files=#{result.file_count} dependencies=#{result.dependency_count}")

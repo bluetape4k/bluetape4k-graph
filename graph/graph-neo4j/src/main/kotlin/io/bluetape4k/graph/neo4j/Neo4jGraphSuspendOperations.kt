@@ -33,6 +33,7 @@ import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.warn
 import io.bluetape4k.support.requireNotBlank
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
@@ -43,6 +44,8 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow as asReactiveFlow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import org.neo4j.driver.Driver
 import org.neo4j.driver.Query
@@ -56,6 +59,9 @@ import org.neo4j.driver.reactivestreams.ReactiveTransaction
  *
  * [ReactiveSession]과 [Flow]를 사용해 non-blocking query를 실행한다. Transactional suspend block은
  * Neo4j reactive transaction 위에서 실행되므로 `runBlocking`을 거치지 않는다.
+ * Neo4j의 named graph catalog는 사용하지 않으므로 `createGraph(name)`은 logical current
+ * name만 선택한다. `dropGraph(name)`은 선택된 이름과 일치할 때만 해당 database의 모든
+ * node와 edge를 비우며, 다른 이름은 [GraphQueryException]으로 거부한다.
  *
  * ```kotlin
  * suspend fun main() {
@@ -84,13 +90,27 @@ class Neo4jGraphSuspendOperations(
    GraphSuspendSchemaManagementOperations,
    GraphSuspendMergeOperations {
 
-    companion object: KLoggingChannel()
+    companion object: KLoggingChannel() {
+        private const val DEFAULT_GRAPH_NAME = "default"
+    }
+
+    @Volatile
+    private var currentGraphName: String = DEFAULT_GRAPH_NAME
+    private val graphLifecycleMutex = Mutex()
+
+    private fun isCurrentGraph(name: String): Boolean {
+        val current = currentGraphName
+        return name == current || (current == DEFAULT_GRAPH_NAME && name == database)
+    }
 
     private fun session(): ReactiveSession =
         driver.session(
             ReactiveSession::class.java,
             SessionConfig.builder().withDatabase(database).build(),
         )
+
+    private fun failGraphExists(e: Throwable, name: String): Nothing =
+        throw e.asGraphExistsFailure("Neo4j", name)
 
     override fun schemaManager(): GraphSuspendSchemaManager =
         Neo4jGraphSchemaManager(driver, database).asSuspendSchemaManager()
@@ -247,25 +267,46 @@ class Neo4jGraphSuspendOperations(
 
     override suspend fun createGraph(name: String) {
         name.requireNotBlank("name")
-        log.debug { "Neo4j graph session initialized for database: $name" }
+        graphLifecycleMutex.withLock {
+            currentGraphName = name
+        }
+        log.debug { "Neo4j logical graph selected for database '$database': $name" }
     }
 
     override suspend fun dropGraph(name: String) {
         name.requireNotBlank("name")
-        runQuery("MATCH (n) DETACH DELETE n") { it }
+        graphLifecycleMutex.withLock {
+            val current = currentGraphName
+            if (!isCurrentGraph(name)) {
+                throw GraphQueryException(
+                    "Neo4j cannot drop graph '$name': current graph is '$current'. " +
+                        "Call createGraph('$name') before dropping it."
+                )
+            }
+            runQuery("MATCH (n) DETACH DELETE n") { it }
+        }
     }
 
     override suspend fun graphExists(name: String): Boolean {
         name.requireNotBlank("name")
 
-        val s = session()
-        return try {
-            val result = s.run(Query("RETURN 1")).awaitSingle()
-            result.records().awaitFirstOrNull() != null
-        } catch (e: Exception) {
-            false
-        } finally {
-            withContext(NonCancellable) { s.close<Void>().awaitFirstOrNull() }
+        return graphLifecycleMutex.withLock {
+            var s: ReactiveSession? = null
+            try {
+                val session = session().also { s = it }
+                val result = session.run(Query("RETURN 1")).awaitSingle()
+                result.records().awaitFirstOrNull() != null && isCurrentGraph(name)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: org.neo4j.driver.exceptions.DatabaseException) {
+                if (e.isMissingDatabaseFailure()) false else failGraphExists(e, name)
+            } catch (e: Exception) {
+                failGraphExists(e, name)
+            } finally {
+                s?.let { session ->
+                    withContext(NonCancellable) { session.close<Void>().awaitFirstOrNull() }
+                }
+            }
         }
     }
 

@@ -1,16 +1,31 @@
 # WIP - bluetape4k-graph
 
-스냅샷: 2026-07-04 KST
+스냅샷: 2026-08-01 KST
 범위: `debop`에게 배정된 열린 GitHub 이슈
-열린 배정 이슈 수: 35개
+열린 배정 이슈 수: 21개
 
 ## 현재 방향
 
 `0.5.0` 안정 라인은 배포되어 `bluetape4k-dependencies`에서 소비 중이다.
 현재 개발 라인은 `0.6.0`이며, 이 WIP 큐는 진행 중인 7-Tier 리뷰 흐름과
-아직 열린 이전 backlog 항목을 추적한다.
+아직 열린 이전 backlog 항목을 추적한다. 이번 review에서는 #437/#440 Epic과
+그 하위 #438/#439/#441-#444를 재검증했고, 별도 Epic이나 subissue는 등록하지
+않았다.
 
-## 활성 큐
+## 최신 `0.6.0` review train
+
+| 우선순위 | 이슈 | 마일스톤 | 라벨 | 메모 |
+|---|---|---|---|---|
+| P0 | [#437](https://github.com/bluetape4k/bluetape4k-graph/issues/437) [Epic] Restore 0.6.0 CI quality and security gates | 0.6.0 | Epic, ci | OPEN; CodeQL/Detekt gate 복구 범위다. |
+| P1 | [#438](https://github.com/bluetape4k/bluetape4k-graph/issues/438) fix(ci): repair CodeQL Kotlin pin for the central version catalog | 0.6.0 | bug, ci, github_actions | OPEN; 로컬 변경은 기존 커밋에 포함됐다. |
+| P1 | [#439](https://github.com/bluetape4k/bluetape4k-graph/issues/439) fix(ci): restore Detekt gate after Spring Boot KDoc localization | 0.6.0 | bug, documentation, ci | OPEN; `detekt`가 17개 task에서 통과했다. |
+| P0 | [#440](https://github.com/bluetape4k/bluetape4k-graph/issues/440) [Epic] Restore graph contracts and published ABI for 0.6.0 | 0.6.0 | bug, test, Epic | OPEN; 계약/ABI 복구의 부모 이슈다. |
+| P1 | [#441](https://github.com/bluetape4k/bluetape4k-graph/issues/441) fix(graph-core): publish coroutine Flow API on the compile classpath | 0.6.0 | bug, test | OPEN; 외부 consumer compile smoke를 추가했다. |
+| P1 | [#442](https://github.com/bluetape4k/bluetape4k-graph/issues/442) fix(graph): make dropGraph(name) semantics safe across backends | 0.6.0 | bug, test | OPEN; fail-closed 및 lifecycle lock 회귀를 추가했다. |
+| P1 | [#443](https://github.com/bluetape4k/bluetape4k-graph/issues/443) fix(graph): align sync and suspend graphExists failure contracts | 0.6.0 | bug, test | OPEN; cancellation/failure 전파와 동시성 경계를 재검증했다. |
+| P1 | [#444](https://github.com/bluetape4k/bluetape4k-graph/issues/444) fix(graph-core): make GraphPath serialization executable | 0.6.0 | bug, test | OPEN; 중첩 serializable property와 실패 계약을 고정했다. |
+
+## 이전 큐 스냅샷 (2026-07-04)
 
 | 우선순위 | 이슈 | 마일스톤 | 라벨 | 메모 |
 |---|---|---|---|---|
@@ -71,9 +86,9 @@
 
 - 원본 명령:
   `gh issue list --repo bluetape4k/bluetape4k-graph --state open --assignee debop --json number,title,milestone,labels,assignees`
-- 열린 배정 이슈: 35개
-- 열린 `0.6.0` review 이슈: #319부터 #342까지
-- 열린 stacked PR: #343부터 #361까지
+- 열린 배정 이슈: 21개
+- 열린 최신 `0.6.0` review 이슈: #437-#444 (모두 OPEN)
+- 이번 review에서 새 Epic/subissue/PR/merge를 생성하거나 추론하지 않았다.
 - 이 환경에서는 `gh milestone`을 사용할 수 없어 milestone title은 GitHub issue
   JSON에서 읽었다.
 
