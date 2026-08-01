@@ -43,8 +43,8 @@ jobs:
           expected_checksum="$(awk '{print $1}' "$checksum_path")"
           actual_checksum="$(shasum -a 256 "$catalog_path" | awk '{print $1}')"
           test "$actual_checksum" = "$expected_checksum"
-          perl -0pi -e 's/^kotlin\s*=\s*"2\.4\.0"$/kotlin = "2.3.21"/m' "$catalog_path"
-          grep -n '^kotlin = "2.3.21"$' "$catalog_path"
+          perl -pi -e 's/^(\s*kotlin\s*=\s*)"2\.4\.0"/$1"2.3.21"/' "$catalog_path"
+          grep -nE '^[[:space:]]*kotlin[[:space:]]*=[[:space:]]*"2\.3\.21"' "$catalog_path"
           echo "BLUETAPE4K_DEPENDENCIES_CATALOG_PATH=$catalog_path" >> "$GITHUB_ENV"
 
       - name: Setup JDK 21
