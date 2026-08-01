@@ -45,6 +45,8 @@ import org.neo4j.driver.Record
 import org.neo4j.driver.Session
 import org.neo4j.driver.SessionConfig
 import org.neo4j.driver.Transaction
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 /**
  * Memgraph용 [GraphOperations] 구현체 (동기 방식).
@@ -89,6 +91,7 @@ class MemgraphGraphOperations(
 
     @Volatile
     private var currentGraphName: String = DEFAULT_GRAPH_NAME
+    private val graphLifecycleLock = ReentrantLock()
 
     private fun isCurrentGraph(name: String): Boolean {
         val current = currentGraphName
@@ -113,35 +116,41 @@ class MemgraphGraphOperations(
 
     override fun createGraph(name: String) {
         name.requireNotBlank("name")
-        currentGraphName = name
+        graphLifecycleLock.withLock {
+            currentGraphName = name
+        }
         log.info { "Memgraph logical graph selected for database '$database': $name" }
     }
 
     override fun dropGraph(name: String) {
         name.requireNotBlank("name")
-        val current = currentGraphName
-        if (!isCurrentGraph(name)) {
-            throw GraphQueryException(
-                "Memgraph cannot drop graph '$name': current graph is '$current'. " +
-                    "Call createGraph('$name') before dropping it."
-            )
-        }
+        graphLifecycleLock.withLock {
+            val current = currentGraphName
+            if (!isCurrentGraph(name)) {
+                throw GraphQueryException(
+                    "Memgraph cannot drop graph '$name': current graph is '$current'. " +
+                        "Call createGraph('$name') before dropping it."
+                )
+            }
 
-        runQuery("MATCH (n) DETACH DELETE n") { it }
+            runQuery("MATCH (n) DETACH DELETE n") { it }
+        }
     }
 
     override fun graphExists(name: String): Boolean {
         name.requireNotBlank("name")
 
-        return try {
-            session().use { s ->
-                s.run("RETURN 1")
-                isCurrentGraph(name)
+        return graphLifecycleLock.withLock {
+            try {
+                session().use { s ->
+                    s.run("RETURN 1")
+                    isCurrentGraph(name)
+                }
+            } catch (e: org.neo4j.driver.exceptions.DatabaseException) {
+                if (e.isMissingDatabaseFailure()) false else throw e.asGraphExistsFailure("Memgraph", name)
+            } catch (e: Exception) {
+                throw e.asGraphExistsFailure("Memgraph", name)
             }
-        } catch (e: org.neo4j.driver.exceptions.DatabaseException) {
-            if (e.isMissingDatabaseFailure()) false else throw e.asGraphExistsFailure("Memgraph", name)
-        } catch (e: Exception) {
-            throw e.asGraphExistsFailure("Memgraph", name)
         }
     }
 

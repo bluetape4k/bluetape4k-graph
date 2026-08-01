@@ -73,6 +73,34 @@ class PublicationPomAuditTest < Minitest::Test
     assert_equal ["no publication POM files found"], result.errors
   end
 
+  def test_requires_public_abi_dependency_on_compile_scope
+    with_pom(<<~XML) do |path|
+      <project><dependencies><dependency>
+        <groupId>org.jetbrains.kotlinx</groupId><artifactId>kotlinx-coroutines-core</artifactId>
+        <version>1.11.0</version><scope>runtime</scope>
+      </dependency></dependencies></project>
+    XML
+      errors = Publication::PomAudit.new([path]).validate_compile_scope(
+        ["org.jetbrains.kotlinx:kotlinx-coroutines-core"],
+      )
+      assert_equal 1, errors.length
+      assert_includes errors.first, "must use compile scope"
+    end
+  end
+
+  def test_accepts_public_abi_dependency_on_compile_scope
+    with_pom(<<~XML) do |path|
+      <project><dependencies><dependency>
+        <groupId>org.jetbrains.kotlinx</groupId><artifactId>kotlinx-coroutines-core</artifactId>
+        <version>1.11.0</version><scope>compile</scope>
+      </dependency></dependencies></project>
+    XML
+      assert_empty Publication::PomAudit.new([path]).validate_compile_scope(
+        ["org.jetbrains.kotlinx:kotlinx-coroutines-core"],
+      )
+    end
+  end
+
   private
 
   def with_pom(content)

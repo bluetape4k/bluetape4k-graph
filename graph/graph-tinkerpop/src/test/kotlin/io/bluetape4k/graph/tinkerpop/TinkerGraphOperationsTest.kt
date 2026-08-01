@@ -23,6 +23,9 @@ import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 class TinkerGraphOperationsTest {
@@ -64,6 +67,42 @@ class TinkerGraphOperationsTest {
 
         ex.message shouldContain "current"
         ops.countVertices("Person") shouldBeEqualTo 1L
+    }
+
+    @Test
+    @Order(13)
+    fun `동시에 graph를 선택하고 삭제해도 다른 logical graph의 데이터는 지우지 않는다`() {
+        repeat(200) { iteration ->
+            ops.createGraph("A")
+            ops.dropGraph("A")
+
+            val ready = CountDownLatch(2)
+            val start = CountDownLatch(1)
+            val executor = Executors.newFixedThreadPool(2)
+            try {
+                val drop = executor.submit {
+                    ready.countDown()
+                    start.await()
+                    runCatching { ops.dropGraph("A") }
+                }
+                val select = executor.submit {
+                    ready.countDown()
+                    start.await()
+                    ops.createGraph("B")
+                    ops.createVertex("Person", mapOf("iteration" to iteration))
+                }
+
+                ready.await(5, TimeUnit.SECONDS)
+                start.countDown()
+                drop.get(5, TimeUnit.SECONDS)
+                select.get(5, TimeUnit.SECONDS)
+
+                ops.countVertices("Person") shouldBeEqualTo 1L
+            } finally {
+                executor.shutdownNow()
+                executor.awaitTermination(5, TimeUnit.SECONDS)
+            }
+        }
     }
 
     @Test

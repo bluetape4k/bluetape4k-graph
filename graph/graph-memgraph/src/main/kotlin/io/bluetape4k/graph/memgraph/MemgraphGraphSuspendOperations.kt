@@ -44,6 +44,8 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow as asReactiveFlow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import org.neo4j.driver.Driver
 import org.neo4j.driver.Query
@@ -102,6 +104,7 @@ class MemgraphGraphSuspendOperations(
 
     @Volatile
     private var currentGraphName: String = DEFAULT_GRAPH_NAME
+    private val graphLifecycleMutex = Mutex()
 
     private fun isCurrentGraph(name: String): Boolean {
         val current = currentGraphName
@@ -272,39 +275,45 @@ class MemgraphGraphSuspendOperations(
 
     override suspend fun createGraph(name: String) {
         name.requireNotBlank("name")
-        currentGraphName = name
+        graphLifecycleMutex.withLock {
+            currentGraphName = name
+        }
         log.debug { "Memgraph logical graph selected for database '$database': $name" }
     }
 
     override suspend fun dropGraph(name: String) {
         name.requireNotBlank("name")
-        val current = currentGraphName
-        if (!isCurrentGraph(name)) {
-            throw GraphQueryException(
-                "Memgraph cannot drop graph '$name': current graph is '$current'. " +
-                    "Call createGraph('$name') before dropping it."
-            )
+        graphLifecycleMutex.withLock {
+            val current = currentGraphName
+            if (!isCurrentGraph(name)) {
+                throw GraphQueryException(
+                    "Memgraph cannot drop graph '$name': current graph is '$current'. " +
+                        "Call createGraph('$name') before dropping it."
+                )
+            }
+            runQuery("MATCH (n) DETACH DELETE n") { it }
         }
-        runQuery("MATCH (n) DETACH DELETE n") { it }
     }
 
     override suspend fun graphExists(name: String): Boolean {
         name.requireNotBlank("name")
 
-        var s: ReactiveSession? = null
-        return try {
-            s = session()
-            val result = s.run(Query("RETURN 1")).awaitSingle()
-            result.records().awaitFirstOrNull() != null && isCurrentGraph(name)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: org.neo4j.driver.exceptions.DatabaseException) {
-            if (e.isMissingDatabaseFailure()) false else failGraphExists(e, name)
-        } catch (e: Exception) {
-            failGraphExists(e, name)
-        } finally {
-            s?.let { session ->
-                withContext(NonCancellable) { session.close<Void>().awaitFirstOrNull() }
+        return graphLifecycleMutex.withLock {
+            var s: ReactiveSession? = null
+            try {
+                s = session()
+                val result = s.run(Query("RETURN 1")).awaitSingle()
+                result.records().awaitFirstOrNull() != null && isCurrentGraph(name)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: org.neo4j.driver.exceptions.DatabaseException) {
+                if (e.isMissingDatabaseFailure()) false else failGraphExists(e, name)
+            } catch (e: Exception) {
+                failGraphExists(e, name)
+            } finally {
+                s?.let { session ->
+                    withContext(NonCancellable) { session.close<Void>().awaitFirstOrNull() }
+                }
             }
         }
     }

@@ -199,6 +199,7 @@ jobs:
           ./gradlew generatePomFileForBluetapeGraphPublication -PsnapshotVersion=-SNAPSHOT \
             --no-daemon --no-configuration-cache --no-build-cache
           ruby scripts/publication/validate_poms.rb
+          ruby scripts/publication/graph_core_consumer_compile_smoke.rb
 
       - name: Detekt static analysis
         run: |

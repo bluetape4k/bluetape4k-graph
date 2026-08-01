@@ -7,6 +7,8 @@ import java.io.Serializable
  *
  * path는 `[VertexStep, EdgeStep, VertexStep, ...]` 순서로 번갈아 구성된다.
  * [Serializable]을 구현하므로 채워진 path도 Java serialization round-trip을 지원한다.
+ * 단, vertex/edge property의 모든 non-null 값과 중첩 map/collection 값은
+ * [java.io.Serializable]이어야 한다. 임의의 `Any` 값까지 자동 변환하지는 않는다.
  *
  * ```kotlin
  * val step: PathStep = PathStep.VertexStep(vertex)
@@ -109,7 +111,7 @@ data class GraphPath(
          *
          * ```kotlin
          * val path = GraphPath.of(alice, bob, carol)
-         * println(path.length)  // 3
+         * println(path.length)  // 0 (vertex-only path)
          * ```
          *
          * @param vertices path에 포함할 vertex 목록.

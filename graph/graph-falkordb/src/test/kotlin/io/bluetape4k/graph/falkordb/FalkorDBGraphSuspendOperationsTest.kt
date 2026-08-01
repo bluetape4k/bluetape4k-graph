@@ -91,6 +91,18 @@ class FalkorDBGraphSuspendOperationsTest : AbstractFalkorDBTest() {
     }
 
     @Test
+    @Order(15)
+    fun `dropGraph propagates coroutine cancellation`() = runSuspendIO {
+        every { cancelledDriver.graph(graphName) } throws CancellationException("cancelled")
+
+        val cancelledOps = FalkorDBGraphSuspendOperations(cancelledDriver, graphName)
+
+        assertFailsWith<CancellationException> {
+            cancelledOps.dropGraph(graphName)
+        }
+    }
+
+    @Test
     @Order(14)
     fun `graphExists preserves backend failures`() = runSuspendIO {
         val failingDriver = mockk<com.falkordb.Driver>()
@@ -102,6 +114,23 @@ class FalkorDBGraphSuspendOperationsTest : AbstractFalkorDBTest() {
         }
 
         ex.message shouldContain "FalkorDB graphExists failed"
+        ex.cause?.cause shouldBeInstanceOf IllegalStateException::class
+    }
+
+    @Test
+    @Order(16)
+    fun `dropGraph preserves backend failures`() = runSuspendIO {
+        val failingDriver = mockk<com.falkordb.Driver>()
+        val failingGraph = mockk<com.falkordb.GraphContextGenerator>(relaxed = true)
+        every { failingDriver.graph(graphName) } returns failingGraph
+        every { failingGraph.deleteGraph() } throws IllegalStateException("redis unavailable")
+        val failingOps = FalkorDBGraphSuspendOperations(failingDriver, graphName)
+
+        val ex = assertFailsWith<GraphQueryException> {
+            failingOps.dropGraph(graphName)
+        }
+
+        ex.message shouldContain "FalkorDB dropGraph failed"
         ex.cause?.cause shouldBeInstanceOf IllegalStateException::class
     }
 

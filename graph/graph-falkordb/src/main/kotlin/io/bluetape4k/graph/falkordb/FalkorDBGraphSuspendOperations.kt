@@ -181,8 +181,15 @@ class FalkorDBGraphSuspendOperations(
             try {
                 driver.graph(name).use { it.deleteGraph() }
                 log.info { "FalkorDB graph dropped: $name" }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
-                log.debug(e) { "dropGraph($name) failed (likely not exists)" }
+                if (e.isMissingFalkorGraph()) {
+                    log.debug(e) { "FalkorDB graph was already absent: $name" }
+                    return@withContext
+                }
+                log.warn(e) { "FalkorDB dropGraph failed: graph=$name" }
+                throw GraphQueryException("FalkorDB dropGraph failed: graph=$name", e)
             }
         }
     }

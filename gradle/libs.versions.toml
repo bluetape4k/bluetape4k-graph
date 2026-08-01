@@ -11,6 +11,8 @@ kotlinx-benchmark = "0.4.17"  # https://mvnrepository.com/artifact/org.jetbrains
 
 # Local Spring Boot plugin and dependency aliases mirror bt4k catalog versions.
 
+kotlinx-coroutines = "1.11.0"  # https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
+
 neo4j-java-driver = "6.1.0"  # https://mvnrepository.com/artifact/org.neo4j.driver/neo4j-java-driver
 neo4j-bolt-connection = "11.0.2"  # https://mvnrepository.com/artifact/org.neo4j.bolt/neo4j-bolt-connection-bom
 
@@ -63,7 +65,7 @@ kotlin-test-junit5 = { module = "org.jetbrains.kotlin:kotlin-test-junit5" }
 
 # kotlinx-coroutines
 kotlinx-coroutines-bom = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-bom" }
-kotlinx-coroutines-core-lib = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core" }
+kotlinx-coroutines-core-lib = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-core-jvm = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm" }
 kotlinx-coroutines-debug = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-debug" }
 kotlinx-coroutines-reactive = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-reactive" }

@@ -103,20 +103,24 @@ class TinkerGraphOperations :
 
     override fun createGraph(name: String) {
         name.requireNotBlank("name")
-        currentGraphName.set(name)
+        writeLock.withLock {
+            currentGraphName.set(name)
+        }
         log.debug { "TinkerGraph logical graph selected: $name" }
     }
 
     override fun dropGraph(name: String) {
         name.requireNotBlank("name")
-        val current = currentGraphName.get()
-        if (name != current) {
-            throw GraphQueryException(
-                "TinkerGraph cannot drop graph '$name': current graph is '$current'. " +
-                    "Call createGraph('$name') before dropping it."
-            )
+        writeLock.withLock {
+            val current = currentGraphName.get()
+            if (name != current) {
+                throw GraphQueryException(
+                    "TinkerGraph cannot drop graph '$name': current graph is '$current'. " +
+                        "Call createGraph('$name') before dropping it."
+                )
+            }
+            g.V().drop().iterate()
         }
-        g.V().drop().iterate()
     }
 
     override fun graphExists(name: String): Boolean {

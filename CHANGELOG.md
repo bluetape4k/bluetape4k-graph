@@ -16,6 +16,19 @@
   통해 chunked path를 사용한다
   ([#233](https://github.com/bluetape4k/bluetape4k-graph/issues/233)).
 
+### Fixed
+
+- **0.6.0 graph contract and publication review**: graph-core의 coroutine
+  `Flow` API를 compile classpath에 고정하고, published POM consumer compile
+  smoke와 compile-scope 감사를 추가했다 ([#440](https://github.com/bluetape4k/bluetape4k-graph/issues/440),
+  [#441](https://github.com/bluetape4k/bluetape4k-graph/issues/441)).
+- **Named graph lifecycle safety**: FalkorDB 삭제 실패를 fail-closed로
+  전파하고, Neo4j/Memgraph/TinkerGraph의 logical graph 선택과 삭제를
+  lifecycle critical section으로 보호했다 ([#442](https://github.com/bluetape4k/bluetape4k-graph/issues/442)).
+- **GraphPath serialization contract**: 중첩 property의 Java serialization
+  조건과 지원하지 않는 값의 실패 동작을 테스트와 KDoc으로 명시했다
+  ([#444](https://github.com/bluetape4k/bluetape4k-graph/issues/444)).
+
 ### Changed
 
 - `0.5.0` 안정 릴리스 이후 `0.6.0` 개발 라인을 열었다.
