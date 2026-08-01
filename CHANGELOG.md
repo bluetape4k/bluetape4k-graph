@@ -15,22 +15,39 @@
   구현을 제공하고, Jackson3 NDJSON export는 `GraphExportOptions.exportChunkSize`를
   통해 chunked path를 사용한다
   ([#233](https://github.com/bluetape4k/bluetape4k-graph/issues/233)).
+- **Typed graph endpoint validation helpers**: graph-core의 sync, suspend,
+  virtual-thread vertex repository에 `requireEndpoint` 계열 확장을 추가해
+  endpoint 누락과 label 불일치를 호출 지점에서 즉시 검증한다
+  ([#398](https://github.com/bluetape4k/bluetape4k-graph/issues/398)).
 
 ### Fixed
 
-- **0.6.0 graph contract and publication review**: graph-core의 coroutine
-  `Flow` API를 compile classpath에 고정하고, published POM consumer compile
-  smoke와 compile-scope 감사를 추가했다 ([#440](https://github.com/bluetape4k/bluetape4k-graph/issues/440),
+- **CodeQL Kotlin catalog pin**: 중앙 version catalog의 정렬된 주석과 공백을
+  허용하면서도 immutable ref와 checksum 검증을 유지하도록 고쳤다
+  ([#437](https://github.com/bluetape4k/bluetape4k-graph/issues/437)).
+- **Gitleaks release asset resolution**: 고정된 도구 버전과 인증된 release
+  metadata를 사용하고, 모호하거나 누락된 asset 및 SHA-256 불일치를 fail-closed로
+  처리하도록 고쳤다 ([#298](https://github.com/bluetape4k/bluetape4k-graph/issues/298)).
+- **0.6.0 graph contract review**: graph-core의 coroutine `Flow` API를
+  compile classpath에 고정하고, 외부 consumer compile smoke와 compile-scope
+  감사를 추가했다 ([#440](https://github.com/bluetape4k/bluetape4k-graph/issues/440),
   [#441](https://github.com/bluetape4k/bluetape4k-graph/issues/441)).
 - **Named graph lifecycle safety**: FalkorDB 삭제 실패를 fail-closed로
   전파하고, Neo4j/Memgraph/TinkerGraph의 logical graph 선택과 삭제를
   lifecycle critical section으로 보호했다 ([#442](https://github.com/bluetape4k/bluetape4k-graph/issues/442)).
+- **Graph existence failure contract**: sync와 suspend `graphExists`가
+  infrastructure failure와 cancellation을 `false`로 숨기지 않고 호출자에게
+  전파하도록 정렬했다
+  ([#443](https://github.com/bluetape4k/bluetape4k-graph/issues/443)).
 - **GraphPath serialization contract**: 중첩 property의 Java serialization
   조건과 지원하지 않는 값의 실패 동작을 테스트와 KDoc으로 명시했다
   ([#444](https://github.com/bluetape4k/bluetape4k-graph/issues/444)).
 
 ### Changed
 
+- **Korean documentation and KDoc consistency**: README와 LLM-facing 문서는
+  유지하면서 single-language 문서와 Kotlin KDoc/comments를 한국어로 정리했다
+  ([#400](https://github.com/bluetape4k/bluetape4k-graph/issues/400)).
 - `0.5.0` 안정 릴리스 이후 `0.6.0` 개발 라인을 열었다.
 - 로컬 `bluetape4k-bom` 참조를 `1.11.1-SNAPSHOT`에 맞췄다.
 - backend-native graph-io bulk loader 가능성을 문서화하고, backend별 fast path를
