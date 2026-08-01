@@ -4,7 +4,6 @@ import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
-import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldNotBeNull
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
@@ -26,7 +25,8 @@ class VirtualThreadSessionAdapterTest {
 
     @BeforeEach
     fun setUp() {
-        // TinkerGraph는 항상 "default" 그래프를 제공하므로 별도 초기화 불필요
+        delegate.createGraph("default")
+        delegate.dropGraph("default")
     }
 
     @Test
@@ -39,6 +39,7 @@ class VirtualThreadSessionAdapterTest {
 
     @Test
     fun `dropGraphAsync delegates and completes`() {
+        adapter.createGraphAsync("social").join()
         val result = adapter.dropGraphAsync("social").join()
         result shouldBeEqualTo Unit
     }
@@ -51,10 +52,10 @@ class VirtualThreadSessionAdapterTest {
     }
 
     @Test
-    fun `graphExistsAsync returns true for any name in TinkerGraph`() {
-        // TinkerGraph는 단일 인메모리 그래프 — 이름과 무관하게 항상 true 반환
+    fun `graphExistsAsync returns false for a non-current name in TinkerGraph`() {
+        // TinkerGraph는 단일 인메모리 그래프 — 현재 logical name만 존재로 보고한다.
         val exists = adapter.graphExistsAsync("nonexistent-graph-xyz").join()
-        exists.shouldBeTrue()
+        exists.shouldBeFalse()
     }
 
     @Test

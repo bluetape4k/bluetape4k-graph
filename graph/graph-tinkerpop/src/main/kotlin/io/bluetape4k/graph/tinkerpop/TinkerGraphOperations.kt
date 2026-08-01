@@ -46,6 +46,7 @@ import org.apache.tinkerpop.gremlin.structure.T
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph
 import java.util.concurrent.Semaphore
+import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__ as AnonymousTraversal
@@ -56,6 +57,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__ as AnonymousT
  * TinkerGraph는 in-memory JVM 그래프 데이터베이스이다.
  *
  * 테스트 및 임베디드 그래프 용도에 적합하다. 서버 프로세스 불필요.
+ * named graph catalog는 제공하지 않으므로 `createGraph(name)`은 logical current name을
+ * 선택한다. `dropGraph(name)`은 선택된 이름과 일치할 때만 현재 graph를 비우며, 다른 이름은
+ * [GraphQueryException]으로 거부한다.
  *
  * ```kotlin
  * val ops = TinkerGraphOperations()
@@ -77,8 +81,11 @@ class TinkerGraphOperations :
     GraphSchemaManagementOperations,
     GraphMergeOperations {
 
-    companion object : KLogging()
+    companion object : KLogging() {
+        private const val DEFAULT_GRAPH_NAME = "default"
+    }
 
+    private val currentGraphName = AtomicReference(DEFAULT_GRAPH_NAME)
     private val graph: TinkerGraph = TinkerGraph.open()
     private val g: GraphTraversalSource = graph.traversal()
     private val schemaManager = TinkerGraphSchemaManager()
@@ -96,17 +103,25 @@ class TinkerGraphOperations :
 
     override fun createGraph(name: String) {
         name.requireNotBlank("name")
-        log.debug { "TinkerGraph session initialized for graph: $name" }
+        currentGraphName.set(name)
+        log.debug { "TinkerGraph logical graph selected: $name" }
     }
 
     override fun dropGraph(name: String) {
         name.requireNotBlank("name")
+        val current = currentGraphName.get()
+        if (name != current) {
+            throw GraphQueryException(
+                "TinkerGraph cannot drop graph '$name': current graph is '$current'. " +
+                    "Call createGraph('$name') before dropping it."
+            )
+        }
         g.V().drop().iterate()
     }
 
     override fun graphExists(name: String): Boolean {
         name.requireNotBlank("name")
-        return true
+        return name == currentGraphName.get()
     }
 
     // -- GraphTransactionalOperations --

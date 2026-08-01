@@ -5,6 +5,8 @@ package io.bluetape4k.graph.repository
  *
  * Ownership: [close] does not close externally injected databases or drivers.
  * Connection pool and driver lifecycles are owned by the Spring container or caller.
+ * Named graph catalog를 제공하지 않는 backend는 `createGraph(name)`을 논리적 current-name
+ * 선택으로 해석하며, `dropGraph(name)`은 이름이 일치할 때만 current graph를 비운다.
  *
  * ```kotlin
  * runBlocking {

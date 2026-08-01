@@ -10,6 +10,7 @@ import io.bluetape4k.graph.repository.transaction
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.testcontainers.graphdb.MemgraphServer
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldBeTrue
@@ -54,6 +55,7 @@ class MemgraphGraphOperationsTest {
 
     @BeforeEach
     fun clearGraph() = runSuspendIO {
+        ops.createGraph("default")
         ops.dropGraph("default")
     }
 
@@ -61,7 +63,7 @@ class MemgraphGraphOperationsTest {
 
     @Test
     @Order(10)
-    fun `graphExists는 항상 true 반환`() = runSuspendIO {
+    fun `기본 current graph가 존재하면 true 반환`() = runSuspendIO {
         ops.graphExists("default").shouldBeTrue()
     }
 
@@ -78,6 +80,25 @@ class MemgraphGraphOperationsTest {
 
         ex.message shouldContain "Memgraph graphExists failed"
         ex.cause shouldBeInstanceOf ServiceUnavailableException::class
+    }
+
+    @Test
+    @Order(13)
+    fun `다른 graph name으로 dropGraph하면 현재 graph를 삭제하지 않는다`() = runSuspendIO {
+        ops.createGraph("current")
+        ops.createVertex("Person", mapOf("name" to "Alice"))
+        ops.graphExists("current").shouldBeTrue()
+        ops.graphExists("other").shouldBeFalse()
+
+        val ex = assertFailsWith<GraphQueryException> {
+            ops.dropGraph("other")
+        }
+
+        ex.message shouldContain "current"
+        ops.countVertices("Person") shouldBeEqualTo 1L
+
+        ops.dropGraph("current")
+        ops.countVertices("Person") shouldBeEqualTo 0L
     }
 
     @Test

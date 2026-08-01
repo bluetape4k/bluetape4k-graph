@@ -55,6 +55,10 @@ import org.neo4j.driver.Transaction
  * Memgraph는 `elementId()` 대신 정수형 `id()`를 사용한다.
  * Cypher 쿼리에서 `id(n) = toInteger($id)` 형태로 노드를 조회한다.
  *
+ * Memgraph의 named graph catalog는 사용하지 않으므로 `createGraph(name)`은 logical current
+ * name만 선택한다. `dropGraph(name)`은 선택된 이름과 일치할 때만 해당 database의 모든
+ * node와 edge를 비우며, 다른 이름은 [GraphQueryException]으로 거부한다.
+ *
  * blocking [Session]을 사용한다.
  *
  *
@@ -79,7 +83,17 @@ class MemgraphGraphOperations(
     private val database: String = "memgraph",
 ): GraphOperations, GraphTransactionalOperations, GraphSchemaManagementOperations, GraphMergeOperations {
 
-    companion object: KLogging()
+    companion object: KLogging() {
+        private const val DEFAULT_GRAPH_NAME = "default"
+    }
+
+    @Volatile
+    private var currentGraphName: String = DEFAULT_GRAPH_NAME
+
+    private fun isCurrentGraph(name: String): Boolean {
+        val current = currentGraphName
+        return name == current || (current == DEFAULT_GRAPH_NAME && name == database)
+    }
 
     private fun session(): Session =
         driver.session(SessionConfig.builder().withDatabase(database).build())
@@ -99,11 +113,19 @@ class MemgraphGraphOperations(
 
     override fun createGraph(name: String) {
         name.requireNotBlank("name")
-        log.info { "Memgraph graph session initialized for database: $name" }
+        currentGraphName = name
+        log.info { "Memgraph logical graph selected for database '$database': $name" }
     }
 
     override fun dropGraph(name: String) {
         name.requireNotBlank("name")
+        val current = currentGraphName
+        if (!isCurrentGraph(name)) {
+            throw GraphQueryException(
+                "Memgraph cannot drop graph '$name': current graph is '$current'. " +
+                    "Call createGraph('$name') before dropping it."
+            )
+        }
 
         runQuery("MATCH (n) DETACH DELETE n") { it }
     }
@@ -114,7 +136,7 @@ class MemgraphGraphOperations(
         return try {
             session().use { s ->
                 s.run("RETURN 1")
-                true
+                isCurrentGraph(name)
             }
         } catch (e: org.neo4j.driver.exceptions.DatabaseException) {
             if (e.isMissingDatabaseFailure()) false else throw e.asGraphExistsFailure("Memgraph", name)
