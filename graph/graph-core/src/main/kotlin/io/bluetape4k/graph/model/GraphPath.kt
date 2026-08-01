@@ -6,6 +6,7 @@ import java.io.Serializable
  * graph path의 step. vertex 또는 edge 중 하나다.
  *
  * path는 `[VertexStep, EdgeStep, VertexStep, ...]` 순서로 번갈아 구성된다.
+ * [Serializable]을 구현하므로 채워진 path도 Java serialization round-trip을 지원한다.
  *
  * ```kotlin
  * val step: PathStep = PathStep.VertexStep(vertex)
@@ -13,7 +14,11 @@ import java.io.Serializable
  * ```
  *
  */
-sealed class PathStep {
+sealed class PathStep: Serializable {
+    companion object {
+        private const val serialVersionUID: Long = 1L
+    }
+
     /**
      * path 안의 vertex step.
      *
@@ -24,7 +29,11 @@ sealed class PathStep {
      *
      * @property vertex 이 step의 vertex.
      */
-    data class VertexStep(val vertex: GraphVertex): PathStep()
+    data class VertexStep(val vertex: GraphVertex): PathStep() {
+        companion object {
+            private const val serialVersionUID: Long = 1L
+        }
+    }
 
     /**
      * path 안의 edge step.
@@ -36,7 +45,11 @@ sealed class PathStep {
      *
      * @property edge 이 step의 edge.
      */
-    data class EdgeStep(val edge: GraphEdge): PathStep()
+    data class EdgeStep(val edge: GraphEdge): PathStep() {
+        companion object {
+            private const val serialVersionUID: Long = 1L
+        }
+    }
 }
 
 /**

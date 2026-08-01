@@ -31,8 +31,21 @@ jobs:
       - name: Pin Kotlin for CodeQL extractor
         if: matrix.language == 'java-kotlin'
         run: |
-          perl -0pi -e 's/kotlin = "2\.4\.0"/kotlin = "2.3.21"/' gradle/libs.versions.toml
-          grep -n 'kotlin = "2.3.21"' gradle/libs.versions.toml
+          catalog_ref="$(sed -n 's/.*orElse("\([0-9a-f]\{40,64\}\)").*/\1/p' settings.gradle.kts)"
+          test -n "$catalog_ref"
+          catalog_path="$RUNNER_TEMP/bluetape4k-codeql-libs.versions.toml"
+          checksum_path="$RUNNER_TEMP/bluetape4k-codeql-libs.versions.toml.sha256"
+          catalog_base_url="https://raw.githubusercontent.com/bluetape4k/bluetape4k-dependencies/$catalog_ref/gradle"
+          curl --fail --silent --show-error --location --retry 3 \
+            "$catalog_base_url/libs.versions.toml" --output "$catalog_path"
+          curl --fail --silent --show-error --location --retry 3 \
+            "$catalog_base_url/libs.versions.toml.sha256" --output "$checksum_path"
+          expected_checksum="$(awk '{print $1}' "$checksum_path")"
+          actual_checksum="$(shasum -a 256 "$catalog_path" | awk '{print $1}')"
+          test "$actual_checksum" = "$expected_checksum"
+          perl -0pi -e 's/^kotlin\s*=\s*"2\.4\.0"$/kotlin = "2.3.21"/m' "$catalog_path"
+          grep -n '^kotlin = "2.3.21"$' "$catalog_path"
+          echo "BLUETAPE4K_DEPENDENCIES_CATALOG_PATH=$catalog_path" >> "$GITHUB_ENV"
 
       - name: Setup JDK 21
         if: matrix.language == 'java-kotlin'

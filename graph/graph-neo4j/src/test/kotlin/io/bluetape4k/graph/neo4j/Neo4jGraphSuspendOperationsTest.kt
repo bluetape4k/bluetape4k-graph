@@ -1,6 +1,7 @@
 package io.bluetape4k.graph.neo4j
 
 import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withTimeout
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
+import io.bluetape4k.assertions.shouldBeInstanceOf
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
@@ -35,6 +37,11 @@ import org.junit.jupiter.api.TestMethodOrder
 import org.neo4j.driver.AuthTokens
 import org.neo4j.driver.Driver
 import org.neo4j.driver.GraphDatabase
+import org.neo4j.driver.SessionConfig
+import org.neo4j.driver.exceptions.ServiceUnavailableException
+import org.neo4j.driver.reactivestreams.ReactiveSession
+import io.mockk.every
+import io.mockk.mockk
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 class Neo4jGraphSuspendOperationsTest {
@@ -67,6 +74,23 @@ class Neo4jGraphSuspendOperationsTest {
     @Order(10)
     fun `graphExists는 항상 true 반환`() = runSuspendIO {
         ops.graphExists("default").shouldBeTrue()
+    }
+
+    @Test
+    @Order(11)
+    fun `graphExists preserves driver failures`() = runSuspendIO {
+        val failingDriver = mockk<Driver>()
+        every {
+            failingDriver.session(ReactiveSession::class.java, any<SessionConfig>())
+        } throws ServiceUnavailableException("neo4j unavailable")
+        val failingOps = Neo4jGraphSuspendOperations(failingDriver)
+
+        val ex = assertFailsWith<GraphQueryException> {
+            failingOps.graphExists("default")
+        }
+
+        ex.message shouldContain "Neo4j graphExists failed"
+        ex.cause shouldBeInstanceOf ServiceUnavailableException::class
     }
 
     @Test

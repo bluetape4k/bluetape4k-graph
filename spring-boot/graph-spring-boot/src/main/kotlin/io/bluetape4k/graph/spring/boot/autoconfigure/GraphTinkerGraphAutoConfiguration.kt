@@ -20,7 +20,8 @@ import org.springframework.context.annotation.Configuration
 /**
  * In-memory TinkerGraph backend auto-configuration.
  *
- * `bluetape4k.graph.backend=tinkergraph`이거나 backend property가 없을 때 활성화된다. TinkerGraph는 외부 service dependency가 없으므로 기본 backend다.
+ * `bluetape4k.graph.backend=tinkergraph`이거나 backend property가 없을 때 활성화된다.
+ * TinkerGraph는 외부 service dependency가 없으므로 기본 backend다.
  *
  * 예제:
  *

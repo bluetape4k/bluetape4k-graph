@@ -8,6 +8,10 @@ import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContainSame
 import io.bluetape4k.assertions.shouldHaveSize
 import org.junit.jupiter.api.Test
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
 
 class GraphPathTest {
 
@@ -106,6 +110,31 @@ class GraphPathTest {
     fun `EMPTY는 싱글턴이다`() {
         GraphPath.EMPTY shouldBeEqualTo GraphPath(emptyList())
         GraphPath.EMPTY.isEmpty.shouldBeTrue()
+    }
+
+    @Test
+    fun `채워진 경로는 Java serialization round-trip을 지원한다`() {
+        val v1 = vertex("1")
+        val v2 = vertex("2")
+        val e1 = edge("e1", "1", "2")
+        val path = GraphPath(
+            steps = listOf(
+                PathStep.VertexStep(v1),
+                PathStep.EdgeStep(e1),
+                PathStep.VertexStep(v2),
+            ),
+        )
+
+        val bytes = ByteArrayOutputStream().use { output ->
+            ObjectOutputStream(output).use { it.writeObject(path) }
+            output.toByteArray()
+        }
+
+        val restored = ObjectInputStream(ByteArrayInputStream(bytes)).use {
+            it.readObject() as GraphPath
+        }
+
+        restored shouldBeEqualTo path
     }
 
     @Test

@@ -5,7 +5,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 /**
  * bluetape4k Graph 공통 auto-configuration property.
  *
- * `bluetape4k.graph.backend`는 active backend를 선택한다. 지원 값은 `tinkergraph`, `neo4j`, `memgraph`, `age`, `falkordb`다. 값이 없으면 `matchIfMissing=true`로 TinkerGraph가 활성화된다.
+ * `bluetape4k.graph.backend`는 active backend를 선택한다. 지원 값은 `tinkergraph`, `neo4j`, `memgraph`,
+ * `age`, `falkordb`다. 값이 없으면 `matchIfMissing=true`로 TinkerGraph가 활성화된다.
  *
  * 예제:
  *

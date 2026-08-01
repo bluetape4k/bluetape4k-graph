@@ -33,6 +33,7 @@ import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.warn
 import io.bluetape4k.support.requireNotBlank
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
@@ -91,6 +92,9 @@ class Neo4jGraphSuspendOperations(
             ReactiveSession::class.java,
             SessionConfig.builder().withDatabase(database).build(),
         )
+
+    private fun failGraphExists(e: Throwable, name: String): Nothing =
+        throw e.asGraphExistsFailure("Neo4j", name)
 
     override fun schemaManager(): GraphSuspendSchemaManager =
         Neo4jGraphSchemaManager(driver, database).asSuspendSchemaManager()
@@ -258,14 +262,21 @@ class Neo4jGraphSuspendOperations(
     override suspend fun graphExists(name: String): Boolean {
         name.requireNotBlank("name")
 
-        val s = session()
+        var s: ReactiveSession? = null
         return try {
-            val result = s.run(Query("RETURN 1")).awaitSingle()
+            val session = session().also { s = it }
+            val result = session.run(Query("RETURN 1")).awaitSingle()
             result.records().awaitFirstOrNull() != null
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: org.neo4j.driver.exceptions.DatabaseException) {
+            if (e.isMissingDatabaseFailure()) false else failGraphExists(e, name)
         } catch (e: Exception) {
-            false
+            failGraphExists(e, name)
         } finally {
-            withContext(NonCancellable) { s.close<Void>().awaitFirstOrNull() }
+            s?.let { session ->
+                withContext(NonCancellable) { session.close<Void>().awaitFirstOrNull() }
+            }
         }
     }
 

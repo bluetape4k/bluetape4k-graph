@@ -195,8 +195,7 @@ class FalkorDBGraphSuspendOperations(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                log.warn(e) { "graphExists($name) failed; treating as false" }
-                false
+                throw GraphQueryException("FalkorDB graphExists failed: graph=$name", e)
             }
         }
     }

@@ -61,7 +61,8 @@ class GraphMemgraphAutoConfiguration {
     /**
      * Memgraph driver bean을 생성하거나 재사용한다.
      *
-     * Memgraph는 Neo4j Bolt 호환 Java driver를 사용한다. 일반 [Driver] bean은 Neo4j backend 소유일 수 있으므로 `memgraphDriver`라는 명시적 이름의 bean만 재사용한다.
+     * Memgraph는 Neo4j Bolt 호환 Java driver를 사용한다. 일반 [Driver] bean은 Neo4j backend 소유일 수
+     * 있으므로 `memgraphDriver`라는 명시적 이름의 bean만 재사용한다.
      */
     @Bean(name = ["memgraphDriver"], destroyMethod = "close")
     @ConditionalOnMissingBean(name = ["memgraphDriver"])
