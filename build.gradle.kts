@@ -73,7 +73,6 @@ allprojects {
 // where `libs` is not in scope (different receiver type in the lambda).
 val rootLibs = libs
 val rootBt4k = bt4k
-val detektSupportedKotlinVersion = "2.3.21"
 val bt4kCatalog = extensions.getByType<org.gradle.api.artifacts.VersionCatalogsExtension>().named("bt4k")
 fun bt4kLibrary(alias: String) = bt4kCatalog.findLibrary(alias).get()
 fun bt4kVersion(alias: String): String {
@@ -82,6 +81,7 @@ fun bt4kVersion(alias: String): String {
         .ifBlank { version.preferredVersion }
         .ifBlank { version.strictVersion }
 }
+val detektSupportedKotlinVersion = bt4kVersion("kotlin")
 
 
 fun Project.isNonPublishedModule(): Boolean {
@@ -180,7 +180,7 @@ subprojects {
             resolutionStrategy.eachDependency {
                 if (requested.group == "org.jetbrains.kotlin") {
                     useVersion(detektSupportedKotlinVersion)
-                    because("detekt 2.0.0-alpha.3 is built and validated with Kotlin 2.3.21")
+                    because("detekt and Kotlin compiler artifacts must use the centrally governed Kotlin version")
                 }
             }
         }
