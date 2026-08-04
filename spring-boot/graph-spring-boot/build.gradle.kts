@@ -40,7 +40,7 @@ dependencies {
     testImplementation(bt4k.bluetape4k.testcontainers)
     testImplementation(libs.testcontainers.neo4j)
     testImplementation(libs.testcontainers.postgresql)
-    testImplementation(libs.neo4j.java.driver)
+    testImplementation(bt4k.neo4j.driver6)
     testRuntimeOnly(bt4k.postgresql)
     testImplementation(bt4k.hikaricp)
     testImplementation("org.springframework.boot:spring-boot-health")

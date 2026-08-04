@@ -1,5 +1,5 @@
 plugins {
-    alias(libs.plugins.kotlinx.benchmark)
+    alias(bt4k.plugins.kotlinx.benchmark)
     kotlin("plugin.allopen")
 }
 
@@ -41,7 +41,7 @@ dependencies {
     implementation(bt4k.bluetape4k.coroutines)
     implementation(bt4k.bluetape4k.virtualthread.api)
     implementation(bt4k.bluetape4k.virtualthread.jdk21)
-    implementation(libs.kotlinx.benchmark.runtime)
+    implementation(bt4k.kotlinx.benchmark.runtime)
 
     testImplementation(bt4k.bluetape4k.junit5)
 }

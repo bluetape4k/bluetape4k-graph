@@ -1,8 +1,8 @@
 dependencies {
     api(project(":bluetape4k-graph-core"))
 
-    api(libs.tinkerpop.gremlin.core)
-    api(libs.tinkergraph.gremlin)
+    api(bt4k.tinkerpop.gremlin.core)
+    api(bt4k.tinkergraph.gremlin)
 
     implementation(bt4k.bluetape4k.coroutines)
     implementation(libs.kotlinx.coroutines.core.lib)

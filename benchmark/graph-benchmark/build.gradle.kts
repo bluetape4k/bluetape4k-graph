@@ -1,5 +1,5 @@
 plugins {
-    alias(libs.plugins.kotlinx.benchmark)
+    alias(bt4k.plugins.kotlinx.benchmark)
     kotlin("plugin.allopen")
     kotlin("plugin.jpa")
 }
@@ -145,7 +145,7 @@ dependencies {
     implementation(project(":bluetape4k-graph-okio"))
     implementation(project(":bluetape4k-graph-tinkerpop"))
 
-    implementation(libs.kotlinx.benchmark.runtime)
+    implementation(bt4k.kotlinx.benchmark.runtime)
     implementation(bt4k.bluetape4k.core)
     implementation(bt4k.bluetape4k.logging)
     implementation(bt4k.bluetape4k.virtualthread.api)
@@ -154,10 +154,10 @@ dependencies {
     implementation(bt4k.exposed.core)
     implementation(bt4k.exposed.jdbc)
     implementation(bt4k.hikaricp)
-    implementation(libs.jakarta.persistence.api)
+    implementation(bt4k.jakarta.persistence.v32)
     implementation("org.hibernate.orm:hibernate-core")
-    implementation(libs.jfalkordb)
-    implementation(libs.neo4j.java.driver)
+    implementation(bt4k.jfalkordb)
+    implementation(bt4k.neo4j.driver6)
     implementation(bt4k.postgresql)
 
     implementation(bt4k.bluetape4k.testcontainers)
