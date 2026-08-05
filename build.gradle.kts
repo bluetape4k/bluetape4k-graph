@@ -438,7 +438,7 @@ subprojects {
 
             // Compressor
             dependency(rootBt4k.snappy.java.get().toString())
-            dependency(rootBt4k.org.lz4.java.get().toString())
+            dependency(rootBt4k.at.yawk.lz4.java.get().toString())
             dependency("com.github.luben:zstd-jni:${bt4kVersion("zstd-jni")}")
 
             dependency(rootBt4k.findbugs.get().toString())

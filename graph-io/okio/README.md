@@ -88,7 +88,7 @@ enum class Compressor { GZIP, DEFLATE, LZ4, SNAPPY, ZSTD, BZIP2 }
 |-----------|-----------|:---------------:|
 | `GZIP` | JDK built-in | ✅ |
 | `DEFLATE` | JDK built-in | ✅ |
-| `LZ4` | `org.lz4:lz4-java` | Optional |
+| `LZ4` | `at.yawk.lz4:lz4-java` | Optional |
 | `SNAPPY` | `org.xerial.snappy:snappy-java` | Optional |
 | `ZSTD` | `com.github.luben:zstd-jni` | Optional |
 | `BZIP2` | `org.apache.commons:commons-compress` | Optional |
@@ -360,7 +360,7 @@ dependencies {
     implementation("io.github.bluetape4k.graph:bluetape4k-graph-okio:VERSION")
 
     // Optional compression libraries — add only what you need
-    implementation("org.lz4:lz4-java:1.8.0")
+    implementation("at.yawk.lz4:lz4-java:1.11.1")
     implementation("org.xerial.snappy:snappy-java:1.1.10.7")
     implementation("com.github.luben:zstd-jni:1.5.6-6")
     implementation("org.apache.commons:commons-compress:1.28.0")

@@ -34,7 +34,7 @@ enum class Compressor(
      * LZ4 고속 압축. `lz4-java` 의존성 필요.
      *
      * ```kotlin
-     * implementation("org.lz4:lz4-java:<version>")
+     * implementation("at.yawk.lz4:lz4-java:<version>")
      * ```
      */
     LZ4(
@@ -42,7 +42,7 @@ enum class Compressor(
         installHint = """
             LZ4 압축을 사용하려면 다음 의존성을 추가하세요:
               // build.gradle.kts
-              implementation("org.lz4:lz4-java:<version>")
+              implementation("at.yawk.lz4:lz4-java:<version>")
         """.trimIndent(),
     ),
     /**

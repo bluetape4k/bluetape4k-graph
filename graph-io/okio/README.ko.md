@@ -84,7 +84,7 @@ enum class Compressor { GZIP, DEFLATE, LZ4, SNAPPY, ZSTD, BZIP2 }
 |-------|--------|:----------:|
 | `GZIP` | JDK 내장 | ✅ |
 | `DEFLATE` | JDK 내장 | ✅ |
-| `LZ4` | `org.lz4:lz4-java` | 선택적 |
+| `LZ4` | `at.yawk.lz4:lz4-java` | 선택적 |
 | `SNAPPY` | `org.xerial.snappy:snappy-java` | 선택적 |
 | `ZSTD` | `com.github.luben:zstd-jni` | 선택적 |
 | `BZIP2` | `org.apache.commons:commons-compress` | 선택적 |
@@ -342,7 +342,7 @@ dependencies {
     implementation("io.github.bluetape4k.graph:bluetape4k-graph-okio:VERSION")
 
     // 선택적 압축 라이브러리 (필요한 것만 추가)
-    implementation("org.lz4:lz4-java:1.8.0")
+    implementation("at.yawk.lz4:lz4-java:1.11.1")
     implementation("org.xerial.snappy:snappy-java:1.1.10.7")
     implementation("com.github.luben:zstd-jni:1.5.6-6")
     implementation("org.apache.commons:commons-compress:1.28.0")
