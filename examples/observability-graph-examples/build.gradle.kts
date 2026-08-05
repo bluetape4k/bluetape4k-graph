@@ -15,7 +15,7 @@ dependencies {
     testImplementation(libs.testcontainers.core)
     testImplementation(libs.testcontainers.neo4j)
     testImplementation(libs.testcontainers.postgresql)
-    testImplementation(libs.neo4j.java.driver)
+    testImplementation(bt4k.neo4j.driver6)
     testRuntimeOnly(bt4k.postgresql)
     testImplementation(bt4k.hikaricp)
     testImplementation(libs.kotlinx.coroutines.test.lib)

@@ -14,7 +14,7 @@ dependencies {
     testImplementation(libs.testcontainers.core)
     testImplementation(libs.testcontainers.neo4j)
     testImplementation(libs.testcontainers.postgresql)
-    testImplementation(libs.neo4j.java.driver)       // bluetape4k-testcontainers는 compileOnly로 선언
+    testImplementation(bt4k.neo4j.driver6)       // bluetape4k-testcontainers는 compileOnly로 선언
     testRuntimeOnly(bt4k.postgresql)           // bluetape4k-testcontainers는 compileOnly로 선언
     testImplementation(bt4k.hikaricp)
     testImplementation(libs.kotlinx.coroutines.test.lib)

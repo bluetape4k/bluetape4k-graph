@@ -1,5 +1,5 @@
 plugins {
-    alias(libs.plugins.kotlinx.benchmark)
+    alias(bt4k.plugins.kotlinx.benchmark)
     kotlin("plugin.allopen")
 }
 
@@ -27,7 +27,7 @@ dependencies {
     implementation(project(":bluetape4k-graph-core"))
     implementation(project(":bluetape4k-graph-age"))
 
-    implementation(libs.kotlinx.benchmark.runtime)
+    implementation(bt4k.kotlinx.benchmark.runtime)
     implementation(bt4k.bluetape4k.core)
     implementation(bt4k.bluetape4k.logging)
     implementation(bt4k.bluetape4k.coroutines)

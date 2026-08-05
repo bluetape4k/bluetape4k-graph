@@ -21,14 +21,14 @@ plugins {
     alias(bt4k.plugins.kotlin.noarg) apply false
     alias(bt4k.plugins.kotlin.jpa) apply false
     alias(bt4k.plugins.kotlin.serialization) apply false
-    alias(libs.plugins.kotlinx.atomicfu)
+    alias(bt4k.plugins.kotlinx.atomicfu)
 
-    alias(libs.plugins.detekt)
+    alias(bt4k.plugins.detekt.dev)
 
     alias(bt4k.plugins.dependency.management)
 
     alias(bt4k.plugins.dokka)
-    alias(libs.plugins.test.logger)
+    alias(bt4k.plugins.test.logger)
     alias(bt4k.plugins.shadow) apply false
     alias(bt4k.plugins.gatling) apply false
 
@@ -72,7 +72,7 @@ allprojects {
 // Capture root-project catalog reference once; used inside subprojects {} closures
 // where `libs` is not in scope (different receiver type in the lambda).
 val rootLibs = libs
-val detektSupportedKotlinVersion = "2.3.21"
+val rootBt4k = bt4k
 val bt4kCatalog = extensions.getByType<org.gradle.api.artifacts.VersionCatalogsExtension>().named("bt4k")
 fun bt4kLibrary(alias: String) = bt4kCatalog.findLibrary(alias).get()
 fun bt4kVersion(alias: String): String {
@@ -81,6 +81,7 @@ fun bt4kVersion(alias: String): String {
         .ifBlank { version.preferredVersion }
         .ifBlank { version.strictVersion }
 }
+val detektSupportedKotlinVersion = bt4kVersion("kotlin")
 
 
 fun Project.isNonPublishedModule(): Boolean {
@@ -179,7 +180,7 @@ subprojects {
             resolutionStrategy.eachDependency {
                 if (requested.group == "org.jetbrains.kotlin") {
                     useVersion(detektSupportedKotlinVersion)
-                    because("detekt 2.0.0-alpha.3 is built and validated with Kotlin 2.3.21")
+                    because("detekt and Kotlin compiler artifacts must use the centrally governed Kotlin version")
                 }
             }
         }
@@ -331,17 +332,17 @@ subprojects {
             mavenBom(bt4kLibrary("bluetape4k-bom").get().toString())
             mavenBom("org.springframework.boot:spring-boot-dependencies:${bt4kVersion("spring-boot4")}")
 
-            mavenBom(rootLibs.feign.bom.get().toString())
-            mavenBom(rootLibs.micrometer.bom.get().toString())
-            mavenBom(rootLibs.micrometer.tracing.bom.get().toString())
+            mavenBom(rootBt4k.feign.bom.get().toString())
+            mavenBom(rootBt4k.micrometer.bom.get().toString())
+            mavenBom(rootBt4k.micrometer.tracing.bom.get().toString())
             mavenBom("org.apache.logging.log4j:log4j-bom:${bt4kVersion("log4j")}")
             mavenBom("org.testcontainers:testcontainers-bom:${bt4kVersion("testcontainers")}")
-            mavenBom(rootLibs.junit.bom.get().toString())
-            mavenBom(rootLibs.okhttp3.bom.get().toString())
+            mavenBom(rootBt4k.junit.bom.get().toString())
+            mavenBom(rootBt4k.okhttp3.bom.get().toString())
             mavenBom("io.netty:netty-bom:${bt4kVersion("netty")}")
             mavenBom("com.fasterxml.jackson:jackson-bom:${bt4kVersion("jackson")}")
             mavenBom("tools.jackson:jackson-bom:${bt4kVersion("jackson3")}")
-            mavenBom(rootLibs.neo4j.bolt.connection.bom.get().toString())
+            mavenBom(rootBt4k.neo4j.bolt.connection.bom.get().toString())
 
             mavenBom("org.jetbrains.kotlinx:kotlinx-coroutines-bom:${bt4kVersion("kotlinx-coroutines")}")
             mavenBom("org.jetbrains.kotlin:kotlin-bom:${bt4kVersion("kotlin")}")
@@ -381,7 +382,7 @@ subprojects {
             dependency("tools.jackson:jackson-bom:${bt4kVersion("jackson3")}")
             // </central-catalog-local-aliases>
             dependency("org.postgresql:postgresql:${bt4kVersion("postgresql")}")
-            dependency(rootLibs.jetbrains.annotations.get().toString())
+            dependency(rootBt4k.jetbrains.annotations.get().toString())
 
             dependency("org.jetbrains.kotlinx:kotlinx-coroutines-bom:${bt4kVersion("kotlinx-coroutines")}")
             dependency("org.jetbrains.kotlinx:kotlinx-coroutines-core:${bt4kVersion("kotlinx-coroutines")}")
@@ -394,16 +395,16 @@ subprojects {
             dependency("org.jetbrains.kotlinx:kotlinx-coroutines-test-jvm:${bt4kVersion("kotlinx-coroutines")}")
 
             // Apache Commons
-            dependency(rootLibs.commons.beanutils.get().toString())
-            dependency(rootLibs.commons.collections4.get().toString())
+            dependency(rootBt4k.commons.beanutils.get().toString())
+            dependency(rootBt4k.commons.collections4.get().toString())
             dependency(bt4kLibrary("commons-compress").get().toString())
             dependency("commons-codec:commons-codec:${bt4kVersion("commons-codec")}")
             dependency("org.apache.commons:commons-csv:${bt4kVersion("commons-csv")}")
             dependency(bt4kLibrary("commons-lang3").get().toString())
             dependency("commons-logging:commons-logging:${bt4kVersion("commons-logging")}")
-            dependency(rootLibs.commons.math3.get().toString())
+            dependency(rootBt4k.commons.math3.get().toString())
             dependency("org.apache.commons:commons-pool2:${bt4kVersion("commons-pool2")}")
-            dependency(rootLibs.commons.text.get().toString())
+            dependency(rootBt4k.commons.text.get().toString())
             dependency("org.apache.commons:commons-exec:${bt4kVersion("commons-exec")}")
             dependency("commons-io:commons-io:${bt4kVersion("commons-io")}")
 
@@ -411,23 +412,23 @@ subprojects {
             dependency("org.slf4j:jcl-over-slf4j:${bt4kVersion("slf4j")}")
             dependency("org.slf4j:jul-to-slf4j:${bt4kVersion("slf4j")}")
             dependency("org.slf4j:log4j-over-slf4j:${bt4kVersion("slf4j")}")
-            dependency(rootLibs.logback.classic.get().toString())
-            dependency(rootLibs.logback.core.get().toString())
+            dependency(rootBt4k.logback.asProvider().get().toString())
+            dependency(rootBt4k.logback.core.get().toString())
 
             // jakarta
             dependency(bt4kLibrary("jakarta-activation-api").get().toString())
-            dependency(rootLibs.jakarta.annotation.api.get().toString())
-            dependency(rootLibs.jakarta.el.api.get().toString())
-            dependency(rootLibs.jakarta.inject.api.get().toString())
-            dependency(rootLibs.jakarta.interceptor.api.get().toString())
-            dependency(rootLibs.jakarta.jms.api.get().toString())
-            dependency(rootLibs.jakarta.json.api.get().toString())
-            dependency(rootLibs.jakarta.json.impl.get().toString())
-            dependency(rootLibs.jakarta.persistence.api.get().toString())
-            dependency(rootLibs.jakarta.servlet.api.get().toString())
-            dependency(rootLibs.jakarta.transaction.api.get().toString())
-            dependency(rootLibs.jakarta.validation.api.get().toString())
-            dependency(rootLibs.jakarta.ws.rs.api.get().toString())
+            dependency(rootBt4k.jakarta.annotation.api.get().toString())
+            dependency(rootBt4k.jakarta.el.api.get().toString())
+            dependency(rootBt4k.jakarta.inject.api.get().toString())
+            dependency(rootBt4k.jakarta.interceptor.api.get().toString())
+            dependency(rootBt4k.jakarta.jms.api.get().toString())
+            dependency(rootBt4k.jakarta.json.api.get().toString())
+            dependency(rootBt4k.jakarta.json.impl.get().toString())
+            dependency(rootBt4k.jakarta.persistence.v32.get().toString())
+            dependency(rootBt4k.jakarta.servlet.api.get().toString())
+            dependency(rootBt4k.jakarta.transaction.api.get().toString())
+            dependency(rootBt4k.jakarta.validation.api.get().toString())
+            dependency(rootBt4k.jakarta.ws.rs.api.get().toString())
             dependency("jakarta.xml.bind:jakarta.xml.bind-api:${bt4kVersion("jakarta-xml-bind")}")
 
             // Jackson
@@ -436,43 +437,43 @@ subprojects {
             dependency("tools.jackson.core:jackson-core:${bt4kVersion("jackson3")}")
 
             // Compressor
-            dependency(rootLibs.snappy.java.get().toString())
-            dependency(rootLibs.lz4.java.get().toString())
+            dependency(rootBt4k.snappy.java.get().toString())
+            dependency(rootBt4k.at.yawk.lz4.java.get().toString())
             dependency("com.github.luben:zstd-jni:${bt4kVersion("zstd-jni")}")
 
-            dependency(rootLibs.findbugs.get().toString())
+            dependency(rootBt4k.findbugs.get().toString())
             dependency("com.google.guava:guava:${bt4kVersion("guava")}")
 
-            dependency(rootLibs.kryo5.get().toString())
+            dependency(rootBt4k.kryo5.get().toString())
             dependency("org.apache.fory:fory-kotlin:${bt4kVersion("fory-kotlin")}")
 
-            dependency(rootLibs.caffeine.core.get().toString())
-            dependency(rootLibs.caffeine.jcache.get().toString())
+            dependency(rootBt4k.caffeine.core.get().toString())
+            dependency(rootBt4k.caffeine.jcache.get().toString())
 
-            dependency(rootLibs.objenesis.get().toString())
+            dependency(rootBt4k.objenesis.get().toString())
             dependency("org.ow2.asm:asm:${bt4kVersion("ow2-asm")}")
 
             dependency("com.esotericsoftware:reflectasm:${bt4kVersion("reflectasm")}")
 
-            dependency(rootLibs.junit.bom.get().toString())
-            dependency(rootLibs.junit.jupiter.all.get().toString())
-            dependency(rootLibs.junit.jupiter.api.get().toString())
-            dependency(rootLibs.junit.jupiter.engine.get().toString())
-            dependency(rootLibs.junit.jupiter.migrationsupport.get().toString())
-            dependency(rootLibs.junit.jupiter.params.get().toString())
-            dependency(rootLibs.junit.platform.commons.get().toString())
-            dependency(rootLibs.junit.platform.engine.get().toString())
-            dependency(rootLibs.junit.platform.launcher.get().toString())
-            dependency(rootLibs.junit.platform.runner.get().toString())
+            dependency(rootBt4k.junit.bom.get().toString())
+            dependency(rootBt4k.junit.jupiter.all.get().toString())
+            dependency(rootBt4k.junit.jupiter.api.get().toString())
+            dependency(rootBt4k.junit.jupiter.engine.get().toString())
+            dependency(rootBt4k.junit.jupiter.migrationsupport.get().toString())
+            dependency(rootBt4k.junit.jupiter.params.get().toString())
+            dependency(rootBt4k.junit.platform.commons.get().toString())
+            dependency(rootBt4k.junit.platform.engine.get().toString())
+            dependency(rootBt4k.junit.platform.launcher.get().toString())
+            dependency(rootBt4k.junit.platform6.runner.get().toString())
 
             dependency("org.assertj:assertj-core:${bt4kVersion("assertj-core")}")
 
-            dependency(rootLibs.mockk.get().toString())
-            dependency(rootLibs.datafaker.get().toString())
+            dependency(rootBt4k.mockk.get().toString())
+            dependency(rootBt4k.datafaker.get().toString())
             dependency("io.github.benas:random-beans:${bt4kVersion("random-beans")}")
 
-            dependency(rootLibs.jsonpath.get().toString())
-            dependency(rootLibs.jsonassert.get().toString())
+            dependency(rootBt4k.jsonpath.v3.get().toString())
+            dependency(rootBt4k.jsonassert.v2.get().toString())
 
         }
     }
@@ -488,24 +489,24 @@ subprojects {
         add("testImplementation", rootLibs.kotlin.test.junit5)
 
         add("implementation", rootLibs.kotlinx.coroutines.core.lib)
-        add("implementation", rootLibs.kotlinx.atomicfu)
+        add("implementation", rootBt4k.kotlinx.atomicfu)
 
         add("implementation", bt4kLibrary("slf4j-api"))
         add("implementation", bt4kLibrary("bluetape4k-logging"))
-        add("implementation", rootLibs.logback.classic)
+        add("implementation", rootBt4k.logback.asProvider())
         add("testImplementation", rootLibs.jcl.over.slf4j)
         add("testImplementation", rootLibs.jul.to.slf4j)
         add("testImplementation", rootLibs.log4j.over.slf4j)
 
         // JUnit 5
         add("testImplementation", bt4kLibrary("bluetape4k-junit5"))
-        add("testImplementation", rootLibs.junit.jupiter.all)
-        add("testRuntimeOnly", rootLibs.junit.platform.engine)
+        add("testImplementation", rootBt4k.junit.jupiter.all)
+        add("testRuntimeOnly", rootBt4k.junit.platform.engine)
 
-        add("testImplementation", rootLibs.mockk)
+        add("testImplementation", rootBt4k.mockk)
         add("testImplementation", "org.awaitility:awaitility-kotlin:${bt4kVersion("awaitility")}")
 
-        add("testImplementation", rootLibs.datafaker)
+        add("testImplementation", rootBt4k.datafaker)
         add("testImplementation", "io.github.benas:random-beans:${bt4kVersion("random-beans")}")
     }
 

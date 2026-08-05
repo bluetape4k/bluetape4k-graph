@@ -8,6 +8,8 @@
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-08-06
+
 ### Added
 
 - **Chunked graph export cursor API**: graph repository가 sync/coroutine

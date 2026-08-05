@@ -5,7 +5,7 @@ plugins {
 dependencies {
     api(project(":bluetape4k-graph-core"))
 
-    api(libs.jfalkordb)
+    api(bt4k.jfalkordb)
     api(bt4k.bluetape4k.coroutines)
 
     testFixturesApi(bt4k.bluetape4k.testcontainers)

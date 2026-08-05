@@ -14,19 +14,19 @@ dependencies {
     implementation(bt4k.bluetape4k.virtualthread.jdk21)
 
     // 압축 런타임 — 선택적 의존성 (없어도 GZip/Deflate/Bzip2는 JDK 내장으로 동작)
-    compileOnly(libs.snappy.java)
-    compileOnly(libs.lz4.java)
+    compileOnly(bt4k.snappy.java)
+    compileOnly(bt4k.at.yawk.lz4.java)
     compileOnly(bt4k.zstd.jni)
     compileOnly(bt4k.commons.compress)
 
     testImplementation(bt4k.bluetape4k.junit5)
     testImplementation(libs.kotlinx.coroutines.test.lib)
-    testImplementation(libs.okio.fakefilesystem)
+    testImplementation(bt4k.okio.fakefilesystem)
     testImplementation(project(":bluetape4k-graph-tinkerpop"))
 
     // 통합 테스트에서 압축 알고리즘 실제 사용
-    testImplementation(libs.snappy.java)
-    testImplementation(libs.lz4.java)
+    testImplementation(bt4k.snappy.java)
+    testImplementation(bt4k.at.yawk.lz4.java)
     testImplementation(bt4k.zstd.jni)
     testImplementation(bt4k.commons.compress)
 }
