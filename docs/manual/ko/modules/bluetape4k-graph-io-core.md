@@ -5,7 +5,7 @@
 
 ## 실행 전 준비
 
-이 모듈은 형식에 독립적인 가져오기·내보내기 계약, 레코드, 옵션, 보고서, 진행 상태, 경로 기반 입출력, 외부 ID 매핑을 정의한다. 새 파일 형식을 구현하거나 공통 보고서 타입이 필요할 때 선택한다. 실제 파일을 읽으려면 CSV, Jackson, GraphML 중 하나를 함께 고른다. 근거는 [GraphBulkImporter.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphBulkImporter.kt)다.
+이 모듈은 형식에 독립적인 가져오기·내보내기 계약, 레코드, 옵션, 보고서, 진행 상태, 경로 기반 입출력, 외부 ID 매핑을 정의한다. 새 파일 형식을 구현하거나 공통 보고서 타입이 필요할 때 선택한다. 실제 파일을 읽으려면 CSV, Jackson, GraphML 중 하나를 함께 고른다. 근거는 [GraphBulkImporter.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/contract/GraphBulkImporter.kt)다.
 
 ## 실행
 
@@ -35,7 +35,7 @@ check(report.status == GraphIoStatus.COMPLETED)
 
 ## 동작과 자원
 
-외부 문자열 ID는 교환 파일 안에서만 정점과 간선을 연결한다. 실제 `GraphElementId` 형식은 보장하지 않는다. mapping 근거는 [GraphIoExternalIdMap.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/support/GraphIoExternalIdMap.kt)다.
+외부 문자열 ID는 교환 파일 안에서만 정점과 간선을 연결한다. 실제 `GraphElementId` 형식은 보장하지 않는다. mapping 근거는 [GraphIoExternalIdMap.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/support/GraphIoExternalIdMap.kt)다.
 
 동기 API는 호출 thread를 막고, virtual thread API는 blocking 작업을 future로 감싸며, suspend API는 coroutine 취소를 전달한다. 어느 방식도 여러 batch를 하나의 트랜잭션으로 만들지 않는다. path 기반 stream은 library가 열고 닫는다.
 
@@ -58,7 +58,7 @@ check(report.status == GraphIoStatus.COMPLETED)
 
 ## 완전한 release 예제
 
-고정된 [Jackson3RoundTripTest](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/jackson3/src/test/kotlin/io/bluetape4k/graph/io/jackson3/Jackson3RoundTripTest.kt)가 모든 fixture 변수를 정의한 완전한 실행 예제다. 다음 명령으로 확인한다.
+고정된 [Jackson3RoundTripTest](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph-io/jackson3/src/test/kotlin/io/bluetape4k/graph/io/jackson3/Jackson3RoundTripTest.kt)가 모든 fixture 변수를 정의한 완전한 실행 예제다. 다음 명령으로 확인한다.
 
 ```bash
 ./gradlew :bluetape4k-graph-io-jackson3:test --tests '*Jackson3RoundTripTest'

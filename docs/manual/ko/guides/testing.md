@@ -7,7 +7,7 @@
 3. 릴리스의 Testcontainers 환경에서 질의, 스키마, 트랜잭션, merge, batch를 검증한다.
 4. 운영에 쓸 형식마다 graph-io 왕복과 실패 경로를 추가한다.
 
-예제는 공통 추상 테스트와 구체 백엔드 생명주기를 분리한다. [`AbstractRecommendationTest.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/recommendation-examples/src/test/kotlin/io/bluetape4k/graph/examples/recommendation/AbstractRecommendationTest.kt)와 [`RecommendationBackendTests.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/recommendation-examples/src/test/kotlin/io/bluetape4k/graph/examples/recommendation/RecommendationBackendTests.kt)를 함께 보면 구조가 보인다.
+예제는 공통 추상 테스트와 구체 백엔드 생명주기를 분리한다. [`AbstractRecommendationTest.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/examples/recommendation-examples/src/test/kotlin/io/bluetape4k/graph/examples/recommendation/AbstractRecommendationTest.kt)와 [`RecommendationBackendTests.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/examples/recommendation-examples/src/test/kotlin/io/bluetape4k/graph/examples/recommendation/RecommendationBackendTests.kt)를 함께 보면 구조가 보인다.
 
 ID의 모양을 단정하지 말고 존재와 동일성만 검증한다. 방향·깊이 제한, 중복 merge 키, 빈 batch와 실패 batch, rollback·취소, 미지원 스키마, 잘못된 import 레코드, 찾지 못한 외부 ID, 자원 종료를 시험한다.
 

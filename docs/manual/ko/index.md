@@ -1,6 +1,6 @@
 # Bluetape4k Graph 0.5 매뉴얼
 
-이 매뉴얼은 커밋 `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`에서 출시한 안정 버전 `0.5.1`을 설명한다. 공통 모델, 동기·코루틴 API, 지원 백엔드 다섯 개, graph-io, 프레임워크 연동이 범위다. Amazon Neptune은 0.5.1에서 **지원하지 않는다**. 백로그 이슈도 현재 기능으로 다루지 않는다.
+이 매뉴얼은 커밋 `72c0256e2e1cf61101d29852210e3c827ca93bc0`에서 출시한 안정 버전 `0.6.0`을 설명한다. 공통 모델, 동기·코루틴 API, 지원 백엔드 다섯 개, graph-io, 프레임워크 연동이 범위다. Amazon Neptune은 0.6.0에서 **지원하지 않는다**. 백로그 이슈도 현재 기능으로 다루지 않는다.
 
 ## 핵심 기능
 
@@ -20,7 +20,7 @@
 
 ![저장소 학습 지도](../assets/overview/repository-learning-map.png)
 
-API의 중심은 [`GraphOperations`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphOperations.kt)와 [`GraphSuspendOperations`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphSuspendOperations.kt)다. 두 API 모두 [`graph-core`의 공통 모델](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/src/main/kotlin/io/bluetape4k/graph/model/GraphVertex.kt)을 반환한다.
+API의 중심은 [`GraphOperations`](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphOperations.kt)와 [`GraphSuspendOperations`](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-core/src/main/kotlin/io/bluetape4k/graph/repository/GraphSuspendOperations.kt)다. 두 API 모두 [`graph-core`의 공통 모델](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-core/src/main/kotlin/io/bluetape4k/graph/model/GraphVertex.kt)을 반환한다.
 
 ## 매뉴얼 지도
 

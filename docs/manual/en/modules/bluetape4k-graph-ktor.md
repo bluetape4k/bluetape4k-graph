@@ -2,7 +2,7 @@
 
 ## Before you run
 
-`GraphPlugin` stores application-scoped sync/suspend operations in Ktor attributes. Choose one managed backend or supply existing operations. Avoid request-scoped installation and avoid selecting multiple backends. Source: [GraphPlugin.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/ktor/graph-ktor/src/main/kotlin/io/bluetape4k/graph/ktor/GraphPlugin.kt).
+`GraphPlugin` stores application-scoped sync/suspend operations in Ktor attributes. Choose one managed backend or supply existing operations. Avoid request-scoped installation and avoid selecting multiple backends. Source: [GraphPlugin.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/ktor/graph-ktor/src/main/kotlin/io/bluetape4k/graph/ktor/GraphPlugin.kt).
 
 
 Execution mode: **release-fixture linked**. `testApplication` supplies the Ktor application and HTTP test client; the linked test installs the plugin, accesses state, stops the application, and verifies the exact `closeOnStop` branch.
@@ -34,7 +34,7 @@ Expected: state is available after installation and the route accesses the appli
 
 ## Lifetime and shutdown ownership
 
-Managed backend DSLs create operations and infrastructure, then register close actions on `ApplicationStopped`. Existing operations use [GraphPluginConfig.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/ktor/graph-ktor/src/main/kotlin/io/bluetape4k/graph/ktor/GraphPluginConfig.kt):
+Managed backend DSLs create operations and infrastructure, then register close actions on `ApplicationStopped`. Existing operations use [GraphPluginConfig.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/ktor/graph-ktor/src/main/kotlin/io/bluetape4k/graph/ktor/GraphPluginConfig.kt):
 
 ```kotlin
 install(GraphPlugin) {
@@ -65,7 +65,7 @@ Expected: startup/access pass, empty configuration fails, default existing opera
 
 ## Complete release example
 
-The pinned [GraphPluginTest](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/ktor/graph-ktor/src/test/kotlin/io/bluetape4k/graph/ktor/GraphPluginTest.kt) defines the fixture values and is the complete executable release example. Run:
+The pinned [GraphPluginTest](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/ktor/graph-ktor/src/test/kotlin/io/bluetape4k/graph/ktor/GraphPluginTest.kt) defines the fixture values and is the complete executable release example. Run:
 
 ```bash
 ./gradlew :bluetape4k-graph-ktor:test --tests '*GraphPluginTest'
@@ -80,12 +80,12 @@ See [Ktor integration](../frameworks/ktor.md), [paired APIs](../architecture/pai
 <!-- release-readme-diagrams:start -->
 ## Release diagrams {#release-diagrams}
 
-These diagrams are loaded directly from README assets published with the `0.5.1` release and pinned to its immutable commit. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG at the same release commit.
+These diagrams are loaded directly from README assets published with the `0.6.0` release and pinned to its immutable commit. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG at the same release commit.
 
 ### graph ktor Architecture diagram
 
-[![graph ktor Architecture diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/ktor-graph-ktor-architecture-01.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/ktor-graph-ktor-architecture-01.svg)
+[![graph ktor Architecture diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/72c0256e2e1cf61101d29852210e3c827ca93bc0/docs/images/readme-diagrams/ktor-graph-ktor-architecture-01.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/docs/images/readme-diagrams/ktor-graph-ktor-architecture-01.svg)
 
-_Release README: [`ktor/graph-ktor/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/ktor/graph-ktor/README.md)_
+_Release README: [`ktor/graph-ktor/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/ktor/graph-ktor/README.md)_
 
 <!-- release-readme-diagrams:end -->

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1040" viewBox="0 0 1600 1040" role="img" aria-labelledby="title desc">
   <title id="title">Choose a Backend You Can Verify</title>
-  <desc id="desc">A backend decision map comparing Neo4j, Memgraph, Apache AGE, TinkerGraph, and FalkorDB, with Amazon Neptune explicitly unavailable in Graph 0.5.1.</desc>
+  <desc id="desc">A backend decision map comparing Neo4j, Memgraph, Apache AGE, TinkerGraph, and FalkorDB, with Amazon Neptune explicitly unavailable in Graph 0.6.0.</desc>
   <defs>
     <marker id="arrow-cyan" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 14 14">
   <polygon points="0,1 14,7 0,13" fill="#8bd5ff" stroke="none"/>
@@ -81,7 +81,7 @@
 </g>
 <g id="neptune">
   <rect class="card " data-card-id="neptune" x="430" y="880" width="740" height="80" rx="28" fill="#172238" stroke="#ff9aae" stroke-width="5"/>
-  <text class="card-title" x="800" y="935" text-anchor="middle" font-size="27" fill="#ff9aae">Amazon Neptune: unavailable in Graph 0.5.1</text>
+  <text class="card-title" x="800" y="935" text-anchor="middle" font-size="27" fill="#ff9aae">Amazon Neptune: unavailable in Graph 0.6.0</text>
 
 </g>
 <path id="choose-neo4j" class="connector" data-start-card="criteria" data-end-card="neo4j" data-route="260,330 260,410 200,410 200,500" d="M 260 330 V 390 Q 260 410 240 410 H 220 Q 200 410 200 430 V 500" fill="none" stroke="#8bd5ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-cyan)"/>

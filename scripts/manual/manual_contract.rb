@@ -58,7 +58,7 @@ module ManualDocs
       locales = publication["locales"]
       errors << "manual publication locales must be en and ko" unless locales == %w[en ko]
       if @strict
-        errors << "manual publication manualVersion must be 0.5" unless publication["manualVersion"] == "0.5"
+        errors << "manual publication manualVersion must be 0.6" unless publication["manualVersion"] == "0.6"
         errors << "manual publication sourceRoot must be docs/manual" unless publication["sourceRoot"] == "docs/manual"
         errors << "manual publication contentStatus must be complete" unless publication["contentStatus"] == "complete"
       end

@@ -2,7 +2,7 @@
 
 ## Before you run
 
-Memgraph uses the Neo4j Java Driver over Bolt but has its own server, Cypher subset, schema DDL, and operational model. Choose it when Memgraph is already deployed or its in-memory/streaming design fits the workload. Avoid using this adapter as proof of Neo4j parity. Source: [MemgraphGraphOperations.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-memgraph/src/main/kotlin/io/bluetape4k/graph/memgraph/MemgraphGraphOperations.kt).
+Memgraph uses the Neo4j Java Driver over Bolt but has its own server, Cypher subset, schema DDL, and operational model. Choose it when Memgraph is already deployed or its in-memory/streaming design fits the workload. Avoid using this adapter as proof of Neo4j parity. Source: [MemgraphGraphOperations.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-memgraph/src/main/kotlin/io/bluetape4k/graph/memgraph/MemgraphGraphOperations.kt).
 
 
 Execution mode: **release-fixture linked**. The linked test starts the exact Memgraph image, creates Driver and `ops`, seeds data, and closes operations before Driver/container; its fixture is the source of endpoint and authentication settings.
@@ -33,7 +33,7 @@ Expected: the Memgraph database returns the created neighbor. Use authentication
 
 ## Semantics and capability boundary
 
-Transactions use the driver's Memgraph session and must be tested against the deployed Memgraph version. Merge and batch queries are adapter-specific. Schema is implemented in [MemgraphGraphSchemaManager.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-memgraph/src/main/kotlin/io/bluetape4k/graph/memgraph/MemgraphGraphSchemaManager.kt); never copy Neo4j DDL assumptions into it.
+Transactions use the driver's Memgraph session and must be tested against the deployed Memgraph version. Merge and batch queries are adapter-specific. Schema is implemented in [MemgraphGraphSchemaManager.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-memgraph/src/main/kotlin/io/bluetape4k/graph/memgraph/MemgraphGraphSchemaManager.kt); never copy Neo4j DDL assumptions into it.
 
 Operations do not close an injected Driver. Close sessions/operations first, then the caller-owned Driver.
 
@@ -58,7 +58,7 @@ Expected: the Memgraph container passes CRUD and its own schema assertions. A Ne
 
 ## Complete release example
 
-The pinned [MemgraphGraphOperationsTest](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-memgraph/src/test/kotlin/io/bluetape4k/graph/memgraph/MemgraphGraphOperationsTest.kt) defines the fixture values and is the complete executable release example. Run:
+The pinned [MemgraphGraphOperationsTest](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-memgraph/src/test/kotlin/io/bluetape4k/graph/memgraph/MemgraphGraphOperationsTest.kt) defines the fixture values and is the complete executable release example. Run:
 
 ```bash
 ./gradlew :bluetape4k-graph-memgraph:test --tests '*MemgraphGraphOperationsTest'

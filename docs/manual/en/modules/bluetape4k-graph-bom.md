@@ -31,7 +31,7 @@ If more than one version is selected, inspect imported platforms and explicit co
 
 ## Managed boundary
 
-The release platform constrains core, five database adapters, TinkerPop, graph-io codecs, OkIO, Ktor, and Spring Boot. Examples and benchmarks are intentionally outside the published platform. The authoritative constraint list is the pinned [BOM build](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/bom/build.gradle.kts); the module inventory is registered in [settings.gradle.kts](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/settings.gradle.kts).
+The release platform constrains core, five database adapters, TinkerPop, graph-io codecs, OkIO, Ktor, and Spring Boot. Examples and benchmarks are intentionally outside the published platform. The authoritative constraint list is the pinned [BOM build](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/bom/build.gradle.kts); the module inventory is registered in [settings.gradle.kts](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/settings.gradle.kts).
 
 There is no transaction, resource, or shutdown behavior in this module. Those semantics belong to the selected backend, graph-io format, or framework integration.
 
@@ -56,7 +56,7 @@ Expected: platform metadata is generated without runtime tests. A failure here u
 
 ## Complete release example
 
-The pinned [BOM build](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/bom/build.gradle.kts) is complete executable release evidence. Run:
+The pinned [BOM build](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/bom/build.gradle.kts) is complete executable release evidence. Run:
 
 ```bash
 ./gradlew :bluetape4k-graph-bom:build
@@ -71,12 +71,12 @@ See [repository map](../architecture/repository-map.md), [getting started](../ge
 <!-- release-readme-diagrams:start -->
 ## Release diagrams {#release-diagrams}
 
-These diagrams are loaded directly from README assets published with the `0.5.1` release and pinned to its immutable commit. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG at the same release commit.
+These diagrams are loaded directly from README assets published with the `0.6.0` release and pinned to its immutable commit. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG at the same release commit.
 
 ### bom Architecture diagram
 
-[![bom Architecture diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/bom-architecture-01.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/bom-architecture-01.svg)
+[![bom Architecture diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/72c0256e2e1cf61101d29852210e3c827ca93bc0/docs/images/readme-diagrams/bom-architecture-01.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/docs/images/readme-diagrams/bom-architecture-01.svg)
 
-_Release README: [`bom/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/bom/README.md)_
+_Release README: [`bom/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/bom/README.md)_
 
 <!-- release-readme-diagrams:end -->

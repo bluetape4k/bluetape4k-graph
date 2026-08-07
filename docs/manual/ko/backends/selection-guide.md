@@ -12,13 +12,13 @@
 | TinkerPop | JVM 안의 TinkerGraph, Gremlin | 메모리 구현 의미론 | 제한된 manager capability | 컨테이너 없음 | 원격 서버를 대신하지 않음 |
 | FalkorDB | Redis 형태 서비스, openCypher 일부 | 라이브러리·서버 제약 | 전용 인덱스 | FalkorDB 컨테이너 | 미지원 트랜잭션 경로 확인 |
 
-구현 근거: [Neo4j](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-neo4j/src/test/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperationsTest.kt), [Memgraph](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-memgraph/src/test/kotlin/io/bluetape4k/graph/memgraph/MemgraphGraphOperationsTest.kt), [AGE](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-age/src/test/kotlin/io/bluetape4k/graph/age/AgeGraphOperationsTest.kt), [TinkerGraph](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-tinkerpop/src/test/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphOperationsTest.kt), [FalkorDB](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-falkordb/src/test/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphOperationsTest.kt).
+구현 근거: [Neo4j](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-neo4j/src/test/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphOperationsTest.kt), [Memgraph](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-memgraph/src/test/kotlin/io/bluetape4k/graph/memgraph/MemgraphGraphOperationsTest.kt), [AGE](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-age/src/test/kotlin/io/bluetape4k/graph/age/AgeGraphOperationsTest.kt), [TinkerGraph](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-tinkerpop/src/test/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphOperationsTest.kt), [FalkorDB](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-falkordb/src/test/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphOperationsTest.kt).
 
-Amazon Neptune은 Graph 0.5.1에서 구현되지 않았고 지원 대상도 아니다. 계획이나 백로그를 지원 근거로 삼지 않는다. 이식성이 필요하면 후보마다 트랜잭션, 스키마, ID, 속성 형식, 순회 결과를 기록한다.
+Amazon Neptune은 Graph 0.6.0에서 구현되지 않았고 지원 대상도 아니다. 계획이나 백로그를 지원 근거로 삼지 않는다. 이식성이 필요하면 후보마다 트랜잭션, 스키마, ID, 속성 형식, 순회 결과를 기록한다.
 
 ## 최종 후보 둘을 검증한다
 
-0.5.1 테스트를 백엔드별로 따로 실행한다.
+0.6.0 테스트를 백엔드별로 따로 실행한다.
 
 ```bash
 ./gradlew :bluetape4k-graph-neo4j:test --tests '*Neo4jGraphMergeOperationsTest' --tests '*Neo4jGraphSchemaManagerTest'

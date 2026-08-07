@@ -536,14 +536,14 @@
       "en",
       "ko"
     ],
-    "manualVersion": "0.5",
+    "manualVersion": "0.6",
     "sourceRoot": "docs/manual"
   },
-  "releaseCommit": "3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907",
-  "releaseRef": "0.5.1",
-  "releaseTag": "0.5.1",
+  "releaseCommit": "72c0256e2e1cf61101d29852210e3c827ca93bc0",
+  "releaseRef": "0.6.0",
+  "releaseTag": "0.6.0",
   "repository": "bluetape4k-graph",
   "schemaVersion": 2,
-  "stableMinor": "0.5",
-  "stableVersion": "0.5.1"
+  "stableMinor": "0.6",
+  "stableVersion": "0.6.0"
 }

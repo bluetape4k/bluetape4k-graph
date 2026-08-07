@@ -5,7 +5,7 @@
 
 ## 실행 전 준비
 
-이 모듈은 공통 그래프 API를 내장형 TinkerGraph와 Gremlin에 연결한다. 단위 테스트, 학습, 알고리즘 기준선, 초기 domain model에 알맞다. 원격 지연, 영속성, cluster, 다른 제품의 트랜잭션을 검증하려는 경우에는 피한다. 구현은 [TinkerGraphOperations.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-tinkerpop/src/main/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphOperations.kt)다.
+이 모듈은 공통 그래프 API를 내장형 TinkerGraph와 Gremlin에 연결한다. 단위 테스트, 학습, 알고리즘 기준선, 초기 domain model에 알맞다. 원격 지연, 영속성, cluster, 다른 제품의 트랜잭션을 검증하려는 경우에는 피한다. 구현은 [TinkerGraphOperations.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-tinkerpop/src/main/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphOperations.kt)다.
 
 ## 실행
 
@@ -34,7 +34,7 @@ TinkerGraphOperations().use { ops ->
 
 ## 동작과 자원
 
-트랜잭션 DSL은 메모리 snapshot을 만들고 실패 시 되돌린다. 원격 ACID 트랜잭션과 같은 의미가 아니다. [TinkerGraphTransactionTest.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-tinkerpop/src/test/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphTransactionTest.kt)가 이 경계를 고정한다. schema 관리도 vendor DDL이 아니라 메모리 호환 계층이다. `use`가 생성한 operations만 닫는다.
+트랜잭션 DSL은 메모리 snapshot을 만들고 실패 시 되돌린다. 원격 ACID 트랜잭션과 같은 의미가 아니다. [TinkerGraphTransactionTest.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-tinkerpop/src/test/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphTransactionTest.kt)가 이 경계를 고정한다. schema 관리도 vendor DDL이 아니라 메모리 호환 계층이다. `use`가 생성한 operations만 닫는다.
 
 ## 운영 점검
 
@@ -55,7 +55,7 @@ TinkerGraphOperations().use { ops ->
 
 ## 완전한 release 예제
 
-고정된 [TinkerGraphOperationsTest](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-tinkerpop/src/test/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphOperationsTest.kt)가 실제로 실행되는 release 근거다. 다음 명령으로 확인한다.
+고정된 [TinkerGraphOperationsTest](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-tinkerpop/src/test/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphOperationsTest.kt)가 실제로 실행되는 release 근거다. 다음 명령으로 확인한다.
 
 ```bash
 ./gradlew :bluetape4k-graph-tinkerpop:test --tests '*TinkerGraphOperationsTest'

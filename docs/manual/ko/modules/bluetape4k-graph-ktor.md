@@ -5,7 +5,7 @@
 
 ## 실행 전 준비
 
-`GraphPlugin`은 애플리케이션 범위의 동기·suspend operations를 Ktor attribute에 보관한다. 관리형 그래프 하나를 선택하거나 이미 만든 operations를 주입한다. request마다 설치하거나 그래프를 여러 개 동시에 선택하지 않는다. 구현은 [GraphPlugin.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/ktor/graph-ktor/src/main/kotlin/io/bluetape4k/graph/ktor/GraphPlugin.kt)다.
+`GraphPlugin`은 애플리케이션 범위의 동기·suspend operations를 Ktor attribute에 보관한다. 관리형 그래프 하나를 선택하거나 이미 만든 operations를 주입한다. request마다 설치하거나 그래프를 여러 개 동시에 선택하지 않는다. 구현은 [GraphPlugin.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/ktor/graph-ktor/src/main/kotlin/io/bluetape4k/graph/ktor/GraphPlugin.kt)다.
 
 ## 실행
 
@@ -42,7 +42,7 @@ install(GraphPlugin) {
 }
 ```
 
-기본 설정에서는 호출자나 DI 컨테이너가 두 객체를 닫는다. `true`로 지정할 때만 플러그인에 종료 책임을 넘긴다. 같은 객체는 한 번만 닫는다. 주입한 Driver는 관리형 DSL이 만든 경우가 아니면 별도로 호출자가 소유한다. 계약은 [GraphPluginConfig.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/ktor/graph-ktor/src/main/kotlin/io/bluetape4k/graph/ktor/GraphPluginConfig.kt)에 있다.
+기본 설정에서는 호출자나 DI 컨테이너가 두 객체를 닫는다. `true`로 지정할 때만 플러그인에 종료 책임을 넘긴다. 같은 객체는 한 번만 닫는다. 주입한 Driver는 관리형 DSL이 만든 경우가 아니면 별도로 호출자가 소유한다. 계약은 [GraphPluginConfig.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/ktor/graph-ktor/src/main/kotlin/io/bluetape4k/graph/ktor/GraphPluginConfig.kt)에 있다.
 
 ## 운영 점검
 
@@ -63,7 +63,7 @@ install(GraphPlugin) {
 
 ## 완전한 release 예제
 
-고정된 [GraphPluginTest](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/ktor/graph-ktor/src/test/kotlin/io/bluetape4k/graph/ktor/GraphPluginTest.kt)가 fixture 값을 정의한 완전한 실행 예제다. 다음 명령으로 확인한다.
+고정된 [GraphPluginTest](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/ktor/graph-ktor/src/test/kotlin/io/bluetape4k/graph/ktor/GraphPluginTest.kt)가 fixture 값을 정의한 완전한 실행 예제다. 다음 명령으로 확인한다.
 
 ```bash
 ./gradlew :bluetape4k-graph-ktor:test --tests '*GraphPluginTest'
@@ -78,12 +78,12 @@ install(GraphPlugin) {
 <!-- release-readme-diagrams:start -->
 ## 배포본 다이어그램 {#release-diagrams}
 
-아래 그림은 `0.5.1` 배포본의 README 자산을 해당 배포 커밋에서 직접 불러옵니다. 이후 SNAPSHOT이 아니라 이 매뉴얼 버전의 구조와 실행 흐름을 보여 줍니다. 미리보기를 누르면 같은 배포 커밋의 SVG 원본이 열립니다.
+아래 그림은 `0.6.0` 배포본의 README 자산을 해당 배포 커밋에서 직접 불러옵니다. 이후 SNAPSHOT이 아니라 이 매뉴얼 버전의 구조와 실행 흐름을 보여 줍니다. 미리보기를 누르면 같은 배포 커밋의 SVG 원본이 열립니다.
 
 ### Bluetape4k Graph ktor 아키텍처
 
-[![Bluetape4k Graph ktor 아키텍처](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/ktor-graph-ktor-architecture-01.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/ktor-graph-ktor-architecture-01.svg)
+[![Bluetape4k Graph ktor 아키텍처](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/72c0256e2e1cf61101d29852210e3c827ca93bc0/docs/images/readme-diagrams/ktor-graph-ktor-architecture-01.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/docs/images/readme-diagrams/ktor-graph-ktor-architecture-01.svg)
 
-_배포본 README: [`ktor/graph-ktor/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/ktor/graph-ktor/README.ko.md)_
+_배포본 README: [`ktor/graph-ktor/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/ktor/graph-ktor/README.ko.md)_
 
 <!-- release-readme-diagrams:end -->

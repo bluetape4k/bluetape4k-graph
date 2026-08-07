@@ -2,7 +2,7 @@
 
 ## Workloads and source
 
-`graph-benchmark` covers backend CRUD/traversal, domain graphs, sustained writes, and sync/virtual-thread/coroutine API shapes. Read the pinned [Gradle configuration](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/benchmark/graph-benchmark/build.gradle.kts), [domain benchmark](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/benchmark/graph-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/GraphDomainWorkloadBenchmark.kt), and [state](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/benchmark/graph-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/GraphBenchmarkState.kt).
+`graph-benchmark` covers backend CRUD/traversal, domain graphs, sustained writes, and sync/virtual-thread/coroutine API shapes. Read the pinned [Gradle configuration](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/benchmark/graph-benchmark/build.gradle.kts), [domain benchmark](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/benchmark/graph-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/GraphDomainWorkloadBenchmark.kt), and [state](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/benchmark/graph-benchmark/src/main/kotlin/io/bluetape4k/graph/benchmark/GraphBenchmarkState.kt).
 
 Prerequisites are JDK 21 and Docker for Neo4j/Memgraph/AGE/FalkorDB lanes. Do not run other Testcontainers workloads concurrently.
 
@@ -12,7 +12,7 @@ Prerequisites are JDK 21 and Docker for Neo4j/Memgraph/AGE/FalkorDB lanes. Do no
 
 This named configuration selects TinkerGraph, Neo4j, and Memgraph domain cases, uses 2 warmups, 4 measurement iterations, 2 seconds per iteration, and JSON output. JMH normally uses one fork unless overridden by the harness. Expected output contains `avgt` scores in `ms/op`; lower is better. Compare social, IAM, fraud, or code rows only when backend, size, parameters, and run metadata match.
 
-The representative committed source is [2026-05-21 domain workload JSON](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/benchmark/graph-domain-workload-testcontainers-2026-05-21.json). It is a local Testcontainers run, not a universal backend ranking. In-memory TinkerGraph and server databases have different persistence and transport boundaries.
+The representative committed source is [2026-05-21 domain workload JSON](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/docs/benchmark/graph-domain-workload-testcontainers-2026-05-21.json). It is a local Testcontainers run, not a universal backend ranking. In-memory TinkerGraph and server databases have different persistence and transport boundaries.
 
 ## Variance, cleanup, and diagnosis
 
@@ -23,12 +23,12 @@ A missing JSON report means the benchmark task or teardown failed. A timeout sho
 <!-- release-readme-diagrams:start -->
 ## Release diagrams {#release-diagrams}
 
-These diagrams are loaded directly from README assets published with the `0.5.1` release and pinned to its immutable commit. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG at the same release commit.
+These diagrams are loaded directly from README assets published with the `0.6.0` release and pinned to its immutable commit. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG at the same release commit.
 
 ### graph-benchmark Architecture diagram
 
-[![graph-benchmark Architecture diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/benchmark/graph-benchmark-architecture-01.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/benchmark/graph-benchmark-architecture-01.svg)
+[![graph-benchmark Architecture diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/72c0256e2e1cf61101d29852210e3c827ca93bc0/docs/images/readme-diagrams/benchmark/graph-benchmark-architecture-01.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/docs/images/readme-diagrams/benchmark/graph-benchmark-architecture-01.svg)
 
-_Release README: [`benchmark/graph-benchmark/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/benchmark/graph-benchmark/README.md)_
+_Release README: [`benchmark/graph-benchmark/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/benchmark/graph-benchmark/README.md)_
 
 <!-- release-readme-diagrams:end -->

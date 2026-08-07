@@ -5,7 +5,7 @@
 
 ## 실행 전 준비
 
-Jackson 2를 쓰는 애플리케이션에서 release NDJSON envelope를 읽고 쓸 때 선택한다. Jackson 2용 mapper 확장이 이미 있다면 이 모듈이 맞다. Jackson 3 애플리케이션에서는 Jackson 3 모듈을 고르고, 특별한 호환 이유 없이 두 계열을 함께 넣지 않는다. 구현은 [Jackson2NdJsonBulkImporter.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/jackson2/src/main/kotlin/io/bluetape4k/graph/io/jackson2/Jackson2NdJsonBulkImporter.kt)다.
+Jackson 2를 쓰는 애플리케이션에서 release NDJSON envelope를 읽고 쓸 때 선택한다. Jackson 2용 mapper 확장이 이미 있다면 이 모듈이 맞다. Jackson 3 애플리케이션에서는 Jackson 3 모듈을 고르고, 특별한 호환 이유 없이 두 계열을 함께 넣지 않는다. 구현은 [Jackson2NdJsonBulkImporter.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph-io/jackson2/src/main/kotlin/io/bluetape4k/graph/io/jackson2/Jackson2NdJsonBulkImporter.kt)다.
 
 ## 실행
 
@@ -54,7 +54,7 @@ check(out.edgesWritten == input.edgesCreated)
 
 ## 완전한 release 예제
 
-고정된 [Jackson2RoundTripTest](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/jackson2/src/test/kotlin/io/bluetape4k/graph/io/jackson2/Jackson2RoundTripTest.kt)가 모든 fixture 변수를 정의한 완전한 실행 예제다. 다음 명령으로 확인한다.
+고정된 [Jackson2RoundTripTest](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph-io/jackson2/src/test/kotlin/io/bluetape4k/graph/io/jackson2/Jackson2RoundTripTest.kt)가 모든 fixture 변수를 정의한 완전한 실행 예제다. 다음 명령으로 확인한다.
 
 ```bash
 ./gradlew :bluetape4k-graph-io-jackson2:test --tests '*Jackson2RoundTripTest'

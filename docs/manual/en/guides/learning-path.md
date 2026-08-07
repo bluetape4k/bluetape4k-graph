@@ -2,15 +2,15 @@
 
 ## Stage 1: model one relationship
 
-Run [Getting started](../getting-started.md) with TinkerGraph. Learn opaque IDs, directed edges, and returned snapshots. Observe generated IDs and neighbor direction. If no neighbor appears, inspect `startId`/`endId`, `Direction`, and label filters. Then read [`GraphVertexTest.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/src/test/kotlin/io/bluetape4k/graph/model/GraphVertexTest.kt).
+Run [Getting started](../getting-started.md) with TinkerGraph. Learn opaque IDs, directed edges, and returned snapshots. Observe generated IDs and neighbor direction. If no neighbor appears, inspect `startId`/`endId`, `Direction`, and label filters. Then read [`GraphVertexTest.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-core/src/test/kotlin/io/bluetape4k/graph/model/GraphVertexTest.kt).
 
 ## Stage 2: read a domain example
 
-Open the [code graph schema](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/code-graph-examples/src/main/kotlin/io/bluetape4k/graph/examples/code/schema/CodeGraphSchema.kt), then follow [`AbstractCodeGraphTest.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/code-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/code/AbstractCodeGraphTest.kt). Learn schema declarations, writes, traversal, and the assertions that define useful output. Run one concrete backend test and compare IDs/query logs.
+Open the [code graph schema](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/examples/code-graph-examples/src/main/kotlin/io/bluetape4k/graph/examples/code/schema/CodeGraphSchema.kt), then follow [`AbstractCodeGraphTest.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/examples/code-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/code/AbstractCodeGraphTest.kt). Learn schema declarations, writes, traversal, and the assertions that define useful output. Run one concrete backend test and compare IDs/query logs.
 
 ## Stage 3: add write semantics
 
-Exercise merge, batch, and `transaction {}`. Observe duplicate handling, output order, commit, and rollback. Diagnose partial writes by comparing pre/post counts. Use [`GraphBatchOperationsTest.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-core/src/test/kotlin/io/bluetape4k/graph/repository/GraphBatchOperationsTest.kt) as the contract map.
+Exercise merge, batch, and `transaction {}`. Observe duplicate handling, output order, commit, and rollback. Diagnose partial writes by comparing pre/post counts. Use [`GraphBatchOperationsTest.kt`](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-core/src/test/kotlin/io/bluetape4k/graph/repository/GraphBatchOperationsTest.kt) as the contract map.
 
 ## Stage 4: change backend
 

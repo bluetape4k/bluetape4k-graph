@@ -5,7 +5,7 @@
 
 ## 실행 전 준비
 
-Jackson 3 의존성 계열에서 NDJSON 그래프 파일을 읽고 쓸 때 선택한다. 새 Jackson 3 연동에는 이 모듈이 알맞다. 애플리케이션과 mapper 확장이 Jackson 2에 남아 있으면 Jackson 2 모듈을 유지한다. 구현은 [Jackson3NdJsonBulkImporter.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/jackson3/src/main/kotlin/io/bluetape4k/graph/io/jackson3/Jackson3NdJsonBulkImporter.kt)다.
+Jackson 3 의존성 계열에서 NDJSON 그래프 파일을 읽고 쓸 때 선택한다. 새 Jackson 3 연동에는 이 모듈이 알맞다. 애플리케이션과 mapper 확장이 Jackson 2에 남아 있으면 Jackson 2 모듈을 유지한다. 구현은 [Jackson3NdJsonBulkImporter.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph-io/jackson3/src/main/kotlin/io/bluetape4k/graph/io/jackson3/Jackson3NdJsonBulkImporter.kt)다.
 
 ## 실행
 
@@ -33,7 +33,7 @@ check(out.verticesWritten == input.verticesCreated)
 
 ## 형식과 자원
 
-한 줄은 정점 또는 간선 envelope 하나다. `from`과 `to`는 외부 ID이며 실제 그래프 ID 형식을 보장하지 않는다. 0.5.1 테스트는 Jackson 2/3 파일 호환을 고정한다. 간선 buffer에는 한도가 있다. path stream은 library가 닫고, 외부 stream은 기본적으로 호출자가 닫는다. 취소나 뒤쪽 parse 실패 뒤에는 앞선 batch가 남을 수 있다.
+한 줄은 정점 또는 간선 envelope 하나다. `from`과 `to`는 외부 ID이며 실제 그래프 ID 형식을 보장하지 않는다. 0.6.0 테스트는 Jackson 2/3 파일 호환을 고정한다. 간선 buffer에는 한도가 있다. path stream은 library가 닫고, 외부 stream은 기본적으로 호출자가 닫는다. 취소나 뒤쪽 parse 실패 뒤에는 앞선 batch가 남을 수 있다.
 
 ## 운영 점검
 
@@ -54,7 +54,7 @@ check(out.verticesWritten == input.verticesCreated)
 
 ## 완전한 release 예제
 
-고정된 [Jackson3RoundTripTest](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/jackson3/src/test/kotlin/io/bluetape4k/graph/io/jackson3/Jackson3RoundTripTest.kt)가 모든 fixture 변수를 정의한 완전한 실행 예제다. 다음 명령으로 확인한다.
+고정된 [Jackson3RoundTripTest](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph-io/jackson3/src/test/kotlin/io/bluetape4k/graph/io/jackson3/Jackson3RoundTripTest.kt)가 모든 fixture 변수를 정의한 완전한 실행 예제다. 다음 명령으로 확인한다.
 
 ```bash
 ./gradlew :bluetape4k-graph-io-jackson3:test --tests '*Jackson3RoundTripTest'

@@ -2,7 +2,7 @@
 
 ## Before you run
 
-This module maps the common contract to embedded TinkerGraph and Gremlin. Choose it for unit tests, tutorials, algorithm baselines, and a first domain model. Avoid treating an in-memory pass as evidence for remote latency, durability, clustering, or another vendor's transaction semantics. Source: [TinkerGraphOperations.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-tinkerpop/src/main/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphOperations.kt).
+This module maps the common contract to embedded TinkerGraph and Gremlin. Choose it for unit tests, tutorials, algorithm baselines, and a first domain model. Avoid treating an in-memory pass as evidence for remote latency, durability, clustering, or another vendor's transaction semantics. Source: [TinkerGraphOperations.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-tinkerpop/src/main/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphOperations.kt).
 
 
 Execution mode: **standalone in-memory example**. `use` creates and closes `TinkerGraphOperations`; no server, fixture, Driver, or DataSource is required.
@@ -34,7 +34,7 @@ Expected: no server is started, and the traversal returns one neighbor.
 
 ## Transactions and capability differences
 
-The transaction DSL uses a snapshot/restore boundary guarded inside the embedded graph; it is not a remote ACID protocol. [TinkerGraphTransactionTest.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-tinkerpop/src/test/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphTransactionTest.kt) locks rollback behavior. Schema management is an in-memory compatibility layer, not vendor DDL. Traversals and algorithms can use local graph access unavailable to remote adapters.
+The transaction DSL uses a snapshot/restore boundary guarded inside the embedded graph; it is not a remote ACID protocol. [TinkerGraphTransactionTest.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-tinkerpop/src/test/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphTransactionTest.kt) locks rollback behavior. Schema management is an in-memory compatibility layer, not vendor DDL. Traversals and algorithms can use local graph access unavailable to remote adapters.
 
 `use` owns only the created TinkerGraph operations object.
 
@@ -59,7 +59,7 @@ Expected: CRUD/traversal passes and an injected transaction failure restores the
 
 ## Complete release example
 
-The pinned [TinkerGraphOperationsTest](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-tinkerpop/src/test/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphOperationsTest.kt) is complete executable release evidence. Run:
+The pinned [TinkerGraphOperationsTest](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-tinkerpop/src/test/kotlin/io/bluetape4k/graph/tinkerpop/TinkerGraphOperationsTest.kt) is complete executable release evidence. Run:
 
 ```bash
 ./gradlew :bluetape4k-graph-tinkerpop:test --tests '*TinkerGraphOperationsTest'

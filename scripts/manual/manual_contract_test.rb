@@ -6,7 +6,7 @@ require "tmpdir"
 require_relative "manual_contract"
 
 class ManualContractTest < Minitest::Test
-  RELEASE = { "ref" => "0.5.1", "commit" => "3" * 40 }.freeze
+  RELEASE = { "ref" => "0.6.0", "commit" => "3" * 40 }.freeze
 
   def validate(module_overrides = {}, manifest_overrides = {}, strict: false)
     Dir.mktmpdir do |root|
@@ -16,8 +16,8 @@ class ManualContractTest < Minitest::Test
       row = { "id" => "core", "gradlePath" => ":core", "projectName" => "core", "sourceDir" => "graph/core",
               "kind" => "library", "group" => "foundation", "artifact" => "g:core", "status" => "stable" }.merge(module_overrides)
       manifest = { "schemaVersion" => 2, "repository" => "bluetape4k-graph", "releaseRef" => RELEASE["ref"],
-                   "stableVersion" => RELEASE["ref"], "stableMinor" => "0.5", "releaseTag" => RELEASE["ref"],
-                   "releaseCommit" => RELEASE["commit"], "publication" => { "manualVersion" => "0.5", "locales" => %w[en ko] },
+                   "stableVersion" => RELEASE["ref"], "stableMinor" => "0.6", "releaseTag" => RELEASE["ref"],
+                   "releaseCommit" => RELEASE["commit"], "publication" => { "manualVersion" => "0.6", "locales" => %w[en ko] },
                    "modules" => [row] }.merge(manifest_overrides)
       path = File.join(root, "docs/manual/manifest.yaml")
       FileUtils.mkdir_p(File.dirname(path))
@@ -40,7 +40,7 @@ class ManualContractTest < Minitest::Test
   end
 
   def test_rejects_release_mismatch
-    validate({}, "releaseRef" => "0.5.0") { |validator| assert validator.errors.any? { |e| e.include?("releaseRef must be 0.5.1") } }
+    validate({}, "releaseRef" => "0.5.0") { |validator| assert validator.errors.any? { |e| e.include?("releaseRef must be 0.6.0") } }
   end
 
   def test_rejects_missing_blank_or_unknown_module_group
@@ -52,9 +52,9 @@ class ManualContractTest < Minitest::Test
   def test_rejects_missing_canonical_release_header
     validate({}, { "repository" => "bluetape4k/bluetape4k-graph", "stableVersion" => nil, "stableMinor" => nil, "releaseTag" => nil }) do |validator|
       assert validator.errors.any? { |e| e.include?("repository must be bluetape4k-graph") }
-      assert validator.errors.any? { |e| e.include?("stableVersion must be 0.5.1") }
-      assert validator.errors.any? { |e| e.include?("stableMinor must be 0.5") }
-      assert validator.errors.any? { |e| e.include?("releaseTag must be 0.5.1") }
+      assert validator.errors.any? { |e| e.include?("stableVersion must be 0.6.0") }
+      assert validator.errors.any? { |e| e.include?("stableMinor must be 0.6") }
+      assert validator.errors.any? { |e| e.include?("releaseTag must be 0.6.0") }
     end
   end
 
@@ -79,7 +79,7 @@ class ManualContractTest < Minitest::Test
     validate({}, {
       "publication" => { "manualVersion" => "0.4", "sourceRoot" => "manual", "locales" => %w[en ko], "contentStatus" => "inventory-only" },
     }, strict: true) do |validator|
-      assert validator.errors.any? { |e| e.include?("manualVersion must be 0.5") }
+      assert validator.errors.any? { |e| e.include?("manualVersion must be 0.6") }
       assert validator.errors.any? { |e| e.include?("sourceRoot must be docs/manual") }
       assert validator.errors.any? { |e| e.include?("contentStatus must be complete") }
     end
@@ -160,9 +160,9 @@ class ManualContractTest < Minitest::Test
       end
       manifest = {
         "schemaVersion" => 2, "repository" => "bluetape4k-graph", "releaseRef" => RELEASE["ref"],
-        "stableVersion" => RELEASE["ref"], "stableMinor" => "0.5", "releaseTag" => RELEASE["ref"],
+        "stableVersion" => RELEASE["ref"], "stableMinor" => "0.6", "releaseTag" => RELEASE["ref"],
         "releaseCommit" => RELEASE["commit"], "publication" => {
-          "manualVersion" => "0.5", "sourceRoot" => "docs/manual", "locales" => %w[en ko], "contentStatus" => "complete",
+          "manualVersion" => "0.6", "sourceRoot" => "docs/manual", "locales" => %w[en ko], "contentStatus" => "complete",
         },
         "overview" => { "documents" => { "en" => ["en/index.md"], "ko" => ["ko/index.md"] }, "assets" => [] },
         "modules" => modules,

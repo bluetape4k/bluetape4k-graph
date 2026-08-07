@@ -12,7 +12,7 @@ This example connects people, employers, skills, and endorsements to exercise se
 
 ## Prerequisites and release boundary
 
-Use JDK 21, commit `3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907`, and the checked-in wrapper. Examples are not published; run this release fixture as a Gradle project from the release source checkout. In a consumer application, select only `bluetape4k-dependencies:<ecosystem-version>` and add the required graph module without an individual version.
+Use JDK 21, commit `72c0256e2e1cf61101d29852210e3c827ca93bc0`, and the checked-in wrapper. Examples are not published; run this release fixture as a Gradle project from the release source checkout. In a consumer application, select only `bluetape4k-dependencies:<ecosystem-version>` and add the required graph module without an individual version.
 
 ## Run and observe
 
@@ -24,11 +24,11 @@ The tests assert direct connections, a multi-hop connection path, second-degree 
 
 ## Reading order
 
-1. [Schema](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/linkedin-graph-examples/src/main/kotlin/io/bluetape4k/graph/examples/linkedin/schema/LinkedInSchema.kt)
-2. [Service](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/linkedin-graph-examples/src/main/kotlin/io/bluetape4k/graph/examples/linkedin/service/LinkedInGraphService.kt)
-3. [Shared executable contract](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/linkedin-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/linkedin/AbstractLinkedInGraphTest.kt)
-4. [Concrete TinkerGraph test](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/linkedin-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/linkedin/TinkerGraphLinkedInGraphTest.kt)
-5. [Build file](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/linkedin-graph-examples/build.gradle.kts)
+1. [Schema](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/examples/linkedin-graph-examples/src/main/kotlin/io/bluetape4k/graph/examples/linkedin/schema/LinkedInSchema.kt)
+2. [Service](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/examples/linkedin-graph-examples/src/main/kotlin/io/bluetape4k/graph/examples/linkedin/service/LinkedInGraphService.kt)
+3. [Shared executable contract](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/examples/linkedin-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/linkedin/AbstractLinkedInGraphTest.kt)
+4. [Concrete TinkerGraph test](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/examples/linkedin-graph-examples/src/test/kotlin/io/bluetape4k/graph/examples/linkedin/TinkerGraphLinkedInGraphTest.kt)
+5. [Build file](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/examples/linkedin-graph-examples/build.gradle.kts)
 
 Continue [from recommendation](./recommendation.md), then read [iam-access-graph](./iam-access-graph.md). Also see [paired APIs](../architecture/paired-apis.md), [testing](../guides/testing.md), and [operations](../guides/operations.md).
 
@@ -39,24 +39,24 @@ Add one result-changing edge and assertion; repeat through the suspend API; then
 <!-- release-readme-diagrams:start -->
 ## Release diagrams {#release-diagrams}
 
-These diagrams are loaded directly from README assets published with the `0.5.1` release and pinned to its immutable commit. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG at the same release commit.
+These diagrams are loaded directly from README assets published with the `0.6.0` release and pinned to its immutable commit. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG at the same release commit.
 
 ### linkedin graph examples architecture
 
-[![linkedin graph examples architecture](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/examples-linkedin-graph-examples-architecture-01.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/examples-linkedin-graph-examples-architecture-01.svg)
+[![linkedin graph examples architecture](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/72c0256e2e1cf61101d29852210e3c827ca93bc0/docs/images/readme-diagrams/examples-linkedin-graph-examples-architecture-01.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/docs/images/readme-diagrams/examples-linkedin-graph-examples-architecture-01.svg)
 
-_Release README: [`examples/linkedin-graph-examples/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/linkedin-graph-examples/README.md)_
+_Release README: [`examples/linkedin-graph-examples/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/examples/linkedin-graph-examples/README.md)_
 
 ### linkedin graph examples data flow
 
-[![linkedin graph examples data flow](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/examples-linkedin-graph-examples-data-flow-03.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/examples-linkedin-graph-examples-data-flow-03.svg)
+[![linkedin graph examples data flow](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/72c0256e2e1cf61101d29852210e3c827ca93bc0/docs/images/readme-diagrams/examples-linkedin-graph-examples-data-flow-03.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/docs/images/readme-diagrams/examples-linkedin-graph-examples-data-flow-03.svg)
 
-_Release README: [`examples/linkedin-graph-examples/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/linkedin-graph-examples/README.md)_
+_Release README: [`examples/linkedin-graph-examples/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/examples/linkedin-graph-examples/README.md)_
 
 ### linkedin graph examples ERD
 
-[![linkedin graph examples ERD](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/examples-linkedin-graph-examples-erd-02.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/examples-linkedin-graph-examples-erd-02.svg)
+[![linkedin graph examples ERD](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/72c0256e2e1cf61101d29852210e3c827ca93bc0/docs/images/readme-diagrams/examples-linkedin-graph-examples-erd-02.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/docs/images/readme-diagrams/examples-linkedin-graph-examples-erd-02.svg)
 
-_Release README: [`examples/linkedin-graph-examples/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/examples/linkedin-graph-examples/README.md)_
+_Release README: [`examples/linkedin-graph-examples/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/examples/linkedin-graph-examples/README.md)_
 
 <!-- release-readme-diagrams:end -->

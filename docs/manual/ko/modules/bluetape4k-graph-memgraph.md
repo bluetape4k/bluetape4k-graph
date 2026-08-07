@@ -5,7 +5,7 @@
 
 ## 실행 전 준비
 
-Memgraph는 Neo4j Java Driver로 Bolt에 연결하지만 서버, Cypher 범위, schema DDL, 운영 특성이 다르다. Memgraph를 이미 운영하거나 메모리 중심 그래프 처리가 요구사항에 맞을 때 선택한다. Neo4j 호환성 검증 수단으로 쓰면 안 된다. 구현은 [MemgraphGraphOperations.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-memgraph/src/main/kotlin/io/bluetape4k/graph/memgraph/MemgraphGraphOperations.kt)다.
+Memgraph는 Neo4j Java Driver로 Bolt에 연결하지만 서버, Cypher 범위, schema DDL, 운영 특성이 다르다. Memgraph를 이미 운영하거나 메모리 중심 그래프 처리가 요구사항에 맞을 때 선택한다. Neo4j 호환성 검증 수단으로 쓰면 안 된다. 구현은 [MemgraphGraphOperations.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-memgraph/src/main/kotlin/io/bluetape4k/graph/memgraph/MemgraphGraphOperations.kt)다.
 
 ## 실행
 
@@ -33,7 +33,7 @@ driver.close()
 
 ## 동작과 자원
 
-트랜잭션과 merge는 Memgraph 서버 버전에서 직접 확인해야 한다. schema는 [MemgraphGraphSchemaManager.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-memgraph/src/main/kotlin/io/bluetape4k/graph/memgraph/MemgraphGraphSchemaManager.kt)의 DDL만 따른다. Neo4j DDL을 그대로 복사하지 않는다. 주입한 Driver는 호출자가 닫는다.
+트랜잭션과 merge는 Memgraph 서버 버전에서 직접 확인해야 한다. schema는 [MemgraphGraphSchemaManager.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-memgraph/src/main/kotlin/io/bluetape4k/graph/memgraph/MemgraphGraphSchemaManager.kt)의 DDL만 따른다. Neo4j DDL을 그대로 복사하지 않는다. 주입한 Driver는 호출자가 닫는다.
 
 ## 운영 점검
 
@@ -54,7 +54,7 @@ driver.close()
 
 ## 완전한 release 예제
 
-고정된 [MemgraphGraphOperationsTest](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-memgraph/src/test/kotlin/io/bluetape4k/graph/memgraph/MemgraphGraphOperationsTest.kt)가 fixture 값을 정의한 완전한 실행 예제다. 다음 명령으로 확인한다.
+고정된 [MemgraphGraphOperationsTest](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-memgraph/src/test/kotlin/io/bluetape4k/graph/memgraph/MemgraphGraphOperationsTest.kt)가 fixture 값을 정의한 완전한 실행 예제다. 다음 명령으로 확인한다.
 
 ```bash
 ./gradlew :bluetape4k-graph-memgraph:test --tests '*MemgraphGraphOperationsTest'

@@ -360,30 +360,9 @@ diagrams:
   releaseReadmes:
   - graph/graph-core/README.ko.md
   - graph/graph-core/README.md
-- id: graph-graph-core-architecture-10
-  canonical: graph-graph-core-architecture-10
-  target: bluetape4k-graph-core
-  manualPages:
-    en: docs/manual/en/modules/bluetape4k-graph-core.md
-    ko: docs/manual/ko/modules/bluetape4k-graph-core.md
-  releaseReadmes:
-  - graph/graph-core/README.ko.md
-- id: graph-graph-core-architecture-11
-  canonical: graph-graph-core-architecture-11
-  target: bluetape4k-graph-core
-  manualPages:
-    en: docs/manual/en/modules/bluetape4k-graph-core.md
-    ko: docs/manual/ko/modules/bluetape4k-graph-core.md
-  releaseReadmes:
-  - graph/graph-core/README.ko.md
-- id: graph-graph-core-architecture-12
-  canonical: graph-graph-core-architecture-12
-  target: bluetape4k-graph-core
-  manualPages:
-    en: docs/manual/en/modules/bluetape4k-graph-core.md
-    ko: docs/manual/ko/modules/bluetape4k-graph-core.md
-  releaseReadmes:
-  - graph/graph-core/README.ko.md
+
+
+
 - id: graph-graph-core-architecture-13
   canonical: graph-graph-core-architecture-13
   target: bluetape4k-graph-core
@@ -424,14 +403,7 @@ diagrams:
     ko: docs/manual/ko/modules/bluetape4k-graph-core.md
   releaseReadmes:
   - graph/graph-core/README.ko.md
-- id: graph-graph-core-class-05
-  canonical: graph-graph-core-class-05
-  target: bluetape4k-graph-core
-  manualPages:
-    en: docs/manual/en/modules/bluetape4k-graph-core.md
-    ko: docs/manual/ko/modules/bluetape4k-graph-core.md
-  releaseReadmes:
-  - graph/graph-core/README.ko.md
+
 - id: graph-graph-core-sequence-06
   canonical: graph-graph-core-sequence-06
   target: bluetape4k-graph-core
