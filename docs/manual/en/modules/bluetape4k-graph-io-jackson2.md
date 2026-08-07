@@ -2,7 +2,7 @@
 
 ## Before you run
 
-This module reads and writes the release NDJSON envelope with Jackson 2. Choose it for applications standardized on Jackson 2 or for compatibility with existing Jackson 2 customization. Prefer Jackson 3 in a Jackson 3 application; avoid loading both stacks without a concrete compatibility need. Source: [Jackson2NdJsonBulkImporter.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/jackson2/src/main/kotlin/io/bluetape4k/graph/io/jackson2/Jackson2NdJsonBulkImporter.kt).
+This module reads and writes the release NDJSON envelope with Jackson 2. Choose it for applications standardized on Jackson 2 or for compatibility with existing Jackson 2 customization. Prefer Jackson 3 in a Jackson 3 application; avoid loading both stacks without a concrete compatibility need. Source: [Jackson2NdJsonBulkImporter.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph-io/jackson2/src/main/kotlin/io/bluetape4k/graph/io/jackson2/Jackson2NdJsonBulkImporter.kt).
 
 
 Execution mode: **release-fixture linked**. `sourceOps` and `targetOps` plus the temporary NDJSON path come from `Jackson2RoundTripTest`; the test seeds vertices/edges and closes operations and path resources.
@@ -59,7 +59,7 @@ Expected: round trip and cross-version envelope compatibility pass; overflow fol
 
 ## Complete release example
 
-The pinned [Jackson2RoundTripTest](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/jackson2/src/test/kotlin/io/bluetape4k/graph/io/jackson2/Jackson2RoundTripTest.kt) defines every fixture variable and is the complete executable release example. Run:
+The pinned [Jackson2RoundTripTest](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph-io/jackson2/src/test/kotlin/io/bluetape4k/graph/io/jackson2/Jackson2RoundTripTest.kt) defines every fixture variable and is the complete executable release example. Run:
 
 ```bash
 ./gradlew :bluetape4k-graph-io-jackson2:test --tests '*Jackson2RoundTripTest'

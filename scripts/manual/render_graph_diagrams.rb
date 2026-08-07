@@ -116,7 +116,7 @@ def repository_learning_map
     <text class="legend" x="90" y="930" font-size="18">Reading path: contract &gt; implementation &gt; integration &gt; evidence &gt; operating guidance</text>
   SVG
   svg(title: "Learn the Graph Repository by Responsibility",
-      subtitle: "Graph 0.5.1 • move outward only after the inner contract is understood",
+      subtitle: "Graph 0.6.0 • move outward only after the inner contract is understood",
       description: "A repository learning map from core foundations through backends, transfer and framework integration, examples, benchmarks, and operating guidance.",
       body: cards.join + links.join + legend)
 end
@@ -163,7 +163,7 @@ def backend_decision_map
     cards << card(id: id, x: x, y: 500, w: 280, h: 300, color: color, title: title, lines: lines, title_size: 30, line_size: 18)
   end
   cards << card(id: "neptune", x: 430, y: 880, w: 740, h: 80, color: :rose,
-                title: "Amazon Neptune: unavailable in Graph 0.5.1", lines: [], title_size: 27)
+                title: "Amazon Neptune: unavailable in Graph 0.6.0", lines: [], title_size: 27)
 
   links = []
   [["neo4j", 260, 200, :cyan], ["memgraph", 560, 500, :teal], ["age", 800, 800, :purple], ["tinker", 1040, 1100, :amber], ["falkor", 1340, 1400, :rose]].each do |id, source_x, target_x, color|
@@ -180,7 +180,7 @@ def backend_decision_map
 
   svg(title: "Choose a Backend You Can Verify",
       subtitle: "Feature counts do not replace infrastructure fit, semantic checks, or local failure evidence",
-      description: "A backend decision map comparing Neo4j, Memgraph, Apache AGE, TinkerGraph, and FalkorDB, with Amazon Neptune explicitly unavailable in Graph 0.5.1.",
+      description: "A backend decision map comparing Neo4j, Memgraph, Apache AGE, TinkerGraph, and FalkorDB, with Amazon Neptune explicitly unavailable in Graph 0.6.0.",
       body: cards.join + links.join)
 end
 

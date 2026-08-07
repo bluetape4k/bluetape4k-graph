@@ -2,7 +2,7 @@
 
 ## Before you run
 
-GraphML uses StAX streaming for directed property graphs. Choose it for interchange with tools that emit nodes, directed edges, scalar keys, and scalar data. Avoid assuming full GraphML: undirected graphs, nested graphs, hyperedges, ports, and vendor XML extensions have explicit strict/skip behavior. Source: [GraphMlBulkImporter.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/graphml/src/main/kotlin/io/bluetape4k/graph/io/graphml/GraphMlBulkImporter.kt).
+GraphML uses StAX streaming for directed property graphs. Choose it for interchange with tools that emit nodes, directed edges, scalar keys, and scalar data. Avoid assuming full GraphML: undirected graphs, nested graphs, hyperedges, ports, and vendor XML extensions have explicit strict/skip behavior. Source: [GraphMlBulkImporter.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph-io/graphml/src/main/kotlin/io/bluetape4k/graph/io/graphml/GraphMlBulkImporter.kt).
 
 
 Execution mode: **release-fixture linked**. `sourceOps`, `targetOps`, and the temporary GraphML path are created and closed by `GraphMlRoundTripTest`; its fixture also locks strict/skip behavior.
@@ -61,7 +61,7 @@ Expected: round trip passes, XXE/unsupported fixtures follow policy, and cross-f
 
 ## Complete release example
 
-The pinned [GraphMlRoundTripTest](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/graphml/src/test/kotlin/io/bluetape4k/graph/io/graphml/GraphMlRoundTripTest.kt) defines every fixture variable and is the complete executable release example. Run:
+The pinned [GraphMlRoundTripTest](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph-io/graphml/src/test/kotlin/io/bluetape4k/graph/io/graphml/GraphMlRoundTripTest.kt) defines every fixture variable and is the complete executable release example. Run:
 
 ```bash
 ./gradlew :bluetape4k-graph-io-graphml:test --tests '*GraphMlRoundTripTest'

@@ -33,7 +33,7 @@
   <rect width="1600" height="1040" fill="#0b1322"/>
   <rect class="frame" x="34" y="34" width="1532" height="972" rx="36"/>
   <text class="heading" x="800" y="100" text-anchor="middle" font-size="52" fill="#f4f7fb">Learn the Graph Repository by Responsibility</text>
-  <text class="subtitle" x="800" y="142" text-anchor="middle" font-size="20">Graph 0.5.1 • move outward only after the inner contract is understood</text>
+  <text class="subtitle" x="800" y="142" text-anchor="middle" font-size="20">Graph 0.6.0 • move outward only after the inner contract is understood</text>
   <g id="foundation">
   <rect class="card " data-card-id="foundation" x="70" y="265" width="280" height="360" rx="28" fill="#172238" stroke="#8bd5ff" stroke-width="5"/>
   <text class="card-title" x="210" y="320" text-anchor="middle" font-size="34" fill="#8bd5ff">Foundation</text>

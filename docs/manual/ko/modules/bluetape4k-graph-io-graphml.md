@@ -5,7 +5,7 @@
 
 ## 실행 전 준비
 
-GraphML 모듈은 StAX로 방향 property 그래프의 제한된 범위를 처리한다. node, 방향 edge, scalar key/data를 주고받는 도구와 연결할 때 선택한다. 무방향 그래프, 중첩 그래프, hyperedge, port, vendor XML 확장을 모두 보존해야 하면 피한다. 구현은 [GraphMlBulkImporter.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/graphml/src/main/kotlin/io/bluetape4k/graph/io/graphml/GraphMlBulkImporter.kt)다.
+GraphML 모듈은 StAX로 방향 property 그래프의 제한된 범위를 처리한다. node, 방향 edge, scalar key/data를 주고받는 도구와 연결할 때 선택한다. 무방향 그래프, 중첩 그래프, hyperedge, port, vendor XML 확장을 모두 보존해야 하면 피한다. 구현은 [GraphMlBulkImporter.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph-io/graphml/src/main/kotlin/io/bluetape4k/graph/io/graphml/GraphMlBulkImporter.kt)다.
 
 ## 실행
 
@@ -57,7 +57,7 @@ node `id`는 외부 ID이고 edge의 `source`와 `target`이 이를 참조한다
 
 ## 완전한 release 예제
 
-고정된 [GraphMlRoundTripTest](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/graphml/src/test/kotlin/io/bluetape4k/graph/io/graphml/GraphMlRoundTripTest.kt)가 모든 fixture 변수를 정의한 완전한 실행 예제다. 다음 명령으로 확인한다.
+고정된 [GraphMlRoundTripTest](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph-io/graphml/src/test/kotlin/io/bluetape4k/graph/io/graphml/GraphMlRoundTripTest.kt)가 모든 fixture 변수를 정의한 완전한 실행 예제다. 다음 명령으로 확인한다.
 
 ```bash
 ./gradlew :bluetape4k-graph-io-graphml:test --tests '*GraphMlRoundTripTest'

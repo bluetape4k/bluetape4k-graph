@@ -5,7 +5,7 @@
 
 ## 실행 전 준비
 
-FalkorDB는 Redis 형태로 운영되는 그래프 서비스이며 jfalkordb와 openCypher 일부를 쓴다. 해당 서비스를 운영하고 query 범위가 요구사항에 맞을 때 선택한다. Neo4j와 query, schema, 트랜잭션, 운영 방식이 같다고 가정하면 안 된다. 구현은 [FalkorDBGraphOperations.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-falkordb/src/main/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphOperations.kt)다.
+FalkorDB는 Redis 형태로 운영되는 그래프 서비스이며 jfalkordb와 openCypher 일부를 쓴다. 해당 서비스를 운영하고 query 범위가 요구사항에 맞을 때 선택한다. Neo4j와 query, schema, 트랜잭션, 운영 방식이 같다고 가정하면 안 된다. 구현은 [FalkorDBGraphOperations.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-falkordb/src/main/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphOperations.kt)다.
 
 ## 실행
 
@@ -33,7 +33,7 @@ driver.close()
 
 ## 동작과 자원
 
-merge와 schema는 FalkorDB 전용 구현을 따른다. 0.5.1의 공통 suspend 트랜잭션 DSL은 명시적으로 지원하지 않는다. 여러 쓰기를 호출자 쪽에서 원자적인 것처럼 감싸지 말고, 멱등 단계로 설계하거나 트랜잭션 요구를 만족하는 구현을 고른다. 근거는 [FalkorDBGraphSuspendOperationsTest.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-falkordb/src/test/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphSuspendOperationsTest.kt)다. Driver는 호출자가 닫는다.
+merge와 schema는 FalkorDB 전용 구현을 따른다. 0.6.0의 공통 suspend 트랜잭션 DSL은 명시적으로 지원하지 않는다. 여러 쓰기를 호출자 쪽에서 원자적인 것처럼 감싸지 말고, 멱등 단계로 설계하거나 트랜잭션 요구를 만족하는 구현을 고른다. 근거는 [FalkorDBGraphSuspendOperationsTest.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-falkordb/src/test/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphSuspendOperationsTest.kt)다. Driver는 호출자가 닫는다.
 
 ## 운영 점검
 
@@ -54,7 +54,7 @@ merge와 schema는 FalkorDB 전용 구현을 따른다. 0.5.1의 공통 suspend 
 
 ## 완전한 release 예제
 
-고정된 [FalkorDBGraphOperationsTest](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-falkordb/src/test/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphOperationsTest.kt)가 fixture 값을 정의한 완전한 실행 예제다. 다음 명령으로 확인한다.
+고정된 [FalkorDBGraphOperationsTest](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-falkordb/src/test/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphOperationsTest.kt)가 fixture 값을 정의한 완전한 실행 예제다. 다음 명령으로 확인한다.
 
 ```bash
 ./gradlew :bluetape4k-graph-falkordb:test --tests '*FalkorDBGraphOperationsTest'
@@ -69,12 +69,12 @@ merge와 schema는 FalkorDB 전용 구현을 따른다. 0.5.1의 공통 suspend 
 <!-- release-readme-diagrams:start -->
 ## 배포본 다이어그램 {#release-diagrams}
 
-아래 그림은 `0.5.1` 배포본의 README 자산을 해당 배포 커밋에서 직접 불러옵니다. 이후 SNAPSHOT이 아니라 이 매뉴얼 버전의 구조와 실행 흐름을 보여 줍니다. 미리보기를 누르면 같은 배포 커밋의 SVG 원본이 열립니다.
+아래 그림은 `0.6.0` 배포본의 README 자산을 해당 배포 커밋에서 직접 불러옵니다. 이후 SNAPSHOT이 아니라 이 매뉴얼 버전의 구조와 실행 흐름을 보여 줍니다. 미리보기를 누르면 같은 배포 커밋의 SVG 원본이 열립니다.
 
 ### Bluetape4k Graph falkordb 아키텍처
 
-[![Bluetape4k Graph falkordb 아키텍처](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-falkordb-architecture-01.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-falkordb-architecture-01.svg)
+[![Bluetape4k Graph falkordb 아키텍처](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/72c0256e2e1cf61101d29852210e3c827ca93bc0/docs/images/readme-diagrams/graph-graph-falkordb-architecture-01.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/docs/images/readme-diagrams/graph-graph-falkordb-architecture-01.svg)
 
-_배포본 README: [`graph/graph-falkordb/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-falkordb/README.ko.md)_
+_배포본 README: [`graph/graph-falkordb/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-falkordb/README.ko.md)_
 
 <!-- release-readme-diagrams:end -->

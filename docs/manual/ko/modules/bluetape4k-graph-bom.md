@@ -31,7 +31,7 @@ dependencies {
 
 ## 관리 범위와 동작
 
-core, 데이터베이스 연동, graph-io, OkIO, Ktor, Spring Boot 모듈을 제약한다. 예제와 benchmark 프로젝트는 포함하지 않는다. 정확한 목록은 release 시점의 [BOM build](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/bom/build.gradle.kts)와 [settings.gradle.kts](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/settings.gradle.kts)에 고정돼 있다.
+core, 데이터베이스 연동, graph-io, OkIO, Ktor, Spring Boot 모듈을 제약한다. 예제와 benchmark 프로젝트는 포함하지 않는다. 정확한 목록은 release 시점의 [BOM build](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/bom/build.gradle.kts)와 [settings.gradle.kts](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/settings.gradle.kts)에 고정돼 있다.
 
 이 모듈에는 트랜잭션과 자원 종료 동작이 없다. 실제 동작은 선택한 모듈 문서에서 확인한다.
 
@@ -54,7 +54,7 @@ core, 데이터베이스 연동, graph-io, OkIO, Ktor, Spring Boot 모듈을 제
 
 ## 완전한 release 예제
 
-고정된 [BOM build](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/bom/build.gradle.kts)가 실제로 실행되는 release 근거다. 다음 명령으로 확인한다.
+고정된 [BOM build](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/bom/build.gradle.kts)가 실제로 실행되는 release 근거다. 다음 명령으로 확인한다.
 
 ```bash
 ./gradlew :bluetape4k-graph-bom:build
@@ -69,12 +69,12 @@ core, 데이터베이스 연동, graph-io, OkIO, Ktor, Spring Boot 모듈을 제
 <!-- release-readme-diagrams:start -->
 ## 배포본 다이어그램 {#release-diagrams}
 
-아래 그림은 `0.5.1` 배포본의 README 자산을 해당 배포 커밋에서 직접 불러옵니다. 이후 SNAPSHOT이 아니라 이 매뉴얼 버전의 구조와 실행 흐름을 보여 줍니다. 미리보기를 누르면 같은 배포 커밋의 SVG 원본이 열립니다.
+아래 그림은 `0.6.0` 배포본의 README 자산을 해당 배포 커밋에서 직접 불러옵니다. 이후 SNAPSHOT이 아니라 이 매뉴얼 버전의 구조와 실행 흐름을 보여 줍니다. 미리보기를 누르면 같은 배포 커밋의 SVG 원본이 열립니다.
 
 ### bom 아키텍처
 
-[![bom 아키텍처](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/bom-architecture-01.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/bom-architecture-01.svg)
+[![bom 아키텍처](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/72c0256e2e1cf61101d29852210e3c827ca93bc0/docs/images/readme-diagrams/bom-architecture-01.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/docs/images/readme-diagrams/bom-architecture-01.svg)
 
-_배포본 README: [`bom/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/bom/README.ko.md)_
+_배포본 README: [`bom/README.ko.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/bom/README.ko.md)_
 
 <!-- release-readme-diagrams:end -->

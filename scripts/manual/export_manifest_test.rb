@@ -15,7 +15,7 @@ class ExportManifestTest < Minitest::Test
             kind: example
           - kind: library
             id: alpha
-        releaseRef: 0.5.1
+        releaseRef: 0.6.0
         schemaVersion: 2
       YAML
       exporter = ManualDocs::ManifestExporter.new(source_path: source, output_path: output)

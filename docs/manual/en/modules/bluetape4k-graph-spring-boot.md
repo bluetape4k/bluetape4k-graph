@@ -2,7 +2,7 @@
 
 ## Before you run
 
-This Spring Boot 4 module binds graph properties and imports backend-specific auto-configurations. Choose exactly one backend. It creates beans only when classpath, properties, and missing-bean conditions match; user beans make it back off. Root: [GraphAutoConfiguration.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/spring-boot/graph-spring-boot/src/main/kotlin/io/bluetape4k/graph/spring/boot/autoconfigure/GraphAutoConfiguration.kt).
+This Spring Boot 4 module binds graph properties and imports backend-specific auto-configurations. Choose exactly one backend. It creates beans only when classpath, properties, and missing-bean conditions match; user beans make it back off. Root: [GraphAutoConfiguration.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/spring-boot/graph-spring-boot/src/main/kotlin/io/bluetape4k/graph/spring/boot/autoconfigure/GraphAutoConfiguration.kt).
 
 
 Execution mode: **release-fixture linked**. `ApplicationContextRunner` supplies the Spring context and test properties; the linked test verifies conditional activation, user-bean backoff, access, and container-owned shutdown.
@@ -41,7 +41,7 @@ Expected: the context provides Driver, `GraphOperations`, `GraphSuspendOperation
 
 ## Conditions, lifetime, and backoff
 
-Backend configurations such as [GraphNeo4jAutoConfiguration.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/spring-boot/graph-spring-boot/src/main/kotlin/io/bluetape4k/graph/spring/boot/autoconfigure/GraphNeo4jAutoConfiguration.kt) use conditional classes/properties and missing-bean checks. A user-provided Driver or graph facade must prevent the corresponding duplicate bean. The container closes beans it creates; the auto-created Driver has `destroyMethod="close"`. User beans follow their own destroy contract.
+Backend configurations such as [GraphNeo4jAutoConfiguration.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/spring-boot/graph-spring-boot/src/main/kotlin/io/bluetape4k/graph/spring/boot/autoconfigure/GraphNeo4jAutoConfiguration.kt) use conditional classes/properties and missing-bean checks. A user-provided Driver or graph facade must prevent the corresponding duplicate bean. The container closes beans it creates; the auto-created Driver has `destroyMethod="close"`. User beans follow their own destroy contract.
 
 ## Operations checklist
 
@@ -64,7 +64,7 @@ Expected: properties bind, beans appear, user beans cause backoff, and context c
 
 ## Complete release example
 
-The pinned [GraphNeo4jAutoConfigurationTest](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/spring-boot/graph-spring-boot/src/test/kotlin/io/bluetape4k/graph/spring/boot/autoconfigure/GraphNeo4jAutoConfigurationTest.kt) defines the fixture values and is the complete executable release example. Run:
+The pinned [GraphNeo4jAutoConfigurationTest](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/spring-boot/graph-spring-boot/src/test/kotlin/io/bluetape4k/graph/spring/boot/autoconfigure/GraphNeo4jAutoConfigurationTest.kt) defines the fixture values and is the complete executable release example. Run:
 
 ```bash
 ./gradlew :bluetape4k-graph-spring-boot:test --tests '*GraphNeo4jAutoConfigurationTest'

@@ -2,7 +2,7 @@
 
 ## Before you run
 
-CSV exports a vertex file and an edge file. Choose it for tabular interchange, inspection, and systems that already own a column schema. Avoid it when one atomic stream, nested property fidelity, or authenticated single-file transport is required. Implementation: [CsvGraphBulkImporter.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/csv/src/main/kotlin/io/bluetape4k/graph/io/csv/CsvGraphBulkImporter.kt) and [CsvGraphBulkExporter.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/csv/src/main/kotlin/io/bluetape4k/graph/io/csv/CsvGraphBulkExporter.kt).
+CSV exports a vertex file and an edge file. Choose it for tabular interchange, inspection, and systems that already own a column schema. Avoid it when one atomic stream, nested property fidelity, or authenticated single-file transport is required. Implementation: [CsvGraphBulkImporter.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph-io/csv/src/main/kotlin/io/bluetape4k/graph/io/csv/CsvGraphBulkImporter.kt) and [CsvGraphBulkExporter.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph-io/csv/src/main/kotlin/io/bluetape4k/graph/io/csv/CsvGraphBulkExporter.kt).
 
 
 Execution mode: **release-fixture linked**. `sourceOps` and `targetOps` are isolated operations created by `CsvRoundTripTest`; the test also creates the vertex/edge temp paths and closes both graph instances.
@@ -41,7 +41,7 @@ Expected: two CSV files form one logical transfer and counts match.
 
 ## Record boundary, IDs, and ownership
 
-Vertex rows establish external IDs; edge rows refer to those IDs. Publish and retain the pair together. Property modes are defined by [CsvGraphIoOptions.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/csv/src/main/kotlin/io/bluetape4k/graph/io/csv/CsvGraphIoOptions.kt); column names, delimiter, charset, quoting, and property mode are part of the contract.
+Vertex rows establish external IDs; edge rows refer to those IDs. Publish and retain the pair together. Property modes are defined by [CsvGraphIoOptions.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph-io/csv/src/main/kotlin/io/bluetape4k/graph/io/csv/CsvGraphIoOptions.kt); column names, delimiter, charset, quoting, and property mode are part of the contract.
 
 Path-based files are library-opened and closed. A successful vertex file followed by a broken edge file can leave vertices imported. CSV is not an atomic database transaction.
 
@@ -66,7 +66,7 @@ Expected: round trip passes and malformed/missing endpoint cases follow configur
 
 ## Complete release example
 
-The pinned [CsvRoundTripTest](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/csv/src/test/kotlin/io/bluetape4k/graph/io/csv/CsvRoundTripTest.kt) defines every fixture variable and is the complete executable release example. Run:
+The pinned [CsvRoundTripTest](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph-io/csv/src/test/kotlin/io/bluetape4k/graph/io/csv/CsvRoundTripTest.kt) defines every fixture variable and is the complete executable release example. Run:
 
 ```bash
 ./gradlew :bluetape4k-graph-io-csv:test --tests '*CsvRoundTripTest'

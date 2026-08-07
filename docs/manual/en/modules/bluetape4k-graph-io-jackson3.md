@@ -2,7 +2,7 @@
 
 ## Before you run
 
-This module implements the same NDJSON envelope with Jackson 3. Choose it for a Jackson 3 dependency line and new integrations. Keep Jackson 2 when the application or mapper extensions still depend on that API. Source: [Jackson3NdJsonBulkImporter.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/jackson3/src/main/kotlin/io/bluetape4k/graph/io/jackson3/Jackson3NdJsonBulkImporter.kt).
+This module implements the same NDJSON envelope with Jackson 3. Choose it for a Jackson 3 dependency line and new integrations. Keep Jackson 2 when the application or mapper extensions still depend on that API. Source: [Jackson3NdJsonBulkImporter.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph-io/jackson3/src/main/kotlin/io/bluetape4k/graph/io/jackson3/Jackson3NdJsonBulkImporter.kt).
 
 
 Execution mode: **release-fixture linked**. `sourceOps`, `targetOps`, and the temporary NDJSON path are owned by `Jackson3RoundTripTest`, which seeds and closes both graphs.
@@ -58,7 +58,7 @@ Expected: local and Jackson 2 compatibility round trips pass, while overflow ret
 
 ## Complete release example
 
-The pinned [Jackson3RoundTripTest](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/jackson3/src/test/kotlin/io/bluetape4k/graph/io/jackson3/Jackson3RoundTripTest.kt) defines every fixture variable and is the complete executable release example. Run:
+The pinned [Jackson3RoundTripTest](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph-io/jackson3/src/test/kotlin/io/bluetape4k/graph/io/jackson3/Jackson3RoundTripTest.kt) defines every fixture variable and is the complete executable release example. Run:
 
 ```bash
 ./gradlew :bluetape4k-graph-io-jackson3:test --tests '*Jackson3RoundTripTest'

@@ -2,7 +2,7 @@
 
 ## Before you run
 
-FalkorDB is a Redis-shaped graph service accessed with jfalkordb and an openCypher subset. Choose it when that deployed service and query subset match the system. Avoid treating it as Neo4j because query, schema, transaction, and operational behavior differ. Source: [FalkorDBGraphOperations.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-falkordb/src/main/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphOperations.kt).
+FalkorDB is a Redis-shaped graph service accessed with jfalkordb and an openCypher subset. Choose it when that deployed service and query subset match the system. Avoid treating it as Neo4j because query, schema, transaction, and operational behavior differ. Source: [FalkorDBGraphOperations.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-falkordb/src/main/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphOperations.kt).
 
 
 Execution mode: **release-fixture linked**. The linked test owns the FalkorDB container, jfalkordb Driver, graph name, `ops`, and cleanup. The snippet is the essential flow after those fixture values are available.
@@ -33,7 +33,7 @@ Expected: the graph is lazily created on the first query and traversal returns B
 
 ## Semantics and unsupported boundaries
 
-Merge and schema behavior are FalkorDB-specific; see [FalkorDBGraphSchemaManager.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-falkordb/src/main/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphSchemaManager.kt). In 0.5.1 the common suspend transaction DSL is explicitly unsupported; do not replace it with client-side pseudo-atomicity. Design multi-write work as idempotent steps or choose a backend with the needed transaction boundary. Evidence: [FalkorDBGraphSuspendOperationsTest.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-falkordb/src/test/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphSuspendOperationsTest.kt).
+Merge and schema behavior are FalkorDB-specific; see [FalkorDBGraphSchemaManager.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-falkordb/src/main/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphSchemaManager.kt). In 0.6.0 the common suspend transaction DSL is explicitly unsupported; do not replace it with client-side pseudo-atomicity. Design multi-write work as idempotent steps or choose a backend with the needed transaction boundary. Evidence: [FalkorDBGraphSuspendOperationsTest.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-falkordb/src/test/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphSuspendOperationsTest.kt).
 
 The caller owns the jfalkordb Driver; operations open and close graph contexts per call.
 
@@ -58,7 +58,7 @@ Expected: CRUD/traversal passes and the transaction test records the unsupported
 
 ## Complete release example
 
-The pinned [FalkorDBGraphOperationsTest](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-falkordb/src/test/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphOperationsTest.kt) defines the fixture values and is the complete executable release example. Run:
+The pinned [FalkorDBGraphOperationsTest](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-falkordb/src/test/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphOperationsTest.kt) defines the fixture values and is the complete executable release example. Run:
 
 ```bash
 ./gradlew :bluetape4k-graph-falkordb:test --tests '*FalkorDBGraphOperationsTest'
@@ -73,12 +73,12 @@ See [FalkorDB guide](../backends/falkordb.md), [backend selection](../backends/s
 <!-- release-readme-diagrams:start -->
 ## Release diagrams {#release-diagrams}
 
-These diagrams are loaded directly from README assets published with the `0.5.1` release and pinned to its immutable commit. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG at the same release commit.
+These diagrams are loaded directly from README assets published with the `0.6.0` release and pinned to its immutable commit. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG at the same release commit.
 
 ### Overview diagram
 
-[![Overview diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-falkordb-architecture-01.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/docs/images/readme-diagrams/graph-graph-falkordb-architecture-01.svg)
+[![Overview diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-graph/72c0256e2e1cf61101d29852210e3c827ca93bc0/docs/images/readme-diagrams/graph-graph-falkordb-architecture-01.png)](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/docs/images/readme-diagrams/graph-graph-falkordb-architecture-01.svg)
 
-_Release README: [`graph/graph-falkordb/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph/graph-falkordb/README.md)_
+_Release README: [`graph/graph-falkordb/README.md`](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-falkordb/README.md)_
 
 <!-- release-readme-diagrams:end -->

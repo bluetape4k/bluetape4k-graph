@@ -2,7 +2,7 @@
 
 ## Before you run
 
-`graph-okio` adapts graph formats to OkIO `Source`, `Sink`, `Path`, and `FileSystem`. It adds compression chaining, atomic path writes, FakeFileSystem tests, and deterministic AEAD chunk encryption for single-stream formats. Choose it for OkIO pipelines; avoid adding it when plain NIO paths are sufficient. Source: [GraphIoOkioPaths.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/okio/src/main/kotlin/io/bluetape4k/graph/io/okio/GraphIoOkioPaths.kt).
+`graph-okio` adapts graph formats to OkIO `Source`, `Sink`, `Path`, and `FileSystem`. It adds compression chaining, atomic path writes, FakeFileSystem tests, and deterministic AEAD chunk encryption for single-stream formats. Choose it for OkIO pipelines; avoid adding it when plain NIO paths are sufficient. Source: [GraphIoOkioPaths.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph-io/okio/src/main/kotlin/io/bluetape4k/graph/io/okio/GraphIoOkioPaths.kt).
 
 
 Execution mode: **release-fixture linked**. `sourceOps`, `targetOps`, the temporary OkIO path, and test key material are fixture-owned; `NegativePathTest` and `OkioRoundTripTest` close them and verify cleanup.
@@ -62,7 +62,7 @@ Expected: authentication fails before records are accepted, bounded reads fail w
 
 ## Complete release example
 
-The pinned [NegativePathTest](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/graph-io/okio/src/test/kotlin/io/bluetape4k/graph/io/okio/NegativePathTest.kt) defines every fixture variable and is the complete executable release example. Run:
+The pinned [NegativePathTest](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph-io/okio/src/test/kotlin/io/bluetape4k/graph/io/okio/NegativePathTest.kt) defines every fixture variable and is the complete executable release example. Run:
 
 ```bash
 ./gradlew :bluetape4k-graph-okio:test --tests '*NegativePathTest'

@@ -23,7 +23,7 @@ class ReleaseContractTest < Minitest::Test
     Dir.mktmpdir do |root|
       FileUtils.mkdir_p(File.join(root, "docs/manual/en"))
       File.write(File.join(root, "docs/manual/en/index.md"), "[source](../../../graph/Missing.kt)\n")
-      contract = ManualDocs::ReleaseContract.new(repository_root: root, tag: "0.5.1", expected_sha: SHA,
+      contract = ManualDocs::ReleaseContract.new(repository_root: root, tag: "0.6.0", expected_sha: SHA,
         git_runner: runner(tree: ["graph/Present.kt"]))
       assert contract.errors.any? { |e| e.include?("release path not found") }
     end
@@ -34,14 +34,14 @@ class ReleaseContractTest < Minitest::Test
       FileUtils.mkdir_p(File.join(root, "docs/manual/en"))
       File.write(File.join(root, "docs/manual/en/index.md"),
         "[source](https://github.com/bluetape4k/bluetape4k-graph/blob/#{'4' * 40}/graph/Present.kt)\n")
-      contract = ManualDocs::ReleaseContract.new(repository_root: root, tag: "0.5.1", expected_sha: SHA,
+      contract = ManualDocs::ReleaseContract.new(repository_root: root, tag: "0.6.0", expected_sha: SHA,
         git_runner: runner(tree: ["graph/Present.kt"]))
       assert contract.errors.any? { |e| e.include?("source link commit") }
     end
   end
 
   def test_rejects_non_annotated_tag
-    contract = ManualDocs::ReleaseContract.new(repository_root: Dir.pwd, tag: "0.5.1", expected_sha: SHA,
+    contract = ManualDocs::ReleaseContract.new(repository_root: Dir.pwd, tag: "0.6.0", expected_sha: SHA,
       git_runner: runner(tree: [], type: "commit"))
     assert contract.errors.any? { |e| e.include?("annotated") }
   end
@@ -51,7 +51,7 @@ class ReleaseContractTest < Minitest::Test
       FileUtils.mkdir_p(File.join(root, "docs/manual"))
       manifest = File.join(root, "docs/manual/manifest.yaml")
       File.write(manifest, YAML.dump("modules" => [{ "id" => "core", "sourcePaths" => ["graph/missing"] }]))
-      contract = ManualDocs::ReleaseContract.new(repository_root: root, tag: "0.5.1", expected_sha: SHA,
+      contract = ManualDocs::ReleaseContract.new(repository_root: root, tag: "0.6.0", expected_sha: SHA,
         manifest_path: manifest, git_runner: runner(tree: ["graph/present/build.gradle.kts"]))
       assert contract.errors.any? { |e| e.include?("sourcePath not found in release tree: graph/missing") }
       assert_equal 1, contract.validate.source_path_count
@@ -66,7 +66,7 @@ class ReleaseContractTest < Minitest::Test
         { "id" => "core", "sourceDir" => "graph/core", "sourcePaths" => [] },
         { "id" => "neo4j", "sourceDir" => "graph/neo4j", "sourcePaths" => ["graph/core"] },
       ]))
-      contract = ManualDocs::ReleaseContract.new(repository_root: root, tag: "0.5.1", expected_sha: SHA,
+      contract = ManualDocs::ReleaseContract.new(repository_root: root, tag: "0.6.0", expected_sha: SHA,
         manifest_path: manifest, git_runner: runner(tree: ["graph/core/build.gradle.kts", "graph/neo4j/build.gradle.kts"]))
       errors = contract.errors
       assert errors.any? { |e| e.include?("core: sourcePaths must equal [sourceDir]") }
@@ -85,7 +85,7 @@ class ReleaseContractTest < Minitest::Test
         FileUtils.mkdir_p(File.join(root, "docs/manual"))
         manifest = File.join(root, "docs/manual/manifest.yaml")
         File.write(manifest, YAML.dump(document))
-        contract = ManualDocs::ReleaseContract.new(repository_root: root, tag: "0.5.1", expected_sha: SHA,
+        contract = ManualDocs::ReleaseContract.new(repository_root: root, tag: "0.6.0", expected_sha: SHA,
           manifest_path: manifest, git_runner: runner(tree: []))
         assert contract.errors.any? { |e| e.include?(expected) }
       end
@@ -97,7 +97,7 @@ class ReleaseContractTest < Minitest::Test
     Dir.mktmpdir do |root|
       validator = ManualDocs::ReleaseManualValidator.new(
         repository_root: root,
-        tag: "0.5.1",
+        tag: "0.6.0",
         expected_sha: SHA,
         inventory_path: File.join(root, "missing.json"),
         manifest_path: File.join(root, "docs/manual/manifest.yaml"),

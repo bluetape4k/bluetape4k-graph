@@ -5,7 +5,7 @@
 
 ## 실행 전 준비
 
-이 Spring Boot 4 모듈은 그래프 property를 bind하고 그래프별 auto-configuration을 불러온다. 그래프 하나만 선택한다. classpath, property, missing-bean 조건이 맞을 때만 bean을 만들며, 사용자가 제공한 bean이 있으면 물러난다. 시작점은 [GraphAutoConfiguration.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/spring-boot/graph-spring-boot/src/main/kotlin/io/bluetape4k/graph/spring/boot/autoconfigure/GraphAutoConfiguration.kt)다.
+이 Spring Boot 4 모듈은 그래프 property를 bind하고 그래프별 auto-configuration을 불러온다. 그래프 하나만 선택한다. classpath, property, missing-bean 조건이 맞을 때만 bean을 만들며, 사용자가 제공한 bean이 있으면 물러난다. 시작점은 [GraphAutoConfiguration.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/spring-boot/graph-spring-boot/src/main/kotlin/io/bluetape4k/graph/spring/boot/autoconfigure/GraphAutoConfiguration.kt)다.
 
 ## 실행
 
@@ -41,7 +41,7 @@ class PeopleService(private val graph: GraphSuspendOperations) {
 
 ## 조건과 종료 책임
 
-[GraphNeo4jAutoConfiguration.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/spring-boot/graph-spring-boot/src/main/kotlin/io/bluetape4k/graph/spring/boot/autoconfigure/GraphNeo4jAutoConfiguration.kt) 같은 설정은 classpath, property, missing-bean 조건을 함께 본다. 사용자가 Driver나 그래프 진입점를 제공하면 중복 bean을 만들지 않아야 한다. container가 만든 Driver는 `destroyMethod="close"`로 닫힌다. 사용자 bean은 그 bean의 종료 계약을 따른다.
+[GraphNeo4jAutoConfiguration.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/spring-boot/graph-spring-boot/src/main/kotlin/io/bluetape4k/graph/spring/boot/autoconfigure/GraphNeo4jAutoConfiguration.kt) 같은 설정은 classpath, property, missing-bean 조건을 함께 본다. 사용자가 Driver나 그래프 진입점를 제공하면 중복 bean을 만들지 않아야 한다. container가 만든 Driver는 `destroyMethod="close"`로 닫힌다. 사용자 bean은 그 bean의 종료 계약을 따른다.
 
 ## 운영 점검
 
@@ -62,7 +62,7 @@ class PeopleService(private val graph: GraphSuspendOperations) {
 
 ## 완전한 release 예제
 
-고정된 [GraphNeo4jAutoConfigurationTest](https://github.com/bluetape4k/bluetape4k-graph/blob/3e0fa7cb9e3bc70c2743aeebda2487f3e45e4907/spring-boot/graph-spring-boot/src/test/kotlin/io/bluetape4k/graph/spring/boot/autoconfigure/GraphNeo4jAutoConfigurationTest.kt)가 fixture 값을 정의한 완전한 실행 예제다. 다음 명령으로 확인한다.
+고정된 [GraphNeo4jAutoConfigurationTest](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/spring-boot/graph-spring-boot/src/test/kotlin/io/bluetape4k/graph/spring/boot/autoconfigure/GraphNeo4jAutoConfigurationTest.kt)가 fixture 값을 정의한 완전한 실행 예제다. 다음 명령으로 확인한다.
 
 ```bash
 ./gradlew :bluetape4k-graph-spring-boot:test --tests '*GraphNeo4jAutoConfigurationTest'
