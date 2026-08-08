@@ -2,8 +2,8 @@
   <title id="title">Observability graph examples data flow</title>
   <desc id="desc">CSV observability fixture is imported, queried through the incident service, and asserted against backend-independent expected answers.</desc>
   <defs>
-    <marker id="arrow" markerWidth="16" markerHeight="16" refX="10" refY="4" orient="auto" markerUnits="userSpaceOnUse">
-      <path d="M0,0 L0,8 L10,4 z" fill="#2563EB"/>
+    <marker id="arrow" markerWidth="14" markerHeight="14" refX="10" refY="4" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 16 16" data-role="primary" data-tip-direction="positive-x">
+      <path d="M0,0 L0,8 L10,4 z" fill="#2563EB" stroke-dasharray="none"/>
     </marker>
     <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#0F172A" flood-opacity="0.12"/>
