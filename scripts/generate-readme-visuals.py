@@ -105,8 +105,8 @@ def style() -> str:
       <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
         <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
       </filter>
-      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+      <marker id="arrow" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" viewBox="0 0 14 14" refX="12" refY="7" orient="auto" data-role="primary" data-tip-direction="positive-x">
+        <path data-arrowhead="true" data-role="primary" data-size="14x14" data-solid-head="true" d="M 1 1 L 13 7 L 1 13 Z" fill="#2563EB" stroke="#2563EB" stroke-width="0" stroke-dasharray="none"/>
       </marker>
     </defs>
     <style>
@@ -165,7 +165,7 @@ def card(out: list[str], x: float, y: float, w: float, h: float, title: str, lin
 
 
 def arrow(out: list[str], x1: float, y1: float, x2: float, y2: float, label: str = "", cls: str = "line") -> None:
-    out.append(f'<path d="M {x1} {y1} C {(x1+x2)/2} {y1}, {(x1+x2)/2} {y2}, {x2} {y2}" class="{cls}"/>')
+    out.append(f'<path data-connector="true" marker-end="url(#arrow)" d="M {x1} {y1} C {(x1+x2)/2} {y1}, {(x1+x2)/2} {y2}, {x2} {y2}" class="{cls}"/>')
     if label:
         lx = (x1 + x2) / 2
         ly = (y1 + y2) / 2 - 28
@@ -3241,7 +3241,7 @@ def graph_core_sequence_svg(
         f'<text x="{width/2}" y="{height-48}" text-anchor="middle" class="tiny">'
         f'{esc(REPOSITORY_URL)} | project: {esc(PROJECT_NAME)} | module: {esc(module_name)} / {esc(title)}</text>'
     )
-    out.insert(2, '<defs><marker id="seqArrow" markerWidth="6" markerHeight="6" refX="5.5" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M 0 0 L 6 3 L 0 6 z" fill="#2E9C9B"/></marker></defs>')
+    out.insert(2, '<defs><marker id="seqArrow" markerUnits="userSpaceOnUse" markerWidth="16" markerHeight="16" viewBox="0 0 16 16" refX="14" refY="8" orient="auto" data-role="sequence" data-tip-direction="positive-x"><path data-arrowhead="true" data-role="sequence" data-size="16x16" data-solid-head="true" d="M 1 1 L 15 8 L 1 15 Z" fill="#2E9C9B" stroke="#2E9C9B" stroke-width="0" stroke-dasharray="none"/></marker></defs>')
     tones = {
         "blue": (PALETTE["sky"], "#3B82F6"),
         "green": (PALETTE["mint"], "#22C55E"),
@@ -3298,7 +3298,7 @@ def graph_core_sequence_svg(
         end = tx - (10 if tx > sx else -10)
         color = line_colors[tone]
         dash = ' stroke-dasharray="10 8"' if dashed else ""
-        out.append(f'<line x1="{start}" y1="{y}" x2="{end}" y2="{y}" stroke="{color}" stroke-width="2.7"{dash} marker-end="url(#seqArrow)"/>')
+        out.append(f'<line data-connector="true" x1="{start}" y1="{y}" x2="{end}" y2="{y}" stroke="{color}" stroke-width="2.7"{dash} marker-end="url(#seqArrow)"/>')
         pill_x = (sx + tx) / 2 - pill_w / 2
         pill_y = y - 44
         pill_center_y = pill_y + 15
