@@ -1,4 +1,4 @@
-# Changelog
+# 변경 이력
 
 이 프로젝트의 주요 변경 사항은 이 파일에 기록한다.
 
@@ -10,7 +10,7 @@
 
 ## [0.6.0] - 2026-08-06
 
-### Added
+### 추가
 
 - **Chunked graph export cursor API**: graph repository가 sync/coroutine
   chunked label lookup을 제공한다. TinkerGraph는 reference chunked traversal
@@ -22,7 +22,7 @@
   endpoint 누락과 label 불일치를 호출 지점에서 즉시 검증한다
   ([#398](https://github.com/bluetape4k/bluetape4k-graph/issues/398)).
 
-### Fixed
+### 버그 수정
 
 - **CodeQL Kotlin catalog pin**: 중앙 version catalog의 정렬된 주석과 공백을
   허용하면서도 immutable ref와 checksum 검증을 유지하도록 고쳤다
@@ -45,7 +45,7 @@
   조건과 지원하지 않는 값의 실패 동작을 테스트와 KDoc으로 명시했다
   ([#444](https://github.com/bluetape4k/bluetape4k-graph/issues/444)).
 
-### Changed
+### 변경
 
 - **Korean documentation and KDoc consistency**: README와 LLM-facing 문서는
   유지하면서 single-language 문서와 Kotlin KDoc/comments를 한국어로 정리했다
@@ -58,7 +58,7 @@
 
 ## [0.5.0] - 2026-06-01
 
-### Added
+### 추가
 
 - **Ktor managed backend DSL**: `graph-ktor`가 `neo4j { ... }`,
   `memgraph { ... }`, `falkorDB { ... }`를 통해 Neo4j, Memgraph, FalkorDB
@@ -100,17 +100,17 @@
   sync/suspend TinkerGraph test를 포함한다
   ([#252](https://github.com/bluetape4k/bluetape4k-graph/issues/252)).
 
-### Changed
+### 변경
 
 - **0.5.0 release line dependency alignment**: graph build가
   `io.github.bluetape4k:bluetape4k-bom:1.10.0`을 사용하도록 바꾸고, shared
   dependency catalog는 `catalog/2026-05-26-01`에 맞췄다.
 
-### Fixed
+### 버그 수정
 
 ## [0.4.2] - 2026-05-27
 
-### Fixed
+### 버그 수정
 
 - **Tag-triggered release의 catalog 선택을 결정적으로 고정**: release workflow의
   tag run은 오래된 repository catalog variable을 무시하고 checked-in catalog
@@ -119,7 +119,7 @@
 - **TinkerGraph shortest-path facade 경고 정리**: 0.4.x 라인에서 안정화한
   shortest-path 동작은 유지하면서 facade-size 경고만 억제했다.
 
-### Changed
+### 변경
 
 - **0.4.2 release line dependency alignment**: graph build가
   `bluetape4k-projects` 1.9.2 BOM과 `catalog/2026-05-26-01` shared catalog
@@ -130,7 +130,7 @@
   override를 사용한다
   ([#243](https://github.com/bluetape4k/bluetape4k-graph/issues/243)).
 
-### Tests
+### 테스트
 
 - **GraphML unsupported element policy matrix**: unsupported GraphML element에
   대한 reader 동작을 고정해, 이후 parser 변경이 문서화된 skip/fail policy를
@@ -151,7 +151,7 @@
 
 ## [0.4.0] - 2026-05-22
 
-### Added
+### 추가
 
 - **graph-io backed domain example sample loaders**: fraud detection,
   recommendation, knowledge graph example에 bundled CSV fixture와 sync/suspend
@@ -179,7 +179,7 @@
   container smoke test로 FalkorDB Spring Boot auto-configuration path를
   검증한다 ([#126](https://github.com/bluetape4k/bluetape4k-graph/issues/126)).
 
-### Fixed
+### 버그 수정
 
 - **FalkorDB/Memgraph schema manager DDL fallback이 cancellation을 보존**:
   schema manager create/drop index helper path는 already-exists 또는
@@ -205,7 +205,7 @@
   test lifecycle 종료 후 caller-owned driver를 닫는다
   ([#135](https://github.com/bluetape4k/bluetape4k-graph/issues/135)).
 
-### Changed
+### 변경
 
 - 의존성을 `io.github.bluetape4k:bluetape4k-bom:1.9.0`과 최신 published
   `io.github.bluetape4k:bluetape4k-dependencies:1.0.0`에 맞췄다.
@@ -224,7 +224,7 @@
 
 ## [0.3.0] - 2026-05-16
 
-### Added
+### 추가
 
 - **Root README refresh**: generated graph workbench hero image, 더 충실한 project
   overview, Mermaid architecture diagram, supported database guidance, graph-io
@@ -311,7 +311,7 @@
   ([#118](https://github.com/bluetape4k/bluetape4k-graph/issues/118),
   [PR #129](https://github.com/bluetape4k/bluetape4k-graph/pull/129)).
 
-### Fixed
+### 버그 수정
 
 - **`graphElementIdOf(Any)` double-`toString()` conversion bug**:
   `GraphElementId` 값을 다시 `graphElementIdOf`에 넘기면
@@ -325,7 +325,7 @@
   수정했다 ([PR #55](https://github.com/bluetape4k/bluetape4k-graph/pull/55),
   [PR #56](https://github.com/bluetape4k/bluetape4k-graph/pull/56)).
 
-### Changed
+### 변경
 
 - 현재 열린 issue queue, Java 21 runtime, version catalog dependency, 변경된
   Spring Boot module, graph-okio DAEAD support, examples workflow, active module
@@ -365,7 +365,7 @@
 
 ## [0.2.0] - 2026-04-28
 
-### Added
+### 추가
 
 - **그래프 알고리즘 확장** (`graph-core` + 백엔드 구현): `pageRank`,
   `degreeCentrality`, `connectedComponents`, `bfs`, `dfs`, `cycles` API를
@@ -425,7 +425,7 @@
   추가하고 Java 25 preview, Gradle cache, Testcontainers 기반 integration test
   path를 구성했다.
 
-### Changed
+### 변경
 
 - **`graph-servers` 모듈 삭제**: `bluetape4k-testcontainers`의
   `io.bluetape4k.testcontainers.graphdb` package
@@ -437,7 +437,7 @@
   pattern, `Database.connect(dataSource)` 선행 호출, `asVirtualThread` 실제
   package import 기준으로 README/KDoc example을 정리했다.
 
-### Fixed
+### 버그 수정
 
 - **TinkerGraph `graphOperations()` 반환 타입**: `GraphOperations` ->
   `TinkerGraphOperations`로 수정했다. `graphSuspendOperations(ops:
@@ -451,7 +451,7 @@
 
 ## [0.1.0] - 2026-04-16
 
-### Added
+### 추가
 
 - **BOM 모듈** (`bluetape4k-graph-bom`): dependency version 통합 관리를 위한
   Bill of Materials를 추가했다.
