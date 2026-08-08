@@ -5,17 +5,17 @@
     <filter id="shadow" x="-5%" y="-5%" width="110%" height="112%">
       <feDropShadow dx="0" dy="7" stdDeviation="5" flood-color="#334155" flood-opacity="0.10"/>
     </filter>
-    <marker id="arrowBlue" viewBox="0 0 22 16" refX="20" refY="8" markerWidth="16" markerHeight="16" orient="auto" markerUnits="userSpaceOnUse">
-      <path d="M 2 2 L 20 8 L 2 14 Z" fill="#2563EB"/>
+    <marker id="arrowBlue" viewBox="0 0 19.25 14" refX="20" refY="8" markerWidth="14" markerHeight="14" orient="auto" markerUnits="userSpaceOnUse" data-role="primary" data-tip-direction="positive-x">
+      <path d="M 2 2 L 20 8 L 2 14 Z" fill="#2563EB" stroke-dasharray="none"/>
     </marker>
-    <marker id="arrowAmber" viewBox="0 0 22 16" refX="20" refY="8" markerWidth="16" markerHeight="16" orient="auto" markerUnits="userSpaceOnUse">
-      <path d="M 2 2 L 20 8 L 2 14 Z" fill="#B45309"/>
+    <marker id="arrowAmber" viewBox="0 0 19.25 14" refX="20" refY="8" markerWidth="14" markerHeight="14" orient="auto" markerUnits="userSpaceOnUse" data-role="primary" data-tip-direction="positive-x">
+      <path d="M 2 2 L 20 8 L 2 14 Z" fill="#B45309" stroke-dasharray="none"/>
     </marker>
-    <marker id="arrowTeal" viewBox="0 0 22 16" refX="20" refY="8" markerWidth="16" markerHeight="16" orient="auto" markerUnits="userSpaceOnUse">
-      <path d="M 2 2 L 20 8 L 2 14 Z" fill="#0F766E"/>
+    <marker id="arrowTeal" viewBox="0 0 19.25 14" refX="20" refY="8" markerWidth="14" markerHeight="14" orient="auto" markerUnits="userSpaceOnUse" data-role="primary" data-tip-direction="positive-x">
+      <path d="M 2 2 L 20 8 L 2 14 Z" fill="#0F766E" stroke-dasharray="none"/>
     </marker>
-    <marker id="arrowViolet" viewBox="0 0 22 16" refX="20" refY="8" markerWidth="16" markerHeight="16" orient="auto" markerUnits="userSpaceOnUse">
-      <path d="M 2 2 L 20 8 L 2 14 Z" fill="#7C3AED"/>
+    <marker id="arrowViolet" viewBox="0 0 19.25 14" refX="20" refY="8" markerWidth="14" markerHeight="14" orient="auto" markerUnits="userSpaceOnUse" data-role="primary" data-tip-direction="positive-x">
+      <path d="M 2 2 L 20 8 L 2 14 Z" fill="#7C3AED" stroke-dasharray="none"/>
     </marker>
   </defs>
 

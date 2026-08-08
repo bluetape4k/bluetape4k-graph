@@ -37,8 +37,8 @@ end
 def marker_defs
   COLORS.map do |name, color|
     <<~SVG
-      <marker id="arrow-#{name}" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 14 14">
-        <polygon points="0,1 14,7 0,13" fill="#{color}" stroke="none"/>
+      <marker id="arrow-#{name}" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 14 14" data-role="primary" data-tip-direction="positive-x">
+        <polygon points="0,1 14,7 0,13" fill="#{color}" stroke="none" stroke-dasharray="none"/>
       </marker>
     SVG
   end.join
