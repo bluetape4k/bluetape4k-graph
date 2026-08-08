@@ -1,22 +1,22 @@
-# Issue 254 - graph-ktor Managed AGE DataSource DSL Plan
+# 이슈 #254 - graph-ktor 관리형 AGE DataSource DSL 계획
 
-## DoD
+## 완료 조건
 
-- Add `ageDataSource { ... }` with property validation.
-- Create a Hikari pool, call `Database.connect(dataSource)`, and wire sync/suspend AGE operations.
-- Close plugin-owned AGE operations and the plugin-created Hikari pool on Ktor stop.
-- Preserve the existing caller-owned `age(graphName)` helper.
-- Add validation tests for invalid properties.
-- Add Ktor `testApplication` smoke coverage with PostgreSQL AGE Testcontainers.
-- Update English and Korean `graph-ktor` README files.
-- Update changelog and lesson note.
-- Verify compile, test, and whitespace checks.
+- 속성 검증을 포함한 `ageDataSource { ... }`를 추가한다.
+- Hikari 풀을 생성하고 `Database.connect(dataSource)`를 호출하며 동기/suspend AGE 연산을 연결한다.
+- Ktor 중지 시 플러그인이 소유한 AGE 연산과 플러그인이 생성한 Hikari 풀을 닫는다.
+- 기존 호출자 소유 `age(graphName)` helper를 유지한다.
+- 잘못된 속성에 대한 검증 테스트를 추가한다.
+- PostgreSQL AGE Testcontainers를 사용하는 Ktor `testApplication` smoke 검증을 추가한다.
+- 영문 및 한국어 `graph-ktor` README 파일을 업데이트한다.
+- 변경 기록과 lesson note를 업데이트한다.
+- 컴파일, 테스트 및 공백 검사를 검증한다.
 
-## Implementation Steps
+## 구현 단계
 
-1. Add `ManagedAgeDataSourceGraphPluginConfig` and `GraphPluginConfig.ageDataSource`.
-2. Add HikariCP as a compile-only dependency for the optional DSL implementation.
-3. Convert the AGE Ktor runtime smoke to use managed setup.
-4. Add invalid property fail-fast tests.
-5. Document lifecycle ownership and optional Hikari dependency.
-6. Run focused `graph-ktor` compile/test checks.
+1. `ManagedAgeDataSourceGraphPluginConfig`와 `GraphPluginConfig.ageDataSource`를 추가한다.
+2. 선택적 DSL 구현을 위해 HikariCP를 compile-only dependency로 추가한다.
+3. AGE Ktor 런타임 smoke가 관리형 설정을 사용하도록 전환한다.
+4. 잘못된 속성에 대한 fail-fast 테스트를 추가한다.
+5. 수명 주체와 선택적 Hikari 의존성을 문서화한다.
+6. 대상 `graph-ktor` compile/test 검사를 실행한다.

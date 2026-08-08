@@ -1,11 +1,11 @@
-# graph-benchmark Report
+# graph-benchmark 결과 보고서
 
-- Source: `docs/benchmark/graph-db-testcontainers-2026-05-21.json`
-- Baseline: `None`
-- Direction: `lower_is_better`
-- Git commit: `8e16971`
+- 소스: `docs/benchmark/graph-db-testcontainers-2026-05-21.json`
+- 기준선: `None`
+- 방향: `lower_is_better`
+- Git 커밋: `8e16971`
 
-| Benchmark | Params | Score | Baseline | Delta | Unit | Improved |
+| 벤치마크 | 매개변수 | 점수 | 기준선 | 차이 | 단위 | 개선 여부 |
 |---|---:|---:|---:|---:|---|---|
 | `GraphDbComparisonBenchmark.batchInsertCycle` | backend=tinkergraph, sizeName=small | 5.3795 | - | - | ms/op | - |
 | `GraphDbComparisonBenchmark.batchInsertCycle` | backend=neo4j, sizeName=small | 6.21737 | - | - | ms/op | - |
