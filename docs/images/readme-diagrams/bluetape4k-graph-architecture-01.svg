@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1580" height="980" viewBox="0 0 1580 980" role="img" aria-label="Bluetape4k Graph Architecture">
 <defs>
-  <marker markerUnits="userSpaceOnUse" id="arrow-blue" markerWidth="14" markerHeight="14" refX="9" refY="3.5" orient="auto" viewBox="0 0 16 16" data-role="primary" data-tip-direction="positive-x"><path d="M 1.28 1.6 L 14.72 8 L 1.28 14.4 Z" fill="#2563eb" stroke="#2563eb" stroke-width="0" stroke-dasharray="none"/></marker>
-  <marker markerUnits="userSpaceOnUse" id="arrow-green" markerWidth="14" markerHeight="14" refX="9" refY="3.5" orient="auto" viewBox="0 0 16 16" data-role="primary" data-tip-direction="positive-x"><path d="M 1.28 1.6 L 14.72 8 L 1.28 14.4 Z" fill="#16a34a" stroke="#16a34a" stroke-width="0" stroke-dasharray="none"/></marker>
-  <marker markerUnits="userSpaceOnUse" id="arrow-orange" markerWidth="14" markerHeight="14" refX="9" refY="3.5" orient="auto" viewBox="0 0 16 16" data-role="primary" data-tip-direction="positive-x"><path d="M 1.28 1.6 L 14.72 8 L 1.28 14.4 Z" fill="#ea580c" stroke="#ea580c" stroke-width="0" stroke-dasharray="none"/></marker>
-  <marker markerUnits="userSpaceOnUse" id="arrow-purple" markerWidth="14" markerHeight="14" refX="9" refY="3.5" orient="auto" viewBox="0 0 16 16" data-role="primary" data-tip-direction="positive-x"><path d="M 1.28 1.6 L 14.72 8 L 1.28 14.4 Z" fill="#9333ea" stroke="#9333ea" stroke-width="0" stroke-dasharray="none"/></marker>
+  <marker markerUnits="userSpaceOnUse" id="arrow-blue" markerWidth="14" markerHeight="14" viewBox="0 0 14 14" refX="12" refY="7" orient="auto" data-role="primary" data-tip-direction="positive-x"><path data-arrowhead="true" data-role="primary" data-size="14x14" data-solid-head="true" d="M 1 1 L 13 7 L 1 13 Z" fill="#2563eb" stroke="#2563eb" stroke-width="0" stroke-dasharray="none"/></marker>
+  <marker markerUnits="userSpaceOnUse" id="arrow-green" markerWidth="14" markerHeight="14" viewBox="0 0 14 14" refX="12" refY="7" orient="auto" data-role="primary" data-tip-direction="positive-x"><path data-arrowhead="true" data-role="primary" data-size="14x14" data-solid-head="true" d="M 1 1 L 13 7 L 1 13 Z" fill="#16a34a" stroke="#16a34a" stroke-width="0" stroke-dasharray="none"/></marker>
+  <marker markerUnits="userSpaceOnUse" id="arrow-orange" markerWidth="14" markerHeight="14" viewBox="0 0 14 14" refX="12" refY="7" orient="auto" data-role="primary" data-tip-direction="positive-x"><path data-arrowhead="true" data-role="primary" data-size="14x14" data-solid-head="true" d="M 1 1 L 13 7 L 1 13 Z" fill="#ea580c" stroke="#ea580c" stroke-width="0" stroke-dasharray="none"/></marker>
+  <marker markerUnits="userSpaceOnUse" id="arrow-purple" markerWidth="14" markerHeight="14" viewBox="0 0 14 14" refX="12" refY="7" orient="auto" data-role="primary" data-tip-direction="positive-x"><path data-arrowhead="true" data-role="primary" data-size="14x14" data-solid-head="true" d="M 1 1 L 13 7 L 1 13 Z" fill="#9333ea" stroke="#9333ea" stroke-width="0" stroke-dasharray="none"/></marker>
   <style>
     .bg{fill:#ffffff}.title{font-family:"Architects Daughter","Comic Sans MS",cursive;font-size:42px;fill:#111827;font-weight:400}.subtitle{font-family:"Comic Mono","SFMono-Regular",monospace;font-size:16px;fill:#6b7280;font-weight:400}
     .layer{fill:#f3f6fa;stroke:#cbd5e1;stroke-width:1.4;stroke-dasharray:8 6}.layer-title{font-family:"Comic Mono","SFMono-Regular",monospace;font-size:16px;fill:#4b5563;font-weight:700;letter-spacing:0.8px}
@@ -29,21 +29,21 @@
 <text class="layer-title" x="108" y="756">GRAPH DATABASE RUNTIMES</text>
 
 <g id="edges">
-  <path class="edge-blue" d="M 435 248 L 630 248"/>
+  <path data-connector="true" marker-end="url(#arrow-blue)" class="edge-blue" d="M 435 248 L 630 248"/>
   <text class="label" x="532" y="224" text-anchor="middle">service call</text>
-  <path class="edge-blue" d="M 950 248 L 1145 248"/>
+  <path data-connector="true" marker-end="url(#arrow-blue)" class="edge-blue" d="M 950 248 L 1130 248"/>
   <text class="label" x="1048" y="224" text-anchor="middle">web entry</text>
-  <path class="edge-blue" d="M 790 296 L 790 365"/>
+  <path data-connector="true" marker-end="url(#arrow-blue)" class="edge-blue" d="M 790 296 L 790 365"/>
   <text class="label" x="835" y="332" text-anchor="middle">uses</text>
-  <path class="edge-blue" d="M 1312 296 L 1312 520 Q 1312 538 1294 538 L 1275 538 Q 1257 538 1257 556 L 1257 572"/>
+  <path data-connector="true" marker-end="url(#arrow-blue)" class="edge-blue" d="M 1312 296 L 1312 520 Q 1312 538 1294 538 L 1275 538 Q 1257 538 1257 556 L 1257 572"/>
   <text class="label" x="1298" y="445" text-anchor="end">plugin delegates</text>
-  <path class="edge-green" d="M 790 488 L 790 572"/>
+  <path data-connector="true" marker-end="url(#arrow-green)" class="edge-green" d="M 790 488 L 790 572"/>
   <text class="label" x="837" y="530" text-anchor="middle">contracts</text>
-  <path class="edge-purple" d="M 710 488 L 710 512 Q 710 530 692 530 L 448 530 Q 430 530 430 548 L 430 572"/>
+  <path data-connector="true" marker-end="url(#arrow-purple)" class="edge-purple" d="M 710 488 L 710 512 Q 710 530 692 530 L 448 530 Q 430 530 430 548 L 430 572"/>
   <text class="label" x="570" y="518" text-anchor="middle">bulk import/export</text>
-  <path class="edge-green" d="M 870 488 L 870 512 Q 870 530 888 530 L 1132 530 Q 1150 530 1150 548 L 1150 572"/>
+  <path data-connector="true" marker-end="url(#arrow-green)" class="edge-green" d="M 870 488 L 870 512 Q 870 530 888 530 L 1132 530 Q 1150 530 1150 548 L 1150 572"/>
   <text class="label" x="1010" y="518" text-anchor="middle">configuration</text>
-  <path class="edge-orange" d="M 790 672 L 790 774"/>
+  <path data-connector="true" marker-end="url(#arrow-orange)" class="edge-orange" d="M 790 672 L 790 774"/>
   <text class="label" x="790" y="724" text-anchor="middle">native query translation</text>
 </g>
 
@@ -124,10 +124,10 @@
 </g>
 
 <g id="legend" transform="translate(108 900)">
-  <line x1="0" y1="8" x2="34" y2="8" class="edge-blue"/><text class="legend" x="46" y="12">application entry</text>
-  <line x1="200" y1="8" x2="234" y2="8" class="edge-green"/><text class="legend" x="246" y="12">contract delegation</text>
-  <line x1="440" y1="8" x2="474" y2="8" class="edge-orange"/><text class="legend" x="486" y="12">backend query translation</text>
-  <line x1="730" y1="8" x2="764" y2="8" class="edge-purple"/><text class="legend" x="776" y="12">bulk graph data path</text>
+  <line data-connector="true" marker-end="url(#arrow-blue)" x1="0" y1="8" x2="34" y2="8" class="edge-blue"/><text class="legend" x="46" y="12">application entry</text>
+  <line data-connector="true" marker-end="url(#arrow-green)" x1="200" y1="8" x2="234" y2="8" class="edge-green"/><text class="legend" x="246" y="12">contract delegation</text>
+  <line data-connector="true" marker-end="url(#arrow-orange)" x1="440" y1="8" x2="474" y2="8" class="edge-orange"/><text class="legend" x="486" y="12">backend query translation</text>
+  <line data-connector="true" marker-end="url(#arrow-purple)" x1="730" y1="8" x2="764" y2="8" class="edge-purple"/><text class="legend" x="776" y="12">bulk graph data path</text>
 </g>
 <text class="note" x="790" y="934" text-anchor="middle">https://github.com/bluetape4k/bluetape4k-graph | project: bluetape4k-graph | module: root</text>
 </svg>
