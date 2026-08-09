@@ -70,5 +70,6 @@ local.properties
 Thumbs.db
 /.profileconfig.json
 .worktrees/
+.bluetape/
 
 .codegraph/
