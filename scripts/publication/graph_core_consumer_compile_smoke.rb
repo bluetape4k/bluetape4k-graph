@@ -55,7 +55,7 @@ Dir.mktmpdir("graph-core-consumer") do |consumer|
   KOTLIN
   File.write(File.join(consumer, "build.gradle.kts"), <<~KOTLIN)
     plugins {
-        kotlin("jvm") version "2.3.21"
+        kotlin("jvm") version "2.4.10"
     }
 
     dependencies {
@@ -63,7 +63,7 @@ Dir.mktmpdir("graph-core-consumer") do |consumer|
     }
 
     kotlin {
-        jvmToolchain(21)
+        jvmToolchain(25)
     }
   KOTLIN
   File.write(File.join(consumer, "src/main/kotlin/Consumer.kt"), <<~KOTLIN)

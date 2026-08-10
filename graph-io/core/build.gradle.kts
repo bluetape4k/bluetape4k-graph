@@ -4,7 +4,7 @@ dependencies {
     api(bt4k.bluetape4k.io)
     api(libs.kotlinx.coroutines.core.lib)
     implementation(bt4k.bluetape4k.virtualthread.api)
-    implementation(bt4k.bluetape4k.virtualthread.jdk21)
+    implementation(bt4k.bluetape4k.virtualthread.jdk25)
     implementation(bt4k.bluetape4k.coroutines)
 
     testImplementation(bt4k.bluetape4k.junit5)

@@ -1,8 +1,8 @@
 # bluetape4k-graph
 
 [![CI](https://github.com/bluetape4k/bluetape4k-graph/actions/workflows/ci.yml/badge.svg)](https://github.com/bluetape4k/bluetape4k-graph/actions/workflows/ci.yml)
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.3-7F52FF?logo=kotlin)](https://kotlinlang.org)
-[![JVM](https://img.shields.io/badge/JVM-21-ED8B00?logo=openjdk)](https://openjdk.org)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.4-7F52FF?logo=kotlin)](https://kotlinlang.org)
+[![JVM](https://img.shields.io/badge/JVM-25-ED8B00?logo=openjdk)](https://openjdk.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ![bluetape4k-graph workbench](docs/assets/bluetape4k-graph-workbench.png)
@@ -390,13 +390,13 @@ GitHub Actions는 전용 `Examples` workflow도 실행한다. 이 workflow는 �
 
 ## 요구 사항
 
-- Java 21 (preview 기능 활성화)
-- Kotlin 2.4.0
+- Java 25 (preview 기능 활성화)
+- Kotlin 2.4.10 (language/API 2.4)
 - Docker (통합 테스트용)
 
 ## 기술 스택
 
-- **Kotlin** 2.4.0 + Coroutines 1.11.0
+- **Kotlin** 2.4.10 (language/API 2.4) + Coroutines 1.11.0
 - **Neo4j Java Driver** 5.x
 - **JetBrains Exposed** (Apache AGE용 JDBC)
 - **Apache TinkerPop** (Gremlin)

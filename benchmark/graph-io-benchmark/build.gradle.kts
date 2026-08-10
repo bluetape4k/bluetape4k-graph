@@ -40,7 +40,7 @@ dependencies {
     implementation(project(":bluetape4k-graph-tinkerpop"))
     implementation(bt4k.bluetape4k.coroutines)
     implementation(bt4k.bluetape4k.virtualthread.api)
-    implementation(bt4k.bluetape4k.virtualthread.jdk21)
+    implementation(bt4k.bluetape4k.virtualthread.jdk25)
     implementation(bt4k.kotlinx.benchmark.runtime)
 
     testImplementation(bt4k.bluetape4k.junit5)
