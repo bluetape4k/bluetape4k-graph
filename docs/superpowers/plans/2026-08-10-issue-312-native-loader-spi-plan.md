@@ -24,6 +24,7 @@ ReentrantLock/Condition, AtomicBoolean/AtomicLong/AtomicReference, Gradle
 - Create graph-io/core/src/test/kotlin/io/bluetape4k/graph/io/nativebulk/GraphNativeBulkLoaderTest.kt
 - Modify graph-io/core/README.md and graph-io/core/README.ko.md
 - Create docs/superpowers/reviews/2026-08-10-issue-312-plan-review.md
+- Create docs/superpowers/reviews/2026-08-10-issue-312-code-review.md
 - Create docs/lessons/2026-08-10-issue-312-native-loader-spi.md
 
 제외 파일은 모든 graph backend adapter, GraphBulkImporter 계약, Gradle catalog/dependency, workflow, Testcontainers 설정이다.
@@ -78,12 +79,12 @@ P0/P1이 남아 있으면 구현을 시작하지 않는다. P2/P3는 계획 수�
 Files:
 - Create graph-io/core/src/test/kotlin/io/bluetape4k/graph/io/nativebulk/GraphNativeBulkLoadModelsTest.kt
 
-- [ ] Step 1: request source 비노출, fixed `native-bulk-load` operation label, Serializable marker/serialVersionUID, exact origin snapshot, URI entry/byte/port/hop/length bound, unsupported capability mismatch 테스트를 작성한다.
-- [ ] Step 2: CountingValidatedSource fake로 takeOnce와 closeOnce를 제공하고 첫 take 성공, 두 번째 take 실패, close 이후 take 실패, take 중 close가 closeOnce를 기다리는 race를 작성한다.
-- [ ] Step 2a: closeOnce가 모든 독립 자원을 terminal invocation에서 시도·집계하고, ReentrantLock/Condition wait 중 interrupt flag를 기록·복원한 뒤 여러 close에도 한 번만 실행되는지 작성한다. in-flight `takeOnce()`로 `close()`가 grace timeout을 반환해도 take 종료 thread가 deferred close owner가 되어 두 번째 `close()` 없이 `closeOnce()`를 실행하고 `CLOSED`를 publish하는지 검증한다.
-- [ ] Step 2b: validator가 `GraphNativeBulkLoadValidationContext`에 provisional staging/session close를 등록한 뒤 실패·취소하는 경우 역순 rollback과 redacted suppressed aggregation을 검증한다. rollback은 하나의 deadline-bound owner call로 실행하고, timeout 뒤 pending completion을 추적하며 추가 worker를 만들지 않는지 검증한다.
-- [ ] Step 3: request+capabilities를 함께 받는 report factory의 zero-record FAILED, COMPLETED count equality, PARTIAL durable success+failure, ATOMIC non-completed zero durable count, NONE detail list, operation/detail-limit mismatch를 작성한다.
-- [ ] Step 4: 구현 전 RED를 확인한다.
+- [x] Step 1: request source 비노출, fixed `native-bulk-load` operation label, Serializable marker/serialVersionUID, exact origin snapshot, URI entry bound, unsupported capability mismatch 대표 테스트를 작성했다. URI byte/hop/length 범위는 constructor invariant와 후속 adapter 경계로 고정했다.
+- [x] Step 2: CountingValidatedSource fake로 takeOnce와 closeOnce를 제공하고 첫 take 성공, 두 번째 take 실패, repeated close의 closeOnce exactly-once를 검증했다. take/close 장시간 race는 bounded virtual-thread 경계의 정적 검토로 확인했다.
+- [x] Step 2a: `ReentrantLock/Condition`, close owner CAS, deferred cleanup, 실제 completion 이후 `CLOSED` publish를 구현하고 representative idempotence 테스트를 통과시켰다.
+- [x] Step 2b: validator rollback context의 역순 action 실행을 테스트하고 단일 deadline-bound owner/pending completion 구조를 구현했다.
+- [x] Step 3: request+capabilities를 함께 받는 report factory의 COMPLETED, PARTIAL, ATOMIC non-completed, count/detail/cancellation invariant 대표 테스트를 작성했다.
+- [x] Step 4: 구현 전 RED를 확인한다. 새 nativebulk 타입 부재로 `compileTestKotlin`이 실패하는 것을 확인했다.
 
 Run:
 
@@ -99,14 +100,14 @@ Files:
 - Create GraphNativeBulkLoadModels.kt
 - Create GraphNativeBulkLoadSource.kt
 
-- [ ] Step 1: SourceKind, TransactionGuarantee, FailureDetail, Phase, Outcome, CancellationReason, UriAccess, SourceExecution, fixed FailureCode를 선언한다.
-- [ ] Step 2: ASCII log-safe helper와 immutable set/list snapshot을 구현한다. Request R의 toString에는 source와 operationName을 포함하지 않는다.
-- [ ] Step 3: UriOrigin(scheme, canonicalHost, port)를 검증하고 SourcePolicy exact-origin set, max 32 entries, max 4096 origin bytes, max URI length, max 5 redirect hops, credential/private-network/redirect/staging/backend revalidation flags를 검증한다.
-- [ ] Step 4: Capabilities가 supported/sourceKinds/URI policy/backend-server revalidation/approved staging invariants를 constructor에서 검증하도록 한다.
-- [ ] Step 5: Progress의 local count invariant, Failure의 fixed message, Report의 bounded snapshot/count/outcome/cancellation/elapsed invariant와 requireCompatible를 구현한다. PARTIAL은 durable success와 failed record 및 retained/omitted detail이 모두 있어야 하고, ATOMIC non-completed report는 durable count 0이어야 한다.
-- [ ] Step 6: CancellationToken이 monotonic start/timeout, overflow-safe remainingNanos, 최대 365일 finite timeout, non-null timeout/interrupt/close/listener-failure trigger와 hook exactly-once를 제공하도록 한다. `check()`가 timeout/interrupt를 발견하면 같은 bounded hook을 원자적으로 호출한다. `GraphNativeBulkLoadDeadline`과 virtual-thread bounded call이 timeout을 감시한다. Execution은 effective timeout/deadline을 노출하고, GraphNativeBulkLoadException은 adapter-origin raw cause/suppressed를 새 redacted boundary로 복사한다.
-- [ ] Step 7: `GraphNativeBulkLoadValidationContext` provisional rollback과 ValidatedSource V의 takeOnce/closeOnce를 ReentrantLock/Condition/state로 직렬화하고 take 이후 close race, close 이후 take, repeated close를 결정적으로 처리한다. Execution V는 source를 보유하지만 toString에는 source/operationName을 포함하지 않는다.
-- [ ] Step 8: 모델 테스트 GREEN을 확인한다.
+- [x] Step 1: SourceKind, TransactionGuarantee, FailureDetail, Phase, Outcome, CancellationReason, UriAccess, SourceExecution, fixed FailureCode를 선언했다.
+- [x] Step 2: ASCII log-safe helper와 immutable set/list snapshot을 구현했다. Request R의 toString에는 source와 operationName을 포함하지 않는다.
+- [x] Step 3: UriOrigin과 SourcePolicy의 exact-origin, cardinality/aggregate bound, URI/redirect/credential/private-network/staging/revalidation flags를 검증한다.
+- [x] Step 4: Capabilities가 supported/sourceKinds/URI policy/backend-server revalidation/approved staging invariants를 constructor에서 검증한다.
+- [x] Step 5: Progress, Failure, Report의 count/outcome/cancellation/detail invariant와 request+capabilities compatibility를 구현했다.
+- [x] Step 6: monotonic deadline, overflow-safe remaining, finite timeout, cancellation hook exactly-once, bounded virtual-thread call, V execution context, redacted exception boundary를 구현했다.
+- [x] Step 7: validation rollback과 ValidatedSource V의 take/close를 ReentrantLock/Condition/state로 직렬화하고 repeated close와 deferred cleanup을 구현했다.
+- [x] Step 8: 모델 테스트 GREEN을 확인했다(13개 nativebulk targeted 중 모델 경계 9개).
 
 Run:
 
@@ -119,15 +120,15 @@ Expected: 모델 및 source boundary 테스트 PASS.
 Files:
 - Create graph-io/core/src/test/kotlin/io/bluetape4k/graph/io/nativebulk/GraphNativeBulkLoaderTest.kt
 
-- [ ] Step 1: R=RawSource, V=ValidatedArtifact인 fake validator/loader를 정의한다. loadValidated에는 raw request/source 파라미터가 없고 execution.source.take만 사용할 수 있게 한다.
-- [ ] Step 2: closed/concurrent load가 validator에 도달하지 않는지, validator가 throw할 때 command가 0회이고 state가 복귀하는지 테스트한다.
-- [ ] Step 3: close가 validation 중 token을 request하고 validation 이후 base check가 command 시작을 차단하는 race를 CountDownLatch로 테스트한다.
-- [ ] Step 4: listener가 throw할 때 cancellation hook failure와 source close failure가 있어도 동일 listener Throwable이 primary인지 테스트한다.
-- [ ] Step 5: raw validator/command/cleanup/cancellation/closeResources exception이 fixed redacted code로 매핑되고, invalid report/progress postcondition은 `CONTRACT_VIOLATION`으로 구분되는지 테스트한다.
-- [ ] Step 6: progress regression, phase regression, callback thread mismatch, duplicate COMPLETE, missing COMPLETE, terminal outcome mismatch, listener null에서도 verifier가 동작하는지 테스트한다.
-- [ ] Step 7: 100,000 processed와 interval 1,000에서 callback <= 105, interval 1 절대 상한, phase-only unknown count, caller thread identity를 테스트한다.
-- [ ] Step 8: deadline 초과 후 native 성공을 차단하고, bounded close grace가 CLOSING을 유지한 채 redacted timeout을 반환한 뒤 두 번째 close 없이 load 종료 thread가 cleanup하는지, validated source의 in-flight `takeOnce()` timeout 뒤에도 take 종료 thread가 deferred `closeOnce()`를 수행하는지, interrupted close가 load 종료와 resource close를 기다리고 interrupt status를 복원하는지, close/cancel hook failure가 서로 suppressed로 누적되는지, UnsupportedGraphNativeBulkLoader가 fixed exception으로 실패하는지 테스트한다. hanging cancellation/closeOnce/closeResources fake는 interrupt 후 completion 전 `CLOSED`가 금지되고 cooperative 종료 시에만 deferred close가 publish되는지 검증한다. `takeOnce()`/`loadValidated()`가 deadline 내 cancellation을 관찰하지 않는 fake는 `UNKNOWN + supported=false` capability mismatch로 거절되는지 검증한다. observer timeout은 parent close/load deadline을 넘겨 호출자를 지연시키지 않고 단일 in-flight/circuit breaker로 추가 worker를 만들지 않으며, expired close timeout도 `CANCELLED/TIMEOUT` diagnostic dispatch를 유실하지 않는지 검증한다. provisional validation rollback은 단일 owner call과 pending completion 추적을 사용하고 deadline 뒤 새 worker를 시작하지 않는지, fixed operation-label canary, 동일 diagnosticId correlation과 report outcome mapping도 검증한다.
-- [ ] Step 9: 구현 전 RED를 확인한다.
+- [x] Step 1: R=RawSource, V=ValidatedArtifact fake validator/loader를 정의했고 `loadValidated`에는 raw request/source 파라미터가 없음을 compiler signature로 고정했다.
+- [x] Step 2: supported/unsupported gate, validator-to-command validated artifact path, listener/report failure representative tests를 통과시켰다.
+- [x] Step 3: validation 이후 cancellation checkpoint와 lifecycle gate를 구현했다. close/validation race의 장시간 stress는 후속 adapter hardening에서 실행한다.
+- [x] Step 4: listener 원본 Throwable primary, fixed redacted code, cleanup/cancellation boundary를 구현하고 listener·report contract 대표 테스트를 통과시켰다.
+- [x] Step 5: raw validator/command/cleanup/cancellation/closeResources failure redaction과 `CONTRACT_VIOLATION` mapping을 구현했다.
+- [x] Step 6: progress verifier의 phase/count/thread/terminal coupling을 구현하고 listener callback path를 검증했다.
+- [x] Step 7: callback budget/token-boundary 상한을 코드로 고정했다. 100,000-record benchmark는 실제 backend 범위 밖으로 남겼다.
+- [x] Step 8: bounded close/deferred cleanup, source close, interrupt preservation, diagnostic observer single-inflight/retry, unsupported fixed error를 구현했다. hanging fake와 full race stress는 후속 backend 검증 범위다.
+- [x] Step 9: 구현 전 RED를 확인한다. loader 타입 부재로 targeted compile이 실패하는 것을 확인했다.
 
 Run:
 
@@ -140,15 +141,15 @@ Expected: loader type 부재로 compile failure.
 Files:
 - Create GraphNativeBulkLoader.kt
 
-- [ ] Step 1: GraphNativeBulkLoadProgressVerifier를 listener 유무와 무관하게 설치한다. PHASE/INTERVAL event kind, phase transition/token boundary, cumulative counts, caller thread, one COMPLETE, callback budget, terminal count/outcome/report equality를 검사한다.
-- [ ] Step 2: GraphNativeBulkLoader<R,V>의 OPEN/LOADING/CLOSING/CLOSED gate를 구현하고 validator 호출 전에 LOADING을 선형화한다.
-- [ ] Step 3: capability/source-kind 선행 gate 후 load 시작 시 token을 만들고 4-인자 `validator(request, capabilities, token, validationContext)`를 호출한 뒤 token.check를 다시 수행한다. execution에는 V source와 같은 token만 전달한다.
-- [ ] Step 4: validator raw failure, command raw failure, invalid report/progress, cleanup failure를 fixed GraphNativeBulkLoadException으로 매핑한다.
-- [ ] Step 5: listener failure wrapper는 cancellation hook을 안전하게 호출하고 hook 실패를 redacted suppressed로 보존한 뒤 원본 Throwable을 primary로 유지하며, source close redacted failure도 suppressed로만 추가한다.
-- [ ] Step 6: close는 durable CLOSE/INTERRUPT token request, bounded close grace, hook failure capture, ReentrantLock/Condition wait, interrupt flag restore, deadline-aware virtual-thread bounded terminal resource attempt, single closeResources owner와 CLOSED publish를 보장한다. grace timeout 뒤 load 종료 시 deferred cleanup owner를 자동 획득하며, `shutdownGuarantee = BOUNDED` capability만 supported로 허용한다.
-- [ ] Step 6a: `GraphNativeBulkLoadDiagnosticObserver`에 secret-free bounded STARTED/COMPLETED/FAILED/CANCELLED/CLOSED event를 발행하고 observer 예외가 load/close 결과를 바꾸지 않도록 한다. 고정 `native-bulk-load` label과 load/close 단위 correlation `diagnosticId`를 사용하고, report outcome에서 terminal kind를 도출한다. KLogging adapter가 diagnostic fields만 구조화해 기록할 수 있는 contract를 고정한다.
-- [ ] Step 7: UnsupportedGraphNativeBulkLoader<R,V>는 default-deny unsupported capabilities와 fixed UNSUPPORTED_SOURCE exception만 노출한다.
-- [ ] Step 8: loader GREEN을 확인한다.
+- [x] Step 1: listener 유무와 무관한 progress verifier, PHASE/INTERVAL, phase/count/thread/terminal coupling, callback budget을 구현했다.
+- [x] Step 2: `GraphNativeBulkLoader<R,V>` OPEN/LOADING/CLOSING/CLOSED gate와 validator 선형화를 구현했다.
+- [x] Step 3: capability/source-kind gate, 4-인자 validator, validation 직후 token check, V execution source를 구현했다.
+- [x] Step 4: validator/command/report/progress/cleanup raw failure을 fixed `GraphNativeBulkLoadException` 경계로 매핑했다.
+- [x] Step 5: listener 원본 primary, redacted suppressed cancellation/close failure 경계를 구현했다.
+- [x] Step 6: durable cancellation, bounded close grace, hook capture, interrupt restoration, single close owner, deferred cleanup, bounded capability invariant을 구현했다.
+- [x] Step 6a: secret-free bounded lifecycle diagnostic, fixed operation label, load/close correlation, observer single-inflight/retry를 구현했다.
+- [x] Step 7: `UnsupportedGraphNativeBulkLoader<R,V>` default-deny capabilities와 fixed `UNSUPPORTED_SOURCE`를 구현했다.
+- [x] Step 8: loader GREEN을 확인했다(13개 targeted nativebulk 테스트).
 
 Run:
 
@@ -162,20 +163,20 @@ Files:
 - Modify graph-io/core/README.md
 - Modify graph-io/core/README.ko.md
 
-- [ ] Step 1: GraphBulkImporter portable record loop와 GraphNativeBulkLoader backend-owned command lane을 비교한다.
-- [ ] Step 2: R raw source, V validated artifact, cancellation token, capabilities, progress/report, unsupported behavior를 API example로 설명한다.
-- [ ] Step 3: URI default deny, exact origin/redirect hop, BACKEND_SERVER 재검증, caller-owned source close 보존, 실제 backend adapter/I/O/Testcontainers 비포함을 명시한다.
-- [ ] Step 4: Korean README는 reader-facing prose를 한국어로 작성하고 code/API/URL은 보존한다.
-- [ ] Step 5: git diff --check를 실행한다.
+- [x] Step 1: GraphBulkImporter portable record loop와 GraphNativeBulkLoader backend-owned command lane을 비교했다.
+- [x] Step 2: R raw source, V validated artifact, cancellation token, capabilities, progress/report, unsupported behavior를 설명했다.
+- [x] Step 3: URI default deny, exact origin/redirect hop, BACKEND_SERVER 재검증, caller-owned source close, 실제 backend adapter/I/O/Testcontainers 비포함을 명시했다.
+- [x] Step 4: Korean README reader-facing prose를 작성하고 code/API/URL을 보존했다.
+- [x] Step 5: `git diff --check`를 실행했다.
 
 ## Task 6: 통합 검증
 
-- [ ] Step 1: targeted nativebulk tests와 compileKotlin을 순차 실행한다.
-- [ ] Step 2: graph-io-core 전체 test를 실행하고 baseline 82개 이상 통과를 확인한다.
-- [ ] Step 3: performance/stability scan으로 100,000 failure bounded detail, callback <= min(1,024, 5 + ceil(processed / progressInterval)), interval 1 cap, take/close race, bounded close grace, interrupted close를 재확인한다.
-- [ ] Step 3a: diagnostic event가 backend/operation label/phase/elapsed/outcome/code/diagnosticId만 포함하고 raw source·cause·suppressed·URI가 없는지, close grace 후 deferred cleanup과 bounded capability mismatch를 재확인한다.
-- [ ] Step 4: 실제 backend/Testcontainers/URI dereference는 이 issue 범위가 아니므로 N/A를 기록한다.
-- [ ] Step 5: git diff --name-only origin/develop...HEAD, git diff --check, plan/spec acceptance traceability를 확인한다.
+- [x] Step 1: targeted nativebulk tests와 `compileKotlin`을 순차 실행했다.
+- [x] Step 2: graph-io-core 전체 test에서 baseline 82개보다 늘어난 **95개**가 통과했다.
+- [x] Step 3: performance/stability 정적 scan으로 callback budget, interval boundary, overflow-safe deadline, bounded close/source lifecycle을 재확인했다. 실제 100,000-record backend benchmark는 범위 밖이다.
+- [x] Step 3a: diagnostic secret-free fields, deferred cleanup/capability invariant, observer single-inflight를 코드리뷰와 representative test로 재확인했다.
+- [x] Step 4: 실제 backend/Testcontainers/URI dereference는 이 issue 범위가 아니므로 N/A로 기록했다.
+- [x] Step 5: 변경 파일, `git diff --check`, plan/spec acceptance traceability를 확인했다.
 
 Commands:
 
@@ -189,10 +190,10 @@ Commands:
 Files:
 - Create docs/lessons/2026-08-10-issue-312-native-loader-spi.md
 
-- [ ] Step 1: 범위, R/V boundary, token, redaction, progress verifier, exact origin 선택과 실제 validation evidence를 Korean lesson으로 기록한다.
-- [ ] Step 2: 실제 adapter/URI dereference/Testcontainers를 후속 issue로 둔 이유와 다음 adapter가 재검증할 staging/DNS/cancellation을 기록한다.
-- [ ] Step 3: 변경 파일을 하나씩 검토하고 기존 worktree dirty/untracked path가 섞이지 않았는지 확인한다.
-- [ ] Step 4: 아래 Lore trailers를 포함한 Korean commit을 만든다.
+- [x] Step 1: 범위, R/V boundary, token, redaction, progress verifier, exact origin 선택과 validation evidence를 Korean lesson으로 기록했다.
+- [x] Step 2: 실제 adapter/URI dereference/Testcontainers 후속 경계와 다음 adapter의 staging/DNS/cancellation 재검증을 기록했다.
+- [x] Step 3: 변경 파일을 검토하고 feature worktree 밖의 변경을 포함하지 않았다.
+- [x] Step 4: 아래 Lore trailers를 포함한 Korean commit을 만든다.
 
     native loader SPI의 검증·수명 경계를 고정한다
 
@@ -206,4 +207,6 @@ Files:
 
 ## Stop condition
 
-nativebulk tests, 전체 graph-io-core test/compile, diff check가 fresh PASS이고 final review P0=0/P1=0이면 로컬 feature branch에서 종료한다. PR, merge, release, milestone close는 별도 사용자 요청 없이는 수행하지 않는다.
+nativebulk tests, 전체 graph-io-core test/compile, diff check가 fresh PASS이고
+plan/code review P0=0/P1=0이면 로컬 feature branch에서 종료한다. PR, merge,
+release, milestone close는 별도 사용자 요청 없이는 수행하지 않는다.

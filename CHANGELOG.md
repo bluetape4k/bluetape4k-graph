@@ -16,6 +16,10 @@
 - Virtual Thread 벌크 I/O future가 `cancel(false)` 상태 취소와
   `cancel(true)` worker interrupt를 구분하고, Micrometer tag cardinality를
   고정한다.
+- **Backend-native bulk loader SPI**: `graph-io-core`에 raw `R`/validated `V`
+  source 경계, capability·progress·report 계약, bounded cancellation/cleanup,
+  secret-free lifecycle diagnostic을 추가했다 (#312). 실제 backend adapter와
+  URI/file I/O는 후속 이슈 범위다.
 
 ## [0.6.0] - 2026-08-06
 
