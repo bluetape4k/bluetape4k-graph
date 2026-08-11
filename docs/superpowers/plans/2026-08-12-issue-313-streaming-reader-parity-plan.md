@@ -402,7 +402,7 @@ signal, public failure redaction, CSV fatal/close 경계를 추가하고 Type-A 
 git status --short --branch
 git log --oneline --decorate -8
 gh issue view 313 --repo bluetape4k/bluetape4k-graph --json state,milestone,assignees,labels,url
-gh pr list --repo bluetape4k/bluetape4k-graph --head debop:feat/issue-313-streaming-reader-parity --state all --json number,state,url,headRefOid
+gh pr list --repo bluetape4k/bluetape4k-graph --head feat/issue-313-streaming-reader-parity --state all --json number,state,url,headRefOid
 ~~~
 
 PR 생성은 승인된 계획 범위이지만 merge는 별도 사용자 승인 없이는 실행하지 않는다.
@@ -410,6 +410,11 @@ PR 생성은 승인된 계획 범위이지만 merge는 별도 사용자 승인 �
 확인 결과: issue #313은 OPEN이며 milestone `0.7.0`, assignee `debop`,
 `enhancement`/`performance` label을 유지한다. 동일 head branch의 기존 PR은 없고,
 기준 `origin/develop`은 `28032611594bb737fee431e0f6046484cac95b58`이다.
+
+PR #482를 생성한 뒤 exact head `bafeb3420c2a823727c3b6ada481049ac9ee3826`에서 hosted
+CI를 확인했다. Build/Detekt, graph backend/Testcontainers, Examples, Coverage, CI
+Status, Catalog, Secret Scan, Wrapper가 모두 성공했고 Graph Benchmark Lifecycle은
+변경 범위 밖으로 skip됐다. PR은 `MERGEABLE`/`CLEAN`이며 merge approval을 기다린다.
 
 ## Step 3-R 계획 리뷰
 
