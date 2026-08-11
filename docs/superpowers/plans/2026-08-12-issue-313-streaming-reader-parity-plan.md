@@ -393,7 +393,7 @@ signal, public failure redaction, CSV fatal/close 경계를 추가하고 Type-A 
 같은 Lore commit에 기록했다(`8ae7942`). 설계 문서도 public failure redaction 계약과
 정렬해 외부 record/column/element 식별자를 보존하지 않도록 명시했다.
 
-- [ ] Step 5: PR 전 live 상태
+- [x] Step 5: PR 전 live 상태
 
 ~~~bash
 git status --short --branch
@@ -403,6 +403,10 @@ gh pr list --repo bluetape4k/bluetape4k-graph --head debop:feat/issue-313-stream
 ~~~
 
 PR 생성은 승인된 계획 범위이지만 merge는 별도 사용자 승인 없이는 실행하지 않는다.
+
+확인 결과: issue #313은 OPEN이며 milestone `0.7.0`, assignee `debop`,
+`enhancement`/`performance` label을 유지한다. 동일 head branch의 기존 PR은 없고,
+기준 `origin/develop`은 `28032611594bb737fee431e0f6046484cac95b58`이다.
 
 ## Step 3-R 계획 리뷰
 
