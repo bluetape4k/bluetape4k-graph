@@ -423,6 +423,6 @@ N/A로 기록한다. 모든 수용 기준은 Acceptance traceability 표의 task
 - [x] 승인된 설계의 파일·책임·순서 매핑
 - [x] 각 behavior의 RED/GREEN 명령과 예상 결과
 - [x] 수용 기준·문서·rollback·risk traceability
-- [ ] 6개 관점 plan review P0=0/P1=0
+- [x] 6개 관점 plan review P0=0/P1=0
 - [ ] 사용자 계획 승인
 - [ ] 구현·검증·PR DoD
