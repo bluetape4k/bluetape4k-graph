@@ -44,8 +44,9 @@ Importer는 Flow를 `toList`로 수집하지 않는다. blocking/suspend importe
 단일-pass 처리 루프를 유지하면서 포맷별 내부 parser primitive를 공유한다. parser는
 정상 record와 `GraphIoFailure`를 sink에 전달하고, public reader에서 parse failure가
 발생하면 core의 `GraphIoReadException(failure)`로 종료한다. 이 예외의 public
-message는 source raw line/value를 포함하지 않고 phase/location/record 식별자만
-사용한다. importer는 이 예외의 `failure`를 기존 `GraphImportReport.failures`에
+message는 source raw line/value와 외부 record 식별자를 포함하지 않고,
+허용된 `line:<n>`, `row:<n>`, `edge-buffer:<n>` location만 사용한다. importer는
+이 예외의 `failure`를 기존 `GraphImportReport.failures`에
 추가하여 기존 report semantics를 보존한다.
 
 - CSV: 기존 CSV record reader의 row 단위 순회를 reader 구현과 importer가 공유한다.
@@ -99,9 +100,9 @@ KDoc은 다음을 명시한다.
 - Flow는 cold이며 collect 시 source가 열린다.
 - 정점/간선 record는 한 번에 하나씩 순서대로 방출된다.
 - edge 외부 ID는 resolve되지 않은 값이다.
-- parse failure는 `GraphIoReadException.failure`로 phase/location/record 식별자를
-  보존하며 source raw payload를 예외 message에 포함하지 않는다. importer는 이를
-  기존 report failure로 변환한다.
+- parse failure는 `GraphIoReadException.failure`로 phase와 허용된 location만
+  보존한다. source/record/column/element 식별자와 raw payload는 public failure와
+  예외 message에서 제거하며, importer는 이를 기존 report failure로 변환한다.
 - `PathSource`와 owned OkIO source는 library-owned, non-owned stream/source는
   caller-owned이다.
 - suspend collect 취소는 다음 record 경계에서 관찰되고 owned resource를 닫는다.

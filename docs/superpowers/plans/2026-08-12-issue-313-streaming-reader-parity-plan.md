@@ -385,12 +385,13 @@ GraphML/CSV/core 보안 회귀 테스트와 전체 6개 module 검증을 다시 
 coverage보다 얕은 점과 GraphML XML parse failure phase가 vertex로 고정된 점으로 기록하며,
 이번 issue의 streaming/ownership/safe-failure 수용 기준을 막지 않는다.
 
-- [ ] Step 4: lesson/review commit
+- [x] Step 4: lesson/review commit
 
 git add docs/lessons docs/review
 `docs/lessons/2026-08-12-issue-313-streaming-reader-parity.md`에 backpressure, stop
 signal, public failure redaction, CSV fatal/close 경계를 추가하고 Type-A review 문서를
-같은 Lore commit에 기록한다.
+같은 Lore commit에 기록했다(`8ae7942`). 설계 문서도 public failure redaction 계약과
+정렬해 외부 record/column/element 식별자를 보존하지 않도록 명시했다.
 
 - [ ] Step 5: PR 전 live 상태
 
