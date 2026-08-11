@@ -1,8 +1,8 @@
 package io.bluetape4k.graph.io.csv
 
-import io.bluetape4k.csv.CsvRecordReader
 import io.bluetape4k.graph.io.contract.GraphBulkImporter
 import io.bluetape4k.graph.io.csv.internal.CsvRecordCodec
+import io.bluetape4k.graph.io.csv.internal.CsvRecordParser
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.options.MissingEndpointPolicy
 import io.bluetape4k.graph.io.report.GraphIoFailure
@@ -92,6 +92,7 @@ class CsvGraphBulkImporter : GraphBulkImporter<CsvGraphImportSource> {
         log.debug { "Starting CSV import: defaultVertexLabel=${options.defaultVertexLabel}, defaultEdgeLabel=${options.defaultEdgeLabel}" }
         val watch = GraphIoStopwatch()
         val codec = CsvRecordCodec(csvOptions.propertyMode)
+        val parser = CsvRecordParser()
         val idMap = GraphIoExternalIdMap(options.onDuplicateVertexId)
         val batchWriter = GraphIoBatchWriter(operations, options.batchSize)
         val failures = mutableListOf<GraphIoFailure>()
@@ -104,48 +105,57 @@ class CsvGraphBulkImporter : GraphBulkImporter<CsvGraphImportSource> {
         var status = GraphIoStatus.COMPLETED
 
         // --- 정점 패스 ---
-        val vertexRecords = CsvRecordReader().read(
-            GraphIoPaths.openInputStream(source.vertices),
-            skipHeaders = true,
-        ) { it }
-
-        for (record in vertexRecords) {
-            verticesRead++
-            val externalId = record.getString("id").orEmpty()
-            val label = record.getString("label").orEmpty().ifBlank { options.defaultVertexLabel }
-            if (externalId.isBlank()) {
+        var stopVertexPass = false
+        parser.parseVertices(
+            source = source.vertices,
+            onRecord = { record ->
+                if (!stopVertexPass) {
+                    verticesRead++
+                    val externalId = record.getString("id").orEmpty()
+                    val label = record.getString("label").orEmpty().ifBlank { options.defaultVertexLabel }
+                    if (externalId.isBlank()) {
+                        verticesCreated += batchWriter.flushVertices(idMap)
+                        failures += GraphIoFailure(
+                            phase = GraphIoPhase.READ_VERTEX,
+                            fileRole = GraphIoFileRole.VERTICES,
+                            location = "row:${record.rowNumber}",
+                            message = "Blank vertex id"
+                        )
+                        status = GraphIoStatus.FAILED
+                        stopVertexPass = true
+                    } else {
+                        val putResult = idMap.putFirstOrFail(
+                            externalId,
+                            GraphElementId(externalId)
+                        )
+                        if (putResult == GraphIoExternalIdMap.PutResult.SKIPPED) {
+                            skippedVertices++
+                            status = GraphIoStatus.PARTIAL
+                            failures += GraphIoFailure(
+                                phase = GraphIoPhase.CREATE_VERTEX,
+                                severity = GraphIoFailureSeverity.WARN,
+                                fileRole = GraphIoFileRole.VERTICES,
+                                recordId = externalId,
+                                message = "Duplicate vertex externalId skipped: $externalId"
+                            )
+                        } else {
+                            val rowMap: Map<String, String?> = record.toColumnMap()
+                            val props = buildMap<String, Any?> {
+                                putAll(codec.extractProperties(rowMap))
+                                options.preserveExternalIdProperty?.let { key -> put(key, externalId) }
+                            }
+                            verticesCreated += batchWriter.addVertex(externalId, label, props, idMap)
+                        }
+                    }
+                }
+            },
+            onFailure = { failure ->
                 verticesCreated += batchWriter.flushVertices(idMap)
-                failures += GraphIoFailure(
-                    phase = GraphIoPhase.READ_VERTEX,
-                    fileRole = GraphIoFileRole.VERTICES,
-                    message = "Blank vertex id at row $verticesRead"
-                )
+                failures += failure
                 status = GraphIoStatus.FAILED
-                break
-            }
-            val putResult = idMap.putFirstOrFail(
-                externalId,
-                GraphElementId(externalId)
-            )
-            if (putResult == GraphIoExternalIdMap.PutResult.SKIPPED) {
-                skippedVertices++
-                status = GraphIoStatus.PARTIAL
-                failures += GraphIoFailure(
-                    phase = GraphIoPhase.CREATE_VERTEX,
-                    severity = GraphIoFailureSeverity.WARN,
-                    fileRole = GraphIoFileRole.VERTICES,
-                    recordId = externalId,
-                    message = "Duplicate vertex externalId skipped: $externalId"
-                )
-                continue
-            }
-            val rowMap: Map<String, String?> = record.toColumnMap()
-            val props = buildMap<String, Any?> {
-                putAll(codec.extractProperties(rowMap))
-                options.preserveExternalIdProperty?.let { key -> put(key, externalId) }
-            }
-            verticesCreated += batchWriter.addVertex(externalId, label, props, idMap)
-        }
+                stopVertexPass = true
+            },
+        )
 
         if (status == GraphIoStatus.FAILED) {
             log.warn { "CSV import failed during vertex pass: vertices=$verticesCreated/$verticesRead, elapsed=${watch.elapsed()}" }
@@ -158,53 +168,67 @@ class CsvGraphBulkImporter : GraphBulkImporter<CsvGraphImportSource> {
         verticesCreated += batchWriter.flushVertices(idMap)
 
         // --- 엣지 패스 ---
-        val edgeRecords = CsvRecordReader().read(
-            GraphIoPaths.openInputStream(source.edges),
-            skipHeaders = true,
-        ) { it }
-
-        for (record in edgeRecords) {
-            edgesRead++
-            val label = record.getString("label").orEmpty().ifBlank { options.defaultEdgeLabel }
-            val from = record.getString("from").orEmpty()
-            val to = record.getString("to").orEmpty()
-            val fromId = idMap.resolve(from)
-            val toId = idMap.resolve(to)
-            if (fromId == null || toId == null) {
-                when (options.onMissingEdgeEndpoint) {
-                    MissingEndpointPolicy.FAIL -> {
-                        edgesCreated += batchWriter.flushEdges()
-                        failures += GraphIoFailure(
-                            phase = GraphIoPhase.READ_EDGE,
-                            fileRole = GraphIoFileRole.EDGES,
-                            message = "Unresolved endpoint from=$from to=$to"
-                        )
-                        status = GraphIoStatus.FAILED
-                        break
+        var stopEdgePass = false
+        parser.parseEdges(
+            source = source.edges,
+            onRecord = { record ->
+                if (!stopEdgePass) {
+                    edgesRead++
+                    val label = record.getString("label").orEmpty().ifBlank { options.defaultEdgeLabel }
+                    val from = record.getString("from").orEmpty()
+                    val to = record.getString("to").orEmpty()
+                    val fromId = idMap.resolve(from)
+                    val toId = idMap.resolve(to)
+                    var skipCurrentEdge = false
+                    if (fromId == null || toId == null) {
+                        when (options.onMissingEdgeEndpoint) {
+                            MissingEndpointPolicy.FAIL -> {
+                                edgesCreated += batchWriter.flushEdges()
+                                failures += GraphIoFailure(
+                                    phase = GraphIoPhase.READ_EDGE,
+                                    fileRole = GraphIoFileRole.EDGES,
+                                    location = "row:${record.rowNumber}",
+                                    message = "Unresolved edge endpoint"
+                                )
+                                status = GraphIoStatus.FAILED
+                                stopEdgePass = true
+                            }
+                            MissingEndpointPolicy.SKIP_EDGE -> {
+                                skippedEdges++
+                                status = GraphIoStatus.PARTIAL
+                                failures += GraphIoFailure(
+                                    phase = GraphIoPhase.READ_EDGE,
+                                    severity = GraphIoFailureSeverity.WARN,
+                                    fileRole = GraphIoFileRole.EDGES,
+                                    location = "row:${record.rowNumber}",
+                                    message = "Missing endpoint skipped"
+                                )
+                                skipCurrentEdge = true
+                            }
+                        }
                     }
-                    MissingEndpointPolicy.SKIP_EDGE -> {
-                        skippedEdges++
-                        status = GraphIoStatus.PARTIAL
-                        failures += GraphIoFailure(
-                            phase = GraphIoPhase.READ_EDGE,
-                            severity = GraphIoFailureSeverity.WARN,
-                            fileRole = GraphIoFileRole.EDGES,
-                            message = "Missing endpoint skipped from=$from to=$to"
-                        )
-                        continue
+                    if (!stopEdgePass && !skipCurrentEdge) {
+                        val resolvedFrom = requireNotNull(fromId)
+                        val resolvedTo = requireNotNull(toId)
+                        val rowMap: Map<String, String?> = record.toColumnMap()
+                        val props = buildMap<String, Any?> {
+                            putAll(codec.extractProperties(rowMap))
+                            val externalEdgeId = record.getString("id")?.takeIf { it.isNotBlank() }
+                            externalEdgeId?.let { eid ->
+                                options.preserveExternalIdProperty?.let { key -> put(key, eid) }
+                            }
+                        }
+                        edgesCreated += batchWriter.addEdge(label, resolvedFrom, resolvedTo, props)
                     }
                 }
-            }
-            val rowMap: Map<String, String?> = record.toColumnMap()
-            val props = buildMap<String, Any?> {
-                putAll(codec.extractProperties(rowMap))
-                val externalEdgeId = record.getString("id")?.takeIf { it.isNotBlank() }
-                externalEdgeId?.let { eid ->
-                    options.preserveExternalIdProperty?.let { key -> put(key, eid) }
-                }
-            }
-            edgesCreated += batchWriter.addEdge(label, fromId, toId, props)
-        }
+            },
+            onFailure = { failure ->
+                edgesCreated += batchWriter.flushEdges()
+                failures += failure
+                status = GraphIoStatus.FAILED
+                stopEdgePass = true
+            },
+        )
 
         if (status != GraphIoStatus.FAILED) {
             edgesCreated += batchWriter.flushEdges()

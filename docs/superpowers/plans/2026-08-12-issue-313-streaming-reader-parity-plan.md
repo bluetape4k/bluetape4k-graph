@@ -102,7 +102,7 @@ Files:
 - Preserve: CsvGraphVirtualThreadBulkImporter.kt remains a sync-importer adapter; it does not collect the new Flow.
 - Create: `graph-io/csv/src/test/kotlin/io/bluetape4k/graph/io/csv/CsvStreamingReaderContractTest.kt`, `graph-io/csv/src/test/kotlin/io/bluetape4k/graph/io/csv/CsvGraphBulkImporterPolicyTest.kt`
 
-- [ ] Step 1: 실패 테스트 작성
+- [x] Step 1: 실패 테스트 작성
 
 close-tracking InputStream과 path source로 vertex/edge 순서, take(1) lazy read, owned close/non-owned open을 먼저 고정한다. logical EOF, truncated final row, post-terminal 재수집(재사용 가능한 PathSource), one-shot InputStream 재사용 제한, terminal callback exactly-once, close failure의 primary/suppressed 보존, malformed row location, duplicate vertex, missing endpoint FAIL/SKIP, suspend cancellation도 추가한다.
 
@@ -119,11 +119,11 @@ fun callerOwnedCsvStreamRemainsOpen() = runBlocking {
 }
 ~~~
 
-- [ ] Step 2: RED 확인
+- [x] Step 2: RED 확인
 
-./gradlew :bluetape4k-graph-io-csv:test --tests '*StreamingReaderContractTest' --tests '*PolicyTest' --no-daemon가 reader/close assertion 실패를 보여야 한다.
+`./gradlew :bluetape4k-graph-io-csv:test --tests '*CsvStreamingReaderContractTest' --tests '*CsvGraphBulkImporterPolicyTest' --no-daemon`가 신규 reader 타입 부재로 compile RED를 확인했다.
 
-- [ ] Step 3: 최소 구현
+- [x] Step 3: 최소 구현
 
 CsvRecordParser는 CsvRecordReader().read(input, encoding, skipHeaders)를 사용하고 GraphIoPaths.openInputStream(source).use로 source ownership을 감싼다. parser는 row별 onVertex, onEdge, onFailure callback만 호출한다.
 
@@ -141,14 +141,13 @@ class CsvGraphRecordFlowReader(
 stream은 channelFlow + withContext(Dispatchers.IO) + trySendBlocking으로 parser와 downstream을 순차화한다. parser failure는 GraphIoReadException으로 감싸고, blocking/suspend importer는 같은 parser를 직접 호출하여 기존 batch writer와 policy를 유지한다.
 public reader KDoc은 cold collect, record order, one-shot InputStream, ownership, cancellation, raw external ID 미해결 의미를 한국어로 명시한다. `trySendBlocking` 실패는 channel cancellation으로 전파하고 `CancellationException`을 `runCatching`으로 삼키지 않는다.
 
-- [ ] Step 4: GREEN 확인
+- [x] Step 4: GREEN 확인
 
-./gradlew :bluetape4k-graph-io-csv:test --tests '*StreamingReaderContractTest' --tests '*CsvGraphBulkImporterPolicyTest' --no-daemon가 PASS해야 한다.
+`./gradlew :bluetape4k-graph-io-csv:test --tests '*CsvStreamingReaderContractTest' --tests '*CsvGraphBulkImporterPolicyTest' --tests '*CsvImportErrorTest' --tests '*SuspendCsvImportErrorTest' --tests '*CsvSuspendRoundTripTest' --no-daemon` 및 전체 `:bluetape4k-graph-io-csv:test`가 PASS했다. `:bluetape4k-graph-io-csv:detekt`도 PASS했고, owned stream close count=1/non-owned open과 caller dispatcher 회귀를 검증했다.
 
-- [ ] Step 5: 커밋
+- [x] Step 5: 커밋
 
-git add graph-io/csv/src/main graph-io/csv/src/test
-git commit -m "CSV streaming reader와 source ownership을 정렬한다"
+`54409b2`에 구현·테스트·계획 증거를 Lore commit으로 기록했다.
 
 ## Task 3: Jackson2/3 NDJSON reader와 bounded edge 처리
 
