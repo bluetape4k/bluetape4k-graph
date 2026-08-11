@@ -19,7 +19,14 @@ source 소유권·취소·실패 경계를 포맷 간에 동일하게 만드는 
   unsupported다.
 - parse failure가 primary이면 source close failure는 suppressed로 남겨 원래 안전한
   `GraphIoReadException`을 덮지 않는다. raw JSON/XML payload와 외부 ID는 public failure에
-  포함하지 않는다.
+  포함하지 않는다. `GraphIoReadException.failure`도 redacted copy만 보유하고
+  `line`/`row`/`edge-buffer` 숫자 위치 외 값은 노출하지 않는다.
+- GraphML event handoff는 `trySendBlocking`으로 느린 collector를 backpressure하고,
+  `maxEdgeBufferSize` 초과는 `StopImport`로 parser를 즉시 중단한다. 일반 policy failure는
+  기존 report 집계를 보존하기 위해 입력을 끝까지 읽는다.
+- CSV parser는 `IOException`/`RuntimeException` parsing failure만 고정 failure로 변환한다.
+  `Error`와 EOF 이후 source close failure는 caller에게 그대로 전달하여 VM/인프라 오류를
+  malformed input으로 숨기지 않는다.
 - 테스트 fixture의 XML declaration은 반드시 첫 바이트부터 시작해야 한다. multiline
   fixture는 `trimIndent()`보다 `trimMargin()`으로 declaration 앞 공백을 제거해야 StAX와
   OkIO bridge에서 동일하게 동작한다.
@@ -38,6 +45,12 @@ Jackson3·GraphML·OkIO contract에 포함되며, 기존 duplicate/missing-endpo
   (순서, owned/caller-owned close, GraphML `take(1)`, CSV pair/unsupported, close suppressed)를
   검증한다.
 - 전체 `:bluetape4k-graph-okio:test`: 111 tests 통과; `:bluetape4k-graph-okio:detekt` 통과.
+- 최신 전체 graph-io 회귀: core 129, CSV 42, Jackson2 15, Jackson3 17, GraphML 28,
+  OkIO 111 tests 통과. 여섯 module `compileKotlin`/`detekt`와 여섯 module Dokka
+  `dokkaGeneratePublicationHtml`도 통과했다.
+- 보안 회귀: `GraphIoReadExceptionTest`, GraphML secret payload, CSV fatal `Error`/close
+  failure 테스트가 통과했다. Dokka short-link 경고를 `GraphImportSource.*` qualified link로
+  보정했다.
 - OkIO 구현 커밋: `ae46335`; `git diff --check`는 각 구현 단계에서 통과했다.
 
 ## Future Guidance

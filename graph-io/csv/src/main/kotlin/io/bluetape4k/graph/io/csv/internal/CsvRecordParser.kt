@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.channels.trySendBlocking
+import java.io.IOException
 import java.io.FilterInputStream
 import java.io.InputStream
 import java.nio.charset.Charset
@@ -70,6 +71,7 @@ internal class CsvRecordParser {
         onFailure: (GraphIoFailure) -> Unit,
     ) {
         var rowNumber = 0L
+        var parsedToEof = false
         try {
             GraphIoPaths.openInputStream(source).use { input ->
                 CsvRecordReader().read(
@@ -84,12 +86,24 @@ internal class CsvRecordParser {
                         throw CallbackFailure(error)
                     }
                 }
+                parsedToEof = true
             }
         } catch (error: CallbackFailure) {
             throw error.error
         } catch (error: CancellationException) {
             throw error
-        } catch (_: Throwable) {
+        } catch (error: IOException) {
+            if (parsedToEof) throw error
+            onFailure(
+                GraphIoFailure(
+                    phase = phase,
+                    fileRole = fileRole,
+                    location = "row:${(rowNumber + 1).coerceAtLeast(1)}",
+                    message = "Malformed CSV input",
+                ),
+            )
+        } catch (error: RuntimeException) {
+            if (parsedToEof) throw error
             onFailure(
                 GraphIoFailure(
                     phase = phase,

@@ -146,6 +146,7 @@ class GraphMlBulkImporter : GraphBulkImporter<GraphImportSource> {
                             "verticesCreated=$vc remain in graph as partial state",
                     )
                     status = GraphIoStatus.FAILED
+                    throw StopImport
                 }
             }
 
@@ -159,8 +160,12 @@ class GraphMlBulkImporter : GraphBulkImporter<GraphImportSource> {
             }
         }
 
-        GraphIoPaths.openInputStream(source).use { input ->
-            reader.read(input, graphMlOptions, sink)
+        try {
+            GraphIoPaths.openInputStream(source).use { input ->
+                reader.read(input, graphMlOptions, sink)
+            }
+        } catch (_: StopImport) {
+            // Stop parsing after a terminal edge-buffer failure.
         }
 
         if (status == GraphIoStatus.FAILED) {
@@ -215,6 +220,8 @@ class GraphMlBulkImporter : GraphBulkImporter<GraphImportSource> {
         return GraphImportReport(status, GraphIoFormat.GRAPHML, vr, vc, er, ec, sv, se, watch.elapsed(), failures)
             .also { log.debug { "Import completed: vertices=$vc/$vr, edges=$ec/$er, skipped=$sv/$se, status=$status, elapsed=${watch.elapsed()}" } }
     }
+
+    private object StopImport : RuntimeException()
 
     companion object : KLogging()
 }

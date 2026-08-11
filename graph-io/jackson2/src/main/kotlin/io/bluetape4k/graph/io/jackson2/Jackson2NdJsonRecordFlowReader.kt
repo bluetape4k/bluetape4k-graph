@@ -20,8 +20,8 @@ import kotlinx.coroutines.flow.map
 /**
  * Jackson2 NDJSON의 정점/간선 envelope를 cold [Flow]로 읽는 reader.
  *
- * collect 시점에 source를 열고 한 줄씩 순차 방출한다. [PathSource]와
- * [InputStreamSource.closeInput]이 `true`인 source는 reader가 닫으며,
+ * collect 시점에 source를 열고 한 줄씩 순차 방출한다. [GraphImportSource.PathSource]와
+ * [GraphImportSource.InputStreamSource.closeInput]이 `true`인 source는 reader가 닫으며,
  * caller-owned source는 닫지 않는다. InputStream source는 one-shot이므로
  * 같은 source를 다시 수집하려면 호출자가 새 stream을 제공해야 한다.
  * 정점과 간선 Flow는 입력 순서를 유지하고, JSON parse failure는 raw payload나

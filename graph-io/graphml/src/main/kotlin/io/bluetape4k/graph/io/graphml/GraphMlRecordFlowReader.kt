@@ -10,7 +10,6 @@ import io.bluetape4k.graph.io.report.GraphIoReadException
 import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.graph.io.support.GraphIoPaths
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
@@ -60,6 +59,5 @@ class GraphMlRecordFlowReader(
                 }
             }
             .filterNotNull()
-            .buffer(0)
     }
 }

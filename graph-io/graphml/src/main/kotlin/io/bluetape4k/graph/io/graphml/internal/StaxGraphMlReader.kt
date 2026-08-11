@@ -14,8 +14,8 @@ import io.bluetape4k.logging.debug
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.ProducerScope
+import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
@@ -140,16 +140,14 @@ internal class StaxGraphMlReader {
                 },
             )
         }
-    }.buffer(0)
+    }
 
     private fun ProducerScope<GraphMlRecordEvent>.sendEvent(event: GraphMlRecordEvent) {
-        while (coroutineContext.isActive) {
-            val result = trySend(event)
-            if (result.isSuccess) return
-            if (result.isClosed) {
-                throw CancellationException("GraphML collection cancelled")
-            }
-            Thread.yield()
+        val result = trySendBlocking(event)
+        if (result.isSuccess) return
+        if (coroutineContext.isActive) {
+            throw result.exceptionOrNull()
+                ?: IllegalStateException("GraphML event channel closed")
         }
         throw CancellationException("GraphML collection cancelled")
     }
@@ -266,7 +264,7 @@ internal class StaxGraphMlReader {
                     phase = GraphIoPhase.READ_EDGE,
                     fileRole = GraphIoFileRole.UNIFIED,
                     recordId = edgeId,
-                    message = "Edge missing source/target: source=$source target=$target",
+                    message = "Edge missing source/target",
                 ),
             )
             return
@@ -326,7 +324,7 @@ internal class StaxGraphMlReader {
                     recordId = recordId,
                     columnName = columnName,
                     elementName = elementName,
-                    message = "Invalid GraphML ${attrType.xmlName} value for '$columnName': $rawValue",
+                    message = "Invalid GraphML ${attrType.xmlName} value",
                 ),
             )
             return null

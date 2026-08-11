@@ -9,6 +9,7 @@ import io.bluetape4k.graph.io.report.GraphIoFailure
 import io.bluetape4k.graph.io.report.GraphIoFileRole
 import io.bluetape4k.graph.io.report.GraphIoPhase
 import io.bluetape4k.graph.io.report.GraphIoReadException
+import io.bluetape4k.graph.io.source.GraphImportSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

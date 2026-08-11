@@ -370,14 +370,27 @@ repository의 실제 ABI task를 먼저 확인하고 실행한다. 기대 결과
 format reader의 public signature를 확인했다. README locale heading 수는 core 18/18,
 CSV 23/23, Jackson2 17/17, Jackson3 29/29, GraphML 21/21, OkIO 26/26으로 일치한다.
 
-- [ ] Step 3: Type-A review
+- [x] Step 3: Type-A review
 
 performance/stability scan, verifier checklist, final code-review reference를 읽고 6개 관점과 main integration을 현재 diff에 적용한다. P0/P1이 있으면 PR 전에 수정하고 affected test를 재실행한다.
+
+최신 independent review에서 확인된 P1은 모두 수정했다. GraphML producer의 busy-spin을
+`trySendBlocking`으로 교체하고 `buffer(0)`를 제거했으며, edge buffer terminal failure는
+`StopImport`로 parser를 즉시 중단한다. `GraphIoReadException`은 safe location과 고정
+message만 public failure로 보유하고 raw source/record/column/element/cause를 제거한다.
+CSV parser는 `catch(Throwable)`를 제거해 `Error`와 EOF 이후 close failure를 보존한다.
+GraphML/CSV/core 보안 회귀 테스트와 전체 6개 module 검증을 다시 실행했다.
+
+최신 결과: P0=0, P1=0. P2는 CSV/Jackson `take(1)` read-count 회귀가 기존 GraphML/OkIO
+coverage보다 얕은 점과 GraphML XML parse failure phase가 vertex로 고정된 점으로 기록하며,
+이번 issue의 streaming/ownership/safe-failure 수용 기준을 막지 않는다.
 
 - [ ] Step 4: lesson/review commit
 
 git add docs/lessons docs/review
-git commit -m "streaming reader parity의 검증 교훈을 남긴다"
+`docs/lessons/2026-08-12-issue-313-streaming-reader-parity.md`에 backpressure, stop
+signal, public failure redaction, CSV fatal/close 경계를 추가하고 Type-A review 문서를
+같은 Lore commit에 기록한다.
 
 - [ ] Step 5: PR 전 live 상태
 

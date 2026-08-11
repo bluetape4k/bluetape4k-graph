@@ -109,58 +109,63 @@ class SuspendGraphMlBulkImporter : GraphSuspendBulkImporter<GraphImportSource> {
         var status = GraphIoStatus.COMPLETED
         val coroutineContext = currentCoroutineContext()
 
-        GraphIoPaths.openInputStream(source).use { input ->
-            reader.events(input, graphMlOptions).collect { event ->
-                coroutineContext.ensureActive()
-                when (event) {
-                    is StaxGraphMlReader.GraphMlRecordEvent.Vertex -> {
-                        vr++
-                        if (status == GraphIoStatus.FAILED) return@collect
-                        val v = event.record
-                        val props = options.preserveExternalIdProperty
-                            ?.let { v.properties + (it to v.externalId) } ?: v.properties
-                        when (idMap.putFirstOrFail(v.externalId, GraphElementId(v.externalId))) {
-                            GraphIoExternalIdMap.PutResult.CREATED -> {
-                                vc += batchWriter.addVertex(v.externalId, v.label, props, idMap)
+        try {
+            GraphIoPaths.openInputStream(source).use { input ->
+                reader.events(input, graphMlOptions).collect { event ->
+                    coroutineContext.ensureActive()
+                    when (event) {
+                        is StaxGraphMlReader.GraphMlRecordEvent.Vertex -> {
+                            vr++
+                            if (status == GraphIoStatus.FAILED) return@collect
+                            val v = event.record
+                            val props = options.preserveExternalIdProperty
+                                ?.let { v.properties + (it to v.externalId) } ?: v.properties
+                            when (idMap.putFirstOrFail(v.externalId, GraphElementId(v.externalId))) {
+                                GraphIoExternalIdMap.PutResult.CREATED -> {
+                                    vc += batchWriter.addVertex(v.externalId, v.label, props, idMap)
+                                }
+                                GraphIoExternalIdMap.PutResult.SKIPPED -> {
+                                    sv++
+                                    status = GraphIoStatus.PARTIAL
+                                    failures += GraphIoFailure(
+                                        phase = GraphIoPhase.CREATE_VERTEX,
+                                        severity = GraphIoFailureSeverity.WARN,
+                                        fileRole = GraphIoFileRole.UNIFIED,
+                                        recordId = v.externalId,
+                                        message = "Duplicate vertex skipped: ${v.externalId}",
+                                    ).also { log.warn { "Duplicate vertex skipped: ${v.externalId}" } }
+                                }
                             }
-                            GraphIoExternalIdMap.PutResult.SKIPPED -> {
-                                sv++
-                                status = GraphIoStatus.PARTIAL
+                        }
+                        is StaxGraphMlReader.GraphMlRecordEvent.Edge -> {
+                            er++
+                            if (status == GraphIoStatus.FAILED) return@collect
+                            bufferedEdges += event.record
+                            if (bufferedEdges.size > options.maxEdgeBufferSize) {
                                 failures += GraphIoFailure(
-                                    phase = GraphIoPhase.CREATE_VERTEX,
-                                    severity = GraphIoFailureSeverity.WARN,
+                                    phase = GraphIoPhase.READ_EDGE,
                                     fileRole = GraphIoFileRole.UNIFIED,
-                                    recordId = v.externalId,
-                                    message = "Duplicate vertex skipped: ${v.externalId}",
-                                ).also { log.warn { "Duplicate vertex skipped: ${v.externalId}" } }
+                                    location = "edge-buffer:${bufferedEdges.size}",
+                                    message = "Edge buffer exceeded maxEdgeBufferSize=${options.maxEdgeBufferSize}; " +
+                                        "verticesCreated=$vc remain in graph as partial state",
+                                )
+                                status = GraphIoStatus.FAILED
+                                throw StopImport
                             }
                         }
-                    }
-                    is StaxGraphMlReader.GraphMlRecordEvent.Edge -> {
-                        er++
-                        if (status == GraphIoStatus.FAILED) return@collect
-                        bufferedEdges += event.record
-                        if (bufferedEdges.size > options.maxEdgeBufferSize) {
-                            failures += GraphIoFailure(
-                                phase = GraphIoPhase.READ_EDGE,
-                                fileRole = GraphIoFileRole.UNIFIED,
-                                location = "edge-buffer:${bufferedEdges.size}",
-                                message = "Edge buffer exceeded maxEdgeBufferSize=${options.maxEdgeBufferSize}; " +
-                                    "verticesCreated=$vc remain in graph as partial state",
-                            )
-                            status = GraphIoStatus.FAILED
-                        }
-                    }
-                    is StaxGraphMlReader.GraphMlRecordEvent.Failure -> {
-                        failures += event.failure
-                        status = when {
-                            event.failure.severity == GraphIoFailureSeverity.ERROR -> GraphIoStatus.FAILED
-                            status == GraphIoStatus.COMPLETED -> GraphIoStatus.PARTIAL
-                            else -> status
+                        is StaxGraphMlReader.GraphMlRecordEvent.Failure -> {
+                            failures += event.failure
+                            status = when {
+                                event.failure.severity == GraphIoFailureSeverity.ERROR -> GraphIoStatus.FAILED
+                                status == GraphIoStatus.COMPLETED -> GraphIoStatus.PARTIAL
+                                else -> status
+                            }
                         }
                     }
                 }
             }
+        } catch (_: StopImport) {
+            // Stop parsing after a terminal edge-buffer failure.
         }
 
         if (status == GraphIoStatus.FAILED) {
@@ -217,6 +222,8 @@ class SuspendGraphMlBulkImporter : GraphSuspendBulkImporter<GraphImportSource> {
         return GraphImportReport(status, GraphIoFormat.GRAPHML, vr, vc, er, ec, sv, se, watch.elapsed(), failures)
             .also { log.debug { "Suspend import completed: vertices=$vc/$vr, edges=$ec/$er, status=$status" } }
     }
+
+    private object StopImport : RuntimeException()
 
     companion object : KLoggingChannel()
 }

@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.toList
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
+import java.io.IOException
+import java.io.InputStream
 
 class CsvStreamingReaderContractTest {
 
@@ -88,6 +90,33 @@ class CsvStreamingReaderContractTest {
         error.message.orEmpty().contains("Person").shouldBeFalse()
     }
 
+    @Test
+    fun `fatal input errors are not converted to malformed csv`() = runSuspendIO {
+        val source = CsvGraphImportSource(
+            vertices = GraphImportSource.InputStreamSource(FatalInputStream()),
+            edges = GraphImportSource.InputStreamSource(ByteArrayInputStream("id,label\n".toByteArray())),
+        )
+
+        assertFailsWith<AssertionError> {
+            CsvGraphRecordFlowReader().readVertices(source).toList()
+        }
+    }
+
+    @Test
+    fun `owned stream close failures remain infrastructure failures`() = runSuspendIO {
+        val source = CsvGraphImportSource(
+            vertices = GraphImportSource.InputStreamSource(
+                CloseFailingInputStream("id,label\nv1,Person\n".toByteArray()),
+                closeInput = true,
+            ),
+            edges = GraphImportSource.InputStreamSource(ByteArrayInputStream("id,label,from,to\n".toByteArray())),
+        )
+
+        assertFailsWith<IOException> {
+            CsvGraphRecordFlowReader().readVertices(source).toList()
+        }
+    }
+
     private fun sourceOf(vertices: String, edges: String): CsvGraphImportSource = CsvGraphImportSource(
         vertices = GraphImportSource.InputStreamSource(ByteArrayInputStream(vertices.toByteArray())),
         edges = GraphImportSource.InputStreamSource(ByteArrayInputStream(edges.toByteArray())),
@@ -103,6 +132,16 @@ class CsvStreamingReaderContractTest {
             closed = true
             closeCount++
             super.close()
+        }
+    }
+
+    private class FatalInputStream : InputStream() {
+        override fun read(): Int = throw AssertionError("fatal-csv-input")
+    }
+
+    private class CloseFailingInputStream(bytes: ByteArray) : ByteArrayInputStream(bytes) {
+        override fun close() {
+            throw IOException("csv-close-failure")
         }
     }
 }

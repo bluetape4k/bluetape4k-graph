@@ -74,12 +74,15 @@ class GraphMlStreamingReaderContractTest {
             GraphMlRecordFlowReader().readVertices(source).toList()
         }
 
+        error.failure.toString() shouldNotContain "secret-payload"
+        error.failure.toString() shouldNotContain "secret-record"
         error.message.orEmpty() shouldNotContain "secret-payload"
         error.message.orEmpty() shouldNotContain "secret-record"
     }
 
     @Test
-    fun `bulk importer enforces bounded edge buffer`() {
+    fun `bulk importer stops reading after edge buffer overflow`() {
+        val trailingNodes = (1..20_000).joinToString("\n") { "<node id=\"trailing-$it\"/>" }
         val xml = graphMl(
             """
             <node id="v1"/>
@@ -87,11 +90,14 @@ class GraphMlStreamingReaderContractTest {
             <node id="v3"/>
             <edge id="e1" source="v1" target="v2"/>
             <edge id="e2" source="v2" target="v3"/>
+            $trailingNodes
             """.trimIndent(),
         )
+        val bytes = xml.toByteArray()
+        val input = TrackingInputStream(bytes)
 
         val report = GraphMlBulkImporter().importGraph(
-            source = sourceOf(xml),
+            source = GraphImportSource.InputStreamSource(input),
             operations = TinkerGraphOperations(),
             options = GraphImportOptions(maxEdgeBufferSize = 1),
         )
@@ -101,6 +107,7 @@ class GraphMlStreamingReaderContractTest {
         report.edgesCreated shouldBeEqualTo 0L
         report.failures.single().message shouldBeEqualTo
             "Edge buffer exceeded maxEdgeBufferSize=1; verticesCreated=0 remain in graph as partial state"
+        (input.bytesRead < bytes.size).shouldBeTrue()
     }
 
     private fun sourceOf(xml: String): GraphImportSource =

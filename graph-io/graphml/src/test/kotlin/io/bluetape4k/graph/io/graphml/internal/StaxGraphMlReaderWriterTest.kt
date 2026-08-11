@@ -161,8 +161,8 @@ class StaxGraphMlReaderWriterTest {
         result.failures.map { it.severity }.toSet() shouldBeEqualTo setOf(GraphIoFailureSeverity.ERROR)
         result.failures.map { it.columnName } shouldContain "age"
         result.failures.map { it.columnName } shouldContain "score"
-        result.failures.map { it.message } shouldContain "Invalid GraphML int value for 'age': not-an-int"
-        result.failures.map { it.message } shouldContain "Invalid GraphML double value for 'score': not-a-double"
+        result.failures.map { it.message } shouldContain "Invalid GraphML int value"
+        result.failures.map { it.message } shouldContain "Invalid GraphML double value"
         result.vertices[0].properties.containsKey("age") shouldBeEqualTo false
         result.vertices[1].properties["age"] shouldBeEqualTo 42
         result.edges[0].properties.containsKey("score") shouldBeEqualTo false
