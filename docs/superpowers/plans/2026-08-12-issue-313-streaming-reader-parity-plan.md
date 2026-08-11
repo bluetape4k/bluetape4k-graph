@@ -381,9 +381,12 @@ message만 public failure로 보유하고 raw source/record/column/element/cause
 CSV parser는 `catch(Throwable)`를 제거해 `Error`와 EOF 이후 close failure를 보존한다.
 GraphML/CSV/core 보안 회귀 테스트와 전체 6개 module 검증을 다시 실행했다.
 
-최신 결과: P0=0, P1=0. P2는 CSV/Jackson `take(1)` read-count 회귀가 기존 GraphML/OkIO
-coverage보다 얕은 점과 GraphML XML parse failure phase가 vertex로 고정된 점으로 기록하며,
-이번 issue의 streaming/ownership/safe-failure 수용 기준을 막지 않는다.
+최신 결과: P0=0, P1=0. P2=4는 CSV/Jackson `take(1)` read-count와 suspend GraphML
+overflow trailing-byte parity의 보강 부족, GraphML XML parse failure phase가 vertex로
+고정된 점, channelFlow read-ahead 상한과 open/read/close·parse/callback 동시 failure
+suppressed 보존 행렬의 테스트 부족으로 기록한다. `buffer(0)`는 `trySendBlocking`과 함께
+targeted test가 정지해 적용하지 않았으며, 이번 issue의 streaming/ownership/safe-failure
+수용 기준을 막지 않는다.
 
 - [x] Step 4: lesson/review commit
 

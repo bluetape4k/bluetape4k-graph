@@ -11,7 +11,7 @@ cancellation, bounded edge staging, safe failure를 Type-A 변경 기준으로 �
 | 관점 | 결과 | 핵심 확인 |
 | --- | --- | --- |
 | performance/stability | PASS | GraphML busy-spin 제거, `trySendBlocking` backpressure, edge overflow `StopImport` 즉시 중단 |
-| security/API | PASS | public `GraphIoReadException.failure` redaction, raw XML/CSV payload·cause 비노출 |
+| security/API | PASS (P0/P1) | public `GraphIoReadException.failure` redaction, raw XML/CSV payload·cause 비노출 |
 | completion/verifier | PASS | 전체 테스트·compile·detekt·Dokka·diff 검증을 fresh 상태에서 재실행 |
 
 통합 판정은 P0=0, P1=0이다. 기존 GraphML strict policy의 다중 failure 집계는
@@ -49,6 +49,12 @@ overflow만 parser를 즉시 중단한다.
   후속 보강 대상이다. 현재 GraphML/OkIO cancellation 및 GraphML sync overflow coverage는
   통과한다.
 - malformed XML의 parse phase가 vertex로 고정된 기존 StAX failure 모델은 후속 개선 대상이다.
+- `channelFlow` 기본 buffered handoff의 정확한 read-ahead 상한은 slow collector/read-count
+  회귀가 없어 후속 보강 대상이다. `buffer(0)`는 `trySendBlocking`과 함께 targeted test가
+  정지해 현재 구현에서는 사용하지 않는다.
+- source open/read/close와 parse/callback failure가 동시에 발생할 때 suppressed 원인
+  보존 행렬은 후속 보강 대상이다. 현재 fatal `Error`와 EOF 후 close failure의 개별 경계는
+  검증했지만 조합 경로는 미검증이다.
 
 위 P2는 이번 issue의 공통 reader API, ownership, safe failure, bounded edge staging
-수용 기준을 차단하지 않는다.
+수용 기준을 차단하지 않는다. 통합 판정은 P0=0, P1=0, P2=4이다.
