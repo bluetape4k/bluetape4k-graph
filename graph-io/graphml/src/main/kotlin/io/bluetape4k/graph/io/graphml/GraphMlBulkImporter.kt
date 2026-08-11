@@ -4,6 +4,8 @@ import io.bluetape4k.graph.io.contract.GraphBulkImporter
 import io.bluetape4k.graph.io.graphml.internal.StaxGraphMlReader
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.options.MissingEndpointPolicy
+import io.bluetape4k.graph.io.model.GraphIoEdgeRecord
+import io.bluetape4k.graph.io.model.GraphIoVertexRecord
 import io.bluetape4k.graph.io.report.GraphIoFailure
 import io.bluetape4k.graph.io.report.GraphIoFailureSeverity
 import io.bluetape4k.graph.io.report.GraphIoFileRole
@@ -86,6 +88,7 @@ class GraphMlBulkImporter : GraphBulkImporter<GraphImportSource> {
         )
     }
 
+    @Suppress("CyclomaticComplexMethod", "LongMethod", "LoopWithTooManyJumpStatements")
     fun importGraph(
         source: GraphImportSource,
         operations: GraphOperations,
@@ -94,52 +97,80 @@ class GraphMlBulkImporter : GraphBulkImporter<GraphImportSource> {
     ): GraphImportReport {
         log.debug { "Starting GRAPHML import: defaultVertexLabel=${graphMlOptions.defaultVertexLabel}" }
         val watch = GraphIoStopwatch()
-
-        val parsed = GraphIoPaths.openInputStream(source).use { reader.read(it, graphMlOptions) }
-
         val idMap = GraphIoExternalIdMap(options.onDuplicateVertexId)
         val batchWriter = GraphIoBatchWriter(operations, options.batchSize)
         val failures = mutableListOf<GraphIoFailure>()
-        failures.addAll(parsed.failures)
-        var vr = parsed.vertices.size.toLong()
+        val bufferedEdges = ArrayDeque<GraphIoEdgeRecord>()
+        var vr = 0L
         var vc = 0L
-        var er = parsed.edges.size.toLong()
+        var er = 0L
         var ec = 0L
         var sv = 0L
         var se = 0L
-        var status = when {
-            parsed.failures.any { it.severity == GraphIoFailureSeverity.ERROR } -> GraphIoStatus.FAILED
-            parsed.failures.any { it.severity == GraphIoFailureSeverity.WARN } -> GraphIoStatus.PARTIAL
-            else -> GraphIoStatus.COMPLETED
+        var status = GraphIoStatus.COMPLETED
+
+        val sink = object : StaxGraphMlReader.GraphMlRecordSink {
+            override fun onVertex(record: GraphIoVertexRecord) {
+                vr++
+                if (status == GraphIoStatus.FAILED) return
+                val props = options.preserveExternalIdProperty
+                    ?.let { record.properties + (it to record.externalId) } ?: record.properties
+                when (idMap.putFirstOrFail(record.externalId, GraphElementId(record.externalId))) {
+                    GraphIoExternalIdMap.PutResult.CREATED -> {
+                        vc += batchWriter.addVertex(record.externalId, record.label, props, idMap)
+                    }
+                    GraphIoExternalIdMap.PutResult.SKIPPED -> {
+                        sv++
+                        status = GraphIoStatus.PARTIAL
+                        failures += GraphIoFailure(
+                            phase = GraphIoPhase.CREATE_VERTEX,
+                            severity = GraphIoFailureSeverity.WARN,
+                            fileRole = GraphIoFileRole.UNIFIED,
+                            recordId = record.externalId,
+                            message = "Duplicate vertex skipped: ${record.externalId}",
+                        ).also { log.warn { "Duplicate vertex skipped: ${record.externalId}" } }
+                    }
+                }
+            }
+
+            override fun onEdge(record: GraphIoEdgeRecord) {
+                er++
+                if (status == GraphIoStatus.FAILED) return
+                bufferedEdges += record
+                if (bufferedEdges.size > options.maxEdgeBufferSize) {
+                    failures += GraphIoFailure(
+                        phase = GraphIoPhase.READ_EDGE,
+                        fileRole = GraphIoFileRole.UNIFIED,
+                        location = "edge-buffer:${bufferedEdges.size}",
+                        message = "Edge buffer exceeded maxEdgeBufferSize=${options.maxEdgeBufferSize}; " +
+                            "verticesCreated=$vc remain in graph as partial state",
+                    )
+                    status = GraphIoStatus.FAILED
+                }
+            }
+
+            override fun onFailure(failure: GraphIoFailure) {
+                failures += failure
+                status = when {
+                    failure.severity == GraphIoFailureSeverity.ERROR -> GraphIoStatus.FAILED
+                    status == GraphIoStatus.COMPLETED -> GraphIoStatus.PARTIAL
+                    else -> status
+                }
+            }
+        }
+
+        GraphIoPaths.openInputStream(source).use { input ->
+            reader.read(input, graphMlOptions, sink)
         }
 
         if (status == GraphIoStatus.FAILED) {
             return GraphImportReport(status, GraphIoFormat.GRAPHML, vr, vc, er, ec, sv, se, watch.elapsed(), failures)
         }
 
-        for (v in parsed.vertices) {
-            val props = options.preserveExternalIdProperty
-                ?.let { v.properties + (it to v.externalId) } ?: v.properties
-            when (idMap.putFirstOrFail(v.externalId, GraphElementId(v.externalId))) {
-                GraphIoExternalIdMap.PutResult.CREATED -> {
-                    vc += batchWriter.addVertex(v.externalId, v.label, props, idMap)
-                }
-                GraphIoExternalIdMap.PutResult.SKIPPED -> {
-                    sv++
-                    status = GraphIoStatus.PARTIAL
-                    failures += GraphIoFailure(
-                        phase = GraphIoPhase.CREATE_VERTEX,
-                        severity = GraphIoFailureSeverity.WARN,
-                        fileRole = GraphIoFileRole.UNIFIED,
-                        recordId = v.externalId,
-                        message = "Duplicate vertex skipped: ${v.externalId}",
-                    ).also { log.warn { "Duplicate vertex skipped: ${v.externalId}" } }
-                }
-            }
-        }
         vc += batchWriter.flushVertices(idMap)
 
-        for (e in parsed.edges) {
+        while (bufferedEdges.isNotEmpty()) {
+            val e = bufferedEdges.removeFirst()
             val from = idMap.resolve(e.fromExternalId)
             val to = idMap.resolve(e.toExternalId)
             if (from == null || to == null) {

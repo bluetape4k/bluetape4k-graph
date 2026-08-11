@@ -24,8 +24,9 @@ import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.warn
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.collect
 
 /**
  * Coroutine bulk importer for GraphML.
@@ -86,6 +87,7 @@ class SuspendGraphMlBulkImporter : GraphSuspendBulkImporter<GraphImportSource> {
         )
     }
 
+    @Suppress("CyclomaticComplexMethod", "LongMethod", "LoopWithTooManyJumpStatements")
     suspend fun importGraphSuspending(
         source: GraphImportSource,
         operations: GraphSuspendOperations,
@@ -94,25 +96,71 @@ class SuspendGraphMlBulkImporter : GraphSuspendBulkImporter<GraphImportSource> {
     ): GraphImportReport {
         log.debug { "Starting GRAPHML suspend import" }
         val watch = GraphIoStopwatch()
-
-        val parsed = withContext(Dispatchers.IO) {
-            GraphIoPaths.openInputStream(source).use { reader.read(it, graphMlOptions) }
-        }
-
         val idMap = GraphIoExternalIdMap(options.onDuplicateVertexId)
         val batchWriter = SuspendGraphIoBatchWriter(operations, options.batchSize)
         val failures = mutableListOf<GraphIoFailure>()
-        failures.addAll(parsed.failures)
-        var vr = parsed.vertices.size.toLong()
+        val bufferedEdges = ArrayDeque<io.bluetape4k.graph.io.model.GraphIoEdgeRecord>()
+        var vr = 0L
         var vc = 0L
-        var er = parsed.edges.size.toLong()
+        var er = 0L
         var ec = 0L
         var sv = 0L
         var se = 0L
-        var status = when {
-            parsed.failures.any { it.severity == GraphIoFailureSeverity.ERROR } -> GraphIoStatus.FAILED
-            parsed.failures.any { it.severity == GraphIoFailureSeverity.WARN } -> GraphIoStatus.PARTIAL
-            else -> GraphIoStatus.COMPLETED
+        var status = GraphIoStatus.COMPLETED
+        val coroutineContext = currentCoroutineContext()
+
+        GraphIoPaths.openInputStream(source).use { input ->
+            reader.events(input, graphMlOptions).collect { event ->
+                coroutineContext.ensureActive()
+                when (event) {
+                    is StaxGraphMlReader.GraphMlRecordEvent.Vertex -> {
+                        vr++
+                        if (status == GraphIoStatus.FAILED) return@collect
+                        val v = event.record
+                        val props = options.preserveExternalIdProperty
+                            ?.let { v.properties + (it to v.externalId) } ?: v.properties
+                        when (idMap.putFirstOrFail(v.externalId, GraphElementId(v.externalId))) {
+                            GraphIoExternalIdMap.PutResult.CREATED -> {
+                                vc += batchWriter.addVertex(v.externalId, v.label, props, idMap)
+                            }
+                            GraphIoExternalIdMap.PutResult.SKIPPED -> {
+                                sv++
+                                status = GraphIoStatus.PARTIAL
+                                failures += GraphIoFailure(
+                                    phase = GraphIoPhase.CREATE_VERTEX,
+                                    severity = GraphIoFailureSeverity.WARN,
+                                    fileRole = GraphIoFileRole.UNIFIED,
+                                    recordId = v.externalId,
+                                    message = "Duplicate vertex skipped: ${v.externalId}",
+                                ).also { log.warn { "Duplicate vertex skipped: ${v.externalId}" } }
+                            }
+                        }
+                    }
+                    is StaxGraphMlReader.GraphMlRecordEvent.Edge -> {
+                        er++
+                        if (status == GraphIoStatus.FAILED) return@collect
+                        bufferedEdges += event.record
+                        if (bufferedEdges.size > options.maxEdgeBufferSize) {
+                            failures += GraphIoFailure(
+                                phase = GraphIoPhase.READ_EDGE,
+                                fileRole = GraphIoFileRole.UNIFIED,
+                                location = "edge-buffer:${bufferedEdges.size}",
+                                message = "Edge buffer exceeded maxEdgeBufferSize=${options.maxEdgeBufferSize}; " +
+                                    "verticesCreated=$vc remain in graph as partial state",
+                            )
+                            status = GraphIoStatus.FAILED
+                        }
+                    }
+                    is StaxGraphMlReader.GraphMlRecordEvent.Failure -> {
+                        failures += event.failure
+                        status = when {
+                            event.failure.severity == GraphIoFailureSeverity.ERROR -> GraphIoStatus.FAILED
+                            status == GraphIoStatus.COMPLETED -> GraphIoStatus.PARTIAL
+                            else -> status
+                        }
+                    }
+                }
+            }
         }
 
         if (status == GraphIoStatus.FAILED) {
@@ -121,29 +169,10 @@ class SuspendGraphMlBulkImporter : GraphSuspendBulkImporter<GraphImportSource> {
             )
         }
 
-        for (v in parsed.vertices) {
-            val props = options.preserveExternalIdProperty
-                ?.let { v.properties + (it to v.externalId) } ?: v.properties
-            when (idMap.putFirstOrFail(v.externalId, GraphElementId(v.externalId))) {
-                GraphIoExternalIdMap.PutResult.CREATED -> {
-                    vc += batchWriter.addVertex(v.externalId, v.label, props, idMap)
-                }
-                GraphIoExternalIdMap.PutResult.SKIPPED -> {
-                    sv++
-                    status = GraphIoStatus.PARTIAL
-                    failures += GraphIoFailure(
-                        phase = GraphIoPhase.CREATE_VERTEX,
-                        severity = GraphIoFailureSeverity.WARN,
-                        fileRole = GraphIoFileRole.UNIFIED,
-                        recordId = v.externalId,
-                        message = "Duplicate vertex skipped: ${v.externalId}",
-                    ).also { log.warn { "Duplicate vertex skipped: ${v.externalId}" } }
-                }
-            }
-        }
         vc += batchWriter.flushVertices(idMap)
 
-        for (e in parsed.edges) {
+        while (bufferedEdges.isNotEmpty()) {
+            val e = bufferedEdges.removeFirst()
             val from = idMap.resolve(e.fromExternalId)
             val to = idMap.resolve(e.toExternalId)
             if (from == null || to == null) {

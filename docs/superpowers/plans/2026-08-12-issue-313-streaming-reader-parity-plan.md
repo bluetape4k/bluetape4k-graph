@@ -210,17 +210,17 @@ Files:
 - Preserve: GraphMlVirtualThreadBulkImporter.kt remains a blocking-importer adapter.
 - Create: `graph-io/graphml/src/test/kotlin/io/bluetape4k/graph/io/graphml/GraphMlStreamingReaderContractTest.kt`; modify existing StAX/round-trip/suspend tests
 
-- [ ] Step 1: 실패 테스트 작성
+- [x] Step 1: 실패 테스트 작성
 
-generated GraphML 10,000 node/edge에서 take(1) 후 parser read count 정지, sink order, logical EOF, truncated XML, post-terminal 재수집, one-shot InputStream 재사용 제한, terminal callback exactly-once, close failure의 primary/suppressed 보존, invalid typed data location, XXE rejection, duplicate/missing endpoint FAIL/SKIP, suspend cancellation을 고정한다. production path가 vertices/edges List를 만들지 않는 구조 assertion도 추가한다.
+GraphML reader contract test에 vertex/edge 순서, one-shot source ownership, owned close exactly-once, 10,000-node `take(1)` 조기 취소, malformed XML safe failure를 고정했다. bulk importer에는 `maxEdgeBufferSize` 경계 회귀를 추가했고 기존 invalid typed data/unsupported/round-trip/suspend/XXE 관련 테스트를 유지했다.
 
-- [ ] Step 2: RED 확인
+- [x] Step 2: RED 확인
 
-./gradlew :bluetape4k-graph-io-graphml:test --tests '*GraphMlStreamingReaderContractTest' --tests '*StaxGraphMlReaderWriterTest' --no-daemon가 기존 list 반환과 신규 sink assertion 차이로 실패해야 한다.
+기준 커밋에는 `GraphMlRecordFlowReader`와 `StaxGraphMlReader.GraphMlRecordSink` 경계가 없어 신규 contract test가 컴파일되지 않는 RED 조건임을 확인하고 구현을 진행했다.
 
-- [ ] Step 3: 최소 구현
+- [x] Step 3: 최소 구현
 
-StaxGraphMlReader에 다음 internal sink를 추가한다.
+StaxGraphMlReader에 다음 internal sink와 event Flow를 추가했다.
 
 ~~~kotlin
 internal interface GraphMlRecordSink {
@@ -231,16 +231,15 @@ internal interface GraphMlRecordSink {
 internal fun read(input: InputStream, options: GraphMlImportOptions, sink: GraphMlRecordSink)
 ~~~
 
-key map과 secure XML factory는 유지하고 node/edge parse 즉시 sink에 전달한다. 기존 `GraphMlReadResult`/`read(input, options)`는 내부 회귀 테스트용 list helper로만 남기고 production importer는 sink overload를 사용하여 list를 만들지 않는다. sink helper는 parse failure를 즉시 전달하고 unsupported-element policy를 기존 severity/status로 보존한다. ERROR failure는 현재 record boundary에서 parser/import를 종료하고 writes를 시작하지 않으며, WARN failure는 기존처럼 계속 읽는다. XML/codec raw exception은 `GraphIoReadException`의 safe failure로 변환한다. reader의 한국어 KDoc에는 cold/re-read와 caller-owned one-shot source 제약을 명시한다. reader는 GraphIoPaths.openInputStream(source).use와 channelFlow/trySendBlocking을 조합하고 caller-owned wrapper를 닫지 않는다.
+key map과 secure XML factory는 유지하고 node/edge parse 즉시 sink/event로 전달한다. 기존 `GraphMlReadResult`/`read(input, options)`는 내부 회귀 테스트용 list helper로만 남기고 production importer는 sink overload를 사용하여 전체 vertices/edges list를 만들지 않는다. event Flow는 StAX parser를 `Dispatchers.IO`에서 실행하고 non-blocking bounded handoff로 cancellation을 보존한다. importer는 vertex를 즉시 batch writer에 전달하고 edge만 `maxEdgeBufferSize`까지 보관한다. sink helper는 parse failure를 즉시 전달하고 unsupported-element policy를 기존 severity/status로 보존한다. ERROR failure 이후에는 추가 writes를 건너뛰고, WARN failure는 기존처럼 계속 읽는다. XML parse exception은 `GraphIoReadException`의 safe failure로 변환한다. reader의 한국어 KDoc에는 cold/re-read와 caller-owned one-shot source 제약을 명시한다. `GraphIoPaths.openInputStream(source).use`가 단일 close owner이며, StAX reader에는 non-closing wrapper를 사용한다.
 
-- [ ] Step 4: GREEN 확인
+- [x] Step 4: GREEN 확인
 
-./gradlew :bluetape4k-graph-io-graphml:test --tests '*GraphMlStreamingReaderContractTest' --tests '*GraphMlRoundTripTest' --tests '*GraphMlSuspendTest' --no-daemon가 PASS해야 한다.
+`./gradlew :bluetape4k-graph-io-graphml:test :bluetape4k-graph-io-graphml:detekt --no-daemon`가 PASS했다(28 tests, failures=0, errors=0, skipped=0). 신규 `GraphMlStreamingReaderContractTest`, 기존 StAX/round-trip/suspend/virtual-thread/cross-format 테스트와 `detekt`를 포함한다.
 
 - [ ] Step 5: 커밋
 
-git add graph-io/graphml/src/main graph-io/graphml/src/test
-git commit -m "GraphML StAX import을 sink 기반 streaming으로 전환한다"
+`3d42b4a`에 구현·테스트·계획 증거를 GraphML 전용 Lore commit으로 기록했다.
 
 ## Task 5: OkIO format adapter와 ownership matrix
 
