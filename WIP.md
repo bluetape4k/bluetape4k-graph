@@ -2,27 +2,22 @@
 
 스냅샷: 2026-08-11 KST
 범위: `debop`에게 배정된 열린 GitHub 이슈
-열린 배정 이슈 수: 10개
+열린 배정 이슈 수: 8개 (`0.7.0` milestone)
 
 ## 현재 방향
 
 `0.5.0` 안정 라인은 유지보수 기준으로 보존한다.
-현재 개발 라인은 `0.7.0`이며, 이 WIP 큐는 진행 중인 7-Tier 리뷰 흐름과
+현재 개발 라인은 `0.7.0`이며, 이 WIP 큐는 진행 중인 native graph-io 작업과
 아직 열린 이전 backlog 항목을 추적한다. 이번 review train에서는 #298/#398
 작업과 #437/#440 Epic 및 관련 subissue를 닫고, #400 문서 Epic도 완료했다.
 세 PR을 `develop`에 병합했으며 post-merge CI/Examples와 graph-core 검증도
 통과했다. 별도 Epic이나 subissue는 등록하지 않았다.
 
-## `0.7.0` 진행
+## 현재 `0.7.0` 진행
 
-- [#311](https://github.com/bluetape4k/bluetape4k-graph/issues/311)
-  graph-io 진행 listener와 선택적 Micrometer bridge 구현을 완료했다. core의
-  sync/suspend/Virtual Thread 계약은 기존 overload를 유지하고, CSV·Jackson2·
-  Jackson3·GraphML·Okio 경로에 ordered lifecycle과 phase snapshot을 연결했다.
-  Spring Boot auto-configuration은 property와 bridge/MeterRegistry classpath를
-  모두 만족할 때만 명시적 bean 이름으로 등록된다.
-- #311의 backend-native loader, checkpoint/resume, 외부 PR/merge/issue close는
-  이번 변경 범위에 포함하지 않는다.
+| 이슈 | 상태 | 메모 |
+|---|---|---|
+| [#312](https://github.com/bluetape4k/bluetape4k-graph/issues/312) | PR #481 검증 대기 | `graph-io-core` additive native loader SPI와 128개 core 테스트(21개 targeted) 통과. TinkerPop/TinkerGraph는 서버 native command/staging semantics가 없어 제외하며, 실제 backend adapter/Testcontainers는 후속 범위다. |
 
 ## 완료된 `0.6.0` review train
 

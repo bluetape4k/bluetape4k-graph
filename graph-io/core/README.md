@@ -238,6 +238,34 @@ Every format follows the same pattern — `*BulkImporter` / `*BulkExporter` (syn
 - **Partial success over fail-fast.** Per-record problems are reported via `GraphIoFailure` — the overall `status` becomes `PARTIAL` rather than aborting the whole run (except when `onDuplicateVertexId` or `onMissingEdgeEndpoint` is `FAIL`).
 - **External IDs stay visible.** If `preserveExternalIdProperty` is set (default: `"_graphIoExternalId"`), the importer writes the original external ID as a vertex property so round-trips remain lossless.
 
+### Backend-native bulk loading SPI
+
+`io.bluetape4k.graph.io.nativebulk` is an additive contract for a backend-owned
+native command lane. It is deliberately separate from `GraphBulkImporter`: a
+backend adapter validates a caller-owned raw `R` source and returns a typed,
+one-shot `GraphNativeBulkLoadValidatedSource<V>`. The native command receives
+only that validated `V` handle and the same deadline-aware cancellation token.
+
+`GraphNativeBulkLoaderCapabilities` declares supported source kinds,
+transaction/failure semantics, URI policy, and a bounded shutdown guarantee.
+Unsupported backends should use `UnsupportedGraphNativeBulkLoader`, which fails
+with the fixed `UNSUPPORTED_SOURCE` code. Progress and reports are verified by
+the base loader; raw adapter causes, paths, URIs, and source values are not
+included in public exceptions or diagnostic events.
+
+TinkerPop/TinkerGraph are intentionally excluded from this SPI: they are
+in-memory/reference graph implementations without a server-owned native bulk
+command or staging lifecycle. They continue to use the portable
+`GraphBulkImporter` path.
+
+URI access is denied by default. An adapter that opts in must enforce exact
+scheme/host/port origins, redirect and private-network policy, and backend
+revalidation at the execution point. FILE/DIRECTORY adapters must bind a
+canonical artifact to an approved staging root. This core module does not open
+files, dereference URIs, stage data, or provide Neo4j/Memgraph/AGE/FalkorDB
+adapters; those concerns belong to follow-up backend issues and their
+Testcontainers coverage.
+
 ## Dependency
 
 ```kotlin

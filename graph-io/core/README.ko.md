@@ -238,6 +238,32 @@ println("${report.verticesCreated} / ${report.verticesRead} 개 정점 임포트
 - **전체 실패보다 부분 성공.** 레코드별 문제는 `GraphIoFailure`로 보고되고, 전체 `status`는 중단 없이 `PARTIAL`로 설정됩니다(`onDuplicateVertexId`나 `onMissingEdgeEndpoint`가 `FAIL`일 때 제외).
 - **외부 ID 보존.** `preserveExternalIdProperty`가 설정되면(기본값: `"_graphIoExternalId"`) 임포터가 원본 외부 ID를 정점 속성으로 기록하여 왕복(round-trip)이 손실 없이 이루어집니다.
 
+### 백엔드 native bulk loading SPI
+
+`io.bluetape4k.graph.io.nativebulk`는 백엔드가 소유한 native command 경로를
+위한 additive 계약입니다. `GraphBulkImporter`와 분리되어 있으며, 백엔드
+어댑터는 호출자가 소유한 raw `R` source를 검증한 뒤 typed one-shot
+`GraphNativeBulkLoadValidatedSource<V>`를 반환합니다. native command에는 검증된
+`V` handle과 deadline-aware cancellation token만 전달됩니다.
+
+`GraphNativeBulkLoaderCapabilities`는 지원 source kind, transaction/failure
+의미, URI 정책, bounded shutdown 보장을 선언합니다. 지원하지 않는 백엔드는
+`UnsupportedGraphNativeBulkLoader`를 사용하며 고정 `UNSUPPORTED_SOURCE` 코드로
+실패합니다. base loader가 progress와 report를 검증하고, raw adapter 원인,
+경로, URI, source 값은 public exception이나 diagnostic event에 포함하지
+않습니다.
+
+TinkerPop/TinkerGraph는 이 SPI에서 의도적으로 제외합니다. 두 구현은 서버가
+소유한 native bulk command나 staging lifecycle이 없는 인메모리/reference
+graph이므로, 계속 portable `GraphBulkImporter` 경로를 사용합니다.
+
+URI 접근은 기본적으로 거절됩니다. 허용하는 어댑터는 exact scheme/host/port
+origin, redirect/private-network 정책과 실행 지점의 backend 재검증을 모두
+강제해야 합니다. FILE/DIRECTORY 어댑터는 canonical artifact를 승인된 staging
+root에 결합해야 합니다. 이 core 모듈은 파일을 열거나 URI를 dereference하거나
+데이터를 staging하지 않으며, Neo4j/Memgraph/AGE/FalkorDB 어댑터와 Testcontainers
+검증은 후속 백엔드 이슈의 범위입니다.
+
 ## 의존성
 
 ```kotlin
