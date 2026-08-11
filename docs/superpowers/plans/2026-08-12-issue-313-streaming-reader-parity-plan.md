@@ -35,7 +35,7 @@ Files:
 - Create: graph-io/core/src/main/kotlin/io/bluetape4k/graph/io/report/GraphIoReadException.kt
 - Test: graph-io/core/src/test/kotlin/io/bluetape4k/graph/io/report/GraphIoReadExceptionTest.kt
 
-- [ ] Step 1: 실패 테스트 작성
+- [x] Step 1: 실패 테스트 작성
 
 ~~~kotlin
 @Test
@@ -57,13 +57,13 @@ fun readExceptionKeepsLocationAndHidesRawPayload() {
 
 reader의 take(1) 후 owned path close, caller-owned stream open, cancellation 후 read count 정지는 각 포맷 모듈의 contract test가 포맷별 source 타입으로 검증한다. core 테스트는 예외의 안전한 message/cause 경계만 고정한다.
 
-- [ ] Step 2: RED 확인
+- [x] Step 2: RED 확인
 
 실행: ./gradlew :bluetape4k-graph-io-core:test --tests '*GraphIoReadExceptionTest' --no-daemon
 
 예상 결과: 예외 심볼이 없어 컴파일 또는 assertion 실패한다.
 
-- [ ] Step 3: 최소 구현
+- [x] Step 3: 최소 구현
 
 ~~~kotlin
 class GraphIoReadException(
@@ -79,11 +79,11 @@ class GraphIoReadException(
 
 message와 cause에는 raw line/XML value, source path, record ID, codec exception message를 넣지 않는다. 원인 예외가 필요한 내부 진단은 parser 내부에서 고정 code/location으로 기록하고 public exception에는 전달하지 않는다.
 
-- [ ] Step 4: GREEN 확인
+- [x] Step 4: GREEN 확인
 
 ./gradlew :bluetape4k-graph-io-core:test --no-daemon 및 git diff --check가 PASS해야 한다.
 
-- [ ] Step 5: 커밋
+- [x] Step 5: 커밋
 
 git add graph-io/core/src/main graph-io/core/src/test
 git commit -m "graph-io read failure 경계를 안전한 예외로 고정한다"
