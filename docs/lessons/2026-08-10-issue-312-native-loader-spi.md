@@ -33,8 +33,8 @@ Testcontainers 검증은 후속 이슈로 남겼다. TinkerPop/TinkerGraph도 �
 ## 검증
 
 - RED: nativebulk 타입이 없을 때 targeted `compileTestKotlin` 실패를 확인했다.
-- GREEN: targeted `io.bluetape4k.graph.io.nativebulk.*` 테스트 19개 통과.
-- 전체 `:bluetape4k-graph-io-core:test`: 126개 통과.
+- GREEN: targeted `io.bluetape4k.graph.io.nativebulk.*` 테스트 21개 통과.
+- 전체 `:bluetape4k-graph-io-core:test`: 128개 통과.
 - `:bluetape4k-graph-io-core:compileKotlin`: 성공.
 - `git diff --check`: 성공.
 

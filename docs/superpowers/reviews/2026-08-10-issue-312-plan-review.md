@@ -41,14 +41,12 @@
 
 - P0: 0
 - P1: 0
-- P2: 3 (후속 adapter의 URI canonicalization 세부, public KDoc 보강, 기존 detekt
-  baseline; 이번 core SPI에서
+- P2: 1 (후속 adapter의 URI canonicalization 세부; 이번 core SPI에서
   dereference하지 않으므로 비차단)
 - P3: 0
 - 설계/계획 판정: **PASS — implementation-ready**
 
 구현 시작 후에는 계획의 RED 테스트를 먼저 실행하고, targeted nativebulk
 테스트·`compileKotlin`·전체 `graph-io-core` 테스트·`git diff --check`를
-순차 검증한다. 최신 구현 증거는 targeted nativebulk 19개, 전체 core 126개,
-`compileKotlin` 성공이며, detekt 전체는 기존 GraphIo baseline 때문에 별도 gap으로
-기록한다.
+순차 검증한다. 최신 구현 증거는 targeted nativebulk 21개, 전체 core 128개,
+`compileKotlin`과 root `detekt` 성공이다.

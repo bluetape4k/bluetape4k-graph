@@ -185,6 +185,75 @@ class GraphNativeBulkLoaderTest {
         loader.closeResourcesCalls.get() shouldBeEqualTo 1
     }
 
+    @Test
+    fun `close waits for terminal diagnostic before publishing closed`() {
+        val completedEntered = CountDownLatch(1)
+        val releaseCompleted = CountDownLatch(1)
+        val closeDone = CountDownLatch(1)
+        val diagnostics = CopyOnWriteArrayList<GraphNativeBulkLoadDiagnosticKind>()
+        val loader = RecordingLoader(
+            observer = GraphNativeBulkLoadDiagnosticObserver { diagnostic ->
+                if (diagnostic.kind == GraphNativeBulkLoadDiagnosticKind.COMPLETED) {
+                    completedEntered.countDown()
+                    releaseCompleted.await(5, TimeUnit.SECONDS)
+                }
+                diagnostics += diagnostic.kind
+            },
+        )
+
+        val loadDone = CountDownLatch(1)
+        Thread.startVirtualThread {
+            try {
+                loader.load(request(source = RawSource("source")))
+            } finally {
+                loadDone.countDown()
+            }
+        }
+
+        completedEntered.await(5, TimeUnit.SECONDS).shouldBeTrue()
+        Thread.startVirtualThread {
+            try {
+                loader.close()
+            } finally {
+                closeDone.countDown()
+            }
+        }
+        (!closeDone.await(100, TimeUnit.MILLISECONDS)).shouldBeTrue()
+        releaseCompleted.countDown()
+
+        loadDone.await(5, TimeUnit.SECONDS).shouldBeTrue()
+        closeDone.await(5, TimeUnit.SECONDS).shouldBeTrue()
+        diagnostics shouldBeEqualTo listOf(
+            GraphNativeBulkLoadDiagnosticKind.STARTED,
+            GraphNativeBulkLoadDiagnosticKind.COMPLETED,
+            GraphNativeBulkLoadDiagnosticKind.CLOSED,
+        )
+    }
+
+    @Test
+    fun `close interrupts an active native load`() {
+        val loader = BlockingLoader()
+        val loadFailure = AtomicReference<Throwable?>(null)
+        val loadDone = CountDownLatch(1)
+
+        Thread.startVirtualThread {
+            try {
+                loader.load(request(source = RawSource("source")))
+            } catch (failure: Throwable) {
+                loadFailure.set(failure)
+            } finally {
+                loadDone.countDown()
+            }
+        }
+
+        loader.started.await(5, TimeUnit.SECONDS).shouldBeTrue()
+        loader.close()
+        loadDone.await(5, TimeUnit.SECONDS).shouldBeTrue()
+        (loadFailure.get() as GraphNativeBulkLoadException).code shouldBeEqualTo
+            GraphNativeBulkLoadFailureCode.NATIVE_COMMAND_FAILED
+        loader.closeResourcesCalls.get() shouldBeEqualTo 1
+    }
+
     private fun request(source: RawSource): GraphNativeBulkLoadRequest<RawSource> = GraphNativeBulkLoadRequest(
         source = source,
         sourceKind = GraphNativeBulkLoadSourceKind.FILE,

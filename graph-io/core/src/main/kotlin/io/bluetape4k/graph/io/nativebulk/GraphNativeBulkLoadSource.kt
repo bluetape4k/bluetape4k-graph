@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.Condition
 import java.util.concurrent.locks.ReentrantLock
 
+/** Validator와 adapter가 공유하는 monotonic timeout/cancellation token이다. */
 class GraphNativeBulkLoadCancellationToken internal constructor(
     val startedNanos: Long,
     val timeoutNanos: Long,
@@ -41,7 +42,7 @@ class GraphNativeBulkLoadCancellationToken internal constructor(
 
     fun deadline(): GraphNativeBulkLoadDeadline = GraphNativeBulkLoadDeadline(deadlineNanos)
 
-    /** Atomically records the first reason and invokes the bounded hook exactly once. */
+    /** 첫 reason을 원자적으로 기록하고 bounded hook을 정확히 한 번 호출한다. */
     fun request(
         reason: GraphNativeBulkLoadCancellationReason,
         deadline: GraphNativeBulkLoadDeadline = closeGraceDeadline(),
@@ -70,6 +71,7 @@ class GraphNativeBulkLoadCancellationToken internal constructor(
 }
 
 
+/** Validation으로 고정된 typed artifact를 한 번만 소비하고 닫는 handle이다. */
 abstract class GraphNativeBulkLoadValidatedSource<V : Any> : AutoCloseable {
     private enum class State { OPEN, CLOSING, CLOSED }
 
@@ -147,11 +149,11 @@ abstract class GraphNativeBulkLoadValidatedSource<V : Any> : AutoCloseable {
         return value
     }
 
-    /** Legacy adapter hook retained for source compatibility. */
+    /** 기존 adapter의 source 호환성을 위한 legacy hook이다. */
     protected open fun takeOnce(): V =
         error("validated source must implement takeOnce() or takeOnce(deadline)")
 
-    /** Deadline-aware hook for adapters that can interrupt or cancel source acquisition. */
+    /** Source acquisition을 interrupt/cancel할 수 있는 adapter용 deadline-aware hook이다. */
     protected open fun takeOnce(deadline: GraphNativeBulkLoadDeadline): V = takeOnce()
 
     final override fun close() {
@@ -231,7 +233,7 @@ abstract class GraphNativeBulkLoadValidatedSource<V : Any> : AutoCloseable {
         cleanupCall.failure?.let { throw it }
     }
 
-    /** Must attempt every independent resource, aggregate failures, and be terminal and deadline-aware. */
+    /** 독립 resource를 모두 시도하고 failure를 합산하는 terminal cleanup hook이다. */
     protected abstract fun closeOnce(deadline: GraphNativeBulkLoadDeadline)
 
     private fun publishClosed() {
@@ -245,6 +247,7 @@ abstract class GraphNativeBulkLoadValidatedSource<V : Any> : AutoCloseable {
     }
 }
 
+/** Validator가 반환한 typed source와 실행 deadline을 native command에 전달한다. */
 class GraphNativeBulkLoadExecution<V : Any>(
     val operationName: String,
     val timeout: Duration,
@@ -263,6 +266,7 @@ class GraphNativeBulkLoadExecution<V : Any>(
             "maxFailureDetails=$maxFailureDetails, progressInterval=$progressInterval)"
 }
 
+/** Raw request를 검증하고 typed validated source를 만드는 SPI다. */
 fun interface GraphNativeBulkLoadSourceValidator<R : Any, V : Any> {
     /** Native command 전에 source kind, trust policy와 실행 위치를 검증한다. */
     fun validate(
@@ -274,12 +278,14 @@ fun interface GraphNativeBulkLoadSourceValidator<R : Any, V : Any> {
 }
 
 /** Validator가 반환 전에 만든 provisional resource의 rollback 소유권을 명시한다. */
+/** Validation 중 생성한 provisional resource의 rollback 소유권을 관리한다. */
 class GraphNativeBulkLoadValidationContext {
     private val rollbackLock = ReentrantLock()
     private val rollbackActions = ArrayDeque<AutoCloseable>()
     private val pendingRollbackCalls = mutableSetOf<GraphNativeBulkLoadBoundedCall>()
     private var committed = false
 
+    /** Validation 실패 시 역순으로 실행할 rollback action을 등록한다. */
     fun registerRollback(action: AutoCloseable) {
         rollbackLock.lock()
         try {

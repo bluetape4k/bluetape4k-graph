@@ -63,24 +63,30 @@ internal fun boundedByCloseGrace(
     nowNanos: Long = System.nanoTime(),
 ): GraphNativeBulkLoadDeadline = earliestDeadline(deadline, closeGraceDeadline(nowNanos))
 
+/** Native loader가 받을 수 있는 원시 source 종류다. */
 enum class GraphNativeBulkLoadSourceKind { FILE, DIRECTORY, URI }
 
+/** Native command가 보장하는 durable transaction 경계다. */
 enum class GraphNativeBulkLoadTransactionGuarantee {
     ATOMIC, BATCHED, NONE, UNKNOWN
 }
 
+/** Adapter가 보존할 수 있는 failure detail의 최소 단위다. */
 enum class GraphNativeBulkLoadFailureDetail {
     RECORD, BATCH, COMMAND, SUMMARY, NONE
 }
 
+/** Bulk command가 통과하는 검증 phase 순서다. */
 enum class GraphNativeBulkLoadPhase {
     PREPARE, LOAD_VERTEX, LOAD_EDGE, VERIFY, COMPLETE
 }
 
+/** Bulk command의 terminal 결과다. */
 enum class GraphNativeBulkLoadOutcome {
     COMPLETED, PARTIAL, FAILED, CANCELLED
 }
 
+/** Caller에게 노출하는 비밀값 없는 고정 failure code다. */
 enum class GraphNativeBulkLoadFailureCode(val publicMessage: String) {
     INVALID_REQUEST("native bulk load request is invalid"),
     SOURCE_REJECTED("native bulk load source was rejected"),
@@ -93,10 +99,12 @@ enum class GraphNativeBulkLoadFailureCode(val publicMessage: String) {
     UNKNOWN("native bulk load failed"),
 }
 
+/** Cancellation을 유발한 lifecycle 사건이다. */
 enum class GraphNativeBulkLoadCancellationReason {
     TIMEOUT, INTERRUPT, CLOSE, LISTENER_FAILURE
 }
 
+/** Native loader가 caller에게 반환하는 redacted 예외다. */
 open class GraphNativeBulkLoadException(
     val code: GraphNativeBulkLoadFailureCode,
 ) : RuntimeException(code.publicMessage) {
@@ -105,6 +113,7 @@ open class GraphNativeBulkLoadException(
     }
 }
 
+/** Cancellation reason을 보존하는 redacted 예외다. */
 class GraphNativeBulkLoadCancellationException(
     val reason: GraphNativeBulkLoadCancellationReason,
 ) : GraphNativeBulkLoadException(
@@ -129,18 +138,22 @@ internal fun redactNativeBulkLoadFailure(
     }
 
 
+/** URI 접근 허용 방식이다. */
 enum class GraphNativeBulkLoadUriAccess {
     DENIED, ALLOWLISTED
 }
 
+/** Source를 읽는 실행 위치다. */
 enum class GraphNativeBulkLoadSourceExecution {
     CALLER_JVM, BACKEND_SERVER
 }
 
+/** Adapter shutdown이 bounded하다는 선언이다. */
 enum class GraphNativeBulkLoadShutdownGuarantee {
     BOUNDED, UNKNOWN
 }
 
+/** Monotonic clock 기반의 bounded deadline이다. */
 data class GraphNativeBulkLoadDeadline(
     val deadlineNanos: Long,
 ) : Serializable {
@@ -230,6 +243,7 @@ internal fun runBounded(
     }
 }
 
+/** URI allowlist에 등록하는 canonical scheme/host/port tuple이다. */
 data class GraphNativeBulkLoadUriOrigin(
     val scheme: String,
     val host: String,
@@ -256,6 +270,7 @@ data class GraphNativeBulkLoadUriOrigin(
     }
 }
 
+/** Source와 timeout/progress/failure-detail 정책을 담는 raw bulk-load request다. */
 data class GraphNativeBulkLoadRequest<R : Any>(
     val source: R,
     val sourceKind: GraphNativeBulkLoadSourceKind,
@@ -299,6 +314,7 @@ data class GraphNativeBulkLoadRequest<R : Any>(
 
 }
 
+/** Loader가 지원하는 source, transaction, failure, shutdown 계약이다. */
 class GraphNativeBulkLoaderCapabilities(
     backend: String,
     val supported: Boolean,
@@ -372,6 +388,7 @@ class GraphNativeBulkLoaderCapabilities(
     }
 }
 
+/** URI, staging root, redirect와 backend 재검증 정책이다. */
 class GraphNativeBulkLoadSourcePolicy(
     val uriAccess: GraphNativeBulkLoadUriAccess = GraphNativeBulkLoadUriAccess.DENIED,
     allowedUriOrigins: Set<GraphNativeBulkLoadUriOrigin> = emptySet(),
@@ -436,6 +453,7 @@ class GraphNativeBulkLoadSourcePolicy(
             !backendRevalidatesArtifact
 }
 
+/** Caller thread에 전달하는 누적 progress snapshot이다. */
 data class GraphNativeBulkLoadProgress(
     val phase: GraphNativeBulkLoadPhase,
     val processed: Long,
@@ -459,10 +477,12 @@ data class GraphNativeBulkLoadProgress(
     }
 }
 
+/** Progress가 phase 경계인지 token 경계인지 구분한다. */
 enum class GraphNativeBulkLoadProgressEventKind {
     PHASE, INTERVAL
 }
 
+/** Report에 보존되는 redacted record/batch/command failure다. */
 data class GraphNativeBulkLoadFailure(
     val phase: GraphNativeBulkLoadPhase,
     val code: GraphNativeBulkLoadFailureCode,
@@ -489,6 +509,7 @@ internal fun contractRequire(value: Boolean, _lazyMessage: () -> String) {
     if (!value) throw GraphNativeBulkLoadException(GraphNativeBulkLoadFailureCode.CONTRACT_VIOLATION)
 }
 
+/** Request와 capability 불변식을 통과한 terminal bulk-load report다. */
 class GraphNativeBulkLoadReport private constructor(
     val operationName: String,
     val outcome: GraphNativeBulkLoadOutcome,

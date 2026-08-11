@@ -107,7 +107,7 @@ Files:
 - [x] Step 5: Progress, Failure, Report의 count/outcome/cancellation/detail invariant와 request+capabilities compatibility를 구현했다.
 - [x] Step 6: monotonic deadline, overflow-safe remaining, finite timeout, cancellation hook exactly-once, bounded virtual-thread call, V execution context, redacted exception boundary를 구현했다.
 - [x] Step 7: validation rollback과 ValidatedSource V의 take/close를 ReentrantLock/Condition/state로 직렬화하고 repeated close와 deferred cleanup을 구현했다.
-- [x] Step 8: 모델 테스트 GREEN을 확인했다(19개 nativebulk targeted 중 모델 경계 12개).
+- [x] Step 8: 모델 테스트 GREEN을 확인했다(21개 nativebulk targeted 중 모델 경계 10개).
 
 Run:
 
@@ -149,7 +149,7 @@ Files:
 - [x] Step 6: durable cancellation, bounded close grace, hook capture, interrupt restoration, single close owner, deferred cleanup, bounded capability invariant을 구현했다.
 - [x] Step 6a: secret-free bounded lifecycle diagnostic, fixed operation label, load/close correlation, observer single-inflight/retry를 구현했다.
 - [x] Step 7: `UnsupportedGraphNativeBulkLoader<R,V>` default-deny capabilities와 fixed `UNSUPPORTED_SOURCE`를 구현했다.
-- [x] Step 8: loader GREEN을 확인했다(19개 targeted nativebulk 테스트).
+- [x] Step 8: loader GREEN을 확인했다(21개 targeted nativebulk 테스트).
 
 Run:
 
@@ -172,7 +172,7 @@ Files:
 ## Task 6: 통합 검증
 
 - [x] Step 1: targeted nativebulk tests와 `compileKotlin`을 순차 실행했다.
-- [x] Step 2: graph-io-core 전체 test에서 baseline 82개보다 늘어난 **126개**가 통과했다.
+- [x] Step 2: graph-io-core 전체 test에서 baseline 82개보다 늘어난 **128개**가 통과했다.
 - [x] Step 3: performance/stability 정적 scan으로 callback budget, interval boundary, overflow-safe deadline, bounded close/source lifecycle을 재확인했다. 실제 100,000-record backend benchmark는 범위 밖이다.
 - [x] Step 3a: diagnostic secret-free fields, deferred cleanup/capability invariant, observer single-inflight를 코드리뷰와 representative test로 재확인했다.
 - [x] Step 4: 실제 backend/Testcontainers/URI dereference는 이 issue 범위가 아니므로 N/A로 기록했다.
