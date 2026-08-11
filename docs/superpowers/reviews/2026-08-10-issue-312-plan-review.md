@@ -13,9 +13,9 @@
 | 관점 | P0 | P1 | P2 | 판정 | 핵심 근거 |
 |---|---:|---:|---:|---|---|
 | Developer/API | 0 | 0 | 0 | PASS | Kotlin 2.4/JDK 25/Gradle 9.7 기준, `ReentrantLock/Condition`, R/V 분리, Serializable 모델, `CONTRACT_VIOLATION`, nullable merge/AtomicBoolean 경계가 고정되었다. |
-| Security | 0 | 0 | 2 | PASS | 고정 비민감 `native-bulk-load` label, source/toString 비노출, fixed-code redaction, URI default deny와 allowlist cardinality/aggregate bounds를 확인했다. 후속 adapter의 URI canonicalization 세부(IP literal/default port)는 후속 범위다. |
-| Performance | 0 | 0 | 0 | PASS | progress callback 상한과 interval 경계, overflow-safe deadline, 단일 observer in-flight/circuit, pending timeout 1회 retry를 확인했다. 실제 backend benchmark는 범위 밖이다. |
-| Stability | 0 | 0 | 0 | PASS | validation rollback 단일 owner/pending completion, deferred cleanup owner, listener/load deadline, completion 이후 `CLOSED` publish를 확인했다. expired observer는 실제 worker completion callback까지 in-flight를 유지한다. |
+| Security | 0 | 0 | 1 | PASS | 고정 비민감 `native-bulk-load` label, source/toString 비노출, fixed-code redaction, URI default deny와 allowlist cardinality/aggregate bounds를 확인했다. 후속 adapter의 URI canonicalization 세부(IP literal/default port)는 후속 범위다. |
+| Performance | 0 | 0 | 1 | PASS | progress callback 상한과 interval 경계, overflow-safe deadline, 단일 observer in-flight/circuit, pending timeout 1회 retry를 확인했다. slow-observer/100k-record stress 증거는 후속 범위다. |
+| Stability | 0 | 0 | 1 | PASS | validation rollback 단일 owner/pending completion, deferred cleanup owner, listener/load deadline, completion 이후 `CLOSED` publish를 확인했다. rollback action continuation은 후속 adapter 검증 범위다. |
 | Operator/Ops | 0 | 0 | 0 | PASS | close timeout diagnostic pending 보존, expired async dispatch, single-inflight, retry CAS 순서, global diagnostic correlation을 확인했다. 최신 수정으로 timeout worker 종료 전 새 observer worker를 만들지 않는다. |
 | User/Caller | 0 | 0 | 0 | PASS | public request/report/progress 계약, listener 원본 primary 보존, bounded caller 복귀, unsupported fixed error, README 경계가 계획에 반영되었다. 기존 portable importer API는 변경하지 않는다. |
 
@@ -41,8 +41,8 @@
 
 - P0: 0
 - P1: 0
-- P2: 1 (후속 adapter의 URI canonicalization 세부; 이번 core SPI에서
-  dereference하지 않으므로 비차단)
+- P2: 3 (후속 adapter의 URI canonicalization 세부, rollback continuation,
+  observer/stress evidence; 이번 core SPI에서 dereference하지 않으므로 비차단)
 - P3: 0
 - 설계/계획 판정: **PASS — implementation-ready**
 

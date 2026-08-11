@@ -20,6 +20,12 @@ staging I/O, Testcontainers를 포함하지 않는다.
 
 - URI origin의 default port, IDNA, IP literal canonicalization은 실제 adapter가
   dereference 직전에 처리해야 한다. 이 core SPI는 URI를 열지 않는다.
+- rollback action 하나가 interrupt를 무시하면 같은 worker의 후속 action이
+  deadline 안에 실행되지 않을 수 있으므로, 후속 adapter에서 독립 close
+  continuation과 누수 관찰을 검증해야 한다.
+- slow observer가 in-flight인 동안 timeout 이외 diagnostic이 best-effort로
+  보류/폐기될 수 있으므로, 후속 관찰성 작업에서 event retention과 100k-record
+  progress/slow-observer stress를 고정해야 한다.
 - 실제 Neo4j/Memgraph/AGE/FalkorDB adapter, file staging, DNS rebinding 방어,
   Testcontainers lifecycle은 후속 backend 이슈에서 검증한다.
 
@@ -40,6 +46,6 @@ staging I/O, Testcontainers를 포함하지 않는다.
 
 - P0: 0
 - P1: 0
-- P2: 1 (adapter-owned URI canonicalization)
+- P2: 3 (adapter-owned URI canonicalization, rollback continuation, observer/stress evidence)
 - P3: 0
 - 구현 코드 리뷰: **PASS — 로컬 이슈 범위에서 완료**

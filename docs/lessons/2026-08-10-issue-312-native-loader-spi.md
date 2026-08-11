@@ -46,3 +46,10 @@ DNS rebinding 방지와 server-side origin/artifact revalidation을 다시 수�
 cleanup deadline을 관찰하지 못하면 `shutdownGuarantee = UNKNOWN` 및
 `supported = false`로 선언한다. 이 core 이슈에서는 실제 backend/Testcontainers
 실행을 하지 않았다.
+
+## 비차단 후속 리스크
+
+- rollback action이 interrupt를 무시하는 경우 후속 자원의 독립 close continuation을
+  추가로 검증해야 한다.
+- slow diagnostic observer의 event retention과 100k-record progress stress는 후속
+  관찰성 테스트에서 고정한다.
