@@ -321,11 +321,12 @@ Jackson3 17, GraphML 28, OkIO 111 tests PASS 및 각 `BUILD SUCCESSFUL`이다.
 
 복잡도: 중간. 선행: Task 6 green. Pattern: bluetape-writer.
 
-Files: `graph-io/core/README.md`, `graph-io/core/README.ko.md`, `graph-io/csv/README.md`, `graph-io/csv/README.ko.md`, `graph-io/jackson2/README.md`, `graph-io/jackson2/README.ko.md`, `graph-io/jackson3/README.md`, `graph-io/jackson3/README.ko.md`, `graph-io/graphml/README.md`, `graph-io/graphml/README.ko.md`, `graph-io/okio/README.md`, `graph-io/okio/README.ko.md`; create `docs/lessons/2026-08-12-issue-313-streaming-reader-parity.md`.
+Files: `graph-io/core/README.md`, `graph-io/core/README.ko.md`, `graph-io/csv/README.md`, `graph-io/csv/README.ko.md`, `graph-io/jackson2/README.md`, `graph-io/jackson2/README.ko.md`, `graph-io/jackson3/README.md`, `graph-io/jackson3/README.ko.md`, `graph-io/graphml/README.md`, `graph-io/graphml/README.ko.md`, `graph-io/okio/README.md`, `graph-io/okio/README.ko.md`, `WIP.md`, `CHANGELOG.md`; create `docs/lessons/2026-08-12-issue-313-streaming-reader-parity.md`.
 
 - [x] Step 1: reader와 batchSize 문서화
 
-각 locale에 다음 의미를 동일하게 기록한다.
+각 locale에 다음 의미를 동일하게 기록하고, substantial 변경 상태를 `WIP.md`와
+`CHANGELOG.md`에 한국어로 남긴다.
 
 ~~~text
 GraphRecordFlowReader는 record를 순차적으로 읽는 reader streaming 축이다.

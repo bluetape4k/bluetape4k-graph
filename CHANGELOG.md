@@ -10,6 +10,10 @@
 
 ### 추가
 
+- **Format streaming import reader parity**: CSV, Jackson2/3 NDJSON, GraphML,
+  OkIO에 순차 `GraphRecordFlowReader`를 추가하고 source ownership, cancellation,
+  safe parse failure, bounded edge staging 계약을 포맷 간에 정렬했다
+  ([#313](https://github.com/bluetape4k/bluetape4k-graph/issues/313)).
 - graph-io 모든 실행 모델에 ordered progress listener lifecycle과 phase
   snapshot을 추가하고, 선택적 `graph-io-micrometer` bridge 및 Spring Boot
   조건부 자동설정을 제공한다 ([#311](https://github.com/bluetape4k/bluetape4k-graph/issues/311)).
