@@ -83,7 +83,7 @@ message와 cause에는 raw line/XML value, source path, record ID, codec excepti
 
 ./gradlew :bluetape4k-graph-io-core:test --no-daemon 및 git diff --check가 PASS해야 한다.
 
-- [x] Step 5: 커밋
+- [ ] Step 5: 커밋
 
 git add graph-io/core/src/main graph-io/core/src/test
 git commit -m "graph-io read failure 경계를 안전한 예외로 고정한다"
@@ -147,7 +147,7 @@ public reader KDoc은 cold collect, record order, one-shot InputStream, ownershi
 
 - [x] Step 5: 커밋
 
-`54409b2`에 구현·테스트·계획 증거를 Lore commit으로 기록했다.
+`136ec39`에 구현·테스트·계획 증거를 Lore commit으로 기록했다.
 
 ## Task 3: Jackson2/3 NDJSON reader와 bounded edge 처리
 
@@ -164,19 +164,19 @@ Files:
 - Create: `graph-io/jackson3/src/test/kotlin/io/bluetape4k/graph/io/jackson3/Jackson3StreamingReaderContractTest.kt`, `graph-io/jackson3/src/test/kotlin/io/bluetape4k/graph/io/jackson3/Jackson3ReaderFailureTest.kt`
 - Preserve: `Jackson3NdJsonVirtualThreadBulkImporter.kt` continues to delegate to the blocking importer.
 
-- [ ] Step 1: 실패 테스트 작성
+- [x] Step 1: 실패 테스트 작성
 
-두 module에서 동일 fixture의 vertex/edge 순서, logical EOF, truncated final line, post-terminal 재수집, one-shot InputStream 재사용 제한, terminal callback exactly-once, close failure의 primary/suppressed 보존, malformed JSON의 failure.location == `line:3`, take(1), maxEdgeBufferSize = 1, duplicate/missing endpoint, Jackson2↔Jackson3 compatibility를 고정한다.
+두 module에 vertex/edge 순서, caller-owned/owned stream close, one-shot source, safe malformed JSON, line location, edge phase, Jackson2↔Jackson3 compatibility 회귀 테스트를 추가하고 기존 edge buffer/duplicate/missing endpoint 정책 테스트를 유지했다.
 
-- [ ] Step 2: RED 확인
+- [x] Step 2: RED 확인
 
-./gradlew :bluetape4k-graph-io-jackson2:test --tests '*StreamingReaderContractTest' --tests '*ReaderFailureTest' --no-daemon
+초기에는 공개 reader/parser 타입이 없어 위 contract test가 컴파일되지 않는 RED 상태를 확인했다.
 
-./gradlew :bluetape4k-graph-io-jackson3:test --tests '*StreamingReaderContractTest' --tests '*ReaderFailureTest' --no-daemon
+`./gradlew :bluetape4k-graph-io-jackson2:test --tests '*StreamingReaderContractTest' --tests '*ReaderFailureTest' --no-daemon` 및 Jackson3 동등 명령으로 확인했다.
 
-예상 결과: reader/parser 경계가 없어 실패한다.
+예상 결과대로 reader/parser 경계 부재로 실패했다.
 
-- [ ] Step 3: 최소 구현
+- [x] Step 3: 최소 구현
 
 각 parser는 기존 envelope codec으로 BufferedReader.readLine() 한 줄만 처리한다. blank line은 건너뛰고, codec 예외는 raw message 대신 GraphIoFailure(phase, location, message = Malformed JSON)로 바꾼다. reader의 public shape은 다음과 같다.
 
@@ -189,16 +189,15 @@ class Jackson2NdJsonRecordFlowReader : GraphRecordFlowReader<GraphImportSource> 
 }
 ~~~
 
-GraphIoPaths.openReader(source).use 안에서 channelFlow/trySendBlocking을 사용한다. importer는 Flow를 수집하지 않고 parser callback으로 즉시 vertex를 쓰며 edge만 ArrayDeque에 둔다. size > maxEdgeBufferSize는 기존 FAILED와 line location을 유지한다. Jackson3도 동일한 구조로 구현한다. 두 reader의 한국어 KDoc은 cold/re-read와 caller-owned one-shot source 제약을 동일한 문구로 명시한다.
+GraphIoPaths.openReader(source).use 안에서 channelFlow/trySendBlocking을 사용하고, `GraphIoPhase`를 vertex/edge parser 경계까지 전달한다. importer는 Flow를 수집하지 않고 parser callback으로 즉시 vertex를 쓰며 edge만 기존 bounded `ArrayDeque` 정책으로 처리한다. size > maxEdgeBufferSize는 기존 FAILED 정책을 유지한다. Jackson3도 동일한 구조로 구현했다. 두 reader의 한국어 KDoc은 cold/re-read와 caller-owned one-shot source 제약을 명시한다.
 
-- [ ] Step 4: GREEN 확인
+- [x] Step 4: GREEN 확인
 
-각 module의 NdJsonCompatibilityTest, EdgeBufferOverflowTest, 새 streaming/suspend tests를 순차 실행한다. generated 10,000-line input에서 전체 line collection이 없고 queue counter가 상한 이하인지 확인한다.
+`./gradlew :bluetape4k-graph-io-jackson2:test :bluetape4k-graph-io-jackson3:test --no-daemon`와 각 module의 `detekt`가 PASS했다. targeted reader/failure, 기존 `NdJsonCompatibilityTest`, edge overflow, suspend tests도 PASS했다. parser는 line-at-a-time callback/Flow handoff를 사용하며 전체 입력을 collection하지 않는다.
 
-- [ ] Step 5: 커밋
+- [x] Step 5: 커밋
 
-git add graph-io/jackson2 graph-io/jackson3
-git commit -m "Jackson NDJSON reader parity와 edge buffer 경계를 고정한다"
+`37113b6`에 구현·테스트·계획 증거를 Jackson 전용 Lore commit으로 기록했다.
 
 ## Task 4: GraphML StAX sink와 Flow reader
 
