@@ -7,6 +7,7 @@ import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.graph.io.report.GraphIoReadException
 import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.toList
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
@@ -57,6 +58,19 @@ class CsvStreamingReaderContractTest {
         edges.closed.shouldBeTrue()
         vertices.closeCount shouldBeEqualTo 1
         edges.closeCount shouldBeEqualTo 1
+    }
+
+    @Test
+    fun `generated vertices remain a sequential cold flow`() = runSuspendIO {
+        val vertices = buildString {
+            append("id,label\n")
+            repeat(10_000) { append("v$it,Person\n") }
+        }
+        val count = CsvGraphRecordFlowReader().readVertices(
+            sourceOf(vertices, "id,label,from,to\n"),
+        ).count()
+
+        count shouldBeEqualTo 10_000
     }
 
     @Test

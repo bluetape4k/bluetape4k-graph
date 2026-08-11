@@ -5,6 +5,7 @@ import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.toList
 import org.junit.jupiter.api.Test
 
@@ -48,6 +49,21 @@ class Jackson3StreamingReaderContractTest {
         callerOwned.closed.shouldBeFalse()
         owned.closed.shouldBeTrue()
         owned.closeCount shouldBeEqualTo 1
+    }
+
+    @Test
+    fun `generated vertices remain a sequential cold flow`() = runSuspendIO {
+        val content = buildString {
+            repeat(10_000) {
+                append("{\"type\":\"vertex\",\"id\":\"v$it\",\"label\":\"Person\",\"properties\":{}}\n")
+            }
+        }
+
+        val count = Jackson3NdJsonRecordFlowReader()
+            .readVertices(sourceOf(content))
+            .count()
+
+        count shouldBeEqualTo 10_000
     }
 
     private fun sourceOf(content: String): GraphImportSource =
