@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package io.bluetape4k.graph.io.okio
 
 import io.bluetape4k.graph.io.okio.bridge.toInputStream
@@ -10,6 +12,9 @@ import io.bluetape4k.graph.io.jackson3.Jackson3NdJsonBulkImporter
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphImportReport
 import io.bluetape4k.graph.io.report.GraphIoFormat
+import io.bluetape4k.graph.io.report.GraphIoOperation
+import io.bluetape4k.graph.io.report.GraphIoProgressListener
+import io.bluetape4k.graph.io.report.GraphIoProgressReporter
 import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
@@ -59,6 +64,13 @@ class OkioGraphBulkImporter(
         options: GraphImportOptions,
     ): GraphImportReport = importGraph(source, GraphIoFormat.NDJSON_JACKSON3, operations, options)
 
+    override fun importGraph(
+        source: OkioGraphImportSource,
+        operations: GraphOperations,
+        options: GraphImportOptions,
+        listener: GraphIoProgressListener,
+    ): GraphImportReport = importGraph(source, GraphIoFormat.NDJSON_JACKSON3, operations, options, listener)
+
     /**
      * OkIO 소스에서 명시된 [format]으로 그래프를 임포트한다.
      *
@@ -86,6 +98,29 @@ class OkioGraphBulkImporter(
         }
     }
 
+    /** 명시한 포맷과 진행 listener를 함께 사용하는 OkIO 임포트 오버로드. */
+    fun importGraph(
+        source: OkioGraphImportSource,
+        format: GraphIoFormat,
+        operations: GraphOperations,
+        options: GraphImportOptions = GraphImportOptions(),
+        listener: GraphIoProgressListener,
+    ): GraphImportReport {
+        val reporter = GraphIoProgressReporter(
+            operation = GraphIoOperation.IMPORT,
+            format = format,
+            listener = listener,
+            bytesProvider = {
+                if (format == GraphIoFormat.CSV) GraphIoOkioPaths.sizeOfCsv(source)
+                else GraphIoOkioPaths.sizeOf(source)
+            },
+        )
+        return reporter.run(
+            block = { importGraph(source, format, operations, options) },
+            onCompleted = { report -> reporter.completed(report) },
+        )
+    }
+
     /**
      * DAEAD chunk 복호화를 통해 단일 스트림 그래프 포맷을 임포트한다.
      *
@@ -107,6 +142,38 @@ class OkioGraphBulkImporter(
         return GraphIoOkioPaths.openDaeadDecryptedSource(source, daead, associatedData, maxCiphertextLength).use { bs ->
             importSingleStream(bs, format, operations, options)
         }
+    }
+
+    fun importGraphDaead(
+        source: OkioGraphImportSource,
+        format: GraphIoFormat,
+        daead: TinkDeterministicAead,
+        operations: GraphOperations,
+        options: GraphImportOptions = GraphImportOptions(),
+        associatedData: ByteArray = ByteArray(0),
+        maxCiphertextLength: Long = DEFAULT_DAEAD_MAX_CIPHERTEXT_LENGTH,
+        listener: GraphIoProgressListener,
+    ): GraphImportReport {
+        val reporter = GraphIoProgressReporter(
+            operation = GraphIoOperation.IMPORT,
+            format = format,
+            listener = listener,
+            bytesProvider = { GraphIoOkioPaths.sizeOf(source) },
+        )
+        return reporter.run(
+            block = {
+                importGraphDaead(
+                    source,
+                    format,
+                    daead,
+                    operations,
+                    options,
+                    associatedData,
+                    maxCiphertextLength,
+                )
+            },
+            onCompleted = { report -> reporter.completed(report) },
+        )
     }
 
     /**
@@ -136,6 +203,40 @@ class OkioGraphBulkImporter(
         ).use { bs ->
             importSingleStream(bs, format, operations, options)
         }
+    }
+
+    fun importGraphDaeadGzip(
+        source: OkioGraphImportSource,
+        format: GraphIoFormat,
+        daead: TinkDeterministicAead,
+        operations: GraphOperations,
+        options: GraphImportOptions = GraphImportOptions(),
+        associatedData: ByteArray = ByteArray(0),
+        maxCiphertextLength: Long = DEFAULT_DAEAD_MAX_CIPHERTEXT_LENGTH,
+        maxDecompressedBytes: Long = GraphIoOkioPaths.DEFAULT_MAX_DECOMPRESSED_BYTES,
+        listener: GraphIoProgressListener,
+    ): GraphImportReport {
+        val reporter = GraphIoProgressReporter(
+            operation = GraphIoOperation.IMPORT,
+            format = format,
+            listener = listener,
+            bytesProvider = { GraphIoOkioPaths.sizeOf(source) },
+        )
+        return reporter.run(
+            block = {
+                importGraphDaeadGzip(
+                    source,
+                    format,
+                    daead,
+                    operations,
+                    options,
+                    associatedData,
+                    maxCiphertextLength,
+                    maxDecompressedBytes,
+                )
+            },
+            onCompleted = { report -> reporter.completed(report) },
+        )
     }
 
     // ─── 내부 헬퍼 ────────────────────────────────────────────────────────────

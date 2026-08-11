@@ -40,6 +40,20 @@ class GraphIoOkioPathsTest {
     }
 
     @Test
+    fun `sizeOf reports path bytes and CSV paired bytes`() {
+        ensureTmpDir()
+        val path = "/tmp/graph.ndjson".toPath()
+        fakeFs.write(path) { writeUtf8("12345") }
+        GraphIoOkioPaths.sizeOf(OkioGraphImportSource.PathSource(path, fakeFs)) shouldBeEqualTo 5L
+
+        val stem = "/tmp/paired".toPath()
+        fakeFs.write("/tmp/paired_vertices.csv".toPath()) { writeUtf8("123") }
+        fakeFs.write("/tmp/paired_edges.csv".toPath()) { writeUtf8("4567") }
+        GraphIoOkioPaths.sizeOfCsv(OkioGraphImportSource.PathSource(stem, fakeFs)) shouldBeEqualTo 7L
+        GraphIoOkioPaths.sizeOf(OkioGraphImportSource.SourceBased(Buffer())) shouldBeEqualTo null
+    }
+
+    @Test
     fun `openSource SourceBased does not close underlying source when ownsSource=false`() {
         val buffer = Buffer().also { it.writeUtf8("stream data") }
         val source = OkioGraphImportSource.SourceBased(buffer, ownsSource = false)

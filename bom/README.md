@@ -28,7 +28,7 @@ The BOM is a Gradle `java-platform` that publishes only `<dependencyManagement>`
 | Group | Modules |
 |-------|---------|
 | `graph/*` | `graph-core`, `graph-neo4j`, `graph-memgraph`, `graph-age`, `graph-tinkerpop`, `graph-falkordb` |
-| `graph-io/*` | `graph-io-core`, `graph-io-csv`, `graph-io-graphml`, `graph-io-jackson2`, `graph-io-jackson3`, `graph-okio` |
+| `graph-io/*` | `graph-io-core`, `graph-io-csv`, `graph-io-graphml`, `graph-io-jackson2`, `graph-io-jackson3`, `graph-io-micrometer`, `graph-okio` |
 | `spring-boot/*` | `graph-spring-boot` |
 | `ktor/*` | `graph-ktor` |
 

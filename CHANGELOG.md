@@ -8,6 +8,15 @@
 
 ## [Unreleased]
 
+### 추가
+
+- graph-io 모든 실행 모델에 ordered progress listener lifecycle과 phase
+  snapshot을 추가하고, 선택적 `graph-io-micrometer` bridge 및 Spring Boot
+  조건부 자동설정을 제공한다 ([#311](https://github.com/bluetape4k/bluetape4k-graph/issues/311)).
+- Virtual Thread 벌크 I/O future가 `cancel(false)` 상태 취소와
+  `cancel(true)` worker interrupt를 구분하고, Micrometer tag cardinality를
+  고정한다.
+
 ## [0.6.0] - 2026-08-06
 
 ### 추가

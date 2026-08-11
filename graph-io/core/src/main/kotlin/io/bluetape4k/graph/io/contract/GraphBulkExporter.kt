@@ -3,6 +3,7 @@ package io.bluetape4k.graph.io.contract
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.report.GraphExportReport
+import io.bluetape4k.graph.io.report.GraphIoProgressListener
 
 /**
  * 공통 동기(blocking) 벌크 익스포터 계약.
@@ -57,4 +58,15 @@ interface GraphBulkExporter<T : Any> : AutoCloseable {
         operations: GraphOperations,
         options: GraphExportOptions = GraphExportOptions(),
     ): GraphExportReport
+
+    /** 진행 listener를 사용하는 익스포트 오버로드. */
+    fun exportGraph(
+        sink: T,
+        operations: GraphOperations,
+        options: GraphExportOptions = GraphExportOptions(),
+        listener: GraphIoProgressListener,
+    ): GraphExportReport {
+        requireNotNull(listener) { "listener must not be null" }
+        return exportGraph(sink, operations, options)
+    }
 }

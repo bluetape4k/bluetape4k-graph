@@ -8,7 +8,10 @@ import io.bluetape4k.graph.io.report.GraphIoFailure
 import io.bluetape4k.graph.io.report.GraphIoFailureSeverity
 import io.bluetape4k.graph.io.report.GraphIoFileRole
 import io.bluetape4k.graph.io.report.GraphIoFormat
+import io.bluetape4k.graph.io.report.GraphIoOperation
 import io.bluetape4k.graph.io.report.GraphIoPhase
+import io.bluetape4k.graph.io.report.GraphIoProgressListener
+import io.bluetape4k.graph.io.report.GraphIoProgressReporter
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.report.GraphImportReport
 import io.bluetape4k.graph.io.source.GraphImportSource
@@ -56,6 +59,32 @@ class SuspendGraphMlBulkImporter : GraphSuspendBulkImporter<GraphImportSource> {
         operations: GraphSuspendOperations,
         options: GraphImportOptions,
     ): GraphImportReport = importGraphSuspending(source, operations, options, GraphMlImportOptions())
+
+    override suspend fun importGraphSuspending(
+        source: GraphImportSource,
+        operations: GraphSuspendOperations,
+        options: GraphImportOptions,
+        listener: GraphIoProgressListener,
+    ): GraphImportReport = importGraphSuspending(source, operations, options, GraphMlImportOptions(), listener)
+
+    suspend fun importGraphSuspending(
+        source: GraphImportSource,
+        operations: GraphSuspendOperations,
+        options: GraphImportOptions = GraphImportOptions(),
+        graphMlOptions: GraphMlImportOptions = GraphMlImportOptions(),
+        listener: GraphIoProgressListener,
+    ): GraphImportReport {
+        val reporter = GraphIoProgressReporter(
+            operation = GraphIoOperation.IMPORT,
+            format = GraphIoFormat.GRAPHML,
+            listener = listener,
+            bytesProvider = { GraphIoPaths.sizeOf(source) },
+        )
+        return reporter.runSuspending(
+            block = { importGraphSuspending(source, operations, options, graphMlOptions) },
+            onCompleted = { report -> reporter.completed(report) },
+        )
+    }
 
     suspend fun importGraphSuspending(
         source: GraphImportSource,

@@ -55,6 +55,69 @@ object GraphIoOkioPaths : KLogging() {
     /** 기본 압축 해제 budget: 512 MiB. */
     const val DEFAULT_MAX_DECOMPRESSED_BYTES: Long = 512L * 1024 * 1024
 
+    /** 경로 기반 source의 확인 가능한 파일 크기를 반환한다. 스트림 source는 `null`이다. */
+    fun sizeOf(source: OkioGraphImportSource): Long? = when (source) {
+        is OkioGraphImportSource.PathSource -> safeSize(source.fileSystem, source.path)
+        is OkioGraphImportSource.SourceBased,
+        is OkioGraphImportSource.InputStreamBased,
+        -> null
+    }
+
+    /** 경로 기반 sink의 현재 파일 크기를 반환한다. 스트림 sink는 `null`이다. */
+    fun sizeOf(sink: OkioGraphExportSink): Long? = when (sink) {
+        is OkioGraphExportSink.PathSink -> safeSize(sink.fileSystem, sink.path)
+        is OkioGraphExportSink.SinkBased,
+        is OkioGraphExportSink.OutputStreamBased,
+        -> null
+    }
+
+    /** CSV paired-file source의 정점/간선 파일 크기를 합산한다. */
+    fun sizeOfCsv(source: OkioGraphImportSource): Long? = when (source) {
+        is OkioGraphImportSource.PathSource -> {
+            val stem = source.path.toString().removeSuffix(".csv")
+            sumSizes(
+                safeSize(source.fileSystem, "${stem}_vertices.csv".toPath()),
+                safeSize(source.fileSystem, "${stem}_edges.csv".toPath()),
+            )
+        }
+        is OkioGraphImportSource.SourceBased,
+        is OkioGraphImportSource.InputStreamBased,
+        -> null
+    }
+
+    /** CSV paired-file sink의 정점/간선 파일 크기를 합산한다. */
+    fun sizeOfCsv(sink: OkioGraphExportSink): Long? = when (sink) {
+        is OkioGraphExportSink.PathSink -> {
+            val stem = sink.path.toString().removeSuffix(".csv")
+            sumSizes(
+                safeSize(sink.fileSystem, "${stem}_vertices.csv".toPath()),
+                safeSize(sink.fileSystem, "${stem}_edges.csv".toPath()),
+            )
+        }
+        is OkioGraphExportSink.SinkBased,
+        is OkioGraphExportSink.OutputStreamBased,
+        -> null
+    }
+
+    private fun safeSize(fileSystem: FileSystem, path: Path): Long? = try {
+        fileSystem.metadata(path).size
+    } catch (_: IOException) {
+        null
+    } catch (_: SecurityException) {
+        null
+    }
+
+    private fun sumSizes(first: Long?, second: Long?): Long? =
+        if (first == null || second == null) {
+            null
+        } else {
+            try {
+                Math.addExact(first, second)
+            } catch (_: ArithmeticException) {
+                null
+            }
+        }
+
     // ─── Source 열기 ─────────────────────────────────────────────────────────
 
     /**

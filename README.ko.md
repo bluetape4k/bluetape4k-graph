@@ -227,6 +227,7 @@ list/Flow fallback을 유지하고, TinkerGraph는 reference chunked path를 제
 | `graph-io-jackson2` | NDJSON (Jackson 2.x) | [README](graph-io/jackson2/README.ko.md) |
 | `graph-io-jackson3` | NDJSON (Jackson 3.x) | [README](graph-io/jackson3/README.ko.md) |
 | `graph-io-graphml` | GraphML XML (StAX) | [README](graph-io/graphml/README.ko.md) |
+| `graph-io-micrometer` | 선택적 고정 cardinality 진행 metric bridge | [README](graph-io/micrometer/README.ko.md) |
 | `graph-okio` | OkIO 기반 통합 어댑터 — 세그먼트 스트리밍, 압축 체이닝, FakeFileSystem 지원, DAEAD chunk encryption | [README](graph-io/okio/README.ko.md) |
 
 > **벤치마크 결과 (graph-io)**: [2026-04-18 graph-io 벌크 I/O 결과](docs/benchmark/2026-04-18-graph-io-bulk-results.md) — 전체 0.4.0 결과셋(graph-db 백엔드 비교, 쓰기 ingestion, 도메인 워크로드, API 모델 비교)은 [벤치마크 의사결정 가이드](benchmark/README.md)를 참고하세요.

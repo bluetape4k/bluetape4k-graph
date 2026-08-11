@@ -1,15 +1,19 @@
 package io.bluetape4k.graph.io.okio.virtualthread
 
-import io.bluetape4k.concurrent.virtualthread.virtualFutureOf
 import io.bluetape4k.graph.io.okio.OkioGraphBulkExporter
 import io.bluetape4k.graph.io.okio.OkioGraphBulkImporter
 import io.bluetape4k.graph.io.okio.OkioGraphExportSink
 import io.bluetape4k.graph.io.okio.OkioGraphImportSource
+import io.bluetape4k.graph.io.okio.GraphIoOkioPaths
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphExportReport
 import io.bluetape4k.graph.io.report.GraphImportReport
 import io.bluetape4k.graph.io.report.GraphIoFormat
+import io.bluetape4k.graph.io.report.GraphIoOperation
+import io.bluetape4k.graph.io.report.GraphIoProgressListener
+import io.bluetape4k.graph.io.report.GraphIoProgressReporter
+import io.bluetape4k.graph.io.support.VirtualThreadGraphBulkAdapter
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
 import java.util.concurrent.CompletableFuture
@@ -45,7 +49,29 @@ class VirtualThreadGraphIoOkioBulkAdapter(
         operations: GraphOperations,
         options: GraphImportOptions = GraphImportOptions(),
     ): CompletableFuture<GraphImportReport> =
-        virtualFutureOf { importer.importGraph(source, format, operations, options) }
+        VirtualThreadGraphBulkAdapter.cancellableVirtualFuture {
+            importer.importGraph(source, format, operations, options)
+        }
+
+    fun importGraphAsync(
+        source: OkioGraphImportSource,
+        format: GraphIoFormat,
+        operations: GraphOperations,
+        options: GraphImportOptions = GraphImportOptions(),
+        listener: GraphIoProgressListener,
+    ): CompletableFuture<GraphImportReport> {
+        val reporter = GraphIoProgressReporter(
+            operation = GraphIoOperation.IMPORT,
+            format = format,
+            listener = listener,
+            bytesProvider = { GraphIoOkioPaths.sizeOf(source) },
+        )
+        return VirtualThreadGraphBulkAdapter.cancellableVirtualFuture(
+            reporter = reporter,
+            block = { importer.importGraph(source, format, operations, options) },
+            onCompleted = { report -> reporter.completed(report) },
+        )
+    }
 
     /**
      * OkIO 싱크에 [format] 포맷으로 그래프를 Virtual Thread 비동기 익스포트한다.
@@ -62,5 +88,27 @@ class VirtualThreadGraphIoOkioBulkAdapter(
         operations: GraphOperations,
         options: GraphExportOptions = GraphExportOptions(),
     ): CompletableFuture<GraphExportReport> =
-        virtualFutureOf { exporter.exportGraph(sink, format, operations, options) }
+        VirtualThreadGraphBulkAdapter.cancellableVirtualFuture {
+            exporter.exportGraph(sink, format, operations, options)
+        }
+
+    fun exportGraphAsync(
+        sink: OkioGraphExportSink,
+        format: GraphIoFormat,
+        operations: GraphOperations,
+        options: GraphExportOptions = GraphExportOptions(),
+        listener: GraphIoProgressListener,
+    ): CompletableFuture<GraphExportReport> {
+        val reporter = GraphIoProgressReporter(
+            operation = GraphIoOperation.EXPORT,
+            format = format,
+            listener = listener,
+            bytesProvider = { GraphIoOkioPaths.sizeOf(sink) },
+        )
+        return VirtualThreadGraphBulkAdapter.cancellableVirtualFuture(
+            reporter = reporter,
+            block = { exporter.exportGraph(sink, format, operations, options) },
+            onCompleted = { report -> reporter.completed(report) },
+        )
+    }
 }

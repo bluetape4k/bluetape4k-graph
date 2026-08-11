@@ -3,6 +3,7 @@ package io.bluetape4k.graph.io.contract
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphImportReport
+import io.bluetape4k.graph.io.report.GraphIoProgressListener
 
 /**
  * 공통 동기(blocking) 벌크 임포터 계약.
@@ -65,4 +66,18 @@ interface GraphBulkImporter<S : Any> : AutoCloseable {
         operations: GraphOperations,
         options: GraphImportOptions = GraphImportOptions(),
     ): GraphImportReport
+
+    /**
+     * 진행 listener를 사용하는 임포트 오버로드.
+     * 포맷 구현체는 동일 reporter를 사용해 lifecycle event를 발행한다.
+     */
+    fun importGraph(
+        source: S,
+        operations: GraphOperations,
+        options: GraphImportOptions = GraphImportOptions(),
+        listener: GraphIoProgressListener,
+    ): GraphImportReport {
+        requireNotNull(listener) { "listener must not be null" }
+        return importGraph(source, operations, options)
+    }
 }

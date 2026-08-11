@@ -8,7 +8,10 @@ import io.bluetape4k.graph.io.report.GraphIoFailure
 import io.bluetape4k.graph.io.report.GraphIoFailureSeverity
 import io.bluetape4k.graph.io.report.GraphIoFileRole
 import io.bluetape4k.graph.io.report.GraphIoFormat
+import io.bluetape4k.graph.io.report.GraphIoOperation
 import io.bluetape4k.graph.io.report.GraphIoPhase
+import io.bluetape4k.graph.io.report.GraphIoProgressListener
+import io.bluetape4k.graph.io.report.GraphIoProgressReporter
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.report.GraphImportReport
 import io.bluetape4k.graph.io.source.GraphImportSource
@@ -56,6 +59,32 @@ class GraphMlBulkImporter : GraphBulkImporter<GraphImportSource> {
         operations: GraphOperations,
         options: GraphImportOptions,
     ): GraphImportReport = importGraph(source, operations, options, GraphMlImportOptions())
+
+    override fun importGraph(
+        source: GraphImportSource,
+        operations: GraphOperations,
+        options: GraphImportOptions,
+        listener: GraphIoProgressListener,
+    ): GraphImportReport = importGraph(source, operations, options, GraphMlImportOptions(), listener)
+
+    fun importGraph(
+        source: GraphImportSource,
+        operations: GraphOperations,
+        options: GraphImportOptions = GraphImportOptions(),
+        graphMlOptions: GraphMlImportOptions = GraphMlImportOptions(),
+        listener: GraphIoProgressListener,
+    ): GraphImportReport {
+        val reporter = GraphIoProgressReporter(
+            operation = GraphIoOperation.IMPORT,
+            format = GraphIoFormat.GRAPHML,
+            listener = listener,
+            bytesProvider = { GraphIoPaths.sizeOf(source) },
+        )
+        return reporter.run(
+            block = { importGraph(source, operations, options, graphMlOptions) },
+            onCompleted = { report -> reporter.completed(report) },
+        )
+    }
 
     fun importGraph(
         source: GraphImportSource,

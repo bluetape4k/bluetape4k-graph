@@ -11,6 +11,7 @@ import io.bluetape4k.graph.io.report.GraphExportReport
 import io.bluetape4k.graph.io.report.GraphImportProgress
 import io.bluetape4k.graph.io.report.GraphImportReport
 import io.bluetape4k.graph.io.report.GraphIoFormat
+import io.bluetape4k.graph.io.report.GraphIoProgressListener
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
@@ -75,6 +76,23 @@ class SuspendGraphIoOkioBulkAdapter(
         )
     }
 
+    fun importGraph(
+        source: OkioGraphImportSource,
+        format: GraphIoFormat,
+        operations: GraphOperations,
+        options: GraphImportOptions = GraphImportOptions(),
+        listener: GraphIoProgressListener,
+    ): Flow<GraphImportProgress> = flow {
+        emit(GraphImportProgress(processed = 0))
+        val report = importGraphInternal(source, format, operations, options, listener)
+        emit(
+            GraphImportProgress(
+                processed = report.verticesRead + report.edgesRead,
+                total = report.verticesRead + report.edgesRead,
+            )
+        )
+    }
+
     /**
      * OkIO 싱크에 [format] 포맷으로 그래프를 익스포트하고 진행 상태 Flow를 반환한다.
      *
@@ -101,6 +119,23 @@ class SuspendGraphIoOkioBulkAdapter(
         )
     }
 
+    fun exportGraph(
+        sink: OkioGraphExportSink,
+        format: GraphIoFormat,
+        operations: GraphOperations,
+        options: GraphExportOptions = GraphExportOptions(),
+        listener: GraphIoProgressListener,
+    ): Flow<GraphExportProgress> = flow {
+        emit(GraphExportProgress(exported = 0))
+        val report = exportGraphInternal(sink, format, operations, options, listener)
+        emit(
+            GraphExportProgress(
+                exported = report.verticesWritten + report.edgesWritten,
+                total = report.verticesWritten + report.edgesWritten,
+            )
+        )
+    }
+
     // ─── Await (완료 보고서) ────────────────────────────────────────────────────
 
     /**
@@ -118,6 +153,14 @@ class SuspendGraphIoOkioBulkAdapter(
         options: GraphImportOptions = GraphImportOptions(),
     ): GraphImportReport = importGraphInternal(source, format, operations, options)
 
+    suspend fun importGraphAwait(
+        source: OkioGraphImportSource,
+        format: GraphIoFormat,
+        operations: GraphOperations,
+        options: GraphImportOptions = GraphImportOptions(),
+        listener: GraphIoProgressListener,
+    ): GraphImportReport = importGraphInternal(source, format, operations, options, listener)
+
     /**
      * OkIO 싱크에 [format] 포맷으로 그래프를 익스포트하고 완료 보고서를 반환한다.
      *
@@ -130,6 +173,14 @@ class SuspendGraphIoOkioBulkAdapter(
         options: GraphExportOptions = GraphExportOptions(),
     ): GraphExportReport = exportGraphInternal(sink, format, operations, options)
 
+    suspend fun exportGraphAwait(
+        sink: OkioGraphExportSink,
+        format: GraphIoFormat,
+        operations: GraphOperations,
+        options: GraphExportOptions = GraphExportOptions(),
+        listener: GraphIoProgressListener,
+    ): GraphExportReport = exportGraphInternal(sink, format, operations, options, listener)
+
     // ─── 내부 구현 ─────────────────────────────────────────────────────────────
 
     @Throws(IOException::class)
@@ -138,10 +189,12 @@ class SuspendGraphIoOkioBulkAdapter(
         format: GraphIoFormat,
         operations: GraphOperations,
         options: GraphImportOptions,
+        listener: GraphIoProgressListener? = null,
     ): GraphImportReport {
         log.debug { "Starting OkIO import (suspend): format=$format" }
         return runInterruptible(Dispatchers.IO) {
-            importer.importGraph(source, format, operations, options)
+            listener?.let { importer.importGraph(source, format, operations, options, it) }
+                ?: importer.importGraph(source, format, operations, options)
         }
     }
 
@@ -151,10 +204,12 @@ class SuspendGraphIoOkioBulkAdapter(
         format: GraphIoFormat,
         operations: GraphOperations,
         options: GraphExportOptions,
+        listener: GraphIoProgressListener? = null,
     ): GraphExportReport {
         log.debug { "Starting OkIO export (suspend): format=$format" }
         return runInterruptible(Dispatchers.IO) {
-            exporter.exportGraph(sink, format, operations, options)
+            listener?.let { exporter.exportGraph(sink, format, operations, options, it) }
+                ?: exporter.exportGraph(sink, format, operations, options)
         }
     }
 }

@@ -270,6 +270,7 @@ jobs:
               :bluetape4k-graph-io-jackson2:test \
               :bluetape4k-graph-io-jackson3:test \
               :bluetape4k-graph-io-graphml:test \
+              :bluetape4k-graph-io-micrometer:test \
               :bluetape4k-graph-okio:test \
               --no-daemon --continue && break
             echo "Attempt $attempt failed"
@@ -290,6 +291,7 @@ jobs:
               :bluetape4k-graph-io-jackson2:koverXmlReport \
               :bluetape4k-graph-io-jackson3:koverXmlReport \
               :bluetape4k-graph-io-graphml:koverXmlReport \
+              :bluetape4k-graph-io-micrometer:koverXmlReport \
               :bluetape4k-graph-okio:koverXmlReport \
               --no-daemon --continue --no-configuration-cache && break
             echo "Attempt $attempt failed"

@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package io.bluetape4k.graph.io.okio
 
 import io.bluetape4k.graph.io.okio.bridge.asClosingOutputStream
@@ -10,6 +12,9 @@ import io.bluetape4k.graph.io.jackson3.Jackson3NdJsonBulkExporter
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.report.GraphExportReport
 import io.bluetape4k.graph.io.report.GraphIoFormat
+import io.bluetape4k.graph.io.report.GraphIoOperation
+import io.bluetape4k.graph.io.report.GraphIoProgressListener
+import io.bluetape4k.graph.io.report.GraphIoProgressReporter
 import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
@@ -48,6 +53,13 @@ class OkioGraphBulkExporter(
         options: GraphExportOptions,
     ): GraphExportReport = exportGraph(sink, GraphIoFormat.NDJSON_JACKSON3, operations, options)
 
+    override fun exportGraph(
+        sink: OkioGraphExportSink,
+        operations: GraphOperations,
+        options: GraphExportOptions,
+        listener: GraphIoProgressListener,
+    ): GraphExportReport = exportGraph(sink, GraphIoFormat.NDJSON_JACKSON3, operations, options, listener)
+
     /**
      * 그래프를 OkIO 싱크에 명시된 [format]으로 익스포트한다.
      *
@@ -77,6 +89,29 @@ class OkioGraphBulkExporter(
         }
     }
 
+    /** 명시한 포맷과 진행 listener를 함께 사용하는 OkIO 익스포트 오버로드. */
+    fun exportGraph(
+        sink: OkioGraphExportSink,
+        format: GraphIoFormat,
+        operations: GraphOperations,
+        options: GraphExportOptions = GraphExportOptions(),
+        listener: GraphIoProgressListener,
+    ): GraphExportReport {
+        val reporter = GraphIoProgressReporter(
+            operation = GraphIoOperation.EXPORT,
+            format = format,
+            listener = listener,
+            bytesProvider = {
+                if (format == GraphIoFormat.CSV) GraphIoOkioPaths.sizeOfCsv(sink)
+                else GraphIoOkioPaths.sizeOf(sink)
+            },
+        )
+        return reporter.run(
+            block = { exportGraph(sink, format, operations, options) },
+            onCompleted = { report -> reporter.completed(report) },
+        )
+    }
+
     /**
      * DAEAD chunk 암호화를 통해 단일 스트림 그래프 포맷을 익스포트한다.
      *
@@ -103,6 +138,30 @@ class OkioGraphBulkExporter(
         }
     }
 
+    fun exportGraphDaead(
+        sink: OkioGraphExportSink,
+        format: GraphIoFormat,
+        daead: TinkDeterministicAead,
+        operations: GraphOperations,
+        options: GraphExportOptions = GraphExportOptions(),
+        chunkSize: Int = DEFAULT_DAEAD_CHUNK_SIZE,
+        associatedData: ByteArray = ByteArray(0),
+        listener: GraphIoProgressListener,
+    ): GraphExportReport {
+        val reporter = GraphIoProgressReporter(
+            operation = GraphIoOperation.EXPORT,
+            format = format,
+            listener = listener,
+            bytesProvider = { GraphIoOkioPaths.sizeOf(sink) },
+        )
+        return reporter.run(
+            block = {
+                exportGraphDaead(sink, format, daead, operations, options, chunkSize, associatedData)
+            },
+            onCompleted = { report -> reporter.completed(report) },
+        )
+    }
+
     /**
      * GZip 압축 후 DAEAD chunk 암호화(compress-then-encrypt)로 단일 스트림 그래프 포맷을 익스포트한다.
      *
@@ -123,6 +182,30 @@ class OkioGraphBulkExporter(
         return GraphIoOkioPaths.openGzipDaeadEncryptedSink(sink, daead, chunkSize, associatedData).use { bs ->
             exportSingleStream(bs, format, operations, options)
         }
+    }
+
+    fun exportGraphGzipDaead(
+        sink: OkioGraphExportSink,
+        format: GraphIoFormat,
+        daead: TinkDeterministicAead,
+        operations: GraphOperations,
+        options: GraphExportOptions = GraphExportOptions(),
+        chunkSize: Int = DEFAULT_DAEAD_CHUNK_SIZE,
+        associatedData: ByteArray = ByteArray(0),
+        listener: GraphIoProgressListener,
+    ): GraphExportReport {
+        val reporter = GraphIoProgressReporter(
+            operation = GraphIoOperation.EXPORT,
+            format = format,
+            listener = listener,
+            bytesProvider = { GraphIoOkioPaths.sizeOf(sink) },
+        )
+        return reporter.run(
+            block = {
+                exportGraphGzipDaead(sink, format, daead, operations, options, chunkSize, associatedData)
+            },
+            onCompleted = { report -> reporter.completed(report) },
+        )
     }
 
     // ─── 내부 헬퍼 ────────────────────────────────────────────────────────────

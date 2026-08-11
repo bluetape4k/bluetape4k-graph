@@ -5,6 +5,9 @@ import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.options.MissingEndpointPolicy
 import io.bluetape4k.graph.io.report.GraphIoStatus
+import io.bluetape4k.graph.io.report.GraphIoProgressEventType
+import io.bluetape4k.graph.io.report.GraphIoProgressEvent
+import io.bluetape4k.graph.io.report.GraphIoProgressListener
 import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
@@ -29,13 +32,28 @@ class CsvRoundTripTest {
         val alice = source.createVertex("Person", mapOf("name" to "Alice"))
         val bob = source.createVertex("Person", mapOf("name" to "Bob"))
         source.createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to "2024"))
+        val events = mutableListOf<GraphIoProgressEventType>()
+        val snapshots = mutableListOf<GraphIoProgressEvent>()
 
         val exporter = CsvGraphBulkExporter()
         exporter.exportGraph(
             CsvGraphExportSink(GraphExportSink.PathSink(vOut), GraphExportSink.PathSink(eOut)),
             source,
             GraphExportOptions(vertexLabels = setOf("Person"), edgeLabels = setOf("KNOWS")),
+            GraphIoProgressListener {
+                events += it.type
+                snapshots += it
+            },
         ).status shouldBeEqualTo GraphIoStatus.COMPLETED
+        events shouldBeEqualTo listOf(
+            GraphIoProgressEventType.STARTED,
+            GraphIoProgressEventType.PHASE_COMPLETED,
+            GraphIoProgressEventType.PHASE_COMPLETED,
+            GraphIoProgressEventType.PROGRESS,
+            GraphIoProgressEventType.COMPLETED,
+        )
+        snapshots.last().bytesProcessed shouldBeEqualTo (Files.size(vOut) + Files.size(eOut))
+        snapshots.last().bytesTotal shouldBeEqualTo (Files.size(vOut) + Files.size(eOut))
 
         val target = TinkerGraphOperations()
         val importer = CsvGraphBulkImporter()

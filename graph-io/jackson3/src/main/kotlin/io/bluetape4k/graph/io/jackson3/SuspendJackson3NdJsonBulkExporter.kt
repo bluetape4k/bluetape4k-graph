@@ -8,6 +8,9 @@ import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.report.GraphExportReport
 import io.bluetape4k.graph.io.report.GraphIoFailure
 import io.bluetape4k.graph.io.report.GraphIoFormat
+import io.bluetape4k.graph.io.report.GraphIoOperation
+import io.bluetape4k.graph.io.report.GraphIoProgressListener
+import io.bluetape4k.graph.io.report.GraphIoProgressReporter
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.io.support.GraphIoPaths
@@ -40,6 +43,24 @@ import kotlinx.coroutines.withContext
 class SuspendJackson3NdJsonBulkExporter : GraphSuspendBulkExporter<GraphExportSink> {
 
     private val codec: Jackson3EnvelopeCodec = Jackson3EnvelopeCodec()
+
+    override suspend fun exportGraphSuspending(
+        sink: GraphExportSink,
+        operations: GraphSuspendOperations,
+        options: GraphExportOptions,
+        listener: GraphIoProgressListener,
+    ): GraphExportReport {
+        val reporter = GraphIoProgressReporter(
+            operation = GraphIoOperation.EXPORT,
+            format = GraphIoFormat.NDJSON_JACKSON3,
+            listener = listener,
+            bytesProvider = { GraphIoPaths.sizeOf(sink) },
+        )
+        return reporter.runSuspending(
+            block = { exportGraphSuspending(sink, operations, options) },
+            onCompleted = { report -> reporter.completed(report) },
+        )
+    }
 
     override suspend fun exportGraphSuspending(
         sink: GraphExportSink,

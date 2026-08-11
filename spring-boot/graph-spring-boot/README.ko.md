@@ -46,6 +46,16 @@ dependencies {
 }
 ```
 
+graph-io 진행 metric을 선택적으로 사용하려면 bridge와 애플리케이션이 제공하는
+Micrometer registry를 추가한다.
+
+```kotlin
+dependencies {
+    implementation("io.github.bluetape4k.graph:bluetape4k-graph-io-micrometer:<version>")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+}
+```
+
 ### 2. `application.yml` 설정
 
 **TinkerGraph (인메모리 — 별도 설정 불필요):**
@@ -53,6 +63,22 @@ dependencies {
 bluetape4k:
   graph:
     backend: tinkergraph
+    io:
+      metrics:
+        enabled: true
+```
+
+활성화되어 있고 `MeterRegistry`가 있으면 auto-configuration이
+`graphIoMicrometerProgressListener` concrete bean을 등록한다. 이 bean은
+일반 `GraphIoProgressListener` 자동 주입 후보가 아니므로 이름으로 조회한 뒤
+애플리케이션 listener와 명시적으로 조합한다.
+
+```kotlin
+@Resource(name = "graphIoMicrometerProgressListener")
+lateinit var metricsListener: GraphIoProgressListener
+
+val listener = GraphIoCompositeProgressListener.of(userListener, metricsListener)
+importer.importGraph(source, ops, options, listener)
 ```
 
 **Neo4j:**
@@ -193,6 +219,7 @@ Neo4j와 동일한 프로퍼티 구조, 프리픽스는 `bluetape4k.graph.memgra
 | `GraphMemgraphAutoConfiguration` | `backend=memgraph` |
 | `GraphAgeAutoConfiguration` | `backend=age` |
 | `GraphFalkorDBAutoConfiguration` | `backend=falkordb` |
+| `GraphIoMicrometerAutoConfiguration` | `bluetape4k.graph.io.metrics.enabled=true`, bridge와 `MeterRegistry` 존재 |
 
 ## Spring Boot 4 참고 사항
 

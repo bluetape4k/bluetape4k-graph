@@ -46,6 +46,16 @@ dependencies {
 }
 ```
 
+For opt-in graph-io progress metrics, add the bridge and Micrometer registry
+provided by your application:
+
+```kotlin
+dependencies {
+    implementation("io.github.bluetape4k.graph:bluetape4k-graph-io-micrometer:<version>")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+}
+```
+
 ### 2. Configure `application.yml`
 
 **TinkerGraph (in-memory — no extra config needed):**
@@ -53,6 +63,22 @@ dependencies {
 bluetape4k:
   graph:
     backend: tinkergraph
+    io:
+      metrics:
+        enabled: true
+```
+
+When enabled and a `MeterRegistry` is present, auto-configuration registers the
+concrete `graphIoMicrometerProgressListener` bean. It is intentionally not an
+unqualified `GraphIoProgressListener` autowire candidate; look it up by name
+and compose it explicitly with an application listener.
+
+```kotlin
+@Resource(name = "graphIoMicrometerProgressListener")
+lateinit var metricsListener: GraphIoProgressListener
+
+val listener = GraphIoCompositeProgressListener.of(userListener, metricsListener)
+importer.importGraph(source, ops, options, listener)
 ```
 
 **Neo4j:**
@@ -193,6 +219,7 @@ Same properties as Neo4j with prefix `bluetape4k.graph.memgraph`. Default databa
 | `GraphMemgraphAutoConfiguration` | `backend=memgraph` |
 | `GraphAgeAutoConfiguration` | `backend=age` |
 | `GraphFalkorDBAutoConfiguration` | `backend=falkordb` |
+| `GraphIoMicrometerAutoConfiguration` | `bluetape4k.graph.io.metrics.enabled=true`, bridge + `MeterRegistry` present |
 
 ## Spring Boot 4 Notes
 

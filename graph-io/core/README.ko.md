@@ -130,6 +130,37 @@ data class GraphIoFailure(
 )
 ```
 
+### 진행 listener와 metric
+
+동기·suspend·Virtual Thread 포맷 진입점은 기존 overload를 유지하면서 마지막
+인자로 required `GraphIoProgressListener`를 받는 overload를 추가로 제공합니다.
+호출 하나마다 `STARTED`, 누적 `PROGRESS`/`PHASE_COMPLETED`, terminal
+`COMPLETED`·`FAILED`·`CANCELLED` 중 하나가 순서대로 정확히 한 번 전달됩니다.
+callback은 작업 thread에서 동기 실행되며 일반 callback 예외는 격리됩니다.
+callback에서 `Error`가 발생하면 reporter가 중단되지만 원래 작업 예외는
+그대로 보존됩니다.
+
+선택 모듈 `bluetape4k-graph-io-micrometer`는 이벤트를 고정 cardinality meter로
+변환합니다. operation·format·status·kind·phase enum tag만 사용하며 source
+경로, record ID, run ID, exception message는 tag가 되지 않습니다. core 모듈은
+Micrometer에 의존하지 않습니다.
+
+```kotlin
+val listener = GraphIoProgressListener { event ->
+    println("${event.type} ${event.operation} ${event.format}")
+}
+
+CsvGraphBulkExporter().exportGraph(sink, graphOps, options, listener)
+```
+
+metric이 필요할 때만 bridge를 추가합니다.
+
+```kotlin
+dependencies {
+    implementation("io.github.bluetape4k.graph:bluetape4k-graph-io-micrometer:$version")
+}
+```
+
 ### 지원 헬퍼 (`io.bluetape4k.graph.io.support`)
 
 - **`GraphIoPaths`** — 모든 `GraphImportSource`/`GraphExportSink`에 대해 `BufferedReader`/`BufferedWriter`/`InputStream`/`OutputStream`을 열고, `PathSink`는 부모 디렉터리를 자동 생성하며, 호출자 소유 스트림에는 `closeInput`/`closeOutput` 플래그를 준수합니다. `closeInput/closeOutput=false` 시 스트림을 닫아도 underlying 스트림이 닫히지 않아 안전합니다. `OutputStreamSink`는 항상 `BufferedOutputStream`으로 래핑됩니다.
