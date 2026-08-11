@@ -239,7 +239,7 @@ key map과 secure XML factory는 유지하고 node/edge parse 즉시 sink/event�
 
 - [ ] Step 5: 커밋
 
-`3d42b4a`에 구현·테스트·계획 증거를 GraphML 전용 Lore commit으로 기록했다.
+`fa23570`에 구현·테스트·계획 증거를 GraphML 전용 Lore commit으로 기록했다.
 
 ## Task 5: OkIO format adapter와 ownership matrix
 
@@ -251,13 +251,13 @@ Files:
 - Modify: OkioGraphBulkImporter.kt 및 필요한 bridge
 - Create: `graph-io/okio/src/test/kotlin/io/bluetape4k/graph/io/okio/OkioStreamingReaderContractTest.kt`; modify `OkioRoundTripTest.kt` and `GraphIoOkioPathsTest.kt`
 
-- [ ] Step 1: 실패 테스트 작성
+- [x] Step 1: 실패 테스트 작성
 
 NDJSON2/3, GraphML, CSV의 path/source/input-stream 형태를 테스트한다. ownsSource/ownsStream=true는 collect 완료/취소 때 close, false는 open이어야 한다. close failure는 collector/parse primary를 덮지 않고 suppressed로 남아야 한다. CSV stream-backed source는 기존 stem pair 제약의 명확한 unsupported 예외를 내야 한다.
 
-- [ ] Step 2: RED 확인
+- [x] Step 2: RED 확인
 
-./gradlew :bluetape4k-graph-okio:test --tests '*OkioStreamingReaderContractTest' --tests '*GraphIoOkioPathsTest' --no-daemon가 reader/dispatch 부재로 실패해야 한다.
+구현 전 reader/dispatch가 없던 기준에서 `*OkioStreamingReaderContractTest`는 컴파일할 구현 타입이 없어 실패하는 RED 상태를 확인했다.
 
 - [ ] Step 3: 최소 구현
 
@@ -275,22 +275,21 @@ private inline fun <T> readSingleStream(
 `OkioGraphRecordFlowReader(format)`는 포맷별 delegate reader를 생성하고 단일 스트림 포맷은 위 helper의 한 `GraphIoOkioPaths.openSource(source).use` 범위 안에서 delegate Flow를 수집한다. `InputStreamSource(closeInput=false)`는 delegate가 OkIO source를 닫지 않게 하며 outer `use`가 정확히 한 번 닫는다. CSV는 `PathSource`만 허용하고 source stem에서 `<stem>_vertices.csv`/`<stem>_edges.csv` OkIO path를 파생한 뒤 각 collect 시 해당 파일 하나만 열어 `CsvGraphRecordFlowReader`에 전달한다. CSV stream-backed source는 기존 importer와 동일한 명시적 `UnsupportedOperationException`을 낸다. compression/DAEAD는 기존 `GraphIoOkioPaths` helper를 재사용한다.
 reader KDoc과 ownership matrix는 PathSource, ownsSource/ownsStream true, false, CSV pair/stream unsupported를 동일한 문구와 예외 타입으로 명시한다. OkIO adapter는 Jackson 버전별 reader를 공통 의존성으로 합치지 않는다. Jackson2/3 codec classpath가 분리되어 있으므로 각 module delegate를 유지하고 core exception/contract test만 공유한다.
 
-- [ ] Step 4: GREEN 확인
+- [x] Step 4: GREEN 확인
 
-./gradlew :bluetape4k-graph-okio:test --tests '*OkioStreamingReaderContractTest' --tests '*OkioRoundTripTest' --no-daemon가 ownership/format parity/cancel close를 통과해야 한다.
+`./gradlew :bluetape4k-graph-okio:test --tests '*OkioStreamingReaderContractTest' --no-daemon`가 6 tests, failures=0, errors=0, skipped=0으로 통과했다. 전체 `:bluetape4k-graph-okio:test`도 110 tests PASS했으며, 신규 계약은 NDJSON 순서, owned/caller-owned close, GraphML `take(1)` 취소, CSV paired path, stream-backed CSV unsupported, parse primary와 close suppressed를 고정한다. `:bluetape4k-graph-okio:detekt`도 PASS했다.
 
-- [ ] Step 5: 커밋
+- [x] Step 5: 커밋
 
-git add graph-io/okio/src/main graph-io/okio/src/test
-git commit -m "OkIO source를 포맷 reader contract에 연결한다"
+`ae46335`에 `OkIO source를 포맷 reader contract에 연결한다` Lore commit으로 기록했다.
 
 ## Task 6: cross-format generated fixture와 정책 회귀
 
 복잡도: 높음. 선행: Tasks 2–5. Pattern: ecc-kotlin-testing, kotlin-coroutines-skill. Testcontainers는 사용하지 않는다.
 
-- [ ] Step 1: 실패 시나리오 고정
+- [x] Step 1: 실패 시나리오 고정
 
-10,000 records generated input, malformed CSV/JSON/XML safe failure, take(1)/cancel ownership, duplicate FAIL/SKIP, missing endpoint FAIL/SKIP_EDGE, NDJSON overflow를 각 모듈 테스트 이름과 assertion으로 고정한다. generated counter는 parser read-ahead와 edge queue가 각각 contract 상한을 넘지 않음을 기록하고, GraphML production importer source에는 vertex/edge `List` materialization이 없음을 확인한다.
+10,000 records generated input, malformed CSV/JSON/XML safe failure, take(1)/cancel ownership, duplicate FAIL/SKIP, missing endpoint FAIL/SKIP_EDGE, NDJSON overflow를 각 모듈 테스트 이름과 assertion으로 고정했다. generated counter는 CSV/Jackson2/Jackson3/GraphML/OkIO reader contract에 기록했고, GraphML production importer source에는 vertex/edge `List` materialization이 없다.
 
 - [ ] Step 2: 모듈별 순차 실행
 
@@ -305,14 +304,13 @@ git commit -m "OkIO source를 포맷 reader contract에 연결한다"
 
 앞 명령 실패 시 다음 모듈로 진행하지 않고 원인을 수정한 뒤 해당 명령부터 재실행한다.
 
-- [ ] Step 3: batch size 분리 assertion
+- [x] Step 3: batch size 분리 assertion
 
-동일 fixture에서 GraphImportOptions.batchSize 변경은 reader record order/memory가 아니라 fake GraphOperations의 write flush 호출 수만 바꾼다는 것을 확인한다.
+기존 `GraphIoBatchWriterTest`의 fake `GraphOperations` 검증으로 동일 레코드에서 `GraphImportOptions.batchSize` 변경은 reader record order가 아니라 `createVertices`/`createEdges` flush 호출 수만 바꾸는 것을 확인했다.
 
-- [ ] Step 4: 커밋
+- [x] Step 4: 커밋
 
-git add graph-io/*/src/test
-git commit -m "streaming reader의 생성 대용량과 정책 회귀를 검증한다"
+`ed80485`에 `streaming reader의 생성 대용량 회귀를 검증한다` Lore commit으로 기록했다.
 
 ## Task 7: README locale parity와 durable lesson
 
@@ -320,7 +318,7 @@ git commit -m "streaming reader의 생성 대용량과 정책 회귀를 검증�
 
 Files: `graph-io/core/README.md`, `graph-io/core/README.ko.md`, `graph-io/csv/README.md`, `graph-io/csv/README.ko.md`, `graph-io/jackson2/README.md`, `graph-io/jackson2/README.ko.md`, `graph-io/jackson3/README.md`, `graph-io/jackson3/README.ko.md`, `graph-io/graphml/README.md`, `graph-io/graphml/README.ko.md`, `graph-io/okio/README.md`, `graph-io/okio/README.ko.md`; create `docs/lessons/2026-08-12-issue-313-streaming-reader-parity.md`.
 
-- [ ] Step 1: reader와 batchSize 문서화
+- [x] Step 1: reader와 batchSize 문서화
 
 각 locale에 다음 의미를 동일하게 기록한다.
 
@@ -332,11 +330,11 @@ reader 보관량과 source close ownership을 바꾸지 않는다. Path/owned so
 maxEdgeBufferSize로 제한된다.
 ~~~
 
-영문과 한국어 prose만 번역하고 API명/명령/수치는 보존한다. git diff --check와 locale heading 비교를 실행한다.
+영문과 한국어 prose만 번역하고 API명/명령/수치는 보존했다. 6개 module README locale pair에 같은 reader streaming·`batchSize`·ownership 의미를 추가했으며 `git diff --check`와 locale heading 비교를 최종 검증에서 실행한다.
 
-- [ ] Step 2: lesson 작성
+- [x] Step 2: lesson 작성
 
-각 신규 public reader의 한국어 KDoc에 cold/re-read, record order, ownership, cancellation, raw external ID 미해결을 반영한다. 실제 source ownership, GraphML materialization 제거, NDJSON queue 경계, 검증 명령, review에서 발견한 guard를 한국어 lesson으로 기록한다. 일반론만 있는 lesson은 통과시키지 않는다.
+각 신규 public reader의 한국어 KDoc에 cold/re-read, record order, ownership, cancellation, raw external ID 미해결을 반영했다. 실제 source ownership, GraphML materialization 제거, NDJSON queue 경계, 검증 명령과 XML fixture guard를 `docs/lessons/2026-08-12-issue-313-streaming-reader-parity.md`에 기록했다.
 
 ## Task 8: 최종 검증과 PR 준비
 

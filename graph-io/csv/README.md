@@ -300,3 +300,10 @@ Choose based on your workload:
 - **Small datasets** (<100K records): Use sync
 - **Medium to large** (100K–1M records): Use virtual threads or suspend
 - **High-concurrency** environments: Use suspend with coroutine supervisors
+
+## Streaming reader contract
+
+`CsvGraphRecordFlowReader` emits vertex and edge records as a cold, sequential `Flow` and preserves
+the input order. `GraphImportOptions.batchSize` controls backend write flushing only; it does not
+change reader buffering or source close ownership. Each CSV import uses the vertex/edge pair, and
+path or explicitly owned streams are closed by the library while caller-owned streams remain open.

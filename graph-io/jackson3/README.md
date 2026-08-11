@@ -284,3 +284,10 @@ Module: graph-io/jackson3
 - `graph-io-core` - Abstract IO contracts and models
 - `graph-io-jackson2` - Jackson 2.x NDJSON (legacy)
 - `graph-neo4j`, `graph-age`, `graph-memgraph` - Graph backend implementations
+
+## Streaming reader contract
+
+`Jackson3NdJsonRecordFlowReader` emits NDJSON records one at a time through a cold `Flow` and keeps
+input order. `GraphImportOptions.batchSize` is only the backend write-flush setting, while edge
+staging is bounded by `maxEdgeBufferSize`. Path and owned sources are closed by the library; a
+caller-owned source remains open after collection.

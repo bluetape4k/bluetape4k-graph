@@ -173,3 +173,10 @@ dependencies {
 - `graph-neo4j` - Neo4j 그래프 작업
 - `graph-tinkerpop` - TinkerPop/Gremlin 지원
 - `graph-age` - Apache AGE 지원
+
+## 스트리밍 reader 계약
+
+`Jackson2NdJsonRecordFlowReader`는 전체 스트림을 materialize하지 않고 NDJSON 레코드를 한 건씩 cold `Flow`로
+읽으며 소스 순서를 유지합니다. `GraphImportOptions.batchSize`는 백엔드 쓰기 플러시만 바꾸고 NDJSON 간선
+staging은 `maxEdgeBufferSize`로 제한됩니다. Path와 소유권을 넘긴 source는 라이브러리가 닫고 호출자 소유
+source는 collect 후에도 열린 상태로 둡니다.

@@ -282,3 +282,11 @@ Transitive dependencies: `bluetape4k-graph-core`, `bluetape4k-coroutines`, `blue
 - `graph-io-jackson2` — NDJSON with Jackson 2.x
 - `graph-io-jackson3` — NDJSON with Jackson 3.x (`tools.jackson`)
 - `graph-io-graphml` — GraphML 2.4 via StAX
+
+## Streaming reader contract
+
+`GraphRecordFlowReader` is the record-streaming axis: `readVertices(source)` and
+`readEdges(source)` emit records sequentially and preserve source order. `GraphImportOptions.batchSize`
+is a separate backend write-flush axis for `createVertices`/`createEdges`; it does not change reader
+buffering or source ownership. Path and explicitly owned sources are closed by the library, while
+caller-owned sources remain open. NDJSON edge staging is bounded by `maxEdgeBufferSize`.

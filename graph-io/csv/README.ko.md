@@ -196,6 +196,38 @@ id,label,from,to,prop.since
 | `onMissingEdgeEndpoint` | `MissingEndpointPolicy` | `FAIL` | 누락된 간선 끝점 처리: 즉시 실패하거나 해당 간선을 건너뜀 |
 | `preserveExternalIdProperty` | `String?` | `null` | 외부 ID를 속성으로 보존할 때 사용할 키 |
 
+### 임포트 리포트
+
+임포트 후 개수와 실패 정보를 확인합니다:
+
+```kotlin
+val report = importer.importGraph(source, graphOps, options)
+
+println("상태: ${report.status}")              // COMPLETED, PARTIAL, FAILED
+println("정점: ${report.verticesCreated}/${report.verticesRead}")
+println("간선: ${report.edgesCreated}/${report.edgesRead}")
+println("건너뛴 정점: ${report.skippedVertices}")
+println("건너뛴 간선: ${report.skippedEdges}")
+println("소요 시간: ${report.elapsed.toMillis()}ms")
+```
+
+### 가상 스레드 임포트
+
+```kotlin
+val importer = CsvGraphVirtualThreadBulkImporter()
+val future = importer.importGraphAsync(source, graphOps, options)
+val report = future.get()
+```
+
+### 코루틴 기반 임포트 (Suspend)
+
+```kotlin
+val importer = SuspendCsvGraphBulkImporter()
+val report = coroutineScope {
+    importer.importGraphSuspending(source, suspendGraphOps, options)
+}
+```
+
 ## 설정
 
 ### 속성 모드
@@ -264,3 +296,10 @@ if (report.failures.isNotEmpty()) {
 - **소규모 데이터셋** (<100K 레코드): 동기 사용
 - **중간~대규모** (100K–1M 레코드): 가상 스레드 또는 suspend 사용
 - **높은 동시성** 환경: 코루틴 감시자와 함께 suspend 사용
+
+## 스트리밍 reader 계약
+
+`CsvGraphRecordFlowReader`는 정점과 간선 레코드를 cold·순차 `Flow`로 방출하며 입력 순서를 유지합니다.
+`GraphImportOptions.batchSize`는 백엔드 쓰기 플러시만 제어하고 reader 버퍼링이나 source close 소유권은 바꾸지
+않습니다. CSV import는 정점/간선 파일 쌍을 사용하며, path 또는 명시적으로 소유권을 넘긴 stream은 라이브러리가
+닫고 호출자 소유 stream은 열린 상태로 둡니다.
