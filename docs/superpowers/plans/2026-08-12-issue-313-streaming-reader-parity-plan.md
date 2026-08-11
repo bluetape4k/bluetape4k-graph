@@ -83,7 +83,9 @@ message와 cause에는 raw line/XML value, source path, record ID, codec excepti
 
 ./gradlew :bluetape4k-graph-io-core:test --no-daemon 및 git diff --check가 PASS해야 한다.
 
-- [ ] Step 5: 커밋
+- [x] Step 5: 커밋
+
+`08f6b9a`에 core exception 경계를 Lore commit으로 기록했다.
 
 git add graph-io/core/src/main graph-io/core/src/test
 git commit -m "graph-io read failure 경계를 안전한 예외로 고정한다"
@@ -197,7 +199,7 @@ GraphIoPaths.openReader(source).use 안에서 channelFlow/trySendBlocking을 사
 
 - [x] Step 5: 커밋
 
-`37113b6`에 구현·테스트·계획 증거를 Jackson 전용 Lore commit으로 기록했다.
+`1531c41`에 구현·테스트·계획 증거를 Jackson 전용 Lore commit으로 기록했다.
 
 ## Task 4: GraphML StAX sink와 Flow reader
 
@@ -237,7 +239,7 @@ key map과 secure XML factory는 유지하고 node/edge parse 즉시 sink/event�
 
 `./gradlew :bluetape4k-graph-io-graphml:test :bluetape4k-graph-io-graphml:detekt --no-daemon`가 PASS했다(28 tests, failures=0, errors=0, skipped=0). 신규 `GraphMlStreamingReaderContractTest`, 기존 StAX/round-trip/suspend/virtual-thread/cross-format 테스트와 `detekt`를 포함한다.
 
-- [ ] Step 5: 커밋
+- [x] Step 5: 커밋
 
 `fa23570`에 구현·테스트·계획 증거를 GraphML 전용 Lore commit으로 기록했다.
 
@@ -259,7 +261,7 @@ NDJSON2/3, GraphML, CSV의 path/source/input-stream 형태를 테스트한다. o
 
 구현 전 reader/dispatch가 없던 기준에서 `*OkioStreamingReaderContractTest`는 컴파일할 구현 타입이 없어 실패하는 RED 상태를 확인했다.
 
-- [ ] Step 3: 최소 구현
+- [x] Step 3: 최소 구현
 
 ~~~kotlin
 private inline fun <T> readSingleStream(
@@ -277,7 +279,7 @@ reader KDoc과 ownership matrix는 PathSource, ownsSource/ownsStream true, false
 
 - [x] Step 4: GREEN 확인
 
-`./gradlew :bluetape4k-graph-okio:test --tests '*OkioStreamingReaderContractTest' --no-daemon`가 6 tests, failures=0, errors=0, skipped=0으로 통과했다. 전체 `:bluetape4k-graph-okio:test`도 110 tests PASS했으며, 신규 계약은 NDJSON 순서, owned/caller-owned close, GraphML `take(1)` 취소, CSV paired path, stream-backed CSV unsupported, parse primary와 close suppressed를 고정한다. `:bluetape4k-graph-okio:detekt`도 PASS했다.
+`./gradlew :bluetape4k-graph-okio:test --tests '*OkioStreamingReaderContractTest' --no-daemon`가 6 tests, failures=0, errors=0, skipped=0으로 통과했다. 전체 `:bluetape4k-graph-okio:test`도 111 tests PASS했으며, 신규 계약은 NDJSON 순서, owned/caller-owned close, GraphML `take(1)` 취소, CSV paired path, stream-backed CSV unsupported, parse primary와 close suppressed를 고정한다. `:bluetape4k-graph-okio:detekt`도 PASS했다.
 
 - [x] Step 5: 커밋
 
@@ -291,7 +293,7 @@ reader KDoc과 ownership matrix는 PathSource, ownsSource/ownsStream true, false
 
 10,000 records generated input, malformed CSV/JSON/XML safe failure, take(1)/cancel ownership, duplicate FAIL/SKIP, missing endpoint FAIL/SKIP_EDGE, NDJSON overflow를 각 모듈 테스트 이름과 assertion으로 고정했다. generated counter는 CSV/Jackson2/Jackson3/GraphML/OkIO reader contract에 기록했고, GraphML production importer source에는 vertex/edge `List` materialization이 없다.
 
-- [ ] Step 2: 모듈별 순차 실행
+- [x] Step 2: 모듈별 순차 실행
 
 ~~~bash
 ./gradlew :bluetape4k-graph-io-core:test --no-daemon
@@ -303,6 +305,9 @@ reader KDoc과 ownership matrix는 PathSource, ownsSource/ownsStream true, false
 ~~~
 
 앞 명령 실패 시 다음 모듈로 진행하지 않고 원인을 수정한 뒤 해당 명령부터 재실행한다.
+
+`--rerun-tasks --no-daemon`으로 순차 재실행한 결과는 core 129, CSV 40, Jackson2 15,
+Jackson3 17, GraphML 28, OkIO 111 tests PASS 및 각 `BUILD SUCCESSFUL`이다.
 
 - [x] Step 3: batch size 분리 assertion
 
@@ -340,7 +345,7 @@ maxEdgeBufferSize로 제한된다.
 
 복잡도: 높음. 선행: Tasks 1–7. Pattern: verification-before-completion, bluetape-kotlin-patterns.
 
-- [ ] Step 1: compile/detekt/diff
+- [x] Step 1: compile/detekt/diff
 
 ~~~bash
 ./gradlew :bluetape4k-graph-io-core:compileKotlin :bluetape4k-graph-io-csv:compileKotlin :bluetape4k-graph-io-jackson2:compileKotlin :bluetape4k-graph-io-jackson3:compileKotlin :bluetape4k-graph-io-graphml:compileKotlin :bluetape4k-graph-okio:compileKotlin --no-daemon
@@ -350,9 +355,19 @@ git diff --check
 
 diagnostics를 읽은 뒤 수정하고 같은 명령을 재실행한다. rg로 !!, raw exception log, ownership 누락, public KDoc 위반을 검사한다.
 
-- [ ] Step 2: ABI와 README parity
+여섯 module `compileKotlin`과 `detekt`를 `--rerun-tasks --no-daemon`으로 재실행해 모두
+`BUILD SUCCESSFUL`을 확인했다. `git diff --check`와 production `!!` scan도 통과했으며,
+신규 reader는 raw payload를 로그/예외에 전달하지 않는다.
+
+- [x] Step 2: ABI와 README parity
 
 repository의 실제 ABI task를 먼저 확인하고 실행한다. 기대 결과는 기존 importer 시그니처 유지와 additive reader/exception만 포함하는 diff다.
+
+현재 repository에는 binary-compatibility/API dump task가 없고 `javadoc`/Kover task만
+존재하므로 ABI task는 N/A로 기록했다. 여섯 0.7.0 jar를 생성하고 `jar tf`/`javap`로
+`GraphRecordFlowReader`, 기존 importer-facing contract, `GraphIoReadException` 및 신규
+format reader의 public signature를 확인했다. README locale heading 수는 core 18/18,
+CSV 23/23, Jackson2 17/17, Jackson3 29/29, GraphML 21/21, OkIO 26/26으로 일치한다.
 
 - [ ] Step 3: Type-A review
 
@@ -419,5 +434,5 @@ N/A로 기록한다. 모든 수용 기준은 Acceptance traceability 표의 task
 - [x] 각 behavior의 RED/GREEN 명령과 예상 결과
 - [x] 수용 기준·문서·rollback·risk traceability
 - [x] 6개 관점 plan review P0=0/P1=0
-- [ ] 사용자 계획 승인
+- [x] 사용자 계획 승인
 - [ ] 구현·검증·PR DoD

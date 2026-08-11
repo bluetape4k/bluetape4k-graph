@@ -37,7 +37,7 @@ Jackson3·GraphML·OkIO contract에 포함되며, 기존 duplicate/missing-endpo
 - GraphML streaming contract 및 OkIO reader contract 통과. OkIO 신규 contract는 6 tests
   (순서, owned/caller-owned close, GraphML `take(1)`, CSV pair/unsupported, close suppressed)를
   검증한다.
-- 전체 `:bluetape4k-graph-okio:test`: 110 tests 통과; `:bluetape4k-graph-okio:detekt` 통과.
+- 전체 `:bluetape4k-graph-okio:test`: 111 tests 통과; `:bluetape4k-graph-okio:detekt` 통과.
 - OkIO 구현 커밋: `ae46335`; `git diff --check`는 각 구현 단계에서 통과했다.
 
 ## Future Guidance
