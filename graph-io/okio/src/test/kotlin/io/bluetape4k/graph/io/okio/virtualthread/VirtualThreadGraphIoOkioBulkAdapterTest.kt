@@ -7,6 +7,8 @@ import io.bluetape4k.graph.io.okio.OkioGraphImportSource
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphIoFormat
+import io.bluetape4k.graph.io.report.GraphIoProgressEventType
+import io.bluetape4k.graph.io.report.GraphIoProgressListener
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import okio.Path.Companion.toPath
@@ -85,6 +87,29 @@ class VirtualThreadGraphIoOkioBulkAdapterTest {
         report.status shouldBeEqualTo GraphIoStatus.COMPLETED
         report.verticesWritten shouldBeEqualTo 2L
         report.edgesWritten shouldBeEqualTo 1L
+    }
+
+    @Test
+    fun `listener overload emits one ordered lifecycle`() {
+        val path = "/vt-listener.ndjson".toPath()
+        val events = mutableListOf<GraphIoProgressEventType>()
+
+        val report = adapter.exportGraphAsync(
+            OkioGraphExportSink.PathSink(path, fakeFs),
+            GraphIoFormat.NDJSON_JACKSON3,
+            buildSourceGraph(),
+            exportOptions,
+            GraphIoProgressListener { events += it.type },
+        ).get()
+
+        report.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        events shouldBeEqualTo listOf(
+            GraphIoProgressEventType.STARTED,
+            GraphIoProgressEventType.PHASE_COMPLETED,
+            GraphIoProgressEventType.PHASE_COMPLETED,
+            GraphIoProgressEventType.PROGRESS,
+            GraphIoProgressEventType.COMPLETED,
+        )
     }
 
     @Test

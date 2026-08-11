@@ -11,6 +11,8 @@ import io.bluetape4k.graph.io.okio.OkioGraphImportSource
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphIoStatus
+import io.bluetape4k.graph.io.report.GraphIoProgressEventType
+import io.bluetape4k.graph.io.report.GraphIoProgressListener
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import kotlinx.coroutines.flow.toList
@@ -47,11 +49,15 @@ class JacksonOkioExtensionsTest {
     fun `Jackson2 sync round trip`() {
         val path = "/j2.ndjson".toPath()
         val src = buildSourceGraph()
+        val events = mutableListOf<GraphIoProgressEventType>()
 
         Jackson2NdJsonBulkExporter().exportGraph(
             OkioGraphExportSink.PathSink(path, fakeFs),
             src, exportOptions,
+            listener = GraphIoProgressListener { events += it.type },
         ).status shouldBeEqualTo GraphIoStatus.COMPLETED
+        events.first() shouldBeEqualTo GraphIoProgressEventType.STARTED
+        events.last() shouldBeEqualTo GraphIoProgressEventType.COMPLETED
 
         val report = Jackson2NdJsonBulkImporter().importGraph(
             OkioGraphImportSource.PathSource(path, fakeFs),

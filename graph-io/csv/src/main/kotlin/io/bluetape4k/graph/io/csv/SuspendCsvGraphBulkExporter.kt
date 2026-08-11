@@ -9,6 +9,9 @@ import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.report.GraphExportReport
 import io.bluetape4k.graph.io.report.GraphIoFailure
 import io.bluetape4k.graph.io.report.GraphIoFormat
+import io.bluetape4k.graph.io.report.GraphIoOperation
+import io.bluetape4k.graph.io.report.GraphIoProgressListener
+import io.bluetape4k.graph.io.report.GraphIoProgressReporter
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.support.GraphIoPaths
 import io.bluetape4k.graph.io.support.GraphIoStopwatch
@@ -44,6 +47,37 @@ class SuspendCsvGraphBulkExporter : GraphSuspendBulkExporter<CsvGraphExportSink>
         operations: GraphSuspendOperations,
         options: GraphExportOptions,
     ): GraphExportReport = exportGraphSuspending(sink, operations, options, CsvGraphIoOptions())
+
+    override suspend fun exportGraphSuspending(
+        sink: CsvGraphExportSink,
+        operations: GraphSuspendOperations,
+        options: GraphExportOptions,
+        listener: GraphIoProgressListener,
+    ): GraphExportReport = exportGraphSuspending(sink, operations, options, CsvGraphIoOptions(), listener)
+
+    suspend fun exportGraphSuspending(
+        sink: CsvGraphExportSink,
+        operations: GraphSuspendOperations,
+        options: GraphExportOptions = GraphExportOptions(),
+        csvOptions: CsvGraphIoOptions = CsvGraphIoOptions(),
+        listener: GraphIoProgressListener,
+    ): GraphExportReport {
+        val reporter = GraphIoProgressReporter(
+            operation = GraphIoOperation.EXPORT,
+            format = GraphIoFormat.CSV,
+            listener = listener,
+            bytesProvider = {
+                GraphIoPaths.sumSizes(
+                    GraphIoPaths.sizeOf(sink.vertices),
+                    GraphIoPaths.sizeOf(sink.edges),
+                )
+            },
+        )
+        return reporter.runSuspending(
+            block = { exportGraphSuspending(sink, operations, options, csvOptions) },
+            onCompleted = { report -> reporter.completed(report) },
+        )
+    }
 
     suspend fun exportGraphSuspending(
         sink: CsvGraphExportSink,

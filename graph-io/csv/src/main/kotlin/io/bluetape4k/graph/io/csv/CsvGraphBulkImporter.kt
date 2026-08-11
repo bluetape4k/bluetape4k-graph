@@ -10,6 +10,8 @@ import io.bluetape4k.graph.io.report.GraphIoFailureSeverity
 import io.bluetape4k.graph.io.report.GraphIoFileRole
 import io.bluetape4k.graph.io.report.GraphIoFormat
 import io.bluetape4k.graph.io.report.GraphIoPhase
+import io.bluetape4k.graph.io.report.GraphIoProgressListener
+import io.bluetape4k.graph.io.report.GraphIoProgressReporter
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.report.GraphImportReport
 import io.bluetape4k.graph.io.support.GraphIoBatchWriter
@@ -49,6 +51,37 @@ class CsvGraphBulkImporter : GraphBulkImporter<CsvGraphImportSource> {
         operations: GraphOperations,
         options: GraphImportOptions,
     ): GraphImportReport = importGraph(source, operations, options, CsvGraphIoOptions())
+
+    override fun importGraph(
+        source: CsvGraphImportSource,
+        operations: GraphOperations,
+        options: GraphImportOptions,
+        listener: GraphIoProgressListener,
+    ): GraphImportReport = importGraph(source, operations, options, CsvGraphIoOptions(), listener)
+
+    fun importGraph(
+        source: CsvGraphImportSource,
+        operations: GraphOperations,
+        options: GraphImportOptions = GraphImportOptions(),
+        csvOptions: CsvGraphIoOptions = CsvGraphIoOptions(),
+        listener: GraphIoProgressListener,
+    ): GraphImportReport {
+        val reporter = GraphIoProgressReporter(
+            operation = io.bluetape4k.graph.io.report.GraphIoOperation.IMPORT,
+            format = GraphIoFormat.CSV,
+            listener = listener,
+            bytesProvider = {
+                GraphIoPaths.sumSizes(
+                    GraphIoPaths.sizeOf(source.vertices),
+                    GraphIoPaths.sizeOf(source.edges),
+                )
+            },
+        )
+        return reporter.run(
+            block = { importGraph(source, operations, options, csvOptions) },
+            onCompleted = { report -> reporter.completed(report) },
+        )
+    }
 
     fun importGraph(
         source: CsvGraphImportSource,

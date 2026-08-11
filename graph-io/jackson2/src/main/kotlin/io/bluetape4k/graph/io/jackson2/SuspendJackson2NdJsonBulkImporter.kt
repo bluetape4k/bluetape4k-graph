@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package io.bluetape4k.graph.io.jackson2
 
 import com.fasterxml.jackson.core.JsonProcessingException
@@ -11,7 +13,10 @@ import io.bluetape4k.graph.io.report.GraphIoFailure
 import io.bluetape4k.graph.io.report.GraphIoFailureSeverity
 import io.bluetape4k.graph.io.report.GraphIoFileRole
 import io.bluetape4k.graph.io.report.GraphIoFormat
+import io.bluetape4k.graph.io.report.GraphIoOperation
 import io.bluetape4k.graph.io.report.GraphIoPhase
+import io.bluetape4k.graph.io.report.GraphIoProgressListener
+import io.bluetape4k.graph.io.report.GraphIoProgressReporter
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.report.GraphImportReport
 import io.bluetape4k.graph.io.source.GraphImportSource
@@ -52,6 +57,24 @@ import kotlinx.coroutines.withContext
 class SuspendJackson2NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSource> {
 
     private val codec: Jackson2EnvelopeCodec = Jackson2EnvelopeCodec()
+
+    override suspend fun importGraphSuspending(
+        source: GraphImportSource,
+        operations: GraphSuspendOperations,
+        options: GraphImportOptions,
+        listener: GraphIoProgressListener,
+    ): GraphImportReport {
+        val reporter = GraphIoProgressReporter(
+            operation = GraphIoOperation.IMPORT,
+            format = GraphIoFormat.NDJSON_JACKSON2,
+            listener = listener,
+            bytesProvider = { GraphIoPaths.sizeOf(source) },
+        )
+        return reporter.runSuspending(
+            block = { importGraphSuspending(source, operations, options) },
+            onCompleted = { report -> reporter.completed(report) },
+        )
+    }
 
     override suspend fun importGraphSuspending(
         source: GraphImportSource,

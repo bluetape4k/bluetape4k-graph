@@ -12,6 +12,7 @@ import java.io.InputStreamReader
 import java.io.OutputStream
 import java.io.OutputStreamWriter
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 
 /**
@@ -156,5 +157,39 @@ object GraphIoPaths {
     fun describeSource(source: GraphImportSource): String? = when (source) {
         is GraphImportSource.PathSource -> source.path.toString()
         is GraphImportSource.InputStreamSource -> null
+    }
+
+    /** 경로 기반 source의 확인 가능한 파일 크기를 반환한다. 스트림 source는 `null`이다. */
+    fun sizeOf(source: GraphImportSource): Long? = when (source) {
+        is GraphImportSource.PathSource -> safeSize(source.path)
+        is GraphImportSource.InputStreamSource -> null
+    }
+
+    /** 경로 기반 sink의 현재 파일 크기를 반환한다. 스트림 sink는 `null`이다. */
+    fun sizeOf(sink: GraphExportSink): Long? = when (sink) {
+        is GraphExportSink.PathSink -> safeSize(sink.path)
+        is GraphExportSink.OutputStreamSink -> null
+    }
+
+    /** 알려진 모든 파일 크기를 overflow 없이 합산한다. 하나라도 모르면 `null`이다. */
+    fun sumSizes(vararg sizes: Long?): Long? =
+        if (sizes.any { it == null }) {
+            null
+        } else {
+            try {
+                sizes.fold(0L) { total, size ->
+                    Math.addExact(total, requireNotNull(size))
+                }
+            } catch (_: ArithmeticException) {
+                null
+            }
+        }
+
+    private fun safeSize(path: Path): Long? = try {
+        Files.size(path)
+    } catch (_: java.io.IOException) {
+        null
+    } catch (_: SecurityException) {
+        null
     }
 }

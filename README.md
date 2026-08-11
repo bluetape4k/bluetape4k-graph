@@ -228,6 +228,7 @@ path.
 | `graph-io-jackson2` | NDJSON (Jackson 2.x) | [README](graph-io/jackson2/README.md) |
 | `graph-io-jackson3` | NDJSON (Jackson 3.x) | [README](graph-io/jackson3/README.md) |
 | `graph-io-graphml` | GraphML XML (StAX) | [README](graph-io/graphml/README.md) |
+| `graph-io-micrometer` | Optional fixed-cardinality progress metrics bridge | [README](graph-io/micrometer/README.md) |
 | `graph-okio` | OkIO-based adapter — segment streaming, compression chaining, FakeFileSystem support, and DAEAD chunk encryption | [README](graph-io/okio/README.md) |
 
 > **Benchmark results (graph-io)**: [2026-04-18 graph-io bulk I/O results](docs/benchmark/2026-04-18-graph-io-bulk-results.md) — see [Benchmark Decision Guide](benchmark/README.md) for the full 0.4.0 result set including graph-db backend, write ingestion, domain workload, and API model comparisons.

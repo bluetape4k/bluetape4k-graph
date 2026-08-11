@@ -189,4 +189,24 @@ class GraphIoPathsTest {
         val src = GraphImportSource.InputStreamSource(ByteArrayInputStream(byteArrayOf()))
         GraphIoPaths.describeSource(src).shouldBeNull()
     }
+
+    // ── byte accounting ──────────────────────────────────────────────────────
+
+    @Test
+    fun `sizeOf returns path file size and ignores streams`(@TempDir dir: Path) {
+        val file = dir.resolve("bytes.bin").also { Files.write(it, byteArrayOf(1, 2, 3, 4)) }
+        GraphIoPaths.sizeOf(GraphImportSource.PathSource(file)) shouldBeEqualTo 4L
+        GraphIoPaths.sizeOf(GraphExportSink.PathSink(file)) shouldBeEqualTo 4L
+        GraphIoPaths.sizeOf(GraphImportSource.InputStreamSource(ByteArrayInputStream(byteArrayOf())))
+            .shouldBeNull()
+        GraphIoPaths.sizeOf(GraphExportSink.OutputStreamSink(ByteArrayOutputStream()))
+            .shouldBeNull()
+    }
+
+    @Test
+    fun `sumSizes is null for unknown or overflowing input`() {
+        GraphIoPaths.sumSizes(1L, null).shouldBeNull()
+        GraphIoPaths.sumSizes(Long.MAX_VALUE, 1L).shouldBeNull()
+        GraphIoPaths.sumSizes(2L, 3L, 5L) shouldBeEqualTo 10L
+    }
 }

@@ -3,6 +3,7 @@ package io.bluetape4k.graph.io.contract
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphImportReport
+import io.bluetape4k.graph.io.report.GraphIoProgressListener
 import java.util.concurrent.CompletableFuture
 
 /**
@@ -54,4 +55,15 @@ interface GraphVirtualThreadBulkImporter<S : Any> : AutoCloseable {
         operations: GraphOperations,
         options: GraphImportOptions = GraphImportOptions(),
     ): CompletableFuture<GraphImportReport>
+
+    /** 진행 listener를 사용하는 Virtual Thread 임포트 오버로드. */
+    fun importGraphAsync(
+        source: S,
+        operations: GraphOperations,
+        options: GraphImportOptions = GraphImportOptions(),
+        listener: GraphIoProgressListener,
+    ): CompletableFuture<GraphImportReport> {
+        requireNotNull(listener) { "listener must not be null" }
+        return importGraphAsync(source, operations, options)
+    }
 }

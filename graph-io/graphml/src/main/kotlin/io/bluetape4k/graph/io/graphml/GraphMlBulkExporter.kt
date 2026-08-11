@@ -8,6 +8,9 @@ import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.report.GraphExportReport
 import io.bluetape4k.graph.io.report.GraphIoFailure
 import io.bluetape4k.graph.io.report.GraphIoFormat
+import io.bluetape4k.graph.io.report.GraphIoOperation
+import io.bluetape4k.graph.io.report.GraphIoProgressListener
+import io.bluetape4k.graph.io.report.GraphIoProgressReporter
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.io.support.GraphIoPaths
@@ -50,6 +53,32 @@ class GraphMlBulkExporter : GraphBulkExporter<GraphExportSink> {
         operations: GraphOperations,
         options: GraphExportOptions,
     ): GraphExportReport = exportGraph(sink, operations, options, GraphMlExportOptions())
+
+    override fun exportGraph(
+        sink: GraphExportSink,
+        operations: GraphOperations,
+        options: GraphExportOptions,
+        listener: GraphIoProgressListener,
+    ): GraphExportReport = exportGraph(sink, operations, options, GraphMlExportOptions(), listener)
+
+    fun exportGraph(
+        sink: GraphExportSink,
+        operations: GraphOperations,
+        options: GraphExportOptions = GraphExportOptions(),
+        graphMlOptions: GraphMlExportOptions = GraphMlExportOptions(),
+        listener: GraphIoProgressListener,
+    ): GraphExportReport {
+        val reporter = GraphIoProgressReporter(
+            operation = GraphIoOperation.EXPORT,
+            format = GraphIoFormat.GRAPHML,
+            listener = listener,
+            bytesProvider = { GraphIoPaths.sizeOf(sink) },
+        )
+        return reporter.run(
+            block = { exportGraph(sink, operations, options, graphMlOptions) },
+            onCompleted = { report -> reporter.completed(report) },
+        )
+    }
 
     fun exportGraph(
         sink: GraphExportSink,

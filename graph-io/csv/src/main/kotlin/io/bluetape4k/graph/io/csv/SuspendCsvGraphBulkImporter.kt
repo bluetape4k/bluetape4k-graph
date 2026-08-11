@@ -10,6 +10,9 @@ import io.bluetape4k.graph.io.report.GraphIoFailureSeverity
 import io.bluetape4k.graph.io.report.GraphIoFileRole
 import io.bluetape4k.graph.io.report.GraphIoFormat
 import io.bluetape4k.graph.io.report.GraphIoPhase
+import io.bluetape4k.graph.io.report.GraphIoOperation
+import io.bluetape4k.graph.io.report.GraphIoProgressListener
+import io.bluetape4k.graph.io.report.GraphIoProgressReporter
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.report.GraphImportReport
 import io.bluetape4k.graph.io.support.GraphIoExternalIdMap
@@ -48,6 +51,37 @@ class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSourc
         operations: GraphSuspendOperations,
         options: GraphImportOptions,
     ): GraphImportReport = importGraphSuspending(source, operations, options, CsvGraphIoOptions())
+
+    override suspend fun importGraphSuspending(
+        source: CsvGraphImportSource,
+        operations: GraphSuspendOperations,
+        options: GraphImportOptions,
+        listener: GraphIoProgressListener,
+    ): GraphImportReport = importGraphSuspending(source, operations, options, CsvGraphIoOptions(), listener)
+
+    suspend fun importGraphSuspending(
+        source: CsvGraphImportSource,
+        operations: GraphSuspendOperations,
+        options: GraphImportOptions = GraphImportOptions(),
+        csvOptions: CsvGraphIoOptions = CsvGraphIoOptions(),
+        listener: GraphIoProgressListener,
+    ): GraphImportReport {
+        val reporter = GraphIoProgressReporter(
+            operation = GraphIoOperation.IMPORT,
+            format = GraphIoFormat.CSV,
+            listener = listener,
+            bytesProvider = {
+                GraphIoPaths.sumSizes(
+                    GraphIoPaths.sizeOf(source.vertices),
+                    GraphIoPaths.sizeOf(source.edges),
+                )
+            },
+        )
+        return reporter.runSuspending(
+            block = { importGraphSuspending(source, operations, options, csvOptions) },
+            onCompleted = { report -> reporter.completed(report) },
+        )
+    }
 
     suspend fun importGraphSuspending(
         source: CsvGraphImportSource,

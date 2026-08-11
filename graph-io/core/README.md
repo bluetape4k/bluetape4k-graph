@@ -130,6 +130,37 @@ data class GraphIoFailure(
 )
 ```
 
+### Progress listeners and metrics
+
+Every synchronous, suspend, and Virtual Thread format entry point keeps its
+existing overload and also offers a required `GraphIoProgressListener` as the
+last parameter. A listener receives one ordered lifecycle per invocation:
+`STARTED`, cumulative `PROGRESS`/`PHASE_COMPLETED`, and exactly one terminal
+`COMPLETED`, `FAILED`, or `CANCELLED` event. Listener callbacks are synchronous
+on the work thread; callback exceptions are isolated and callback `Error`s stop
+the reporter without changing the original operation failure.
+
+The optional `bluetape4k-graph-io-micrometer` module adapts these events to
+fixed-cardinality meters. It records operation, format, status, kind, and phase
+enum tags only; source paths, record IDs, run IDs, and exception messages never
+become tags. The core module has no Micrometer dependency.
+
+```kotlin
+val listener = GraphIoProgressListener { event ->
+    println("${event.type} ${event.operation} ${event.format}")
+}
+
+CsvGraphBulkExporter().exportGraph(sink, graphOps, options, listener)
+```
+
+Add the bridge only when metrics are needed:
+
+```kotlin
+dependencies {
+    implementation("io.github.bluetape4k.graph:bluetape4k-graph-io-micrometer:$version")
+}
+```
+
 ### Support Helpers (`io.bluetape4k.graph.io.support`)
 
 - **`GraphIoPaths`** — opens `BufferedReader`/`BufferedWriter`/`InputStream`/`OutputStream` for any `GraphImportSource`/`GraphExportSink`, auto-creates parent directories for `PathSink`, honours the `closeInput`/`closeOutput` flag for caller-owned streams.

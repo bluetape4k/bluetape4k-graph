@@ -3,6 +3,9 @@ package io.bluetape4k.graph.io.jackson2
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphIoStatus
+import io.bluetape4k.graph.io.report.GraphIoProgressEventType
+import io.bluetape4k.graph.io.report.GraphIoProgressEvent
+import io.bluetape4k.graph.io.report.GraphIoProgressListener
 import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
@@ -23,13 +26,28 @@ class Jackson2RoundTripTest {
         val charlie = src.createVertex("Person", mapOf("name" to "Charlie"))
         src.createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to "2020"))
         src.createEdge(bob.id, charlie.id, "KNOWS", mapOf("since" to "2022"))
+        val events = mutableListOf<GraphIoProgressEventType>()
+        val snapshots = mutableListOf<GraphIoProgressEvent>()
 
         val exporter = Jackson2NdJsonBulkExporter()
         exporter.exportGraph(
             GraphExportSink.PathSink(out),
             src,
             GraphExportOptions(vertexLabels = setOf("Person"), edgeLabels = setOf("KNOWS")),
+            GraphIoProgressListener {
+                events += it.type
+                snapshots += it
+            },
         ).status shouldBeEqualTo GraphIoStatus.COMPLETED
+        events shouldBeEqualTo listOf(
+            GraphIoProgressEventType.STARTED,
+            GraphIoProgressEventType.PHASE_COMPLETED,
+            GraphIoProgressEventType.PHASE_COMPLETED,
+            GraphIoProgressEventType.PROGRESS,
+            GraphIoProgressEventType.COMPLETED,
+        )
+        snapshots.last().bytesProcessed shouldBeEqualTo java.nio.file.Files.size(out)
+        snapshots.last().bytesTotal shouldBeEqualTo java.nio.file.Files.size(out)
 
         val target = TinkerGraphOperations()
         val importer = Jackson2NdJsonBulkImporter()

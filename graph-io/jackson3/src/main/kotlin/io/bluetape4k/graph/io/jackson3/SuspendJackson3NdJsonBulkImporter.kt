@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package io.bluetape4k.graph.io.jackson3
 
 import io.bluetape4k.graph.io.contract.GraphSuspendBulkImporter
@@ -10,7 +12,10 @@ import io.bluetape4k.graph.io.report.GraphIoFailure
 import io.bluetape4k.graph.io.report.GraphIoFailureSeverity
 import io.bluetape4k.graph.io.report.GraphIoFileRole
 import io.bluetape4k.graph.io.report.GraphIoFormat
+import io.bluetape4k.graph.io.report.GraphIoOperation
 import io.bluetape4k.graph.io.report.GraphIoPhase
+import io.bluetape4k.graph.io.report.GraphIoProgressListener
+import io.bluetape4k.graph.io.report.GraphIoProgressReporter
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.report.GraphImportReport
 import io.bluetape4k.graph.io.source.GraphImportSource
@@ -52,6 +57,24 @@ import tools.jackson.core.JacksonException
 class SuspendJackson3NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSource> {
 
     private val codec: Jackson3EnvelopeCodec = Jackson3EnvelopeCodec()
+
+    override suspend fun importGraphSuspending(
+        source: GraphImportSource,
+        operations: GraphSuspendOperations,
+        options: GraphImportOptions,
+        listener: GraphIoProgressListener,
+    ): GraphImportReport {
+        val reporter = GraphIoProgressReporter(
+            operation = GraphIoOperation.IMPORT,
+            format = GraphIoFormat.NDJSON_JACKSON3,
+            listener = listener,
+            bytesProvider = { GraphIoPaths.sizeOf(source) },
+        )
+        return reporter.runSuspending(
+            block = { importGraphSuspending(source, operations, options) },
+            onCompleted = { report -> reporter.completed(report) },
+        )
+    }
 
     override suspend fun importGraphSuspending(
         source: GraphImportSource,
