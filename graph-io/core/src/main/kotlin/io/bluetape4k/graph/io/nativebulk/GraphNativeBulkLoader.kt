@@ -1,3 +1,17 @@
+@file:Suppress(
+    "ComplexCondition",
+    "CyclomaticComplexMethod",
+    "LongMethod",
+    "LongParameterList",
+    "MagicNumber",
+    "ReturnCount",
+    "ThrowsCount",
+    "TooGenericExceptionCaught",
+    "TooManyFunctions",
+    "UseCheckOrError",
+    "UseRequireNotNull",
+)
+
 package io.bluetape4k.graph.io.nativebulk
 
 import java.io.Serializable
@@ -43,8 +57,27 @@ data class GraphNativeBulkLoadDiagnostic(
             "operationName must be the fixed native-bulk-load operation label"
         }
         require(elapsed >= Duration.ZERO) { "elapsed must be >= 0" }
-        require(kind != GraphNativeBulkLoadDiagnosticKind.CANCELLED || cancellationReason != null) {
-            "CANCELLED diagnostic requires a cancellation reason"
+        when (kind) {
+            GraphNativeBulkLoadDiagnosticKind.COMPLETED -> {
+                require(outcome == GraphNativeBulkLoadOutcome.COMPLETED) {
+                    "COMPLETED diagnostic requires a COMPLETED outcome"
+                }
+            }
+            GraphNativeBulkLoadDiagnosticKind.CANCELLED -> {
+                require(outcome == GraphNativeBulkLoadOutcome.CANCELLED) {
+                    "CANCELLED diagnostic requires a CANCELLED outcome"
+                }
+                require(cancellationReason != null) {
+                    "CANCELLED diagnostic requires a cancellation reason"
+                }
+            }
+            GraphNativeBulkLoadDiagnosticKind.FAILED -> {
+                require(outcome != GraphNativeBulkLoadOutcome.COMPLETED) {
+                    "FAILED diagnostic cannot report a COMPLETED outcome"
+                }
+            }
+            GraphNativeBulkLoadDiagnosticKind.STARTED,
+            GraphNativeBulkLoadDiagnosticKind.CLOSED -> Unit
         }
     }
 
@@ -191,7 +224,7 @@ abstract class GraphNativeBulkLoader<R : Any, V : Any>(
             cancel = {
                 cancellation.request(
                     GraphNativeBulkLoadCancellationReason.LISTENER_FAILURE,
-                    cancellation.deadline(),
+                    boundedByCloseGrace(cancellation.deadline()),
                 )
                 cancellation.cancellationHookFailure()
             },
@@ -214,9 +247,10 @@ abstract class GraphNativeBulkLoader<R : Any, V : Any>(
                 val rejected = GraphNativeBulkLoadException(GraphNativeBulkLoadFailureCode.SOURCE_REJECTED)
                 validation.rollback(cancellation.deadline())?.let { rejected.addSuppressed(it) }
                 throw rejected
-            } catch (failure: Throwable) {
-                validation.rollback(cancellation.deadline())
-                throw failure
+            } catch (_: Throwable) {
+                val rejected = GraphNativeBulkLoadException(GraphNativeBulkLoadFailureCode.SOURCE_REJECTED)
+                validation.rollback(cancellation.deadline())?.let { rejected.addSuppressed(it) }
+                throw rejected
             }
             cancellation.check()
             report = try {
@@ -237,7 +271,7 @@ abstract class GraphNativeBulkLoader<R : Any, V : Any>(
                 throw redactNativeBulkLoadFailure(failure)
             } catch (_: IllegalArgumentException) {
                 throw GraphNativeBulkLoadException(GraphNativeBulkLoadFailureCode.CONTRACT_VIOLATION)
-            } catch (_: Exception) {
+            } catch (_: Throwable) {
                 throw GraphNativeBulkLoadException(GraphNativeBulkLoadFailureCode.NATIVE_COMMAND_FAILED)
             }
             cancellation.check()
@@ -251,7 +285,7 @@ abstract class GraphNativeBulkLoader<R : Any, V : Any>(
             primaryFailure = redactNativeBulkLoadFailure(failure)
         } catch (_: IllegalArgumentException) {
             primaryFailure = GraphNativeBulkLoadException(GraphNativeBulkLoadFailureCode.CONTRACT_VIOLATION)
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
             primaryFailure = GraphNativeBulkLoadException(GraphNativeBulkLoadFailureCode.UNKNOWN)
         } finally {
             validated?.let { source ->
@@ -259,7 +293,7 @@ abstract class GraphNativeBulkLoader<R : Any, V : Any>(
                     source.close()
                 } catch (failure: GraphNativeBulkLoadException) {
                     primaryFailure = mergeFailure(primaryFailure, redactNativeBulkLoadFailure(failure))
-                } catch (_: Exception) {
+                } catch (_: Throwable) {
                     primaryFailure = mergeFailure(
                         primaryFailure,
                         GraphNativeBulkLoadException(GraphNativeBulkLoadFailureCode.UNKNOWN),
@@ -285,6 +319,13 @@ abstract class GraphNativeBulkLoader<R : Any, V : Any>(
                     reportCancellation != null ||
                     failureCode == GraphNativeBulkLoadFailureCode.CANCELLED ||
                     failureCode == GraphNativeBulkLoadFailureCode.TIMEOUT
+                val diagnosticOutcome = when {
+                    isCancelled -> GraphNativeBulkLoadOutcome.CANCELLED
+                    finalFailure == null -> terminal?.outcome
+                    terminal?.outcome == GraphNativeBulkLoadOutcome.PARTIAL ->
+                        GraphNativeBulkLoadOutcome.PARTIAL
+                    else -> GraphNativeBulkLoadOutcome.FAILED
+                }
                 emitDiagnostic(
                     kind = when {
                         finalFailure == null && terminal?.outcome == GraphNativeBulkLoadOutcome.COMPLETED ->
@@ -295,7 +336,7 @@ abstract class GraphNativeBulkLoader<R : Any, V : Any>(
                     },
                     startedNanos = startedNanos,
                     phase = verifier.lastPhase(),
-                    outcome = terminal?.outcome,
+                    outcome = diagnosticOutcome,
                     code = failureCode,
                     cancellationReason = if (isCancelled) terminalCancellation else null,
                     operationName = request.operationName,
@@ -479,6 +520,7 @@ abstract class GraphNativeBulkLoader<R : Any, V : Any>(
                 kind = GraphNativeBulkLoadDiagnosticKind.CANCELLED,
                 startedNanos = closeStartedNanos,
                 phase = GraphNativeBulkLoadPhase.COMPLETE,
+                outcome = GraphNativeBulkLoadOutcome.CANCELLED,
                 code = GraphNativeBulkLoadFailureCode.TIMEOUT,
                 cancellationReason = cancellation?.reason ?: GraphNativeBulkLoadCancellationReason.CLOSE,
                 deadline = closeDeadline,
@@ -504,9 +546,7 @@ abstract class GraphNativeBulkLoader<R : Any, V : Any>(
         startedNanos: Long = System.nanoTime(),
         operationName: String = "native-bulk-load",
         diagnosticId: String = newDiagnosticId(),
-        deadline: GraphNativeBulkLoadDeadline = GraphNativeBulkLoadDeadline(
-            saturatingAdd(System.nanoTime(), GraphNativeBulkLoadRequest.DEFAULT_CLOSE_GRACE.toNanos()),
-        ),
+        deadline: GraphNativeBulkLoadDeadline = closeGraceDeadline(),
         emitClosed: Boolean = true,
         onClosed: (GraphNativeBulkLoadException?) -> Unit = {},
     ): GraphNativeBulkLoadException? {
@@ -568,7 +608,8 @@ abstract class GraphNativeBulkLoader<R : Any, V : Any>(
         val interrupted = Thread.interrupted()
         var wasInterrupted = interrupted
         return try {
-            runBounded(deadline) { requestCancellation(reason, deadline) }.failure
+            val boundedDeadline = boundedByCloseGrace(deadline)
+            runBounded(boundedDeadline) { requestCancellation(reason, boundedDeadline) }.failure
         } finally {
             if (Thread.interrupted()) wasInterrupted = true
             if (wasInterrupted) Thread.currentThread().interrupt()
@@ -583,9 +624,7 @@ abstract class GraphNativeBulkLoader<R : Any, V : Any>(
         code: GraphNativeBulkLoadFailureCode? = null,
         cancellationReason: GraphNativeBulkLoadCancellationReason? = null,
         operationName: String = "native-bulk-load",
-        deadline: GraphNativeBulkLoadDeadline = GraphNativeBulkLoadDeadline(
-            saturatingAdd(System.nanoTime(), GraphNativeBulkLoadRequest.DEFAULT_CLOSE_GRACE.toNanos()),
-        ),
+        deadline: GraphNativeBulkLoadDeadline = closeGraceDeadline(),
         diagnosticId: String,
     ) {
         val observer = diagnosticObserver ?: return
@@ -652,7 +691,7 @@ abstract class GraphNativeBulkLoader<R : Any, V : Any>(
                         diagnosticInFlight.set(false)
                         dispatchPendingDiagnostic(observer)
                     }
-                } catch (_: Exception) {
+                } catch (_: Throwable) {
                     diagnosticInFlight.set(false)
                     dispatchPendingDiagnostic(observer)
                 }
@@ -660,7 +699,8 @@ abstract class GraphNativeBulkLoader<R : Any, V : Any>(
             return
         }
         try {
-            val observerCall = runBounded(deadline) {
+            val observerDeadline = boundedByCloseGrace(deadline)
+            val observerCall = runBounded(observerDeadline) {
                 observer.onDiagnostic(diagnostic)
             }
             if (!observerCall.completed) {
@@ -679,7 +719,7 @@ abstract class GraphNativeBulkLoader<R : Any, V : Any>(
                 diagnosticInFlight.set(false)
                 dispatchPendingDiagnostic(observer)
             }
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
             diagnosticInFlight.set(false)
             dispatchPendingDiagnostic(observer)
             // Observer setup failures are intentionally not part of the public outcome.

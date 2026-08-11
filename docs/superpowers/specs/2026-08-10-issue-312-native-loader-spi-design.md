@@ -264,7 +264,7 @@ internal class GraphNativeBulkLoadBoundedCall internal constructor(
         completion.whenComplete { failure, _ ->
             try {
                 action(failure)
-            } catch (_: Exception) {
+            } catch (_: Throwable) {
                 // Late terminal publication is best effort and never leaks worker failures.
             }
         }
@@ -284,7 +284,7 @@ internal fun runBounded(
             failure = redactNativeBulkLoadFailure(caught)
         } catch (_: InterruptedException) {
             failure = GraphNativeBulkLoadException(GraphNativeBulkLoadFailureCode.UNKNOWN)
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
             failure = GraphNativeBulkLoadException(GraphNativeBulkLoadFailureCode.UNKNOWN)
         } finally {
             completion.complete(failure)
@@ -575,6 +575,7 @@ abstract class GraphNativeBulkLoadValidatedSource<V : Any> : AutoCloseable {
     private var state = State.OPEN
     private var taken = false
     private var takeInFlight = false
+    private var takingThread: Thread? = null
     private val closeStarted = AtomicBoolean(false)
 
     /** Validation 결과에 결합된 canonical/pinned artifact를 단 한 번만 소비한다. */
@@ -584,6 +585,7 @@ abstract class GraphNativeBulkLoadValidatedSource<V : Any> : AutoCloseable {
             check(state == State.OPEN && !taken) { "validated source is not available" }
             taken = true
             takeInFlight = true
+            takingThread = Thread.currentThread()
         } finally {
             lifecycleLock.unlock()
         }
@@ -591,13 +593,16 @@ abstract class GraphNativeBulkLoadValidatedSource<V : Any> : AutoCloseable {
         var primaryFailure: Throwable? = null
         var deferredCleanupOwner = false
         try {
-            value = takeOnce()
-        } catch (failure: Throwable) {
-            primaryFailure = failure
+            value = takeOnce(closeGraceDeadline())
+        } catch (failure: GraphNativeBulkLoadException) {
+            primaryFailure = redactNativeBulkLoadFailure(failure)
+        } catch (_: Throwable) {
+            primaryFailure = GraphNativeBulkLoadException(GraphNativeBulkLoadFailureCode.UNKNOWN)
         } finally {
             lifecycleLock.lock()
             try {
                 takeInFlight = false
+                takingThread = null
                 if (state == State.CLOSING && closeStarted.compareAndSet(false, true)) {
                     deferredCleanupOwner = true
                 }
@@ -607,9 +612,7 @@ abstract class GraphNativeBulkLoadValidatedSource<V : Any> : AutoCloseable {
             }
         }
         if (deferredCleanupOwner) {
-            val deferredDeadline = GraphNativeBulkLoadDeadline(
-                saturatingAdd(System.nanoTime(), GraphNativeBulkLoadRequest.DEFAULT_CLOSE_GRACE.toNanos()),
-            )
+            val deferredDeadline = closeGraceDeadline()
             val deferredCall = runBounded(deferredDeadline) { closeOnce(deferredDeadline) }
             if (deferredCall.completed) publishClosed()
             else deferredCall.onCompletion { publishClosed() }
@@ -623,7 +626,10 @@ abstract class GraphNativeBulkLoadValidatedSource<V : Any> : AutoCloseable {
         return value
     }
 
-    protected abstract fun takeOnce(): V
+    protected open fun takeOnce(): V =
+        error("validated source must implement takeOnce() or takeOnce(deadline)")
+
+    protected open fun takeOnce(deadline: GraphNativeBulkLoadDeadline): V = takeOnce()
 
     final override fun close() {
         val deadline = GraphNativeBulkLoadDeadline(
@@ -1843,12 +1849,17 @@ backend-neutral fallback을 만들지 않는다.
   validated `closeOnce()`와 `closeResources()`의 terminal invocation이 선언된 close
   grace 안에 반환한다는 adapter 책임을 포함하며, base의 bounded wrapper가 이를
   runtime에서 감시한다. 이 책임을 증명할 수 없는 adapter는
-  `UNKNOWN`/`supported = false`로 선언한다. observer도 동일한 parent deadline과
-  단일 in-flight/circuit-breaker 경계를 사용해 종료 경로를 막지 않는다. timeout
+  `UNKNOWN`/`supported = false`로 선언한다. observer는 parent deadline과 고정된
+  close grace 중 더 이른 deadline 및 단일 in-flight/circuit-breaker 경계를 사용해
+  종료 경로를 막지 않는다. timeout
   뒤 worker가 살아 있는 동안에는 `CLOSED`를 publish하지 않고, worker completion
   callback이 실제 terminal cleanup 후에만 상태를 닫는다. `BOUNDED` capability는
   validator가 반환한 `takeOnce()`와 native `loadValidated()`가 token의 유효
   deadline 안에 취소를 관찰하고 반환한다는 책임까지 포함한다.
+  validated source는 deadline-aware `takeOnce(deadline)` hook을 제공하며, close가
+  진행 중인 take를 즉시 interrupt해 cooperative adapter가 source acquisition을
+  취소할 수 있게 한다. take가 close interrupt를 관찰하면 redacted `CANCELLED`
+  failure를 반환하고 deferred cleanup owner가 terminal close를 인계한다.
   load thread 안에서
   callback이 `close()`를 재진입하면 `IllegalStateException`으로 거절한다.
 - base loader는 validator 이전에 monotonic deadline을 가진 cancellation token을
@@ -1941,8 +1952,8 @@ event는 다음 값만 가진다.
 - 마지막 검증된 phase, monotonic `elapsed`, terminal `outcome`, fixed `code`,
   cancellation reason(취소 event인 경우).
 
-observer 자체의 예외·stack·suppressed는 public 결과에 전달하지 않고 redacted
-unknown으로 기록하거나 폐기한다. observer 구현체가 로그를 남길 때는
+observer 자체의 예외·stack·suppressed와 adapter `Error`/raw `Throwable`은 public
+결과에 전달하지 않고 redacted fixed code로 기록하거나 폐기한다. observer 구현체가 로그를 남길 때는
 `KLogging`을 사용하고 diagnostic 값만 구조화해 기록한다. raw source, tenant/request
 ID, URI, native command, server path와 throwable은 event와 로그 어느 쪽에도 포함하지
 않는다. 실패 시 report가 없더라도 `FAILED`/`CANCELLED` event가 code와 diagnosticId를

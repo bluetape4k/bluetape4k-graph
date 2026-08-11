@@ -253,6 +253,11 @@ with the fixed `UNSUPPORTED_SOURCE` code. Progress and reports are verified by
 the base loader; raw adapter causes, paths, URIs, and source values are not
 included in public exceptions or diagnostic events.
 
+TinkerPop/TinkerGraph are intentionally excluded from this SPI: they are
+in-memory/reference graph implementations without a server-owned native bulk
+command or staging lifecycle. They continue to use the portable
+`GraphBulkImporter` path.
+
 URI access is denied by default. An adapter that opts in must enforce exact
 scheme/host/port origins, redirect and private-network policy, and backend
 revalidation at the execution point. FILE/DIRECTORY adapters must bind a

@@ -1,3 +1,12 @@
+@file:Suppress(
+    "CyclomaticComplexMethod",
+    "LongMethod",
+    "ReturnCount",
+    "ThrowsCount",
+    "TooGenericExceptionCaught",
+    "UseCheckOrError",
+)
+
 package io.bluetape4k.graph.io.nativebulk
 
 import java.time.Duration
@@ -35,9 +44,7 @@ class GraphNativeBulkLoadCancellationToken internal constructor(
     /** Atomically records the first reason and invokes the bounded hook exactly once. */
     fun request(
         reason: GraphNativeBulkLoadCancellationReason,
-        deadline: GraphNativeBulkLoadDeadline = GraphNativeBulkLoadDeadline(
-            saturatingAdd(System.nanoTime(), GraphNativeBulkLoadRequest.DEFAULT_CLOSE_GRACE.toNanos()),
-        ),
+        deadline: GraphNativeBulkLoadDeadline = closeGraceDeadline(),
     ): Boolean {
         if (!requestedReason.compareAndSet(null, reason)) return false
         if (hookInvoked.compareAndSet(false, true)) {
@@ -71,6 +78,7 @@ abstract class GraphNativeBulkLoadValidatedSource<V : Any> : AutoCloseable {
     private var state = State.OPEN
     private var taken = false
     private var takeInFlight = false
+    private var takingThread: Thread? = null
     private val closeStarted = AtomicBoolean(false)
 
     /** Validation 결과에 결합된 canonical/pinned artifact를 단 한 번만 소비한다. */
@@ -80,20 +88,39 @@ abstract class GraphNativeBulkLoadValidatedSource<V : Any> : AutoCloseable {
             check(state == State.OPEN && !taken) { "validated source is not available" }
             taken = true
             takeInFlight = true
+            takingThread = Thread.currentThread()
         } finally {
             lifecycleLock.unlock()
         }
+        val takeDeadline = closeGraceDeadline()
         var value: V? = null
         var primaryFailure: Throwable? = null
+        var interrupted = Thread.interrupted()
         var deferredCleanupOwner = false
         try {
-            value = takeOnce()
-        } catch (failure: Throwable) {
+            value = takeOnce(takeDeadline)
+        } catch (failure: GraphNativeBulkLoadCancellationException) {
             primaryFailure = failure
+        } catch (failure: GraphNativeBulkLoadException) {
+            primaryFailure = redactNativeBulkLoadFailure(failure)
+        } catch (_: InterruptedException) {
+            interrupted = true
+            primaryFailure = GraphNativeBulkLoadCancellationException(
+                lifecycleLock.runLocked {
+                    if (state == State.CLOSING) {
+                        GraphNativeBulkLoadCancellationReason.CLOSE
+                    } else {
+                        GraphNativeBulkLoadCancellationReason.INTERRUPT
+                    }
+                },
+            )
+        } catch (_: Throwable) {
+            primaryFailure = GraphNativeBulkLoadException(GraphNativeBulkLoadFailureCode.UNKNOWN)
         } finally {
             lifecycleLock.lock()
             try {
                 takeInFlight = false
+                takingThread = null
                 if (state == State.CLOSING && closeStarted.compareAndSet(false, true)) {
                     deferredCleanupOwner = true
                 }
@@ -103,9 +130,7 @@ abstract class GraphNativeBulkLoadValidatedSource<V : Any> : AutoCloseable {
             }
         }
         if (deferredCleanupOwner) {
-            val deferredDeadline = GraphNativeBulkLoadDeadline(
-                saturatingAdd(System.nanoTime(), GraphNativeBulkLoadRequest.DEFAULT_CLOSE_GRACE.toNanos()),
-            )
+            val deferredDeadline = closeGraceDeadline()
             val deferredCall = runBounded(deferredDeadline) { closeOnce(deferredDeadline) }
             if (deferredCall.completed) publishClosed()
             else deferredCall.onCompletion { publishClosed() }
@@ -115,12 +140,19 @@ abstract class GraphNativeBulkLoadValidatedSource<V : Any> : AutoCloseable {
                 else existingFailure.addSuppressed(boundedFailure)
             }
         }
+        if (Thread.interrupted()) interrupted = true
+        if (interrupted) Thread.currentThread().interrupt()
         primaryFailure?.let { throw it }
-        check(value != null) { "validated source did not produce an artifact" }
+        checkNotNull(value) { "validated source did not produce an artifact" }
         return value
     }
 
-    protected abstract fun takeOnce(): V
+    /** Legacy adapter hook retained for source compatibility. */
+    protected open fun takeOnce(): V =
+        error("validated source must implement takeOnce() or takeOnce(deadline)")
+
+    /** Deadline-aware hook for adapters that can interrupt or cancel source acquisition. */
+    protected open fun takeOnce(deadline: GraphNativeBulkLoadDeadline): V = takeOnce()
 
     final override fun close() {
         val deadline = GraphNativeBulkLoadDeadline(
@@ -129,13 +161,24 @@ abstract class GraphNativeBulkLoadValidatedSource<V : Any> : AutoCloseable {
         var interrupted = Thread.interrupted()
         var ownsClose = false
         var timedOut = false
+        var threadToInterrupt: Thread? = null
+        val currentThread = Thread.currentThread()
         lifecycleLock.lock()
         try {
+            if (takingThread === currentThread) {
+                if (interrupted) currentThread.interrupt()
+                throw IllegalStateException("close() cannot be re-entered from an active take()")
+            }
             when (state) {
-                State.OPEN -> state = State.CLOSING
-                State.CLOSING -> Unit
+                State.OPEN -> {
+                    state = State.CLOSING
+                    threadToInterrupt = takingThread
+                }
+                State.CLOSING -> threadToInterrupt = takingThread
                 State.CLOSED -> Unit
             }
+            threadToInterrupt?.takeUnless { it === currentThread }?.interrupt()
+            threadToInterrupt = null
             while (takeInFlight) {
                 val remaining = deadline.remainingNanos()
                 if (remaining == 0L) {
@@ -268,7 +311,8 @@ class GraphNativeBulkLoadValidationContext {
         }
         if (actions.isEmpty()) return null
         val lateFailure = AtomicReference<GraphNativeBulkLoadException?>(null)
-        val rollbackCall = runBounded(deadline) {
+        val rollbackDeadline = boundedByCloseGrace(deadline)
+        val rollbackCall = runBounded(rollbackDeadline) {
             actions.forEach { action ->
                 try {
                     action.close()

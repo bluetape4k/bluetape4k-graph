@@ -1,3 +1,15 @@
+@file:Suppress(
+    "CyclomaticComplexMethod",
+    "FunctionParameterNaming",
+    "LongParameterList",
+    "MagicNumber",
+    "MaxLineLength",
+    "ReturnCount",
+    "TooManyFunctions",
+    "UnusedParameter",
+    "UnreachableCode",
+)
+
 package io.bluetape4k.graph.io.nativebulk
 
 import java.io.Serializable
@@ -41,6 +53,16 @@ internal fun earliestDeadline(
 ): GraphNativeBulkLoadDeadline =
     GraphNativeBulkLoadDeadline(minOf(first.deadlineNanos, second.deadlineNanos))
 
+internal fun closeGraceDeadline(nowNanos: Long = System.nanoTime()): GraphNativeBulkLoadDeadline =
+    GraphNativeBulkLoadDeadline(
+        saturatingAdd(nowNanos, GraphNativeBulkLoadRequest.DEFAULT_CLOSE_GRACE.toNanos()),
+    )
+
+internal fun boundedByCloseGrace(
+    deadline: GraphNativeBulkLoadDeadline,
+    nowNanos: Long = System.nanoTime(),
+): GraphNativeBulkLoadDeadline = earliestDeadline(deadline, closeGraceDeadline(nowNanos))
+
 enum class GraphNativeBulkLoadSourceKind { FILE, DIRECTORY, URI }
 
 enum class GraphNativeBulkLoadTransactionGuarantee {
@@ -77,7 +99,11 @@ enum class GraphNativeBulkLoadCancellationReason {
 
 open class GraphNativeBulkLoadException(
     val code: GraphNativeBulkLoadFailureCode,
-) : RuntimeException(code.publicMessage)
+) : RuntimeException(code.publicMessage) {
+    companion object {
+        private const val serialVersionUID: Long = 1L
+    }
+}
 
 class GraphNativeBulkLoadCancellationException(
     val reason: GraphNativeBulkLoadCancellationReason,
@@ -87,7 +113,11 @@ class GraphNativeBulkLoadCancellationException(
     } else {
         GraphNativeBulkLoadFailureCode.CANCELLED
     },
-)
+) {
+    companion object {
+        private const val serialVersionUID: Long = 1L
+    }
+}
 
 internal fun redactNativeBulkLoadFailure(
     failure: GraphNativeBulkLoadException,
@@ -141,7 +171,7 @@ internal class GraphNativeBulkLoadBoundedCall internal constructor(
         completion.whenComplete { failure, _ ->
             try {
                 action(failure)
-            } catch (_: Exception) {
+            } catch (_: Throwable) {
                 // Late terminal publication is best effort and never leaks worker failures.
             }
         }
@@ -161,7 +191,7 @@ internal fun runBounded(
             failure = redactNativeBulkLoadFailure(caught)
         } catch (_: InterruptedException) {
             failure = GraphNativeBulkLoadException(GraphNativeBulkLoadFailureCode.UNKNOWN)
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
             failure = GraphNativeBulkLoadException(GraphNativeBulkLoadFailureCode.UNKNOWN)
         } finally {
             completion.complete(failure)

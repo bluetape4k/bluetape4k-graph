@@ -9,7 +9,10 @@ import java.io.ByteArrayOutputStream
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.time.Duration
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
 
 class GraphNativeBulkLoadModelsTest {
 
@@ -175,6 +178,42 @@ class GraphNativeBulkLoadModelsTest {
     }
 
     @Test
+    fun `bounded worker redacts assertion errors`() {
+        val bounded = runBounded(closeGraceDeadline()) {
+            throw AssertionError("secret-error")
+        }
+
+        bounded.completed.shouldBeTrue()
+        bounded.failure?.code shouldBeEqualTo GraphNativeBulkLoadFailureCode.UNKNOWN
+        (!bounded.failure.toString().contains("secret-error")).shouldBeTrue()
+    }
+
+    @Test
+    fun `closing validated source interrupts an active take`() {
+        val source = BlockingValidatedSource()
+        val failure = AtomicReference<Throwable?>(null)
+        val done = CountDownLatch(1)
+
+        Thread.startVirtualThread {
+            try {
+                source.take()
+            } catch (caught: Throwable) {
+                failure.set(caught)
+            } finally {
+                done.countDown()
+            }
+        }
+
+        source.started.await(5, TimeUnit.SECONDS).shouldBeTrue()
+        source.close()
+        done.await(5, TimeUnit.SECONDS).shouldBeTrue()
+        (failure.get() as GraphNativeBulkLoadException).code shouldBeEqualTo
+            GraphNativeBulkLoadFailureCode.CANCELLED
+        source.closeCount.get() shouldBeEqualTo 1
+        source.observedDeadline.shouldBeTrue()
+    }
+
+    @Test
     fun `validation rollback runs registered resources in reverse order`() {
         val closed = mutableListOf<String>()
         val context = GraphNativeBulkLoadValidationContext()
@@ -219,6 +258,23 @@ class GraphNativeBulkLoadModelsTest {
         val closeCount = AtomicInteger()
 
         override fun takeOnce(): String = "validated"
+
+        override fun closeOnce(deadline: GraphNativeBulkLoadDeadline) {
+            closeCount.incrementAndGet()
+        }
+    }
+
+    private class BlockingValidatedSource : GraphNativeBulkLoadValidatedSource<String>() {
+        val started = CountDownLatch(1)
+        val closeCount = AtomicInteger()
+        var observedDeadline = false
+
+        override fun takeOnce(deadline: GraphNativeBulkLoadDeadline): String {
+            observedDeadline = deadline.remainingNanos() > 0L
+            started.countDown()
+            CountDownLatch(1).await()
+            return "unreachable"
+        }
 
         override fun closeOnce(deadline: GraphNativeBulkLoadDeadline) {
             closeCount.incrementAndGet()

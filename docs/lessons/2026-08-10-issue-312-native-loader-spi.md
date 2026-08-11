@@ -5,7 +5,9 @@
 이번 변경은 `graph-io-core`에 backend-native bulk loader의 공통 경계를
 추가한다. 기존 `GraphBulkImporter`의 portable record loop는 변경하지 않고,
 실제 Neo4j/Memgraph/AGE/FalkorDB adapter와 파일 staging·URI dereference·
-Testcontainers 검증은 후속 이슈로 남겼다.
+Testcontainers 검증은 후속 이슈로 남겼다. TinkerPop/TinkerGraph도 서버가
+소유한 native command/staging semantics가 없는 인메모리/reference 구현이므로
+이 SPI 대상에서 제외하고 portable `GraphBulkImporter` 경로를 유지한다.
 
 ## 핵심 선택
 
@@ -31,8 +33,8 @@ Testcontainers 검증은 후속 이슈로 남겼다.
 ## 검증
 
 - RED: nativebulk 타입이 없을 때 targeted `compileTestKotlin` 실패를 확인했다.
-- GREEN: targeted `io.bluetape4k.graph.io.nativebulk.*` 테스트 13개 통과.
-- 전체 `:bluetape4k-graph-io-core:test`: 95개 통과.
+- GREEN: targeted `io.bluetape4k.graph.io.nativebulk.*` 테스트 19개 통과.
+- 전체 `:bluetape4k-graph-io-core:test`: 126개 통과.
 - `:bluetape4k-graph-io-core:compileKotlin`: 성공.
 - `git diff --check`: 성공.
 

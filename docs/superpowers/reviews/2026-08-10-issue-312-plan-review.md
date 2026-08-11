@@ -1,11 +1,11 @@
 # Issue #312 계획 리뷰
 
-검토 대상은 다음 현재 문서 snapshot이다.
+검토 대상은 다음 문서와 최신 구현 검증 snapshot이다.
 
 - 설계: `4f7212762ea7016b317d4efa0199dd3d655b35b8f0613c85320c4a3e60120dc7`
 - 계획: `33a483af151f4692937351a37b1e1c6f6320b83886b5cf0796c21350fdcea99f`
 
-실제 backend adapter, URI/file dereference, staging I/O, Testcontainers는 이
+기준 구현 base는 `c81635fa`이며, 실제 backend adapter, URI/file dereference, staging I/O, Testcontainers는 이
 이슈의 범위가 아니며 후속 adapter 이슈로 남긴다.
 
 ## 관점별 판정
@@ -33,16 +33,22 @@
    적용했다. expired deadline의 observer는 caller를 막지 않는 비동기 경로로
    보존하되, timeout 시 실제 worker completion callback까지 in-flight를 유지한다.
    pending `CANCELLED/TIMEOUT` 이벤트는 CAS로 한 번만 retry한다.
+6. 후속 안정성 재검토에서 close grace를 cancellation/observer/rollback에도
+   독립 적용하고, `takeOnce(deadline)` 및 active take interrupt, `Throwable` redaction,
+   diagnostic kind/outcome coupling을 추가했다.
 
 ## 최종 gate
 
 - P0: 0
 - P1: 0
-- P2: 2 (후속 adapter의 URI canonicalization 세부; 이번 core SPI에서
+- P2: 3 (후속 adapter의 URI canonicalization 세부, public KDoc 보강, 기존 detekt
+  baseline; 이번 core SPI에서
   dereference하지 않으므로 비차단)
 - P3: 0
 - 설계/계획 판정: **PASS — implementation-ready**
 
 구현 시작 후에는 계획의 RED 테스트를 먼저 실행하고, targeted nativebulk
 테스트·`compileKotlin`·전체 `graph-io-core` 테스트·`git diff --check`를
-순차 검증한다.
+순차 검증한다. 최신 구현 증거는 targeted nativebulk 19개, 전체 core 126개,
+`compileKotlin` 성공이며, detekt 전체는 기존 GraphIo baseline 때문에 별도 gap으로
+기록한다.

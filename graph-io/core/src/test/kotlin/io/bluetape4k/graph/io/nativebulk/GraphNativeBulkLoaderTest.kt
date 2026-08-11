@@ -2,11 +2,15 @@ package io.bluetape4k.graph.io.nativebulk
 
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldBeTrue
 import org.junit.jupiter.api.Test
 import java.time.Duration
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
+import java.util.concurrent.TimeUnit
 
 class GraphNativeBulkLoaderTest {
 
@@ -48,6 +52,69 @@ class GraphNativeBulkLoaderTest {
     }
 
     @Test
+    fun `progress listener receives ordered terminal events on caller thread`() {
+        val loader = RecordingLoader()
+        val caller = Thread.currentThread()
+        val events = mutableListOf<GraphNativeBulkLoadProgress>()
+
+        loader.load(request(source = RawSource("source"))) { progress ->
+            (Thread.currentThread() === caller).shouldBeTrue()
+            events += progress
+        }
+
+        events.map { it.phase } shouldBeEqualTo listOf(
+            GraphNativeBulkLoadPhase.PREPARE,
+            GraphNativeBulkLoadPhase.LOAD_VERTEX,
+            GraphNativeBulkLoadPhase.COMPLETE,
+        )
+        events.map { it.eventKind } shouldBeEqualTo listOf(
+            GraphNativeBulkLoadProgressEventKind.PHASE,
+            GraphNativeBulkLoadProgressEventKind.PHASE,
+            GraphNativeBulkLoadProgressEventKind.PHASE,
+        )
+        events.last().outcome shouldBeEqualTo GraphNativeBulkLoadOutcome.COMPLETED
+        events.last().processed shouldBeEqualTo 1L
+        events.last().succeeded shouldBeEqualTo 1L
+        events.last().failed shouldBeEqualTo 0L
+    }
+
+    @Test
+    fun `progress callback budget violation is a contract failure`() {
+        val failure = assertFailsWith<GraphNativeBulkLoadException> {
+            OverBudgetLoader().load(request(source = RawSource("source")))
+        }
+
+        failure.code shouldBeEqualTo GraphNativeBulkLoadFailureCode.CONTRACT_VIOLATION
+    }
+
+    @Test
+    fun `concurrent load is rejected before a second validator call`() {
+        val loader = BlockingLoader()
+        val firstFailure = AtomicReference<Throwable?>(null)
+        val firstDone = CountDownLatch(1)
+
+        Thread.startVirtualThread {
+            try {
+                loader.load(request(source = RawSource("first")))
+            } catch (failure: Throwable) {
+                firstFailure.set(failure)
+            } finally {
+                firstDone.countDown()
+            }
+        }
+
+        loader.started.await(5, TimeUnit.SECONDS).shouldBeTrue()
+        assertFailsWith<IllegalStateException> {
+            loader.load(request(source = RawSource("second")))
+        }
+        loader.validatorCalls.get() shouldBeEqualTo 1
+
+        loader.release.countDown()
+        firstDone.await(5, TimeUnit.SECONDS).shouldBeTrue()
+        firstFailure.get().shouldBeNull()
+    }
+
+    @Test
     fun `report postcondition violations are contract failures`() {
         val loader = object : RecordingLoader() {
             override fun loadValidated(
@@ -74,6 +141,23 @@ class GraphNativeBulkLoaderTest {
         }
 
         failure.code shouldBeEqualTo GraphNativeBulkLoadFailureCode.CONTRACT_VIOLATION
+    }
+
+    @Test
+    fun `adapter errors are redacted at the native command boundary`() {
+        val failure = assertFailsWith<GraphNativeBulkLoadException> {
+            object : RecordingLoader() {
+                override fun loadValidated(
+                    execution: GraphNativeBulkLoadExecution<String>,
+                    listener: GraphNativeBulkLoadProgressListener?,
+                ): GraphNativeBulkLoadReport {
+                    throw AssertionError("secret-native-error")
+                }
+            }.load(request(source = RawSource("source")))
+        }
+
+        failure.code shouldBeEqualTo GraphNativeBulkLoadFailureCode.NATIVE_COMMAND_FAILED
+        (!failure.toString().contains("secret-native-error")).shouldBeTrue()
     }
 
     @Test
@@ -205,5 +289,47 @@ class GraphNativeBulkLoaderTest {
         override fun takeOnce(): String = value
 
         override fun closeOnce(deadline: GraphNativeBulkLoadDeadline) = Unit
+    }
+
+    private class OverBudgetLoader : RecordingLoader() {
+        override fun loadValidated(
+            execution: GraphNativeBulkLoadExecution<String>,
+            listener: GraphNativeBulkLoadProgressListener?,
+        ): GraphNativeBulkLoadReport {
+            listener?.onProgress(
+                GraphNativeBulkLoadProgress(
+                    phase = GraphNativeBulkLoadPhase.PREPARE,
+                    processed = 0,
+                    succeeded = 0,
+                    failed = 0,
+                ),
+            )
+            repeat(GraphNativeBulkLoadRequest.MAX_PROGRESS_CALLBACKS.toInt()) { index ->
+                listener?.onProgress(
+                    GraphNativeBulkLoadProgress(
+                        phase = GraphNativeBulkLoadPhase.PREPARE,
+                        processed = index + 1L,
+                        succeeded = index + 1L,
+                        failed = 0,
+                        eventKind = GraphNativeBulkLoadProgressEventKind.INTERVAL,
+                    ),
+                )
+            }
+            throw GraphNativeBulkLoadException(GraphNativeBulkLoadFailureCode.NATIVE_COMMAND_FAILED)
+        }
+    }
+
+    private class BlockingLoader : RecordingLoader() {
+        val started = CountDownLatch(1)
+        val release = CountDownLatch(1)
+
+        override fun loadValidated(
+            execution: GraphNativeBulkLoadExecution<String>,
+            listener: GraphNativeBulkLoadProgressListener?,
+        ): GraphNativeBulkLoadReport {
+            started.countDown()
+            release.await(5, TimeUnit.SECONDS)
+            return super.loadValidated(execution, listener)
+        }
     }
 }

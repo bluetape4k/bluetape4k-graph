@@ -253,6 +253,10 @@ println("${report.verticesCreated} / ${report.verticesRead} 개 정점 임포트
 경로, URI, source 값은 public exception이나 diagnostic event에 포함하지
 않습니다.
 
+TinkerPop/TinkerGraph는 이 SPI에서 의도적으로 제외합니다. 두 구현은 서버가
+소유한 native bulk command나 staging lifecycle이 없는 인메모리/reference
+graph이므로, 계속 portable `GraphBulkImporter` 경로를 사용합니다.
+
 URI 접근은 기본적으로 거절됩니다. 허용하는 어댑터는 exact scheme/host/port
 origin, redirect/private-network 정책과 실행 지점의 backend 재검증을 모두
 강제해야 합니다. FILE/DIRECTORY 어댑터는 canonical artifact를 승인된 staging

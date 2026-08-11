@@ -17,7 +17,7 @@
 
 | 이슈 | 상태 | 메모 |
 |---|---|---|
-| [#312](https://github.com/bluetape4k/bluetape4k-graph/issues/312) | 로컬 구현 완료, PR 전 | `graph-io-core` additive native loader SPI와 95개 core 테스트 통과. 실제 backend adapter/Testcontainers는 후속 범위다. |
+| [#312](https://github.com/bluetape4k/bluetape4k-graph/issues/312) | 로컬 구현 완료, PR 전 | `graph-io-core` additive native loader SPI와 126개 core 테스트(19개 targeted) 통과. TinkerPop/TinkerGraph는 서버 native command/staging semantics가 없어 제외하며, 실제 backend adapter/Testcontainers는 후속 범위다. |
 
 ## 완료된 `0.6.0` review train
 
