@@ -7,7 +7,9 @@ import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.graph.io.report.GraphIoReadException
 import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.count
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
@@ -60,6 +62,75 @@ class CsvStreamingReaderContractTest {
         edges.closed.shouldBeTrue()
         vertices.closeCount shouldBeEqualTo 1
         edges.closeCount shouldBeEqualTo 1
+    }
+
+    @Test
+    fun `take one emits one record before eof and closes owned streams exactly once`() = runSuspendIO {
+        val vertexPayload = generatedVertices()
+        val edgePayload = generatedEdges()
+        val vertices = TrackingInputStream(vertexPayload.toByteArray(), maxChunk = 1)
+        val edges = TrackingInputStream(edgePayload.toByteArray(), maxChunk = 1)
+        val source = CsvGraphImportSource(
+            vertices = GraphImportSource.InputStreamSource(vertices, closeInput = true),
+            edges = GraphImportSource.InputStreamSource(edges, closeInput = true),
+        )
+        val reader = CsvGraphRecordFlowReader()
+
+        val firstVertex = reader.readVertices(source).take(1).toList()
+        val firstEdge = reader.readEdges(source).take(1).toList()
+
+        firstVertex.map { it.externalId } shouldBeEqualTo listOf("v0")
+        firstEdge.map { it.externalId } shouldBeEqualTo listOf("e0")
+        (vertices.bytesRead < vertexPayload.toByteArray().size).shouldBeTrue()
+        (edges.bytesRead < edgePayload.toByteArray().size).shouldBeTrue()
+        vertices.closed.shouldBeTrue()
+        edges.closed.shouldBeTrue()
+        vertices.closeCount shouldBeEqualTo 1
+        edges.closeCount shouldBeEqualTo 1
+    }
+
+    @Test
+    fun `take one leaves caller owned vertex and edge streams open`() = runSuspendIO {
+        val vertices = TrackingInputStream(generatedVertices().toByteArray(), maxChunk = 1)
+        val edges = TrackingInputStream(generatedEdges().toByteArray(), maxChunk = 1)
+        val source = CsvGraphImportSource(
+            vertices = GraphImportSource.InputStreamSource(vertices),
+            edges = GraphImportSource.InputStreamSource(edges),
+        )
+        val reader = CsvGraphRecordFlowReader()
+
+        reader.readVertices(source).take(1).toList()
+        reader.readEdges(source).take(1).toList()
+
+        vertices.closed.shouldBeFalse()
+        edges.closed.shouldBeFalse()
+        vertices.closeCount shouldBeEqualTo 0
+        edges.closeCount shouldBeEqualTo 0
+    }
+
+    @Test
+    fun `suspend reader rethrows source cancellation without exposing raw input`() = runSuspendIO {
+        val cancellation = CancellationException("controlled-cancellation")
+        val input = CancellationInputStream(
+            bytes = "id,label\nsecret-record,Person\n".toByteArray(),
+            cancelAfter = 12,
+            cancellation = cancellation,
+        )
+
+        val thrown = assertFailsWith<CancellationException> {
+            CsvGraphRecordFlowReader().readVertices(
+                CsvGraphImportSource(
+                    vertices = GraphImportSource.InputStreamSource(input, closeInput = true),
+                    edges = GraphImportSource.InputStreamSource(
+                        ByteArrayInputStream("id,label,from,to\n".toByteArray()),
+                    ),
+                ),
+            ).toList()
+        }
+
+        thrown.message shouldBeEqualTo cancellation.message
+        thrown.message.orEmpty().contains("secret-record").shouldBeFalse()
+        input.closeCount shouldBeEqualTo 1
     }
 
     @Test
@@ -122,11 +193,44 @@ class CsvStreamingReaderContractTest {
         edges = GraphImportSource.InputStreamSource(ByteArrayInputStream(edges.toByteArray())),
     )
 
-    private class TrackingInputStream(bytes: ByteArray) : ByteArrayInputStream(bytes) {
+    private fun generatedVertices(): String = buildString {
+        append("id,label\n")
+        append("v0,Person\n")
+        repeat(10_000) { append("trailing-v$it,Person\n") }
+    }
+
+    private fun generatedEdges(): String = buildString {
+        append("id,label,from,to\n")
+        append("e0,KNOWS,v0,v0\n")
+        repeat(10_000) { append("trailing-e$it,KNOWS,v0,v0\n") }
+    }
+
+    private class TrackingInputStream(
+        bytes: ByteArray,
+        private val maxChunk: Int = Int.MAX_VALUE,
+    ) : ByteArrayInputStream(bytes) {
         var closed: Boolean = false
             private set
         var closeCount: Int = 0
             private set
+        var bytesRead: Int = 0
+            private set
+
+        init {
+            require(maxChunk > 0)
+        }
+
+        override fun read(): Int {
+            val value = super.read()
+            if (value >= 0) bytesRead++
+            return value
+        }
+
+        override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
+            val count = super.read(buffer, offset, length.coerceAtMost(maxChunk))
+            if (count > 0) bytesRead += count
+            return count
+        }
 
         override fun close() {
             closed = true
@@ -142,6 +246,35 @@ class CsvStreamingReaderContractTest {
     private class CloseFailingInputStream(bytes: ByteArray) : ByteArrayInputStream(bytes) {
         override fun close() {
             throw IOException("csv-close-failure")
+        }
+    }
+
+    private class CancellationInputStream(
+        bytes: ByteArray,
+        private val cancelAfter: Int,
+        private val cancellation: CancellationException,
+    ) : ByteArrayInputStream(bytes) {
+        private var bytesRead: Int = 0
+        var closeCount: Int = 0
+            private set
+
+        override fun read(): Int {
+            if (bytesRead >= cancelAfter) throw cancellation
+            val value = super.read()
+            if (value >= 0) bytesRead++
+            return value
+        }
+
+        override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
+            if (bytesRead >= cancelAfter) throw cancellation
+            val count = super.read(buffer, offset, length.coerceAtMost(1))
+            if (count > 0) bytesRead += count
+            return count
+        }
+
+        override fun close() {
+            closeCount++
+            super.close()
         }
     }
 }
