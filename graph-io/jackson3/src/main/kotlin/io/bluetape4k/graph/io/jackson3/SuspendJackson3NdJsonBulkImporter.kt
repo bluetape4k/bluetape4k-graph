@@ -4,6 +4,7 @@ package io.bluetape4k.graph.io.jackson3
 
 import io.bluetape4k.graph.io.contract.GraphSuspendBulkImporter
 import io.bluetape4k.graph.io.jackson3.internal.Jackson3EnvelopeCodec
+import io.bluetape4k.graph.io.jackson3.internal.Jackson3RecordParser
 import io.bluetape4k.graph.io.jackson3.internal.NdJsonEnvelope
 import io.bluetape4k.graph.io.model.GraphIoEdgeRecord
 import io.bluetape4k.graph.io.options.GraphImportOptions
@@ -16,6 +17,7 @@ import io.bluetape4k.graph.io.report.GraphIoOperation
 import io.bluetape4k.graph.io.report.GraphIoPhase
 import io.bluetape4k.graph.io.report.GraphIoProgressListener
 import io.bluetape4k.graph.io.report.GraphIoProgressReporter
+import io.bluetape4k.graph.io.report.GraphIoReadException
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.report.GraphImportReport
 import io.bluetape4k.graph.io.source.GraphImportSource
@@ -28,12 +30,9 @@ import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.warn
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.withContext
-import tools.jackson.core.JacksonException
+import kotlinx.coroutines.flow.collect
 
 /**
  * Jackson 3 기반 coroutine NDJSON bulk importer.
@@ -87,24 +86,18 @@ class SuspendJackson3NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
         val batchWriter = SuspendGraphIoBatchWriter(operations, options.batchSize)
         val failures = mutableListOf<GraphIoFailure>()
         val bufferedEdges = ArrayDeque<GraphIoEdgeRecord>()
+        val parser = Jackson3RecordParser(codec)
         var vr = 0L; var vc = 0L; var er = 0L; var ec = 0L; var sv = 0L; var se = 0L
         var status = GraphIoStatus.COMPLETED
 
         val coroutineContext = currentCoroutineContext()
-        val reader = withContext(Dispatchers.IO) { GraphIoPaths.openReader(source) }
         try {
-            var lineNo = 0
-            var keepReading = true
-            while (keepReading && status != GraphIoStatus.FAILED) {
+            parser.records(source).collect { parsed ->
                 coroutineContext.ensureActive()
-                val raw = withContext(Dispatchers.IO) { reader.readLine() }
-                if (raw == null) {
-                    keepReading = false
-                } else {
-                    lineNo++
-                    status = importLine(
-                        raw = raw,
-                        lineNo = lineNo,
+                if (status != GraphIoStatus.FAILED) {
+                    status = importEnvelope(
+                        env = parsed.envelope,
+                        lineNo = parsed.lineNumber,
                         currentStatus = status,
                         options = options,
                         idMap = idMap,
@@ -117,10 +110,14 @@ class SuspendJackson3NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
                         onVertexSkipped = { sv++ },
                         onEdgeRead = { er++ },
                     )
+                    if (status == GraphIoStatus.FAILED) throw StopImport
                 }
             }
-        } finally {
-            withContext(NonCancellable + Dispatchers.IO) { reader.close() }
+        } catch (_: StopImport) {
+            // Stop at the first terminal import failure; parser closes the source.
+        } catch (error: GraphIoReadException) {
+            failures += error.failure
+            status = GraphIoStatus.FAILED
         }
 
         vc += batchWriter.flushVertices(idMap)
@@ -150,46 +147,6 @@ class SuspendJackson3NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
         return GraphImportReport(status, GraphIoFormat.NDJSON_JACKSON3, vr, vc, er, ec, sv, se, watch.elapsed(), failures).also {
             log.debug { "NDJSON_JACKSON3 import (suspend) completed: vertices=$vc/$vr, edges=$ec/$er, skipped=$sv/$se, status=$status, elapsed=${watch.elapsed()}" }
         }
-    }
-
-    private suspend fun importLine(
-        raw: String,
-        lineNo: Int,
-        currentStatus: GraphIoStatus,
-        options: GraphImportOptions,
-        idMap: GraphIoExternalIdMap,
-        batchWriter: SuspendGraphIoBatchWriter,
-        failures: MutableList<GraphIoFailure>,
-        bufferedEdges: ArrayDeque<GraphIoEdgeRecord>,
-        verticesCreated: () -> Long,
-        onVertexRead: () -> Unit,
-        onVertexCreated: (Int) -> Unit,
-        onVertexSkipped: () -> Unit,
-        onEdgeRead: () -> Unit,
-    ): GraphIoStatus {
-        var nextStatus = currentStatus
-        val line = raw.trim()
-        if (line.isNotBlank()) {
-            val env = parseEnvelope(line, lineNo, failures)
-            nextStatus = env?.let {
-                importEnvelope(
-                    env = it,
-                    lineNo = lineNo,
-                    currentStatus = currentStatus,
-                    options = options,
-                    idMap = idMap,
-                    batchWriter = batchWriter,
-                    failures = failures,
-                    bufferedEdges = bufferedEdges,
-                    verticesCreated = verticesCreated,
-                    onVertexRead = onVertexRead,
-                    onVertexCreated = onVertexCreated,
-                    onVertexSkipped = onVertexSkipped,
-                    onEdgeRead = onEdgeRead,
-                )
-            } ?: GraphIoStatus.FAILED
-        }
-        return nextStatus
     }
 
     private suspend fun drainBufferedEdges(
@@ -381,24 +338,6 @@ class SuspendJackson3NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
         }
     }
 
-    private fun parseEnvelope(
-        line: String,
-        lineNo: Int,
-        failures: MutableList<GraphIoFailure>,
-    ): NdJsonEnvelope? =
-        try {
-            codec.parseLine(line)
-        } catch (e: JacksonException) {
-            log.warn(e) { "Malformed JSON at line $lineNo: ${e.message}" }
-            failures += GraphIoFailure(
-                phase = GraphIoPhase.READ_VERTEX,
-                fileRole = GraphIoFileRole.UNIFIED,
-                location = "line:$lineNo",
-                message = "Malformed JSON: ${e.message}",
-            )
-            null
-        }
-
     private fun toVertexRecord(
         env: NdJsonEnvelope,
         lineNo: Int,
@@ -406,12 +345,12 @@ class SuspendJackson3NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
         failures: MutableList<GraphIoFailure>,
     ) = try {
         codec.toVertex(env, options.defaultVertexLabel)
-    } catch (e: IllegalArgumentException) {
+    } catch (_: IllegalArgumentException) {
         failures += GraphIoFailure(
             phase = GraphIoPhase.READ_VERTEX,
             fileRole = GraphIoFileRole.UNIFIED,
             location = "line:$lineNo",
-            message = "Invalid vertex envelope: ${e.message}",
+            message = if (env.id == null) "Invalid vertex envelope: missing id" else "Invalid vertex envelope",
         )
         null
     }
@@ -423,15 +362,17 @@ class SuspendJackson3NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
         failures: MutableList<GraphIoFailure>,
     ) = try {
         codec.toEdge(env, options.defaultEdgeLabel)
-    } catch (e: IllegalArgumentException) {
+    } catch (_: IllegalArgumentException) {
         failures += GraphIoFailure(
             phase = GraphIoPhase.READ_EDGE,
             fileRole = GraphIoFileRole.UNIFIED,
             location = "line:$lineNo",
-            message = "Invalid edge envelope: ${e.message}",
+            message = "Invalid edge envelope",
         )
         null
     }
+
+    private object StopImport : RuntimeException()
 
     companion object : KLoggingChannel()
 }

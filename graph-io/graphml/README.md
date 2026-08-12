@@ -243,3 +243,10 @@ Failures are collected and reported rather than failing fast, allowing partial i
 - `graph-io-core`: Core graph I/O interfaces and models
 - `bluetape4k-coroutines`: Coroutine utilities
 - `bluetape4k-virtualthread`: Virtual thread support for Java 21+
+
+## Streaming reader contract
+
+`GraphMlRecordFlowReader` parses nodes and edges through a cold `Flow` in source order. StAX events
+are handed off incrementally; production import does not materialize a full vertex/edge list and
+edge staging is bounded by `maxEdgeBufferSize`. `GraphImportOptions.batchSize` controls backend
+write flushing only. Path and owned inputs are closed by the library, while caller-owned inputs remain open.

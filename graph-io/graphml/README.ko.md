@@ -243,3 +243,10 @@ StAX 스트리밍 접근 방식은 XML을 증분적으로 처리하므로 DOM �
 - `graph-io-core`: 핵심 그래프 I/O 인터페이스 및 모델
 - `bluetape4k-coroutines`: 코루틴 유틸리티
 - `bluetape4k-virtualthread`: Java 21+ Virtual Thread 지원
+
+## 스트리밍 reader 계약
+
+`GraphMlRecordFlowReader`는 cold `Flow`를 통해 node와 edge를 소스 순서대로 파싱합니다. StAX event는 점진적으로
+전달되며 production import는 전체 vertex/edge list를 materialize하지 않고 간선 staging을 `maxEdgeBufferSize`로
+제한합니다. `GraphImportOptions.batchSize`는 백엔드 쓰기 플러시만 제어합니다. Path와 소유권을 넘긴 input은
+라이브러리가 닫고 호출자 소유 input은 열린 상태로 둡니다.

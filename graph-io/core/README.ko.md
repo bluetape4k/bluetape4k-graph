@@ -280,3 +280,11 @@ dependencies {
 - `graph-io-jackson2` — Jackson 2.x 기반 NDJSON
 - `graph-io-jackson3` — Jackson 3.x (`tools.jackson`) 기반 NDJSON
 - `graph-io-graphml` — StAX 기반 GraphML 2.4
+
+## 스트리밍 reader 계약
+
+`GraphRecordFlowReader`는 레코드 스트리밍 축입니다. `readVertices(source)`와
+`readEdges(source)`가 소스 순서를 유지하며 레코드를 순차적으로 방출합니다. `GraphImportOptions.batchSize`는
+`createVertices`/`createEdges`의 백엔드 쓰기 플러시 축이며 reader 버퍼링이나 source 소유권을 바꾸지 않습니다.
+Path와 명시적으로 소유권을 넘긴 source는 라이브러리가 닫고, 호출자 소유 source는 열린 상태로 둡니다.
+NDJSON 간선 staging은 `maxEdgeBufferSize`로 제한됩니다.

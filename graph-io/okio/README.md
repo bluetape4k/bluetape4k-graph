@@ -370,3 +370,11 @@ dependencies {
 ## Roadmap
 
 - **v2**: Stream-based CSV without `PathSource`/`PathSink` constraint
+
+## Streaming reader contract
+
+`OkioGraphRecordFlowReader(format)` delegates to the format-specific reader and emits a cold,
+ordered `Flow`. `GraphImportOptions.batchSize` remains the backend write-flush axis and does not
+change reader buffering or source ownership. `PathSource` and sources with `ownsSource`/`ownsStream=true`
+are closed by the library; caller-owned sources remain open. CSV reader dispatch requires paired
+`{stem}_vertices.csv` and `{stem}_edges.csv` files, so stream-backed CSV is explicitly unsupported.

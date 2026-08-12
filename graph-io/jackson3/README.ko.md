@@ -284,3 +284,9 @@ Module: graph-io/jackson3
 - `graph-io-core` - 추상 IO 계약 및 모델
 - `graph-io-jackson2` - Jackson 2.x NDJSON (레거시)
 - `graph-neo4j`, `graph-age`, `graph-memgraph` - 그래프 백엔드 구현
+
+## 스트리밍 reader 계약
+
+`Jackson3NdJsonRecordFlowReader`는 cold `Flow`를 통해 NDJSON 레코드를 한 건씩 방출하고 입력 순서를 유지합니다.
+`GraphImportOptions.batchSize`는 백엔드 쓰기 플러시 설정이며 간선 staging은 `maxEdgeBufferSize`로 제한됩니다.
+Path와 소유권을 넘긴 source는 라이브러리가 닫고 호출자 소유 source는 collect 후에도 열린 상태로 둡니다.
