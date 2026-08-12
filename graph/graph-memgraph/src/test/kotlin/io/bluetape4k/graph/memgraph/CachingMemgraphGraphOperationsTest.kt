@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
 /**
- * [CachingMemgraphGraphOperations] 의 캐시 히트·무효화·Write 메모이제이션 동작을 검증한다.
+ * [CachingMemgraphGraphOperations] 의 읽기 캐시 히트·무효화와 생성 위임 계약을 검증한다.
  *
  * MockK 로 delegate 를 모킹하여 delegate 호출 횟수를 정확히 검증한다.
  * 실제 Memgraph 서버 없이 순수 캐시 레이어만 테스트한다.
@@ -243,70 +243,73 @@ class CachingMemgraphGraphOperationsTest {
         verify(exactly = 2) { delegate.findVerticesByLabel("Person", emptyMap()) }
     }
 
-    // ───── 쓰기 메모이제이션 ─────
+    // ───── 생성 계약과 읽기 캐시 무효화 ─────
 
     @Test
-    fun `createVertex는 동일 인자 반복 호출 시 메모이제이션된 결과를 반환한다`() {
+    fun `createVertex는 동일 인자 반복 호출마다 delegate를 호출한다`() {
         val props = mapOf("name" to "Alice")
-        every { delegate.createVertex("Person", props) } returns alice
+        val secondVertex = alice.copy(id = GraphElementId.of("alice-2"))
+        every { delegate.createVertex("Person", props) } returns alice andThen secondVertex
 
         val first = caching.createVertex("Person", props)
         val second = caching.createVertex("Person", props)
 
         first shouldBeEqualTo alice
-        second shouldBeEqualTo alice
-        verify(exactly = 1) { delegate.createVertex("Person", props) }
+        second shouldBeEqualTo secondVertex
+        verify(exactly = 2) { delegate.createVertex("Person", props) }
     }
 
     @Test
-    fun `createEdge는 동일 인자 반복 호출 시 메모이제이션된 결과를 반환한다`() {
-        every { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) } returns edge
+    fun `createEdge는 동일 인자 반복 호출마다 delegate를 호출한다`() {
+        val secondEdge = edge.copy(id = GraphElementId.of("edge-2"))
+        every { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) } returns edge andThen secondEdge
 
         val first = caching.createEdge(aliceId, bobId, "KNOWS", emptyMap())
         val second = caching.createEdge(aliceId, bobId, "KNOWS", emptyMap())
 
         first shouldBeEqualTo edge
-        second shouldBeEqualTo edge
-        verify(exactly = 1) { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) }
+        second shouldBeEqualTo secondEdge
+        verify(exactly = 2) { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) }
     }
 
     @Test
-    fun `createEdge는 읽기 캐시만 무효화하고 쓰기 메모이제이션 캐시는 보존한다`() {
-        every { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) } returns edge
+    fun `createEdge는 생성마다 위임하고 읽기 캐시를 무효화한다`() {
+        every { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) } returns edge andThen
+            edge.copy(id = GraphElementId.of("edge-2"))
         every { delegate.findEdgesByLabel("KNOWS", emptyMap()) } returns listOf(edge)
 
         caching.findEdgesByLabel("KNOWS")              // 읽기 캐시 적재
-        caching.createEdge(aliceId, bobId, "KNOWS")    // 읽기 캐시만 무효화, 쓰기 캐시는 유지
+        caching.createEdge(aliceId, bobId, "KNOWS")    // 읽기 캐시 무효화
         caching.findEdgesByLabel("KNOWS")              // 읽기 캐시 미스 → delegate 재호출
 
         verify(exactly = 1) { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) }
         verify(exactly = 2) { delegate.findEdgesByLabel("KNOWS", emptyMap()) }
 
-        // 두 번째 createEdge 호출 → 메모이제이션 캐시 히트
+        // 동일 인자라도 생성 요청은 다시 delegate에 위임한다.
         caching.createEdge(aliceId, bobId, "KNOWS")
-        verify(exactly = 1) { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) }  // delegate 추가 호출 없음
+        verify(exactly = 2) { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) }
     }
 
     @Test
-    fun `createVertex는 읽기 캐시만 무효화하고 쓰기 메모이제이션 캐시는 보존한다`() {
+    fun `createVertex는 생성마다 위임하고 읽기 캐시를 무효화한다`() {
         val props = mapOf("name" to "Alice")
-        every { delegate.createVertex("Person", props) } returns alice
+        every { delegate.createVertex("Person", props) } returns alice andThen alice.copy(id = GraphElementId.of("alice-2"))
         every { delegate.findVertexById("Person", aliceId) } returns alice
 
         caching.findVertexById("Person", aliceId)   // 읽기 캐시 적재
-        caching.createVertex("Person", props)        // 읽기 캐시만 무효화, 쓰기 캐시는 유지
+        caching.createVertex("Person", props)        // 읽기 캐시 무효화
         caching.findVertexById("Person", aliceId)   // 읽기 캐시 미스 → delegate 재호출
 
         verify(exactly = 1) { delegate.createVertex("Person", props) }
         verify(exactly = 2) { delegate.findVertexById("Person", aliceId) }
 
-        // 두 번째 createVertex 호출 → 메모이제이션 캐시 히트
+        // 동일 인자라도 생성 요청은 다시 delegate에 위임한다.
         caching.createVertex("Person", props)
-        verify(exactly = 1) { delegate.createVertex("Person", props) }  // delegate 추가 호출 없음
+        verify(exactly = 2) { delegate.createVertex("Person", props) }
     }
 
     @Test
-    fun `createVertices 후 읽기 캐시와 쓰기 메모이제이션 캐시가 무효화된다`() {
+    fun `createVertices 후 읽기 캐시가 무효화되고 이후 생성도 위임된다`() {
         val props = mapOf("name" to "Alice")
         val batch = listOf(props, mapOf("name" to "Bob"))
         every { delegate.findVertexById("Person", aliceId) } returns alice
@@ -325,7 +328,7 @@ class CachingMemgraphGraphOperationsTest {
     }
 
     @Test
-    fun `createEdges 후 읽기 캐시와 쓰기 메모이제이션 캐시가 무효화된다`() {
+    fun `createEdges 후 읽기 캐시가 무효화되고 이후 생성도 위임된다`() {
         val batch = listOf(
             BatchEdge(aliceId, bobId),
             BatchEdge(bobId, aliceId, mapOf("since" to 2025L)),
@@ -347,33 +350,6 @@ class CachingMemgraphGraphOperationsTest {
     }
 
     @Test
-    fun `deleteVertex 후 쓰기 메모이제이션 캐시도 무효화된다`() {
-        val props = mapOf("name" to "Alice")
-        every { delegate.createVertex("Person", props) } returns alice andThen alice.copy(id = GraphElementId.of("alice-2"))
-        every { delegate.deleteVertex("Person", aliceId) } returns true
-
-        caching.createVertex("Person", props)       // 쓰기 캐시 적재
-        val deleted = caching.deleteVertex("Person", aliceId)  // 전체 캐시 무효화
-        caching.createVertex("Person", props)       // 쓰기 캐시 미스 → delegate 재호출
-
-        deleted.shouldBeTrue()
-        verify(exactly = 2) { delegate.createVertex("Person", props) }
-    }
-
-    @Test
-    fun `updateVertex 후 쓰기 메모이제이션 캐시도 무효화된다`() {
-        val props = mapOf("name" to "Alice")
-        every { delegate.createVertex("Person", props) } returns alice andThen alice.copy(id = GraphElementId.of("alice-2"))
-        every { delegate.updateVertex("Person", aliceId, any()) } returns alice.copy(properties = mapOf("name" to "Alice Updated"))
-
-        caching.createVertex("Person", props)       // 쓰기 캐시 적재
-        caching.updateVertex("Person", aliceId, mapOf("name" to "Alice Updated"))  // 전체 캐시 무효화
-        caching.createVertex("Person", props)       // 쓰기 캐시 미스 → delegate 재호출
-
-        verify(exactly = 2) { delegate.createVertex("Person", props) }
-    }
-
-    @Test
     fun `createVertex는 다른 속성 맵으로 호출 시 delegate를 각각 호출한다`() {
         val propsAlice = mapOf("name" to "Alice")
         val propsBob = mapOf("name" to "Bob")
@@ -387,20 +363,6 @@ class CachingMemgraphGraphOperationsTest {
         r2 shouldBeEqualTo bob
         verify(exactly = 1) { delegate.createVertex("Person", propsAlice) }
         verify(exactly = 1) { delegate.createVertex("Person", propsBob) }
-    }
-
-    @Test
-    fun `deleteEdge 후 쓰기 메모이제이션 캐시도 무효화된다`() {
-        every { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) } returns edge andThen
-            GraphEdge(GraphElementId.of("edge-2"), "KNOWS", aliceId, bobId)
-        every { delegate.deleteEdge("KNOWS", edgeId) } returns true
-
-        caching.createEdge(aliceId, bobId, "KNOWS")    // 쓰기 캐시 적재
-        val deleted = caching.deleteEdge("KNOWS", edgeId)  // 전체 캐시 무효화
-        caching.createEdge(aliceId, bobId, "KNOWS")    // 쓰기 캐시 미스 → delegate 재호출
-
-        deleted.shouldBeTrue()
-        verify(exactly = 2) { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) }
     }
 
     @Test
