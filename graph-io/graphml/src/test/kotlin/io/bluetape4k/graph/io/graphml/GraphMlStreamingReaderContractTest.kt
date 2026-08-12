@@ -10,11 +10,18 @@ import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.report.GraphIoReadException
 import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
+import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
+import java.io.IOException
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 class GraphMlStreamingReaderContractTest {
 
@@ -110,6 +117,107 @@ class GraphMlStreamingReaderContractTest {
         (input.bytesRead < bytes.size).shouldBeTrue()
     }
 
+    @Test
+    fun `suspend bulk importer stops reading after edge buffer overflow`() = runSuspendIO {
+        val trailingNodes = (1..20_000).joinToString("\n") { "<node id=\"trailing-$it\"/>" }
+        val xml = graphMl(
+            """
+            <node id="v1"/>
+            <node id="v2"/>
+            <node id="v3"/>
+            <edge id="e1" source="v1" target="v2"/>
+            <edge id="e2" source="v2" target="v3"/>
+            $trailingNodes
+            """.trimIndent(),
+        )
+        val bytes = xml.toByteArray()
+        val input = TrackingInputStream(bytes)
+
+        val report = SuspendGraphMlBulkImporter().importGraphSuspending(
+            source = GraphImportSource.InputStreamSource(input, closeInput = true),
+            operations = TinkerGraphSuspendOperations(TinkerGraphOperations()),
+            options = GraphImportOptions(maxEdgeBufferSize = 1),
+        )
+
+        report.status shouldBeEqualTo GraphIoStatus.FAILED
+        report.verticesRead shouldBeEqualTo 3L
+        report.verticesCreated shouldBeEqualTo 0L
+        report.edgesRead shouldBeEqualTo 2L
+        report.edgesCreated shouldBeEqualTo 0L
+        report.failures.single().location shouldBeEqualTo "edge-buffer:2"
+        report.failures.single().message shouldBeEqualTo
+            "Edge buffer exceeded maxEdgeBufferSize=1; verticesCreated=0 remain in graph as partial state"
+        (input.bytesRead < bytes.size).shouldBeTrue()
+        input.closed.shouldBeTrue()
+        input.closeCount shouldBeEqualTo 1
+    }
+
+    @Test
+    fun `suspend bulk importer preserves source ownership and closes owned input once`() = runSuspendIO {
+        val callerOwned = TrackingInputStream(graphMl("<node id=\"caller\"/>").toByteArray())
+        val owned = TrackingInputStream(graphMl("<node id=\"owned\"/>").toByteArray())
+        val importer = SuspendGraphMlBulkImporter()
+
+        importer.importGraphSuspending(
+            source = GraphImportSource.InputStreamSource(callerOwned),
+            operations = TinkerGraphSuspendOperations(TinkerGraphOperations()),
+        ).status shouldBeEqualTo GraphIoStatus.COMPLETED
+        importer.importGraphSuspending(
+            source = GraphImportSource.InputStreamSource(owned, closeInput = true),
+            operations = TinkerGraphSuspendOperations(TinkerGraphOperations()),
+        ).status shouldBeEqualTo GraphIoStatus.COMPLETED
+
+        callerOwned.closed.shouldBeFalse()
+        callerOwned.closeCount shouldBeEqualTo 0
+        owned.closed.shouldBeTrue()
+        owned.closeCount shouldBeEqualTo 1
+    }
+
+    @Test
+    fun `suspend bulk importer closes owned input once after real cancellation`() = runSuspendIO {
+        val input = BlockingInputStream(graphMl("<node id=\"v1\"/>").toByteArray())
+        val job = async(Dispatchers.IO) {
+            SuspendGraphMlBulkImporter().importGraphSuspending(
+                source = GraphImportSource.InputStreamSource(input, closeInput = true),
+                operations = TinkerGraphSuspendOperations(TinkerGraphOperations()),
+            )
+        }
+
+        try {
+            input.entered.await(5, TimeUnit.SECONDS).shouldBeTrue()
+            job.cancel(CancellationException("controlled-cancellation"))
+            input.release.countDown()
+
+            assertFailsWith<CancellationException> { job.await() }
+        } finally {
+            input.release.countDown()
+            job.cancel()
+            job.join()
+        }
+
+        input.closeCount shouldBeEqualTo 1
+    }
+
+    @Test
+    fun `suspend bulk importer preserves source cancellation and suppresses owned close failure`() = runSuspendIO {
+        val cancellation = CancellationException("controlled-source-cancellation")
+        val input = CancellationCloseFailingInputStream(
+            content = graphMl("<node id=\"v1\"/>").toByteArray(),
+            cancellation = cancellation,
+        )
+
+        val thrown = assertFailsWith<CancellationException> {
+            SuspendGraphMlBulkImporter().importGraphSuspending(
+                source = GraphImportSource.InputStreamSource(input, closeInput = true),
+                operations = TinkerGraphSuspendOperations(TinkerGraphOperations()),
+            )
+        }
+
+        thrown.message shouldBeEqualTo cancellation.message
+        thrown.suppressed.map { it.message } shouldBeEqualTo listOf("graphml-close-failure")
+        input.closeCount shouldBeEqualTo 1
+    }
+
     private fun sourceOf(xml: String): GraphImportSource =
         GraphImportSource.InputStreamSource(xml.byteInputStream())
 
@@ -145,6 +253,52 @@ class GraphMlStreamingReaderContractTest {
             closed = true
             closeCount++
             super.close()
+        }
+    }
+
+    private class BlockingInputStream(content: ByteArray) : ByteArrayInputStream(content) {
+
+        val entered = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        var closeCount: Int = 0
+            private set
+
+        override fun read(): Int {
+            awaitRelease()
+            return super.read()
+        }
+
+        override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
+            awaitRelease()
+            return super.read(buffer, offset, length)
+        }
+
+        override fun close() {
+            closeCount++
+            super.close()
+        }
+
+        private fun awaitRelease() {
+            entered.countDown()
+            check(release.await(5, TimeUnit.SECONDS)) { "test input release timed out" }
+        }
+    }
+
+    private class CancellationCloseFailingInputStream(
+        content: ByteArray,
+        private val cancellation: CancellationException,
+    ) : ByteArrayInputStream(content) {
+
+        var closeCount: Int = 0
+            private set
+
+        override fun read(): Int = throw cancellation
+
+        override fun read(buffer: ByteArray, offset: Int, length: Int): Int = throw cancellation
+
+        override fun close() {
+            closeCount++
+            throw IOException("graphml-close-failure")
         }
     }
 }
