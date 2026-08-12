@@ -6,6 +6,7 @@ import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldNotContain
 import io.bluetape4k.graph.io.options.GraphImportOptions
+import io.bluetape4k.graph.io.report.GraphIoPhase
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.report.GraphIoReadException
 import io.bluetape4k.graph.io.source.GraphImportSource
@@ -85,6 +86,67 @@ class GraphMlStreamingReaderContractTest {
         error.failure.toString() shouldNotContain "secret-record"
         error.message.orEmpty() shouldNotContain "secret-payload"
         error.message.orEmpty() shouldNotContain "secret-record"
+        error.failure.phase shouldBeEqualTo GraphIoPhase.READ_VERTEX
+    }
+
+    @Test
+    fun `sync importer reports malformed edge phase`() {
+        val report = GraphMlBulkImporter().importGraph(
+            source = sourceOf(
+                graphMl(
+                    """
+                    <node id="v1"/>
+                    <node id="v2"/>
+                    <edge id="secret-edge" source="v1" target="v2">
+                      <data key="payload">secret-payload
+                    """.trimIndent(),
+                ),
+            ),
+            operations = TinkerGraphOperations(),
+        )
+
+        report.status shouldBeEqualTo GraphIoStatus.FAILED
+        report.failures.single().phase shouldBeEqualTo GraphIoPhase.READ_EDGE
+    }
+
+    @Test
+    fun `suspend importer reports malformed edge phase`() = runSuspendIO {
+        val report = SuspendGraphMlBulkImporter().importGraphSuspending(
+            source = sourceOf(
+                graphMl(
+                    """
+                    <node id="v1"/>
+                    <node id="v2"/>
+                    <edge id="secret-edge" source="v1" target="v2">
+                      <data key="payload">secret-payload
+                    """.trimIndent(),
+                ),
+            ),
+            operations = TinkerGraphSuspendOperations(TinkerGraphOperations()),
+        )
+
+        report.status shouldBeEqualTo GraphIoStatus.FAILED
+        report.failures.single().phase shouldBeEqualTo GraphIoPhase.READ_EDGE
+    }
+
+    @Test
+    fun `streaming reader reports malformed edge phase`() = runSuspendIO {
+        val error = assertFailsWith<GraphIoReadException> {
+            GraphMlRecordFlowReader().readEdges(
+                sourceOf(
+                    graphMl(
+                        """
+                        <node id="v1"/>
+                        <node id="v2"/>
+                        <edge id="secret-edge" source="v1" target="v2">
+                          <data key="payload">secret-payload
+                        """.trimIndent(),
+                    ),
+                ),
+            ).toList()
+        }
+
+        error.failure.phase shouldBeEqualTo GraphIoPhase.READ_EDGE
     }
 
     @Test

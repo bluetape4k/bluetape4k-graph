@@ -86,6 +86,7 @@ internal class StaxGraphMlReader {
 
         val keyIdToName = mutableMapOf<String, String>()
         val keyIdToType = mutableMapOf<String, GraphMlAttrType>()
+        var currentPhase = GraphIoPhase.READ_VERTEX
 
         try {
             while (reader.hasNext()) {
@@ -95,15 +96,21 @@ internal class StaxGraphMlReader {
                         "key" -> parseKey(reader, keyIdToName, keyIdToType)
                         "graph" -> recordUnsupportedGraph(reader, options, sink)
                         "hyperedge", "port" -> recordUnsupportedElement(reader, options, sink)
-                        "node" -> parseNode(reader, keyIdToName, keyIdToType, options, sink)
-                        "edge" -> parseEdge(reader, keyIdToName, keyIdToType, options, sink)
+                        "node" -> {
+                            currentPhase = GraphIoPhase.READ_VERTEX
+                            parseNode(reader, keyIdToName, keyIdToType, options, sink)
+                        }
+                        "edge" -> {
+                            currentPhase = GraphIoPhase.READ_EDGE
+                            parseEdge(reader, keyIdToName, keyIdToType, options, sink)
+                        }
                     }
                 }
             }
         } catch (_: XMLStreamException) {
             sink.onFailure(
                 GraphIoFailure(
-                    phase = GraphIoPhase.READ_VERTEX,
+                    phase = currentPhase,
                     fileRole = GraphIoFileRole.UNIFIED,
                     location = reader.location.lineNumber.takeIf { it > 0 }?.let { "line:$it" },
                     message = "Malformed GraphML",
