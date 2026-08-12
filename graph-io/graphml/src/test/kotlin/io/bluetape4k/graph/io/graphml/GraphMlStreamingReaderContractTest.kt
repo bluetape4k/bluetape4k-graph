@@ -130,6 +130,42 @@ class GraphMlStreamingReaderContractTest {
     }
 
     @Test
+    fun `sync importer reports malformed edge opening phase`() {
+        val report = GraphMlBulkImporter().importGraph(
+            source = sourceOf(
+                graphMl(
+                    """
+                    <edge id="secret-edge" source="v1"
+                    """.trimIndent(),
+                ),
+            ),
+            operations = TinkerGraphOperations(),
+        )
+
+        report.status shouldBeEqualTo GraphIoStatus.FAILED
+        report.failures.single().phase shouldBeEqualTo GraphIoPhase.READ_EDGE
+        report.failures.single().toString() shouldNotContain "secret-edge"
+    }
+
+    @Test
+    fun `suspend importer reports malformed edge opening phase`() = runSuspendIO {
+        val report = SuspendGraphMlBulkImporter().importGraphSuspending(
+            source = sourceOf(
+                graphMl(
+                    """
+                    <edge id="secret-edge" source="v1"
+                    """.trimIndent(),
+                ),
+            ),
+            operations = TinkerGraphSuspendOperations(TinkerGraphOperations()),
+        )
+
+        report.status shouldBeEqualTo GraphIoStatus.FAILED
+        report.failures.single().phase shouldBeEqualTo GraphIoPhase.READ_EDGE
+        report.failures.single().toString() shouldNotContain "secret-edge"
+    }
+
+    @Test
     fun `streaming reader reports malformed edge phase`() = runSuspendIO {
         val error = assertFailsWith<GraphIoReadException> {
             GraphMlRecordFlowReader().readEdges(
@@ -147,6 +183,55 @@ class GraphMlStreamingReaderContractTest {
         }
 
         error.failure.phase shouldBeEqualTo GraphIoPhase.READ_EDGE
+    }
+
+    @Test
+    fun `streaming reader reports malformed edge opening phase`() = runSuspendIO {
+        val error = assertFailsWith<GraphIoReadException> {
+            GraphMlRecordFlowReader().readEdges(
+                sourceOf(
+                    graphMl(
+                        """
+                        <edge id="secret-edge" source="v1"
+                        """.trimIndent(),
+                    ),
+                ),
+            ).toList()
+        }
+
+        error.failure.phase shouldBeEqualTo GraphIoPhase.READ_EDGE
+        error.failure.toString() shouldNotContain "secret-edge"
+        error.message.orEmpty() shouldNotContain "secret-edge"
+    }
+
+    @Test
+    fun `streaming reader retains phase for truncated self closing edge`() = runSuspendIO {
+        val error = assertFailsWith<GraphIoReadException> {
+            GraphMlRecordFlowReader().readEdges(
+                sourceOf(graphMl("<edge/")),
+            ).toList()
+        }
+
+        error.failure.phase shouldBeEqualTo GraphIoPhase.READ_EDGE
+    }
+
+    @Test
+    fun `streaming reader keeps vertex fallback for malformed node opening`() = runSuspendIO {
+        val error = assertFailsWith<GraphIoReadException> {
+            GraphMlRecordFlowReader().readVertices(
+                sourceOf(
+                    graphMl(
+                        """
+                        <node id="secret-node"
+                        """.trimIndent(),
+                    ),
+                ),
+            ).toList()
+        }
+
+        error.failure.phase shouldBeEqualTo GraphIoPhase.READ_VERTEX
+        error.failure.toString() shouldNotContain "secret-node"
+        error.message.orEmpty() shouldNotContain "secret-node"
     }
 
     @Test

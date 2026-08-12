@@ -82,7 +82,8 @@ internal class StaxGraphMlReader {
     ) {
         log.debug { "Parsing GraphML stream: labelAttrName=${options.labelAttrName}" }
 
-        val reader = factory.createXMLStreamReader(NonClosingInputStream(input))
+        val trackedInput = NonClosingInputStream(input)
+        val reader = factory.createXMLStreamReader(trackedInput)
 
         val keyIdToName = mutableMapOf<String, String>()
         val keyIdToType = mutableMapOf<String, GraphMlAttrType>()
@@ -110,7 +111,7 @@ internal class StaxGraphMlReader {
         } catch (_: XMLStreamException) {
             sink.onFailure(
                 GraphIoFailure(
-                    phase = currentPhase,
+                    phase = trackedInput.malformedRecordPhase ?: currentPhase,
                     fileRole = GraphIoFileRole.UNIFIED,
                     location = reader.location.lineNumber.takeIf { it > 0 }?.let { "line:$it" },
                     message = "Malformed GraphML",
@@ -391,9 +392,138 @@ internal class StaxGraphMlReader {
     }
 
     private class NonClosingInputStream(input: InputStream) : FilterInputStream(input) {
+        private val phaseTracker = RecordPhaseTracker()
+
+        val malformedRecordPhase: GraphIoPhase?
+            get() = phaseTracker.malformedRecordPhase
+
+        override fun read(): Int = super.read().also { byte ->
+            if (byte >= 0) phaseTracker.accept(byte)
+        }
+
+        override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
+            val count = super.read(buffer, offset, length)
+            if (count > 0) {
+                repeat(count) { index -> phaseTracker.accept(buffer[offset + index].toInt()) }
+            }
+            return count
+        }
+
         override fun close() {
             // The caller-owned GraphImportSource/use scope owns the underlying stream.
         }
+    }
+
+    /**
+     * record opening tag가 START_ELEMENT로 승격되기 전에 깨지면 StAX가 whitespace만
+     * 보고할 수 있다. 속성, 식별자, parser message를 보존하지 않고 제한된 lexical
+     * marker만 유지하여 실패 단계를 식별한다.
+     */
+    private class RecordPhaseTracker {
+        private enum class State {
+            TEXT,
+            EXPECT_NAME,
+            NAME,
+            RECORD_ATTRIBUTES,
+            SELF_CLOSING,
+            MALFORMED_RECORD,
+            OTHER_MARKUP,
+        }
+
+        private enum class RecordName(val phase: GraphIoPhase, val token: String) {
+            NODE(GraphIoPhase.READ_VERTEX, "node"),
+            EDGE(GraphIoPhase.READ_EDGE, "edge"),
+            ;
+
+            fun matches(index: Int, byte: Int): Boolean = index < token.length && token[index] == byte.toChar()
+        }
+
+        private var state = State.TEXT
+        private var recordName: RecordName? = null
+        private var nameIndex = 0
+        private var activeRecordPhase: GraphIoPhase? = null
+        private var attributeQuote: Int? = null
+
+        val malformedRecordPhase: GraphIoPhase?
+            get() = activeRecordPhase
+
+        fun accept(byte: Int) {
+            when (state) {
+                State.TEXT -> if (byte == '<'.code) state = State.EXPECT_NAME
+                State.EXPECT_NAME -> acceptExpectedNameByte(byte)
+                State.NAME -> acceptNameByte(byte)
+                State.RECORD_ATTRIBUTES -> acceptRecordAttributeByte(byte)
+                State.SELF_CLOSING -> if (byte == '>'.code) clearRecord() else state = State.MALFORMED_RECORD
+                State.MALFORMED_RECORD -> Unit
+                State.OTHER_MARKUP -> if (byte == '>'.code) state = State.TEXT
+            }
+        }
+
+        private fun acceptExpectedNameByte(byte: Int) {
+            when (byte) {
+                '/'.code, '?'.code, '!'.code -> state = State.OTHER_MARKUP
+                'n'.code -> startName(RecordName.NODE)
+                'e'.code -> startName(RecordName.EDGE)
+                else -> state = State.OTHER_MARKUP
+            }
+        }
+
+        private fun startName(name: RecordName) {
+            recordName = name
+            nameIndex = 1
+            state = State.NAME
+            activeRecordPhase = null
+            attributeQuote = null
+        }
+
+        private fun acceptNameByte(byte: Int) {
+            val name = recordName
+            if (name == null) {
+                state = State.OTHER_MARKUP
+                return
+            }
+            if (nameIndex < name.token.length && name.matches(nameIndex, byte)) {
+                nameIndex++
+                if (nameIndex == name.token.length) {
+                    activeRecordPhase = name.phase
+                }
+                return
+            }
+            if (nameIndex == name.token.length && isTagNameDelimiter(byte)) {
+                activeRecordPhase = name.phase
+                state = State.RECORD_ATTRIBUTES
+                acceptRecordAttributeByte(byte)
+            } else {
+                state = State.OTHER_MARKUP
+                recordName = null
+                activeRecordPhase = null
+            }
+        }
+
+        private fun acceptRecordAttributeByte(byte: Int) {
+            attributeQuote?.let { quote ->
+                if (byte == quote) attributeQuote = null
+                return
+            }
+            when (byte) {
+                '"'.code, '\''.code -> attributeQuote = byte
+                '>'.code -> clearRecord()
+                '/'.code -> state = State.SELF_CLOSING
+                '<'.code -> state = State.MALFORMED_RECORD
+            }
+        }
+
+        private fun clearRecord() {
+            state = State.TEXT
+            recordName = null
+            activeRecordPhase = null
+            attributeQuote = null
+        }
+
+        private fun isTagNameDelimiter(byte: Int): Boolean =
+            byte == '>'.code || byte == '/'.code || byte == ' '.code || byte == '\t'.code ||
+                byte == '\r'.code || byte == '\n'.code
+
     }
 
     companion object : KLogging() {
