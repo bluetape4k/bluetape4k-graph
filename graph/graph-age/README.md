@@ -28,7 +28,7 @@
 |-------|-------------|
 | `AgeGraphOperations` | Synchronous `GraphOperations` implementation backed by Exposed + JDBC |
 | `AgeGraphSuspendOperations` | Coroutine-based `GraphSuspendOperations` implementation |
-| `CachingAgeGraphOperations` | `ConcurrentHashMap`-backed caching decorator over `AgeGraphOperations` |
+| `CachingAgeGraphOperations` | Caffeine bounded/expiring caching decorator over `AgeGraphOperations` |
 | `AgeGraphSchemaManager` | Explicit unsupported schema manager for AGE-specific index DDL |
 | `AgeSql` | Produces SQL strings that wrap Cypher queries for Apache AGE |
 | `AgePropertySerializer` | Serializes Kotlin values into AGE-compatible literals |
@@ -142,29 +142,36 @@ val edge = ops.transaction {
 
 ## Caching Decorator
 
-`CachingAgeGraphOperations` wraps an `AgeGraphOperations` instance and memoizes all read results using `ConcurrentHashMap` (~5 ns lookup). It is designed for read-heavy workloads such as benchmarks or repeated graph traversals.
+`CachingAgeGraphOperations` wraps an `AgeGraphOperations` instance and memoizes all read results in six Caffeine caches. Each cache applies the configured `maxSize` entry bound and `expireAfterWrite` TTL, making the decorator suitable for read-heavy workloads such as benchmarks or repeated graph traversals.
 
 ### Cache Behaviour
 
 | Operation | Effect |
 |-----------|--------|
 | `findVertexById`, `findVerticesByLabel`, `neighbors`, `shortestPath`, `allPaths`, `findEdgesByLabel` | Results cached on first call; subsequent calls return the cached value without hitting the DB |
+| `maxSize`, `expireAfterWrite` | Applied to every read cache; both values must be positive |
 | `createVertex`, `createEdge` | Every call delegates to the underlying operation, even with identical arguments. Read caches are invalidated after the write |
 | `updateVertex`, `deleteVertex`, `deleteEdge` | All read caches invalidated |
 
 ### Usage Example
 
 ```kotlin
+import java.time.Duration
+
 Database.connect(dataSource)
 val baseOps = AgeGraphOperations("my_graph")
 
-// Wrap with caching decorator
-val ops = CachingAgeGraphOperations(baseOps)
+// Wrap with bounded/expiring caching decorator
+val ops = CachingAgeGraphOperations(
+    baseOps,
+    maxSize = 1_000,
+    expireAfterWrite = Duration.ofMinutes(5),
+)
 
 // First call: DB query (JDBC round-trip)
 val alice = ops.findVertexById("Person", aliceId)
 
-// Second call: cache hit (~5 ns), no DB round-trip
+// Second call: cache hit, no DB round-trip
 val aliceCached = ops.findVertexById("Person", aliceId)
 
 // Supported write methods invalidate all read caches automatically
