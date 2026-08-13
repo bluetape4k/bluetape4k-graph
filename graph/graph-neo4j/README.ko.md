@@ -487,6 +487,10 @@ graphOps.shortestPath(fromId, toId, edgeLabel = "KNOWS", maxDepth = 10)
 | `maxSize`, `expireAfterWrite` | 모든 읽기 캐시에 적용되며 두 값 모두 양수여야 합니다 |
 | `createVertex`, `createEdge` | 동일 인자라도 매번 기본 연산에 위임하여 새 레코드를 생성합니다. 생성 후 읽기 캐시를 무효화합니다 |
 | `updateVertex`, `deleteVertex`, `deleteEdge` | 읽기 캐시 전체를 무효화합니다 |
+| `dropGraph` | 먼저 기본 연산에 위임하고 graph 삭제가 성공하면 읽기 캐시 전체를 무효화합니다 |
+| `transaction { ... }` | backend transaction capability를 전달하며 commit 후에는 읽기 캐시를 무효화하고 rollback 후에는 기존 캐시를 유지합니다 |
+
+각 cache miss는 delegate 읽기 전에 generation을 캡처합니다. wrapper를 통한 쓰기, `dropGraph`, 또는 commit된 transaction이 읽기 중 generation을 증가시키면 해당 결과를 캐시에 재적재하지 않습니다. 이미 진행 중인 호출은 쓰기 전에 읽은 값을 반환할 수 있으며, 다른 delegate 인스턴스에서 직접 수행한 쓰기는 이 wrapper의 무효화 경계 밖입니다.
 
 ### 사용 예제
 

@@ -8,6 +8,7 @@ import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.BatchEdge
+import io.bluetape4k.graph.repository.transaction
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.assertions.assertFailsWith
 import io.mockk.clearMocks
@@ -22,6 +23,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.time.Duration
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 /**
  * [CachingNeo4jGraphOperations] 의 읽기 캐시 히트·무효화와 생성 위임 계약을 검증한다.
@@ -204,6 +208,72 @@ class CachingNeo4jGraphOperationsTest {
     }
 
     // ───── 쓰기 시 읽기 캐시 무효화 ─────
+
+    @Test
+    fun `동시 miss 중 성공한 write가 이전 결과를 캐시에 재적재하지 않는다`() {
+        val updated = alice.copy(properties = mapOf("name" to "Alice Updated"))
+        val readStarted = CountDownLatch(1)
+        val releaseRead = CountDownLatch(1)
+        every { delegate.findVertexById("Person", aliceId) } answers {
+            readStarted.countDown()
+            releaseRead.await(5, TimeUnit.SECONDS)
+            alice
+        } andThen updated
+        every { delegate.updateVertex("Person", aliceId, any()) } returns updated
+
+        val executor = Executors.newSingleThreadExecutor()
+        try {
+            val pendingRead = executor.submit<GraphVertex?> {
+                caching.findVertexById("Person", aliceId)
+            }
+            readStarted.await(5, TimeUnit.SECONDS).shouldBeTrue()
+
+            caching.updateVertex("Person", aliceId, mapOf("name" to "Alice Updated"))
+            releaseRead.countDown()
+            pendingRead.get(5, TimeUnit.SECONDS) shouldBeEqualTo alice
+
+            caching.findVertexById("Person", aliceId) shouldBeEqualTo updated
+            verify(exactly = 2) { delegate.findVertexById("Person", aliceId) }
+        } finally {
+            executor.shutdownNow()
+            executor.awaitTermination(5, TimeUnit.SECONDS)
+        }
+    }
+
+    @Test
+    fun `dropGraph 성공 후 읽기 캐시를 무효화한다`() {
+        every { delegate.findVertexById("Person", aliceId) } returns alice andThen null
+
+        caching.findVertexById("Person", aliceId)
+        caching.dropGraph("default")
+
+        caching.findVertexById("Person", aliceId).shouldBeNull()
+        verify(exactly = 1) { delegate.dropGraph("default") }
+        verify(exactly = 2) { delegate.findVertexById("Person", aliceId) }
+    }
+
+    @Test
+    fun `transaction commit 후 읽기 캐시를 무효화하고 rollback 후에는 유지한다`() {
+        val updated = alice.copy(properties = mapOf("name" to "Alice Updated"))
+        every { delegate.findVertexById("Person", aliceId) } returns alice andThen updated
+        every { delegate.transaction<GraphVertex>(any()) } returns updated
+
+        caching.findVertexById("Person", aliceId)
+        val committed = caching.transaction { updated }
+        committed shouldBeEqualTo updated
+        caching.findVertexById("Person", aliceId) shouldBeEqualTo updated
+        verify(exactly = 2) { delegate.findVertexById("Person", aliceId) }
+
+        val failure = IllegalStateException("rollback")
+        every { delegate.transaction<GraphVertex>(any()) } throws failure
+        caching.findVertexById("Person", aliceId)
+        assertFailsWith<IllegalStateException> {
+            caching.transaction { error("transaction block should not execute") }
+        }
+        caching.findVertexById("Person", aliceId) shouldBeEqualTo updated
+        verify(exactly = 2) { delegate.transaction<GraphVertex>(any()) }
+        verify(exactly = 2) { delegate.findVertexById("Person", aliceId) }
+    }
 
     @Test
     fun `deleteVertex 후 읽기 캐시가 무효화된다`() {

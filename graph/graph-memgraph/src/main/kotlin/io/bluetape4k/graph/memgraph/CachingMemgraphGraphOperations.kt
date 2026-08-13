@@ -11,6 +11,8 @@ import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.repository.GraphMergeOperations
 import io.bluetape4k.graph.repository.GraphOperations
+import io.bluetape4k.graph.repository.GraphTransactionScope
+import io.bluetape4k.graph.repository.GraphTransactionalOperations
 import io.bluetape4k.graph.schema.GraphSchemaManagementOperations
 import io.bluetape4k.graph.schema.GraphSchemaManager
 import io.bluetape4k.logging.KLogging
@@ -18,6 +20,7 @@ import io.bluetape4k.support.requireGt
 import io.bluetape4k.support.requirePositiveNumber
 import java.time.Duration
 import java.util.Optional
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * Caffeine 기반 bounded/expiring read cache를 사용하는 [MemgraphGraphOperations] 래퍼.
@@ -32,8 +35,9 @@ import java.util.Optional
  * 캐시 래퍼는 생성 의미를 바꾸지 않으며, 생성 후 읽기 캐시만 무효화한다.
  *
  * 각 읽기 캐시는 [maxSize] 엔트리까지 보관하고 [expireAfterWrite] 이후 만료된다.
- * 쓰기 완료 후에는 모든 읽기 캐시를 무효화한다. 이미 진행 중인 cache miss가
- * 이전 값을 다시 저장할 수 있으므로 동시 실행에 대한 강한 일관성은 보장하지 않는다.
+ * 쓰기 완료 후에는 모든 읽기 캐시를 무효화하고 generation을 증가시킨다. 읽기 중 generation이
+ * 바뀌면 해당 miss 결과를 캐시에 저장하지 않아 이전 값의 재적재를 막는다. 이미 진행 중인 읽기가
+ * 반환하는 값 자체까지 직렬화하지 않으므로 wrapper 외부에서 직접 수행한 쓰기까지 강한 일관성을 보장하지는 않는다.
  *
  * ### 사용 예제
  * ```kotlin
@@ -67,11 +71,12 @@ import java.util.Optional
  * @param maxSize 각 읽기 캐시의 최대 엔트리 수. 양수여야 한다.
  * @param expireAfterWrite 읽기 캐시 엔트리의 쓰기 후 만료 시간. 양수여야 한다.
  */
+@Suppress("TooManyFunctions")
 class CachingMemgraphGraphOperations(
     private val delegate: MemgraphGraphOperations,
     private val maxSize: Long = 10_000,
     private val expireAfterWrite: Duration = Duration.ofMinutes(5),
-): GraphOperations by delegate, GraphSchemaManagementOperations, GraphMergeOperations {
+): GraphOperations by delegate, GraphTransactionalOperations, GraphSchemaManagementOperations, GraphMergeOperations {
 
     companion object : KLogging()
 
@@ -82,6 +87,21 @@ class CachingMemgraphGraphOperations(
 
     override fun schemaManager(): GraphSchemaManager =
         delegate.schemaManager()
+
+    /**
+     * Graph 전체를 삭제한 성공적인 lifecycle operation 뒤에는 모든 read cache를 비운다.
+     */
+    override fun dropGraph(name: String) {
+        delegate.dropGraph(name)
+        clearReadCaches()
+    }
+
+    /**
+     * transaction이 commit된 경우에만 read cache를 무효화한다. 예외로 rollback된 transaction은
+     * backend 데이터가 변경되지 않았으므로 기존 cache를 유지한다.
+     */
+    override fun <T> transaction(block: GraphTransactionScope.() -> T): T =
+        delegate.transaction(block).also { clearReadCaches() }
 
     private data class VertexKey(val label: String, val id: GraphElementId)
     private data class LabelKey(val label: String, val filter: Map<String, Any?>)
@@ -99,6 +119,23 @@ class CachingMemgraphGraphOperations(
         cache.cleanUp()
     }
 
+    private val cacheGeneration = AtomicLong()
+
+    private fun <K : Any, V : Any> readThrough(
+        cache: Cache<K, V>,
+        key: K,
+        loader: () -> V,
+    ): V {
+        cache.getIfPresent(key)?.let { return it }
+
+        val generation = cacheGeneration.get()
+        val value = loader()
+        if (cacheGeneration.get() == generation) {
+            putReadCache(cache, key, value)
+        }
+        return value
+    }
+
     // Caffeine Cache는 null 값을 허용하지 않으므로 nullable 결과는 Optional로 래핑한다.
     private val vertexByIdCache: Cache<VertexKey, Optional<GraphVertex>> = newReadCache()
 
@@ -114,6 +151,7 @@ class CachingMemgraphGraphOperations(
     private val edgesByLabelCache: Cache<EdgeLabelKey, List<GraphEdge>> = newReadCache()
 
     private fun clearReadCaches() {
+        cacheGeneration.incrementAndGet()
         vertexByIdCache.invalidateAll()
         verticesByLabelCache.invalidateAll()
         neighborsCache.invalidateAll()
@@ -127,10 +165,9 @@ class CachingMemgraphGraphOperations(
      */
     override fun findVertexById(label: String, id: GraphElementId): GraphVertex? {
         val key = VertexKey(label, id)
-        val cached = vertexByIdCache.getIfPresent(key)
-        if (cached != null) return cached.orElse(null)
-        val value = Optional.ofNullable(delegate.findVertexById(label, id))
-        putReadCache(vertexByIdCache, key, value)
+        val value = readThrough(vertexByIdCache, key) {
+            Optional.ofNullable(delegate.findVertexById(label, id))
+        }
         return value.orElse(null)
     }
 
@@ -139,11 +176,9 @@ class CachingMemgraphGraphOperations(
      */
     override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> {
         val key = LabelKey(label, filter)
-        val cached = verticesByLabelCache.getIfPresent(key)
-        if (cached != null) return cached
-        val value = delegate.findVerticesByLabel(label, filter)
-        putReadCache(verticesByLabelCache, key, value)
-        return value
+        return readThrough(verticesByLabelCache, key) {
+            delegate.findVerticesByLabel(label, filter)
+        }
     }
 
     /**
@@ -151,11 +186,9 @@ class CachingMemgraphGraphOperations(
      */
     override fun neighbors(startId: GraphElementId, options: NeighborOptions): List<GraphVertex> {
         val key = NeighborKey(startId, options)
-        val cached = neighborsCache.getIfPresent(key)
-        if (cached != null) return cached
-        val value = delegate.neighbors(startId, options)
-        putReadCache(neighborsCache, key, value)
-        return value
+        return readThrough(neighborsCache, key) {
+            delegate.neighbors(startId, options)
+        }
     }
 
     /**
@@ -167,10 +200,9 @@ class CachingMemgraphGraphOperations(
         options: PathOptions,
     ): GraphPath? {
         val key = PathKey(fromId, toId, options)
-        val cached = shortestPathCache.getIfPresent(key)
-        if (cached != null) return cached.orElse(null)
-        val value = Optional.ofNullable(delegate.shortestPath(fromId, toId, options))
-        putReadCache(shortestPathCache, key, value)
+        val value = readThrough(shortestPathCache, key) {
+            Optional.ofNullable(delegate.shortestPath(fromId, toId, options))
+        }
         return value.orElse(null)
     }
 
@@ -183,11 +215,9 @@ class CachingMemgraphGraphOperations(
         options: PathOptions,
     ): List<GraphPath> {
         val key = PathKey(fromId, toId, options)
-        val cached = allPathsCache.getIfPresent(key)
-        if (cached != null) return cached
-        val value = delegate.allPaths(fromId, toId, options)
-        putReadCache(allPathsCache, key, value)
-        return value
+        return readThrough(allPathsCache, key) {
+            delegate.allPaths(fromId, toId, options)
+        }
     }
 
     /**
@@ -195,11 +225,9 @@ class CachingMemgraphGraphOperations(
      */
     override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): List<GraphEdge> {
         val key = EdgeLabelKey(label, filter)
-        val cached = edgesByLabelCache.getIfPresent(key)
-        if (cached != null) return cached
-        val value = delegate.findEdgesByLabel(label, filter)
-        putReadCache(edgesByLabelCache, key, value)
-        return value
+        return readThrough(edgesByLabelCache, key) {
+            delegate.findEdgesByLabel(label, filter)
+        }
     }
 
     /**
