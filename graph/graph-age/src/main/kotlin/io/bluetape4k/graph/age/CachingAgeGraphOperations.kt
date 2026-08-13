@@ -25,10 +25,8 @@ import java.util.concurrent.ConcurrentHashMap
  * 쓰기 메서드 (createVertex, updateVertex, deleteVertex, createEdge, deleteEdge) 호출 시
  * 캐시를 전체 무효화하여 일관성을 유지한다.
  *
- * **쓰기 경로 메모이제이션 (Write-result memoization)**:
- * createVertex/createEdge는 동일 인자로 호출되면 이전에 생성된 [GraphVertex]/[GraphEdge]를
- * 그대로 반환한다. 이는 벤치마크/테스트용 편의 기능이며, 트랜잭션 기반 insert 의미가 필요한
- * 프로덕션 코드는 [AgeGraphOperations]를 직접 사용해야 한다.
+ * createVertex/createEdge는 호출마다 [AgeGraphOperations]에 위임하여 새 생성 결과를 반환한다.
+ * 캐시 래퍼는 생성 의미를 바꾸지 않으며, 생성 후 읽기 캐시만 무효화한다.
  *
  * 모든 읽기 캐시는 Caffeine → ConcurrentHashMap 으로 구현되어 TinyLFU 북키핑 비용을 제거하고
  * 조회 지연을 ~13-15 ns에서 ~5 ns로 줄인다. TTL/maxSize 기반 축출은 제거되었고,
@@ -82,14 +80,6 @@ class CachingAgeGraphOperations(
     private data class NeighborKey(val startId: GraphElementId, val options: NeighborOptions)
     private data class PathKey(val fromId: GraphElementId, val toId: GraphElementId, val options: PathOptions)
     private data class EdgeLabelKey(val label: String, val filter: Map<String, Any?>)
-    private data class WriteVertexKey(val label: String, val properties: Map<String, Any?>)
-    private data class WriteEdgeKey(
-        val fromId: GraphElementId,
-        val toId: GraphElementId,
-        val label: String,
-        val properties: Map<String, Any?>,
-    )
-
     // ConcurrentHashMap은 Caffeine의 ~13-15 ns 대비 약 ~5 ns 조회로 TinyLFU bookkeeping 비용을 제거한다.
     // null 값을 허용하지 않으므로 nullable 결과는 Optional 로 래핑한다.
     private val vertexByIdCache: ConcurrentHashMap<VertexKey, Optional<GraphVertex>> = ConcurrentHashMap(128)
@@ -105,12 +95,6 @@ class CachingAgeGraphOperations(
 
     private val edgesByLabelCache: ConcurrentHashMap<EdgeLabelKey, List<GraphEdge>> = ConcurrentHashMap(128)
 
-    // 쓰기 경로 메모이제이션: 동일 인자 create 호출이 반복될 때 DB 라운드트립을 피하기 위한 캐시.
-    // invalidateAll() 이 파괴적 쓰기(updateVertex/deleteVertex/deleteEdge) 시 명시적으로 clear() 한다.
-    private val createVertexMap: ConcurrentHashMap<WriteVertexKey, GraphVertex> = ConcurrentHashMap(128)
-
-    private val createEdgeMap: ConcurrentHashMap<WriteEdgeKey, GraphEdge> = ConcurrentHashMap(128)
-
     private fun invalidateAll() {
         vertexByIdCache.clear()
         verticesByLabelCache.clear()
@@ -118,12 +102,9 @@ class CachingAgeGraphOperations(
         shortestPathCache.clear()
         allPathsCache.clear()
         edgesByLabelCache.clear()
-        createVertexMap.clear()
-        createEdgeMap.clear()
     }
 
-    // 읽기 캐시만 무효화 (쓰기 메모이제이션 캐시는 보존)
-    // createVertex/createEdge 내부에서 사용하며 write-cache 자체 삭제를 방지한다.
+    // createVertex/createEdge 후 생성 결과와 일관되지 않을 수 있는 읽기 캐시를 무효화한다.
     private fun invalidateReads() {
         vertexByIdCache.clear()
         verticesByLabelCache.clear()
@@ -249,32 +230,24 @@ class CachingAgeGraphOperations(
     }
 
     /**
-     * 새 정점을 생성하고 결과를 **쓰기 메모이제이션** 캐시에 저장한다.
-     * 동일 `(label, properties)` 인자로 재호출 시 DB 를 거치지 않고 캐시된 [GraphVertex] 를 반환한다.
-     * 읽기 캐시([findVertexById] 등)는 무효화하지만 쓰기 메모이제이션 캐시는 유지된다.
+     * 새 정점을 생성할 때마다 delegate에 위임한다.
+     * 동일 인자라도 `createVertex`의 생성 계약을 보존하여 새 결과를 반환한다.
+     * 생성 후 읽기 캐시([findVertexById] 등)를 무효화한다.
      *
      * ```kotlin
      * val a = ops.createVertex("Person", props)  // DB write, 읽기 캐시 무효화
-     * val b = ops.createVertex("Person", props)  // 메모이제이션 히트 — a 와 동일한 객체 반환
+     * val b = ops.createVertex("Person", props)  // 동일 인자라도 별도 DB write
      * ```
      *
-     * > **주의**: 트랜잭션 기반 insert 의미가 필요하다면 [AgeGraphOperations] 를 직접 사용한다.
      */
-    override fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex {
-        val key = WriteVertexKey(label, properties)
-        val cached = createVertexMap[key]
-        if (cached != null) return cached
-        val created = delegate.createVertex(label, properties)
-        createVertexMap[key] = created
-        invalidateReads()
-        return created
-    }
+    override fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex =
+        delegate.createVertex(label, properties).also { invalidateReads() }
 
     override fun createVertices(label: String, propertiesList: List<Map<String, Any?>>): List<GraphVertex> =
         delegate.createVertices(label, propertiesList).also { invalidateAll() }
 
     /**
-     * 기존 정점의 속성을 갱신한다. 갱신 후 **읽기·쓰기 캐시 전체**를 무효화하여 이후 조회가 DB 에서 최신 데이터를 가져온다.
+     * 기존 정점의 속성을 갱신한다. 갱신 후 모든 읽기 캐시를 무효화하여 이후 조회가 DB 에서 최신 데이터를 가져온다.
      *
      * ```kotlin
      * ops.updateVertex("Person", id, mapOf("age" to 31))
@@ -285,54 +258,43 @@ class CachingAgeGraphOperations(
         delegate.updateVertex(label, id, properties).also { invalidateAll() }
 
     /**
-     * 정점을 삭제하고 **읽기·쓰기 캐시 전체**를 무효화한다.
-     * `createVertex` 의 쓰기 메모이제이션 캐시도 함께 지워지므로 삭제 후 동일 인자로 재생성하면 DB 에 새 레코드가 생긴다.
+     * 정점을 삭제하고 모든 읽기 캐시를 무효화한다.
      *
      * ```kotlin
      * ops.deleteVertex("Person", id)
-     * // createVertex("Person", sameProps) → 쓰기 캐시 미스 → 새 DB 레코드 생성
+     * // createVertex("Person", sameProps) → delegate 위임 → 새 DB 레코드 생성
      * ```
      */
     override fun deleteVertex(label: String, id: GraphElementId): Boolean =
         delegate.deleteVertex(label, id).also { invalidateAll() }
 
     /**
-     * 새 간선을 생성하고 결과를 **쓰기 메모이제이션** 캐시에 저장한다.
-     * 동일 `(fromId, toId, label, properties)` 인자로 재호출 시 DB 를 거치지 않고 캐시된 [GraphEdge] 를 반환한다.
-     * 읽기 캐시([findEdgesByLabel] 등)는 무효화하지만 쓰기 메모이제이션 캐시는 유지된다.
+     * 새 간선을 생성할 때마다 delegate에 위임한다.
+     * 동일 인자라도 `createEdge`의 생성 계약을 보존하여 새 결과를 반환한다.
+     * 생성 후 읽기 캐시([findEdgesByLabel] 등)를 무효화한다.
      *
      * ```kotlin
      * val e1 = ops.createEdge(aId, bId, "KNOWS")  // DB write, 읽기 캐시 무효화
-     * val e2 = ops.createEdge(aId, bId, "KNOWS")  // 메모이제이션 히트 — e1 과 동일한 객체 반환
+     * val e2 = ops.createEdge(aId, bId, "KNOWS")  // 동일 인자라도 별도 DB write
      * ```
      *
-     * > **주의**: 트랜잭션 기반 insert 의미가 필요하다면 [AgeGraphOperations] 를 직접 사용한다.
      */
     override fun createEdge(
         fromId: GraphElementId,
         toId: GraphElementId,
         label: String,
         properties: Map<String, Any?>,
-    ): GraphEdge {
-        val key = WriteEdgeKey(fromId, toId, label, properties)
-        val cached = createEdgeMap[key]
-        if (cached != null) return cached
-        val created = delegate.createEdge(fromId, toId, label, properties)
-        createEdgeMap[key] = created
-        invalidateReads()
-        return created
-    }
+    ): GraphEdge = delegate.createEdge(fromId, toId, label, properties).also { invalidateReads() }
 
     override fun createEdges(label: String, edges: List<BatchEdge>): List<GraphEdge> =
         delegate.createEdges(label, edges).also { invalidateAll() }
 
     /**
-     * 간선을 삭제하고 **읽기·쓰기 캐시 전체**를 무효화한다.
-     * `createEdge` 의 쓰기 메모이제이션 캐시도 함께 지워지므로 삭제 후 동일 인자로 재생성하면 DB 에 새 레코드가 생긴다.
+     * 간선을 삭제하고 모든 읽기 캐시를 무효화한다.
      *
      * ```kotlin
      * ops.deleteEdge("KNOWS", edgeId)
-     * // createEdge(aId, bId, "KNOWS") → 쓰기 캐시 미스 → 새 DB 레코드 생성
+     * // createEdge(aId, bId, "KNOWS") → delegate 위임 → 새 DB 레코드 생성
      * ```
      */
     override fun deleteEdge(label: String, id: GraphElementId): Boolean =

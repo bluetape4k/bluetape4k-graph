@@ -13,10 +13,17 @@
 세 PR을 `develop`에 병합했으며 post-merge CI/Examples와 graph-core 검증도
 통과했다. 별도 Epic이나 subissue는 등록하지 않았다.
 
+이번 stacked train은 graph-core cache/capability/schema Epic의 P1 결함을
+우선 처리한다. #463을 `develop` 기준 첫 slice로 검증한 뒤, 같은 브랜치 위에
+#464의 bounded/expiring cache slice를 쌓는다. 중간 PR은 독립 병합하지 않고
+train tip과 CI를 함께 확인한다.
+
 ## 현재 `0.7.0` 진행
 
 | 이슈 | 상태 | 메모 |
 |---|---|---|
+| [#463](https://github.com/bluetape4k/bluetape4k-graph/issues/463) | 구현·검증 완료, PR 준비 | AGE/Neo4j/Memgraph cache decorator가 `createVertex/createEdge`를 매번 delegate에 위임하도록 고쳤다. 세 모듈 전체 테스트와 detekt/Dokka가 통과했다. |
+| [#464](https://github.com/bluetape4k/bluetape4k-graph/issues/464) | #463 후속 slice 대기 | `maxSize`/`expireAfterWrite` 계약을 실제 bounded/expiring read cache로 정렬한다. |
 | [#312](https://github.com/bluetape4k/bluetape4k-graph/issues/312) | PR #481 검증 대기 | `graph-io-core` additive native loader SPI와 128개 core 테스트(21개 targeted) 통과. TinkerPop/TinkerGraph는 서버 native command/staging semantics가 없어 제외하며, 실제 backend adapter/Testcontainers는 후속 범위다. |
 | [#313](https://github.com/bluetape4k/bluetape4k-graph/issues/313) | PR #482 CI 성공, 병합 승인 대기 | CSV/Jackson2/Jackson3/GraphML/OkIO streaming reader와 ownership·cancellation·safe failure contract를 추가했다. 여섯 graph-io module의 fresh test/compile/detekt와 hosted graph/Examples CI가 통과했으며, P0/P1=0·P2=4 후속 범위를 review 문서에 기록했다. |
 

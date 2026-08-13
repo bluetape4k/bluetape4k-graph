@@ -25,10 +25,8 @@ import java.util.concurrent.ConcurrentHashMap
  * 쓰기 메서드 (createVertex, updateVertex, deleteVertex, createEdge, deleteEdge) 호출 시
  * 캐시를 전체 무효화하여 일관성을 유지한다.
  *
- * **쓰기 경로 메모이제이션 (Write-result memoization)**:
- * createVertex/createEdge는 동일 인자로 호출되면 이전에 생성된 [GraphVertex]/[GraphEdge]를
- * 그대로 반환한다. 이는 벤치마크/테스트용 편의 기능이며, 트랜잭션 기반 insert 의미가 필요한
- * 프로덕션 코드는 [MemgraphGraphOperations]를 직접 사용해야 한다.
+ * createVertex/createEdge는 호출마다 [MemgraphGraphOperations]에 위임하여 새 생성 결과를 반환한다.
+ * 캐시 래퍼는 생성 의미를 바꾸지 않으며, 생성 후 읽기 캐시만 무효화한다.
  *
  * 모든 읽기 캐시는 ConcurrentHashMap 으로 구현되어 TinyLFU 북키핑 비용을 제거하고
  * 조회 지연을 ~5 ns 수준으로 유지한다. TTL/maxSize 기반 축출은 제거되었고,
@@ -76,14 +74,6 @@ class CachingMemgraphGraphOperations(
     private data class NeighborKey(val startId: GraphElementId, val options: NeighborOptions)
     private data class PathKey(val fromId: GraphElementId, val toId: GraphElementId, val options: PathOptions)
     private data class EdgeLabelKey(val label: String, val filter: Map<String, Any?>)
-    private data class WriteVertexKey(val label: String, val properties: Map<String, Any?>)
-    private data class WriteEdgeKey(
-        val fromId: GraphElementId,
-        val toId: GraphElementId,
-        val label: String,
-        val properties: Map<String, Any?>,
-    )
-
     // ConcurrentHashMap은 약 ~5 ns 조회 비용을 유지한다. null 값을 허용하지 않으므로 nullable 결과는 Optional로 감싼다.
     private val vertexByIdCache: ConcurrentHashMap<VertexKey, Optional<GraphVertex>> = ConcurrentHashMap(128)
 
@@ -98,12 +88,6 @@ class CachingMemgraphGraphOperations(
 
     private val edgesByLabelCache: ConcurrentHashMap<EdgeLabelKey, List<GraphEdge>> = ConcurrentHashMap(128)
 
-    // 쓰기 경로 메모이제이션: 동일 인자 create 호출이 반복될 때 DB 라운드트립을 피하기 위한 캐시.
-    // invalidateAll() 이 파괴적 쓰기(updateVertex/deleteVertex/deleteEdge) 시 명시적으로 clear() 한다.
-    private val createVertexMap: ConcurrentHashMap<WriteVertexKey, GraphVertex> = ConcurrentHashMap(128)
-
-    private val createEdgeMap: ConcurrentHashMap<WriteEdgeKey, GraphEdge> = ConcurrentHashMap(128)
-
     private fun invalidateAll() {
         vertexByIdCache.clear()
         verticesByLabelCache.clear()
@@ -111,12 +95,9 @@ class CachingMemgraphGraphOperations(
         shortestPathCache.clear()
         allPathsCache.clear()
         edgesByLabelCache.clear()
-        createVertexMap.clear()
-        createEdgeMap.clear()
     }
 
-    // 읽기 캐시만 무효화 (쓰기 메모이제이션 캐시는 보존)
-    // createVertex/createEdge 내부에서 사용하며 write-cache 자체 삭제를 방지한다.
+    // createVertex/createEdge 후 생성 결과와 일관되지 않을 수 있는 읽기 캐시를 무효화한다.
     private fun invalidateReads() {
         vertexByIdCache.clear()
         verticesByLabelCache.clear()
@@ -207,64 +188,47 @@ class CachingMemgraphGraphOperations(
     }
 
     /**
-     * 새 정점을 생성하고 결과를 **쓰기 메모이제이션** 캐시에 저장한다.
-     * 동일 `(label, properties)` 인자로 재호출 시 DB 를 거치지 않고 캐시된 [GraphVertex] 를 반환한다.
-     * 읽기 캐시는 무효화하지만 쓰기 메모이제이션 캐시는 유지된다.
+     * 새 정점을 생성할 때마다 delegate에 위임한다.
+     * 동일 인자라도 `createVertex`의 생성 계약을 보존하여 새 결과를 반환한다.
+     * 생성 후 읽기 캐시를 무효화한다.
      *
-     * > **주의**: 트랜잭션 기반 insert 의미가 필요하다면 [MemgraphGraphOperations] 를 직접 사용한다.
      */
-    override fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex {
-        val key = WriteVertexKey(label, properties)
-        val cached = createVertexMap[key]
-        if (cached != null) return cached
-        val created = delegate.createVertex(label, properties)
-        createVertexMap[key] = created
-        invalidateReads()
-        return created
-    }
+    override fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex =
+        delegate.createVertex(label, properties).also { invalidateReads() }
 
     override fun createVertices(label: String, propertiesList: List<Map<String, Any?>>): List<GraphVertex> =
         delegate.createVertices(label, propertiesList).also { invalidateAll() }
 
     /**
-     * 기존 정점의 속성을 갱신한다. 갱신 후 **읽기·쓰기 캐시 전체**를 무효화하여 이후 조회가 DB 에서 최신 데이터를 가져온다.
+     * 기존 정점의 속성을 갱신한다. 갱신 후 모든 읽기 캐시를 무효화하여 이후 조회가 DB 에서 최신 데이터를 가져온다.
      */
     override fun updateVertex(label: String, id: GraphElementId, properties: Map<String, Any?>): GraphVertex? =
         delegate.updateVertex(label, id, properties).also { invalidateAll() }
 
     /**
-     * 정점을 삭제하고 **읽기·쓰기 캐시 전체**를 무효화한다.
+     * 정점을 삭제하고 모든 읽기 캐시를 무효화한다.
      */
     override fun deleteVertex(label: String, id: GraphElementId): Boolean =
         delegate.deleteVertex(label, id).also { invalidateAll() }
 
     /**
-     * 새 간선을 생성하고 결과를 **쓰기 메모이제이션** 캐시에 저장한다.
-     * 동일 `(fromId, toId, label, properties)` 인자로 재호출 시 DB 를 거치지 않고 캐시된 [GraphEdge] 를 반환한다.
-     * 읽기 캐시는 무효화하지만 쓰기 메모이제이션 캐시는 유지된다.
+     * 새 간선을 생성할 때마다 delegate에 위임한다.
+     * 동일 인자라도 `createEdge`의 생성 계약을 보존하여 새 결과를 반환한다.
+     * 생성 후 읽기 캐시를 무효화한다.
      *
-     * > **주의**: 트랜잭션 기반 insert 의미가 필요하다면 [MemgraphGraphOperations] 를 직접 사용한다.
      */
     override fun createEdge(
         fromId: GraphElementId,
         toId: GraphElementId,
         label: String,
         properties: Map<String, Any?>,
-    ): GraphEdge {
-        val key = WriteEdgeKey(fromId, toId, label, properties)
-        val cached = createEdgeMap[key]
-        if (cached != null) return cached
-        val created = delegate.createEdge(fromId, toId, label, properties)
-        createEdgeMap[key] = created
-        invalidateReads()
-        return created
-    }
+    ): GraphEdge = delegate.createEdge(fromId, toId, label, properties).also { invalidateReads() }
 
     override fun createEdges(label: String, edges: List<BatchEdge>): List<GraphEdge> =
         delegate.createEdges(label, edges).also { invalidateAll() }
 
     /**
-     * 간선을 삭제하고 **읽기·쓰기 캐시 전체**를 무효화한다.
+     * 간선을 삭제하고 모든 읽기 캐시를 무효화한다.
      */
     override fun deleteEdge(label: String, id: GraphElementId): Boolean =
         delegate.deleteEdge(label, id).also { invalidateAll() }

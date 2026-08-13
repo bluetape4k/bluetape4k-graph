@@ -220,10 +220,8 @@ All queries use Neo4j driver parameter binding. Never concatenate user-supplied 
 | Operation | Effect |
 |-----------|--------|
 | `findVertexById`, `findVerticesByLabel`, `neighbors`, `shortestPath`, `allPaths`, `findEdgesByLabel` | Results cached on first call; subsequent calls return the cached value without hitting the DB |
-| `createVertex`, `createEdge` | Write-result memoization: same arguments return the same object. Read caches are invalidated; write caches are preserved |
-| `updateVertex`, `deleteVertex`, `deleteEdge` | All caches (read + write) invalidated |
-
-> **Production note**: write-result memoization means repeated `createVertex` calls with the same arguments do not create additional DB records. Use `Neo4jGraphOperations` directly when transactional insert semantics are required.
+| `createVertex`, `createEdge` | Every call delegates to the underlying operation, even with identical arguments. Read caches are invalidated after the write |
+| `updateVertex`, `deleteVertex`, `deleteEdge` | All read caches invalidated |
 
 ### Usage Example
 
@@ -240,7 +238,7 @@ val alice = ops.findVertexById("Person", aliceId)
 // Second call: cache hit (~5 ns), no DB round-trip
 val aliceCached = ops.findVertexById("Person", aliceId)
 
-// Any write invalidates all read caches automatically
+// Supported write methods invalidate all read caches automatically
 ops.deleteVertex("Person", aliceId)
 val afterDelete = ops.findVertexById("Person", aliceId)  // null (cache miss → DB)
 ```

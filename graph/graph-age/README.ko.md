@@ -455,11 +455,8 @@ val edge = ops.transaction {
 | 연산 | 효과 |
 |------|------|
 | `findVertexById`, `findVerticesByLabel`, `neighbors`, `shortestPath`, `allPaths`, `findEdgesByLabel` | 첫 번째 호출 시 DB 조회 후 캐시 저장, 이후 호출은 캐시 히트 |
-| `createVertex`, `createEdge` | 동일 인자 반복 호출 시 이전 결과 반환 (쓰기 메모이제이션). 읽기 캐시는 무효화, 쓰기 캐시는 보존 |
-| `updateVertex`, `deleteVertex`, `deleteEdge` | 읽기·쓰기 캐시 전체 무효화 |
-
-> **프로덕션 주의**: 쓰기 메모이제이션으로 인해 동일 인자로 `createVertex`를 반복 호출해도 DB 레코드가 추가 생성되지 않습니다.
-> 트랜잭션 기반 insert 의미가 필요한 경우 `AgeGraphOperations`를 직접 사용하세요.
+| `createVertex`, `createEdge` | 동일 인자라도 매번 기본 연산에 위임하여 새 레코드를 생성합니다. 생성 후 읽기 캐시를 무효화합니다 |
+| `updateVertex`, `deleteVertex`, `deleteEdge` | 읽기 캐시 전체를 무효화합니다 |
 
 ### 사용 예제
 
@@ -476,7 +473,7 @@ val alice = ops.findVertexById("Person", aliceId)
 // 두 번째 조회: 캐시 히트 (~5 ns)
 val aliceCached = ops.findVertexById("Person", aliceId)
 
-// 쓰기 후 자동 캐시 무효화
+// 지원하는 쓰기 연산 후 읽기 캐시 자동 무효화
 ops.deleteVertex("Person", aliceId)
 val afterDelete = ops.findVertexById("Person", aliceId)  // null (캐시 미스 → DB 재조회)
 ```

@@ -25,6 +25,13 @@
   secret-free lifecycle diagnostic을 추가했다 (#312). 실제 backend adapter와
   URI/file I/O는 후속 이슈 범위다.
 
+### 버그 수정
+
+- **Graph cache create contract**: AGE, Neo4j, Memgraph 캐시 데코레이터가
+  `createVertex`와 `createEdge`를 동일 인자라는 이유로 합치지 않고 매번 backend에
+  위임하도록 고쳤다. 생성 후 읽기 캐시 무효화와 영문/국문 문서 계약도 정렬했다
+  ([#463](https://github.com/bluetape4k/bluetape4k-graph/issues/463)).
+
 ## [0.6.0] - 2026-08-06
 
 ### 추가
