@@ -21,12 +21,14 @@ Memgraph 그래프 데이터베이스를 위한 `GraphOperations` / `GraphSuspen
 |--------|------|
 | `MemgraphGraphOperations` | 동기(blocking) 방식 그래프 연산 |
 | `MemgraphGraphSuspendOperations` | 코루틴(suspend/Flow) 방식 그래프 연산 |
-| `CachingMemgraphGraphOperations` | `ConcurrentHashMap` 기반 캐싱 데코레이터 |
+| `CachingMemgraphGraphOperations` | Caffeine bounded/expiring 기반 캐싱 데코레이터 |
 | `MemgraphGraphSchemaManager` | Memgraph index와 unique constraint용 SchemaManager |
 
 ## 사용법
 
 ```kotlin
+import java.time.Duration
+
 val driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.none())
 
 // 동기 방식
@@ -108,8 +110,8 @@ val top10  = ops.pageRank(PageRankOptions(vertexLabel = "Person", topK = 10))
 
 ## 캐싱 데코레이터
 
-`CachingMemgraphGraphOperations`는 `MemgraphGraphOperations`를 `ConcurrentHashMap` 기반 캐시로 감싸는 데코레이터다.
-읽기 결과를 메모이제이션하여 캐시 히트 시 DB 호출을 ~5 ns 조회로 대체한다.
+`CachingMemgraphGraphOperations`는 `MemgraphGraphOperations`를 Caffeine 기반 bounded/expiring 캐시로 감싸는 데코레이터다.
+읽기 결과를 메모이제이션하며 모든 읽기 캐시에 `maxSize` 엔트리 상한과 `expireAfterWrite` TTL을 적용한다.
 반복 읽기가 많은 벤치마크 및 워크로드에 적합하다.
 
 ### 캐시 동작
@@ -117,17 +119,24 @@ val top10  = ops.pageRank(PageRankOptions(vertexLabel = "Person", topK = 10))
 | 연산 | 효과 |
 |------|------|
 | `findVertexById`, `findVerticesByLabel`, `neighbors`, `shortestPath`, `allPaths`, `findEdgesByLabel` | 첫 번째 호출 시 DB 조회 후 캐시 저장, 이후 호출은 캐시 히트 |
+| `maxSize`, `expireAfterWrite` | 모든 읽기 캐시에 적용되며 두 값 모두 양수여야 한다 |
 | `createVertex`, `createEdge` | 동일 인자라도 매번 기본 연산에 위임하여 새 레코드를 생성합니다. 생성 후 읽기 캐시를 무효화합니다 |
 | `updateVertex`, `deleteVertex`, `deleteEdge` | 읽기 캐시 전체를 무효화합니다 |
 
 ### 사용 예제
 
 ```kotlin
+import java.time.Duration
+
 val driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.none())
 val baseOps = MemgraphGraphOperations(driver)
 
-// 캐싱 데코레이터로 감싸기
-val ops = CachingMemgraphGraphOperations(baseOps)
+// bounded/expiring 캐싱 데코레이터로 감싸기
+val ops = CachingMemgraphGraphOperations(
+    baseOps,
+    maxSize = 1_000,
+    expireAfterWrite = Duration.ofMinutes(5),
+)
 
 // 첫 번째 조회: DB 호출
 val alice = ops.findVertexById("Person", aliceId)

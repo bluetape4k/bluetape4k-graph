@@ -1,5 +1,7 @@
 package io.bluetape4k.graph.neo4j
 
+import com.github.benmanes.caffeine.cache.Cache
+import com.github.benmanes.caffeine.cache.Caffeine
 import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphElementId
@@ -12,12 +14,13 @@ import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.schema.GraphSchemaManagementOperations
 import io.bluetape4k.graph.schema.GraphSchemaManager
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.support.requireGt
+import io.bluetape4k.support.requirePositiveNumber
 import java.time.Duration
 import java.util.Optional
-import java.util.concurrent.ConcurrentHashMap
 
 /**
- * [ConcurrentHashMap] 캐시를 사용하는 [Neo4jGraphOperations] wrapper.
+ * Caffeine 기반 bounded/expiring read cache를 사용하는 [Neo4jGraphOperations] wrapper.
  *
  * 읽기 메서드(`findVertexById`, `findVerticesByLabel`, `neighbors`, `shortestPath`,
  * `allPaths`, `findEdgesByLabel`)는 결과를 캐싱한다. 같은 조회가 반복되면 database round trip 대신
@@ -29,16 +32,22 @@ import java.util.concurrent.ConcurrentHashMap
  * `createVertex`와 `createEdge`는 호출마다 [Neo4jGraphOperations]에 위임하여 새 생성 결과를 반환한다.
  * 캐시 래퍼는 생성 의미를 바꾸지 않으며, 생성 후 읽기 캐시만 무효화한다.
  *
- * 읽기 캐시는 TinyLFU bookkeeping 비용을 피하기 위해 Caffeine 대신 [ConcurrentHashMap]을 사용한다.
- * TTL과 max-size eviction은 의도적으로 제공하지 않는다. 쓰기 시 명시적인 `clear()` 호출로 일관성을 유지한다.
+ * 각 읽기 캐시는 [maxSize] 엔트리까지 보관하고 [expireAfterWrite] 이후 만료된다.
+ * 쓰기 시에는 모든 읽기 캐시를 즉시 무효화하여 일관성을 유지한다.
  *
  * ### Usage
  * ```kotlin
+ * import java.time.Duration
+ *
  * val driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.none())
  * val baseOps = Neo4jGraphOperations(driver)
  *
  * // benchmark 또는 반복 읽기 workload에 맞게 기본 operations를 감싼다.
- * val ops = CachingNeo4jGraphOperations(baseOps)
+ * val ops = CachingNeo4jGraphOperations(
+ *     baseOps,
+ *     maxSize = 1_000,
+ *     expireAfterWrite = Duration.ofMinutes(5),
+ * )
  *
  * // 첫 번째 조회: database 호출.
  * val alice = ops.findVertexById("Person", aliceId)
@@ -55,16 +64,21 @@ import java.util.concurrent.ConcurrentHashMap
  */
 /**
  * @param delegate 실제 database 호출을 수행할 [Neo4jGraphOperations] 인스턴스.
- * @param maxSize 호환성 유지용 파라미터. [ConcurrentHashMap] migration 이후 현재는 사용하지 않는다.
- * @param expireAfterWrite 호환성 유지용 파라미터. 쓰기 시 명시적으로 cache를 clear하므로 현재는 사용하지 않는다.
+ * @param maxSize 각 읽기 캐시의 최대 엔트리 수. 양수여야 한다.
+ * @param expireAfterWrite 읽기 캐시 엔트리의 쓰기 후 만료 시간. 양수여야 한다.
  */
 class CachingNeo4jGraphOperations(
     private val delegate: Neo4jGraphOperations,
-    @Suppress("UNUSED_PARAMETER") maxSize: Long = 10_000,
-    @Suppress("UNUSED_PARAMETER") expireAfterWrite: Duration = Duration.ofMinutes(5),
+    private val maxSize: Long = 10_000,
+    private val expireAfterWrite: Duration = Duration.ofMinutes(5),
 ): GraphOperations by delegate, GraphSchemaManagementOperations, GraphMergeOperations {
 
     companion object : KLogging()
+
+    init {
+        maxSize.requirePositiveNumber("maxSize")
+        expireAfterWrite.requireGt(Duration.ZERO, "expireAfterWrite")
+    }
 
     override fun schemaManager(): GraphSchemaManager =
         delegate.schemaManager()
@@ -74,38 +88,38 @@ class CachingNeo4jGraphOperations(
     private data class NeighborKey(val startId: GraphElementId, val options: NeighborOptions)
     private data class PathKey(val fromId: GraphElementId, val toId: GraphElementId, val options: PathOptions)
     private data class EdgeLabelKey(val label: String, val filter: Map<String, Any?>)
-    // ConcurrentHashMap은 TinyLFU bookkeeping을 피하고 lookup overhead를 낮게 유지한다.
-    // null 값을 허용하지 않으므로 nullable 결과는 Optional로 감싼다.
-    private val vertexByIdCache: ConcurrentHashMap<VertexKey, Optional<GraphVertex>> = ConcurrentHashMap(128)
+    private fun <K : Any, V : Any> newReadCache(): Cache<K, V> =
+        Caffeine.newBuilder()
+            .maximumSize(maxSize)
+            .expireAfterWrite(expireAfterWrite)
+            .build<K, V>()
 
-    private val verticesByLabelCache: ConcurrentHashMap<LabelKey, List<GraphVertex>> = ConcurrentHashMap(128)
-
-    private val neighborsCache: ConcurrentHashMap<NeighborKey, List<GraphVertex>> = ConcurrentHashMap(128)
-
-    // shortestPath는 null을 반환할 수 있으므로 cache에는 Optional 값을 저장한다.
-    private val shortestPathCache: ConcurrentHashMap<PathKey, Optional<GraphPath>> = ConcurrentHashMap(128)
-
-    private val allPathsCache: ConcurrentHashMap<PathKey, List<GraphPath>> = ConcurrentHashMap(128)
-
-    private val edgesByLabelCache: ConcurrentHashMap<EdgeLabelKey, List<GraphEdge>> = ConcurrentHashMap(128)
-
-    private fun invalidateAll() {
-        vertexByIdCache.clear()
-        verticesByLabelCache.clear()
-        neighborsCache.clear()
-        shortestPathCache.clear()
-        allPathsCache.clear()
-        edgesByLabelCache.clear()
+    private fun <K : Any, V : Any> putReadCache(cache: Cache<K, V>, key: K, value: V) {
+        cache.put(key, value)
+        cache.cleanUp()
     }
 
-    // createVertex/createEdge 후 생성 결과와 일관되지 않을 수 있는 읽기 cache를 무효화한다.
-    private fun invalidateReads() {
-        vertexByIdCache.clear()
-        verticesByLabelCache.clear()
-        neighborsCache.clear()
-        shortestPathCache.clear()
-        allPathsCache.clear()
-        edgesByLabelCache.clear()
+    // Caffeine Cache는 null 값을 허용하지 않으므로 nullable 결과는 Optional로 감싼다.
+    private val vertexByIdCache: Cache<VertexKey, Optional<GraphVertex>> = newReadCache()
+
+    private val verticesByLabelCache: Cache<LabelKey, List<GraphVertex>> = newReadCache()
+
+    private val neighborsCache: Cache<NeighborKey, List<GraphVertex>> = newReadCache()
+
+    // shortestPath는 null을 반환할 수 있으므로 cache에는 Optional 값을 저장한다.
+    private val shortestPathCache: Cache<PathKey, Optional<GraphPath>> = newReadCache()
+
+    private val allPathsCache: Cache<PathKey, List<GraphPath>> = newReadCache()
+
+    private val edgesByLabelCache: Cache<EdgeLabelKey, List<GraphEdge>> = newReadCache()
+
+    private fun clearReadCaches() {
+        vertexByIdCache.invalidateAll()
+        verticesByLabelCache.invalidateAll()
+        neighborsCache.invalidateAll()
+        shortestPathCache.invalidateAll()
+        allPathsCache.invalidateAll()
+        edgesByLabelCache.invalidateAll()
     }
 
     /**
@@ -120,10 +134,10 @@ class CachingNeo4jGraphOperations(
 	 */
     override fun findVertexById(label: String, id: GraphElementId): GraphVertex? {
         val key = VertexKey(label, id)
-        val cached = vertexByIdCache[key]
+        val cached = vertexByIdCache.getIfPresent(key)
         if (cached != null) return cached.orElse(null)
         val value = Optional.ofNullable(delegate.findVertexById(label, id))
-        vertexByIdCache[key] = value
+        putReadCache(vertexByIdCache, key, value)
         return value.orElse(null)
     }
 
@@ -140,10 +154,10 @@ class CachingNeo4jGraphOperations(
 	 */
     override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> {
         val key = LabelKey(label, filter)
-        val cached = verticesByLabelCache[key]
+        val cached = verticesByLabelCache.getIfPresent(key)
         if (cached != null) return cached
         val value = delegate.findVerticesByLabel(label, filter)
-        verticesByLabelCache[key] = value
+        putReadCache(verticesByLabelCache, key, value)
         return value
     }
 
@@ -157,10 +171,10 @@ class CachingNeo4jGraphOperations(
 	 */
     override fun neighbors(startId: GraphElementId, options: NeighborOptions): List<GraphVertex> {
         val key = NeighborKey(startId, options)
-        val cached = neighborsCache[key]
+        val cached = neighborsCache.getIfPresent(key)
         if (cached != null) return cached
         val value = delegate.neighbors(startId, options)
-        neighborsCache[key] = value
+        putReadCache(neighborsCache, key, value)
         return value
     }
 
@@ -178,10 +192,10 @@ class CachingNeo4jGraphOperations(
         options: PathOptions,
     ): GraphPath? {
         val key = PathKey(fromId, toId, options)
-        val cached = shortestPathCache[key]
+        val cached = shortestPathCache.getIfPresent(key)
         if (cached != null) return cached.orElse(null)
         val value = Optional.ofNullable(delegate.shortestPath(fromId, toId, options))
-        shortestPathCache[key] = value
+        putReadCache(shortestPathCache, key, value)
         return value.orElse(null)
     }
 
@@ -199,10 +213,10 @@ class CachingNeo4jGraphOperations(
         options: PathOptions,
     ): List<GraphPath> {
         val key = PathKey(fromId, toId, options)
-        val cached = allPathsCache[key]
+        val cached = allPathsCache.getIfPresent(key)
         if (cached != null) return cached
         val value = delegate.allPaths(fromId, toId, options)
-        allPathsCache[key] = value
+        putReadCache(allPathsCache, key, value)
         return value
     }
 
@@ -219,10 +233,10 @@ class CachingNeo4jGraphOperations(
 	 */
     override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): List<GraphEdge> {
         val key = EdgeLabelKey(label, filter)
-        val cached = edgesByLabelCache[key]
+        val cached = edgesByLabelCache.getIfPresent(key)
         if (cached != null) return cached
         val value = delegate.findEdgesByLabel(label, filter)
-        edgesByLabelCache[key] = value
+        putReadCache(edgesByLabelCache, key, value)
         return value
     }
 
@@ -238,10 +252,10 @@ class CachingNeo4jGraphOperations(
 	 *
 	 */
     override fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex =
-        delegate.createVertex(label, properties).also { invalidateReads() }
+        delegate.createVertex(label, properties).also { clearReadCaches() }
 
     override fun createVertices(label: String, propertiesList: List<Map<String, Any?>>): List<GraphVertex> =
-        delegate.createVertices(label, propertiesList).also { invalidateAll() }
+        delegate.createVertices(label, propertiesList).also { clearReadCaches() }
 
     /**
      * 정점 속성을 갱신하고 모든 읽기 cache를 무효화한다.
@@ -252,7 +266,7 @@ class CachingNeo4jGraphOperations(
 	 * ```
 	 */
     override fun updateVertex(label: String, id: GraphElementId, properties: Map<String, Any?>): GraphVertex? =
-        delegate.updateVertex(label, id, properties).also { invalidateAll() }
+        delegate.updateVertex(label, id, properties).also { clearReadCaches() }
 
     /**
      * 정점을 삭제하고 모든 읽기 cache를 무효화한다.
@@ -263,7 +277,7 @@ class CachingNeo4jGraphOperations(
 	 * ```
 	 */
     override fun deleteVertex(label: String, id: GraphElementId): Boolean =
-        delegate.deleteVertex(label, id).also { invalidateAll() }
+        delegate.deleteVertex(label, id).also { clearReadCaches() }
 
     /**
      * 간선을 생성할 때마다 delegate에 위임한다.
@@ -281,10 +295,10 @@ class CachingNeo4jGraphOperations(
         toId: GraphElementId,
         label: String,
         properties: Map<String, Any?>,
-    ): GraphEdge = delegate.createEdge(fromId, toId, label, properties).also { invalidateReads() }
+    ): GraphEdge = delegate.createEdge(fromId, toId, label, properties).also { clearReadCaches() }
 
     override fun createEdges(label: String, edges: List<BatchEdge>): List<GraphEdge> =
-        delegate.createEdges(label, edges).also { invalidateAll() }
+        delegate.createEdges(label, edges).also { clearReadCaches() }
 
     /**
      * 간선을 삭제하고 모든 읽기 cache를 무효화한다.
@@ -295,14 +309,14 @@ class CachingNeo4jGraphOperations(
 	 * ```
 	 */
     override fun deleteEdge(label: String, id: GraphElementId): Boolean =
-        delegate.deleteEdge(label, id).also { invalidateAll() }
+        delegate.deleteEdge(label, id).also { clearReadCaches() }
 
     override fun mergeVertex(
         label: String,
         matchProperties: Map<String, Any?>,
         setProperties: Map<String, Any?>,
     ): GraphVertex =
-        delegate.mergeVertex(label, matchProperties, setProperties).also { invalidateAll() }
+        delegate.mergeVertex(label, matchProperties, setProperties).also { clearReadCaches() }
 
     override fun mergeEdge(
         fromId: GraphElementId,
@@ -311,5 +325,5 @@ class CachingNeo4jGraphOperations(
         matchProperties: Map<String, Any?>,
         setProperties: Map<String, Any?>,
     ): GraphEdge =
-        delegate.mergeEdge(fromId, toId, label, matchProperties, setProperties).also { invalidateAll() }
+        delegate.mergeEdge(fromId, toId, label, matchProperties, setProperties).also { clearReadCaches() }
 }

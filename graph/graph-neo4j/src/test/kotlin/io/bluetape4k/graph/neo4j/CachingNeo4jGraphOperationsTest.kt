@@ -9,6 +9,7 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.assertions.assertFailsWith
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import java.time.Duration
 
 /**
  * [CachingNeo4jGraphOperations] 의 읽기 캐시 히트·무효화와 생성 위임 계약을 검증한다.
@@ -378,5 +380,47 @@ class CachingNeo4jGraphOperationsTest {
         r2 shouldBeEqualTo edge2
         verify(exactly = 1) { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) }
         verify(exactly = 1) { delegate.createEdge(aliceId, bobId, "KNOWS", mapOf("since" to 2025)) }
+    }
+
+    // ───── bounded/expiring read cache ─────
+
+    @Test
+    fun `maxSize는 단일 read cache의 엔트리 수를 제한한다`() {
+        val bounded = CachingNeo4jGraphOperations(delegate, maxSize = 1)
+        every { delegate.findVertexById("Person", aliceId) } returns alice
+        every { delegate.findVertexById("Person", bobId) } returns bob
+
+        bounded.findVertexById("Person", aliceId)
+        bounded.findVertexById("Person", bobId)
+        bounded.findVertexById("Person", aliceId)
+
+        verify(exactly = 2) { delegate.findVertexById("Person", aliceId) }
+        verify(exactly = 1) { delegate.findVertexById("Person", bobId) }
+    }
+
+    @Test
+    fun `expireAfterWrite 후 read cache가 만료되어 delegate를 다시 호출한다`() {
+        val expiring = CachingNeo4jGraphOperations(delegate, expireAfterWrite = Duration.ofMillis(20))
+        every { delegate.findVertexById("Person", aliceId) } returns alice
+
+        expiring.findVertexById("Person", aliceId)
+        Thread.sleep(80)
+        expiring.findVertexById("Person", aliceId)
+
+        verify(exactly = 2) { delegate.findVertexById("Person", aliceId) }
+    }
+
+    @Test
+    fun `maxSize는 양수여야 한다`() {
+        assertFailsWith<IllegalArgumentException> {
+            CachingNeo4jGraphOperations(delegate, maxSize = 0)
+        }
+    }
+
+    @Test
+    fun `expireAfterWrite는 양수여야 한다`() {
+        assertFailsWith<IllegalArgumentException> {
+            CachingNeo4jGraphOperations(delegate, expireAfterWrite = Duration.ZERO)
+        }
     }
 }

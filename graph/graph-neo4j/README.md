@@ -20,7 +20,7 @@ It bridges the Reactive Streams API through `kotlinx-coroutines-reactive` to pro
 |-------|-------------|
 | `Neo4jGraphOperations` | Synchronous `GraphOperations` implementation over the Neo4j driver |
 | `Neo4jGraphSuspendOperations` | Coroutine-based `GraphSuspendOperations` implementation |
-| `CachingNeo4jGraphOperations` | `ConcurrentHashMap`-backed caching decorator over `Neo4jGraphOperations` |
+| `CachingNeo4jGraphOperations` | Caffeine bounded/expiring caching decorator over `Neo4jGraphOperations` |
 | `Neo4jGraphSchemaManager` | Schema/index manager for Neo4j indexes and unique constraints |
 | `Neo4jCoroutineSession` | Bridges `ReactiveSession` and Kotlin Coroutines |
 | `Neo4jRecordMapper` | Converts Neo4j `Record`, `Node`, `Relationship`, and `Path` to graph-core domain types |
@@ -213,24 +213,31 @@ All queries use Neo4j driver parameter binding. Never concatenate user-supplied 
 
 ## Caching Decorator
 
-`CachingNeo4jGraphOperations` wraps a `Neo4jGraphOperations` instance and memoizes all read results using `ConcurrentHashMap` (~5 ns lookup). It is designed for read-heavy workloads such as benchmarks or repeated graph traversals.
+`CachingNeo4jGraphOperations` wraps a `Neo4jGraphOperations` instance and memoizes all read results in six Caffeine caches. Each cache applies the configured `maxSize` entry bound and `expireAfterWrite` TTL, making the decorator suitable for read-heavy workloads such as benchmarks or repeated graph traversals.
 
 ### Cache Behaviour
 
 | Operation | Effect |
 |-----------|--------|
 | `findVertexById`, `findVerticesByLabel`, `neighbors`, `shortestPath`, `allPaths`, `findEdgesByLabel` | Results cached on first call; subsequent calls return the cached value without hitting the DB |
+| `maxSize`, `expireAfterWrite` | Applied to every read cache; both values must be positive |
 | `createVertex`, `createEdge` | Every call delegates to the underlying operation, even with identical arguments. Read caches are invalidated after the write |
 | `updateVertex`, `deleteVertex`, `deleteEdge` | All read caches invalidated |
 
 ### Usage Example
 
 ```kotlin
+import java.time.Duration
+
 val driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.none())
 val baseOps = Neo4jGraphOperations(driver)
 
-// Wrap with caching decorator
-val ops = CachingNeo4jGraphOperations(baseOps)
+// Wrap with bounded/expiring caching decorator
+val ops = CachingNeo4jGraphOperations(
+    baseOps,
+    maxSize = 1_000,
+    expireAfterWrite = Duration.ofMinutes(5),
+)
 
 // First call: DB query
 val alice = ops.findVertexById("Person", aliceId)

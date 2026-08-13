@@ -1,6 +1,6 @@
 # WIP - bluetape4k-graph
 
-스냅샷: 2026-08-12 KST
+스냅샷: 2026-08-13 KST
 범위: `debop`에게 배정된 열린 GitHub 이슈
 열린 배정 이슈 수: 8개 (`0.7.0` milestone)
 
@@ -22,8 +22,8 @@ train tip과 CI를 함께 확인한다.
 
 | 이슈 | 상태 | 메모 |
 |---|---|---|
-| [#463](https://github.com/bluetape4k/bluetape4k-graph/issues/463) | 구현·검증 완료, PR 준비 | AGE/Neo4j/Memgraph cache decorator가 `createVertex/createEdge`를 매번 delegate에 위임하도록 고쳤다. 세 모듈 전체 테스트와 detekt/Dokka가 통과했다. |
-| [#464](https://github.com/bluetape4k/bluetape4k-graph/issues/464) | #463 후속 slice 대기 | `maxSize`/`expireAfterWrite` 계약을 실제 bounded/expiring read cache로 정렬한다. |
+| [#463](https://github.com/bluetape4k/bluetape4k-graph/issues/463) | 병합 완료 | PR #497이 `d5366325dd2a126a3f52f55800911776e64c9de6`으로 병합됐고, 병합 후 AGE/Neo4j/Memgraph targeted 회귀 테스트를 통과했다. |
+| [#464](https://github.com/bluetape4k/bluetape4k-graph/issues/464) | 구현·검증 완료, PR 준비 | 세 wrapper의 여섯 read cache를 Caffeine bounded/expiring cache로 전환하고 `maxSize`/`expireAfterWrite` 양수 검증, eviction/expiration 회귀 테스트와 영문/국문 문서를 정렬했다. |
 | [#312](https://github.com/bluetape4k/bluetape4k-graph/issues/312) | PR #481 검증 대기 | `graph-io-core` additive native loader SPI와 128개 core 테스트(21개 targeted) 통과. TinkerPop/TinkerGraph는 서버 native command/staging semantics가 없어 제외하며, 실제 backend adapter/Testcontainers는 후속 범위다. |
 | [#313](https://github.com/bluetape4k/bluetape4k-graph/issues/313) | PR #482 CI 성공, 병합 승인 대기 | CSV/Jackson2/Jackson3/GraphML/OkIO streaming reader와 ownership·cancellation·safe failure contract를 추가했다. 여섯 graph-io module의 fresh test/compile/detekt와 hosted graph/Examples CI가 통과했으며, P0/P1=0·P2=4 후속 범위를 review 문서에 기록했다. |
 

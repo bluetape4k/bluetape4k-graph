@@ -21,12 +21,14 @@ It can be connected to with `neo4j-java-driver` as-is.
 |-------|-------------|
 | `MemgraphGraphOperations` | Synchronous (blocking) graph operations |
 | `MemgraphGraphSuspendOperations` | Coroutine (suspend/Flow) graph operations |
-| `CachingMemgraphGraphOperations` | `ConcurrentHashMap`-backed caching decorator over `MemgraphGraphOperations` |
+| `CachingMemgraphGraphOperations` | Caffeine bounded/expiring caching decorator over `MemgraphGraphOperations` |
 | `MemgraphGraphSchemaManager` | Schema/index manager for Memgraph indexes and unique constraints |
 
 ## Usage
 
 ```kotlin
+import java.time.Duration
+
 val driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.none())
 
 // Synchronous
@@ -113,24 +115,31 @@ val top10  = ops.pageRank(PageRankOptions(vertexLabel = "Person", topK = 10))
 
 ## Caching Decorator
 
-`CachingMemgraphGraphOperations` wraps a `MemgraphGraphOperations` instance and memoizes all read results using `ConcurrentHashMap` (~5 ns lookup). It is designed for read-heavy workloads such as benchmarks or repeated graph traversals.
+`CachingMemgraphGraphOperations` wraps a `MemgraphGraphOperations` instance and memoizes all read results in six Caffeine caches. Each cache applies the configured `maxSize` entry bound and `expireAfterWrite` TTL, making the decorator suitable for read-heavy workloads such as benchmarks or repeated graph traversals.
 
 ### Cache Behaviour
 
 | Operation | Effect |
 |-----------|--------|
 | `findVertexById`, `findVerticesByLabel`, `neighbors`, `shortestPath`, `allPaths`, `findEdgesByLabel` | Results cached on first call; subsequent calls return the cached value without hitting the DB |
+| `maxSize`, `expireAfterWrite` | Applied to every read cache; both values must be positive |
 | `createVertex`, `createEdge` | Every call delegates to the underlying operation, even with identical arguments. Read caches are invalidated after the write |
 | `updateVertex`, `deleteVertex`, `deleteEdge` | All read caches invalidated |
 
 ### Usage Example
 
 ```kotlin
+import java.time.Duration
+
 val driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.none())
 val baseOps = MemgraphGraphOperations(driver)
 
-// Wrap with caching decorator
-val ops = CachingMemgraphGraphOperations(baseOps)
+// Wrap with bounded/expiring caching decorator
+val ops = CachingMemgraphGraphOperations(
+    baseOps,
+    maxSize = 1_000,
+    expireAfterWrite = Duration.ofMinutes(5),
+)
 
 // First call: DB query
 val alice = ops.findVertexById("Person", aliceId)

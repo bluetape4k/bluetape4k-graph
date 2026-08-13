@@ -31,6 +31,11 @@
   `createVertex`와 `createEdge`를 동일 인자라는 이유로 합치지 않고 매번 backend에
   위임하도록 고쳤다. 생성 후 읽기 캐시 무효화와 영문/국문 문서 계약도 정렬했다
   ([#463](https://github.com/bluetape4k/bluetape4k-graph/issues/463)).
+- **Graph cache bounds and TTL**: AGE, Neo4j, Memgraph 캐시 데코레이터가
+  `maxSize`와 `expireAfterWrite`를 모든 읽기 캐시에 실제로 적용하도록 Caffeine
+  bounded/expiring cache로 전환했다. 양수 파라미터 검증과 eviction/expiration
+  회귀 테스트, 영문/국문 문서를 추가했다
+  ([#464](https://github.com/bluetape4k/bluetape4k-graph/issues/464)).
 
 ## [0.6.0] - 2026-08-06
 

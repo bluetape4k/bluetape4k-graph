@@ -1,5 +1,7 @@
 package io.bluetape4k.graph.memgraph
 
+import com.github.benmanes.caffeine.cache.Cache
+import com.github.benmanes.caffeine.cache.Caffeine
 import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphElementId
@@ -12,12 +14,13 @@ import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.schema.GraphSchemaManagementOperations
 import io.bluetape4k.graph.schema.GraphSchemaManager
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.support.requireGt
+import io.bluetape4k.support.requirePositiveNumber
 import java.time.Duration
 import java.util.Optional
-import java.util.concurrent.ConcurrentHashMap
 
 /**
- * ConcurrentHashMap 기반 캐시를 사용한 [MemgraphGraphOperations] 래퍼.
+ * Caffeine 기반 bounded/expiring read cache를 사용하는 [MemgraphGraphOperations] 래퍼.
  *
  * 읽기 메서드 (findVertexById, findVerticesByLabel, neighbors, shortestPath, allPaths, findEdgesByLabel)
  * 의 결과를 캐싱하여 반복 DB 호출을 캐시 히트 (~5 ns) 로 변환한다.
@@ -28,17 +31,22 @@ import java.util.concurrent.ConcurrentHashMap
  * createVertex/createEdge는 호출마다 [MemgraphGraphOperations]에 위임하여 새 생성 결과를 반환한다.
  * 캐시 래퍼는 생성 의미를 바꾸지 않으며, 생성 후 읽기 캐시만 무효화한다.
  *
- * 모든 읽기 캐시는 ConcurrentHashMap 으로 구현되어 TinyLFU 북키핑 비용을 제거하고
- * 조회 지연을 ~5 ns 수준으로 유지한다. TTL/maxSize 기반 축출은 제거되었고,
- * 쓰기 시 명시적 clear() 로 일관성을 유지한다.
+ * 각 읽기 캐시는 [maxSize] 엔트리까지 보관하고 [expireAfterWrite] 이후 만료된다.
+ * 쓰기 시에는 모든 읽기 캐시를 즉시 무효화하여 일관성을 유지한다.
  *
  * ### 사용 예제
  * ```kotlin
+ * import java.time.Duration
+ *
  * val driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.none())
  * val baseOps = MemgraphGraphOperations(driver)
  *
  * // 캐싱 래퍼로 감싸기 (벤치마크/반복 읽기가 많은 워크로드에 적합)
- * val ops = CachingMemgraphGraphOperations(baseOps)
+ * val ops = CachingMemgraphGraphOperations(
+ *     baseOps,
+ *     maxSize = 1_000,
+ *     expireAfterWrite = Duration.ofMinutes(5),
+ * )
  *
  * // 첫 번째 조회: DB 호출 발생
  * val alice = ops.findVertexById("Person", aliceId)
@@ -55,16 +63,21 @@ import java.util.concurrent.ConcurrentHashMap
  */
 /**
  * @param delegate 실제 DB 호출을 위임할 [MemgraphGraphOperations] 인스턴스.
- * @param maxSize API 호환성 유지용 파라미터 — 현재 사용되지 않음.
- * @param expireAfterWrite API 호환성 유지용 파라미터 — 현재 사용되지 않음 (쓰기 시 명시적 clear() 로 무효화).
+ * @param maxSize 각 읽기 캐시의 최대 엔트리 수. 양수여야 한다.
+ * @param expireAfterWrite 읽기 캐시 엔트리의 쓰기 후 만료 시간. 양수여야 한다.
  */
 class CachingMemgraphGraphOperations(
     private val delegate: MemgraphGraphOperations,
-    @Suppress("UNUSED_PARAMETER") maxSize: Long = 10_000,
-    @Suppress("UNUSED_PARAMETER") expireAfterWrite: Duration = Duration.ofMinutes(5),
+    private val maxSize: Long = 10_000,
+    private val expireAfterWrite: Duration = Duration.ofMinutes(5),
 ): GraphOperations by delegate, GraphSchemaManagementOperations, GraphMergeOperations {
 
     companion object : KLogging()
+
+    init {
+        maxSize.requirePositiveNumber("maxSize")
+        expireAfterWrite.requireGt(Duration.ZERO, "expireAfterWrite")
+    }
 
     override fun schemaManager(): GraphSchemaManager =
         delegate.schemaManager()
@@ -74,37 +87,38 @@ class CachingMemgraphGraphOperations(
     private data class NeighborKey(val startId: GraphElementId, val options: NeighborOptions)
     private data class PathKey(val fromId: GraphElementId, val toId: GraphElementId, val options: PathOptions)
     private data class EdgeLabelKey(val label: String, val filter: Map<String, Any?>)
-    // ConcurrentHashMap은 약 ~5 ns 조회 비용을 유지한다. null 값을 허용하지 않으므로 nullable 결과는 Optional로 감싼다.
-    private val vertexByIdCache: ConcurrentHashMap<VertexKey, Optional<GraphVertex>> = ConcurrentHashMap(128)
+    private fun <K : Any, V : Any> newReadCache(): Cache<K, V> =
+        Caffeine.newBuilder()
+            .maximumSize(maxSize)
+            .expireAfterWrite(expireAfterWrite)
+            .build<K, V>()
 
-    private val verticesByLabelCache: ConcurrentHashMap<LabelKey, List<GraphVertex>> = ConcurrentHashMap(128)
-
-    private val neighborsCache: ConcurrentHashMap<NeighborKey, List<GraphVertex>> = ConcurrentHashMap(128)
-
-    // shortestPath: null 가능 → Optional 래핑
-    private val shortestPathCache: ConcurrentHashMap<PathKey, Optional<GraphPath>> = ConcurrentHashMap(128)
-
-    private val allPathsCache: ConcurrentHashMap<PathKey, List<GraphPath>> = ConcurrentHashMap(128)
-
-    private val edgesByLabelCache: ConcurrentHashMap<EdgeLabelKey, List<GraphEdge>> = ConcurrentHashMap(128)
-
-    private fun invalidateAll() {
-        vertexByIdCache.clear()
-        verticesByLabelCache.clear()
-        neighborsCache.clear()
-        shortestPathCache.clear()
-        allPathsCache.clear()
-        edgesByLabelCache.clear()
+    private fun <K : Any, V : Any> putReadCache(cache: Cache<K, V>, key: K, value: V) {
+        cache.put(key, value)
+        cache.cleanUp()
     }
 
-    // createVertex/createEdge 후 생성 결과와 일관되지 않을 수 있는 읽기 캐시를 무효화한다.
-    private fun invalidateReads() {
-        vertexByIdCache.clear()
-        verticesByLabelCache.clear()
-        neighborsCache.clear()
-        shortestPathCache.clear()
-        allPathsCache.clear()
-        edgesByLabelCache.clear()
+    // Caffeine Cache는 null 값을 허용하지 않으므로 nullable 결과는 Optional로 래핑한다.
+    private val vertexByIdCache: Cache<VertexKey, Optional<GraphVertex>> = newReadCache()
+
+    private val verticesByLabelCache: Cache<LabelKey, List<GraphVertex>> = newReadCache()
+
+    private val neighborsCache: Cache<NeighborKey, List<GraphVertex>> = newReadCache()
+
+    // shortestPath: null 가능 → Optional 래핑
+    private val shortestPathCache: Cache<PathKey, Optional<GraphPath>> = newReadCache()
+
+    private val allPathsCache: Cache<PathKey, List<GraphPath>> = newReadCache()
+
+    private val edgesByLabelCache: Cache<EdgeLabelKey, List<GraphEdge>> = newReadCache()
+
+    private fun clearReadCaches() {
+        vertexByIdCache.invalidateAll()
+        verticesByLabelCache.invalidateAll()
+        neighborsCache.invalidateAll()
+        shortestPathCache.invalidateAll()
+        allPathsCache.invalidateAll()
+        edgesByLabelCache.invalidateAll()
     }
 
     /**
@@ -112,10 +126,10 @@ class CachingMemgraphGraphOperations(
      */
     override fun findVertexById(label: String, id: GraphElementId): GraphVertex? {
         val key = VertexKey(label, id)
-        val cached = vertexByIdCache[key]
+        val cached = vertexByIdCache.getIfPresent(key)
         if (cached != null) return cached.orElse(null)
         val value = Optional.ofNullable(delegate.findVertexById(label, id))
-        vertexByIdCache[key] = value
+        putReadCache(vertexByIdCache, key, value)
         return value.orElse(null)
     }
 
@@ -124,10 +138,10 @@ class CachingMemgraphGraphOperations(
      */
     override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> {
         val key = LabelKey(label, filter)
-        val cached = verticesByLabelCache[key]
+        val cached = verticesByLabelCache.getIfPresent(key)
         if (cached != null) return cached
         val value = delegate.findVerticesByLabel(label, filter)
-        verticesByLabelCache[key] = value
+        putReadCache(verticesByLabelCache, key, value)
         return value
     }
 
@@ -136,10 +150,10 @@ class CachingMemgraphGraphOperations(
      */
     override fun neighbors(startId: GraphElementId, options: NeighborOptions): List<GraphVertex> {
         val key = NeighborKey(startId, options)
-        val cached = neighborsCache[key]
+        val cached = neighborsCache.getIfPresent(key)
         if (cached != null) return cached
         val value = delegate.neighbors(startId, options)
-        neighborsCache[key] = value
+        putReadCache(neighborsCache, key, value)
         return value
     }
 
@@ -152,10 +166,10 @@ class CachingMemgraphGraphOperations(
         options: PathOptions,
     ): GraphPath? {
         val key = PathKey(fromId, toId, options)
-        val cached = shortestPathCache[key]
+        val cached = shortestPathCache.getIfPresent(key)
         if (cached != null) return cached.orElse(null)
         val value = Optional.ofNullable(delegate.shortestPath(fromId, toId, options))
-        shortestPathCache[key] = value
+        putReadCache(shortestPathCache, key, value)
         return value.orElse(null)
     }
 
@@ -168,10 +182,10 @@ class CachingMemgraphGraphOperations(
         options: PathOptions,
     ): List<GraphPath> {
         val key = PathKey(fromId, toId, options)
-        val cached = allPathsCache[key]
+        val cached = allPathsCache.getIfPresent(key)
         if (cached != null) return cached
         val value = delegate.allPaths(fromId, toId, options)
-        allPathsCache[key] = value
+        putReadCache(allPathsCache, key, value)
         return value
     }
 
@@ -180,10 +194,10 @@ class CachingMemgraphGraphOperations(
      */
     override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): List<GraphEdge> {
         val key = EdgeLabelKey(label, filter)
-        val cached = edgesByLabelCache[key]
+        val cached = edgesByLabelCache.getIfPresent(key)
         if (cached != null) return cached
         val value = delegate.findEdgesByLabel(label, filter)
-        edgesByLabelCache[key] = value
+        putReadCache(edgesByLabelCache, key, value)
         return value
     }
 
@@ -194,22 +208,22 @@ class CachingMemgraphGraphOperations(
      *
      */
     override fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex =
-        delegate.createVertex(label, properties).also { invalidateReads() }
+        delegate.createVertex(label, properties).also { clearReadCaches() }
 
     override fun createVertices(label: String, propertiesList: List<Map<String, Any?>>): List<GraphVertex> =
-        delegate.createVertices(label, propertiesList).also { invalidateAll() }
+        delegate.createVertices(label, propertiesList).also { clearReadCaches() }
 
     /**
      * 기존 정점의 속성을 갱신한다. 갱신 후 모든 읽기 캐시를 무효화하여 이후 조회가 DB 에서 최신 데이터를 가져온다.
      */
     override fun updateVertex(label: String, id: GraphElementId, properties: Map<String, Any?>): GraphVertex? =
-        delegate.updateVertex(label, id, properties).also { invalidateAll() }
+        delegate.updateVertex(label, id, properties).also { clearReadCaches() }
 
     /**
      * 정점을 삭제하고 모든 읽기 캐시를 무효화한다.
      */
     override fun deleteVertex(label: String, id: GraphElementId): Boolean =
-        delegate.deleteVertex(label, id).also { invalidateAll() }
+        delegate.deleteVertex(label, id).also { clearReadCaches() }
 
     /**
      * 새 간선을 생성할 때마다 delegate에 위임한다.
@@ -222,23 +236,23 @@ class CachingMemgraphGraphOperations(
         toId: GraphElementId,
         label: String,
         properties: Map<String, Any?>,
-    ): GraphEdge = delegate.createEdge(fromId, toId, label, properties).also { invalidateReads() }
+    ): GraphEdge = delegate.createEdge(fromId, toId, label, properties).also { clearReadCaches() }
 
     override fun createEdges(label: String, edges: List<BatchEdge>): List<GraphEdge> =
-        delegate.createEdges(label, edges).also { invalidateAll() }
+        delegate.createEdges(label, edges).also { clearReadCaches() }
 
     /**
      * 간선을 삭제하고 모든 읽기 캐시를 무효화한다.
      */
     override fun deleteEdge(label: String, id: GraphElementId): Boolean =
-        delegate.deleteEdge(label, id).also { invalidateAll() }
+        delegate.deleteEdge(label, id).also { clearReadCaches() }
 
     override fun mergeVertex(
         label: String,
         matchProperties: Map<String, Any?>,
         setProperties: Map<String, Any?>,
     ): GraphVertex =
-        delegate.mergeVertex(label, matchProperties, setProperties).also { invalidateAll() }
+        delegate.mergeVertex(label, matchProperties, setProperties).also { clearReadCaches() }
 
     override fun mergeEdge(
         fromId: GraphElementId,
@@ -247,5 +261,5 @@ class CachingMemgraphGraphOperations(
         matchProperties: Map<String, Any?>,
         setProperties: Map<String, Any?>,
     ): GraphEdge =
-        delegate.mergeEdge(fromId, toId, label, matchProperties, setProperties).also { invalidateAll() }
+        delegate.mergeEdge(fromId, toId, label, matchProperties, setProperties).also { clearReadCaches() }
 }
