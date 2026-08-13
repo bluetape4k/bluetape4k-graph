@@ -23,16 +23,17 @@ import java.util.Optional
  * Caffeine 기반 bounded/expiring read cache를 사용하는 [MemgraphGraphOperations] 래퍼.
  *
  * 읽기 메서드 (findVertexById, findVerticesByLabel, neighbors, shortestPath, allPaths, findEdgesByLabel)
- * 의 결과를 캐싱하여 반복 DB 호출을 캐시 히트 (~5 ns) 로 변환한다.
+ * 의 결과를 캐싱하여 반복 DB 호출을 캐시 히트로 처리한다.
  *
  * 쓰기 메서드 (createVertex, updateVertex, deleteVertex, createEdge, deleteEdge) 호출 시
- * 캐시를 전체 무효화하여 일관성을 유지한다.
+ * 캐시를 전체 무효화하여 성공한 쓰기 이후의 stale 결과를 줄인다.
  *
  * createVertex/createEdge는 호출마다 [MemgraphGraphOperations]에 위임하여 새 생성 결과를 반환한다.
  * 캐시 래퍼는 생성 의미를 바꾸지 않으며, 생성 후 읽기 캐시만 무효화한다.
  *
  * 각 읽기 캐시는 [maxSize] 엔트리까지 보관하고 [expireAfterWrite] 이후 만료된다.
- * 쓰기 시에는 모든 읽기 캐시를 즉시 무효화하여 일관성을 유지한다.
+ * 쓰기 완료 후에는 모든 읽기 캐시를 무효화한다. 이미 진행 중인 cache miss가
+ * 이전 값을 다시 저장할 수 있으므로 동시 실행에 대한 강한 일관성은 보장하지 않는다.
  *
  * ### 사용 예제
  * ```kotlin
@@ -51,7 +52,7 @@ import java.util.Optional
  * // 첫 번째 조회: DB 호출 발생
  * val alice = ops.findVertexById("Person", aliceId)
  *
- * // 두 번째 조회: 캐시 히트 (~5 ns), DB 호출 없음
+ * // 두 번째 조회: 캐시 히트, DB 호출 없음
  * val aliceCached = ops.findVertexById("Person", aliceId)
  *
  * // 정점 삭제: 모든 캐시 자동 무효화

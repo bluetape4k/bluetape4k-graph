@@ -171,7 +171,7 @@ val ops = CachingAgeGraphOperations(
 // First call: DB query (JDBC round-trip)
 val alice = ops.findVertexById("Person", aliceId)
 
-// Second call: cache hit (~5 ns), no DB round-trip
+// Second call: cache hit, no DB round-trip
 val aliceCached = ops.findVertexById("Person", aliceId)
 
 // Supported write methods invalidate all read caches automatically

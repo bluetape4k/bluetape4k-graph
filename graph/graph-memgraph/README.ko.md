@@ -141,7 +141,7 @@ val ops = CachingMemgraphGraphOperations(
 // 첫 번째 조회: DB 호출
 val alice = ops.findVertexById("Person", aliceId)
 
-// 두 번째 조회: 캐시 히트 (~5 ns)
+// 두 번째 조회: 캐시 히트
 val aliceCached = ops.findVertexById("Person", aliceId)
 
 // 지원하는 쓰기 연산 후 읽기 캐시 자동 무효화
