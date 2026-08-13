@@ -36,6 +36,10 @@
   bounded/expiring cache로 전환했다. 양수 파라미터 검증과 eviction/expiration
   회귀 테스트, 영문/국문 문서를 추가했다
   ([#464](https://github.com/bluetape4k/bluetape4k-graph/issues/464)).
+- **Graph cache invalidation race**: AGE, Neo4j, Memgraph 캐시 데코레이터가
+  generation guard로 동시 cache miss의 stale 재적재를 차단하고, `dropGraph`와
+  transaction commit/rollback 이후의 읽기 캐시 경계를 명시하도록 정렬했다
+  ([#499](https://github.com/bluetape4k/bluetape4k-graph/issues/499)).
 
 ## [0.6.0] - 2026-08-06
 

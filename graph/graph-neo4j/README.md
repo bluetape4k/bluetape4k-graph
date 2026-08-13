@@ -223,6 +223,10 @@ All queries use Neo4j driver parameter binding. Never concatenate user-supplied 
 | `maxSize`, `expireAfterWrite` | Applied to every read cache; both values must be positive |
 | `createVertex`, `createEdge` | Every call delegates to the underlying operation, even with identical arguments. Read caches are invalidated after the write |
 | `updateVertex`, `deleteVertex`, `deleteEdge` | All read caches invalidated |
+| `dropGraph` | Delegates first and invalidates all read caches after a successful graph deletion |
+| `transaction { ... }` | Forwards the backend transaction capability; commit invalidates all read caches, while rollback keeps the existing cache |
+
+Each cache miss captures a generation before the delegate read. If a wrapper-visible write, `dropGraph`, or committed transaction advances that generation while the read is in flight, the returned value is not reinserted into the cache. The in-flight call may still return the value it read before the write; writes performed through another delegate instance remain outside this wrapper's invalidation boundary.
 
 ### Usage Example
 
