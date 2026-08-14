@@ -13,11 +13,14 @@ import io.bluetape4k.graph.repository.capabilities
 import io.bluetape4k.logging.KLogging
 
 /**
- * Unified adapter that exposes all [GraphOperations] capabilities on virtual threads.
+ * [GraphOperations]의 CRUD, traversal, algorithm surface를 Virtual Thread에서 실행하는
+ * 통합 adapter다.
  *
- * It composes five focused adapters through Kotlin `by` delegation.
+ * Kotlin `by` delegation으로 다섯 개의 focused adapter를 조합한다. 선택 capability는
+ * [capabilities]로 외부 delegate의 매핑을 보존하지만, 아직 `MERGE`, `SCHEMA`,
+ * `TRANSACTION`, `CHUNKED_READ`용 `*Async` method를 제공한다는 뜻은 아니다.
  *
- * ### Usage
+ * ### 사용 예
  * ```kotlin
  * val ops: GraphOperations = TinkerGraphOperations()
  * val vtOps = VirtualThreadOperationsAdapter(ops)
@@ -26,7 +29,7 @@ import io.bluetape4k.logging.KLogging
  * val scores = vtOps.pageRankAsync().join()
  * ```
  *
- * @param delegate synchronous [GraphOperations] to delegate to.
+ * @param delegate 호출자가 소유한 synchronous [GraphOperations] delegate.
  */
 class VirtualThreadOperationsAdapter(
     private val delegate: GraphOperations,
@@ -42,7 +45,12 @@ class VirtualThreadOperationsAdapter(
 
     override fun capabilities() = delegate.capabilities()
 
+    /**
+     * Borrowed delegate를 조기 종료하지 않도록 facade만 닫는다.
+     *
+     * delegate의 `close()`는 이 adapter의 호출자가 별도로 수행해야 한다.
+     */
     override fun close() {
-        // The delegate is externally owned; callers manage its lifecycle.
+        // delegate의 lifecycle은 호출자가 소유한다.
     }
 }

@@ -1,6 +1,9 @@
 package io.bluetape4k.graph.vt
 
 import io.bluetape4k.graph.model.BatchEdge
+import io.bluetape4k.graph.repository.GraphVirtualThreadCapabilitiesOperations
+import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
+import io.bluetape4k.graph.repository.capabilities
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.junit5.concurrency.StructuredTaskScopeTester
 import io.bluetape4k.logging.KLogging
@@ -56,7 +59,8 @@ class VirtualThreadOperationsAdapterTest {
 
     @Test
     fun `close does not affect delegate`() {
-        vtOps.close()
+        val virtualThread: GraphVirtualThreadOperations = vtOps
+        virtualThread.close()
         // delegate 는 여전히 사용 가능
         val v = ops.createVertex("Person")
         v.shouldNotBeNull()
@@ -66,6 +70,14 @@ class VirtualThreadOperationsAdapterTest {
     fun `asVirtualThread returns GraphVirtualThreadOperations`() {
         val result: io.bluetape4k.graph.repository.GraphVirtualThreadOperations = ops.asVirtualThread()
         result.shouldNotBeNull()
+    }
+
+    @Test
+    fun `facade type preserves capability contract`() {
+        val virtualThread: GraphVirtualThreadOperations = vtOps
+        val capabilities: GraphVirtualThreadCapabilitiesOperations = virtualThread
+
+        capabilities.capabilities() shouldBeEqualTo ops.capabilities()
     }
 
     @Test

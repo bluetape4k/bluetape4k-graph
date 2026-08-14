@@ -1137,13 +1137,24 @@ val cycles = ops.detectCycles(CycleOptions(edgeLabel = "KNOWS", maxDepth = 5))
 
 `GraphAlgorithmRepository`를 Virtual Thread 어댑터로 감싸면 Java 상호운용을 위한 `CompletableFuture` 기반 비동기 API를 사용할 수 있다.
 
+`GraphVirtualThreadOperations.capabilities()`는 외부에서 소유한 동기 delegate의
+capability discovery를 보존하는 공개 projection이다. delegate의 지원 flag, 버전,
+제약을 그대로 보여주지만 facade가 선택 기능 `MERGE`, `SCHEMA`, `TRANSACTION`,
+`CHUNKED_READ`용 `*Async` method까지 제공한다는 뜻은 아니다. 해당 비동기 경계가
+확정될 때까지 대응하는 sync/suspend contract 또는 graph-io Virtual Thread
+adapter를 사용해야 한다. `vtOps.close()`는 facade만 닫으며 delegate의 close 책임은
+호출자에게 남는다.
+
 ```kotlin
+import io.bluetape4k.graph.repository.GraphCapability
 import io.bluetape4k.graph.vt.asVirtualThread
 
 val ops: GraphOperations = TinkerGraphOperations()
 
 // Virtual Thread executor 로 감싸기
 val vtOps = ops.asVirtualThread()
+
+check(vtOps.capabilities().supports(GraphCapability.GRAPH_ALGORITHM))
 
 // CompletableFuture<List<PageRankScore>> 반환
 val future = vtOps.pageRankAsync(PageRankOptions(topK = 5))
