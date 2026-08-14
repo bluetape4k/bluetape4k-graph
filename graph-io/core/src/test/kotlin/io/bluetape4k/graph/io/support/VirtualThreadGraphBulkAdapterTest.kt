@@ -79,6 +79,25 @@ class VirtualThreadGraphBulkAdapterTest {
         ee.cause shouldBeInstanceOf RuntimeException::class
     }
 
+    @Test
+    fun `import adapter closes sync importer exactly once`() {
+        val closeCalls = AtomicInteger()
+        val importer = object : GraphBulkImporter<String> {
+            override fun importGraph(source: String, operations: GraphOperations, options: GraphImportOptions) =
+                stubImportReport
+
+            override fun close() {
+                closeCalls.incrementAndGet()
+            }
+        }
+        val vt = VirtualThreadGraphBulkAdapter.wrapImporter(importer)
+
+        vt.close()
+        vt.close()
+
+        closeCalls.get() shouldBeEqualTo 1
+    }
+
     // ── wrapExporter ─────────────────────────────────────────────────────────
 
     @Test
@@ -105,6 +124,25 @@ class VirtualThreadGraphBulkAdapterTest {
             vt.exportGraphAsync("sink", FakeGraphOperations(), GraphExportOptions()).get()
         }
         ee.cause shouldBeInstanceOf RuntimeException::class
+    }
+
+    @Test
+    fun `export adapter closes sync exporter exactly once`() {
+        val closeCalls = AtomicInteger()
+        val exporter = object : GraphBulkExporter<String> {
+            override fun exportGraph(sink: String, operations: GraphOperations, options: GraphExportOptions) =
+                stubExportReport
+
+            override fun close() {
+                closeCalls.incrementAndGet()
+            }
+        }
+        val vt = VirtualThreadGraphBulkAdapter.wrapExporter(exporter)
+
+        vt.close()
+        vt.close()
+
+        closeCalls.get() shouldBeEqualTo 1
     }
 
     @Test

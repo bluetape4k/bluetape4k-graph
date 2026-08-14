@@ -40,6 +40,10 @@
   generation guard로 동시 cache miss의 stale 재적재를 차단하고, `dropGraph`와
   transaction commit/rollback 이후의 읽기 캐시 경계를 명시하도록 정렬했다
   ([#499](https://github.com/bluetape4k/bluetape4k-graph/issues/499)).
+- **Virtual Thread bulk adapter lifecycle**: graph-io의 `wrapImporter`와
+  `wrapExporter`가 동기 delegate의 `close()`를 wrapper에서 최대 한 번 전파하고,
+  반복 close·source/sink 소유권·비동기 작업 중 close 정책을 KDoc과 회귀 테스트로
+  명시하도록 고쳤다 ([#470](https://github.com/bluetape4k/bluetape4k-graph/issues/470)).
 
 ## [0.6.0] - 2026-08-06
 

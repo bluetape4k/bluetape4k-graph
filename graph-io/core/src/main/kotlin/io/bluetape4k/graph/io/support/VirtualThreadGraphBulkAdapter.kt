@@ -26,8 +26,19 @@ import kotlin.concurrent.withLock
  */
 object VirtualThreadGraphBulkAdapter : KLogging() {
 
+    /**
+     * 동기 임포터를 Virtual Thread 비동기 임포터로 감싼다.
+     *
+     * 반환 어댑터의 [AutoCloseable.close]는 delegate의 close를 최대 한 번만
+     * 호출하며, 반복 호출은 no-op이다. source 소유권과 비동기 작업 중 close
+     * 시점의 의미는 delegate 계약을 따른다.
+     */
     fun <S : Any> wrapImporter(sync: GraphBulkImporter<S>): GraphVirtualThreadBulkImporter<S> =
         object : GraphVirtualThreadBulkImporter<S> {
+            private val delegateClose = CloseOnce(sync)
+
+            override fun close() = delegateClose.close()
+
             override fun importGraphAsync(
                 source: S,
                 operations: GraphOperations,
@@ -35,8 +46,19 @@ object VirtualThreadGraphBulkAdapter : KLogging() {
             ) = cancellableVirtualFuture { sync.importGraph(source, operations, options) }
         }
 
+    /**
+     * 동기 익스포터를 Virtual Thread 비동기 익스포터로 감싼다.
+     *
+     * 반환 어댑터의 [AutoCloseable.close]는 delegate의 close를 최대 한 번만
+     * 호출하며, 반복 호출은 no-op이다. sink 소유권과 비동기 작업 중 close
+     * 시점의 의미는 delegate 계약을 따른다.
+     */
     fun <T : Any> wrapExporter(sync: GraphBulkExporter<T>): GraphVirtualThreadBulkExporter<T> =
         object : GraphVirtualThreadBulkExporter<T> {
+            private val delegateClose = CloseOnce(sync)
+
+            override fun close() = delegateClose.close()
+
             override fun exportGraphAsync(
                 sink: T,
                 operations: GraphOperations,
@@ -73,6 +95,14 @@ object VirtualThreadGraphBulkAdapter : KLogging() {
                     if (cancellationRequested.get()) reporter.cancelled() else onCompleted(result)
                 },
             )
+        }
+    }
+
+    private class CloseOnce(private val delegate: AutoCloseable) : AutoCloseable {
+        private val closed = AtomicBoolean(false)
+
+        override fun close() {
+            if (closed.compareAndSet(false, true)) delegate.close()
         }
     }
 
