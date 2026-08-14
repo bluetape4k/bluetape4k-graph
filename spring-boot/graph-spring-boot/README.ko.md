@@ -165,6 +165,15 @@ class MyGraphService(
 
 모든 빈은 `@ConditionalOnMissingBean`을 사용하므로, 직접 빈을 등록하면 자동 구성이 건너뛰어진다.
 
+TinkerGraph의 자동 구성 `GraphSuspendOperations`에는 추가 조건이 있다. 활성화된
+`GraphOperations` 빈이 `TinkerGraphOperations`인 경우에만 suspend factory를 생성한다.
+다른 `GraphOperations` 구현을 제공하면 TinkerGraph suspend factory도 함께 건너뛰므로
+애플리케이션 시작이 실패하지 않는다. 사용자 동기 구현에서도 suspend API가 필요하면
+`GraphOperations`와 `GraphSuspendOperations`를 모두 직접 제공한다.
+`bluetape4k.graph.tinkergraph.register-suspend=false`를 설정하면 자동 구성 suspend 빈을
+명시적으로 비활성화할 수 있으며, virtual-thread adapter는 활성화된 모든
+`GraphOperations` 빈을 계속 감쌀 수 있다.
+
 Neo4j와 Memgraph는 `neo4jDriver`, `memgraphDriver`라는 이름으로 backend
 driver identity를 보존한다. operations, suspend operations, health indicator는
 각 이름에 `@Qualifier`를 적용하므로, unrelated 또는 추가 Neo4j 호환
