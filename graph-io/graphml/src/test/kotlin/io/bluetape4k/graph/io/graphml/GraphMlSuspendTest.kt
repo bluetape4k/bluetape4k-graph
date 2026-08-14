@@ -17,6 +17,7 @@ import io.bluetape4k.junit5.coroutines.runSuspendIO
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
@@ -54,6 +55,33 @@ class GraphMlSuspendTest {
         importReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
         importReport.verticesCreated shouldBeEqualTo 2L
         importReport.edgesCreated shouldBeEqualTo 1L
+    }
+
+    @Test
+    fun `suspend export uses chunked repository API without full label materialization`(@TempDir dir: Path) = runTest {
+        val out = dir.resolve("chunked-suspend.graphml")
+        val src = TinkerGraphSuspendOperations()
+        val vertices = (1..5).map { index ->
+            src.createVertex("Person", mapOf("name" to "Person-$index"))
+        }
+        src.createEdge(vertices[0].id, vertices[1].id, "KNOWS", mapOf("rank" to 1))
+        src.createEdge(vertices[1].id, vertices[2].id, "KNOWS", mapOf("rank" to 2))
+        val requestedChunkSizes = mutableListOf<Int>()
+
+        val report = SuspendGraphMlBulkExporter().exportGraphSuspending(
+            GraphExportSink.PathSink(out),
+            ChunkOnlyGraphSuspendOperations(src, requestedChunkSizes),
+            GraphExportOptions(
+                vertexLabels = setOf("Person"),
+                edgeLabels = setOf("KNOWS"),
+                exportChunkSize = 2,
+            ),
+        )
+
+        report.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        report.verticesWritten shouldBeEqualTo 5L
+        report.edgesWritten shouldBeEqualTo 2L
+        requestedChunkSizes shouldBeEqualTo listOf(2, 2, 2, 2)
     }
 
     @Test
@@ -116,6 +144,24 @@ class GraphMlSuspendTest {
             return delegate.findEdgesByLabel(label, filter)
         }
 
+        override fun findVerticesByLabelChunked(
+            label: String,
+            filter: Map<String, Any?>,
+            chunkSize: Int,
+        ): Flow<List<GraphVertex>> {
+            record()
+            return delegate.findVerticesByLabelChunked(label, filter, chunkSize)
+        }
+
+        override fun findEdgesByLabelChunked(
+            label: String,
+            filter: Map<String, Any?>,
+            chunkSize: Int,
+        ): Flow<List<GraphEdge>> {
+            record()
+            return delegate.findEdgesByLabelChunked(label, filter, chunkSize)
+        }
+
         override suspend fun createVertices(
             label: String,
             propertiesList: List<Map<String, Any?>>,
@@ -131,6 +177,36 @@ class GraphMlSuspendTest {
 
         private fun record() {
             recordedThreads.add(Thread.currentThread().name)
+        }
+    }
+
+    private class ChunkOnlyGraphSuspendOperations(
+        private val delegate: GraphSuspendOperations,
+        private val requestedChunkSizes: MutableList<Int>,
+    ) : GraphSuspendOperations by delegate {
+
+        override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphVertex> =
+            error("full vertex Flow lookup must not be used by GraphML export")
+
+        override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphEdge> =
+            error("full edge Flow lookup must not be used by GraphML export")
+
+        override fun findVerticesByLabelChunked(
+            label: String,
+            filter: Map<String, Any?>,
+            chunkSize: Int,
+        ): Flow<List<GraphVertex>> {
+            requestedChunkSizes += chunkSize
+            return delegate.findVerticesByLabelChunked(label, filter, chunkSize)
+        }
+
+        override fun findEdgesByLabelChunked(
+            label: String,
+            filter: Map<String, Any?>,
+            chunkSize: Int,
+        ): Flow<List<GraphEdge>> {
+            requestedChunkSizes += chunkSize
+            return delegate.findEdgesByLabelChunked(label, filter, chunkSize)
         }
     }
 }

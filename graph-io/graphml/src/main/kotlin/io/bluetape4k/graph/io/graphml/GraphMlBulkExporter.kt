@@ -23,8 +23,8 @@ import io.bluetape4k.logging.debug
 /**
  * Blocking bulk exporter for GraphML.
  *
- * The exporter collects matching vertices and edges, then writes a single XML
- * document through the StAX writer.
+ * exporter는 property key 이름만 미리 스캔한 뒤 bounded repository chunk를
+ * 이용해 정점과 간선을 하나의 XML 문서에 기록한다.
  *
  * 예제:
  *
@@ -92,29 +92,55 @@ class GraphMlBulkExporter : GraphBulkExporter<GraphExportSink> {
         val failures = mutableListOf<GraphIoFailure>()
         val (vertexLabels, edgeLabels) = options.resolveLabels(operations)
 
-        val vertices = vertexLabels.flatMap { label ->
-            operations.findVerticesByLabel(label).map { v ->
-                GraphIoVertexRecord(v.id.value, v.label, v.properties)
-            }
-        }
-        val edges = edgeLabels.flatMap { label ->
-            operations.findEdgesByLabel(label).map { e ->
-                GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties)
-            }
+        fun vertexChunks() = vertexLabels.asSequence().flatMap { label ->
+            operations.findVerticesByLabelChunked(label, chunkSize = options.exportChunkSize)
         }
 
-        GraphIoPaths.openOutputStream(sink).use { output ->
-            writer.write(output, vertices, edges, graphMlOptions)
+        fun edgeChunks() = edgeLabels.asSequence().flatMap { label ->
+            operations.findEdgesByLabelChunked(label, chunkSize = options.exportChunkSize)
+        }
+
+        val vertexPropertyKeys = linkedSetOf<String>()
+        for (chunk in vertexChunks()) {
+            chunk.forEach { vertexPropertyKeys.addAll(it.properties.keys) }
+        }
+        val edgePropertyKeys = linkedSetOf<String>()
+        for (chunk in edgeChunks()) {
+            chunk.forEach { edgePropertyKeys.addAll(it.properties.keys) }
+        }
+
+        fun vertexRecords() = vertexChunks()
+            .flatMap { chunk -> chunk.asSequence() }
+            .map { v -> GraphIoVertexRecord(v.id.value, v.label, v.properties) }
+
+        fun edgeRecords() = edgeChunks()
+            .flatMap { chunk -> chunk.asSequence() }
+            .map { e -> GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties) }
+
+        val writeResult = GraphIoPaths.openOutputStream(sink).use { output ->
+            writer.write(
+                output = output,
+                vertices = vertexRecords(),
+                edges = edgeRecords(),
+                options = graphMlOptions,
+                vertexPropertyKeys = vertexPropertyKeys,
+                edgePropertyKeys = edgePropertyKeys,
+            )
         }
 
         return GraphExportReport(
             status = if (failures.isEmpty()) GraphIoStatus.COMPLETED else GraphIoStatus.PARTIAL,
             format = GraphIoFormat.GRAPHML,
-            verticesWritten = vertices.size.toLong(),
-            edgesWritten = edges.size.toLong(),
+            verticesWritten = writeResult.verticesWritten,
+            edgesWritten = writeResult.edgesWritten,
             elapsed = watch.elapsed(),
             failures = failures,
-        ).also { log.debug { "Export completed: vertices=${vertices.size}, edges=${edges.size}, elapsed=${watch.elapsed()}" } }
+        ).also {
+            log.debug {
+                "Export completed: vertices=${writeResult.verticesWritten}, " +
+                    "edges=${writeResult.edgesWritten}, elapsed=${watch.elapsed()}"
+            }
+        }
     }
 
     companion object : KLogging()
