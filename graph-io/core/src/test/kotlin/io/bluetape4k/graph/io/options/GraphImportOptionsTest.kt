@@ -49,4 +49,9 @@ class GraphImportOptionsTest {
     fun `preserveExternalIdProperty must not be blank when set`() {
         assertFailsWith<IllegalArgumentException> { GraphImportOptions(preserveExternalIdProperty = " ") }
     }
+
+    @Test
+    fun `resume requires an explicit store and key`() {
+        assertFailsWith<IllegalArgumentException> { GraphImportOptions(resumeFromCheckpoint = true) }
+    }
 }
