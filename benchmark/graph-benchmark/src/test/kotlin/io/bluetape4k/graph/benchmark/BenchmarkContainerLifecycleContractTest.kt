@@ -112,13 +112,15 @@ class BenchmarkContainerLifecycleContractTest {
     }
 
     @Test
-    fun `PR CI detects graph benchmark changes and runs lifecycle tests`() {
+    fun `PR CI detects all benchmark modules and runs lifecycle tests serially`() {
         val workflow = repoRoot().resolve(".github/workflows/ci.yml").readText()
 
-        workflow shouldContain "graph-benchmark:"
-        workflow shouldContain "- 'benchmark/graph-benchmark/**'"
+        workflow shouldContain "graph-benchmarks:"
+        workflow shouldContain "- 'benchmark/**'"
+        workflow shouldContain "benchmark-catalog:"
         workflow shouldContain "test-graph-benchmark:"
-        workflow shouldContain ":graph-benchmark:test"
+        workflow shouldContain ":\${{ matrix.project }}:test"
+        workflow shouldContain "max-parallel: 1"
         workflow shouldContain "- test-graph-benchmark"
     }
 
