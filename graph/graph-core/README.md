@@ -73,6 +73,28 @@ GraphSuspendOperations = GraphSuspendSession
 | `GraphMergeOperations` | Optional sync merge/upsert capability used by `ops.mergeVertex()` and `ops.mergeEdge()` |
 | `GraphSuspendMergeOperations` | Optional coroutine merge/upsert capability used by suspend merge extensions |
 
+### Capability Discovery
+
+Use `capabilities()` before invoking optional operations. The returned immutable
+`GraphCapabilities` value exposes support flags, the `core-0.7` contract version,
+and capability-specific constraints without probing by exception.
+
+```kotlin
+import io.bluetape4k.graph.repository.GraphCapability
+import io.bluetape4k.graph.repository.capabilities
+
+val capabilities = ops.capabilities()
+if (capabilities.supports(GraphCapability.MERGE)) {
+    ops.mergeVertex("Person", matchProperties = mapOf("email" to "alice@example.com"))
+}
+```
+
+`GRAPH_ALGORITHM` means portable JVM algorithms. `NATIVE_ALGORITHM` is reported
+only by an explicitly installed backend provider; an absent flag must not be
+interpreted as a silent fallback guarantee. Decorators that use Kotlin
+`by`-delegation must implement `GraphCapabilitiesOperations` to preserve their
+delegate mapping.
+
 ## Traversal and Algorithm APIs
 
 ![Traversal and Algorithm APIs diagram](../../docs/images/readme-diagrams/graph-graph-core-traversal-algorithm-15.png)

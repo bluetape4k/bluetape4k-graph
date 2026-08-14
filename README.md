@@ -166,6 +166,7 @@ write-time guarantees without changing the base `GraphOperations` source contrac
 | Schema manager | `ops.schemaManager()` / `suspendOps.schemaManager()` | Create/list/drop indexes and constraints through common metadata models |
 | Merge / Upsert | `ops.mergeVertex(...)`, `ops.mergeEdge(...)` | Idempotent vertex and edge writes using stable `matchProperties` |
 | Transaction DSL | `ops.transaction { }`, `suspendOps.suspendTransaction { }` | Atomic repository-style vertex/edge work blocks |
+| Capability discovery | `ops.capabilities()` / `suspendOps.capabilities()` | Read support flags, contract versions, and constraints before optional calls |
 
 ```kotlin
 import io.bluetape4k.graph.repository.mergeVertex
@@ -185,6 +186,10 @@ val edge = ops.transaction {
     createEdge(alice.id, bob.id, "KNOWS")
 }
 ```
+
+Capability discovery is explicit and does not require probing by exception. The
+`NATIVE_ALGORITHM` flag is reported only by an installed backend provider;
+`GRAPH_ALGORITHM` refers to portable JVM algorithms.
 
 ## Bulk Import / Export (`graph-io`)
 

@@ -2,12 +2,14 @@ package io.bluetape4k.graph.vt
 
 import io.bluetape4k.graph.algo.VirtualThreadAlgorithmAdapter
 import io.bluetape4k.graph.repository.GraphOperations
+import io.bluetape4k.graph.repository.GraphVirtualThreadCapabilitiesOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadAlgorithmRepository
 import io.bluetape4k.graph.repository.GraphVirtualThreadEdgeRepository
 import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadSession
 import io.bluetape4k.graph.repository.GraphVirtualThreadTraversalRepository
 import io.bluetape4k.graph.repository.GraphVirtualThreadVertexRepository
+import io.bluetape4k.graph.repository.capabilities
 import io.bluetape4k.logging.KLogging
 
 /**
@@ -29,6 +31,7 @@ import io.bluetape4k.logging.KLogging
 class VirtualThreadOperationsAdapter(
     private val delegate: GraphOperations,
 ): GraphVirtualThreadOperations,
+   GraphVirtualThreadCapabilitiesOperations,
    GraphVirtualThreadSession by VirtualThreadSessionAdapter(delegate),
    GraphVirtualThreadVertexRepository by VirtualThreadVertexAdapter(delegate),
    GraphVirtualThreadEdgeRepository by VirtualThreadEdgeAdapter(delegate),
@@ -36,6 +39,8 @@ class VirtualThreadOperationsAdapter(
    GraphVirtualThreadAlgorithmRepository by VirtualThreadAlgorithmAdapter(delegate) {
 
     companion object: KLogging()
+
+    override fun capabilities() = delegate.capabilities()
 
     override fun close() {
         // The delegate is externally owned; callers manage its lifecycle.
