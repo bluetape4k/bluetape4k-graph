@@ -67,6 +67,7 @@ import kotlinx.coroutines.withContext
  *
  * @param delegate 동기 방식 [TinkerGraphOperations] (내부 위임)
  */
+@Suppress("TooManyFunctions")
 class TinkerGraphSuspendOperations(
     private val delegate: TinkerGraphOperations = TinkerGraphOperations(),
 ): GraphSuspendOperations,
