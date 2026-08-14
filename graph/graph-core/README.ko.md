@@ -59,6 +59,30 @@ if (capabilities.supports(GraphCapability.MERGE)) {
 자동 fallback이 보장되는 것은 아니다. Kotlin `by` 위임을 사용하는 decorator는
 delegate 매핑을 보존하기 위해 `GraphCapabilitiesOperations`를 구현해야 한다.
 
+CORE-2 conformance slice는 `MERGE`, `SCHEMA`, `TRANSACTION`, `BATCH_INSERT`,
+`CHUNKED_READ`, `CHUNKED_EXPORT`, `WEIGHTED_PATH`, `GRAPH_ALGORITHM`,
+`NATIVE_ALGORITHM` 플래그를 공통 계약으로 검증한다. 지원하지 않는 optional
+연산은 조용히 무시하지 않고 `UnsupportedOperationException`으로 명시적으로
+실패해야 한다.
+
+### Cross-backend capability conformance
+
+재사용 가능한 `AbstractGraphCapabilityConformanceTest` fixture가 TinkerGraph
+인메모리 lane과 각 container backend에 같은 계약을 적용한다. Testcontainers
+lifecycle이 겹치지 않도록 아래 task를 순차 실행한다.
+
+```bash
+./gradlew :bluetape4k-graph-tinkerpop:test --tests '*GraphCapabilityConformanceTest'
+./gradlew :bluetape4k-graph-neo4j:test --tests '*GraphCapabilityConformanceTest'
+./gradlew :bluetape4k-graph-memgraph:test --tests '*GraphCapabilityConformanceTest'
+./gradlew :bluetape4k-graph-age:test --tests '*GraphCapabilityConformanceTest'
+./gradlew :bluetape4k-graph-falkordb:test --tests '*GraphCapabilityConformanceTest'
+```
+
+`graph-core` 변경은 일반 CI의 backend test job을 트리거하며, 전체 container
+matrix는 Full Nightly scope에서 실행한다. TinkerGraph는 빠른 인메모리 기준
+lane으로 유지한다.
+
 ## 순회와 알고리즘 API
 
 ![Traversal and algorithm API diagram](../../docs/images/readme-diagrams/graph-graph-core-traversal-algorithm-15.png)

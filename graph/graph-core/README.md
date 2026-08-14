@@ -95,6 +95,29 @@ interpreted as a silent fallback guarantee. Decorators that use Kotlin
 `by`-delegation must implement `GraphCapabilitiesOperations` to preserve their
 delegate mapping.
 
+The CORE-2 conformance slice covers `MERGE`, `SCHEMA`, `TRANSACTION`,
+`BATCH_INSERT`, `CHUNKED_READ`, `CHUNKED_EXPORT`, `WEIGHTED_PATH`,
+`GRAPH_ALGORITHM`, and `NATIVE_ALGORITHM`. Unsupported optional operations must
+remain explicit `UnsupportedOperationException` failures.
+
+### Cross-backend capability conformance
+
+The reusable `AbstractGraphCapabilityConformanceTest` fixture runs the same
+contract against the in-memory TinkerGraph lane and each container backend. Run
+the lanes sequentially so Testcontainers lifecycles do not overlap:
+
+```bash
+./gradlew :bluetape4k-graph-tinkerpop:test --tests '*GraphCapabilityConformanceTest'
+./gradlew :bluetape4k-graph-neo4j:test --tests '*GraphCapabilityConformanceTest'
+./gradlew :bluetape4k-graph-memgraph:test --tests '*GraphCapabilityConformanceTest'
+./gradlew :bluetape4k-graph-age:test --tests '*GraphCapabilityConformanceTest'
+./gradlew :bluetape4k-graph-falkordb:test --tests '*GraphCapabilityConformanceTest'
+```
+
+The normal CI backend jobs are triggered by `graph-core` changes. The complete
+container matrix belongs to the Full Nightly scope; TinkerGraph remains the
+fast in-memory reference lane.
+
 ## Traversal and Algorithm APIs
 
 ![Traversal and Algorithm APIs diagram](../../docs/images/readme-diagrams/graph-graph-core-traversal-algorithm-15.png)

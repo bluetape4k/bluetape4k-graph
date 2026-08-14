@@ -21,8 +21,17 @@ enum class GraphCapability {
     /** backend transaction DSL을 제공한다. */
     TRANSACTION,
 
+    /** 여러 vertex/edge를 한 번에 생성하는 batch API를 제공한다. */
+    BATCH_INSERT,
+
     /** vertex/edge를 chunk 단위로 조회하는 API를 제공한다. */
     CHUNKED_READ,
+
+    /** bounded chunk 단위로 graph 데이터를 내보내는 API를 제공한다. */
+    CHUNKED_EXPORT,
+
+    /** 가중치 옵션을 받는 portable path API를 제공한다. */
+    WEIGHTED_PATH,
 
     /** portable JVM graph algorithm API를 제공한다. */
     GRAPH_ALGORITHM,
@@ -81,9 +90,21 @@ data class GraphCapabilities(
                 }
                 when (operation) {
                     is GraphVertexRepository,
+                    is GraphEdgeRepository,
                     is GraphSuspendVertexRepository,
+                    is GraphSuspendEdgeRepository,
                     is GraphVirtualThreadVertexRepository,
-                    -> add(GraphCapability.CHUNKED_READ)
+                    -> {
+                        add(GraphCapability.BATCH_INSERT)
+                        add(GraphCapability.CHUNKED_EXPORT)
+                        add(GraphCapability.CHUNKED_READ)
+                    }
+                }
+                when (operation) {
+                    is GraphTraversalRepository,
+                    is GraphSuspendTraversalRepository,
+                    is GraphVirtualThreadTraversalRepository,
+                    -> add(GraphCapability.WEIGHTED_PATH)
                 }
                 when (operation) {
                     is GraphGenericRepository,
@@ -107,7 +128,10 @@ data class GraphCapabilities(
             GraphCapability.MERGE -> setOf("backend-native-or-atomic-upsert")
             GraphCapability.SCHEMA -> setOf("backend-schema-manager")
             GraphCapability.TRANSACTION -> setOf("backend-transaction-scope")
+            GraphCapability.BATCH_INSERT -> setOf("ordered-batch-result")
             GraphCapability.CHUNKED_READ -> setOf("positive-chunk-size")
+            GraphCapability.CHUNKED_EXPORT -> setOf("positive-chunk-size")
+            GraphCapability.WEIGHTED_PATH -> setOf("weight-property-or-unit-weight")
             GraphCapability.GRAPH_ALGORITHM -> setOf("portable-jvm-semantics")
             GraphCapability.NATIVE_ALGORITHM -> setOf("provider-declared")
         }
