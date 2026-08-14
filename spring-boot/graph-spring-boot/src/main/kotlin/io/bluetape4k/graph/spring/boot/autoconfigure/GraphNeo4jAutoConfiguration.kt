@@ -13,6 +13,7 @@ import org.neo4j.driver.AuthTokens
 import org.neo4j.driver.Config
 import org.neo4j.driver.Driver
 import org.neo4j.driver.GraphDatabase
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -23,9 +24,10 @@ import org.springframework.context.annotation.Configuration
 import java.util.concurrent.TimeUnit
 
 /**
- * Neo4j backend auto-configuration.
+ * Neo4j backend 자동 구성이다.
  *
- * `bluetape4k.graph.backend=neo4j`일 때 활성화된다. Application이 이미 Neo4j [Driver]를 제공하면 그 driver를 재사용한다.
+ * `bluetape4k.graph.backend=neo4j`일 때 활성화된다. `neo4jDriver`라는 이름의
+ * [Driver]만 재사용하며, 다른 backend의 [Driver] bean은 선택하지 않는다.
  *
  * 예제:
  *
@@ -58,10 +60,10 @@ class GraphNeo4jAutoConfiguration {
     companion object : KLogging()
 
     /**
-     * Application이 제공한 Neo4j [Driver]가 없을 때 새 [Driver]를 생성한다.
+     * Application이 `neo4jDriver`를 제공하지 않을 때 새 [Driver]를 생성한다.
      */
     @Bean(name = ["neo4jDriver"], destroyMethod = "close")
-    @ConditionalOnMissingBean(Driver::class)
+    @ConditionalOnMissingBean(name = ["neo4jDriver"])
     fun neo4jDriver(props: Neo4jGraphProperties): Driver {
         val auth = if (props.username.isBlank() || props.password.isBlank()) AuthTokens.none()
                    else AuthTokens.basic(props.username, props.password)
@@ -79,7 +81,10 @@ class GraphNeo4jAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean(GraphOperations::class)
-    fun graphOperations(driver: Driver, props: Neo4jGraphProperties): GraphOperations =
+    fun graphOperations(
+        @Qualifier("neo4jDriver") driver: Driver,
+        props: Neo4jGraphProperties,
+    ): GraphOperations =
         Neo4jGraphOperations(driver, props.database)
 
     /**
@@ -93,7 +98,10 @@ class GraphNeo4jAutoConfiguration {
         havingValue = "true",
         matchIfMissing = true,
     )
-    fun graphSuspendOperations(driver: Driver, props: Neo4jGraphProperties): GraphSuspendOperations =
+    fun graphSuspendOperations(
+        @Qualifier("neo4jDriver") driver: Driver,
+        props: Neo4jGraphProperties,
+    ): GraphSuspendOperations =
         Neo4jGraphSuspendOperations(driver, props.database)
 
     /**
@@ -121,7 +129,9 @@ class GraphNeo4jAutoConfiguration {
 
         @Bean
         @ConditionalOnMissingBean
-        fun neo4jHealthIndicator(driver: Driver): org.springframework.boot.health.contributor.HealthIndicator =
+        fun neo4jHealthIndicator(
+            @Qualifier("neo4jDriver") driver: Driver,
+        ): org.springframework.boot.health.contributor.HealthIndicator =
             org.springframework.boot.health.contributor.HealthIndicator {
                 try {
                     driver.verifyConnectivity()

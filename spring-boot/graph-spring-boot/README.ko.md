@@ -165,6 +165,12 @@ class MyGraphService(
 
 모든 빈은 `@ConditionalOnMissingBean`을 사용하므로, 직접 빈을 등록하면 자동 구성이 건너뛰어진다.
 
+Neo4j와 Memgraph는 `neo4jDriver`, `memgraphDriver`라는 이름으로 backend
+driver identity를 보존한다. operations, suspend operations, health indicator는
+각 이름에 `@Qualifier`를 적용하므로, unrelated 또는 추가 Neo4j 호환
+`Driver` 빈이 있어도 backend driver 생성을 건너뛰거나 주입이 모호해지지
+않는다. 기본 driver를 대체하려면 해당 이름으로 명시적인 빈을 제공한다.
+
 ## 설정 프로퍼티
 
 ### 공통
