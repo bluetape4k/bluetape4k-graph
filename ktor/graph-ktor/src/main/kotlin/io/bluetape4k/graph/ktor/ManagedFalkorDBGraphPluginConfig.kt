@@ -36,6 +36,7 @@ class ManagedFalkorDBGraphPluginConfig {
 /**
  * [GraphPlugin]을 plugin 소유 FalkorDB driver로 설정한다.
  */
+@Suppress("TooGenericExceptionCaught")
 fun GraphPluginConfig.falkorDB(
     configure: ManagedFalkorDBGraphPluginConfig.() -> Unit,
 ): GraphPluginConfig = apply {
@@ -43,29 +44,40 @@ fun GraphPluginConfig.falkorDB(
     props.host.requireNotBlank("host")
     props.port.requirePositiveNumber("port")
     props.graphName.requireNotBlank("graphName")
+    ensureBackendAvailable("managedFalkorDB")
 
-    val driver = if (props.username.isBlank()) {
-        FalkorDB.driver(props.host, props.port)
-    } else {
-        FalkorDB.driver(props.host, props.port, props.username, props.password)
+    val resources = ManagedGraphPluginResources()
+    try {
+        val driver = resources.own(
+            "FalkorDBDriver",
+            if (props.username.isBlank()) {
+                FalkorDB.driver(props.host, props.port)
+            } else {
+                FalkorDB.driver(props.host, props.port, props.username, props.password)
+            },
+        )
+        val graphOperations = resources.own(
+            "FalkorDBGraphOperations",
+            FalkorDBGraphOperations(driver.value, props.graphName),
+        )
+        val graphSuspendOperations = resources.own(
+            "FalkorDBGraphSuspendOperations",
+            FalkorDBGraphSuspendOperations(driver.value, props.graphName),
+        )
+
+        configure(
+            backendName = "managedFalkorDB",
+            graphOperationsFactory = { graphOperations.value },
+            graphSuspendOperationsFactory = { graphSuspendOperations.value },
+            closeActions = listOf(
+                graphOperations.closeAction,
+                graphSuspendOperations.closeAction,
+                driver.closeAction,
+            ),
+        )
+        resources.commit()
+    } catch (e: Exception) {
+        resources.rollback()
+        throw e
     }
-    val graphOperations = FalkorDBGraphOperations(driver, props.graphName)
-    val graphSuspendOperations = FalkorDBGraphSuspendOperations(driver, props.graphName)
-
-    configure(
-        backendName = "managedFalkorDB",
-        graphOperationsFactory = { graphOperations },
-        graphSuspendOperationsFactory = { graphSuspendOperations },
-        closeActions = listOf(
-            GraphPluginCloseAction("FalkorDBGraphOperations") {
-                graphOperations.close()
-            },
-            GraphPluginCloseAction("FalkorDBGraphSuspendOperations") {
-                graphSuspendOperations.close()
-            },
-            GraphPluginCloseAction("FalkorDBDriver") {
-                driver.close()
-            },
-        ),
-    )
 }

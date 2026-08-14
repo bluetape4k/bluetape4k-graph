@@ -35,36 +35,45 @@ class ManagedNeo4jGraphPluginConfig {
 /**
  * [GraphPlugin]을 plugin 소유 Neo4j driver로 설정한다.
  */
+@Suppress("TooGenericExceptionCaught")
 fun GraphPluginConfig.neo4j(
     configure: ManagedNeo4jGraphPluginConfig.() -> Unit,
 ): GraphPluginConfig = apply {
     val props = ManagedNeo4jGraphPluginConfig().apply(configure)
     props.uri.requireNotBlank("uri")
     props.database.requireNotBlank("database")
+    ensureBackendAvailable("managedNeo4j")
 
     val authToken = if (props.username.isBlank()) {
         AuthTokens.none()
     } else {
         AuthTokens.basic(props.username, props.password)
     }
-    val driver = GraphDatabase.driver(props.uri, authToken)
-    val graphOperations = Neo4jGraphOperations(driver, props.database)
-    val graphSuspendOperations = Neo4jGraphSuspendOperations(driver, props.database)
+    val resources = ManagedGraphPluginResources()
+    try {
+        val driver = resources.own("Neo4jDriver", GraphDatabase.driver(props.uri, authToken))
+        val graphOperations = resources.own(
+            "Neo4jGraphOperations",
+            Neo4jGraphOperations(driver.value, props.database),
+        )
+        val graphSuspendOperations = resources.own(
+            "Neo4jGraphSuspendOperations",
+            Neo4jGraphSuspendOperations(driver.value, props.database),
+        )
 
-    configure(
-        backendName = "managedNeo4j",
-        graphOperationsFactory = { graphOperations },
-        graphSuspendOperationsFactory = { graphSuspendOperations },
-        closeActions = listOf(
-            GraphPluginCloseAction("Neo4jGraphOperations") {
-                graphOperations.close()
-            },
-            GraphPluginCloseAction("Neo4jGraphSuspendOperations") {
-                graphSuspendOperations.close()
-            },
-            GraphPluginCloseAction("Neo4jDriver") {
-                driver.close()
-            },
-        ),
-    )
+        configure(
+            backendName = "managedNeo4j",
+            graphOperationsFactory = { graphOperations.value },
+            graphSuspendOperationsFactory = { graphSuspendOperations.value },
+            closeActions = listOf(
+                graphOperations.closeAction,
+                graphSuspendOperations.closeAction,
+                driver.closeAction,
+            ),
+        )
+        resources.commit()
+    } catch (e: Exception) {
+        resources.rollback()
+        throw e
+    }
 }

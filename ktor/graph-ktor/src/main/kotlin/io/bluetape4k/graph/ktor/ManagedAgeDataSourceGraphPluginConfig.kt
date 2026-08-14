@@ -44,6 +44,7 @@ class ManagedAgeDataSourceGraphPluginConfig {
 /**
  * [GraphPlugin]을 plugin 소유 Apache AGE JDBC pool로 설정한다.
  */
+@Suppress("TooGenericExceptionCaught")
 fun GraphPluginConfig.ageDataSource(
     configure: ManagedAgeDataSourceGraphPluginConfig.() -> Unit,
 ): GraphPluginConfig = apply {
@@ -54,48 +55,54 @@ fun GraphPluginConfig.ageDataSource(
     props.connectionInitSql.requireNotBlank("connectionInitSql")
     props.driverClassName.requireNotBlank("driverClassName")
     props.maximumPoolSize.requirePositiveNumber("maximumPoolSize")
+    ensureBackendAvailable("managedAgeDataSource")
 
-    val dataSource = HikariDataSource(HikariConfig().apply {
-        jdbcUrl = props.jdbcUrl
-        username = props.username
-        password = props.password
-        driverClassName = props.driverClassName
-        connectionInitSql = props.connectionInitSql
-        maximumPoolSize = props.maximumPoolSize
-    })
-
+    val resources = ManagedGraphPluginResources()
     try {
+        val dataSource = resources.own(
+            "AgeDataSource",
+            HikariDataSource(HikariConfig().apply {
+                jdbcUrl = props.jdbcUrl
+                username = props.username
+                password = props.password
+                driverClassName = props.driverClassName
+                connectionInitSql = props.connectionInitSql
+                maximumPoolSize = props.maximumPoolSize
+            }),
+        )
         val previousDefaultDatabase = TransactionManager.defaultDatabase
-        val database = Database.connect(dataSource)
+        val database = Database.connect(dataSource.value)
         TransactionManager.defaultDatabase = previousDefaultDatabase
+        val databaseCloseAction = resources.register("AgeExposedDatabase") {
+            if (TransactionManager.defaultDatabase === database) {
+                TransactionManager.defaultDatabase = previousDefaultDatabase
+            }
+            TransactionManager.closeAndUnregister(database)
+        }
 
-        val graphOperations = AgeGraphOperations(database, props.graphName)
-        val graphSuspendOperations = AgeGraphSuspendOperations(database, props.graphName)
+        val graphOperations = resources.own(
+            "AgeGraphOperations",
+            AgeGraphOperations(database, props.graphName),
+        )
+        val graphSuspendOperations = resources.own(
+            "AgeGraphSuspendOperations",
+            AgeGraphSuspendOperations(database, props.graphName),
+        )
 
         configure(
             backendName = "managedAgeDataSource",
-            graphOperationsFactory = { graphOperations },
-            graphSuspendOperationsFactory = { graphSuspendOperations },
+            graphOperationsFactory = { graphOperations.value },
+            graphSuspendOperationsFactory = { graphSuspendOperations.value },
             closeActions = listOf(
-                GraphPluginCloseAction("AgeGraphOperations") {
-                    graphOperations.close()
-                },
-                GraphPluginCloseAction("AgeGraphSuspendOperations") {
-                    graphSuspendOperations.close()
-                },
-                GraphPluginCloseAction("AgeExposedDatabase") {
-                    if (TransactionManager.defaultDatabase === database) {
-                        TransactionManager.defaultDatabase = previousDefaultDatabase
-                    }
-                    TransactionManager.closeAndUnregister(database)
-                },
-                GraphPluginCloseAction("AgeDataSource") {
-                    dataSource.close()
-                },
+                graphOperations.closeAction,
+                graphSuspendOperations.closeAction,
+                databaseCloseAction,
+                dataSource.closeAction,
             ),
         )
-    } catch (e: IllegalArgumentException) {
-        dataSource.close()
+        resources.commit()
+    } catch (e: Exception) {
+        resources.rollback()
         throw e
     }
 }

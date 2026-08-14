@@ -67,13 +67,23 @@ class GraphPluginConfig {
         graphSuspendOperationsFactory: () -> GraphSuspendOperations,
         closeActions: List<GraphPluginCloseAction> = emptyList(),
     ) {
-        require(this.graphOperationsFactory == null && this.graphSuspendOperationsFactory == null) {
-            "GraphPlugin backend can only be configured once. Already configured backend: $backendName"
+        if (this.graphOperationsFactory != null || this.graphSuspendOperationsFactory != null) {
+            closeGraphPluginActions(closeActions)
+            throw duplicateBackendException(backendName)
         }
 
         this.graphOperationsFactory = graphOperationsFactory
         this.graphSuspendOperationsFactory = graphSuspendOperationsFactory
         this.closeActions.addAll(closeActions)
+    }
+
+    /**
+     * Managed backend가 resource를 만들기 전에 중복 구성을 차단한다.
+     */
+    internal fun ensureBackendAvailable(backendName: String) {
+        if (this.graphOperationsFactory != null || this.graphSuspendOperationsFactory != null) {
+            throw duplicateBackendException(backendName)
+        }
     }
 
     internal fun resolveState(): GraphPluginState {
@@ -101,7 +111,58 @@ class GraphPluginConfig {
     }
 }
 
-internal data class GraphPluginCloseAction(
+private fun duplicateBackendException(backendName: String): IllegalArgumentException =
+    IllegalArgumentException(
+        "GraphPlugin backend can only be configured once. Already configured backend: $backendName",
+    )
+
+internal class GraphPluginCloseAction(
     val name: String,
-    val action: () -> Unit,
+    private val action: () -> Unit,
+) {
+    private val closed = java.util.concurrent.atomic.AtomicBoolean(false)
+
+    fun close() {
+        if (closed.compareAndSet(false, true)) {
+            action()
+        }
+    }
+}
+
+/**
+ * 생성된 resource와 plugin 종료 시 사용할 close action을 함께 보관한다.
+ */
+internal class ManagedGraphPluginResource<T : AutoCloseable>(
+    val value: T,
+    val closeAction: GraphPluginCloseAction,
 )
+
+/**
+ * Managed backend 생성 중 획득한 자원의 소유권과 rollback 순서를 추적한다.
+ */
+internal class ManagedGraphPluginResources {
+    private val resources = mutableListOf<GraphPluginCloseAction>()
+    private var committed = false
+
+    fun <T : AutoCloseable> own(name: String, resource: T): ManagedGraphPluginResource<T> {
+        val closeAction = register(name) { resource.close() }
+        return ManagedGraphPluginResource(resource, closeAction)
+    }
+
+    fun register(name: String, action: () -> Unit): GraphPluginCloseAction {
+        val closeAction = GraphPluginCloseAction(name, action)
+        resources += closeAction
+        return closeAction
+    }
+
+    fun commit() {
+        committed = true
+    }
+
+    fun rollback() {
+        if (!committed) {
+            committed = true
+            closeGraphPluginActions(resources.asReversed())
+        }
+    }
+}

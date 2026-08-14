@@ -34,36 +34,45 @@ class ManagedMemgraphGraphPluginConfig {
 /**
  * [GraphPlugin]을 plugin 소유 Memgraph driver로 설정한다.
  */
+@Suppress("TooGenericExceptionCaught")
 fun GraphPluginConfig.memgraph(
     configure: ManagedMemgraphGraphPluginConfig.() -> Unit,
 ): GraphPluginConfig = apply {
     val props = ManagedMemgraphGraphPluginConfig().apply(configure)
     props.uri.requireNotBlank("uri")
     props.database.requireNotBlank("database")
+    ensureBackendAvailable("managedMemgraph")
 
     val authToken = if (props.username.isBlank()) {
         AuthTokens.none()
     } else {
         AuthTokens.basic(props.username, props.password)
     }
-    val driver = GraphDatabase.driver(props.uri, authToken)
-    val graphOperations = MemgraphGraphOperations(driver, props.database)
-    val graphSuspendOperations = MemgraphGraphSuspendOperations(driver, props.database)
+    val resources = ManagedGraphPluginResources()
+    try {
+        val driver = resources.own("MemgraphDriver", GraphDatabase.driver(props.uri, authToken))
+        val graphOperations = resources.own(
+            "MemgraphGraphOperations",
+            MemgraphGraphOperations(driver.value, props.database),
+        )
+        val graphSuspendOperations = resources.own(
+            "MemgraphGraphSuspendOperations",
+            MemgraphGraphSuspendOperations(driver.value, props.database),
+        )
 
-    configure(
-        backendName = "managedMemgraph",
-        graphOperationsFactory = { graphOperations },
-        graphSuspendOperationsFactory = { graphSuspendOperations },
-        closeActions = listOf(
-            GraphPluginCloseAction("MemgraphGraphOperations") {
-                graphOperations.close()
-            },
-            GraphPluginCloseAction("MemgraphGraphSuspendOperations") {
-                graphSuspendOperations.close()
-            },
-            GraphPluginCloseAction("MemgraphDriver") {
-                driver.close()
-            },
-        ),
-    )
+        configure(
+            backendName = "managedMemgraph",
+            graphOperationsFactory = { graphOperations.value },
+            graphSuspendOperationsFactory = { graphSuspendOperations.value },
+            closeActions = listOf(
+                graphOperations.closeAction,
+                graphSuspendOperations.closeAction,
+                driver.closeAction,
+            ),
+        )
+        resources.commit()
+    } catch (e: Exception) {
+        resources.rollback()
+        throw e
+    }
 }
