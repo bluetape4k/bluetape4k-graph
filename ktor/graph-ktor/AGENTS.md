@@ -1,5 +1,15 @@
 # AGENTS.md - graph-ktor
 
+## Guidance hierarchy
+
+Before applying this module overlay, read and follow the guidance in this
+order:
+
+1. User scope: `${CODEX_HOME:-$HOME/.codex}/AGENTS.md`.
+2. Workspace scope: `/Users/debop/work/bluetape4k/.github/docs/workspace/AGENTS.md`.
+
+Apply both broader scopes before module- and repository-specific rules.
+
 This module inherits `../../../AGENTS.md` (workspace root) and
 `../../AGENTS.md` (bluetape4k-graph repo guide). Read both first. This file
 only narrows graph-ktor-specific rules.
