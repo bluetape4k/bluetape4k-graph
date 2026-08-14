@@ -6,7 +6,7 @@ api(libs.exposed.dao)
 api(bt4k.exposed.jdbc)
 api(bt4k.exposed.java.time)
     api(bt4k.postgresql)
-    api(bt4k.caffeine.core)
+    implementation(bt4k.caffeine.core)
 
     implementation(bt4k.bluetape4k.coroutines)
     implementation(libs.kotlinx.coroutines.core.lib)

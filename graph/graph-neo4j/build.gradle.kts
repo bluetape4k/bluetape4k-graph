@@ -3,7 +3,7 @@ dependencies {
     api(bt4k.neo4j.driver6)
     runtimeOnly(bt4k.neo4j.bolt.connection.netty)
     runtimeOnly(bt4k.neo4j.bolt.connection.pooled)
-    api(bt4k.caffeine.core)
+    implementation(bt4k.caffeine.core)
 
     api(bt4k.bluetape4k.coroutines)
     api(libs.kotlinx.coroutines.reactive)

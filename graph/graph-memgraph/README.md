@@ -15,6 +15,10 @@ It can be connected to with `neo4j-java-driver` as-is.
 
 `graph-memgraph` keeps the `graph-core` repository contracts and maps them to Memgraph through the Neo4j Java Driver, Memgraph Cypher syntax, numeric `id()` values, schema DDL, and JVM algorithm fallbacks.
 
+The module uses the driver API directly and does not expose the `graph-neo4j`
+implementation module transitively. Its Caffeine cache is declared as a direct
+implementation dependency.
+
 ## Key Classes
 
 | Class | Description |
