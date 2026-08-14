@@ -1,0 +1,147 @@
+package io.bluetape4k.graph.io.workflow
+
+import io.bluetape4k.graph.io.checkpoint.GraphImportCheckpoint
+import io.bluetape4k.graph.io.report.GraphIoFormat
+import java.io.Serializable
+import java.time.Duration
+
+enum class GraphImportWorkflowState {
+    DISCOVERED,
+    VALIDATED,
+    VERTICES_LOADED,
+    EDGES_LOADED,
+    VERIFIED,
+    COMPLETED,
+    FAILED,
+}
+
+enum class GraphImportSourceRole { VERTICES, EDGES, SCHEMA }
+
+data class GraphImportSourceSpec(
+    val id: String,
+    val role: GraphImportSourceRole,
+    val format: GraphIoFormat,
+    val sourceIdentity: String,
+    val label: String? = null,
+    val compression: String? = null,
+    val encrypted: Boolean = false,
+    val dependsOn: Set<String> = emptySet(),
+) : Serializable {
+    init {
+        require(id.isNotBlank()) { "source id must not be blank" }
+        require(sourceIdentity.isNotBlank()) { "sourceIdentity must not be blank" }
+        require(dependsOn.none { it == id }) { "source cannot depend on itself" }
+    }
+
+    companion object { private const val serialVersionUID: Long = 1L }
+}
+
+data class GraphImportManifest(
+    val jobId: String,
+    val sources: List<GraphImportSourceSpec>,
+) : Serializable {
+    init {
+        require(jobId.isNotBlank()) { "jobId must not be blank" }
+        require(sources.isNotEmpty()) { "at least one source is required" }
+        val ids = sources.map { it.id }
+        require(ids.size == ids.toSet().size) { "source ids must be unique" }
+        val knownIds = ids.toSet()
+        require(sources.all { it.dependsOn.all(knownIds::contains) }) {
+            "source dependency refers to an unknown source"
+        }
+        require(sources.any { it.role == GraphImportSourceRole.VERTICES }) {
+            "at least one vertex source is required"
+        }
+    }
+
+    companion object { private const val serialVersionUID: Long = 1L }
+}
+
+data class GraphImportSourceReport(
+    val sourceId: String,
+    val recordsRead: Long = 0,
+    val recordsSkipped: Long = 0,
+    val failure: String? = null,
+) : Serializable {
+    companion object { private const val serialVersionUID: Long = 1L }
+}
+
+data class GraphImportWorkflowReport(
+    val jobId: String,
+    val state: GraphImportWorkflowState,
+    val sources: List<GraphImportSourceReport> = emptyList(),
+    val elapsed: Duration = Duration.ZERO,
+    val checkpoint: GraphImportCheckpoint? = null,
+) : Serializable {
+    companion object { private const val serialVersionUID: Long = 1L }
+}
+
+interface GraphImportJobStateStore {
+    fun load(jobId: String): GraphImportWorkflowReport?
+
+    fun save(report: GraphImportWorkflowReport)
+}
+
+class InMemoryGraphImportJobStateStore : GraphImportJobStateStore {
+    private val reports = mutableMapOf<String, GraphImportWorkflowReport>()
+
+    @Synchronized
+    override fun load(jobId: String): GraphImportWorkflowReport? = reports[jobId]
+
+    @Synchronized
+    override fun save(report: GraphImportWorkflowReport) {
+        reports[report.jobId] = report
+    }
+}
+
+/** Manifest validation and durable state transitions for a portable multi-source job. */
+class GraphImportWorkflow(
+    private val manifest: GraphImportManifest,
+    private val stateStore: GraphImportJobStateStore,
+) {
+    fun validate(): GraphImportWorkflowReport {
+        val edgeSources = manifest.sources.filter { it.role == GraphImportSourceRole.EDGES }
+        require(edgeSources.all { edge -> edge.dependsOn.any { dependency ->
+            manifest.sources.any { it.id == dependency && it.role == GraphImportSourceRole.VERTICES }
+        } || edge.dependsOn.isEmpty() }) {
+            "edge sources must depend on a vertex source or declare no dependency"
+        }
+        return persist(GraphImportWorkflowState.VALIDATED)
+    }
+
+    fun transition(state: GraphImportWorkflowState): GraphImportWorkflowReport {
+        val current = stateStore.load(manifest.jobId)?.state ?: GraphImportWorkflowState.DISCOVERED
+        require(ALLOWED_TRANSITIONS[current].orEmpty().contains(state)) {
+            "invalid workflow transition: $current -> $state"
+        }
+        return persist(state)
+    }
+
+    private fun persist(state: GraphImportWorkflowState): GraphImportWorkflowReport =
+        GraphImportWorkflowReport(manifest.jobId, state).also(stateStore::save)
+
+    companion object {
+        private val ALLOWED_TRANSITIONS = mapOf(
+            GraphImportWorkflowState.DISCOVERED to setOf(
+                GraphImportWorkflowState.VALIDATED,
+                GraphImportWorkflowState.FAILED,
+            ),
+            GraphImportWorkflowState.VALIDATED to setOf(
+                GraphImportWorkflowState.VERTICES_LOADED,
+                GraphImportWorkflowState.FAILED,
+            ),
+            GraphImportWorkflowState.VERTICES_LOADED to setOf(
+                GraphImportWorkflowState.EDGES_LOADED,
+                GraphImportWorkflowState.FAILED,
+            ),
+            GraphImportWorkflowState.EDGES_LOADED to setOf(
+                GraphImportWorkflowState.VERIFIED,
+                GraphImportWorkflowState.FAILED,
+            ),
+            GraphImportWorkflowState.VERIFIED to setOf(
+                GraphImportWorkflowState.COMPLETED,
+                GraphImportWorkflowState.FAILED,
+            ),
+        )
+    }
+}
