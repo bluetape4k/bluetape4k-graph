@@ -251,3 +251,21 @@ Spring Boot 4에서는 일부 모듈이 분리되어 명시적으로 추가해�
 `HealthIndicator` 패키지 변경:
 - Boot 3: `org.springframework.boot.actuate.health.HealthIndicator`
 - Boot 4: `org.springframework.boot.health.contributor.HealthIndicator`
+# Actuator Graph management endpoint
+
+`bluetape4k.graph.management.endpoint.enabled=true`를 명시한 경우에만
+read-only `graph` Actuator endpoint가 등록됩니다. 기본값은 비활성화이며,
+임의 query나 credential, raw connection URL은 반환하지 않습니다.
+
+예시 응답:
+
+```json
+{
+  "backend": "neo4j",
+  "graph": "default",
+  "database": "default",
+  "driverAvailable": true,
+  "sessionAvailable": true,
+  "capabilities": { "schema": true, "graphIo": true }
+}
+```

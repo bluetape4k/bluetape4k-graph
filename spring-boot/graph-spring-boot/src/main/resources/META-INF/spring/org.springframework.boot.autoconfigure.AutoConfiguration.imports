@@ -5,3 +5,4 @@ io.bluetape4k.graph.spring.boot.autoconfigure.GraphMemgraphAutoConfiguration
 io.bluetape4k.graph.spring.boot.autoconfigure.GraphAgeAutoConfiguration
 io.bluetape4k.graph.spring.boot.autoconfigure.GraphFalkorDBAutoConfiguration
 io.bluetape4k.graph.spring.boot.autoconfigure.GraphIoMicrometerAutoConfiguration
+io.bluetape4k.graph.spring.boot.autoconfigure.GraphManagementEndpointAutoConfiguration
