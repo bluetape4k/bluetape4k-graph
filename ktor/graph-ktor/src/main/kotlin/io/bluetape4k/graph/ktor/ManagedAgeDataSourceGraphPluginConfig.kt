@@ -8,6 +8,7 @@ import io.bluetape4k.graph.age.sql.AgeSql
 import io.bluetape4k.support.requireNotBlank
 import io.bluetape4k.support.requirePositiveNumber
 import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
 
 /**
  * [GraphPlugin]이 소유하는 Apache AGE JDBC pool을 생성하는 Ktor DSL.
@@ -15,7 +16,7 @@ import org.jetbrains.exposed.v1.jdbc.Database
  * ## 동작 계약
  * - [jdbcUrl], [username], [graphName], [connectionInitSql], [driverClassName]은 blank이면 안 된다.
  * - [maximumPoolSize]는 양수여야 한다.
- * - 관리 pool은 AGE operations 생성 전에 `Database.connect(dataSource)`로 Exposed에 연결된다.
+ * - 관리 pool은 AGE operations 생성 전에 명시적인 Exposed [Database]를 생성한다.
  * - 이 DSL이 만든 Hikari pool은 plugin 소유이며 `ApplicationStopped`에서 닫힌다.
  * - 기존 `age(graphName)` helper는 호출자 소유 `Database` / `DataSource` 계약을 유지한다.
  *
@@ -64,10 +65,12 @@ fun GraphPluginConfig.ageDataSource(
     })
 
     try {
-        Database.connect(dataSource)
+        val previousDefaultDatabase = TransactionManager.defaultDatabase
+        val database = Database.connect(dataSource)
+        TransactionManager.defaultDatabase = previousDefaultDatabase
 
-        val graphOperations = AgeGraphOperations(props.graphName)
-        val graphSuspendOperations = AgeGraphSuspendOperations(props.graphName)
+        val graphOperations = AgeGraphOperations(database, props.graphName)
+        val graphSuspendOperations = AgeGraphSuspendOperations(database, props.graphName)
 
         configure(
             backendName = "managedAgeDataSource",
@@ -79,6 +82,12 @@ fun GraphPluginConfig.ageDataSource(
                 },
                 GraphPluginCloseAction("AgeGraphSuspendOperations") {
                     graphSuspendOperations.close()
+                },
+                GraphPluginCloseAction("AgeExposedDatabase") {
+                    if (TransactionManager.defaultDatabase === database) {
+                        TransactionManager.defaultDatabase = previousDefaultDatabase
+                    }
+                    TransactionManager.closeAndUnregister(database)
                 },
                 GraphPluginCloseAction("AgeDataSource") {
                     dataSource.close()

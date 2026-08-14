@@ -38,9 +38,13 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
-import org.jetbrains.exposed.v1.jdbc.transactions.experimental.newSuspendedTransaction
+import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.JdbcTransaction
 import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
+import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction as exposedSuspendTransaction
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Apache AGE + PostgreSQL 기반 [GraphSuspendOperations] 구현체 (코루틴 방식).
@@ -55,7 +59,8 @@ import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
  *
  * ```kotlin
  * // HikariCP DataSource 생성 (connectionInitSql로 AGE 로드)
- * val ops = AgeGraphSuspendOperations("social")
+ * val database = Database.connect(dataSource)
+ * val ops = AgeGraphSuspendOperations(database, "social")
  *
  * suspend fun writeGraph() {
  *     ops.createGraph("social")
@@ -71,20 +76,37 @@ import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
  * }
  * ```
  *
+ * @param database 이 facade가 사용할 Exposed 데이터베이스
  * @param graphName AGE 그래프 이름
  */
 @Suppress("DEPRECATION")
 class AgeGraphSuspendOperations(
+    private val database: Database,
     private val graphName: String,
 ): GraphSuspendOperations,
    GraphSuspendTransactionalOperations,
    GraphSuspendSchemaManagementOperations,
    GraphSuspendMergeOperations {
 
+    /**
+     * 전역 Exposed Database를 사용하는 기존 생성자다.
+     *
+     * 새 코드는 여러 DataSource를 안전하게 격리할 수 있도록 [Database]를 명시해야 한다.
+     */
+    @Deprecated("명시적인 Database를 전달하는 생성자를 사용하세요.")
+    constructor(graphName: String): this(requirePrimaryDatabase(), graphName)
+
     companion object: KLoggingChannel()
 
     init {
         graphName.requireNotBlank("graphName").requireSafeIdentifier("graphName")
+    }
+
+    private suspend fun <T> newSuspendedTransaction(
+        context: CoroutineContext? = null,
+        statement: suspend JdbcTransaction.() -> T,
+    ): T = withContext(context ?: currentCoroutineContext()) {
+        exposedSuspendTransaction(db = database, statement = statement)
     }
 
     override fun schemaManager(): GraphSuspendSchemaManager =
@@ -110,7 +132,7 @@ class AgeGraphSuspendOperations(
         setProperties: Map<String, Any?>,
     ): GraphVertex =
         withContext(Dispatchers.IO) {
-            AgeGraphOperations(graphName).mergeVertex(label, matchProperties, setProperties)
+            AgeGraphOperations(database, graphName).mergeVertex(label, matchProperties, setProperties)
         }
 
     override suspend fun mergeEdge(
@@ -121,7 +143,7 @@ class AgeGraphSuspendOperations(
         setProperties: Map<String, Any?>,
     ): GraphEdge =
         withContext(Dispatchers.IO) {
-            AgeGraphOperations(graphName).mergeEdge(fromId, toId, label, matchProperties, setProperties)
+            AgeGraphOperations(database, graphName).mergeEdge(fromId, toId, label, matchProperties, setProperties)
         }
 
     override suspend fun createGraph(name: String) {
@@ -188,7 +210,7 @@ class AgeGraphSuspendOperations(
         propertiesList: List<Map<String, Any?>>,
     ): List<GraphVertex> =
         withContext(Dispatchers.IO) {
-            AgeGraphOperations(graphName).createVertices(label, propertiesList)
+            AgeGraphOperations(database, graphName).createVertices(label, propertiesList)
         }
 
     override suspend fun findVertexById(label: String, id: GraphElementId): GraphVertex? {
@@ -316,7 +338,7 @@ class AgeGraphSuspendOperations(
 
     override suspend fun createEdges(label: String, edges: List<BatchEdge>): List<GraphEdge> =
         withContext(Dispatchers.IO) {
-            AgeGraphOperations(graphName).createEdges(label, edges)
+            AgeGraphOperations(database, graphName).createEdges(label, edges)
         }
 
     override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphEdge> {
@@ -475,7 +497,7 @@ class AgeGraphSuspendOperations(
 
     // -- GraphSuspendAlgorithmRepository --
 
-    private val syncDelegate by lazy { AgeGraphOperations(graphName) }
+    private val syncDelegate by lazy { AgeGraphOperations(database, graphName) }
 
     override suspend fun degreeCentrality(
         vertexId: GraphElementId,
@@ -680,3 +702,7 @@ private class AgeGraphSuspendTransactionScope(
         return deleted
     }
 }
+
+private fun requirePrimaryDatabase(): Database =
+    TransactionManager.primaryDatabase
+        ?: error("Exposed Database가 등록되지 않았습니다. AgeGraphSuspendOperations에 명시적인 Database를 전달하세요.")
