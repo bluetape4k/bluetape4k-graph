@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.neo4j
 
+import com.github.benmanes.caffeine.cache.Ticker
 import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphPath
@@ -35,6 +36,16 @@ import java.util.concurrent.TimeUnit
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CachingNeo4jGraphOperationsTest {
+
+    private class TestTicker : Ticker {
+        private var nanos = 0L
+
+        override fun read(): Long = nanos
+
+        fun advance(duration: Duration) {
+            nanos += duration.toNanos()
+        }
+    }
 
     companion object : KLogging()
 
@@ -315,6 +326,41 @@ class CachingNeo4jGraphOperationsTest {
         verify(exactly = 2) { delegate.findVerticesByLabel("Person", emptyMap()) }
     }
 
+    @Test
+    fun `deleteVertex 후 여섯 read cache가 모두 무효화된다`() {
+        val options = PathOptions.Default
+        every { delegate.findVertexById("Person", aliceId) } returns alice andThen bob
+        every { delegate.findVerticesByLabel("Person", emptyMap()) } returns listOf(alice) andThen listOf(bob)
+        every { delegate.neighbors(aliceId, NeighborOptions.Default) } returns listOf(bob) andThen listOf(alice)
+        every { delegate.shortestPath(aliceId, bobId, options) } returns path andThen null
+        every { delegate.allPaths(aliceId, bobId, options) } returns listOf(path) andThen emptyList()
+        every { delegate.findEdgesByLabel("KNOWS", emptyMap()) } returns listOf(edge) andThen emptyList()
+        every { delegate.deleteVertex("Person", aliceId) } returns true
+
+        caching.findVertexById("Person", aliceId) shouldBeEqualTo alice
+        caching.findVerticesByLabel("Person") shouldBeEqualTo listOf(alice)
+        caching.neighbors(aliceId, NeighborOptions.Default) shouldBeEqualTo listOf(bob)
+        caching.shortestPath(aliceId, bobId, options) shouldBeEqualTo path
+        caching.allPaths(aliceId, bobId, options) shouldBeEqualTo listOf(path)
+        caching.findEdgesByLabel("KNOWS") shouldBeEqualTo listOf(edge)
+
+        caching.deleteVertex("Person", aliceId)
+
+        caching.findVertexById("Person", aliceId) shouldBeEqualTo bob
+        caching.findVerticesByLabel("Person") shouldBeEqualTo listOf(bob)
+        caching.neighbors(aliceId, NeighborOptions.Default) shouldBeEqualTo listOf(alice)
+        caching.shortestPath(aliceId, bobId, options).shouldBeNull()
+        caching.allPaths(aliceId, bobId, options) shouldBeEqualTo emptyList()
+        caching.findEdgesByLabel("KNOWS") shouldBeEqualTo emptyList()
+
+        verify(exactly = 2) { delegate.findVertexById("Person", aliceId) }
+        verify(exactly = 2) { delegate.findVerticesByLabel("Person", emptyMap()) }
+        verify(exactly = 2) { delegate.neighbors(aliceId, NeighborOptions.Default) }
+        verify(exactly = 2) { delegate.shortestPath(aliceId, bobId, options) }
+        verify(exactly = 2) { delegate.allPaths(aliceId, bobId, options) }
+        verify(exactly = 2) { delegate.findEdgesByLabel("KNOWS", emptyMap()) }
+    }
+
     // ───── 생성 계약과 읽기 캐시 무효화 ─────
 
     @Test
@@ -463,18 +509,27 @@ class CachingNeo4jGraphOperationsTest {
         bounded.findVertexById("Person", aliceId)
         bounded.findVertexById("Person", bobId)
         bounded.findVertexById("Person", aliceId)
+        bounded.findVertexById("Person", bobId)
 
-        verify(exactly = 2) { delegate.findVertexById("Person", aliceId) }
-        verify(exactly = 1) { delegate.findVertexById("Person", bobId) }
+        // Caffeine W-TinyLFU 정책은 두 키 중 어느 것을 eviction victim으로 선택할 수 있다.
+        // victim 선택에 의존하지 않고 키별 호출 범위와 전체 miss 범위를 검증한다.
+        verify(atLeast = 1, atMost = 2) { delegate.findVertexById("Person", aliceId) }
+        verify(atLeast = 1, atMost = 2) { delegate.findVertexById("Person", bobId) }
+        verify(atLeast = 3, atMost = 4) { delegate.findVertexById("Person", any()) }
     }
 
     @Test
     fun `expireAfterWrite 후 read cache가 만료되어 delegate를 다시 호출한다`() {
-        val expiring = CachingNeo4jGraphOperations(delegate, expireAfterWrite = Duration.ofMillis(20))
+        val ticker = TestTicker()
+        val expiring = CachingNeo4jGraphOperations(
+            delegate,
+            expireAfterWrite = Duration.ofSeconds(1),
+            ticker = ticker,
+        )
         every { delegate.findVertexById("Person", aliceId) } returns alice
 
         expiring.findVertexById("Person", aliceId)
-        Thread.sleep(80)
+        ticker.advance(Duration.ofSeconds(1))
         expiring.findVertexById("Person", aliceId)
 
         verify(exactly = 2) { delegate.findVertexById("Person", aliceId) }
