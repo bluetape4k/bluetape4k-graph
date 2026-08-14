@@ -93,6 +93,7 @@ import org.neo4j.driver.reactivestreams.ReactiveTransaction
  * @param driver Neo4j Java Driver (외부 소유, Memgraph bolt URL로 생성)
  * @param database 데이터베이스 이름 (기본: "memgraph")
  */
+@Suppress("LargeClass", "TooManyFunctions")
 class MemgraphGraphSuspendOperations(
     private val driver: Driver,
     private val database: String = "memgraph",

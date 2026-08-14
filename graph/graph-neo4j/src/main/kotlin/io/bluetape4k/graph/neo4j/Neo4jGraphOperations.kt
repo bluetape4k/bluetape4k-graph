@@ -80,6 +80,7 @@ import kotlin.concurrent.withLock
  * @param driver 외부에서 소유하고 수명주기를 관리하는 Neo4j Java Driver.
  * @param database Neo4j database 이름. 기본값은 `"neo4j"`.
  */
+@Suppress("LargeClass", "TooManyFunctions")
 class Neo4jGraphOperations(
     private val driver: Driver,
     private val database: String = "neo4j",
