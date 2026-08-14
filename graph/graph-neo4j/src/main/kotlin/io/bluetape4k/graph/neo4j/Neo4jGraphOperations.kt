@@ -6,6 +6,11 @@ import io.bluetape4k.graph.algo.internal.BfsDfsRunner
 import io.bluetape4k.graph.algo.internal.CycleDetector
 import io.bluetape4k.graph.algo.internal.PageRankCalculator
 import io.bluetape4k.graph.algo.internal.UnionFind
+import io.bluetape4k.graph.algo.provider.GraphAlgorithmExecution
+import io.bluetape4k.graph.algo.provider.GraphAlgorithmExecutionObservable
+import io.bluetape4k.graph.algo.provider.GraphAlgorithmExecutionObserver
+import io.bluetape4k.graph.algo.provider.GraphAlgorithmId
+import io.bluetape4k.graph.algo.provider.GraphAlgorithmProviderSelector
 import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.ComponentOptions
@@ -78,7 +83,12 @@ import kotlin.concurrent.withLock
 class Neo4jGraphOperations(
     private val driver: Driver,
     private val database: String = "neo4j",
-): GraphOperations, GraphTransactionalOperations, GraphSchemaManagementOperations, GraphMergeOperations {
+    private val algorithmExecutionObserver: GraphAlgorithmExecutionObserver = GraphAlgorithmExecutionObserver.Noop,
+): GraphOperations,
+   GraphTransactionalOperations,
+   GraphSchemaManagementOperations,
+   GraphMergeOperations,
+   GraphAlgorithmExecutionObservable {
 
     companion object: KLogging() {
         private const val DEFAULT_GRAPH_NAME = "default"
@@ -87,6 +97,22 @@ class Neo4jGraphOperations(
     @Volatile
     private var currentGraphName: String = DEFAULT_GRAPH_NAME
     private val graphLifecycleLock = ReentrantLock()
+
+    @Volatile
+    private var latestAlgorithmExecution: GraphAlgorithmExecution? = null
+
+    override val lastAlgorithmExecution: GraphAlgorithmExecution?
+        get() = latestAlgorithmExecution
+
+    private fun observeJvmFallback(algorithm: GraphAlgorithmId) {
+        val execution = GraphAlgorithmProviderSelector.select(algorithm)
+        latestAlgorithmExecution = execution
+        try {
+            algorithmExecutionObserver.onExecution(execution)
+        } catch (e: Exception) {
+            log.warn(e) { "Ignoring graph algorithm observer failure for ${execution.algorithm}" }
+        }
+    }
 
     private fun isCurrentGraph(name: String): Boolean {
         val current = currentGraphName
@@ -668,6 +694,7 @@ class Neo4jGraphOperations(
     override fun pageRank(options: PageRankOptions): List<PageRankScore> {
         options.vertexLabel?.requireNotBlank("vertexLabel")
         options.edgeLabel?.requireNotBlank("edgeLabel")
+        observeJvmFallback(GraphAlgorithmId.PAGE_RANK)
         log.warn { "pageRank: Neo4j Cypher fallback in use (no GDS). Consider topK to limit results." }
 
         val labelClause = options.vertexLabel?.let { ":${it.requireSafeIdentifier("vertexLabel")}" } ?: ""

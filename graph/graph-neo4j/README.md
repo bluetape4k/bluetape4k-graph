@@ -283,6 +283,14 @@ RETURN p
 | `connectedComponents` | JVM fallback (`UnionFind`) | |
 | `pageRank` | JVM fallback (`PageRankCalculator`) | GDS optional module planned for Phase 7 |
 
+The current PageRank fallback is observable through
+`GraphAlgorithmExecutionObservable.lastAlgorithmExecution`, which reports
+provider `jvm-fallback`, path `JVM_FALLBACK`, and reason `NO_PROVIDER`. An
+optional provider module can use the dependency-free `graph-core` provider SPI;
+the base Neo4j module does not install GDS or claim native execution. Native
+provider failures must remain explicit instead of silently changing result
+semantics.
+
 ### Usage Example
 
 ```kotlin

@@ -92,6 +92,27 @@ GraphSuspendOperations = GraphSuspendSession
 - `bfs(startId, BfsDfsOptions)` and `dfs(startId, BfsDfsOptions)` return ordered `TraversalVisit` events.
 - `detectCycles(CycleOptions)` returns `GraphCycle` paths.
 
+### Optional Native Algorithm Provider SPI
+
+`graph-core` exposes a dependency-free provider boundary through
+`GraphAlgorithmProvider`, `GraphAlgorithmProviderDescriptor`, and
+`GraphAlgorithmProviderSelector`. Optional modules can advertise native
+capabilities without adding a GDS/MAGE SDK to a base backend. `AUTO` selects a
+provider only when its descriptor lists the requested algorithm; otherwise the
+selector returns an explicit `JVM_FALLBACK` observation. `NATIVE_ONLY` fails
+with `GraphAlgorithmProviderUnavailableException` instead of silently changing
+the execution path.
+
+```kotlin
+val execution = GraphAlgorithmProviderSelector.select(GraphAlgorithmId.PAGE_RANK)
+check(execution.path == GraphAlgorithmExecutionPath.JVM_FALLBACK)
+```
+
+Native provider modules and their driver calls are intentionally outside this
+module. Backends expose the last selected path through
+`GraphAlgorithmExecutionObservable` and may receive a
+`GraphAlgorithmExecutionObserver` for metrics or audit logging.
+
 ### Transaction DSL
 
 Backends that implement `GraphTransactionalOperations` can expose a sync transaction block through the

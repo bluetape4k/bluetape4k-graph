@@ -97,6 +97,12 @@ Memgraph는 Neo4j Bolt 프로토콜을 공유하므로 `graph-neo4j`와 동일�
 | `connectedComponents` | JVM fallback (`UnionFind`) |
 | `pageRank` | JVM fallback (`PageRankCalculator`) — Memgraph MAGE 모듈은 별도 계획 |
 
+현재 PageRank fallback은 `GraphAlgorithmExecutionObservable.lastAlgorithmExecution`으로
+관찰할 수 있으며 provider `jvm-fallback`, 경로 `JVM_FALLBACK`, 이유
+`NO_PROVIDER`를 기록한다. 선택적 MAGE 모듈은 dependency-free
+`graph-core` provider SPI를 사용할 수 있고, 기본 Memgraph 모듈은 MAGE를
+설치하지 않으며 native 결과 실패를 JVM 결과로 조용히 바꾸지 않는다.
+
 ### 사용 예제
 
 ```kotlin
