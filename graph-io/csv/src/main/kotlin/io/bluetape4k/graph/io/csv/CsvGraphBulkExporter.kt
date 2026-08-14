@@ -15,6 +15,7 @@ import io.bluetape4k.graph.io.report.GraphIoProgressReporter
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.support.GraphIoPaths
 import io.bluetape4k.graph.io.support.GraphIoStopwatch
+import io.bluetape4k.graph.io.support.resolveLabels
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
@@ -90,9 +91,10 @@ class CsvGraphBulkExporter : GraphBulkExporter<CsvGraphExportSink> {
         val failures = mutableListOf<GraphIoFailure>()
         var vWritten = 0L
         var eWritten = 0L
+        val (vertexLabels, edgeLabels) = options.resolveLabels(operations)
 
         // --- 정점 익스포트 ---
-        val allVertices = options.vertexLabels.flatMap { label ->
+        val allVertices = vertexLabels.flatMap { label ->
             operations.findVerticesByLabel(label).map { v ->
                 GraphIoVertexRecord(v.id.value, v.label, v.properties)
             }
@@ -117,7 +119,7 @@ class CsvGraphBulkExporter : GraphBulkExporter<CsvGraphExportSink> {
         }
 
         // --- 간선 익스포트 ---
-        val allEdges = options.edgeLabels.flatMap { label ->
+        val allEdges = edgeLabels.flatMap { label ->
             operations.findEdgesByLabel(label).map { e ->
                 GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties)
             }

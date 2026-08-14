@@ -69,8 +69,8 @@ data class GraphImportOptions(
 )
 
 data class GraphExportOptions(
-    val vertexLabels: Set<String> = emptySet(),  // 비어있으면 전체 레이블
-    val edgeLabels: Set<String> = emptySet(),    // 비어있으면 전체 레이블
+    val vertexLabels: Set<String> = emptySet(),  // 비어있으면 라벨 조회 후 전체
+    val edgeLabels: Set<String> = emptySet(),    // 비어있으면 라벨 조회 후 전체
     val includeEmptyProperties: Boolean = true,
     val exportChunkSize: Int = 1_000,
 )
@@ -87,6 +87,10 @@ enum class MissingEndpointPolicy { FAIL, SKIP_EDGE }
 fallback을 사용하고, cursor-aware 백엔드는 전체 label materialization을 피할 수
 있습니다. CSV처럼 전역 헤더가 필요한 포맷은 여전히 포맷별 pre-scan을 수행할 수
 있습니다.
+
+빈 라벨 집합은 `GraphLabelDiscovery`로 전체 라벨을 조회하라는 의미입니다.
+해당 capability가 없는 백엔드는 명시적 라벨을 받아야 하며, exporter는 0건을
+성공으로 조용히 반환하지 않고 명확한 오류를 발생시킵니다.
 
 레이블 필드와 레이블 세트의 모든 원소에 `requireNotBlank` 검증이 적용됩니다.
 
