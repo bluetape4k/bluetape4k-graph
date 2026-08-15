@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.io.options
 
+import io.bluetape4k.graph.io.checkpoint.GraphImportCheckpointStore
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.support.requireNotBlank
 import io.bluetape4k.support.requirePositiveNumber
@@ -19,6 +20,12 @@ data class GraphImportOptions(
     val defaultVertexLabel: String = "Vertex",
     val defaultEdgeLabel: String = "Edge",
     val preserveExternalIdProperty: String? = "_graphIoExternalId",
+    /** Optional durable checkpoint store; null preserves the existing one-attempt behavior. */
+    val checkpointStore: GraphImportCheckpointStore? = null,
+    /** Opaque key used by [checkpointStore]; raw paths and payloads must not be used. */
+    val checkpointKey: String? = null,
+    /** Resume only when an existing compatible checkpoint is found. */
+    val resumeFromCheckpoint: Boolean = false,
 ) : Serializable {
     init {
         batchSize.requirePositiveNumber("batchSize")
@@ -26,6 +33,10 @@ data class GraphImportOptions(
         defaultVertexLabel.requireNotBlank("defaultVertexLabel")
         defaultEdgeLabel.requireNotBlank("defaultEdgeLabel")
         preserveExternalIdProperty?.requireNotBlank("preserveExternalIdProperty")
+        checkpointKey?.requireNotBlank("checkpointKey")
+        require(!resumeFromCheckpoint || (checkpointStore != null && checkpointKey != null)) {
+            "resumeFromCheckpoint requires checkpointStore and checkpointKey"
+        }
     }
 
     companion object : KLogging() {
