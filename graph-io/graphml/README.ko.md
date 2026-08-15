@@ -218,6 +218,8 @@ data class GraphMlExportOptions(
 
 StAX 스트리밍 접근 방식은 XML을 증분적으로 처리하므로 DOM 기반 파서로는 메모리에 맞지 않는 대용량 GraphML 파일에 적합합니다.
 
+GraphML export는 정점과 간선을 조회할 때 `GraphExportOptions.exportChunkSize`를 사용합니다. 첫 번째 node 또는 edge보다 먼저 전역 `<key>` 정의를 써야 하므로 exporter는 bounded pre-scan에서 property key 이름만 보관한 뒤 같은 chunk를 다시 읽어 기록합니다. 전체 정점/간선 record list를 materialize하지 않으며, 그 대신 bounded repository pass가 한 번 더 필요합니다.
+
 ## 오류 처리
 
 임포트 연산은 다음을 포함하는 상세한 `GraphImportReport`를 반환합니다:

@@ -218,6 +218,8 @@ The `StaxGraphMlReader` and `StaxGraphMlWriter` classes use cached factories to 
 
 The StAX streaming approach processes XML incrementally, making it suitable for large GraphML files that would not fit in memory with a DOM-based parser.
 
+GraphML export uses `GraphExportOptions.exportChunkSize` for both vertex and edge repository reads. Because GraphML requires global `<key>` definitions before the first node or edge, the exporter performs a bounded pre-scan that retains only property-key names, then reads the same chunks again while writing. It never materializes the complete vertex or edge record lists; the trade-off is a second bounded repository pass.
+
 ## Error Handling
 
 Import operations return a detailed `GraphImportReport` containing:
