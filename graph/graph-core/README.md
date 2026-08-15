@@ -200,6 +200,28 @@ Support matrix:
 | AGE | Unsupported | Unsupported | PostgreSQL-side AGE indexes are not portable yet |
 | FalkorDB | Create / list / drop | Unsupported | Unique constraints require raw `GRAPH.CONSTRAINT CREATE` support |
 
+### Schema Drift Planning
+
+Use `GraphSchemaDefinition` to compare a desired declaration with live metadata before applying DDL.
+Planning is dry-run by default; extra live indexes become `SKIP` entries until destructive drops are explicitly enabled.
+Constraint drops are reported as `UNSUPPORTED` because the common manager intentionally has no drop-constraint API.
+
+```kotlin
+import io.bluetape4k.graph.model.GraphIndex
+import io.bluetape4k.graph.schema.GraphSchemaDefinition
+import io.bluetape4k.graph.schema.GraphSchemaPlanOptions
+import io.bluetape4k.graph.schema.plan
+
+val desired = GraphSchemaDefinition(
+    indexes = setOf(GraphIndex("ignored", "Person", "email")),
+)
+val plan = ops.schemaManager().plan(desired) // dry-run, no mutation
+val report = plan.apply(ops.schemaManager()) // applies creates only when dryRun=false
+```
+
+Set `GraphSchemaPlanOptions(dryRun = false, allowDestructiveDrops = true)` only in an explicitly approved
+migration path. A failed backend operation is surfaced as `UNSUPPORTED` rather than treated as a silent success.
+
 ### Merge / Upsert
 
 Backends that implement `GraphMergeOperations` expose idempotent vertex and edge upserts through extension functions.

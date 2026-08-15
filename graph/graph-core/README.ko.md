@@ -108,6 +108,23 @@ lane으로 유지한다.
 
 ## 스키마 정의 (DSL)
 
+### Schema Drift 계획
+
+`GraphSchemaDefinition`으로 desired 선언과 live metadata를 비교한 뒤 DDL 적용 계획을 만들 수 있습니다.
+기본값은 dry-run이며, extra index는 destructive drop을 명시적으로 허용하기 전까지 `SKIP`으로 남습니다.
+공통 manager에는 constraint 삭제 API가 없으므로 constraint drop은 `UNSUPPORTED`로 보고됩니다.
+
+```kotlin
+val desired = GraphSchemaDefinition(
+    indexes = setOf(GraphIndex("ignored", "Person", "email")),
+)
+val plan = ops.schemaManager().plan(desired) // 기본 dry-run
+val report = plan.apply(ops.schemaManager())
+```
+
+삭제가 필요한 승인된 migration에서만 `GraphSchemaPlanOptions(dryRun = false, allowDestructiveDrops = true)`를
+사용하세요. backend가 지원하지 않는 작업은 조용히 성공 처리하지 않고 `UNSUPPORTED` 결과로 남습니다.
+
 ### VertexLabel 정의
 
 ```kotlin
