@@ -17,7 +17,9 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.delay
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
 import java.io.IOException
@@ -25,6 +27,40 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 class GraphMlStreamingReaderContractTest {
+
+    @Test
+    fun `slow collector stays within measured graphml read ahead bound`() = runSuspendIO {
+        val xml = graphMl((1..10_000).joinToString("\n") { "<node id=\"v$it\"/>" })
+        val input = MarkerInputStream(xml.toByteArray())
+
+        val first = GraphMlRecordFlowReader().readVertices(
+            GraphImportSource.InputStreamSource(input, closeInput = true),
+        ).onEach { delay(25) }.take(1).toList()
+
+        first.single().externalId shouldBeEqualTo "v1"
+        (input.markerCount <= MAX_READ_AHEAD_RECORDS).shouldBeTrue()
+        (input.bytesRead < xml.toByteArray().size).shouldBeTrue()
+        input.closeCount shouldBeEqualTo 1
+    }
+
+    @Test
+    fun `parse failure remains primary when owned close also fails`() = runSuspendIO {
+        val input = ParseCloseFailingInputStream(
+            graphMl("<node id=\"secret-record\"><data>secret-payload").toByteArray(),
+        )
+
+        val error = assertFailsWith<GraphIoReadException> {
+            GraphMlRecordFlowReader().readVertices(
+                GraphImportSource.InputStreamSource(input, closeInput = true),
+            ).toList()
+        }
+
+        error.failure.phase shouldBeEqualTo GraphIoPhase.READ_VERTEX
+        error.message.orEmpty() shouldNotContain "secret-record"
+        error.message.orEmpty() shouldNotContain "secret-payload"
+        error.suppressed.map { it.message } shouldBeEqualTo listOf("graphml-close-failure")
+        input.closeCount shouldBeEqualTo 1
+    }
 
     @Test
     fun `reader emits vertices and edges in source order`() = runSuspendIO {
@@ -403,6 +439,26 @@ class GraphMlStreamingReaderContractTest {
         }
     }
 
+    private class MarkerInputStream(private val content: ByteArray) : ByteArrayInputStream(content) {
+        var bytesRead: Int = 0
+            private set
+        var closeCount: Int = 0
+            private set
+        val markerCount: Int
+            get() = content.copyOf(bytesRead).decodeToString().windowed(5).count { it == "<node" }
+
+        override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
+            val count = super.read(buffer, offset, length.coerceAtMost(1))
+            if (count > 0) bytesRead += count
+            return count
+        }
+
+        override fun close() {
+            closeCount++
+            super.close()
+        }
+    }
+
     private class BlockingInputStream(content: ByteArray) : ByteArrayInputStream(content) {
 
         val entered = CountDownLatch(1)
@@ -447,5 +503,20 @@ class GraphMlStreamingReaderContractTest {
             closeCount++
             throw IOException("graphml-close-failure")
         }
+    }
+
+    private class ParseCloseFailingInputStream(content: ByteArray) : ByteArrayInputStream(content) {
+        var closeCount: Int = 0
+            private set
+
+        override fun close() {
+            closeCount++
+            throw IOException("graphml-close-failure")
+        }
+    }
+
+    private companion object {
+        // The StAX channel currently exposes 64 records while the collector is delayed.
+        const val MAX_READ_AHEAD_RECORDS = 96
     }
 }

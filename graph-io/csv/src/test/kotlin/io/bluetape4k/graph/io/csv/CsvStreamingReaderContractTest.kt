@@ -8,7 +8,9 @@ import io.bluetape4k.graph.io.report.GraphIoReadException
 import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.count
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import org.junit.jupiter.api.Test
@@ -17,6 +19,44 @@ import java.io.IOException
 import java.io.InputStream
 
 class CsvStreamingReaderContractTest {
+
+    @Test
+    fun `slow collector stays within measured csv read ahead bound`() = runSuspendIO {
+        val payload = generatedVertices()
+        val input = MarkerInputStream(payload.toByteArray())
+
+        val first = CsvGraphRecordFlowReader().readVertices(
+            CsvGraphImportSource(
+                vertices = GraphImportSource.InputStreamSource(input, closeInput = true),
+                edges = GraphImportSource.InputStreamSource(ByteArrayInputStream("id,label,from,to\n".toByteArray())),
+            ),
+        ).onEach { delay(25) }.take(1).toList()
+
+        first.map { it.externalId } shouldBeEqualTo listOf("v0")
+        (input.markerCount <= MAX_READ_AHEAD_RECORDS).shouldBeTrue()
+        (input.bytesRead < payload.toByteArray().size).shouldBeTrue()
+        input.closeCount shouldBeEqualTo 1
+    }
+
+    @Test
+    fun `parse failure remains primary when owned close also fails`() = runSuspendIO {
+        val input = CloseFailingInputStream("id,label\n,Person\n".toByteArray())
+
+        val thrown = assertFailsWith<GraphIoReadException> {
+            CsvGraphRecordFlowReader().readVertices(
+                CsvGraphImportSource(
+                    vertices = GraphImportSource.InputStreamSource(input, closeInput = true),
+                    edges = GraphImportSource.InputStreamSource(
+                        ByteArrayInputStream("id,label,from,to\n".toByteArray()),
+                    ),
+                ),
+            ).toList()
+        }
+
+        thrown.message.orEmpty().contains("Person").shouldBeFalse()
+        thrown.suppressed.map { it.message } shouldBeEqualTo listOf("csv-close-failure")
+        input.closeCount shouldBeEqualTo 1
+    }
 
     @Test
     fun `reader emits vertices and edges in source order`() = runSuspendIO {
@@ -239,12 +279,42 @@ class CsvStreamingReaderContractTest {
         }
     }
 
+    private class MarkerInputStream(private val content: ByteArray) : ByteArrayInputStream(content) {
+        var bytesRead: Int = 0
+            private set
+        var closeCount: Int = 0
+            private set
+        val markerCount: Int
+            get() = content.copyOf(bytesRead).count { it == '\n'.code.toByte() } - 1
+
+        override fun read(): Int {
+            val value = super.read()
+            if (value >= 0) bytesRead++
+            return value
+        }
+
+        override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
+            val count = super.read(buffer, offset, length.coerceAtMost(1))
+            if (count > 0) bytesRead += count
+            return count
+        }
+
+        override fun close() {
+            closeCount++
+            super.close()
+        }
+    }
+
     private class FatalInputStream : InputStream() {
         override fun read(): Int = throw AssertionError("fatal-csv-input")
     }
 
     private class CloseFailingInputStream(bytes: ByteArray) : ByteArrayInputStream(bytes) {
+        var closeCount: Int = 0
+            private set
+
         override fun close() {
+            closeCount++
             throw IOException("csv-close-failure")
         }
     }
@@ -276,5 +346,11 @@ class CsvStreamingReaderContractTest {
             closeCount++
             super.close()
         }
+    }
+
+    private companion object {
+        // Observed with a 1-byte source and a 25 ms collector delay; keep room for
+        // parser implementation variance without permitting unbounded prefetch.
+        const val MAX_READ_AHEAD_RECORDS = 8
     }
 }
