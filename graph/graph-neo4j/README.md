@@ -220,13 +220,16 @@ All queries use Neo4j driver parameter binding. Never concatenate user-supplied 
 | Operation | Effect |
 |-----------|--------|
 | `findVertexById`, `findVerticesByLabel`, `neighbors`, `shortestPath`, `allPaths`, `findEdgesByLabel` | Results cached on first call; subsequent calls return the cached value without hitting the DB |
-| `maxSize`, `expireAfterWrite` | Applied to every read cache; both values must be positive |
+| `maxSize` | Applied independently to each of the six read caches; it bounds entries per cache, not the wrapper's combined entries or heap bytes. Must be positive |
+| `expireAfterWrite`, `ticker` | `expireAfterWrite` is the positive TTL for each cache; `ticker` defaults to the system clock and can be replaced with a fake clock for deterministic tests |
 | `createVertex`, `createEdge` | Every call delegates to the underlying operation, even with identical arguments. Read caches are invalidated after the write |
 | `updateVertex`, `deleteVertex`, `deleteEdge` | All read caches invalidated |
 | `dropGraph` | Delegates first and invalidates all read caches after a successful graph deletion |
 | `transaction { ... }` | Forwards the backend transaction capability; commit invalidates all read caches, while rollback keeps the existing cache |
 
 Each cache miss captures a generation before the delegate read. If a wrapper-visible write, `dropGraph`, or committed transaction advances that generation while the read is in flight, the returned value is not reinserted into the cache. The in-flight call may still return the value it read before the write; writes performed through another delegate instance remain outside this wrapper's invalidation boundary.
+
+`maxSize` is a per-cache entry policy: six caches can each retain up to the configured bound, and the bound is not a heap-size guarantee. A successful miss stores its value and runs Caffeine maintenance immediately so small bounds remain observable on the next lookup; the maintenance trade-off is recorded in the [cache maintenance lesson](../../docs/lessons/2026-08-14-issue-500-cache-maintenance.md).
 
 ### Usage Example
 

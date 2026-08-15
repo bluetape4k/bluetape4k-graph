@@ -455,13 +455,16 @@ val edge = ops.transaction {
 | 연산 | 효과 |
 |------|------|
 | `findVertexById`, `findVerticesByLabel`, `neighbors`, `shortestPath`, `allPaths`, `findEdgesByLabel` | 첫 번째 호출 시 DB 조회 후 캐시 저장, 이후 호출은 캐시 히트 |
-| `maxSize`, `expireAfterWrite` | 모든 읽기 캐시에 적용되며 두 값 모두 양수여야 합니다 |
+| `maxSize` | 여섯 읽기 캐시에 각각 적용되는 엔트리 상한입니다. 래퍼 전체 합계나 heap 바이트 상한이 아니며 양수여야 합니다 |
+| `expireAfterWrite`, `ticker` | `expireAfterWrite`는 각 캐시의 양수 TTL이며, `ticker` 기본값은 system clock입니다. 결정적 테스트에서는 fake clock을 주입할 수 있습니다 |
 | `createVertex`, `createEdge` | 동일 인자라도 매번 기본 연산에 위임하여 새 레코드를 생성합니다. 생성 후 읽기 캐시를 무효화합니다 |
 | `updateVertex`, `deleteVertex`, `deleteEdge` | 읽기 캐시 전체를 무효화합니다 |
 | `dropGraph` | 먼저 기본 연산에 위임하고 graph 삭제가 성공하면 읽기 캐시 전체를 무효화합니다 |
 | `transaction { ... }` | backend transaction capability를 전달하며 commit 후에는 읽기 캐시를 무효화하고 rollback 후에는 기존 캐시를 유지합니다 |
 
 각 cache miss는 delegate 읽기 전에 generation을 캡처합니다. wrapper를 통한 쓰기, `dropGraph`, 또는 commit된 transaction이 읽기 중 generation을 증가시키면 해당 결과를 캐시에 재적재하지 않습니다. 이미 진행 중인 호출은 쓰기 전에 읽은 값을 반환할 수 있으며, 다른 delegate 인스턴스에서 직접 수행한 쓰기는 이 wrapper의 무효화 경계 밖입니다.
+
+`maxSize`는 캐시별 엔트리 정책입니다. 여섯 캐시가 각각 설정된 상한까지 보관할 수 있으며 heap 크기를 보장하지 않습니다. 성공한 cache miss는 값을 저장한 직후 Caffeine maintenance를 실행하여 작은 상한도 다음 조회에서 즉시 관찰되도록 합니다. maintenance 비용과 선택 근거는 [cache maintenance lesson](../../docs/lessons/2026-08-14-issue-500-cache-maintenance.md)에 기록했습니다.
 
 ### 사용 예제
 
