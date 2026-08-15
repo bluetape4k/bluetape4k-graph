@@ -165,6 +165,16 @@ class MyGraphService(
 
 All beans use `@ConditionalOnMissingBean` — provide your own bean to override.
 
+TinkerGraph's auto-configured `GraphSuspendOperations` has one additional
+guard: it is created only when the active `GraphOperations` bean is a
+`TinkerGraphOperations`. Supplying another `GraphOperations` implementation
+backs off the TinkerGraph suspend factory instead of failing application
+startup. Provide both `GraphOperations` and `GraphSuspendOperations` when a
+custom synchronous implementation also needs a suspend API. Setting
+`bluetape4k.graph.tinkergraph.register-suspend=false` explicitly disables the
+auto-configured suspend bean; the virtual-thread adapter can still wrap any
+active `GraphOperations` bean.
+
 Neo4j and Memgraph keep backend identity through the named driver beans
 `neo4jDriver` and `memgraphDriver`. Their operations, suspend operations, and
 health indicators inject the matching name with `@Qualifier`; an unrelated or

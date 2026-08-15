@@ -3,13 +3,14 @@ package io.bluetape4k.graph.spring.boot.autoconfigure
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
-import io.bluetape4k.graph.vt.asVirtualThread
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
 import io.bluetape4k.graph.spring.boot.properties.TinkerGraphGraphProperties
+import io.bluetape4k.graph.vt.asVirtualThread
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.info
 import org.springframework.boot.autoconfigure.AutoConfiguration
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -63,9 +64,15 @@ class GraphTinkerGraphAutoConfiguration {
     }
 
     /**
-     * Suspend 지원이 활성화되면 coroutine 친화적 TinkerGraph operations를 등록한다.
+     * Suspend 지원이 활성화되고 TinkerGraph 동기 구현이 활성화된 경우 coroutine 친화적
+     * TinkerGraph operations를 등록한다.
+     *
+     * 사용자가 다른 [GraphOperations] 구현을 제공하면 이 factory도 함께 back off한다.
+     * [TinkerGraphSuspendOperations]가 TinkerGraph 전용 transaction snapshot을 사용하므로,
+     * custom sync 구현에 대해서는 사용자가 [GraphSuspendOperations]를 직접 제공해야 한다.
      */
     @Bean
+    @ConditionalOnBean(TinkerGraphOperations::class)
     @ConditionalOnMissingBean(GraphSuspendOperations::class)
     @ConditionalOnProperty(
         prefix = "bluetape4k.graph.tinkergraph",
