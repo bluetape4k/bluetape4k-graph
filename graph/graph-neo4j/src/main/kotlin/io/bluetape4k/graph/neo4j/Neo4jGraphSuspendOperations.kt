@@ -2,6 +2,9 @@ package io.bluetape4k.graph.neo4j
 
 import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.algo.ShortestPathFallback
+import io.bluetape4k.graph.algo.provider.GraphAlgorithmExecution
+import io.bluetape4k.graph.algo.provider.GraphAlgorithmExecutionObservable
+import io.bluetape4k.graph.algo.provider.GraphAlgorithmExecutionObserver
 import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.ComponentOptions
@@ -82,13 +85,16 @@ import org.neo4j.driver.reactivestreams.ReactiveTransaction
  * @param driver 외부에서 소유하고 수명주기를 관리하는 Neo4j Java Driver.
  * @param database Neo4j database 이름. 기본값은 `"neo4j"`.
  */
+@Suppress("LargeClass", "TooManyFunctions")
 class Neo4jGraphSuspendOperations(
     private val driver: Driver,
     private val database: String = "neo4j",
+    private val algorithmExecutionObserver: GraphAlgorithmExecutionObserver = GraphAlgorithmExecutionObserver.Noop,
 ): GraphSuspendOperations,
    GraphSuspendTransactionalOperations,
    GraphSuspendSchemaManagementOperations,
-   GraphSuspendMergeOperations {
+   GraphSuspendMergeOperations,
+   GraphAlgorithmExecutionObservable {
 
     companion object: KLoggingChannel() {
         private const val DEFAULT_GRAPH_NAME = "default"
@@ -584,7 +590,10 @@ class Neo4jGraphSuspendOperations(
 
     // -- GraphSuspendAlgorithmRepository --
 
-    private val syncDelegate by lazy { Neo4jGraphOperations(driver, database) }
+    private val syncDelegate by lazy { Neo4jGraphOperations(driver, database, algorithmExecutionObserver) }
+
+    override val lastAlgorithmExecution: GraphAlgorithmExecution?
+        get() = syncDelegate.lastAlgorithmExecution
 
     override fun pageRank(options: PageRankOptions): Flow<PageRankScore> = flow {
         val list = withContext(Dispatchers.IO) { syncDelegate.pageRank(options) }

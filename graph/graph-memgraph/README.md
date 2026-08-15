@@ -102,6 +102,13 @@ Memgraph shares the same Cypher-based algorithm implementations as `graph-neo4j`
 | `connectedComponents` | JVM fallback (`UnionFind`) | |
 | `pageRank` | JVM fallback (`PageRankCalculator`) | Memgraph MAGE optional module planned |
 
+The current PageRank fallback is observable through
+`GraphAlgorithmExecutionObservable.lastAlgorithmExecution`, which reports
+provider `jvm-fallback`, path `JVM_FALLBACK`, and reason `NO_PROVIDER`. An
+optional MAGE module can use the dependency-free `graph-core` provider SPI;
+the base Memgraph module does not install MAGE or silently replace a failed
+native result with a JVM result.
+
 ### Usage Example
 
 ```kotlin

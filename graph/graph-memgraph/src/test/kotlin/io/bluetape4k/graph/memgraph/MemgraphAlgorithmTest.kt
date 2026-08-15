@@ -14,6 +14,10 @@ import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldNotBeEmpty
+import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.graph.algo.provider.GraphAlgorithmExecutionPath
+import io.bluetape4k.graph.algo.provider.GraphAlgorithmFallbackReason
+import io.bluetape4k.graph.algo.provider.GraphAlgorithmId
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -74,6 +78,16 @@ class MemgraphAlgorithmTest {
         scores.shouldNotBeEmpty()
         scores.zipWithNext { x, y -> (x.score >= y.score).shouldBeTrue() }
         scores.first().vertex.properties["name"] shouldBeEqualTo "Hub"
+    }
+
+    @Test
+    fun `pageRank exposes the JVM fallback execution`() {
+        ops.pageRank(PageRankOptions(vertexLabel = "Person", topK = 1))
+
+        val execution = ops.lastAlgorithmExecution.shouldNotBeNull()
+        execution.algorithm shouldBeEqualTo GraphAlgorithmId.PAGE_RANK
+        execution.path shouldBeEqualTo GraphAlgorithmExecutionPath.JVM_FALLBACK
+        execution.fallbackReason shouldBeEqualTo GraphAlgorithmFallbackReason.NO_PROVIDER
     }
 
     @Test

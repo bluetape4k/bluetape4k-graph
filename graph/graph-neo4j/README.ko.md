@@ -564,6 +564,13 @@ WHERE elementId(a) = $fromId AND elementId(b) = $toId RETURN p
 | `connectedComponents` | JVM fallback (`UnionFind`) |
 | `pageRank` | JVM fallback (`PageRankCalculator`) — GDS 옵션 모듈은 Phase 7 |
 
+현재 PageRank fallback은 `GraphAlgorithmExecutionObservable.lastAlgorithmExecution`으로
+관찰할 수 있으며 provider `jvm-fallback`, 경로 `JVM_FALLBACK`, 이유
+`NO_PROVIDER`를 기록한다. 선택적 provider 모듈은 dependency-free
+`graph-core` provider SPI를 사용할 수 있고, 기본 Neo4j 모듈은 GDS를
+설치하거나 native 실행을 주장하지 않는다. native provider 실행 실패는
+결과 의미를 바꾸지 않도록 명시적인 실패로 남긴다.
+
 ### 사용 예제
 
 ```kotlin

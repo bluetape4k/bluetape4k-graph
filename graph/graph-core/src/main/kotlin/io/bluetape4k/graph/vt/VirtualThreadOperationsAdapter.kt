@@ -1,6 +1,8 @@
 package io.bluetape4k.graph.vt
 
 import io.bluetape4k.graph.algo.VirtualThreadAlgorithmAdapter
+import io.bluetape4k.graph.algo.provider.GraphAlgorithmExecution
+import io.bluetape4k.graph.algo.provider.GraphAlgorithmExecutionObservable
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadCapabilitiesOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadAlgorithmRepository
@@ -35,6 +37,7 @@ class VirtualThreadOperationsAdapter(
     private val delegate: GraphOperations,
 ): GraphVirtualThreadOperations,
    GraphVirtualThreadCapabilitiesOperations,
+   GraphAlgorithmExecutionObservable,
    GraphVirtualThreadSession by VirtualThreadSessionAdapter(delegate),
    GraphVirtualThreadVertexRepository by VirtualThreadVertexAdapter(delegate),
    GraphVirtualThreadEdgeRepository by VirtualThreadEdgeAdapter(delegate),
@@ -42,6 +45,9 @@ class VirtualThreadOperationsAdapter(
    GraphVirtualThreadAlgorithmRepository by VirtualThreadAlgorithmAdapter(delegate) {
 
     companion object: KLogging()
+
+    override val lastAlgorithmExecution: GraphAlgorithmExecution?
+        get() = (delegate as? GraphAlgorithmExecutionObservable)?.lastAlgorithmExecution
 
     override fun capabilities() = delegate.capabilities()
 

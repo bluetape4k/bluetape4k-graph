@@ -102,6 +102,27 @@ lane으로 유지한다.
 - `bfs(startId, BfsDfsOptions)` / `dfs(startId, BfsDfsOptions)`: 방문 순서를 담은 `TraversalVisit` 목록을 반환한다.
 - `detectCycles(CycleOptions)`: 순환 경로를 담은 `GraphCycle` 목록을 반환한다.
 
+### 선택적 Native Algorithm Provider SPI
+
+`graph-core`는 GDS/MAGE SDK를 base backend에 추가하지 않고 선택 모듈이
+native capability를 선언할 수 있도록 `GraphAlgorithmProvider`,
+`GraphAlgorithmProviderDescriptor`, `GraphAlgorithmProviderSelector`를
+제공한다. `AUTO` 정책은 descriptor가 요청 알고리즘을 실제로 선언한
+provider만 선택하며, provider가 없으면 `JVM_FALLBACK`과 이유를 함께
+기록한다. `NATIVE_ONLY`에서 capability가 없으면 조용히 JVM으로 바꾸지
+않고 `GraphAlgorithmProviderUnavailableException`을 발생시킨다.
+
+```kotlin
+val execution = GraphAlgorithmProviderSelector.select(GraphAlgorithmId.PAGE_RANK)
+check(execution.path == GraphAlgorithmExecutionPath.JVM_FALLBACK)
+```
+
+native provider 모듈의 driver 호출은 이 모듈의 범위가 아니다. backend는
+`GraphAlgorithmExecutionObservable`로 마지막 실행 경로를 노출하고,
+`GraphAlgorithmExecutionObserver`로 metrics/audit 관찰 callback을 받을 수
+있다. 현재 Neo4j와 Memgraph의 PageRank는 `NO_PROVIDER` 이유의 JVM
+fallback으로 관찰된다.
+
 ### 스키마 DSL 클래스
 
 ![Schema DSL metadata diagram](../../docs/images/readme-diagrams/graph-graph-core-class-05.png)

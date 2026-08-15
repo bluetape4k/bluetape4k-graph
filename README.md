@@ -166,6 +166,7 @@ write-time guarantees without changing the base `GraphOperations` source contrac
 | Schema manager | `ops.schemaManager()` / `suspendOps.schemaManager()` | Create/list/drop indexes and constraints through common metadata models |
 | Merge / Upsert | `ops.mergeVertex(...)`, `ops.mergeEdge(...)` | Idempotent vertex and edge writes using stable `matchProperties` |
 | Transaction DSL | `ops.transaction { }`, `suspendOps.suspendTransaction { }` | Atomic repository-style vertex/edge work blocks |
+| Native algorithm provider SPI | `GraphAlgorithmProviderSelector` / `GraphAlgorithmExecutionObservable` | Optional GDS/MAGE modules can declare native support without polluting base backend dependencies |
 | Capability discovery | `ops.capabilities()` / `suspendOps.capabilities()` | Read support flags, contract versions, and constraints before optional calls |
 
 ```kotlin
@@ -186,6 +187,13 @@ val edge = ops.transaction {
     createEdge(alice.id, bob.id, "KNOWS")
 }
 ```
+
+Native algorithm providers are an optional capability boundary. The core
+module contains only provider descriptors and selection policy; it does not
+depend on Neo4j GDS or Memgraph MAGE SDKs. When no provider is installed,
+Neo4j and Memgraph expose PageRank as an observable `JVM_FALLBACK` with reason
+`NO_PROVIDER`. A native-provider execution failure must remain an explicit
+failure; it must not be silently converted into a JVM result.
 
 Capability discovery is explicit and does not require probing by exception. The
 `NATIVE_ALGORITHM` flag is reported only by an installed backend provider;

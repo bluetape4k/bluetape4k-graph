@@ -166,6 +166,7 @@ val edges = ops.createEdges(
 | Schema manager | `ops.schemaManager()` / `suspendOps.schemaManager()` | 공통 metadata model로 index와 constraint 생성·조회·삭제 |
 | Merge / Upsert | `ops.mergeVertex(...)`, `ops.mergeEdge(...)` | 안정적인 `matchProperties` 기반 idempotent vertex/edge write |
 | Transaction DSL | `ops.transaction { }`, `suspendOps.suspendTransaction { }` | repository-style vertex/edge work block을 atomic하게 실행 |
+| Native algorithm provider SPI | `GraphAlgorithmProviderSelector` / `GraphAlgorithmExecutionObservable` | 선택적 GDS/MAGE 모듈이 base backend 의존성을 오염시키지 않고 native 지원을 선언 |
 
 ```kotlin
 import io.bluetape4k.graph.repository.mergeVertex
@@ -185,6 +186,13 @@ val edge = ops.transaction {
     createEdge(alice.id, bob.id, "KNOWS")
 }
 ```
+
+Native algorithm provider는 optional capability 경계다. core 모듈은 provider
+descriptor와 선택 정책만 포함하며 Neo4j GDS나 Memgraph MAGE SDK에 의존하지
+않는다. provider가 설치되지 않은 현재 Neo4j와 Memgraph의 PageRank는
+`NO_PROVIDER` 이유가 있는 관찰 가능한 `JVM_FALLBACK`으로 노출된다. native
+provider 실행 실패는 명시적인 실패로 남겨야 하며 JVM 결과로 조용히 바꾸지
+않는다.
 
 ## 벌크 임포트/익스포트 (`graph-io`)
 
