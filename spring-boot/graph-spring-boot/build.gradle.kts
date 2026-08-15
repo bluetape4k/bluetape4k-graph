@@ -26,6 +26,7 @@ dependencies {
     // Spring Boot 4에서 HealthIndicator 모듈 분리
     compileOnly("org.springframework.boot:spring-boot-health")
     compileOnly("org.springframework.boot:spring-boot-actuator-autoconfigure")
+    compileOnly("org.springframework.boot:spring-boot-actuator")
     // graph-io Micrometer bridge는 선택 기능이며, 기본 graph-spring-boot classpath에 전이하지 않는다.
     compileOnly(project(":bluetape4k-graph-io-micrometer"))
     compileOnly("io.micrometer:micrometer-core")
@@ -47,6 +48,7 @@ dependencies {
     testRuntimeOnly(bt4k.postgresql)
     testImplementation(bt4k.hikaricp)
     testImplementation("org.springframework.boot:spring-boot-health")
+    testImplementation("org.springframework.boot:spring-boot-actuator")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-starter-web")
     testImplementation("org.springframework.boot:spring-boot-starter-webflux")
