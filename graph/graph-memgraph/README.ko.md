@@ -85,7 +85,9 @@ val edge = ops.transaction {
 
 ## 그래프 알고리즘
 
-Memgraph는 Neo4j Bolt 프로토콜을 공유하므로 `graph-neo4j`와 동일한 Cypher 기반 알고리즘 구현을 사용한다.
+Memgraph는 Neo4j Bolt 프로토콜을 공유하므로 동일한 driver API를 사용하지만,
+모듈은 `graph-neo4j` 구현 모듈에 의존하지 않습니다. Caffeine cache도
+Memgraph 모듈이 직접 implementation dependency로 선언합니다.
 
 ### 알고리즘 지원 매트릭스
 

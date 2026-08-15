@@ -1,8 +1,8 @@
 dependencies {
     api(project(":bluetape4k-graph-core"))
-    api(project(":bluetape4k-graph-neo4j"))
 
     api(bt4k.neo4j.driver6)
+    implementation(bt4k.caffeine.core)
     runtimeOnly(bt4k.neo4j.bolt.connection.netty)
     runtimeOnly(bt4k.neo4j.bolt.connection.pooled)
 
