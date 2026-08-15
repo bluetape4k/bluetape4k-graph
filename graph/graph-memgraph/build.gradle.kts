@@ -13,4 +13,5 @@ dependencies {
     testImplementation(bt4k.bluetape4k.testcontainers)
     testImplementation(libs.testcontainers.core)
     testImplementation(libs.kotlinx.coroutines.test.lib)
+    testImplementation(testFixtures(project(":bluetape4k-graph-core")))
 }

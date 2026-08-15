@@ -15,11 +15,12 @@ import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.io.support.GraphIoPaths
 import io.bluetape4k.graph.io.support.GraphIoStopwatch
+import io.bluetape4k.graph.io.support.resolveLabels
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
 
 /**
@@ -80,6 +81,7 @@ class SuspendGraphMlBulkExporter : GraphSuspendBulkExporter<GraphExportSink> {
         )
     }
 
+    @Suppress("LongMethod", "TooGenericExceptionCaught")
     suspend fun exportGraphSuspending(
         sink: GraphExportSink,
         operations: GraphSuspendOperations,
@@ -89,32 +91,70 @@ class SuspendGraphMlBulkExporter : GraphSuspendBulkExporter<GraphExportSink> {
         log.debug { "Starting GRAPHML suspend export" }
         val watch = GraphIoStopwatch()
         val failures = mutableListOf<GraphIoFailure>()
+        val (vertexLabels, edgeLabels) = options.resolveLabels(operations)
 
-        val vertices = options.vertexLabels.flatMap { label ->
-            operations.findVerticesByLabel(label).toList().map { v ->
-                GraphIoVertexRecord(v.id.value, v.label, v.properties)
+        val vertexPropertyKeys = linkedSetOf<String>()
+        for (label in vertexLabels) {
+            operations.findVerticesByLabelChunked(label, chunkSize = options.exportChunkSize).collect { chunk ->
+                chunk.forEach { vertexPropertyKeys.addAll(it.properties.keys) }
             }
         }
-        val edges = options.edgeLabels.flatMap { label ->
-            operations.findEdgesByLabel(label).toList().map { e ->
-                GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties)
+        val edgePropertyKeys = linkedSetOf<String>()
+        for (label in edgeLabels) {
+            operations.findEdgesByLabelChunked(label, chunkSize = options.exportChunkSize).collect { chunk ->
+                chunk.forEach { edgePropertyKeys.addAll(it.properties.keys) }
             }
         }
 
-        withContext(Dispatchers.IO) {
-            GraphIoPaths.openOutputStream(sink).use { output ->
-                writer.write(output, vertices, edges, graphMlOptions)
+        val output = withContext(Dispatchers.IO) { GraphIoPaths.openOutputStream(sink) }
+        val session = try {
+            withContext(Dispatchers.IO) {
+                writer.open(output, graphMlOptions, vertexPropertyKeys, edgePropertyKeys)
+            }
+        } catch (e: Throwable) {
+            withContext(NonCancellable + Dispatchers.IO) { output.close() }
+            throw e
+        }
+
+        val writeResult = try {
+            for (label in vertexLabels) {
+                operations.findVerticesByLabelChunked(label, chunkSize = options.exportChunkSize).collect { chunk ->
+                    val records = chunk.map { v -> GraphIoVertexRecord(v.id.value, v.label, v.properties) }
+                    withContext(Dispatchers.IO) { session.writeVertices(records) }
+                }
+            }
+            for (label in edgeLabels) {
+                operations.findEdgesByLabelChunked(label, chunkSize = options.exportChunkSize).collect { chunk ->
+                    val records = chunk.map { e ->
+                        GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties)
+                    }
+                    withContext(Dispatchers.IO) { session.writeEdges(records) }
+                }
+            }
+            withContext(Dispatchers.IO) {
+                session.finish()
+                session.result()
+            }
+        } finally {
+            withContext(NonCancellable + Dispatchers.IO) {
+                session.close()
+                output.close()
             }
         }
 
         return GraphExportReport(
             status = if (failures.isEmpty()) GraphIoStatus.COMPLETED else GraphIoStatus.PARTIAL,
             format = GraphIoFormat.GRAPHML,
-            verticesWritten = vertices.size.toLong(),
-            edgesWritten = edges.size.toLong(),
+            verticesWritten = writeResult.verticesWritten,
+            edgesWritten = writeResult.edgesWritten,
             elapsed = watch.elapsed(),
             failures = failures,
-        ).also { log.debug { "Suspend export completed: vertices=${vertices.size}, edges=${edges.size}" } }
+        ).also {
+            log.debug {
+                "Suspend export completed: vertices=${writeResult.verticesWritten}, " +
+                    "edges=${writeResult.edgesWritten}"
+            }
+        }
     }
 
     companion object : KLoggingChannel()

@@ -15,6 +15,7 @@ import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.io.support.GraphIoPaths
 import io.bluetape4k.graph.io.support.GraphIoStopwatch
+import io.bluetape4k.graph.io.support.resolveLabels
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
@@ -72,24 +73,29 @@ class Jackson2NdJsonBulkExporter : GraphBulkExporter<GraphExportSink> {
         val watch = GraphIoStopwatch()
         val failures = mutableListOf<GraphIoFailure>()
         var vWritten = 0L; var eWritten = 0L
+        val (vertexLabels, edgeLabels) = options.resolveLabels(operations)
 
         GraphIoPaths.openWriter(sink).use { writer ->
             // 정점 쓰기
-            for (label in options.vertexLabels) {
-                for (v in operations.findVerticesByLabel(label)) {
-                    val rec = GraphIoVertexRecord(v.id.value, v.label, v.properties)
-                    writer.write(codec.writeVertex(rec))
-                    writer.newLine()
-                    vWritten++
+            for (label in vertexLabels) {
+                for (chunk in operations.findVerticesByLabelChunked(label, chunkSize = options.exportChunkSize)) {
+                    for (v in chunk) {
+                        val rec = GraphIoVertexRecord(v.id.value, v.label, v.properties)
+                        writer.write(codec.writeVertex(rec))
+                        writer.newLine()
+                        vWritten++
+                    }
                 }
             }
             // 간선 쓰기
-            for (label in options.edgeLabels) {
-                for (e in operations.findEdgesByLabel(label)) {
-                    val rec = GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties)
-                    writer.write(codec.writeEdge(rec))
-                    writer.newLine()
-                    eWritten++
+            for (label in edgeLabels) {
+                for (chunk in operations.findEdgesByLabelChunked(label, chunkSize = options.exportChunkSize)) {
+                    for (e in chunk) {
+                        val rec = GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties)
+                        writer.write(codec.writeEdge(rec))
+                        writer.newLine()
+                        eWritten++
+                    }
                 }
             }
         }

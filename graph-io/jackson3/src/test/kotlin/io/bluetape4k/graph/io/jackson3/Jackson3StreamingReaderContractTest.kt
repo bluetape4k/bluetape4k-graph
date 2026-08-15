@@ -7,13 +7,50 @@ import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.count
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
+import java.io.IOException
 
 class Jackson3StreamingReaderContractTest {
+
+    @Test
+    fun `slow collector stays within measured ndjson read ahead bound`() = runSuspendIO {
+        val payload = generatedVertices()
+        val input = MarkerInputStream(payload.toByteArray())
+
+        val first = Jackson3NdJsonRecordFlowReader()
+            .readVertices(GraphImportSource.InputStreamSource(input, closeInput = true))
+            .onEach { delay(25) }
+            .take(1)
+            .toList()
+
+        first.map { it.externalId } shouldBeEqualTo listOf("v0")
+        (input.markerCount <= MAX_READ_AHEAD_RECORDS).shouldBeTrue()
+        (input.bytesRead < payload.toByteArray().size).shouldBeTrue()
+        input.closeCount shouldBeEqualTo 1
+    }
+
+    @Test
+    fun `parse failure remains primary when owned close also fails`() = runSuspendIO {
+        val input = CloseFailingInputStream(
+            "{\"type\":\"vertex\",\"id\":\"secret-record\",\"properties\":{\n".toByteArray(),
+        )
+
+        val thrown = assertFailsWith<io.bluetape4k.graph.io.report.GraphIoReadException> {
+            Jackson3NdJsonRecordFlowReader().readVertices(
+                GraphImportSource.InputStreamSource(input, closeInput = true),
+            ).toList()
+        }
+
+        thrown.message.orEmpty().contains("secret-record").shouldBeFalse()
+        thrown.suppressed.map { it.message } shouldBeEqualTo listOf("jackson3-close-failure")
+        input.closeCount shouldBeEqualTo 1
+    }
 
     @Test
     fun `reader emits vertices and edges in source order`() = runSuspendIO {
@@ -183,6 +220,49 @@ class Jackson3StreamingReaderContractTest {
         }
     }
 
+    private class MarkerInputStream(content: ByteArray) : ByteArrayInputStream(content) {
+        var bytesRead = 0
+            private set
+        var markerCount = 0
+            private set
+
+        var closeCount = 0
+            private set
+
+        override fun read(): Int {
+            val value = super.read()
+            if (value >= 0) {
+                bytesRead++
+                if (value.toChar() == '\n') markerCount++
+            }
+            return value
+        }
+
+        override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
+            val count = super.read(buffer, offset, length.coerceAtMost(1))
+            if (count > 0) {
+                bytesRead += count
+                repeat(count) { if (buffer[offset + it].toInt().toChar() == '\n') markerCount++ }
+            }
+            return count
+        }
+
+        override fun close() {
+            closeCount++
+            super.close()
+        }
+    }
+
+    private class CloseFailingInputStream(content: ByteArray) : ByteArrayInputStream(content) {
+        var closeCount = 0
+            private set
+
+        override fun close() {
+            closeCount++
+            throw IOException("jackson3-close-failure")
+        }
+    }
+
     private class CancellationInputStream(
         bytes: ByteArray,
         private val cancelAfter: Int,
@@ -210,5 +290,10 @@ class Jackson3StreamingReaderContractTest {
             closeCount++
             super.close()
         }
+    }
+
+    private companion object {
+        // BufferedReader observed 276 records (8,192 bytes) before cancellation.
+        const val MAX_READ_AHEAD_RECORDS = 512
     }
 }

@@ -38,6 +38,51 @@ length = 2  (간선 개수)
 
 ![Repository contract diagram](../../docs/images/readme-diagrams/graph-graph-core-class-04.png)
 
+### Capability 조회
+
+선택 기능을 호출하기 전에 `capabilities()`를 조회한다. 반환되는 불변
+`GraphCapabilities`는 예외를 발생시켜 추측하지 않고 지원 여부, `core-0.7`
+계약 버전, capability별 제약을 제공한다.
+
+```kotlin
+import io.bluetape4k.graph.repository.GraphCapability
+import io.bluetape4k.graph.repository.capabilities
+
+val capabilities = ops.capabilities()
+if (capabilities.supports(GraphCapability.MERGE)) {
+    ops.mergeVertex("Person", matchProperties = mapOf("email" to "alice@example.com"))
+}
+```
+
+`GRAPH_ALGORITHM`은 portable JVM 알고리즘을 의미한다. `NATIVE_ALGORITHM`은
+명시적으로 설치한 backend provider가 있을 때만 보고되며, 플래그가 없다고
+자동 fallback이 보장되는 것은 아니다. Kotlin `by` 위임을 사용하는 decorator는
+delegate 매핑을 보존하기 위해 `GraphCapabilitiesOperations`를 구현해야 한다.
+
+CORE-2 conformance slice는 `MERGE`, `SCHEMA`, `TRANSACTION`, `BATCH_INSERT`,
+`CHUNKED_READ`, `CHUNKED_EXPORT`, `WEIGHTED_PATH`, `GRAPH_ALGORITHM`,
+`NATIVE_ALGORITHM` 플래그를 공통 계약으로 검증한다. 지원하지 않는 optional
+연산은 조용히 무시하지 않고 `UnsupportedOperationException`으로 명시적으로
+실패해야 한다.
+
+### Cross-backend capability conformance
+
+재사용 가능한 `AbstractGraphCapabilityConformanceTest` fixture가 TinkerGraph
+인메모리 lane과 각 container backend에 같은 계약을 적용한다. Testcontainers
+lifecycle이 겹치지 않도록 아래 task를 순차 실행한다.
+
+```bash
+./gradlew :bluetape4k-graph-tinkerpop:test --tests '*GraphCapabilityConformanceTest'
+./gradlew :bluetape4k-graph-neo4j:test --tests '*GraphCapabilityConformanceTest'
+./gradlew :bluetape4k-graph-memgraph:test --tests '*GraphCapabilityConformanceTest'
+./gradlew :bluetape4k-graph-age:test --tests '*GraphCapabilityConformanceTest'
+./gradlew :bluetape4k-graph-falkordb:test --tests '*GraphCapabilityConformanceTest'
+```
+
+`graph-core` 변경은 일반 CI의 backend test job을 트리거하며, 전체 container
+matrix는 Full Nightly scope에서 실행한다. TinkerGraph는 빠른 인메모리 기준
+lane으로 유지한다.
+
 ## 순회와 알고리즘 API
 
 ![Traversal and algorithm API diagram](../../docs/images/readme-diagrams/graph-graph-core-traversal-algorithm-15.png)
@@ -83,6 +128,23 @@ fallback으로 관찰된다.
 ![Schema DSL metadata diagram](../../docs/images/readme-diagrams/graph-graph-core-class-05.png)
 
 ## 스키마 정의 (DSL)
+
+### Schema Drift 계획
+
+`GraphSchemaDefinition`으로 desired 선언과 live metadata를 비교한 뒤 DDL 적용 계획을 만들 수 있습니다.
+기본값은 dry-run이며, extra index는 destructive drop을 명시적으로 허용하기 전까지 `SKIP`으로 남습니다.
+공통 manager에는 constraint 삭제 API가 없으므로 constraint drop은 `UNSUPPORTED`로 보고됩니다.
+
+```kotlin
+val desired = GraphSchemaDefinition(
+    indexes = setOf(GraphIndex("ignored", "Person", "email")),
+)
+val plan = ops.schemaManager().plan(desired) // 기본 dry-run
+val report = plan.apply(ops.schemaManager())
+```
+
+삭제가 필요한 승인된 migration에서만 `GraphSchemaPlanOptions(dryRun = false, allowDestructiveDrops = true)`를
+사용하세요. backend가 지원하지 않는 작업은 조용히 성공 처리하지 않고 `UNSUPPORTED` 결과로 남습니다.
 
 ### VertexLabel 정의
 
@@ -1096,13 +1158,24 @@ val cycles = ops.detectCycles(CycleOptions(edgeLabel = "KNOWS", maxDepth = 5))
 
 `GraphAlgorithmRepository`를 Virtual Thread 어댑터로 감싸면 Java 상호운용을 위한 `CompletableFuture` 기반 비동기 API를 사용할 수 있다.
 
+`GraphVirtualThreadOperations.capabilities()`는 외부에서 소유한 동기 delegate의
+capability discovery를 보존하는 공개 projection이다. delegate의 지원 flag, 버전,
+제약을 그대로 보여주지만 facade가 선택 기능 `MERGE`, `SCHEMA`, `TRANSACTION`,
+`CHUNKED_READ`용 `*Async` method까지 제공한다는 뜻은 아니다. 해당 비동기 경계가
+확정될 때까지 대응하는 sync/suspend contract 또는 graph-io Virtual Thread
+adapter를 사용해야 한다. `vtOps.close()`는 facade만 닫으며 delegate의 close 책임은
+호출자에게 남는다.
+
 ```kotlin
+import io.bluetape4k.graph.repository.GraphCapability
 import io.bluetape4k.graph.vt.asVirtualThread
 
 val ops: GraphOperations = TinkerGraphOperations()
 
 // Virtual Thread executor 로 감싸기
 val vtOps = ops.asVirtualThread()
+
+check(vtOps.capabilities().supports(GraphCapability.GRAPH_ALGORITHM))
 
 // CompletableFuture<List<PageRankScore>> 반환
 val future = vtOps.pageRankAsync(PageRankOptions(topK = 5))

@@ -26,6 +26,7 @@ import io.bluetape4k.graph.repository.GraphBatchValidation
 import io.bluetape4k.graph.repository.GraphEdgeRepository
 import io.bluetape4k.graph.repository.DEFAULT_GRAPH_EXPORT_CHUNK_SIZE
 import io.bluetape4k.graph.repository.GraphMergeOperations
+import io.bluetape4k.graph.repository.GraphLabelDiscovery
 import io.bluetape4k.graph.repository.GraphMergeValidation
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphTransactionScope
@@ -73,13 +74,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__ as AnonymousT
  * ops.close()
  * ```
  */
-@Suppress("LargeClass")
+@Suppress("LargeClass", "TooManyFunctions")
 class TinkerGraphOperations :
     GraphOperations,
     GraphAlgorithmRepository,
     GraphTransactionalOperations,
     GraphSchemaManagementOperations,
-    GraphMergeOperations {
+    GraphMergeOperations,
+    GraphLabelDiscovery {
 
     companion object : KLogging() {
         private const val DEFAULT_GRAPH_NAME = "default"
@@ -88,6 +90,13 @@ class TinkerGraphOperations :
     private val currentGraphName = AtomicReference(DEFAULT_GRAPH_NAME)
     private val graph: TinkerGraph = TinkerGraph.open()
     private val g: GraphTraversalSource = graph.traversal()
+
+    override fun listVertexLabels(): Set<String> =
+        graph.vertices().asSequence().map { it.label() }.toSet()
+
+    override fun listEdgeLabels(): Set<String> =
+        graph.edges().asSequence().map { it.label() }.toSet()
+
     private val schemaManager = TinkerGraphSchemaManager()
     private val transactionGate = Semaphore(1)
     private val writeLock = ReentrantLock()

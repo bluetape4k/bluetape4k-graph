@@ -2,6 +2,7 @@ package io.bluetape4k.graph.neo4j
 
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
+import com.github.benmanes.caffeine.cache.Ticker
 import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphElementId
@@ -35,10 +36,12 @@ import java.util.concurrent.atomic.AtomicLong
  * `createVertex`와 `createEdge`는 호출마다 [Neo4jGraphOperations]에 위임하여 새 생성 결과를 반환한다.
  * 캐시 래퍼는 생성 의미를 바꾸지 않으며, 생성 후 읽기 캐시만 무효화한다.
  *
- * 각 읽기 캐시는 [maxSize] 엔트리까지 보관하고 [expireAfterWrite] 이후 만료된다.
+ * 여섯 읽기 캐시는 각각 [maxSize] 엔트리까지 보관하고 [expireAfterWrite] 이후 만료된다.
+ * 따라서 [maxSize]는 래퍼 전체의 합계나 heap 바이트 상한이 아니라 cache별 entry 상한이다.
  * 쓰기 완료 후에는 모든 읽기 캐시를 무효화하고 generation을 증가시킨다. 읽기 중 generation이
  * 바뀌면 해당 miss 결과를 캐시에 저장하지 않아 이전 값의 재적재를 막는다. 이미 진행 중인 읽기가
  * 반환하는 값 자체까지 직렬화하지 않으므로 wrapper 외부에서 직접 수행한 쓰기까지 강한 일관성을 보장하지는 않는다.
+ * [ticker]를 주입하면 wall-clock 대기 없이 만료 정책을 결정적으로 검증할 수 있다.
  *
  * ### Usage
  * ```kotlin
@@ -69,14 +72,17 @@ import java.util.concurrent.atomic.AtomicLong
  */
 /**
  * @param delegate 실제 database 호출을 수행할 [Neo4jGraphOperations] 인스턴스.
- * @param maxSize 각 읽기 캐시의 최대 엔트리 수. 양수여야 한다.
+ * @param maxSize 각 읽기 캐시별 최대 엔트리 수. 래퍼 전체 합계나 heap 바이트 상한이
+ *     아니며, 양수여야 한다.
  * @param expireAfterWrite 읽기 캐시 엔트리의 쓰기 후 만료 시간. 양수여야 한다.
+ * @param ticker Caffeine 만료 시계. 기본값은 system ticker이며, 테스트에서는 fake ticker를 주입할 수 있다.
  */
 @Suppress("TooManyFunctions")
 class CachingNeo4jGraphOperations(
     private val delegate: Neo4jGraphOperations,
     private val maxSize: Long = 10_000,
     private val expireAfterWrite: Duration = Duration.ofMinutes(5),
+    private val ticker: Ticker = Ticker.systemTicker(),
 ): GraphOperations by delegate, GraphTransactionalOperations, GraphSchemaManagementOperations, GraphMergeOperations {
 
     companion object : KLogging()
@@ -113,6 +119,7 @@ class CachingNeo4jGraphOperations(
         Caffeine.newBuilder()
             .maximumSize(maxSize)
             .expireAfterWrite(expireAfterWrite)
+            .ticker(ticker)
             .build<K, V>()
 
     private fun <K : Any, V : Any> putReadCache(cache: Cache<K, V>, key: K, value: V) {

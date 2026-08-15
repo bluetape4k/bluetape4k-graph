@@ -69,8 +69,8 @@ data class GraphImportOptions(
 )
 
 data class GraphExportOptions(
-    val vertexLabels: Set<String> = emptySet(),  // empty = all labels
-    val edgeLabels: Set<String> = emptySet(),    // empty = all labels
+    val vertexLabels: Set<String> = emptySet(),  // empty = discover all labels
+    val edgeLabels: Set<String> = emptySet(),    // empty = discover all labels
     val includeEmptyProperties: Boolean = true,
     val exportChunkSize: Int = 1_000,
 )
@@ -87,6 +87,10 @@ from chunk-aware repository methods such as `findVerticesByLabelChunked` and
 compatible list/Flow fallback, while cursor-aware backends can avoid
 whole-label materialization. Formats that need global headers, such as CSV, may
 still perform format-specific pre-scans.
+
+An empty label set requests all labels through `GraphLabelDiscovery`. A backend
+without that capability must receive explicit labels; exporters fail clearly
+instead of reporting a successful zero-record export.
 
 `requireNotBlank` is enforced on label fields and on every element of label sets.
 

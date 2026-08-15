@@ -73,6 +73,51 @@ GraphSuspendOperations = GraphSuspendSession
 | `GraphMergeOperations` | Optional sync merge/upsert capability used by `ops.mergeVertex()` and `ops.mergeEdge()` |
 | `GraphSuspendMergeOperations` | Optional coroutine merge/upsert capability used by suspend merge extensions |
 
+### Capability Discovery
+
+Use `capabilities()` before invoking optional operations. The returned immutable
+`GraphCapabilities` value exposes support flags, the `core-0.7` contract version,
+and capability-specific constraints without probing by exception.
+
+```kotlin
+import io.bluetape4k.graph.repository.GraphCapability
+import io.bluetape4k.graph.repository.capabilities
+
+val capabilities = ops.capabilities()
+if (capabilities.supports(GraphCapability.MERGE)) {
+    ops.mergeVertex("Person", matchProperties = mapOf("email" to "alice@example.com"))
+}
+```
+
+`GRAPH_ALGORITHM` means portable JVM algorithms. `NATIVE_ALGORITHM` is reported
+only by an explicitly installed backend provider; an absent flag must not be
+interpreted as a silent fallback guarantee. Decorators that use Kotlin
+`by`-delegation must implement `GraphCapabilitiesOperations` to preserve their
+delegate mapping.
+
+The CORE-2 conformance slice covers `MERGE`, `SCHEMA`, `TRANSACTION`,
+`BATCH_INSERT`, `CHUNKED_READ`, `CHUNKED_EXPORT`, `WEIGHTED_PATH`,
+`GRAPH_ALGORITHM`, and `NATIVE_ALGORITHM`. Unsupported optional operations must
+remain explicit `UnsupportedOperationException` failures.
+
+### Cross-backend capability conformance
+
+The reusable `AbstractGraphCapabilityConformanceTest` fixture runs the same
+contract against the in-memory TinkerGraph lane and each container backend. Run
+the lanes sequentially so Testcontainers lifecycles do not overlap:
+
+```bash
+./gradlew :bluetape4k-graph-tinkerpop:test --tests '*GraphCapabilityConformanceTest'
+./gradlew :bluetape4k-graph-neo4j:test --tests '*GraphCapabilityConformanceTest'
+./gradlew :bluetape4k-graph-memgraph:test --tests '*GraphCapabilityConformanceTest'
+./gradlew :bluetape4k-graph-age:test --tests '*GraphCapabilityConformanceTest'
+./gradlew :bluetape4k-graph-falkordb:test --tests '*GraphCapabilityConformanceTest'
+```
+
+The normal CI backend jobs are triggered by `graph-core` changes. The complete
+container matrix belongs to the Full Nightly scope; TinkerGraph remains the
+fast in-memory reference lane.
+
 ## Traversal and Algorithm APIs
 
 ![Traversal and Algorithm APIs diagram](../../docs/images/readme-diagrams/graph-graph-core-traversal-algorithm-15.png)
@@ -175,6 +220,28 @@ Support matrix:
 | TinkerGraph | In-memory recorded no-op | Unsupported | Constraints cannot be enforced by TinkerGraph |
 | AGE | Unsupported | Unsupported | PostgreSQL-side AGE indexes are not portable yet |
 | FalkorDB | Create / list / drop | Unsupported | Unique constraints require raw `GRAPH.CONSTRAINT CREATE` support |
+
+### Schema Drift Planning
+
+Use `GraphSchemaDefinition` to compare a desired declaration with live metadata before applying DDL.
+Planning is dry-run by default; extra live indexes become `SKIP` entries until destructive drops are explicitly enabled.
+Constraint drops are reported as `UNSUPPORTED` because the common manager intentionally has no drop-constraint API.
+
+```kotlin
+import io.bluetape4k.graph.model.GraphIndex
+import io.bluetape4k.graph.schema.GraphSchemaDefinition
+import io.bluetape4k.graph.schema.GraphSchemaPlanOptions
+import io.bluetape4k.graph.schema.plan
+
+val desired = GraphSchemaDefinition(
+    indexes = setOf(GraphIndex("ignored", "Person", "email")),
+)
+val plan = ops.schemaManager().plan(desired) // dry-run, no mutation
+val report = plan.apply(ops.schemaManager()) // applies creates only when dryRun=false
+```
+
+Set `GraphSchemaPlanOptions(dryRun = false, allowDestructiveDrops = true)` only in an explicitly approved
+migration path. A failed backend operation is surfaced as `UNSUPPORTED` rather than treated as a silent success.
 
 ### Merge / Upsert
 
@@ -437,13 +504,25 @@ val cycles = ops.detectCycles(CycleOptions(edgeLabel = "KNOWS", maxDepth = 5))
 
 `GraphAlgorithmRepository` can be wrapped with a Virtual Thread adapter to expose `CompletableFuture`-based async APIs for Java interop.
 
+`GraphVirtualThreadOperations.capabilities()` is a public capability-discovery
+projection of the externally owned synchronous delegate. It preserves the
+delegate's support flags, versions, and constraints, but it does not imply that
+the facade has `*Async` methods for optional `MERGE`, `SCHEMA`, `TRANSACTION`,
+or `CHUNKED_READ` operations. Use the corresponding sync/suspend contract or
+the graph-io Virtual Thread adapter until those async boundaries are defined.
+Calling `vtOps.close()` closes only the facade; the caller remains responsible
+for closing the delegate.
+
 ```kotlin
+import io.bluetape4k.graph.repository.GraphCapability
 import io.bluetape4k.graph.vt.asVirtualThread
 
 val ops: GraphOperations = TinkerGraphOperations()
 
 // Wrap with virtual-thread executor
 val vtOps = ops.asVirtualThread()
+
+check(vtOps.capabilities().supports(GraphCapability.GRAPH_ALGORITHM))
 
 // Returns CompletableFuture<List<PageRankScore>>
 val future = vtOps.pageRankAsync(PageRankOptions(topK = 5))

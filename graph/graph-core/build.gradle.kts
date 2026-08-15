@@ -1,3 +1,7 @@
+plugins {
+    id("java-test-fixtures")
+}
+
 dependencies {
     api(bt4k.bluetape4k.core)
     implementation(bt4k.bluetape4k.virtualthread.api)
@@ -9,4 +13,6 @@ dependencies {
     testImplementation(bt4k.bluetape4k.testcontainers)
     testImplementation(libs.kotlinx.coroutines.test.lib)
     testImplementation(project(":bluetape4k-graph-tinkerpop"))
+
+    testFixturesApi(bt4k.bluetape4k.junit5)
 }

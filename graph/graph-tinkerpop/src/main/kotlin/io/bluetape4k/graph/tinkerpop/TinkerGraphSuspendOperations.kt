@@ -20,6 +20,7 @@ import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.repository.GraphSuspendMergeOperations
+import io.bluetape4k.graph.repository.GraphSuspendLabelDiscovery
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphSuspendTransactionScope
 import io.bluetape4k.graph.repository.GraphSuspendTransactionalOperations
@@ -66,9 +67,11 @@ import kotlinx.coroutines.withContext
  *
  * @param delegate 동기 방식 [TinkerGraphOperations] (내부 위임)
  */
+@Suppress("TooManyFunctions")
 class TinkerGraphSuspendOperations(
     private val delegate: TinkerGraphOperations = TinkerGraphOperations(),
 ): GraphSuspendOperations,
+   GraphSuspendLabelDiscovery,
    GraphSuspendTransactionalOperations,
    GraphSuspendSchemaManagementOperations,
    GraphSuspendMergeOperations {
@@ -76,6 +79,12 @@ class TinkerGraphSuspendOperations(
     companion object: KLoggingChannel() {
         private const val TRANSACTION_GATE_RETRY_DELAY_MILLIS = 10L
     }
+
+    override suspend fun listVertexLabels(): Set<String> =
+        withContext(Dispatchers.IO) { delegate.listVertexLabels() }
+
+    override suspend fun listEdgeLabels(): Set<String> =
+        withContext(Dispatchers.IO) { delegate.listEdgeLabels() }
 
     override fun close() {
         delegate.close()
