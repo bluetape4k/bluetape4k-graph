@@ -15,6 +15,7 @@ import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.io.support.GraphIoPaths
 import io.bluetape4k.graph.io.support.GraphIoStopwatch
+import io.bluetape4k.graph.io.support.resolveLabels
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
@@ -71,9 +72,10 @@ class SuspendJackson3NdJsonBulkExporter : GraphSuspendBulkExporter<GraphExportSi
         val watch = GraphIoStopwatch()
         val failures = mutableListOf<GraphIoFailure>()
         var vWritten = 0L; var eWritten = 0L
+        val (vertexLabels, edgeLabels) = options.resolveLabels(operations)
 
         GraphIoPaths.openWriter(sink).use { writer ->
-            for (label in options.vertexLabels) {
+            for (label in vertexLabels) {
                 operations.findVerticesByLabelChunked(label, chunkSize = options.exportChunkSize).collect { chunk ->
                     for (v in chunk) {
                         val rec = GraphIoVertexRecord(v.id.value, v.label, v.properties)
@@ -83,7 +85,7 @@ class SuspendJackson3NdJsonBulkExporter : GraphSuspendBulkExporter<GraphExportSi
                     }
                 }
             }
-            for (label in options.edgeLabels) {
+            for (label in edgeLabels) {
                 operations.findEdgesByLabelChunked(label, chunkSize = options.exportChunkSize).collect { chunk ->
                     for (e in chunk) {
                         val rec = GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties)

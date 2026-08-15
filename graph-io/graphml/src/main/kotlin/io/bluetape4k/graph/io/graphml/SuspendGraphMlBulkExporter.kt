@@ -15,6 +15,7 @@ import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.io.support.GraphIoPaths
 import io.bluetape4k.graph.io.support.GraphIoStopwatch
+import io.bluetape4k.graph.io.support.resolveLabels
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
@@ -89,13 +90,14 @@ class SuspendGraphMlBulkExporter : GraphSuspendBulkExporter<GraphExportSink> {
         log.debug { "Starting GRAPHML suspend export" }
         val watch = GraphIoStopwatch()
         val failures = mutableListOf<GraphIoFailure>()
+        val (vertexLabels, edgeLabels) = options.resolveLabels(operations)
 
-        val vertices = options.vertexLabels.flatMap { label ->
+        val vertices = vertexLabels.flatMap { label ->
             operations.findVerticesByLabel(label).toList().map { v ->
                 GraphIoVertexRecord(v.id.value, v.label, v.properties)
             }
         }
-        val edges = options.edgeLabels.flatMap { label ->
+        val edges = edgeLabels.flatMap { label ->
             operations.findEdgesByLabel(label).toList().map { e ->
                 GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties)
             }

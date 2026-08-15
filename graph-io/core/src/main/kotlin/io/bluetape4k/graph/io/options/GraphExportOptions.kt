@@ -9,6 +9,9 @@ import java.io.Serializable
 /**
  * graph export operation option.
  *
+ * 빈 label 집합은 전체 label export를 요청한다. backend가
+ * [io.bluetape4k.graph.repository.GraphLabelDiscovery]를 제공하지 않으면
+ * exporter가 빈 결과를 성공으로 반환하지 않고 명확히 실패한다.
  * [vertexLabels] 또는 [edgeLabels]의 blank value는 fail fast 처리한다.
  *
  * @property exportChunkSize streaming-capable exporter가 repository chunk당 요청하는 최대
