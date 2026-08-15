@@ -20,6 +20,7 @@ import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotBeNull
 import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -80,6 +81,28 @@ class AgeGraphOperationsTest {
     fun `그래프를 삭제하면 존재 여부가 false 반환`() = runSuspendIO {
         ops.dropGraph(graphName)
         ops.graphExists(graphName).shouldBeFalse()
+    }
+
+    @Test
+    @Order(12)
+    fun `명시한 Database는 전역 기본 Database 변경에도 sync와 suspend transaction을 격리한다`() = runSuspendIO {
+        val otherDatabase = Database.connect(dataSource)
+        val previousDefaultDatabase = TransactionManager.defaultDatabase
+        try {
+            TransactionManager.defaultDatabase = otherDatabase
+
+            val isolatedOps = AgeGraphOperations(database, "database_isolation_sync")
+            val isolatedSuspendOps = AgeGraphSuspendOperations(database, "database_isolation_suspend")
+
+            val syncDatabase = isolatedOps.transaction { TransactionManager.current().db }
+            val suspendDatabase = isolatedSuspendOps.suspendTransaction { TransactionManager.current().db }
+
+            (syncDatabase === database).shouldBeTrue()
+            (suspendDatabase === database).shouldBeTrue()
+        } finally {
+            TransactionManager.defaultDatabase = previousDefaultDatabase
+            TransactionManager.closeAndUnregister(otherDatabase)
+        }
     }
 
     // ───────────────────────── 정점(Vertex) CRUD ─────────────────────────

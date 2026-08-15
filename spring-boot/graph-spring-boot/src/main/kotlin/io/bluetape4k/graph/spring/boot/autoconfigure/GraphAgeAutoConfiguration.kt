@@ -11,6 +11,7 @@ import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.info
 import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
@@ -81,7 +82,10 @@ class GraphAgeAutoConfiguration {
     @ConditionalOnMissingBean(name = ["ageExposedDatabase"])
     fun ageExposedDatabase(dataSource: DataSource): Database {
         log.info { "Connecting Exposed Database to AGE DataSource" }
-        return Database.connect(dataSource)
+        val previousDefaultDatabase = TransactionManager.defaultDatabase
+        return Database.connect(dataSource).also {
+            TransactionManager.defaultDatabase = previousDefaultDatabase
+        }
     }
 
     /**
@@ -90,9 +94,9 @@ class GraphAgeAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(GraphOperations::class)
     @DependsOn("ageExposedDatabase")
-    fun graphOperations(props: AgeGraphProperties): AgeGraphOperations {
+    fun graphOperations(props: AgeGraphProperties, database: Database): AgeGraphOperations {
         log.info { "Registering AgeGraphOperations (graphName=${props.graphName})" }
-        return AgeGraphOperations(props.graphName)
+        return AgeGraphOperations(database, props.graphName)
     }
 
     /**
@@ -132,9 +136,9 @@ class GraphAgeAutoConfiguration {
         havingValue = "true",
         matchIfMissing = true,
     )
-    fun graphSuspendOperations(props: AgeGraphProperties): GraphSuspendOperations {
+    fun graphSuspendOperations(props: AgeGraphProperties, database: Database): GraphSuspendOperations {
         log.info { "Registering AgeGraphSuspendOperations (graphName=${props.graphName})" }
-        return AgeGraphSuspendOperations(props.graphName)
+        return AgeGraphSuspendOperations(database, props.graphName)
     }
 
     /**

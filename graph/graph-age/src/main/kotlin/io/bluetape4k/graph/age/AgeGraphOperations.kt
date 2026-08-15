@@ -41,7 +41,10 @@ import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.warn
 import io.bluetape4k.support.requireNotBlank
-import org.jetbrains.exposed.v1.jdbc.transactions.transaction as exposedTransaction
+import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.JdbcTransaction
+import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 /**
  * Apache AGE + PostgreSQL 기반 [GraphOperations] 구현체 (동기(blocking) 방식).
@@ -60,7 +63,7 @@ import org.jetbrains.exposed.v1.jdbc.transactions.transaction as exposedTransact
  *     connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
  * })
  * val database = Database.connect(dataSource)
- * val ops = AgeGraphOperations("social_graph")
+ * val ops = AgeGraphOperations(database, "social_graph")
  *
  * ops.createGraph("social_graph")
  * val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
@@ -69,11 +72,21 @@ import org.jetbrains.exposed.v1.jdbc.transactions.transaction as exposedTransact
  * val path = ops.shortestPath(alice.id, bob.id, PathOptions(edgeLabel = "KNOWS"))
  * ```
  *
+ * @param database 이 facade가 사용할 Exposed 데이터베이스
  * @param graphName AGE 그래프 이름
  */
 class AgeGraphOperations(
+    private val database: Database,
     private val graphName: String,
 ): GraphOperations, GraphTransactionalOperations, GraphSchemaManagementOperations, GraphMergeOperations {
+
+    /**
+     * 전역 Exposed Database를 사용하는 기존 생성자다.
+     *
+     * 새 코드는 여러 DataSource를 안전하게 격리할 수 있도록 [Database]를 명시해야 한다.
+     */
+    @Deprecated("명시적인 Database를 전달하는 생성자를 사용하세요.")
+    constructor(graphName: String): this(requirePrimaryDatabase(), graphName)
 
     companion object: KLogging()
 
@@ -90,6 +103,9 @@ class AgeGraphOperations(
     )
 
     private val batchChunkSize: Int = 500
+
+    private fun <T> exposedTransaction(statement: JdbcTransaction.() -> T): T =
+        transaction(db = database, statement = statement)
 
     init {
         graphName.requireNotBlank("graphName").requireSafeIdentifier("graphName")
@@ -750,3 +766,7 @@ class AgeGraphOperations(
         GraphVertexRepository by delegate,
         GraphEdgeRepository by delegate
 }
+
+private fun requirePrimaryDatabase(): Database =
+    TransactionManager.primaryDatabase
+        ?: error("Exposed Database가 등록되지 않았습니다. AgeGraphOperations에 명시적인 Database를 전달하세요.")
