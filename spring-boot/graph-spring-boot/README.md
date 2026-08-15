@@ -165,6 +165,13 @@ class MyGraphService(
 
 All beans use `@ConditionalOnMissingBean` — provide your own bean to override.
 
+Neo4j and Memgraph keep backend identity through the named driver beans
+`neo4jDriver` and `memgraphDriver`. Their operations, suspend operations, and
+health indicators inject the matching name with `@Qualifier`; an unrelated or
+additional Neo4j-compatible `Driver` bean therefore neither suppresses the
+backend driver nor creates an ambiguous injection. Provide an explicit bean
+with the matching name to override the default.
+
 ## Configuration Properties
 
 ### Common
