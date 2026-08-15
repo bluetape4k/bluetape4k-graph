@@ -13,4 +13,5 @@ dependencies {
     testImplementation(libs.testcontainers.neo4j)
     testImplementation(libs.kotlinx.coroutines.test.lib)
     testImplementation(bt4k.mockk)
+    testImplementation(testFixtures(project(":bluetape4k-graph-core")))
 }

@@ -9,4 +9,5 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test.lib)
 
     testImplementation(bt4k.bluetape4k.junit5)
+    testImplementation(testFixtures(project(":bluetape4k-graph-core")))
 }

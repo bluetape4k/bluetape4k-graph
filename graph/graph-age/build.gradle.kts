@@ -17,4 +17,5 @@ api(bt4k.exposed.java.time)
     testImplementation(libs.testcontainers.postgresql)
     testImplementation(bt4k.hikaricp)
     testImplementation(bt4k.mockk)
+    testImplementation(testFixtures(project(":bluetape4k-graph-core")))
 }
