@@ -1,0 +1,22 @@
+[
+  {
+    "id": "graph-benchmark",
+    "project": "graph-benchmark",
+    "report_root": "benchmark/graph-benchmark/build/reports/benchmarks"
+  },
+  {
+    "id": "graph-age-benchmark",
+    "project": "graph-age-benchmark",
+    "report_root": "benchmark/graph-age-benchmark/build/reports/benchmarks"
+  },
+  {
+    "id": "graph-io-benchmark",
+    "project": "graph-io-benchmark",
+    "report_root": "benchmark/graph-io-benchmark/build/reports/benchmarks"
+  },
+  {
+    "id": "graph-neo4j-benchmark",
+    "project": "graph-neo4j-benchmark",
+    "report_root": "benchmark/graph-neo4j-benchmark/build/reports/benchmarks"
+  }
+]

@@ -1,8 +1,6 @@
 name: Benchmarks
 
-# Manually-triggered JMH benchmark workflow for graph-benchmark.
-# Runs the TinkerGraph baseline benchmarks (BatchInsert / ShortestPath / Neighbors / Algorithm / Traversal / VertexOperations)
-# and uploads JMH JSON + rendered SVG charts as build artifacts.
+# Manually-triggered JMH workflow for every module listed in benchmark-modules.json.
 
 on:
   workflow_dispatch:
@@ -19,10 +17,32 @@ env:
   JAVA_DISTRIBUTION: 'temurin'
 
 jobs:
-  graph-benchmark:
-    name: graph-benchmark (TinkerGraph baseline)
+  benchmark-catalog:
+    name: Validate benchmark catalog
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      matrix: ${{ steps.catalog.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build benchmark matrix
+        id: catalog
+        run: |
+          set -euo pipefail
+          test "$(jq 'length' benchmark/benchmark-modules.json)" -eq 4
+          jq -e 'all(.[]; (.id | type == "string") and (.project | type == "string") and (.report_root | type == "string"))' benchmark/benchmark-modules.json >/dev/null
+          echo "matrix=$(jq -c '{include: .}' benchmark/benchmark-modules.json)" >> "$GITHUB_OUTPUT"
+
+  benchmark:
+    name: ${{ matrix.id }} (JMH)
+    needs: benchmark-catalog
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix: ${{ fromJSON(needs.benchmark-catalog.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v7
 
@@ -43,11 +63,11 @@ jobs:
           python-version: '3.11'
 
       - name: Run JMH benchmarks
-        run: ./gradlew :graph-benchmark:benchmark
+        run: ./gradlew ":${{ matrix.project }}:benchmark" --no-daemon --no-configuration-cache
 
       - name: Locate JMH JSON results
         run: |
-          find benchmark/graph-benchmark/build/reports/benchmarks -name 'main.json' | sort > benchmark-json-files.txt
+          find "${{ matrix.report_root }}" -name 'main.json' | sort > benchmark-json-files.txt
           if [ ! -s benchmark-json-files.txt ]; then
             echo "ERROR: JMH JSON results not found" >&2
             exit 1
@@ -59,23 +79,24 @@ jobs:
           while IFS= read -r json_path; do
             result_name="$(basename "$(dirname "$json_path")")"
             safe_name="$(printf '%s' "$result_name" | tr -c 'A-Za-z0-9._-' '-')"
-            BENCHMARK_CHART_PREFIX="${safe_name}-" python3 benchmark/scripts/render_benchmark_svg.py "$json_path"
+            BENCHMARK_CHART_PREFIX="${{ matrix.id }}-${safe_name}-" python3 benchmark/scripts/render_benchmark_svg.py "$json_path"
           done < benchmark-json-files.txt
 
       - name: Upload benchmark artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: graph-benchmark-results
+          name: ${{ matrix.id }}-results
           path: |
-            benchmark/graph-benchmark/build/reports/benchmarks/**/main.json
+            benchmark/${{ matrix.project }}/build/reports/benchmarks/**/main.json
             docs/benchmark-results/*.svg
             docs/benchmark-results/*.png
+          if-no-files-found: error
           retention-days: 30
 
       - name: Summary
         run: |
           {
-            echo "## graph-benchmark results"
+            echo "## ${{ matrix.id }} results"
             echo ""
             echo "### JMH JSON results"
             while IFS= read -r json_path; do
