@@ -173,5 +173,6 @@ suspend fun GraphSuspendOperations.capabilities(): GraphCapabilities =
     (this as? GraphSuspendCapabilitiesOperations)?.capabilities() ?: GraphCapabilities.from(this)
 
 /** Virtual Thread graph facade의 capability를 조회한다. */
+@Suppress("EXTENSION_SHADOWED_BY_MEMBER")
 fun GraphVirtualThreadOperations.capabilities(): GraphCapabilities =
     (this as? GraphVirtualThreadCapabilitiesOperations)?.capabilities() ?: GraphCapabilities.from(this)

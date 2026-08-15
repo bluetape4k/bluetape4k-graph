@@ -483,13 +483,25 @@ val cycles = ops.detectCycles(CycleOptions(edgeLabel = "KNOWS", maxDepth = 5))
 
 `GraphAlgorithmRepository` can be wrapped with a Virtual Thread adapter to expose `CompletableFuture`-based async APIs for Java interop.
 
+`GraphVirtualThreadOperations.capabilities()` is a public capability-discovery
+projection of the externally owned synchronous delegate. It preserves the
+delegate's support flags, versions, and constraints, but it does not imply that
+the facade has `*Async` methods for optional `MERGE`, `SCHEMA`, `TRANSACTION`,
+or `CHUNKED_READ` operations. Use the corresponding sync/suspend contract or
+the graph-io Virtual Thread adapter until those async boundaries are defined.
+Calling `vtOps.close()` closes only the facade; the caller remains responsible
+for closing the delegate.
+
 ```kotlin
+import io.bluetape4k.graph.repository.GraphCapability
 import io.bluetape4k.graph.vt.asVirtualThread
 
 val ops: GraphOperations = TinkerGraphOperations()
 
 // Wrap with virtual-thread executor
 val vtOps = ops.asVirtualThread()
+
+check(vtOps.capabilities().supports(GraphCapability.GRAPH_ALGORITHM))
 
 // Returns CompletableFuture<List<PageRankScore>>
 val future = vtOps.pageRankAsync(PageRankOptions(topK = 5))
