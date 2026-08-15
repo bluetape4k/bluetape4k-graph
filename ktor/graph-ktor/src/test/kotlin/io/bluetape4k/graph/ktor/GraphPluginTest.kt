@@ -20,6 +20,7 @@ import io.ktor.server.testing.testApplication
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 
 class GraphPluginTest {
 
@@ -117,9 +118,49 @@ class GraphPluginTest {
     }
 
     @Test
+    fun `중복 backend 구성 실패 시 이미 생성한 resource close action 을 rollback 한다`() {
+        val rollbackCount = AtomicInteger(0)
+        val config = GraphPluginConfig().apply { tinkerGraph() }
+
+        assertFailsWith<IllegalArgumentException> {
+            config.configure(
+                backendName = "managedNeo4j",
+                graphOperationsFactory = { mockk() },
+                graphSuspendOperationsFactory = { mockk() },
+                closeActions = listOf(
+                    GraphPluginCloseAction("managed resource") {
+                        rollbackCount.incrementAndGet()
+                    },
+                ),
+            )
+        }
+
+        rollbackCount.get() shouldBeEqualTo 1
+    }
+
+    @Test
+    fun `GraphPluginState close 는 반복 호출해도 close action 을 한 번만 실행한다`() {
+        val closeCount = AtomicInteger(0)
+        val state = GraphPluginState(
+            graphOperations = mockk(),
+            graphSuspendOperations = mockk(),
+            closeActions = listOf(
+                GraphPluginCloseAction("managed resource") {
+                    closeCount.incrementAndGet()
+                },
+            ),
+        )
+
+        state.close()
+        state.close()
+
+        closeCount.get() shouldBeEqualTo 1
+    }
+
+    @Test
     fun `backend helper 는 blank 입력을 fail fast 한다`() {
         assertFailsWith<IllegalArgumentException> {
-            GraphPluginConfig().age(" ")
+            GraphPluginConfig().age(mockk(), graphName = " ")
         }
 
         assertFailsWith<IllegalArgumentException> {
@@ -150,7 +191,7 @@ class GraphPluginTest {
             .closeActions.size shouldBeEqualTo 0
 
         GraphPluginConfig()
-            .age("graph")
+            .age(mockk(), graphName = "graph")
             .closeActions.size shouldBeEqualTo 0
     }
 
