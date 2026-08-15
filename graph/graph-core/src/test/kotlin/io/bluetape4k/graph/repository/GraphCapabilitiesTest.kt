@@ -1,0 +1,64 @@
+package io.bluetape4k.graph.repository
+
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeFalse
+import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
+import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
+import io.bluetape4k.graph.vt.VirtualThreadOperationsAdapter
+import io.bluetape4k.junit5.coroutines.runSuspendIO
+import org.junit.jupiter.api.Test
+
+class GraphCapabilitiesTest {
+
+    @Test
+    fun `blocking capability lookup reflects declared backend contracts`() {
+        val capabilities = TinkerGraphOperations().capabilities()
+
+        capabilities.supports(GraphCapability.MERGE).shouldBeTrue()
+        capabilities.supports(GraphCapability.SCHEMA).shouldBeTrue()
+        capabilities.supports(GraphCapability.TRANSACTION).shouldBeTrue()
+        capabilities.supports(GraphCapability.CHUNKED_READ).shouldBeTrue()
+        capabilities.supports(GraphCapability.GRAPH_ALGORITHM).shouldBeTrue()
+        capabilities.supports(GraphCapability.NATIVE_ALGORITHM).shouldBeFalse()
+        capabilities.version(GraphCapability.MERGE) shouldBeEqualTo "core-0.7"
+    }
+
+    @Test
+    fun `suspend capability lookup reflects declared backend contracts`() = runSuspendIO {
+        val operations = TinkerGraphSuspendOperations()
+
+        operations.capabilities().supports(GraphCapability.MERGE).shouldBeTrue()
+        operations.capabilities().supports(GraphCapability.SCHEMA).shouldBeTrue()
+        operations.capabilities().supports(GraphCapability.TRANSACTION).shouldBeTrue()
+        operations.capabilities().supports(GraphCapability.CHUNKED_READ).shouldBeTrue()
+        operations.capabilities().supports(GraphCapability.GRAPH_ALGORITHM).shouldBeTrue()
+        operations.capabilities().supports(GraphCapability.NATIVE_ALGORITHM).shouldBeFalse()
+        operations.close()
+    }
+
+    @Test
+    fun `virtual thread adapter preserves delegate capability mapping`() {
+        val operations = TinkerGraphOperations()
+        val virtualThread = VirtualThreadOperationsAdapter(operations)
+
+        virtualThread.capabilities() shouldBeEqualTo operations.capabilities()
+        virtualThread.close()
+        operations.close()
+    }
+
+    @Test
+    fun `decorator must explicitly preserve capability mapping`() {
+        val delegate = TinkerGraphOperations()
+        val decorator: GraphOperations = GraphOperationsDecorator(delegate)
+
+        decorator.capabilities().supports(GraphCapability.MERGE).shouldBeFalse()
+        decorator.capabilities().supports(GraphCapability.SCHEMA).shouldBeFalse()
+        decorator.capabilities().supports(GraphCapability.TRANSACTION).shouldBeFalse()
+        decorator.close()
+    }
+
+    private class GraphOperationsDecorator(
+        delegate: GraphOperations,
+    ): GraphOperations by delegate
+}

@@ -38,6 +38,27 @@ length = 2  (간선 개수)
 
 ![Repository contract diagram](../../docs/images/readme-diagrams/graph-graph-core-class-04.png)
 
+### Capability 조회
+
+선택 기능을 호출하기 전에 `capabilities()`를 조회한다. 반환되는 불변
+`GraphCapabilities`는 예외를 발생시켜 추측하지 않고 지원 여부, `core-0.7`
+계약 버전, capability별 제약을 제공한다.
+
+```kotlin
+import io.bluetape4k.graph.repository.GraphCapability
+import io.bluetape4k.graph.repository.capabilities
+
+val capabilities = ops.capabilities()
+if (capabilities.supports(GraphCapability.MERGE)) {
+    ops.mergeVertex("Person", matchProperties = mapOf("email" to "alice@example.com"))
+}
+```
+
+`GRAPH_ALGORITHM`은 portable JVM 알고리즘을 의미한다. `NATIVE_ALGORITHM`은
+명시적으로 설치한 backend provider가 있을 때만 보고되며, 플래그가 없다고
+자동 fallback이 보장되는 것은 아니다. Kotlin `by` 위임을 사용하는 decorator는
+delegate 매핑을 보존하기 위해 `GraphCapabilitiesOperations`를 구현해야 한다.
+
 ## 순회와 알고리즘 API
 
 ![Traversal and algorithm API diagram](../../docs/images/readme-diagrams/graph-graph-core-traversal-algorithm-15.png)
