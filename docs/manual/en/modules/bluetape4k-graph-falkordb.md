@@ -2,7 +2,7 @@
 
 ## Before you run
 
-FalkorDB is a Redis-shaped graph service accessed with jfalkordb and an openCypher subset. Choose it when that deployed service and query subset match the system. Avoid treating it as Neo4j because query, schema, transaction, and operational behavior differ. Source: [FalkorDBGraphOperations.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-falkordb/src/main/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphOperations.kt).
+FalkorDB is a Redis-shaped graph service accessed with jfalkordb 0.8.0 and an openCypher subset. Choose it when that deployed service and query subset match the system. Avoid treating it as Neo4j because query, schema, transaction, and operational behavior differ. Source: [FalkorDBGraphOperations.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-falkordb/src/main/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphOperations.kt).
 
 
 Execution mode: **release-fixture linked**. The linked test owns the FalkorDB container, jfalkordb Driver, graph name, `ops`, and cleanup. The snippet is the essential flow after those fixture values are available.

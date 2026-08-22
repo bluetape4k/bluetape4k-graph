@@ -49,7 +49,7 @@ import kotlinx.coroutines.withContext
 /**
  * FalkorDB용 [GraphSuspendOperations] 구현체 (코루틴 방식).
  *
- * jfalkordb 0.7.0은 Jedis 기반 동기 API만 제공하므로, 모든 IO 작업은
+ * jfalkordb 0.8.0은 Jedis 기반 동기 API만 제공하므로, 모든 IO 작업은
  * [Dispatchers.IO]로 격리하여 코루틴 친화적으로 노출합니다.
  *
  * Flow 반환 메서드는 [channelFlow]를 사용하여 클라이언트 backpressure를 지원하며,

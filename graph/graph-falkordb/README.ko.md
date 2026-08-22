@@ -7,7 +7,7 @@ bluetape4k-graph의 FalkorDB 그래프 데이터베이스 백엔드 모듈.
 ## 개요
 
 [FalkorDB](https://falkordb.com/)는 Redis 모듈 기반 그래프 데이터베이스로 openCypher 쿼리를 지원합니다.
-이 모듈은 [jfalkordb](https://github.com/FalkorDB/jfalkordb) 0.7.0 Java 드라이버를 사용하여
+이 모듈은 [jfalkordb](https://github.com/FalkorDB/jfalkordb) 0.8.0 Java 드라이버를 사용하여
 `GraphOperations` / `GraphSuspendOperations`의 동기 및 코루틴 구현을 제공합니다.
 
 ## Architecture Diagram
@@ -99,7 +99,7 @@ driver.close()
 
 ## 테스트
 
-Testcontainers (`FalkorDBServer`)로 `falkordb/falkordb:v4.18.1` 컨테이너를 자동 실행합니다:
+Testcontainers (`FalkorDBServer`)로 `falkordb/falkordb:v4.20.2` 컨테이너를 자동 실행합니다:
 
 ```kotlin
 val server = FalkorDBServer.Launcher.falkordb

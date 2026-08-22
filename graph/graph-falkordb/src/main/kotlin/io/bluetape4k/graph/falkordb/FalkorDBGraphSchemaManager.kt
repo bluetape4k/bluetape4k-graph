@@ -14,7 +14,7 @@ import kotlinx.coroutines.CancellationException
  * FalkorDB Cypher DDL 기반 스키마 관리자.
  *
  * 단일 property range index를 생성/삭제/조회한다. Unique constraint는 FalkorDB의
- * `GRAPH.CONSTRAINT CREATE` 명령이 필요하고 jfalkordb 0.7.0의 graph query surface와 분리되어
+ * `GRAPH.CONSTRAINT CREATE` 명령이 필요하고 jfalkordb 0.8.0의 graph query surface와 분리되어
  * 있으므로 현재 API에서는 명시적으로 미지원 처리한다.
  */
 class FalkorDBGraphSchemaManager(

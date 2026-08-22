@@ -8,7 +8,7 @@
 |---|---|---|---|---|---|
 | Neo4j | Neo4j/Bolt, Cypher | 드라이버 트랜잭션 | 인덱스·제약조건 | Neo4j 5 컨테이너 | 공통 계약의 넓은 기준점 |
 | Memgraph | Neo4j 드라이버 호환 Bolt, Cypher | 서버 트랜잭션 | 백엔드별 Cypher DDL | Memgraph 컨테이너 | Cypher·DDL 차이를 재검증 |
-| Apache AGE | PostgreSQL, SQL 안의 Cypher | JDBC/Exposed 경계 | 이식 가능한 DDL 제한 | `apache/age:PG16_latest` | 세션과 graph context가 중요 |
+| Apache AGE | PostgreSQL, SQL 안의 Cypher | JDBC/Exposed 경계 | 이식 가능한 DDL 제한 | `apache/age:release_PG18_1.7.0` | 세션과 graph context가 중요 |
 | TinkerPop | JVM 안의 TinkerGraph, Gremlin | 메모리 구현 의미론 | 제한된 manager capability | 컨테이너 없음 | 원격 서버를 대신하지 않음 |
 | FalkorDB | Redis 형태 서비스, openCypher 일부 | 라이브러리·서버 제약 | 전용 인덱스 | FalkorDB 컨테이너 | 미지원 트랜잭션 경로 확인 |
 

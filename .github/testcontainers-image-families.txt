@@ -1,0 +1,7 @@
+# Stable backend family to image repository mapping.
+# Tags are authoritative in testcontainers-images.txt; #1337 consumes this map
+# to select startup/workload checks when a family changes.
+neo4j=neo4j
+memgraph=memgraph/memgraph
+age=apache/age
+falkordb=falkordb/falkordb
