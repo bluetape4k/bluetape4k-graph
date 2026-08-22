@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "sharedPaths": [
+    ".github/testcontainers-images.txt",
+    ".github/testcontainers-image-families.txt",
+    ".github/workflows/ci.yml",
+    ".github/workflows/nightly-tests.yml",
+    ".github/workflows/release.yml",
+    ".github/actions/testcontainers-image-cache/",
+    "scripts/testcontainers_image_gate",
+    "scripts/run_testcontainers_image_gate.py",
+    "scripts/test_testcontainers_image_gate.py",
+    "scripts/test_run_testcontainers_image_gate.py",
+    "settings.gradle.kts",
+    "build.gradle.kts",
+    "gradle/",
+    "buildSrc/",
+    "graph/graph-core/src/testFixtures/"
+  ],
+  "families": [
+    {
+      "id": "neo4j",
+      "image": "neo4j",
+      "tag": "5.26.29",
+      "testTask": ":bluetape4k-graph-neo4j:test",
+      "testPattern": "io.bluetape4k.graph.neo4j.Neo4jGraphCapabilityConformanceTest",
+      "testSource": "graph/graph-neo4j/src/test/kotlin/io/bluetape4k/graph/neo4j/Neo4jGraphCapabilityConformanceTest.kt",
+      "pathPrefixes": [
+        "graph/graph-neo4j/src/test/",
+        "graph/graph-neo4j/src/testFixtures/"
+      ],
+      "readiness": "Neo4jServer.Launcher.neo4j.boltUrl connection readiness",
+      "workload": "GraphCapability conformance: batch/chunk, merge, transaction",
+      "diagnostics": ["image_digest", "docker_inspect", "docker_logs", "docker_events"],
+      "releaseRequired": true
+    },
+    {
+      "id": "memgraph",
+      "image": "memgraph/memgraph",
+      "tag": "3.12.0",
+      "testTask": ":bluetape4k-graph-memgraph:test",
+      "testPattern": "io.bluetape4k.graph.memgraph.MemgraphGraphCapabilityConformanceTest",
+      "testSource": "graph/graph-memgraph/src/test/kotlin/io/bluetape4k/graph/memgraph/MemgraphGraphCapabilityConformanceTest.kt",
+      "pathPrefixes": [
+        "graph/graph-memgraph/src/test/",
+        "graph/graph-memgraph/src/testFixtures/"
+      ],
+      "readiness": "MemgraphServer.Launcher.memgraph.boltUrl connection readiness",
+      "workload": "GraphCapability conformance: batch/chunk, merge, transaction",
+      "diagnostics": ["image_digest", "docker_inspect", "docker_logs", "docker_events"],
+      "releaseRequired": true
+    },
+    {
+      "id": "age",
+      "image": "apache/age",
+      "tag": "release_PG18_1.7.0",
+      "testTask": ":bluetape4k-graph-age:test",
+      "testPattern": "io.bluetape4k.graph.age.AgeGraphCapabilityConformanceTest",
+      "testSource": "graph/graph-age/src/test/kotlin/io/bluetape4k/graph/age/AgeGraphCapabilityConformanceTest.kt",
+      "pathPrefixes": [
+        "graph/graph-age/src/test/",
+        "graph/graph-age/src/testFixtures/"
+      ],
+      "readiness": "PostgreSQLAgeServer.Launcher.postgresqlAge JDBC and AGE extension readiness",
+      "workload": "GraphCapability conformance: batch/chunk, merge, transaction",
+      "diagnostics": ["image_digest", "docker_inspect", "docker_logs", "docker_events"],
+      "releaseRequired": true
+    },
+    {
+      "id": "falkordb",
+      "image": "falkordb/falkordb",
+      "tag": "v4.20.2",
+      "testTask": ":bluetape4k-graph-falkordb:test",
+      "testPattern": "io.bluetape4k.graph.falkordb.FalkorDBGraphCapabilityConformanceTest",
+      "testSource": "graph/graph-falkordb/src/test/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphCapabilityConformanceTest.kt",
+      "pathPrefixes": [
+        "graph/graph-falkordb/src/test/",
+        "graph/graph-falkordb/src/testFixtures/"
+      ],
+      "readiness": "FalkorDBServer.Launcher.falkordb host/port readiness",
+      "workload": "GraphCapability conformance: batch/chunk and merge workload",
+      "diagnostics": ["image_digest", "docker_inspect", "docker_logs", "docker_events"],
+      "releaseRequired": true
+    }
+  ]
+}
