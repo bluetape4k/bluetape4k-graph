@@ -163,7 +163,7 @@ val afterDelete = ops.findVertexById("Person", aliceId)  // null (캐시 미스 
 
 ## 테스트
 
-Testcontainers를 통해 `memgraph/memgraph:latest` 이미지를 자동으로 실행한다.
+Testcontainers를 통해 `memgraph/memgraph:3.12.0` 이미지를 자동으로 실행한다.
 
 ```bash
 ./gradlew :graph-memgraph:test

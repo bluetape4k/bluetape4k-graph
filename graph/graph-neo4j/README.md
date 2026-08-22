@@ -1,6 +1,6 @@
 # Module graph-neo4j
 
-`GraphOperations` interface implementation that uses Neo4j Java Driver 5.x + Kotlin Coroutines.
+`GraphOperations` interface implementation that uses Neo4j Java Driver 6.2.1 + Kotlin Coroutines.
 It bridges the Reactive Streams API through `kotlinx-coroutines-reactive` to provide Virtual Thread / Coroutine-friendly, non-blocking access to Neo4j.
 
 > 🇰🇷 [한국어 문서](README.ko.md)

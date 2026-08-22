@@ -66,6 +66,9 @@ Apache AGE (PostgreSQL 그래프 확장)를 기반으로 한 `GraphOperations` �
 
 ![graph-age test environment](../../docs/images/readme-diagrams/graph-graph-age-architecture-12.png)
 
+통합 테스트는 `apache/age:release_PG18_1.7.0` 이미지를 사용하는 Testcontainers로
+실행한다.
+
 ## 코드 예시
 
 ### 의존성

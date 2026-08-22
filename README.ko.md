@@ -43,11 +43,11 @@ bluetape4k 생태계의 그래프 데이터베이스 통합 라이브러리. Apa
 
 | Database | Module | Query model | Local testing | 적합한 용도 |
 |----------|--------|-------------|---------------|-------------|
-| Neo4j | `graph-neo4j` | Neo4j Java Driver 기반 Cypher | Testcontainers `neo4j:5` | 성숙한 도구, index, transaction, Cypher 지원이 필요한 production graph database |
-| Memgraph | `graph-memgraph` | Neo4j-compatible protocol 기반 Cypher | Testcontainers `memgraph/memgraph` | 낮은 지연 시간의 graph workload와 Neo4j 유사 개발 경험 |
-| Apache AGE | `graph-age` | PostgreSQL/JDBC 기반 Cypher-over-SQL | Testcontainers `apache/age:PG16_latest` | 별도 graph server 없이 PostgreSQL 중심 배포에서 graph modeling이 필요할 때 |
+| Neo4j | `graph-neo4j` | Neo4j Java Driver 6.2.1 기반 Cypher | Testcontainers `neo4j:5.26.29` | 성숙한 도구, index, transaction, Cypher 지원이 필요한 production graph database |
+| Memgraph | `graph-memgraph` | Neo4j Java Driver 6.2.1 호환 protocol 기반 Cypher | Testcontainers `memgraph/memgraph:3.12.0` | 낮은 지연 시간의 graph workload와 Neo4j 유사 개발 경험 |
+| Apache AGE | `graph-age` | PostgreSQL/JDBC 42.7.13 기반 Cypher-over-SQL | Testcontainers `apache/age:release_PG18_1.7.0` | 별도 graph server 없이 PostgreSQL 중심 배포에서 graph modeling이 필요할 때 |
 | TinkerPop / TinkerGraph | `graph-tinkerpop` | Gremlin | JVM in-memory graph, 외부 서비스 불필요 | 빠른 테스트, 예제, 로컬 데모, Gremlin traversal |
-| FalkorDB | `graph-falkordb` | Redis module 위 openCypher subset | Testcontainers `falkordb/falkordb:v4.18.1` | Redis 기반 graph workload와 가벼운 graph service 배포 |
+| FalkorDB | `graph-falkordb` | Redis module 위 openCypher subset | Testcontainers `falkordb/falkordb:v4.20.2` | Redis 기반 graph workload와 가벼운 graph service 배포 |
 
 Amazon Neptune은 별도 future backend 작업으로 추적한다. 의미 있는 지원은 local/integration test 가능성에 달려 있으므로, `graph-neptune` 구현 전에 feasibility research를 먼저 진행한다.
 
@@ -334,8 +334,8 @@ driver.close()
 |------|-----------|-------------|----------------|-----------------|----------------|
 | 쿼리 언어 | Cypher-over-SQL | Cypher | Cypher | Gremlin | openCypher (부분집합) |
 | 인프라 | PostgreSQL + AGE | Neo4j | Memgraph | JVM 인메모리 | Redis 모듈 |
-| 드라이버 | JDBC + Exposed | Neo4j Java Driver | Neo4j Java Driver (호환) | TinkerPop | jfalkordb 0.8.0 |
-| 테스트 컨테이너 | `apache/age:PG16_latest` | `neo4j:5` | `memgraph/memgraph:latest` | 불필요 | `falkordb/falkordb:v4.18.1` |
+| 드라이버 | PostgreSQL JDBC 42.7.13 + Exposed | Neo4j Java Driver 6.2.1 | Neo4j Java Driver 6.2.1 (호환) | TinkerPop | jfalkordb 0.8.0 |
+| 테스트 컨테이너 | `apache/age:release_PG18_1.7.0` | `neo4j:5.26.29` | `memgraph/memgraph:3.12.0` | 불필요 | `falkordb/falkordb:v4.20.2` |
 | 가장 강한 로컬 역할 | PostgreSQL-native graph | 성숙한 graph server | low-latency Cypher server | unit/integration tests | Redis-backed graph service |
 
 ## 테스트 실행
@@ -406,13 +406,13 @@ GitHub Actions는 전용 `Examples` workflow도 실행한다. 이 workflow는 �
 ## 기술 스택
 
 - **Kotlin** 2.4.10 (language/API 2.4) + Coroutines 1.11.0
-- **Neo4j Java Driver** 5.x
+- **Neo4j Java Driver** 6.2.1
 - **JetBrains Exposed** (Apache AGE용 JDBC)
 - **Apache TinkerPop** (Gremlin)
 - **Ktor** 3.x (ApplicationPlugin integration)
 - **jfalkordb** 0.8.0 (FalkorDB / Redis 모듈 그래프)
 - **Testcontainers** (통합 테스트)
-- **bluetape4k** 1.11.1-SNAPSHOT (공통 유틸리티)
+- **bluetape4k** 2.0.0-SNAPSHOT (공통 유틸리티)
 
 ## 문서
 

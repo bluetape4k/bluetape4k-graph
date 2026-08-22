@@ -8,7 +8,7 @@ Select from existing infrastructure and required semantics, then verify locally.
 |---|---|---|---|---|---|
 | Neo4j | Neo4j/Bolt, Cypher | native driver transaction | indexes and constraints | Testcontainers Neo4j 5 | broad common-contract baseline |
 | Memgraph | Memgraph with Neo4j-driver-compatible Bolt, Cypher | native transaction | backend-specific Cypher DDL | Memgraph container | test Cypher/schema differences |
-| Apache AGE | PostgreSQL, Cypher-over-SQL | JDBC/Exposed boundary | limited portable DDL | `apache/age:PG16_latest` | SQL session and graph context matter |
+| Apache AGE | PostgreSQL, Cypher-over-SQL | JDBC/Exposed boundary | limited portable DDL | `apache/age:release_PG18_1.7.0` | SQL session and graph context matter |
 | TinkerPop | in-process JVM, Gremlin/TinkerGraph | in-memory transaction behavior | manager capability is limited | no container | best for tests, not a remote-server substitute |
 | FalkorDB | Redis-shaped service, openCypher subset | library/backend constraints | backend-specific indexes | FalkorDB container | validate unsupported transaction paths |
 

@@ -1,6 +1,6 @@
 # Module graph-neo4j
 
-Neo4j Java Driver 5.x + Kotlin Coroutines를 사용하여 `GraphOperations` 인터페이스를 구현한 모듈입니다.
+Neo4j Java Driver 6.2.1 + Kotlin Coroutines를 사용하여 `GraphOperations` 인터페이스를 구현한 모듈입니다.
 Reactive Streams API를 `kotlinx-coroutines-reactive`로 브릿지하여 Virtual Thread/Coroutines 친화적이고 non-blocking한 그래프 데이터베이스 접근을 제공합니다.
 
 > 🇺🇸 [English](README.md)

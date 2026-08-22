@@ -5,7 +5,7 @@
 
 ## 실행 전 준비
 
-FalkorDB는 Redis 형태로 운영되는 그래프 서비스이며 jfalkordb와 openCypher 일부를 쓴다. 해당 서비스를 운영하고 query 범위가 요구사항에 맞을 때 선택한다. Neo4j와 query, schema, 트랜잭션, 운영 방식이 같다고 가정하면 안 된다. 구현은 [FalkorDBGraphOperations.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-falkordb/src/main/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphOperations.kt)다.
+FalkorDB는 Redis 형태로 운영되는 그래프 서비스이며 jfalkordb 0.8.0과 openCypher 일부를 쓴다. 해당 서비스를 운영하고 query 범위가 요구사항에 맞을 때 선택한다. Neo4j와 query, schema, 트랜잭션, 운영 방식이 같다고 가정하면 안 된다. 구현은 [FalkorDBGraphOperations.kt](https://github.com/bluetape4k/bluetape4k-graph/blob/72c0256e2e1cf61101d29852210e3c827ca93bc0/graph/graph-falkordb/src/main/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphOperations.kt)다.
 
 ## 실행
 

@@ -8,7 +8,7 @@ FalkorDB graph database backend for bluetape4k-graph.
 
 [FalkorDB](https://falkordb.com/) is a Redis-module based graph database supporting openCypher queries.
 This module provides sync and coroutine implementations of `GraphOperations` / `GraphSuspendOperations`
-using the [jfalkordb](https://github.com/FalkorDB/jfalkordb) 0.7.0 Java driver.
+using the [jfalkordb](https://github.com/FalkorDB/jfalkordb) 0.8.0 Java driver.
 
 ## Architecture Diagram
 
@@ -100,7 +100,7 @@ driver.close()
 
 ## Testing
 
-Uses Testcontainers (`FalkorDBServer`) to spin up `falkordb/falkordb:v4.18.1`:
+Uses Testcontainers (`FalkorDBServer`) to spin up `falkordb/falkordb:v4.20.2`:
 
 ```kotlin
 val server = FalkorDBServer.Launcher.falkordb

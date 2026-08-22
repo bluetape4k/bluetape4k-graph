@@ -1,0 +1,73 @@
+name: Testcontainers 계약 검증
+
+on:
+  push:
+    branches: [develop, main]
+    paths:
+      - 'README.md'
+      - 'README.ko.md'
+      - 'graph/graph-*/README.md'
+      - 'graph/graph-*/README.ko.md'
+      - 'graph/graph-falkordb/src/main/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphSchemaManager.kt'
+      - 'graph/graph-falkordb/src/main/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphSuspendOperations.kt'
+      - 'docs/manual/**'
+      - '.github/testcontainers-images.txt'
+      - '.github/testcontainers-image-families.txt'
+      - '.github/workflows/testcontainers-contract.yml'
+      - 'build.gradle.kts'
+      - 'settings.gradle.kts'
+      - 'spring-boot/graph-spring-boot/src/test/kotlin/io/bluetape4k/graph/spring/boot/autoconfigure/TestcontainersImageLauncherContractTest.kt'
+      - 'scripts/manual/testcontainers_image_contract.rb'
+      - 'scripts/manual/testcontainers_image_contract_test.rb'
+  pull_request:
+    branches: [develop, main]
+    paths:
+      - 'README.md'
+      - 'README.ko.md'
+      - 'graph/graph-*/README.md'
+      - 'graph/graph-*/README.ko.md'
+      - 'graph/graph-falkordb/src/main/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphSchemaManager.kt'
+      - 'graph/graph-falkordb/src/main/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphSuspendOperations.kt'
+      - 'docs/manual/**'
+      - '.github/testcontainers-images.txt'
+      - '.github/testcontainers-image-families.txt'
+      - '.github/workflows/testcontainers-contract.yml'
+      - 'build.gradle.kts'
+      - 'settings.gradle.kts'
+      - 'spring-boot/graph-spring-boot/src/test/kotlin/io/bluetape4k/graph/spring/boot/autoconfigure/TestcontainersImageLauncherContractTest.kt'
+      - 'scripts/manual/testcontainers_image_contract.rb'
+      - 'scripts/manual/testcontainers_image_contract_test.rb'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  image-contract:
+    name: 이미지·문서 drift contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: 그래프 저장소 checkout
+        uses: actions/checkout@v7
+
+      - name: 중앙 catalog ref 확인
+        id: catalog
+        shell: bash
+        run: |
+          set -euo pipefail
+          ref=$(sed -n 's/.*\.orElse("\([0-9a-f]\{40,64\}\)").*/\1/p' settings.gradle.kts | head -n 1)
+          [[ "${ref}" =~ ^[0-9a-f]{40,64}$ ]]
+          echo "ref=${ref}" >> "${GITHUB_OUTPUT}"
+
+      - name: 중앙 catalog checkout
+        uses: actions/checkout@v7
+        with:
+          repository: bluetape4k/bluetape4k-dependencies
+          ref: ${{ steps.catalog.outputs.ref }}
+          path: .catalog/bluetape4k-dependencies
+
+      - name: 이미지·문서·baseline drift 검증
+        env:
+          BLUETAPE4K_CATALOG_PATH: ${{ github.workspace }}/.catalog/bluetape4k-dependencies/gradle/libs.versions.toml
+        run: ruby scripts/manual/testcontainers_image_contract.rb --repository-root . --catalog "${BLUETAPE4K_CATALOG_PATH}"

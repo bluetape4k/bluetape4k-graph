@@ -206,7 +206,7 @@ Synchronous operations run inside independent Exposed transactions. The coroutin
 
 ## Testing
 
-Integration tests use Testcontainers with the `apache/age:PG16_latest` image.
+Integration tests use Testcontainers with the `apache/age:release_PG18_1.7.0` image.
 
 ![graph-age test environment](../../docs/images/readme-diagrams/graph-graph-age-architecture-12.png)
 
