@@ -1,24 +1,31 @@
 # WIP - bluetape4k-graph
 
-스냅샷: 2026-08-13 KST
-범위: `debop`에게 배정된 열린 GitHub 이슈
-열린 배정 이슈 수: 8개 (`0.7.0` milestone)
+스냅샷: 2026-08-23 KST
+범위: `1.0.0` milestone stacked train 및 이전 `0.7.0` 큐
+이전 배정 큐 스냅샷: 8개 (`0.7.0` milestone)
+
+## 현재 `1.0.0` stacked train
+
+| 이슈 | 상태 | 메모 |
+|---|---|---|
+| [#527](https://github.com/bluetape4k/bluetape4k-graph/issues/527) | 병합 완료 | stacked train 첫 slice인 PR #530이 `a234d7cfd0cd41381982720d06395e5b51226702`로 병합되고 이슈가 닫혔다. |
+| [#525](https://github.com/bluetape4k/bluetape4k-graph/issues/525) | 구현·검증 완료, PR 준비 | 선택적 Spring bridge와 기존 graph property alias를 적용했다. Spring Boot 전체 테스트 50 passing/1 환경 pending, detekt·Dokka를 통과했다. |
+| [#526](https://github.com/bluetape4k/bluetape4k-graph/issues/526) | 대기 | 변경된 image family의 startup/workload gate를 #527/#525 위에 쌓는다. |
+
+최종 순서는 `#527 → #525 → #526`이며, 중간 slice는 독립 병합하지 않고 각 exact
+head의 hosted CI와 train tip을 확인한다.
 
 ## 현재 방향
 
 `0.5.0` 안정 라인은 유지보수 기준으로 보존한다.
-현재 개발 라인은 `0.7.0`이며, 이 WIP 큐는 진행 중인 native graph-io 작업과
-아직 열린 이전 backlog 항목을 추적한다. 이번 review train에서는 #298/#398
-작업과 #437/#440 Epic 및 관련 subissue를 닫고, #400 문서 Epic도 완료했다.
-세 PR을 `develop`에 병합했으며 post-merge CI/Examples와 graph-core 검증도
-통과했다. 별도 Epic이나 subissue는 등록하지 않았다.
+현재 작업 라인은 `1.0.0`이며, 위 stacked train에서 Spring/Testcontainers
+통합 테스트 계약을 먼저 고정한다. 아래 `0.7.0` 표와 backlog는 이전 review
+기록을 보존한 것이다.
 
-이번 stacked train은 graph-core cache/capability/schema Epic의 P1 결함을
-우선 처리한다. #463을 `develop` 기준 첫 slice로 검증한 뒤, 같은 브랜치 위에
-#464의 bounded/expiring cache slice를 쌓는다. 중간 PR은 독립 병합하지 않고
-train tip과 CI를 함께 확인한다.
+현재 train의 중간 PR은 독립 병합하지 않고, 각 exact head의 hosted CI와 최종
+train tip을 함께 확인한다.
 
-## 현재 `0.7.0` 진행
+## 이전 `0.7.0` 진행 기록
 
 | 이슈 | 상태 | 메모 |
 |---|---|---|

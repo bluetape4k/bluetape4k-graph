@@ -154,6 +154,35 @@ class MyGraphService(
 }
 ```
 
+## Testcontainers `DynamicPropertyRegistry` bridge
+
+Spring Boot 통합 테스트는 다음 test-only bridge 모듈을 선택적으로 사용할 수 있다.
+
+```kotlin
+dependencies {
+    testImplementation("io.github.bluetape4k:bluetape4k-testcontainers-spring:<version>")
+}
+```
+
+선택 모듈이 제공하는 `PropertyExportingServer.registerDynamicProperties(registry)`는
+`testcontainers.{namespace}.{key}` 형식의 generic key를 lazy supplier로 등록한다.
+컨테이너를 시작하거나 중지하지 않고 JVM system property도 변경하지 않는다. 그래프
+테스트 helper는 기존 `bluetape4k.graph.*` 프로퍼티 이름을 유지하기 위해 alias를
+추가로 등록한다. 테스트가 생성한 graph name은 서버가 export하는 값이 아니므로
+테스트에서 별도로 등록한다.
+
+현재 적용 범위는 의도적인 경계다.
+
+| 테스트 영역 | Dynamic property bridge | 이유 |
+|---|---|---|
+| 실제 컨테이너를 사용하는 `FalkorDBSpringBootIntegrationTest` | 적용 | `@SpringBootTest`가 `DynamicPropertyRegistry`를 제공하며 live endpoint를 lazy하게 전달한다. |
+| Neo4j 및 Memgraph `ApplicationContextRunner` 테스트 | 미적용 | 명시적 `.withPropertyValues`로 auto-configuration을 검증하고 `DynamicPropertyRegistry`를 노출하지 않는다. |
+| AGE `ApplicationContextRunner` 테스트 | 미적용 | `.withPropertyValues`와 함께 테스트가 `DataSource`/Hikari wiring을 직접 소유하며 registry가 없다. |
+
+이 의존성은 test-only이며 SDK-neutral Testcontainers core에 Spring 의존성을 추가하지
+않는다. 다른 backend에 live `@SpringBootTest`가 추가될 때는 export key mapping을
+추가하되 운영 property namespace는 유지한다.
+
 ## 등록되는 빈
 
 | 빈 타입 | 등록 조건 |
