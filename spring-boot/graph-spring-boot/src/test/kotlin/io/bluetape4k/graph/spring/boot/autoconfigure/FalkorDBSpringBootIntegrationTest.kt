@@ -37,9 +37,11 @@ class FalkorDBSpringBootIntegrationTest {
         @JvmStatic
         @DynamicPropertySource
         fun graphProperties(registry: DynamicPropertyRegistry) {
+            server.registerGraphDynamicProperties(
+                registry,
+                graphBackendDynamicPropertyMappings.getValue("falkordb"),
+            )
             registry.add("bluetape4k.graph.backend") { "falkordb" }
-            registry.add("bluetape4k.graph.falkordb.host") { server.host }
-            registry.add("bluetape4k.graph.falkordb.port") { server.port }
             registry.add("bluetape4k.graph.falkordb.graph-name") { graphName }
         }
     }

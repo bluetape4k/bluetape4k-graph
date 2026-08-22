@@ -25,6 +25,14 @@
   secret-free lifecycle diagnostic을 추가했다 (#312). 실제 backend adapter와
   URI/file I/O는 후속 이슈 범위다.
 
+### 변경
+
+- **Spring Testcontainers DynamicPropertyRegistry bridge**: 선택적
+  `bluetape4k-testcontainers-spring`을 graph-spring-boot 테스트에 연결하고,
+  공용 `testcontainers.*` key와 기존 `bluetape4k.graph.*` 설정 alias의 lazy 계약을
+  FalkorDB live 통합 테스트 및 backend mapping 회귀 테스트로 고정했다
+  ([#525](https://github.com/bluetape4k/bluetape4k-graph/issues/525)).
+
 ### 버그 수정
 
 - **Graph cache create contract**: AGE, Neo4j, Memgraph 캐시 데코레이터가

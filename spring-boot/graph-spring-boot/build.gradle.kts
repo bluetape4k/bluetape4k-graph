@@ -42,6 +42,7 @@ dependencies {
     testImplementation(project(":bluetape4k-graph-falkordb"))
     testImplementation(testFixtures(project(":bluetape4k-graph-falkordb")))
     testImplementation(bt4k.bluetape4k.testcontainers)
+    testImplementation(bt4k.bluetape4k.testcontainers.spring)
     testImplementation(libs.testcontainers.neo4j)
     testImplementation(libs.testcontainers.postgresql)
     testImplementation(bt4k.neo4j.driver6)
