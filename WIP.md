@@ -9,8 +9,8 @@
 | 이슈 | 상태 | 메모 |
 |---|---|---|
 | [#527](https://github.com/bluetape4k/bluetape4k-graph/issues/527) | 병합 완료 | stacked train 첫 slice인 PR #530이 `a234d7cfd0cd41381982720d06395e5b51226702`로 병합되고 이슈가 닫혔다. |
-| [#525](https://github.com/bluetape4k/bluetape4k-graph/issues/525) | 구현·검증 완료, PR 준비 | 선택적 Spring bridge와 기존 graph property alias를 적용했다. Spring Boot 전체 테스트 50 passing/1 환경 pending, detekt·Dokka를 통과했다. |
-| [#526](https://github.com/bluetape4k/bluetape4k-graph/issues/526) | 대기 | 변경된 image family의 startup/workload gate를 #527/#525 위에 쌓는다. |
+| [#525](https://github.com/bluetape4k/bluetape4k-graph/issues/525) | 병합 완료 | PR #531이 `a74d735a7eee98ebba258d2ad909290f183dc041`로 병합되고 이슈가 닫혔다. 선택적 Spring bridge와 기존 graph property alias를 적용했다. |
+| [#526](https://github.com/bluetape4k/bluetape4k-graph/issues/526) | 구현·검증 진행, PR 준비 | `neo4j`, `memgraph`, `age`, `falkordb` manifest 기반 changed/full startup·workload gate와 fail-closed release gate를 #527/#525 위에 쌓는다. |
 
 최종 순서는 `#527 → #525 → #526`이며, 중간 slice는 독립 병합하지 않고 각 exact
 head의 hosted CI와 train tip을 확인한다.
@@ -22,8 +22,9 @@ head의 hosted CI와 train tip을 확인한다.
 통합 테스트 계약을 먼저 고정한다. 아래 `0.7.0` 표와 backlog는 이전 review
 기록을 보존한 것이다.
 
-현재 train의 중간 PR은 독립 병합하지 않고, 각 exact head의 hosted CI와 최종
-train tip을 함께 확인한다.
+현재 train의 중간 slice는 선행 slice가 병합된 뒤 exact head를 다시 읽고,
+각 hosted CI와 최종 train tip을 함께 확인한다. #526은 현재 마지막 slice이며
+PR 생성 후 hosted CI가 release gate의 전체 matrix 증거를 제공해야 한다.
 
 ## 이전 `0.7.0` 진행 기록
 

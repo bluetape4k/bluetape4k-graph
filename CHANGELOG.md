@@ -32,6 +32,13 @@
   공용 `testcontainers.*` key와 기존 `bluetape4k.graph.*` 설정 alias의 lazy 계약을
   FalkorDB live 통합 테스트 및 backend mapping 회귀 테스트로 고정했다
   ([#525](https://github.com/bluetape4k/bluetape4k-graph/issues/525)).
+- **Graph Testcontainers image family gate**: Neo4j, Memgraph, Apache AGE,
+  FalkorDB manifest가 변경 범위를 결정하고, 각 backend의 startup readiness와
+  대표 `GraphCapability` workload를 순차 실행하도록 CI·Nightly·release gate를
+  연결했다. readiness timeout, image pull/rate-limit, infrastructure,
+  application failure를 분류하고 retry 성공도 release gate를 열지 않으며,
+  image digest·container inspect/logs/events를 artifact로 보존한다
+  ([#526](https://github.com/bluetape4k/bluetape4k-graph/issues/526)).
 
 ### 버그 수정
 
