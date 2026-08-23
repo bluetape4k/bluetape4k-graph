@@ -1,5 +1,7 @@
 # bluetape4k-graph
 
+English | [한국어](README.ko.md)
+
 [![CI](https://github.com/bluetape4k/bluetape4k-graph/actions/workflows/ci.yml/badge.svg)](https://github.com/bluetape4k/bluetape4k-graph/actions/workflows/ci.yml)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.4-7F52FF?logo=kotlin)](https://kotlinlang.org)
 [![JVM](https://img.shields.io/badge/JVM-25-ED8B00?logo=openjdk)](https://openjdk.org)
@@ -8,8 +10,6 @@
 ![bluetape4k-graph workbench](docs/assets/bluetape4k-graph-workbench.png)
 
 Graph database integration library for the bluetape4k ecosystem. It provides a unified Kotlin API over Apache AGE, Neo4j, Memgraph, Apache TinkerPop, and FalkorDB, plus bulk import/export, Ktor integration, Spring Boot 4 auto-configuration, examples, benchmarks, and a BOM for dependency alignment.
-
-> 🇰🇷 [한국어 문서](README.ko.md)
 
 ## What This Project Provides
 
@@ -373,6 +373,25 @@ Tests automatically launch Docker containers via Testcontainers. Docker is requi
 
 GitHub Actions also runs a dedicated `Examples` workflow daily and on changes to example, graph, graph-io, Ktor, Gradle, or workflow files. The examples are intentionally excluded from the Nightly workflow so the daily example signal stays separate from backend/integration smoke coverage.
 
+## Testcontainers Image Family Gate
+
+CI, full Nightly, and release workflows use
+`scripts/testcontainers_image_gate_manifest.json` to select the affected graph
+image family and run startup readiness plus a representative `GraphCapability`
+workload sequentially.
+
+Run the full local gate with:
+
+```bash
+python3 scripts/run_testcontainers_image_gate.py \
+  --scope full \
+  --report-dir build/reports/testcontainers-image-gate
+```
+
+The gate covers Neo4j, Memgraph, Apache AGE, and FalkorDB. Pull/readiness,
+infrastructure, and application failures are classified separately; a retry
+may preserve diagnostics but does not set `release_gate=true`.
+
 ## Example Module Structure (`examples/`)
 
 Each example module uses the **abstract test class pattern**. Common test logic lives in one place, while each concrete class only overrides backend-specific setup.
@@ -411,6 +430,7 @@ Concrete classes only need to implement `ops` (`GraphOperations` or `GraphSuspen
 
 ## Tech Stack
 
+- **Development line** 1.0.0 (Kotlin 2.4 / Java 25)
 - **Kotlin** 2.4.10 (language/API 2.4) + Coroutines 1.11.0
 - **Neo4j Java Driver** 6.2.1
 - **JetBrains Exposed** (JDBC for Apache AGE)
@@ -422,5 +442,6 @@ Concrete classes only need to implement `ops` (`GraphOperations` or `GraphSuspen
 
 ## Documentation
 
-- [Graph Database Pros & Cons and Selection Guide](docs/graphdb-tradeoffs.md) — GraphDB trade-offs and backend selection guide for bluetape4k-graph (Neo4j, Memgraph, AGE, TinkerPop)
+- [Graph Database Pros & Cons and Selection Guide](docs/graphdb-tradeoffs.md) — GraphDB trade-offs and backend selection guide for bluetape4k-graph (Neo4j, Memgraph, AGE, TinkerPop, FalkorDB)
+- [Testcontainers Image Family Gate](docs/operations/issue-526-testcontainers-image-gate.md) — manifest-driven startup/workload gate and fail-closed release evidence
 - [Benchmark Decision Guide](benchmark/README.md) — Backend selection guide with measured evidence: graph-db backend comparison (small/medium/large), sustained write ingestion, domain workloads, 10k write ingestion, and API model (Sync / Virtual Thread / Coroutine) results from the 0.4.0 release benchmark run (May 2026)

@@ -27,6 +27,12 @@
 
 ### 변경
 
+- **Graph image/document contract alignment**: 공용 graph launcher와 현재
+  중앙 catalog에 맞춰 Neo4j `5.26.29`, Memgraph `3.12.0`, Apache AGE
+  `release_PG18_1.7.0`, FalkorDB `v4.20.2` 및 Java 25/Kotlin 2.4.10 기준을
+  루트·backend EN/KO README, AGE 선택 가이드, FalkorDB manual/KDoc에 정렬하고,
+  manifest/image family drift를 fail-closed로 검증했다
+  ([#527](https://github.com/bluetape4k/bluetape4k-graph/issues/527)).
 - **Spring Testcontainers DynamicPropertyRegistry bridge**: 선택적
   `bluetape4k-testcontainers-spring`을 graph-spring-boot 테스트에 연결하고,
   공용 `testcontainers.*` key와 기존 `bluetape4k.graph.*` 설정 alias의 lazy 계약을
