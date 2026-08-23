@@ -1,6 +1,6 @@
 # 그래프 데이터베이스 장단점 및 선택 가이드
 
-> `bluetape4k-graph`가 지원하는 Neo4j, Memgraph, Apache AGE, Apache TinkerPop 백엔드를 기준으로 정리한 문서입니다.
+> `bluetape4k-graph`가 지원하는 Neo4j, Memgraph, Apache AGE, Apache TinkerPop, FalkorDB 백엔드를 기준으로 정리한 문서입니다.
 
 ## 개요
 
@@ -54,17 +54,19 @@
 | **Memgraph** | Cypher | Neo4j Java Driver (Bolt 호환) | 인메모리, 스트리밍 친화, 저지연 | 실시간 분석, 저지연 질의, CEP |
 | **Apache AGE** | Cypher over SQL | PostgreSQL JDBC + Exposed | 기존 PostgreSQL 위에 그래프 레이어 추가 | RDBMS와 그래프 혼합, 기존 PG 인프라 재활용 |
 | **Apache TinkerPop** | Gremlin | TinkerGraph (인메모리) | 표준 그래프 API, 프로퍼티 그래프 | 테스트/프로토타입, 벤더 중립성 필요 |
+| **FalkorDB** | openCypher (부분집합) | jfalkordb 0.8.0 | Redis 모듈 기반 경량 그래프 서비스 | Redis 기반 그래프 워크로드, 가벼운 서비스 배포 |
 
 ## 선택 가이드
 
 1. **이미 PostgreSQL을 운영 중이고 그래프는 보조 역할** → `graph-age`
 2. **그래프가 주 워크로드이고 ACID 필수** → `graph-neo4j`
 3. **실시간 스트리밍/저지연 분석** → `graph-memgraph`
-4. **벤더 중립성, 테스트, 프로토타이핑** → `graph-tinkerpop`
+4. **Redis 기반 그래프 워크로드와 경량 서비스** → `graph-falkordb`
+5. **벤더 중립성, 테스트, 프로토타이핑** → `graph-tinkerpop`
 
 ## 실측 벤치마크 결과 (TinkerGraph 기준선)
 
-> **환경**: macOS Darwin 25.4.0 / JDK 21 (preview), kotlinx-benchmark + JMH
+> **환경**: macOS Darwin 25.4.0 / JDK 25 (preview), kotlinx-benchmark + JMH
 > **측정 설정**: warmup 3회 × 2초, measurement 5회 × 3초, fork=1
 > **재실행**: `./gradlew :graph-benchmark:benchmark`
 > **SVG 재생성**: `python3 benchmark/scripts/render_benchmark_svg.py <build/reports/benchmarks/.../main.json>`

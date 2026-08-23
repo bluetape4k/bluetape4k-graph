@@ -21,8 +21,9 @@ and coroutine APIs, virtual-thread adapters, graph-io bulk import/export,
 Ktor 3 integration, Spring Boot 4 auto-configuration, examples, benchmarks,
 and a BOM.
 
-- Kotlin: 2.3
-- Java: 21 with preview enabled
+- Base version: 1.0.0
+- Kotlin: 2.4.10 (language/API 2.4)
+- Java: 25 with preview enabled
 - Dependency versions: `gradle/libs.versions.toml`
 
 ## Layout
@@ -122,11 +123,11 @@ Schema DSL uses Exposed Table-style declarations through `VertexLabel` and
 
 | Module | Driver | Query language | Local verification |
 |---|---|---|---|
-| `bluetape4k-graph-neo4j` | Neo4j Java Driver | Cypher | Testcontainers `neo4j:5` |
-| `bluetape4k-graph-memgraph` | Neo4j Java Driver compatible | Cypher | Testcontainers `memgraph/memgraph` |
-| `bluetape4k-graph-age` | PostgreSQL JDBC + Exposed | Cypher-over-SQL | Testcontainers `apache/age:PG16_latest` |
+| `bluetape4k-graph-neo4j` | Neo4j Java Driver 6.2.1 | Cypher | Testcontainers `neo4j:5.26.29` |
+| `bluetape4k-graph-memgraph` | Neo4j Java Driver 6.2.1 compatible | Cypher | Testcontainers `memgraph/memgraph:3.12.0` |
+| `bluetape4k-graph-age` | PostgreSQL JDBC 42.7.13 + Exposed | Cypher-over-SQL | Testcontainers `apache/age:release_PG18_1.7.0` |
 | `bluetape4k-graph-tinkerpop` | TinkerGraph | Gremlin | In-memory JVM graph |
-| `bluetape4k-graph-falkordb` | jfalkordb 0.7.0, Jedis-based | openCypher subset | Testcontainers `falkordb/falkordb:v4.18.1` |
+| `bluetape4k-graph-falkordb` | jfalkordb 0.8.0, Jedis-based | openCypher subset | Testcontainers `falkordb/falkordb:v4.20.2` |
 
 Amazon Neptune work is intentionally blocked by issue #113 until local or
 reliable integration testability is proven. Do not implement a backend against
@@ -164,6 +165,11 @@ mocks only.
   workflow with `workflow_dispatch` before DoD and record the run URL/result.
   For module coverage changes, use `scope=full` unless the change is strictly
   smoke-only.
+- `scripts/testcontainers_image_gate_manifest.json` is the source of truth for
+  the four image families; CI changed-path, full Nightly, and release gates run
+  the families sequentially. Use
+  `python3 scripts/run_testcontainers_image_gate.py --scope full --report-dir build/reports/testcontainers-image-gate`
+  for the complete local gate.
 
 ## Documentation
 

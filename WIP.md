@@ -1,8 +1,9 @@
 # WIP - bluetape4k-graph
 
 스냅샷: 2026-08-23 KST
-범위: `1.0.0` milestone stacked train 및 이전 `0.7.0` 큐
-이전 배정 큐 스냅샷: 8개 (`0.7.0` milestone)
+범위: `1.0.0` milestone closeout 및 `backlog` 후속 큐
+현재 live 상태: `1.0.0` 열린 issue 0개, 열린 PR 0개; `backlog` 배정 issue 2개
+최신 GitHub release: `0.6.0` (2026-08-05); 현재 개발 기준선은 `1.0.0`이다.
 
 ## 현재 `1.0.0` stacked train
 
@@ -10,7 +11,7 @@
 |---|---|---|
 | [#527](https://github.com/bluetape4k/bluetape4k-graph/issues/527) | 병합 완료 | stacked train 첫 slice인 PR #530이 `a234d7cfd0cd41381982720d06395e5b51226702`로 병합되고 이슈가 닫혔다. |
 | [#525](https://github.com/bluetape4k/bluetape4k-graph/issues/525) | 병합 완료 | PR #531이 `a74d735a7eee98ebba258d2ad909290f183dc041`로 병합되고 이슈가 닫혔다. 선택적 Spring bridge와 기존 graph property alias를 적용했다. |
-| [#526](https://github.com/bluetape4k/bluetape4k-graph/issues/526) | 구현·검증 진행, PR 준비 | `neo4j`, `memgraph`, `age`, `falkordb` manifest 기반 changed/full startup·workload gate와 fail-closed release gate를 #527/#525 위에 쌓는다. |
+| [#526](https://github.com/bluetape4k/bluetape4k-graph/issues/526) | 병합 완료 | PR #532가 `57d3348acb2b5cad1ff3b5e03737cba704fc567a`로 병합되고 이슈가 닫혔다. `neo4j`, `memgraph`, `age`, `falkordb` manifest 기반 changed/full startup·workload gate와 fail-closed release gate를 완성했다. |
 
 최종 순서는 `#527 → #525 → #526`이며, 중간 slice는 독립 병합하지 않고 각 exact
 head의 hosted CI와 train tip을 확인한다.
@@ -18,15 +19,27 @@ head의 hosted CI와 train tip을 확인한다.
 ## 현재 방향
 
 `0.5.0` 안정 라인은 유지보수 기준으로 보존한다.
-현재 작업 라인은 `1.0.0`이며, 위 stacked train에서 Spring/Testcontainers
-통합 테스트 계약을 먼저 고정한다. 아래 `0.7.0` 표와 backlog는 이전 review
-기록을 보존한 것이다.
+현재 작업 라인 `1.0.0`의 milestone issue와 PR은 모두 종료됐다. 최근
+stacked train은 Spring/Testcontainers 통합 테스트 계약과 네 graph image
+family의 startup/workload gate를 함께 고정했다. 아래 `0.7.0` 표와 이전 큐는
+historical snapshot으로 보존한다.
 
-현재 train의 중간 slice는 선행 slice가 병합된 뒤 exact head를 다시 읽고,
-각 hosted CI와 최종 train tip을 함께 확인한다. #526은 현재 마지막 slice이며
-PR 생성 후 hosted CI가 release gate의 전체 matrix 증거를 제공해야 한다.
+현재 train은 `#527 → #525 → #526` 순서로 완료됐다. PR #530의 merge
+`a234d7cfd0cd41381982720d06395e5b51226702`, PR #531의 merge
+`a74d735a7eee98ebba258d2ad909290f183dc041`, PR #532의 merge
+`57d3348acb2b5cad1ff3b5e03737cba704fc567a`를 기준으로 기록한다.
+
+## 다음 backlog
+
+| 이슈 | 상태 | 메모 |
+|---|---|---|
+| [#215](https://github.com/bluetape4k/bluetape4k-graph/issues/215) | backlog | Amazon Neptune backend feasibility를 local 또는 신뢰 가능한 integration test 가능성부터 재검증한다. |
+| [#30](https://github.com/bluetape4k/bluetape4k-graph/issues/30) | backlog | #215의 feasibility 결과 전까지 `graph-neptune` 구현을 시작하지 않는다. |
 
 ## 이전 `0.7.0` 진행 기록
+
+이 절의 상태와 서술은 해당 release line의 당시 기록을 보존한 historical
+snapshot이다. 현재 live 상태는 위의 `1.0.0` closeout과 `backlog` 표를 따른다.
 
 | 이슈 | 상태 | 메모 |
 |---|---|---|
@@ -77,7 +90,7 @@ PR 생성 후 hosted CI가 release gate의 전체 matrix 증거를 제공해야 
 | P1 | [#335](https://github.com/bluetape4k/bluetape4k-graph/issues/335) test(graph-falkordb): move raw GenericContainer fixture behind shared launcher | 0.6.0 | test, refactoring | PR #359 열림. |
 | P2 | [#336](https://github.com/bluetape4k/bluetape4k-graph/issues/336) docs(graph-core): convert public API KDoc to English | 0.6.0 | documentation | PR #360 열림. |
 | P2 | [#337](https://github.com/bluetape4k/bluetape4k-graph/issues/337) docs(repo): refresh README commands and version references | 0.6.0 | documentation | PR #361 열림. |
-| P2 | [#338](https://github.com/bluetape4k/bluetape4k-graph/issues/338) docs(repo): refresh WIP issue queue from live GitHub state | 0.6.0 | documentation | 현재 WIP 갱신 대상이다. |
+| P2 | [#338](https://github.com/bluetape4k/bluetape4k-graph/issues/338) docs(repo): refresh WIP issue queue from live GitHub state | 0.6.0 | documentation | 당시 WIP 갱신 대상이었다. |
 | P1 | [#339](https://github.com/bluetape4k/bluetape4k-graph/issues/339) ci(graph): fail coverage aggregation when expected Kover reports are missing | 0.6.0 | bug, ci | 다음 CI hardening 항목이다. |
 | P1 | [#340](https://github.com/bluetape4k/bluetape4k-graph/issues/340) ci(graph): include graph-io Kover XML tasks in nightly coverage | 0.6.0 | ci | #339 coverage signal 작업의 후속이다. |
 | P1 | [#341](https://github.com/bluetape4k/bluetape4k-graph/issues/341) ci(benchmark): render all benchmark JSON outputs with chart artifacts | 0.6.0 | performance, ci | benchmark artifact 정리 항목이다. |
@@ -94,7 +107,7 @@ PR 생성 후 hosted CI가 release gate의 전체 matrix 증거를 제공해야 
 | P3 | [#215](https://github.com/bluetape4k/bluetape4k-graph/issues/215) research: revalidate Amazon Neptune backend feasibility | backlog | enhancement, research | #30을 되살리기 전에 필요하다. |
 | P3 | [#30](https://github.com/bluetape4k/bluetape4k-graph/issues/30) [Epic] Amazon Neptune graph DB backend implementation (graph-neptune) | backlog | invalid, Epic, research | invalid/research 상태인 동안 차단 상태로 둔다. mock만으로 구현하지 않는다. |
 
-## 최근 완료
+## 과거 완료 기록
 
 - `0.5.0` Ktor managed backend DSL 작업은 Neo4j, Memgraph, FalkorDB, Apache AGE
   DataSource 소유권 경로까지 완료되었다.
@@ -111,7 +124,17 @@ PR 생성 후 hosted CI가 release gate의 전체 matrix 증거를 제공해야 
 - 루트 README의 영어/한국어 module 목록과 example test 명령은 현재 Gradle
   project name 및 version catalog에 맞게 갱신되었다.
 
-## 검증 증거
+## 최신 검증 증거
+
+- live GitHub 조회(2026-08-23 KST): `1.0.0` milestone 열린 issue 0개,
+  열린 PR 0개; `backlog` 배정 issue는 #215와 #30이다.
+- stacked train merge tip: PR #530 → `a234d7cfd0cd41381982720d06395e5b51226702`,
+  PR #531 → `a74d735a7eee98ebba258d2ad909290f183dc041`, PR #532 →
+  `57d3348acb2b5cad1ff3b5e03737cba704fc567a`.
+- PR #532 hosted CI run `32594015661`: 전체 check와 graph image family gate가
+  성공했다.
+
+## 당시 검증 증거 (`0.6.0` review)
 
 - 원본 명령:
   `gh issue list --assignee debop --state open --limit 100 --json number,title,url,labels,milestone`
@@ -122,11 +145,11 @@ PR 생성 후 hosted CI가 release gate의 전체 matrix 증거를 제공해야 
 - local graph-core test/compile: `335 passing`, `BUILD SUCCESSFUL`
 - 이번 review에서 새 Epic/subissue를 등록하지 않았다.
 
-## 범위 메모
+## 현재 및 과거 범위 메모
 
-- 현재 7-Tier review train과 가까운 CI/build hardening 작업에는 `0.6.0`을
-  사용한다.
-- backend-native loader SPI와 large-import workflow 항목은 별도 설계와 범위가
-  잡히기 전까지 backlog에 둔다.
+- 현재 `1.0.0` closeout 이후 작업은 위 `backlog` 표의 #215 feasibility와
+  #30 blocked Epic을 기준으로 시작한다.
 - Neptune 작업은 로컬 또는 신뢰 가능한 integration test 가능성이 입증될 때까지
   backlog에 둔다.
+- `0.6.0` review train의 CI/build hardening, backend-native loader SPI,
+  large-import workflow 항목은 당시 범위와 후속 backlog 기록으로 보존한다.

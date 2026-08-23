@@ -1,5 +1,7 @@
 # bluetape4k-graph
 
+[English](README.md) | 한국어
+
 [![CI](https://github.com/bluetape4k/bluetape4k-graph/actions/workflows/ci.yml/badge.svg)](https://github.com/bluetape4k/bluetape4k-graph/actions/workflows/ci.yml)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.4-7F52FF?logo=kotlin)](https://kotlinlang.org)
 [![JVM](https://img.shields.io/badge/JVM-25-ED8B00?logo=openjdk)](https://openjdk.org)
@@ -8,8 +10,6 @@
 ![bluetape4k-graph workbench](docs/assets/bluetape4k-graph-workbench.png)
 
 bluetape4k 생태계의 그래프 데이터베이스 통합 라이브러리. Apache AGE, Neo4j, Memgraph, Apache TinkerPop, FalkorDB를 단일 Kotlin API로 사용할 수 있게 하고, 벌크 임포트/익스포트, Ktor 통합, Spring Boot 4 자동 설정, 예제, 벤치마크, 의존성 정렬용 BOM을 함께 제공한다.
-
-> 🇺🇸 [English](README.md)
 
 ## 프로젝트가 제공하는 것
 
@@ -367,6 +367,25 @@ driver.close()
 
 GitHub Actions는 전용 `Examples` workflow도 실행한다. 이 workflow는 매일 한 번, 그리고 example, graph, graph-io, Ktor, Gradle, workflow 파일 변경 시 실행된다. 예제 검증은 Nightly에서 제외해 backend/integration smoke coverage와 별도 신호로 관리한다.
 
+## Testcontainers 이미지 패밀리 게이트
+
+CI, full Nightly, release workflow는
+`scripts/testcontainers_image_gate_manifest.json`을 사용해 변경된 graph
+image family를 선택하고 startup readiness와 대표 `GraphCapability`
+workload를 순차적으로 실행한다.
+
+전체 로컬 게이트는 다음과 같이 실행한다.
+
+```bash
+python3 scripts/run_testcontainers_image_gate.py \
+  --scope full \
+  --report-dir build/reports/testcontainers-image-gate
+```
+
+이 게이트는 Neo4j, Memgraph, Apache AGE, FalkorDB를 대상으로 한다.
+pull/readiness, infrastructure, application failure를 구분해 분류하며,
+retry가 진단 자료를 남길 수는 있어도 `release_gate=true`를 설정하지는 않는다.
+
 ## 예시 모듈 구조 (`examples/`)
 
 각 예시 모듈은 **추상 테스트 클래스 패턴**을 사용한다. 공통 테스트 로직은 한 곳에, 백엔드별 설정만 구체 클래스에서 오버라이드한다.
@@ -405,6 +424,7 @@ GitHub Actions는 전용 `Examples` workflow도 실행한다. 이 workflow는 �
 
 ## 기술 스택
 
+- **개발 라인** 1.0.0 (Kotlin 2.4 / Java 25)
 - **Kotlin** 2.4.10 (language/API 2.4) + Coroutines 1.11.0
 - **Neo4j Java Driver** 6.2.1
 - **JetBrains Exposed** (Apache AGE용 JDBC)
@@ -416,5 +436,6 @@ GitHub Actions는 전용 `Examples` workflow도 실행한다. 이 workflow는 �
 
 ## 문서
 
-- [Graph Database 장단점 및 선택 가이드](docs/graphdb-tradeoffs.md) — GraphDB의 장단점과 bluetape4k-graph 백엔드(Neo4j, Memgraph, AGE, TinkerPop) 선택 가이드
+- [Graph Database 장단점 및 선택 가이드](docs/graphdb-tradeoffs.md) — GraphDB의 장단점과 bluetape4k-graph 백엔드(Neo4j, Memgraph, AGE, TinkerPop, FalkorDB) 선택 가이드
+- [Testcontainers 이미지 패밀리 게이트](docs/operations/issue-526-testcontainers-image-gate.md) — manifest 기반 startup/workload 게이트와 fail-closed release 근거
 - [벤치마크 의사결정 가이드](benchmark/README.md) — 실측 데이터 기반 백엔드 선택 가이드: graph-db 백엔드 비교(small/medium/large), 지속 쓰기 ingestion, 도메인 워크로드, 10k 쓰기 ingestion, API 모델(Sync / Virtual Thread / Coroutine) 비교 — 0.4.0 릴리즈 벤치마크 결과(2026년 5월) 기준
