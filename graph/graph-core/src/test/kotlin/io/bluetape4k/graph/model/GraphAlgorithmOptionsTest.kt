@@ -58,29 +58,53 @@ class GraphAlgorithmOptionsTest {
 
     @Test
     fun `PageRankOptions는 0 이하 iterations를 거부한다`() {
-        val ex = assertFailsWith<IllegalArgumentException> {
-            PageRankOptions(iterations = 0)
-        }
+        listOf(0, -1).forEach { iterations ->
+            val ex = assertFailsWith<IllegalArgumentException> {
+                PageRankOptions(iterations = iterations)
+            }
 
-        ex.message shouldContain "iterations"
+            ex.message shouldContain "iterations"
+        }
     }
 
     @Test
     fun `PageRankOptions는 0 이하 topK를 거부한다`() {
-        val ex = assertFailsWith<IllegalArgumentException> {
-            PageRankOptions(topK = 0)
-        }
+        listOf(0, -1).forEach { topK ->
+            val ex = assertFailsWith<IllegalArgumentException> {
+                PageRankOptions(topK = topK)
+            }
 
-        ex.message shouldContain "topK"
+            ex.message shouldContain "topK"
+        }
     }
 
     @Test
-    fun `PageRankOptions는 범위를 벗어난 dampingFactor를 거부한다`() {
-        val ex = assertFailsWith<IllegalArgumentException> {
-            PageRankOptions(dampingFactor = 1.1)
-        }
+    fun `PageRankOptions는 범위를 벗어나거나 비유한 dampingFactor를 거부한다`() {
+        listOf(-0.1, 1.1, Double.NaN, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY).forEach { dampingFactor ->
+            val ex = assertFailsWith<IllegalArgumentException> {
+                PageRankOptions(dampingFactor = dampingFactor)
+            }
 
-        ex.message shouldContain "dampingFactor"
+            ex.message shouldContain "dampingFactor"
+        }
+    }
+
+    @Test
+    fun `PageRankOptions는 dampingFactor의 양 끝 경계를 허용한다`() {
+        listOf(0.0, 1.0).forEach { dampingFactor ->
+            PageRankOptions(dampingFactor = dampingFactor).dampingFactor shouldBeEqualTo dampingFactor
+        }
+    }
+
+    @Test
+    fun `PageRankOptions는 0 이하 또는 비유한 tolerance를 거부한다`() {
+        listOf(0.0, -1e-4, Double.NaN, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY).forEach { tolerance ->
+            val ex = assertFailsWith<IllegalArgumentException> {
+                PageRankOptions(tolerance = tolerance)
+            }
+
+            ex.message shouldContain "tolerance"
+        }
     }
 
     @Test
@@ -149,11 +173,13 @@ class GraphAlgorithmOptionsTest {
 
     @Test
     fun `ComponentOptions는 0 이하 minSize를 거부한다`() {
-        val ex = assertFailsWith<IllegalArgumentException> {
-            ComponentOptions(minSize = 0)
-        }
+        listOf(0, -1).forEach { minSize ->
+            val ex = assertFailsWith<IllegalArgumentException> {
+                ComponentOptions(minSize = minSize)
+            }
 
-        ex.message shouldContain "minSize"
+            ex.message shouldContain "minSize"
+        }
     }
 
     @Test

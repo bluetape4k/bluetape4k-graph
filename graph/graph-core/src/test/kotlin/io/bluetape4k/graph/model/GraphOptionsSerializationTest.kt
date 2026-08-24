@@ -84,6 +84,7 @@ class GraphOptionsSerializationTest {
             serializedWithField(PathOptions(), "maxVisited", 0) to listOf("maxVisited", "0"),
             serializedWithField(BfsDfsOptions(), "maxDepth", -1) to listOf("maxDepth", "-1"),
             serializedWithField(BfsDfsOptions(), "maxVertices", 0) to listOf("maxVertices", "0"),
+            serializedWithField(CycleOptions(), "maxDepth", 0) to listOf("maxDepth", "0"),
             serializedWithField(CycleOptions(), "maxDepth", -1) to listOf("maxDepth", "-1"),
             serializedWithField(CycleOptions(), "maxCycles", 0) to listOf("maxCycles", "0"),
         )
@@ -102,6 +103,9 @@ class GraphOptionsSerializationTest {
             serializedWithField(PageRankOptions(), "iterations", 0) to listOf("iterations", "0"),
             serializedWithField(PageRankOptions(), "topK", 0) to listOf("topK", "0"),
             serializedWithField(PageRankOptions(), "dampingFactor", Double.NaN) to listOf("dampingFactor", "NaN"),
+            serializedWithField(PageRankOptions(), "dampingFactor", Double.POSITIVE_INFINITY) to
+                listOf("dampingFactor", "Infinity"),
+            serializedWithField(PageRankOptions(), "tolerance", 0.0) to listOf("tolerance", "0.0"),
             serializedWithField(PageRankOptions(), "tolerance", Double.POSITIVE_INFINITY) to
                 listOf("tolerance", "Infinity"),
             serializedWithField(ComponentOptions(), "minSize", 0) to listOf("minSize", "0"),

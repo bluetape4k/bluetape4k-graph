@@ -65,13 +65,9 @@ class GraphTraversalOptionsTest {
     }
 
     @Test
-    fun `NeighborOptions - maxDepth 0도 설정 가능하다`() {
-        val opts = NeighborOptions(maxDepth = 0)
-        opts.maxDepth shouldBeEqualTo 0
-    }
+    fun `NeighborOptions는 maxDepth 0을 허용하고 음수는 거부한다`() {
+        NeighborOptions(maxDepth = 0).maxDepth shouldBeEqualTo 0
 
-    @Test
-    fun `NeighborOptions는 음수 maxDepth를 거부한다`() {
         val ex = assertFailsWith<IllegalArgumentException> {
             NeighborOptions(maxDepth = -1)
         }
@@ -104,6 +100,28 @@ class GraphTraversalOptionsTest {
         val updated = base.copy(maxDepth = 20)
         updated.maxDepth shouldBeEqualTo 20
         updated.edgeLabel.shouldBeNull()
+    }
+
+    @Test
+    fun `PathOptions는 0 이하 maxVisited를 거부한다`() {
+        listOf(0, -1).forEach { maxVisited ->
+            val ex = assertFailsWith<IllegalArgumentException> {
+                PathOptions(maxVisited = maxVisited)
+            }
+
+            ex.message shouldContain "maxVisited"
+        }
+    }
+
+    @Test
+    fun `PathOptions는 maxDepth 0을 허용하고 음수는 거부한다`() {
+        PathOptions(maxDepth = 0).maxDepth shouldBeEqualTo 0
+
+        val ex = assertFailsWith<IllegalArgumentException> {
+            PathOptions(maxDepth = -1)
+        }
+
+        ex.message shouldContain "maxDepth"
     }
 
     @Test
@@ -155,12 +173,21 @@ class GraphTraversalOptionsTest {
     }
 
     @Test
-    fun `BfsDfsOptions는 0 이하 maxVertices를 거부한다`() {
-        val ex = assertFailsWith<IllegalArgumentException> {
-            BfsDfsOptions(maxVertices = 0)
-        }
+    fun `BfsDfsOptions는 maxDepth 0에서 시작 정점만 허용한다`() {
+        val opts = BfsDfsOptions(maxDepth = 0)
 
-        ex.message shouldContain "maxVertices"
+        opts.maxDepth shouldBeEqualTo 0
+    }
+
+    @Test
+    fun `BfsDfsOptions는 0 이하 maxVertices를 거부한다`() {
+        listOf(0, -1).forEach { maxVertices ->
+            val ex = assertFailsWith<IllegalArgumentException> {
+                BfsDfsOptions(maxVertices = maxVertices)
+            }
+
+            ex.message shouldContain "maxVertices"
+        }
     }
 
     @Test
@@ -194,21 +221,25 @@ class GraphTraversalOptionsTest {
     }
 
     @Test
-    fun `CycleOptions는 음수 maxDepth를 거부한다`() {
-        val ex = assertFailsWith<IllegalArgumentException> {
-            CycleOptions(maxDepth = -1)
-        }
+    fun `CycleOptions는 0 이하 maxDepth를 거부한다`() {
+        listOf(0, -1).forEach { maxDepth ->
+            val ex = assertFailsWith<IllegalArgumentException> {
+                CycleOptions(maxDepth = maxDepth)
+            }
 
-        ex.message shouldContain "maxDepth"
+            ex.message shouldContain "maxDepth"
+        }
     }
 
     @Test
     fun `CycleOptions는 0 이하 maxCycles를 거부한다`() {
-        val ex = assertFailsWith<IllegalArgumentException> {
-            CycleOptions(maxCycles = 0)
-        }
+        listOf(0, -1).forEach { maxCycles ->
+            val ex = assertFailsWith<IllegalArgumentException> {
+                CycleOptions(maxCycles = maxCycles)
+            }
 
-        ex.message shouldContain "maxCycles"
+            ex.message shouldContain "maxCycles"
+        }
     }
 
     @Test

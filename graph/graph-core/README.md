@@ -517,6 +517,15 @@ data class GraphPath(
 | DFS | `dfs(startId, options)` | `BfsDfsOptions` | `List<TraversalVisit>` |
 | Cycle Detection | `detectCycles(options)` | `CycleOptions` | `List<GraphCycle>` |
 
+All traversal and algorithm options validate their public constructor inputs.
+`NeighborOptions.maxDepth` may be zero (no neighbor expansion),
+`PathOptions.maxDepth` may be zero (only a vertex-only path), and
+`BfsDfsOptions.maxDepth` may be zero (only the start vertex); cycle depth and
+all visit, iteration, result, cycle, and component limits must be positive.
+`PageRankOptions.tolerance` must be positive and finite, and `dampingFactor`
+must be finite in the inclusive range `[0.0, 1.0]`. Invalid values throw
+`IllegalArgumentException` before a backend query is built.
+
 ### Composite Interface
 
 ```
