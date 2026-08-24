@@ -81,6 +81,11 @@ enum class MissingEndpointPolicy { FAIL, SKIP_EDGE }
 
 `batchSize`는 임포트 중 백엔드 쓰기 플러시 크기를 제어합니다. 임포터는 대기 중인 정점과 간선을 라벨별로 묶고, 라벨별 버퍼가 이 크기에 도달하면 `createVertices`/`createEdges`를 호출하며, 마지막 부분 버퍼는 종료 시 플러시합니다. 중복 ID나 누락 엔드포인트 정책의 의미는 바꾸지 않습니다.
 
+`batchSize`는 양수여야 합니다. `GraphImportOptions`, `GraphIoBatchWriter`,
+`SuspendGraphIoBatchWriter`는 모두 공유 Bluetape `requirePositiveNumber` 계약으로
+0 또는 음수 값을 거부하며, writer를 직접 생성하는 경우에도 같은 검증이
+적용됩니다.
+
 `exportChunkSize`는 스트리밍 가능한 exporter가 `findVerticesByLabelChunked`,
 `findEdgesByLabelChunked` 같은 chunk-aware repository API에서 한 번에 요청하는
 레코드 수를 제어합니다. 이 메서드를 override하지 않은 백엔드는 기존 list/Flow
@@ -170,6 +175,7 @@ dependencies {
 - **`GraphIoPaths`** — 모든 `GraphImportSource`/`GraphExportSink`에 대해 `BufferedReader`/`BufferedWriter`/`InputStream`/`OutputStream`을 열고, `PathSink`는 부모 디렉터리를 자동 생성하며, 호출자 소유 스트림에는 `closeInput`/`closeOutput` 플래그를 준수합니다. `closeInput/closeOutput=false` 시 스트림을 닫아도 underlying 스트림이 닫히지 않아 안전합니다. `OutputStreamSink`는 항상 `BufferedOutputStream`으로 래핑됩니다.
 - **`GraphIoExternalIdMap`** — 임포트 중 외부 ID → 백엔드 `GraphElementId` 매핑을 추적하고 `DuplicateVertexPolicy`(`FAIL` 또는 `SKIP`)를 강제합니다.
 - **`GraphIoBatchWriter` / `SuspendGraphIoBatchWriter`** — `GraphImportOptions.batchSize`에 따라 `createVertices`/`createEdges`로 플러시하는 라벨별 임포트 쓰기 버퍼입니다.
+- **`GraphImportWorkflow` / `GraphImportJobStateStore`** — multi-source 임포트 manifest를 검증하고 순서가 있는 job state를 저장합니다. store의 `update` 경계는 한 JVM store 인스턴스에서 load/검증/save를 원자적으로 수행하며, durable store는 native transaction 또는 CAS로 override해야 합니다.
 - **`GraphIoStopwatch`** — 포맷 임포터/익스포터가 `report.elapsed`에 사용하는 밀리초 단위 타이머.
 - **`VirtualThreadGraphBulkAdapter`** — 동기 `GraphBulkImporter`/`GraphBulkExporter`를 `CompletableFuture` 기반 Virtual Thread 비동기 변형으로 래핑합니다.
 

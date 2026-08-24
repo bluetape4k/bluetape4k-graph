@@ -80,6 +80,20 @@ interface GraphImportJobStateStore {
     fun load(jobId: String): GraphImportWorkflowReport?
 
     fun save(report: GraphImportWorkflowReport)
+
+    /**
+     * Atomically loads, transforms, and saves one job report for this store instance.
+     * Durable stores should override this boundary with a native transaction or CAS.
+     */
+    fun update(
+        jobId: String,
+        transform: (GraphImportWorkflowReport?) -> GraphImportWorkflowReport,
+    ): GraphImportWorkflowReport = synchronized(this) {
+        val updated = transform(load(jobId))
+        require(updated.jobId == jobId) { "state update jobId must match the requested jobId" }
+        save(updated)
+        updated
+    }
 }
 
 class InMemoryGraphImportJobStateStore : GraphImportJobStateStore {
@@ -110,15 +124,17 @@ class GraphImportWorkflow(
     }
 
     fun transition(state: GraphImportWorkflowState): GraphImportWorkflowReport {
-        val current = stateStore.load(manifest.jobId)?.state ?: GraphImportWorkflowState.DISCOVERED
-        require(ALLOWED_TRANSITIONS[current].orEmpty().contains(state)) {
-            "invalid workflow transition: $current -> $state"
-        }
         return persist(state)
     }
 
     private fun persist(state: GraphImportWorkflowState): GraphImportWorkflowReport =
-        GraphImportWorkflowReport(manifest.jobId, state).also(stateStore::save)
+        stateStore.update(manifest.jobId) { currentReport ->
+            val current = currentReport?.state ?: GraphImportWorkflowState.DISCOVERED
+            require(ALLOWED_TRANSITIONS[current].orEmpty().contains(state)) {
+                "invalid workflow transition: $current -> $state"
+            }
+            GraphImportWorkflowReport(manifest.jobId, state)
+        }
 
     companion object {
         private val ALLOWED_TRANSITIONS = mapOf(
