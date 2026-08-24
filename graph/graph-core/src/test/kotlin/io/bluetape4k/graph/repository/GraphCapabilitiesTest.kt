@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.repository
 
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeTrue
@@ -76,6 +77,16 @@ class GraphCapabilitiesTest {
         decorator.capabilities().supports(GraphCapability.BOUNDED_CHUNKED_READ).shouldBeFalse()
         decorator.capabilities().supports(GraphCapability.BOUNDED_CHUNKED_EXPORT).shouldBeFalse()
         decorator.close()
+    }
+
+    @Test
+    fun `bounded capability requires its API chunk capability`() {
+        assertFailsWith<IllegalArgumentException> {
+            GraphCapabilities(supported = setOf(GraphCapability.BOUNDED_CHUNKED_READ))
+        }
+        assertFailsWith<IllegalArgumentException> {
+            GraphCapabilities(supported = setOf(GraphCapability.BOUNDED_CHUNKED_EXPORT))
+        }
     }
 
     private class GraphOperationsDecorator(

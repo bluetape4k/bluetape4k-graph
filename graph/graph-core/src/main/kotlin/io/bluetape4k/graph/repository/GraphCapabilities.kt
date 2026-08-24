@@ -30,12 +30,6 @@ enum class GraphCapability {
     /** chunk 단위로 graph 데이터를 내보내는 API를 제공한다 (source bounded 보장은 별도 capability). */
     CHUNKED_EXPORT,
 
-    /** 전체 결과를 먼저 materialize하지 않는 bounded vertex/edge 조회를 제공한다. */
-    BOUNDED_CHUNKED_READ,
-
-    /** 전체 결과를 먼저 materialize하지 않는 bounded graph export를 제공한다. */
-    BOUNDED_CHUNKED_EXPORT,
-
     /** 가중치 옵션을 받는 portable path API를 제공한다. */
     WEIGHTED_PATH,
 
@@ -44,6 +38,12 @@ enum class GraphCapability {
 
     /** backend-native algorithm provider를 제공한다. */
     NATIVE_ALGORITHM,
+
+    /** 전체 결과를 먼저 materialize하지 않는 bounded vertex/edge 조회를 제공한다. */
+    BOUNDED_CHUNKED_READ,
+
+    /** 전체 결과를 먼저 materialize하지 않는 bounded graph export를 제공한다. */
+    BOUNDED_CHUNKED_EXPORT,
 }
 
 /**
@@ -65,6 +65,18 @@ data class GraphCapabilities(
         }
         require(constraints.keys.all(supported::contains)) {
             "constraints may describe only supported capabilities"
+        }
+        require(
+            GraphCapability.BOUNDED_CHUNKED_READ !in supported ||
+                GraphCapability.CHUNKED_READ in supported,
+        ) {
+            "BOUNDED_CHUNKED_READ requires CHUNKED_READ"
+        }
+        require(
+            GraphCapability.BOUNDED_CHUNKED_EXPORT !in supported ||
+                GraphCapability.CHUNKED_EXPORT in supported,
+        ) {
+            "BOUNDED_CHUNKED_EXPORT requires CHUNKED_EXPORT"
         }
     }
 
@@ -177,8 +189,8 @@ interface GraphVirtualThreadCapabilitiesOperations {
 interface GraphNativeAlgorithmOperations
 
 /**
- * source 조회가 전체 label 결과를 먼저 materialize하지 않고 chunk 경계를 지키는
- * backend 구현을 표시하는 marker다.
+ * vertex와 edge source 조회가 전체 label 결과를 먼저 materialize하지 않고 chunk
+ * 경계를 지키는 backend 구현을 표시하는 marker다.
  *
  * `CHUNKED_*` API만 제공하는 기본 repository 구현에는 이 marker를 추가하지 않는다.
  */

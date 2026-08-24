@@ -129,7 +129,7 @@ Files:
 
 복잡도: 중간. 선행: Task 6.
 
-- [ ] Step 1: `docs/lessons/2026-08-25-issue-536-bounded-chunk-capability.md`에 문제, 선택한 분리 계약, backend 제한, 검증 명령과 잔여 P2를 한국어로 기록한다.
+- [x] Step 1: `docs/lessons/2026-08-25-issue-536-bounded-chunk-capability.md`에 문제, 선택한 분리 계약, backend 제한, 검증 명령과 잔여 P2를 한국어로 기록한다.
 - [ ] Step 2: workflow helper로 각 topology check의 입력·결과·component evidence·completion을 기록한다. helper 외 `.bluetape` 상태를 직접 수정하지 않는다.
 - [ ] Step 3: implementation과 lesson을 Lore trailers가 있는 commit으로 기록하고 `git status`, `git diff --check`, exact HEAD를 다시 읽는다.
 

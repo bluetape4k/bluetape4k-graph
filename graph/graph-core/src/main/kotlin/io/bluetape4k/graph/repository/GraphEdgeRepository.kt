@@ -79,15 +79,14 @@ interface GraphEdgeRepository {
     fun findEdgesByLabel(label: String, filter: Map<String, Any?> = emptyMap()): List<GraphEdge>
 
     /**
-     * Finds edges by label and property filter as API chunks.
+     * label과 property filter로 간선을 API chunk 단위로 조회한다.
      *
-     * ## Contract
+     * ## 계약
      *
-     * - The default implementation splits the [findEdgesByLabel] result into chunks for compatibility;
-     *   this does not promise bounded source execution.
-     * - Backends that avoid whole-label materialization during large exports should override this method and
-     *   advertise [GraphCapability.BOUNDED_CHUNKED_READ] and [GraphCapability.BOUNDED_CHUNKED_EXPORT].
-     * - [chunkSize] must be positive.
+     * - 기본 구현은 호환성을 위해 [findEdgesByLabel] 결과를 chunk로 나누며 source 실행의 bounded 보장은 제공하지 않는다.
+     * - 대규모 export에서 전체 label materialization을 피하는 backend는 이 method를 override하고
+     *   [GraphCapability.BOUNDED_CHUNKED_READ]와 [GraphCapability.BOUNDED_CHUNKED_EXPORT]를 광고해야 한다.
+     * - [chunkSize]는 양수여야 한다.
      *
      * ```kotlin
      * for (chunk in ops.findEdgesByLabelChunked("KNOWS", chunkSize = 500)) {
@@ -95,10 +94,10 @@ interface GraphEdgeRepository {
      * }
      * ```
      *
-     * @param label edge label to query.
-     * @param filter property-name to value conditions. An empty map returns the full label.
-     * @param chunkSize maximum number of edges per chunk.
-     * @return chunk sequence containing matching [GraphEdge] values.
+     * @param label 조회할 edge label.
+     * @param filter property name과 value 조건. 빈 map은 해당 label 전체를 반환한다.
+     * @param chunkSize chunk 하나에 포함할 edge 최대 개수.
+     * @return 일치하는 [GraphEdge]를 담은 chunk sequence.
      */
     fun findEdgesByLabelChunked(
         label: String,

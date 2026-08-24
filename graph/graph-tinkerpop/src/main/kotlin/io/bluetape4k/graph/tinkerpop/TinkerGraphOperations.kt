@@ -263,7 +263,12 @@ class TinkerGraphOperations :
             filter.forEach { (key, value) ->
                 traversal.has(key, value)
             }
-            yieldMappedChunks(traversal, chunkSize, GremlinRecordMapper::vertexToGraphVertex)
+            yieldMappedChunks(
+                source = traversal,
+                chunkSize = chunkSize,
+                mapper = GremlinRecordMapper::vertexToGraphVertex,
+                close = traversal::close,
+            )
         }
     }
 
@@ -417,7 +422,12 @@ class TinkerGraphOperations :
             filter.forEach { (key, value) ->
                 traversal.has(key, value)
             }
-            yieldMappedChunks(traversal, chunkSize, GremlinRecordMapper::edgeToGraphEdge)
+            yieldMappedChunks(
+                source = traversal,
+                chunkSize = chunkSize,
+                mapper = GremlinRecordMapper::edgeToGraphEdge,
+                close = traversal::close,
+            )
         }
     }
 
@@ -632,15 +642,16 @@ class TinkerGraphOperations :
         return GraphPath(steps)
     }
 
-    private suspend fun <E, R> SequenceScope<List<R>>.yieldMappedChunks(
-        traversal: Traversal<*, E>,
+    internal suspend fun <E, R> SequenceScope<List<R>>.yieldMappedChunks(
+        source: Iterator<E>,
         chunkSize: Int = DEFAULT_GRAPH_EXPORT_CHUNK_SIZE,
         mapper: (E) -> R,
+        close: () -> Unit,
     ) {
         val chunk = ArrayList<R>(chunkSize)
         try {
-            while (traversal.hasNext()) {
-                chunk += mapper(traversal.next())
+            while (source.hasNext()) {
+                chunk += mapper(source.next())
                 if (chunk.size == chunkSize) {
                     yield(chunk.toList())
                     chunk.clear()
@@ -650,7 +661,7 @@ class TinkerGraphOperations :
                 yield(chunk.toList())
             }
         } finally {
-            traversal.close()
+            close()
         }
     }
 
