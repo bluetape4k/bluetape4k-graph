@@ -1,6 +1,8 @@
 package io.bluetape4k.graph.io.csv
 
 import io.bluetape4k.graph.io.contract.GraphSuspendBulkImporter
+import io.bluetape4k.graph.io.checkpoint.GraphImportCheckpointIdentity
+import io.bluetape4k.graph.io.checkpoint.GraphImportCheckpointSession
 import io.bluetape4k.graph.io.csv.internal.CsvRecordCodec
 import io.bluetape4k.graph.io.csv.internal.CsvRecordParser
 import io.bluetape4k.graph.io.options.GraphImportOptions
@@ -94,7 +96,20 @@ class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSourc
         val codec = CsvRecordCodec(csvOptions.propertyMode)
         val parser = CsvRecordParser()
         val idMap = GraphIoExternalIdMap(options.onDuplicateVertexId)
-        val batchWriter = SuspendGraphIoBatchWriter(operations, options.batchSize)
+        val checkpoint = GraphImportCheckpointSession(
+            format = GraphIoFormat.CSV,
+            sourceIdentity = GraphImportCheckpointIdentity.resolve(options, source.vertices, source.edges),
+            options = options,
+            idMap = idMap,
+            importOptionsIdentity = GraphImportCheckpointIdentity.optionsIdentity(
+                options,
+                csvOptions.propertyMode.toString(),
+            ),
+        )
+        val batchWriter = SuspendGraphIoBatchWriter(operations, options.writeBatchSize) { boundary, error ->
+            checkpoint.failed(boundary, error.message)
+        }
+        try {
         val failures = mutableListOf<GraphIoFailure>()
         var verticesRead = 0L
         var verticesCreated = 0L
@@ -113,10 +128,12 @@ class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSourc
             ).collect { record ->
                 if (status == GraphIoStatus.FAILED) return@collect
                 verticesRead++
+                if (checkpoint.shouldSkipVertex(verticesRead)) return@collect
                 val externalId = record.getString("id").orEmpty()
                 val label = record.getString("label").orEmpty().ifBlank { options.defaultVertexLabel }
                 if (externalId.isBlank()) {
                     verticesCreated += batchWriter.flushVertices(idMap)
+                    checkpoint.verticesCommitted(verticesRead - 1)
                     failures += GraphIoFailure(
                         phase = GraphIoPhase.READ_VERTEX,
                         fileRole = GraphIoFileRole.VERTICES,
@@ -144,15 +161,23 @@ class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSourc
                     putAll(codec.extractProperties(rowMap))
                     options.preserveExternalIdProperty?.let { key -> put(key, externalId) }
                 }
-                verticesCreated += batchWriter.addVertex(externalId, label, props, idMap)
+                val created = batchWriter.addVertex(externalId, label, props, idMap)
+                verticesCreated += created
+                if (created > 0) {
+                    verticesCreated += batchWriter.flushVertices(idMap)
+                    checkpoint.verticesCommitted(verticesRead)
+                }
             }
         } catch (error: GraphIoReadException) {
             verticesCreated += batchWriter.flushVertices(idMap)
+            checkpoint.verticesCommitted(verticesRead)
             failures += error.failure
             status = GraphIoStatus.FAILED
+            checkpoint.failed("VERTICES", error.message)
         }
 
         if (status == GraphIoStatus.FAILED) {
+            checkpoint.failed("VERTICES")
             log.warn { "CSV import (suspend) failed during vertex pass: vertices=$verticesCreated/$verticesRead, elapsed=${watch.elapsed()}" }
             return buildReport(
                 watch, failures, GraphIoStatus.FAILED,
@@ -161,6 +186,7 @@ class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSourc
         }
 
         verticesCreated += batchWriter.flushVertices(idMap)
+        checkpoint.verticesCommitted(verticesRead)
 
         // --- 엣지 패스 ---
         try {
@@ -171,6 +197,7 @@ class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSourc
             ).collect { record ->
                 if (status == GraphIoStatus.FAILED) return@collect
                 edgesRead++
+                if (checkpoint.shouldSkipEdge(edgesRead)) return@collect
                 val label = record.getString("label").orEmpty().ifBlank { options.defaultEdgeLabel }
                 val from = record.getString("from").orEmpty()
                 val to = record.getString("to").orEmpty()
@@ -180,6 +207,7 @@ class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSourc
                     when (options.onMissingEdgeEndpoint) {
                         MissingEndpointPolicy.FAIL -> {
                             edgesCreated += batchWriter.flushEdges()
+                            checkpoint.edgesCommitted(verticesRead, edgesRead - 1)
                             failures += GraphIoFailure(
                                 phase = GraphIoPhase.READ_EDGE,
                                 fileRole = GraphIoFileRole.EDGES,
@@ -211,16 +239,27 @@ class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSourc
                         options.preserveExternalIdProperty?.let { key -> put(key, eid) }
                     }
                 }
-                edgesCreated += batchWriter.addEdge(label, fromId, toId, props)
+                val created = batchWriter.addEdge(label, fromId, toId, props)
+                edgesCreated += created
+                if (created > 0) {
+                    edgesCreated += batchWriter.flushEdges()
+                    checkpoint.edgesCommitted(verticesRead, edgesRead)
+                }
             }
         } catch (error: GraphIoReadException) {
             edgesCreated += batchWriter.flushEdges()
+            checkpoint.edgesCommitted(verticesRead, edgesRead)
             failures += error.failure
             status = GraphIoStatus.FAILED
+            checkpoint.failed("EDGES", error.message)
         }
 
         if (status != GraphIoStatus.FAILED) {
             edgesCreated += batchWriter.flushEdges()
+            checkpoint.edgesCommitted(verticesRead, edgesRead)
+            checkpoint.completed()
+        } else {
+            checkpoint.failed("EDGES")
         }
 
         return buildReport(
@@ -228,6 +267,9 @@ class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSourc
             verticesRead, verticesCreated, edgesRead, edgesCreated, skippedVertices, skippedEdges
         ).also {
             log.debug { "CSV import (suspend) completed: vertices=$verticesCreated/$verticesRead, edges=$edgesCreated/$edgesRead, skipped=$skippedVertices/$skippedEdges, status=$status, elapsed=${watch.elapsed()}" }
+        }
+        } finally {
+            checkpoint.close()
         }
     }
 

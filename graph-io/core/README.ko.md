@@ -66,6 +66,10 @@ data class GraphImportOptions(
     val defaultVertexLabel: String = "Vertex",
     val defaultEdgeLabel: String = "Edge",
     val preserveExternalIdProperty: String? = "_graphIoExternalId",
+    val checkpointStore: GraphImportCheckpointStore? = null,
+    val checkpointKey: String? = null,
+    val checkpointSourceIdentity: String? = null,
+    val resumeFromCheckpoint: Boolean = false,
 )
 
 data class GraphExportOptions(
@@ -79,7 +83,9 @@ enum class DuplicateVertexPolicy { FAIL, SKIP }
 enum class MissingEndpointPolicy { FAIL, SKIP_EDGE }
 ```
 
-`batchSize`는 임포트 중 백엔드 쓰기 플러시 크기를 제어합니다. 임포터는 대기 중인 정점과 간선을 라벨별로 묶고, 라벨별 버퍼가 이 크기에 도달하면 `createVertices`/`createEdges`를 호출하며, 마지막 부분 버퍼는 종료 시 플러시합니다. 중복 ID나 누락 엔드포인트 정책의 의미는 바꾸지 않습니다.
+`batchSize`는 임포트 중 백엔드 쓰기 플러시 크기를 제어합니다. 임포터는 대기 중인 정점과 간선을 라벨별로 묶고, 라벨별 버퍼가 이 크기에 도달하면 `createVertices`/`createEdges`를 호출하며, 마지막 부분 버퍼는 종료 시 플러시합니다. checkpoint를 활성화하면 부분 배치 커밋을 숨기지 않도록 안전한 단일 레코드 경계를 사용합니다. 중복 ID나 누락 엔드포인트 정책의 의미는 바꾸지 않습니다.
+
+checkpoint/resume은 `checkpointStore`와 `checkpointKey`를 함께 지정할 때만 활성화됩니다. 각 포맷의 sync, suspend, virtual-thread importer는 안전한 정점/간선 경계와 외부 ID 매핑, import 옵션 지문을 저장하고, 성공하면 checkpoint를 삭제합니다. 재개 시 포맷, 버전, source identity, import 옵션 또는 매핑이 다르면 `GraphImportCheckpointConflictException`으로 즉시 실패합니다. 저장소와 그래프 백엔드 사이의 원자 트랜잭션이 없는 경우 재개 보장은 at-least-once이므로 안정적인 외부 ID와 백엔드 멱등성/unique 제약을 함께 사용해야 합니다. `InputStream`/OkIO stream은 호출자가 `checkpointSourceIdentity`에 안정적인 버전 식별자를 지정해야 하며, 기본값은 기존의 단일 시도 동작을 유지합니다.
 
 `batchSize`는 양수여야 합니다. `GraphImportOptions`, `GraphIoBatchWriter`,
 `SuspendGraphIoBatchWriter`는 모두 공유 Bluetape `requirePositiveNumber` 계약으로

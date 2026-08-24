@@ -12,9 +12,11 @@ import io.bluetape4k.support.requirePositiveNumber
  * 정점은 레이블별로 모은 뒤 [GraphOperations.createVertices] 호출 결과 순서와 입력 순서를 매칭해
  * 외부 ID 맵을 갱신한다. 간선도 레이블별로 모아 [GraphOperations.createEdges]를 호출한다.
  */
+@Suppress("TooGenericExceptionCaught")
 class GraphIoBatchWriter(
     private val operations: GraphOperations,
     private val batchSize: Int,
+    private val onFailure: (boundary: String, cause: Throwable) -> Unit = { _, _ -> },
 ) {
     init {
         batchSize.requirePositiveNumber("batchSize")
@@ -56,9 +58,15 @@ class GraphIoBatchWriter(
         if (buffer.isEmpty()) return 0
 
         val rows = buffer.toList()
-        val created = operations.createVertices(label, rows.map { it.properties })
-        require(created.size == rows.size) {
-            "createVertices('$label', ...) returned ${created.size} rows for ${rows.size} input rows"
+        val created = try {
+            operations.createVertices(label, rows.map { it.properties }).also {
+                require(it.size == rows.size) {
+                    "createVertices('$label', ...) returned ${it.size} rows for ${rows.size} input rows"
+                }
+            }
+        } catch (error: Throwable) {
+            notifyFailure("VERTICES", error)
+            throw error
         }
         rows.zip(created).forEach { (pending, vertex) ->
             idMap.put(pending.externalId, vertex.id)
@@ -72,12 +80,23 @@ class GraphIoBatchWriter(
         if (buffer.isEmpty()) return 0
 
         val rows = buffer.toList()
-        val created = operations.createEdges(label, rows)
-        require(created.size == rows.size) {
-            "createEdges('$label', ...) returned ${created.size} rows for ${rows.size} input rows"
+        val created = try {
+            operations.createEdges(label, rows).also {
+                require(it.size == rows.size) {
+                    "createEdges('$label', ...) returned ${it.size} rows for ${rows.size} input rows"
+                }
+            }
+        } catch (error: Throwable) {
+            notifyFailure("EDGES", error)
+            throw error
         }
         edgeBuffers[label]?.clear()
         return created.size
+    }
+
+    private fun notifyFailure(boundary: String, cause: Throwable) {
+        runCatching { onFailure(boundary, cause) }
+            .onFailure(cause::addSuppressed)
     }
 
     private data class PendingVertex(
@@ -89,9 +108,11 @@ class GraphIoBatchWriter(
 /**
  * suspend graph-io importer용 batch writer.
  */
+@Suppress("TooGenericExceptionCaught")
 class SuspendGraphIoBatchWriter(
     private val operations: GraphSuspendOperations,
     private val batchSize: Int,
+    private val onFailure: (boundary: String, cause: Throwable) -> Unit = { _, _ -> },
 ) {
     init {
         batchSize.requirePositiveNumber("batchSize")
@@ -143,9 +164,15 @@ class SuspendGraphIoBatchWriter(
         if (buffer.isEmpty()) return 0
 
         val rows = buffer.toList()
-        val created = operations.createVertices(label, rows.map { it.properties })
-        require(created.size == rows.size) {
-            "createVertices('$label', ...) returned ${created.size} rows for ${rows.size} input rows"
+        val created = try {
+            operations.createVertices(label, rows.map { it.properties }).also {
+                require(it.size == rows.size) {
+                    "createVertices('$label', ...) returned ${it.size} rows for ${rows.size} input rows"
+                }
+            }
+        } catch (error: Throwable) {
+            notifyFailure("VERTICES", error)
+            throw error
         }
         rows.zip(created).forEach { (pending, vertex) ->
             idMap.put(pending.externalId, vertex.id)
@@ -159,12 +186,23 @@ class SuspendGraphIoBatchWriter(
         if (buffer.isEmpty()) return 0
 
         val rows = buffer.toList()
-        val created = operations.createEdges(label, rows)
-        require(created.size == rows.size) {
-            "createEdges('$label', ...) returned ${created.size} rows for ${rows.size} input rows"
+        val created = try {
+            operations.createEdges(label, rows).also {
+                require(it.size == rows.size) {
+                    "createEdges('$label', ...) returned ${it.size} rows for ${rows.size} input rows"
+                }
+            }
+        } catch (error: Throwable) {
+            notifyFailure("EDGES", error)
+            throw error
         }
         edgeBuffers[label]?.clear()
         return created.size
+    }
+
+    private fun notifyFailure(boundary: String, cause: Throwable) {
+        runCatching { onFailure(boundary, cause) }
+            .onFailure(cause::addSuppressed)
     }
 
     private data class PendingVertex(
