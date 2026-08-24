@@ -32,14 +32,17 @@ Flow의 lazy 계약과 구분해 문서화한다.
    blocking 호출은 caller dispatcher에서 실행되지 않는다.
 2. 직접 조회를 공통 `streamQuery` helper로 모은다. helper는
    `channelFlow` 안에서 `newSuspendedTransaction(Dispatchers.IO)`를 시작하고,
-   Exposed `exec` callback의 `ResultSet`을 행 단위로 읽는다.
+   `BlockingExecutable`로 실제 `PreparedStatement.fetchSize`를 positive 값으로
+   설정한 뒤 `ResultSet`을 행 단위로 읽는다. `DatabaseConfig.defaultFetchSize`가
+   positive면 이를 사용하고, 없으면 100을 기본값으로 사용한다.
 3. callback은 suspend 함수가 아니므로 `kotlinx.coroutines.channels.trySendBlocking`
    을 사용해 channel backpressure를 적용한다. 이 bridge는 IO worker에서만
    실행하고, `channelFlow`의 collector 취소·실패가 callback 예외로 전파되게
    한다.
-4. Exposed `exec`가 callback 범위에서 `ResultSet.use`를 수행하고 suspended
-   transaction이 종료 시 connection/transaction을 닫는 현재 계약을 전제로
-   한다. 별도 `runCatching`으로 취소를 삼키지 않는다.
+4. streaming transaction은 행을 이미 collector에 공개한 뒤 재시도할 수 없으므로
+   `maxAttempts=1`로 고정한다. Exposed 실행 경계는 `ResultSet.use`와
+   transaction 종료 시 connection/statement close를 계속 소유하며, 별도
+   `runCatching`으로 취소를 삼키지 않는다.
 
 ## 실패와 취소 계약
 
@@ -48,6 +51,9 @@ Flow의 lazy 계약과 구분해 문서화한다.
 - mapper 또는 collector가 예외를 던지면 예외를 그대로 전파하고
   `ResultSet`/transaction을 닫는다.
 - `CancellationException`은 일반 예외로 변환하지 않는다.
+- JDBC driver에는 positive fetch size를 전달해 결과 전체를 driver 메모리에
+  먼저 적재하지 않도록 한다. 단, `executeQuery()`/`ResultSet.next()` 자체의
+  blocking을 `Statement.cancel()`로 중단하는 별도 계약은 이 이슈 범위가 아니다.
 - transaction-scoped Flow는 commit 전 materialize를 유지하므로 이 API의
   bounded/lazy 보장은 직접 facade Flow에 한정한다.
 
@@ -55,8 +61,8 @@ Flow의 lazy 계약과 구분해 문서화한다.
 
 - public method signature와 반환 타입은 바꾸지 않는다.
 - `trySendBlocking`은 IO thread를 잠시 점유하므로 channel capacity와 collector
-  처리 속도가 bounded memory를 결정한다. 무제한 producer thread를 추가하지
-  않는다.
+  처리 속도가 application-side bounded memory를 결정한다. JDBC fetch size는
+  driver-side prefetch 상한을 둔다. 무제한 producer thread를 추가하지 않는다.
 - AGE Testcontainers는 기존 singleton launcher와 순차 실행 규칙을 따른다.
 - 취소 후 connection pool이 고갈되지 않는지 반복 `first()`/`take(1)`와 후속
   query로 검증한다.

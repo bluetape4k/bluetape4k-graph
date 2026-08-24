@@ -18,15 +18,17 @@
 
 3. **최소 구현**
    - `newSuspendedTransaction` 기본 context를 `Dispatchers.IO`로 고정한다.
-   - Exposed `exec` callback과 `channelFlow` 사이에 `trySendBlocking` 기반
-     `streamQuery`를 추가한다.
+   - `BlockingExecutable`에서 positive `PreparedStatement.fetchSize`를 설정하고,
+     streaming transaction의 `maxAttempts`를 1로 제한한다.
+   - Exposed callback과 `channelFlow` 사이에 `trySendBlocking` 기반 `streamQuery`를
+     추가한다.
    - 여섯 직접 조회를 helper로 전환하고 알고리즘 delegate 경계는 변경하지
      않는다.
    - 취소를 삼키는 예외 처리나 새 dependency를 추가하지 않는다.
 
 4. **문서와 정적 검증**
-   - Korean KDoc과 graph-age README 두 locale에 직접 Flow의 cursor/backpressure
-     및 transaction-scoped materialize 차이를 반영한다.
+   - Korean KDoc과 graph-age README 두 locale에 직접 Flow의 cursor/fetch size/
+     backpressure 및 transaction-scoped materialize 차이를 반영한다.
    - `git diff --check`, `detekt`, compile, assertions/`runCatching`/blocking
      call 정적 검색과 terminology audit를 실행한다.
 

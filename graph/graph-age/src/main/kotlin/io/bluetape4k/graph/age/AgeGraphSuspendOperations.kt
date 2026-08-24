@@ -40,12 +40,20 @@ import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withContext
+import org.jetbrains.exposed.v1.core.IColumnType
+import org.jetbrains.exposed.v1.core.Transaction
+import org.jetbrains.exposed.v1.core.statements.Statement
+import org.jetbrains.exposed.v1.core.statements.StatementType
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.JdbcTransaction
+import org.jetbrains.exposed.v1.jdbc.statements.BlockingExecutable
+import org.jetbrains.exposed.v1.jdbc.statements.api.JdbcPreparedStatementApi
 import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction as exposedSuspendTransaction
 import java.sql.ResultSet
 import kotlin.coroutines.CoroutineContext
+
+private const val DEFAULT_STREAM_FETCH_SIZE = 100
 
 /**
  * Apache AGE + PostgreSQL 기반 [GraphSuspendOperations] 구현체 (코루틴 방식).
@@ -108,9 +116,41 @@ class AgeGraphSuspendOperations(
 
     private suspend fun <T> newSuspendedTransaction(
         context: CoroutineContext = Dispatchers.IO,
+        attempts: Int? = null,
         statement: suspend JdbcTransaction.() -> T,
     ): T = withContext(context) {
-        exposedSuspendTransaction(db = database, statement = statement)
+        exposedSuspendTransaction(db = database) {
+            attempts?.let { maxAttempts = it }
+            statement()
+        }
+    }
+
+    /**
+     * Exposed의 문자열 [exec]는 fetch size를 조정할 수 없으므로
+     * [BlockingExecutable] 경계에서 PostgreSQL cursor fetch size를 설정한다.
+     * 이 경계를 통해 pgjdbc 기본 fetch-all 동작을 피하고 transaction이 소유한
+     * [ResultSet]과 prepared statement lifecycle을 그대로 유지한다.
+     */
+    private fun JdbcTransaction.execStreaming(
+        statementText: String,
+        transform: (ResultSet) -> Unit,
+    ) {
+        val executable = object : BlockingExecutable<Unit, Statement<Unit>> {
+            override val statement = object : Statement<Unit>(StatementType.SELECT, emptyList()) {
+                override fun prepareSQL(transaction: Transaction, prepared: Boolean): String = statementText
+
+                override fun arguments(): Iterable<Iterable<Pair<IColumnType<*>, Any?>>> =
+                    listOf(emptyList())
+            }
+
+            override fun JdbcPreparedStatementApi.executeInternal(transaction: JdbcTransaction): Unit? {
+                fetchSize = transaction.db.defaultFetchSize?.takeIf { it > 0 } ?: DEFAULT_STREAM_FETCH_SIZE
+                executeQuery().result.use(transform)
+                return Unit
+            }
+        }
+
+        exec(executable)
     }
 
     /**
@@ -119,15 +159,17 @@ class AgeGraphSuspendOperations(
      * Exposed callback은 suspend 함수가 아니므로 [trySendBlocking]을 사용한다.
      * 이 bridge는 [Dispatchers.IO]에서만 실행하며, collector가 느리면 channel이
      * backpressure를 적용하고 collector가 취소되면 callback과 transaction이
-     * 종료되어 [ResultSet]이 닫힌다.
+     * 종료되어 [ResultSet]이 닫힌다. JDBC prepared statement에는 positive fetch
+     * size를 적용하고 streaming transaction retry를 비활성화해 driver fetch-all과
+     * retry 시 prefix 중복 방출을 막는다.
      */
     private fun <T> streamQuery(
         statement: String,
         mapper: (ResultSet) -> T,
     ): Flow<T> = channelFlow {
         val output = this@channelFlow
-        newSuspendedTransaction(Dispatchers.IO) {
-            exec(statement) { resultSet ->
+        newSuspendedTransaction(Dispatchers.IO, attempts = 1) {
+            execStreaming(statement) { resultSet ->
                 while (resultSet.next()) {
                     output.trySendBlocking(mapper(resultSet)).getOrThrow()
                 }

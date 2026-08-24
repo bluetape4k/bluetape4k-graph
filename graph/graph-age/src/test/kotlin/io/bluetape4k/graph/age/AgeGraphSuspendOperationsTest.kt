@@ -30,6 +30,7 @@ import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotBeNull
+import org.jetbrains.exposed.v1.core.DatabaseConfig
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -61,8 +62,13 @@ class AgeGraphSuspendOperationsTest {
             connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
             maximumPoolSize = 5
         })
-        database = Database.connect(dataSource)
-        ops = AgeGraphSuspendOperations(graphName)
+        database = Database.connect(
+            dataSource,
+            databaseConfig = DatabaseConfig {
+                defaultFetchSize = 8
+            }
+        )
+        ops = AgeGraphSuspendOperations(database, graphName)
     }
 
     @AfterAll
@@ -269,7 +275,7 @@ class AgeGraphSuspendOperationsTest {
     @Order(32_1)
     fun `직접 조회 Flow를 조기 취소해도 JDBC 자원을 반환한다`() = runSuspendIO {
         ops.suspendTransaction {
-            repeat(128) { index ->
+            repeat(256) { index ->
                 createVertex("Person", mapOf("name" to "Person-$index"))
             }
         }
@@ -280,13 +286,17 @@ class AgeGraphSuspendOperationsTest {
             }
         }
 
-        ops.countVertices("Person") shouldBeEqualTo 128L
+        ops.countVertices("Person") shouldBeEqualTo 256L
     }
 
     @Test
     @Order(32_2)
     fun `직접 조회 Flow의 collector 예외가 전파되어도 JDBC 자원을 반환한다`() = runSuspendIO {
-        ops.createVertex("Person", mapOf("name" to "Alice"))
+        ops.suspendTransaction {
+            repeat(128) { index ->
+                createVertex("Person", mapOf("name" to "Person-$index"))
+            }
+        }
 
         assertFailsWith<IllegalStateException> {
             ops.findVerticesByLabel("Person").collect {
@@ -294,7 +304,7 @@ class AgeGraphSuspendOperationsTest {
             }
         }
 
-        ops.countVertices("Person") shouldBeEqualTo 1L
+        ops.countVertices("Person") shouldBeEqualTo 128L
     }
 
     // ───────────────────────── 간선(Edge) CRUD ─────────────────────────

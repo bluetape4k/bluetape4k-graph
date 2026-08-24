@@ -202,7 +202,7 @@ Nested JSON structures inside AGE results are parsed by `AgeTypeParser`. Extreme
 The `LOAD 'age'` and `search_path` statement **must** be set via `connectionInitSql` — otherwise each connection pulled from the pool will fail to recognize AGE functions.
 
 ### Transaction Isolation
-Synchronous operations run inside independent Exposed transactions. The coroutine variant uses Exposed suspended transactions for direct AGE queries and delegates selected blocking fallback algorithms to an IO dispatcher. Direct `Flow` queries run their JDBC cursor on `Dispatchers.IO`, emit rows through channel backpressure, and release the `ResultSet` and transaction when collection completes or is cancelled. They do not first materialize the complete result into a `MutableList`.
+Synchronous operations run inside independent Exposed transactions. The coroutine variant uses Exposed suspended transactions for direct AGE queries and delegates selected blocking fallback algorithms to an IO dispatcher. Direct `Flow` queries run their JDBC cursor on `Dispatchers.IO`, apply `DatabaseConfig.defaultFetchSize` (or a positive default of 100) to the prepared statement, emit rows through channel backpressure, and release the `ResultSet` and transaction when collection completes or is cancelled. Streaming transactions disable Exposed retries because rows may already be visible to the collector before a late JDBC failure. They do not first materialize the complete result into a `MutableList`.
 
 `suspendTransaction { ... }` has a different ownership boundary: a `Flow` returned from the transaction scope is materialized before commit so it remains readable after the transaction closes. Use direct `AgeGraphSuspendOperations` query methods when lazy, bounded collection is required.
 
