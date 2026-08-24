@@ -2,7 +2,8 @@
 
 ## 판정
 
-- 기준 HEAD: `db578e6d` (`#539의 export lifecycle 실패를 원인 예외 보존으로 고정한다`)
+- 구현 기준 HEAD: `db578e6d` (`#539의 export lifecycle 실패를 원인 예외 보존으로 고정한다`)
+- 문서 기준 HEAD: `627952b6` (`#539의 export 계약과 7-Tier 증거를 문서로 고정한다`)
 - 대상 이슈: [#539](https://github.com/bluetape4k/bluetape4k-graph/issues/539)
 - 범위: `graph-io/core`, `graph-io/csv`, `graph-io/graphml`의 sync·suspend export, 회귀 테스트, README, 설계·계획 문서
 - 최종 판정: **PASS / WATCH**
@@ -38,7 +39,8 @@ hardening 범위로 분리한다. 이 review는 PR 생성·merge·issue close를
 ## 독립 review disposition
 
 최초 exact-head review는 replay input lifecycle과 cleanup exception masking을 P1로
-판정했다. 다음 변경으로 두 결함을 닫았다.
+판정했다. 다음 변경으로 두 결함을 닫았고, 구현 HEAD `db578e6d`에서 재검토한
+독립 architecture review는 **PASS / CLEAR**로 확인했다.
 
 1. `GraphIoRecordSpool`이 replay `DataInputStream`을 등록하고 `close()`에서 모든
    active input을 독립적으로 닫는다. sequence가 `yield`에서 abandon되어도 spool
@@ -48,6 +50,10 @@ hardening 범위로 분리한다. 이 review는 PR 생성·merge·issue close를
    suppressed가 된다.
 3. core abandoned replay, CSV/GraphML sync·suspend failing sink 회귀를
    `io.bluetape4k.assertions.assertFailsWith`로 고정했다.
+
+재검토에서는 P0/P1=0, P2=4, P3=1을 확인했다. cleanup 자체가 실패하는 환경을
+주입해 `suppressed` 배열을 직접 검증하는 seam은 [#558](https://github.com/bluetape4k/bluetape4k-graph/issues/558)에
+포함했다.
 
 ## 검증 증거
 
