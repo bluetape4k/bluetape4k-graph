@@ -19,7 +19,7 @@
      `NonCancellable`로 정렬한다.
 4. **문서·정적 검증**
    - core/CSV/GraphML README 영어·한국어와 public KDoc에 heap/disk bound,
-     snapshot 시점, output ownership, failure/cancellation 계약을 기록한다.
+     기준 데이터 시점, output ownership, failure/cancellation 계약을 기록한다.
    - `git diff --check`, forbidden assertion scan, detekt, compile을 실행한다.
 5. **7-Tier review와 후속 이슈**
    - exact HEAD에서 architecture/code review를 독립 수행한다.

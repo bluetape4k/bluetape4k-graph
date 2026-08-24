@@ -1,4 +1,4 @@
-# #539 graph-io CSV/GraphML export bounded snapshot 설계
+# #539 graph-io CSV/GraphML export bounded 기준 데이터 설계
 
 ## 문제와 범위
 
@@ -17,13 +17,13 @@ property-key pre-scan과 payload write에서 backend를 두 번 조회한다. �
 ### 1. backend transaction 안에서 두 pass 실행
 
 `GraphTransactionalOperations`/`GraphSuspendTransactionalOperations`가 있는
-backend에서는 snapshot을 얻을 수 있지만, 모든 exporter 호출자가 해당 capability를
+backend에서는 transaction 기준 데이터를 얻을 수 있지만, 모든 exporter 호출자가 해당 capability를
 구현한다는 보장이 없다. capability가 없는 backend의 기존 export를 실패시키거나
 best-effort로 되돌리면 계약이 분기된다.
 
 ### 2. header key만 저장하고 payload를 두 번째 live pass로 재조회
 
-heap 사용량은 줄지만 GraphML의 동일 snapshot을 보장하지 못한다. #471의 bounded
+heap 사용량은 줄지만 GraphML의 동일 기준 데이터를 보장하지 못한다. #471의 bounded
 reader 조회를 유지하면서도 #539 acceptance를 충족하지 못하므로 채택하지 않는다.
 
 ### 3. 공통 immutable disk spool (채택)
@@ -36,7 +36,7 @@ header를 key 집합에서 만들고 같은 spool을 다시 읽어 payload를 �
 
 chunk-aware backend가 실제로 bounded chunk를 제공한다는 전제에서 이 방식의
 exporter-side 메모리 경계는 `O(exportChunkSize + distinctPropertyKeys)`이고, header와
-payload는 staging 완료 시점의 동일 immutable snapshot이다. 호환성 list/Flow fallback은
+payload는 staging 완료 시점의 동일한 불변 기준 데이터다. 호환성 list/Flow fallback은
 exporter에 전달되기 전에 라벨 전체를 materialize할 수 있으므로 backend capability를
 별도로 확인해야 한다. source 조회 실패나 cancellation이 발생하면 sink를 열기 전에
 spool을 정리하므로 부분 output을 만들지 않는다.
@@ -70,7 +70,7 @@ spool을 정리하므로 부분 output을 만들지 않는다.
 1. vertex/edge chunk를 한 번만 spool에 append하고 key 집합을 고정한다.
 2. `StaxGraphMlWriter`의 existing sequence/session API에 spool sequence와 key
    집합을 전달한다.
-3. header와 node/edge payload가 같은 spool snapshot을 사용하므로 backend의
+3. header와 node/edge payload가 같은 spool 기준 데이터를 사용하므로 backend의
    두 번째 live traversal이 없다.
 4. suspend 경로는 output/session/replay를 `Dispatchers.IO`에서 실행하고,
    `NonCancellable` cleanup에서 spool과 output ownership을 정리한다.
@@ -93,8 +93,8 @@ spool을 정리하므로 부분 output을 만들지 않는다.
 ## 수용 기준과 DoD
 
 - CSV sync/suspend가 전체 record `List`를 만들지 않고 chunk→spool→replay를 사용한다.
-- GraphML sync/suspend가 backend를 한 번만 읽고 header/payload가 같은 immutable
-  snapshot에서 생성된다.
+- GraphML sync/suspend가 backend를 한 번만 읽고 header/payload가 같은 불변 기준
+  데이터에서 생성된다.
 - empty graph, multi-label, property union, cancellation, abandoned replay input,
   caller-owned sink close와 source/write failure 회귀가 sync/suspend 모두에서 통과한다.
 - cross-format round-trip, graph-io-core spool test, detekt, Kotlin compile과
