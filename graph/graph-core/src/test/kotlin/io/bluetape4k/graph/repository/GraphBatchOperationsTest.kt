@@ -2,6 +2,8 @@ package io.bluetape4k.graph.repository
 
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeFalse
+import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.GraphEdge
@@ -98,6 +100,21 @@ class GraphBatchOperationsTest {
 
         chunks.map { it.size } shouldBeEqualTo listOf(2, 1)
         chunks.flatten().map { it.id.value } shouldBeEqualTo listOf("e1", "e2", "e3")
+    }
+
+    @Test
+    fun `default chunk fallback advertises API chunking without bounded execution`() {
+        val repo = ListingVertexRepository(emptyList())
+        val capabilities = GraphCapabilities.from(repo)
+
+        capabilities.supports(GraphCapability.CHUNKED_READ).shouldBeTrue()
+        capabilities.supports(GraphCapability.CHUNKED_EXPORT).shouldBeTrue()
+        capabilities.supports(GraphCapability.BOUNDED_CHUNKED_READ).shouldBeFalse()
+        capabilities.supports(GraphCapability.BOUNDED_CHUNKED_EXPORT).shouldBeFalse()
+        capabilities.constraints(GraphCapability.CHUNKED_READ)
+            .contains("api-chunking-only").shouldBeTrue()
+        capabilities.constraints(GraphCapability.CHUNKED_EXPORT)
+            .contains("api-chunking-only").shouldBeTrue()
     }
 
     @Test

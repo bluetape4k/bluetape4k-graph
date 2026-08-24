@@ -57,6 +57,18 @@ abstract class AbstractGraphCapabilityConformanceTest {
                 capabilities.constraints(capability).size shouldBeEqualTo 0
             }
         }
+
+        val bounded = GraphCapability.BOUNDED_CHUNKED_READ in expectedCapabilities
+        capabilities.supports(GraphCapability.BOUNDED_CHUNKED_READ).shouldBeEqualTo(bounded)
+        capabilities.supports(GraphCapability.BOUNDED_CHUNKED_EXPORT).shouldBeEqualTo(bounded)
+        capabilities.constraints(GraphCapability.CHUNKED_READ).contains("api-chunking-only").shouldBeTrue()
+        capabilities.constraints(GraphCapability.CHUNKED_EXPORT).contains("api-chunking-only").shouldBeTrue()
+        if (bounded) {
+            capabilities.constraints(GraphCapability.BOUNDED_CHUNKED_READ)
+                .contains("native-traversal-bounded").shouldBeTrue()
+            capabilities.constraints(GraphCapability.BOUNDED_CHUNKED_EXPORT)
+                .contains("native-traversal-bounded").shouldBeTrue()
+        }
     }
 
     @Test
@@ -129,13 +141,20 @@ abstract class AbstractGraphCapabilityConformanceTest {
     }
 
     /** backend별로 공유하는 capability 집합을 생성한다. */
-    protected fun backendCapabilities(transactional: Boolean): Set<GraphCapability> = buildSet {
+    protected fun backendCapabilities(
+        transactional: Boolean,
+        boundedChunked: Boolean = false,
+    ): Set<GraphCapability> = buildSet {
         add(GraphCapability.MERGE)
         add(GraphCapability.SCHEMA)
         if (transactional) add(GraphCapability.TRANSACTION)
         add(GraphCapability.BATCH_INSERT)
         add(GraphCapability.CHUNKED_READ)
         add(GraphCapability.CHUNKED_EXPORT)
+        if (boundedChunked) {
+            add(GraphCapability.BOUNDED_CHUNKED_READ)
+            add(GraphCapability.BOUNDED_CHUNKED_EXPORT)
+        }
         add(GraphCapability.WEIGHTED_PATH)
         add(GraphCapability.GRAPH_ALGORITHM)
     }

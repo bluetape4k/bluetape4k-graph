@@ -108,12 +108,14 @@ interface GraphVertexRepository {
     fun findVerticesByLabel(label: String, filter: Map<String, Any?> = emptyMap()): List<GraphVertex>
 
     /**
-     * Finds vertices by label and property filter as bounded chunks.
+     * Finds vertices by label and property filter as API chunks.
      *
      * ## Contract
      *
-     * - The default implementation splits the [findVerticesByLabel] result into chunks for compatibility.
-     * - Backends that must avoid whole-label materialization during large exports should override this method.
+     * - The default implementation splits the [findVerticesByLabel] result into chunks for compatibility;
+     *   this does not promise bounded source execution.
+     * - Backends that avoid whole-label materialization during large exports should override this method and
+     *   advertise [GraphCapability.BOUNDED_CHUNKED_READ] and [GraphCapability.BOUNDED_CHUNKED_EXPORT].
      * - [chunkSize] must be positive.
      *
      * ```kotlin

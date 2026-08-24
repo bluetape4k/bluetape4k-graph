@@ -25,6 +25,7 @@ import io.bluetape4k.graph.repository.GraphAlgorithmRepository
 import io.bluetape4k.graph.repository.GraphBatchValidation
 import io.bluetape4k.graph.repository.GraphEdgeRepository
 import io.bluetape4k.graph.repository.DEFAULT_GRAPH_EXPORT_CHUNK_SIZE
+import io.bluetape4k.graph.repository.GraphBoundedChunkOperations
 import io.bluetape4k.graph.repository.GraphMergeOperations
 import io.bluetape4k.graph.repository.GraphLabelDiscovery
 import io.bluetape4k.graph.repository.GraphMergeValidation
@@ -81,7 +82,8 @@ class TinkerGraphOperations :
     GraphTransactionalOperations,
     GraphSchemaManagementOperations,
     GraphMergeOperations,
-    GraphLabelDiscovery {
+    GraphLabelDiscovery,
+    GraphBoundedChunkOperations {
 
     companion object : KLogging() {
         private const val DEFAULT_GRAPH_NAME = "default"

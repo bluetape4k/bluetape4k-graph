@@ -13,7 +13,9 @@ package io.bluetape4k.graph.repository
  * 노출하지 않는다. 이 optional contract는 thread affinity, callback 경계,
  * bounded read semantics가 확정될 때까지 synchronous/suspend API 또는
  * graph-io Virtual Thread adapter를 사용해야 하며, capability flag만으로
- * asynchronous method가 있다고 추측해서는 안 된다.
+ * asynchronous method가 있다고 추측해서는 안 된다. `BOUNDED_CHUNKED_*`도
+ * delegate source 실행 보장을 그대로 투영할 뿐 Virtual Thread async method를
+ * 추가하지 않는다.
  *
  * delegate의 소유권은 호출자에게 있다. 따라서 [close]는 delegate를 조기
  * 종료하지 않으며, delegate의 close 책임도 호출자에게 남는다.

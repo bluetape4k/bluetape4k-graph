@@ -60,10 +60,13 @@ if (capabilities.supports(GraphCapability.MERGE)) {
 delegate 매핑을 보존하기 위해 `GraphCapabilitiesOperations`를 구현해야 한다.
 
 CORE-2 conformance slice는 `MERGE`, `SCHEMA`, `TRANSACTION`, `BATCH_INSERT`,
-`CHUNKED_READ`, `CHUNKED_EXPORT`, `WEIGHTED_PATH`, `GRAPH_ALGORITHM`,
-`NATIVE_ALGORITHM` 플래그를 공통 계약으로 검증한다. 지원하지 않는 optional
-연산은 조용히 무시하지 않고 `UnsupportedOperationException`으로 명시적으로
-실패해야 한다.
+`CHUNKED_READ`, `CHUNKED_EXPORT`, `BOUNDED_CHUNKED_READ`,
+`BOUNDED_CHUNKED_EXPORT`, `WEIGHTED_PATH`, `GRAPH_ALGORITHM`,
+`NATIVE_ALGORITHM` 플래그를 공통 계약으로 검증한다. `CHUNKED_*`는 API 결과를
+chunk로 나누는 계약일 뿐이다. backend source가 전체 결과를 먼저 materialize하지
+않는다는 근거가 있을 때만 `BOUNDED_CHUNKED_*`를 광고할 수 있다. 지원하지 않는
+optional 연산은 조용히 무시하지 않고 `UnsupportedOperationException`으로
+명시적으로 실패해야 한다.
 
 ### Cross-backend capability conformance
 

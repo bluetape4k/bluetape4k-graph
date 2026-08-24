@@ -32,9 +32,9 @@ Files:
 - Modify: `GraphCapabilitiesTest.kt`, `GraphBatchOperationsTest.kt`
 - Modify: `AbstractGraphCapabilityConformanceTest.kt`
 
-- [ ] Step 1: `BOUNDED_CHUNKED_READ`와 `BOUNDED_CHUNKED_EXPORT`가 별도 enum으로 존재하고, 기존 `CHUNKED_*`에는 `api-chunking-only`, bounded capability에는 `native-traversal-bounded` 제약이 필요하다는 실패 테스트를 작성한다.
-- [ ] Step 2: marker 없는 기본 repository/decorator가 기존 `CHUNKED_*`만 계산하고 bounded flag를 계산하지 않는 RED를 확인한다. 예외 경계는 `bluetape4k-assertions.assertFailsWith`를 유지한다.
-- [ ] Step 3: conformance fixture에 `boundedChunked` 기대값을 추가하고, 기대 backend만 bounded 두 capability를 요구하도록 RED를 확인한다.
+- [x] Step 1: `BOUNDED_CHUNKED_READ`와 `BOUNDED_CHUNKED_EXPORT`가 별도 enum으로 존재하고, 기존 `CHUNKED_*`에는 `api-chunking-only`, bounded capability에는 `native-traversal-bounded` 제약이 필요하다는 실패 테스트를 작성한다.
+- [x] Step 2: marker 없는 기본 repository/decorator가 기존 `CHUNKED_*`만 계산하고 bounded flag를 계산하지 않는 RED를 확인한다. 예외 경계는 `bluetape4k-assertions.assertFailsWith`를 유지한다.
+- [x] Step 3: conformance fixture에 `boundedChunked` 기대값을 추가하고, 기대 backend만 bounded 두 capability를 요구하도록 RED를 확인한다.
 
 검증 명령:
 
@@ -52,10 +52,10 @@ Files:
 
 - Modify/Create: `GraphCapabilities.kt`와 같은 package의 bounded marker source
 
-- [ ] Step 1: `GraphCapability`에 새 bounded 두 값을 추가하고 기존 enum/API version을 제거하지 않는다.
-- [ ] Step 2: `GraphBoundedChunkOperations`의 한국어 KDoc에 “소스 결과 전체를 먼저 materialize하지 않는 구현자의 명시적 계약”을 기록한다.
-- [ ] Step 3: `GraphCapabilities.from`이 repository interface에는 API capability만, bounded marker에는 bounded capability와 native constraint만 추가하도록 구현한다. 기본 chunk fallback은 동작과 반환 형식을 바꾸지 않는다.
-- [ ] Step 4: `CHUNKED_EXPORT` KDoc의 bounded 표현을 API chunk 의미로 고친다.
+- [x] Step 1: `GraphCapability`에 새 bounded 두 값을 추가하고 기존 enum/API version을 제거하지 않는다.
+- [x] Step 2: `GraphBoundedChunkOperations`의 한국어 KDoc에 “소스 결과 전체를 먼저 materialize하지 않는 구현자의 명시적 계약”을 기록한다.
+- [x] Step 3: `GraphCapabilities.from`이 repository interface에는 API capability만, bounded marker에는 bounded capability와 native constraint만 추가하도록 구현한다. 기본 chunk fallback은 동작과 반환 형식을 바꾸지 않는다.
+- [x] Step 4: `CHUNKED_EXPORT` KDoc의 bounded 표현을 API chunk 의미로 고친다.
 
 검증 명령:
 
@@ -72,9 +72,9 @@ Files:
 - Modify: `TinkerGraphOperations.kt`, `TinkerGraphSuspendOperations.kt`
 - Modify: TinkerGraph capability/conformance/chunk tests as required
 
-- [ ] Step 1: 기존 traversal iterator 기반 sync/suspend chunk 경로와 chunk 크기·순서 테스트를 먼저 보존한다.
-- [ ] Step 2: 두 구현에 marker를 적용하고 virtual-thread adapter가 delegate capability를 그대로 투영하는지 테스트한다.
-- [ ] Step 3: TinkerGraph만 bounded 두 capability를 보고하는 GREEN을 확인한다. AGE/Neo4j/Memgraph/FalkorDB sync 구현에는 marker를 추가하지 않는다.
+- [x] Step 1: 기존 traversal iterator 기반 sync/suspend chunk 경로와 chunk 크기·순서 테스트를 먼저 보존한다.
+- [x] Step 2: 두 구현에 marker를 적용하고 virtual-thread adapter가 delegate capability를 그대로 투영하는지 테스트한다.
+- [x] Step 3: TinkerGraph만 bounded 두 capability를 보고하는 GREEN을 확인한다. AGE/Neo4j/Memgraph/FalkorDB sync 구현에는 marker를 추가하지 않는다.
 
 검증 명령:
 
@@ -91,10 +91,10 @@ Files:
 - Modify: 공용 conformance fixture 및 AGE/Neo4j/Memgraph/FalkorDB/TinkerGraph의 expected capability setup
 - Inspect/Modify: graph-io CSV/GraphML consumer KDoc이 API chunk를 bounded로 오해하지 않는 범위
 
-- [ ] Step 1: 모든 backend가 기존 chunk 결과 크기·순서 계약을 유지하는지 fixture assertion을 실행한다.
-- [ ] Step 2: 네 container backend는 `CHUNKED_*`와 `api-chunking-only`만 보고하고 bounded capability를 보고하지 않는지 확인한다.
-- [ ] Step 3: TinkerGraph는 bounded capability와 `native-traversal-bounded`를 확인하고, default list fallback은 bounded가 아님을 core test로 고정한다.
-- [ ] Step 4: graph-io exporter 호출 경로는 유지하되, capability를 확인하지 않은 호출자에게 heap bound를 암시하는 KDoc을 추가하지 않는다.
+- [x] Step 1: 모든 backend가 기존 chunk 결과 크기·순서 계약을 유지하는지 fixture assertion을 실행한다.
+- [x] Step 2: 네 container backend는 `CHUNKED_*`와 `api-chunking-only`만 보고하고 bounded capability를 보고하지 않는지 확인한다.
+- [x] Step 3: TinkerGraph는 bounded capability와 `native-traversal-bounded`를 확인하고, default list fallback은 bounded가 아님을 core test로 고정한다.
+- [x] Step 4: graph-io exporter 호출 경로는 유지하되, capability를 확인하지 않은 호출자에게 heap bound를 암시하는 KDoc을 추가하지 않는다.
 
 검증은 Testcontainers가 필요한 backend를 동시에 실행하지 않고 AGE → Neo4j → Memgraph → FalkorDB 순서로 수행한다. 실패 시 이미지, lifecycle, 재시도 여부를 별도 기록하며 skipped를 성공으로 취급하지 않는다.
 
@@ -108,10 +108,10 @@ Files:
 - Modify: `graph/graph-core/README.md`, `README.ko.md`
 - Modify: `graph-io/graphml/README.md`, `README.ko.md`
 
-- [ ] Step 1: `CHUNKED_*`는 API chunking일 뿐이라고 명시한다.
-- [ ] Step 2: `BOUNDED_CHUNKED_READ`/`BOUNDED_CHUNKED_EXPORT`를 확인해야 source heap bound를 요구할 수 있다고 설명한다.
-- [ ] Step 3: 현재 TinkerGraph만 bounded reference path로, AGE/Neo4j/Memgraph/FalkorDB sync는 호환 list fallback으로 명시한다.
-- [ ] Step 4: GraphML의 “never materializes complete list” 단정을 capability 조건부 문장으로 교체하고 영어/한국어 locale 의미를 대조한다.
+- [x] Step 1: `CHUNKED_*`는 API chunking일 뿐이라고 명시한다.
+- [x] Step 2: `BOUNDED_CHUNKED_READ`/`BOUNDED_CHUNKED_EXPORT`를 확인해야 source heap bound를 요구할 수 있다고 설명한다.
+- [x] Step 3: 현재 TinkerGraph만 bounded reference path로, AGE/Neo4j/Memgraph/FalkorDB sync는 호환 list fallback으로 명시한다.
+- [x] Step 4: GraphML의 “never materializes complete list” 단정을 capability 조건부 문장으로 교체하고 영어/한국어 locale 의미를 대조한다.
 
 문서에는 지원하지 않는 backend를 지원한다고 쓰지 않으며, `git diff --check`와 한국어 용어 audit를 통과시킨다.
 
@@ -119,9 +119,9 @@ Files:
 
 복잡도: 높음. 선행: Task 1–5.
 
-- [ ] Step 1: affected graph-core/graph-tinkerpop tests와 compile을 실행한다.
-- [ ] Step 2: graph-core 및 TinkerPop detekt, ABI 관련 compile/static 검사를 실행한다.
-- [ ] Step 3: `git diff --check`와 변경 경로/문서 grep을 실행한다.
+- [x] Step 1: affected graph-core/graph-tinkerpop tests와 compile을 실행한다.
+- [x] Step 2: graph-core 및 TinkerPop detekt, ABI 관련 compile/static 검사를 실행한다.
+- [x] Step 3: `git diff --check`와 변경 경로/문서 grep을 실행한다.
 - [ ] Step 4: 독립 architecture/code-reviewer에게 exact HEAD를 전달해 7-Tier P0/P1/P2, ABI, capability matrix, assertions, docs, regression risk를 source-read-only로 재검토시킨다.
 - [ ] Step 5: P0/P1 발견 시 수정 후 같은 exact HEAD 기준으로 재검토하고, P2는 후속 이슈 후보로 기록한다.
 

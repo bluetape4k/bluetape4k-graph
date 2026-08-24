@@ -81,11 +81,11 @@ interface GraphSuspendEdgeRepository {
     fun findEdgesByLabel(label: String, filter: Map<String, Any?> = emptyMap()): Flow<GraphEdge>
 
     /**
-     * Finds edges by label and property filter as a Flow of bounded chunks.
+     * Finds edges by label and property filter as a Flow of API chunks.
      *
-     * The default implementation groups the record Flow from [findEdgesByLabel].
-     * Backends with driver cursors or paging APIs can override this method so the
-     * backend query itself runs chunk-by-chunk.
+     * The default implementation groups the record Flow from [findEdgesByLabel] and
+     * does not promise bounded source execution. Backends with driver cursors or paging
+     * APIs can override this method and advertise the bounded chunk capabilities.
      *
      * ```kotlin
      * ops.findEdgesByLabelChunked("KNOWS", chunkSize = 500)

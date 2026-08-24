@@ -232,7 +232,12 @@ chunk-aware repository methods. `Jackson3NdJsonBulkExporter` and
 `SuspendJackson3NdJsonBulkExporter` consume `findVerticesByLabelChunked` and
 `findEdgesByLabelChunked`; backends without a cursor implementation keep the
 compatible list/Flow fallback, while TinkerGraph provides the reference chunked
-path.
+path. `CHUNKED_READ` and `CHUNKED_EXPORT` describe only the API result shape;
+they do not prove that the backend source is bounded. Callers that require a
+bounded source read must check `BOUNDED_CHUNKED_READ` and
+`BOUNDED_CHUNKED_EXPORT`. TinkerGraph is the current bounded reference path;
+AGE, Neo4j, Memgraph, and FalkorDB synchronous paths retain the compatible
+list fallback and do not advertise the bounded capabilities.
 
 | Module | Format | Docs |
 |--------|--------|------|

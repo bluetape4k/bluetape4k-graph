@@ -24,11 +24,17 @@ enum class GraphCapability {
     /** 여러 vertex/edge를 한 번에 생성하는 batch API를 제공한다. */
     BATCH_INSERT,
 
-    /** vertex/edge를 chunk 단위로 조회하는 API를 제공한다. */
+    /** vertex/edge를 chunk 단위로 조회하는 API를 제공한다 (source bounded 보장은 별도 capability). */
     CHUNKED_READ,
 
-    /** bounded chunk 단위로 graph 데이터를 내보내는 API를 제공한다. */
+    /** chunk 단위로 graph 데이터를 내보내는 API를 제공한다 (source bounded 보장은 별도 capability). */
     CHUNKED_EXPORT,
+
+    /** 전체 결과를 먼저 materialize하지 않는 bounded vertex/edge 조회를 제공한다. */
+    BOUNDED_CHUNKED_READ,
+
+    /** 전체 결과를 먼저 materialize하지 않는 bounded graph export를 제공한다. */
+    BOUNDED_CHUNKED_EXPORT,
 
     /** 가중치 옵션을 받는 portable path API를 제공한다. */
     WEIGHTED_PATH,
@@ -98,6 +104,10 @@ data class GraphCapabilities(
                         add(GraphCapability.BATCH_INSERT)
                         add(GraphCapability.CHUNKED_EXPORT)
                         add(GraphCapability.CHUNKED_READ)
+                        if (operation is GraphBoundedChunkOperations) {
+                            add(GraphCapability.BOUNDED_CHUNKED_READ)
+                            add(GraphCapability.BOUNDED_CHUNKED_EXPORT)
+                        }
                     }
                 }
                 when (operation) {
@@ -129,8 +139,10 @@ data class GraphCapabilities(
             GraphCapability.SCHEMA -> setOf("backend-schema-manager")
             GraphCapability.TRANSACTION -> setOf("backend-transaction-scope")
             GraphCapability.BATCH_INSERT -> setOf("ordered-batch-result")
-            GraphCapability.CHUNKED_READ -> setOf("positive-chunk-size")
-            GraphCapability.CHUNKED_EXPORT -> setOf("positive-chunk-size")
+            GraphCapability.CHUNKED_READ -> setOf("positive-chunk-size", "api-chunking-only")
+            GraphCapability.CHUNKED_EXPORT -> setOf("positive-chunk-size", "api-chunking-only")
+            GraphCapability.BOUNDED_CHUNKED_READ -> setOf("positive-chunk-size", "native-traversal-bounded")
+            GraphCapability.BOUNDED_CHUNKED_EXPORT -> setOf("positive-chunk-size", "native-traversal-bounded")
             GraphCapability.WEIGHTED_PATH -> setOf("weight-property-or-unit-weight")
             GraphCapability.GRAPH_ALGORITHM -> setOf("portable-jvm-semantics")
             GraphCapability.NATIVE_ALGORITHM -> setOf("provider-declared")
@@ -163,6 +175,14 @@ interface GraphVirtualThreadCapabilitiesOperations {
 
 /** backend-native algorithm provider가 자신이 지원하는 capability를 표시하는 SPI다. */
 interface GraphNativeAlgorithmOperations
+
+/**
+ * source 조회가 전체 label 결과를 먼저 materialize하지 않고 chunk 경계를 지키는
+ * backend 구현을 표시하는 marker다.
+ *
+ * `CHUNKED_*` API만 제공하는 기본 repository 구현에는 이 marker를 추가하지 않는다.
+ */
+interface GraphBoundedChunkOperations
 
 /** 동기 graph facade의 capability를 조회한다. */
 fun GraphOperations.capabilities(): GraphCapabilities =

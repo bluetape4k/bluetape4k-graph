@@ -96,9 +96,12 @@ interpreted as a silent fallback guarantee. Decorators that use Kotlin
 delegate mapping.
 
 The CORE-2 conformance slice covers `MERGE`, `SCHEMA`, `TRANSACTION`,
-`BATCH_INSERT`, `CHUNKED_READ`, `CHUNKED_EXPORT`, `WEIGHTED_PATH`,
-`GRAPH_ALGORITHM`, and `NATIVE_ALGORITHM`. Unsupported optional operations must
-remain explicit `UnsupportedOperationException` failures.
+`BATCH_INSERT`, `CHUNKED_READ`, `CHUNKED_EXPORT`, `BOUNDED_CHUNKED_READ`,
+`BOUNDED_CHUNKED_EXPORT`, `WEIGHTED_PATH`, `GRAPH_ALGORITHM`, and
+`NATIVE_ALGORITHM`. `CHUNKED_*` is an API chunking contract only. A backend may
+advertise `BOUNDED_CHUNKED_*` only when its source traversal does not
+materialize the complete result before producing chunks. Unsupported optional
+operations must remain explicit `UnsupportedOperationException` failures.
 
 ### Cross-backend capability conformance
 
