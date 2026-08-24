@@ -3,6 +3,7 @@ package io.bluetape4k.graph.age
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.model.Direction
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.NeighborOptions
@@ -81,6 +82,19 @@ class AgeGraphOperationsTest {
     fun `그래프를 삭제하면 존재 여부가 false 반환`() = runSuspendIO {
         ops.dropGraph(graphName)
         ops.graphExists(graphName).shouldBeFalse()
+    }
+
+    @Test
+    @Order(13)
+    fun `sync graph name과 vertex label은 안전한 식별자만 허용한다`() = runSuspendIO {
+        val unsafe = "invalid-label; DROP TABLE users; --"
+
+        assertFailsWith<GraphQueryException> {
+            ops.createGraph(unsafe)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            ops.createVertex(unsafe)
+        }
     }
 
     @Test
