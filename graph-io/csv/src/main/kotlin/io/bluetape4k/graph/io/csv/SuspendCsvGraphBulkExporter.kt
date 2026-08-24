@@ -82,7 +82,7 @@ class SuspendCsvGraphBulkExporter : GraphSuspendBulkExporter<CsvGraphExportSink>
         )
     }
 
-    @Suppress("CyclomaticComplexMethod", "LongMethod")
+    @Suppress("CyclomaticComplexMethod", "LongMethod", "TooGenericExceptionCaught")
     suspend fun exportGraphSuspending(
         sink: CsvGraphExportSink,
         operations: GraphSuspendOperations,
@@ -98,6 +98,7 @@ class SuspendCsvGraphBulkExporter : GraphSuspendBulkExporter<CsvGraphExportSink>
         val (vertexLabels, edgeLabels) = options.resolveLabels(operations)
 
         val spool = GraphIoRecordSpool()
+        var primaryFailure: Throwable? = null
         try {
             // 입력은 caller context에서 읽고, blocking spool 쓰기만 IO dispatcher에서 수행한다.
             for (label in vertexLabels) {
@@ -177,8 +178,13 @@ class SuspendCsvGraphBulkExporter : GraphSuspendBulkExporter<CsvGraphExportSink>
                         "status=$status, elapsed=${watch.elapsed()}"
                 }
             }
+        } catch (failure: Throwable) {
+            primaryFailure = failure
+            throw failure
         } finally {
-            withContext(NonCancellable + Dispatchers.IO) { spool.close() }
+            withContext(NonCancellable + Dispatchers.IO) {
+                spool.closeSuppressing(primaryFailure)
+            }
         }
     }
 

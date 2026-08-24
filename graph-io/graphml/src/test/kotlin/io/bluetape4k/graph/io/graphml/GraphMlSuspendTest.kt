@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.io.graphml
 
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphIoStatus
@@ -20,9 +21,12 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import java.io.IOException
+import java.io.OutputStream
 import java.nio.file.Path
 import java.util.Collections
 import java.util.concurrent.Executors
+import javax.xml.stream.XMLStreamException
 
 class GraphMlSuspendTest {
 
@@ -82,6 +86,25 @@ class GraphMlSuspendTest {
         report.verticesWritten shouldBeEqualTo 5L
         report.edgesWritten shouldBeEqualTo 2L
         requestedChunkSizes shouldBeEqualTo listOf(2, 2)
+    }
+
+    @Test
+    fun `suspend export preserves the primary sink failure while closing spool`() = runSuspendIO {
+        val source = TinkerGraphSuspendOperations().also {
+            it.createVertex("Person", mapOf("name" to "Alice"))
+        }
+
+        val thrown = assertFailsWith<XMLStreamException> {
+            SuspendGraphMlBulkExporter().exportGraphSuspending(
+                GraphExportSink.OutputStreamSink(FailingOutputStream("graphml-suspend-sink-failure")),
+                source,
+                GraphExportOptions(vertexLabels = setOf("Person")),
+            )
+        }
+
+        generateSequence<Throwable>(thrown) { it.cause }
+            .any { it.message?.contains("graphml-suspend-sink-failure") == true }
+            .shouldBeTrue()
     }
 
     @Test
@@ -208,5 +231,13 @@ class GraphMlSuspendTest {
             requestedChunkSizes += chunkSize
             return delegate.findEdgesByLabelChunked(label, filter, chunkSize)
         }
+    }
+
+    private class FailingOutputStream(
+        private val message: String,
+    ) : OutputStream() {
+        override fun write(b: Int): Unit = throw IOException(message)
+
+        override fun write(b: ByteArray, off: Int, len: Int): Unit = throw IOException(message)
     }
 }

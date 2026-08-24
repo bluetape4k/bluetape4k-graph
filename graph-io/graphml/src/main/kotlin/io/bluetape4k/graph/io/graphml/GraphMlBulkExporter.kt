@@ -82,6 +82,7 @@ class GraphMlBulkExporter : GraphBulkExporter<GraphExportSink> {
         )
     }
 
+    @Suppress("TooGenericExceptionCaught")
     fun exportGraph(
         sink: GraphExportSink,
         operations: GraphOperations,
@@ -93,6 +94,7 @@ class GraphMlBulkExporter : GraphBulkExporter<GraphExportSink> {
         val failures = mutableListOf<GraphIoFailure>()
         val (vertexLabels, edgeLabels) = options.resolveLabels(operations)
         val spool = GraphIoRecordSpool()
+        var primaryFailure: Throwable? = null
 
         try {
             for (label in vertexLabels) {
@@ -135,8 +137,11 @@ class GraphMlBulkExporter : GraphBulkExporter<GraphExportSink> {
                         "edges=${writeResult.edgesWritten}, elapsed=${watch.elapsed()}"
                 }
             }
+        } catch (failure: Throwable) {
+            primaryFailure = failure
+            throw failure
         } finally {
-            spool.close()
+            spool.closeSuppressing(primaryFailure)
         }
     }
 

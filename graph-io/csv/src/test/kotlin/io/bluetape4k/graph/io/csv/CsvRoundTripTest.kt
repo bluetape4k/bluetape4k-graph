@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.io.csv
 
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.graph.io.options.DuplicateVertexPolicy
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.options.GraphImportOptions
@@ -21,6 +22,8 @@ import io.bluetape4k.assertions.shouldContain
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.io.OutputStream
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -124,6 +127,26 @@ class CsvRoundTripTest {
         edges.write('x'.code)
     }
 
+    @Test
+    fun `sync export preserves the primary sink failure while closing spool`() {
+        val source = TinkerGraphOperations().also {
+            it.createVertex("Person", mapOf("name" to "Alice"))
+        }
+
+        val thrown = assertFailsWith<IOException> {
+            CsvGraphBulkExporter().exportGraph(
+                CsvGraphExportSink(
+                    GraphExportSink.OutputStreamSink(FailingOutputStream("csv-sink-failure")),
+                    GraphExportSink.OutputStreamSink(ByteArrayOutputStream()),
+                ),
+                source,
+                GraphExportOptions(vertexLabels = setOf("Person")),
+            )
+        }
+
+        thrown.message shouldBeEqualTo "csv-sink-failure"
+    }
+
     private class ChunkOnlyGraphOperations(
         private val delegate: GraphOperations,
         private val requests: MutableList<String>,
@@ -161,5 +184,13 @@ class CsvRoundTripTest {
             closed = true
             super.close()
         }
+    }
+
+    private class FailingOutputStream(
+        private val message: String,
+    ) : OutputStream() {
+        override fun write(b: Int): Unit = throw IOException(message)
+
+        override fun write(b: ByteArray, off: Int, len: Int): Unit = throw IOException(message)
     }
 }

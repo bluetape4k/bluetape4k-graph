@@ -5,13 +5,12 @@
 1. **기준선과 계약 고정**
    - live #539, 종료된 #469/#471, CSV/GraphML source·writer·repository chunk
      API·README·테스트를 읽고 Type A/refactor 범위와 immutable spool 결정을 기록한다.
-   - CSV 47개와 GraphML 44개 baseline test를 receipt에 남긴다.
+   - CSV/GraphML baseline과 현재 full test count를 receipt에 남긴다.
 2. **RED 회귀 테스트**
    - `GraphIoRecordSpool` record/key round-trip과 temporary file cleanup을 먼저 고정한다.
-   - CSV/GraphML sync/suspend fake operations가 첫 chunk snapshot 이후 mutation을
-     반환해도 output이 첫 snapshot만 포함하는지 검증한다.
+   - CSV/GraphML sync/suspend fake operations와 bounded chunk 호출을 고정한다.
    - chunk size, empty graph, multi-label/property union, output ownership,
-     cancellation·failure close를 추가한다.
+     abandoned replay, cancellation·failure close를 추가한다.
 3. **최소 구현**
    - graph-io-core에 dependency 없는 bounded binary spool을 추가한다.
    - CSV sync/suspend를 full list에서 chunk append/replay로 전환한다.
@@ -24,7 +23,8 @@
    - `git diff --check`, forbidden assertion scan, detekt, compile을 실행한다.
 5. **7-Tier review와 후속 이슈**
    - exact HEAD에서 architecture/code review를 독립 수행한다.
-   - P0/P1은 수정하고 남은 P2/P3는 Korean GitHub issue로 생성한다.
+   - P0/P1은 수정하고 남은 P2/P3는 Korean GitHub issue로 생성한다. backend mutation
+     TCK와 fallback boundedness는 후속 이슈로 분리한다.
 6. **receipt·커밋·DoD**
    - required checks, fresh module tests, review/lesson, changed paths를 receipt에
      붙이고 Lore trailers 커밋을 만든다.

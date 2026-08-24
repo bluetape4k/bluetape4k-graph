@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.io.csv
 
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphIoStatus
@@ -27,6 +28,8 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
+import java.io.IOException
+import java.io.OutputStream
 import java.util.Collections
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
@@ -154,6 +157,26 @@ class CsvSuspendRoundTripTest {
         cancelled.get().shouldBeTrue()
     }
 
+    @Test
+    fun `suspend export preserves the primary sink failure while closing spool`() = runSuspendIO {
+        val source = TinkerGraphSuspendOperations().also {
+            it.createVertex("Person", mapOf("name" to "Alice"))
+        }
+
+        val thrown = assertFailsWith<IOException> {
+            SuspendCsvGraphBulkExporter().exportGraphSuspending(
+                CsvGraphExportSink(
+                    GraphExportSink.OutputStreamSink(FailingOutputStream("csv-suspend-sink-failure")),
+                    GraphExportSink.OutputStreamSink(java.io.ByteArrayOutputStream()),
+                ),
+                source,
+                GraphExportOptions(vertexLabels = setOf("Person")),
+            )
+        }
+
+        thrown.message shouldBeEqualTo "csv-suspend-sink-failure"
+    }
+
     private class ThreadRecordingSuspendOperations(
         private val delegate: GraphSuspendOperations,
     ): GraphSuspendOperations by delegate {
@@ -256,5 +279,13 @@ class CsvSuspendRoundTripTest {
                 cancelled.set(true)
             }
         }
+    }
+
+    private class FailingOutputStream(
+        private val message: String,
+    ) : OutputStream() {
+        override fun write(b: Int): Unit = throw IOException(message)
+
+        override fun write(b: ByteArray, off: Int, len: Int): Unit = throw IOException(message)
     }
 }

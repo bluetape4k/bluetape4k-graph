@@ -95,7 +95,8 @@ fallback을 사용하고, cursor-aware 백엔드는 전체 label materialization
 구현합니다. 백엔드 chunk를 임시 디스크 레코드에 한 번 저장한 뒤 헤더 탐색과
 출력 쓰기에서 replay하므로 source snapshot이 흔들리지 않습니다. spool은 writer와
 동일한 문자열 속성 계약으로 값을 정규화하며 정상 완료·실패·취소 경로에서 임시
-파일을 정리합니다.
+파일을 정리합니다. active replay stream도 cleanup에서 닫으며, exporter는 원래
+source·sink·취소 예외를 유지하고 cleanup 실패를 suppressed exception으로 연결합니다.
 
 빈 라벨 집합은 `GraphLabelDiscovery`로 전체 라벨을 조회하라는 의미입니다.
 해당 capability가 없는 백엔드는 명시적 라벨을 받아야 하며, exporter는 0건을

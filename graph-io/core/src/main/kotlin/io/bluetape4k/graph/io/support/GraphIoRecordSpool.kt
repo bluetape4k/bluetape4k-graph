@@ -12,6 +12,7 @@ import java.io.EOFException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.Collections
 
 /**
  * 대용량 graph-io export를 위한 디스크 기반 레코드 spool이다.
@@ -31,6 +32,7 @@ class GraphIoRecordSpool : AutoCloseable {
     private val edgeKeys = linkedSetOf<String>()
     private var finished = false
     private var closed = false
+    private val replayInputs = Collections.synchronizedSet(mutableSetOf<DataInputStream>())
 
     /** 입력 정점에서 관찰된 속성 키를 발견 순서대로 반환한다. */
     val vertexPropertyKeys: Set<String>
@@ -112,11 +114,26 @@ class GraphIoRecordSpool : AutoCloseable {
         if (closed) return
         closed = true
         var failure: Throwable? = null
+        failure = closeAndCapture(failure) { closeReplayInputs() }
         failure = closeAndCapture(failure) { vertexOutput = closeOutput(vertexOutput) }
         failure = closeAndCapture(failure) { edgeOutput = closeOutput(edgeOutput) }
         failure = closeAndCapture(failure) { Files.deleteIfExists(vertexFile) }
         failure = closeAndCapture(failure) { Files.deleteIfExists(edgeFile) }
         if (failure != null) throw failure
+    }
+
+    /** 원래 작업 실패를 보존하면서 spool 정리 실패를 suppressed exception으로 연결한다. */
+    fun closeSuppressing(primaryFailure: Throwable?) {
+        try {
+            close()
+        } catch (closeFailure: Throwable) {
+            if (primaryFailure == null) {
+                throw closeFailure
+            }
+            if (closeFailure !== primaryFailure) {
+                primaryFailure.addSuppressed(closeFailure)
+            }
+        }
     }
 
     private fun ensureWritable() {
@@ -156,19 +173,50 @@ class GraphIoRecordSpool : AutoCloseable {
         file: Path,
         readPayload: DataInputStream.() -> T,
     ): Sequence<T> = sequence {
-        DataInputStream(BufferedInputStream(Files.newInputStream(file))).use { input ->
-            while (true) {
-                val length = try {
-                    input.readInt()
-                } catch (_: EOFException) {
-                    break
-                }
-                require(length in 0..MAX_RECORD_BYTES) { "Invalid graph-io spool record length: $length" }
-                val bytes = ByteArray(length)
-                input.readFully(bytes)
-                yield(readPayload(DataInputStream(ByteArrayInputStream(bytes))))
-            }
+        val input = DataInputStream(BufferedInputStream(Files.newInputStream(file)))
+        if (!registerReplayInput(input)) {
+            input.close()
+            error("GraphIoRecordSpool is already closed")
         }
+        try {
+            input.use {
+                while (true) {
+                    val length = try {
+                        it.readInt()
+                    } catch (_: EOFException) {
+                        break
+                    }
+                    require(length in 0..MAX_RECORD_BYTES) {
+                        "Invalid graph-io spool record length: $length"
+                    }
+                    val bytes = ByteArray(length)
+                    it.readFully(bytes)
+                    yield(readPayload(DataInputStream(ByteArrayInputStream(bytes))))
+                }
+            }
+        } finally {
+            replayInputs.remove(input)
+        }
+    }
+
+    private fun registerReplayInput(input: DataInputStream): Boolean = synchronized(replayInputs) {
+        if (closed) {
+            false
+        } else {
+            replayInputs += input
+            true
+        }
+    }
+
+    private fun closeReplayInputs() {
+        val inputs = synchronized(replayInputs) {
+            replayInputs.toList().also { replayInputs.clear() }
+        }
+        var failure: Throwable? = null
+        inputs.forEach { input ->
+            failure = closeAndCapture(failure) { input.close() }
+        }
+        if (failure != null) throw failure
     }
 
     private fun openOutput(file: Path): DataOutputStream =

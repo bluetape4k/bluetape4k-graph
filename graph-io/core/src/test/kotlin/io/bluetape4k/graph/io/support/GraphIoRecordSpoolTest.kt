@@ -5,6 +5,7 @@ import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.graph.io.model.GraphIoEdgeRecord
 import io.bluetape4k.graph.io.model.GraphIoVertexRecord
 import org.junit.jupiter.api.Test
+import java.io.IOException
 
 class GraphIoRecordSpoolTest {
 
@@ -59,5 +60,23 @@ class GraphIoRecordSpoolTest {
         spool.close()
         assertFailsWith<IllegalStateException> { spool.vertexRecords().toList() }
         spool.close()
+    }
+
+    @Test
+    fun `closing spool closes an abandoned replay input`() {
+        val spool = GraphIoRecordSpool()
+        spool.appendVertices(
+            listOf(
+                GraphIoVertexRecord("v-1", "Person"),
+                GraphIoVertexRecord("v-2", "Person"),
+            ),
+        )
+        spool.finish()
+
+        val iterator = spool.vertexRecords().iterator()
+        iterator.next().externalId shouldBeEqualTo "v-1"
+        spool.close()
+
+        assertFailsWith<IOException> { iterator.next() }
     }
 }

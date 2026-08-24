@@ -95,6 +95,7 @@ class SuspendGraphMlBulkExporter : GraphSuspendBulkExporter<GraphExportSink> {
         val failures = mutableListOf<GraphIoFailure>()
         val (vertexLabels, edgeLabels) = options.resolveLabels(operations)
         val spool = GraphIoRecordSpool()
+        var primaryFailure: Throwable? = null
 
         try {
             for (label in vertexLabels) {
@@ -141,8 +142,13 @@ class SuspendGraphMlBulkExporter : GraphSuspendBulkExporter<GraphExportSink> {
                         "edges=${writeResult.edgesWritten}"
                 }
             }
+        } catch (failure: Throwable) {
+            primaryFailure = failure
+            throw failure
         } finally {
-            withContext(NonCancellable + Dispatchers.IO) { spool.close() }
+            withContext(NonCancellable + Dispatchers.IO) {
+                spool.closeSuppressing(primaryFailure)
+            }
         }
     }
 

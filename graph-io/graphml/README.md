@@ -218,7 +218,7 @@ The `StaxGraphMlReader` and `StaxGraphMlWriter` classes use cached factories to 
 
 The StAX streaming approach processes XML incrementally, making it suitable for large GraphML files that would not fit in memory with a DOM-based parser.
 
-GraphML export uses `GraphExportOptions.exportChunkSize` for both vertex and edge repository reads. Because GraphML requires global `<key>` definitions before the first node or edge, the exporter stages each bounded chunk once in the shared `GraphIoRecordSpool`, then replays the immutable disk snapshot for key discovery and XML writing. It never materializes the complete vertex or edge record lists and does not issue a live second backend pass. Temporary spool files are cleaned up on success, failure, and suspend cancellation.
+GraphML export uses `GraphExportOptions.exportChunkSize` for both vertex and edge repository reads. When the backend overrides the chunk-aware repository API (or provides a cursor-backed implementation), the exporter stages each bounded chunk once in the shared `GraphIoRecordSpool`, then replays the immutable disk snapshot for key discovery and XML writing. It avoids exporter-side whole-list materialization and a live second backend pass; the compatibility list/Flow fallback may still materialize a label before the exporter receives it. Active replay streams are closed during spool cleanup, and cleanup failures are suppressed behind the original source, sink, or cancellation failure. Temporary spool files are cleaned up on success, failure, and suspend cancellation.
 
 ## Error Handling
 

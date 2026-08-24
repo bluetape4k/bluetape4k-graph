@@ -80,7 +80,7 @@ class CsvGraphBulkExporter : GraphBulkExporter<CsvGraphExportSink> {
         )
     }
 
-    @Suppress("CyclomaticComplexMethod", "LongMethod")
+    @Suppress("CyclomaticComplexMethod", "LongMethod", "TooGenericExceptionCaught")
     fun exportGraph(
         sink: CsvGraphExportSink,
         operations: GraphOperations,
@@ -96,6 +96,7 @@ class CsvGraphBulkExporter : GraphBulkExporter<CsvGraphExportSink> {
         val (vertexLabels, edgeLabels) = options.resolveLabels(operations)
 
         val spool = GraphIoRecordSpool()
+        var primaryFailure: Throwable? = null
         try {
             // 입력은 한 번만 읽어 immutable disk snapshot으로 고정한다.
             for (label in vertexLabels) {
@@ -169,8 +170,11 @@ class CsvGraphBulkExporter : GraphBulkExporter<CsvGraphExportSink> {
                         "status=$status, elapsed=${watch.elapsed()}"
                 }
             }
+        } catch (failure: Throwable) {
+            primaryFailure = failure
+            throw failure
         } finally {
-            spool.close()
+            spool.closeSuppressing(primaryFailure)
         }
     }
 

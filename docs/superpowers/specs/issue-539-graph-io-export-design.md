@@ -34,10 +34,12 @@ graph-io-core에 `GraphIoRecordSpool`을 추가한다. exporter는 label별
 property key 집합만 작은 heap metadata로 유지한다. staging이 끝난 뒤 CSV/GraphML
 header를 key 집합에서 만들고 같은 spool을 다시 읽어 payload를 작성한다.
 
-이 방식의 메모리 경계는 `O(exportChunkSize + distinctPropertyKeys)`이고, header와
-payload는 staging 완료 시점의 동일 immutable snapshot이다. source 조회 실패나
-cancellation이 발생하면 sink를 열기 전에 spool을 정리하므로 부분 output을 만들지
-않는다.
+chunk-aware backend가 실제로 bounded chunk를 제공한다는 전제에서 이 방식의
+exporter-side 메모리 경계는 `O(exportChunkSize + distinctPropertyKeys)`이고, header와
+payload는 staging 완료 시점의 동일 immutable snapshot이다. 호환성 list/Flow fallback은
+exporter에 전달되기 전에 라벨 전체를 materialize할 수 있으므로 backend capability를
+별도로 확인해야 한다. source 조회 실패나 cancellation이 발생하면 sink를 열기 전에
+spool을 정리하므로 부분 output을 만들지 않는다.
 
 ## 컴포넌트 계약
 
@@ -46,10 +48,13 @@ cancellation이 발생하면 sink를 열기 전에 spool을 정리하므로 부�
 - `appendVertices`/`appendEdges`는 chunk 단위로만 호출하고, 호출 시 property 값을
   문자열 또는 null로 고정한다.
 - `finish()`가 write stream을 닫은 뒤 `vertexRecords()`/`edgeRecords()` sequence를
-  재생한다. replay는 한 번에 한 record만 heap에 둔다.
+  재생한다. replay는 한 번에 한 record만 heap에 두며, spool은 active replay input을
+  추적해 조기 종료·writer 실패·취소 때도 닫는다.
 - `vertexPropertyKeys`/`edgePropertyKeys`는 immutable copy로 노출한다.
 - `close()`는 writer, replay stream, temporary file을 독립적으로 정리하며 실패를
-  숨기지 않는다. exporter는 정상·예외·cancellation 모두에서 close를 호출한다.
+  숨기지 않는다. exporter는 정상·예외·cancellation 모두에서 close를 호출하고,
+  `closeSuppressing(primaryFailure)`로 원래 실패를 보존하면서 cleanup 실패를
+  suppressed exception으로 연결한다.
 - helper는 exporter 내부 공용 기반 계약이며 새로운 dependency를 추가하지 않는다.
 
 ### CSV sync/suspend
@@ -78,9 +83,10 @@ cancellation이 발생하면 sink를 열기 전에 spool을 정리하므로 부�
   Korean KDoc와 direct unit test를 제공한다. 기존 caller는 변경 없이 동작한다.
 - property 값은 기존 CSV/GraphML writer와 동일하게 `toString()`으로 표현한다.
   임의 객체의 Java serialization을 요구하지 않는다.
-- temporary file 생성·write·read·delete 실패는 원래 예외를 유지하고 조용히
-  삼키지 않는다. caller-owned `OutputStreamSink(closeOutput = false)`는 기존
-  ownership 계약대로 닫지 않는다.
+- temporary file 생성·write·read·delete 실패는 정상 경로에서 숨기지 않는다. 작업 중
+  source·sink·cancellation이 먼저 실패하면 그 원래 예외를 유지하고 cleanup 실패를
+  suppressed exception으로 연결한다. caller-owned `OutputStreamSink(closeOutput = false)`는
+  기존 ownership 계약대로 닫지 않는다.
 - virtual-thread adapter는 exporter public entry를 그대로 위임하므로 별도 변경하지
   않는다.
 
@@ -89,8 +95,8 @@ cancellation이 발생하면 sink를 열기 전에 spool을 정리하므로 부�
 - CSV sync/suspend가 전체 record `List`를 만들지 않고 chunk→spool→replay를 사용한다.
 - GraphML sync/suspend가 backend를 한 번만 읽고 header/payload가 같은 immutable
   snapshot에서 생성된다.
-- empty graph, multi-label, property union, cancellation, sink close와 source/write
-  failure 회귀가 sync/suspend 모두에서 통과한다.
+- empty graph, multi-label, property union, cancellation, abandoned replay input,
+  caller-owned sink close와 source/write failure 회귀가 sync/suspend 모두에서 통과한다.
 - cross-format round-trip, graph-io-core spool test, detekt, Kotlin compile과
   `git diff --check`가 통과한다.
 - 신규 예외 검증은 `io.bluetape4k.assertions.assertFailsWith`를 사용한다.
