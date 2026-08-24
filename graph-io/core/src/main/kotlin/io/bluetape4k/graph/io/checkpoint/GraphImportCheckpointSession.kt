@@ -195,15 +195,18 @@ class GraphImportCheckpointSession(
         failureBoundary = listOfNotNull(failureBoundary, message).joinToString(":").ifBlank { null },
     )
 
-    /** 예외·취소가 importer 경계를 빠져나가도 claim을 보존하고 해제한다. */
+    /**
+     * 예외·취소가 importer 경계를 빠져나가도 claim을 보존하고 해제한다.
+     * cleanup 저장소 오류는 원래 importer 예외를 가리지 않도록 best-effort로 처리한다.
+     */
     fun close() {
         val checkpointStore = store ?: return
         if (!claimAcquired) return
         val checkpointKey = requireNotNull(key)
         try {
-            val current = checkpointStore.load(checkpointKey)
-            if (current?.attemptId == attemptId) {
-                runCatching {
+            runCatching {
+                val current = checkpointStore.load(checkpointKey)
+                if (current?.attemptId == attemptId) {
                     checkpointStore.save(
                         checkpointKey,
                         checkpoint(
@@ -218,7 +221,7 @@ class GraphImportCheckpointSession(
                 }
             }
         } finally {
-            checkpointStore.release(checkpointKey, attemptId)
+            runCatching { checkpointStore.release(checkpointKey, attemptId) }
             claimAcquired = false
         }
     }

@@ -128,20 +128,18 @@ class GraphImportCheckpointConflictException(
 
 private object GraphImportCheckpointClaims {
     private data class ClaimKey(val store: GraphImportCheckpointStore, val key: String)
-    private data class Claim(val attemptId: String, val owner: Thread)
+    private data class Claim(val attemptId: String)
 
     private val claims = ConcurrentHashMap<ClaimKey, Claim>()
 
     @Suppress("ReturnCount")
     fun claim(store: GraphImportCheckpointStore, key: String, attemptId: String): Boolean {
         val claimKey = ClaimKey(store, key)
-        val next = Claim(attemptId, Thread.currentThread())
+        val next = Claim(attemptId)
         while (true) {
             val current = claims[claimKey]
             if (current == null) {
                 if (claims.putIfAbsent(claimKey, next) == null) return true
-            } else if (!current.owner.isAlive) {
-                if (claims.replace(claimKey, current, next)) return true
             } else {
                 return false
             }
