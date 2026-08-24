@@ -122,24 +122,24 @@ Files:
 - [x] Step 1: affected graph-core/graph-tinkerpop tests와 compile을 실행한다.
 - [x] Step 2: graph-core 및 TinkerPop detekt, ABI 관련 compile/static 검사를 실행한다.
 - [x] Step 3: `git diff --check`와 변경 경로/문서 grep을 실행한다.
-- [ ] Step 4: 독립 architecture/code-reviewer에게 exact HEAD를 전달해 7-Tier P0/P1/P2, ABI, capability matrix, assertions, docs, regression risk를 source-read-only로 재검토시킨다.
-- [ ] Step 5: P0/P1 발견 시 수정 후 같은 exact HEAD 기준으로 재검토하고, P2는 후속 이슈 후보로 기록한다.
+- [x] Step 4: 독립 architecture/code-reviewer에게 exact HEAD를 전달해 7-Tier P0/P1/P2, ABI, capability matrix, assertions, docs, regression risk를 source-read-only로 재검토시킨다.
+- [x] Step 5: P0/P1 발견 시 수정 후 같은 exact HEAD 기준으로 재검토하고, P2는 후속 이슈 후보로 기록한다. 두 reviewer가 `d1fd2eac`에서 PASS(P0/P1=0)를 판정했고, close/lazy lifecycle은 #548, enum exhaustive consumer는 #549로 분리했다.
 
 ## Task 7: lesson, receipt, Lore commit
 
 복잡도: 중간. 선행: Task 6.
 
 - [x] Step 1: `docs/lessons/2026-08-25-issue-536-bounded-chunk-capability.md`에 문제, 선택한 분리 계약, backend 제한, 검증 명령과 잔여 P2를 한국어로 기록한다.
-- [ ] Step 2: workflow helper로 각 topology check의 입력·결과·component evidence·completion을 기록한다. helper 외 `.bluetape` 상태를 직접 수정하지 않는다.
-- [ ] Step 3: implementation과 lesson을 Lore trailers가 있는 commit으로 기록하고 `git status`, `git diff --check`, exact HEAD를 다시 읽는다.
+- [x] Step 2: workflow helper로 각 topology check의 입력·결과·component evidence·completion을 기록한다. helper 외 `.bluetape` 상태를 직접 수정하지 않는다. Receipt `20260824T180636Z-5f75447e`가 sequence 23에서 completed다.
+- [x] Step 3: implementation과 lesson을 Lore trailers가 있는 commit으로 기록하고 `git status`, `git diff --check`, exact HEAD를 다시 읽는다. 구현 commit은 `d1fd2eac`다.
 
 롤백은 implementation/lesson commit을 각각 revert하여 기존 enum·fallback·문서 기준선으로 돌아가는 경로를 사용한다. PR 생성, push, merge, issue close는 이 계획의 범위가 아니다.
 
 ## DoD
 
-- [ ] API chunking과 bounded 실행이 별도 capability/constraint로 기계적으로 구분된다.
-- [ ] TinkerGraph sync/suspend/virtual-thread projection만 bounded를 광고하고 네 container sync backend는 명시적으로 광고하지 않는다.
-- [ ] core 기본 fallback, backend conformance, chunk 크기·순서가 `bluetape4k-assertions` 기반 테스트로 검증된다.
-- [ ] root/graph-core/GraphML 영어·한국어 문서가 heap bound의 조건과 제한을 정확히 설명한다.
-- [ ] compile, detekt, targeted/full affected tests, 순차 container conformance, diff-check, 독립 7-Tier review가 fresh evidence로 기록된다.
-- [ ] open issue #536과 feature branch 상태를 보존하고 PR/merge 없이 종료한다.
+- [x] API chunking과 bounded 실행이 별도 capability/constraint로 기계적으로 구분된다.
+- [x] TinkerGraph sync/suspend/virtual-thread projection만 bounded를 광고하고 네 container sync backend는 명시적으로 광고하지 않는다.
+- [x] core 기본 fallback, backend conformance, chunk 크기·순서가 `bluetape4k-assertions` 기반 테스트로 검증된다.
+- [x] root/graph-core/GraphML 영어·한국어 문서가 heap bound의 조건과 제한을 정확히 설명한다.
+- [x] compile, detekt, targeted/full affected tests, 순차 container conformance, diff-check, 독립 7-Tier review가 fresh evidence로 기록된다.
+- [x] open issue #536과 feature branch 상태를 보존하고 PR/merge 없이 종료한다.

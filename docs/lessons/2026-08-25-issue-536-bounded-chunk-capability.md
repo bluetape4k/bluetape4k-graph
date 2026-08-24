@@ -35,6 +35,21 @@ fallback 동작과 결과 순서를 보존했다.
 - TinkerGraph의 bounded helper는 첫 chunk만 요청할 때 source를 정확히 chunk 크기만
   소비하는 회귀 테스트를 추가했고, 전체 소비 시 traversal close callback도 확인했다.
 
+## 독립 7-Tier review와 후속 이슈
+
+두 source-read-only reviewer가 exact HEAD `d1fd2eac`를 재검토해 P0/P1 없이
+`PASS/WATCH`를 판정했다. WATCH 항목은 현재 이슈를 차단하지 않는 다음 세 가지다.
+
+- public chunk API 자체의 lazy source 소비를 직접 고정하는 회귀 테스트가 필요하다.
+- `Sequence.take(1)`과 suspend Flow cancellation에서 cursor/traversal close를 보장할
+  close-aware lifecycle 계약이 필요하다.
+- 새 enum capability를 exhaustive `when`으로 소비하는 외부 코드의 source/binary
+  호환성 정책과 release guidance가 필요하다.
+
+첫 두 항목은 [이슈 #548](https://github.com/bluetape4k/bluetape4k-graph/issues/548),
+enum compatibility 항목은 [이슈 #549](https://github.com/bluetape4k/bluetape4k-graph/issues/549)로
+분리해 후속 처리한다.
+
 ## 놓친 점
 
 첫 container 실행에서는 context-mode subprocess가 Colima 환경변수를 전달하지 않아
@@ -50,5 +65,6 @@ bounded marker를 새 backend에 추가할 때는 해당 chunk override가 실�
 확인하고 heap bound를 가정하는 exporter 호출자는 `BOUNDED_CHUNKED_*` capability를
 먼저 확인해야 한다. backend별 paging/cursor 구현은 결과 순서와 cursor lifecycle을
 별도 이슈로 검증한 뒤 추가한다. Kotlin `Sequence.take`의 조기 종료는 producer의
-`finally`를 재개하지 않으므로, 동기 cursor의 조기 close 보장은 별도 close-aware API
-이슈로 다룬다.
+`finally`를 재개하지 않으므로, 동기 cursor의 조기 close 보장은 #548의 close-aware
+API 이슈로 다룬다. `GraphCapability`를 exhaustive `when`으로 소비하는 코드는 #549의
+compatibility policy가 정해질 때까지 unknown/`else` 분기를 유지해야 한다.
