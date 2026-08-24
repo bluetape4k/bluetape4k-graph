@@ -529,7 +529,9 @@ connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"${'$'}user\", p
 
 ### 트랜잭션 격리
 
-동기 API의 각 연산은 독립적인 Exposed 트랜잭션 안에서 실행된다. 코루틴 API는 직접 AGE 쿼리에 Exposed suspended transaction을 사용하고, 일부 blocking fallback 알고리즘만 IO dispatcher로 위임한다.
+동기 API의 각 연산은 독립적인 Exposed 트랜잭션 안에서 실행된다. 코루틴 API의 직접 AGE 조회는 `Dispatchers.IO`에서 JDBC cursor를 열고 channel backpressure를 적용해 행 단위로 `Flow`를 반환한다. 전체 결과를 먼저 `MutableList`에 저장하지 않으며, 수집이 끝나거나 취소되면 `ResultSet`과 transaction을 닫는다.
+
+`suspendTransaction { ... }`은 소유권 경계가 다르다. transaction scope에서 반환한 `Flow`는 transaction이 commit된 뒤에도 읽을 수 있도록 commit 전에 materialize한다. lazy하고 bounded한 수집이 필요하면 `AgeGraphSuspendOperations`의 직접 조회 메서드를 사용한다.
 
 - 각 메서드는 독립적인 트랜잭션
 - 명시적 `transaction { ... }` API로 여러 연산을 하나의 graph transaction으로 묶을 수 있음

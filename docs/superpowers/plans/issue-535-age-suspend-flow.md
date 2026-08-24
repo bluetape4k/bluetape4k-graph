@@ -18,7 +18,7 @@
 
 3. **최소 구현**
    - `newSuspendedTransaction` 기본 context를 `Dispatchers.IO`로 고정한다.
-   - Exposed `exec` callback과 `channelFlow` 사이에 `sendBlocking` 기반
+   - Exposed `exec` callback과 `channelFlow` 사이에 `trySendBlocking` 기반
      `streamQuery`를 추가한다.
    - 여섯 직접 조회를 helper로 전환하고 알고리즘 delegate 경계는 변경하지
      않는다.

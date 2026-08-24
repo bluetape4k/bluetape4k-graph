@@ -19,6 +19,8 @@ import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.KLogging
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withTimeout
 import io.bluetape4k.assertions.shouldBeEqualTo
@@ -261,6 +263,38 @@ class AgeGraphSuspendOperationsTest {
 
         val names = people.toList().map { it.properties["name"] }
         names.any { it == "Alice" }.shouldBeTrue()
+    }
+
+    @Test
+    @Order(32_1)
+    fun `직접 조회 Flow를 조기 취소해도 JDBC 자원을 반환한다`() = runSuspendIO {
+        ops.suspendTransaction {
+            repeat(128) { index ->
+                createVertex("Person", mapOf("name" to "Person-$index"))
+            }
+        }
+
+        withTimeout(5_000) {
+            repeat(8) {
+                ops.findVerticesByLabel("Person").first()
+            }
+        }
+
+        ops.countVertices("Person") shouldBeEqualTo 128L
+    }
+
+    @Test
+    @Order(32_2)
+    fun `직접 조회 Flow의 collector 예외가 전파되어도 JDBC 자원을 반환한다`() = runSuspendIO {
+        ops.createVertex("Person", mapOf("name" to "Alice"))
+
+        assertFailsWith<IllegalStateException> {
+            ops.findVerticesByLabel("Person").collect {
+                error("collector failure")
+            }
+        }
+
+        ops.countVertices("Person") shouldBeEqualTo 1L
     }
 
     // ───────────────────────── 간선(Edge) CRUD ─────────────────────────

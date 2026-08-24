@@ -33,7 +33,7 @@ Flow의 lazy 계약과 구분해 문서화한다.
 2. 직접 조회를 공통 `streamQuery` helper로 모은다. helper는
    `channelFlow` 안에서 `newSuspendedTransaction(Dispatchers.IO)`를 시작하고,
    Exposed `exec` callback의 `ResultSet`을 행 단위로 읽는다.
-3. callback은 suspend 함수가 아니므로 `kotlinx.coroutines.channels.sendBlocking`
+3. callback은 suspend 함수가 아니므로 `kotlinx.coroutines.channels.trySendBlocking`
    을 사용해 channel backpressure를 적용한다. 이 bridge는 IO worker에서만
    실행하고, `channelFlow`의 collector 취소·실패가 callback 예외로 전파되게
    한다.
@@ -43,7 +43,7 @@ Flow의 lazy 계약과 구분해 문서화한다.
 
 ## 실패와 취소 계약
 
-- collector가 `first()` 또는 `take(1)`로 upstream을 취소하면 `sendBlocking`
+- collector가 `first()` 또는 `take(1)`로 upstream을 취소하면 `trySendBlocking`
   이 종료되고 transaction이 rollback/close 경로를 거친다.
 - mapper 또는 collector가 예외를 던지면 예외를 그대로 전파하고
   `ResultSet`/transaction을 닫는다.
@@ -54,7 +54,7 @@ Flow의 lazy 계약과 구분해 문서화한다.
 ## 호환성과 위험
 
 - public method signature와 반환 타입은 바꾸지 않는다.
-- `sendBlocking`은 IO thread를 잠시 점유하므로 channel capacity와 collector
+- `trySendBlocking`은 IO thread를 잠시 점유하므로 channel capacity와 collector
   처리 속도가 bounded memory를 결정한다. 무제한 producer thread를 추가하지
   않는다.
 - AGE Testcontainers는 기존 singleton launcher와 순차 실행 규칙을 따른다.
