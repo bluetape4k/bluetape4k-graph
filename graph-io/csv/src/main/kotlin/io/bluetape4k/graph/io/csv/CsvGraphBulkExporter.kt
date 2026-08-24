@@ -14,6 +14,7 @@ import io.bluetape4k.graph.io.report.GraphIoProgressListener
 import io.bluetape4k.graph.io.report.GraphIoProgressReporter
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.support.GraphIoPaths
+import io.bluetape4k.graph.io.support.GraphIoRecordSpool
 import io.bluetape4k.graph.io.support.GraphIoStopwatch
 import io.bluetape4k.graph.io.support.resolveLabels
 import io.bluetape4k.graph.repository.GraphOperations
@@ -24,7 +25,7 @@ import io.bluetape4k.logging.debug
  * CSV 동기 벌크 익스포터.
  *
  * 정점 파일과 간선 파일을 별도로 작성한다.
- * 정점 헤더는 전체 레코드를 스캔하여 모든 속성 키의 유니온 헤더를 자동 생성한다.
+ * 입력은 bounded chunk로 디스크 spool에 한 번만 기록하고 헤더와 본문에서 replay한다.
  *
  * ```kotlin
  * val exporter = CsvGraphBulkExporter()
@@ -79,6 +80,7 @@ class CsvGraphBulkExporter : GraphBulkExporter<CsvGraphExportSink> {
         )
     }
 
+    @Suppress("CyclomaticComplexMethod", "LongMethod")
     fun exportGraph(
         sink: CsvGraphExportSink,
         operations: GraphOperations,
@@ -93,67 +95,82 @@ class CsvGraphBulkExporter : GraphBulkExporter<CsvGraphExportSink> {
         var eWritten = 0L
         val (vertexLabels, edgeLabels) = options.resolveLabels(operations)
 
-        // --- 정점 익스포트 ---
-        val allVertices = vertexLabels.flatMap { label ->
-            operations.findVerticesByLabel(label).map { v ->
-                GraphIoVertexRecord(v.id.value, v.label, v.properties)
-            }
-        }
-        val vHeader = codec.unionVertexHeader(allVertices)
-        val prefix = (csvOptions.propertyMode as? CsvPropertyMode.PrefixedColumns)?.prefix ?: ""
-        GraphIoPaths.openWriter(sink.vertices).use { w ->
-            val csv = CsvRecordWriter(w)
-            csv.writeHeaders(vHeader)
-            for (v in allVertices) {
-                val row = buildList<Any?> {
-                    add(v.externalId)
-                    add(v.label)
-                    vHeader.drop(2).forEach { col ->
-                        val key = col.removePrefix(prefix)
-                        add(v.properties[key]?.toString() ?: "")
-                    }
+        val spool = GraphIoRecordSpool()
+        try {
+            // 입력은 한 번만 읽어 immutable disk snapshot으로 고정한다.
+            for (label in vertexLabels) {
+                operations.findVerticesByLabelChunked(label, chunkSize = options.exportChunkSize).forEach { chunk ->
+                    spool.appendVertices(chunk.map { v -> GraphIoVertexRecord(v.id.value, v.label, v.properties) })
                 }
-                csv.writeRow(row)
-                vWritten++
             }
-        }
-
-        // --- 간선 익스포트 ---
-        val allEdges = edgeLabels.flatMap { label ->
-            operations.findEdgesByLabel(label).map { e ->
-                GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties)
-            }
-        }
-        val eHeader = codec.unionEdgeHeader(allEdges)
-        GraphIoPaths.openWriter(sink.edges).use { w ->
-            val csv = CsvRecordWriter(w)
-            csv.writeHeaders(eHeader)
-            for (ed in allEdges) {
-                val row = buildList<Any?> {
-                    add(ed.externalId ?: "")
-                    add(ed.label)
-                    add(ed.fromExternalId)
-                    add(ed.toExternalId)
-                    eHeader.drop(4).forEach { col ->
-                        val key = col.removePrefix(prefix)
-                        add(ed.properties[key]?.toString() ?: "")
-                    }
+            for (label in edgeLabels) {
+                operations.findEdgesByLabelChunked(label, chunkSize = options.exportChunkSize).forEach { chunk ->
+                    spool.appendEdges(
+                        chunk.map { e ->
+                            GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties)
+                        },
+                    )
                 }
-                csv.writeRow(row)
-                eWritten++
             }
-        }
+            spool.finish()
 
-        val status = if (failures.isEmpty()) GraphIoStatus.COMPLETED else GraphIoStatus.PARTIAL
-        return GraphExportReport(
-            status = status,
-            format = GraphIoFormat.CSV,
-            verticesWritten = vWritten,
-            edgesWritten = eWritten,
-            elapsed = watch.elapsed(),
-            failures = failures,
-        ).also {
-            log.debug { "CSV export completed: verticesWritten=$vWritten, edgesWritten=$eWritten, status=$status, elapsed=${watch.elapsed()}" }
+            // --- 정점 익스포트 ---
+            val vHeader = codec.unionVertexHeader(spool.vertexRecords().asIterable())
+            val prefix = (csvOptions.propertyMode as? CsvPropertyMode.PrefixedColumns)?.prefix ?: ""
+            GraphIoPaths.openWriter(sink.vertices).use { w ->
+                val csv = CsvRecordWriter(w)
+                csv.writeHeaders(vHeader)
+                for (v in spool.vertexRecords()) {
+                    val row = buildList<Any?> {
+                        add(v.externalId)
+                        add(v.label)
+                        vHeader.drop(2).forEach { col ->
+                            val key = col.removePrefix(prefix)
+                            add(v.properties[key]?.toString() ?: "")
+                        }
+                    }
+                    csv.writeRow(row)
+                    vWritten++
+                }
+            }
+
+            // --- 간선 익스포트 ---
+            val eHeader = codec.unionEdgeHeader(spool.edgeRecords().asIterable())
+            GraphIoPaths.openWriter(sink.edges).use { w ->
+                val csv = CsvRecordWriter(w)
+                csv.writeHeaders(eHeader)
+                for (ed in spool.edgeRecords()) {
+                    val row = buildList<Any?> {
+                        add(ed.externalId ?: "")
+                        add(ed.label)
+                        add(ed.fromExternalId)
+                        add(ed.toExternalId)
+                        eHeader.drop(4).forEach { col ->
+                            val key = col.removePrefix(prefix)
+                            add(ed.properties[key]?.toString() ?: "")
+                        }
+                    }
+                    csv.writeRow(row)
+                    eWritten++
+                }
+            }
+
+            val status = if (failures.isEmpty()) GraphIoStatus.COMPLETED else GraphIoStatus.PARTIAL
+            return GraphExportReport(
+                status = status,
+                format = GraphIoFormat.CSV,
+                verticesWritten = vWritten,
+                edgesWritten = eWritten,
+                elapsed = watch.elapsed(),
+                failures = failures,
+            ).also {
+                log.debug {
+                    "CSV export completed: verticesWritten=$vWritten, edgesWritten=$eWritten, " +
+                        "status=$status, elapsed=${watch.elapsed()}"
+                }
+            }
+        } finally {
+            spool.close()
         }
     }
 

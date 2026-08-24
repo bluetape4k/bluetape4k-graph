@@ -297,6 +297,14 @@ if (report.failures.isNotEmpty()) {
 - **중간~대규모** (100K–1M 레코드): 가상 스레드 또는 suspend 사용
 - **높은 동시성** 환경: 코루틴 감시자와 함께 suspend 사용
 
+CSV export는 선택한 정점·간선 라벨을 `findVerticesByLabelChunked` /
+`findEdgesByLabelChunked`로 읽습니다. 전체 속성 키의 union header가 필요하므로
+레코드는 공용 `GraphIoRecordSpool`에 한 번 저장한 뒤 헤더 탐색과 row 출력에서
+replay합니다. 메모리 사용량은 backend chunk와 단일 레코드 범위로 제한되며,
+정상 완료·실패·코루틴 취소 시 임시 spool 파일을 삭제합니다. 따라서 동기와
+suspend export 모두 live backend를 두 번째로 읽지 않고 동일한 immutable snapshot을
+관찰합니다.
+
 ## 스트리밍 reader 계약
 
 `CsvGraphRecordFlowReader`는 정점과 간선 레코드를 cold·순차 `Flow`로 방출하며 입력 순서를 유지합니다.

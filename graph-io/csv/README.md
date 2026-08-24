@@ -301,6 +301,15 @@ Choose based on your workload:
 - **Medium to large** (100K–1M records): Use virtual threads or suspend
 - **High-concurrency** environments: Use suspend with coroutine supervisors
 
+CSV export reads each selected vertex and edge label through
+`findVerticesByLabelChunked` / `findEdgesByLabelChunked`. Because the header is
+the union of all property keys, records are written once to the shared
+`GraphIoRecordSpool` and replayed for header discovery and row output. Memory
+usage stays bounded by the backend chunk plus one record; the temporary spool
+is removed on success, failure, and coroutine cancellation. Sync and suspend
+exports therefore observe one immutable input snapshot instead of a live
+second backend pass.
+
 ## Streaming reader contract
 
 `CsvGraphRecordFlowReader` emits vertex and edge records as a cold, sequential `Flow` and preserves

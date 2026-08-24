@@ -10,12 +10,17 @@ import io.bluetape4k.graph.io.report.GraphIoProgressEvent
 import io.bluetape4k.graph.io.report.GraphIoProgressListener
 import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.io.source.GraphImportSource
+import io.bluetape4k.graph.model.GraphEdge
+import io.bluetape4k.graph.model.GraphVertex
+import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeGreaterThan
+import io.bluetape4k.assertions.shouldContain
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import java.io.ByteArrayOutputStream
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -69,5 +74,92 @@ class CsvRoundTripTest {
         report.verticesCreated shouldBeEqualTo 2L
         report.edgesCreated shouldBeEqualTo 1L
         Files.size(vOut) shouldBeGreaterThan 0L
+    }
+
+    @Test
+    fun `sync export uses bounded chunks once per label and unions properties`(@TempDir dir: Path) {
+        val vOut = dir.resolve("bounded-v.csv")
+        val eOut = dir.resolve("bounded-e.csv")
+        val source = TinkerGraphOperations()
+        val person = source.createVertex("Person", mapOf("name" to "Alice"))
+        val company = source.createVertex("Company", mapOf("industry" to "Software"))
+        source.createEdge(person.id, company.id, "WORKS", mapOf("since" to 2024))
+        val requests = mutableListOf<String>()
+
+        val report = CsvGraphBulkExporter().exportGraph(
+            CsvGraphExportSink(GraphExportSink.PathSink(vOut), GraphExportSink.PathSink(eOut)),
+            ChunkOnlyGraphOperations(source, requests),
+            GraphExportOptions(
+                vertexLabels = setOf("Person", "Company"),
+                edgeLabels = setOf("WORKS"),
+                exportChunkSize = 1,
+            ),
+        )
+
+        report.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        report.verticesWritten shouldBeEqualTo 2L
+        report.edgesWritten shouldBeEqualTo 1L
+        requests.sorted() shouldBeEqualTo listOf("Company:1", "Person:1", "WORKS:1")
+        Files.readString(vOut) shouldContain "prop.industry"
+        Files.readString(vOut) shouldContain "prop.name"
+    }
+
+    @Test
+    fun `sync export preserves caller-owned output streams`() {
+        val vertices = TrackingOutputStream()
+        val edges = TrackingOutputStream()
+
+        CsvGraphBulkExporter().exportGraph(
+            CsvGraphExportSink(
+                GraphExportSink.OutputStreamSink(vertices, closeOutput = false),
+                GraphExportSink.OutputStreamSink(edges, closeOutput = false),
+            ),
+            TinkerGraphOperations(),
+            GraphExportOptions(vertexLabels = setOf("Person"), edgeLabels = setOf("KNOWS")),
+        )
+
+        vertices.closed shouldBeEqualTo false
+        edges.closed shouldBeEqualTo false
+        vertices.write('x'.code)
+        edges.write('x'.code)
+    }
+
+    private class ChunkOnlyGraphOperations(
+        private val delegate: GraphOperations,
+        private val requests: MutableList<String>,
+    ) : GraphOperations by delegate {
+
+        override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> =
+            error("full vertex list lookup must not be used by CSV export")
+
+        override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): List<GraphEdge> =
+            error("full edge list lookup must not be used by CSV export")
+
+        override fun findVerticesByLabelChunked(
+            label: String,
+            filter: Map<String, Any?>,
+            chunkSize: Int,
+        ): Sequence<List<GraphVertex>> {
+            requests += "$label:$chunkSize"
+            return delegate.findVerticesByLabelChunked(label, filter, chunkSize)
+        }
+
+        override fun findEdgesByLabelChunked(
+            label: String,
+            filter: Map<String, Any?>,
+            chunkSize: Int,
+        ): Sequence<List<GraphEdge>> {
+            requests += "$label:$chunkSize"
+            return delegate.findEdgesByLabelChunked(label, filter, chunkSize)
+        }
+    }
+
+    private class TrackingOutputStream : ByteArrayOutputStream() {
+        var closed: Boolean = false
+
+        override fun close() {
+            closed = true
+            super.close()
+        }
     }
 }

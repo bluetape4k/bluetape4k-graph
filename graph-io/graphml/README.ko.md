@@ -218,7 +218,7 @@ data class GraphMlExportOptions(
 
 StAX 스트리밍 접근 방식은 XML을 증분적으로 처리하므로 DOM 기반 파서로는 메모리에 맞지 않는 대용량 GraphML 파일에 적합합니다.
 
-GraphML export는 정점과 간선을 조회할 때 `GraphExportOptions.exportChunkSize`를 사용합니다. 첫 번째 node 또는 edge보다 먼저 전역 `<key>` 정의를 써야 하므로 exporter는 pre-scan에서 property key 이름만 보관한 뒤 같은 chunk를 다시 읽어 기록합니다. exporter 자체는 현재 chunk와 key 이름만 보관하지만 source 메모리 bounded 여부는 graph facade가 `BOUNDED_CHUNKED_READ`/`BOUNDED_CHUNKED_EXPORT`를 광고할 때만 보장됩니다. 기본 repository fallback은 전체 list를 만든 뒤 나눌 수 있으므로 heap bound를 보장하지 않습니다. bounded backend에서는 대신 repository pass가 한 번 더 필요합니다.
+GraphML export는 정점과 간선을 조회할 때 `GraphExportOptions.exportChunkSize`를 사용합니다. 첫 번째 node 또는 edge보다 먼저 전역 `<key>` 정의를 써야 하므로 exporter는 각 bounded chunk를 공용 `GraphIoRecordSpool`에 한 번 저장하고, 동일한 immutable disk snapshot을 key 탐색과 XML 쓰기에서 replay합니다. 전체 정점/간선 record list를 materialize하지 않으며 live backend를 두 번째로 조회하지 않습니다. 임시 spool 파일은 정상 완료·실패·suspend 취소 시 정리됩니다.
 
 ## 오류 처리
 

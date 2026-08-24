@@ -91,7 +91,11 @@ from chunk-aware repository methods such as `findVerticesByLabelChunked` and
 `findEdgesByLabelChunked`. Backends that do not override those methods use the
 compatible list/Flow fallback, while cursor-aware backends can avoid
 whole-label materialization. Formats that need global headers, such as CSV, may
-still perform format-specific pre-scans.
+still need a second logical read. CSV and GraphML exporters satisfy that
+contract with `GraphIoRecordSpool`: each backend chunk is staged once into
+temporary disk records, then replayed for header discovery and output writing.
+The spool normalizes property values using the writer string contract and
+deletes its temporary files on normal completion, failure, or cancellation.
 
 An empty label set requests all labels through `GraphLabelDiscovery`. A backend
 without that capability must receive explicit labels; exporters fail clearly

@@ -81,7 +81,7 @@ class GraphMlSuspendTest {
         report.status shouldBeEqualTo GraphIoStatus.COMPLETED
         report.verticesWritten shouldBeEqualTo 5L
         report.edgesWritten shouldBeEqualTo 2L
-        requestedChunkSizes shouldBeEqualTo listOf(2, 2, 2, 2)
+        requestedChunkSizes shouldBeEqualTo listOf(2, 2)
     }
 
     @Test

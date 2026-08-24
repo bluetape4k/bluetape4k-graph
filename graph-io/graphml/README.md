@@ -218,7 +218,7 @@ The `StaxGraphMlReader` and `StaxGraphMlWriter` classes use cached factories to 
 
 The StAX streaming approach processes XML incrementally, making it suitable for large GraphML files that would not fit in memory with a DOM-based parser.
 
-GraphML export uses `GraphExportOptions.exportChunkSize` for both vertex and edge repository reads. Because GraphML requires global `<key>` definitions before the first node or edge, the exporter performs a pre-scan that retains only property-key names, then reads the same chunks again while writing. The exporter itself retains only the current chunk and key names, but source memory is bounded only when the graph facade advertises `BOUNDED_CHUNKED_READ`/`BOUNDED_CHUNKED_EXPORT`; the default repository fallback may materialize a complete list before splitting it. The trade-off for a bounded backend is a second repository pass.
+GraphML export uses `GraphExportOptions.exportChunkSize` for both vertex and edge repository reads. Because GraphML requires global `<key>` definitions before the first node or edge, the exporter stages each bounded chunk once in the shared `GraphIoRecordSpool`, then replays the immutable disk snapshot for key discovery and XML writing. It never materializes the complete vertex or edge record lists and does not issue a live second backend pass. Temporary spool files are cleaned up on success, failure, and suspend cancellation.
 
 ## Error Handling
 

@@ -91,7 +91,11 @@ enum class MissingEndpointPolicy { FAIL, SKIP_EDGE }
 레코드 수를 제어합니다. 이 메서드를 override하지 않은 백엔드는 기존 list/Flow
 fallback을 사용하고, cursor-aware 백엔드는 전체 label materialization을 피할 수
 있습니다. CSV처럼 전역 헤더가 필요한 포맷은 여전히 포맷별 pre-scan을 수행할 수
-있습니다.
+있습니다. CSV와 GraphML exporter는 이 논리적 재읽기를 `GraphIoRecordSpool`로
+구현합니다. 백엔드 chunk를 임시 디스크 레코드에 한 번 저장한 뒤 헤더 탐색과
+출력 쓰기에서 replay하므로 source snapshot이 흔들리지 않습니다. spool은 writer와
+동일한 문자열 속성 계약으로 값을 정규화하며 정상 완료·실패·취소 경로에서 임시
+파일을 정리합니다.
 
 빈 라벨 집합은 `GraphLabelDiscovery`로 전체 라벨을 조회하라는 의미입니다.
 해당 capability가 없는 백엔드는 명시적 라벨을 받아야 하며, exporter는 0건을
