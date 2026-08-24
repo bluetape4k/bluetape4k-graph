@@ -57,9 +57,12 @@ class GraphImportWorkflowTest {
             }
             store.firstSaveEntered.await(5, TimeUnit.SECONDS) shouldBeEqualTo true
 
+            val secondTaskStarted = CountDownLatch(1)
             val second = executor.submit<GraphImportWorkflowReport> {
+                secondTaskStarted.countDown()
                 GraphImportWorkflow(manifest, store).transition(GraphImportWorkflowState.VERTICES_LOADED)
             }
+            secondTaskStarted.await(5, TimeUnit.SECONDS) shouldBeEqualTo true
             store.secondSaveEntered.await(1, TimeUnit.SECONDS) shouldBeEqualTo false
             store.releaseFirstSave.countDown()
 

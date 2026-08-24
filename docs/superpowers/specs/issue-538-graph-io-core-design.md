@@ -22,8 +22,8 @@ workflow 인스턴스가 동시에 실행되면 둘 다 stale 상태를 읽고 �
 
 1. `GraphImportJobStateStore.update(jobId, transform)`를 추가한다. 기본 구현은
    store 인스턴스 monitor에서 `load → transform → save`를 묶어 동일 store를
-   공유하는 workflow 인스턴스 간 원자성을 보장한다. 현재 in-memory store는
-   이 경계를 사용하고, 향후 database/CAS store는 이 메서드를 native
+   공유하는 workflow 인스턴스 간 원자성을 보장한다. `transform`은 side effect가
+   없는 retry-safe 함수여야 하며, 향후 database/CAS store는 이 메서드를 native
    transaction/CAS로 override할 수 있다.
 2. `GraphImportWorkflow.persist`는 `update` 안에서 현재 state와
    `ALLOWED_TRANSITIONS`를 다시 확인하고 새 report를 저장한다. 따라서
@@ -42,8 +42,9 @@ workflow 인스턴스가 동시에 실행되면 둘 다 stale 상태를 읽고 �
 
 - public workflow method와 writer method signature는 바꾸지 않는다.
 - `GraphImportJobStateStore`의 새 default `update`는 기존 구현을 깨지 않으며,
-  동일 store 인스턴스 내부의 JVM 원자성만 제공한다. 분산 프로세스 간 원자성은
-  backend store가 `update`를 CAS/transaction으로 override해야 한다.
+  동일 store 인스턴스 내부의 JVM 원자성만 제공한다. transform은 durable CAS
+  재시도에도 안전해야 하며, 분산 프로세스 간 원자성은 backend store가
+  `update`를 CAS/transaction으로 override해야 한다.
 - transition 오류는 기존 `IllegalArgumentException`과 메시지 형식을
   유지한다. 동시 호출에서 허용되지 않은 두 번째 전이는 실패한다.
 - batchSize는 양수만 허용한다. importer의 `GraphImportOptions` validation과

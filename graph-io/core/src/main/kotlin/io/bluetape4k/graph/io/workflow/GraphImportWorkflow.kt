@@ -83,7 +83,9 @@ interface GraphImportJobStateStore {
 
     /**
      * Atomically loads, transforms, and saves one job report for this store instance.
-     * Durable stores should override this boundary with a native transaction or CAS.
+     * The transform must be pure and retry-safe because a durable CAS implementation
+     * may evaluate it more than once. Durable stores should override this boundary
+     * with a native transaction or CAS.
      */
     fun update(
         jobId: String,
