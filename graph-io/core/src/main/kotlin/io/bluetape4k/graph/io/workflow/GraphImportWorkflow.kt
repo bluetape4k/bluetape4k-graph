@@ -82,10 +82,10 @@ interface GraphImportJobStateStore {
     fun save(report: GraphImportWorkflowReport)
 
     /**
-     * Atomically loads, transforms, and saves one job report for this store instance.
-     * The transform must be pure and retry-safe because a durable CAS implementation
-     * may evaluate it more than once. Durable stores should override this boundary
-     * with a native transaction or CAS.
+     * 이 store 인스턴스에서 하나의 job report를 load·transform·save하는 원자 경계입니다.
+     * durable CAS 구현은 transform을 여러 번 평가할 수 있으므로 transform은 순수하고
+     * 재시도에 안전해야 합니다. durable store는 이 경계를 native transaction 또는 CAS로
+     * override해야 합니다.
      */
     fun update(
         jobId: String,
