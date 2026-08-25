@@ -325,7 +325,7 @@ jobs:
         with:
           name: retry-evidence-ci-test-core
           path: ${{ runner.temp }}/bluetape4k-retry/ci-test-core/
-          if-no-files-found: ignore
+          if-no-files-found: error
           retention-days: 7
 
       - name: Upload coverage report

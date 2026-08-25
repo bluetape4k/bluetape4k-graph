@@ -17,9 +17,9 @@
 |---|---|---|
 | T1 컴파일·구성 | PASS | immutable `bt4k` catalog를 보존한 상태에서 local alias를 제거했고 `./gradlew help --no-daemon --no-configuration-cache --console=plain`이 성공했다. |
 | T2 동작 계약 | PASS | 공통 helper가 first-attempt `success`, retry 후 `success_after_retry`, bounded `failed`를 분리하고 attempt 수와 retry 수를 output/summary에 기록한다. |
-| T3 실패·예외 | PASS | 각 시도 stdout/stderr와 첫 실패 log를 보존하며, 최대 시도 후 마지막 non-zero exit code를 반환한다. retry로 성공해도 첫 실패 evidence를 삭제하지 않는다. |
+| T3 실패·예외 | PASS | 각 시도 stdout/stderr와 첫 실패 log를 보존하며, 최대 시도 후 마지막 non-zero exit code를 반환한다. command 또는 `tee`가 실패하거나 evidence 파일·output을 쓸 수 없으면 helper가 fail-closed exit code `74`를 반환한다. retry로 성공해도 첫 실패 evidence를 삭제하지 않는다. |
 | T4 보안·노출 | PASS/WATCH | 새 로그에는 실행 command와 Gradle output이 남으므로 호출 step은 secret을 인자로 전달하지 않아야 한다. 이번 두 command에는 credential 인자가 없으며, helper가 값을 새로 출력하거나 dependency를 추가하지 않는다. |
-| T5 운영·관찰성 | PASS | `GITHUB_STEP_SUMMARY`, `GITHUB_OUTPUT`, always-upload artifact를 통해 retry-only green을 정상 green과 구분한다. artifact는 `${RUNNER_TEMP}/bluetape4k-retry/<name>/`에 격리한다. |
+| T5 운영·관찰성 | PASS | `GITHUB_STEP_SUMMARY`, `GITHUB_OUTPUT`, always-upload artifact를 통해 retry-only green을 정상 green과 구분한다. artifact는 `${RUNNER_TEMP}/bluetape4k-retry/<name>/`에 격리하고, evidence가 없으면 upload action도 실패한다. |
 | T6 ecosystem·패턴 | PASS | `settings.gradle.kts`가 소유한 immutable `bt4k` catalog와 leaf catalog ownership을 문서화하고, Gradle 기존 명령·workflow contract를 재사용했다. 새 runtime dependency는 없다. |
 | T7 문서·인계 | PASS/WATCH | governance 문서, `CHANGELOG.md`, `WIP.md`, lesson과 이 review를 갱신한다. hosted exact-head CI와 최종 train merge는 마지막 승인 단계로 남긴다. |
 
@@ -27,9 +27,10 @@
 
 - `actionlint .github/workflows/examples.yml .github/workflows/ci.yml` — PASS.
 - `bash -n .github/scripts/run-gradle-retry.sh` — PASS.
-- `python3 .github/scripts/test_run_gradle_retry.py` — 3 tests, PASS.
+- `python3 .github/scripts/test_run_gradle_retry.py` — 5 tests, PASS.
 - helper 수동 fake 검증 — first-attempt success, retry 후 success, bounded
-  failure와 first-failure log 보존을 모두 확인했다.
+  failure, first-failure log 보존, evidence root/`tee` write failure fail-closed를
+  모두 확인했다.
 - `./gradlew help --no-daemon --no-configuration-cache --console=plain` —
   BUILD SUCCESSFUL.
 - `libs.versions.*`의 제거 alias accessor 검색 — 잔존 0건.
@@ -40,7 +41,8 @@
 - [x] local `bluetape4k` alias ownership을 제거·문서화했다.
 - [x] 두 지정 retry step이 첫 실패 log, attempt log, retry count와
   `success_after_retry`를 노출한다.
-- [x] helper의 성공·retry·최종실패 회귀 테스트를 추가하고 통과했다.
+- [x] helper의 성공·retry·최종실패와 evidence write failure 회귀 테스트를
+  추가하고 통과했다.
 - [x] workflow lint와 Gradle catalog resolution을 통과했다.
 - [x] Korean governance/WIP/CHANGELOG와 7-Tier review/lesson을 기록한다.
 - [ ] hosted exact-head CI/review와 최종 train merge — 최종 승인 단계에서

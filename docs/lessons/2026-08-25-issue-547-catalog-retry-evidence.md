@@ -11,7 +11,9 @@ help resolution을 함께 실행한다.
 `examples.yml` build와 `ci.yml` core-test의 bounded retry는 공통 helper로
 실행한다. 모든 시도와 첫 실패를 artifact로 보존하고, 첫 시도 성공과 retry 후
 성공을 `success`/`success_after_retry`로 구분한다. 마지막 retry가 green이어도
-flaky signal을 정상 green으로 축약하지 않는다.
+flaky signal을 정상 green으로 축약하지 않는다. 명령이 성공해도 attempt log,
+summary, output을 저장하지 못하면 증거가 없는 green이므로 helper 자체가
+fail-closed로 종료하고 artifact upload도 missing evidence를 오류로 처리한다.
 
 ## 범위 경계
 
@@ -24,6 +26,8 @@ workflow의 실패 semantics와 review surface가 섞이기 때문이다.
 
 - retry step을 추가하거나 바꿀 때는 `attempt-N.log`, `first-failure.log`,
   `summary.env`, step output, always-upload artifact를 함께 제공한다.
+- command와 evidence writer(`tee`, `cp`, summary/output redirect)의 실패를
+  독립적으로 검사한다. 명령 결과만으로 green을 만들지 않는다.
 - retry로 통과한 hosted run은 DoD에서 `success_after_retry`로 기록하고,
   원인 미분류 상태에서 release/merge gate를 자동으로 열지 않는다.
 - central catalog alias를 삭제·이동할 때는 accessor 검색과 최소 Gradle

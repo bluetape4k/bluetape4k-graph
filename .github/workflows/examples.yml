@@ -131,7 +131,7 @@ jobs:
         with:
           name: retry-evidence-examples
           path: ${{ runner.temp }}/bluetape4k-retry/examples-build/
-          if-no-files-found: ignore
+          if-no-files-found: error
           retention-days: 14
 
   examples-status:

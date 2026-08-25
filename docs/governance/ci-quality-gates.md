@@ -23,9 +23,10 @@
   step은 모든 attempt log와 첫 실패 log를
   `${RUNNER_TEMP}/bluetape4k-retry/<name>/`에 보존하고, retry count와
   `success_after_retry` 상태를 `GITHUB_STEP_SUMMARY`와 step output에 노출한다.
-  retry evidence artifact는 `if: always()`로 업로드한다. 다른 기존 retry
-  step은 이 slice의 범위가 아니며 같은 evidence 계약으로 후속 이슈에서
-  정렬해야 한다.
+  retry evidence artifact는 `if: always()`로 업로드하되 파일이 없으면
+  실패한다. command와 evidence writer가 서로 다른 상태를 만들지 않도록
+  helper는 저장 실패를 fail-closed로 처리한다. 다른 기존 retry step은 이
+  slice의 범위가 아니며 같은 evidence 계약으로 후속 이슈에서 정렬해야 한다.
 
 ## 제외 사항
 

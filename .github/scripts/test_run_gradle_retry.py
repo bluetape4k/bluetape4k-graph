@@ -31,6 +31,54 @@ class RunGradleRetryTest(unittest.TestCase):
             check=False,
         )
 
+    def test_evidence_root_failure_is_nonzero(self) -> None:
+        env = {
+            **os.environ,
+            "RUNNER_TEMP": "/dev/null",
+            "RETRY_NAME": "unwritable",
+            "RETRY_MAX_ATTEMPTS": "1",
+            "RETRY_DELAY_SECONDS": "0",
+        }
+        result = subprocess.run(
+            [str(SCRIPT), "bash", "-c", "exit 0"],
+            env=env,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+
+        self.assertEqual(result.returncode, 74)
+        self.assertIn("retry evidence failure", result.stderr)
+
+    def test_tee_failure_is_not_reported_as_command_success(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            fake_bin = root / "bin"
+            fake_bin.mkdir()
+            fake_tee = fake_bin / "tee"
+            fake_tee.write_text("#!/usr/bin/env bash\nexit 17\n", encoding="utf-8")
+            fake_tee.chmod(0o755)
+            env = {
+                **os.environ,
+                "PATH": f"{fake_bin}:{os.environ['PATH']}",
+                "RUNNER_TEMP": str(root / "runner-temp"),
+                "RETRY_NAME": "tee-failure",
+                "RETRY_MAX_ATTEMPTS": "1",
+                "RETRY_DELAY_SECONDS": "0",
+            }
+            result = subprocess.run(
+                [str(SCRIPT), "bash", "-c", "exit 0"],
+                env=env,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+
+        self.assertEqual(result.returncode, 74)
+        self.assertIn("tee failed", result.stderr)
+
     def test_first_attempt_success_is_not_retry_only(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             result = self.run_helper(Path(temporary), ["bash", "-c", "exit 0"])
