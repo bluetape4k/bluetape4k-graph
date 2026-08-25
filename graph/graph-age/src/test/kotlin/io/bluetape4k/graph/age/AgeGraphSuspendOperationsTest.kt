@@ -432,6 +432,30 @@ class AgeGraphSuspendOperationsTest {
         probe.resultSetCloseCount.get() shouldBeEqualTo 1
     }
 
+    @Test
+    @Order(328)
+    fun `JDBC 실행 전에 취소되면 조회를 시작하지 않고 statement cancel을 소비하지 않는다`() = runSuspendIO {
+        ops.createVertex("Person", mapOf("name" to "cancel-before-execute-query"))
+
+        val probe = StreamingProbe(blockBeforeExecuteQueryUntilCancel = true)
+        withProbedOperations(defaultFetchSize = 8, probe) { probedOps ->
+            withTimeout(5_000) {
+                coroutineScope {
+                    val query = async { probedOps.findVerticesByLabel("Person").toList() }
+                    probe.beforeExecuteQueryStarted.await(2, TimeUnit.SECONDS).shouldBeTrue()
+
+                    query.cancel()
+                    probe.releaseBlockedJdbcCall()
+                    assertFailsWith<CancellationException> { query.await() }
+                }
+            }
+        }
+
+        probe.executeQueryCount.get() shouldBeEqualTo 0
+        probe.statementCancelCount.get() shouldBeEqualTo 0
+        probe.statementCloseCount.get() shouldBeEqualTo 1
+    }
+
     private suspend fun <T> withProbedOperations(
         defaultFetchSize: Int,
         probe: StreamingProbe,
@@ -626,13 +650,16 @@ private class StreamingProbe(
     val failAfterFirstRow: Boolean = false,
     val blockExecuteQueryUntilCancel: Boolean = false,
     val blockResultSetNextUntilCancel: Boolean = false,
+    val blockBeforeExecuteQueryUntilCancel: Boolean = false,
 ) {
     val fetchSizes = CopyOnWriteArrayList<Int>()
     val streamingAttempts = AtomicInteger()
     val statementCancelCount = AtomicInteger()
     val statementCloseCount = AtomicInteger()
     val resultSetCloseCount = AtomicInteger()
+    val executeQueryCount = AtomicInteger()
     val executeQueryStarted = CountDownLatch(1)
+    val beforeExecuteQueryStarted = CountDownLatch(1)
     val resultSetNextStarted = CountDownLatch(1)
 
     private val cancellationRelease = CountDownLatch(1)
@@ -684,10 +711,15 @@ private fun probingPreparedStatement(delegate: PreparedStatement, probe: Streami
             "setFetchSize" -> {
                 fetchSize = args?.firstOrNull() as? Int ?: 0
                 probe.fetchSizes += fetchSize
+                if (probe.blockBeforeExecuteQueryUntilCancel) {
+                    probe.beforeExecuteQueryStarted.countDown()
+                    probe.awaitBlockedJdbcCallRelease()
+                }
                 invokeDelegate(delegate, method, args)
             }
 
             "executeQuery" -> {
+                probe.executeQueryCount.incrementAndGet()
                 if (fetchSize > 0) {
                     probe.streamingAttempts.incrementAndGet()
                 }

@@ -142,13 +142,22 @@ class AgeGraphSuspendOperations(
         statementText: String,
         transform: (ResultSet) -> Unit,
     ) {
+        val context = coroutineContext
         val activeStatement = AtomicReference<JdbcPreparedStatementApi?>()
         val cancellationRequested = AtomicBoolean()
         val statementCancelled = AtomicBoolean()
+        val statementExecuting = AtomicBoolean()
         fun cancelActiveStatement() {
             val statement = activeStatement.get() ?: return
-            if (cancellationRequested.get() && statementCancelled.compareAndSet(false, true)) {
-                runCatching { statement.cancel() }
+            if (statementExecuting.get() &&
+                cancellationRequested.get() &&
+                statementCancelled.compareAndSet(false, true)
+            ) {
+                try {
+                    statement.cancel()
+                } catch (cancelFailure: SQLException) {
+                    log.warn("AGE JDBC statement cancellation failed", cancelFailure)
+                }
             }
         }
         val cancellationHandle = coroutineContext[Job]?.invokeOnCompletion(onCancelling = true) { cause ->
@@ -168,12 +177,15 @@ class AgeGraphSuspendOperations(
 
             override fun JdbcPreparedStatementApi.executeInternal(transaction: JdbcTransaction): Unit? {
                 activeStatement.set(this)
-                cancelActiveStatement()
                 fetchSize = transaction.db.defaultFetchSize?.takeIf { it > 0 } ?: DEFAULT_STREAM_FETCH_SIZE
+                context.ensureActive()
+                statementExecuting.set(true)
+                context.ensureActive()
                 try {
                     executeQuery().result.use(transform)
                     return Unit
                 } finally {
+                    statementExecuting.set(false)
                     activeStatement.compareAndSet(this, null)
                 }
             }
@@ -186,6 +198,7 @@ class AgeGraphSuspendOperations(
             throw cause
         } finally {
             cancellationHandle?.dispose()
+            statementExecuting.set(false)
             activeStatement.set(null)
         }
     }
