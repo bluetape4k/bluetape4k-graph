@@ -268,6 +268,30 @@ Same properties as Neo4j with prefix `bluetape4k.graph.memgraph`. Default databa
 | `GraphFalkorDBAutoConfiguration` | `backend=falkordb` |
 | `GraphIoMicrometerAutoConfiguration` | `bluetape4k.graph.io.metrics.enabled=true`, bridge + `MeterRegistry` present |
 
+# Actuator Graph management endpoint
+
+The read-only `graph` Actuator endpoint is registered only when
+`bluetape4k.graph.management.endpoint.enabled=true` is set. It is disabled by
+default and never returns arbitrary queries, credentials, or raw connection URLs.
+
+Example response:
+
+```json
+{
+  "backend": "neo4j",
+  "graph": "default",
+  "database": "neo4j",
+  "driverAvailable": true,
+  "sessionAvailable": true,
+  "capabilities": { "schema": true, "graphIo": true }
+}
+```
+
+`graph` and `database` come from the configured backend properties. `schema`
+is derived from the actual `GraphOperations.capabilities()` result, while
+`graphIo` is true only when a graph operations bean and the graph-io contract
+classes are both available on the runtime classpath.
+
 ## Spring Boot 4 Notes
 
 Spring Boot 4 splits several previously bundled modules. Add them explicitly if needed:
