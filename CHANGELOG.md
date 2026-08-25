@@ -45,6 +45,13 @@
   EN/KO README와 release guidance에 명시했다. 이름 기반 입력은
   `fromSerializedNameOrNull`로 future capability를 `null`로 격리한다
   ([#549](https://github.com/bluetape4k/bluetape4k-graph/issues/549)).
+- **AGE suspend Flow streaming boundary**: direct suspend 조회가
+  `Dispatchers.IO`의 JDBC cursor와 channel backpressure를 사용하고,
+  `DatabaseConfig.defaultFetchSize` 또는 양수 기본값 100을 적용하도록 정렬했다.
+  이미 방출한 prefix가 늦은 JDBC 오류에서 중복되지 않도록 streaming transaction의
+  재시도를 끄고(`maxAttempts=1`), 취소·collector 예외 시 cursor와 transaction을
+  닫는 계약을 검증했다
+  ([#535](https://github.com/bluetape4k/bluetape4k-graph/issues/535)).
 - **Graph image/document contract alignment**: 공용 graph launcher와 현재
   중앙 catalog에 맞춰 Neo4j `5.26.29`, Memgraph `3.12.0`, Apache AGE
   `release_PG18_1.7.0`, FalkorDB `v4.20.2` 및 Java 25/Kotlin 2.4.10 기준을

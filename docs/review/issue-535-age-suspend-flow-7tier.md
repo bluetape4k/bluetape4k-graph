@@ -4,7 +4,7 @@
 
 - 대상 이슈: [#535](https://github.com/bluetape4k/bluetape4k-graph/issues/535)
 - 대상 모듈: `graph/graph-age`
-- 기준 ref: `fix/issue-535-age-suspend-flow` exact HEAD `432a2e8f92e4ca2812c7a9d1967f0edec5bfcae8`
+- 기준 ref: `fix/issue-535-age-suspend-flow` exact HEAD `7758aa8e430d1460cceaae27667d3636093b178e` (현재 #549 PR #571 exact head `68131d0b06ebad865aa5a00f138dd7dd04066c18` 위에 적층)
 - 검토 방식: 구현자와 분리된 `graph_architecture_review`, `graph_code_review` 두 lane의
   source-read-only 검토를 exact HEAD에서 수집하고 현재 검증 결과와 대조했다.
 - 관련 기준 문서: `docs/superpowers/specs/issue-535-age-suspend-flow-design.md`,
@@ -69,7 +69,7 @@
 - module: `./gradlew :bluetape4k-graph-age:cleanTest :bluetape4k-graph-age:test --no-build-cache --no-daemon --console=plain` → `191/191`, failures/errors/skipped `0`, `BUILD SUCCESSFUL`.
 - static/build: `:bluetape4k-graph-age:detekt`, `compileKotlin`, `compileTestKotlin` → `BUILD SUCCESSFUL`.
 - diff/terms: `git diff --check` PASS; `audit-korean-terms.mjs` 3 files, findings `[]`.
-- worktree: exact HEAD `432a2e8f92e4ca2812c7a9d1967f0edec5bfcae8`, review 시점 clean.
+- worktree: exact HEAD `7758aa8e430d1460cceaae27667d3636093b178e`, review 시점 clean.
 
 ## 결론
 

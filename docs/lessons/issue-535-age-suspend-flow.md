@@ -36,7 +36,7 @@ Flow의 commit 전 materialize 계약은 유지하는 것이었다.
 초기 구현은 channel backpressure만 추가하고 JDBC driver fetch size를 설정하지 않아
 pgjdbc 기본 fetch-all 위험을 남겼다. 또한 Exposed 기본 transaction retry가 late
 `SQLException`에서 이미 방출한 prefix를 다시 내보낼 수 있었다. 두 P1을 exact HEAD
-`432a2e8f92e4ca2812c7a9d1967f0edec5bfcae8`에서 `BlockingExecutable`과 `maxAttempts=1`로
+`7758aa8e430d1460cceaae27667d3636093b178e`에서 `BlockingExecutable`과 `maxAttempts=1`로
 수정하고 재검토했다.
 
 정상 Testcontainers 경로에서는 statement property와 late-failure retry를 직접 관찰하지
