@@ -10,6 +10,9 @@
 순차적으로 쌓고 최종 일괄 merge 승인 전까지 병합하지 않는다. 현재 train은
 #550까지 이어지며, #550은 #535 PR #572 exact head 위의 PR #573에서 fault-injection
 검증을 적층했고 hosted 검증·리뷰를 대기 중이다.
+#551은 #550 PR #573 exact head `186ea8af18192d8fe1e8024bc78cc80b7f235bc1` 위에
+suspend transaction 중첩 `Flow` 결과 계약을 적층하며, 최종 일괄 merge 승인 전까지
+독립 병합하지 않는다.
 최신 GitHub release: `0.6.0` (2026-08-05); 현재 개발 기준선은 `1.0.0`이다.
 
 ## 최근 완료 및 현재 `1.0.0` stacked train
@@ -29,8 +32,9 @@
 | [#549](https://github.com/bluetape4k/bluetape4k-graph/issues/549) | PR #571 검증 대기 | graph-core와 주요 소비 모듈의 `GraphCapability` exhaustive consumer를 inventory하고, enum ordinal/name 보존·외부 `else` unknown policy·`fromSerializedNameOrNull` forward-compatible parser를 추가했다. graph-core 352개 test, Detekt, 순차 capability conformance와 문서·release evidence를 완료했다. 전체 train merge는 마지막 승인 단계에서만 수행한다. |
 | [#535](https://github.com/bluetape4k/bluetape4k-graph/issues/535) | PR #572 검증 대기 | #549 PR #571 exact head 위에서 AGE suspend direct Flow의 `Dispatchers.IO`·cursor·positive fetch size·`maxAttempts=1`·cancellation cleanup 계약을 고정했다. AGE targeted/full test 29/191, compile, Detekt, 문서·7-Tier evidence를 재검증했고 PR #572 hosted 검증·리뷰를 대기 중이다. #550은 이 PR의 exact head 위에 쌓는다. |
 | [#550](https://github.com/bluetape4k/bluetape4k-graph/issues/550) | PR #573 검증 대기 | #535 PR #572 exact head 위에서 실제 `PreparedStatement.fetchSize` `8`/fallback `100`과 late `SQLException` 단일 시도·prefix 비중복을 JDBC proxy fault injection으로 관찰했다. AGE targeted/full 32/194, compile, Detekt, 7-Tier review·lesson evidence를 완료했고 PR #573 hosted 검증·리뷰를 대기 중이다. |
+| [#551](https://github.com/bluetape4k/bluetape4k-graph/issues/551) | 구현·검증 완료, PR 준비 | #550 PR #573 exact head 위에서 `suspendTransaction` 최상위 `Flow` materialization과 표준 컨테이너 중첩 `Flow` 거부 계약을 graph-core 공통 helper 및 AGE·Neo4j·Memgraph·TinkerPop에 정렬했다. core 355개, TinkerPop 119개, Neo4j 132개, Memgraph 124개, AGE 195개 전체 테스트와 다섯 모듈 Detekt를 순차 통과했다. |
 
-이전 완료 순서는 `#527 → #525 → #526`이다. 현재 train은 `#543 → #544 → #545 → #546 → #547 → #536 → #548 → #549 → #535 → #550`
+이전 완료 순서는 `#527 → #525 → #526`이다. 현재 train은 `#543 → #544 → #545 → #546 → #547 → #536 → #548 → #549 → #535 → #550 → #551`
 순서이며, 각 PR은 이전 exact head를 base로 삼고 최종 일괄 merge 승인 전에는
 독립 병합하지 않는다.
 

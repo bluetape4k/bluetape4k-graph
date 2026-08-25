@@ -27,6 +27,7 @@ import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphSuspendMergeOperations
 import io.bluetape4k.graph.repository.GraphSuspendTransactionScope
 import io.bluetape4k.graph.repository.GraphSuspendTransactionalOperations
+import io.bluetape4k.graph.repository.materializeSuspendTransactionResult
 import io.bluetape4k.graph.schema.GraphSuspendSchemaManager
 import io.bluetape4k.graph.schema.GraphSuspendSchemaManagementOperations
 import io.bluetape4k.graph.schema.asSuspendSchemaManager
@@ -39,7 +40,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -137,7 +137,7 @@ class MemgraphGraphSuspendOperations(
             val tx = beginTransaction(s) { failure = it }
             try {
                 val result = MemgraphReactiveGraphSuspendTransactionScope(tx).block()
-                val materializedResult = materializeTransactionResult(result)
+                val materializedResult = materializeSuspendTransactionResult(result)
                 tx.commit<Void>().awaitFirstOrNull()
                 return materializedResult
             } catch (e: Throwable) {
@@ -205,14 +205,6 @@ class MemgraphGraphSuspendOperations(
                 log.warn(closeFailure) { "Failed to close Memgraph reactive session after successful transaction." }
             }
         }
-    }
-
-    private suspend fun <T> materializeTransactionResult(result: T): T {
-        if (result !is Flow<*>) return result
-
-        val values = result.toList()
-        @Suppress("UNCHECKED_CAST")
-        return values.asFlow() as T
     }
 
     override suspend fun mergeVertex(

@@ -19,9 +19,46 @@ import io.bluetape4k.graph.model.PageRankOptions
 import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.TraversalVisit
+import io.bluetape4k.junit5.coroutines.runSuspendIO
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.toList
 import org.junit.jupiter.api.Test
 
 class GraphTransactionExtensionsTest {
+
+    @Test
+    fun `top-level Flow is materialized before transaction commit`() = runSuspendIO {
+        val values = materializeSuspendTransactionResult(flowOf("Alice", "Bob")).toList()
+
+        values shouldContain "Alice"
+        values shouldContain "Bob"
+    }
+
+    @Test
+    fun `nested Flow is rejected with an explicit transaction contract`() = runSuspendIO {
+        val ex = assertFailsWith<IllegalArgumentException> {
+            materializeSuspendTransactionResult("Person" to flowOf("Alice"))
+        }
+
+        ex.message shouldContain "nested Flow"
+        ex.message shouldContain "result.second"
+    }
+
+    @Test
+    fun `nested Flow is rejected in standard result containers`() = runSuspendIO {
+        suspend fun assertRejected(result: Any) {
+            val ex = assertFailsWith<IllegalArgumentException> {
+                materializeSuspendTransactionResult(result)
+            }
+
+            ex.message shouldContain "nested Flow"
+        }
+
+        assertRejected(Triple("Person", "people", flowOf("Alice")))
+        assertRejected(mapOf("people" to flowOf("Alice")))
+        assertRejected(listOf(flowOf("Alice")))
+        assertRejected(arrayOf(flowOf("Alice")))
+    }
 
     @Test
     fun `transaction fails clearly when backend does not support transactions`() {

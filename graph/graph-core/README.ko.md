@@ -1084,6 +1084,12 @@ val edge = suspendOps.suspendTransaction {
 }
 ```
 
+코루틴 transaction 결과 계약은 transaction을 지원하는 모든 코루틴 backend에서 동일하다. 최상위 `Flow`는 commit
+전에 materialize하므로 transaction이 반환된 뒤에도 수집할 수 있다. `Pair`, `Triple`, `Map`, `Collection`, 배열
+안에 중첩된 `Flow`는 `IllegalArgumentException`으로 거부한다. composite 값을 반환해야 하면 transaction block
+안에서 `toList()` 등으로 명시적으로 materialize한 뒤 반환한다. `Sequence`와 임의 사용자 wrapper/data class 내부는
+검사하지 않으므로 해당 carrier의 materialization은 호출자가 책임진다.
+
 이번 1차 구현은 Neo4j, Memgraph, AGE, TinkerGraph의 동기/코루틴 트랜잭션을 지원한다.
 FalkorDB는 Redis `MULTI`에서 그래프 쿼리 결과가 `EXEC`까지 지연되어, 생성한 정점 ID를 같은 DSL 블록의 다음 호출에서 즉시 사용해야 하는 repository DSL과 맞지 않으므로 명시적으로 미지원한다.
 

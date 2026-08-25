@@ -205,6 +205,12 @@ val edge = suspendOps.suspendTransaction {
 }
 ```
 
+The coroutine transaction result contract is shared by every transaction-capable coroutine backend. A top-level `Flow`
+is materialized before commit and can be collected after the transaction returns. A `Flow` nested in a `Pair`,
+`Triple`, `Map`, `Collection`, or array is rejected with `IllegalArgumentException`; call `toList()` (or another
+explicit materializer) inside the transaction block before returning a composite value. `Sequence` and arbitrary
+user-wrapper/data-class internals are not inspected, so callers own materialization for those carriers.
+
 This first slice adds transaction support for Neo4j, Memgraph, AGE, and TinkerGraph sync/coroutine backends.
 FalkorDB remains explicitly unsupported because its Redis `MULTI` API queues graph query results until `EXEC`, while
 this repository DSL needs each created vertex ID immediately for later calls in the same block.
