@@ -18,7 +18,7 @@
 | [#543](https://github.com/bluetape4k/bluetape4k-graph/issues/543) | 병합 완료 | PR #564가 `a553a423271eb99cd69a6ce8bb88d034b27923d2`로 병합되고 이슈가 닫혔다. |
 | [#544](https://github.com/bluetape4k/bluetape4k-graph/issues/544) | PR #565 검증 대기 | `fix/issue-544-neo4j-weighted-assertions` exact head 위에 #545를 쌓는다. 최종 merge 승인 전에는 병합하지 않는다. |
 | [#545](https://github.com/bluetape4k/bluetape4k-graph/issues/545) | PR #566 검증 대기 | graph management 상태 요약, AGE initializer 예외 경계, Spring assertion migration을 한 slice로 정렬했고 로컬 test/Detekt/Kover를 통과했다. |
-| [#546](https://github.com/bluetape4k/bluetape4k-graph/issues/546) | PR #567 검증 대기 | 7개 suspend backend teardown에서 CancellationException을 재전파하고 일반 drop 실패만 기록하며 driver close를 finally에서 보장했다. 7개 예제 테스트 311개가 순차 통과했다. exact head는 `53c79847226069d0a52b02ac512088fb59072c36`이다. |
+| [#546](https://github.com/bluetape4k/bluetape4k-graph/issues/546) | PR #567 검증 대기 | 7개 suspend backend teardown에서 CancellationException을 재전파하고 일반 drop 실패만 기록하며 driver close를 finally에서 보장했다. 7개 예제 테스트 311개가 순차 통과했다. exact head는 `b8471418e187697e2a4709620f3ac494ea236599`이다. |
 
 이전 완료 순서는 `#527 → #525 → #526`이다. 현재 train은 `#543 → #544 → #545 → #546`
 순서이며, 각 PR은 이전 exact head를 base로 삼고 최종 일괄 merge 승인 전에는
