@@ -4,20 +4,22 @@
 
 - 이슈: [#538](https://github.com/bluetape4k/bluetape4k-graph/issues/538)
 - 대상: `graph-io-core` workflow state transition과 sync/suspend batch writer 입력 계약
-- branch: `fix/issue-538-graph-io-core`
-- exact HEAD: `1d62fd5e0f25bc4df659437902df7e3742ffd58a`
+- stacked base: PR [#575](https://github.com/bluetape4k/bluetape4k-graph/pull/575)의
+  live exact head `941c822e40f670ae8d856fad893f0922ae5d8a0d`
+- branch: `fix/issue-538-graph-io-core-stacked`
+- exact HEAD: `6e648846f4b6079f07a560e101a1978f18c5ac16`
 - 판정: **PASS / WATCH** (P0/P1 blocker 없음)
-- 외부 상태: PR 생성, merge, push, 이슈 close를 수행하지 않음
+- 외부 상태: PR 생성 전 로컬 검증 단계이며 merge와 이슈 close를 수행하지 않음
 
 ## SPW evidence ledger
 
 | ID | 확인 내용 | 증거 | 결과 |
 | --- | --- | --- | --- |
-| SPW-01 | 요구사항·범위·기존 계약 확인 | live #538, graph-io-core source/history, `bluetape-workflow` Type B receipt `20260824T202141Z-b21f14da` | PASS |
+| SPW-01 | 요구사항·범위·기존 계약 확인 | live #538, graph-io-core source/history, PR #575 exact base, `bluetape-workflow` Type C/Bug Fix 분류 | PASS |
 | SPW-02 | Kotlin/Bluetape 패턴 대조 | additive default `GraphImportJobStateStore.update`, `requirePositiveNumber("batchSize")`, sync/suspend parity, public KDoc 및 README en/ko | PASS |
 | SPW-03 | lifecycle·동시성 검증 | `load → transform → jobId 검증 → save` atomic monitor; 두 workflow race에서 1 success + 1 `IllegalArgumentException` | PASS |
 | SPW-04 | 테스트·정적 검증 | RED 재현 후 targeted 11/11, full 142/142, detekt, Kotlin compile/test-compile, 금지 assertion scan, `git diff --check` | PASS |
-| SPW-05 | 문서·운영 증거 | design/plan, 이 리뷰와 lesson, 후속 issues #553/#554/#555, receipt completion evidence | PASS |
+| SPW-05 | 문서·운영 증거 | design/plan, 이 리뷰와 lesson, 후속 issues #553/#554/#555, stacked base/head read-back | PASS |
 
 ## 7-Tier 결과
 
@@ -52,7 +54,7 @@ Architecture lane과 code-review lane이 exact HEAD를 별도로 읽었다.
 - `:bluetape4k-graph-io-core:detekt`: PASS
 - `compileKotlin`, `compileTestKotlin`: PASS
 - 금지 assertion/fallback scan: clean (`assertThrows`, `kotlin.test.assertFailsWith`, `shouldThrow`, `runCatching`, `invoking {` 없음)
-- `git diff --check 67b2f872920924f16971dc62477481d52dec785c..HEAD`: PASS
+- `git diff --check 941c822e40f670ae8d856fad893f0922ae5d8a0d..HEAD`: PASS
 
 초기 병렬 `--rerun-tasks` 시도에서 일시적인 Companion class loading/report
 lifecycle 오류가 있었으나, 원인을 classpath/build-output race로 분리한 뒤
@@ -60,6 +62,8 @@ lifecycle 오류가 있었으나, 원인을 classpath/build-output race로 분�
 
 ## 최종 결론
 
-`#538` 구현은 Kotlin pattern, Bluetape helper/assertions, API/ABI, 동시성 및
-검증 계약을 충족한다. **Merge gate: PASS / Architecture status: WATCH**.
+`#538` 구현은 PR #575 exact head 위에서 Kotlin pattern, Bluetape
+helper/assertions, API/ABI, 동시성 및 검증 계약을 충족한다. **PR readiness:
+PASS / Architecture status: WATCH**. PR 생성 후 hosted exact-head checks와
+리뷰 read-back을 추가하고, 최종 train merge는 마지막 승인 단계에서만 수행한다.
 후속 이슈가 해결되기 전에도 P0/P1 기준의 병합 차단 사유는 없다.

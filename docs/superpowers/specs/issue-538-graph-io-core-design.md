@@ -14,8 +14,9 @@ workflow 인스턴스가 동시에 실행되면 둘 다 stale 상태를 읽고 �
 실패하므로, 옵션 경로와 같은 Bluetape `requirePositiveNumber` 계약을
 생성자에 적용한다.
 
-이번 변경은 graph-io-core의 workflow store, 두 writer, 회귀 테스트와 계약
-문서만 대상으로 한다. 외부 durable store 구현이나 모듈별 importer의
+이번 변경은 PR #575 exact head `941c822e40f670ae8d856fad893f0922ae5d8a0d` 위에
+graph-io-core의 workflow store, 두 writer, 회귀 테스트와 계약 문서만
+적층하는 범위다. 외부 durable store 구현이나 모듈별 importer의
 배치 정책은 변경하지 않는다.
 
 ## 제안 설계
@@ -58,6 +59,8 @@ workflow 인스턴스가 동시에 실행되면 둘 다 stale 상태를 읽고 �
 - 새 예외 검증은 `io.bluetape4k.assertions.assertFailsWith`만 사용한다.
 - 독립 7-Tier review에서 P0/P1이 없고, 남은 P2/P3는 별도 GitHub issue로
   기록한다.
+- candidate exact head `6e648846f4b6079f07a560e101a1978f18c5ac16`에서
+  graph-io-core 전체 142 tests와 Detekt를 통과한다.
 
 ## 범위 밖
 

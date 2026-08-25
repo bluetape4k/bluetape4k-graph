@@ -20,6 +20,8 @@ transaction/CAS로 override해야 하며 transform은 pure/retry-safe여야 한�
 
 - 실제 두 번째 task 시작을 보장하는 race 회귀에서 성공 1건/실패 1건을 확인
 - targeted 11/11, graph-io-core 전체 142/142, detekt와 Kotlin compile 통과
+- PR #575 exact head `941c822e40f670ae8d856fad893f0922ae5d8a0d` 위에서
+  candidate exact head `6e648846f4b6079f07a560e101a1978f18c5ac16`을 검증
 - README 영어/한국어, design/plan, public KDoc에 JVM-local 및 durable override 경계를 기록
 - 독립 7-Tier review에서 P0/P1=0, merge gate PASS
 - 비차단 후속 이슈 생성: [#553](https://github.com/bluetape4k/bluetape4k-graph/issues/553), [#554](https://github.com/bluetape4k/bluetape4k-graph/issues/554), [#555](https://github.com/bluetape4k/bluetape4k-graph/issues/555)
@@ -39,8 +41,9 @@ monitor의 head-of-line blocking은 #555로 추적한다.
 
 ## 다음 작업 가드
 
-1. #553에서 report payload 보존을 먼저 회귀 테스트로 고정한다.
+1. #538 PR을 생성하고 hosted exact-head checks를 확인한 뒤 #553을 그 PR의
+   exact head 위에 적층한다.
 2. #554에서 durable store TCK와 `jobId` mismatch 저장 금지를 정립한다.
 3. 성능 근거가 생길 때 #555에서 job별 lock 범위를 최적화한다.
-4. graph-io 다음 우선순위는 CSV/GraphML 대용량 export snapshot·boundedness 이슈
+4. graph-io 다음 우선순위는 CSV/GraphML 대용량 export 시점 일관성과 boundedness 이슈
    [#539](https://github.com/bluetape4k/bluetape4k-graph/issues/539)다.
