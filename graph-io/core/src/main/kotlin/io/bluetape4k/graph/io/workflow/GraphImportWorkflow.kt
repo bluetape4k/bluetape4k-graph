@@ -82,10 +82,15 @@ interface GraphImportJobStateStore {
     fun save(report: GraphImportWorkflowReport)
 
     /**
-     * 이 store 인스턴스에서 하나의 job report를 load·transform·save하는 원자 경계입니다.
-     * durable CAS 구현은 transform을 여러 번 평가할 수 있으므로 transform은 순수하고
-     * 재시도에 안전해야 합니다. durable store는 이 경계를 native transaction 또는 CAS로
-     * override해야 합니다.
+     * 하나의 job report를 load·transform·검증·save하는 원자 경계입니다.
+     *
+     * 기본 구현은 동일 store 인스턴스의 JVM monitor 안에서 실행됩니다. durable
+     * 구현은 native transaction 또는 CAS로 이 메서드를 override해야 하며 다음
+     * 계약을 유지해야 합니다.
+     *
+     * - `transform`은 최신 report를 입력으로 받아도 순수하고 재시도에 안전해야 합니다.
+     * - 결과 `jobId`는 요청한 `jobId`와 같아야 하며, 다르면 저장하지 않고 실패해야 합니다.
+     * - transform 또는 invariant 검증이 실패하면 기존 report를 변경하지 않아야 합니다.
      */
     fun update(
         jobId: String,
