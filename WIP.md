@@ -28,6 +28,10 @@ GraphImportJobStateStore atomic update와 sync/suspend writer `batchSize`
 #553은 이 exact head 위에서 report payload 보존을 적층 중이며 candidate는
 implementation commit은 `88cc9676dfbbd48c7b700c51854f7380ee6fe07a`,
 설계·리뷰·WIP receipt는 `09ceee92`다.
+#554는 #553 PR #577 exact head `c3ac327a23730b977c5ffc03d730b0fc8abecdcd` 위에
+`GraphImportJobStateStore` durable contract TCK와 retry/save 경계를 적층 중이다.
+현재 branch는 `fix/issue-554-state-store-tck-stacked`이며, test-fixtures·README
+EN/KO·KDoc·7-Tier evidence를 정리한 뒤 PR을 생성한다.
 최신 GitHub release: `0.6.0` (2026-08-05); 현재 개발 기준선은 `1.0.0`이다.
 
 ## 최근 완료 및 현재 `1.0.0` stacked train
@@ -51,8 +55,9 @@ implementation commit은 `88cc9676dfbbd48c7b700c51854f7380ee6fe07a`,
 | [#552](https://github.com/bluetape4k/bluetape4k-graph/issues/552) | PR #575 hosted 검증·리뷰 대기 | #551 PR #574 exact head 위에서 AGE active JDBC statement를 cancellation 시작 시 한 번 cancel하고, 실행 전 취소·`executeQuery()`·`ResultSet.next()` blocking 및 Exposed cleanup ownership을 deterministic proxy로 검증했다. targeted 3/3, AGE 198/198, Detekt를 통과했으며 실제 driver의 `Statement.cancel()`/`IDLE → IN_QUERY` handoff 한계와 positive `defaultQueryTimeout`/vendor API 책임을 EN/KO README와 7-Tier evidence에 기록했다. source implementation commit은 `35a9bef41daf5176a16695ee48cb15d7584e5344`, race 보정 commit은 `5a21d911`, PR read-back docs commit은 `093f2a7cd09a3191965a869acc34ff5883d92379`이며, 최종 train merge는 마지막 승인 단계에서만 수행한다. |
 | [#538](https://github.com/bluetape4k/bluetape4k-graph/issues/538) | PR #576 hosted 통과, review·merge 대기 | PR #575 exact head 위에서 state-store `update` 원자 경계와 `GraphIoBatchWriter`/`SuspendGraphIoBatchWriter`의 shared `requirePositiveNumber` 검증을 추가했다. graph-io-core targeted 11/11, 전체 142개, Detekt, forbidden assertion scan, Korean terminology audit를 통과했고 PR #576 exact head `112703d4752fa5dad6f25cef5a53328cd6712bfa`에서 CI·Examples hosted checks가 모두 성공했다. #553은 이 exact head 위에 적층 중이다. 최종 train merge는 마지막 승인 단계에서만 수행한다. |
 | [#553](https://github.com/bluetape4k/bluetape4k-graph/issues/553) | PR #577 hosted 통과, review·merge 대기 | #538 PR #576 exact head 위에서 workflow transition이 기존 `sources`·`elapsed`·`checkpoint` payload를 `copy(state = ...)`로 보존하도록 수정했다. TDD RED 후 targeted 4/4, graph-io-core 143/143, Detekt, 금지 assertion scan과 diff-check를 통과했고 PR #577을 생성했다. lifecycle 문서 sync를 포함한 최신 head에서 CI·Examples hosted run이 모두 성공했다. implementation commit은 `88cc9676dfbbd48c7b700c51854f7380ee6fe07a`이고, 최종 train merge는 마지막 승인 단계에서만 수행한다. #554는 이 slice의 exact head 위에 적층한다. |
+| [#554](https://github.com/bluetape4k/bluetape4k-graph/issues/554) | 구현·로컬 검증 진행 중 | #553 PR #577 exact head 위에서 `java-test-fixtures` 기반 reusable state-store TCK를 추가한다. 기본 invariant 4개와 retry/save 경계 2개, README EN/KO·KDoc·설계·7-Tier·lesson을 정리하고 graph-io-core 전체 test/Detekt와 hosted exact-head checks를 검증한 뒤 PR을 생성한다. 실제 durable backend와 merge는 이 slice 범위 밖이며 전체 train 마지막 승인 단계까지 보류한다. |
 
-이전 완료 순서는 `#527 → #525 → #526`이다. 현재 train은 `#543 → #544 → #545 → #546 → #547 → #536 → #548 → #549 → #535 → #550 → #551 → #552 → #538 → #553`
+이전 완료 순서는 `#527 → #525 → #526`이다. 현재 train은 `#543 → #544 → #545 → #546 → #547 → #536 → #548 → #549 → #535 → #550 → #551 → #552 → #538 → #553 → #554`
 순서이며, 각 PR은 이전 exact head를 base로 삼고 최종 일괄 merge 승인 전에는
 독립 병합하지 않는다.
 

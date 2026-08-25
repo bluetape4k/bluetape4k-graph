@@ -175,9 +175,31 @@ dependencies {
 - **`GraphIoPaths`** — opens `BufferedReader`/`BufferedWriter`/`InputStream`/`OutputStream` for any `GraphImportSource`/`GraphExportSink`, auto-creates parent directories for `PathSink`, honours the `closeInput`/`closeOutput` flag for caller-owned streams.
 - **`GraphIoExternalIdMap`** — tracks external ID → backend `GraphElementId` mappings during import and enforces `DuplicateVertexPolicy` (`FAIL` or `SKIP`). Importers follow a 2-step pattern: `putFirstOrFail()` gates the duplicate policy with a temporary ID, then `put()` overwrites with the backend-issued ID. Calling `put()` before `putFirstOrFail()` throws `IllegalStateException` to surface duplicate-policy bypass at the caller site.
 - **`GraphIoBatchWriter` / `SuspendGraphIoBatchWriter`** — label-grouped import write buffers that flush via `createVertices`/`createEdges` according to `GraphImportOptions.batchSize`.
-- **`GraphImportWorkflow` / `GraphImportJobStateStore`** — validates a multi-source import manifest and persists ordered job states. The store's `update` boundary performs load/validate/save atomically for one JVM store instance; transitions use `copy(state = ...)` to preserve existing `sources`, `elapsed`, and `checkpoint` payload; its transform must be pure/retry-safe, and durable stores should override it with a native transaction or CAS.
+- **`GraphImportWorkflow` / `GraphImportJobStateStore`** — validates a multi-source import manifest and persists ordered job states. The store's `update` boundary performs load/validate/save atomically for one JVM store instance; transitions use `copy(state = ...)` to preserve existing `sources`, `elapsed`, and `checkpoint` payload; its transform must be pure/retry-safe, and durable stores should override it with a native transaction or CAS. The published `testFixtures` variant contains the reusable state-store contract TCK.
 - **`GraphIoStopwatch`** — millisecond-precision timer used by format importers/exporters to populate `report.elapsed`.
 - **`VirtualThreadGraphBulkAdapter`** — wraps a sync `GraphBulkImporter`/`GraphBulkExporter` as a Virtual-Thread-backed async variant via `CompletableFuture`.
+
+### Durable State Store TCK
+
+`graph-io-core` publishes a Gradle `testFixtures` variant so durable
+`GraphImportJobStateStore` implementations can run the same contract tests
+without copying test code:
+
+```kotlin
+dependencies {
+    testImplementation(testFixtures(project(":bluetape4k-graph-io-core")))
+}
+```
+
+Extend `AbstractGraphImportJobStateStoreContractTest` and provide
+`createStore()` to verify latest-report updates, first-report creation,
+`jobId` mismatch rejection without a save, and transform-failure atomicity.
+CAS or transaction-backed adapters can additionally extend
+`AbstractGraphImportJobStateStoreRetryContractTest` and provide an
+adapter-specific `GraphImportJobStateStoreRetryHarness` to inject a
+contention retry. The retry contract requires a pure, retry-safe transform and
+commits only the result calculated from the latest report; it does not provide
+a durable implementation itself.
 
 ## Usage (Format Implementer's View)
 
