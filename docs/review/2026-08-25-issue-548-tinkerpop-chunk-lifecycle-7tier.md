@@ -5,7 +5,7 @@
 - Issue: [#548](https://github.com/bluetape4k/bluetape4k-graph/issues/548)
 - Branch: `fix/issue-548-tinkerpop-chunk-lifecycle`
 - Base: PR #569의 live exact head `88f85ce15c2c48cfd9a5c1cdac6a8294841dceab`를
-  부모로 삼고, 현재 변경 head는 `ba090d7b97b86247da68dad91b8a2a459707742c`다.
+  부모로 삼고, 현재 변경 head는 `0a2807b5546f852586df13b1cd7f41f9c378846d`다.
 - Module scope: `bluetape4k-graph-tinkerpop`의 sync vertex/edge chunk와
   suspend/Flow chunk 경로
 - Scope boundary: AGE, Neo4j, Memgraph, FalkorDB driver cursor API와
@@ -21,7 +21,7 @@
 | T4 보안·노출 | PASS | 로그·credential·backend URI를 추가하지 않았고 runtime dependency도 추가하지 않았다. cursor 오류 메시지는 운영 secret을 포함하지 않는다. |
 | T5 수명주기·동시성 | PASS/WATCH | active iterator를 추적해 sequence `close()`가 모든 cursor를 idempotent하게 닫는다. TinkerGraph in-process traversal 범위이며 driver backend의 remote cursor semantics는 이번 변경 대상이 아니다. |
 | T6 ecosystem·패턴 | PASS | 기존 TinkerPop `Traversal.close`, `Dispatchers.IO`, Kotlin Flow `finally`, `bluetape4k` assertion과 기존 repository API를 재사용했다. 새 추상화는 lifecycle 경계에만 한정했다. |
-| T7 문서·인계 | PASS/WATCH | cursor KDoc, graph-io 영향 범위, CHANGELOG, WIP, lesson과 이 review를 갱신했다. hosted exact-head CI/review와 전체 train merge는 마지막 승인 단계로 남긴다. |
+| T7 문서·인계 | PASS/WATCH | cursor KDoc, graph-tinkerpop EN/KO README의 close/use 예와 legacy `Sequence` 제한, graph-io 영향 범위, CHANGELOG, WIP, lesson과 이 review를 갱신했다. hosted exact-head CI/review와 전체 train merge는 마지막 승인 단계로 남긴다. |
 
 ## 검증 증거
 
