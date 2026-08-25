@@ -22,6 +22,8 @@ import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.withContext
 
@@ -83,7 +85,7 @@ class SuspendGraphMlBulkExporter : GraphSuspendBulkExporter<GraphExportSink> {
         )
     }
 
-    @Suppress("LongMethod", "TooGenericExceptionCaught")
+    @Suppress("LongMethod", "TooGenericExceptionCaught", "ThrowsCount")
     suspend fun exportGraphSuspending(
         sink: GraphExportSink,
         operations: GraphSuspendOperations,
@@ -118,15 +120,36 @@ class SuspendGraphMlBulkExporter : GraphSuspendBulkExporter<GraphExportSink> {
             }
             withContext(Dispatchers.IO) { spool.finish() }
 
-            val writeResult = withContext(Dispatchers.IO) {
-                writer.write(
-                    output = GraphIoPaths.openOutputStream(sink),
-                    vertices = spool.vertexRecords(),
-                    edges = spool.edgeRecords(),
-                    options = graphMlOptions,
-                    vertexPropertyKeys = spool.vertexPropertyKeys,
-                    edgePropertyKeys = spool.edgePropertyKeys,
-                )
+            val exportContext = currentCoroutineContext()
+            val output = withContext(Dispatchers.IO) { GraphIoPaths.openOutputStream(sink) }
+            val session = try {
+                withContext(Dispatchers.IO) {
+                    writer.open(output, graphMlOptions, spool.vertexPropertyKeys, spool.edgePropertyKeys)
+                }
+            } catch (failure: Throwable) {
+                primaryFailure = failure
+                withContext(NonCancellable + Dispatchers.IO) {
+                    closeSuppressing(output, primaryFailure)?.let { if (it !== primaryFailure) throw it }
+                }
+                throw failure
+            }
+
+            val writeResult = try {
+                withContext(Dispatchers.IO) {
+                    spool.vertexRecords()
+                        .onEach { exportContext.ensureActive() }
+                        .forEach(session::writeVertex)
+                    spool.edgeRecords()
+                        .onEach { exportContext.ensureActive() }
+                        .forEach(session::writeEdge)
+                    session.finish()
+                    session.result()
+                }
+            } catch (failure: Throwable) {
+                primaryFailure = failure
+                throw failure
+            } finally {
+                closeGraphMlResources(session, output, primaryFailure)
             }
 
             return GraphExportReport(
@@ -143,8 +166,10 @@ class SuspendGraphMlBulkExporter : GraphSuspendBulkExporter<GraphExportSink> {
                 }
             }
         } catch (failure: Throwable) {
-            primaryFailure = failure
-            throw failure
+            if (primaryFailure == null) {
+                primaryFailure = failure
+            }
+            throw primaryFailure
         } finally {
             withContext(NonCancellable + Dispatchers.IO) {
                 spool.closeSuppressing(primaryFailure)
@@ -153,4 +178,31 @@ class SuspendGraphMlBulkExporter : GraphSuspendBulkExporter<GraphExportSink> {
     }
 
     companion object : KLoggingChannel()
+}
+
+@Suppress("TooGenericExceptionCaught")
+private fun closeSuppressing(resource: AutoCloseable?, primaryFailure: Throwable?): Throwable? {
+    if (resource == null) return primaryFailure
+    return try {
+        resource.close()
+        primaryFailure
+    } catch (cleanupFailure: Throwable) {
+        primaryFailure?.let {
+            it.addSuppressed(cleanupFailure)
+            it
+        } ?: cleanupFailure
+    }
+}
+
+private suspend fun closeGraphMlResources(
+    session: AutoCloseable,
+    output: AutoCloseable,
+    primaryFailure: Throwable?,
+) = withContext(NonCancellable + Dispatchers.IO) {
+    var cleanupFailure = primaryFailure
+    cleanupFailure = closeSuppressing(output, cleanupFailure)
+    cleanupFailure = closeSuppressing(session, cleanupFailure)
+    if (primaryFailure == null && cleanupFailure != null) {
+        throw cleanupFailure
+    }
 }

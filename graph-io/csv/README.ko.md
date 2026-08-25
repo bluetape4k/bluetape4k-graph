@@ -311,6 +311,13 @@ replay합니다. 이 spool은 exporter 자체의 전체 list materialization과 
 `toByteArray()` 복사본을 만들지 않습니다. constructor 초기화 중 뒤의 파일이나
 output stream을 열지 못하면 먼저 만든 임시 파일과 stream도 정리합니다.
 
+suspend replay는 각 record 경계에서 coroutine context를 확인하므로 취소 요청이
+다음 row를 쓰기 전에 관찰됩니다. 이는 blocking write 하나를 interrupt한다는
+뜻이 아니라 write 사이의 bounded checkpoint입니다. suspend cleanup은
+`NonCancellable`에서 수행하며, 호출자 소유
+`OutputStreamSink(closeOutput = false)`는 flush 후 열어 두고 owned sink만 닫으며,
+정리 실패는 원래 예외의 suppressed exception으로 연결합니다.
+
 CSV bounded-chunk TCK는 요청 chunk 크기, 선택한 label별 단일 조회, 첫 chunk 이후
 backend mutation이 발생해도 stage 시점 값이 유지되는지를 검증합니다. 첫 chunk를
 내보내기 전에 전체 label 조회가 실행될 수 있는 호환성 fallback의 source
