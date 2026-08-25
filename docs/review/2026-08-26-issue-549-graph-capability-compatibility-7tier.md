@@ -6,7 +6,8 @@
 - Branch: `fix/issue-549-graph-capability-compatibility`
 - Base: PR #570의 live exact head
   `b666c2d94e7c7520a5125ac687eff9e417d05168`.
-- Current head: rebase 후 최종 commit을 push하고 `gh pr view 571`로 재확인한다.
+- Current PR head와 metadata는 PR 생성·후속 push마다 `gh pr view 571`로 live
+  확인한다.
   (`fix/issue-548-tinkerpop-chunk-lifecycle`)
 - Scope: graph-core `GraphCapability` enum, capability parsing/test 계약,
   graph-core public README EN/KO와 release-facing guidance
