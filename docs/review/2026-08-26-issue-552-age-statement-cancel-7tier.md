@@ -6,8 +6,10 @@
 - 대상 모듈: `graph-age`
 - 기준 base: PR [#574](https://github.com/bluetape4k/bluetape4k-graph/pull/574)의
   live exact head `130532a2c2f0be2e9c87572ed6876bbb688afa06`.
-- 대상 PR: [#575](https://github.com/bluetape4k/bluetape4k-graph/pull/575)의
-  live head `35a9bef41daf5176a16695ee48cb15d7584e5344`.
+- 대상 PR: [#575](https://github.com/bluetape4k/bluetape4k-graph/pull/575).
+  구현 관찰 head는 `35a9bef41daf5176a16695ee48cb15d7584e5344`이고, 이후
+  read-back docs commit은 `093f2a7cd09a3191965a869acc34ff5883d92379`이다. 최종
+  live head는 GitHub metadata를 권위로 삼는다.
 - 구현은 `AgeGraphSuspendOperations.execStreaming`의 active JDBC statement
   등록, `onCancelling=true` handler, one-shot `cancel()`과 cancellation
   exception 복원으로 제한한다.
