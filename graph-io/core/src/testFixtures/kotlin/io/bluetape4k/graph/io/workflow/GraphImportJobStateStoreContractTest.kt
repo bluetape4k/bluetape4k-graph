@@ -134,6 +134,7 @@ abstract class AbstractGraphImportJobStateStoreRetryContractTest :
         val intervening = initial.copy(elapsed = Duration.ofSeconds(2))
         retryingStore.save(initial)
         retryingStore.arrangeRetry(intervening)
+        val savesBeforeRetry = retryingStore.saveInvocations
 
         var evaluations = 0
         val updated = retryingStore.update(initial.jobId) { current ->
@@ -146,6 +147,7 @@ abstract class AbstractGraphImportJobStateStoreRetryContractTest :
         }
 
         evaluations shouldBeEqualTo 2
+        retryingStore.saveInvocations shouldBeEqualTo savesBeforeRetry + 2
         updated shouldBeEqualTo intervening.copy(state = GraphImportWorkflowState.VALIDATED)
         retryingStore.load(initial.jobId) shouldBeEqualTo updated
     }
