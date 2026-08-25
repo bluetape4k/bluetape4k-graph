@@ -112,7 +112,7 @@ abstract class AbstractGraphImportJobStateStoreFailureContractTest :
         failingStore.save(initial)
         failingStore.failNextSave()
 
-        assertFailsWith<Throwable> {
+        assertFailsWith<Exception> {
             failingStore.update(initial.jobId) {
                 initial.copy(state = GraphImportWorkflowState.VALIDATED)
             }
