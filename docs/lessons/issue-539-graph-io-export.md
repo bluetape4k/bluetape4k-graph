@@ -21,7 +21,7 @@ cancellation 예외는 유지하고 cleanup 실패를 suppressed로 연결한다
   불변 기준 데이터를 사용한다.
 - caller-owned `OutputStreamSink(closeOutput = false)` ownership을 유지한다.
 - core abandoned replay와 CSV/GraphML sync·suspend sink failure 회귀를 추가했다.
-- full fresh test는 core 143, CSV 53, GraphML 46건이며 세 모듈 detekt와 diff check가
+- full fresh test는 core 158, CSV 53, GraphML 46건이며 세 모듈 detekt와 diff check가
   통과했다.
 
 ## Misses and surprises
@@ -44,7 +44,7 @@ cancellation 예외는 유지하고 cleanup 실패를 suppressed로 연결한다
   :bluetape4k-graph-io-csv:test \
   :bluetape4k-graph-io-graphml:test \
   --rerun-tasks --no-daemon --console=plain
-143 + 53 + 46 tests passed
+158 + 53 + 46 tests passed
 
 ./gradlew :bluetape4k-graph-io-core:detekt \
   :bluetape4k-graph-io-csv:detekt \

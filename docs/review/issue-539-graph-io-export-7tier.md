@@ -2,8 +2,9 @@
 
 ## 판정
 
-- 구현 기준 HEAD: `db578e6d` (`#539의 export lifecycle 실패를 원인 예외 보존으로 고정한다`)
-- 문서 기준 HEAD: `627952b6` (`#539의 export 계약과 7-Tier 증거를 문서로 고정한다`)
+- 선행 PR #579 exact base: `66d8a398cf32acab791ae5bf9b2f99c59944e316`
+- 구현 기준 HEAD: `47b25739` (`#539의 export lifecycle 실패를 원인 예외 보존으로 고정한다`)
+- 최종 review/문서 receipt HEAD: `07172ec6a6b3b0b1b6be9879a901ff7301869067`
 - 대상 이슈: [#539](https://github.com/bluetape4k/bluetape4k-graph/issues/539)
 - 범위: `graph-io/core`, `graph-io/csv`, `graph-io/graphml`의 sync·suspend export, 회귀 테스트, README, 설계·계획 문서
 - 최종 판정: **PASS / WATCH**
@@ -39,7 +40,7 @@ hardening 범위로 분리한다. 이 review는 PR 생성·merge·issue close를
 ## 독립 review disposition
 
 최초 exact-head review는 replay input lifecycle과 cleanup exception masking을 P1로
-판정했다. 다음 변경으로 두 결함을 닫았고, 구현 HEAD `db578e6d`에서 재검토한
+판정했다. 다음 변경으로 두 결함을 닫았고, 구현 HEAD `47b25739`에서 재검토한
 독립 architecture review는 **PASS / CLEAR**로 확인했다.
 
 1. `GraphIoRecordSpool`이 replay `DataInputStream`을 등록하고 `close()`에서 모든
@@ -62,7 +63,7 @@ hardening 범위로 분리한다. 이 review는 PR 생성·merge·issue close를
   :bluetape4k-graph-io-csv:test \
   :bluetape4k-graph-io-graphml:test \
   --rerun-tasks --no-daemon --console=plain
-SUCCESS: Executed 143 tests in 2.8s
+SUCCESS: Executed 158 tests in 3.7s
 SUCCESS: Executed 53 tests in 3.1s
 SUCCESS: Executed 46 tests in 2.1s
 BUILD SUCCESSFUL
@@ -127,9 +128,10 @@ security/resource, tests/observability, docs/maintainability를 각각 독립
 | active replay input이 close에서 회수됨 | `GraphIoRecordSpool.kt`의 `replayInputs`, `closeReplayInputs` |
 | 원래 실패가 보존됨 | CSV/GraphML 네 exporter의 `primaryFailure`, `closeSuppressing` |
 | boundedness에 backend 전제가 있음 | core/CSV/GraphML README의 export performance 문단 |
-| 회귀가 통과함 | 위 검증 명령의 143+53+46 test 결과 |
+| 회귀가 통과함 | 위 검증 명령의 158+53+46 test 결과 |
 
 ## SPW-05 Render/read-back
 
 문서는 파일로 다시 읽어 제목·표·코드 블록·URL을 확인했고 `git diff --check`를
-통과했다. `audit-korean-terms.mjs`는 7개 파일에서 finding 0으로 통과했다.
+통과했다. `audit-korean-terms.mjs`는 이 checkout에 없어 실행하지 못했으며,
+이 gap은 PR DoD에 명시했다.
