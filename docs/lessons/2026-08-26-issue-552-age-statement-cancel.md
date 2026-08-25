@@ -12,8 +12,9 @@ statement를 놓치면 connection pool 반환이 늦어지고 다음 요청이 �
 `execStreaming`이 Exposed `executeInternal` 경계에서 active
 `JdbcPreparedStatementApi`를 보관한다. Job의 `onCancelling=true` handler가
 취소 시작을 즉시 관찰해 `cancel()`을 one-shot으로 호출하고, statement 등록과
-취소의 race는 등록 직후 재확인한다. driver call이 `SQLException`으로 먼저
-끝나면 `ensureActive()`가 원래 `CancellationException`을 다시 전파한다.
+실행 전 취소의 race는 `ensureActive()`와 `statementExecuting` 경계로 분리한다.
+driver call이 `SQLException`으로 먼저 끝나면 `ensureActive()`가 원래
+`CancellationException`을 다시 전파한다.
 
 statement/ResultSet 직접 close는 Exposed transaction cleanup에 맡긴다. 따라서
 취소 경로가 소유권을 중복하지 않고, test double은 `cancel=1`, statement
@@ -34,6 +35,10 @@ statement/ResultSet 직접 close는 Exposed transaction cleanup에 맡긴다. �
   아니다. 지원하지 않는 driver에는 timeout/vendor API가 필요하다는 제한을
   문서화하고, 테스트 double의 성공을 실제 driver latency 보장으로 과장하지
   않는다.
+- 표준 JDBC는 마지막 `ensureActive()`와 driver의 `IN_QUERY` 전환을 원자적으로
+  노출하지 않는다. 따라서 `IDLE → IN_QUERY` handoff 경합은 driver cancel 또는
+  positive Exposed `defaultQueryTimeout`/vendor API가 설정된 경우에만 bounded
+  계약으로 다루고, facade가 universal guarantee를 주장하지 않는다.
 
 ## 재현 명령과 결과
 
@@ -41,19 +46,24 @@ statement/ResultSet 직접 close는 Exposed transaction cleanup에 맡긴다. �
 ./gradlew :bluetape4k-graph-age:test \
   --tests '*executeQuery가 블로킹 중이어도*' \
   --tests '*ResultSet next가 블로킹 중이어도*' \
+  --tests '*JDBC 실행 전에 취소되면*' \
   --no-daemon --console=plain
 ```
 
-결과는 두 테스트 `2/2` 통과이며, `executeQuery` 경로는 원래
+결과는 targeted 테스트 `3/3` 통과이며, `executeQuery` 경로는 원래
 `CancellationException`과 statement cancel/close를, `ResultSet.next` 경로는
-statement cancel/close와 ResultSet close를 각각 한 번씩 검증했다.
+statement cancel/close와 ResultSet close를 각각 한 번씩 검증했다. 실행 전 취소
+경로는 `executeQuery=0`, `cancel=0`, statement close를 검증했다. AGE 전체는
+`198/198`, Detekt, 금지 assertion scan, `git diff --check`를 통과했다.
 
 ## 남은 범위
 
 AGE 실제 이미지와 proxy는 JDBC lifecycle을 검증하지만, 모든 PostgreSQL/AGE
-driver 버전의 cancel latency를 증명하지 않는다. full AGE test, Detekt,
-forbidden assertion scan은 통과했으며, PR [#575](https://github.com/bluetape4k/bluetape4k-graph/pull/575)의
-hosted exact-head checks와 review read-back은 아직 후속 증거다.
+driver 버전의 cancel latency나 표준 JDBC의 `IDLE → IN_QUERY` handoff를 증명하지
+않는다. positive Exposed `defaultQueryTimeout` 또는 vendor-specific API가 없으면
+driver가 cancel을 무시하는 경로가 남는다. PR
+[#575](https://github.com/bluetape4k/bluetape4k-graph/pull/575)의 hosted exact-head
+checks와 review read-back은 아직 후속 증거다.
 
 ## SPW writer gate
 

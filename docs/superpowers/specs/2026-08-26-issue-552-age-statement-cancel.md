@@ -11,15 +11,17 @@ coroutine 취소만으로 해당 호출이 즉시 중단되지 않는다. 현재
 적층 기준은 PR [#574](https://github.com/bluetape4k/bluetape4k-graph/pull/574)의
 exact head `130532a2c2f0be2e9c87572ed6876bbb688afa06`이다. 구현은 PR
 [#575](https://github.com/bluetape4k/bluetape4k-graph/pull/575)에서 진행하며,
-현재 source head는 `35a9bef41daf5176a16695ee48cb15d7584e5344`이다. 다른 backend의
+현재 source head는 `5a21d911` (`35a9bef41daf5176a16695ee48cb15d7584e5344`의
+실행 전 race 보정)이다. 다른 backend의
 취소 계약과 `suspendTransaction` 중첩 Flow 결과 계약은 각각 기존 slice와
 후속 이슈 범위로 남긴다.
 
 ## 결정
 
 1. `execStreaming`이 `JdbcPreparedStatementApi`를 `executeInternal` 진입 직후
-   `AtomicReference`에 등록한다. 이 등록은 `executeQuery()`와
-   `ResultSet.next()` 양쪽이 실행 중인 동안 유지된다.
+   `AtomicReference`에 등록한다. 실행 전 `ensureActive()`와
+   `statementExecuting` 상태를 분리해 이미 취소된 query는 시작하지 않는다.
+   등록은 `executeQuery()`와 `ResultSet.next()` 양쪽이 실행 중인 동안 유지된다.
 2. coroutine Job에는 `onCancelling=true` completion handler를 등록한다. 취소가
    시작되면 active statement에 JDBC `cancel()`을 최대 한 번 호출한다. 취소가
    statement 등록과 경합해도 등록 직후 동일한 one-shot guard가 다시 확인한다.
@@ -29,10 +31,11 @@ exact head `130532a2c2f0be2e9c87572ed6876bbb688afa06`이다. 구현은 PR
 4. statement를 직접 닫지는 않는다. Exposed transaction의 기존 cleanup이
    current statement와 `ResultSet`을 각각 닫도록 소유권을 유지하고, test double로
    `cancel`/statement close/ResultSet close 횟수를 관찰한다.
-5. JDBC driver가 `Statement.cancel()`을 실제 실행 중인 호출에 적용하지 않으면
-   prompt cancellation을 보장하지 않는다. 이 경우 driver query timeout이나
-   vendor API를 별도로 설정해야 하며, AGE facade가 무조건 bounded completion을
-   주장하지 않는다.
+5. JDBC driver가 `Statement.cancel()`을 실제 실행 중인 호출에 적용하지 않거나
+   마지막 `ensureActive()`와 `IN_QUERY` 전환을 원자적으로 보장하지 않으면 prompt
+   cancellation을 보장하지 않는다. 이 경우 positive Exposed `defaultQueryTimeout`
+   또는 vendor API를 별도로 설정해야 하며, AGE facade가 무조건 bounded
+   completion을 주장하지 않는다.
 
 ## API·호환성
 
@@ -52,6 +55,8 @@ exact head `130532a2c2f0be2e9c87572ed6876bbb688afa06`이다. 구현은 PR
   을 검증한다.
 - `ResultSet.next()`가 latch에서 대기하는 경우 동일한 statement 취소와
   `ResultSet.close=1`을 검증한다.
+- statement 실행 전에 취소되는 경우 query가 시작되지 않고
+  `executeQuery=0`, `cancel=0`, statement close를 검증한다.
 - AGE 전체 테스트, compile, Detekt, 금지 assertion scan, `git diff --check`를
   AGE 단일 backend 범위에서 순차 실행한다.
 

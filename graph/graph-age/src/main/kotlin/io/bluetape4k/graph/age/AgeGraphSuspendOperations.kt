@@ -210,11 +210,12 @@ class AgeGraphSuspendOperations(
      * 이 bridge는 [Dispatchers.IO]에서만 실행하며, collector가 느리면 channel이
      * backpressure를 적용하고 collector가 취소되면 callback과 transaction이
      * 종료되어 [ResultSet]이 닫힌다. 취소 시 active JDBC statement에
-     * 정확히 한 번 `Statement.cancel()`을 전달하고 Exposed cleanup이 close를
+     * 최대 한 번 `Statement.cancel()`을 전달하고 Exposed cleanup이 close를
      * 완료하므로, `executeQuery()` 또는
      * `ResultSet.next()`가 driver에서 블로킹 중이어도 취소가 진행될 수 있다.
-     * JDBC driver가 statement cancellation을 지원하지 않으면 이 보장은 제공되지
-     * 않으며, 해당 driver의 timeout/API를 별도로 설정해야 한다. JDBC prepared
+     * JDBC driver가 statement cancellation을 지원하지 않거나 query timeout을
+     * 적용하지 않으면 이 보장은 제공되지 않으며, 해당 driver의 timeout/API를
+     * 별도로 설정해야 한다. JDBC prepared
      * statement에는 positive fetch size를 적용하고 streaming transaction retry를
      * 비활성화해 driver fetch-all과 retry 시 prefix 중복 방출을 막는다.
      */

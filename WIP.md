@@ -14,9 +14,12 @@
 suspend transaction 중첩 `Flow` 결과 계약을 적층한 PR #574의 live head
 `130532a2c2f0be2e9c87572ed6876bbb688afa06`에서 hosted 검증·리뷰를 대기 중이다.
 #552는 이 exact head 위에 AGE JDBC `Statement.cancel()` 수명주기와
-`executeQuery()`/`ResultSet.next()` blocking 취소 회귀를 적층하는 다음 slice이며,
-PR 생성 전 로컬 구현·검증을 진행한다. 최종 일괄 merge 승인 전에는 모든 PR을
-독립 병합하지 않는다.
+`executeQuery()`/`ResultSet.next()` blocking 취소 회귀를 적층한 PR #575에서
+검증 중이다. 최신 source commit `5a21d911`은 실행 전 cancellation race와
+cancel 실패 관찰을 보정했고, targeted 3/3·AGE 전체 198/198·Detekt를 통과했다.
+표준 JDBC의 `IDLE → IN_QUERY` handoff는 positive `defaultQueryTimeout` 또는
+vendor API가 필요한 조건부 계약으로 기록했으며, 최종 일괄 merge 승인 전에는
+모든 PR을 독립 병합하지 않는다.
 최신 GitHub release: `0.6.0` (2026-08-05); 현재 개발 기준선은 `1.0.0`이다.
 
 ## 최근 완료 및 현재 `1.0.0` stacked train
@@ -37,7 +40,7 @@ PR 생성 전 로컬 구현·검증을 진행한다. 최종 일괄 merge 승인 
 | [#535](https://github.com/bluetape4k/bluetape4k-graph/issues/535) | PR #572 검증 대기 | #549 PR #571 exact head 위에서 AGE suspend direct Flow의 `Dispatchers.IO`·cursor·positive fetch size·`maxAttempts=1`·cancellation cleanup 계약을 고정했다. AGE targeted/full test 29/191, compile, Detekt, 문서·7-Tier evidence를 재검증했고 PR #572 hosted 검증·리뷰를 대기 중이다. #550은 이 PR의 exact head 위에 쌓는다. |
 | [#550](https://github.com/bluetape4k/bluetape4k-graph/issues/550) | PR #573 검증 대기 | #535 PR #572 exact head 위에서 실제 `PreparedStatement.fetchSize` `8`/fallback `100`과 late `SQLException` 단일 시도·prefix 비중복을 JDBC proxy fault injection으로 관찰했다. AGE targeted/full 32/194, compile, Detekt, 7-Tier review·lesson evidence를 완료했고 PR #573 hosted 검증·리뷰를 대기 중이다. |
 | [#551](https://github.com/bluetape4k/bluetape4k-graph/issues/551) | PR #574 hosted 검증·리뷰 대기 | #550 PR #573 exact head 위에서 `suspendTransaction` 최상위 `Flow` materialization과 표준 컨테이너 중첩 `Flow` 거부 계약을 graph-core 공통 helper 및 AGE·Neo4j·Memgraph·TinkerPop에 정렬했다. PR #574 live head `130532a2c2f0be2e9c87572ed6876bbb688afa06`, core 355개, TinkerPop 119개, Neo4j 132개, Memgraph 124개, AGE 195개 전체 테스트와 다섯 모듈 Detekt를 순차 통과했다. 최종 train merge는 마지막 승인 단계에서만 수행한다. |
-| [#552](https://github.com/bluetape4k/bluetape4k-graph/issues/552) | PR #575 hosted 검증·리뷰 대기 | #551 PR #574 exact head 위에서 AGE active JDBC statement를 cancellation 시작 시 한 번 cancel하고, Exposed cleanup의 statement/ResultSet close와 원래 `CancellationException` 전파를 deterministic proxy로 검증했다. AGE 197 tests와 Detekt를 통과했으며 실제 driver가 `Statement.cancel()`을 지원하지 않는 경우의 timeout 한계를 EN/KO README와 7-Tier evidence에 기록했다. source implementation commit은 `35a9bef41daf5176a16695ee48cb15d7584e5344`, PR read-back docs commit은 `093f2a7cd09a3191965a869acc34ff5883d92379`이며, 최종 train merge는 마지막 승인 단계에서만 수행한다. |
+| [#552](https://github.com/bluetape4k/bluetape4k-graph/issues/552) | PR #575 hosted 검증·리뷰 대기 | #551 PR #574 exact head 위에서 AGE active JDBC statement를 cancellation 시작 시 한 번 cancel하고, 실행 전 취소·`executeQuery()`·`ResultSet.next()` blocking 및 Exposed cleanup ownership을 deterministic proxy로 검증했다. targeted 3/3, AGE 198/198, Detekt를 통과했으며 실제 driver의 `Statement.cancel()`/`IDLE → IN_QUERY` handoff 한계와 positive `defaultQueryTimeout`/vendor API 책임을 EN/KO README와 7-Tier evidence에 기록했다. source implementation commit은 `35a9bef41daf5176a16695ee48cb15d7584e5344`, race 보정 commit은 `5a21d911`, PR read-back docs commit은 `093f2a7cd09a3191965a869acc34ff5883d92379`이며, 최종 train merge는 마지막 승인 단계에서만 수행한다. |
 
 이전 완료 순서는 `#527 → #525 → #526`이다. 현재 train은 `#543 → #544 → #545 → #546 → #547 → #536 → #548 → #549 → #535 → #550 → #551`
 순서이며, 각 PR은 이전 exact head를 base로 삼고 최종 일괄 merge 승인 전에는
