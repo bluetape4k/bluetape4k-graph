@@ -50,3 +50,6 @@
   같은 상태로 서술하지 않는다. PR/DoD는 retry-only 통과와 첫 실패 evidence
   artifact를 별도로 기록한다. helper가 적용되지 않은 기존 step의 green은
   이 계약의 증거로 간주하지 않는다.
+- `success_after_retry`는 상태 집계상 green일 수 있지만 merge-ready가 아니다.
+  최종 stacked train 승인 전에는 exact head의 retry 상태와 첫 실패 artifact를
+  확인하고, 원인을 분류·재검증하지 않은 retry-only 결과로 병합하지 않는다.

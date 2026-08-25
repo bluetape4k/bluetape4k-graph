@@ -144,6 +144,8 @@ jobs:
               - 'gradle/**'
               - '.github/actions/testcontainers-image-cache/**'
               - '.github/scripts/docker-image-cache.sh'
+              - '.github/scripts/run-gradle-retry.sh'
+              - '.github/scripts/test_run_gradle_retry.py'
               - '.github/testcontainers-images.txt'
               - '.github/testcontainers-image-families.txt'
               - 'scripts/testcontainers_image_gate*'
@@ -151,7 +153,22 @@ jobs:
               - 'settings.gradle.kts'
               - '.github/workflows/ci.yml'
 
-  # ── 3. 전체 빌드 + Detekt 품질 게이트 ─────────────────────────────────────
+  # ── 3. retry helper 회귀 검증 ─────────────────────────────────────────────
+  retry-helper:
+    name: Test / Gradle Retry Helper
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Run retry helper tests
+        run: python3 .github/scripts/test_run_gradle_retry.py
+
+  # ── 4. 전체 빌드 + Detekt 품질 게이트 ─────────────────────────────────────
   catalog-governance:
     name: Central Catalog Governance
     runs-on: ubuntu-latest
@@ -1015,6 +1032,7 @@ jobs:
     timeout-minutes: 10
     needs:
       - catalog-governance
+      - retry-helper
       - gitleaks
       - changes
       - build
