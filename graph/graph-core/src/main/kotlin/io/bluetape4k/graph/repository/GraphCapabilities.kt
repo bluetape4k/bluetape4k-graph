@@ -9,7 +9,12 @@ import java.io.Serializable
  *
  * `GRAPH_ALGORITHM`은 모든 graph facade가 제공하는 portable JVM 알고리즘을
  * 의미하며, backend 확장 모듈이 제공하는 기능은 `NATIVE_ALGORITHM`으로
- * 별도 표시한다.
+ * 별도 표시한다. 새 capability는 기존 enum ordinal과 이름 기반 직렬화
+ * 호환성을 보존하기 위해 enum 마지막에만 추가해야 한다.
+ *
+ * 외부 입력이나 저장된 capability 이름을 읽을 때는 [fromSerializedNameOrNull]을
+ * 사용한다. 이후 버전에서 추가된 이름은 `null`로 반환되므로 구버전 소비자가
+ * 알 수 없는 capability를 안전하게 무시하거나 별도 관찰할 수 있다.
  */
 enum class GraphCapability {
     /** MERGE/upsert API를 제공한다. */
@@ -43,7 +48,19 @@ enum class GraphCapability {
     BOUNDED_CHUNKED_READ,
 
     /** 전체 결과를 먼저 materialize하지 않는 bounded graph export를 제공한다. */
-    BOUNDED_CHUNKED_EXPORT,
+    BOUNDED_CHUNKED_EXPORT;
+
+    public companion object {
+        /**
+         * 이름 기반 capability를 forward-compatible하게 해석한다.
+         *
+         * [Enum.valueOf]와 달리 현재 라이브러리에 없는 미래 capability 이름을
+         * 예외로 처리하지 않고 `null`로 반환한다. 이름은 enum serialization과
+         * 동일하게 대소문자를 구분한다.
+         */
+        public fun fromSerializedNameOrNull(name: String): GraphCapability? =
+            entries.firstOrNull { it.name == name }
+    }
 }
 
 /**
