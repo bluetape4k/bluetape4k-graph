@@ -17,8 +17,11 @@ import io.bluetape4k.graph.repository.suspendTransaction
 import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.KLogging
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
@@ -50,6 +53,8 @@ import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import javax.sql.DataSource
 
@@ -382,6 +387,51 @@ class AgeGraphSuspendOperationsTest {
         probe.streamingAttempts.get() shouldBeEqualTo 1
     }
 
+    @Test
+    @Order(326)
+    fun `executeQuery가 블로킹 중이어도 취소는 JDBC statement를 한 번 cancel하고 원래 CancellationException을 전파한다`() = runSuspendIO {
+        ops.createVertex("Person", mapOf("name" to "cancel-execute-query"))
+
+        val probe = StreamingProbe(blockExecuteQueryUntilCancel = true)
+        withProbedOperations(defaultFetchSize = 8, probe) { probedOps ->
+            withTimeout(5_000) {
+                coroutineScope {
+                    val query = async { probedOps.findVerticesByLabel("Person").toList() }
+                    probe.executeQueryStarted.await(2, TimeUnit.SECONDS).shouldBeTrue()
+
+                    query.cancel()
+                    assertFailsWith<CancellationException> { query.await() }
+                }
+            }
+        }
+
+        probe.statementCancelCount.get() shouldBeEqualTo 1
+        probe.statementCloseCount.get() shouldBeEqualTo 1
+    }
+
+    @Test
+    @Order(327)
+    fun `ResultSet next가 블로킹 중이어도 취소는 statement와 ResultSet을 한 번씩 정리한다`() = runSuspendIO {
+        ops.createVertex("Person", mapOf("name" to "cancel-result-set"))
+
+        val probe = StreamingProbe(blockResultSetNextUntilCancel = true)
+        withProbedOperations(defaultFetchSize = 8, probe) { probedOps ->
+            withTimeout(5_000) {
+                coroutineScope {
+                    val query = async { probedOps.findVerticesByLabel("Person").toList() }
+                    probe.resultSetNextStarted.await(2, TimeUnit.SECONDS).shouldBeTrue()
+
+                    query.cancel()
+                    assertFailsWith<CancellationException> { query.await() }
+                }
+            }
+        }
+
+        probe.statementCancelCount.get() shouldBeEqualTo 1
+        probe.statementCloseCount.get() shouldBeEqualTo 1
+        probe.resultSetCloseCount.get() shouldBeEqualTo 1
+    }
+
     private suspend fun <T> withProbedOperations(
         defaultFetchSize: Int,
         probe: StreamingProbe,
@@ -574,9 +624,28 @@ class AgeGraphSuspendOperationsTest {
 
 private class StreamingProbe(
     val failAfterFirstRow: Boolean = false,
+    val blockExecuteQueryUntilCancel: Boolean = false,
+    val blockResultSetNextUntilCancel: Boolean = false,
 ) {
     val fetchSizes = CopyOnWriteArrayList<Int>()
     val streamingAttempts = AtomicInteger()
+    val statementCancelCount = AtomicInteger()
+    val statementCloseCount = AtomicInteger()
+    val resultSetCloseCount = AtomicInteger()
+    val executeQueryStarted = CountDownLatch(1)
+    val resultSetNextStarted = CountDownLatch(1)
+
+    private val cancellationRelease = CountDownLatch(1)
+
+    fun releaseBlockedJdbcCall() {
+        cancellationRelease.countDown()
+    }
+
+    fun awaitBlockedJdbcCallRelease() {
+        if (!cancellationRelease.await(3, TimeUnit.SECONDS)) {
+            throw SQLException("timed out waiting for JDBC statement cancellation")
+        }
+    }
 }
 
 private class ProbingDataSource(
@@ -619,17 +688,37 @@ private fun probingPreparedStatement(delegate: PreparedStatement, probe: Streami
             }
 
             "executeQuery" -> {
+                if (fetchSize > 0) {
+                    probe.streamingAttempts.incrementAndGet()
+                }
+                if (probe.blockExecuteQueryUntilCancel) {
+                    probe.executeQueryStarted.countDown()
+                    probe.awaitBlockedJdbcCallRelease()
+                    throw SQLException("injected blocked AGE executeQuery cancellation")
+                }
+
                 val result = invokeDelegate(delegate, method, args)
                 if (fetchSize <= 0) {
                     result
+                } else if (probe.failAfterFirstRow || probe.blockResultSetNextUntilCancel) {
+                    probingResultSet(result as ResultSet, probe)
                 } else {
-                    probe.streamingAttempts.incrementAndGet()
-                    if (probe.failAfterFirstRow) {
-                        probingResultSet(result as ResultSet)
-                    } else {
-                        result
-                    }
+                    result
                 }
+            }
+
+            "cancel" -> {
+                probe.statementCancelCount.incrementAndGet()
+                try {
+                    invokeDelegate(delegate, method, args)
+                } finally {
+                    probe.releaseBlockedJdbcCall()
+                }
+            }
+
+            "close" -> {
+                probe.statementCloseCount.incrementAndGet()
+                invokeDelegate(delegate, method, args)
             }
 
             else -> invokeDelegate(delegate, method, args)
@@ -638,20 +727,33 @@ private fun probingPreparedStatement(delegate: PreparedStatement, probe: Streami
 }
 
 @Suppress("UNCHECKED_CAST")
-private fun probingResultSet(delegate: ResultSet): ResultSet {
+private fun probingResultSet(delegate: ResultSet, probe: StreamingProbe): ResultSet {
     var emittedRows = 0
     return Proxy.newProxyInstance(
         ResultSet::class.java.classLoader,
         arrayOf(ResultSet::class.java),
     ) { _, method, args ->
-        if (method.name != "next") {
-            invokeDelegate(delegate, method, args)
-        } else if (emittedRows > 0) {
-            throw SQLException("injected late AGE streaming failure")
-        } else {
-            val hasNext = invokeDelegate(delegate, method, args) as Boolean
-            if (hasNext) emittedRows++
-            hasNext
+        when (method.name) {
+            "next" -> {
+                if (probe.blockResultSetNextUntilCancel && emittedRows == 0) {
+                    probe.resultSetNextStarted.countDown()
+                    probe.awaitBlockedJdbcCallRelease()
+                    throw SQLException("injected blocked AGE ResultSet.next cancellation")
+                }
+                if (emittedRows > 0) {
+                    throw SQLException("injected late AGE streaming failure")
+                }
+                val hasNext = invokeDelegate(delegate, method, args) as Boolean
+                if (hasNext) emittedRows++
+                hasNext
+            }
+
+            "close" -> {
+                probe.resultSetCloseCount.incrementAndGet()
+                invokeDelegate(delegate, method, args)
+            }
+
+            else -> invokeDelegate(delegate, method, args)
         }
     } as ResultSet
 }

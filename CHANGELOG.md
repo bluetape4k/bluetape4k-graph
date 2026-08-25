@@ -64,6 +64,12 @@
   호출자는 transaction block 안에서 `toList()` 등으로 명시적으로 materialize해야
   하며, 임의 사용자 wrapper의 내부 구조는 검사하지 않는다
   ([#551](https://github.com/bluetape4k/bluetape4k-graph/issues/551)).
+- **AGE JDBC statement 취소 수명주기**: direct suspend `Flow`가 취소되면 active
+  JDBC statement에 `Statement.cancel()`을 최대 한 번 전달하고, Exposed cleanup이
+  statement와 `ResultSet`을 닫도록 정렬했다. `executeQuery()`와
+  `ResultSet.next()` blocking 경계를 실제 AGE JDBC proxy로 검증하며, driver가
+  statement 취소를 지원하지 않는 경우에는 자체 timeout/vendor API가 필요하다는
+  제한을 문서화했다 ([#552](https://github.com/bluetape4k/bluetape4k-graph/issues/552)).
 - **Graph image/document contract alignment**: 공용 graph launcher와 현재
   중앙 catalog에 맞춰 Neo4j `5.26.29`, Memgraph `3.12.0`, Apache AGE
   `release_PG18_1.7.0`, FalkorDB `v4.20.2` 및 Java 25/Kotlin 2.4.10 기준을
