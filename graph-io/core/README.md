@@ -191,6 +191,14 @@ dependencies {
 }
 ```
 
+For a published module, use the external test-fixtures notation instead:
+
+```kotlin
+dependencies {
+    testImplementation(testFixtures("io.github.bluetape4k.graph:bluetape4k-graph-io-core:$version"))
+}
+```
+
 Extend `AbstractGraphImportJobStateStoreContractTest` and provide
 `createStore()` to verify latest-report updates, first-report creation,
 `jobId` mismatch rejection without a save, and transform-failure atomicity.

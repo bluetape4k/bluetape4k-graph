@@ -31,7 +31,7 @@
 | 2. Kotlin/Bluetape 패턴 | 불변성·null safety·의도 matcher를 지키는가 | PASS. `copy`, `shouldNotBeNull`, `assertFailsWith`, shared test fixture를 사용 |
 | 3. 상태·동시성 | stale transition을 버리고 최신 report로 retry하는가 | PASS. retry harness가 intervening report를 저장한 뒤 transform을 재평가하고 첫 결과를 저장하지 않음 |
 | 4. 오류·계약 | mismatch·transform 실패가 state를 오염시키는가 | PASS. mismatch는 save invocation 없이 실패하고 transform 실패 후 기존 report를 재조회 |
-| 5. 테스트 | 기본 구현과 future durable adapter가 같은 TCK를 재사용하는가 | PASS. `java-test-fixtures` variant와 기본 in-memory reference harness 제공 |
+| 5. 테스트 | 기본 구현과 future durable adapter가 같은 TCK를 재사용하는가 | PASS. `java-test-fixtures` variant, project/external Gradle 소비 예시와 기본 in-memory reference harness 제공 |
 | 6. 문서·호환성 | durable override 경계와 retry-safe 규칙이 reader-facing 문서와 일치하는가 | PASS. KDoc 및 README EN/KO에 동일 계약 기록 |
 | 7. 운영·유지보수 | exact receipt와 후속 위험이 추적 가능한가 | WATCH. hosted PR checks는 exact head에서 확인하며, 실제 durable backend 운영 검증은 후속 scope |
 

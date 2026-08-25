@@ -191,6 +191,14 @@ dependencies {
 }
 ```
 
+외부에 발행된 모듈을 소비할 때는 external test-fixtures 표기를 사용합니다.
+
+```kotlin
+dependencies {
+    testImplementation(testFixtures("io.github.bluetape4k.graph:bluetape4k-graph-io-core:$version"))
+}
+```
+
 `AbstractGraphImportJobStateStoreContractTest`를 상속하고 `createStore()`를
 구현하면 최신 report 갱신, 최초 report 생성, 저장하지 않는 `jobId` mismatch
 거부, transform 실패 원자성을 검증합니다. CAS 또는 transaction 기반
