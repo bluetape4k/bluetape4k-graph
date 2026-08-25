@@ -6,8 +6,30 @@ class InMemoryGraphImportJobStateStoreContractTest :
 
     override fun createStore(): GraphImportJobStateStore = InMemoryGraphImportJobStateStore()
 
+    override fun createFailureStore(): GraphImportJobStateStoreFailureHarness =
+        FailingInMemoryGraphImportJobStateStore()
+
     override fun createRetryingStore(): GraphImportJobStateStoreRetryHarness =
         RetryingInMemoryGraphImportJobStateStore()
+
+    private class FailingInMemoryGraphImportJobStateStore : GraphImportJobStateStoreFailureHarness {
+        private val delegate = InMemoryGraphImportJobStateStore()
+        private var failNextSave = false
+
+        override fun load(jobId: String): GraphImportWorkflowReport? = delegate.load(jobId)
+
+        override fun save(report: GraphImportWorkflowReport) {
+            if (failNextSave) {
+                failNextSave = false
+                error("contract save failure")
+            }
+            delegate.save(report)
+        }
+
+        override fun failNextSave() {
+            failNextSave = true
+        }
+    }
 
     private class RetryingInMemoryGraphImportJobStateStore : GraphImportJobStateStoreRetryHarness {
         private val delegate = InMemoryGraphImportJobStateStore()

@@ -90,6 +90,34 @@ abstract class AbstractGraphImportJobStateStoreContractTest {
         )
 }
 
+/** 저장 실패를 주입해 기존 report 보존을 검증하는 test-fixture harness다. */
+interface GraphImportJobStateStoreFailureHarness : GraphImportJobStateStore {
+    fun failNextSave()
+}
+
+/** adapter의 원자적 save 실패 경계를 검증하는 추가 contract TCK다. */
+abstract class AbstractGraphImportJobStateStoreFailureContractTest :
+    AbstractGraphImportJobStateStoreContractTest() {
+
+    protected abstract fun createFailureStore(): GraphImportJobStateStoreFailureHarness
+
+    @Test
+    fun `save failure leaves the existing report unchanged`() {
+        val failingStore = createFailureStore()
+        val initial = initialReport()
+        failingStore.save(initial)
+        failingStore.failNextSave()
+
+        assertFailsWith<IllegalStateException> {
+            failingStore.update(initial.jobId) {
+                initial.copy(state = GraphImportWorkflowState.VALIDATED)
+            }
+        }
+
+        failingStore.load(initial.jobId) shouldBeEqualTo initial
+    }
+}
+
 /**
  * CAS/transaction 구현이 transform 재평가와 저장 경계를 검증할 수 있도록
  * 제공하는 test-fixture harness다. [saveInvocations]는 test-only 관찰값이며,
@@ -106,7 +134,7 @@ interface GraphImportJobStateStoreRetryHarness : GraphImportJobStateStore {
  * CAS/transaction 구현이 추가로 검증해야 하는 retry contract TCK다.
  */
 abstract class AbstractGraphImportJobStateStoreRetryContractTest :
-    AbstractGraphImportJobStateStoreContractTest() {
+    AbstractGraphImportJobStateStoreFailureContractTest() {
 
     protected abstract fun createRetryingStore(): GraphImportJobStateStoreRetryHarness
 
@@ -125,6 +153,32 @@ abstract class AbstractGraphImportJobStateStoreRetryContractTest :
 
         retryingStore.saveInvocations shouldBeEqualTo savesBeforeMismatch
         retryingStore.load(initial.jobId) shouldBeEqualTo initial
+    }
+
+    @Test
+    fun `retry jobId mismatch fails before the retry result is saved`() {
+        val retryingStore = createRetryingStore()
+        val initial = initialReport().copy(elapsed = Duration.ofSeconds(1))
+        val intervening = initial.copy(elapsed = Duration.ofSeconds(2))
+        retryingStore.save(initial)
+        retryingStore.arrangeRetry(intervening)
+        var evaluations = 0
+
+        assertFailsWith<IllegalArgumentException> {
+            retryingStore.update(initial.jobId) { current ->
+                evaluations++
+                if (evaluations == 1) {
+                    current.shouldNotBeNull().copy(state = GraphImportWorkflowState.VALIDATED)
+                } else {
+                    current.shouldNotBeNull().copy(jobId = "other-job")
+                }
+            }
+        }
+
+        evaluations shouldBeEqualTo 2
+        retryingStore.saveInvocations shouldBeEqualTo 2
+        retryingStore.load(initial.jobId) shouldBeEqualTo intervening
+        retryingStore.load("other-job").shouldBeNull()
     }
 
     @Test
