@@ -1,12 +1,12 @@
 # WIP - bluetape4k-graph
 
-스냅샷: 2026-08-25 KST
+스냅샷: 2026-08-26 KST
 범위: `1.0.0` milestone closeout 및 `backlog` 후속 큐
 현재 live 상태: #543은 병합 완료, #544(PR #565)는 stacked train에서 검증 대기,
 #545(PR #566)는 #544 exact head 위에서 로컬 검증을 완료하고 hosted 검증을 대기 중이며,
 #546(PR #567)은 #545 exact head 위에서 7개 예제 모듈의 suspend teardown을 정렬하고 hosted 검증을 대기 중이며,
 #547(PR #568)은 #546 exact head 위에서 catalog ownership과 retry-only CI evidence를 정렬했고 hosted exact-head checks가 모두 통과했으며 review·최종 merge를 대기 중이다.
-#536은 #547 exact head 위에 bounded capability contract를 적층해 로컬 검증을 완료하고 PR 생성을 준비 중이며, #548은 #536 exact head 위에서 close-aware TinkerGraph lifecycle을 적층할 예정이다. 후속 `1.0.0` issue는 같은 train에
+#536은 #547 exact head 위에 bounded capability contract를 적층한 PR #569의 hosted checks가 모두 통과했으며 review·최종 merge를 대기 중이다. #548은 #536 exact head 위의 PR #570에서 close-aware TinkerGraph lifecycle과 cursor README를 정렬했고 hosted checks·독립 review를 대기 중이다. #549는 #548 exact head 위의 PR #571에서 enum compatibility policy를 정비했다. 후속 `1.0.0` issue는 같은 train에
 순차적으로 쌓고 최종 일괄 merge 승인 전까지 병합하지 않는다.
 최신 GitHub release: `0.6.0` (2026-08-05); 현재 개발 기준선은 `1.0.0`이다.
 
@@ -22,10 +22,11 @@
 | [#545](https://github.com/bluetape4k/bluetape4k-graph/issues/545) | PR #566 검증 대기 | graph management 상태 요약, AGE initializer 예외 경계, Spring assertion migration을 한 slice로 정렬했고 로컬 test/Detekt/Kover를 통과했다. |
 | [#546](https://github.com/bluetape4k/bluetape4k-graph/issues/546) | PR #567 검증 대기 | 7개 suspend backend teardown에서 CancellationException을 재전파하고 일반 drop 실패만 기록하며 driver close를 finally에서 보장했다. 7개 예제 테스트 311개가 순차 통과했다. exact head는 `75e45556f22994bf46b8aaab297747845669e0e4`이다. |
 | [#547](https://github.com/bluetape4k/bluetape4k-graph/issues/547) | PR #568 hosted 통과, review·merge 대기 | #567 exact head `75e45556f22994bf46b8aaab297747845669e0e4` 위에서 local `bluetape4k` alias를 제거하고 examples/core retry helper가 첫 실패·retry-only 상태를 보존하도록 정렬했다. evidence root·`tee`·output write failure도 fail-closed로 고정하고 helper/test path routing, `fix/**` stacked PR trigger와 필수 `retry-helper` CI job을 추가했다. PR #568 live head `eda9c433a7004ab91e96e0f8ea8ecade0e1fa68a`에서 CI·Examples checks가 모두 통과했다. 최종 train merge는 마지막 승인 단계에서 수행한다. |
-| [#536](https://github.com/bluetape4k/bluetape4k-graph/issues/536) | #547 위 로컬 검증 완료, PR 준비 | `BOUNDED_CHUNKED_READ/EXPORT`와 `GraphBoundedChunkOperations` marker를 추가해 API chunking과 source bounded 실행을 분리하고 TinkerGraph만 bounded capability를 광고하도록 정렬했다. graph-core 351개, graph-tinkerpop 114개, GraphML 44개 테스트와 세 모듈 Detekt, AGE→Neo4j→Memgraph→FalkorDB 순차 conformance가 통과했다. #548은 이 exact head 위에 쌓는다. |
-| [#548](https://github.com/bluetape4k/bluetape4k-graph/issues/548) | #536 위 구현·검증 완료, PR 준비 | #536 exact head 위에서 기존 `Sequence` ABI를 유지한 additive close-aware vertex/edge cursor와 suspend Flow `finally` close를 구현했다. TinkerGraph sync/suspend targeted 65개, compile, Detekt, public `javap` ABI 확인과 AGE→Neo4j→Memgraph→FalkorDB 순차 conformance가 통과했으며 public traversal lazy/close-order seam을 보강 중이다. 전체 train merge는 마지막 승인 단계에서만 수행한다. |
+| [#536](https://github.com/bluetape4k/bluetape4k-graph/issues/536) | PR #569 hosted 통과, review·merge 대기 | `BOUNDED_CHUNKED_READ/EXPORT`와 `GraphBoundedChunkOperations` marker를 추가해 API chunking과 source bounded 실행을 분리하고 TinkerGraph만 bounded capability를 광고하도록 정렬했다. graph-core 351개, graph-tinkerpop 114개, GraphML 44개 테스트와 세 모듈 Detekt, AGE→Neo4j→Memgraph→FalkorDB 순차 conformance가 통과했으며 PR #569 hosted checks가 모두 통과했다. #548이 이 exact head 위에 쌓였다. |
+| [#548](https://github.com/bluetape4k/bluetape4k-graph/issues/548) | PR #570 검증 대기 | #536 exact head 위에서 기존 `Sequence` ABI를 유지한 additive close-aware vertex/edge cursor와 suspend Flow `finally` close를 구현했다. TinkerGraph sync/suspend targeted 67개, compile, Detekt, public `javap` ABI 확인과 AGE→Neo4j→Memgraph→FalkorDB 순차 conformance가 통과했고 internal factory JVM surface는 `@JvmSynthetic`으로 숨겼다. 모듈 EN/KO README에 cursor use와 legacy Sequence 제한을 기록했으며 hosted checks·독립 review와 최종 train merge를 대기 중이다. #549가 이 exact head 위에 쌓였다. |
+| [#549](https://github.com/bluetape4k/bluetape4k-graph/issues/549) | PR #571 검증 대기 | graph-core와 주요 소비 모듈의 `GraphCapability` exhaustive consumer를 inventory하고, enum ordinal/name 보존·외부 `else` unknown policy·`fromSerializedNameOrNull` forward-compatible parser를 추가했다. graph-core 352개 test, Detekt, 순차 capability conformance와 문서·release evidence를 완료했다. 전체 train merge는 마지막 승인 단계에서만 수행한다. |
 
-이전 완료 순서는 `#527 → #525 → #526`이다. 현재 train은 `#543 → #544 → #545 → #546 → #547 → #536`
+이전 완료 순서는 `#527 → #525 → #526`이다. 현재 train은 `#543 → #544 → #545 → #546 → #547 → #536 → #548 → #549`
 순서이며, 각 PR은 이전 exact head를 base로 삼고 최종 일괄 merge 승인 전에는
 독립 병합하지 않는다.
 

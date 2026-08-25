@@ -52,6 +52,28 @@ val neighbors = ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS"))
 ops.close()
 ```
 
+## Bounded chunk cursor 수명주기
+
+`findVerticesByLabelChunkedCursor`와 `findEdgesByLabelChunkedCursor`는
+`CloseableChunkSequence`를 반환한다. cursor는 chunk마다 최대 `chunkSize`개의
+record만 소비하고, 전체 소비·실패·명시적 close에서 underlying TinkerPop
+traversal을 닫는다. `take(1)`처럼 부분 소비가 끝나면 cursor를 닫아야 한다.
+
+```kotlin
+val cursor = ops.findVerticesByLabelChunkedCursor("Person", chunkSize = 256)
+try {
+    val firstChunk = cursor.take(1).toList()
+} finally {
+    cursor.close()
+}
+```
+
+기존 repository ABI를 위해 `findVerticesByLabelChunked`와
+`findEdgesByLabelChunked`는 계속 `Sequence`를 반환한다. 이 interface 타입에는
+close handle이 없으므로 조기 close 또는 source memory bound가 caller 계약이면
+구체적인 `*Cursor` 메서드를 사용한다. suspend/Flow chunk 메서드는 조기 `take`,
+cancellation, downstream failure에서도 `finally`로 cursor를 닫는다.
+
 ## Schema / Index Management
 
 TinkerGraph는 durable schema DDL이 없지만 `schemaManager()`가 현재 `TinkerGraphOperations` instance 안에
