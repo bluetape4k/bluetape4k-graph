@@ -5,7 +5,7 @@
 - Issue: [#548](https://github.com/bluetape4k/bluetape4k-graph/issues/548)
 - Branch: `fix/issue-548-tinkerpop-chunk-lifecycle`
 - Base: PR #569의 live exact head `88f85ce15c2c48cfd9a5c1cdac6a8294841dceab`를
-  부모로 삼고, 현재 변경 head는 `63cb311a`다.
+  부모로 삼고, 현재 변경 head는 `ba090d7b97b86247da68dad91b8a2a459707742c`다.
 - Module scope: `bluetape4k-graph-tinkerpop`의 sync vertex/edge chunk와
   suspend/Flow chunk 경로
 - Scope boundary: AGE, Neo4j, Memgraph, FalkorDB driver cursor API와
@@ -15,7 +15,7 @@
 
 | Tier | 판정 | 근거 |
 |---|---|---|
-| T1 컴파일·ABI | PASS | 기존 `find*ByLabelChunked`의 `Sequence` 반환 ABI를 유지하고, 조기 종료용 `CloseableChunkSequence` cursor API를 additive로 추가했다. 생성자는 private이며 `javap`에서 보이는 `DefaultConstructorMarker` 생성자는 `ACC_SYNTHETIC`으로 공개 API가 아니다. test compile과 public-surface 확인이 통과했다. |
+| T1 컴파일·ABI | PASS | 기존 `find*ByLabelChunked`의 `Sequence` 반환 ABI를 유지하고, 조기 종료용 `CloseableChunkSequence` cursor API를 additive로 추가했다. 생성자는 private이며 `javap`에서 보이는 `DefaultConstructorMarker` 생성자는 `ACC_SYNTHETIC`으로 공개 API가 아니다. internal factory와 companion factory도 `@JvmSynthetic`/`ACC_SYNTHETIC`으로 Java 공개 surface를 차단했다. test compile과 public-surface 확인이 통과했다. |
 | T2 lazy 동작 | PASS | `TraversalChunkIterator`는 요청 chunk 크기만 소비하고, public vertex/edge cursor의 `take(1)` 회귀 테스트가 첫 chunk만 관찰한다. 전체 결과를 `toList()`로 선 materialize하지 않는다. |
 | T3 실패·취소 | PASS | cursor는 mapper/iterator 예외에서 close 후 원래 예외를 재전파한다. suspend Flow는 `finally`에서 cursor를 닫으며 `take(1)`, timeout cancellation, iterator 예외 회귀가 close를 확인한다. close 실패는 원래 예외에 suppressed로 붙인다. |
 | T4 보안·노출 | PASS | 로그·credential·backend URI를 추가하지 않았고 runtime dependency도 추가하지 않았다. cursor 오류 메시지는 운영 secret을 포함하지 않는다. |
@@ -36,6 +36,7 @@
 - ABI: `javap` public-surface check confirms the existing `Sequence` methods and
   additive `CloseableChunkSequence` cursor methods — PASS. `CloseableChunkSequence`
   primary constructor는 private이고 synthetic marker constructor만 생성된다.
+  internal factory/companion factory는 `ACC_SYNTHETIC`이다.
   This module does not expose a `checkProductionAbi` Gradle task.
 - Static/hygiene: `git diff --check` — PASS.
 - Backend conformance: 변경 없는 영향 확인 목적으로 현재 head에서 AGE →

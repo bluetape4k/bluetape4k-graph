@@ -18,6 +18,7 @@ public class CloseableChunkSequence<T> private constructor(
 ) : Sequence<T>, AutoCloseable {
 
     internal companion object {
+        @JvmSynthetic
         fun <T> create(
             iteratorFactory: () -> CloseableChunkIterator<T>,
         ): CloseableChunkSequence<T> = CloseableChunkSequence(iteratorFactory)
@@ -110,6 +111,7 @@ public class CloseableChunkSequence<T> private constructor(
     }
 }
 
+@JvmSynthetic
 internal fun <T> closeableChunkSequence(
     iteratorFactory: () -> CloseableChunkIterator<T>,
 ): CloseableChunkSequence<T> = CloseableChunkSequence.create(iteratorFactory)
