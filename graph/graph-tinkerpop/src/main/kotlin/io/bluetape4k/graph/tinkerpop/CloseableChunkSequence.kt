@@ -13,9 +13,15 @@ import kotlin.concurrent.withLock
  * 일반 `Sequence`처럼 사용할 수 있고, 부분 소비는 `try/finally` 또는
  * `use`로 수명 경계를 명시한다.
  */
-public class CloseableChunkSequence<T> internal constructor(
+public class CloseableChunkSequence<T> private constructor(
     private val iteratorFactory: () -> CloseableChunkIterator<T>,
 ) : Sequence<T>, AutoCloseable {
+
+    internal companion object {
+        fun <T> create(
+            iteratorFactory: () -> CloseableChunkIterator<T>,
+        ): CloseableChunkSequence<T> = CloseableChunkSequence(iteratorFactory)
+    }
 
     private val lock = ReentrantLock()
     private val activeIterators = LinkedHashSet<TrackedCloseableChunkIterator>()
@@ -103,6 +109,10 @@ public class CloseableChunkSequence<T> internal constructor(
         }
     }
 }
+
+internal fun <T> closeableChunkSequence(
+    iteratorFactory: () -> CloseableChunkIterator<T>,
+): CloseableChunkSequence<T> = CloseableChunkSequence.create(iteratorFactory)
 
 /** [CloseableChunkSequence]가 소유하는 close 가능한 iterator다. */
 internal interface CloseableChunkIterator<T> : Iterator<T>, AutoCloseable

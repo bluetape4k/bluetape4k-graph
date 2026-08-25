@@ -269,7 +269,7 @@ class TinkerGraphOperations :
         label.requireNotBlank("label")
         chunkSize.requirePositiveNumber("chunkSize")
 
-        return CloseableChunkSequence {
+        return closeableChunkSequence {
             val traversal = g.V().hasLabel(label)
             filter.forEach { (key, value) ->
                 traversal.has(key, value)
@@ -430,7 +430,7 @@ class TinkerGraphOperations :
         label.requireNotBlank("label")
         chunkSize.requirePositiveNumber("chunkSize")
 
-        return CloseableChunkSequence {
+        return closeableChunkSequence {
             val traversal = g.E().hasLabel(label)
             filter.forEach { (key, value) ->
                 traversal.has(key, value)

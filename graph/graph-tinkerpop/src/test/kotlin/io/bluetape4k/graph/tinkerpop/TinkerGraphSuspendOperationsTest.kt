@@ -106,7 +106,7 @@ class TinkerGraphSuspendOperationsTest {
 
         var takeClosed = false
         closeAwareChunkFlow {
-            CloseableChunkSequence<List<Int>> {
+            closeableChunkSequence<List<Int>> {
                 closeableValues(listOf(listOf(1), listOf(2))) { takeClosed = true }
             }
         }.take(1).toList()
@@ -117,7 +117,7 @@ class TinkerGraphSuspendOperationsTest {
         assertFailsWith<TimeoutCancellationException> {
             withTimeout(100) {
                 closeAwareChunkFlow {
-                    CloseableChunkSequence<List<Int>> {
+                    closeableChunkSequence<List<Int>> {
                         closeableValues(listOf(listOf(1), listOf(2))) { cancellationClosed = true }
                     }
                 }.onEach { delay(1_000) }.collect()
@@ -129,7 +129,7 @@ class TinkerGraphSuspendOperationsTest {
         var failureClosed = false
         assertFailsWith<IllegalStateException> {
             closeAwareChunkFlow {
-                CloseableChunkSequence<List<Int>> {
+                closeableChunkSequence<List<Int>> {
                     closeableFailure(IllegalStateException("chunk failure")) { failureClosed = true }
                 }
             }.toList()

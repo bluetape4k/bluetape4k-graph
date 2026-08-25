@@ -262,8 +262,12 @@ class TinkerGraphOperationsTest {
     fun `bounded traversal cursor는 첫 chunk만 소비하고 traversal close를 전파한다`() {
         var consumed = 0
         val closeEvents = mutableListOf<String>()
-        val traversal = trackingTraversal((1..100).toList(), closeEvents) { consumed++ }
-        val cursor = CloseableChunkSequence {
+        val traversal = trackingTraversal(
+            values = (1..100).toList(),
+            closeEvents = closeEvents,
+            onNext = { consumed++ },
+        )
+        val cursor = closeableChunkSequence {
             TraversalChunkIterator(traversal, 2) { it }
         }
 
@@ -288,7 +292,7 @@ class TinkerGraphOperationsTest {
             onNext = { events += "next" },
             closeFailure = closeFailure,
         )
-        val cursor = CloseableChunkSequence {
+        val cursor = closeableChunkSequence {
             TraversalChunkIterator(traversal, 1) {
                 events += "mapper"
                 error("mapper failure")
