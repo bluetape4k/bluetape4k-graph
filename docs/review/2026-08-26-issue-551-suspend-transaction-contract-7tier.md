@@ -6,8 +6,12 @@
 - 대상 모듈: `graph-core`, `graph-age`, `graph-neo4j`, `graph-memgraph`,
   `graph-tinkerpop`
 - 기준 base: PR [#573](https://github.com/bluetape4k/bluetape4k-graph/pull/573)의
-  live exact head `186ea8af18192d8fe1e8024bc78cc80b7f235bc1`; 최종 review head는
-  branch push 후 GitHub PR metadata로 재확인한다.
+  live exact head `186ea8af18192d8fe1e8024bc78cc80b7f235bc1`.
+- 현재 review ref: PR [#574](https://github.com/bluetape4k/bluetape4k-graph/pull/574)의
+  live exact head를 GitHub metadata에서 authoritative receipt로 재확인한다. 최초
+  review 관찰 head는 `b9decdc36f68dd005eb396465fa58e751a94aad5`였으며, 이 문서는
+  self-referential SHA를 기준으로 삼지 않는다. hosted checks와 review threads는
+  현재 대기 중이다.
 - 검토 결정: 최상위 `Flow`는 commit 전에 materialize하고, 표준 컨테이너 내부의
   중첩 `Flow`는 `IllegalArgumentException`으로 거부한다. 임의 사용자 wrapper는
   reflection 없이 호출자 책임으로 둔다.
@@ -71,8 +75,8 @@
 - P0/P1 merge blocker: 현재 없음.
 - WATCH: custom wrapper 책임과 #552 driver stall cancellation은 명시적 후속
   범위다.
-- 최종 PR 생성 후 exact head, hosted checks, review threads를 다시 읽어 이 문서의
-  기준 ref와 verdict를 갱신한다.
+- PR #574 exact head는 live metadata와 대조했으며, hosted checks와 review threads
+  완료 후 SPW-05를 갱신한다.
 
 ## SPW writer gate
 
