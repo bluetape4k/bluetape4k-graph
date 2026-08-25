@@ -4,7 +4,7 @@
 
 - 대상 이슈: [#550](https://github.com/bluetape4k/bluetape4k-graph/issues/550)
 - 대상 모듈: `graph/graph-age`
-- 기준 ref: `fix/issue-550-age-streaming-fetch-retry` exact HEAD `ecd0729a69cc09d465e78e59826024aaade20579` (현재 PR 생성 전; base는 #535 PR #572 exact head `03513d1a68bddda34105e2f48cb67bd0eb4ee0e6`)
+- 기준 ref: `fix/issue-550-age-streaming-fetch-retry` exact HEAD `1b59e6df427de509127efe89c6cc0d2d5895a161` (PR #573; base는 #535 PR #572 exact head `03513d1a68bddda34105e2f48cb67bd0eb4ee0e6`)
 - 검토 범위: #535가 구현한 direct `Flow`의 실제 `PreparedStatement.fetchSize` 전달, 비양수 fallback `100`, late `SQLException` 단일 시도·prefix 중복 방지를 AGE Testcontainers와 JDBC proxy에서 관찰한다.
 - 변경 범위: production API·ABI 변경 없이 `AgeGraphSuspendOperationsTest`에 `DataSource`/`Connection`/`PreparedStatement`/`ResultSet` proxy fault injection만 추가한다.
 - 후속 경계: `executeQuery()`/`ResultSet.next()` 자체 stall과 `Statement.cancel()` 연동은 [#552](https://github.com/bluetape4k/bluetape4k-graph/issues/552), nested `Flow` escape는 [#551](https://github.com/bluetape4k/bluetape4k-graph/issues/551)에서 다룬다.
@@ -66,4 +66,4 @@
 - **SPW-02 — Artifact contract: PASS.** 범위, 7-Tier, 독립 검토, findings/disposition, validation, verdict, 후속 경계를 포함한다.
 - **SPW-03 — Korean technical register: PASS.** code token과 명령은 보존하고 현재 구현·관찰·미범위를 분리했다.
 - **SPW-04 — Technical traceability: PASS.** #535 base PR, source test seam, 32/194 test evidence, #551/#552 후속 issue를 연결했다.
-- **SPW-05 — Read-back: PASS.** exact head와 검증 수치를 push/PR 생성 후 live metadata에 다시 대조한다.
+- **SPW-05 — Read-back: PASS.** exact head와 검증 수치를 PR #573 live metadata에 다시 대조했다.
