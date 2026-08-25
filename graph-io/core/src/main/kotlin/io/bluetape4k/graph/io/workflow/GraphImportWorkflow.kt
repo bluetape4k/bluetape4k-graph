@@ -135,7 +135,8 @@ class GraphImportWorkflow(
             require(ALLOWED_TRANSITIONS[current].orEmpty().contains(state)) {
                 "invalid workflow transition: $current -> $state"
             }
-            GraphImportWorkflowReport(manifest.jobId, state)
+            currentReport?.copy(state = state)
+                ?: GraphImportWorkflowReport(manifest.jobId, state)
         }
 
     companion object {

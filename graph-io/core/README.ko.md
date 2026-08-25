@@ -175,7 +175,7 @@ dependencies {
 - **`GraphIoPaths`** — 모든 `GraphImportSource`/`GraphExportSink`에 대해 `BufferedReader`/`BufferedWriter`/`InputStream`/`OutputStream`을 열고, `PathSink`는 부모 디렉터리를 자동 생성하며, 호출자 소유 스트림에는 `closeInput`/`closeOutput` 플래그를 준수합니다. `closeInput/closeOutput=false` 시 스트림을 닫아도 underlying 스트림이 닫히지 않아 안전합니다. `OutputStreamSink`는 항상 `BufferedOutputStream`으로 래핑됩니다.
 - **`GraphIoExternalIdMap`** — 임포트 중 외부 ID → 백엔드 `GraphElementId` 매핑을 추적하고 `DuplicateVertexPolicy`(`FAIL` 또는 `SKIP`)를 강제합니다.
 - **`GraphIoBatchWriter` / `SuspendGraphIoBatchWriter`** — `GraphImportOptions.batchSize`에 따라 `createVertices`/`createEdges`로 플러시하는 라벨별 임포트 쓰기 버퍼입니다.
-- **`GraphImportWorkflow` / `GraphImportJobStateStore`** — multi-source 임포트 manifest를 검증하고 순서가 있는 job state를 저장합니다. store의 `update` 경계는 한 JVM store 인스턴스에서 load/검증/save를 원자적으로 수행하며, transform은 순수하고 retry-safe해야 하고 durable store는 native transaction 또는 CAS로 override해야 합니다.
+- **`GraphImportWorkflow` / `GraphImportJobStateStore`** — multi-source 임포트 manifest를 검증하고 순서가 있는 job state를 저장합니다. store의 `update` 경계는 한 JVM store 인스턴스에서 load/검증/save를 원자적으로 수행하며, 전이할 때 `copy(state = ...)`를 사용해 기존 `sources`·`elapsed`·`checkpoint` payload를 보존합니다. transform은 순수하고 retry-safe해야 하며 durable store는 native transaction 또는 CAS로 override해야 합니다.
 - **`GraphIoStopwatch`** — 포맷 임포터/익스포터가 `report.elapsed`에 사용하는 밀리초 단위 타이머.
 - **`VirtualThreadGraphBulkAdapter`** — 동기 `GraphBulkImporter`/`GraphBulkExporter`를 `CompletableFuture` 기반 Virtual Thread 비동기 변형으로 래핑합니다.
 
