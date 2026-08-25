@@ -7,7 +7,7 @@
 #546(PR #567)은 #545 exact head 위에서 7개 예제 모듈의 suspend teardown을 정렬하고 hosted 검증을 대기 중이며,
 #547(PR #568)은 #546 exact head 위에서 catalog ownership과 retry-only CI evidence를 정렬했고 hosted exact-head checks가 모두 통과했으며 review·최종 merge를 대기 중이다.
 #536은 #547 exact head 위에 bounded capability contract를 적층한 PR #569의 hosted checks가 모두 통과했으며 review·최종 merge를 대기 중이다. #548은 #536 exact head 위의 PR #570에서 close-aware TinkerGraph lifecycle과 cursor README를 정렬했고 hosted checks·독립 review를 대기 중이다. #549는 #548 exact head 위의 PR #571에서 enum compatibility policy를 정비했다. #535는 #549 PR #571 exact head 위의 PR #572에서 AGE suspend Flow 선행 계약을 적층했고 hosted 검증·리뷰를 대기 중이다. 후속 `1.0.0` issue는 dependency 순서를 따라 같은 train에
-순차적으로 쌓고 최종 일괄 merge 승인 전까지 병합하지 않는다. #550은 #535 PR #572 exact head 위에 fault-injection 검증을 적층한다.
+순차적으로 쌓고 최종 일괄 merge 승인 전까지 병합하지 않는다. #550은 #535 PR #572 exact head 위의 PR #573에서 fault-injection 검증을 적층했고 hosted 검증·리뷰를 대기 중이다.
 최신 GitHub release: `0.6.0` (2026-08-05); 현재 개발 기준선은 `1.0.0`이다.
 
 ## 최근 완료 및 현재 `1.0.0` stacked train
@@ -26,7 +26,7 @@
 | [#548](https://github.com/bluetape4k/bluetape4k-graph/issues/548) | PR #570 검증 대기 | #536 exact head 위에서 기존 `Sequence` ABI를 유지한 additive close-aware vertex/edge cursor와 suspend Flow `finally` close를 구현했다. TinkerGraph sync/suspend targeted 67개, compile, Detekt, public `javap` ABI 확인과 AGE→Neo4j→Memgraph→FalkorDB 순차 conformance가 통과했고 internal factory JVM surface는 `@JvmSynthetic`으로 숨겼다. 모듈 EN/KO README에 cursor use와 legacy Sequence 제한을 기록했으며 hosted checks·독립 review와 최종 train merge를 대기 중이다. #549가 이 exact head 위에 쌓였다. |
 | [#549](https://github.com/bluetape4k/bluetape4k-graph/issues/549) | PR #571 검증 대기 | graph-core와 주요 소비 모듈의 `GraphCapability` exhaustive consumer를 inventory하고, enum ordinal/name 보존·외부 `else` unknown policy·`fromSerializedNameOrNull` forward-compatible parser를 추가했다. graph-core 352개 test, Detekt, 순차 capability conformance와 문서·release evidence를 완료했다. 전체 train merge는 마지막 승인 단계에서만 수행한다. |
 | [#535](https://github.com/bluetape4k/bluetape4k-graph/issues/535) | PR #572 검증 대기 | #549 PR #571 exact head 위에서 AGE suspend direct Flow의 `Dispatchers.IO`·cursor·positive fetch size·`maxAttempts=1`·cancellation cleanup 계약을 고정했다. AGE targeted/full test 29/191, compile, Detekt, 문서·7-Tier evidence를 재검증했고 PR #572 hosted 검증·리뷰를 대기 중이다. #550은 이 PR의 exact head 위에 쌓는다. |
-| [#550](https://github.com/bluetape4k/bluetape4k-graph/issues/550) | PR 준비 중 | #535 PR #572 exact head 위에서 실제 `PreparedStatement.fetchSize` `8`/fallback `100`과 late `SQLException` 단일 시도·prefix 비중복을 JDBC proxy fault injection으로 관찰했다. AGE targeted/full 32/194, compile, Detekt, review evidence를 완료하고 PR을 생성한다. |
+| [#550](https://github.com/bluetape4k/bluetape4k-graph/issues/550) | PR #573 검증 대기 | #535 PR #572 exact head 위에서 실제 `PreparedStatement.fetchSize` `8`/fallback `100`과 late `SQLException` 단일 시도·prefix 비중복을 JDBC proxy fault injection으로 관찰했다. AGE targeted/full 32/194, compile, Detekt, 7-Tier review·lesson evidence를 완료했고 PR #573 hosted 검증·리뷰를 대기 중이다. |
 
 이전 완료 순서는 `#527 → #525 → #526`이다. 현재 train은 `#543 → #544 → #545 → #546 → #547 → #536 → #548 → #549 → #535`
 순서이며, 각 PR은 이전 exact head를 base로 삼고 최종 일괄 merge 승인 전에는
