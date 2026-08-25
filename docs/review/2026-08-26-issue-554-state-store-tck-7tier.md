@@ -7,12 +7,13 @@
 - stacked base: PR [#577](https://github.com/bluetape4k/bluetape4k-graph/pull/577)의
   live exact head `c3ac327a23730b977c5ffc03d730b0fc8abecdcd`
 - branch: `fix/issue-554-state-store-tck-stacked`
-- implementation commits: `98dddf35`, `ccc6c7ac`
+- implementation commits: `98dddf35`, `ccc6c7ac`, `6037a01a`, `0bca9697`
 - retry guard commit: `4375f03f`
 - 판정: **PASS / WATCH** (P0/P1 blocker 없음)
-- WATCH: 실제 durable adapter가 아직 없으므로 CAS/transaction 운영 성공을 이
-  slice가 증명하지 않는다. adapter 구현 시 retry harness를 연결해 이 TCK를
-  실행해야 한다. 기본 store monitor 병렬성은 [#555](https://github.com/bluetape4k/bluetape4k-graph/issues/555)로 분리한다.
+- WATCH: 실제 durable adapter가 아직 없으므로 CAS/transaction 운영 성공과
+  partial-write rollback을 이 slice가 증명하지 않는다. adapter 구현 시 retry 및
+  rollback harness를 연결해 이 TCK를 실행해야 한다. 기본 store monitor 병렬성은
+  [#555](https://github.com/bluetape4k/bluetape4k-graph/issues/555)로 분리한다.
 
 ## SPW evidence ledger
 
@@ -39,8 +40,8 @@
 ## 독립 리뷰 결론
 
 - P0=0, P1=0: 현재 TCK/documentation slice를 막는 결함 없음
-- P2 WATCH: concrete durable adapter와 multi-process contention은 저장소에 없어
-  이 PR에서 허위 green으로 주장하지 않음
+- P2 WATCH: concrete durable adapter의 multi-process contention과 partial-write
+  rollback은 저장소에 없어 이 PR에서 허위 green으로 주장하지 않음
 - P3: 기본 store 전체 monitor 범위는 [#555](https://github.com/bluetape4k/bluetape4k-graph/issues/555)에서 별도 측정
 - N/A: suspend state-store counterpart와 production durable caller는 source 검색에
   없어 API를 추가하지 않음
@@ -54,9 +55,12 @@
 - `git diff --check`: PASS
 - `SUSPEND_COUNTERPART_MATCHES=0`: suspend state-store counterpart 없음
 - implementation commits `98dddf35`, `ccc6c7ac`, retry guard `4375f03f`,
-  docs receipt `68fa57d7`
-- PR #578 exact base/head와 hosted CI·Examples run URL/result는 최종 lifecycle
-  receipt로 갱신
+  portability fix `6037a01a`, matcher hardening `0bca9697`
+- implementation exact head `0bca9697cfd23783ac611b72f4585890535cec54`에서 hosted
+  CI [32896770041](https://github.com/bluetape4k/bluetape4k-graph/actions/runs/32896770041)
+  와 Examples [32896770312](https://github.com/bluetape4k/bluetape4k-graph/actions/runs/32896770312)이
+  모두 성공했다. 이 문서 sync commit은 그 receipt를 보존하며, docs-only 최종
+  head의 checks는 PR read-back에서 다시 확인한다.
 
 ## 최종 결론
 
