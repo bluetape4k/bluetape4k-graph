@@ -27,6 +27,11 @@
 
 ### 변경
 
+- **Catalog ownership and retry-only CI evidence**: local `bluetape4k` version
+  alias를 중앙 immutable `bt4k` catalog ownership으로 정리하고, examples
+  build와 graph-core test의 bounded retry가 첫 실패 log·attempt count·
+  `success_after_retry`를 별도 evidence로 보존하도록 공통 helper와 governance
+  계약을 추가했다 ([#547](https://github.com/bluetape4k/bluetape4k-graph/issues/547)).
 - **Graph image/document contract alignment**: 공용 graph launcher와 현재
   중앙 catalog에 맞춰 Neo4j `5.26.29`, Memgraph `3.12.0`, Apache AGE
   `release_PG18_1.7.0`, FalkorDB `v4.20.2` 및 Java 25/Kotlin 2.4.10 기준을

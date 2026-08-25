@@ -35,7 +35,8 @@ junit-platform = "6.0.3"  # https://mvnrepository.com/artifact/org.junit.platfor
 
 [libraries]
 
-# bluetape4k
+# bluetape4k shared BOM and library versions are owned by the `bt4k` catalog
+# imported in settings.gradle.kts; keep no local version alias for that family.
 
 # kotlin
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom" }
