@@ -10,7 +10,7 @@
 - implementation HEAD: `88cc9676dfbbd48c7b700c51854f7380ee6fe07a`
 - 설계·리뷰·WIP receipt commit: `09ceee92`
 - 판정: **PASS / WATCH** (P0/P1 blocker 없음)
-- 외부 상태: PR 생성 전 local candidate 검증 단계이며 merge와 이슈 close는 수행하지 않음
+- 외부 상태: PR [#577](https://github.com/bluetape4k/bluetape4k-graph/pull/577) 생성 완료. 첫 hosted CI·Examples 검증은 성공했으며, 문서 live-state 동기화 후 재검증한다. merge와 이슈 close는 수행하지 않음
 
 ## SPW evidence ledger
 
@@ -51,12 +51,12 @@
 - 금지 assertion scan: `assertThrows`, `kotlin.test.assertFailsWith`, `shouldThrow`,
   `invoking {` 없음
 - `git diff --check`: PASS
-- implementation candidate: `88cc9676dfbbd48c7b700c51854f7380ee6fe07a`
-- 문서 receipt: `09ceee92`
+- implementation commit: `88cc9676dfbbd48c7b700c51854f7380ee6fe07a`
+- 문서 receipt chain: `09ceee92`, 이후 PR lifecycle read-back 보정 커밋 포함
 
 ## 최종 결론
 
 `#553`은 #576의 atomic update 경계 안에서 state만 바꾸고 기존 report payload를
-보존한다. **PR readiness: PASS / Architecture status: WATCH**. PR 생성 후 hosted
-exact-head checks와 review read-back을 추가하고, 최종 train merge는 마지막 승인
-단계에서만 수행한다.
+보존한다. **PR readiness: PASS / Architecture status: WATCH**. PR #577의 첫
+hosted exact-head checks가 성공했으며 문서 live-state 보정 후 재실행 결과를 확인한다.
+최종 train merge는 마지막 승인 단계에서만 수행한다.
