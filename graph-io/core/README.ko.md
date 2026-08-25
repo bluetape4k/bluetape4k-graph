@@ -202,9 +202,13 @@ dependencies {
 `AbstractGraphImportJobStateStoreContractTest`를 상속하고 `createStore()`를
 구현하면 최신 report 갱신, 최초 report 생성, 저장하지 않는 `jobId` mismatch
 거부, transform 실패 원자성을 검증합니다. CAS 또는 transaction 기반
-adapter는 `AbstractGraphImportJobStateStoreRetryContractTest`를 추가로
-상속하고 contention retry를 주입하는 adapter 전용
+adapter는 저장 실패를 주입하려면 `AbstractGraphImportJobStateStoreFailureContractTest`를
+추가로 상속하고 원래 report가 보존되는지 검증하는
+`GraphImportJobStateStoreFailureHarness`를 제공할 수 있습니다. CAS 또는
+transaction 기반 adapter는 `AbstractGraphImportJobStateStoreRetryContractTest`를
+추가로 상속하고 contention retry를 주입하는 adapter 전용
 `GraphImportJobStateStoreRetryHarness`를 제공할 수 있습니다. retry 계약은
+retry 경로의 `jobId` mismatch 거부와 stale 첫 결과 미저장을 함께 확인하며,
 transform이 순수하고 재시도에 안전하며 최신 report로 계산한 결과만 저장하도록
 요구하지만, durable 구현 자체를 제공하지는 않습니다.
 

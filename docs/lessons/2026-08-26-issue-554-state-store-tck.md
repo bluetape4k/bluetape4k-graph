@@ -28,10 +28,11 @@ production durable API가 아니며, 실제 adapter가 각자의 transaction/CAS
 - README에는 composite build용 `testFixtures(project(...))`와 published
   module용 `testFixtures("io.github.bluetape4k.graph:...")` 소비 표기를 모두
   기록해 TCK handoff가 build 형태에 종속되지 않게 했다.
-- implementation commit `98dddf35`는 production API 변경 없이 TCK와 KDoc만
-  추가하며, 문서 receipt는 후속 commit에서 분리한다.
-- targeted TCK 6/6, graph-io-core full 149/149, Detekt, 금지 assertion scan,
-  `git diff --check` 통과
+- implementation commits `98dddf35`, `ccc6c7ac`는 production API 변경 없이
+  TCK와 KDoc만 추가하며, retry guard `4375f03f`와 docs receipt `68fa57d7`를
+  분리해 exact lifecycle을 추적한다.
+- targeted TCK 8/8 (retry mismatch·save failure 포함), graph-io-core full
+  151/151, Detekt, 금지 assertion scan, `git diff --check` 통과
 - hosted exact-head CI·Examples와 PR lifecycle receipt는 PR 생성 후 최신 head로
   다시 기록
 
@@ -43,5 +44,5 @@ production durable API가 아니며, 실제 adapter가 각자의 transaction/CAS
    test-only in-memory harness의 증거로 대체하지 않는다.
 3. 기본 store 전체 monitor의 head-of-line blocking 개선은 #555에서 별도 성능
    근거를 만든다.
-4. PR #578 생성 후 exact head hosted CI·Examples와 review read-back을 확인하고,
+4. PR #578 exact head hosted CI·Examples와 review read-back을 확인하고,
    전체 train 마지막 승인 전에는 merge하지 않는다.

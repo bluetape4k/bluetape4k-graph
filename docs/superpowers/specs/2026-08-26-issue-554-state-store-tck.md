@@ -8,7 +8,7 @@
 - 선행 PR: [#577](https://github.com/bluetape4k/bluetape4k-graph/pull/577)
 - 선행 exact head: `c3ac327a23730b977c5ffc03d730b0fc8abecdcd`
 - 작업 branch: `fix/issue-554-state-store-tck-stacked`
-- implementation commit: `98dddf35`
+- implementation commits: `98dddf35`, `ccc6c7ac`
 - 범위: 기본 in-memory store와 향후 durable CAS/transaction adapter가 공유할
   `GraphImportJobStateStore` contract TCK와 retry 경계 문서화
 
@@ -28,10 +28,13 @@ invariant·failure atomicity를 공통 테스트로 재사용할 방법이 없�
    - job이 없을 때 최초 report를 생성한다.
    - 요청 `jobId`와 다른 결과는 저장하지 않고 실패한다.
    - transform 실패 시 기존 report를 보존한다.
-3. `AbstractGraphImportJobStateStoreRetryContractTest`와
+3. `AbstractGraphImportJobStateStoreFailureContractTest`와
+   test-only `GraphImportJobStateStoreFailureHarness`는 atomic save 실패를
+   주입해 기존 report가 보존되는지 검증한다.
+4. `AbstractGraphImportJobStateStoreRetryContractTest`와
    test-only `GraphImportJobStateStoreRetryHarness`는 CAS/transaction adapter가
    contention retry에서 최신 report를 다시 읽고, retry 결과만 저장하며,
-   mismatch 전에 `save`를 호출하지 않는지 검증한다. 실제 adapter는
+   retry 경로의 `jobId` mismatch를 저장 없이 실패시키는지 검증한다. 실제 adapter는
    충돌 주입을 위한 adapter 전용 harness만 제공한다.
 4. `GraphImportJobStateStore.update` KDoc와 graph-io-core README EN/KO에
    pure/retry-safe transform, 결과 `jobId` invariant, durable override의
@@ -48,7 +51,7 @@ invariant·failure atomicity를 공통 테스트로 재사용할 방법이 없�
 | --- | --- |
 | contention/retry 재현 | test fixture retry harness가 intervening report를 주입하고 transform을 2회 평가 |
 | `jobId` mismatch 저장 금지 | 결과 mismatch 예외와 save invocation 불변을 함께 검증 |
-| failure atomicity | transform 실패 후 기존 report와 저장 결과 보존 검증 |
+| failure atomicity | transform 실패와 atomic save 실패 후 기존 report 보존 검증 |
 | retry-safe 규칙 문서화 | `GraphImportJobStateStore.update` KDoc, README EN/KO |
 | graph-io-core 품질 | targeted/full test, Detekt, 금지 assertion scan, `git diff --check` |
 

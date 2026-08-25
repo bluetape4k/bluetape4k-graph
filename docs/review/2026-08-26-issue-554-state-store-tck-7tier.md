@@ -7,7 +7,8 @@
 - stacked base: PR [#577](https://github.com/bluetape4k/bluetape4k-graph/pull/577)의
   live exact head `c3ac327a23730b977c5ffc03d730b0fc8abecdcd`
 - branch: `fix/issue-554-state-store-tck-stacked`
-- implementation commit: `98dddf35`
+- implementation commits: `98dddf35`, `ccc6c7ac`
+- retry guard commit: `4375f03f`
 - 판정: **PASS / WATCH** (P0/P1 blocker 없음)
 - WATCH: 실제 durable adapter가 아직 없으므로 CAS/transaction 운영 성공을 이
   slice가 증명하지 않는다. adapter 구현 시 retry harness를 연결해 이 TCK를
@@ -30,8 +31,8 @@
 | 1. API/ABI | production signature와 report serialization을 깨뜨리는가 | PASS. `GraphImportJobStateStore` method와 data class ABI를 유지하고 KDoc만 보강 |
 | 2. Kotlin/Bluetape 패턴 | 불변성·null safety·의도 matcher를 지키는가 | PASS. `copy`, `shouldNotBeNull`, `assertFailsWith`, shared test fixture를 사용 |
 | 3. 상태·동시성 | stale transition을 버리고 최신 report로 retry하는가 | PASS. retry harness가 intervening report를 저장한 뒤 transform을 재평가하고 첫 결과를 저장하지 않음 |
-| 4. 오류·계약 | mismatch·transform 실패가 state를 오염시키는가 | PASS. mismatch는 save invocation 없이 실패하고 transform 실패 후 기존 report를 재조회 |
-| 5. 테스트 | 기본 구현과 future durable adapter가 같은 TCK를 재사용하는가 | PASS. `java-test-fixtures` variant, project/external Gradle 소비 예시와 기본 in-memory reference harness 제공 |
+| 4. 오류·계약 | mismatch·transform·save 실패가 state를 오염시키는가 | PASS. 기본·retry 경로 mismatch는 save 없이 실패하고 transform/save 실패 후 기존 report를 재조회 |
+| 5. 테스트 | 기본 구현과 future durable adapter가 같은 TCK를 재사용하는가 | PASS. `java-test-fixtures` variant, project/external Gradle 소비 예시, failure/retry harness와 기본 in-memory reference harness 제공 |
 | 6. 문서·호환성 | durable override 경계와 retry-safe 규칙이 reader-facing 문서와 일치하는가 | PASS. KDoc 및 README EN/KO에 동일 계약 기록 |
 | 7. 운영·유지보수 | exact receipt와 후속 위험이 추적 가능한가 | WATCH. hosted PR checks는 exact head에서 확인하며, 실제 durable backend 운영 검증은 후속 scope |
 
@@ -46,14 +47,16 @@
 
 ## 검증 영수증
 
-- targeted TCK: `InMemoryGraphImportJobStateStoreContractTest` 6/6 PASS
-- full: `:bluetape4k-graph-io-core:test` `SUCCESS: Executed 149 tests`
+- targeted TCK: `InMemoryGraphImportJobStateStoreContractTest` 8/8 PASS (retry mismatch·save failure 포함)
+- full: `:bluetape4k-graph-io-core:test` `SUCCESS: Executed 151 tests`
 - `:bluetape4k-graph-io-core:detekt`: PASS (`BUILD SUCCESSFUL`)
 - 금지 assertion scan: `assertThrows`, `kotlin.test.assertFailsWith`, `shouldThrow`, `invoking {` 없음
 - `git diff --check`: PASS
 - `SUSPEND_COUNTERPART_MATCHES=0`: suspend state-store counterpart 없음
-- implementation/docs commit과 PR exact base/head, hosted CI·Examples run URL/result는
-  PR 생성 후 최신 lifecycle receipt로 갱신
+- implementation commits `98dddf35`, `ccc6c7ac`, retry guard `4375f03f`,
+  docs receipt `68fa57d7`
+- PR #578 exact base/head와 hosted CI·Examples run URL/result는 최종 lifecycle
+  receipt로 갱신
 
 ## 최종 결론
 

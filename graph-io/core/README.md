@@ -202,12 +202,17 @@ dependencies {
 Extend `AbstractGraphImportJobStateStoreContractTest` and provide
 `createStore()` to verify latest-report updates, first-report creation,
 `jobId` mismatch rejection without a save, and transform-failure atomicity.
+Adapters that need an injected save failure can additionally extend
+`AbstractGraphImportJobStateStoreFailureContractTest` and provide a
+`GraphImportJobStateStoreFailureHarness` to verify the existing report is
+unchanged when an atomic save rejects the update.
 CAS or transaction-backed adapters can additionally extend
 `AbstractGraphImportJobStateStoreRetryContractTest` and provide an
 adapter-specific `GraphImportJobStateStoreRetryHarness` to inject a
-contention retry. The retry contract requires a pure, retry-safe transform and
-commits only the result calculated from the latest report; it does not provide
-a durable implementation itself.
+contention retry. It verifies both retry-path `jobId` mismatch rejection and
+that the stale first result is not saved. The retry contract requires a pure,
+retry-safe transform and commits only the result calculated from the latest
+report; it does not provide a durable implementation itself.
 
 ## Usage (Format Implementer's View)
 
