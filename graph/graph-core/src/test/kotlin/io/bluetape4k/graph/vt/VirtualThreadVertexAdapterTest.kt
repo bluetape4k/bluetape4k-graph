@@ -62,7 +62,7 @@ class VirtualThreadVertexAdapterTest {
 
     @Test
     fun `findVertexByIdAsync returns null when missing`() {
-        val result = adapter.findVertexByIdAsync("Person", GraphElementId.of("missing")).join()
+        val result = adapter.findVertexByIdAsync("Person", GraphElementId.of("99999999")).join()
         result shouldBeEqualTo null
     }
 

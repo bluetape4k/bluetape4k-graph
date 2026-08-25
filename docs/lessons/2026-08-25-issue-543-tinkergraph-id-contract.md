@@ -16,6 +16,8 @@ TinkerGraph는 `GraphElementId`를 `Long`으로 변환할 수 없을 때 malform
 - GREEN: TinkerGraph 대상 테스트 77개 통과, `BUILD SUCCESSFUL`.
 - 정적 검증: `:bluetape4k-graph-tinkerpop:compileKotlin`, `:bluetape4k-graph-tinkerpop:detekt`, `git diff --check` 통과.
 - 회귀 범위: sync/suspend CRUD·merge·neighbors·shortest/all paths·Dijkstra/A*·degree centrality·BFS/DFS와 conformance contract를 포함했다.
+- 부모 PR CI 수리: 기존 endpoint/virtual-thread absence fixture가 malformed 문자열을 사용해 `GraphQueryException`을 기대한 `IllegalArgumentException` 계약과 충돌했다. 네 테스트를 valid-but-missing numeric ID(`99999999`)로 교체했다.
+- 수리 GREEN: graph-core targeted 19개, graph-core 전체 349개, TinkerGraph 전체 113개 테스트와 compile/detekt가 통과했다.
 
 ## Miss / surprise
 
@@ -28,8 +30,17 @@ TinkerGraph는 `GraphElementId`를 `Long`으로 변환할 수 없을 때 malform
 - 순서·집합 assertion에는 Kotlin bare `assert` 대신 `io.bluetape4k.assertions`를 사용한다.
 - Gradle test-fixtures를 새 conformance lane에 연결할 때는 fixture jar에 기대 class가 포함됐는지 확인한 뒤 RED/ GREEN을 판정한다.
 
+## Writer DoD
+
+- SPW-01: PASS — 이슈 #543, PR #564, 최초 CI 실패, 수리 파일, exact-head 재검증 대기를 근거로 고정했다.
+- SPW-02: PASS — context, decision, outcome, miss, future guard, 검증과 남은 gate를 포함했다.
+- SPW-03: PASS — 한국어 기술 문체와 코드 토큰을 보존했고 terminology audit에서 2개 파일, findings 0을 확인했다.
+- SPW-04: PASS — 현재 테스트 수와 PR 상태를 소스·실행 결과와 대조했다.
+- SPW-05: PASS — 최종 Markdown을 read-back하고 headings, code tokens, status boundary를 확인했다.
+
 ## DoD
 
 - Issue #543 acceptance criteria: 충족
 - 7-Tier review: blocker 없음
-- PR·merge·release: 사용자 범위 밖, 실행하지 않음
+- PR #564 exact-head CI: 수리 후 재검증 대기
+- merge·release: fresh merge approval 전까지 실행하지 않음

@@ -11,7 +11,10 @@
   - `TinkerGraphSuspendOperationsTest.kt`
   - `TinkerGraphWeightedPathTest.kt`
   - `TinkerGraphCapabilityConformanceTest.kt`
-- 검토 근거: 소스 diff, TinkerGraph 테스트 77개, `compileKotlin`, `detekt`, `git diff --check`
+- 부모 PR CI 수리 파일:
+  - `GraphEndpointValidationTest.kt`
+  - `VirtualThreadVertexAdapterTest.kt`
+- 검토 근거: 소스 diff, graph-core 테스트 349개, TinkerGraph 테스트 113개, compile, detekt, `git diff --check`
 - 입력 계약: malformed ID는 `GraphQueryException`, 숫자 형식이지만 존재하지 않는 ID는 기존 null/false/empty 결과를 유지한다.
 
 ## 7-Tier 결과
@@ -20,11 +23,11 @@
 | --- | --- | --- | --- |
 | 1 | 빌드·API·ABI | `requireNumericId`는 private helper이고 repository 공개 시그니처를 변경하지 않았다. `compileKotlin` 성공. | PASS |
 | 2 | 동작·계약 | 정점/간선 CRUD, merge, neighbors, shortest/all paths, weighted Dijkstra/A*, degree centrality, BFS/DFS의 ID 진입점이 같은 예외 계약을 사용한다. 숫자형 missing ID는 absence semantics를 유지한다. | PASS |
-| 3 | 테스트·assertion | 동기·suspend 회귀 테스트와 conformance 테스트가 malformed/missing을 분리한다. weighted-path custom helper의 bare `assert`를 `shouldBeEqualTo`로 교체해 JVM `-ea`와 무관하게 검증한다. | PASS |
+| 3 | 테스트·assertion | 동기·suspend 회귀 테스트와 conformance 테스트가 malformed/missing을 분리한다. 부모 CI에서 malformed ID를 사용하던 기존 absence fixture 4건을 numeric missing ID로 정렬했고, weighted-path custom helper의 bare `assert`도 `shouldBeEqualTo`로 교체했다. | PASS |
 | 4 | 동시성·coroutine | TinkerGraph suspend 구현은 sync delegate를 사용하며 이번 변경은 lock, transaction rollback 상태 보존, cancellation 경계를 건드리지 않는다. 기존 suspend 테스트와 신규 회귀가 통과한다. | PASS |
 | 5 | Bluetape4k 패턴·생태계 | `io.bluetape4k.assertions.assertFailsWith`와 `shouldContain`/`shouldBeNull`/`shouldBeEqualTo`를 사용했다. 다른 numeric-ID backend와 같은 `GraphQueryException` 계열 계약을 따른다. | PASS |
 | 6 | 문서·호환성 | 공개 API·README·BOM을 변경하지 않는 내부 계약 정렬이다. 이 리뷰와 lesson에 결정·범위·검증·후속 guard를 기록했다. | PASS |
-| 7 | 운영·CI·릴리스 | in-memory TinkerGraph라 Testcontainers 검증은 해당 없음이다. module test/compile/detekt는 통과했으며 PR·CI dispatch·push·release는 사용자 범위 밖이라 실행하지 않았다. | PASS (N/A 경계 포함) |
+| 7 | 운영·CI·릴리스 | in-memory TinkerGraph라 Testcontainers 검증은 해당 없음이다. PR #564 최초 CI에서 malformed fixture 4건이 실패했으나 원인을 확인하고 로컬 graph-core 349개·TinkerGraph 113개 테스트, compile, detekt를 통과했다. exact-head CI 재실행은 남아 있다. | PENDING (CI 재검증) |
 
 ## 심각도별 findings
 
@@ -36,7 +39,7 @@
 ## 추적성과 잔여 위험
 
 - `GraphElementId` 자체는 문자열 value class이므로 backend가 numeric-ID 입력 계약을 명시적으로 검사해야 한다. 이 변경은 TinkerGraph 경계에서만 조기 거부하며 공통 core 모델을 확장하지 않는다.
-- backend 간 전체 conformance matrix 실행과 PR CI는 이번 로컬 이슈 작업의 범위가 아니다. 해당 표면은 PR 생성 승인 후 exact-head 기준으로 다시 검증해야 한다.
+- backend 간 전체 conformance matrix는 이번 TinkerGraph 수리 범위에 포함하지 않았다. PR #564 exact-head CI에서 부모 fixture 수리 결과를 다시 확인해야 한다.
 
 ## Writer DoD (SPW)
 
@@ -48,4 +51,4 @@
 
 ## Verdict
 
-7-Tier 기준 blocker와 미해결 finding이 없어 이슈 #543의 로컬 구현·검증 단계는 PASS다. PR·merge·release 단계는 실행하지 않았다.
+7-Tier 기준 P0/P1 blocker와 미해결 finding은 없다. 이슈 #543의 로컬 구현·수리·검증 단계는 PASS이며, PR #564 exact-head CI 재검증과 merge 단계는 PENDING이다.
