@@ -12,6 +12,7 @@ import io.bluetape4k.graph.io.report.GraphIoProgressListener
 import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.graph.model.GraphEdge
+import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
@@ -19,6 +20,7 @@ import io.bluetape4k.logging.KLogging
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeGreaterThan
 import io.bluetape4k.assertions.shouldContain
+import io.bluetape4k.assertions.shouldNotContain
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.ByteArrayOutputStream
@@ -108,6 +110,49 @@ class CsvRoundTripTest {
     }
 
     @Test
+    fun `sync export freezes the first chunk before backend mutation`(@TempDir dir: Path) {
+        val vOut = dir.resolve("mutation-v.csv")
+        val eOut = dir.resolve("mutation-e.csv")
+        val vertexProperties = linkedMapOf<String, Any?>("name" to "before")
+        val edgeProperties = linkedMapOf<String, Any?>("state" to "before")
+        val backend = MutatingChunkOnlyGraphOperations(
+            vertex = GraphVertex(GraphElementId.of("v-1"), "Person", vertexProperties),
+            edge = GraphEdge(
+                GraphElementId.of("e-1"),
+                "KNOWS",
+                GraphElementId.of("v-1"),
+                GraphElementId.of("v-2"),
+                edgeProperties,
+            ),
+            vertexProperties = vertexProperties,
+            edgeProperties = edgeProperties,
+        )
+
+        val report = CsvGraphBulkExporter().exportGraph(
+            CsvGraphExportSink(GraphExportSink.PathSink(vOut), GraphExportSink.PathSink(eOut)),
+            backend,
+            GraphExportOptions(
+                vertexLabels = setOf("Person"),
+                edgeLabels = setOf("KNOWS"),
+                exportChunkSize = 1,
+            ),
+        )
+
+        report.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        report.verticesWritten shouldBeEqualTo 1L
+        report.edgesWritten shouldBeEqualTo 1L
+        backend.requests shouldBeEqualTo listOf("vertices:1", "edges:1")
+        Files.readString(vOut).also {
+            it shouldContain "before"
+            it shouldNotContain "after"
+        }
+        Files.readString(eOut).also {
+            it shouldContain "before"
+            it shouldNotContain "after"
+        }
+    }
+
+    @Test
     fun `sync export preserves caller-owned output streams`() {
         val vertices = TrackingOutputStream()
         val edges = TrackingOutputStream()
@@ -174,6 +219,44 @@ class CsvRoundTripTest {
         ): Sequence<List<GraphEdge>> {
             requests += "$label:$chunkSize"
             return delegate.findEdgesByLabelChunked(label, filter, chunkSize)
+        }
+    }
+
+    private class MutatingChunkOnlyGraphOperations(
+        private val vertex: GraphVertex,
+        private val edge: GraphEdge,
+        private val vertexProperties: MutableMap<String, Any?>,
+        private val edgeProperties: MutableMap<String, Any?>,
+    ) : GraphOperations by TinkerGraphOperations() {
+
+        val requests = mutableListOf<String>()
+
+        override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> =
+            error("full vertex list lookup must not be used by CSV export")
+
+        override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): List<GraphEdge> =
+            error("full edge list lookup must not be used by CSV export")
+
+        override fun findVerticesByLabelChunked(
+            label: String,
+            filter: Map<String, Any?>,
+            chunkSize: Int,
+        ): Sequence<List<GraphVertex>> = sequence {
+            requests += "vertices:$chunkSize"
+            yield(listOf(vertex))
+            vertexProperties["name"] = "after"
+            yield(emptyList())
+        }
+
+        override fun findEdgesByLabelChunked(
+            label: String,
+            filter: Map<String, Any?>,
+            chunkSize: Int,
+        ): Sequence<List<GraphEdge>> = sequence {
+            requests += "edges:$chunkSize"
+            yield(listOf(edge))
+            edgeProperties["state"] = "after"
+            yield(emptyList())
         }
     }
 

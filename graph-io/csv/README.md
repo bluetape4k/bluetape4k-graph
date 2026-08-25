@@ -313,6 +313,12 @@ and cleanup failures are suppressed behind the original source, sink, or
 cancellation failure. The temporary spool is removed on success, failure, and
 coroutine cancellation.
 
+The CSV bounded-chunk TCK asserts the requested chunk size, one lookup per
+selected label, and preservation of stage-time values when the backend mutates
+after the first chunk. It does not claim bounded source execution for the
+compatibility fallback, whose full label lookup can occur before the first
+chunk is yielded.
+
 ## Streaming reader contract
 
 `CsvGraphRecordFlowReader` emits vertex and edge records as a cold, sequential `Flow` and preserves

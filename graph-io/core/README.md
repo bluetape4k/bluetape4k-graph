@@ -89,8 +89,10 @@ directly.
 `exportChunkSize` controls how many records streaming-capable exporters request
 from chunk-aware repository methods such as `findVerticesByLabelChunked` and
 `findEdgesByLabelChunked`. Backends that do not override those methods use the
-compatible list/Flow fallback, while cursor-aware backends can avoid
-whole-label materialization. Formats that need global headers, such as CSV, may
+compatible list/Flow fallback. That default calls the full label lookup before
+the first chunk is yielded, so it is API chunking only and does not provide a
+bounded source read. Cursor-aware backends can avoid whole-label materialization.
+Formats that need global headers, such as CSV, may
 still need a second logical read. CSV and GraphML exporters satisfy that
 contract with `GraphIoRecordSpool`: each backend chunk is staged once into
 temporary disk records, then replayed for header discovery and output writing.
@@ -99,6 +101,10 @@ active replay streams during cleanup, and deletes its temporary files on normal
 completion, failure, or cancellation. Exporters preserve the original source,
 sink, or cancellation failure and attach cleanup failures as suppressed
 exceptions.
+
+The CSV/GraphML bounded-chunk TCK checks requested chunk size, one label lookup,
+and stage-time record preservation after a backend mutation. It verifies the
+exporter snapshot contract without claiming bounded execution for the fallback.
 
 An empty label set requests all labels through `GraphLabelDiscovery`. A backend
 without that capability must receive explicit labels; exporters fail clearly
