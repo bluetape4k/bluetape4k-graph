@@ -3,7 +3,7 @@
 스냅샷: 2026-08-25 KST
 범위: `1.0.0` milestone closeout 및 `backlog` 후속 큐
 현재 live 상태: #543은 병합 완료, #544(PR #565)는 stacked train에서 검증 대기,
-#545는 #544 exact head 위에서 구현·검증 중이다. 후속 `1.0.0` issue는 같은 train에
+#545(PR #566)는 #544 exact head 위에서 로컬 검증을 완료하고 hosted 검증을 대기 중이다. 후속 `1.0.0` issue는 같은 train에
 순차적으로 쌓고 최종 일괄 merge 승인 전까지 병합하지 않는다.
 최신 GitHub release: `0.6.0` (2026-08-05); 현재 개발 기준선은 `1.0.0`이다.
 
@@ -16,7 +16,7 @@
 | [#526](https://github.com/bluetape4k/bluetape4k-graph/issues/526) | 병합 완료 | PR #532가 `57d3348acb2b5cad1ff3b5e03737cba704fc567a`로 병합되고 이슈가 닫혔다. `neo4j`, `memgraph`, `age`, `falkordb` manifest 기반 changed/full startup·workload gate와 fail-closed release gate를 완성했다. |
 | [#543](https://github.com/bluetape4k/bluetape4k-graph/issues/543) | 병합 완료 | PR #564가 `a553a423271eb99cd69a6ce8bb88d034b27923d2`로 병합되고 이슈가 닫혔다. |
 | [#544](https://github.com/bluetape4k/bluetape4k-graph/issues/544) | PR #565 검증 대기 | `fix/issue-544-neo4j-weighted-assertions` exact head 위에 #545를 쌓는다. 최종 merge 승인 전에는 병합하지 않는다. |
-| [#545](https://github.com/bluetape4k/bluetape4k-graph/issues/545) | 구현·검증 중 | graph management snapshot, AGE initializer 예외 경계, Spring assertion migration을 한 slice로 정렬한다. |
+| [#545](https://github.com/bluetape4k/bluetape4k-graph/issues/545) | PR #566 검증 대기 | graph management 상태 요약, AGE initializer 예외 경계, Spring assertion migration을 한 slice로 정렬했고 로컬 test/Detekt/Kover를 통과했다. |
 
 이전 완료 순서는 `#527 → #525 → #526`이다. 현재 train은 `#543 → #544 → #545`
 순서이며, 각 PR은 이전 exact head를 base로 삼고 최종 일괄 merge 승인 전에는
@@ -28,7 +28,7 @@
 현재 작업 라인 `1.0.0`에는 #544와 #545가 남아 있다. 최근 stacked train은
 Spring/Testcontainers 통합 테스트 계약과 네 graph image family의
 startup/workload gate를 고정했고, 현재는 Spring Boot management·initializer
-계약을 같은 train에 추가 검증 중이다. 아래 `0.7.0` 표와 이전 큐는 historical
+계약을 PR #566으로 추가했고 hosted 검증을 대기 중이다. 아래 `0.7.0` 표와 이전 큐는 historical
 snapshot으로 보존한다.
 
 이전 train의 merge tip은 PR #530의 `a234d7cfd0cd41381982720d06395e5b51226702`,
