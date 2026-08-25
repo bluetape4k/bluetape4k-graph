@@ -21,7 +21,7 @@ transaction/CAS로 override해야 하며 transform은 pure/retry-safe여야 한�
 - 실제 두 번째 task 시작을 보장하는 race 회귀에서 성공 1건/실패 1건을 확인
 - targeted 11/11, graph-io-core 전체 142/142, detekt와 Kotlin compile 통과
 - PR #575 exact head `941c822e40f670ae8d856fad893f0922ae5d8a0d` 위에서
-  candidate exact head `6e648846f4b6079f07a560e101a1978f18c5ac16`을 검증
+  PR #576 exact head `3a9f8e52a07107d365a33e090722d78a10d5c5f0`을 검증
 - README 영어/한국어, design/plan, public KDoc에 JVM-local 및 durable override 경계를 기록
 - 독립 7-Tier review에서 P0/P1=0, merge gate PASS
 - 비차단 후속 이슈 생성: [#553](https://github.com/bluetape4k/bluetape4k-graph/issues/553), [#554](https://github.com/bluetape4k/bluetape4k-graph/issues/554), [#555](https://github.com/bluetape4k/bluetape4k-graph/issues/555)

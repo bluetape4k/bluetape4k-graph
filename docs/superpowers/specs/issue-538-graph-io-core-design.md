@@ -59,7 +59,7 @@ graph-io-core의 workflow store, 두 writer, 회귀 테스트와 계약 문서�
 - 새 예외 검증은 `io.bluetape4k.assertions.assertFailsWith`만 사용한다.
 - 독립 7-Tier review에서 P0/P1이 없고, 남은 P2/P3는 별도 GitHub issue로
   기록한다.
-- candidate exact head `6e648846f4b6079f07a560e101a1978f18c5ac16`에서
+- PR #576 exact head `3a9f8e52a07107d365a33e090722d78a10d5c5f0`에서
   graph-io-core 전체 142 tests와 Detekt를 통과한다.
 
 ## 범위 밖
