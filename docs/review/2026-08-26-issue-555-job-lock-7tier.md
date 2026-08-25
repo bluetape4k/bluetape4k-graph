@@ -8,7 +8,7 @@
   exact head `26b41485d3107a99a555678de85fb455b1000504`
 - branch: `fix/issue-555-state-store-job-lock-stacked`
 - implementation commit: `030f7879`
-- 판정: **PASS / WATCH** (P0/P1 blocker 없음; candidate head hosted PASS)
+- 판정: **PASS / WATCH** (P0/P1 blocker 없음; final head hosted PASS)
 - WATCH: lock 최적화는 JVM-local reference store에 한정한다. 실제 durable
   adapter의 process 간 contention·transaction rollback·정량 성능은 이 PR이
   증명하지 않는다.
@@ -23,7 +23,7 @@
 | SPW-04 | lifecycle/cancellation | 참조 카운트 감소·idle entry 제거, interruptible waiter 회귀 test | PASS |
 | SPW-05 | 테스트·정적 검증 | targeted/full, Detekt, 금지 assertion scan, `git diff --check` | PASS |
 | SPW-06 | 문서·호환성 | KDoc, README EN/KO, 설계·lesson·WIP | PASS |
-| SPW-07 | hosted 운영 증거 | candidate head CI `32899855369`와 Examples `32899855380` terminal PASS; docs-only lifecycle 후 exact final head를 재검증 | PASS |
+| SPW-07 | hosted 운영 증거 | candidate head CI `32899855369`·Examples `32899855380`, final head CI `32900966027`·Examples `32900966048` terminal PASS; PR metadata exact-head read-back | PASS |
 
 ## 7-Tier 결과
 
@@ -35,7 +35,7 @@
 | 4. 오류·취소 | transform 실패나 interrupt가 state/lock을 오염시키는가 | PASS. acquire flag와 `finally` cleanup, interrupted waiter 후 후속 update 성공 |
 | 5. 테스트 | 회귀가 실패 모드까지 재현하는가 | PASS. overlap·serialization·cancel 3개 test와 기존 8개 TCK 유지 |
 | 6. 문서·호환성 | JVM-local/durable 경계와 수용 기준이 일치하는가 | PASS. KDoc·README EN/KO·spec·lesson에 동일 범위 기록 |
-| 7. 운영·유지보수 | exact receipt와 미검증 위험이 추적 가능한가 | PASS/WATCH. candidate exact head hosted receipt는 PASS이며 docs-only final head checks를 추가로 read-back한다 |
+| 7. 운영·유지보수 | exact receipt와 미검증 위험이 추적 가능한가 | PASS/WATCH. final head hosted receipt와 exact base/head·metadata를 read-back했고 durable multi-process·정량 성능은 후속 범위로 남겼다 |
 
 ## 검증 영수증
 
@@ -49,7 +49,12 @@
   와 Examples
   [32899855380](https://github.com/bluetape4k/bluetape4k-graph/actions/runs/32899855380)이
   모두 terminal PASS
-- docs-only lifecycle 후 새 final head의 CI·Examples와 PR metadata를 다시 읽어 최종 receipt로 갱신한다
+- final head `419e1e4ccbe7063514cccabce4fb505efaf538ae`: CI
+  [32900966027](https://github.com/bluetape4k/bluetape4k-graph/actions/runs/32900966027)
+  와 Examples
+  [32900966048](https://github.com/bluetape4k/bluetape4k-graph/actions/runs/32900966048)이
+  모두 terminal PASS; PR #579의 exact base/head와 `MERGEABLE`/`CLEAN` 상태를
+  read-back했다.
 
 ## 최종 결론
 
