@@ -42,7 +42,7 @@ class GraphEndpointValidationTest {
     @Test
     fun `동기 endpoint가 없으면 IllegalArgumentException을 던진다`() {
         assertFailsWith<IllegalArgumentException> {
-            ops.requireEndpoint(GraphElementId.of("missing"), "Person", "personId")
+            ops.requireEndpoint(GraphElementId.of("99999999"), "Person", "personId")
         }
     }
 
@@ -65,7 +65,7 @@ class GraphEndpointValidationTest {
     @Test
     fun `suspend endpoint가 없으면 IllegalArgumentException을 던진다`() = runSuspendIO {
         assertFailsWith<IllegalArgumentException> {
-            suspendOps.requireEndpoint(GraphElementId.of("missing"), "Person", "personId")
+            suspendOps.requireEndpoint(GraphElementId.of("99999999"), "Person", "personId")
         }
     }
 
@@ -88,7 +88,7 @@ class GraphEndpointValidationTest {
     @Test
     fun `virtual thread endpoint가 없으면 IllegalArgumentException으로 실패한다`() {
         val error = assertFailsWith<CompletionException> {
-            virtualThreadOps.requireEndpointAsync(GraphElementId.of("missing"), "Person", "personId").join()
+            virtualThreadOps.requireEndpointAsync(GraphElementId.of("99999999"), "Person", "personId").join()
         }
 
         error.cause shouldBeInstanceOf IllegalArgumentException::class

@@ -2,7 +2,9 @@ package io.bluetape4k.graph.tinkerpop
 
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.graph.GraphQueryException
+import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.Direction
+import io.bluetape4k.graph.model.DegreeOptions
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
@@ -125,6 +127,51 @@ class TinkerGraphSuspendOperationsTest {
         val fakeId = GraphElementId.of("99999999")
         val result = ops.findVertexById("Person", fakeId)
         result.shouldBeNull()
+    }
+
+    @Test
+    @Order(231)
+    fun `malformed id는 suspend repository와 traversal에서 GraphQueryException으로 거부한다`() = runSuspendIO {
+        val malformedId = GraphElementId.of("not-a-number")
+        val missingId = GraphElementId.of("99999999")
+        val operations: List<suspend () -> Any?> = listOf(
+            { ops.findVertexById("Person", malformedId) },
+            { ops.findVertexById(malformedId) },
+            { ops.updateVertex("Person", malformedId, emptyMap()) },
+            { ops.deleteVertex("Person", malformedId) },
+            { ops.findEdgesByStartId(malformedId).toList() },
+            { ops.findEdgesByEndId(malformedId).toList() },
+            { ops.deleteEdge("KNOWS", malformedId) },
+            { ops.neighbors(malformedId, NeighborOptions()).toList() },
+            { ops.shortestPath(malformedId, missingId, PathOptions()) },
+            { ops.shortestPath(malformedId, missingId, PathOptions(weightProperty = "weight")) },
+            { ops.aStarPath(malformedId, missingId, PathOptions(weightProperty = "weight")) { 0.0 } },
+            { ops.allPaths(malformedId, missingId, PathOptions()).toList() },
+            { ops.degreeCentrality(malformedId, DegreeOptions()) },
+            { ops.bfs(malformedId, BfsDfsOptions()).toList() },
+            { ops.dfs(malformedId, BfsDfsOptions()).toList() },
+        )
+
+        operations.forEach { operation ->
+            val failure = assertFailsWith<GraphQueryException> { operation() }
+            failure.message shouldContain "numeric ID"
+        }
+    }
+
+    @Test
+    @Order(232)
+    fun `valid but missing numeric id는 suspend absence semantics를 유지한다`() = runSuspendIO {
+        val missingId = GraphElementId.of("99999999")
+
+        ops.findVertexById("Person", missingId).shouldBeNull()
+        ops.updateVertex("Person", missingId, emptyMap()).shouldBeNull()
+        ops.deleteVertex("Person", missingId).shouldBeFalse()
+        ops.findEdgesByStartId(missingId).toList().shouldHaveSize(0)
+        ops.findEdgesByEndId(missingId).toList().shouldHaveSize(0)
+        ops.deleteEdge("KNOWS", missingId).shouldBeFalse()
+        ops.neighbors(missingId, NeighborOptions()).toList().shouldHaveSize(0)
+        ops.shortestPath(missingId, missingId, PathOptions()).shouldBeNull()
+        ops.allPaths(missingId, missingId, PathOptions()).toList().shouldHaveSize(0)
     }
 
     @Test
