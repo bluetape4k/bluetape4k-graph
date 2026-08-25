@@ -4,7 +4,7 @@
 
 - 대상 이슈: [#550](https://github.com/bluetape4k/bluetape4k-graph/issues/550)
 - 대상 모듈: `graph/graph-age`
-- 기준 ref: `fix/issue-550-age-streaming-fetch-retry` exact HEAD `ff05df33` (현재 PR 생성 전; base는 #535 PR #572 exact head `03513d1a`)
+- 기준 ref: `fix/issue-550-age-streaming-fetch-retry` exact HEAD `ecd0729a69cc09d465e78e59826024aaade20579` (현재 PR 생성 전; base는 #535 PR #572 exact head `03513d1a68bddda34105e2f48cb67bd0eb4ee0e6`)
 - 검토 범위: #535가 구현한 direct `Flow`의 실제 `PreparedStatement.fetchSize` 전달, 비양수 fallback `100`, late `SQLException` 단일 시도·prefix 중복 방지를 AGE Testcontainers와 JDBC proxy에서 관찰한다.
 - 변경 범위: production API·ABI 변경 없이 `AgeGraphSuspendOperationsTest`에 `DataSource`/`Connection`/`PreparedStatement`/`ResultSet` proxy fault injection만 추가한다.
 - 후속 경계: `executeQuery()`/`ResultSet.next()` 자체 stall과 `Statement.cancel()` 연동은 [#552](https://github.com/bluetape4k/bluetape4k-graph/issues/552), nested `Flow` escape는 [#551](https://github.com/bluetape4k/bluetape4k-graph/issues/551)에서 다룬다.
