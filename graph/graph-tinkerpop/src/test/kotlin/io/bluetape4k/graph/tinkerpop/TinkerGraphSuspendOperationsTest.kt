@@ -18,7 +18,10 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.withTimeout
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
@@ -87,6 +90,52 @@ class TinkerGraphSuspendOperationsTest {
         ops.dropGraph("default")
 
         ops.countVertices("Person") shouldBeEqualTo 0L
+    }
+
+    @Test
+    @Order(253)
+    fun `chunk Flow는 take 조기 종료와 iterator 예외에서 cursor를 닫는다`() = runSuspendIO {
+        val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
+        val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
+        ops.findVerticesByLabelChunked("Person", chunkSize = 1)
+            .take(1)
+            .toList()
+            .map { it.size } shouldBeEqualTo listOf(1)
+        ops.createEdge(alice.id, bob.id, "KNOWS")
+        ops.findEdgesByLabelChunked("KNOWS", chunkSize = 1).take(1).toList().map { it.size } shouldBeEqualTo listOf(1)
+
+        var takeClosed = false
+        closeAwareChunkFlow {
+            CloseableChunkSequence<List<Int>> {
+                closeableValues(listOf(listOf(1), listOf(2))) { takeClosed = true }
+            }
+        }.take(1).toList()
+
+        takeClosed.shouldBeTrue()
+
+        var cancellationClosed = false
+        assertFailsWith<TimeoutCancellationException> {
+            withTimeout(100) {
+                closeAwareChunkFlow {
+                    CloseableChunkSequence<List<Int>> {
+                        closeableValues(listOf(listOf(1), listOf(2))) { cancellationClosed = true }
+                    }
+                }.onEach { delay(1_000) }.collect()
+            }
+        }
+
+        cancellationClosed.shouldBeTrue()
+
+        var failureClosed = false
+        assertFailsWith<IllegalStateException> {
+            closeAwareChunkFlow {
+                CloseableChunkSequence<List<Int>> {
+                    closeableFailure(IllegalStateException("chunk failure")) { failureClosed = true }
+                }
+            }.toList()
+        }
+
+        failureClosed.shouldBeTrue()
     }
 
     // ----- 정점(Vertex) CRUD -----
@@ -494,5 +543,45 @@ class TinkerGraphSuspendOperationsTest {
         val paths = ops.allPaths(a.id, c.id, PathOptions(edgeLabel = "KNOWS")).toList()
         paths.shouldNotBeEmpty()
         paths.size shouldBeGreaterOrEqualTo 2
+    }
+}
+
+private fun <T> closeableValues(
+    values: List<T>,
+    onClose: () -> Unit,
+): CloseableChunkIterator<T> = object : CloseableChunkIterator<T> {
+    private val delegate = values.iterator()
+    private var closed = false
+
+    override fun hasNext(): Boolean = !closed && delegate.hasNext()
+
+    override fun next(): T = delegate.next()
+
+    override fun close() {
+        if (!closed) {
+            closed = true
+            onClose()
+        }
+    }
+}
+
+private fun <T> closeableFailure(
+    failure: Throwable,
+    onClose: () -> Unit,
+): CloseableChunkIterator<T> = object : CloseableChunkIterator<T> {
+    private var closed = false
+
+    override fun hasNext(): Boolean {
+        if (closed) return false
+        throw failure
+    }
+
+    override fun next(): T = throw failure
+
+    override fun close() {
+        if (!closed) {
+            closed = true
+            onClose()
+        }
     }
 }

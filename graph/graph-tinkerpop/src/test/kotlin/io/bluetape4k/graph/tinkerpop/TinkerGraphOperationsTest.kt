@@ -25,7 +25,8 @@ import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
-import java.util.NoSuchElementException
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import java.lang.reflect.Proxy
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -243,48 +244,63 @@ class TinkerGraphOperationsTest {
 
     @Test
     @Order(252)
-    fun `bounded chunk helper consumes only the requested first chunk`() {
+    fun `public vertex chunk sequence는 조기 소비 후 명시적으로 cursor를 닫을 수 있다`() {
+        (1..5).forEach { index ->
+            ops.createVertex("Person", mapOf("name" to "Person-$index"))
+        }
+
+        val chunks = ops.findVerticesByLabelChunkedCursor("Person", chunkSize = 2)
+        try {
+            chunks.take(1).toList().map { it.size } shouldBeEqualTo listOf(2)
+        } finally {
+            chunks.close()
+        }
+    }
+
+    @Test
+    @Order(254)
+    fun `bounded traversal cursor는 첫 chunk만 소비하고 traversal close를 전파한다`() {
         var consumed = 0
-        var closed = false
-        val source = object : Iterator<Int> {
-            private var nextValue = 0
+        val closeEvents = mutableListOf<String>()
+        val traversal = trackingTraversal((1..100).toList(), closeEvents) { consumed++ }
+        val cursor = CloseableChunkSequence {
+            TraversalChunkIterator(traversal, 2) { it }
+        }
 
-            override fun hasNext(): Boolean = nextValue < 100
+        try {
+            cursor.take(1).toList() shouldBeEqualTo listOf(listOf(1, 2))
+        } finally {
+            cursor.close()
+        }
 
-            override fun next(): Int {
-                if (!hasNext()) throw NoSuchElementException()
-                consumed++
-                return ++nextValue
+        consumed shouldBeEqualTo 2
+        closeEvents shouldBeEqualTo listOf("close")
+    }
+
+    @Test
+    @Order(255)
+    fun `bounded traversal mapper 실패는 close 후 primary 예외와 suppressed close 실패를 보존한다`() {
+        val events = mutableListOf<String>()
+        val closeFailure = IllegalArgumentException("close failure")
+        val traversal = trackingTraversal(
+            values = listOf(1),
+            closeEvents = events,
+            onNext = { events += "next" },
+            closeFailure = closeFailure,
+        )
+        val cursor = CloseableChunkSequence {
+            TraversalChunkIterator(traversal, 1) {
+                events += "mapper"
+                error("mapper failure")
             }
         }
 
-        val chunks = sequence<List<Int>> {
-            with(ops) {
-                yieldMappedChunks(
-                    source = source,
-                    chunkSize = 2,
-                    mapper = { it },
-                    close = { closed = true },
-                )
-            }
-        }.take(1).toList()
+        val failure = assertFailsWith<IllegalStateException> {
+            cursor.iterator().hasNext()
+        }
 
-        chunks shouldBeEqualTo listOf(listOf(1, 2))
-        consumed shouldBeEqualTo 2
-
-        val fullyConsumed = sequence<List<Int>> {
-            with(ops) {
-                yieldMappedChunks(
-                    source = (1..3).iterator(),
-                    chunkSize = 2,
-                    mapper = { it },
-                    close = { closed = true },
-                )
-            }
-        }.toList()
-
-        fullyConsumed shouldBeEqualTo listOf(listOf(1, 2), listOf(3))
-        closed.shouldBeTrue()
+        events shouldBeEqualTo listOf("next", "mapper", "close")
+        failure.suppressed.toList() shouldBeEqualTo listOf(closeFailure)
     }
 
     @Test
@@ -364,6 +380,23 @@ class TinkerGraphOperationsTest {
 
         chunks.map { it.size } shouldBeEqualTo listOf(2, 1)
         chunks.flatten().map { it.properties["rank"] }.toSet() shouldBeEqualTo setOf(0, 1, 2)
+    }
+
+    @Test
+    @Order(312)
+    fun `public edge chunk cursor는 조기 소비 후 close를 전파한다`() {
+        val vertices = (1..3).map { index ->
+            ops.createVertex("Person", mapOf("name" to "Person-$index"))
+        }
+        ops.createEdge(vertices[0].id, vertices[1].id, "KNOWS")
+        ops.createEdge(vertices[1].id, vertices[2].id, "KNOWS")
+
+        val chunks = ops.findEdgesByLabelChunkedCursor("KNOWS", chunkSize = 1)
+        try {
+            chunks.take(1).toList().map { it.size } shouldBeEqualTo listOf(1)
+        } finally {
+            chunks.close()
+        }
     }
 
     @Test
@@ -552,4 +585,29 @@ class TinkerGraphOperationsTest {
         val result = ops.findEdgesByLabel("NON_EXISTENT_EDGE")
         result.shouldBeEmpty()
     }
+}
+
+@Suppress("UNCHECKED_CAST")
+private fun <T> trackingTraversal(
+    values: List<T>,
+    closeEvents: MutableList<String>,
+    onNext: () -> Unit,
+    closeFailure: Throwable? = null,
+): Traversal<Any, T> {
+    var index = 0
+    return Proxy.newProxyInstance(
+        Traversal::class.java.classLoader,
+        arrayOf(Traversal::class.java),
+    ) { _, method, _ ->
+        when (method.name) {
+            "hasNext" -> index < values.size
+            "next" -> values[index++].also { onNext() }
+            "close" -> {
+                closeEvents += "close"
+                closeFailure?.let { throw it }
+                null
+            }
+            else -> throw UnsupportedOperationException("Unexpected traversal method: ${method.name}")
+        }
+    } as Traversal<Any, T>
 }

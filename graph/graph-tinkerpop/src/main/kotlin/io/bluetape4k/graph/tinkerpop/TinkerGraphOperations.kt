@@ -254,21 +254,27 @@ class TinkerGraphOperations :
         label: String,
         filter: Map<String, Any?>,
         chunkSize: Int,
-    ): Sequence<List<GraphVertex>> {
+    ): Sequence<List<GraphVertex>> = findVerticesByLabelChunkedCursor(label, filter, chunkSize)
+
+    /**
+     * 조기 소비 시 명시적으로 cursor를 닫을 수 있는 TinkerGraph 전용 vertex chunk API다.
+     * 일반 repository interface의 [Sequence] 반환 계약은 유지하므로, `take` 후에는
+     * 이 cursor를 `use`하거나 `close()`해야 traversal 수명이 끝난다.
+     */
+    public fun findVerticesByLabelChunkedCursor(
+        label: String,
+        filter: Map<String, Any?> = emptyMap(),
+        chunkSize: Int = DEFAULT_GRAPH_EXPORT_CHUNK_SIZE,
+    ): CloseableChunkSequence<List<GraphVertex>> {
         label.requireNotBlank("label")
         chunkSize.requirePositiveNumber("chunkSize")
 
-        return sequence {
+        return CloseableChunkSequence {
             val traversal = g.V().hasLabel(label)
             filter.forEach { (key, value) ->
                 traversal.has(key, value)
             }
-            yieldMappedChunks(
-                source = traversal,
-                chunkSize = chunkSize,
-                mapper = GremlinRecordMapper::vertexToGraphVertex,
-                close = traversal::close,
-            )
+            TraversalChunkIterator(traversal, chunkSize, GremlinRecordMapper::vertexToGraphVertex)
         }
     }
 
@@ -413,21 +419,23 @@ class TinkerGraphOperations :
         label: String,
         filter: Map<String, Any?>,
         chunkSize: Int,
-    ): Sequence<List<GraphEdge>> {
+    ): Sequence<List<GraphEdge>> = findEdgesByLabelChunkedCursor(label, filter, chunkSize)
+
+    /** 조기 소비 수명을 명시할 수 있는 TinkerGraph 전용 edge chunk cursor API다. */
+    public fun findEdgesByLabelChunkedCursor(
+        label: String,
+        filter: Map<String, Any?> = emptyMap(),
+        chunkSize: Int = DEFAULT_GRAPH_EXPORT_CHUNK_SIZE,
+    ): CloseableChunkSequence<List<GraphEdge>> {
         label.requireNotBlank("label")
         chunkSize.requirePositiveNumber("chunkSize")
 
-        return sequence {
+        return CloseableChunkSequence {
             val traversal = g.E().hasLabel(label)
             filter.forEach { (key, value) ->
                 traversal.has(key, value)
             }
-            yieldMappedChunks(
-                source = traversal,
-                chunkSize = chunkSize,
-                mapper = GremlinRecordMapper::edgeToGraphEdge,
-                close = traversal::close,
-            )
+            TraversalChunkIterator(traversal, chunkSize, GremlinRecordMapper::edgeToGraphEdge)
         }
     }
 
@@ -640,29 +648,6 @@ class TinkerGraphOperations :
         }
 
         return GraphPath(steps)
-    }
-
-    internal suspend fun <E, R> SequenceScope<List<R>>.yieldMappedChunks(
-        source: Iterator<E>,
-        chunkSize: Int = DEFAULT_GRAPH_EXPORT_CHUNK_SIZE,
-        mapper: (E) -> R,
-        close: () -> Unit,
-    ) {
-        val chunk = ArrayList<R>(chunkSize)
-        try {
-            while (source.hasNext()) {
-                chunk += mapper(source.next())
-                if (chunk.size == chunkSize) {
-                    yield(chunk.toList())
-                    chunk.clear()
-                }
-            }
-            if (chunk.isNotEmpty()) {
-                yield(chunk.toList())
-            }
-        } finally {
-            close()
-        }
     }
 
     // -- GraphAlgorithmRepository --
