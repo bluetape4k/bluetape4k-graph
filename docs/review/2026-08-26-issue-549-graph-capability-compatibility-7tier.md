@@ -4,7 +4,8 @@
 
 - Issue: [#549](https://github.com/bluetape4k/bluetape4k-graph/issues/549)
 - Branch: `fix/issue-549-graph-capability-compatibility`
-- Base: PR #570의 live exact head `ba090d7b97b86247da68dad91b8a2a459707742c`
+- Base: PR #570의 live exact head
+  `b5564c994948c3b92ab8546617ddf4c7128892a3`.
   (`fix/issue-548-tinkerpop-chunk-lifecycle`)
 - Scope: graph-core `GraphCapability` enum, capability parsing/test 계약,
   graph-core public README EN/KO와 release-facing guidance
