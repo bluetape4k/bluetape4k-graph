@@ -1,12 +1,14 @@
 package io.bluetape4k.graph.neo4j
 
+import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBeInRange
+import io.bluetape4k.assertions.shouldBeNear
+import io.bluetape4k.assertions.shouldBeNull
+import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.graph.model.MissingWeightPolicy
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.testcontainers.graphdb.Neo4jServer
-import io.bluetape4k.assertions.shouldBeNear
-import io.bluetape4k.assertions.shouldBeNull
-import io.bluetape4k.assertions.shouldNotBeNull
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -15,6 +17,7 @@ import org.junit.jupiter.api.TestInstance
 import org.neo4j.driver.AuthTokens
 import org.neo4j.driver.Driver
 import org.neo4j.driver.GraphDatabase
+import org.opentest4j.AssertionFailedError
 import kotlin.math.sqrt
 
 /**
@@ -71,6 +74,13 @@ class Neo4jWeightedPathTest {
 
         path.totalWeight.shouldBeNear(3.0, 0.001)
         path.vertices.size shouldBeInRange 2..3
+    }
+
+    @Test
+    fun `범위 밖 정점 수는 bluetape4k assertion으로 실패한다`() {
+        assertFailsWith<AssertionFailedError> {
+            1 shouldBeInRange 2..3
+        }
     }
 
     @Test
@@ -165,11 +175,5 @@ class Neo4jWeightedPathTest {
         ) { _ -> 0.0 }
 
         result.shouldBeNull()
-    }
-
-    // ─── 헬퍼 ─────────────────────────────────────────────────────────────────────
-
-    private infix fun Int.shouldBeInRange(range: IntRange) {
-        assert(this in range) { "Expected $this to be in $range" }
     }
 }
