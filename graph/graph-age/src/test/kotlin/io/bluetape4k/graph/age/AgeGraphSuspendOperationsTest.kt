@@ -39,6 +39,16 @@ import org.junit.jupiter.api.MethodOrderer.OrderAnnotation
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
+import java.lang.reflect.InvocationTargetException
+import java.lang.reflect.Method
+import java.lang.reflect.Proxy
+import java.sql.Connection
+import java.sql.PreparedStatement
+import java.sql.ResultSet
+import java.sql.SQLException
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.atomic.AtomicInteger
+import javax.sql.DataSource
 
 @TestMethodOrder(OrderAnnotation::class)
 class AgeGraphSuspendOperationsTest {
@@ -307,6 +317,65 @@ class AgeGraphSuspendOperationsTest {
         ops.countVertices("Person") shouldBeEqualTo 128L
     }
 
+    @Test
+    @Order(32_3)
+    fun `직접 조회 Flow는 DatabaseConfig fetch size를 PreparedStatement에 전달한다`() = runSuspendIO {
+        ops.createVertex("Person", mapOf("name" to "fetch-size"))
+
+        val probe = StreamingProbe()
+        val probedOps = probedOperations(defaultFetchSize = 8, probe)
+
+        probedOps.findVerticesByLabel("Person").toList().shouldNotBeEmpty()
+
+        probe.fetchSizes.any { it == 8 }.shouldBeTrue()
+    }
+
+    @Test
+    @Order(32_4)
+    fun `직접 조회 Flow는 비양수 DatabaseConfig에서 positive 기본 fetch size를 사용한다`() = runSuspendIO {
+        ops.createVertex("Person", mapOf("name" to "fallback-fetch-size"))
+
+        val probe = StreamingProbe()
+        val probedOps = probedOperations(defaultFetchSize = 0, probe)
+
+        probedOps.findVerticesByLabel("Person").toList().shouldNotBeEmpty()
+
+        probe.fetchSizes.any { it == 100 }.shouldBeTrue()
+    }
+
+    @Test
+    @Order(32_5)
+    fun `늦은 JDBC 오류는 prefix 중복 없이 streaming transaction 한 번으로 종료된다`() = runSuspendIO {
+        repeat(2) { index ->
+            ops.createVertex("Person", mapOf("name" to "late-failure-$index"))
+        }
+
+        val probe = StreamingProbe(failAfterFirstRow = true)
+        val probedOps = probedOperations(defaultFetchSize = 8, probe)
+        val emitted = mutableListOf<String>()
+
+        val failure = assertFailsWith<Exception> {
+            probedOps.findVerticesByLabel("Person").collect { vertex ->
+                emitted += vertex.properties["name"].toString()
+            }
+        }
+
+        generateSequence<Throwable>(failure) { it.cause }.any { it is SQLException }.shouldBeTrue()
+        emitted.size shouldBeEqualTo 1
+        probe.streamingAttempts.get() shouldBeEqualTo 1
+    }
+
+    private fun probedOperations(defaultFetchSize: Int, probe: StreamingProbe): AgeGraphSuspendOperations =
+        AgeGraphSuspendOperations(
+            Database.connect(
+                ProbingDataSource(dataSource, probe),
+                databaseConfig = DatabaseConfig {
+                    this.defaultFetchSize = defaultFetchSize
+                }
+            ),
+            graphName,
+        )
+
     // ───────────────────────── 간선(Edge) CRUD ─────────────────────────
 
     @Test
@@ -478,3 +547,94 @@ class AgeGraphSuspendOperationsTest {
         ops.pageRank(PageRankOptions(vertexLabel = "Node", iterations = 20)).toList().shouldNotBeEmpty()
     }
 }
+
+private class StreamingProbe(
+    val failAfterFirstRow: Boolean = false,
+) {
+    val fetchSizes = CopyOnWriteArrayList<Int>()
+    val streamingAttempts = AtomicInteger()
+}
+
+private class ProbingDataSource(
+    private val delegate: DataSource,
+    private val probe: StreamingProbe,
+): DataSource by delegate {
+
+    override fun getConnection(): Connection = probingConnection(delegate.connection, probe)
+
+    override fun getConnection(username: String?, password: String?): Connection =
+        probingConnection(delegate.getConnection(username, password), probe)
+}
+
+@Suppress("UNCHECKED_CAST")
+private fun probingConnection(delegate: Connection, probe: StreamingProbe): Connection =
+    Proxy.newProxyInstance(
+        Connection::class.java.classLoader,
+        arrayOf(Connection::class.java),
+    ) { _, method, args ->
+        if (method.name != "prepareStatement") {
+            invokeDelegate(delegate, method, args)
+        } else {
+            val prepared = invokeDelegate(delegate, method, args)
+            if (prepared is PreparedStatement) probingPreparedStatement(prepared, probe) else prepared
+        }
+    } as Connection
+
+@Suppress("UNCHECKED_CAST")
+private fun probingPreparedStatement(delegate: PreparedStatement, probe: StreamingProbe): PreparedStatement {
+    var fetchSize = 0
+    return Proxy.newProxyInstance(
+        PreparedStatement::class.java.classLoader,
+        arrayOf(PreparedStatement::class.java),
+    ) { _, method, args ->
+        when (method.name) {
+            "setFetchSize" -> {
+                fetchSize = args?.firstOrNull() as? Int ?: 0
+                probe.fetchSizes += fetchSize
+                invokeDelegate(delegate, method, args)
+            }
+
+            "executeQuery" -> {
+                val result = invokeDelegate(delegate, method, args)
+                if (fetchSize <= 0) {
+                    result
+                } else {
+                    probe.streamingAttempts.incrementAndGet()
+                    if (probe.failAfterFirstRow) {
+                        probingResultSet(result as ResultSet)
+                    } else {
+                        result
+                    }
+                }
+            }
+
+            else -> invokeDelegate(delegate, method, args)
+        }
+    } as PreparedStatement
+}
+
+@Suppress("UNCHECKED_CAST")
+private fun probingResultSet(delegate: ResultSet): ResultSet {
+    var emittedRows = 0
+    return Proxy.newProxyInstance(
+        ResultSet::class.java.classLoader,
+        arrayOf(ResultSet::class.java),
+    ) { _, method, args ->
+        if (method.name != "next") {
+            invokeDelegate(delegate, method, args)
+        } else if (emittedRows > 0) {
+            throw SQLException("injected late AGE streaming failure")
+        } else {
+            val hasNext = invokeDelegate(delegate, method, args) as Boolean
+            if (hasNext) emittedRows++
+            hasNext
+        }
+    } as ResultSet
+}
+
+private fun invokeDelegate(target: Any, method: Method, args: Array<out Any?>?): Any? =
+    try {
+        method.invoke(target, *(args ?: emptyArray()))
+    } catch (e: InvocationTargetException) {
+        throw e.targetException
+    }
