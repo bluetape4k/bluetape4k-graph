@@ -9,7 +9,9 @@ coroutine 취소만으로 해당 호출이 즉시 중단되지 않는다. 현재
 
 대상 이슈는 [#552](https://github.com/bluetape4k/bluetape4k-graph/issues/552)이며,
 적층 기준은 PR [#574](https://github.com/bluetape4k/bluetape4k-graph/pull/574)의
-exact head `130532a2c2f0be2e9c87572ed6876bbb688afa06`이다. 다른 backend의
+exact head `130532a2c2f0be2e9c87572ed6876bbb688afa06`이다. 구현은 PR
+[#575](https://github.com/bluetape4k/bluetape4k-graph/pull/575)에서 진행하며,
+현재 source head는 `35a9bef41daf5176a16695ee48cb15d7584e5344`이다. 다른 backend의
 취소 계약과 `suspendTransaction` 중첩 Flow 결과 계약은 각각 기존 slice와
 후속 이슈 범위로 남긴다.
 

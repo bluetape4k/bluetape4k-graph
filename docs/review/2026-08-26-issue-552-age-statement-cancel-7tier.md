@@ -6,11 +6,13 @@
 - 대상 모듈: `graph-age`
 - 기준 base: PR [#574](https://github.com/bluetape4k/bluetape4k-graph/pull/574)의
   live exact head `130532a2c2f0be2e9c87572ed6876bbb688afa06`.
+- 대상 PR: [#575](https://github.com/bluetape4k/bluetape4k-graph/pull/575)의
+  live head `35a9bef41daf5176a16695ee48cb15d7584e5344`.
 - 구현은 `AgeGraphSuspendOperations.execStreaming`의 active JDBC statement
   등록, `onCancelling=true` handler, one-shot `cancel()`과 cancellation
   exception 복원으로 제한한다.
-- 실제 PR head와 hosted checks/review는 PR 생성 후 GitHub live metadata에서
-  다시 대조하며, 그 전까지 SPW-05는 PENDING이다.
+- 실제 PR head는 live metadata에서 대조했으며 hosted checks/review read-back은
+  아직 대기 중이므로 SPW-05는 PENDING이다.
 
 ## 7-Tier 결과
 

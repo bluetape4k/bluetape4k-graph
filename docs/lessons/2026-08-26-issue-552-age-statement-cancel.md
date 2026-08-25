@@ -52,8 +52,8 @@ statement cancel/close와 ResultSet close를 각각 한 번씩 검증했다.
 
 AGE 실제 이미지와 proxy는 JDBC lifecycle을 검증하지만, 모든 PostgreSQL/AGE
 driver 버전의 cancel latency를 증명하지 않는다. full AGE test, Detekt,
-forbidden assertion scan, hosted exact-head checks와 review read-back은 PR 단계의
-후속 증거다.
+forbidden assertion scan은 통과했으며, PR [#575](https://github.com/bluetape4k/bluetape4k-graph/pull/575)의
+hosted exact-head checks와 review read-back은 아직 후속 증거다.
 
 ## SPW writer gate
 
