@@ -2,10 +2,17 @@ package io.bluetape4k.graph.io.support
 
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeFalse
+import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.graph.io.model.GraphIoEdgeRecord
 import io.bluetape4k.graph.io.model.GraphIoVertexRecord
 import org.junit.jupiter.api.Test
+import java.io.DataOutputStream
 import java.io.IOException
+import java.io.OutputStream
+import java.nio.file.Files
+import java.nio.file.Path
 
 class GraphIoRecordSpoolTest {
 
@@ -78,5 +85,96 @@ class GraphIoRecordSpoolTest {
         spool.close()
 
         assertFailsWith<IOException> { iterator.next() }
+    }
+
+    @Test
+    fun `spool writes payload without requesting a second byte array copy`() {
+        val spool = GraphIoRecordSpool(
+            maxRecordBytes = 256,
+            payloadFactory = { NoCopyByteArrayOutputStream() },
+        )
+
+        spool.use {
+            it.appendVertices(listOf(GraphIoVertexRecord("v-1", "Person", mapOf("name" to "Alice"))))
+            it.finish()
+            it.vertexRecords().toList().single().externalId shouldBeEqualTo "v-1"
+        }
+    }
+
+    @Test
+    fun `spool rejects an oversized payload before writing a partial record`() {
+        GraphIoRecordSpool(maxRecordBytes = 32).use { spool ->
+            val ex = assertFailsWith<IllegalArgumentException> {
+                spool.appendVertices(
+                    listOf(GraphIoVertexRecord("v-1", "Person", mapOf("payload" to "x".repeat(256)))),
+                )
+            }
+
+            ex.message shouldContain "limit"
+            spool.finish()
+            spool.vertexRecords().toList() shouldBeEqualTo emptyList()
+        }
+    }
+
+    @Test
+    fun `spool constructor cleans resources when the second temp file fails`() {
+        val createdFiles = mutableListOf<Path>()
+        val outputs = mutableListOf<TrackingOutputStream>()
+        var createCount = 0
+
+        val ex = assertFailsWith<IOException> {
+            GraphIoRecordSpool(
+                maxRecordBytes = 256,
+                createTempFile = { prefix, suffix ->
+                    createCount++
+                    if (createCount == 2) throw IOException("edge file creation failed")
+                    Files.createTempFile(prefix, suffix).also(createdFiles::add)
+                },
+                openOutput = {
+                    TrackingOutputStream().also(outputs::add).let(::DataOutputStream)
+                },
+            )
+        }
+
+        ex.message shouldBeEqualTo "edge file creation failed"
+        outputs.single().closed.shouldBeTrue()
+        createdFiles.single().let { Files.exists(it).shouldBeFalse() }
+    }
+
+    @Test
+    fun `spool constructor cleans resources when the second output fails`() {
+        val createdFiles = mutableListOf<Path>()
+        val outputs = mutableListOf<TrackingOutputStream>()
+
+        val ex = assertFailsWith<IOException> {
+            GraphIoRecordSpool(
+                maxRecordBytes = 256,
+                createTempFile = { prefix, suffix ->
+                    Files.createTempFile(prefix, suffix).also(createdFiles::add)
+                },
+                openOutput = {
+                    if (outputs.isNotEmpty()) throw IOException("edge output open failed")
+                    TrackingOutputStream().also(outputs::add).let(::DataOutputStream)
+                },
+            )
+        }
+
+        ex.message shouldBeEqualTo "edge output open failed"
+        outputs.single().closed.shouldBeTrue()
+        createdFiles.forEach { Files.exists(it).shouldBeFalse() }
+    }
+
+    private class NoCopyByteArrayOutputStream : java.io.ByteArrayOutputStream() {
+        override fun toByteArray(): ByteArray = error("record payload must be written without copying")
+    }
+
+    private class TrackingOutputStream : OutputStream() {
+        var closed = false
+
+        override fun write(value: Int) = Unit
+
+        override fun close() {
+            closed = true
+        }
     }
 }

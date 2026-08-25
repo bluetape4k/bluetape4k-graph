@@ -14,20 +14,134 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.Collections
 
+private const val DEFAULT_MAX_RECORD_BYTES = 128 * 1024 * 1024
+private const val INITIAL_PAYLOAD_BUFFER_BYTES = 8 * 1024
+
+private data class SpoolResources(
+    val vertexFile: Path,
+    val edgeFile: Path,
+    val vertexOutput: DataOutputStream,
+    val edgeOutput: DataOutputStream,
+    val maxRecordBytes: Int,
+)
+
+private fun createSpoolFile(prefix: String, suffix: String): Path = Files.createTempFile(prefix, suffix)
+
+private fun openSpoolOutput(file: Path): DataOutputStream =
+    DataOutputStream(BufferedOutputStream(Files.newOutputStream(file)))
+
+@Suppress("TooGenericExceptionCaught")
+private fun openSpoolResources(
+    maxRecordBytes: Int,
+    createTempFile: (String, String) -> Path,
+    openOutput: (Path) -> DataOutputStream,
+): SpoolResources {
+    require(maxRecordBytes > 0) { "maxRecordBytes must be positive" }
+
+    var vertexFile: Path? = null
+    var edgeFile: Path? = null
+    var vertexOutput: DataOutputStream? = null
+    var edgeOutput: DataOutputStream? = null
+    try {
+        vertexFile = createTempFile("bluetape4k-graph-io-vertices-", ".spool")
+        vertexOutput = openOutput(vertexFile)
+        edgeFile = createTempFile("bluetape4k-graph-io-edges-", ".spool")
+        edgeOutput = openOutput(edgeFile)
+        return SpoolResources(
+            vertexFile = vertexFile,
+            edgeFile = edgeFile,
+            vertexOutput = vertexOutput,
+            edgeOutput = edgeOutput,
+            maxRecordBytes = maxRecordBytes,
+        )
+    } catch (error: Throwable) {
+        listOf(edgeOutput, vertexOutput).forEach { output ->
+            try {
+                output?.close()
+            } catch (cleanupFailure: Throwable) {
+                error.addSuppressed(cleanupFailure)
+            }
+        }
+        listOf(edgeFile, vertexFile).forEach { file ->
+            try {
+                file?.let(Files::deleteIfExists)
+            } catch (cleanupFailure: Throwable) {
+                error.addSuppressed(cleanupFailure)
+            }
+        }
+        throw error
+    }
+}
+
+private class CappedByteArrayOutputStream(
+    private val maxBytes: Int,
+) : ByteArrayOutputStream(minOf(maxBytes, INITIAL_PAYLOAD_BUFFER_BYTES)) {
+
+    override fun write(value: Int) {
+        requireCapacity(1)
+        super.write(value)
+    }
+
+    override fun write(buffer: ByteArray, offset: Int, length: Int) {
+        requireCapacity(length)
+        super.write(buffer, offset, length)
+    }
+
+    private fun requireCapacity(incomingBytes: Int) {
+        require(incomingBytes <= maxBytes - size()) {
+            "A graph-io spool record exceeds the ${maxBytes} byte limit"
+        }
+    }
+}
+
 /**
  * 대용량 graph-io export를 위한 디스크 기반 레코드 spool이다.
  *
  * 입력은 한 번만 소비하고, 출력 헤더 계산과 본문 쓰기에서는 같은 불변
  * 레코드를 반복 재생한다. 속성 값은 기존 CSV/GraphML writer와 같은
  * 문자열 표현으로 정규화하므로 임의의 직렬화 가능 여부에 의존하지 않는다.
+ * 각 레코드는 128 MiB 한도 내의 단일 payload buffer로 인코딩하고 직접 기록하며,
+ * 초기화 중 실패하면 이미 획득한 임시 파일과 stream을 정리한다.
  */
 @Suppress("TooManyFunctions", "TooGenericExceptionCaught")
-class GraphIoRecordSpool : AutoCloseable {
+class GraphIoRecordSpool private constructor(
+    resources: SpoolResources,
+    private val payloadFactory: (Int) -> ByteArrayOutputStream,
+) : AutoCloseable {
 
-    private val vertexFile: Path = Files.createTempFile("bluetape4k-graph-io-vertices-", ".spool")
-    private val edgeFile: Path = Files.createTempFile("bluetape4k-graph-io-edges-", ".spool")
-    private var vertexOutput: DataOutputStream? = openOutput(vertexFile)
-    private var edgeOutput: DataOutputStream? = openOutput(edgeFile)
+    constructor() : this(
+        openSpoolResources(DEFAULT_MAX_RECORD_BYTES, ::createSpoolFile, ::openSpoolOutput),
+        ::CappedByteArrayOutputStream,
+    )
+
+    internal constructor(maxRecordBytes: Int) : this(
+        openSpoolResources(maxRecordBytes, ::createSpoolFile, ::openSpoolOutput),
+        ::CappedByteArrayOutputStream,
+    )
+
+    internal constructor(
+        maxRecordBytes: Int,
+        payloadFactory: (Int) -> ByteArrayOutputStream,
+    ) : this(
+        openSpoolResources(maxRecordBytes, ::createSpoolFile, ::openSpoolOutput),
+        payloadFactory,
+    )
+
+    internal constructor(
+        maxRecordBytes: Int,
+        createTempFile: (String, String) -> Path,
+        openOutput: (Path) -> DataOutputStream,
+        payloadFactory: (Int) -> ByteArrayOutputStream = ::CappedByteArrayOutputStream,
+    ) : this(
+        openSpoolResources(maxRecordBytes, createTempFile, openOutput),
+        payloadFactory,
+    )
+
+    private val maxRecordBytes = resources.maxRecordBytes
+    private val vertexFile = resources.vertexFile
+    private val edgeFile = resources.edgeFile
+    private var vertexOutput: DataOutputStream? = resources.vertexOutput
+    private var edgeOutput: DataOutputStream? = resources.edgeOutput
     private val vertexKeys = linkedSetOf<String>()
     private val edgeKeys = linkedSetOf<String>()
     private var finished = false
@@ -159,14 +273,14 @@ class GraphIoRecordSpool : AutoCloseable {
     }
 
     private fun writeRecord(output: DataOutputStream, writePayload: DataOutputStream.() -> Unit) {
-        val payload = ByteArrayOutputStream()
+        val payload = payloadFactory(maxRecordBytes)
         DataOutputStream(payload).use(writePayload)
-        val bytes = payload.toByteArray()
-        require(bytes.size <= MAX_RECORD_BYTES) {
-            "A graph-io spool record exceeds the ${MAX_RECORD_BYTES} byte limit"
+        val size = payload.size()
+        require(size <= maxRecordBytes) {
+            "A graph-io spool record exceeds the ${maxRecordBytes} byte limit"
         }
-        output.writeInt(bytes.size)
-        output.write(bytes)
+        output.writeInt(size)
+        payload.writeTo(output)
     }
 
     private fun <T> records(
@@ -186,7 +300,7 @@ class GraphIoRecordSpool : AutoCloseable {
                     } catch (_: EOFException) {
                         break
                     }
-                    require(length in 0..MAX_RECORD_BYTES) {
+                    require(length in 0..maxRecordBytes) {
                         "Invalid graph-io spool record length: $length"
                     }
                     val bytes = ByteArray(length)
@@ -219,9 +333,6 @@ class GraphIoRecordSpool : AutoCloseable {
         if (failure != null) throw failure
     }
 
-    private fun openOutput(file: Path): DataOutputStream =
-        DataOutputStream(BufferedOutputStream(Files.newOutputStream(file)))
-
     private fun closeOutput(output: DataOutputStream?): DataOutputStream? {
         output?.close()
         return null
@@ -236,8 +347,6 @@ class GraphIoRecordSpool : AutoCloseable {
         }
 
     private companion object {
-        const val MAX_RECORD_BYTES = 128 * 1024 * 1024
-
         fun DataOutputStream.writeString(value: String) {
             val bytes = value.toByteArray(StandardCharsets.UTF_8)
             writeInt(bytes.size)
@@ -260,32 +369,33 @@ class GraphIoRecordSpool : AutoCloseable {
             }
         }
 
-        fun DataInputStream.readString(): String {
-            val length = readInt()
-            require(length >= 0) { "A required spool string cannot be null" }
-            return readStringBytes(length)
-        }
+    }
 
-        fun DataInputStream.readNullableString(): String? {
-            val length = readInt()
-            return if (length < 0) null else readStringBytes(length)
-        }
+    private fun DataInputStream.readString(): String {
+        val length = readInt()
+        require(length >= 0) { "A required spool string cannot be null" }
+        return readStringBytes(length)
+    }
 
-        fun DataInputStream.readStringBytes(length: Int): String {
-            require(length <= MAX_RECORD_BYTES) { "Invalid graph-io spool string length: $length" }
-            val bytes = ByteArray(length)
-            readFully(bytes)
-            return bytes.toString(StandardCharsets.UTF_8)
-        }
+    private fun DataInputStream.readNullableString(): String? {
+        val length = readInt()
+        return if (length < 0) null else readStringBytes(length)
+    }
 
-        fun DataInputStream.readProperties(): Map<String, String?> {
-            val count = readInt()
-            require(count >= 0) { "Invalid graph-io spool property count: $count" }
-            val properties = LinkedHashMap<String, String?>(count)
-            repeat(count) {
-                properties[readString()] = readNullableString()
-            }
-            return properties
+    private fun DataInputStream.readStringBytes(length: Int): String {
+        require(length <= maxRecordBytes) { "Invalid graph-io spool string length: $length" }
+        val bytes = ByteArray(length)
+        readFully(bytes)
+        return bytes.toString(StandardCharsets.UTF_8)
+    }
+
+    private fun DataInputStream.readProperties(): Map<String, String?> {
+        val count = readInt()
+        require(count >= 0) { "Invalid graph-io spool property count: $count" }
+        val properties = LinkedHashMap<String, String?>(count)
+        repeat(count) {
+            properties[readString()] = readNullableString()
         }
+        return properties
     }
 }

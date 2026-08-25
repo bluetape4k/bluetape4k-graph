@@ -102,6 +102,13 @@ completion, failure, or cancellation. Exporters preserve the original source,
 sink, or cancellation failure and attach cleanup failures as suppressed
 exceptions.
 
+Each spool record is capped at 128 MiB while it is encoded and is written from
+the single bounded payload buffer directly to the spool stream; the writer does
+not call `toByteArray()` to create a second full-record heap copy. Temporary
+files and opened streams are acquired as one constructor resource set, and an
+initialization failure closes and deletes every resource acquired before the
+failure.
+
 The CSV/GraphML bounded-chunk TCK checks requested chunk size, one label lookup,
 and stage-time record preservation after a backend mutation. It verifies the
 exporter snapshot contract without claiming bounded execution for the fallback.

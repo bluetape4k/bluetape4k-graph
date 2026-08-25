@@ -307,6 +307,10 @@ replay합니다. 이 spool은 exporter 자체의 전체 list materialization과 
 실패는 원래 source·sink·취소 예외의 suppressed exception으로 연결합니다. 정상
 완료·실패·코루틴 취소 시 임시 spool 파일을 삭제합니다.
 
+공용 spool은 레코드별 인코딩을 128 MiB까지 제한하면서 전체 레코드의 두 번째
+`toByteArray()` 복사본을 만들지 않습니다. constructor 초기화 중 뒤의 파일이나
+output stream을 열지 못하면 먼저 만든 임시 파일과 stream도 정리합니다.
+
 CSV bounded-chunk TCK는 요청 chunk 크기, 선택한 label별 단일 조회, 첫 chunk 이후
 backend mutation이 발생해도 stage 시점 값이 유지되는지를 검증합니다. 첫 chunk를
 내보내기 전에 전체 label 조회가 실행될 수 있는 호환성 fallback의 source

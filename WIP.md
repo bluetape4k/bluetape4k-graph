@@ -44,6 +44,10 @@ CSV/GraphML bounded spool과 lifecycle 예외 보존을 적층한 PR #580의 최
 `32905050954`를 성공시켰다. #556은 이 exact head 위에서 backend bounded chunk와
 기준 데이터 변경 TCK를 구현했고 local full test·Detekt·정적 검증을 완료했으며,
 PR 생성과 hosted receipt를 진행한다.
+#557은 #556 PR #581 exact head `534aed0111d062450d5d6a3958d3cb0294e34bba` 위에서
+`GraphIoRecordSpool`의 capped payload/direct write와 constructor fail-clean
+resource factory를 적층했다. targeted spool test 8/8과 TDD RED→GREEN을 완료했으며
+graph-io-core 전체 검증·7-Tier receipt·PR 생성을 진행한다.
 최신 GitHub release: `0.6.0` (2026-08-05); 현재 개발 기준선은 `1.0.0`이다.
 
 ## 최근 완료 및 현재 `1.0.0` stacked train
@@ -71,8 +75,9 @@ PR 생성과 hosted receipt를 진행한다.
 | [#555](https://github.com/bluetape4k/bluetape4k-graph/issues/555) | PR #579 hosted 통과, review·merge 대기 | #554 PR #578 exact head `26b41485d3107a99a555678de85fb455b1000504` 위에서 in-memory state store의 global monitor를 job별 reentrant lock registry로 좁혔다. implementation commit `030f7879`와 docs receipt `5260dc89`, `419e1e4c`에서 서로 다른 job 병렬성, 같은 job 직렬성, interrupt waiter 해제 회귀를 추가했고 targeted 3/3·graph-io-core 154/154·Detekt·금지 assertion scan·diff-check를 통과했다. 최종 head `419e1e4ccbe7063514cccabce4fb505efaf538ae`의 CI `32900966027`·Examples `32900966048`도 성공했으며 exact base/head·metadata read-back을 완료했다. 전체 train merge는 마지막 승인 단계까지 보류한다. |
 | [#539](https://github.com/bluetape4k/bluetape4k-graph/issues/539) | PR #580 hosted 통과, review·merge 대기 | #555 PR #579 exact head `66d8a398cf32acab791ae5bf9b2f99c59944e316` 위에서 CSV/GraphML exporter의 bounded spool, primary exception 보존, lifecycle 회귀를 적층했다. 최종 head `31c959c984f0cbee3666283392491b646c8e0e99`의 CI `32905050922`·Examples `32905050954`가 성공했고 exact base/head·metadata read-back을 완료했다. 전체 train merge는 마지막 승인 단계까지 보류한다. |
 | [#556](https://github.com/bluetape4k/bluetape4k-graph/issues/556) | PR 생성·hosted 검증 진행 | #580 exact head `31c959c984f0cbee3666283392491b646c8e0e99` 위에서 CSV/GraphML sync·suspend mutation TCK, graph-core fallback eager-materialization 회귀, backend capability matrix와 EN/KO 문서를 추가했다. local graph-core 357, graph-io-core 158, CSV 55, GraphML 48 전체 테스트와 Detekt·금지 assertion scan·diff-check를 통과했으며 PR exact-head receipt를 생성한다. |
+| [#557](https://github.com/bluetape4k/bluetape4k-graph/issues/557) | 구현·로컬 검증 진행 | #556 PR #581 exact head `534aed0111d062450d5d6a3958d3cb0294e34bba` 위에서 record payload capped buffer/direct write, oversized partial-write guard, second temp file/output constructor fault cleanup을 추가했다. TDD RED에서 hardening constructor 부재를 확인한 뒤 targeted `GraphIoRecordSpoolTest` 8/8을 통과했고, graph-io-core full/Detekt/hosted receipt를 진행한다. |
 
-이전 완료 순서는 `#527 → #525 → #526`이다. 현재 train은 `#543 → #544 → #545 → #546 → #547 → #536 → #548 → #549 → #535 → #550 → #551 → #552 → #538 → #553 → #554 → #555 → #539 → #556`
+이전 완료 순서는 `#527 → #525 → #526`이다. 현재 train은 `#543 → #544 → #545 → #546 → #547 → #536 → #548 → #549 → #535 → #550 → #551 → #552 → #538 → #553 → #554 → #555 → #539 → #556 → #557`
 순서이며, 각 PR은 이전 exact head를 base로 삼고 최종 일괄 merge 승인 전에는
 독립 병합하지 않는다.
 

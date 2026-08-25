@@ -99,6 +99,12 @@ boundedness를 보장하지 않습니다. cursor-aware 백엔드는 전체 label
 파일을 정리합니다. active replay stream도 cleanup에서 닫으며, exporter는 원래
 source·sink·취소 예외를 유지하고 cleanup 실패를 suppressed exception으로 연결합니다.
 
+각 spool 레코드는 인코딩 중 128 MiB 한도 안에서 제한되며, 하나의 bounded payload
+buffer를 spool stream에 직접 기록합니다. writer는 전체 레코드의 두 번째 heap
+복사본을 만들기 위해 `toByteArray()`를 호출하지 않습니다. 임시 파일과 열린 stream은
+하나의 constructor resource set으로 획득하고, 초기화 중 실패하면 그 전에 획득한
+모든 resource를 닫고 삭제합니다.
+
 CSV/GraphML bounded-chunk TCK는 요청 chunk 크기, label별 단일 조회, backend
 mutation 이후 stage 시점 레코드 보존을 검증합니다. 이 검증은 exporter snapshot
 계약을 고정할 뿐 fallback의 bounded 실행을 주장하지 않습니다.

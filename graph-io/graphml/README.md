@@ -226,6 +226,11 @@ after the first chunk. It does not claim bounded source execution for the
 compatibility fallback, whose full label lookup can occur before the first
 chunk is yielded.
 
+The shared spool enforces a 128 MiB per-record encoding cap without creating a
+second full-record `toByteArray()` copy. Constructor setup is fail-clean: if a
+later temporary file or output stream cannot be opened, all resources acquired
+before the failure are closed and deleted.
+
 ## Error Handling
 
 Import operations return a detailed `GraphImportReport` containing:
