@@ -50,7 +50,8 @@
 - [ ] hosted exact-head CI/review와 최종 train merge — 최종 승인 단계에서
   수행한다.
 
-최종 판정: **PASS/WATCH**. 구현과 로컬 검증은 완료됐으며, PR #568 exact
-head `6d4297b10ffaf2755ce730544f3051064249160c`의 hosted 검증을 대기한다.
+최종 판정: **PASS/WATCH**. 구현과 로컬 검증은 완료됐으며, PR #568의 live
+exact head는 push 후 `gh pr view 568`로 확인하고 해당 SHA의 hosted 검증을
+대기한다.
 `success_after_retry` green은 첫 실패 원인과 artifact 확인 전까지 merge-ready가
 아니며, 병합은 전체 train의 마지막 사용자 승인 전까지 보류한다.
