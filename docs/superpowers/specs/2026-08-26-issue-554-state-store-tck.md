@@ -36,7 +36,7 @@ invariant·failure atomicity를 공통 테스트로 재사용할 방법이 없�
    contention retry에서 최신 report를 다시 읽고, retry 결과만 저장하며,
    retry 경로의 `jobId` mismatch를 저장 없이 실패시키는지 검증한다. 실제 adapter는
    충돌 주입을 위한 adapter 전용 harness만 제공한다.
-4. `GraphImportJobStateStore.update` KDoc와 graph-io-core README EN/KO에
+5. `GraphImportJobStateStore.update` KDoc와 graph-io-core README EN/KO에
    pure/retry-safe transform, 결과 `jobId` invariant, durable override의
    native transaction/CAS 경계를 명시한다.
 

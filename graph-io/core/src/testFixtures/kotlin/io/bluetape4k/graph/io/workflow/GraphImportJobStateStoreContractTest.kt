@@ -90,7 +90,11 @@ abstract class AbstractGraphImportJobStateStoreContractTest {
         )
 }
 
-/** 저장 실패를 주입해 기존 report 보존을 검증하는 test-fixture harness다. */
+/** 저장 실패를 주입해 기존 report 보존을 검증하는 test-fixture harness다.
+ *
+ * 실패의 구체적인 예외 타입은 adapter 구현의 계약이며 이 harness가 고정하지
+ * 않는다. TCK는 저장 실패가 관찰되고 기존 report가 보존되는지만 검증한다.
+ */
 interface GraphImportJobStateStoreFailureHarness : GraphImportJobStateStore {
     fun failNextSave()
 }
@@ -108,7 +112,7 @@ abstract class AbstractGraphImportJobStateStoreFailureContractTest :
         failingStore.save(initial)
         failingStore.failNextSave()
 
-        assertFailsWith<IllegalStateException> {
+        assertFailsWith<Throwable> {
             failingStore.update(initial.jobId) {
                 initial.copy(state = GraphImportWorkflowState.VALIDATED)
             }
@@ -162,6 +166,7 @@ abstract class AbstractGraphImportJobStateStoreRetryContractTest :
         val intervening = initial.copy(elapsed = Duration.ofSeconds(2))
         retryingStore.save(initial)
         retryingStore.arrangeRetry(intervening)
+        val savesBeforeMismatch = retryingStore.saveInvocations
         var evaluations = 0
 
         assertFailsWith<IllegalArgumentException> {
@@ -176,7 +181,7 @@ abstract class AbstractGraphImportJobStateStoreRetryContractTest :
         }
 
         evaluations shouldBeEqualTo 2
-        retryingStore.saveInvocations shouldBeEqualTo 2
+        retryingStore.saveInvocations shouldBeEqualTo savesBeforeMismatch + 1
         retryingStore.load(initial.jobId) shouldBeEqualTo intervening
         retryingStore.load("other-job").shouldBeNull()
     }

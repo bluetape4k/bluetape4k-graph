@@ -19,8 +19,8 @@ production durable API가 아니며, 실제 adapter가 각자의 transaction/CAS
 
 ## 검증
 
-- `InMemoryGraphImportJobStateStoreContractTest`는 기본 4개와 retry 2개 테스트를
-  공유 fixture에서 실행
+- `InMemoryGraphImportJobStateStoreContractTest`는 기본 invariant 4개, atomic
+  save failure 1개, retry 경계 3개를 공유 fixture에서 실행해 총 8개를 검증
 - `io.bluetape4k.assertions.assertFailsWith`와 의도 matcher를 사용하고 금지된
   JUnit/Kotlin assertion을 추가하지 않음
 - KDoc과 graph-io-core README EN/KO에 pure/retry-safe transform, `jobId`
