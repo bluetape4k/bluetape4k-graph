@@ -2,10 +2,11 @@ package io.bluetape4k.graph.tinkerpop
 
 import io.bluetape4k.graph.model.MissingWeightPolicy
 import io.bluetape4k.graph.model.PathOptions
-import io.bluetape4k.logging.KLogging
+import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeNear
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.logging.KLogging
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -155,12 +156,7 @@ class TinkerGraphWeightedPathTest {
 
     private infix fun <T> List<T>.shouldContainInOrder(expected: List<T>): List<T> {
         val actual = this
-        assert(actual.size == expected.size) {
-            "Expected size ${expected.size} but was ${actual.size}: $actual"
-        }
-        expected.forEachIndexed { i, v ->
-            assert(actual[i] == v) { "At index $i: expected $v but was ${actual[i]}" }
-        }
+        actual shouldBeEqualTo expected
         return this
     }
 }

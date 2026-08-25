@@ -227,13 +227,13 @@ class TinkerGraphOperations :
     override fun findVertexById(label: String, id: GraphElementId): GraphVertex? {
         label.requireNotBlank("label")
 
-        val idValue = id.value.toLongOrNull() ?: return null
+        val idValue = requireNumericId(id)
         val optional = g.V(idValue).hasLabel(label).tryNext()
         return if (optional.isPresent) GremlinRecordMapper.vertexToGraphVertex(optional.get()) else null
     }
 
     override fun findVertexById(id: GraphElementId): GraphVertex? {
-        val idValue = id.value.toLongOrNull() ?: return null
+        val idValue = requireNumericId(id)
         val optional = g.V(idValue).tryNext()
         return if (optional.isPresent) GremlinRecordMapper.vertexToGraphVertex(optional.get()) else null
     }
@@ -268,7 +268,7 @@ class TinkerGraphOperations :
     override fun updateVertex(label: String, id: GraphElementId, properties: Map<String, Any?>): GraphVertex? {
         label.requireNotBlank("label")
 
-        val idValue = id.value.toLongOrNull() ?: return null
+        val idValue = requireNumericId(id)
         val optional = g.V(idValue).hasLabel(label).tryNext()
         if (!optional.isPresent) return null
         if (properties.isEmpty()) return GremlinRecordMapper.vertexToGraphVertex(optional.get())
@@ -284,7 +284,7 @@ class TinkerGraphOperations :
     override fun deleteVertex(label: String, id: GraphElementId): Boolean {
         label.requireNotBlank("label")
 
-        val idValue = id.value.toLongOrNull() ?: return false
+        val idValue = requireNumericId(id)
         val optional = g.V(idValue).hasLabel(label).tryNext()
         if (!optional.isPresent) return false
         g.V(idValue).drop().iterate()
@@ -338,10 +338,8 @@ class TinkerGraphOperations :
         properties: Map<String, Any?>,
     ): GraphEdge {
         label.requireNotBlank("label")
-        val fromIdValue = fromId.value.toLongOrNull()
-            ?: throw GraphQueryException("Invalid fromId: ${fromId.value}")
-        val toIdValue = toId.value.toLongOrNull()
-            ?: throw GraphQueryException("Invalid toId: ${toId.value}")
+        val fromIdValue = requireNumericId(fromId)
+        val toIdValue = requireNumericId(toId)
 
         return addEdge(fromIdValue, toIdValue, label, properties)
     }
@@ -352,10 +350,8 @@ class TinkerGraphOperations :
 
         return writeLock.withLock {
             val endpoints = validatedEdges.map { edge ->
-                val fromIdValue = edge.fromId.value.toLongOrNull()
-                    ?: throw GraphQueryException("Invalid fromId: ${edge.fromId.value}")
-                val toIdValue = edge.toId.value.toLongOrNull()
-                    ?: throw GraphQueryException("Invalid toId: ${edge.toId.value}")
+                val fromIdValue = requireNumericId(edge.fromId)
+                val toIdValue = requireNumericId(edge.toId)
 
                 if (!g.V(fromIdValue).tryNext().isPresent) {
                     throw GraphQueryException("Start vertex not found: ${edge.fromId.value}")
@@ -425,21 +421,21 @@ class TinkerGraphOperations :
 
     override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
         edgeLabel?.requireNotBlank("edgeLabel")
-        val idValue = startId.value.toLongOrNull() ?: return emptyList()
+        val idValue = requireNumericId(startId)
         val traversal = if (edgeLabel != null) g.V(idValue).outE(edgeLabel) else g.V(idValue).outE()
         return traversal.toList().map { GremlinRecordMapper.edgeToGraphEdge(it) }
     }
 
     override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
         edgeLabel?.requireNotBlank("edgeLabel")
-        val idValue = endId.value.toLongOrNull() ?: return emptyList()
+        val idValue = requireNumericId(endId)
         val traversal = if (edgeLabel != null) g.V(idValue).inE(edgeLabel) else g.V(idValue).inE()
         return traversal.toList().map { GremlinRecordMapper.edgeToGraphEdge(it) }
     }
 
     override fun deleteEdge(label: String, id: GraphElementId): Boolean {
         label.requireNotBlank("label")
-        val idValue = id.value.toLongOrNull() ?: return false
+        val idValue = requireNumericId(id)
         val optional = g.E(idValue).hasLabel(label).tryNext()
         if (!optional.isPresent) return false
         g.E(idValue).drop().iterate()
@@ -456,10 +452,8 @@ class TinkerGraphOperations :
         withTransactionGate {
             writeLock.withLock {
                 val properties = GraphMergeValidation.validateEdge(fromId, toId, label, matchProperties, setProperties)
-                val fromIdValue = fromId.value.toLongOrNull()
-                    ?: throw GraphQueryException("Invalid fromId: ${fromId.value}")
-                val toIdValue = toId.value.toLongOrNull()
-                    ?: throw GraphQueryException("Invalid toId: ${toId.value}")
+                val fromIdValue = requireNumericId(fromId)
+                val toIdValue = requireNumericId(toId)
 
                 val traversal = g.V(fromIdValue).outE(label)
                     .where(AnonymousTraversal.inV().hasId(toIdValue))
@@ -492,7 +486,7 @@ class TinkerGraphOperations :
         options: NeighborOptions,
     ): List<GraphVertex> {
         options.edgeLabel?.requireNotBlank("edgeLabel")
-        val idValue = startId.value.toLongOrNull() ?: return emptyList()
+        val idValue = requireNumericId(startId)
 
         if (options.maxDepth == 1) {
             val traversal = when (options.direction) {
@@ -524,12 +518,14 @@ class TinkerGraphOperations :
         toId: GraphElementId,
         options: PathOptions,
     ): GraphPath? {
+        requireNumericId(fromId)
+        requireNumericId(toId)
         if (options.weightProperty != null) {
             return ShortestPathFallback.dijkstra(this, fromId, toId, options)
         }
 
-        val fromIdValue = fromId.value.toLongOrNull() ?: return null
-        val toIdValue = toId.value.toLongOrNull() ?: return null
+        val fromIdValue = requireNumericId(fromId)
+        val toIdValue = requireNumericId(toId)
 
         @Suppress("UNCHECKED_CAST")
         val step = (if (options.edgeLabel != null) AnonymousTraversal.both(options.edgeLabel) else AnonymousTraversal.both())
@@ -561,15 +557,19 @@ class TinkerGraphOperations :
         toId: GraphElementId,
         options: PathOptions,
         heuristic: (GraphVertex) -> Double,
-    ): GraphPath? = ShortestPathFallback.aStar(this, fromId, toId, options, heuristic)
+    ): GraphPath? {
+        requireNumericId(fromId)
+        requireNumericId(toId)
+        return ShortestPathFallback.aStar(this, fromId, toId, options, heuristic)
+    }
 
     override fun allPaths(
         fromId: GraphElementId,
         toId: GraphElementId,
         options: PathOptions,
     ): List<GraphPath> {
-        val fromIdValue = fromId.value.toLongOrNull() ?: return emptyList()
-        val toIdValue = toId.value.toLongOrNull() ?: return emptyList()
+        val fromIdValue = requireNumericId(fromId)
+        val toIdValue = requireNumericId(toId)
 
         @Suppress("UNCHECKED_CAST")
         val step = (if (options.edgeLabel != null) AnonymousTraversal.both(options.edgeLabel) else AnonymousTraversal.both())
@@ -696,8 +696,7 @@ class TinkerGraphOperations :
         options: DegreeOptions,
     ): DegreeResult {
         options.edgeLabel?.requireNotBlank("edgeLabel")
-        val idValue = vertexId.value.toLongOrNull()
-            ?: throw IllegalArgumentException("Cannot convert GraphElementId '${vertexId.value}' to TinkerGraph Long ID")
+        val idValue = requireNumericId(vertexId)
 
         val inE = if (options.edgeLabel != null) g.V(idValue).inE(options.edgeLabel).count().next()
                   else g.V(idValue).inE().count().next()
@@ -749,8 +748,7 @@ class TinkerGraphOperations :
 
     override fun bfs(startId: GraphElementId, options: BfsDfsOptions): List<TraversalVisit> {
         options.edgeLabel?.requireNotBlank("edgeLabel")
-        val idValue = startId.value.toLongOrNull()
-            ?: throw IllegalArgumentException("Cannot convert GraphElementId '${startId.value}' to TinkerGraph Long ID")
+        val idValue = requireNumericId(startId)
 
         val adjacency = HashMap<GraphElementId, MutableList<GraphElementId>>()
         val collectedVertices = HashMap<GraphElementId, GraphVertex>()
@@ -783,8 +781,7 @@ class TinkerGraphOperations :
 
     override fun dfs(startId: GraphElementId, options: BfsDfsOptions): List<TraversalVisit> {
         options.edgeLabel?.requireNotBlank("edgeLabel")
-        val idValue = startId.value.toLongOrNull()
-            ?: throw IllegalArgumentException("Cannot convert GraphElementId '${startId.value}' to TinkerGraph Long ID")
+        val idValue = requireNumericId(startId)
 
         val adjacency = HashMap<GraphElementId, MutableList<GraphElementId>>()
         val collectedVertices = HashMap<GraphElementId, GraphVertex>()
@@ -853,6 +850,10 @@ class TinkerGraphOperations :
             GraphCycle(GraphPath(steps))
         }
     }
+
+    private fun requireNumericId(id: GraphElementId): Long =
+        id.value.toLongOrNull()
+            ?: throw GraphQueryException("TinkerGraph requires numeric ID, got: ${id.value}")
 
     private fun snapshot(): TinkerGraphSnapshot {
         val vertices = g.V().toList().map { vertex ->
