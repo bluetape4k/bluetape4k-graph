@@ -23,10 +23,11 @@ fallback 동작과 결과 순서를 보존했다.
 
 ## 결과와 검증
 
-- graph-core capability 테스트 351개와 graph-tinkerpop 테스트 109개가 통과했다.
+- graph-core capability 테스트 351개, graph-tinkerpop 테스트 114개,
+  graph-io-graphml 테스트 44개가 통과했다.
 - AGE, Neo4j, Memgraph, FalkorDB capability conformance가 각각 4개 테스트로
   통과했으며, Testcontainers는 AGE → Neo4j → Memgraph → FalkorDB 순서로 실행했다.
-- `compileKotlin`, test compilation, 두 모듈 `detekt`, `git diff --check`와
+- `compileKotlin`, test compilation, 세 모듈 `detekt`, `git diff --check`와
   Korean terminology audit를 통과했다.
 - 새 테스트는 `io.bluetape4k.assertions` 기반 assertion을 사용하고 금지된
   JUnit/Kotlin `assertThrows` 계열을 추가하지 않았다.
@@ -37,8 +38,10 @@ fallback 동작과 결과 순서를 보존했다.
 
 ## 독립 7-Tier review와 후속 이슈
 
-두 source-read-only reviewer가 exact HEAD `d1fd2eac`를 재검토해 P0/P1 없이
-`PASS/WATCH`를 판정했다. WATCH 항목은 현재 이슈를 차단하지 않는 다음 세 가지다.
+이전 implementation head `d1fd2eac`에 대해 두 source-read-only reviewer가
+P0/P1 없이 `PASS/WATCH`를 판정했고, 이번 stacked branch는 #547 exact head 위로
+rebase한 뒤 같은 계약과 검증을 다시 통과했다. WATCH 항목은 현재 이슈를 차단하지
+않는 다음 세 가지다.
 
 - public chunk API 자체의 lazy source 소비를 직접 고정하는 회귀 테스트가 필요하다.
 - `Sequence.take(1)`과 suspend Flow cancellation에서 cursor/traversal close를 보장할
