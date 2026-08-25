@@ -9,6 +9,7 @@
 - 선행 exact head: `26b41485d3107a99a555678de85fb455b1000504`
 - 작업 branch: `fix/issue-555-state-store-job-lock-stacked`
 - implementation commit: `030f7879`
+- implementation/docs candidate head: `5260dc89f16af9503c5c9d1b4016c3c14ceab9ea`
 - 범위: `InMemoryGraphImportJobStateStore`의 JVM-local 전체 monitor를 job별
   lock으로 좁히고 병렬성·직렬성·취소 안전성을 회귀 테스트와 문서로 고정
 

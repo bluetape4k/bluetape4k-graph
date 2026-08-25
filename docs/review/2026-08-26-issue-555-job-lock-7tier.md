@@ -8,7 +8,7 @@
   exact head `26b41485d3107a99a555678de85fb455b1000504`
 - branch: `fix/issue-555-state-store-job-lock-stacked`
 - implementation commit: `030f7879`
-- 판정: **PASS / WATCH** (P0/P1 blocker 없음; hosted receipt pending)
+- 판정: **PASS / WATCH** (P0/P1 blocker 없음; candidate head hosted PASS)
 - WATCH: lock 최적화는 JVM-local reference store에 한정한다. 실제 durable
   adapter의 process 간 contention·transaction rollback·정량 성능은 이 PR이
   증명하지 않는다.
@@ -23,7 +23,7 @@
 | SPW-04 | lifecycle/cancellation | 참조 카운트 감소·idle entry 제거, interruptible waiter 회귀 test | PASS |
 | SPW-05 | 테스트·정적 검증 | targeted/full, Detekt, 금지 assertion scan, `git diff --check` | PASS |
 | SPW-06 | 문서·호환성 | KDoc, README EN/KO, 설계·lesson·WIP | PASS |
-| SPW-07 | hosted 운영 증거 | PR 생성 후 exact head CI·Examples와 metadata read-back | PENDING |
+| SPW-07 | hosted 운영 증거 | candidate head CI `32899855369`와 Examples `32899855380` terminal PASS; docs-only lifecycle 후 exact final head를 재검증 | PASS |
 
 ## 7-Tier 결과
 
@@ -35,7 +35,7 @@
 | 4. 오류·취소 | transform 실패나 interrupt가 state/lock을 오염시키는가 | PASS. acquire flag와 `finally` cleanup, interrupted waiter 후 후속 update 성공 |
 | 5. 테스트 | 회귀가 실패 모드까지 재현하는가 | PASS. overlap·serialization·cancel 3개 test와 기존 8개 TCK 유지 |
 | 6. 문서·호환성 | JVM-local/durable 경계와 수용 기준이 일치하는가 | PASS. KDoc·README EN/KO·spec·lesson에 동일 범위 기록 |
-| 7. 운영·유지보수 | exact receipt와 미검증 위험이 추적 가능한가 | WATCH. hosted CI·Examples·PR read-back 후 PASS로 갱신 |
+| 7. 운영·유지보수 | exact receipt와 미검증 위험이 추적 가능한가 | PASS/WATCH. candidate exact head hosted receipt는 PASS이며 docs-only final head checks를 추가로 read-back한다 |
 
 ## 검증 영수증
 
@@ -44,7 +44,12 @@
 - static: `:bluetape4k-graph-io-core:detekt` PASS (`BUILD SUCCESSFUL`)
 - 금지 assertion scan: `assertThrows`, `kotlin.test.assertFailsWith`, `shouldThrow`, `invoking {` 없음
 - `git diff --check`: PASS
-- hosted: PR 생성 후 exact head에서 CI·Examples terminal PASS 확인 예정
+- hosted candidate head `5260dc89f16af9503c5c9d1b4016c3c14ceab9ea`: CI
+  [32899855369](https://github.com/bluetape4k/bluetape4k-graph/actions/runs/32899855369)
+  와 Examples
+  [32899855380](https://github.com/bluetape4k/bluetape4k-graph/actions/runs/32899855380)이
+  모두 terminal PASS
+- docs-only lifecycle 후 새 final head의 CI·Examples와 PR metadata를 다시 읽어 최종 receipt로 갱신한다
 
 ## 최종 결론
 
