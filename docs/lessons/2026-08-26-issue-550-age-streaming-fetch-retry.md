@@ -22,6 +22,8 @@ production surface를 테스트용으로 열지 않고 `DataSource`에서 실제
 - 두 행 중 첫 행을 collector에 공개한 뒤 late `SQLException`이 발생해도
   `maxAttempts=1`로 streaming statement 실행은 한 번이고 prefix는 한 건뿐이다.
 - 원인 예외 chain에 주입한 `SQLException`이 남아 있어 JDBC 장애임을 확인할 수 있다.
+- 각 proxy fixture의 Exposed `Database`는 `finally`에서 `TransactionManager.closeAndUnregister`로
+  제거해 global registry 오염을 남기지 않는다.
 
 ## 남은 범위
 

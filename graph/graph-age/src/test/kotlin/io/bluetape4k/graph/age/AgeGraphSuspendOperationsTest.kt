@@ -32,6 +32,7 @@ import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotBeNull
 import org.jetbrains.exposed.v1.core.DatabaseConfig
 import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -318,45 +319,44 @@ class AgeGraphSuspendOperationsTest {
     }
 
     @Test
-    @Order(32_3)
+    @Order(323)
     fun `직접 조회 Flow는 DatabaseConfig fetch size를 PreparedStatement에 전달한다`() = runSuspendIO {
         ops.createVertex("Person", mapOf("name" to "fetch-size"))
 
         val probe = StreamingProbe()
-        val probedOps = probedOperations(defaultFetchSize = 8, probe)
-
-        probedOps.findVerticesByLabel("Person").toList().shouldNotBeEmpty()
-
-        probe.fetchSizes.any { it == 8 }.shouldBeTrue()
+        withProbedOperations(defaultFetchSize = 8, probe) { probedOps ->
+            probedOps.findVerticesByLabel("Person").toList().shouldNotBeEmpty()
+            probe.fetchSizes.any { it == 8 }.shouldBeTrue()
+        }
     }
 
     @Test
-    @Order(32_4)
+    @Order(324)
     fun `직접 조회 Flow는 비양수 DatabaseConfig에서 positive 기본 fetch size를 사용한다`() = runSuspendIO {
         ops.createVertex("Person", mapOf("name" to "fallback-fetch-size"))
 
         val probe = StreamingProbe()
-        val probedOps = probedOperations(defaultFetchSize = 0, probe)
-
-        probedOps.findVerticesByLabel("Person").toList().shouldNotBeEmpty()
-
-        probe.fetchSizes.any { it == 100 }.shouldBeTrue()
+        withProbedOperations(defaultFetchSize = 0, probe) { probedOps ->
+            probedOps.findVerticesByLabel("Person").toList().shouldNotBeEmpty()
+            probe.fetchSizes.any { it == 100 }.shouldBeTrue()
+        }
     }
 
     @Test
-    @Order(32_5)
+    @Order(325)
     fun `늦은 JDBC 오류는 prefix 중복 없이 streaming transaction 한 번으로 종료된다`() = runSuspendIO {
         repeat(2) { index ->
             ops.createVertex("Person", mapOf("name" to "late-failure-$index"))
         }
 
         val probe = StreamingProbe(failAfterFirstRow = true)
-        val probedOps = probedOperations(defaultFetchSize = 8, probe)
         val emitted = mutableListOf<String>()
 
-        val failure = assertFailsWith<Exception> {
-            probedOps.findVerticesByLabel("Person").collect { vertex ->
-                emitted += vertex.properties["name"].toString()
+        val failure = withProbedOperations(defaultFetchSize = 8, probe) { probedOps ->
+            assertFailsWith<Exception> {
+                probedOps.findVerticesByLabel("Person").collect { vertex ->
+                    emitted += vertex.properties["name"].toString()
+                }
             }
         }
 
@@ -365,16 +365,23 @@ class AgeGraphSuspendOperationsTest {
         probe.streamingAttempts.get() shouldBeEqualTo 1
     }
 
-    private fun probedOperations(defaultFetchSize: Int, probe: StreamingProbe): AgeGraphSuspendOperations =
-        AgeGraphSuspendOperations(
-            Database.connect(
-                ProbingDataSource(dataSource, probe),
-                databaseConfig = DatabaseConfig {
-                    this.defaultFetchSize = defaultFetchSize
-                }
-            ),
-            graphName,
+    private suspend fun <T> withProbedOperations(
+        defaultFetchSize: Int,
+        probe: StreamingProbe,
+        block: suspend (AgeGraphSuspendOperations) -> T,
+    ): T {
+        val probedDatabase = Database.connect(
+            ProbingDataSource(dataSource, probe),
+            databaseConfig = DatabaseConfig {
+                this.defaultFetchSize = defaultFetchSize
+            }
         )
+        return try {
+            block(AgeGraphSuspendOperations(probedDatabase, graphName))
+        } finally {
+            TransactionManager.closeAndUnregister(probedDatabase)
+        }
+    }
 
     // ───────────────────────── 간선(Edge) CRUD ─────────────────────────
 

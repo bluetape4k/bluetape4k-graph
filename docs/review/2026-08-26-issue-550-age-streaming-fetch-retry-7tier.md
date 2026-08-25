@@ -15,7 +15,7 @@
 |---|---|---|---|
 | 1. 계약·호환성 | public API/ABI, 범위, base | 테스트 전용 변경이며 `AgeGraphSuspendOperations` public constructor/interface/ABI를 수정하지 않는다. PR #572 exact head `03513d1a` 위에만 적층한다. | PASS |
 | 2. Kotlin 패턴·API | null/error/coroutine/assertions | `runSuspendIO`, 실제 `DataSource` 위임, `assertFailsWith<Exception>`, `SQLException` cause 확인을 사용한다. 금지된 `assertThrows`/`shouldThrow`는 없다. | PASS |
-| 3. Lifecycle·취소 | statement/result set/transaction | proxy는 실제 JDBC 객체를 위임하고 `ResultSet.next()`의 두 번째 호출에서만 late 오류를 주입한다. production의 `ResultSet.use`와 transaction close를 그대로 통과한다. | PASS |
+| 3. Lifecycle·취소 | statement/result set/transaction | proxy는 실제 JDBC 객체를 위임하고 `ResultSet.next()`의 두 번째 호출에서만 late 오류를 주입한다. production의 `ResultSet.use`와 transaction close를 그대로 통과하며, `withProbedOperations`가 probe `Database`를 `finally`에서 unregister한다. | PASS |
 | 4. Concurrency·backpressure | fetch/retry/prefix | configured `8`, fallback `100`, positive fetch statement 횟수와 emitted prefix 1건·streaming attempt 1회를 직접 관찰한다. driver 내부 stall은 #552로 제한한다. | PASS |
 | 5. Test·fixture | deterministic integration | AGE Testcontainers에서 32개 targeted와 194개 graph-age 전체 테스트를 순차 실행했고, 두 행 fixture로 late failure를 재현한다. | PASS |
 | 6. 문서·운영 | README/review/lesson/train | #535 README EN/KO의 fetch/retry 경계를 재사용하고 본 review·lesson·CHANGELOG·WIP에 fault-injection 증거와 잔여 범위를 기록한다. | PASS |
@@ -49,7 +49,7 @@
 - targeted: `./gradlew :bluetape4k-graph-age:test --tests 'io.bluetape4k.graph.age.AgeGraphSuspendOperationsTest' --no-build-cache --no-daemon --console=plain` → `32/32`, `BUILD SUCCESSFUL`.
 - module: `./gradlew :bluetape4k-graph-age:test --no-build-cache --no-daemon --console=plain` → `194/194`, failures/errors/skipped `0`, `BUILD SUCCESSFUL`.
 - static/build: `:bluetape4k-graph-age:detekt`, `compileKotlin`, `compileTestKotlin` → `BUILD SUCCESSFUL`.
-- diff/terms: `git diff --check` PASS; new test source contains `io.bluetape4k.assertions.assertFailsWith` and no forbidden assertion.
+- diff/terms: `git diff --check` PASS; new test source contains `io.bluetape4k.assertions.assertFailsWith` and no forbidden assertion. Probe `Database`는 `TransactionManager.closeAndUnregister`로 정리하고 test order는 `323/324/325`로 명시했다.
 - lifecycle note: AGE Testcontainers는 기존 graph-age 모듈 전체 테스트와 같은 단일 모듈에서 순차 실행했으며 별도 retry 없이 통과했다.
 
 ## 결론
