@@ -5,6 +5,7 @@ import io.bluetape4k.graph.falkordb.FalkorDBGraphSuspendOperations
 import io.bluetape4k.graph.falkordb.FalkorDBServer
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.warn
+import kotlinx.coroutines.CancellationException
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import java.util.UUID
@@ -23,8 +24,14 @@ class FalkorDBLinkedInGraphSuspendTest : AbstractLinkedInGraphSuspendTest() {
 
     @AfterAll
     fun stopServer() {
-        runCatching { runSuspendIO { ops.dropGraph(graphName) } }
-            .onFailure { log.warn(it) { "Failed to drop graph $graphName" } }
-        driver.close()
+        try {
+            runSuspendIO { ops.dropGraph(graphName) }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            log.warn(e) { "Failed to drop graph $graphName" }
+        } finally {
+            driver.close()
+        }
     }
 }
