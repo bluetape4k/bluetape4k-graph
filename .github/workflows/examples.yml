@@ -21,7 +21,7 @@ on:
       - '.github/testcontainers-images.txt'
       - '.github/workflows/examples.yml'
   pull_request:
-    branches: [develop, main]
+    branches: [develop, main, 'fix/**']
     paths:
       - 'examples/**'
       - 'graph/**'

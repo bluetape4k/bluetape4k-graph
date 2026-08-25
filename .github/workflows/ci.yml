@@ -14,7 +14,7 @@ on:
       - '.omc/**'
       - '.claude/**'
   pull_request:
-    branches: [develop, main]
+    branches: [develop, main, 'fix/**']
     paths-ignore:
       - '**.md'
       - 'docs/**'
