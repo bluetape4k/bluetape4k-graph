@@ -7,7 +7,8 @@
 - 유형: Type C/Bug Fix
 - 선행 PR: [#576](https://github.com/bluetape4k/bluetape4k-graph/pull/576)
 - 선행 exact head: `112703d4752fa5dad6f25cef5a53328cd6712bfa`
-- 현재 candidate: `88cc9676dfbbd48c7b700c51854f7380ee6fe07a`
+- production candidate commit: `88cc9676dfbbd48c7b700c51854f7380ee6fe07a`
+- 설계·리뷰·WIP receipt commit: `09ceee92`
 - 범위: workflow 전이 때 기존 `GraphImportWorkflowReport` payload 보존
 
 ## 문제

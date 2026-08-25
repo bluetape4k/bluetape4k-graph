@@ -19,8 +19,8 @@
 - 수정 후 workflow targeted 4/4, graph-io-core 전체 143/143, Detekt 통과
 - `shouldBeEmpty`·`shouldBeNull`·`shouldBeEqualTo`로 기본값과 보존값의 의도를 분리
 - 금지 assertion scan과 `git diff --check` 통과
-- #576 exact head `112703d4752fa5dad6f25cef5a53328cd6712bfa` 위 candidate
-  `88cc9676dfbbd48c7b700c51854f7380ee6fe07a`에서 확인
+- #576 exact head `112703d4752fa5dad6f25cef5a53328cd6712bfa` 위 implementation
+  commit `88cc9676dfbbd48c7b700c51854f7380ee6fe07a`와 문서 receipt `09ceee92`에서 확인
 
 ## 남은 가드
 
