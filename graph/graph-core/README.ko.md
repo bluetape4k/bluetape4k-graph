@@ -1233,6 +1233,13 @@ val cycles = ops.detectCycles(CycleOptions(edgeLabel = "KNOWS", maxDepth = 5))
 `CompletableFutureSupportKt` 소유자에 맞춰 다시 컴파일해야 하며 외부 ABI migration은
 [#562](https://github.com/bluetape4k/bluetape4k-graph/issues/562)에서 검증한다.
 
+#562 ABI TCK는 삭제된 owner를 기준으로 미리 컴파일한 최소 Java consumer를
+legacy class 없이 실행해 예상한 `NoClassDefFoundError`를 재현한다. 같은 consumer를
+공식 owner 기준으로 다시 컴파일한 fixture는 nullable `CompletableFuture`를 정상
+완료해야 한다. classfile의 owner 참조와 공식 owner의
+`ProtectionDomain.codeSource`도 함께 검사하므로 source compile 성공만으로 artifact
+소유권을 증명했다고 간주하지 않는다.
+
 `GraphOperations`를 Virtual Thread 어댑터로 감싸면 Java 상호운용을 위한
 `CompletableFuture` 기반 비동기 API를 사용할 수 있다. 어댑터는 Bluetape4k의
 `virtualFutureOf` helper를 사용하며 별도 executor를 만들지 않는다.
