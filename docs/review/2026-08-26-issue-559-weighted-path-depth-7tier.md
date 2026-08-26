@@ -21,7 +21,7 @@
 | SPW-04 | backend parity | Neo4j/Memgraph/AGE/FalkorDB container와 TinkerGraph 공통 fixture | PASS |
 | SPW-05 | execution models | sync, virtual-thread, suspend weighted 경로 모두 fixture 호출 | PASS |
 | SPW-06 | compatibility | public API, PathOptions validation, positive-weight policy 유지 | PASS |
-| SPW-07 | hosted traceability | local receipt 완료; PR exact-head CI/Examples terminal receipt는 PR 생성 후 갱신 | PENDING → PASS 예정 |
+| SPW-07 | hosted traceability | PR #584 exact head `6309412799416f94bb2367948da9a6a4b4b8744f`, CI `32913808915`, Examples `32913809041` terminal green | PASS |
 
 ## 7-Tier 결과
 
@@ -43,8 +43,8 @@
 - Backend TCK: Neo4j 13개, Memgraph 10개, AGE 10개, FalkorDB 10개 weighted
   sync/suspend 테스트와 TinkerGraph/core fixture 통과.
 - 모든 weighted 경로의 virtual-thread adapter도 같은 sync fixture로 검증했다.
-- 전체 module test/Detekt, assertion scan, diff-check와 hosted exact-head
-  receipt는 PR 생성 후 최종 갱신한다.
+- 전체 module test/Detekt, assertion scan, diff-check와 PR exact-head hosted
+  receipt를 확인했다.
 
 ## P0/P1 판정과 후속 위험
 
@@ -59,5 +59,5 @@
 
 weighted Dijkstra/A*가 inclusive `PathOptions.maxDepth`를 준수하고, 다섯 backend의
 sync/suspend/virtual-thread 결과가 공통 TCK로 정렬된다. **PR readiness: PASS /
-Architecture status: WATCH**. hosted exact-head receipt와 전체 train merge는 마지막
-승인 단계에서만 진행한다.
+Architecture status: WATCH**. PR #584의 CI/Examples hosted receipt도 terminal
+green이다. 전체 train merge는 마지막 승인 단계에서만 진행한다.
