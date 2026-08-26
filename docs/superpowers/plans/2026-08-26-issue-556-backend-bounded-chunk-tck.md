@@ -34,4 +34,3 @@
   있다.
 - 실제 backend capability를 승격해야 한다면 별도 issue와 cursor/transaction
   evidence를 먼저 만든다.
-

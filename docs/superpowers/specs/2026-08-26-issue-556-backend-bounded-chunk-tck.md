@@ -63,4 +63,3 @@ stage 시점 snapshot이어야 한다.
 - P1: 네 경로 중 하나라도 chunk size/call count가 어긋나거나 fallback을 bounded라고
   문서화함.
 - P2: backend별 실제 cursor conformance, serialization peak, cancellation checkpoint.
-
