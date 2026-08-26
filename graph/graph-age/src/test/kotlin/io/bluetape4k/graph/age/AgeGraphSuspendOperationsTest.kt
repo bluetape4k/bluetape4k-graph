@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEmpty
+import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
@@ -123,6 +124,19 @@ class AgeGraphSuspendOperationsTest {
     fun `그래프를 삭제하면 존재 여부가 false 반환`() = runSuspendIO {
         ops.dropGraph(graphName)
         ops.graphExists(graphName).shouldBeFalse()
+    }
+
+    @Test
+    @Order(13)
+    fun `suspend graph name과 vertex label은 안전한 식별자만 허용한다`() = runSuspendIO {
+        val unsafe = "invalid-label; DROP TABLE users; --"
+
+        assertFailsWith<GraphQueryException> {
+            ops.createGraph(unsafe)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            ops.createVertex(unsafe)
+        }
     }
 
     // ───────────────────────── 정점(Vertex) CRUD ─────────────────────────

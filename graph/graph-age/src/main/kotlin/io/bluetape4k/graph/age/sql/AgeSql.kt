@@ -7,7 +7,7 @@ import io.bluetape4k.graph.support.requireSafeIdentifier
  *
  * AGE는 PostgreSQL 내에서 다음 형태로 Cypher를 실행합니다:
  * ```sql
- * SELECT * FROM ag_catalog.cypher('graph_name', $$ MATCH (n) RETURN n $$) AS (v agtype)
+ * SELECT * FROM ag_catalog.cypher('graph_name', $bt4k$ MATCH (n) RETURN n $bt4k$) AS (v agtype)
  * ```
  *
  * ```kotlin
@@ -70,7 +70,10 @@ object AgeSql {
      * AgeSql.createGraph("social")  // → "SELECT create_graph('social')"
      * ```
      */
-    fun createGraph(graphName: String): String = "SELECT create_graph('$graphName')"
+    fun createGraph(graphName: String): String {
+        val safeGraphName = graphName.requireSafeIdentifier("graphName")
+        return "SELECT create_graph('$safeGraphName')"
+    }
 
     /**
      * 지정한 AGE 그래프를 삭제하는 SQL 문자열을 반환한다.
@@ -83,8 +86,10 @@ object AgeSql {
      * @param graphName 삭제할 그래프 이름.
      * @param cascade 의존 객체 포함 삭제 여부 (기본: true).
      */
-    fun dropGraph(graphName: String, cascade: Boolean = true): String =
-        "SELECT drop_graph('$graphName', $cascade)"
+    fun dropGraph(graphName: String, cascade: Boolean = true): String {
+        val safeGraphName = graphName.requireSafeIdentifier("graphName")
+        return "SELECT drop_graph('$safeGraphName', $cascade)"
+    }
 
     /**
      * 지정한 이름의 AGE 그래프 존재 여부를 확인하는 COUNT SQL 문자열을 반환한다.
@@ -95,8 +100,8 @@ object AgeSql {
      * ```
      */
     fun graphExists(graphName: String): String {
-        graphName.requireSafeIdentifier("graphName")
-        return "SELECT count(*) FROM ag_catalog.ag_graph WHERE name = '$graphName'"
+        val safeGraphName = graphName.requireSafeIdentifier("graphName")
+        return "SELECT count(*) FROM ag_catalog.ag_graph WHERE name = '$safeGraphName'"
     }
 
     /**
@@ -108,20 +113,50 @@ object AgeSql {
      *     "MATCH (n:Person) RETURN n",
      *     listOf("n" to "agtype")
      * )
-     * // → "SELECT * FROM ag_catalog.cypher('social', $$ MATCH (n:Person) RETURN n $$) AS (n agtype)"
+     * // → "SELECT * FROM ag_catalog.cypher('social', $bt4k$ MATCH (n:Person) RETURN n $bt4k$) AS (n agtype)"
      * ```
      *
      * @param graphName AGE 그래프 이름.
      * @param cypherQuery 실행할 Cypher 쿼리 문자열.
      * @param columns 결과 컬럼 목록. 예: listOf("v" to "agtype", "e" to "agtype")
+     *
+     * [graphName]과 결과 컬럼의 이름·타입은 SQL 구조에 보간되므로 안전한 식별자만 허용한다.
+     * [cypherQuery]는 호출자가 제공하는 Cypher 문장으로서 SQL dollar-quote 리터럴 안에
+     * 전달된다. 쿼리 안에 고정 delimiter가 포함되어도 SQL 리터럴 경계를 탈출하지 않도록
+     * 사용하지 않은 delimiter를 선택한다. 프로퍼티 값은 [AgePropertySerializer]를 통해
+     * Cypher 리터럴로 직렬화해야 한다.
      */
     fun cypher(
         graphName: String,
         cypherQuery: String,
         columns: List<Pair<String, String>>,
     ): String {
-        val colDef = columns.joinToString(", ") { (name, type) -> "$name $type" }
-        return $$"""SELECT * FROM ag_catalog.cypher('$$graphName', $$ $$cypherQuery $$) AS ($$colDef)"""
+        val safeGraphName = graphName.requireSafeIdentifier("graphName")
+        require(columns.isNotEmpty()) { "columns must not be empty" }
+        val colDef = columns.joinToString(", ") { (name, type) ->
+            val safeName = name.requireSafeIdentifier("column name")
+            val safeType = type.requireSafeIdentifier("column type")
+            "$safeName $safeType"
+        }
+        val queryLiteral = dollarQuote(cypherQuery)
+        return "SELECT * FROM ag_catalog.cypher('$safeGraphName', $queryLiteral) AS ($colDef)"
+    }
+
+    /**
+     * SQL dollar-quote delimiter를 쿼리 본문과 겹치지 않게 선택한다.
+     *
+     * AGE의 Cypher 문장은 SQL 문자열 리터럴 안에 중첩되므로 고정 `$$` delimiter를 사용하면
+     * 쿼리 본문에 `$$`가 포함된 값이 SQL 경계를 깨뜨릴 수 있다. 태그를 늘려 본문에 없는
+     * delimiter를 선택하면 현재 String 기반 Exposed 실행 계약을 유지하면서도 이 경계를
+     * 안전하게 보존할 수 있다.
+     */
+    private fun dollarQuote(value: String): String {
+        var tag = "bt4k"
+        while (value.contains("\$$tag\$")) {
+            tag += "_"
+        }
+        val delimiter = "\$$tag\$"
+        return "$delimiter$value$delimiter"
     }
 
     /**
@@ -129,20 +164,24 @@ object AgeSql {
      *
      * ```kotlin
      * AgeSql.createVertex("social", "Person", mapOf("name" to "Alice"))
-     * // → SELECT * FROM ag_catalog.cypher('social', $$ CREATE (v:Person {name: 'Alice'}) RETURN v $$) AS (v agtype)
+     * // → SELECT * FROM ag_catalog.cypher(
+     * //       'social', $bt4k$ CREATE (v:Person {name: 'Alice'}) RETURN v $bt4k$
+     * //   ) AS (v agtype)
      * ```
      */
     fun createVertex(graphName: String, label: String, properties: Map<String, Any?>): String {
+        val safeLabel = label.requireSafeIdentifier("label")
         val propsStr = AgePropertySerializer.toCypherProps(properties)
         return cypher(
             graphName,
-            "CREATE (v:$label $propsStr) RETURN v",
+            "CREATE (v:$safeLabel $propsStr) RETURN v",
             listOf("v" to "agtype")
         )
     }
 
     fun createVerticesBatch(graphName: String, label: String, rows: List<BatchVertexRow>): String {
         require(rows.isNotEmpty()) { "rows must not be empty" }
+        val safeLabel = label.requireSafeIdentifier("label")
 
         val keys = commonSortedPropertyKeys(rows.map { it.properties })
         val rowList = rows.joinToString(", ", "[", "]") { row ->
@@ -155,7 +194,7 @@ object AgeSql {
             fields.joinToString(", ", "{", "}")
         }
         val props = propertyMapFromRow(keys)
-        val createPattern = if (props.isEmpty()) "(v:$label)" else "(v:$label $props)"
+        val createPattern = if (props.isEmpty()) "(v:$safeLabel)" else "(v:$safeLabel $props)"
 
         return cypher(
             graphName,
@@ -172,10 +211,11 @@ object AgeSql {
      * ```
      */
     fun matchVertices(graphName: String, label: String, filter: Map<String, Any?> = emptyMap()): String {
+        val safeLabel = label.requireSafeIdentifier("label")
         val filterStr = if (filter.isEmpty()) "" else AgePropertySerializer.toCypherProps(filter)
         return cypher(
             graphName,
-            "MATCH (v:$label $filterStr) RETURN v",
+            "MATCH (v:$safeLabel $filterStr) RETURN v",
             listOf("v" to "agtype")
         )
     }
@@ -187,12 +227,14 @@ object AgeSql {
      * AgeSql.matchVertexById("social", "Person", 42L)
      * ```
      */
-    fun matchVertexById(graphName: String, label: String, id: Long): String =
-        cypher(
+    fun matchVertexById(graphName: String, label: String, id: Long): String {
+        val safeLabel = label.requireSafeIdentifier("label")
+        return cypher(
             graphName,
-            "MATCH (v:$label) WHERE id(v) = $id RETURN v",
+            "MATCH (v:$safeLabel) WHERE id(v) = $id RETURN v",
             listOf("v" to "agtype")
         )
+    }
 
     /**
      * 정점 속성을 갱신하는 AGE SQL을 반환한다.
@@ -202,10 +244,11 @@ object AgeSql {
      * ```
      */
     fun updateVertex(graphName: String, label: String, id: Long, properties: Map<String, Any?>): String {
+        val safeLabel = label.requireSafeIdentifier("label")
         val sets = AgePropertySerializer.toCypherAssignments("v", properties)
         return cypher(
             graphName,
-            "MATCH (v:$label) WHERE id(v) = $id SET $sets RETURN v",
+            "MATCH (v:$safeLabel) WHERE id(v) = $id SET $sets RETURN v",
             listOf("v" to "agtype")
         )
     }
@@ -217,12 +260,14 @@ object AgeSql {
      * AgeSql.deleteVertex("social", "Person", 42L)
      * ```
      */
-    fun deleteVertex(graphName: String, label: String, id: Long): String =
-        cypher(
+    fun deleteVertex(graphName: String, label: String, id: Long): String {
+        val safeLabel = label.requireSafeIdentifier("label")
+        return cypher(
             graphName,
-            "MATCH (v:$label) WHERE id(v) = $id DETACH DELETE v RETURN 1",
+            "MATCH (v:$safeLabel) WHERE id(v) = $id DETACH DELETE v RETURN 1",
             listOf("result" to "agtype")
         )
+    }
 
     /**
      * 레이블별 정점 수를 조회하는 AGE SQL을 반환한다.
@@ -231,12 +276,14 @@ object AgeSql {
      * AgeSql.countVertices("social", "Person")
      * ```
      */
-    fun countVertices(graphName: String, label: String): String =
-        cypher(
+    fun countVertices(graphName: String, label: String): String {
+        val safeLabel = label.requireSafeIdentifier("label")
+        return cypher(
             graphName,
-            "MATCH (v:$label) RETURN count(v)",
+            "MATCH (v:$safeLabel) RETURN count(v)",
             listOf("count" to "agtype")
         )
+    }
 
     /**
      * 간선 생성 Cypher를 AGE SQL로 래핑하여 반환한다.
@@ -252,10 +299,13 @@ object AgeSql {
         edgeLabel: String,
         properties: Map<String, Any?>,
     ): String {
+        val safeEdgeLabel = edgeLabel.requireSafeIdentifier("edgeLabel")
         val propsStr = AgePropertySerializer.toCypherProps(properties)
+        val query = "MATCH (a), (b) WHERE id(a) = $fromId AND id(b) = $toId " +
+                "CREATE (a)-[e:$safeEdgeLabel $propsStr]->(b) RETURN e"
         return cypher(
             graphName,
-            "MATCH (a), (b) WHERE id(a) = $fromId AND id(b) = $toId CREATE (a)-[e:$edgeLabel $propsStr]->(b) RETURN e",
+            query,
             listOf("e" to "agtype")
         )
     }
@@ -278,6 +328,7 @@ object AgeSql {
 
     fun createEdgesBatch(graphName: String, edgeLabel: String, rows: List<BatchEdgeRow>): String {
         require(rows.isNotEmpty()) { "rows must not be empty" }
+        val safeEdgeLabel = edgeLabel.requireSafeIdentifier("edgeLabel")
 
         val keys = commonSortedPropertyKeys(rows.map { it.properties })
         val rowList = rows.joinToString(", ", "[", "]") { row ->
@@ -292,7 +343,7 @@ object AgeSql {
             fields.joinToString(", ", "{", "}")
         }
         val props = propertyMapFromRow(keys)
-        val edgePattern = if (props.isEmpty()) "[e:$edgeLabel]" else "[e:$edgeLabel $props]"
+        val edgePattern = if (props.isEmpty()) "[e:$safeEdgeLabel]" else "[e:$safeEdgeLabel $props]"
 
         return cypher(
             graphName,
@@ -313,10 +364,11 @@ object AgeSql {
      * ```
      */
     fun matchEdgesByLabel(graphName: String, edgeLabel: String, filter: Map<String, Any?> = emptyMap()): String {
+        val safeEdgeLabel = edgeLabel.requireSafeIdentifier("edgeLabel")
         val filterStr = if (filter.isEmpty()) "" else AgePropertySerializer.toCypherProps(filter)
         return cypher(
             graphName,
-            "MATCH ()-[e:$edgeLabel $filterStr]->() RETURN e",
+            "MATCH ()-[e:$safeEdgeLabel $filterStr]->() RETURN e",
             listOf("e" to "agtype")
         )
     }
@@ -331,10 +383,11 @@ object AgeSql {
         edgeLabel: String,
         filter: Map<String, Any?> = emptyMap(),
     ): String {
+        val safeEdgeLabel = edgeLabel.requireSafeIdentifier("edgeLabel")
         val filterStr = if (filter.isEmpty()) "" else AgePropertySerializer.toCypherProps(filter)
         return cypher(
             graphName,
-            "MATCH (a)-[e:$edgeLabel $filterStr]->(b) WHERE id(a) = $fromId AND id(b) = $toId RETURN e",
+            "MATCH (a)-[e:$safeEdgeLabel $filterStr]->(b) WHERE id(a) = $fromId AND id(b) = $toId RETURN e",
             listOf("e" to "agtype")
         )
     }
@@ -343,10 +396,11 @@ object AgeSql {
      * 간선 속성을 갱신하는 AGE SQL을 반환한다.
      */
     fun updateEdge(graphName: String, edgeLabel: String, id: Long, properties: Map<String, Any?>): String {
+        val safeEdgeLabel = edgeLabel.requireSafeIdentifier("edgeLabel")
         val sets = AgePropertySerializer.toCypherAssignments("e", properties)
         return cypher(
             graphName,
-            "MATCH ()-[e:$edgeLabel]->() WHERE id(e) = $id SET $sets RETURN e",
+            "MATCH ()-[e:$safeEdgeLabel]->() WHERE id(e) = $id SET $sets RETURN e",
             listOf("e" to "agtype")
         )
     }
@@ -358,12 +412,14 @@ object AgeSql {
      * AgeSql.deleteEdge("social", "KNOWS", 99L)
      * ```
      */
-    fun deleteEdge(graphName: String, edgeLabel: String, id: Long): String =
-        cypher(
+    fun deleteEdge(graphName: String, edgeLabel: String, id: Long): String {
+        val safeEdgeLabel = edgeLabel.requireSafeIdentifier("edgeLabel")
+        return cypher(
             graphName,
-            "MATCH ()-[e:$edgeLabel]->() WHERE id(e) = $id DELETE e RETURN 1",
+            "MATCH ()-[e:$safeEdgeLabel]->() WHERE id(e) = $id DELETE e RETURN 1",
             listOf("result" to "agtype")
         )
+    }
 
     /**
      * 인접 정점 탐색 SQL을 생성합니다.
@@ -389,8 +445,9 @@ object AgeSql {
         direction: String,
         depth: Int,
     ): String {
+        val safeEdgeLabel = edgeLabel?.requireSafeIdentifier("edgeLabel")
         val depthStr = if (depth == 1) "" else "*1..$depth"
-        val edgePart = if (edgeLabel != null) ":$edgeLabel$depthStr" else depthStr.ifEmpty { "" }
+        val edgePart = if (safeEdgeLabel != null) ":$safeEdgeLabel$depthStr" else depthStr.ifEmpty { "" }
         val pattern = when (direction) {
             "OUTGOING" -> "(start)-[$edgePart]->(neighbor)"
             "INCOMING" -> "(start)<-[$edgePart]-(neighbor)"
@@ -426,8 +483,9 @@ object AgeSql {
         edgeLabel: String?,
         maxDepth: Int,
     ): String {
+        val safeEdgeLabel = edgeLabel?.requireSafeIdentifier("edgeLabel")
         // AGE는 shortestPath() 내장 함수를 지원하지 않으므로, 변수 길이 패스 + LIMIT 1 로 대체
-        val relPattern = if (edgeLabel != null) ":$edgeLabel*1..$maxDepth" else "*1..$maxDepth"
+        val relPattern = if (safeEdgeLabel != null) ":$safeEdgeLabel*1..$maxDepth" else "*1..$maxDepth"
         return cypher(
             graphName,
             "MATCH p = (a)-[$relPattern]-(b) WHERE id(a) = $fromId AND id(b) = $toId RETURN p LIMIT 1",
@@ -455,7 +513,8 @@ object AgeSql {
         edgeLabel: String?,
         maxDepth: Int,
     ): String {
-        val relPattern = if (edgeLabel != null) ":$edgeLabel*1..$maxDepth" else "*1..$maxDepth"
+        val safeEdgeLabel = edgeLabel?.requireSafeIdentifier("edgeLabel")
+        val relPattern = if (safeEdgeLabel != null) ":$safeEdgeLabel*1..$maxDepth" else "*1..$maxDepth"
         return cypher(
             graphName,
             "MATCH p = (a)-[$relPattern]-(b) WHERE id(a) = $fromId AND id(b) = $toId RETURN p",
@@ -470,7 +529,7 @@ object AgeSql {
      *
      * ```kotlin
      * val sql = AgeSql.degreeCentrality("social", 42L, edgeLabel = "KNOWS")
-     * // SELECT * FROM cypher('social', $$ MATCH (n) WHERE id(n) = 42 ... $$) AS (in_d agtype, out_d agtype)
+     * // SELECT * FROM cypher('social', $bt4k$ MATCH (n) WHERE id(n) = 42 ... $bt4k$) AS (in_d agtype, out_d agtype)
      * ```
      *
      * @param graphName 그래프 이름.
@@ -479,15 +538,17 @@ object AgeSql {
      */
     fun degreeCentrality(graphName: String, vertexId: Long, edgeLabel: String? = null): String {
         val edgeClause = edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
-        return """
-            SELECT in_d, out_d FROM ag_catalog.cypher('$graphName', $$
+        return cypher(
+            graphName,
+            """
                 MATCH (n) WHERE id(n) = $vertexId
                 OPTIONAL MATCH (n)-[r_out$edgeClause]->()
                 WITH n, count(r_out) AS out_d
                 OPTIONAL MATCH ()-[r_in$edgeClause]->(n)
                 RETURN count(r_in) AS in_d, out_d
-            $$) AS (in_d agtype, out_d agtype)
-        """.trimIndent()
+            """.trimIndent(),
+            listOf("in_d" to "agtype", "out_d" to "agtype")
+        )
     }
 
     /**
@@ -555,7 +616,7 @@ object AgeSql {
      *
      * ```kotlin
      * val sql = AgeSql.matchAllVertices("social")
-     * // SELECT * FROM ag_catalog.cypher('social', $$ MATCH (n) RETURN n $$) AS (v agtype)
+     * // SELECT * FROM ag_catalog.cypher('social', $bt4k$ MATCH (n) RETURN n $bt4k$) AS (v agtype)
      * ```
      */
     fun matchAllVertices(graphName: String): String =

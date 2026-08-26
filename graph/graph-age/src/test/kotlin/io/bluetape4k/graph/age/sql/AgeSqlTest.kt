@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.age.sql
 
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldNotContain
 import org.junit.jupiter.api.Test
@@ -7,6 +8,72 @@ import org.junit.jupiter.api.Test
 class AgeSqlTest {
 
     private val graph = "test_graph"
+
+    @Test
+    fun `구조적 식별자는 SQL에 보간하기 전에 안전성을 검증한다`() {
+        val unsafe = "invalid-label; DROP TABLE users; --"
+        val calls: List<() -> String> = listOf(
+            { AgeSql.createGraph(unsafe) },
+            { AgeSql.dropGraph(unsafe) },
+            { AgeSql.graphExists(unsafe) },
+            { AgeSql.cypher(unsafe, "RETURN 1", listOf("v" to "agtype")) },
+            { AgeSql.createVertex(graph, unsafe, emptyMap()) },
+            { AgeSql.createVerticesBatch(graph, unsafe, listOf(AgeSql.BatchVertexRow(0, emptyMap()))) },
+            { AgeSql.matchVertices(graph, unsafe) },
+            { AgeSql.matchVertexById(graph, unsafe, 1L) },
+            { AgeSql.updateVertex(graph, unsafe, 1L, emptyMap()) },
+            { AgeSql.deleteVertex(graph, unsafe, 1L) },
+            { AgeSql.countVertices(graph, unsafe) },
+            { AgeSql.createEdge(graph, 1L, 2L, unsafe, emptyMap()) },
+            { AgeSql.createEdgesBatch(graph, unsafe, listOf(AgeSql.BatchEdgeRow(0, 1L, 2L))) },
+            { AgeSql.matchEdgesByLabel(graph, unsafe) },
+            { AgeSql.matchEdgeBetween(graph, 1L, 2L, unsafe) },
+            { AgeSql.updateEdge(graph, unsafe, 1L, emptyMap()) },
+            { AgeSql.deleteEdge(graph, unsafe, 1L) },
+            { AgeSql.neighbors(graph, 1L, unsafe, "OUTGOING", 1) },
+            { AgeSql.shortestPath(graph, 1L, 2L, unsafe, 2) },
+            { AgeSql.allPaths(graph, 1L, 2L, unsafe, 2) },
+            { AgeSql.matchEdgesByStartId(graph, 1L, unsafe) },
+            { AgeSql.matchEdgesByEndId(graph, 2L, unsafe) },
+            { AgeSql.degreeCentrality(graph, 1L, unsafe) },
+        )
+
+        calls.forEachIndexed { index, call ->
+            assertFailsWith<IllegalArgumentException>("unsafe identifier call index=$index") { call() }
+        }
+    }
+
+    @Test
+    fun `cypher 결과 컬럼의 이름과 타입도 안전한 식별자만 허용한다`() {
+        assertFailsWith<IllegalArgumentException> {
+            AgeSql.cypher(graph, "RETURN 1", listOf("v; DROP TABLE users; --" to "agtype"))
+        }
+        assertFailsWith<IllegalArgumentException> {
+            AgeSql.cypher(graph, "RETURN 1", listOf("v" to "agtype); DROP TABLE users; --"))
+        }
+        assertFailsWith<IllegalArgumentException> {
+            AgeSql.cypher(graph, "RETURN 1", emptyList())
+        }
+    }
+
+    @Test
+    fun `cypher 본문에 dollar quote가 포함되어도 SQL delimiter 경계를 탈출하지 않는다`() {
+        val value = "\$\$; DROP TABLE users; --"
+        val sql = AgeSql.createVertex(graph, "Person", mapOf("payload" to value))
+
+        sql shouldContain "\$bt4k\$"
+        sql shouldContain value
+        sql shouldNotContain "cypher('$graph', \$\$"
+    }
+
+    @Test
+    fun `cypher 본문이 기본 delimiter 태그를 포함하면 다음 태그를 선택한다`() {
+        val query = "RETURN '\$bt4k\$' AS first, '\$bt4k_\$' AS second"
+        val sql = AgeSql.cypher(graph, query, listOf("v" to "agtype"))
+
+        sql shouldContain "\$bt4k__\$"
+        sql shouldContain query
+    }
 
     // ── createGraph / dropGraph / graphExists ─────────────────────────────
 
