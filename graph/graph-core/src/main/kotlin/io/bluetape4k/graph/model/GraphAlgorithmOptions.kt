@@ -1,6 +1,18 @@
 package io.bluetape4k.graph.model
 
+import java.io.InvalidObjectException
+import java.io.ObjectInputStream
 import java.io.Serializable
+
+private fun validateDeserializedAlgorithmOption(condition: Boolean, message: String) {
+    if (!condition) {
+        throw InvalidObjectException(message)
+    }
+}
+
+private fun validateDeserializedAlgorithmOptionNotNull(value: Any?, name: String) {
+    validateDeserializedAlgorithmOption(value != null, "$name must not be null")
+}
 
 /**
  * Base sealed class for analytics algorithm options.
@@ -12,6 +24,9 @@ import java.io.Serializable
  * ```kotlin
  * val opts: GraphAlgorithmOptions = PageRankOptions(iterations = 20)
  * ```
+ *
+ * Java deserialization rechecks each concrete option's invariants and throws
+ * [InvalidObjectException] for a malformed payload.
  */
 sealed class GraphAlgorithmOptions: Serializable {
     companion object {
@@ -26,7 +41,7 @@ sealed class GraphAlgorithmOptions: Serializable {
  * @param edgeLabel Includes all edges when `null`.
  * @param iterations Number of iterations. Defaults to `20`.
  * @param dampingFactor Damping factor. Defaults to `0.85`; backend support varies.
- * @param tolerance Convergence tolerance. Defaults to `1e-4`; backend support varies.
+ * @param tolerance Convergence tolerance. Defaults to `1e-4`; must be finite and non-negative.
  * @param topK Returns only the top K results. `Int.MAX_VALUE` returns all results.
  *
  * Result order is guaranteed to be descending by score.
@@ -49,10 +64,27 @@ data class PageRankOptions(
         require(iterations > 0) { "iterations must be > 0, was $iterations" }
         require(topK > 0) { "topK must be > 0, was $topK" }
         require(dampingFactor in 0.0..1.0) { "dampingFactor must be in [0,1], was $dampingFactor" }
+        require(tolerance >= 0.0 && tolerance.isFinite()) {
+            "tolerance must be finite and >= 0.0, was $tolerance"
+        }
     }
     companion object {
         private const val serialVersionUID: Long = 1L
         val Default = PageRankOptions()
+    }
+
+    private fun readObject(input: ObjectInputStream) {
+        input.defaultReadObject()
+        validateDeserializedAlgorithmOption(iterations > 0, "iterations must be > 0, was $iterations")
+        validateDeserializedAlgorithmOption(topK > 0, "topK must be > 0, was $topK")
+        validateDeserializedAlgorithmOption(
+            dampingFactor in 0.0..1.0,
+            "dampingFactor must be in [0,1], was $dampingFactor",
+        )
+        validateDeserializedAlgorithmOption(
+            tolerance >= 0.0 && tolerance.isFinite(),
+            "tolerance must be finite and >= 0.0, was $tolerance",
+        )
     }
 }
 
@@ -61,6 +93,7 @@ data class PageRankOptions(
  *
  * @param edgeLabel Includes all edges when `null`.
  * @param direction Traversal direction: `BOTH`, `OUTGOING`, or `INCOMING`.
+ * The direction is required to be non-null across Java serialization boundaries.
  *
  * ### Usage
  * ```kotlin
@@ -76,6 +109,11 @@ data class DegreeOptions(
         private const val serialVersionUID: Long = 1L
         val Default = DegreeOptions()
     }
+
+    private fun readObject(input: ObjectInputStream) {
+        input.defaultReadObject()
+        validateDeserializedAlgorithmOptionNotNull(direction, "direction")
+    }
 }
 
 /**
@@ -84,7 +122,7 @@ data class DegreeOptions(
  * @param vertexLabel Targets all vertices when `null`.
  * @param edgeLabel Includes all edges when `null`.
  * @param weakly `true` for weakly connected components, ignoring direction; `false` for strongly connected components.
- * @param minSize Minimum component size to return. Defaults to `1`.
+ * @param minSize Minimum component size to return. Defaults to `1`; must be positive.
  *
  * ### Usage
  * ```kotlin
@@ -98,8 +136,17 @@ data class ComponentOptions(
     val weakly: Boolean = true,
     val minSize: Int = 1,
 ): GraphAlgorithmOptions() {
+    init {
+        require(minSize > 0) { "minSize must be > 0, was $minSize" }
+    }
+
     companion object {
         private const val serialVersionUID: Long = 1L
         val Default = ComponentOptions()
+    }
+
+    private fun readObject(input: ObjectInputStream) {
+        input.defaultReadObject()
+        validateDeserializedAlgorithmOption(minSize > 0, "minSize must be > 0, was $minSize")
     }
 }

@@ -27,6 +27,11 @@
 
 ### 변경
 
+- **Serializable option invariant TCK**: graph-core의 Serializable traversal·algorithm
+  options와 `MissingWeightPolicy.UseDefault`가 Java deserialization으로 constructor
+  invariant를 우회하지 못하도록 `readObject` 재검증과 `InvalidObjectException` 계약을
+  추가했다. public property, `serialVersionUID = 1L`, 정상 round-trip과 malformed
+  payload 거부를 Bluetape assertion TCK로 고정했다 ([#560](https://github.com/bluetape4k/bluetape4k-graph/issues/560)).
 - **Weighted path `maxDepth` conformance**: Dijkstra/A* JVM fallback이
   `(vertexId, depth)` 상태와 predecessor를 사용해 inclusive hop bound를
   적용하도록 고쳤다. `maxDepth=0` source-only 경계와 cheaper-deep/shallow

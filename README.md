@@ -74,6 +74,17 @@ surfaces therefore enforce the same inclusive `PathOptions.maxDepth` edge bound;
 `maxDepth = 0` permits only a source-to-self vertex-only result. Backend
 weighted-path TCKs exercise the one-hop, two-hop, and zero-hop boundaries.
 
+### Serializable option invariant
+
+The concrete `GraphTraversalOptions` and `GraphAlgorithmOptions` types, together
+with `MissingWeightPolicy.UseDefault`, are Java-serializable contracts. A
+round-trip preserves their public properties and `serialVersionUID = 1L`.
+Constructors reject invalid values with `IllegalArgumentException`, and the
+deserialization path rechecks the same invariants and throws
+`InvalidObjectException` with the field and value when a payload is malformed.
+Java serialization is not a trust boundary; apply an `ObjectInputFilter` when
+reading untrusted streams.
+
 ## Module Structure
 
 ```

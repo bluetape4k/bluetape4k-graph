@@ -306,6 +306,16 @@ virtual-thread API는 각 백엔드의 sync 구현에 위임하므로 세 표면
 | TinkerGraph | `ShortestPathFallback` | `Dispatchers.IO`의 sync delegate | sync delegate | in-memory weighted-path TCK |
 | FalkorDB | `ShortestPathFallback` | `Dispatchers.IO`의 sync delegate | sync delegate | Testcontainers weighted-path TCK |
 
+### Serializable option invariant 계약
+
+`GraphTraversalOptions`, `GraphAlgorithmOptions`의 구체 옵션과
+`MissingWeightPolicy.UseDefault`는 안정적인 Java serialization 계약을 구현한다.
+round-trip은 public property와 `serialVersionUID = 1L`을 보존한다. 생성자는 잘못된
+값을 `IllegalArgumentException`으로 거부하고, 역직렬화도 같은 검사를 반복해 변조된
+payload를 잘못된 필드명과 값이 포함된 `InvalidObjectException`으로 거부한다. Java
+serialization은 신뢰 경계가 아니므로 신뢰할 수 없는 stream에는
+`ObjectInputFilter`를 설정해야 한다.
+
 ## 사용 예시
 
 ### 완전한 그래프 구축 예시

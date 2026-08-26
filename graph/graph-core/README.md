@@ -450,6 +450,16 @@ sealed class MissingWeightPolicy {
 }
 ```
 
+### Serializable option invariant
+
+`GraphTraversalOptions` and `GraphAlgorithmOptions` concrete options, plus
+`MissingWeightPolicy.UseDefault`, implement a stable Java serialization contract.
+Round-trips preserve public properties and `serialVersionUID = 1L`. Constructors
+reject invalid values with `IllegalArgumentException`; deserialization repeats
+the checks and rejects forged payloads with `InvalidObjectException` that names
+the invalid field and value. Java serialization is not a trust boundary, so
+configure an `ObjectInputFilter` for untrusted streams.
+
 ### Usage Example
 
 ```kotlin

@@ -74,6 +74,16 @@ backend 구현으로 승격시키지는 않습니다.
 source와 target이 같은 vertex-only 결과만 허용합니다. 백엔드 weighted-path TCK는
 1-hop, 2-hop, 0-hop 경계를 함께 검증합니다.
 
+### Serializable option invariant 계약
+
+구체적인 `GraphTraversalOptions`, `GraphAlgorithmOptions`와
+`MissingWeightPolicy.UseDefault`는 Java serialization 계약을 제공합니다. round-trip은
+public property와 `serialVersionUID = 1L`을 보존합니다. 생성자는 잘못된 값을
+`IllegalArgumentException`으로 거부하며, 역직렬화 경로도 같은 invariant를 다시 검사해
+payload가 변조되면 필드명과 값을 포함한 `InvalidObjectException`을 던집니다. Java
+serialization은 신뢰 경계가 아니므로 신뢰할 수 없는 stream을 읽을 때는
+`ObjectInputFilter`를 적용해야 합니다.
+
 ## 모듈 구조
 
 ```
