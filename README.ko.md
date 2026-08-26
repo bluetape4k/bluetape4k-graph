@@ -23,6 +23,45 @@ bluetape4k 생태계의 그래프 데이터베이스 통합 라이브러리. Apa
 - CSV, NDJSON, GraphML, OkIO stream 기반의 이식 가능한 그래프 벌크 I/O가 필요할 때
 - code graph, social graph, fraud detection, recommendation, knowledge graph, observability incident, IAM access path, supply-chain impact analysis, data lineage, network topology, security attack path, Ktor integration 예제를 바로 실행해 보고 싶을 때
 
+## 1.0.0 개발선 주요 변경
+
+`baseVersion=1.0.0` repository-side closeout train은 병합되었지만 아직
+`1.0.0` release는 아니다. 최신 release는 `0.6.0`이다. 최근 계약 보강 내용은
+다음과 같다.
+
+- AGE 구조적 식별자 검증과 안전한 literal 처리
+  ([#534](https://github.com/bluetape4k/bluetape4k-graph/issues/534))
+- importer checkpoint/resume lifecycle, atomic state transition, report payload
+  보존, durable state-store TCK, job별 lock 격리
+  ([#537](https://github.com/bluetape4k/bluetape4k-graph/issues/537),
+  [#538](https://github.com/bluetape4k/bluetape4k-graph/issues/538),
+  [#553](https://github.com/bluetape4k/bluetape4k-graph/issues/553),
+  [#554](https://github.com/bluetape4k/bluetape4k-graph/issues/554),
+  [#555](https://github.com/bluetape4k/bluetape4k-graph/issues/555))
+- 불변 CSV/GraphML export staging, backend bounded-chunk capability 분리,
+  capped record write, constructor cleanup, record 단위 suspend cancellation
+  checkpoint
+  ([#539](https://github.com/bluetape4k/bluetape4k-graph/issues/539),
+  [#556](https://github.com/bluetape4k/bluetape4k-graph/issues/556),
+  [#557](https://github.com/bluetape4k/bluetape4k-graph/issues/557),
+  [#558](https://github.com/bluetape4k/bluetape4k-graph/issues/558))
+- graph option, malformed TinkerGraph ID, weighted-path 테스트에 일관된
+  Bluetape validation과 `bluetape4k-assertions` 적용
+  ([#540](https://github.com/bluetape4k/bluetape4k-graph/issues/540),
+  [#543](https://github.com/bluetape4k/bluetape4k-graph/issues/543),
+  [#544](https://github.com/bluetape4k/bluetape4k-graph/issues/544))
+- sync·suspend·virtual-thread API 전반의 cancellation-safe suspend teardown,
+  virtual-thread capability ownership, generated-owner migration 검증
+  ([#546](https://github.com/bluetape4k/bluetape4k-graph/issues/546),
+  [#541](https://github.com/bluetape4k/bluetape4k-graph/issues/541),
+  [#561](https://github.com/bluetape4k/bluetape4k-graph/issues/561),
+  [#562](https://github.com/bluetape4k/bluetape4k-graph/issues/562))
+- fail-closed Testcontainers image-family/retry evidence와 backend capability
+  conformance를 정비했으며, upstream virtual-thread split-package 수정은
+  [#563](https://github.com/bluetape4k/bluetape4k-graph/issues/563)에서 추적한다.
+  해당 수정의 downstream 검증은 새 upstream artifact가 배포될 때까지
+  대기한다 ([upstream PR #1523](https://github.com/bluetape4k/bluetape4k-projects/pull/1523)).
+
 <!-- README_VISUAL_OVERVIEW:START -->
 ## Overview Diagram
 
@@ -60,7 +99,7 @@ graph-io에서 bounded source 계약은 chunk 형태의 API가 존재하는 것�
 | Backend | Chunk API 구현 | Source boundedness | CSV/GraphML export 계약 |
 |---------|----------------|--------------------|-------------------------|
 | TinkerGraph | cursor 기반 override | `BOUNDED_CHUNKED_READ`와 `BOUNDED_CHUNKED_EXPORT` 광고 | bounded 기준 경로이며 mutation·호출 횟수 TCK를 실행 |
-| AGE, Neo4j, Memgraph, FalkorDB | list/Flow fallback을 포함한 호환 `CHUNKED_*` API | 광고하지 않음. fallback은 첫 chunk 전에 전체 label을 materialize할 수 있음 | exporter snapshot은 안정적이지만 backend source boundedness는 주장하지 않음 |
+| AGE, Neo4j, Memgraph, FalkorDB | list/Flow fallback을 포함한 호환 `CHUNKED_*` API | 광고하지 않음. fallback은 첫 chunk 전에 전체 label을 materialize할 수 있음 | exporter 기준 데이터는 안정적이지만 backend source boundedness는 주장하지 않음 |
 
 graph-io CSV/GraphML TCK는 요청 chunk 크기, label별 단일 조회, backend mutation
 뒤 stage 시점 데이터 보존을 검증합니다. 이 TCK가 호환성 fallback을 bounded

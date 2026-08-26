@@ -8,14 +8,17 @@
 
 ## [Unreleased]
 
+> 이 섹션은 `baseVersion=1.0.0` 개발선에 병합된 변경을 기록한다. `1.0.0`
+> tag/release는 아직 생성하지 않았으며, 최신 GitHub release는 `0.6.0`이다.
+
 ### 추가
 
 - **Format streaming import reader parity**: CSV, Jackson2/3 NDJSON, GraphML,
   OkIO에 순차 `GraphRecordFlowReader`를 추가하고 source ownership, cancellation,
   safe parse failure, bounded edge staging 계약을 포맷 간에 정렬했다
   ([#313](https://github.com/bluetape4k/bluetape4k-graph/issues/313)).
-- graph-io 모든 실행 모델에 ordered progress listener lifecycle과 phase
-  snapshot을 추가하고, 선택적 `graph-io-micrometer` bridge 및 Spring Boot
+- graph-io 모든 실행 모델에 ordered progress listener lifecycle과 phase별 상태
+  요약을 추가하고, 선택적 `graph-io-micrometer` bridge 및 Spring Boot
   조건부 자동설정을 제공한다 ([#311](https://github.com/bluetape4k/bluetape4k-graph/issues/311)).
 - Virtual Thread 벌크 I/O future가 `cancel(false)` 상태 취소와
   `cancel(true)` worker interrupt를 구분하고, Micrometer tag cardinality를
@@ -27,13 +30,59 @@
 
 ### 변경
 
+- **AGE SQL 구조적 식별자 경계**: graph·label·column 식별자를 공통
+  `requireSafeIdentifier`로 검증하고, dollar-quote 본문 충돌과 property 값
+  직렬화 경계를 회귀 테스트로 고정했다 ([#534](https://github.com/bluetape4k/bluetape4k-graph/issues/534)).
+- **TinkerGraph malformed ID 계약**: numeric ID로 변환할 수 없는 입력은
+  `GraphQueryException`으로 조기에 거부하고, valid-but-missing ID의 기존
+  null/false/empty 결과는 유지했다. weighted-path 테스트의 JVM bare `assert`도
+  `bluetape4k-assertions` matcher로 교체했다
+  ([#543](https://github.com/bluetape4k/bluetape4k-graph/issues/543)).
+- **Neo4j weighted-path assertion 정렬**: weighted-path 회귀가 JVM assertion
+  활성화 여부에 의존하지 않도록 `bluetape4k-assertions`를 사용했다
+  ([#544](https://github.com/bluetape4k/bluetape4k-graph/issues/544),
+  [PR #565](https://github.com/bluetape4k/bluetape4k-graph/pull/565)).
+- **Graph option Bluetape validation**: traversal·algorithm option 생성과
+  역직렬화에서 양수·0 허용 depth·유한 실수 invariant를 공통 Bluetape helper로
+  검증하고 `bluetape4k.assertions.assertFailsWith` 회귀를 추가했다
+  ([#540](https://github.com/bluetape4k/bluetape4k-graph/issues/540),
+  [PR #592](https://github.com/bluetape4k/bluetape4k-graph/pull/592)).
+- **Spring Boot·examples lifecycle 계약**: management 상태 요약과 AGE
+  initializer의 예외 경계를 정렬하고, suspend example teardown은
+  `CancellationException`을 재전파하며 owned driver close를 `finally`에서
+  보장하도록 했다 ([#545](https://github.com/bluetape4k/bluetape4k-graph/issues/545),
+  [#546](https://github.com/bluetape4k/bluetape4k-graph/issues/546)).
+- **Graph-io checkpoint/state lifecycle**: 공통 checkpoint identity·phase·claim
+  수명주기, atomic workflow update, report payload 보존, durable state-store TCK와
+  job별 lock registry를 연결했다. transform·retry·failure 경계와 기존
+  `sources`·`elapsed`·`checkpoint` 보존을 `bluetape4k.assertions` 기반 TCK로
+  고정했다 ([#537](https://github.com/bluetape4k/bluetape4k-graph/issues/537),
+  [#538](https://github.com/bluetape4k/bluetape4k-graph/issues/538),
+  [#553](https://github.com/bluetape4k/bluetape4k-graph/issues/553),
+  [#554](https://github.com/bluetape4k/bluetape4k-graph/issues/554),
+  [#555](https://github.com/bluetape4k/bluetape4k-graph/issues/555)).
+- **Graph-io bounded export lifecycle**: CSV/GraphML export를 immutable spool
+  replay로 정렬하고, backend bounded chunk capability와 stage 시점 기준 데이터를
+  분리했다. capped payload direct write, constructor fail-clean, record 단위
+  suspend cancellation checkpoint, primary/suppressed cleanup 경계를 추가했다
+  ([#539](https://github.com/bluetape4k/bluetape4k-graph/issues/539),
+  [#556](https://github.com/bluetape4k/bluetape4k-graph/issues/556),
+  [#557](https://github.com/bluetape4k/bluetape4k-graph/issues/557),
+  [#558](https://github.com/bluetape4k/bluetape4k-graph/issues/558)).
+- **Catalog·retry-only CI evidence**: 중앙 catalog ownership을 사용하고
+  examples/core retry 결과의 첫 실패·attempt count·`success_after_retry`를
+  별도 evidence로 보존하는 fail-closed 경계를 추가했다
+  ([#547](https://github.com/bluetape4k/bluetape4k-graph/issues/547),
+  [PR #568](https://github.com/bluetape4k/bluetape4k-graph/pull/568)).
+
 - **Virtual Thread split-package 검증 경계**: upstream 지원 PR
   [#1523](https://github.com/bluetape4k/bluetape4k-projects/pull/1523)이
   `bluetape4k-virtualthread-api` 타입을 `.api` package로 이동하고 core owner를
   유지하도록 정렬했다. graph-core에는 실제 resolved JAR 쌍의 package ownership와
   `java --validate-modules`를 검증하는 fail-closed verifier 및 migration 문서를
-  추가했으며, 새 upstream snapshot 배포 전까지 downstream 소비 검증은 PENDING으로
-  유지한다 ([#563](https://github.com/bluetape4k/bluetape4k-graph/issues/563)).
+  추가했다. upstream PR은 2026-08-26에 MERGED 되었지만, 새 artifact
+  배포 전까지 downstream 소비 검증은 PENDING으로 유지한다
+  ([#563](https://github.com/bluetape4k/bluetape4k-graph/issues/563)).
 
 - **Virtual Thread helper owner 정리**: graph-core의 graph-local
   `CompletableFutureNullableSupportKt` 중복을 제거하고 공식
@@ -59,7 +108,8 @@
   delegate mapping으로 분리했다. Bluetape4k virtual future helper, transaction
   thread affinity, unsupported exceptional future, delegate·chunk source ownership,
   cancellation/timeout과 materialized chunk 경계를 TCK와 EN/KO 문서로 고정했다
-  ([#561](https://github.com/bluetape4k/bluetape4k-graph/issues/561)).
+  ([#541](https://github.com/bluetape4k/bluetape4k-graph/issues/541),
+  [#561](https://github.com/bluetape4k/bluetape4k-graph/issues/561)).
 - **Weighted path `maxDepth` conformance**: Dijkstra/A* JVM fallback이
   `(vertexId, depth)` 상태와 predecessor를 사용해 inclusive hop bound를
   적용하도록 고쳤다. `maxDepth=0` source-only 경계와 cheaper-deep/shallow
@@ -139,7 +189,7 @@
   teardown이 `CancellationException`을 재전파하고 일반 graph drop 실패만
   기록하도록 정렬했다. owned driver close는 `finally`에서 보장하며 sync-only
   teardown은 변경하지 않았다 ([#546](https://github.com/bluetape4k/bluetape4k-graph/issues/546)).
-- **Spring Boot graph management contract**: Actuator snapshot이 backend별
+- **Spring Boot graph management contract**: Actuator 상태 요약이 backend별
   graph/database 설정과 실제 `GraphOperations.capabilities()`·graph-io
   classpath/bean 상태를 반영하도록 고쳤다. AGE graph initializer는
   operations의 typed duplicate predicate에만 중복을 위임하고 일반 예외를
@@ -354,7 +404,7 @@
 - **AGE, Memgraph, TinkerGraph suspend transaction이 더 이상 `runBlocking`을
   경유하지 않음**: AGE는 Exposed suspended transaction과 native suspend
   transaction scope를 사용하고, Memgraph는 reactive Bolt transaction을 사용하며,
-  TinkerGraph는 suspend-aware rollback snapshot path를 사용한다. Cancellation
+  TinkerGraph는 suspend-aware rollback 기준 상태 경로를 사용한다. Cancellation
   rollback과 반환된 transaction `Flow` materialization은 targeted test로
   검증한다 ([#160](https://github.com/bluetape4k/bluetape4k-graph/issues/160)).
 - **FalkorDB Ktor example teardown이 driver를 닫음**: example test는 PER_CLASS

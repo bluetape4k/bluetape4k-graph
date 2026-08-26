@@ -23,6 +23,45 @@ Use this project when you need:
 - portable graph bulk I/O in CSV, NDJSON, GraphML, and OkIO streams
 - ready-to-run domain examples for code graphs, social graphs, fraud detection, recommendations, knowledge graphs, observability incidents, IAM access paths, supply-chain impact analysis, data lineage, network topology, security attack paths, and Ktor integration
 
+## 1.0.0 Development-Line Highlights
+
+The repository-side closeout train for `baseVersion=1.0.0` is merged; this is a
+development line, not a `1.0.0` release yet. The latest release remains `0.6.0`.
+Recent contract hardening includes:
+
+- strict AGE structural-identifier validation and safe literal handling
+  ([#534](https://github.com/bluetape4k/bluetape4k-graph/issues/534))
+- importer checkpoint/resume lifecycle, atomic state transitions, report-payload
+  preservation, durable state-store TCKs, and per-job lock isolation
+  ([#537](https://github.com/bluetape4k/bluetape4k-graph/issues/537),
+  [#538](https://github.com/bluetape4k/bluetape4k-graph/issues/538),
+  [#553](https://github.com/bluetape4k/bluetape4k-graph/issues/553),
+  [#554](https://github.com/bluetape4k/bluetape4k-graph/issues/554),
+  [#555](https://github.com/bluetape4k/bluetape4k-graph/issues/555))
+- immutable CSV/GraphML export staging, backend bounded-chunk capability
+  separation, capped record writes, constructor cleanup, and record-level suspend
+  cancellation checkpoints
+  ([#539](https://github.com/bluetape4k/bluetape4k-graph/issues/539),
+  [#556](https://github.com/bluetape4k/bluetape4k-graph/issues/556),
+  [#557](https://github.com/bluetape4k/bluetape4k-graph/issues/557),
+  [#558](https://github.com/bluetape4k/bluetape4k-graph/issues/558))
+- consistent Bluetape validation and `bluetape4k-assertions` usage for graph
+  options, malformed TinkerGraph IDs, and weighted-path tests
+  ([#540](https://github.com/bluetape4k/bluetape4k-graph/issues/540),
+  [#543](https://github.com/bluetape4k/bluetape4k-graph/issues/543),
+  [#544](https://github.com/bluetape4k/bluetape4k-graph/issues/544))
+- cancellation-safe suspend teardown, virtual-thread capability ownership, and
+  generated-owner migration checks across sync, suspend, and virtual-thread APIs
+  ([#546](https://github.com/bluetape4k/bluetape4k-graph/issues/546),
+  [#541](https://github.com/bluetape4k/bluetape4k-graph/issues/541),
+  [#561](https://github.com/bluetape4k/bluetape4k-graph/issues/561),
+  [#562](https://github.com/bluetape4k/bluetape4k-graph/issues/562))
+- fail-closed Testcontainers image-family/retry evidence and backend capability
+  conformance, with the upstream virtual-thread split-package fix tracked through
+  [#563](https://github.com/bluetape4k/bluetape4k-graph/issues/563). Downstream
+  verification for that fix remains pending until a new upstream snapshot is
+  published ([upstream PR #1523](https://github.com/bluetape4k/bluetape4k-projects/pull/1523)).
+
 <!-- README_VISUAL_OVERVIEW:START -->
 ## Overview Diagram
 
