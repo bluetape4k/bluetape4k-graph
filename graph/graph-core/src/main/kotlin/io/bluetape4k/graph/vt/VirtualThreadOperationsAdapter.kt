@@ -3,26 +3,36 @@ package io.bluetape4k.graph.vt
 import io.bluetape4k.graph.algo.VirtualThreadAlgorithmAdapter
 import io.bluetape4k.graph.algo.provider.GraphAlgorithmExecution
 import io.bluetape4k.graph.algo.provider.GraphAlgorithmExecutionObservable
+import io.bluetape4k.graph.repository.GraphBoundedChunkOperations
+import io.bluetape4k.graph.repository.GraphCapability
+import io.bluetape4k.graph.repository.GraphCapabilities
+import io.bluetape4k.graph.repository.GraphMergeOperations
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadCapabilitiesOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadAlgorithmRepository
+import io.bluetape4k.graph.repository.GraphVirtualThreadChunkedOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadEdgeRepository
+import io.bluetape4k.graph.repository.GraphVirtualThreadMergeOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
+import io.bluetape4k.graph.repository.GraphVirtualThreadSchemaManagementOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadSession
 import io.bluetape4k.graph.repository.GraphVirtualThreadTraversalRepository
+import io.bluetape4k.graph.repository.GraphVirtualThreadTransactionalOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadVertexRepository
+import io.bluetape4k.graph.repository.GraphTransactionalOperations
 import io.bluetape4k.graph.repository.capabilities
+import io.bluetape4k.graph.schema.GraphSchemaManagementOperations
 import io.bluetape4k.logging.KLogging
 
 /**
  * [GraphOperations]의 CRUD, traversal, algorithm surface를 Virtual Thread에서 실행하는
  * 통합 adapter다.
  *
- * Kotlin `by` delegation으로 다섯 개의 focused adapter를 조합한다. 선택 capability는
- * [capabilities]로 외부 delegate의 매핑을 보존하지만, 아직 `MERGE`, `SCHEMA`,
- * `TRANSACTION`, `CHUNKED_READ`용 `*Async` method를 제공한다는 뜻은 아니다.
- * `BOUNDED_CHUNKED_*` 역시 delegate source 보장만 보존하며 async API를 의미하지
- * 않는다.
+ * Kotlin `by` delegation으로 기존 CRUD/traversal/algorithm adapter와 optional
+ * merge/schema/transaction/chunked adapter를 조합한다. delegate가 해당 동기
+ * capability를 구현한 경우에만 optional capability를 surface에 보고하고, 그렇지
+ * 않으면 해당 future가 명시적인 [UnsupportedOperationException]으로 완료된다.
+ * `delegateCapabilities()`는 감싼 동기 delegate의 전체 매핑을 별도로 보존한다.
  *
  * ### 사용 예
  * ```kotlin
@@ -44,14 +54,37 @@ class VirtualThreadOperationsAdapter(
    GraphVirtualThreadVertexRepository by VirtualThreadVertexAdapter(delegate),
    GraphVirtualThreadEdgeRepository by VirtualThreadEdgeAdapter(delegate),
    GraphVirtualThreadTraversalRepository by VirtualThreadTraversalAdapter(delegate),
-   GraphVirtualThreadAlgorithmRepository by VirtualThreadAlgorithmAdapter(delegate) {
+   GraphVirtualThreadAlgorithmRepository by VirtualThreadAlgorithmAdapter(delegate),
+   GraphVirtualThreadMergeOperations by VirtualThreadMergeAdapter(delegate as? GraphMergeOperations),
+   GraphVirtualThreadSchemaManagementOperations by VirtualThreadSchemaAdapter(
+       (delegate as? GraphSchemaManagementOperations)?.schemaManager(),
+   ),
+   GraphVirtualThreadTransactionalOperations by VirtualThreadTransactionalAdapter(
+       delegate as? GraphTransactionalOperations,
+   ),
+   GraphVirtualThreadChunkedOperations by VirtualThreadChunkedAdapter(delegate) {
 
     companion object: KLogging()
 
     override val lastAlgorithmExecution: GraphAlgorithmExecution?
         get() = (delegate as? GraphAlgorithmExecutionObservable)?.lastAlgorithmExecution
 
-    override fun capabilities() = delegate.capabilities()
+    override fun delegateCapabilities() = delegate.capabilities()
+
+    override fun surfaceCapabilities(): GraphCapabilities {
+        val optional = buildList {
+            if (delegate is GraphMergeOperations) add(GraphCapability.MERGE)
+            if (delegate is GraphSchemaManagementOperations) add(GraphCapability.SCHEMA)
+            if (delegate is GraphTransactionalOperations) add(GraphCapability.TRANSACTION)
+            add(GraphCapability.CHUNKED_READ)
+            add(GraphCapability.CHUNKED_EXPORT)
+            if (delegate is GraphBoundedChunkOperations) {
+                add(GraphCapability.BOUNDED_CHUNKED_READ)
+                add(GraphCapability.BOUNDED_CHUNKED_EXPORT)
+            }
+        }
+        return GraphCapabilities.from(this).withAdditional(*optional.toTypedArray())
+    }
 
     /**
      * Borrowed delegate를 조기 종료하지 않도록 facade만 닫는다.
