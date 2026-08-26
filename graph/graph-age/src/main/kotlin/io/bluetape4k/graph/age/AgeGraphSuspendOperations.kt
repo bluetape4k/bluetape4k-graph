@@ -34,7 +34,10 @@ import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.support.requireNotBlank
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.trySendBlocking
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flow
@@ -50,7 +53,11 @@ import org.jetbrains.exposed.v1.jdbc.statements.api.JdbcPreparedStatementApi
 import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction as exposedSuspendTransaction
 import java.sql.ResultSet
+import java.sql.SQLException
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
 
 private const val DEFAULT_STREAM_FETCH_SIZE = 100
 
@@ -130,10 +137,36 @@ class AgeGraphSuspendOperations(
      * 이 경계를 통해 pgjdbc 기본 fetch-all 동작을 피하고 transaction이 소유한
      * [ResultSet]과 prepared statement lifecycle을 그대로 유지한다.
      */
-    private fun JdbcTransaction.execStreaming(
+    @OptIn(InternalCoroutinesApi::class)
+    private suspend fun JdbcTransaction.execStreaming(
         statementText: String,
         transform: (ResultSet) -> Unit,
     ) {
+        val context = coroutineContext
+        val activeStatement = AtomicReference<JdbcPreparedStatementApi?>()
+        val cancellationRequested = AtomicBoolean()
+        val statementCancelled = AtomicBoolean()
+        val statementExecuting = AtomicBoolean()
+        fun cancelActiveStatement() {
+            val statement = activeStatement.get() ?: return
+            if (statementExecuting.get() &&
+                cancellationRequested.get() &&
+                statementCancelled.compareAndSet(false, true)
+            ) {
+                try {
+                    statement.cancel()
+                } catch (cancelFailure: SQLException) {
+                    log.warn("AGE JDBC statement cancellation failed", cancelFailure)
+                }
+            }
+        }
+        val cancellationHandle = coroutineContext[Job]?.invokeOnCompletion(onCancelling = true) { cause ->
+            if (cause is CancellationException) {
+                cancellationRequested.set(true)
+                cancelActiveStatement()
+            }
+        }
+
         val executable = object : BlockingExecutable<Unit, Statement<Unit>> {
             override val statement = object : Statement<Unit>(StatementType.SELECT, emptyList()) {
                 override fun prepareSQL(transaction: Transaction, prepared: Boolean): String = statementText
@@ -143,13 +176,31 @@ class AgeGraphSuspendOperations(
             }
 
             override fun JdbcPreparedStatementApi.executeInternal(transaction: JdbcTransaction): Unit? {
+                activeStatement.set(this)
                 fetchSize = transaction.db.defaultFetchSize?.takeIf { it > 0 } ?: DEFAULT_STREAM_FETCH_SIZE
-                executeQuery().result.use(transform)
-                return Unit
+                context.ensureActive()
+                statementExecuting.set(true)
+                context.ensureActive()
+                try {
+                    executeQuery().result.use(transform)
+                    return Unit
+                } finally {
+                    statementExecuting.set(false)
+                    activeStatement.compareAndSet(this, null)
+                }
             }
         }
 
-        exec(executable)
+        try {
+            exec(executable)
+        } catch (cause: SQLException) {
+            coroutineContext.ensureActive()
+            throw cause
+        } finally {
+            cancellationHandle?.dispose()
+            statementExecuting.set(false)
+            activeStatement.set(null)
+        }
     }
 
     /**
@@ -158,9 +209,15 @@ class AgeGraphSuspendOperations(
      * Exposed callback은 suspend 함수가 아니므로 [trySendBlocking]을 사용한다.
      * 이 bridge는 [Dispatchers.IO]에서만 실행하며, collector가 느리면 channel이
      * backpressure를 적용하고 collector가 취소되면 callback과 transaction이
-     * 종료되어 [ResultSet]이 닫힌다. JDBC prepared statement에는 positive fetch
-     * size를 적용하고 streaming transaction retry를 비활성화해 driver fetch-all과
-     * retry 시 prefix 중복 방출을 막는다.
+     * 종료되어 [ResultSet]이 닫힌다. 취소 시 active JDBC statement에
+     * 최대 한 번 `Statement.cancel()`을 전달하고 Exposed cleanup이 close를
+     * 완료하므로, `executeQuery()` 또는
+     * `ResultSet.next()`가 driver에서 블로킹 중이어도 취소가 진행될 수 있다.
+     * JDBC driver가 statement cancellation을 지원하지 않거나 query timeout을
+     * 적용하지 않으면 이 보장은 제공되지 않으며, 해당 driver의 timeout/API를
+     * 별도로 설정해야 한다. JDBC prepared
+     * statement에는 positive fetch size를 적용하고 streaming transaction retry를
+     * 비활성화해 driver fetch-all과 retry 시 prefix 중복 방출을 막는다.
      */
     private fun <T> streamQuery(
         statement: String,

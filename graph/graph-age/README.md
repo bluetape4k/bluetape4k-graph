@@ -204,6 +204,8 @@ The `LOAD 'age'` and `search_path` statement **must** be set via `connectionInit
 ### Transaction Isolation
 Synchronous operations run inside independent Exposed transactions. The coroutine variant uses Exposed suspended transactions for direct AGE queries and delegates selected blocking fallback algorithms to an IO dispatcher. Direct `Flow` queries run their JDBC cursor on `Dispatchers.IO`, apply `DatabaseConfig.defaultFetchSize` (or a positive default of 100) to the prepared statement, emit rows through channel backpressure, and release the `ResultSet` and transaction when collection completes or is cancelled. Streaming transactions disable Exposed retries because rows may already be visible to the collector before a late JDBC failure. They do not first materialize the complete result into a `MutableList`.
 
+Cancellation is connected to the active JDBC statement: when the collector job starts cancelling, the implementation calls JDBC `Statement.cancel()` at most once, then Exposed transaction cleanup closes the statement and `ResultSet`. This can interrupt a blocking `executeQuery()` or `ResultSet.next()` only when the selected JDBC driver honors statement cancellation. Drivers that do not support it may continue until their own query timeout; configure that timeout or a vendor-specific cancellation API instead of assuming a universal bounded-latency guarantee.
+
 `suspendTransaction { ... }` has a different ownership boundary: a `Flow` returned from the transaction scope is materialized before commit so it remains readable after the transaction closes. Use direct `AgeGraphSuspendOperations` query methods when lazy, bounded collection is required.
 
 ## Testing
