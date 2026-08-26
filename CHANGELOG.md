@@ -27,6 +27,12 @@
 
 ### 변경
 
+- **Virtual Thread helper owner 정리**: graph-core의 graph-local
+  `CompletableFutureNullableSupportKt` 중복을 제거하고 공식
+  `bluetape4k-core`의 `virtualFutureOfNullable`을 사용하도록 정렬했다. Kotlin
+  source import는 유지하고 generated owner를 직접 참조한 consumer의 재컴파일
+  경계, upstream split-package 후속 범위, Bluetape assertion ownership TCK를
+  문서화했다 ([#542](https://github.com/bluetape4k/bluetape4k-graph/issues/542)).
 - **Serializable option invariant TCK**: graph-core의 Serializable traversal·algorithm
   options와 `MissingWeightPolicy.UseDefault`가 Java deserialization으로 constructor
   invariant를 우회하지 못하도록 `readObject` 재검증과 `InvalidObjectException` 계약을
