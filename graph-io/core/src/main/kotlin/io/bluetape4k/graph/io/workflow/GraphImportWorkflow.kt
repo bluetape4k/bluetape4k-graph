@@ -4,6 +4,8 @@ import io.bluetape4k.graph.io.checkpoint.GraphImportCheckpoint
 import io.bluetape4k.graph.io.report.GraphIoFormat
 import java.io.Serializable
 import java.time.Duration
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.locks.ReentrantLock
 
 enum class GraphImportWorkflowState {
     DISCOVERED,
@@ -103,15 +105,72 @@ interface GraphImportJobStateStore {
     }
 }
 
+/**
+ * job별로 상태 전이를 직렬화하는 JVM-local reference store입니다.
+ *
+ * 서로 다른 job ID는 독립 lock을 사용하고, 같은 job의 [load], [save],
+ * [update]는 동일한 reentrant lock을 공유합니다. lock entry는 참조 횟수를
+ * 세고 사용자가 없을 때 제거하므로 대기 중인 thread의 interrupt나 transform
+ * 실패가 lock entry를 누수시키지 않습니다. 프로세스 간 원자성이 필요한
+ * durable store는 [GraphImportJobStateStore.update]를 native transaction 또는
+ * CAS로 구현해야 합니다.
+ */
 class InMemoryGraphImportJobStateStore : GraphImportJobStateStore {
-    private val reports = mutableMapOf<String, GraphImportWorkflowReport>()
+    private val reports = ConcurrentHashMap<String, GraphImportWorkflowReport>()
+    private val lockRegistryMonitor = Any()
+    private val lockRegistry = mutableMapOf<String, JobLock>()
 
-    @Synchronized
-    override fun load(jobId: String): GraphImportWorkflowReport? = reports[jobId]
+    override fun load(jobId: String): GraphImportWorkflowReport? =
+        withJobLock(jobId) { reports[jobId] }
 
-    @Synchronized
     override fun save(report: GraphImportWorkflowReport) {
-        reports[report.jobId] = report
+        withJobLock(report.jobId) {
+            reports[report.jobId] = report
+        }
+    }
+
+    override fun update(
+        jobId: String,
+        transform: (GraphImportWorkflowReport?) -> GraphImportWorkflowReport,
+    ): GraphImportWorkflowReport = withJobLock(jobId) {
+        val updated = transform(reports[jobId])
+        require(updated.jobId == jobId) { "state update jobId must match the requested jobId" }
+        reports[jobId] = updated
+        updated
+    }
+
+    private fun <T> withJobLock(jobId: String, action: () -> T): T {
+        val jobLock = synchronized(lockRegistryMonitor) {
+            lockRegistry[jobId]?.also { it.references++ }
+                ?: JobLock().also {
+                    it.references = 1
+                    lockRegistry[jobId] = it
+                }
+        }
+        var acquired = false
+        try {
+            jobLock.lock.lockInterruptibly()
+            acquired = true
+            return action()
+        } catch (error: InterruptedException) {
+            Thread.currentThread().interrupt()
+            throw error
+        } finally {
+            if (acquired) {
+                jobLock.lock.unlock()
+            }
+            synchronized(lockRegistryMonitor) {
+                jobLock.references--
+                if (jobLock.references == 0) {
+                    lockRegistry.remove(jobId)
+                }
+            }
+        }
+    }
+
+    private class JobLock {
+        val lock = ReentrantLock()
+        var references: Int = 0
     }
 }
 
