@@ -8,7 +8,7 @@
 #547(PR #568)은 #546 exact head 위에서 catalog ownership과 retry-only CI evidence를 정렬했고 hosted exact-head checks가 모두 통과했으며 review·최종 merge를 대기 중이다.
 #536은 #547 exact head 위에 bounded capability contract를 적층한 PR #569의 hosted checks가 모두 통과했으며 review·최종 merge를 대기 중이다. #548은 #536 exact head 위의 PR #570에서 close-aware TinkerGraph lifecycle과 cursor README를 정렬했고 hosted checks·독립 review를 대기 중이다. #549는 #548 exact head 위의 PR #571에서 enum compatibility policy를 정비했다. #535는 #549 PR #571 exact head 위의 PR #572에서 AGE suspend Flow 선행 계약을 적층했고 hosted 검증·리뷰를 대기 중이다. 후속 `1.0.0` issue는 dependency 순서를 따라 같은 train에
 순차적으로 쌓고 최종 일괄 merge 승인 전까지 병합하지 않는다. 현재 train은
-#561까지 이어진다. #550은 #535 PR #572 exact head 위의 PR #573에서 fault-injection
+#562까지 이어진다. #550은 #535 PR #572 exact head 위의 PR #573에서 fault-injection
 검증을 적층했고 hosted 검증·리뷰를 대기 중이다.
 #551은 #550 PR #573 exact head `186ea8af18192d8fe1e8024bc78cc80b7f235bc1` 위에
 suspend transaction 중첩 `Flow` 결과 계약을 적층한 PR #574의 live head
@@ -88,6 +88,13 @@ graph-core full 379개 test, compile, Detekt, 금지 assertion scan, diff-check�
 EN/KO README·7-Tier review·lesson을 완료했으며 PR #587을 생성한다. generated owner
 ABI migration은 #562, upstream split-package는 #563으로 분리하고 hosted exact-head
 receipt와 전체 train merge는 마지막 승인 단계까지 보류한다.
+#562는 #542 PR #587 exact head `0c859bc135c1ca68efcd36690427ccb2863773b1` 위에서
+삭제된 `CompletableFutureNullableSupportKt`를 직접 호출하는 최소 Java precompiled
+fixture와 공식 `CompletableFutureSupportKt`로 재컴파일한 fixture를 격리 실행한다.
+legacy linkage failure, migrated nullable future 결과, classfile owner와
+`ProtectionDomain.codeSource`를 검증하는 TDD TCK 3개를 통과했고 EN/KO README·
+spec/plan·7-Tier review·lesson을 추가한다. PR 생성과 hosted exact-head receipt,
+전체 train merge는 마지막 승인 단계까지 보류한다.
 최신 GitHub release: `0.6.0` (2026-08-05); 현재 개발 기준선은 `1.0.0`이다.
 
 ## 최근 완료 및 현재 `1.0.0` stacked train
@@ -121,8 +128,9 @@ receipt와 전체 train merge는 마지막 승인 단계까지 보류한다.
 | [#560](https://github.com/bluetape4k/bluetape4k-graph/issues/560) | PR #585 hosted 부분 통과, review·merge 대기 | #559 PR #584 current head `ab9753ca3748cf723675b887f3d9b9c4eebe8d7a` 위에서 graph-core Serializable option의 constructor/deserialization invariant와 nested `UseDefault` TCK를 추가했다. targeted 47개·full 373개·Detekt·ABI·금지 assertion scan·diff-check를 통과했다. PR #585 exact head `33d0f0d688e0522286dbc09a57370079d543bc12`의 Examples `32919966702`는 성공했으며 핵심 graph/backend CI도 성공했다. workflow_dispatch Image Family Gate와 `graph-benchmark` weighted path 실패는 선행 #559에서도 재현된 별도 제한으로 기록했다. 전체 train merge는 마지막 승인 단계에서만 수행한다. |
 | [#561](https://github.com/bluetape4k/bluetape4k-graph/issues/561) | PR #586 생성·hosted 검증 대기 | #560 PR #585 exact head `33d0f0d688e0522286dbc09a57370079d543bc12` 위에서 Virtual Thread optional merge/schema/transaction/chunked async surface와 capability routing TCK를 추가했다. supported/unsupported delegate, focused adapter, transaction affinity, exception·cancellation·timeout을 포함한 graph-core 378개 test, compile, Detekt, 금지 assertion scan, diff-check를 통과했다. PR #586의 hosted exact-head CI·Examples와 독립 review를 진행하며, 전체 train merge는 마지막 승인 단계에서만 수행한다. |
 | [#542](https://github.com/bluetape4k/bluetape4k-graph/issues/542) | PR #587 생성·hosted 검증 대기 | #561 PR #586 exact head `295ec47cbc4dc76028b2f4bc72425c37bef9c9d3` 위에서 graph-core local `CompletableFutureNullableSupport.kt`를 제거하고 공식 `bluetape4k-core` helper owner를 사용하도록 정리했다. ownership TDD RED→GREEN, graph-core 379개 test, compile, Detekt, 금지 assertion scan, diff-check와 EN/KO README·7-Tier review·lesson을 통과했다. PR #587의 hosted exact-head CI·Examples와 독립 review를 진행하며, 전체 train merge는 마지막 승인 단계에서만 수행한다. |
+| [#562](https://github.com/bluetape4k/bluetape4k-graph/issues/562) | PR 생성·hosted 검증 진행 | #542 PR #587 exact head `0c859bc135c1ca68efcd36690427ccb2863773b1` 위에서 legacy generated owner를 직접 참조한 Java fixture의 linkage failure와 official owner migration 성공 경로, artifact code source를 TDD TCK로 고정했다. local targeted 3/3 통과, 전체 graph-core·compile·Detekt·정적 검증과 PR receipt를 진행하며, #563 split-package와 전체 train merge는 후속 승인 단계까지 보류한다. |
 
-이전 완료 순서는 `#527 → #525 → #526`이다. 현재 train은 `#543 → #544 → #545 → #546 → #547 → #536 → #548 → #549 → #535 → #550 → #551 → #552 → #538 → #553 → #554 → #555 → #539 → #556 → #557 → #558 → #559 → #560 → #561 → #542`
+이전 완료 순서는 `#527 → #525 → #526`이다. 현재 train은 `#543 → #544 → #545 → #546 → #547 → #536 → #548 → #549 → #535 → #550 → #551 → #552 → #538 → #553 → #554 → #555 → #539 → #556 → #557 → #558 → #559 → #560 → #561 → #542 → #562`
 순서이며, 각 PR은 이전 exact head를 base로 삼고 최종 일괄 merge 승인 전에는
 독립 병합하지 않는다.
 

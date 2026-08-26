@@ -33,6 +33,13 @@
   source import는 유지하고 generated owner를 직접 참조한 consumer의 재컴파일
   경계, upstream split-package 후속 범위, Bluetape assertion ownership TCK를
   문서화했다 ([#542](https://github.com/bluetape4k/bluetape4k-graph/issues/542)).
+- **Generated owner ABI migration TCK**: 삭제된
+  `CompletableFutureNullableSupportKt`를 직접 호출하는 최소 Java fixture의
+  linkage failure와 공식 `CompletableFutureSupportKt`로 재컴파일한 nullable
+  future 성공 경로를 격리된 classloader로 검증했다. classfile owner와
+  `ProtectionDomain.codeSource`가 실제 `bluetape4k-core` artifact를 가리키는지
+  확인해 source-level compile과 binary migration의 차이를 고정했다
+  ([#562](https://github.com/bluetape4k/bluetape4k-graph/issues/562)).
 - **Serializable option invariant TCK**: graph-core의 Serializable traversal·algorithm
   options와 `MissingWeightPolicy.UseDefault`가 Java deserialization으로 constructor
   invariant를 우회하지 못하도록 `readObject` 재검증과 `InvalidObjectException` 계약을

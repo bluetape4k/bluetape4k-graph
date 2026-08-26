@@ -566,6 +566,14 @@ generated `CompletableFutureNullableSupportKt` class must be recompiled against
 the official `CompletableFutureSupportKt` owner; the external ABI migration is
 tracked in [#562](https://github.com/bluetape4k/bluetape4k-graph/issues/562).
 
+The #562 ABI TCK keeps a minimal Java consumer precompiled against the removed
+owner and runs it without the legacy class to reproduce the expected
+`NoClassDefFoundError`. A second fixture is recompiled against the official
+owner and must complete a nullable `CompletableFuture` successfully. The TCK
+also checks the classfile owner reference and the official owner's
+`ProtectionDomain.codeSource`, so a source-level compile alone is not treated as
+proof of artifact ownership.
+
 `GraphOperations` can be wrapped with a Virtual Thread adapter to expose
 `CompletableFuture`-based async APIs for Java interop. The adapter uses the
 Bluetape4k `virtualFutureOf` helpers and does not create a second executor.
