@@ -21,6 +21,8 @@ import io.bluetape4k.logging.KLogging
  * Kotlin `by` delegation으로 다섯 개의 focused adapter를 조합한다. 선택 capability는
  * [capabilities]로 외부 delegate의 매핑을 보존하지만, 아직 `MERGE`, `SCHEMA`,
  * `TRANSACTION`, `CHUNKED_READ`용 `*Async` method를 제공한다는 뜻은 아니다.
+ * `BOUNDED_CHUNKED_*` 역시 delegate source 보장만 보존하며 async API를 의미하지
+ * 않는다.
  *
  * ### 사용 예
  * ```kotlin

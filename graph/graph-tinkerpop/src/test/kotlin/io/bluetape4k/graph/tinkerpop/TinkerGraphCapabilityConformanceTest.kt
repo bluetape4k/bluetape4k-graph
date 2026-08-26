@@ -20,7 +20,8 @@ class TinkerGraphCapabilityConformanceTest : AbstractGraphCapabilityConformanceT
 
     override val graphName: String = "default"
 
-    override val expectedCapabilities: Set<GraphCapability> = backendCapabilities(transactional = true)
+    override val expectedCapabilities: Set<GraphCapability> =
+        backendCapabilities(transactional = true, boundedChunked = true)
 
     @Test
     fun `malformed and valid-missing IDs remain distinct in the conformance lane`() {

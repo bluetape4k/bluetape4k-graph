@@ -19,6 +19,7 @@ import io.bluetape4k.graph.model.PageRankOptions
 import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.TraversalVisit
+import io.bluetape4k.graph.repository.GraphBoundedChunkOperations
 import io.bluetape4k.graph.repository.GraphSuspendMergeOperations
 import io.bluetape4k.graph.repository.GraphSuspendLabelDiscovery
 import io.bluetape4k.graph.repository.GraphSuspendOperations
@@ -74,7 +75,8 @@ class TinkerGraphSuspendOperations(
    GraphSuspendLabelDiscovery,
    GraphSuspendTransactionalOperations,
    GraphSuspendSchemaManagementOperations,
-   GraphSuspendMergeOperations {
+   GraphSuspendMergeOperations,
+   GraphBoundedChunkOperations {
 
     companion object: KLoggingChannel() {
         private const val TRANSACTION_GATE_RETRY_DELAY_MILLIS = 10L

@@ -5,7 +5,8 @@
 현재 live 상태: #543은 병합 완료, #544(PR #565)는 stacked train에서 검증 대기,
 #545(PR #566)는 #544 exact head 위에서 로컬 검증을 완료하고 hosted 검증을 대기 중이며,
 #546(PR #567)은 #545 exact head 위에서 7개 예제 모듈의 suspend teardown을 정렬하고 hosted 검증을 대기 중이며,
-#547(PR #568)은 #546 exact head 위에서 catalog ownership과 retry-only CI evidence를 정렬하고 hosted 검증을 대기 중이다. 후속 `1.0.0` issue는 같은 train에
+#547(PR #568)은 #546 exact head 위에서 catalog ownership과 retry-only CI evidence를 정렬했고 hosted exact-head checks가 모두 통과했으며 review·최종 merge를 대기 중이다.
+#536은 #547 exact head 위에 bounded capability contract를 적층해 로컬 검증을 완료하고 PR 생성을 준비 중이며, #548은 #536 exact head 위에서 close-aware TinkerGraph lifecycle을 적층할 예정이다. 후속 `1.0.0` issue는 같은 train에
 순차적으로 쌓고 최종 일괄 merge 승인 전까지 병합하지 않는다.
 최신 GitHub release: `0.6.0` (2026-08-05); 현재 개발 기준선은 `1.0.0`이다.
 
@@ -20,20 +21,21 @@
 | [#544](https://github.com/bluetape4k/bluetape4k-graph/issues/544) | PR #565 검증 대기 | `fix/issue-544-neo4j-weighted-assertions` exact head 위에 #545를 쌓는다. 최종 merge 승인 전에는 병합하지 않는다. |
 | [#545](https://github.com/bluetape4k/bluetape4k-graph/issues/545) | PR #566 검증 대기 | graph management 상태 요약, AGE initializer 예외 경계, Spring assertion migration을 한 slice로 정렬했고 로컬 test/Detekt/Kover를 통과했다. |
 | [#546](https://github.com/bluetape4k/bluetape4k-graph/issues/546) | PR #567 검증 대기 | 7개 suspend backend teardown에서 CancellationException을 재전파하고 일반 drop 실패만 기록하며 driver close를 finally에서 보장했다. 7개 예제 테스트 311개가 순차 통과했다. exact head는 `75e45556f22994bf46b8aaab297747845669e0e4`이다. |
-| [#547](https://github.com/bluetape4k/bluetape4k-graph/issues/547) | PR #568 검증 대기 | #567 exact head `75e45556f22994bf46b8aaab297747845669e0e4` 위에서 local `bluetape4k` alias를 제거하고 examples/core retry helper가 첫 실패·retry-only 상태를 보존하도록 정렬했다. evidence root·`tee`·output write failure도 fail-closed로 고정하고 helper/test path routing, `fix/**` stacked PR trigger와 필수 `retry-helper` CI job을 추가했다. `actionlint`, helper 5개 테스트, Gradle help, alias audit를 통과했으며 PR #568의 live exact head는 push 후 `gh pr view 568`로 확인한다. hosted exact-head 검증과 최종 train merge는 마지막 승인 단계에서 수행한다. |
+| [#547](https://github.com/bluetape4k/bluetape4k-graph/issues/547) | PR #568 hosted 통과, review·merge 대기 | #567 exact head `75e45556f22994bf46b8aaab297747845669e0e4` 위에서 local `bluetape4k` alias를 제거하고 examples/core retry helper가 첫 실패·retry-only 상태를 보존하도록 정렬했다. evidence root·`tee`·output write failure도 fail-closed로 고정하고 helper/test path routing, `fix/**` stacked PR trigger와 필수 `retry-helper` CI job을 추가했다. PR #568 live head `eda9c433a7004ab91e96e0f8ea8ecade0e1fa68a`에서 CI·Examples checks가 모두 통과했다. 최종 train merge는 마지막 승인 단계에서 수행한다. |
+| [#536](https://github.com/bluetape4k/bluetape4k-graph/issues/536) | #547 위 로컬 검증 완료, PR 준비 | `BOUNDED_CHUNKED_READ/EXPORT`와 `GraphBoundedChunkOperations` marker를 추가해 API chunking과 source bounded 실행을 분리하고 TinkerGraph만 bounded capability를 광고하도록 정렬했다. graph-core 351개, graph-tinkerpop 114개, GraphML 44개 테스트와 세 모듈 Detekt, AGE→Neo4j→Memgraph→FalkorDB 순차 conformance가 통과했다. #548은 이 exact head 위에 쌓는다. |
 
-이전 완료 순서는 `#527 → #525 → #526`이다. 현재 train은 `#543 → #544 → #545 → #546 → #547`
+이전 완료 순서는 `#527 → #525 → #526`이다. 현재 train은 `#543 → #544 → #545 → #546 → #547 → #536`
 순서이며, 각 PR은 이전 exact head를 base로 삼고 최종 일괄 merge 승인 전에는
 독립 병합하지 않는다.
 
 ## 현재 방향
 
 `0.5.0` 안정 라인은 유지보수 기준으로 보존한다.
-현재 작업 라인 `1.0.0`에는 #544, #545, #546, #547이 남아 있다. 최근 stacked train은
+현재 작업 라인 `1.0.0`에는 #544, #545, #546, #547, #536이 남아 있다. 최근 stacked train은
 Spring/Testcontainers 통합 테스트 계약과 네 graph image family의
 startup/workload gate를 고정했고, 현재는 Spring Boot management·initializer
 계약을 PR #566으로 추가한 뒤 7개 예제 suspend teardown의 cancellation-safe cleanup을 #546 slice로
-쌓고 catalog/retry evidence를 PR #568의 #547 slice로 추가했다. hosted 검증은 각 PR에 대해 대기 중이다. 아래 `0.7.0` 표와 이전 큐는 historical
+쌓고 catalog/retry evidence를 PR #568의 #547 slice로 추가한 뒤 bounded capability contract를 #536 slice로 적층했다. hosted 검증과 review는 각 PR에 대해 대기 중이다. 아래 `0.7.0` 표와 이전 큐는 historical
 snapshot으로 보존한다.
 
 이전 train의 merge tip은 PR #530의 `a234d7cfd0cd41381982720d06395e5b51226702`,

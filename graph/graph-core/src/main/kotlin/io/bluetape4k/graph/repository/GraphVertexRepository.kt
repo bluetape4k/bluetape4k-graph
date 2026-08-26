@@ -108,13 +108,14 @@ interface GraphVertexRepository {
     fun findVerticesByLabel(label: String, filter: Map<String, Any?> = emptyMap()): List<GraphVertex>
 
     /**
-     * Finds vertices by label and property filter as bounded chunks.
+     * label과 property filter로 정점을 API chunk 단위로 조회한다.
      *
-     * ## Contract
+     * ## 계약
      *
-     * - The default implementation splits the [findVerticesByLabel] result into chunks for compatibility.
-     * - Backends that must avoid whole-label materialization during large exports should override this method.
-     * - [chunkSize] must be positive.
+     * - 기본 구현은 호환성을 위해 [findVerticesByLabel] 결과를 chunk로 나누며 source 실행의 bounded 보장은 제공하지 않는다.
+     * - 대규모 export에서 전체 label materialization을 피하는 backend는 이 method를 override하고
+     *   [GraphCapability.BOUNDED_CHUNKED_READ]와 [GraphCapability.BOUNDED_CHUNKED_EXPORT]를 광고해야 한다.
+     * - [chunkSize]는 양수여야 한다.
      *
      * ```kotlin
      * for (chunk in ops.findVerticesByLabelChunked("Person", chunkSize = 500)) {
@@ -122,10 +123,10 @@ interface GraphVertexRepository {
      * }
      * ```
      *
-     * @param label vertex label to query.
-     * @param filter property-name to value conditions. An empty map returns the full label.
-     * @param chunkSize maximum number of vertices per chunk.
-     * @return chunk sequence containing matching [GraphVertex] values.
+     * @param label 조회할 vertex label.
+     * @param filter property name과 value 조건. 빈 map은 해당 label 전체를 반환한다.
+     * @param chunkSize chunk 하나에 포함할 vertex 최대 개수.
+     * @return 일치하는 [GraphVertex]를 담은 chunk sequence.
      */
     fun findVerticesByLabelChunked(
         label: String,

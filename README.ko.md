@@ -227,6 +227,12 @@ repository API를 사용합니다. `Jackson3NdJsonBulkExporter`와
 `SuspendJackson3NdJsonBulkExporter`는 `findVerticesByLabelChunked`,
 `findEdgesByLabelChunked`를 소비합니다. Cursor 구현이 없는 백엔드는 기존
 list/Flow fallback을 유지하고, TinkerGraph는 reference chunked path를 제공합니다.
+`CHUNKED_READ`와 `CHUNKED_EXPORT`는 API 결과 형태만 설명하며 backend source가
+bounded라는 뜻은 아닙니다. source bounded 실행이 필요하면
+`BOUNDED_CHUNKED_READ`와 `BOUNDED_CHUNKED_EXPORT`를 확인해야 합니다. 현재
+TinkerGraph만 bounded reference path이며 AGE, Neo4j, Memgraph, FalkorDB 동기
+경로는 호환 가능한 list fallback을 유지하고 bounded capability를 광고하지
+않습니다.
 
 | 모듈 | 포맷 | 문서 |
 |------|------|------|

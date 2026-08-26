@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.repository
 
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeTrue
@@ -21,6 +22,14 @@ class GraphCapabilitiesTest {
         capabilities.supports(GraphCapability.BATCH_INSERT).shouldBeTrue()
         capabilities.supports(GraphCapability.CHUNKED_READ).shouldBeTrue()
         capabilities.supports(GraphCapability.CHUNKED_EXPORT).shouldBeTrue()
+        capabilities.supports(GraphCapability.BOUNDED_CHUNKED_READ).shouldBeTrue()
+        capabilities.supports(GraphCapability.BOUNDED_CHUNKED_EXPORT).shouldBeTrue()
+        capabilities.constraints(GraphCapability.CHUNKED_READ).contains("api-chunking-only").shouldBeTrue()
+        capabilities.constraints(GraphCapability.CHUNKED_EXPORT).contains("api-chunking-only").shouldBeTrue()
+        capabilities.constraints(GraphCapability.BOUNDED_CHUNKED_READ)
+            .contains("native-traversal-bounded").shouldBeTrue()
+        capabilities.constraints(GraphCapability.BOUNDED_CHUNKED_EXPORT)
+            .contains("native-traversal-bounded").shouldBeTrue()
         capabilities.supports(GraphCapability.WEIGHTED_PATH).shouldBeTrue()
         capabilities.supports(GraphCapability.GRAPH_ALGORITHM).shouldBeTrue()
         capabilities.supports(GraphCapability.NATIVE_ALGORITHM).shouldBeFalse()
@@ -37,6 +46,8 @@ class GraphCapabilitiesTest {
         operations.capabilities().supports(GraphCapability.BATCH_INSERT).shouldBeTrue()
         operations.capabilities().supports(GraphCapability.CHUNKED_READ).shouldBeTrue()
         operations.capabilities().supports(GraphCapability.CHUNKED_EXPORT).shouldBeTrue()
+        operations.capabilities().supports(GraphCapability.BOUNDED_CHUNKED_READ).shouldBeTrue()
+        operations.capabilities().supports(GraphCapability.BOUNDED_CHUNKED_EXPORT).shouldBeTrue()
         operations.capabilities().supports(GraphCapability.WEIGHTED_PATH).shouldBeTrue()
         operations.capabilities().supports(GraphCapability.GRAPH_ALGORITHM).shouldBeTrue()
         operations.capabilities().supports(GraphCapability.NATIVE_ALGORITHM).shouldBeFalse()
@@ -61,7 +72,21 @@ class GraphCapabilitiesTest {
         decorator.capabilities().supports(GraphCapability.MERGE).shouldBeFalse()
         decorator.capabilities().supports(GraphCapability.SCHEMA).shouldBeFalse()
         decorator.capabilities().supports(GraphCapability.TRANSACTION).shouldBeFalse()
+        decorator.capabilities().supports(GraphCapability.CHUNKED_READ).shouldBeTrue()
+        decorator.capabilities().supports(GraphCapability.CHUNKED_EXPORT).shouldBeTrue()
+        decorator.capabilities().supports(GraphCapability.BOUNDED_CHUNKED_READ).shouldBeFalse()
+        decorator.capabilities().supports(GraphCapability.BOUNDED_CHUNKED_EXPORT).shouldBeFalse()
         decorator.close()
+    }
+
+    @Test
+    fun `bounded capability requires its API chunk capability`() {
+        assertFailsWith<IllegalArgumentException> {
+            GraphCapabilities(supported = setOf(GraphCapability.BOUNDED_CHUNKED_READ))
+        }
+        assertFailsWith<IllegalArgumentException> {
+            GraphCapabilities(supported = setOf(GraphCapability.BOUNDED_CHUNKED_EXPORT))
+        }
     }
 
     private class GraphOperationsDecorator(

@@ -25,6 +25,7 @@ import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
+import java.util.NoSuchElementException
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -238,6 +239,52 @@ class TinkerGraphOperationsTest {
         chunks.map { it.size } shouldBeEqualTo listOf(2, 2, 1)
         chunks.flatten().map { it.properties["name"] }.toSet() shouldBeEqualTo
                 setOf("Person-1", "Person-2", "Person-3", "Person-4", "Person-5")
+    }
+
+    @Test
+    @Order(252)
+    fun `bounded chunk helper consumes only the requested first chunk`() {
+        var consumed = 0
+        var closed = false
+        val source = object : Iterator<Int> {
+            private var nextValue = 0
+
+            override fun hasNext(): Boolean = nextValue < 100
+
+            override fun next(): Int {
+                if (!hasNext()) throw NoSuchElementException()
+                consumed++
+                return ++nextValue
+            }
+        }
+
+        val chunks = sequence<List<Int>> {
+            with(ops) {
+                yieldMappedChunks(
+                    source = source,
+                    chunkSize = 2,
+                    mapper = { it },
+                    close = { closed = true },
+                )
+            }
+        }.take(1).toList()
+
+        chunks shouldBeEqualTo listOf(listOf(1, 2))
+        consumed shouldBeEqualTo 2
+
+        val fullyConsumed = sequence<List<Int>> {
+            with(ops) {
+                yieldMappedChunks(
+                    source = (1..3).iterator(),
+                    chunkSize = 2,
+                    mapper = { it },
+                    close = { closed = true },
+                )
+            }
+        }.toList()
+
+        fullyConsumed shouldBeEqualTo listOf(listOf(1, 2), listOf(3))
+        closed.shouldBeTrue()
     }
 
     @Test

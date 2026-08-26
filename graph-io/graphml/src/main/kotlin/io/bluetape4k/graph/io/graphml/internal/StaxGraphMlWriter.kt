@@ -13,9 +13,9 @@ import javax.xml.stream.XMLOutputFactory
  * StAX 기반 GraphML 라이터.
  * `<key>` 정의를 먼저 쓴 뒤 `<graph>` 내부에 `<node>` / `<edge>` 요소를 순차 기록한다.
  *
- * GraphML header에 전역 property key 정의가 필요하므로 exporter는 key 이름만
- * bounded pre-scan으로 수집하고, 실제 record는 [GraphMlWriteSession]에 한 번에
- * 하나의 chunk씩 전달한다.
+ * GraphML header에 전역 property key 정의가 필요하므로 exporter는 key 이름을
+ * pre-scan으로 수집하고, 실제 record는 [GraphMlWriteSession]에 한 번에 하나의
+ * API chunk씩 전달한다. source bounded 여부는 graph facade capability에 따른다.
  */
 internal class StaxGraphMlWriter {
 

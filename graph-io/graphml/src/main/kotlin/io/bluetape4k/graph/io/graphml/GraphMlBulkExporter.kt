@@ -23,8 +23,9 @@ import io.bluetape4k.logging.debug
 /**
  * Blocking bulk exporter for GraphML.
  *
- * exporter는 property key 이름만 미리 스캔한 뒤 bounded repository chunk를
- * 이용해 정점과 간선을 하나의 XML 문서에 기록한다.
+ * exporter는 property key 이름만 미리 스캔한 뒤 repository API chunk를 이용해
+ * 정점과 간선을 하나의 XML 문서에 기록한다. source bounded 실행은 graph facade가
+ * `BOUNDED_CHUNKED_*` capability를 광고하는 경우에만 보장된다.
  *
  * 예제:
  *
