@@ -2,8 +2,13 @@ package io.bluetape4k.graph.io.workflow
 
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeEmpty
+import io.bluetape4k.assertions.shouldBeNull
+import io.bluetape4k.graph.io.checkpoint.GraphImportCheckpoint
+import io.bluetape4k.graph.io.checkpoint.GraphImportCheckpointPhase
 import io.bluetape4k.graph.io.report.GraphIoFormat
 import org.junit.jupiter.api.Test
+import java.time.Duration
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executors
@@ -29,11 +34,49 @@ class GraphImportWorkflowTest {
     fun `workflow enforces vertex before edge ordering and persists state`() {
         val store = InMemoryGraphImportJobStateStore()
         val workflow = GraphImportWorkflow(manifest, store)
-        workflow.validate().state shouldBeEqualTo GraphImportWorkflowState.VALIDATED
+        workflow.validate().also { report ->
+            report.state shouldBeEqualTo GraphImportWorkflowState.VALIDATED
+            report.sources.shouldBeEmpty()
+            report.checkpoint.shouldBeNull()
+            report.elapsed shouldBeEqualTo Duration.ZERO
+        }
         workflow.transition(GraphImportWorkflowState.VERTICES_LOADED)
         workflow.transition(GraphImportWorkflowState.EDGES_LOADED).state shouldBeEqualTo
             GraphImportWorkflowState.EDGES_LOADED
         store.load("job-1")?.state shouldBeEqualTo GraphImportWorkflowState.EDGES_LOADED
+    }
+
+    @Test
+    fun `workflow transition preserves existing report payload`() {
+        val store = InMemoryGraphImportJobStateStore()
+        val sourceReport = GraphImportSourceReport(
+            sourceId = "vertices",
+            recordsRead = 10,
+            recordsSkipped = 2,
+        )
+        val checkpoint = GraphImportCheckpoint(
+            format = GraphIoFormat.CSV,
+            sourceIdentity = "sha256:v",
+            phase = GraphImportCheckpointPhase.VERTICES,
+            verticesProcessed = 10,
+            edgesProcessed = 0,
+        )
+        val existing = GraphImportWorkflowReport(
+            jobId = manifest.jobId,
+            state = GraphImportWorkflowState.VALIDATED,
+            sources = listOf(sourceReport),
+            elapsed = Duration.ofSeconds(3),
+            checkpoint = checkpoint,
+        )
+        store.save(existing)
+
+        val report = GraphImportWorkflow(manifest, store).transition(GraphImportWorkflowState.VERTICES_LOADED)
+
+        report.state shouldBeEqualTo GraphImportWorkflowState.VERTICES_LOADED
+        report.sources shouldBeEqualTo existing.sources
+        report.elapsed shouldBeEqualTo existing.elapsed
+        report.checkpoint shouldBeEqualTo existing.checkpoint
+        store.load(manifest.jobId) shouldBeEqualTo report
     }
 
     @Test
