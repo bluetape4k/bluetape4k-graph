@@ -48,6 +48,13 @@
 
 ### 버그 수정
 
+- **Spring Boot graph management contract**: Actuator snapshot이 backend별
+  graph/database 설정과 실제 `GraphOperations.capabilities()`·graph-io
+  classpath/bean 상태를 반영하도록 고쳤다. AGE graph initializer는
+  operations의 typed duplicate predicate에만 중복을 위임하고 일반 예외를
+  다시 던지며, backend auto-configuration 테스트는
+  `bluetape4k.assertions.assertFailsWith`를 사용한다
+  ([#545](https://github.com/bluetape4k/bluetape4k-graph/issues/545)).
 - **Graph cache create contract**: AGE, Neo4j, Memgraph 캐시 데코레이터가
   `createVertex`와 `createEdge`를 동일 인자라는 이유로 합치지 않고 매번 backend에
   위임하도록 고쳤다. 생성 후 읽기 캐시 무효화와 영문/국문 문서 계약도 정렬했다

@@ -7,12 +7,13 @@ import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
+import io.bluetape4k.graph.spring.boot.properties.AgeGraphProperties
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
+import io.bluetape4k.assertions.assertFailsWith
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
@@ -75,8 +76,9 @@ class GraphAgeAutoConfigurationTest {
             *ageProperties,
             "bluetape4k.graph.age.register-suspend=false",
         ).run { ctx ->
-            assertThatThrownBy { ctx.getBean(GraphSuspendOperations::class.java) }
-                .isInstanceOf(NoSuchBeanDefinitionException::class.java)
+            assertFailsWith<NoSuchBeanDefinitionException> {
+                ctx.getBean(GraphSuspendOperations::class.java)
+            }
         }
     }
 
@@ -86,9 +88,28 @@ class GraphAgeAutoConfigurationTest {
             *ageProperties,
             "bluetape4k.graph.age.register-virtual-thread=false",
         ).run { ctx ->
-            assertThatThrownBy { ctx.getBean(GraphVirtualThreadOperations::class.java) }
-                .isInstanceOf(NoSuchBeanDefinitionException::class.java)
+            assertFailsWith<NoSuchBeanDefinitionException> {
+                ctx.getBean(GraphVirtualThreadOperations::class.java)
+            }
         }
+    }
+
+    @Test
+    fun `initializer rethrows generic failure even when message resembles duplicate`() {
+        val operations = mockk<io.bluetape4k.graph.age.AgeGraphOperations>()
+        every { operations.createGraph("test_graph") } throws
+            IllegalStateException("graph already exists but the connection failed")
+
+        val initializer = GraphAgeAutoConfiguration()
+            .ageGraphInitializer(
+                operations,
+                AgeGraphProperties("test_graph"),
+            )
+
+        assertFailsWith<IllegalStateException> {
+            initializer.afterPropertiesSet()
+        }
+        verify(exactly = 1) { operations.createGraph("test_graph") }
     }
 
     @Test

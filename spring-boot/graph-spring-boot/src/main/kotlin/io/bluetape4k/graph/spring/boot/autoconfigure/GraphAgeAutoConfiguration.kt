@@ -8,7 +8,6 @@ import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
 import io.bluetape4k.graph.spring.boot.properties.AgeGraphProperties
 import io.bluetape4k.graph.vt.asVirtualThread
 import io.bluetape4k.logging.KLogging
-import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.info
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
@@ -113,15 +112,8 @@ class GraphAgeAutoConfiguration {
     )
     fun ageGraphInitializer(ops: AgeGraphOperations, props: AgeGraphProperties): InitializingBean =
         InitializingBean {
-            runCatching { ops.createGraph(props.graphName) }
-                .onSuccess { log.info { "AGE graph '${props.graphName}' created" } }
-                .onFailure { ex ->
-                    if (ex.message?.contains("already exists", ignoreCase = true) == true) {
-                        log.debug { "AGE graph '${props.graphName}' already exists — skipping" }
-                    } else {
-                        throw ex
-                    }
-                }
+            ops.createGraph(props.graphName)
+            log.info { "AGE graph '${props.graphName}' created or already exists" }
         }
 
     /**

@@ -7,11 +7,11 @@ import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.testcontainers.graphdb.MemgraphServer
+import io.bluetape4k.assertions.assertFailsWith
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.neo4j.driver.Driver
-import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
@@ -75,8 +75,9 @@ class GraphMemgraphAutoConfigurationTest {
             *memgraphProperties,
             "bluetape4k.graph.memgraph.register-suspend=false",
         ).run { ctx ->
-            assertThatThrownBy { ctx.getBean(GraphSuspendOperations::class.java) }
-                .isInstanceOf(NoSuchBeanDefinitionException::class.java)
+            assertFailsWith<NoSuchBeanDefinitionException> {
+                ctx.getBean(GraphSuspendOperations::class.java)
+            }
         }
     }
 
@@ -86,8 +87,9 @@ class GraphMemgraphAutoConfigurationTest {
             *memgraphProperties,
             "bluetape4k.graph.memgraph.register-virtual-thread=false",
         ).run { ctx ->
-            assertThatThrownBy { ctx.getBean(GraphVirtualThreadOperations::class.java) }
-                .isInstanceOf(NoSuchBeanDefinitionException::class.java)
+            assertFailsWith<NoSuchBeanDefinitionException> {
+                ctx.getBean(GraphVirtualThreadOperations::class.java)
+            }
         }
     }
 

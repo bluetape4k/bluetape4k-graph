@@ -6,7 +6,7 @@ import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.assertions.shouldNotBeNull
-import org.assertj.core.api.Assertions.assertThatThrownBy
+import io.bluetape4k.assertions.assertFailsWith
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
@@ -54,8 +54,9 @@ class GraphFalkorDBAutoConfigurationTest {
             *falkordbProperties,
             "bluetape4k.graph.falkordb.register-suspend=false",
         ).run { ctx ->
-            assertThatThrownBy { ctx.getBean(GraphSuspendOperations::class.java) }
-                .isInstanceOf(NoSuchBeanDefinitionException::class.java)
+            assertFailsWith<NoSuchBeanDefinitionException> {
+                ctx.getBean(GraphSuspendOperations::class.java)
+            }
         }
     }
 
@@ -65,8 +66,9 @@ class GraphFalkorDBAutoConfigurationTest {
             *falkordbProperties,
             "bluetape4k.graph.falkordb.register-virtual-thread=false",
         ).run { ctx ->
-            assertThatThrownBy { ctx.getBean(GraphVirtualThreadOperations::class.java) }
-                .isInstanceOf(NoSuchBeanDefinitionException::class.java)
+            assertFailsWith<NoSuchBeanDefinitionException> {
+                ctx.getBean(GraphVirtualThreadOperations::class.java)
+            }
         }
     }
 
@@ -74,8 +76,9 @@ class GraphFalkorDBAutoConfigurationTest {
     fun `backend=falkordb 아닐 때 빈 등록 안됨`() {
         runner.withPropertyValues("bluetape4k.graph.backend=neo4j")
             .run { ctx ->
-                assertThatThrownBy { ctx.getBean(GraphOperations::class.java) }
-                    .isInstanceOf(NoSuchBeanDefinitionException::class.java)
+                assertFailsWith<NoSuchBeanDefinitionException> {
+                    ctx.getBean(GraphOperations::class.java)
+                }
             }
     }
 

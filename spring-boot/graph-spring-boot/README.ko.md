@@ -292,9 +292,13 @@ read-only `graph` Actuator endpoint가 등록됩니다. 기본값은 비활성�
 {
   "backend": "neo4j",
   "graph": "default",
-  "database": "default",
+  "database": "neo4j",
   "driverAvailable": true,
   "sessionAvailable": true,
   "capabilities": { "schema": true, "graphIo": true }
 }
 ```
+
+`graph`와 `database`는 backend별 설정 property에서 읽으며, `schema`는 실제
+`GraphOperations.capabilities()` 결과를, `graphIo`는 operations bean과 graph-io
+계약 classpath가 모두 존재할 때만 `true`로 보고합니다.
