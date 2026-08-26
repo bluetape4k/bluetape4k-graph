@@ -4,6 +4,7 @@ import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
+import io.bluetape4k.support.requirePositiveNumber
 
 /**
  * graph-io importer에서 `GraphImportOptions.batchSize` 단위로 backend batch write를 수행한다.
@@ -15,6 +16,10 @@ class GraphIoBatchWriter(
     private val operations: GraphOperations,
     private val batchSize: Int,
 ) {
+    init {
+        batchSize.requirePositiveNumber("batchSize")
+    }
+
     private val vertexBuffers = LinkedHashMap<String, MutableList<PendingVertex>>()
     private val edgeBuffers = LinkedHashMap<String, MutableList<BatchEdge>>()
 
@@ -88,6 +93,10 @@ class SuspendGraphIoBatchWriter(
     private val operations: GraphSuspendOperations,
     private val batchSize: Int,
 ) {
+    init {
+        batchSize.requirePositiveNumber("batchSize")
+    }
+
     private val vertexBuffers = LinkedHashMap<String, MutableList<PendingVertex>>()
     private val edgeBuffers = LinkedHashMap<String, MutableList<BatchEdge>>()
 

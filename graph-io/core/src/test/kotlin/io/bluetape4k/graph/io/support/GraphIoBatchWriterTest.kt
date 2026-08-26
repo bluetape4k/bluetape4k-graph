@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.io.support
 
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldHaveSize
@@ -17,6 +18,27 @@ import io.bluetape4k.graph.model.GraphVertex
 import org.junit.jupiter.api.Test
 
 class GraphIoBatchWriterTest {
+
+    @Test
+    fun `sync writer rejects non-positive batch size`() {
+        assertFailsWith<IllegalArgumentException> {
+            GraphIoBatchWriter(FakeGraphOperations(), batchSize = 0)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            GraphIoBatchWriter(FakeGraphOperations(), batchSize = -1)
+        }
+    }
+
+    @Test
+    fun `suspend writer rejects non-positive batch size`() = runSuspendIO {
+        val operations = mockk<GraphSuspendOperations>()
+        assertFailsWith<IllegalArgumentException> {
+            SuspendGraphIoBatchWriter(operations, batchSize = 0)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            SuspendGraphIoBatchWriter(operations, batchSize = -1)
+        }
+    }
 
     @Test
     fun `vertex writer flushes by label and maps returned ids in input order`() {

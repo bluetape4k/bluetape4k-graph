@@ -81,6 +81,11 @@ enum class MissingEndpointPolicy { FAIL, SKIP_EDGE }
 
 `batchSize` controls backend write flushing during imports. Importers group pending vertices and edges by label, call `createVertices`/`createEdges` when a label buffer reaches this size, and flush final partial buffers at the end. It does not change duplicate-ID or missing-endpoint policy semantics.
 
+`batchSize` must be positive. `GraphImportOptions`, `GraphIoBatchWriter`, and
+`SuspendGraphIoBatchWriter` all reject zero or negative values through the shared
+Bluetape `requirePositiveNumber` contract, including when a writer is constructed
+directly.
+
 `exportChunkSize` controls how many records streaming-capable exporters request
 from chunk-aware repository methods such as `findVerticesByLabelChunked` and
 `findEdgesByLabelChunked`. Backends that do not override those methods use the
@@ -170,6 +175,7 @@ dependencies {
 - **`GraphIoPaths`** — opens `BufferedReader`/`BufferedWriter`/`InputStream`/`OutputStream` for any `GraphImportSource`/`GraphExportSink`, auto-creates parent directories for `PathSink`, honours the `closeInput`/`closeOutput` flag for caller-owned streams.
 - **`GraphIoExternalIdMap`** — tracks external ID → backend `GraphElementId` mappings during import and enforces `DuplicateVertexPolicy` (`FAIL` or `SKIP`). Importers follow a 2-step pattern: `putFirstOrFail()` gates the duplicate policy with a temporary ID, then `put()` overwrites with the backend-issued ID. Calling `put()` before `putFirstOrFail()` throws `IllegalStateException` to surface duplicate-policy bypass at the caller site.
 - **`GraphIoBatchWriter` / `SuspendGraphIoBatchWriter`** — label-grouped import write buffers that flush via `createVertices`/`createEdges` according to `GraphImportOptions.batchSize`.
+- **`GraphImportWorkflow` / `GraphImportJobStateStore`** — validates a multi-source import manifest and persists ordered job states. The store's `update` boundary performs load/validate/save atomically for one JVM store instance; its transform must be pure/retry-safe, and durable stores should override it with a native transaction or CAS.
 - **`GraphIoStopwatch`** — millisecond-precision timer used by format importers/exporters to populate `report.elapsed`.
 - **`VirtualThreadGraphBulkAdapter`** — wraps a sync `GraphBulkImporter`/`GraphBulkExporter` as a Virtual-Thread-backed async variant via `CompletableFuture`.
 

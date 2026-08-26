@@ -80,6 +80,22 @@ interface GraphImportJobStateStore {
     fun load(jobId: String): GraphImportWorkflowReport?
 
     fun save(report: GraphImportWorkflowReport)
+
+    /**
+     * 이 store 인스턴스에서 하나의 job report를 load·transform·save하는 원자 경계입니다.
+     * durable CAS 구현은 transform을 여러 번 평가할 수 있으므로 transform은 순수하고
+     * 재시도에 안전해야 합니다. durable store는 이 경계를 native transaction 또는 CAS로
+     * override해야 합니다.
+     */
+    fun update(
+        jobId: String,
+        transform: (GraphImportWorkflowReport?) -> GraphImportWorkflowReport,
+    ): GraphImportWorkflowReport = synchronized(this) {
+        val updated = transform(load(jobId))
+        require(updated.jobId == jobId) { "state update jobId must match the requested jobId" }
+        save(updated)
+        updated
+    }
 }
 
 class InMemoryGraphImportJobStateStore : GraphImportJobStateStore {
@@ -110,15 +126,17 @@ class GraphImportWorkflow(
     }
 
     fun transition(state: GraphImportWorkflowState): GraphImportWorkflowReport {
-        val current = stateStore.load(manifest.jobId)?.state ?: GraphImportWorkflowState.DISCOVERED
-        require(ALLOWED_TRANSITIONS[current].orEmpty().contains(state)) {
-            "invalid workflow transition: $current -> $state"
-        }
         return persist(state)
     }
 
     private fun persist(state: GraphImportWorkflowState): GraphImportWorkflowReport =
-        GraphImportWorkflowReport(manifest.jobId, state).also(stateStore::save)
+        stateStore.update(manifest.jobId) { currentReport ->
+            val current = currentReport?.state ?: GraphImportWorkflowState.DISCOVERED
+            require(ALLOWED_TRANSITIONS[current].orEmpty().contains(state)) {
+                "invalid workflow transition: $current -> $state"
+            }
+            GraphImportWorkflowReport(manifest.jobId, state)
+        }
 
     companion object {
         private val ALLOWED_TRANSITIONS = mapOf(
