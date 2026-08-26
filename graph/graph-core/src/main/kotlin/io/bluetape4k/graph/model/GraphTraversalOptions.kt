@@ -1,5 +1,7 @@
 package io.bluetape4k.graph.model
 
+import io.bluetape4k.support.requirePositiveNumber
+import io.bluetape4k.support.requireZeroOrPositiveNumber
 import java.io.InvalidObjectException
 import java.io.ObjectInputStream
 import java.io.Serializable
@@ -50,7 +52,8 @@ sealed class GraphTraversalOptions: Serializable {
  *
  * @param edgeLabel Edge label to traverse. `null` traverses all labels.
  * @param direction Traversal direction: `OUTGOING`, `INCOMING`, or `BOTH`.
- * @param maxDepth Maximum traversal depth. Defaults to `1`; must be non-negative.
+ * @param maxDepth 최대 순회 깊이. 0이면 이웃을 확장하지 않으며 기본값은 `1`이다.
+ * @throws IllegalArgumentException [maxDepth]가 음수이면 발생한다.
  */
 data class NeighborOptions(
     val edgeLabel: String? = null,
@@ -58,7 +61,7 @@ data class NeighborOptions(
     override val maxDepth: Int = 1,
 ): GraphTraversalOptions() {
     init {
-        require(maxDepth >= 0) { "maxDepth must be >= 0, was $maxDepth" }
+        maxDepth.requireZeroOrPositiveNumber("maxDepth")
     }
 
     companion object {
@@ -94,12 +97,14 @@ data class NeighborOptions(
  * ```
  *
  * @param edgeLabel Edge label to traverse. `null` traverses all labels.
- * @param maxDepth Maximum traversal depth. Defaults to `10`; must be non-negative.
+ * @param maxDepth 최대 순회 깊이. 0이면 source와 target이 같은 vertex-only path만 허용하며
+ * 기본값은 `10`이다.
  * @param weightProperty Edge weight property key. `null` uses unweighted traversal.
  * @param missingWeightPolicy Policy for edges missing [weightProperty]. Defaults to [MissingWeightPolicy.Fail].
  * @param direction Traversal direction. Applies only when [weightProperty] is set. Defaults to [Direction.OUTGOING].
- * @param maxVisited Maximum visited vertices during weighted traversal.
- * Protects against unbounded graphs. Defaults to `100_000`; must be positive.
+ * @param maxVisited weighted traversal에서 방문할 정점 수의 상한. 무한 그래프 확장을
+ * 막기 위해 양수여야 하며 기본값은 `100_000`이다.
+ * @throws IllegalArgumentException [maxDepth]가 음수이거나 [maxVisited]가 양수가 아니면 발생한다.
  */
 data class PathOptions(
     val edgeLabel: String? = null,
@@ -110,8 +115,8 @@ data class PathOptions(
     val maxVisited: Int = 100_000,
 ): GraphTraversalOptions() {
     init {
-        require(maxDepth >= 0) { "maxDepth must be >= 0, was $maxDepth" }
-        require(maxVisited > 0) { "maxVisited must be > 0, was $maxVisited" }
+        maxDepth.requireZeroOrPositiveNumber("maxDepth")
+        maxVisited.requirePositiveNumber("maxVisited")
     }
     companion object {
         private const val serialVersionUID: Long = 1L
@@ -136,7 +141,13 @@ data class PathOptions(
  * val visits = ops.bfs(alice.id, opts)
  * ```
  *
- * `maxDepth` must be non-negative and `maxVertices` must be positive.
+ * `maxDepth`가 `0`이면 시작 정점만 반환한다.
+ *
+ * @param edgeLabel 순회할 간선 레이블. `null`이면 모든 레이블을 순회한다.
+ * @param direction 순회 방향: `OUTGOING`, `INCOMING`, `BOTH`.
+ * @param maxDepth 최대 순회 깊이. 0이면 시작 정점만 반환한다.
+ * @param maxVertices 반환할 정점 수의 양수 상한. 기본값은 `10_000`이다.
+ * @throws IllegalArgumentException [maxDepth]가 음수이거나 [maxVertices]가 양수가 아니면 발생한다.
  */
 data class BfsDfsOptions(
     val edgeLabel: String? = null,
@@ -145,8 +156,8 @@ data class BfsDfsOptions(
     val maxVertices: Int = 10_000,
 ): GraphTraversalOptions() {
     init {
-        require(maxDepth >= 0) { "maxDepth must be >= 0, was $maxDepth" }
-        require(maxVertices > 0) { "maxVertices must be > 0, was $maxVertices" }
+        maxDepth.requireZeroOrPositiveNumber("maxDepth")
+        maxVertices.requirePositiveNumber("maxVertices")
     }
     companion object {
         private const val serialVersionUID: Long = 1L
@@ -166,8 +177,9 @@ data class BfsDfsOptions(
  *
  * @param vertexLabel Vertex label to traverse. `null` traverses all labels.
  * @param edgeLabel Edge label to traverse. `null` traverses all labels.
- * @param maxDepth Maximum traversal depth. Defaults to `10`; must be non-negative.
- * @param maxCycles Maximum number of cycles to return. Defaults to `100`; must be positive.
+ * @param maxDepth 최대 순회 깊이. 양수여야 하며 기본값은 `10`이다.
+ * @param maxCycles 반환할 순환 수의 양수 상한. 기본값은 `100`이다.
+ * @throws IllegalArgumentException [maxDepth] 또는 [maxCycles]가 양수가 아니면 발생한다.
  */
 data class CycleOptions(
     val vertexLabel: String? = null,
@@ -176,8 +188,8 @@ data class CycleOptions(
     val maxCycles: Int = 100,
 ): GraphTraversalOptions() {
     init {
-        require(maxDepth >= 0) { "maxDepth must be >= 0, was $maxDepth" }
-        require(maxCycles > 0) { "maxCycles must be > 0, was $maxCycles" }
+        maxDepth.requirePositiveNumber("maxDepth")
+        maxCycles.requirePositiveNumber("maxCycles")
     }
     companion object {
         private const val serialVersionUID: Long = 1L
@@ -186,7 +198,7 @@ data class CycleOptions(
 
     private fun readObject(input: ObjectInputStream) {
         input.defaultReadObject()
-        validateDeserializedOption(maxDepth >= 0, "maxDepth must be >= 0, was $maxDepth")
+        validateDeserializedOption(maxDepth > 0, "maxDepth must be > 0, was $maxDepth")
         validateDeserializedOption(maxCycles > 0, "maxCycles must be > 0, was $maxCycles")
     }
 }

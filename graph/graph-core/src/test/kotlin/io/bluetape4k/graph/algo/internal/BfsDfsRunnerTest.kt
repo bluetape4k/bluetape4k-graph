@@ -40,6 +40,22 @@ class BfsDfsRunnerTest {
     }
 
     @Test
+    fun `bfs maxDepth 0 returns only the start vertex`() {
+        val visits = BfsDfsRunner.bfs(id("a"), adjacency, maxDepth = 0, maxVertices = 100)
+
+        visits.shouldHaveSize(1)
+        visits.single().vertex.id shouldBeEqualTo id("a")
+    }
+
+    @Test
+    fun `dfs maxDepth 0 returns only the start vertex`() {
+        val visits = BfsDfsRunner.dfs(id("a"), adjacency, maxDepth = 0, maxVertices = 100)
+
+        visits.shouldHaveSize(1)
+        visits.single().vertex.id shouldBeEqualTo id("a")
+    }
+
+    @Test
     fun `bfs respects maxVertices`() {
         val visits = BfsDfsRunner.bfs(id("a"), adjacency, maxDepth = 10, maxVertices = 2)
         visits.shouldHaveSize(2)

@@ -1185,6 +1185,14 @@ val edge = ops.mergeEdge(
 | DFS | `dfs(startId, options)` | `BfsDfsOptions` | `List<TraversalVisit>` |
 | Cycle Detection | `detectCycles(options)` | `CycleOptions` | `List<GraphCycle>` |
 
+모든 순회·알고리즘 option은 public constructor에서 입력을 검증한다.
+`NeighborOptions.maxDepth`와 `PathOptions.maxDepth`는 각각 이웃 확장 없음·vertex-only
+path 의미의 0을 허용하고, `BfsDfsOptions.maxDepth`도 0을 허용해 시작 정점만 반환한다.
+`CycleOptions.maxDepth`와 방문·반복·결과·사이클·컴포넌트 한도는 양수여야 한다.
+`PageRankOptions.tolerance`는 양의 유한값이어야 하고 `dampingFactor`는 유한한
+`[0.0, 1.0]` 범위여야 한다. 잘못된 값은 backend query를 만들기 전에
+`IllegalArgumentException`으로 실패한다.
+
 ### 복합 인터페이스 구조
 
 ```

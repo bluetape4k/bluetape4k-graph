@@ -1,5 +1,8 @@
 package io.bluetape4k.graph.model
 
+import io.bluetape4k.support.requireFinite
+import io.bluetape4k.support.requireInRange
+import io.bluetape4k.support.requirePositiveNumber
 import java.io.InvalidObjectException
 import java.io.ObjectInputStream
 import java.io.Serializable
@@ -39,10 +42,14 @@ sealed class GraphAlgorithmOptions: Serializable {
  *
  * @param vertexLabel Targets all vertices when `null`.
  * @param edgeLabel Includes all edges when `null`.
- * @param iterations Number of iterations. Defaults to `20`.
- * @param dampingFactor Damping factor. Defaults to `0.85`; backend support varies.
- * @param tolerance Convergence tolerance. Defaults to `1e-4`; must be finite and non-negative.
- * @param topK Returns only the top K results. `Int.MAX_VALUE` returns all results.
+ * @param iterations 반복 횟수의 양수 값. 기본값은 `20`이다.
+ * @param dampingFactor `[0.0, 1.0]` 범위의 유한 감쇠 계수. 기본값은 `0.85`이며
+ * backend 지원 여부는 다를 수 있다.
+ * @param tolerance 수렴 판정에 사용하는 양의 유한 허용 오차. 기본값은 `1e-4`이며
+ * backend 지원 여부는 다를 수 있다.
+ * @param topK 결과 수의 양수 상한. `Int.MAX_VALUE`이면 모든 결과를 반환한다.
+ * @throws IllegalArgumentException 반복·결과 상한이 양수가 아니거나, 감쇠 계수가
+ * 유한하지 않거나 `[0.0, 1.0]` 범위를 벗어나거나, 허용 오차가 양의 유한값이 아니면 발생한다.
  *
  * Result order is guaranteed to be descending by score.
  *
@@ -61,12 +68,10 @@ data class PageRankOptions(
     val topK: Int = Int.MAX_VALUE,
 ): GraphAlgorithmOptions() {
     init {
-        require(iterations > 0) { "iterations must be > 0, was $iterations" }
-        require(topK > 0) { "topK must be > 0, was $topK" }
-        require(dampingFactor in 0.0..1.0) { "dampingFactor must be in [0,1], was $dampingFactor" }
-        require(tolerance >= 0.0 && tolerance.isFinite()) {
-            "tolerance must be finite and >= 0.0, was $tolerance"
-        }
+        iterations.requirePositiveNumber("iterations")
+        topK.requirePositiveNumber("topK")
+        dampingFactor.requireFinite("dampingFactor").requireInRange(0.0, 1.0, "dampingFactor")
+        tolerance.requireFinite("tolerance").requirePositiveNumber("tolerance")
     }
     companion object {
         private const val serialVersionUID: Long = 1L
@@ -78,12 +83,12 @@ data class PageRankOptions(
         validateDeserializedAlgorithmOption(iterations > 0, "iterations must be > 0, was $iterations")
         validateDeserializedAlgorithmOption(topK > 0, "topK must be > 0, was $topK")
         validateDeserializedAlgorithmOption(
-            dampingFactor in 0.0..1.0,
-            "dampingFactor must be in [0,1], was $dampingFactor",
+            dampingFactor.isFinite() && dampingFactor in 0.0..1.0,
+            "dampingFactor must be finite and in [0,1], was $dampingFactor",
         )
         validateDeserializedAlgorithmOption(
-            tolerance >= 0.0 && tolerance.isFinite(),
-            "tolerance must be finite and >= 0.0, was $tolerance",
+            tolerance > 0.0 && tolerance.isFinite(),
+            "tolerance must be finite and > 0.0, was $tolerance",
         )
     }
 }
@@ -122,7 +127,8 @@ data class DegreeOptions(
  * @param vertexLabel Targets all vertices when `null`.
  * @param edgeLabel Includes all edges when `null`.
  * @param weakly `true` for weakly connected components, ignoring direction; `false` for strongly connected components.
- * @param minSize Minimum component size to return. Defaults to `1`; must be positive.
+ * @param minSize 반환할 컴포넌트 크기의 양수 하한. 기본값은 `1`이다.
+ * @throws IllegalArgumentException [minSize]가 양수가 아니면 발생한다.
  *
  * ### Usage
  * ```kotlin
@@ -137,7 +143,7 @@ data class ComponentOptions(
     val minSize: Int = 1,
 ): GraphAlgorithmOptions() {
     init {
-        require(minSize > 0) { "minSize must be > 0, was $minSize" }
+        minSize.requirePositiveNumber("minSize")
     }
 
     companion object {
