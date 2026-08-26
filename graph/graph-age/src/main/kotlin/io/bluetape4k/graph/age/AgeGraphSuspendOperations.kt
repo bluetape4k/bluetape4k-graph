@@ -33,18 +33,27 @@ import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.support.requireNotBlank
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
+import org.jetbrains.exposed.v1.core.IColumnType
+import org.jetbrains.exposed.v1.core.Transaction
+import org.jetbrains.exposed.v1.core.statements.Statement
+import org.jetbrains.exposed.v1.core.statements.StatementType
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.JdbcTransaction
+import org.jetbrains.exposed.v1.jdbc.statements.BlockingExecutable
+import org.jetbrains.exposed.v1.jdbc.statements.api.JdbcPreparedStatementApi
 import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction as exposedSuspendTransaction
+import java.sql.ResultSet
 import kotlin.coroutines.CoroutineContext
+
+private const val DEFAULT_STREAM_FETCH_SIZE = 100
 
 /**
  * Apache AGE + PostgreSQL 기반 [GraphSuspendOperations] 구현체 (코루틴 방식).
@@ -55,7 +64,10 @@ import kotlin.coroutines.CoroutineContext
  *
  * **Dispatcher 경계:**
  * - 단일값 반환 `suspend fun`은 내부적으로 [Dispatchers.IO]에서 실행
- * - 컬렉션 반환 `fun ... : Flow<T>`는 `flow { }` 빌더 안에서 [Dispatchers.IO]로 감싸 실행
+ * - 직접 조회 `Flow<T>`는 [Dispatchers.IO]의 JDBC cursor를 행 단위로 읽고 channel
+ *   backpressure를 적용한다.
+ * - `suspendTransaction { ... }` 안의 Flow는 commit 전에 materialize한다. 트랜잭션
+ *   소유권이 끝난 뒤 cursor를 노출하지 않는 별도 계약이다.
  *
  * ```kotlin
  * // HikariCP DataSource 생성 (connectionInitSql로 AGE 로드)
@@ -103,10 +115,66 @@ class AgeGraphSuspendOperations(
     }
 
     private suspend fun <T> newSuspendedTransaction(
-        context: CoroutineContext? = null,
+        context: CoroutineContext = Dispatchers.IO,
+        attempts: Int? = null,
         statement: suspend JdbcTransaction.() -> T,
-    ): T = withContext(context ?: currentCoroutineContext()) {
-        exposedSuspendTransaction(db = database, statement = statement)
+    ): T = withContext(context) {
+        exposedSuspendTransaction(db = database) {
+            attempts?.let { maxAttempts = it }
+            statement()
+        }
+    }
+
+    /**
+     * Exposed의 문자열 [exec]는 fetch size를 조정할 수 없으므로
+     * [BlockingExecutable] 경계에서 PostgreSQL cursor fetch size를 설정한다.
+     * 이 경계를 통해 pgjdbc 기본 fetch-all 동작을 피하고 transaction이 소유한
+     * [ResultSet]과 prepared statement lifecycle을 그대로 유지한다.
+     */
+    private fun JdbcTransaction.execStreaming(
+        statementText: String,
+        transform: (ResultSet) -> Unit,
+    ) {
+        val executable = object : BlockingExecutable<Unit, Statement<Unit>> {
+            override val statement = object : Statement<Unit>(StatementType.SELECT, emptyList()) {
+                override fun prepareSQL(transaction: Transaction, prepared: Boolean): String = statementText
+
+                override fun arguments(): Iterable<Iterable<Pair<IColumnType<*>, Any?>>> =
+                    listOf(emptyList())
+            }
+
+            override fun JdbcPreparedStatementApi.executeInternal(transaction: JdbcTransaction): Unit? {
+                fetchSize = transaction.db.defaultFetchSize?.takeIf { it > 0 } ?: DEFAULT_STREAM_FETCH_SIZE
+                executeQuery().result.use(transform)
+                return Unit
+            }
+        }
+
+        exec(executable)
+    }
+
+    /**
+     * Exposed의 callback 기반 JDBC 조회를 lazy, bounded [Flow]로 변환한다.
+     *
+     * Exposed callback은 suspend 함수가 아니므로 [trySendBlocking]을 사용한다.
+     * 이 bridge는 [Dispatchers.IO]에서만 실행하며, collector가 느리면 channel이
+     * backpressure를 적용하고 collector가 취소되면 callback과 transaction이
+     * 종료되어 [ResultSet]이 닫힌다. JDBC prepared statement에는 positive fetch
+     * size를 적용하고 streaming transaction retry를 비활성화해 driver fetch-all과
+     * retry 시 prefix 중복 방출을 막는다.
+     */
+    private fun <T> streamQuery(
+        statement: String,
+        mapper: (ResultSet) -> T,
+    ): Flow<T> = channelFlow {
+        val output = this@channelFlow
+        newSuspendedTransaction(Dispatchers.IO, attempts = 1) {
+            execStreaming(statement) { resultSet ->
+                while (resultSet.next()) {
+                    output.trySendBlocking(mapper(resultSet)).getOrThrow()
+                }
+            }
+        }
     }
 
     override fun schemaManager(): GraphSuspendSchemaManager =
@@ -118,6 +186,11 @@ class AgeGraphSuspendOperations(
             materializeTransactionResult(result)
         }
 
+    /**
+     * Transaction-scoped Flow는 commit 이후에도 안전하게 읽을 수 있도록 commit
+     * 전에 materialize한다. 직접 facade 조회 Flow의 cursor streaming 계약과
+     * 혼동하지 않도록 이 경계를 유지한다.
+     */
     private suspend fun <T> materializeTransactionResult(result: T): T {
         if (result !is Flow<*>) return result
 
@@ -248,18 +321,8 @@ class AgeGraphSuspendOperations(
 
     override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphVertex> {
         label.requireNotBlank("label")
-        return channelFlow {
-            val vertices = newSuspendedTransaction {
-                val list = mutableListOf<GraphVertex>()
-                val stmt = AgeSql.matchVertices(graphName, label, filter)
-                exec(stmt) { rs ->
-                    while (rs.next()) {
-                        list.add(AgeTypeParser.parseVertex(rs.getString("v")))
-                    }
-                }
-                list
-            }
-            vertices.forEach { send(it) }
+        return streamQuery(AgeSql.matchVertices(graphName, label, filter)) { resultSet ->
+            AgeTypeParser.parseVertex(resultSet.getString("v"))
         }
     }
 
@@ -343,54 +406,24 @@ class AgeGraphSuspendOperations(
 
     override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphEdge> {
         label.requireNotBlank("label")
-        return channelFlow {
-            val edges = newSuspendedTransaction {
-                val list = mutableListOf<GraphEdge>()
-                val stmt = AgeSql.matchEdgesByLabel(graphName, label, filter)
-                exec(stmt) { rs ->
-                    while (rs.next()) {
-                        list.add(AgeTypeParser.parseEdge(rs.getString("e")))
-                    }
-                }
-                list
-            }
-            edges.forEach { send(it) }
+        return streamQuery(AgeSql.matchEdgesByLabel(graphName, label, filter)) { resultSet ->
+            AgeTypeParser.parseEdge(resultSet.getString("e"))
         }
     }
 
     override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): Flow<GraphEdge> {
         val longId = startId.value.toLongOrNull()
             ?: throw GraphQueryException("AGE requires numeric ID, got: ${startId.value}")
-        return channelFlow {
-            val edges = newSuspendedTransaction {
-                val list = mutableListOf<GraphEdge>()
-                val stmt = AgeSql.matchEdgesByStartId(graphName, longId, edgeLabel)
-                exec(stmt) { rs ->
-                    while (rs.next()) {
-                        list.add(AgeTypeParser.parseEdge(rs.getString("e")))
-                    }
-                }
-                list
-            }
-            edges.forEach { send(it) }
+        return streamQuery(AgeSql.matchEdgesByStartId(graphName, longId, edgeLabel)) { resultSet ->
+            AgeTypeParser.parseEdge(resultSet.getString("e"))
         }
     }
 
     override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): Flow<GraphEdge> {
         val longId = endId.value.toLongOrNull()
             ?: throw GraphQueryException("AGE requires numeric ID, got: ${endId.value}")
-        return channelFlow {
-            val edges = newSuspendedTransaction {
-                val list = mutableListOf<GraphEdge>()
-                val stmt = AgeSql.matchEdgesByEndId(graphName, longId, edgeLabel)
-                exec(stmt) { rs ->
-                    while (rs.next()) {
-                        list.add(AgeTypeParser.parseEdge(rs.getString("e")))
-                    }
-                }
-                list
-            }
-            edges.forEach { send(it) }
+        return streamQuery(AgeSql.matchEdgesByEndId(graphName, longId, edgeLabel)) { resultSet ->
+            AgeTypeParser.parseEdge(resultSet.getString("e"))
         }
     }
 
@@ -416,20 +449,10 @@ class AgeGraphSuspendOperations(
         val longId = startId.value.toLongOrNull()
             ?: throw GraphQueryException("AGE requires numeric ID, got: ${startId.value}")
 
-        return channelFlow {
-            val vertices = newSuspendedTransaction {
-                val list = mutableListOf<GraphVertex>()
-                val stmt = AgeSql.neighbors(
-                    graphName, longId, options.edgeLabel, options.direction.name, options.maxDepth
-                )
-                exec(stmt) { rs ->
-                    while (rs.next()) {
-                        list.add(AgeTypeParser.parseVertex(rs.getString("neighbor")))
-                    }
-                }
-                list
-            }
-            vertices.forEach { send(it) }
+        return streamQuery(
+            AgeSql.neighbors(graphName, longId, options.edgeLabel, options.direction.name, options.maxDepth)
+        ) { resultSet ->
+            AgeTypeParser.parseVertex(resultSet.getString("neighbor"))
         }
     }
 
@@ -480,18 +503,8 @@ class AgeGraphSuspendOperations(
         val to = toId.value.toLongOrNull()
             ?: throw GraphQueryException("AGE requires numeric ID, got: ${toId.value}")
 
-        return channelFlow {
-            val paths = newSuspendedTransaction {
-                val list = mutableListOf<GraphPath>()
-                val stmt = AgeSql.allPaths(graphName, from, to, options.edgeLabel, options.maxDepth)
-                exec(stmt) { rs ->
-                    while (rs.next()) {
-                        list.add(AgeTypeParser.parsePath(rs.getString("p")))
-                    }
-                }
-                list
-            }
-            paths.forEach { send(it) }
+        return streamQuery(AgeSql.allPaths(graphName, from, to, options.edgeLabel, options.maxDepth)) { resultSet ->
+            AgeTypeParser.parsePath(resultSet.getString("p"))
         }
     }
 
