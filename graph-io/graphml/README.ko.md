@@ -225,6 +225,11 @@ GraphML bounded-chunk TCK는 요청 chunk 크기, 선택한 label별 단일 조�
 chunk를 내보내기 전에 전체 label 조회가 실행될 수 있는 호환성 fallback의 source
 boundedness를 주장하지는 않습니다.
 
+공용 spool은 레코드별 인코딩을 128 MiB까지 제한하면서 전체 레코드의 두 번째
+`toByteArray()` 복사본을 만들지 않습니다. constructor는 fail-clean 경계를 가지므로
+뒤의 임시 파일이나 output stream을 열지 못하면 그 전에 획득한 모든 resource를
+닫고 삭제합니다.
+
 ## 오류 처리
 
 임포트 연산은 다음을 포함하는 상세한 `GraphImportReport`를 반환합니다:
