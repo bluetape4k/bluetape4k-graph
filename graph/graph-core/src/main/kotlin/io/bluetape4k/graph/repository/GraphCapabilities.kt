@@ -106,6 +106,19 @@ data class GraphCapabilities(
     /** 주어진 capability의 실행 제약을 반환한다. */
     fun constraints(capability: GraphCapability): Set<String> = constraints[capability].orEmpty()
 
+    /**
+     * Decorator가 실제로 노출하는 capability를 기존 매핑에 추가한다.
+     * 버전과 제약은 기존 값을 보존하고 새 capability에는 core 기본값을 채운다.
+     */
+    internal fun withAdditional(vararg additional: GraphCapability): GraphCapabilities {
+        val merged = supported + additional
+        return GraphCapabilities(
+            supported = merged,
+            versions = merged.associateWith { versions[it] ?: CORE_API_VERSION },
+            constraints = merged.associateWith { constraints[it] ?: defaultConstraints(it) },
+        )
+    }
+
     companion object {
         private const val serialVersionUID: Long = 1L
         private const val CORE_API_VERSION: String = "core-0.7"
@@ -154,6 +167,7 @@ data class GraphCapabilities(
                 if (operation is GraphNativeAlgorithmOperations) {
                     add(GraphCapability.NATIVE_ALGORITHM)
                 }
+                addVirtualThreadOptionalCapabilities(operation)
             }
 
             return GraphCapabilities(
@@ -161,6 +175,20 @@ data class GraphCapabilities(
                 versions = supported.associateWith { CORE_API_VERSION },
                 constraints = supported.associateWith(::defaultConstraints),
             )
+        }
+
+        /** Adds optional capabilities for focused adapters, not the integrated facade. */
+        private fun MutableSet<GraphCapability>.addVirtualThreadOptionalCapabilities(operation: Any) {
+            if (operation is GraphVirtualThreadOperations) return
+            when (operation) {
+                is GraphVirtualThreadMergeOperations -> add(GraphCapability.MERGE)
+                is GraphVirtualThreadSchemaManagementOperations -> add(GraphCapability.SCHEMA)
+                is GraphVirtualThreadTransactionalOperations -> add(GraphCapability.TRANSACTION)
+                is GraphVirtualThreadChunkedOperations -> {
+                    add(GraphCapability.CHUNKED_READ)
+                    add(GraphCapability.CHUNKED_EXPORT)
+                }
+            }
         }
 
         private fun defaultConstraints(capability: GraphCapability): Set<String> = when (capability) {
@@ -198,8 +226,14 @@ interface GraphSuspendCapabilitiesOperations {
 
 /** Virtual Thread decorator가 capability 매핑을 보존하기 위한 SPI다. */
 interface GraphVirtualThreadCapabilitiesOperations {
-    /** 실제 동기 delegate의 capability 매핑을 반환한다. */
+    /** 현재 Virtual Thread facade에서 호출 가능한 capability를 반환한다. */
     fun capabilities(): GraphCapabilities
+
+    /** facade가 감싼 동기 delegate의 전체 capability를 반환한다. */
+    fun delegateCapabilities(): GraphCapabilities = capabilities()
+
+    /** 현재 facade의 실제 Virtual Thread API surface capability를 반환한다. */
+    fun surfaceCapabilities(): GraphCapabilities = capabilities()
 }
 
 /** backend-native algorithm provider가 자신이 지원하는 capability를 표시하는 SPI다. */

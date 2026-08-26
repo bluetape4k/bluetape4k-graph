@@ -554,16 +554,33 @@ val cycles = ops.detectCycles(CycleOptions(edgeLabel = "KNOWS", maxDepth = 5))
 
 ## Virtual Threads
 
-`GraphAlgorithmRepository` can be wrapped with a Virtual Thread adapter to expose `CompletableFuture`-based async APIs for Java interop.
+`GraphOperations` can be wrapped with a Virtual Thread adapter to expose
+`CompletableFuture`-based async APIs for Java interop. The adapter uses the
+Bluetape4k `virtualFutureOf` helpers and does not create a second executor.
 
-`GraphVirtualThreadOperations.capabilities()` is a public capability-discovery
-projection of the externally owned synchronous delegate. It preserves the
-delegate's support flags, versions, and constraints, but it does not imply that
-the facade has `*Async` methods for optional `MERGE`, `SCHEMA`, `TRANSACTION`,
-or `CHUNKED_READ` operations. Use the corresponding sync/suspend contract or
-the graph-io Virtual Thread adapter until those async boundaries are defined.
-Calling `vtOps.close()` closes only the facade; the caller remains responsible
-for closing the delegate.
+`GraphVirtualThreadOperations.capabilities()` reports the async surface that the
+facade can call. `delegateCapabilities()` keeps the complete capability mapping
+of the borrowed synchronous delegate. A delegate implementing
+`GraphMergeOperations`, `GraphSchemaManagementOperations`, or
+`GraphTransactionalOperations` exposes the corresponding optional async
+surface; unsupported delegates omit that capability and complete the optional
+future exceptionally with `UnsupportedOperationException`.
+
+The optional surface is:
+
+- `mergeVertexAsync` / `mergeEdgeAsync`
+- `createIndexAsync`, `createUniqueConstraintAsync`, `dropIndexAsync`,
+  `listIndexesAsync`, and `listConstraintsAsync`
+- `transactionAsync`, whose whole block runs on one virtual thread
+- `findVerticesByLabelChunkedAsync` / `findEdgesByLabelChunkedAsync`
+
+Each operation body runs on one Bluetape4k virtual-thread task. Completion-stage
+callbacks use the executor selected by the caller. A synchronous delegate
+exception becomes the original cause of exceptional completion. Standard
+`CompletableFuture.cancel(true)` and `orTimeout` remain observable, but neither
+guarantees that a blocking driver stops; backend-specific interruption remains
+the caller's responsibility. The adapter borrows the delegate: `close()` closes
+only the facade, while a chunk source is closed after it has been drained.
 
 ```kotlin
 import io.bluetape4k.graph.repository.GraphCapability
@@ -575,10 +592,24 @@ val ops: GraphOperations = TinkerGraphOperations()
 val vtOps = ops.asVirtualThread()
 
 check(vtOps.capabilities().supports(GraphCapability.GRAPH_ALGORITHM))
+check(vtOps.capabilities().supports(GraphCapability.MERGE))
+check(vtOps.delegateCapabilities() == ops.capabilities())
 
 // Returns CompletableFuture<List<PageRankScore>>
 val future = vtOps.pageRankAsync(PageRankOptions(topK = 5))
 val scores = future.join()
+
+// Optional merge/schema/transaction/chunked surfaces
+val alice = vtOps.mergeVertexAsync(
+    "Person",
+    matchProperties = mapOf("email" to "alice@example.com"),
+    setProperties = mapOf("name" to "Alice"),
+).join()
+vtOps.createIndexAsync("Person", "email").join()
+val transactionResult = vtOps.transactionAsync {
+    createVertex("Person", mapOf("name" to "Bob"))
+}.join()
+val chunks = vtOps.findVerticesByLabelChunkedAsync("Person", chunkSize = 100).join()
 
 // Composed pipeline
 val pipeline = vtOps.pageRankAsync()
@@ -586,3 +617,10 @@ val pipeline = vtOps.pageRankAsync()
     .thenAccept { top -> top.forEach { println(it) } }
 pipeline.join()
 ```
+
+For callers migrating from a facade whose `capabilities()` represented only
+the delegate, use `delegateCapabilities()` for that old lookup and use
+`capabilities()` to gate calls on the new async surface. Chunked async results
+preserve chunk boundaries but are fully materialized before the future
+completes; use the synchronous close-aware cursor when streaming or early close
+is required.

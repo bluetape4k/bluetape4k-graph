@@ -1222,15 +1222,33 @@ val cycles = ops.detectCycles(CycleOptions(edgeLabel = "KNOWS", maxDepth = 5))
 
 ## Virtual Threads
 
-`GraphAlgorithmRepository`를 Virtual Thread 어댑터로 감싸면 Java 상호운용을 위한 `CompletableFuture` 기반 비동기 API를 사용할 수 있다.
+`GraphOperations`를 Virtual Thread 어댑터로 감싸면 Java 상호운용을 위한
+`CompletableFuture` 기반 비동기 API를 사용할 수 있다. 어댑터는 Bluetape4k의
+`virtualFutureOf` helper를 사용하며 별도 executor를 만들지 않는다.
 
-`GraphVirtualThreadOperations.capabilities()`는 외부에서 소유한 동기 delegate의
-capability discovery를 보존하는 공개 projection이다. delegate의 지원 flag, 버전,
-제약을 그대로 보여주지만 facade가 선택 기능 `MERGE`, `SCHEMA`, `TRANSACTION`,
-`CHUNKED_READ`용 `*Async` method까지 제공한다는 뜻은 아니다. 해당 비동기 경계가
-확정될 때까지 대응하는 sync/suspend contract 또는 graph-io Virtual Thread
-adapter를 사용해야 한다. `vtOps.close()`는 facade만 닫으며 delegate의 close 책임은
-호출자에게 남는다.
+`GraphVirtualThreadOperations.capabilities()`는 facade에서 실제 호출할 수 있는
+비동기 surface를 보고한다. 빌린 동기 delegate의 전체 capability 매핑은
+`delegateCapabilities()`로 확인한다. delegate가 `GraphMergeOperations`,
+`GraphSchemaManagementOperations`, `GraphTransactionalOperations` 중 하나를
+구현한 경우 대응하는 optional async surface가 제공된다. 지원하지 않는 delegate는
+해당 capability를 광고하지 않으며 optional future를
+`UnsupportedOperationException`으로 완료한다.
+
+지원하는 optional surface는 다음과 같다.
+
+- `mergeVertexAsync` / `mergeEdgeAsync`
+- `createIndexAsync`, `createUniqueConstraintAsync`, `dropIndexAsync`,
+  `listIndexesAsync`, `listConstraintsAsync`
+- 전체 block을 하나의 virtual thread에서 실행하는 `transactionAsync`
+- `findVerticesByLabelChunkedAsync` / `findEdgesByLabelChunkedAsync`
+
+각 operation block은 Bluetape4k virtual-thread task 하나에서 실행된다.
+Completion-stage callback의 executor는 호출자가 선택하며, 동기 delegate 예외는
+원인 예외를 보존한 exceptional completion으로 전달된다. 표준
+`CompletableFuture.cancel(true)`와 `orTimeout`의 상태는 관찰할 수 있지만 blocking
+driver의 중단까지 보장하지 않으므로 backend별 interruption 계약은 호출자가
+확인해야 한다. 어댑터는 delegate를 빌려 쓴다. 따라서 `close()`는 facade만 닫고
+delegate는 닫지 않으며, chunk source는 끝까지 소비한 뒤 닫는다.
 
 ```kotlin
 import io.bluetape4k.graph.repository.GraphCapability
@@ -1242,10 +1260,24 @@ val ops: GraphOperations = TinkerGraphOperations()
 val vtOps = ops.asVirtualThread()
 
 check(vtOps.capabilities().supports(GraphCapability.GRAPH_ALGORITHM))
+check(vtOps.capabilities().supports(GraphCapability.MERGE))
+check(vtOps.delegateCapabilities() == ops.capabilities())
 
 // CompletableFuture<List<PageRankScore>> 반환
 val future = vtOps.pageRankAsync(PageRankOptions(topK = 5))
 val scores = future.join()
+
+// optional merge/schema/transaction/chunked surface
+val alice = vtOps.mergeVertexAsync(
+    "Person",
+    matchProperties = mapOf("email" to "alice@example.com"),
+    setProperties = mapOf("name" to "Alice"),
+).join()
+vtOps.createIndexAsync("Person", "email").join()
+val transactionResult = vtOps.transactionAsync {
+    createVertex("Person", mapOf("name" to "Bob"))
+}.join()
+val chunks = vtOps.findVerticesByLabelChunkedAsync("Person", chunkSize = 100).join()
 
 // 파이프라인 조합
 val pipeline = vtOps.pageRankAsync()
@@ -1253,3 +1285,9 @@ val pipeline = vtOps.pageRankAsync()
     .thenAccept { top -> top.forEach { println(it) } }
 pipeline.join()
 ```
+
+기존 facade에서 `capabilities()`를 delegate 조회 용도로 사용하던 호출자는
+`delegateCapabilities()`로 같은 정보를 읽고, 새 비동기 API 호출 전에는
+`capabilities()`로 surface 지원 여부를 확인한다. 비동기 chunk 결과는 chunk 경계를
+유지하지만 future 완료 전에 전체 결과를 materialize한다. streaming 또는 조기
+close가 필요하면 synchronous close-aware cursor API를 사용한다.

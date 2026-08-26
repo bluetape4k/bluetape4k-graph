@@ -8,7 +8,7 @@
 #547(PR #568)은 #546 exact head 위에서 catalog ownership과 retry-only CI evidence를 정렬했고 hosted exact-head checks가 모두 통과했으며 review·최종 merge를 대기 중이다.
 #536은 #547 exact head 위에 bounded capability contract를 적층한 PR #569의 hosted checks가 모두 통과했으며 review·최종 merge를 대기 중이다. #548은 #536 exact head 위의 PR #570에서 close-aware TinkerGraph lifecycle과 cursor README를 정렬했고 hosted checks·독립 review를 대기 중이다. #549는 #548 exact head 위의 PR #571에서 enum compatibility policy를 정비했다. #535는 #549 PR #571 exact head 위의 PR #572에서 AGE suspend Flow 선행 계약을 적층했고 hosted 검증·리뷰를 대기 중이다. 후속 `1.0.0` issue는 dependency 순서를 따라 같은 train에
 순차적으로 쌓고 최종 일괄 merge 승인 전까지 병합하지 않는다. 현재 train은
-#560까지 이어진다. #550은 #535 PR #572 exact head 위의 PR #573에서 fault-injection
+#561까지 이어진다. #550은 #535 PR #572 exact head 위의 PR #573에서 fault-injection
 검증을 적층했고 hosted 검증·리뷰를 대기 중이다.
 #551은 #550 PR #573 exact head `186ea8af18192d8fe1e8024bc78cc80b7f235bc1` 위에
 suspend transaction 중첩 `Flow` 결과 계약을 적층한 PR #574의 live head
@@ -72,6 +72,15 @@ PR #585 exact head `29133f1dce97eca728b28c8d069c7f5e00589b5b`의 Examples
 `graph-benchmark`는 `WeightedShortestPathBench.kt:85`의 `Required value was null`
 실패로 부분 통과 상태다. 같은 테스트가 선행 #559 head에서도 재현되어 별도
 benchmark backlog로 추적하며, PR review·최종 train merge를 대기한다.
+#561은 #560 PR #585 exact head `33d0f0d688e0522286dbc09a57370079d543bc12` 위에서
+Virtual Thread optional merge/schema/transaction/chunked async surface와
+`capabilities()`/`delegateCapabilities()` 분리를 적층했다. Bluetape4k future helper,
+supported/unsupported capability routing, transaction virtual-thread affinity,
+exception·cancellation·timeout과 chunk source ownership을 graph-core TCK로
+검증했으며 EN/KO README·public KDoc·7-Tier review·lesson을 추가한다. local
+graph-core 378개 test, compile, Detekt, 금지 assertion scan, diff-check를 통과했고
+PR #586을 #585 exact head 위에 생성한다. hosted exact-head receipt와 전체 train
+merge는 마지막 승인 단계까지 보류한다.
 최신 GitHub release: `0.6.0` (2026-08-05); 현재 개발 기준선은 `1.0.0`이다.
 
 ## 최근 완료 및 현재 `1.0.0` stacked train
@@ -102,9 +111,10 @@ benchmark backlog로 추적하며, PR review·최종 train merge를 대기한다
 | [#557](https://github.com/bluetape4k/bluetape4k-graph/issues/557) | PR #582 hosted 검증 진행 | #556 PR #581 exact head `534aed0111d062450d5d6a3958d3cb0294e34bba` 위에서 record payload capped buffer/direct write, oversized partial-write guard, second temp file/output constructor fault cleanup을 추가했다. TDD RED→GREEN, targeted `GraphIoRecordSpoolTest` 8/8, graph-io-core full/Detekt/forbidden assertion scan/diff-check를 완료했고 PR #582 exact-head hosted receipt를 진행한다. |
 | [#558](https://github.com/bluetape4k/bluetape4k-graph/issues/558) | 구현·로컬 검증 진행 | #557 PR #582 exact head `5d5cd3f64bea1aedd7df66f64ca33a739970353c` 위에서 CSV/GraphML suspend replay record checkpoint, caller-owned/owned sink lifecycle, cancellation primary와 close suppressed TCK를 추가했다. suspend CSV 10개·GraphML 9개 관련 테스트와 TDD RED→GREEN을 완료했으며 module 전체 검증·7-Tier receipt·PR 생성을 진행한다. |
 | [#559](https://github.com/bluetape4k/bluetape4k-graph/issues/559) | PR #584 hosted 통과, review·merge 대기 | #558 PR #583 exact head `283dbd2fe9c8337699f510a8844d16094bbd06dc` 위에서 weighted Dijkstra/A*의 inclusive `maxDepth`, depth-aware predecessor, backend sync/suspend/virtual-thread conformance TCK와 EN/KO matrix를 추가했다. graph-core RED→GREEN, Neo4j 13개·Memgraph 10개·AGE 10개·FalkorDB 10개 weighted TCK 및 TinkerGraph fixture를 통과했고 PR #584 receipt head `a934b017ab667cf763a7f2a72c6c906172e1169d`의 CI `32914749733`·Examples `32914749720`가 모두 성공했다. 문서 전용 receipt commit 후 현재 head는 PR read-back으로 확인하며, 전체 train merge는 마지막 승인 단계까지 보류한다. |
-| [#560](https://github.com/bluetape4k/bluetape4k-graph/issues/560) | PR #585 hosted 부분 통과, review·merge 대기 | #559 PR #584 current head `ab9753ca3748cf723675b887f3d9b9c4eebe8d7a` 위에서 graph-core Serializable option의 constructor/deserialization invariant와 nested `UseDefault` TCK를 추가했다. targeted 47개·full 373개·Detekt·ABI·금지 assertion scan·diff-check를 통과했다. PR #585 exact head `29133f1dce97eca728b28c8d069c7f5e00589b5b`의 Examples `32918378892`와 핵심 graph/backend CI가 성공했으며, workflow_dispatch Image Family Gate와 `graph-benchmark` weighted path 실패는 선행 #559에서도 재현된 별도 제한으로 기록했다. 전체 train merge는 마지막 승인 단계에서만 수행한다. |
+| [#560](https://github.com/bluetape4k/bluetape4k-graph/issues/560) | PR #585 hosted 부분 통과, review·merge 대기 | #559 PR #584 current head `ab9753ca3748cf723675b887f3d9b9c4eebe8d7a` 위에서 graph-core Serializable option의 constructor/deserialization invariant와 nested `UseDefault` TCK를 추가했다. targeted 47개·full 373개·Detekt·ABI·금지 assertion scan·diff-check를 통과했다. PR #585 exact head `33d0f0d688e0522286dbc09a57370079d543bc12`의 Examples `32919966702`는 성공했으며 핵심 graph/backend CI도 성공했다. workflow_dispatch Image Family Gate와 `graph-benchmark` weighted path 실패는 선행 #559에서도 재현된 별도 제한으로 기록했다. 전체 train merge는 마지막 승인 단계에서만 수행한다. |
+| [#561](https://github.com/bluetape4k/bluetape4k-graph/issues/561) | PR #586 생성·hosted 검증 대기 | #560 PR #585 exact head `33d0f0d688e0522286dbc09a57370079d543bc12` 위에서 Virtual Thread optional merge/schema/transaction/chunked async surface와 capability routing TCK를 추가했다. supported/unsupported delegate, focused adapter, transaction affinity, exception·cancellation·timeout을 포함한 graph-core 378개 test, compile, Detekt, 금지 assertion scan, diff-check를 통과했다. PR #586의 hosted exact-head CI·Examples와 독립 review를 진행하며, 전체 train merge는 마지막 승인 단계에서만 수행한다. |
 
-이전 완료 순서는 `#527 → #525 → #526`이다. 현재 train은 `#543 → #544 → #545 → #546 → #547 → #536 → #548 → #549 → #535 → #550 → #551 → #552 → #538 → #553 → #554 → #555 → #539 → #556 → #557 → #558 → #559 → #560`
+이전 완료 순서는 `#527 → #525 → #526`이다. 현재 train은 `#543 → #544 → #545 → #546 → #547 → #536 → #548 → #549 → #535 → #550 → #551 → #552 → #538 → #553 → #554 → #555 → #539 → #556 → #557 → #558 → #559 → #560 → #561`
 순서이며, 각 PR은 이전 exact head를 base로 삼고 최종 일괄 merge 승인 전에는
 독립 병합하지 않는다.
 

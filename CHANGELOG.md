@@ -32,6 +32,13 @@
   invariant를 우회하지 못하도록 `readObject` 재검증과 `InvalidObjectException` 계약을
   추가했다. public property, `serialVersionUID = 1L`, 정상 round-trip과 malformed
   payload 거부를 Bluetape assertion TCK로 고정했다 ([#560](https://github.com/bluetape4k/bluetape4k-graph/issues/560)).
+- **Virtual Thread optional async surface**: graph-core Virtual Thread facade에
+  merge/schema/transaction/chunked read·export `CompletableFuture` 표면을 추가하고,
+  `capabilities()`와 `delegateCapabilities()`를 실제 async surface와 borrowed
+  delegate mapping으로 분리했다. Bluetape4k virtual future helper, transaction
+  thread affinity, unsupported exceptional future, delegate·chunk source ownership,
+  cancellation/timeout과 materialized chunk 경계를 TCK와 EN/KO 문서로 고정했다
+  ([#561](https://github.com/bluetape4k/bluetape4k-graph/issues/561)).
 - **Weighted path `maxDepth` conformance**: Dijkstra/A* JVM fallback이
   `(vertexId, depth)` 상태와 predecessor를 사용해 inclusive hop bound를
   적용하도록 고쳤다. `maxDepth=0` source-only 경계와 cheaper-deep/shallow
