@@ -89,14 +89,19 @@ enum class MissingEndpointPolicy { FAIL, SKIP_EDGE }
 `exportChunkSize`는 스트리밍 가능한 exporter가 `findVerticesByLabelChunked`,
 `findEdgesByLabelChunked` 같은 chunk-aware repository API에서 한 번에 요청하는
 레코드 수를 제어합니다. 이 메서드를 override하지 않은 백엔드는 기존 list/Flow
-fallback을 사용하고, cursor-aware 백엔드는 전체 label materialization을 피할 수
-있습니다. CSV처럼 전역 헤더가 필요한 포맷은 여전히 포맷별 pre-scan을 수행할 수
+fallback을 사용하며 첫 chunk를 내보내기 전에 전체 label 조회를 호출하므로 source
+boundedness를 보장하지 않습니다. cursor-aware 백엔드는 전체 label materialization을
+피할 수 있습니다. CSV처럼 전역 헤더가 필요한 포맷은 여전히 포맷별 pre-scan을 수행할 수
 있습니다. CSV와 GraphML exporter는 이 논리적 재읽기를 `GraphIoRecordSpool`로
 구현합니다. 백엔드 chunk를 임시 디스크 레코드에 한 번 저장한 뒤 헤더 탐색과
 출력 쓰기에서 replay하므로 source 기준 데이터가 흔들리지 않습니다. spool은 writer와
 동일한 문자열 속성 계약으로 값을 정규화하며 정상 완료·실패·취소 경로에서 임시
 파일을 정리합니다. active replay stream도 cleanup에서 닫으며, exporter는 원래
 source·sink·취소 예외를 유지하고 cleanup 실패를 suppressed exception으로 연결합니다.
+
+CSV/GraphML bounded-chunk TCK는 요청 chunk 크기, label별 단일 조회, backend
+mutation 이후 stage 시점 레코드 보존을 검증합니다. 이 검증은 exporter snapshot
+계약을 고정할 뿐 fallback의 bounded 실행을 주장하지 않습니다.
 
 빈 라벨 집합은 `GraphLabelDiscovery`로 전체 라벨을 조회하라는 의미입니다.
 해당 capability가 없는 백엔드는 명시적 라벨을 받아야 하며, exporter는 0건을

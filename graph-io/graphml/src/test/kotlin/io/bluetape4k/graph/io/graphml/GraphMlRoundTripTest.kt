@@ -13,6 +13,7 @@ import io.bluetape4k.graph.io.report.GraphIoProgressListener
 import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.graph.model.GraphEdge
+import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
@@ -20,6 +21,7 @@ import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.assertions.shouldNotContain
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.IOException
@@ -126,6 +128,44 @@ class GraphMlRoundTripTest {
         report.verticesWritten shouldBeEqualTo 5L
         report.edgesWritten shouldBeEqualTo 2L
         requestedChunkSizes shouldBeEqualTo listOf(2, 2)
+    }
+
+    @Test
+    fun `sync export freezes the first chunk before backend mutation`(@TempDir dir: Path) {
+        val out = dir.resolve("mutation.graphml")
+        val vertexProperties = linkedMapOf<String, Any?>("name" to "before")
+        val edgeProperties = linkedMapOf<String, Any?>("state" to "before")
+        val backend = MutatingChunkOnlyGraphOperations(
+            vertex = GraphVertex(GraphElementId.of("v-1"), "Person", vertexProperties),
+            edge = GraphEdge(
+                GraphElementId.of("e-1"),
+                "KNOWS",
+                GraphElementId.of("v-1"),
+                GraphElementId.of("v-2"),
+                edgeProperties,
+            ),
+            vertexProperties = vertexProperties,
+            edgeProperties = edgeProperties,
+        )
+
+        val report = GraphMlBulkExporter().exportGraph(
+            GraphExportSink.PathSink(out),
+            backend,
+            GraphExportOptions(
+                vertexLabels = setOf("Person"),
+                edgeLabels = setOf("KNOWS"),
+                exportChunkSize = 1,
+            ),
+        )
+
+        report.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        report.verticesWritten shouldBeEqualTo 1L
+        report.edgesWritten shouldBeEqualTo 1L
+        backend.requests shouldBeEqualTo listOf("vertices:1", "edges:1")
+        java.nio.file.Files.readString(out).also {
+            it shouldContain "before"
+            it shouldNotContain "after"
+        }
     }
 
     @Test
@@ -263,6 +303,44 @@ class GraphMlRoundTripTest {
         ): Sequence<List<GraphEdge>> {
             requestedChunkSizes += chunkSize
             return delegate.findEdgesByLabelChunked(label, filter, chunkSize)
+        }
+    }
+
+    private class MutatingChunkOnlyGraphOperations(
+        private val vertex: GraphVertex,
+        private val edge: GraphEdge,
+        private val vertexProperties: MutableMap<String, Any?>,
+        private val edgeProperties: MutableMap<String, Any?>,
+    ) : GraphOperations by TinkerGraphOperations() {
+
+        val requests = mutableListOf<String>()
+
+        override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> =
+            error("full vertex list lookup must not be used by GraphML export")
+
+        override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): List<GraphEdge> =
+            error("full edge list lookup must not be used by GraphML export")
+
+        override fun findVerticesByLabelChunked(
+            label: String,
+            filter: Map<String, Any?>,
+            chunkSize: Int,
+        ): Sequence<List<GraphVertex>> = sequence {
+            requests += "vertices:$chunkSize"
+            yield(listOf(vertex))
+            vertexProperties["name"] = "after"
+            yield(emptyList())
+        }
+
+        override fun findEdgesByLabelChunked(
+            label: String,
+            filter: Map<String, Any?>,
+            chunkSize: Int,
+        ): Sequence<List<GraphEdge>> = sequence {
+            requests += "edges:$chunkSize"
+            yield(listOf(edge))
+            edgeProperties["state"] = "after"
+            yield(emptyList())
         }
     }
 

@@ -307,6 +307,11 @@ replay합니다. 이 spool은 exporter 자체의 전체 list materialization과 
 실패는 원래 source·sink·취소 예외의 suppressed exception으로 연결합니다. 정상
 완료·실패·코루틴 취소 시 임시 spool 파일을 삭제합니다.
 
+CSV bounded-chunk TCK는 요청 chunk 크기, 선택한 label별 단일 조회, 첫 chunk 이후
+backend mutation이 발생해도 stage 시점 값이 유지되는지를 검증합니다. 첫 chunk를
+내보내기 전에 전체 label 조회가 실행될 수 있는 호환성 fallback의 source
+boundedness를 주장하지는 않습니다.
+
 ## 스트리밍 reader 계약
 
 `CsvGraphRecordFlowReader`는 정점과 간선 레코드를 cold·순차 `Flow`로 방출하며 입력 순서를 유지합니다.

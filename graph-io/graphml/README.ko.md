@@ -220,6 +220,11 @@ StAX 스트리밍 접근 방식은 XML을 증분적으로 처리하므로 DOM �
 
 GraphML export는 정점과 간선을 조회할 때 `GraphExportOptions.exportChunkSize`를 사용합니다. 백엔드가 chunk-aware repository API를 override하거나 cursor 기반 구현을 제공하면, 첫 번째 node 또는 edge보다 먼저 전역 `<key>` 정의를 쓸 수 있도록 각 bounded chunk를 공용 `GraphIoRecordSpool`에 한 번 저장하고 동일한 불변 기준 데이터를 key 탐색과 XML 쓰기에서 replay합니다. exporter 자체의 전체 record list materialization과 live backend 두 번째 조회는 없지만, 호환성 list/Flow fallback은 exporter에 전달되기 전에 라벨 전체를 materialize할 수 있습니다. active replay stream은 spool 정리 때 닫고, 정리 실패는 원래 source·sink·취소 예외의 suppressed exception으로 연결합니다. 임시 spool 파일은 정상 완료·실패·suspend 취소 시 정리됩니다.
 
+GraphML bounded-chunk TCK는 요청 chunk 크기, 선택한 label별 단일 조회, 첫 chunk
+이후 backend mutation이 발생해도 stage 시점 값이 유지되는지를 검증합니다. 첫
+chunk를 내보내기 전에 전체 label 조회가 실행될 수 있는 호환성 fallback의 source
+boundedness를 주장하지는 않습니다.
+
 ## 오류 처리
 
 임포트 연산은 다음을 포함하는 상세한 `GraphImportReport`를 반환합니다:

@@ -55,6 +55,17 @@ Amazon Neptune is tracked separately as future backend work. Because meaningful 
 
 ![Backend capability matrix](docs/images/readme-diagrams/root-readme-backend-capability-matrix-01.png)
 
+The graph-io bounded-source contract is separate from the presence of a chunk-shaped API:
+
+| Backend | Chunk API implementation | Source boundedness | CSV/GraphML export contract |
+|---------|--------------------------|--------------------|------------------------------|
+| TinkerGraph | Cursor-backed override | Advertises `BOUNDED_CHUNKED_READ` and `BOUNDED_CHUNKED_EXPORT` | Bounded reference path; mutation and call-count TCK |
+| AGE, Neo4j, Memgraph, FalkorDB | Compatible `CHUNKED_*` API with list/Flow fallback | Not advertised; fallback may materialize a whole label before the first chunk | Exporter snapshot is stable, but backend source boundedness is not claimed |
+
+The graph-io CSV/GraphML TCK verifies requested chunk sizes, one lookup per label,
+and stage-time data preservation after a backend mutation. It does not turn a
+compatibility fallback into a bounded backend implementation.
+
 ## Module Structure
 
 ```

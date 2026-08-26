@@ -84,6 +84,20 @@ class GraphBatchOperationsTest {
     }
 
     @Test
+    fun `default vertex chunk fallback materializes the label before yielding`() {
+        val repo = ListingVertexRepository(
+            (1..3).map { index ->
+                GraphVertex(GraphElementId.of("v$index"), "Person")
+            },
+        )
+
+        val chunks = repo.findVerticesByLabelChunked("Person", chunkSize = 2)
+
+        repo.lookupCount shouldBeEqualTo 1
+        chunks.toList().map { it.size } shouldBeEqualTo listOf(2, 1)
+    }
+
+    @Test
     fun `default findEdgesByLabelChunked splits list fallback`() {
         val repo = ListingEdgeRepository(
             (1..3).map { index ->
@@ -165,6 +179,20 @@ class GraphBatchOperationsTest {
 
         chunks.map { it.size } shouldBeEqualTo listOf(2, 2, 1)
         chunks.flatten().map { it.id.value } shouldBeEqualTo listOf("v1", "v2", "v3", "v4", "v5")
+    }
+
+    @Test
+    fun `suspend default vertex chunk fallback materializes the label before emitting`() = runSuspendIO {
+        val repo = ListingSuspendVertexRepository(
+            (1..3).map { index ->
+                GraphVertex(GraphElementId.of("v$index"), "Person")
+            },
+        )
+
+        val chunks = repo.findVerticesByLabelChunked("Person", chunkSize = 2)
+
+        repo.lookupCount shouldBeEqualTo 1
+        chunks.toList().map { it.size } shouldBeEqualTo listOf(2, 1)
     }
 
     @Test
@@ -274,10 +302,15 @@ class GraphBatchOperationsTest {
     private class ListingVertexRepository(
         private val vertices: List<GraphVertex>,
     ) : GraphVertexRepository {
+        var lookupCount: Int = 0
+
         override fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex = unsupported()
         override fun findVertexById(label: String, id: GraphElementId): GraphVertex? = unsupported()
         override fun findVertexById(id: GraphElementId): GraphVertex? = unsupported()
-        override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> = vertices
+        override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> {
+            lookupCount++
+            return vertices
+        }
         override fun updateVertex(label: String, id: GraphElementId, properties: Map<String, Any?>): GraphVertex? =
             unsupported()
         override fun deleteVertex(label: String, id: GraphElementId): Boolean = unsupported()
@@ -341,11 +374,15 @@ class GraphBatchOperationsTest {
     private class ListingSuspendVertexRepository(
         private val vertices: List<GraphVertex>,
     ) : GraphSuspendVertexRepository {
+        var lookupCount: Int = 0
+
         override suspend fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex = unsupported()
         override suspend fun findVertexById(label: String, id: GraphElementId): GraphVertex? = unsupported()
         override suspend fun findVertexById(id: GraphElementId): GraphVertex? = unsupported()
-        override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphVertex> =
-            vertices.asFlow()
+        override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphVertex> {
+            lookupCount++
+            return vertices.asFlow()
+        }
         override suspend fun updateVertex(
             label: String,
             id: GraphElementId,

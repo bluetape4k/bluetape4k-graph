@@ -220,6 +220,12 @@ The StAX streaming approach processes XML incrementally, making it suitable for 
 
 GraphML export uses `GraphExportOptions.exportChunkSize` for both vertex and edge repository reads. When the backend overrides the chunk-aware repository API (or provides a cursor-backed implementation), the exporter stages each bounded chunk once in the shared `GraphIoRecordSpool`, then replays the immutable disk snapshot for key discovery and XML writing. It avoids exporter-side whole-list materialization and a live second backend pass; the compatibility list/Flow fallback may still materialize a label before the exporter receives it. Active replay streams are closed during spool cleanup, and cleanup failures are suppressed behind the original source, sink, or cancellation failure. Temporary spool files are cleaned up on success, failure, and suspend cancellation.
 
+The GraphML bounded-chunk TCK asserts the requested chunk size, one lookup per
+selected label, and preservation of stage-time values when the backend mutates
+after the first chunk. It does not claim bounded source execution for the
+compatibility fallback, whose full label lookup can occur before the first
+chunk is yielded.
+
 ## Error Handling
 
 Import operations return a detailed `GraphImportReport` containing:

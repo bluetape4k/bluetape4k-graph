@@ -8,7 +8,7 @@
 #547(PR #568)은 #546 exact head 위에서 catalog ownership과 retry-only CI evidence를 정렬했고 hosted exact-head checks가 모두 통과했으며 review·최종 merge를 대기 중이다.
 #536은 #547 exact head 위에 bounded capability contract를 적층한 PR #569의 hosted checks가 모두 통과했으며 review·최종 merge를 대기 중이다. #548은 #536 exact head 위의 PR #570에서 close-aware TinkerGraph lifecycle과 cursor README를 정렬했고 hosted checks·독립 review를 대기 중이다. #549는 #548 exact head 위의 PR #571에서 enum compatibility policy를 정비했다. #535는 #549 PR #571 exact head 위의 PR #572에서 AGE suspend Flow 선행 계약을 적층했고 hosted 검증·리뷰를 대기 중이다. 후속 `1.0.0` issue는 dependency 순서를 따라 같은 train에
 순차적으로 쌓고 최종 일괄 merge 승인 전까지 병합하지 않는다. 현재 train은
-#550까지 이어지며, #550은 #535 PR #572 exact head 위의 PR #573에서 fault-injection
+#556까지 이어진다. #550은 #535 PR #572 exact head 위의 PR #573에서 fault-injection
 검증을 적층했고 hosted 검증·리뷰를 대기 중이다.
 #551은 #550 PR #573 exact head `186ea8af18192d8fe1e8024bc78cc80b7f235bc1` 위에
 suspend transaction 중첩 `Flow` 결과 계약을 적층한 PR #574의 live head
@@ -38,6 +38,12 @@ hosted CI·Examples를 각각 통과했다(`32899855369`/`32899855380`,
 `32900966027`/`32900966048`). PR #579 exact base/head와 metadata를 read-back했으며,
 현재 branch는
 `fix/issue-555-state-store-job-lock-stacked`이다.
+#539는 #555 PR #579 exact head `66d8a398cf32acab791ae5bf9b2f99c59944e316` 위에서
+CSV/GraphML bounded spool과 lifecycle 예외 보존을 적층한 PR #580의 최종 head
+`31c959c984f0cbee3666283392491b646c8e0e99`에서 CI `32905050922`와 Examples
+`32905050954`를 성공시켰다. #556은 이 exact head 위에서 backend bounded chunk와
+기준 데이터 변경 TCK를 구현했고 local full test·Detekt·정적 검증을 완료했으며,
+PR 생성과 hosted receipt를 진행한다.
 최신 GitHub release: `0.6.0` (2026-08-05); 현재 개발 기준선은 `1.0.0`이다.
 
 ## 최근 완료 및 현재 `1.0.0` stacked train
@@ -63,8 +69,10 @@ hosted CI·Examples를 각각 통과했다(`32899855369`/`32899855380`,
 | [#553](https://github.com/bluetape4k/bluetape4k-graph/issues/553) | PR #577 hosted 통과, review·merge 대기 | #538 PR #576 exact head 위에서 workflow transition이 기존 `sources`·`elapsed`·`checkpoint` payload를 `copy(state = ...)`로 보존하도록 수정했다. TDD RED 후 targeted 4/4, graph-io-core 143/143, Detekt, 금지 assertion scan과 diff-check를 통과했고 PR #577을 생성했다. lifecycle 문서 sync를 포함한 최신 head에서 CI·Examples hosted run이 모두 성공했다. implementation commit은 `88cc9676dfbbd48c7b700c51854f7380ee6fe07a`이고, 최종 train merge는 마지막 승인 단계에서만 수행한다. #554는 이 slice의 exact head 위에 적층한다. |
 | [#554](https://github.com/bluetape4k/bluetape4k-graph/issues/554) | PR #578 hosted 통과, review·merge 대기 | #553 PR #577 exact head 위에서 `java-test-fixtures` 기반 reusable state-store TCK를 추가했다. 최종 head `26b41485d3107a99a555678de85fb455b1000504`에서 CI `32897864345`와 Examples `32897864554`가 모두 성공했으며, graph-io-core 151/151·Detekt·금지 assertion scan·diff-check와 README EN/KO·KDoc·7-Tier receipt를 확인했다. 실제 durable backend와 merge는 이 slice 범위 밖이며 전체 train 마지막 승인 단계까지 보류한다. |
 | [#555](https://github.com/bluetape4k/bluetape4k-graph/issues/555) | PR #579 hosted 통과, review·merge 대기 | #554 PR #578 exact head `26b41485d3107a99a555678de85fb455b1000504` 위에서 in-memory state store의 global monitor를 job별 reentrant lock registry로 좁혔다. implementation commit `030f7879`와 docs receipt `5260dc89`, `419e1e4c`에서 서로 다른 job 병렬성, 같은 job 직렬성, interrupt waiter 해제 회귀를 추가했고 targeted 3/3·graph-io-core 154/154·Detekt·금지 assertion scan·diff-check를 통과했다. 최종 head `419e1e4ccbe7063514cccabce4fb505efaf538ae`의 CI `32900966027`·Examples `32900966048`도 성공했으며 exact base/head·metadata read-back을 완료했다. 전체 train merge는 마지막 승인 단계까지 보류한다. |
+| [#539](https://github.com/bluetape4k/bluetape4k-graph/issues/539) | PR #580 hosted 통과, review·merge 대기 | #555 PR #579 exact head `66d8a398cf32acab791ae5bf9b2f99c59944e316` 위에서 CSV/GraphML exporter의 bounded spool, primary exception 보존, lifecycle 회귀를 적층했다. 최종 head `31c959c984f0cbee3666283392491b646c8e0e99`의 CI `32905050922`·Examples `32905050954`가 성공했고 exact base/head·metadata read-back을 완료했다. 전체 train merge는 마지막 승인 단계까지 보류한다. |
+| [#556](https://github.com/bluetape4k/bluetape4k-graph/issues/556) | PR 생성·hosted 검증 진행 | #580 exact head `31c959c984f0cbee3666283392491b646c8e0e99` 위에서 CSV/GraphML sync·suspend mutation TCK, graph-core fallback eager-materialization 회귀, backend capability matrix와 EN/KO 문서를 추가했다. local graph-core 357, graph-io-core 158, CSV 55, GraphML 48 전체 테스트와 Detekt·금지 assertion scan·diff-check를 통과했으며 PR exact-head receipt를 생성한다. |
 
-이전 완료 순서는 `#527 → #525 → #526`이다. 현재 train은 `#543 → #544 → #545 → #546 → #547 → #536 → #548 → #549 → #535 → #550 → #551 → #552 → #538 → #553 → #554 → #555`
+이전 완료 순서는 `#527 → #525 → #526`이다. 현재 train은 `#543 → #544 → #545 → #546 → #547 → #536 → #548 → #549 → #535 → #550 → #551 → #552 → #538 → #553 → #554 → #555 → #539 → #556`
 순서이며, 각 PR은 이전 exact head를 base로 삼고 최종 일괄 merge 승인 전에는
 독립 병합하지 않는다.
 
