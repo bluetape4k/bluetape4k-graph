@@ -25,6 +25,7 @@ import io.bluetape4k.graph.repository.GraphSuspendMergeOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphSuspendTransactionScope
 import io.bluetape4k.graph.repository.GraphSuspendTransactionalOperations
+import io.bluetape4k.graph.repository.materializeSuspendTransactionResult
 import io.bluetape4k.graph.schema.GraphSuspendSchemaManagementOperations
 import io.bluetape4k.graph.schema.GraphSuspendSchemaManager
 import io.bluetape4k.graph.schema.asSuspendSchemaManager
@@ -35,10 +36,8 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.v1.core.IColumnType
 import org.jetbrains.exposed.v1.core.Transaction
@@ -183,21 +182,8 @@ class AgeGraphSuspendOperations(
     override suspend fun <T> suspendTransaction(block: suspend GraphSuspendTransactionScope.() -> T): T =
         newSuspendedTransaction(Dispatchers.IO) {
             val result = AgeGraphSuspendTransactionScope(graphName).block()
-            materializeTransactionResult(result)
+            materializeSuspendTransactionResult(result)
         }
-
-    /**
-     * Transaction-scoped Flow는 commit 이후에도 안전하게 읽을 수 있도록 commit
-     * 전에 materialize한다. 직접 facade 조회 Flow의 cursor streaming 계약과
-     * 혼동하지 않도록 이 경계를 유지한다.
-     */
-    private suspend fun <T> materializeTransactionResult(result: T): T {
-        if (result !is Flow<*>) return result
-
-        val values = result.toList()
-        @Suppress("UNCHECKED_CAST")
-        return values.asFlow() as T
-    }
 
     override suspend fun mergeVertex(
         label: String,

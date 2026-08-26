@@ -16,6 +16,7 @@ import io.bluetape4k.logging.debug
 import io.bluetape4k.testcontainers.graphdb.Neo4jServer
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withTimeout
 import io.bluetape4k.assertions.shouldBeEqualTo
@@ -248,6 +249,21 @@ class Neo4jGraphSuspendOperationsTest {
         }
 
         people.toList().map { it.properties["name"] } shouldContain "Alice"
+    }
+
+    @Test
+    @Order(330)
+    fun `suspendTransaction은 nested Flow 반환을 명시적으로 거부한다`() = runSuspendIO {
+        val ex = assertFailsWith<IllegalArgumentException> {
+            ops.suspendTransaction<Pair<String, Flow<*>>> {
+                createVertex("Person", mapOf("name" to "Alice"))
+                "Person" to findVerticesByLabel("Person")
+            }
+        }
+
+        ex.message shouldContain "nested Flow"
+        ex.message shouldContain "result.second"
+        ops.countVertices("Person") shouldBeEqualTo 0L
     }
 
     @Test

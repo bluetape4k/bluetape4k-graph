@@ -57,6 +57,13 @@
   `SQLException`, emitted prefix 1건과 streaming attempt 1회를 관찰하는 회귀를
   추가했다. production API는 변경하지 않고 #552의 driver stall 취소 범위는
   별도 유지한다 ([#550](https://github.com/bluetape4k/bluetape4k-graph/issues/550)).
+- **suspendTransaction 중첩 Flow 결과 계약**: graph-core 공통 helper가
+  transaction commit 전에 최상위 `Flow`를 materialize하고, `Pair`, `Triple`,
+  `Map`, `Collection`, 배열 내부의 중첩 `Flow`는 `IllegalArgumentException`으로
+  거부하도록 AGE·Neo4j·Memgraph·TinkerPop에 정렬했다. 중첩 값을 반환해야 하는
+  호출자는 transaction block 안에서 `toList()` 등으로 명시적으로 materialize해야
+  하며, 임의 사용자 wrapper의 내부 구조는 검사하지 않는다
+  ([#551](https://github.com/bluetape4k/bluetape4k-graph/issues/551)).
 - **Graph image/document contract alignment**: 공용 graph launcher와 현재
   중앙 catalog에 맞춰 Neo4j `5.26.29`, Memgraph `3.12.0`, Apache AGE
   `release_PG18_1.7.0`, FalkorDB `v4.20.2` 및 Java 25/Kotlin 2.4.10 기준을

@@ -26,6 +26,7 @@ import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphSuspendTransactionScope
 import io.bluetape4k.graph.repository.GraphSuspendTransactionalOperations
 import io.bluetape4k.graph.repository.asSuspendTransactionScope
+import io.bluetape4k.graph.repository.materializeSuspendTransactionResult
 import io.bluetape4k.graph.schema.GraphSuspendSchemaManagementOperations
 import io.bluetape4k.graph.schema.GraphSuspendSchemaManager
 import io.bluetape4k.graph.schema.asSuspendSchemaManager
@@ -35,9 +36,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withContext
 
 /**
@@ -147,7 +146,7 @@ class TinkerGraphSuspendOperations(
             try {
                 withContext(Dispatchers.IO) {
                     val result = delegate.transactionScope().asSuspendTransactionScope().block()
-                    materializeTransactionResult(result)
+                    materializeSuspendTransactionResult(result)
                 }
             } catch (e: Throwable) {
                 try {
@@ -168,14 +167,6 @@ class TinkerGraphSuspendOperations(
         while (!delegate.tryAcquireTransactionGate()) {
             delay(TRANSACTION_GATE_RETRY_DELAY_MILLIS)
         }
-    }
-
-    private suspend fun <T> materializeTransactionResult(result: T): T {
-        if (result !is Flow<*>) return result
-
-        val values = result.toList()
-        @Suppress("UNCHECKED_CAST")
-        return values.asFlow() as T
     }
 
     override suspend fun mergeVertex(

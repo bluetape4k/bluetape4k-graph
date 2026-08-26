@@ -19,6 +19,7 @@ import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.KLogging
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
@@ -28,6 +29,7 @@ import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeGreaterThan
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotBeNull
 import org.jetbrains.exposed.v1.core.DatabaseConfig
@@ -280,6 +282,21 @@ class AgeGraphSuspendOperationsTest {
 
         val names = people.toList().map { it.properties["name"] }
         names.any { it == "Alice" }.shouldBeTrue()
+    }
+
+    @Test
+    @Order(330)
+    fun `suspendTransaction은 nested Flow 반환을 명시적으로 거부한다`() = runSuspendIO {
+        val ex = assertFailsWith<IllegalArgumentException> {
+            ops.suspendTransaction<Pair<String, Flow<*>>> {
+                createVertex("Person", mapOf("name" to "Alice"))
+                "Person" to findVerticesByLabel("Person")
+            }
+        }
+
+        ex.message shouldContain "nested Flow"
+        ex.message shouldContain "result.second"
+        ops.countVertices("Person") shouldBeEqualTo 0L
     }
 
     @Test
