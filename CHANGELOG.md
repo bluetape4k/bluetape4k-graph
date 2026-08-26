@@ -27,6 +27,14 @@
 
 ### 변경
 
+- **Virtual Thread split-package 검증 경계**: upstream 지원 PR
+  [#1523](https://github.com/bluetape4k/bluetape4k-projects/pull/1523)이
+  `bluetape4k-virtualthread-api` 타입을 `.api` package로 이동하고 core owner를
+  유지하도록 정렬했다. graph-core에는 실제 resolved JAR 쌍의 package ownership와
+  `java --validate-modules`를 검증하는 fail-closed verifier 및 migration 문서를
+  추가했으며, 새 upstream snapshot 배포 전까지 downstream 소비 검증은 PENDING으로
+  유지한다 ([#563](https://github.com/bluetape4k/bluetape4k-graph/issues/563)).
+
 - **Virtual Thread helper owner 정리**: graph-core의 graph-local
   `CompletableFutureNullableSupportKt` 중복을 제거하고 공식
   `bluetape4k-core`의 `virtualFutureOfNullable`을 사용하도록 정렬했다. Kotlin
