@@ -84,6 +84,19 @@ class GraphAlgorithmOptionsTest {
     }
 
     @Test
+    fun `PageRankOptions는 음수 또는 비유한 tolerance를 거부한다`() {
+        val negative = assertFailsWith<IllegalArgumentException> {
+            PageRankOptions(tolerance = -1e-4)
+        }
+        negative.message shouldContain "tolerance"
+
+        val nonFinite = assertFailsWith<IllegalArgumentException> {
+            PageRankOptions(tolerance = Double.NaN)
+        }
+        nonFinite.message shouldContain "tolerance"
+    }
+
+    @Test
     fun `DegreeOptions 기본값은 모든 간선과 양방향이다`() {
         val opts = DegreeOptions()
 
@@ -132,6 +145,15 @@ class GraphAlgorithmOptionsTest {
         opts.edgeLabel shouldBeEqualTo "TRANSFERRED_TO"
         opts.weakly shouldBeEqualTo false
         opts.minSize shouldBeEqualTo 3
+    }
+
+    @Test
+    fun `ComponentOptions는 0 이하 minSize를 거부한다`() {
+        val ex = assertFailsWith<IllegalArgumentException> {
+            ComponentOptions(minSize = 0)
+        }
+
+        ex.message shouldContain "minSize"
     }
 
     @Test

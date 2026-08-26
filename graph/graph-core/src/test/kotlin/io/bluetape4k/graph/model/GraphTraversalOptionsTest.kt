@@ -71,6 +71,15 @@ class GraphTraversalOptionsTest {
     }
 
     @Test
+    fun `NeighborOptions는 음수 maxDepth를 거부한다`() {
+        val ex = assertFailsWith<IllegalArgumentException> {
+            NeighborOptions(maxDepth = -1)
+        }
+
+        ex.message shouldContain "maxDepth"
+    }
+
+    @Test
     fun `NeighborOptions - 모든 필드를 명시해서 생성할 수 있다`() {
         val opts = NeighborOptions(
             edgeLabel = "WORKS_AT",

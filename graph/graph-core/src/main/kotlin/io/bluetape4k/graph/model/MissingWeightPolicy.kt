@@ -1,5 +1,7 @@
 package io.bluetape4k.graph.model
 
+import java.io.InvalidObjectException
+import java.io.ObjectInputStream
 import java.io.Serializable
 
 /**
@@ -60,6 +62,13 @@ sealed class MissingWeightPolicy : Serializable {
         init {
             require(value > 0.0 && value.isFinite()) {
                 "default weight must be finite and > 0.0, was $value"
+            }
+        }
+
+        private fun readObject(input: ObjectInputStream) {
+            input.defaultReadObject()
+            if (value <= 0.0 || !value.isFinite()) {
+                throw InvalidObjectException("default weight must be finite and > 0.0, was $value")
             }
         }
     }

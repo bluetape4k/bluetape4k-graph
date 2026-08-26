@@ -1,6 +1,18 @@
 package io.bluetape4k.graph.model
 
+import java.io.InvalidObjectException
+import java.io.ObjectInputStream
 import java.io.Serializable
+
+private fun validateDeserializedOption(condition: Boolean, message: String) {
+    if (!condition) {
+        throw InvalidObjectException(message)
+    }
+}
+
+private fun validateDeserializedOptionNotNull(value: Any?, name: String) {
+    validateDeserializedOption(value != null, "$name must not be null")
+}
 
 /**
  * Base sealed class for graph traversal options.
@@ -13,6 +25,9 @@ import java.io.Serializable
  * // Find shortest or all paths up to five hops.
  * val pathOpts = PathOptions(edgeLabel = "KNOWS", maxDepth = 5)
  * ```
+ *
+ * Java deserialization rechecks each concrete option's invariants and throws
+ * [InvalidObjectException] for a malformed payload.
  */
 sealed class GraphTraversalOptions: Serializable {
     /**
@@ -35,16 +50,26 @@ sealed class GraphTraversalOptions: Serializable {
  *
  * @param edgeLabel Edge label to traverse. `null` traverses all labels.
  * @param direction Traversal direction: `OUTGOING`, `INCOMING`, or `BOTH`.
- * @param maxDepth Maximum traversal depth. Defaults to `1`.
+ * @param maxDepth Maximum traversal depth. Defaults to `1`; must be non-negative.
  */
 data class NeighborOptions(
     val edgeLabel: String? = null,
     val direction: Direction = Direction.OUTGOING,
     override val maxDepth: Int = 1,
 ): GraphTraversalOptions() {
+    init {
+        require(maxDepth >= 0) { "maxDepth must be >= 0, was $maxDepth" }
+    }
+
     companion object {
         private const val serialVersionUID: Long = 1L
         val Default = NeighborOptions()
+    }
+
+    private fun readObject(input: ObjectInputStream) {
+        input.defaultReadObject()
+        validateDeserializedOption(maxDepth >= 0, "maxDepth must be >= 0, was $maxDepth")
+        validateDeserializedOptionNotNull(direction, "direction")
     }
 }
 
@@ -69,12 +94,12 @@ data class NeighborOptions(
  * ```
  *
  * @param edgeLabel Edge label to traverse. `null` traverses all labels.
- * @param maxDepth Maximum traversal depth. Defaults to `10`.
+ * @param maxDepth Maximum traversal depth. Defaults to `10`; must be non-negative.
  * @param weightProperty Edge weight property key. `null` uses unweighted traversal.
  * @param missingWeightPolicy Policy for edges missing [weightProperty]. Defaults to [MissingWeightPolicy.Fail].
  * @param direction Traversal direction. Applies only when [weightProperty] is set. Defaults to [Direction.OUTGOING].
  * @param maxVisited Maximum visited vertices during weighted traversal.
- * Protects against unbounded graphs. Defaults to `100_000`.
+ * Protects against unbounded graphs. Defaults to `100_000`; must be positive.
  */
 data class PathOptions(
     val edgeLabel: String? = null,
@@ -92,6 +117,14 @@ data class PathOptions(
         private const val serialVersionUID: Long = 1L
         val Default = PathOptions()
     }
+
+    private fun readObject(input: ObjectInputStream) {
+        input.defaultReadObject()
+        validateDeserializedOption(maxDepth >= 0, "maxDepth must be >= 0, was $maxDepth")
+        validateDeserializedOption(maxVisited > 0, "maxVisited must be > 0, was $maxVisited")
+        validateDeserializedOptionNotNull(direction, "direction")
+        validateDeserializedOptionNotNull(missingWeightPolicy, "missingWeightPolicy")
+    }
 }
 
 /**
@@ -102,6 +135,8 @@ data class PathOptions(
  * val opts = BfsDfsOptions(edgeLabel = "KNOWS", maxDepth = 3, maxVertices = 1_000)
  * val visits = ops.bfs(alice.id, opts)
  * ```
+ *
+ * `maxDepth` must be non-negative and `maxVertices` must be positive.
  */
 data class BfsDfsOptions(
     val edgeLabel: String? = null,
@@ -117,6 +152,13 @@ data class BfsDfsOptions(
         private const val serialVersionUID: Long = 1L
         val Default = BfsDfsOptions()
     }
+
+    private fun readObject(input: ObjectInputStream) {
+        input.defaultReadObject()
+        validateDeserializedOption(maxDepth >= 0, "maxDepth must be >= 0, was $maxDepth")
+        validateDeserializedOption(maxVertices > 0, "maxVertices must be > 0, was $maxVertices")
+        validateDeserializedOptionNotNull(direction, "direction")
+    }
 }
 
 /**
@@ -124,8 +166,8 @@ data class BfsDfsOptions(
  *
  * @param vertexLabel Vertex label to traverse. `null` traverses all labels.
  * @param edgeLabel Edge label to traverse. `null` traverses all labels.
- * @param maxDepth Maximum traversal depth. Defaults to `10`.
- * @param maxCycles Maximum number of cycles to return. Defaults to `100`.
+ * @param maxDepth Maximum traversal depth. Defaults to `10`; must be non-negative.
+ * @param maxCycles Maximum number of cycles to return. Defaults to `100`; must be positive.
  */
 data class CycleOptions(
     val vertexLabel: String? = null,
@@ -140,5 +182,11 @@ data class CycleOptions(
     companion object {
         private const val serialVersionUID: Long = 1L
         val Default = CycleOptions()
+    }
+
+    private fun readObject(input: ObjectInputStream) {
+        input.defaultReadObject()
+        validateDeserializedOption(maxDepth >= 0, "maxDepth must be >= 0, was $maxDepth")
+        validateDeserializedOption(maxCycles > 0, "maxCycles must be > 0, was $maxCycles")
     }
 }
