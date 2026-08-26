@@ -274,6 +274,38 @@ object FollowsLabel : EdgeLabel("FOLLOWS", PersonLabel, PersonLabel) {
 
 ![Weighted path fallback diagram](../../docs/images/readme-diagrams/graph-graph-core-architecture-14.png)
 
+### 가중치 경로의 `maxDepth` 계약
+
+`graph-core`의 `DijkstraRunner`와 `AStarRunner`는 모든 백엔드가 공유하는
+`ShortestPathFallback` 구현이다. 가중치 탐색은 `PathOptions.maxDepth`를 간선 수의
+포함 상한으로 적용한다. 탐색 상태에 현재 깊이를 포함하므로 더 싸지만 깊은 경로가
+유효한 얕은 경로를 가리지 않는다. `maxDepth = 0`이면 source와 target이 같은
+vertex-only 결과만 허용한다.
+
+| 필드 | 기본값 | 설명 |
+|------|--------|------|
+| `weightProperty` | `null` | 간선 weight 속성 이름. 가중치 탐색에서 필수다. |
+| `edgeLabel` | `null` | 간선 label 필터. `null`이면 모든 label을 사용한다. |
+| `maxDepth` | `10` | 가중치 경로의 최대 간선 수. |
+| `missingWeightPolicy` | `Fail` | weight가 없는 간선의 처리 정책. |
+| `direction` | `OUTGOING` | 탐색 방향. |
+| `maxVisited` | `100_000` | 가중치 탐색 상태의 최대 방문 수. |
+
+### 가중치 경로 백엔드 매트릭스
+
+다섯 백엔드는 sync와 suspend 가중치 경로에서 같은 JVM runner를 사용한다.
+virtual-thread API는 각 백엔드의 sync 구현에 위임하므로 세 표면의 depth 계약이
+같다. native 백엔드 경로 쿼리는 unweighted 구현이며 자체 `PathOptions.maxDepth`
+처리를 계속 따른다.
+
+| 백엔드 | Sync weighted path | Suspend weighted path | Virtual-thread weighted path | 증거 |
+|--------|--------------------|-----------------------|------------------------------|------|
+| Neo4j | `ShortestPathFallback` | `Dispatchers.IO`의 sync delegate | sync delegate | Testcontainers weighted-path TCK |
+| Memgraph | `ShortestPathFallback` | `Dispatchers.IO`의 sync delegate | sync delegate | Testcontainers weighted-path TCK |
+| Apache AGE | `ShortestPathFallback` | `Dispatchers.IO`의 sync delegate | sync delegate | Testcontainers weighted-path TCK |
+| TinkerGraph | `ShortestPathFallback` | `Dispatchers.IO`의 sync delegate | sync delegate | in-memory weighted-path TCK |
+| FalkorDB | `ShortestPathFallback` | `Dispatchers.IO`의 sync delegate | sync delegate | Testcontainers weighted-path TCK |
+
 ## 사용 예시
 
 ### 완전한 그래프 구축 예시

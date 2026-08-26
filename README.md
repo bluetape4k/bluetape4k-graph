@@ -66,6 +66,14 @@ The graph-io CSV/GraphML TCK verifies requested chunk sizes, one lookup per labe
 and stage-time data preservation after a backend mutation. It does not turn a
 compatibility fallback into a bounded backend implementation.
 
+### Weighted path depth contract
+
+Weighted `shortestPath` and `aStarPath` calls use the shared JVM
+`ShortestPathFallback` across every backend. Sync, suspend, and virtual-thread
+surfaces therefore enforce the same inclusive `PathOptions.maxDepth` edge bound;
+`maxDepth = 0` permits only a source-to-self vertex-only result. Backend
+weighted-path TCKs exercise the one-hop, two-hop, and zero-hop boundaries.
+
 ## Module Structure
 
 ```

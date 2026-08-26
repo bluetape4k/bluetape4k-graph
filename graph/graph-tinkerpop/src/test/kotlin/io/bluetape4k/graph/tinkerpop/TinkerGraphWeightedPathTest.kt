@@ -2,6 +2,7 @@ package io.bluetape4k.graph.tinkerpop
 
 import io.bluetape4k.graph.model.MissingWeightPolicy
 import io.bluetape4k.graph.model.PathOptions
+import io.bluetape4k.graph.conformance.WeightedPathDepthConformance
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeNear
 import io.bluetape4k.assertions.shouldBeNull
@@ -58,6 +59,11 @@ class TinkerGraphWeightedPathTest {
 
         path.totalWeight.shouldBeNear(3.0, 0.001)
         path.vertices.map { it.properties["name"] } shouldContainInOrder listOf("A", "B", "C")
+    }
+
+    @Test
+    fun `sync와 virtual thread weighted path가 maxDepth 경계를 공유한다`() {
+        WeightedPathDepthConformance.assertSyncAndVirtual(ops)
     }
 
     @Test

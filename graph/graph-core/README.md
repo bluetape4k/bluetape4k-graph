@@ -411,7 +411,7 @@ dependencies {
 
 ## Weighted Shortest Path
 
-`graph-core` ships pure-JVM `DijkstraRunner` and `AStarRunner` used by all backends via `ShortestPathFallback`. Both algorithms read `PathOptions.weightProperty` from edge properties and delegate fetching to backend-specific lambdas.
+`graph-core` ships pure-JVM `DijkstraRunner` and `AStarRunner` used by all backends via `ShortestPathFallback`. Both algorithms read `PathOptions.weightProperty` from edge properties and delegate fetching to backend-specific lambdas. Weighted search treats `PathOptions.maxDepth` as an inclusive edge-count bound, including depth in its search state so a cheaper deep route cannot hide a valid shallower route.
 
 ### PathOptions
 
@@ -419,9 +419,26 @@ dependencies {
 |-------|---------|-------------|
 | `weightProperty` | `null` | Edge property name for weight. Required for weighted traversal. |
 | `edgeLabel` | `null` | Filter edges by label (`null` = all labels). |
+| `maxDepth` | `10` | Inclusive maximum number of edges in a weighted path. `0` allows only a vertex-only source-to-self result. |
 | `missingWeightPolicy` | `Fail` | What to do when an edge lacks the weight property. |
 | `direction` | `OUTGOING` | Edge direction to follow. |
-| `maxVisited` | `Int.MAX_VALUE` | Abort if more vertices are visited. |
+| `maxVisited` | `100_000` | Abort if more weighted search states are visited. |
+
+### Weighted path backend matrix
+
+All five backends use the same JVM weighted runner for sync and suspend APIs. The
+virtual-thread API delegates to the corresponding sync implementation, so the
+depth contract is identical across all three surfaces. Native backend path
+queries remain the unweighted path implementation and are still bounded by
+their own `PathOptions.maxDepth` handling.
+
+| Backend | Sync weighted path | Suspend weighted path | Virtual-thread weighted path | Evidence |
+|---------|--------------------|-----------------------|------------------------------|----------|
+| Neo4j | `ShortestPathFallback` | sync delegate on `Dispatchers.IO` | sync delegate | Testcontainers weighted-path TCK |
+| Memgraph | `ShortestPathFallback` | sync delegate on `Dispatchers.IO` | sync delegate | Testcontainers weighted-path TCK |
+| Apache AGE | `ShortestPathFallback` | sync delegate on `Dispatchers.IO` | sync delegate | Testcontainers weighted-path TCK |
+| TinkerGraph | `ShortestPathFallback` | sync delegate on `Dispatchers.IO` | sync delegate | in-memory weighted-path TCK |
+| FalkorDB | `ShortestPathFallback` | sync delegate on `Dispatchers.IO` | sync delegate | Testcontainers weighted-path TCK |
 
 ### MissingWeightPolicy
 

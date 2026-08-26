@@ -7,6 +7,7 @@ import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.graph.model.MissingWeightPolicy
 import io.bluetape4k.graph.model.PathOptions
+import io.bluetape4k.graph.conformance.WeightedPathDepthConformance
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.testcontainers.graphdb.Neo4jServer
 import org.junit.jupiter.api.AfterAll
@@ -74,6 +75,11 @@ class Neo4jWeightedPathTest {
 
         path.totalWeight.shouldBeNear(3.0, 0.001)
         path.vertices.size shouldBeInRange 2..3
+    }
+
+    @Test
+    fun `sync와 virtual thread weighted path가 maxDepth 경계를 공유한다`() {
+        WeightedPathDepthConformance.assertSyncAndVirtual(ops)
     }
 
     @Test
