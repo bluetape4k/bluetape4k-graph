@@ -14,7 +14,7 @@ on:
       - '.omc/**'
       - '.claude/**'
   pull_request:
-    branches: [develop, main]
+    branches: [develop, main, 'fix/**']
     paths-ignore:
       - '**.md'
       - 'docs/**'
@@ -144,6 +144,8 @@ jobs:
               - 'gradle/**'
               - '.github/actions/testcontainers-image-cache/**'
               - '.github/scripts/docker-image-cache.sh'
+              - '.github/scripts/run-gradle-retry.sh'
+              - '.github/scripts/test_run_gradle_retry.py'
               - '.github/testcontainers-images.txt'
               - '.github/testcontainers-image-families.txt'
               - 'scripts/testcontainers_image_gate*'
@@ -151,7 +153,22 @@ jobs:
               - 'settings.gradle.kts'
               - '.github/workflows/ci.yml'
 
-  # ── 3. 전체 빌드 + Detekt 품질 게이트 ─────────────────────────────────────
+  # ── 3. retry helper 회귀 검증 ─────────────────────────────────────────────
+  retry-helper:
+    name: Test / Gradle Retry Helper
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Run retry helper tests
+        run: python3 .github/scripts/test_run_gradle_retry.py
+
+  # ── 4. 전체 빌드 + Detekt 품질 게이트 ─────────────────────────────────────
   catalog-governance:
     name: Central Catalog Governance
     runs-on: ubuntu-latest
@@ -253,6 +270,10 @@ jobs:
       needs.changes.outputs['graph-core'] == 'true' ||
       needs.changes.outputs.common == 'true' ||
       github.event_name == 'workflow_dispatch'
+    outputs:
+      retry_status: ${{ steps.test_core_retry.outputs.retry_status }}
+      retry_attempts: ${{ steps.test_core_retry.outputs.retry_attempts }}
+      retry_count: ${{ steps.test_core_retry.outputs.retry_count }}
     steps:
       - uses: actions/checkout@v7
 
@@ -267,8 +288,9 @@ jobs:
           cache-read-only: true
 
       - name: Test graph-core & graph-tinkerpop & graph-io
+        id: test_core_retry
         run: |
-          for attempt in 1 2 3 4 5; do
+          ./.github/scripts/run-gradle-retry.sh \
             ./gradlew \
               :bluetape4k-graph-core:test \
               :bluetape4k-graph-tinkerpop:test \
@@ -279,11 +301,11 @@ jobs:
               :bluetape4k-graph-io-graphml:test \
               :bluetape4k-graph-io-micrometer:test \
               :bluetape4k-graph-okio:test \
-              --no-daemon --continue && break
-            echo "Attempt $attempt failed"
-            [ $attempt -lt 5 ] && sleep 30 || exit 1
-          done
+              --no-daemon --continue
         env:
+          RETRY_NAME: ci-test-core
+          RETRY_MAX_ATTEMPTS: "5"
+          RETRY_DELAY_SECONDS: "30"
           GRADLE_OPTS: "-Dorg.gradle.daemon=false"
 
       - name: Generate Kover XML report
@@ -312,6 +334,15 @@ jobs:
         with:
           name: test-results-core
           path: '**/build/test-results/test/*.xml'
+          retention-days: 7
+
+      - name: Upload Gradle retry evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: retry-evidence-ci-test-core
+          path: ${{ runner.temp }}/bluetape4k-retry/ci-test-core/
+          if-no-files-found: error
           retention-days: 7
 
       - name: Upload coverage report
@@ -1001,6 +1032,7 @@ jobs:
     timeout-minutes: 10
     needs:
       - catalog-governance
+      - retry-helper
       - gitleaks
       - changes
       - build
@@ -1019,8 +1051,18 @@ jobs:
       - name: Check all jobs
         env:
           RESULTS: ${{ join(needs.*.result, ',') }}
+          CORE_RETRY_STATUS: ${{ needs.test-core.outputs.retry_status }}
+          CORE_RETRY_ATTEMPTS: ${{ needs.test-core.outputs.retry_attempts }}
+          CORE_RETRY_COUNT: ${{ needs.test-core.outputs.retry_count }}
         run: |
           echo "Job results: $RESULTS"
+          echo "Core retry status: ${CORE_RETRY_STATUS:-not-run} (attempts: ${CORE_RETRY_ATTEMPTS:-0}, retries: ${CORE_RETRY_COUNT:-0})"
+          {
+            echo "### CI retry status"
+            echo "- graph-core status: \`${CORE_RETRY_STATUS:-not-run}\`"
+            echo "- attempts: \`${CORE_RETRY_ATTEMPTS:-0}\`"
+            echo "- retry count: \`${CORE_RETRY_COUNT:-0}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
           if echo "$RESULTS" | grep -qE "failure|cancelled"; then
             echo "CI failed"
             exit 1

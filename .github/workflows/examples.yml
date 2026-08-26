@@ -16,10 +16,12 @@ on:
       - 'settings.gradle.kts'
       - '.github/actions/testcontainers-image-cache/**'
       - '.github/scripts/docker-image-cache.sh'
+      - '.github/scripts/run-gradle-retry.sh'
+      - '.github/scripts/test_run_gradle_retry.py'
       - '.github/testcontainers-images.txt'
       - '.github/workflows/examples.yml'
   pull_request:
-    branches: [develop, main]
+    branches: [develop, main, 'fix/**']
     paths:
       - 'examples/**'
       - 'graph/**'
@@ -31,6 +33,8 @@ on:
       - 'settings.gradle.kts'
       - '.github/actions/testcontainers-image-cache/**'
       - '.github/scripts/docker-image-cache.sh'
+      - '.github/scripts/run-gradle-retry.sh'
+      - '.github/scripts/test_run_gradle_retry.py'
       - '.github/testcontainers-images.txt'
       - '.github/workflows/examples.yml'
   workflow_dispatch:
@@ -61,6 +65,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     needs: validate-wrapper
+    outputs:
+      retry_status: ${{ steps.build_examples_retry.outputs.retry_status }}
+      retry_attempts: ${{ steps.build_examples_retry.outputs.retry_attempts }}
+      retry_count: ${{ steps.build_examples_retry.outputs.retry_count }}
     steps:
       - uses: actions/checkout@v7
 
@@ -82,8 +90,9 @@ jobs:
           restore-key: ${{ runner.os }}-testcontainers-images-v1-${{ github.job }}-
 
       - name: Build and test example modules
+        id: build_examples_retry
         run: |
-          for attempt in 1 2 3 4 5; do
+          ./.github/scripts/run-gradle-retry.sh \
             ./gradlew \
               :code-graph-examples:build \
               :linkedin-graph-examples:build \
@@ -97,11 +106,11 @@ jobs:
               :data-lineage-examples:build \
               :network-topology-examples:build \
               :security-attack-path-examples:build \
-              --no-daemon --continue && break
-            echo "Attempt $attempt failed"
-            [ $attempt -lt 5 ] && sleep 30 || exit 1
-          done
+              --no-daemon --continue
         env:
+          RETRY_NAME: examples-build
+          RETRY_MAX_ATTEMPTS: "5"
+          RETRY_DELAY_SECONDS: "30"
           GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
           TESTCONTAINERS_RYUK_DISABLED: "true"
           DOCKER_HOST: "unix:///var/run/docker.sock"
@@ -120,6 +129,15 @@ jobs:
           path: '**/build/test-results/test/*.xml'
           retention-days: 14
 
+      - name: Upload Gradle retry evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: retry-evidence-examples
+          path: ${{ runner.temp }}/bluetape4k-retry/examples-build/
+          if-no-files-found: error
+          retention-days: 14
+
   examples-status:
     name: Examples Status
     runs-on: ubuntu-latest
@@ -132,8 +150,18 @@ jobs:
       - name: Check all jobs
         env:
           RESULTS: ${{ join(needs.*.result, ',') }}
+          RETRY_STATUS: ${{ needs.build-examples.outputs.retry_status }}
+          RETRY_ATTEMPTS: ${{ needs.build-examples.outputs.retry_attempts }}
+          RETRY_COUNT: ${{ needs.build-examples.outputs.retry_count }}
         run: |
           echo "Examples results: $RESULTS"
+          echo "Examples retry status: ${RETRY_STATUS:-not-run} (attempts: ${RETRY_ATTEMPTS:-0}, retries: ${RETRY_COUNT:-0})"
+          {
+            echo "### Examples retry status"
+            echo "- status: \`${RETRY_STATUS:-not-run}\`"
+            echo "- attempts: \`${RETRY_ATTEMPTS:-0}\`"
+            echo "- retry count: \`${RETRY_COUNT:-0}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
           if echo "$RESULTS" | grep -qE "failure|cancelled"; then
             echo "Examples workflow failed"
             exit 1

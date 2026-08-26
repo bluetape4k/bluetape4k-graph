@@ -19,6 +19,14 @@
 - dependency security posture는 CodeQL, GitHub dependency graph alert,
   GitHub Actions용 Dependabot, `bluetape4k-dependencies`의 중앙 library version
   governance로 처리한다.
+- #547에서 helper를 적용한 `examples.yml` build와 `ci.yml` core-test Gradle
+  step은 모든 attempt log와 첫 실패 log를
+  `${RUNNER_TEMP}/bluetape4k-retry/<name>/`에 보존하고, retry count와
+  `success_after_retry` 상태를 `GITHUB_STEP_SUMMARY`와 step output에 노출한다.
+  retry evidence artifact는 `if: always()`로 업로드하되 파일이 없으면
+  실패한다. command와 evidence writer가 서로 다른 상태를 만들지 않도록
+  helper는 저장 실패를 fail-closed로 처리한다. 다른 기존 retry step은 이
+  slice의 범위가 아니며 같은 evidence 계약으로 후속 이슈에서 정렬해야 한다.
 
 ## 제외 사항
 
@@ -38,3 +46,10 @@
   `./gradlew detektProjectBaseline`로만 재생성한다.
 - Kover report generation은 `continue-on-error: true`를 유지한다. 고정 threshold
   하나만으로 build를 실패시키지 않으면서 coverage data를 볼 수 있어야 한다.
+- 최종 job이 green이어도 `success_after_retry`를 정상 first-attempt success와
+  같은 상태로 서술하지 않는다. PR/DoD는 retry-only 통과와 첫 실패 evidence
+  artifact를 별도로 기록한다. helper가 적용되지 않은 기존 step의 green은
+  이 계약의 증거로 간주하지 않는다.
+- `success_after_retry`는 상태 집계상 green일 수 있지만 merge-ready가 아니다.
+  최종 stacked train 승인 전에는 exact head의 retry 상태와 첫 실패 artifact를
+  확인하고, 원인을 분류·재검증하지 않은 retry-only 결과로 병합하지 않는다.

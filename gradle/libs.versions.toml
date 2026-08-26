@@ -2,8 +2,6 @@
 # Gradle Version Catalog — migrated from buildSrc/src/main/kotlin/Libs.kt
 
 [versions]
-bluetape4k = "2.0.0-SNAPSHOT"  # https://mvnrepository.com/artifact/io.github.bluetape4k/bluetape4k-bom
-
 # Versions that also exist in bt4k remain only for local plugin/library aliases
 # that the central catalog does not expose in the shape this repository needs.
 kotlinx-benchmark = "0.4.17"  # https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-benchmark-runtime
@@ -35,7 +33,8 @@ junit-platform = "6.0.3"  # https://mvnrepository.com/artifact/org.junit.platfor
 
 [libraries]
 
-# bluetape4k
+# bluetape4k shared BOM and library versions are owned by the `bt4k` catalog
+# imported in settings.gradle.kts; keep no local version alias for that family.
 
 # kotlin
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom" }
