@@ -60,6 +60,11 @@
 
 ### 버그 수정
 
+- **TinkerGraph chunk cursor lifecycle**: sync vertex/edge chunk 경로에
+  close-aware cursor를 추가하고 suspend Flow가 조기 `take`, cancellation,
+  iterator 예외에서 traversal을 닫도록 정렬했다. 기존 repository `Sequence`
+  ABI는 유지하며 graph-io와 remote driver backend는 변경하지 않았다
+  ([#548](https://github.com/bluetape4k/bluetape4k-graph/issues/548)).
 - **Suspend example teardown cancellation contract**: code, fraud, IAM,
   knowledge, LinkedIn, observability, recommendation 예제의 suspend backend
   teardown이 `CancellationException`을 재전파하고 일반 graph drop 실패만

@@ -52,6 +52,30 @@ val neighbors = ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS"))
 ops.close()
 ```
 
+## Bounded Chunk Cursor Lifecycle
+
+`findVerticesByLabelChunkedCursor` and `findEdgesByLabelChunkedCursor` return a
+`CloseableChunkSequence`. The cursor consumes at most `chunkSize` records per
+chunk and closes the underlying TinkerPop traversal when it is exhausted,
+fails, or is explicitly closed. Close the cursor when a partial consumer such
+as `take(1)` stops early:
+
+```kotlin
+val cursor = ops.findVerticesByLabelChunkedCursor("Person", chunkSize = 256)
+try {
+    val firstChunk = cursor.take(1).toList()
+} finally {
+    cursor.close()
+}
+```
+
+The repository-compatible `findVerticesByLabelChunked` and
+`findEdgesByLabelChunked` methods still return `Sequence` for ABI compatibility;
+that interface type has no close handle, so use the concrete `*Cursor` methods
+when early-close or a source-memory bound is part of the caller's contract.
+Suspend/Flow chunk methods close the cursor from `finally` on early `take`,
+cancellation, and downstream failure.
+
 ## Schema / Index Management
 
 TinkerGraph has no durable schema DDL. `schemaManager().createIndex(label, property)` records index metadata in the

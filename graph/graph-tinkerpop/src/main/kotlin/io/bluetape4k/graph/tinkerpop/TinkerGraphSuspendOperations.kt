@@ -41,6 +41,48 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withContext
 
 /**
+ * Flow collector가 조기 종료·취소되거나 chunk 소비 중 실패하면 동기 chunk
+ * cursor를 닫는다.
+ */
+@Suppress("TooGenericExceptionCaught")
+internal fun <T> closeAwareChunkFlow(
+    sequenceFactory: () -> CloseableChunkSequence<T>,
+): Flow<T> = flow {
+    val chunks = sequenceFactory()
+    var failure: Throwable? = null
+    try {
+        val iterator = withContext(Dispatchers.IO) { chunks.iterator() }
+        while (true) {
+            val chunk = withContext(Dispatchers.IO) {
+                if (iterator.hasNext()) iterator.next() else null
+            } ?: break
+            emit(chunk)
+        }
+    } catch (error: Throwable) {
+        failure = error
+        throw error
+    } finally {
+        closeChunkSequence(chunks, failure)
+    }
+}
+
+@Suppress("TooGenericExceptionCaught")
+private fun closeChunkSequence(
+    chunks: CloseableChunkSequence<*>,
+    failure: Throwable?,
+) {
+    try {
+        chunks.close()
+    } catch (closeFailure: Throwable) {
+        if (failure != null) {
+            failure.addSuppressed(closeFailure)
+        } else {
+            throw closeFailure
+        }
+    }
+}
+
+/**
  * Apache TinkerPop TinkerGraph 기반 [GraphSuspendOperations] 구현체 (코루틴 방식).
  *
  * TinkerGraph는 in-process이므로 [Dispatchers.IO]로 래핑한다.
@@ -212,16 +254,8 @@ class TinkerGraphSuspendOperations(
         label: String,
         filter: Map<String, Any?>,
         chunkSize: Int,
-    ): Flow<List<GraphVertex>> = flow {
-        val iterator = withContext(Dispatchers.IO) {
-            delegate.findVerticesByLabelChunked(label, filter, chunkSize).iterator()
-        }
-        while (true) {
-            val chunk = withContext(Dispatchers.IO) {
-                if (iterator.hasNext()) iterator.next() else null
-            } ?: break
-            emit(chunk)
-        }
+    ): Flow<List<GraphVertex>> = closeAwareChunkFlow {
+        delegate.findVerticesByLabelChunkedCursor(label, filter, chunkSize)
     }
 
     override suspend fun updateVertex(label: String, id: GraphElementId, properties: Map<String, Any?>): GraphVertex? =
@@ -266,16 +300,8 @@ class TinkerGraphSuspendOperations(
         label: String,
         filter: Map<String, Any?>,
         chunkSize: Int,
-    ): Flow<List<GraphEdge>> = flow {
-        val iterator = withContext(Dispatchers.IO) {
-            delegate.findEdgesByLabelChunked(label, filter, chunkSize).iterator()
-        }
-        while (true) {
-            val chunk = withContext(Dispatchers.IO) {
-                if (iterator.hasNext()) iterator.next() else null
-            } ?: break
-            emit(chunk)
-        }
+    ): Flow<List<GraphEdge>> = closeAwareChunkFlow {
+        delegate.findEdgesByLabelChunkedCursor(label, filter, chunkSize)
     }
 
     override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): Flow<GraphEdge> = flow {
