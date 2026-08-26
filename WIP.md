@@ -53,6 +53,13 @@ CSV/GraphML suspend replay의 record cancellation checkpoint와 output ownership
 primary/suppressed cleanup TCK를 적층했다. suspend CSV 10개·GraphML 9개 관련
 테스트와 TDD RED→GREEN을 완료했으며 module 전체 검증·7-Tier receipt·PR 생성을
 진행한다.
+#559는 #558 PR #583 exact head `283dbd2fe9c8337699f510a8844d16094bbd06dc` 위에서
+weighted Dijkstra/A* fallback의 `(vertexId, depth)` 상태와 inclusive
+`PathOptions.maxDepth` 경계를 적층했다. graph-core algorithm RED→GREEN, 공통
+sync/suspend/virtual-thread conformance fixture와 Neo4j→Memgraph→AGE→FalkorDB
+순차 container TCK를 완료했으며, 다섯 backend의 weighted 결과와 TinkerGraph가
+같은 경계를 통과한다. PR #584 생성·hosted exact-head receipt를 진행하고, 전체
+train merge는 마지막 일괄 승인 단계까지 보류한다.
 최신 GitHub release: `0.6.0` (2026-08-05); 현재 개발 기준선은 `1.0.0`이다.
 
 ## 최근 완료 및 현재 `1.0.0` stacked train
@@ -82,8 +89,9 @@ primary/suppressed cleanup TCK를 적층했다. suspend CSV 10개·GraphML 9개 
 | [#556](https://github.com/bluetape4k/bluetape4k-graph/issues/556) | PR 생성·hosted 검증 진행 | #580 exact head `31c959c984f0cbee3666283392491b646c8e0e99` 위에서 CSV/GraphML sync·suspend mutation TCK, graph-core fallback eager-materialization 회귀, backend capability matrix와 EN/KO 문서를 추가했다. local graph-core 357, graph-io-core 158, CSV 55, GraphML 48 전체 테스트와 Detekt·금지 assertion scan·diff-check를 통과했으며 PR exact-head receipt를 생성한다. |
 | [#557](https://github.com/bluetape4k/bluetape4k-graph/issues/557) | PR #582 hosted 검증 진행 | #556 PR #581 exact head `534aed0111d062450d5d6a3958d3cb0294e34bba` 위에서 record payload capped buffer/direct write, oversized partial-write guard, second temp file/output constructor fault cleanup을 추가했다. TDD RED→GREEN, targeted `GraphIoRecordSpoolTest` 8/8, graph-io-core full/Detekt/forbidden assertion scan/diff-check를 완료했고 PR #582 exact-head hosted receipt를 진행한다. |
 | [#558](https://github.com/bluetape4k/bluetape4k-graph/issues/558) | 구현·로컬 검증 진행 | #557 PR #582 exact head `5d5cd3f64bea1aedd7df66f64ca33a739970353c` 위에서 CSV/GraphML suspend replay record checkpoint, caller-owned/owned sink lifecycle, cancellation primary와 close suppressed TCK를 추가했다. suspend CSV 10개·GraphML 9개 관련 테스트와 TDD RED→GREEN을 완료했으며 module 전체 검증·7-Tier receipt·PR 생성을 진행한다. |
+| [#559](https://github.com/bluetape4k/bluetape4k-graph/issues/559) | PR 생성·hosted 검증 진행 | #558 PR #583 exact head `283dbd2fe9c8337699f510a8844d16094bbd06dc` 위에서 weighted Dijkstra/A*의 inclusive `maxDepth`, depth-aware predecessor, backend sync/suspend/virtual-thread conformance TCK와 EN/KO matrix를 추가했다. graph-core RED→GREEN, Neo4j 13개·Memgraph 10개·AGE 10개·FalkorDB 10개 weighted TCK 및 TinkerGraph fixture를 통과했고 PR #584를 생성한다. 전체 train merge는 마지막 승인 단계까지 보류한다. |
 
-이전 완료 순서는 `#527 → #525 → #526`이다. 현재 train은 `#543 → #544 → #545 → #546 → #547 → #536 → #548 → #549 → #535 → #550 → #551 → #552 → #538 → #553 → #554 → #555 → #539 → #556 → #557 → #558`
+이전 완료 순서는 `#527 → #525 → #526`이다. 현재 train은 `#543 → #544 → #545 → #546 → #547 → #536 → #548 → #549 → #535 → #550 → #551 → #552 → #538 → #553 → #554 → #555 → #539 → #556 → #557 → #558 → #559`
 순서이며, 각 PR은 이전 exact head를 base로 삼고 최종 일괄 merge 승인 전에는
 독립 병합하지 않는다.
 

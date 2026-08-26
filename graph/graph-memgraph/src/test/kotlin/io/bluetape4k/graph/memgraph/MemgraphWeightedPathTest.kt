@@ -2,6 +2,7 @@ package io.bluetape4k.graph.memgraph
 
 import io.bluetape4k.graph.model.MissingWeightPolicy
 import io.bluetape4k.graph.model.PathOptions
+import io.bluetape4k.graph.conformance.WeightedPathDepthConformance
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.testcontainers.graphdb.MemgraphServer
 import io.bluetape4k.assertions.shouldBeNear
@@ -56,6 +57,11 @@ class MemgraphWeightedPathTest {
         ).shouldNotBeNull()
 
         path.totalWeight.shouldBeNear(3.0, 0.001)
+    }
+
+    @Test
+    fun `sync와 virtual thread weighted path가 maxDepth 경계를 공유한다`() {
+        WeightedPathDepthConformance.assertSyncAndVirtual(ops)
     }
 
     @Test

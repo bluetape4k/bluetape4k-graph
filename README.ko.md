@@ -66,6 +66,14 @@ graph-io CSV/GraphML TCK는 요청 chunk 크기, label별 단일 조회, backend
 뒤 stage 시점 데이터 보존을 검증합니다. 이 TCK가 호환성 fallback을 bounded
 backend 구현으로 승격시키지는 않습니다.
 
+### Weighted path depth 계약
+
+모든 백엔드의 weighted `shortestPath`와 `aStarPath`는 공통 JVM
+`ShortestPathFallback`을 사용합니다. 따라서 sync, suspend, virtual-thread 표면은
+포함형 `PathOptions.maxDepth` 간선 상한을 동일하게 적용하며, `maxDepth = 0`은
+source와 target이 같은 vertex-only 결과만 허용합니다. 백엔드 weighted-path TCK는
+1-hop, 2-hop, 0-hop 경계를 함께 검증합니다.
+
 ## 모듈 구조
 
 ```

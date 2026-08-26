@@ -9,6 +9,7 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeNear
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldContainAll
@@ -132,6 +133,40 @@ class AStarRunnerTest {
     fun `maxVisited 초과 시 null 반환`() {
         val opts = PathOptions(weightProperty = "cost", maxVisited = 1)
         runner().run(id("A"), id("C"), opts).shouldBeNull()
+    }
+
+    @Test
+    fun `maxDepth보다 긴 경로는 제외하고 경계 안의 weighted path를 선택한다`() {
+        val opts = PathOptions(weightProperty = "cost", maxDepth = 1)
+
+        val path = runner().run(id("A"), id("C"), opts).shouldNotBeNull()
+
+        path.vertexIds() shouldBeEqualTo listOf("A", "C")
+        path.totalWeight.shouldBeNear(3.0, 0.001)
+    }
+
+    @Test
+    fun `maxDepth 0은 source와 target이 같을 때만 vertex-only path를 허용한다`() {
+        val opts = PathOptions(weightProperty = "cost", maxDepth = 0)
+
+        runner().run(id("A"), id("A"), opts).shouldNotBeNull().length shouldBeEqualTo 0
+        runner().run(id("A"), id("C"), opts).shouldBeNull()
+    }
+
+    @Test
+    fun `더 싼 깊은 경로가 shallow 경로를 가리지 않고 maxDepth 내 후속 경로를 보존한다`() {
+        val boundedGraph = mapOf(
+            "A" to listOf(edge("eAX", "A", "X", 0.1), edge("eAB_shallow", "A", "B", 5.0)),
+            "X" to listOf(edge("eXB", "X", "B", 0.1)),
+            "B" to listOf(edge("eBC", "B", "C", 1.0)),
+            "C" to emptyList<GraphEdge>(),
+        )
+        val opts = PathOptions(weightProperty = "cost", maxDepth = 2)
+
+        val path = runner(boundedGraph).run(id("A"), id("C"), opts).shouldNotBeNull()
+
+        path.vertexIds() shouldBeEqualTo listOf("A", "B", "C")
+        path.totalWeight.shouldBeNear(6.0, 0.001)
     }
 
     // ─── MissingWeightPolicy ─────────────────────────────────────────────────────

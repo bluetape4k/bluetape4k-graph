@@ -6,6 +6,7 @@ import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.MissingWeightPolicy
 import io.bluetape4k.graph.model.PathOptions
+import io.bluetape4k.graph.conformance.WeightedPathDepthConformance
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.testcontainers.graphdb.MemgraphServer
@@ -53,6 +54,11 @@ class MemgraphSuspendWeightedPathTest {
         ).shouldNotBeNull()
 
         path.totalWeight.shouldBeNear(3.0, 0.001)
+    }
+
+    @Test
+    fun `suspend weighted path가 maxDepth 경계를 준수한다`() = runSuspendIO {
+        WeightedPathDepthConformance.assertSuspend(ops)
     }
 
     @Test

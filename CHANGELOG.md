@@ -27,6 +27,11 @@
 
 ### 변경
 
+- **Weighted path `maxDepth` conformance**: Dijkstra/A* JVM fallback이
+  `(vertexId, depth)` 상태와 predecessor를 사용해 inclusive hop bound를
+  적용하도록 고쳤다. `maxDepth=0` source-only 경계와 cheaper-deep/shallow
+  경로를 graph-core 및 Neo4j, Memgraph, AGE, FalkorDB, TinkerGraph의
+  sync/suspend/virtual-thread 공통 TCK로 검증했다 ([#559](https://github.com/bluetape4k/bluetape4k-graph/issues/559)).
 - **Catalog ownership and retry-only CI evidence**: local `bluetape4k` version
   alias를 중앙 immutable `bt4k` catalog ownership으로 정리하고, examples
   build와 graph-core test의 bounded retry가 첫 실패 log·attempt count·

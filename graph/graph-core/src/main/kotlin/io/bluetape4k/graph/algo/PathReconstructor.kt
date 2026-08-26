@@ -10,6 +10,19 @@ import io.bluetape4k.logging.warn
 
 private val log = KotlinLogging.logger {}
 
+/** Weighted traversal state. Depth is part of the state because a cheaper deep path
+ * must not hide a more expensive shallow path that can still reach the target. */
+internal data class WeightedPathState(
+    val id: GraphElementId,
+    val depth: Int,
+)
+
+/** Predecessor information for a depth-aware weighted traversal state. */
+internal data class WeightedPathPredecessor(
+    val parent: WeightedPathState,
+    val edge: GraphEdge,
+)
+
 /**
  * Reconstructs a [GraphPath] by walking a predecessor map after traversal completes.
  *
@@ -23,29 +36,28 @@ private val log = KotlinLogging.logger {}
  * @return reconstructed [GraphPath], or `null` when no path exists.
  */
 internal fun reconstructPath(
-    targetId: GraphElementId,
-    cameFrom: Map<GraphElementId, Pair<GraphVertex, GraphEdge>>,
+    target: WeightedPathState,
+    cameFrom: Map<WeightedPathState, WeightedPathPredecessor>,
     vertexLookup: (GraphElementId) -> GraphVertex?,
     totalWeight: Double,
 ): GraphPath? {
     val steps = mutableListOf<PathStep>()
-    var currentId = targetId
+    var current = target
 
     while (true) {
-        val entry = cameFrom[currentId] ?: break
-        val (parentVertex, edge) = entry
-        val currentVertex = vertexLookup(currentId) ?: run {
-            log.warn { "PathReconstructor: vertex $currentId not found during reconstruction (target=$targetId)" }
+        val entry = cameFrom[current] ?: break
+        val currentVertex = vertexLookup(current.id) ?: run {
+            log.warn { "PathReconstructor: vertex ${current.id} not found during reconstruction (target=${target.id})" }
             return null
         }
         steps.add(PathStep.VertexStep(currentVertex))
-        steps.add(PathStep.EdgeStep(edge))
-        currentId = parentVertex.id
+        steps.add(PathStep.EdgeStep(entry.edge))
+        current = entry.parent
     }
 
     // Add the source vertex.
-    val startVertex = vertexLookup(currentId) ?: run {
-        log.warn { "PathReconstructor: start vertex $currentId not found during reconstruction" }
+    val startVertex = vertexLookup(current.id) ?: run {
+        log.warn { "PathReconstructor: start vertex ${current.id} not found during reconstruction" }
         return null
     }
     steps.add(PathStep.VertexStep(startVertex))

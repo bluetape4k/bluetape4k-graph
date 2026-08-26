@@ -16,6 +16,7 @@ import java.util.*
  * ## Design decisions
  * - **Single JVM implementation**: Neo4j, AGE, FalkorDB, and TinkerPop delegate here.
  * - **Deterministic tie-break**: equal-cost vertices are ordered lexicographically by ID.
+ * - **maxDepth guard**: weighted paths never exceed [PathOptions.maxDepth] edges.
  * - **maxVisited guard**: protects against unbounded expansion in infinite graphs.
  * - **Direction support**: OUTGOING, INCOMING, and BOTH are all supported.
  *
@@ -50,10 +51,12 @@ class DijkstraRunner(
     companion object : KLogging()
 
     /** PriorityQueue entry with deterministic tie-break and no Pair comparator dispatch. */
-    private data class DijkstraNode(val cost: Double, val id: GraphElementId) : Comparable<DijkstraNode> {
+    private data class DijkstraNode(val cost: Double, val state: WeightedPathState) : Comparable<DijkstraNode> {
         override fun compareTo(other: DijkstraNode): Int {
             val cmp = cost.compareTo(other.cost)
-            return if (cmp != 0) cmp else id.value.compareTo(other.id.value)
+            if (cmp != 0) return cmp
+            val idCmp = state.id.value.compareTo(other.state.id.value)
+            return if (idCmp != 0) idCmp else state.depth.compareTo(other.state.depth)
         }
     }
 
@@ -62,7 +65,7 @@ class DijkstraRunner(
 	*
      * @param fromId source vertex ID.
      * @param toId target vertex ID.
-     * @param options traversal options (`weightProperty`, `missingWeightPolicy`, `maxVisited`).
+     * @param options traversal options (`weightProperty`, `missingWeightPolicy`, `maxDepth`, `maxVisited`).
      * @return shortest [GraphPath], or `null` when no path exists.
      * @throws IllegalArgumentException when [PathOptions.weightProperty] is null.
      */
@@ -78,27 +81,33 @@ class DijkstraRunner(
 
         // cost + vertexId tie-break keeps traversal deterministic across equal-cost frontiers.
         val pq = PriorityQueue<DijkstraNode>()
-        val dist = mutableMapOf<GraphElementId, Double>()
-        val cameFrom = mutableMapOf<GraphElementId, Pair<GraphVertex, GraphEdge>>()
+        val dist = mutableMapOf<WeightedPathState, Double>()
+        val cameFrom = mutableMapOf<WeightedPathState, WeightedPathPredecessor>()
+        val startState = WeightedPathState(fromId, 0)
 
-        dist[fromId] = 0.0
-        pq.add(DijkstraNode(0.0, fromId))
+        dist[startState] = 0.0
+        pq.add(DijkstraNode(0.0, startState))
         var visited = 0
 
         outer@ while (pq.isNotEmpty()) {
-            val (cost, currentId) = pq.poll()
+            val node = pq.poll()
+            val cost = node.cost
+            val currentState = node.state
+            val currentId = currentState.id
 
-            if (cost > (dist[currentId] ?: Double.MAX_VALUE)) continue // stale entry
+            if (cost > (dist[currentState] ?: Double.MAX_VALUE)) continue // stale entry
 
             if (currentId == toId) {
                 log.debug { "Dijkstra found path: $fromId → $toId, cost=$cost, visited=$visited" }
-                return reconstructPath(toId, cameFrom, { fetchVertex(it) }, cost)
+                return reconstructPath(currentState, cameFrom, { fetchVertex(it) }, cost)
             }
 
             if (++visited > options.maxVisited) {
                 log.warn { "Dijkstra maxVisited=${options.maxVisited} reached; no path found from $fromId → $toId" }
                 break
             }
+
+            if (currentState.depth >= options.maxDepth) continue
 
             val currentVertex = fetchVertex(currentId) ?: run {
                 log.warn { "Dijkstra: fetchVertex($currentId) returned null mid-traversal — skipping neighbors" }
@@ -111,10 +120,11 @@ class DijkstraRunner(
                 val w = extractor.extract(edge) ?: continue // Skip policy
 
                 val newCost = cost + w
-                if (newCost < (dist[neighborId] ?: Double.MAX_VALUE)) {
-                    dist[neighborId] = newCost
-                    cameFrom[neighborId] = currentVertex to edge
-                    pq.add(DijkstraNode(newCost, neighborId))
+                val neighborState = WeightedPathState(neighborId, currentState.depth + 1)
+                if (newCost < (dist[neighborState] ?: Double.MAX_VALUE)) {
+                    dist[neighborState] = newCost
+                    cameFrom[neighborState] = WeightedPathPredecessor(currentState, edge)
+                    pq.add(DijkstraNode(newCost, neighborState))
                 }
             }
         }

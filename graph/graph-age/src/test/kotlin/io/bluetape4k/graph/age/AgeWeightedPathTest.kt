@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.bluetape4k.graph.model.MissingWeightPolicy
 import io.bluetape4k.graph.model.PathOptions
+import io.bluetape4k.graph.conformance.WeightedPathDepthConformance
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
@@ -71,6 +72,11 @@ class AgeWeightedPathTest {
         ).shouldNotBeNull()
 
         path.totalWeight.shouldBeNear(3.0, 0.001)
+    }
+
+    @Test
+    fun `sync와 virtual thread weighted path가 maxDepth 경계를 공유한다`() {
+        WeightedPathDepthConformance.assertSyncAndVirtual(ops)
     }
 
     @Test
