@@ -557,14 +557,27 @@ val cycles = ops.detectCycles(CycleOptions(edgeLabel = "KNOWS", maxDepth = 5))
 The `virtualFutureOf` and `virtualFutureOfNullable` helpers come from the
 upstream `bluetape4k-core` dependency. `graph-core` imports the official
 helpers and no longer publishes a package-local copy, so it does not add a
-third owner for `io.bluetape4k.concurrent.virtualthread`. The current upstream
-dependency train still has a split package between `bluetape4k-core` and
-`bluetape4k-virtualthread-api`; that dependency boundary is tracked in
-[#563](https://github.com/bluetape4k/bluetape4k-graph/issues/563). Kotlin source
-imports remain unchanged. Consumers that directly reference the removed
-generated `CompletableFutureNullableSupportKt` class must be recompiled against
-the official `CompletableFutureSupportKt` owner; the external ABI migration is
+third owner for `io.bluetape4k.concurrent.virtualthread`. Upstream PR
+[#1523](https://github.com/bluetape4k/bluetape4k-projects/pull/1523) moves the
+Java 21 API types to `io.bluetape4k.concurrent.virtualthread.api`, leaving the
+core utility owner unchanged. The current `2.0.0-SNAPSHOT` dependency remains
+the pre-migration artifact until that PR is merged and published, so graph
+consumption is intentionally pending. Kotlin source imports remain unchanged
+for core helpers. Consumers that directly reference the removed generated
+`CompletableFutureNullableSupportKt` class must be recompiled against the
+official `CompletableFutureSupportKt` owner; the external ABI migration is
 tracked in [#562](https://github.com/bluetape4k/bluetape4k-graph/issues/562).
+
+After the upstream artifact is available, verify the resolved JAR pair with:
+
+```bash
+python3 scripts/verify_virtualthread_module_boundary.py \
+  /path/to/bluetape4k-core-<version>.jar \
+  /path/to/bluetape4k-virtualthread-api-<version>.jar
+```
+
+The verifier rejects shared class packages, legacy API classes in the old
+package, missing API owners, or a non-zero `java --validate-modules` result.
 
 The #562 ABI TCK keeps a minimal Java consumer precompiled against the removed
 owner and runs it without the legacy class to reproduce the expected

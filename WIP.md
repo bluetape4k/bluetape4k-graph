@@ -95,6 +95,13 @@ legacy linkage failure, migrated nullable future 결과, classfile owner와
 `ProtectionDomain.codeSource`를 검증하는 TDD TCK 3개를 통과했고 EN/KO README·
 spec/plan·7-Tier review·lesson을 추가한다. PR 생성과 hosted exact-head receipt,
 전체 train merge는 마지막 승인 단계까지 보류한다.
+#563은 #562 PR #588 exact head `61b6b82aecfcc61504cb1e9ea155b6d775db4150` 위에서
+upstream `bluetape4k-projects` 지원 PR #1523을 기준으로 core/API module boundary
+검증과 migration 문서를 적층한다. upstream branch `refactor/issue-563-virtualthread-package-boundary`
+의 exact head `be85366f1de5eb3a74a74fd15ba3e4223d98f6fb`에서 API를 `.api`
+subpackage로 분리하고 생성 JAR `java --validate-modules` exit 0을 확인했지만,
+아직 merge·새 snapshot 배포 전이므로 graph verifier와 downstream 소비 검증은
+PENDING이다. 이 PR과 전체 train merge는 마지막 승인 단계까지 보류한다.
 최신 GitHub release: `0.6.0` (2026-08-05); 현재 개발 기준선은 `1.0.0`이다.
 
 ## 최근 완료 및 현재 `1.0.0` stacked train

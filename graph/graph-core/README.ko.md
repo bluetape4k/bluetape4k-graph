@@ -1225,13 +1225,27 @@ val cycles = ops.detectCycles(CycleOptions(edgeLabel = "KNOWS", maxDepth = 5))
 `virtualFutureOf`와 `virtualFutureOfNullable`은 상위 `bluetape4k-core`
 의존성이 제공한다. `graph-core`는 공식 helper를 import하고 패키지 로컬 복사본을
 더 이상 배포하지 않으므로 `io.bluetape4k.concurrent.virtualthread`에 세 번째
-소유자를 추가하지 않는다. 현재 upstream dependency train에서는
-`bluetape4k-core`와 `bluetape4k-virtualthread-api` 사이의 split package가 남아
-있으며 [#563](https://github.com/bluetape4k/bluetape4k-graph/issues/563)에서
-추적한다. Kotlin source import 경로는 그대로지만 삭제된 generated
-`CompletableFutureNullableSupportKt` 클래스를 직접 참조한 소비자 코드는 공식
-`CompletableFutureSupportKt` 소유자에 맞춰 다시 컴파일해야 하며 외부 ABI migration은
-[#562](https://github.com/bluetape4k/bluetape4k-graph/issues/562)에서 검증한다.
+소유자를 추가하지 않는다. upstream
+[#1523](https://github.com/bluetape4k/bluetape4k-projects/pull/1523)은 Java 21
+API 타입을 `io.bluetape4k.concurrent.virtualthread.api`로 이동하고 core
+유틸리티 소유자는 그대로 유지한다. 현재 `2.0.0-SNAPSHOT` dependency는 아직
+이전 artifact이므로 해당 PR이 병합되고 새 artifact가 배포될 때까지 graph 소비
+검증은 의도적으로 대기한다. Core helper의 Kotlin source import 경로는 그대로지만
+삭제된 generated `CompletableFutureNullableSupportKt` 클래스를 직접 참조한 소비자
+코드는 공식 `CompletableFutureSupportKt` 소유자에 맞춰 다시 컴파일해야 하며 외부
+ABI migration은 [#562](https://github.com/bluetape4k/bluetape4k-graph/issues/562)에서
+검증한다.
+
+upstream artifact가 준비되면 다음 verifier로 실제 해결된 JAR 쌍을 확인한다.
+
+```bash
+python3 scripts/verify_virtualthread_module_boundary.py \
+  /path/to/bluetape4k-core-<version>.jar \
+  /path/to/bluetape4k-virtualthread-api-<version>.jar
+```
+
+verifier는 shared class package, 이전 package의 API class, 누락된 API owner 또는
+`java --validate-modules`의 non-zero 결과를 거부한다.
 
 #562 ABI TCK는 삭제된 owner를 기준으로 미리 컴파일한 최소 Java consumer를
 legacy class 없이 실행해 예상한 `NoClassDefFoundError`를 재현한다. 같은 consumer를
