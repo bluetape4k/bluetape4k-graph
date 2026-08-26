@@ -48,6 +48,11 @@
 
 ### 버그 수정
 
+- **Suspend example teardown cancellation contract**: code, fraud, IAM,
+  knowledge, LinkedIn, observability, recommendation 예제의 suspend backend
+  teardown이 `CancellationException`을 재전파하고 일반 graph drop 실패만
+  기록하도록 정렬했다. owned driver close는 `finally`에서 보장하며 sync-only
+  teardown은 변경하지 않았다 ([#546](https://github.com/bluetape4k/bluetape4k-graph/issues/546)).
 - **Spring Boot graph management contract**: Actuator snapshot이 backend별
   graph/database 설정과 실제 `GraphOperations.capabilities()`·graph-io
   classpath/bean 상태를 반영하도록 고쳤다. AGE graph initializer는
