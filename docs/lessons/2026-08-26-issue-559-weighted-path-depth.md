@@ -28,5 +28,6 @@ Neo4j, Memgraph, AGE, FalkorDB, TinkerGraph의 weighted 결과를 동일하게 �
    메모리 비용을 계속 bounded하게 유지해야 한다.
 2. 이 변경은 weighted JVM fallback 계약이다. native unweighted planner와
    heuristic admissibility는 별도 계약으로 남는다.
-3. PR #584 exact-head CI `32913808915`와 Examples `32913809041`가 terminal green임을
-   read-back했다. 전체 train은 마지막 일괄 merge 승인 전까지 병합하지 않는다.
+3. PR #584 receipt head `a934b017ab667cf763a7f2a72c6c906172e1169d`의 CI
+   `32914749733`와 Examples `32914749720`가 terminal green임을 read-back했다.
+   전체 train은 마지막 일괄 merge 승인 전까지 병합하지 않는다.
