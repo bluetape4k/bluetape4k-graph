@@ -7,7 +7,8 @@
 - stacked base: PR #584 current head `ab9753ca3748cf723675b887f3d9b9c4eebe8d7a`
 - 대상: `graph-core`의 Serializable traversal/algorithm options와
   `MissingWeightPolicy.UseDefault`
-- 판정: **PASS / WATCH** (P0/P1 blocker 없음; stacked PR hosted receipt는 생성 후 갱신)
+- 판정: **PASS / WATCH** (P0/P1 blocker 없음; exact-head hosted receipt의 전역 CI는
+  기존 benchmark 실패와 workflow_dispatch 입력 결함으로 부분 통과)
 - WATCH: Java serialization은 신뢰 경계가 아니므로 이 변경은 invariant 복구만
   담당하며, untrusted stream 허용 여부는 `ObjectInputFilter` 정책이 결정한다.
 
@@ -21,7 +22,7 @@
 | SPW-04 | serialization invariant | concrete `readObject`가 `defaultReadObject` 뒤 동일 조건을 재검사 | PASS |
 | SPW-05 | nested policy | `UseDefault`의 finite/positive weight guard가 PathOptions 안에서도 실행 | PASS |
 | SPW-06 | compatibility | public properties/constructors와 `serialVersionUID = 1L` 유지 | PASS |
-| SPW-07 | hosted traceability | PR 생성 후 exact-head CI·Examples terminal receipt를 이 문서와 WIP에 갱신 | PENDING |
+| SPW-07 | hosted traceability | PR #585 exact head `29133f1dce97eca728b28c8d069c7f5e00589b5b`와 CI/Examples terminal receipt를 기록 | PASS / WATCH |
 
 ## 7-Tier 결과
 
@@ -33,7 +34,7 @@
 | 4. 오류·보안 | malformed stream이 정상 객체로 유입되지 않고 원인 메시지를 보존하는가 | PASS / WATCH. `InvalidObjectException`에 필드·값을 포함하며, stream filtering 자체는 호출자 책임이다. |
 | 5. 동시성·수명주기 | readObject가 외부 상태나 backend lifecycle을 변경하는가 | PASS. 입력 객체의 기본 필드만 검사하고 graph/backend resource를 열지 않는다. |
 | 6. 테스트·관측성 | 정상 round-trip, forged payload, nested failure, UID를 재현하는가 | PASS. Unsafe test-only payload forge로 constructor bypass를 재현하고 7개 concrete option을 모두 확인한다. |
-| 7. 문서·유지보수 | EN/KO README와 review/lesson/WIP가 계약과 신뢰 경계를 설명하는가 | PASS / WATCH. local evidence는 기록했으며 hosted receipt는 PR 생성 후 추가한다. |
+| 7. 문서·유지보수 | EN/KO README와 review/lesson/WIP가 계약과 신뢰 경계를 설명하는가 | PASS / WATCH. local·hosted receipt와 workflow/benchmark 제한을 함께 기록했다. |
 
 ## 검증 영수증
 
@@ -49,6 +50,18 @@
   `javap`/`ObjectStreamClass`로 확인한다.
 - Full graph-core test, Detekt, diff-check, exact-head hosted receipt는 PR 생성
   직전과 hosted cycle 후에 갱신한다.
+- Hosted exact-head receipt: PR #585 head
+  `29133f1dce97eca728b28c8d069c7f5e00589b5b`에서 Examples run
+  [`32918378892`](https://github.com/bluetape4k/bluetape4k-graph/actions/runs/32918378892)은
+  terminal success이며, CI run
+  [`32918376820`](https://github.com/bluetape4k/bluetape4k-graph/actions/runs/32918376820)은
+  core/backend·Build/Detekt를 통과했다. 전역 CI는 (1) workflow_dispatch에서
+  `github.event.before`가 비어 Image Family Gate의 `git diff`가 exit 128,
+  (2) `graph-benchmark`의 `WeightedShortestPathBenchTest`가
+  `WeightedShortestPathBench.kt:85`에서 `Required value was null`로 실패해
+  `failure`였다. 같은 테스트를 선행 #559 head
+  `ab9753ca3748cf723675b887f3d9b9c4eebe8d7a`에서 로컬 재실행해 동일 실패를
+  확인했으므로 #560 변경의 회귀로 분류하지 않는다.
 
 ## P0/P1 판정과 후속 위험
 
@@ -64,6 +77,6 @@
 
 graph-core Serializable option은 정상 round-trip에서 public state와 ABI identity를
 보존하고, constructor bypass payload에서도 동일 invariant를 `InvalidObjectException`으로
-거부한다. **PR readiness: PASS / Architecture status: WATCH**. PR #585 hosted
-receipt와 exact-head read-back은 생성 후 기록하며, 전체 stacked train merge는 마지막
-승인 단계에서만 진행한다.
+거부한다. **PR readiness: PASS / Architecture status: WATCH**. PR #585의 Examples와
+핵심 graph/backend CI는 exact head에서 통과했지만, 전역 CI에는 위 두 가지 비코드성
+제한이 남아 있다. 전체 stacked train merge는 마지막 승인 단계에서만 진행한다.

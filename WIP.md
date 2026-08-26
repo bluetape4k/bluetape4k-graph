@@ -65,8 +65,13 @@ CI `32914749733`와 Examples `32914749720`가 모두 terminal green이며,
 #560은 #559 PR #584 current head `ab9753ca3748cf723675b887f3d9b9c4eebe8d7a` 위에서
 Serializable option의 constructor/deserialization invariant, nested
 `MissingWeightPolicy.UseDefault` TCK와 `serialVersionUID` 보존 검증을 적층했다.
-graph-core targeted 47개와 TDD RED→GREEN을 완료했으며, full test·Detekt·ABI·정적
-검증과 PR #585 hosted receipt를 진행한다.
+graph-core targeted 47개와 TDD RED→GREEN, full test·Detekt·ABI·정적 검증을 완료했다.
+PR #585 exact head `29133f1dce97eca728b28c8d069c7f5e00589b5b`의 Examples
+`32918378892`는 성공했고, CI `32918376820`은 핵심 graph/backend·Build/Detekt를
+통과했다. 전역 CI의 Image Family Gate는 workflow_dispatch 빈 `github.event.before`,
+`graph-benchmark`는 `WeightedShortestPathBench.kt:85`의 `Required value was null`
+실패로 부분 통과 상태다. 같은 테스트가 선행 #559 head에서도 재현되어 별도
+benchmark backlog로 추적하며, PR review·최종 train merge를 대기한다.
 최신 GitHub release: `0.6.0` (2026-08-05); 현재 개발 기준선은 `1.0.0`이다.
 
 ## 최근 완료 및 현재 `1.0.0` stacked train
@@ -97,7 +102,7 @@ graph-core targeted 47개와 TDD RED→GREEN을 완료했으며, full test·Dete
 | [#557](https://github.com/bluetape4k/bluetape4k-graph/issues/557) | PR #582 hosted 검증 진행 | #556 PR #581 exact head `534aed0111d062450d5d6a3958d3cb0294e34bba` 위에서 record payload capped buffer/direct write, oversized partial-write guard, second temp file/output constructor fault cleanup을 추가했다. TDD RED→GREEN, targeted `GraphIoRecordSpoolTest` 8/8, graph-io-core full/Detekt/forbidden assertion scan/diff-check를 완료했고 PR #582 exact-head hosted receipt를 진행한다. |
 | [#558](https://github.com/bluetape4k/bluetape4k-graph/issues/558) | 구현·로컬 검증 진행 | #557 PR #582 exact head `5d5cd3f64bea1aedd7df66f64ca33a739970353c` 위에서 CSV/GraphML suspend replay record checkpoint, caller-owned/owned sink lifecycle, cancellation primary와 close suppressed TCK를 추가했다. suspend CSV 10개·GraphML 9개 관련 테스트와 TDD RED→GREEN을 완료했으며 module 전체 검증·7-Tier receipt·PR 생성을 진행한다. |
 | [#559](https://github.com/bluetape4k/bluetape4k-graph/issues/559) | PR #584 hosted 통과, review·merge 대기 | #558 PR #583 exact head `283dbd2fe9c8337699f510a8844d16094bbd06dc` 위에서 weighted Dijkstra/A*의 inclusive `maxDepth`, depth-aware predecessor, backend sync/suspend/virtual-thread conformance TCK와 EN/KO matrix를 추가했다. graph-core RED→GREEN, Neo4j 13개·Memgraph 10개·AGE 10개·FalkorDB 10개 weighted TCK 및 TinkerGraph fixture를 통과했고 PR #584 receipt head `a934b017ab667cf763a7f2a72c6c906172e1169d`의 CI `32914749733`·Examples `32914749720`가 모두 성공했다. 문서 전용 receipt commit 후 현재 head는 PR read-back으로 확인하며, 전체 train merge는 마지막 승인 단계까지 보류한다. |
-| [#560](https://github.com/bluetape4k/bluetape4k-graph/issues/560) | 구현·로컬 검증 진행 | #559 PR #584 current head `ab9753ca3748cf723675b887f3d9b9c4eebe8d7a` 위에서 graph-core Serializable option의 constructor/deserialization invariant와 nested `UseDefault` TCK를 추가했다. targeted 47개·TDD RED→GREEN을 통과했고 full test·Detekt·ABI·정적 검증과 PR #585 hosted receipt를 진행한다. |
+| [#560](https://github.com/bluetape4k/bluetape4k-graph/issues/560) | PR #585 hosted 부분 통과, review·merge 대기 | #559 PR #584 current head `ab9753ca3748cf723675b887f3d9b9c4eebe8d7a` 위에서 graph-core Serializable option의 constructor/deserialization invariant와 nested `UseDefault` TCK를 추가했다. targeted 47개·full 373개·Detekt·ABI·금지 assertion scan·diff-check를 통과했다. PR #585 exact head `29133f1dce97eca728b28c8d069c7f5e00589b5b`의 Examples `32918378892`와 핵심 graph/backend CI가 성공했으며, workflow_dispatch Image Family Gate와 `graph-benchmark` weighted path 실패는 선행 #559에서도 재현된 별도 제한으로 기록했다. 전체 train merge는 마지막 승인 단계에서만 수행한다. |
 
 이전 완료 순서는 `#527 → #525 → #526`이다. 현재 train은 `#543 → #544 → #545 → #546 → #547 → #536 → #548 → #549 → #535 → #550 → #551 → #552 → #538 → #553 → #554 → #555 → #539 → #556 → #557 → #558 → #559 → #560`
 순서이며, 각 PR은 이전 exact head를 base로 삼고 최종 일괄 merge 승인 전에는

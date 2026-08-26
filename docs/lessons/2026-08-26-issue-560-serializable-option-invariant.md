@@ -39,3 +39,10 @@ Java serialization은 Kotlin 생성자와 `init`을 우회할 수 있으므로,
   호출자는 `ObjectInputFilter`를 별도로 구성해야 한다.
 - PR receipt는 exact head와 hosted terminal run을 함께 기록하고, stacked train의
   최종 merge 전까지 선행 PR을 독립 병합하지 않는다.
+- #585 exact head `29133f1dce97eca728b28c8d069c7f5e00589b5b`의 Examples run
+  `32918378892`는 성공했다. CI run `32918376820`은 핵심 graph/backend·Build/Detekt는
+  성공했으나 workflow_dispatch의 빈 `github.event.before` 때문에 Image Family Gate가
+  실패했고, `graph-benchmark`의 `WeightedShortestPathBenchTest`가
+  `WeightedShortestPathBench.kt:85`에서 `Required value was null`로 실패했다. 이는
+  선행 #559 head에서도 동일하게 재현되어 #560 graph-core 변경의 회귀로 분류하지
+  않고 별도 benchmark backlog로 추적한다.
