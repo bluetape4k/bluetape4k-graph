@@ -175,9 +175,42 @@ dependencies {
 - **`GraphIoPaths`** — 모든 `GraphImportSource`/`GraphExportSink`에 대해 `BufferedReader`/`BufferedWriter`/`InputStream`/`OutputStream`을 열고, `PathSink`는 부모 디렉터리를 자동 생성하며, 호출자 소유 스트림에는 `closeInput`/`closeOutput` 플래그를 준수합니다. `closeInput/closeOutput=false` 시 스트림을 닫아도 underlying 스트림이 닫히지 않아 안전합니다. `OutputStreamSink`는 항상 `BufferedOutputStream`으로 래핑됩니다.
 - **`GraphIoExternalIdMap`** — 임포트 중 외부 ID → 백엔드 `GraphElementId` 매핑을 추적하고 `DuplicateVertexPolicy`(`FAIL` 또는 `SKIP`)를 강제합니다.
 - **`GraphIoBatchWriter` / `SuspendGraphIoBatchWriter`** — `GraphImportOptions.batchSize`에 따라 `createVertices`/`createEdges`로 플러시하는 라벨별 임포트 쓰기 버퍼입니다.
-- **`GraphImportWorkflow` / `GraphImportJobStateStore`** — multi-source 임포트 manifest를 검증하고 순서가 있는 job state를 저장합니다. store의 `update` 경계는 한 JVM store 인스턴스에서 load/검증/save를 원자적으로 수행하며, 전이할 때 `copy(state = ...)`를 사용해 기존 `sources`·`elapsed`·`checkpoint` payload를 보존합니다. transform은 순수하고 retry-safe해야 하며 durable store는 native transaction 또는 CAS로 override해야 합니다.
+- **`GraphImportWorkflow` / `GraphImportJobStateStore`** — multi-source 임포트 manifest를 검증하고 순서가 있는 job state를 저장합니다. store의 `update` 경계는 한 JVM store 인스턴스에서 load/검증/save를 원자적으로 수행하며, 전이할 때 `copy(state = ...)`를 사용해 기존 `sources`·`elapsed`·`checkpoint` payload를 보존합니다. transform은 순수하고 retry-safe해야 하며 durable store는 native transaction 또는 CAS로 override해야 합니다. 재사용 가능한 state-store contract TCK는 Gradle `testFixtures` variant로 제공합니다.
 - **`GraphIoStopwatch`** — 포맷 임포터/익스포터가 `report.elapsed`에 사용하는 밀리초 단위 타이머.
 - **`VirtualThreadGraphBulkAdapter`** — 동기 `GraphBulkImporter`/`GraphBulkExporter`를 `CompletableFuture` 기반 Virtual Thread 비동기 변형으로 래핑합니다.
+
+### Durable State Store TCK
+
+`graph-io-core`는 Gradle `testFixtures` variant를 발행하므로 durable
+`GraphImportJobStateStore` 구현체가 테스트 코드를 복사하지 않고 같은 계약
+테스트를 실행할 수 있습니다.
+
+```kotlin
+dependencies {
+    testImplementation(testFixtures(project(":bluetape4k-graph-io-core")))
+}
+```
+
+외부에 발행된 모듈을 소비할 때는 external test-fixtures 표기를 사용합니다.
+
+```kotlin
+dependencies {
+    testImplementation(testFixtures("io.github.bluetape4k.graph:bluetape4k-graph-io-core:$version"))
+}
+```
+
+`AbstractGraphImportJobStateStoreContractTest`를 상속하고 `createStore()`를
+구현하면 최신 report 갱신, 최초 report 생성, 저장하지 않는 `jobId` mismatch
+거부, transform 실패 원자성을 검증합니다. CAS 또는 transaction 기반
+adapter는 저장 실패를 주입하려면 `AbstractGraphImportJobStateStoreFailureContractTest`를
+추가로 상속하고 원래 report가 보존되는지 검증하는
+`GraphImportJobStateStoreFailureHarness`를 제공할 수 있습니다. CAS 또는
+transaction 기반 adapter는 `AbstractGraphImportJobStateStoreRetryContractTest`를
+추가로 상속하고 contention retry를 주입하는 adapter 전용
+`GraphImportJobStateStoreRetryHarness`를 제공할 수 있습니다. retry 계약은
+retry 경로의 `jobId` mismatch 거부와 stale 첫 결과 미저장을 함께 확인하며,
+transform이 순수하고 재시도에 안전하며 최신 report로 계산한 결과만 저장하도록
+요구하지만, durable 구현 자체를 제공하지는 않습니다.
 
 ## 사용법 (포맷 구현자 관점)
 
