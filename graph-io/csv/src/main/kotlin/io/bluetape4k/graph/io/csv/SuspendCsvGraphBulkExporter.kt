@@ -22,8 +22,11 @@ import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.withContext
+import java.io.BufferedWriter
 
 /**
  * Coroutine bulk exporter for CSV graph data.
@@ -98,6 +101,8 @@ class SuspendCsvGraphBulkExporter : GraphSuspendBulkExporter<CsvGraphExportSink>
         val (vertexLabels, edgeLabels) = options.resolveLabels(operations)
 
         val spool = GraphIoRecordSpool()
+        var vertexWriter: BufferedWriter? = null
+        var edgeWriter: BufferedWriter? = null
         var primaryFailure: Throwable? = null
         try {
             // 입력은 caller context에서 읽고, blocking spool 쓰기만 IO dispatcher에서 수행한다.
@@ -121,46 +126,49 @@ class SuspendCsvGraphBulkExporter : GraphSuspendBulkExporter<CsvGraphExportSink>
             }
             withContext(Dispatchers.IO) { spool.finish() }
 
+            val exportContext = currentCoroutineContext()
             withContext(Dispatchers.IO) {
                 // --- 정점 익스포트 ---
-                val vHeader = codec.unionVertexHeader(spool.vertexRecords().asIterable())
+                val vHeader = codec.unionVertexHeader(
+                    spool.vertexRecords().onEach { exportContext.ensureActive() }.asIterable(),
+                )
                 val prefix = (csvOptions.propertyMode as? CsvPropertyMode.PrefixedColumns)?.prefix ?: ""
-                GraphIoPaths.openWriter(sink.vertices).use { w ->
-                    val csv = CsvRecordWriter(w)
-                    csv.writeHeaders(vHeader)
-                    for (v in spool.vertexRecords()) {
-                        val row = buildList<Any?> {
-                            add(v.externalId)
-                            add(v.label)
-                            vHeader.drop(2).forEach { col ->
-                                val key = col.removePrefix(prefix)
-                                add(v.properties[key]?.toString() ?: "")
-                            }
+                vertexWriter = GraphIoPaths.openWriter(sink.vertices)
+                val vertexCsv = CsvRecordWriter(requireNotNull(vertexWriter))
+                vertexCsv.writeHeaders(vHeader)
+                for (v in spool.vertexRecords().onEach { exportContext.ensureActive() }) {
+                    val row = buildList<Any?> {
+                        add(v.externalId)
+                        add(v.label)
+                        vHeader.drop(2).forEach { col ->
+                            val key = col.removePrefix(prefix)
+                            add(v.properties[key]?.toString() ?: "")
                         }
-                        csv.writeRow(row)
-                        vWritten++
                     }
+                    vertexCsv.writeRow(row)
+                    vWritten++
                 }
 
                 // --- 간선 익스포트 ---
-                val eHeader = codec.unionEdgeHeader(spool.edgeRecords().asIterable())
-                GraphIoPaths.openWriter(sink.edges).use { w ->
-                    val csv = CsvRecordWriter(w)
-                    csv.writeHeaders(eHeader)
-                    for (ed in spool.edgeRecords()) {
-                        val row = buildList<Any?> {
-                            add(ed.externalId ?: "")
-                            add(ed.label)
-                            add(ed.fromExternalId)
-                            add(ed.toExternalId)
-                            eHeader.drop(4).forEach { col ->
-                                val key = col.removePrefix(prefix)
-                                add(ed.properties[key]?.toString() ?: "")
-                            }
+                val eHeader = codec.unionEdgeHeader(
+                    spool.edgeRecords().onEach { exportContext.ensureActive() }.asIterable(),
+                )
+                edgeWriter = GraphIoPaths.openWriter(sink.edges)
+                val edgeCsv = CsvRecordWriter(requireNotNull(edgeWriter))
+                edgeCsv.writeHeaders(eHeader)
+                for (ed in spool.edgeRecords().onEach { exportContext.ensureActive() }) {
+                    val row = buildList<Any?> {
+                        add(ed.externalId ?: "")
+                        add(ed.label)
+                        add(ed.fromExternalId)
+                        add(ed.toExternalId)
+                        eHeader.drop(4).forEach { col ->
+                            val key = col.removePrefix(prefix)
+                            add(ed.properties[key]?.toString() ?: "")
                         }
-                        csv.writeRow(row)
-                        eWritten++
                     }
+                    edgeCsv.writeRow(row)
+                    eWritten++
                 }
             }
 
@@ -182,11 +190,38 @@ class SuspendCsvGraphBulkExporter : GraphSuspendBulkExporter<CsvGraphExportSink>
             primaryFailure = failure
             throw failure
         } finally {
-            withContext(NonCancellable + Dispatchers.IO) {
-                spool.closeSuppressing(primaryFailure)
-            }
+            closeCsvResources(vertexWriter, edgeWriter, spool, primaryFailure)
         }
     }
 
     companion object : KLoggingChannel()
+}
+
+@Suppress("TooGenericExceptionCaught")
+private fun closeSuppressing(resource: AutoCloseable?, primaryFailure: Throwable?): Throwable? {
+    if (resource == null) return primaryFailure
+    return try {
+        resource.close()
+        primaryFailure
+    } catch (cleanupFailure: Throwable) {
+        primaryFailure?.let {
+            it.addSuppressed(cleanupFailure)
+            it
+        } ?: cleanupFailure
+    }
+}
+
+private suspend fun closeCsvResources(
+    vertexWriter: BufferedWriter?,
+    edgeWriter: BufferedWriter?,
+    spool: GraphIoRecordSpool,
+    primaryFailure: Throwable?,
+) = withContext(NonCancellable + Dispatchers.IO) {
+    var cleanupFailure = primaryFailure
+    cleanupFailure = closeSuppressing(vertexWriter, cleanupFailure)
+    cleanupFailure = closeSuppressing(edgeWriter, cleanupFailure)
+    cleanupFailure = closeSuppressing(spool, cleanupFailure)
+    if (primaryFailure == null && cleanupFailure != null) {
+        throw cleanupFailure
+    }
 }

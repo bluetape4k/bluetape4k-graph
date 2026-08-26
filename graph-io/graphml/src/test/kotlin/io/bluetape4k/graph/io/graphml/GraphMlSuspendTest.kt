@@ -3,6 +3,7 @@ package io.bluetape4k.graph.io.graphml
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.options.GraphImportOptions
+import io.bluetape4k.graph.io.report.GraphExportReport
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.io.source.GraphImportSource
@@ -19,16 +20,21 @@ import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldNotContain
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.IOException
+import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 import java.nio.file.Path
 import java.util.Collections
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicReference
 import javax.xml.stream.XMLStreamException
 
 class GraphMlSuspendTest {
@@ -146,6 +152,92 @@ class GraphMlSuspendTest {
         generateSequence<Throwable>(thrown) { it.cause }
             .any { it.message?.contains("graphml-suspend-sink-failure") == true }
             .shouldBeTrue()
+    }
+
+    @Test
+    fun `suspend graphml replay checkpoints cancellation between records`() = runSuspendIO {
+        val cancellation = CancellationException("graphml-replay-cancelled")
+        val deferredRef = AtomicReference<kotlinx.coroutines.Deferred<GraphExportReport>?>(null)
+        val output = CancellingAfterMarkerOutputStream("row-0") {
+            deferredRef.get()?.cancel(cancellation)
+        }
+        val source = TinkerGraphSuspendOperations().also {
+            repeat(4) { index ->
+                it.createVertex("Person", mapOf("name" to "row-$index-${"x".repeat(9_000)}"))
+            }
+        }
+        val deferred = async(start = CoroutineStart.LAZY) {
+            SuspendGraphMlBulkExporter().exportGraphSuspending(
+                GraphExportSink.OutputStreamSink(output, closeOutput = false),
+                source,
+                GraphExportOptions(vertexLabels = setOf("Person")),
+            )
+        }
+        deferredRef.set(deferred)
+        deferred.start()
+
+        val thrown = assertFailsWith<CancellationException> { deferred.await() }
+        thrown.message shouldBeEqualTo cancellation.message
+        output.text shouldContain "row-0"
+        output.text shouldNotContain "row-3"
+    }
+
+    @Test
+    fun `suspend graphml keeps caller owned output stream open`() = runSuspendIO {
+        val output = TrackingOutputStream()
+        val source = TinkerGraphSuspendOperations().also {
+            it.createVertex("Person", mapOf("name" to "Alice"))
+        }
+
+        SuspendGraphMlBulkExporter().exportGraphSuspending(
+            GraphExportSink.OutputStreamSink(output, closeOutput = false),
+            source,
+            GraphExportOptions(vertexLabels = setOf("Person")),
+        )
+
+        output.closed shouldBeEqualTo false
+        output.write('!'.code)
+    }
+
+    @Test
+    fun `suspend graphml closes owned output stream`() = runSuspendIO {
+        val output = TrackingOutputStream()
+        val source = TinkerGraphSuspendOperations().also {
+            it.createVertex("Person", mapOf("name" to "Alice"))
+        }
+
+        SuspendGraphMlBulkExporter().exportGraphSuspending(
+            GraphExportSink.OutputStreamSink(output, closeOutput = true),
+            source,
+            GraphExportOptions(vertexLabels = setOf("Person")),
+        )
+
+        output.closed shouldBeEqualTo true
+    }
+
+    @Test
+    fun `suspend graphml preserves cancellation when owned sink close fails`() = runSuspendIO {
+        val cancellation = CancellationException("graphml-replay-cancelled-close-failure")
+        val output = CancellingAfterMarkerOutputStream(
+            marker = "row-0",
+            closeFailure = "graphml-close-failure",
+            failure = cancellation,
+        )
+        val source = TinkerGraphSuspendOperations().also {
+            repeat(4) { index ->
+                it.createVertex("Person", mapOf("name" to "row-$index-${"x".repeat(9_000)}"))
+            }
+        }
+        val thrown = assertFailsWith<CancellationException> {
+            SuspendGraphMlBulkExporter().exportGraphSuspending(
+                GraphExportSink.OutputStreamSink(output, closeOutput = true),
+                source,
+                GraphExportOptions(vertexLabels = setOf("Person")),
+            )
+        }
+
+        thrown.message shouldBeEqualTo cancellation.message
+        thrown.suppressed.any { it.message == "graphml-close-failure" }.shouldBeTrue()
     }
 
     @Test
@@ -318,5 +410,60 @@ class GraphMlSuspendTest {
         override fun write(b: Int): Unit = throw IOException(message)
 
         override fun write(b: ByteArray, off: Int, len: Int): Unit = throw IOException(message)
+    }
+
+    private class CancellingAfterMarkerOutputStream(
+        private val marker: String,
+        private val closeFailure: String? = null,
+        private val failure: Throwable? = null,
+        private val onMarker: () -> Unit = {},
+    ) : OutputStream() {
+        private val delegate = ByteArrayOutputStream()
+        private var triggered = false
+
+        val text: String
+            get() = delegate.toString(Charsets.UTF_8.name())
+
+        override fun write(b: Int) {
+            delegate.write(b)
+            triggerIfMatched()
+        }
+
+        override fun write(b: ByteArray, off: Int, len: Int) {
+            delegate.write(b, off, len)
+            triggerIfMatched()
+        }
+
+        override fun close() {
+            closeFailure?.let { throw IOException(it) }
+        }
+
+        private fun triggerIfMatched() {
+            if (!triggered && text.contains(marker)) {
+                triggered = true
+                onMarker()
+                failure?.let { throw it }
+            }
+        }
+    }
+
+    private class TrackingOutputStream : OutputStream() {
+        private val delegate = ByteArrayOutputStream()
+        var closed: Boolean = false
+            private set
+
+        override fun write(b: Int) {
+            check(!closed) { "stream is closed" }
+            delegate.write(b)
+        }
+
+        override fun write(b: ByteArray, off: Int, len: Int) {
+            check(!closed) { "stream is closed" }
+            delegate.write(b, off, len)
+        }
+
+        override fun close() {
+            closed = true
+        }
     }
 }

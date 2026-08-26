@@ -317,6 +317,13 @@ The shared spool enforces a 128 MiB per-record encoding cap without creating a
 second full-record `toByteArray()` copy, and constructor setup removes already
 created temporary files if a later file or output stream cannot be opened.
 
+Suspend replay checks the coroutine context at every record boundary, so a
+cancellation request is observed before the next row is written. This is a
+bounded checkpoint between blocking writes, not an interrupt guarantee for a
+single write call. Suspend cleanup runs under `NonCancellable`: caller-owned
+`OutputStreamSink(closeOutput = false)` is flushed but left open, owned sinks are
+closed, and cleanup failures are suppressed behind the original failure.
+
 The CSV bounded-chunk TCK asserts the requested chunk size, one lookup per
 selected label, and preservation of stage-time values when the backend mutates
 after the first chunk. It does not claim bounded source execution for the

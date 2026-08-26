@@ -230,6 +230,14 @@ boundedness를 주장하지는 않습니다.
 뒤의 임시 파일이나 output stream을 열지 못하면 그 전에 획득한 모든 resource를
 닫고 삭제합니다.
 
+suspend GraphML replay는 다음 StAX write 전에 각 정점·간선 경계에서 coroutine
+context를 확인합니다. 이는 blocking StAX 호출 하나를 interrupt한다는 뜻이
+아니라 write 사이의 bounded checkpoint입니다. suspend session과 output은
+`NonCancellable` cleanup scope에서 닫히며, 호출자 소유
+`OutputStreamSink(closeOutput = false)`는 flush 후 열어 두고 owned sink만 닫습니다.
+정리 실패는 원래 source·sink·cancellation failure의 suppressed exception으로
+연결합니다.
+
 ## 오류 처리
 
 임포트 연산은 다음을 포함하는 상세한 `GraphImportReport`를 반환합니다:

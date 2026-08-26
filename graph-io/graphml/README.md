@@ -231,6 +231,14 @@ second full-record `toByteArray()` copy. Constructor setup is fail-clean: if a
 later temporary file or output stream cannot be opened, all resources acquired
 before the failure are closed and deleted.
 
+Suspend GraphML replay checks the coroutine context at every vertex or edge
+boundary before the next StAX write. This is a bounded checkpoint between
+blocking writes, not an interrupt guarantee for a single StAX call. The suspend
+session and output are closed in a `NonCancellable` cleanup scope; caller-owned
+`OutputStreamSink(closeOutput = false)` streams are flushed but kept open, owned
+sinks are closed, and cleanup failures are suppressed behind the original
+source, sink, or cancellation failure.
+
 ## Error Handling
 
 Import operations return a detailed `GraphImportReport` containing:
