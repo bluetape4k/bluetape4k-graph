@@ -95,6 +95,22 @@ interpreted as a silent fallback guarantee. Decorators that use Kotlin
 `by`-delegation must implement `GraphCapabilitiesOperations` to preserve their
 delegate mapping.
 
+#### Capability compatibility policy
+
+`GraphCapability` enum names are the serialization-facing contract. New values
+are appended to the enum so existing ordinals remain stable, but consumers must
+not persist or compare `ordinal`; use the enum `name` instead. A consumer that
+handles capabilities with `when` must include an explicit `else` branch because
+new values can be added in a later library version. The branch should treat an
+unknown value as unsupported (and may emit telemetry) rather than invoking an
+operation it cannot verify.
+
+When reading capability names from configuration, storage, or a remote peer,
+use `GraphCapability.fromSerializedNameOrNull(name)`. It returns `null` for a
+name introduced by a newer library, while `Enum.valueOf` throws. This is a
+forward-compatible parsing boundary; it does not make an older binary aware of
+new operations.
+
 The CORE-2 conformance slice covers `MERGE`, `SCHEMA`, `TRANSACTION`,
 `BATCH_INSERT`, `CHUNKED_READ`, `CHUNKED_EXPORT`, `BOUNDED_CHUNKED_READ`,
 `BOUNDED_CHUNKED_EXPORT`, `WEIGHTED_PATH`, `GRAPH_ALGORITHM`, and

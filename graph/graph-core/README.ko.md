@@ -59,6 +59,21 @@ if (capabilities.supports(GraphCapability.MERGE)) {
 자동 fallback이 보장되는 것은 아니다. Kotlin `by` 위임을 사용하는 decorator는
 delegate 매핑을 보존하기 위해 `GraphCapabilitiesOperations`를 구현해야 한다.
 
+#### Capability 호환성 정책
+
+`GraphCapability` enum 이름은 serialization 경계의 계약이다. 새 값은 기존
+ordinal을 보존하도록 enum 마지막에만 추가하지만, 소비자는 `ordinal`을 저장하거나
+비교하지 말고 enum `name`을 사용해야 한다. capability를 `when`으로 처리하는
+외부 소비자는 이후 라이브러리에서 값이 추가될 수 있으므로 반드시 명시적인
+`else` 분기를 둬야 한다. 이 분기는 알 수 없는 값을 unsupported로 취급하고
+(필요하면 telemetry를 남기며) 확인하지 않은 연산을 호출하지 않아야 한다.
+
+설정·저장소·remote peer에서 capability 이름을 읽을 때는
+`GraphCapability.fromSerializedNameOrNull(name)`을 사용한다. 이후 버전에서
+추가된 이름은 `null`을 반환하며 `Enum.valueOf`처럼 예외를 발생시키지 않는다.
+이는 forward-compatible parsing 경계일 뿐, 구버전 binary가 신규 연산을
+자동으로 이해하게 하지는 않는다.
+
 CORE-2 conformance slice는 `MERGE`, `SCHEMA`, `TRANSACTION`, `BATCH_INSERT`,
 `CHUNKED_READ`, `CHUNKED_EXPORT`, `BOUNDED_CHUNKED_READ`,
 `BOUNDED_CHUNKED_EXPORT`, `WEIGHTED_PATH`, `GRAPH_ALGORITHM`,

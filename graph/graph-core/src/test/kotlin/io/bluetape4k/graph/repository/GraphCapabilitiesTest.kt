@@ -3,6 +3,7 @@ package io.bluetape4k.graph.repository
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
+import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
@@ -11,6 +12,26 @@ import io.bluetape4k.junit5.coroutines.runSuspendIO
 import org.junit.jupiter.api.Test
 
 class GraphCapabilitiesTest {
+
+    @Test
+    fun `capability names and existing ordinals remain serialization compatible`() {
+        GraphCapability.MERGE.ordinal shouldBeEqualTo 0
+        GraphCapability.SCHEMA.ordinal shouldBeEqualTo 1
+        GraphCapability.TRANSACTION.ordinal shouldBeEqualTo 2
+        GraphCapability.BATCH_INSERT.ordinal shouldBeEqualTo 3
+        GraphCapability.CHUNKED_READ.ordinal shouldBeEqualTo 4
+        GraphCapability.CHUNKED_EXPORT.ordinal shouldBeEqualTo 5
+        GraphCapability.WEIGHTED_PATH.ordinal shouldBeEqualTo 6
+        GraphCapability.GRAPH_ALGORITHM.ordinal shouldBeEqualTo 7
+        GraphCapability.NATIVE_ALGORITHM.ordinal shouldBeEqualTo 8
+        GraphCapability.BOUNDED_CHUNKED_READ.ordinal shouldBeEqualTo 9
+        GraphCapability.BOUNDED_CHUNKED_EXPORT.ordinal shouldBeEqualTo 10
+
+        GraphCapability.fromSerializedNameOrNull("BOUNDED_CHUNKED_READ") shouldBeEqualTo
+            GraphCapability.BOUNDED_CHUNKED_READ
+        GraphCapability.fromSerializedNameOrNull("CAPABILITY_ADDED_LATER").shouldBeNull()
+        GraphCapability.fromSerializedNameOrNull("bounded_chunked_read").shouldBeNull()
+    }
 
     @Test
     fun `blocking capability lookup reflects declared backend contracts`() {

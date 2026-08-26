@@ -39,6 +39,12 @@
   Memgraph, FalkorDB synchronous fallback은 API chunking만 유지하며 GraphML과
   graph-core 문서에 heap-bound 한계를 명시했다
   ([#536](https://github.com/bluetape4k/bluetape4k-graph/issues/536)).
+- **GraphCapability enum compatibility policy**: 기존 enum ordinal과
+  serialization name을 보존하고, 새 capability를 enum 마지막에만 추가하는
+  규칙과 외부 exhaustive `when`의 `else`/unknown handling을 graph-core
+  EN/KO README와 release guidance에 명시했다. 이름 기반 입력은
+  `fromSerializedNameOrNull`로 future capability를 `null`로 격리한다
+  ([#549](https://github.com/bluetape4k/bluetape4k-graph/issues/549)).
 - **Graph image/document contract alignment**: 공용 graph launcher와 현재
   중앙 catalog에 맞춰 Neo4j `5.26.29`, Memgraph `3.12.0`, Apache AGE
   `release_PG18_1.7.0`, FalkorDB `v4.20.2` 및 Java 25/Kotlin 2.4.10 기준을
