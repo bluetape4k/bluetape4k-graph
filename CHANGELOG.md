@@ -52,6 +52,11 @@
   재시도를 끄고(`maxAttempts=1`), 취소·collector 예외 시 cursor와 transaction을
   닫는 계약을 검증했다
   ([#535](https://github.com/bluetape4k/bluetape4k-graph/issues/535)).
+- **AGE streaming fetch/retry fault injection**: 실제 AGE JDBC 경계를 감싼
+  test-only proxy로 configured fetch size `8`, positive fallback `100`, late
+  `SQLException`, emitted prefix 1건과 streaming attempt 1회를 관찰하는 회귀를
+  추가했다. production API는 변경하지 않고 #552의 driver stall 취소 범위는
+  별도 유지한다 ([#550](https://github.com/bluetape4k/bluetape4k-graph/issues/550)).
 - **Graph image/document contract alignment**: 공용 graph launcher와 현재
   중앙 catalog에 맞춰 Neo4j `5.26.29`, Memgraph `3.12.0`, Apache AGE
   `release_PG18_1.7.0`, FalkorDB `v4.20.2` 및 Java 25/Kotlin 2.4.10 기준을
