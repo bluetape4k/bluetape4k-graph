@@ -1222,6 +1222,17 @@ val cycles = ops.detectCycles(CycleOptions(edgeLabel = "KNOWS", maxDepth = 5))
 
 ## Virtual Threads
 
+`virtualFutureOf`와 `virtualFutureOfNullable`은 상위 `bluetape4k-core`
+의존성이 제공한다. `graph-core`는 공식 helper를 import하고 패키지 로컬 복사본을
+더 이상 배포하지 않으므로 `io.bluetape4k.concurrent.virtualthread`에 세 번째
+소유자를 추가하지 않는다. 현재 upstream dependency train에서는
+`bluetape4k-core`와 `bluetape4k-virtualthread-api` 사이의 split package가 남아
+있으며 [#563](https://github.com/bluetape4k/bluetape4k-graph/issues/563)에서
+추적한다. Kotlin source import 경로는 그대로지만 삭제된 generated
+`CompletableFutureNullableSupportKt` 클래스를 직접 참조한 소비자 코드는 공식
+`CompletableFutureSupportKt` 소유자에 맞춰 다시 컴파일해야 하며 외부 ABI migration은
+[#562](https://github.com/bluetape4k/bluetape4k-graph/issues/562)에서 검증한다.
+
 `GraphOperations`를 Virtual Thread 어댑터로 감싸면 Java 상호운용을 위한
 `CompletableFuture` 기반 비동기 API를 사용할 수 있다. 어댑터는 Bluetape4k의
 `virtualFutureOf` helper를 사용하며 별도 executor를 만들지 않는다.

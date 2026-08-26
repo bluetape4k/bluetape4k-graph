@@ -554,6 +554,18 @@ val cycles = ops.detectCycles(CycleOptions(edgeLabel = "KNOWS", maxDepth = 5))
 
 ## Virtual Threads
 
+The `virtualFutureOf` and `virtualFutureOfNullable` helpers come from the
+upstream `bluetape4k-core` dependency. `graph-core` imports the official
+helpers and no longer publishes a package-local copy, so it does not add a
+third owner for `io.bluetape4k.concurrent.virtualthread`. The current upstream
+dependency train still has a split package between `bluetape4k-core` and
+`bluetape4k-virtualthread-api`; that dependency boundary is tracked in
+[#563](https://github.com/bluetape4k/bluetape4k-graph/issues/563). Kotlin source
+imports remain unchanged. Consumers that directly reference the removed
+generated `CompletableFutureNullableSupportKt` class must be recompiled against
+the official `CompletableFutureSupportKt` owner; the external ABI migration is
+tracked in [#562](https://github.com/bluetape4k/bluetape4k-graph/issues/562).
+
 `GraphOperations` can be wrapped with a Virtual Thread adapter to expose
 `CompletableFuture`-based async APIs for Java interop. The adapter uses the
 Bluetape4k `virtualFutureOf` helpers and does not create a second executor.
