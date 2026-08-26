@@ -1,6 +1,8 @@
 package io.bluetape4k.graph.io.graphml
 
 import io.bluetape4k.graph.io.contract.GraphBulkImporter
+import io.bluetape4k.graph.io.checkpoint.GraphImportCheckpointIdentity
+import io.bluetape4k.graph.io.checkpoint.GraphImportCheckpointSession
 import io.bluetape4k.graph.io.graphml.internal.StaxGraphMlReader
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.options.MissingEndpointPolicy
@@ -98,7 +100,23 @@ class GraphMlBulkImporter : GraphBulkImporter<GraphImportSource> {
         log.debug { "Starting GRAPHML import: defaultVertexLabel=${graphMlOptions.defaultVertexLabel}" }
         val watch = GraphIoStopwatch()
         val idMap = GraphIoExternalIdMap(options.onDuplicateVertexId)
-        val batchWriter = GraphIoBatchWriter(operations, options.batchSize)
+        val checkpoint = GraphImportCheckpointSession(
+            format = GraphIoFormat.GRAPHML,
+            sourceIdentity = GraphImportCheckpointIdentity.resolve(options, source),
+            options = options,
+            idMap = idMap,
+            importOptionsIdentity = GraphImportCheckpointIdentity.optionsIdentity(
+                options,
+                graphMlOptions.labelAttrName,
+                graphMlOptions.unsupportedElementPolicy.name,
+                graphMlOptions.defaultVertexLabel,
+                graphMlOptions.defaultEdgeLabel,
+            ),
+        )
+        val batchWriter = GraphIoBatchWriter(operations, options.writeBatchSize) { boundary, error ->
+            checkpoint.failed(boundary, error.message)
+        }
+        try {
         val failures = mutableListOf<GraphIoFailure>()
         val bufferedEdges = ArrayDeque<GraphIoEdgeRecord>()
         var vr = 0L
@@ -108,19 +126,28 @@ class GraphMlBulkImporter : GraphBulkImporter<GraphImportSource> {
         var sv = 0L
         var se = 0L
         var status = GraphIoStatus.COMPLETED
+        var failureBoundary = "VERTICES"
 
         val sink = object : StaxGraphMlReader.GraphMlRecordSink {
             override fun onVertex(record: GraphIoVertexRecord) {
                 vr++
                 if (status == GraphIoStatus.FAILED) return
+                if (checkpoint.shouldSkipVertex(vr)) return
                 val props = options.preserveExternalIdProperty
                     ?.let { record.properties + (it to record.externalId) } ?: record.properties
                 when (idMap.putFirstOrFail(record.externalId, GraphElementId(record.externalId))) {
                     GraphIoExternalIdMap.PutResult.CREATED -> {
-                        vc += batchWriter.addVertex(record.externalId, record.label, props, idMap)
+                        val created = batchWriter.addVertex(record.externalId, record.label, props, idMap)
+                        vc += created
+                        if (created > 0 || options.checkpointStore != null) {
+                            checkpoint.verticesCommitted(vr)
+                        }
                     }
                     GraphIoExternalIdMap.PutResult.SKIPPED -> {
                         sv++
+                        if (options.checkpointStore != null) {
+                            checkpoint.verticesCommitted(vr)
+                        }
                         status = GraphIoStatus.PARTIAL
                         failures += GraphIoFailure(
                             phase = GraphIoPhase.CREATE_VERTEX,
@@ -136,6 +163,8 @@ class GraphMlBulkImporter : GraphBulkImporter<GraphImportSource> {
             override fun onEdge(record: GraphIoEdgeRecord) {
                 er++
                 if (status == GraphIoStatus.FAILED) return
+                if (checkpoint.shouldSkipEdge(er)) return
+                failureBoundary = "EDGES"
                 bufferedEdges += record
                 if (bufferedEdges.size > options.maxEdgeBufferSize) {
                     failures += GraphIoFailure(
@@ -152,6 +181,7 @@ class GraphMlBulkImporter : GraphBulkImporter<GraphImportSource> {
 
             override fun onFailure(failure: GraphIoFailure) {
                 failures += failure
+                failureBoundary = if (failure.phase == GraphIoPhase.READ_EDGE) "EDGES" else "VERTICES"
                 status = when {
                     failure.severity == GraphIoFailureSeverity.ERROR -> GraphIoStatus.FAILED
                     status == GraphIoStatus.COMPLETED -> GraphIoStatus.PARTIAL
@@ -169,19 +199,22 @@ class GraphMlBulkImporter : GraphBulkImporter<GraphImportSource> {
         }
 
         if (status == GraphIoStatus.FAILED) {
+            checkpoint.failed(failureBoundary)
             return GraphImportReport(status, GraphIoFormat.GRAPHML, vr, vc, er, ec, sv, se, watch.elapsed(), failures)
         }
-
         vc += batchWriter.flushVertices(idMap)
-
+        checkpoint.verticesCommitted(vr)
+        var drainedEdges = checkpoint.resumeEdgesProcessed
         while (bufferedEdges.isNotEmpty()) {
             val e = bufferedEdges.removeFirst()
+            drainedEdges++
             val from = idMap.resolve(e.fromExternalId)
             val to = idMap.resolve(e.toExternalId)
             if (from == null || to == null) {
                 when (options.onMissingEdgeEndpoint) {
                     MissingEndpointPolicy.FAIL -> {
                         ec += batchWriter.flushEdges()
+                        checkpoint.edgesCommitted(vr, drainedEdges - 1)
                         val failure = GraphIoFailure(
                             phase = GraphIoPhase.READ_EDGE,
                             fileRole = GraphIoFileRole.UNIFIED,
@@ -210,15 +243,27 @@ class GraphMlBulkImporter : GraphBulkImporter<GraphImportSource> {
             val props = e.externalId?.let { eid ->
                 options.preserveExternalIdProperty?.let { key -> e.properties + (key to eid) } ?: e.properties
             } ?: e.properties
-            ec += batchWriter.addEdge(e.label, from, to, props)
+            val created = batchWriter.addEdge(e.label, from, to, props)
+            ec += created
+            if (created > 0) {
+                ec += batchWriter.flushEdges()
+                checkpoint.edgesCommitted(vr, drainedEdges)
+            }
         }
 
         if (status != GraphIoStatus.FAILED) {
             ec += batchWriter.flushEdges()
+            checkpoint.edgesCommitted(vr, er)
+            checkpoint.completed()
+        } else {
+            checkpoint.failed("EDGES")
         }
 
         return GraphImportReport(status, GraphIoFormat.GRAPHML, vr, vc, er, ec, sv, se, watch.elapsed(), failures)
             .also { log.debug { "Import completed: vertices=$vc/$vr, edges=$ec/$er, skipped=$sv/$se, status=$status, elapsed=${watch.elapsed()}" } }
+        } finally {
+            checkpoint.close()
+        }
     }
 
     private object StopImport : RuntimeException()

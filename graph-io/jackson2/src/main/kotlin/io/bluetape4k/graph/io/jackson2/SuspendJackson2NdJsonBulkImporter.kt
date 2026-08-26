@@ -3,6 +3,8 @@
 package io.bluetape4k.graph.io.jackson2
 
 import io.bluetape4k.graph.io.contract.GraphSuspendBulkImporter
+import io.bluetape4k.graph.io.checkpoint.GraphImportCheckpointIdentity
+import io.bluetape4k.graph.io.checkpoint.GraphImportCheckpointSession
 import io.bluetape4k.graph.io.jackson2.internal.Jackson2EnvelopeCodec
 import io.bluetape4k.graph.io.jackson2.internal.Jackson2RecordParser
 import io.bluetape4k.graph.io.jackson2.internal.NdJsonEnvelope
@@ -83,18 +85,41 @@ class SuspendJackson2NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
         log.debug { "Starting NDJSON_JACKSON2 import (suspend): defaultVertexLabel=${options.defaultVertexLabel}, defaultEdgeLabel=${options.defaultEdgeLabel}" }
         val watch = GraphIoStopwatch()
         val idMap = GraphIoExternalIdMap(options.onDuplicateVertexId)
-        val batchWriter = SuspendGraphIoBatchWriter(operations, options.batchSize)
+        val checkpoint = GraphImportCheckpointSession(
+            format = GraphIoFormat.NDJSON_JACKSON2,
+            sourceIdentity = GraphImportCheckpointIdentity.resolve(options, source),
+            options = options,
+            idMap = idMap,
+        )
+        val batchWriter = SuspendGraphIoBatchWriter(operations, options.writeBatchSize) { boundary, error ->
+            checkpoint.failed(boundary, error.message)
+        }
+        try {
         val failures = mutableListOf<GraphIoFailure>()
         val bufferedEdges = ArrayDeque<GraphIoEdgeRecord>()
         val parser = Jackson2RecordParser(codec)
         var vr = 0L; var vc = 0L; var er = 0L; var ec = 0L; var sv = 0L; var se = 0L
         var status = GraphIoStatus.COMPLETED
+        var failureBoundary = "VERTICES"
+        var drainedEdges = checkpoint.resumeEdgesProcessed
 
         val coroutineContext = currentCoroutineContext()
         try {
             parser.records(source).collect { parsed ->
                 coroutineContext.ensureActive()
                 if (status != GraphIoStatus.FAILED) {
+                    when (parsed.envelope.type) {
+                        NdJsonEnvelope.TYPE_VERTEX -> {
+                            vr++
+                            if (checkpoint.shouldSkipVertex(vr)) return@collect
+                        }
+                        NdJsonEnvelope.TYPE_EDGE -> {
+                            er++
+                            if (checkpoint.shouldSkipEdge(er)) return@collect
+                            failureBoundary = "EDGES"
+                        }
+                    }
+                    val previousVerticesCreated = vc
                     status = importEnvelope(
                         env = parsed.envelope,
                         lineNo = parsed.lineNumber,
@@ -105,11 +130,15 @@ class SuspendJackson2NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
                         failures = failures,
                         bufferedEdges = bufferedEdges,
                         verticesCreated = { vc },
-                        onVertexRead = { vr++ },
+                        onVertexRead = {},
                         onVertexCreated = { created -> vc += created },
                         onVertexSkipped = { sv++ },
-                        onEdgeRead = { er++ },
+                        onEdgeRead = {},
                     )
+                    if (vc > previousVerticesCreated) {
+                        vc += batchWriter.flushVertices(idMap)
+                        checkpoint.verticesCommitted(vr)
+                    }
                     if (status == GraphIoStatus.FAILED) throw StopImport
                 }
             }
@@ -118,11 +147,14 @@ class SuspendJackson2NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
         } catch (error: GraphIoReadException) {
             failures += error.failure
             status = GraphIoStatus.FAILED
+            failureBoundary = if (error.failure.phase == GraphIoPhase.READ_EDGE) "EDGES" else "VERTICES"
         }
 
         vc += batchWriter.flushVertices(idMap)
+        checkpoint.verticesCommitted(vr)
 
         if (status == GraphIoStatus.FAILED) {
+            checkpoint.failed(failureBoundary)
             log.warn { "NDJSON_JACKSON2 import (suspend) failed: vertices=$vc/$vr, edges=$ec/$er, elapsed=${watch.elapsed()}" }
             return GraphImportReport(
                 status, GraphIoFormat.NDJSON_JACKSON2, vr, vc, er, ec, sv, se, watch.elapsed(), failures
@@ -136,16 +168,36 @@ class SuspendJackson2NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
             batchWriter = batchWriter,
             failures = failures,
             currentStatus = status,
-            onEdgesCreated = { created -> ec += created },
+            onEdgesCreated = { created ->
+                ec += created
+                if (created > 0) {
+                    ec += batchWriter.flushEdges()
+                    true
+                } else {
+                    false
+                }
+            },
             onEdgeSkipped = { se++ },
+            onEdgeProgress = { progress ->
+                drainedEdges = progress
+                checkpoint.edgesCommitted(vr, drainedEdges)
+            },
+            startingEdgeProgress = checkpoint.resumeEdgesProcessed,
         )
 
         if (status != GraphIoStatus.FAILED) {
             ec += batchWriter.flushEdges()
+            checkpoint.edgesCommitted(vr, er)
+            checkpoint.completed()
+        } else {
+            checkpoint.failed("EDGES")
         }
 
         return GraphImportReport(status, GraphIoFormat.NDJSON_JACKSON2, vr, vc, er, ec, sv, se, watch.elapsed(), failures).also {
             log.debug { "NDJSON_JACKSON2 import (suspend) completed: vertices=$vc/$vr, edges=$ec/$er, skipped=$sv/$se, status=$status, elapsed=${watch.elapsed()}" }
+        }
+        } finally {
+            checkpoint.close()
         }
     }
 
@@ -156,13 +208,17 @@ class SuspendJackson2NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
         batchWriter: SuspendGraphIoBatchWriter,
         failures: MutableList<GraphIoFailure>,
         currentStatus: GraphIoStatus,
-        onEdgesCreated: (Int) -> Unit,
+        onEdgesCreated: suspend (Int) -> Boolean,
         onEdgeSkipped: () -> Unit,
+        onEdgeProgress: suspend (Long) -> Unit,
+        startingEdgeProgress: Long,
     ): GraphIoStatus {
         var status = currentStatus
+        var processedEdges = startingEdgeProgress
+        var checkpointedEdges = startingEdgeProgress
         for (edge in bufferedEdges) {
             if (status != GraphIoStatus.FAILED) {
-                status = drainBufferedEdge(
+                val result = drainBufferedEdge(
                     edge = edge,
                     idMap = idMap,
                     options = options,
@@ -172,6 +228,17 @@ class SuspendJackson2NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
                     onEdgesCreated = onEdgesCreated,
                     onEdgeSkipped = onEdgeSkipped,
                 )
+                if (result.accepted) processedEdges++
+                status = result.status
+                if (status == GraphIoStatus.FAILED) {
+                    if (result.flushed && processedEdges > checkpointedEdges) {
+                        onEdgeProgress(processedEdges)
+                        checkpointedEdges = processedEdges
+                    }
+                } else if (result.flushed || result.skipped) {
+                    onEdgeProgress(processedEdges)
+                    checkpointedEdges = processedEdges
+                }
             }
         }
         return status
@@ -184,9 +251,9 @@ class SuspendJackson2NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
         batchWriter: SuspendGraphIoBatchWriter,
         failures: MutableList<GraphIoFailure>,
         currentStatus: GraphIoStatus,
-        onEdgesCreated: (Int) -> Unit,
+        onEdgesCreated: suspend (Int) -> Boolean,
         onEdgeSkipped: () -> Unit,
-    ): GraphIoStatus {
+    ): EdgeDrainResult {
         val from = idMap.resolve(edge.fromExternalId)
         val to = idMap.resolve(edge.toExternalId)
         return if (from == null || to == null) {
@@ -195,8 +262,8 @@ class SuspendJackson2NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
             val props = edge.externalId?.let { eid ->
                 options.preserveExternalIdProperty?.let { key -> edge.properties + (key to eid) } ?: edge.properties
             } ?: edge.properties
-            onEdgesCreated(batchWriter.addEdge(edge.label, from, to, props))
-            currentStatus
+            val flushed = onEdgesCreated(batchWriter.addEdge(edge.label, from, to, props))
+            EdgeDrainResult(currentStatus, accepted = true, flushed = flushed)
         }
     }
 
@@ -205,19 +272,19 @@ class SuspendJackson2NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
         options: GraphImportOptions,
         batchWriter: SuspendGraphIoBatchWriter,
         failures: MutableList<GraphIoFailure>,
-        onEdgesCreated: (Int) -> Unit,
+        onEdgesCreated: suspend (Int) -> Boolean,
         onEdgeSkipped: () -> Unit,
-    ): GraphIoStatus =
+    ): EdgeDrainResult =
         when (options.onMissingEdgeEndpoint) {
             MissingEndpointPolicy.FAIL -> {
-                onEdgesCreated(batchWriter.flushEdges())
+                val flushed = onEdgesCreated(batchWriter.flushEdges())
                 failures += GraphIoFailure(
                     phase = GraphIoPhase.READ_EDGE,
                     fileRole = GraphIoFileRole.UNIFIED,
                     recordId = edge.externalId,
                     message = "Unresolved endpoint from=${edge.fromExternalId} to=${edge.toExternalId}",
                 )
-                GraphIoStatus.FAILED
+                EdgeDrainResult(GraphIoStatus.FAILED, accepted = false, flushed = flushed)
             }
             MissingEndpointPolicy.SKIP_EDGE -> {
                 onEdgeSkipped()
@@ -228,9 +295,16 @@ class SuspendJackson2NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
                     recordId = edge.externalId,
                     message = "Missing endpoint skipped from=${edge.fromExternalId} to=${edge.toExternalId}",
                 )
-                GraphIoStatus.PARTIAL
+                EdgeDrainResult(GraphIoStatus.PARTIAL, accepted = true, skipped = true)
             }
         }
+
+    private data class EdgeDrainResult(
+        val status: GraphIoStatus,
+        val accepted: Boolean,
+        val flushed: Boolean = false,
+        val skipped: Boolean = false,
+    )
 
     private suspend fun importEnvelope(
         env: NdJsonEnvelope,

@@ -2,6 +2,8 @@ package io.bluetape4k.graph.io.support
 
 import io.bluetape4k.graph.io.options.DuplicateVertexPolicy
 import io.bluetape4k.graph.model.GraphElementId
+import java.nio.charset.StandardCharsets
+import java.util.Base64
 
 /**
  * 외부 ID와 백엔드가 발급한 [GraphElementId] 간의 매핑.
@@ -105,4 +107,48 @@ class GraphIoExternalIdMap(
      * 현재 등록된 외부 ID 수.
      */
     val size: Int get() = mapping.size
+
+    /**
+     * graph-io checkpoint에 저장할 결정적이고 불투명한 snapshot을 반환한다.
+     * 임의의 외부/backend ID가 레코드 형식을 깨뜨리지 않도록 URL-safe Base64를 사용한다.
+     */
+    fun snapshot(): String = buildString {
+        append(SNAPSHOT_VERSION)
+        mapping.entries
+            .sortedBy { it.key }
+            .forEach { (externalId, backendId) ->
+                append(';')
+                append(encode(externalId))
+                append(':')
+                append(encode(backendId.value))
+            }
+    }
+
+    /** 재개 import 전에 checkpoint snapshot을 이 맵으로 복원한다. */
+    fun restore(snapshot: String?) {
+        if (snapshot.isNullOrBlank()) return
+        val entries = snapshot.split(';')
+        require(entries.first() == SNAPSHOT_VERSION) { "unsupported external ID map snapshot" }
+        mapping.clear()
+        entries.drop(1).forEach { entry ->
+            if (entry.isBlank()) return@forEach
+            val separator = entry.indexOf(':')
+            require(separator > 0 && separator < entry.lastIndex) {
+                "invalid external ID map snapshot entry"
+            }
+            val externalId = decode(entry.substring(0, separator))
+            val backendId = decode(entry.substring(separator + 1))
+            mapping[externalId] = GraphElementId(backendId)
+        }
+    }
+
+    private fun encode(value: String): String =
+        Base64.getUrlEncoder().withoutPadding().encodeToString(value.toByteArray(StandardCharsets.UTF_8))
+
+    private fun decode(value: String): String =
+        String(Base64.getUrlDecoder().decode(value), StandardCharsets.UTF_8)
+
+    private companion object {
+        const val SNAPSHOT_VERSION = "v1"
+    }
 }

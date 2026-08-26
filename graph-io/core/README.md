@@ -66,6 +66,10 @@ data class GraphImportOptions(
     val defaultVertexLabel: String = "Vertex",
     val defaultEdgeLabel: String = "Edge",
     val preserveExternalIdProperty: String? = "_graphIoExternalId",
+    val checkpointStore: GraphImportCheckpointStore? = null,
+    val checkpointKey: String? = null,
+    val checkpointSourceIdentity: String? = null,
+    val resumeFromCheckpoint: Boolean = false,
 )
 
 data class GraphExportOptions(
@@ -79,7 +83,9 @@ enum class DuplicateVertexPolicy { FAIL, SKIP }
 enum class MissingEndpointPolicy { FAIL, SKIP_EDGE }
 ```
 
-`batchSize` controls backend write flushing during imports. Importers group pending vertices and edges by label, call `createVertices`/`createEdges` when a label buffer reaches this size, and flush final partial buffers at the end. It does not change duplicate-ID or missing-endpoint policy semantics.
+`batchSize` controls backend write flushing during imports. Importers group pending vertices and edges by label, call `createVertices`/`createEdges` when a label buffer reaches this size, and flush final partial buffers at the end. When checkpointing is enabled, importers use single-record safe boundaries so a partial backend batch cannot be hidden. It does not change duplicate-ID or missing-endpoint policy semantics.
+
+Checkpoint/resume is opt-in through `checkpointStore` and `checkpointKey`. Every sync, suspend, and virtual-thread importer for the supported formats persists safe vertex/edge boundaries, the external-ID mapping, and an import-options fingerprint, then deletes the checkpoint after success. Resume fails closed with `GraphImportCheckpointConflictException` when the format, version, source identity, import options, or mapping is incompatible. Without an atomic transaction spanning the checkpoint store and graph backend, resume is at-least-once; callers should use stable external IDs with backend idempotency or unique constraints. Stream and OkIO stream sources require callers to provide a stable `checkpointSourceIdentity`; the default remains the existing one-attempt behavior.
 
 `batchSize` must be positive. `GraphImportOptions`, `GraphIoBatchWriter`, and
 `SuspendGraphIoBatchWriter` all reject zero or negative values through the shared
