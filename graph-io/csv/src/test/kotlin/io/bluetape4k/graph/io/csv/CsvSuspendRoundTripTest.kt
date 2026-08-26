@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.io.csv
 
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphIoStatus
@@ -12,16 +13,26 @@ import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.coroutines.KLoggingChannel
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runCurrent
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
+import java.io.IOException
+import java.io.OutputStream
 import java.util.Collections
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
 
 class CsvSuspendRoundTripTest {
 
@@ -98,6 +109,74 @@ class CsvSuspendRoundTripTest {
         }
     }
 
+    @Test
+    fun `suspend export uses bounded chunks once per label and unions properties`(@TempDir dir: Path) = runSuspendIO {
+        val vOut = dir.resolve("bounded-suspend-v.csv")
+        val eOut = dir.resolve("bounded-suspend-e.csv")
+        val source = TinkerGraphSuspendOperations()
+        val person = source.createVertex("Person", mapOf("name" to "Alice"))
+        val company = source.createVertex("Company", mapOf("industry" to "Software"))
+        source.createEdge(person.id, company.id, "WORKS", mapOf("since" to 2024))
+        val requests = Collections.synchronizedList(mutableListOf<String>())
+
+        val report = SuspendCsvGraphBulkExporter().exportGraphSuspending(
+            CsvGraphExportSink(GraphExportSink.PathSink(vOut), GraphExportSink.PathSink(eOut)),
+            ChunkOnlyGraphSuspendOperations(source, requests),
+            GraphExportOptions(
+                vertexLabels = setOf("Person", "Company"),
+                edgeLabels = setOf("WORKS"),
+                exportChunkSize = 1,
+            ),
+        )
+
+        report.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        report.verticesWritten shouldBeEqualTo 2L
+        report.edgesWritten shouldBeEqualTo 1L
+        requests.sorted() shouldBeEqualTo listOf("Company:1", "Person:1", "WORKS:1")
+        java.nio.file.Files.readString(vOut) shouldContain "prop.industry"
+        java.nio.file.Files.readString(vOut) shouldContain "prop.name"
+    }
+
+    @Test
+    fun `suspend export cancels source collection and completes spool cleanup`() = runTest {
+        val cancelled = AtomicBoolean(false)
+        val exporter = SuspendCsvGraphBulkExporter()
+        val job = launch {
+            exporter.exportGraphSuspending(
+                CsvGraphExportSink(
+                    GraphExportSink.OutputStreamSink(java.io.ByteArrayOutputStream(), closeOutput = false),
+                    GraphExportSink.OutputStreamSink(java.io.ByteArrayOutputStream(), closeOutput = false),
+                ),
+                CancellingGraphSuspendOperations(cancelled),
+                GraphExportOptions(vertexLabels = setOf("Person"), edgeLabels = setOf("KNOWS")),
+            )
+        }
+
+        runCurrent()
+        job.cancelAndJoin()
+        cancelled.get().shouldBeTrue()
+    }
+
+    @Test
+    fun `suspend export preserves the primary sink failure while closing spool`() = runSuspendIO {
+        val source = TinkerGraphSuspendOperations().also {
+            it.createVertex("Person", mapOf("name" to "Alice"))
+        }
+
+        val thrown = assertFailsWith<IOException> {
+            SuspendCsvGraphBulkExporter().exportGraphSuspending(
+                CsvGraphExportSink(
+                    GraphExportSink.OutputStreamSink(FailingOutputStream("csv-suspend-sink-failure")),
+                    GraphExportSink.OutputStreamSink(java.io.ByteArrayOutputStream()),
+                ),
+                source,
+                GraphExportOptions(vertexLabels = setOf("Person")),
+            )
+        }
+
+        thrown.message shouldBeEqualTo "csv-suspend-sink-failure"
+    }
+
     private class ThreadRecordingSuspendOperations(
         private val delegate: GraphSuspendOperations,
     ): GraphSuspendOperations by delegate {
@@ -118,6 +197,24 @@ class CsvSuspendRoundTripTest {
             return delegate.findEdgesByLabel(label, filter)
         }
 
+        override fun findVerticesByLabelChunked(
+            label: String,
+            filter: Map<String, Any?>,
+            chunkSize: Int,
+        ): Flow<List<GraphVertex>> {
+            record()
+            return delegate.findVerticesByLabelChunked(label, filter, chunkSize)
+        }
+
+        override fun findEdgesByLabelChunked(
+            label: String,
+            filter: Map<String, Any?>,
+            chunkSize: Int,
+        ): Flow<List<GraphEdge>> {
+            record()
+            return delegate.findEdgesByLabelChunked(label, filter, chunkSize)
+        }
+
         override suspend fun createVertices(
             label: String,
             propertiesList: List<Map<String, Any?>>,
@@ -134,5 +231,61 @@ class CsvSuspendRoundTripTest {
         private fun record() {
             recordedThreads.add(Thread.currentThread().name)
         }
+    }
+
+    private class ChunkOnlyGraphSuspendOperations(
+        private val delegate: GraphSuspendOperations,
+        private val requests: MutableList<String>,
+    ) : GraphSuspendOperations by delegate {
+
+        override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphVertex> =
+            error("full vertex Flow lookup must not be used by CSV export")
+
+        override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphEdge> =
+            error("full edge Flow lookup must not be used by CSV export")
+
+        override fun findVerticesByLabelChunked(
+            label: String,
+            filter: Map<String, Any?>,
+            chunkSize: Int,
+        ): Flow<List<GraphVertex>> {
+            requests += "$label:$chunkSize"
+            return delegate.findVerticesByLabelChunked(label, filter, chunkSize)
+        }
+
+        override fun findEdgesByLabelChunked(
+            label: String,
+            filter: Map<String, Any?>,
+            chunkSize: Int,
+        ): Flow<List<GraphEdge>> {
+            requests += "$label:$chunkSize"
+            return delegate.findEdgesByLabelChunked(label, filter, chunkSize)
+        }
+    }
+
+    private class CancellingGraphSuspendOperations(
+        private val cancelled: AtomicBoolean,
+    ) : GraphSuspendOperations by TinkerGraphSuspendOperations() {
+
+        override fun findVerticesByLabelChunked(
+            label: String,
+            filter: Map<String, Any?>,
+            chunkSize: Int,
+        ): Flow<List<GraphVertex>> = flow {
+            try {
+                emit(listOf(GraphVertex(io.bluetape4k.graph.model.GraphElementId.of("v-1"), label)))
+                awaitCancellation()
+            } finally {
+                cancelled.set(true)
+            }
+        }
+    }
+
+    private class FailingOutputStream(
+        private val message: String,
+    ) : OutputStream() {
+        override fun write(b: Int): Unit = throw IOException(message)
+
+        override fun write(b: ByteArray, off: Int, len: Int): Unit = throw IOException(message)
     }
 }

@@ -14,6 +14,7 @@ import io.bluetape4k.graph.io.report.GraphIoProgressReporter
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.io.support.GraphIoPaths
+import io.bluetape4k.graph.io.support.GraphIoRecordSpool
 import io.bluetape4k.graph.io.support.GraphIoStopwatch
 import io.bluetape4k.graph.io.support.resolveLabels
 import io.bluetape4k.graph.repository.GraphOperations
@@ -23,9 +24,8 @@ import io.bluetape4k.logging.debug
 /**
  * Blocking bulk exporter for GraphML.
  *
- * exporter는 property key 이름만 미리 스캔한 뒤 repository API chunk를 이용해
- * 정점과 간선을 하나의 XML 문서에 기록한다. source bounded 실행은 graph facade가
- * `BOUNDED_CHUNKED_*` capability를 광고하는 경우에만 보장된다.
+ * exporter는 bounded repository chunk를 immutable disk spool에 한 번 기록한 뒤,
+ * 같은 snapshot에서 property key와 payload를 읽어 하나의 XML 문서에 기록한다.
  *
  * 예제:
  *
@@ -82,6 +82,7 @@ class GraphMlBulkExporter : GraphBulkExporter<GraphExportSink> {
         )
     }
 
+    @Suppress("TooGenericExceptionCaught")
     fun exportGraph(
         sink: GraphExportSink,
         operations: GraphOperations,
@@ -92,55 +93,55 @@ class GraphMlBulkExporter : GraphBulkExporter<GraphExportSink> {
         val watch = GraphIoStopwatch()
         val failures = mutableListOf<GraphIoFailure>()
         val (vertexLabels, edgeLabels) = options.resolveLabels(operations)
+        val spool = GraphIoRecordSpool()
+        var primaryFailure: Throwable? = null
 
-        fun vertexChunks() = vertexLabels.asSequence().flatMap { label ->
-            operations.findVerticesByLabelChunked(label, chunkSize = options.exportChunkSize)
-        }
-
-        fun edgeChunks() = edgeLabels.asSequence().flatMap { label ->
-            operations.findEdgesByLabelChunked(label, chunkSize = options.exportChunkSize)
-        }
-
-        val vertexPropertyKeys = linkedSetOf<String>()
-        for (chunk in vertexChunks()) {
-            chunk.forEach { vertexPropertyKeys.addAll(it.properties.keys) }
-        }
-        val edgePropertyKeys = linkedSetOf<String>()
-        for (chunk in edgeChunks()) {
-            chunk.forEach { edgePropertyKeys.addAll(it.properties.keys) }
-        }
-
-        fun vertexRecords() = vertexChunks()
-            .flatMap { chunk -> chunk.asSequence() }
-            .map { v -> GraphIoVertexRecord(v.id.value, v.label, v.properties) }
-
-        fun edgeRecords() = edgeChunks()
-            .flatMap { chunk -> chunk.asSequence() }
-            .map { e -> GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties) }
-
-        val writeResult = GraphIoPaths.openOutputStream(sink).use { output ->
-            writer.write(
-                output = output,
-                vertices = vertexRecords(),
-                edges = edgeRecords(),
-                options = graphMlOptions,
-                vertexPropertyKeys = vertexPropertyKeys,
-                edgePropertyKeys = edgePropertyKeys,
-            )
-        }
-
-        return GraphExportReport(
-            status = if (failures.isEmpty()) GraphIoStatus.COMPLETED else GraphIoStatus.PARTIAL,
-            format = GraphIoFormat.GRAPHML,
-            verticesWritten = writeResult.verticesWritten,
-            edgesWritten = writeResult.edgesWritten,
-            elapsed = watch.elapsed(),
-            failures = failures,
-        ).also {
-            log.debug {
-                "Export completed: vertices=${writeResult.verticesWritten}, " +
-                    "edges=${writeResult.edgesWritten}, elapsed=${watch.elapsed()}"
+        try {
+            for (label in vertexLabels) {
+                operations.findVerticesByLabelChunked(label, chunkSize = options.exportChunkSize).forEach { chunk ->
+                    spool.appendVertices(chunk.map { v -> GraphIoVertexRecord(v.id.value, v.label, v.properties) })
+                }
             }
+            for (label in edgeLabels) {
+                operations.findEdgesByLabelChunked(label, chunkSize = options.exportChunkSize).forEach { chunk ->
+                    spool.appendEdges(
+                        chunk.map { e ->
+                            GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties)
+                        },
+                    )
+                }
+            }
+            spool.finish()
+
+            val writeResult = GraphIoPaths.openOutputStream(sink).use { output ->
+                writer.write(
+                    output = output,
+                    vertices = spool.vertexRecords(),
+                    edges = spool.edgeRecords(),
+                    options = graphMlOptions,
+                    vertexPropertyKeys = spool.vertexPropertyKeys,
+                    edgePropertyKeys = spool.edgePropertyKeys,
+                )
+            }
+
+            return GraphExportReport(
+                status = if (failures.isEmpty()) GraphIoStatus.COMPLETED else GraphIoStatus.PARTIAL,
+                format = GraphIoFormat.GRAPHML,
+                verticesWritten = writeResult.verticesWritten,
+                edgesWritten = writeResult.edgesWritten,
+                elapsed = watch.elapsed(),
+                failures = failures,
+            ).also {
+                log.debug {
+                    "Export completed: vertices=${writeResult.verticesWritten}, " +
+                        "edges=${writeResult.edgesWritten}, elapsed=${watch.elapsed()}"
+                }
+            }
+        } catch (failure: Throwable) {
+            primaryFailure = failure
+            throw failure
+        } finally {
+            spool.closeSuppressing(primaryFailure)
         }
     }
 

@@ -297,6 +297,16 @@ if (report.failures.isNotEmpty()) {
 - **중간~대규모** (100K–1M 레코드): 가상 스레드 또는 suspend 사용
 - **높은 동시성** 환경: 코루틴 감시자와 함께 suspend 사용
 
+CSV export는 선택한 정점·간선 라벨을 `findVerticesByLabelChunked` /
+`findEdgesByLabelChunked`로 읽습니다. 백엔드가 chunk-aware repository API를
+override하거나 cursor 기반 구현을 제공하면, 각 bounded chunk를 공용
+`GraphIoRecordSpool`에 한 번 저장한 뒤 header 탐색과 row 출력에서 불변 기준 데이터를
+replay합니다. 이 spool은 exporter 자체의 전체 list materialization과 live backend
+두 번째 조회를 없애지만, 호환성 list/Flow fallback은 exporter에 전달되기 전에 라벨
+전체를 materialize할 수 있습니다. active replay stream은 spool 정리 때 닫고, 정리
+실패는 원래 source·sink·취소 예외의 suppressed exception으로 연결합니다. 정상
+완료·실패·코루틴 취소 시 임시 spool 파일을 삭제합니다.
+
 ## 스트리밍 reader 계약
 
 `CsvGraphRecordFlowReader`는 정점과 간선 레코드를 cold·순차 `Flow`로 방출하며 입력 순서를 유지합니다.

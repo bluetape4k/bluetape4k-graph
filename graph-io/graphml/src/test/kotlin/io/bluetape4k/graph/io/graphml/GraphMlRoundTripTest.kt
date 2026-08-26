@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.io.graphml
 
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.graph.io.options.DuplicateVertexPolicy
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.options.GraphImportOptions
@@ -17,11 +18,15 @@ import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldHaveSize
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import java.io.IOException
+import java.io.OutputStream
 import java.nio.file.Path
 import kotlin.io.path.writeText
+import javax.xml.stream.XMLStreamException
 
 class GraphMlRoundTripTest {
 
@@ -120,7 +125,26 @@ class GraphMlRoundTripTest {
         report.status shouldBeEqualTo GraphIoStatus.COMPLETED
         report.verticesWritten shouldBeEqualTo 5L
         report.edgesWritten shouldBeEqualTo 2L
-        requestedChunkSizes shouldBeEqualTo listOf(2, 2, 2, 2)
+        requestedChunkSizes shouldBeEqualTo listOf(2, 2)
+    }
+
+    @Test
+    fun `sync export preserves the primary sink failure while closing spool`() {
+        val source = TinkerGraphOperations().also {
+            it.createVertex("Person", mapOf("name" to "Alice"))
+        }
+
+        val thrown = assertFailsWith<XMLStreamException> {
+            GraphMlBulkExporter().exportGraph(
+                GraphExportSink.OutputStreamSink(FailingOutputStream("graphml-sink-failure")),
+                source,
+                GraphExportOptions(vertexLabels = setOf("Person")),
+            )
+        }
+
+        generateSequence<Throwable>(thrown) { it.cause }
+            .any { it.message?.contains("graphml-sink-failure") == true }
+            .shouldBeTrue()
     }
 
     @Test
@@ -240,5 +264,13 @@ class GraphMlRoundTripTest {
             requestedChunkSizes += chunkSize
             return delegate.findEdgesByLabelChunked(label, filter, chunkSize)
         }
+    }
+
+    private class FailingOutputStream(
+        private val message: String,
+    ) : OutputStream() {
+        override fun write(b: Int): Unit = throw IOException(message)
+
+        override fun write(b: ByteArray, off: Int, len: Int): Unit = throw IOException(message)
     }
 }

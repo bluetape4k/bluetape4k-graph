@@ -301,6 +301,18 @@ Choose based on your workload:
 - **Medium to large** (100K–1M records): Use virtual threads or suspend
 - **High-concurrency** environments: Use suspend with coroutine supervisors
 
+CSV export reads each selected vertex and edge label through
+`findVerticesByLabelChunked` / `findEdgesByLabelChunked`. When the backend
+overrides the chunk-aware repository API (or provides a cursor-backed
+implementation), records are written once to the shared `GraphIoRecordSpool`
+and replayed for header discovery and row output. The spool avoids
+exporter-side whole-list materialization and a live second backend pass; the
+compatibility list/Flow fallback may still materialize a label before the
+exporter receives it. Active replay streams are closed during spool cleanup,
+and cleanup failures are suppressed behind the original source, sink, or
+cancellation failure. The temporary spool is removed on success, failure, and
+coroutine cancellation.
+
 ## Streaming reader contract
 
 `CsvGraphRecordFlowReader` emits vertex and edge records as a cold, sequential `Flow` and preserves

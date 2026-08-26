@@ -14,6 +14,7 @@ import io.bluetape4k.graph.io.report.GraphIoProgressReporter
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.io.support.GraphIoPaths
+import io.bluetape4k.graph.io.support.GraphIoRecordSpool
 import io.bluetape4k.graph.io.support.GraphIoStopwatch
 import io.bluetape4k.graph.io.support.resolveLabels
 import io.bluetape4k.graph.repository.GraphSuspendOperations
@@ -21,6 +22,7 @@ import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.withContext
 
 /**
@@ -92,67 +94,60 @@ class SuspendGraphMlBulkExporter : GraphSuspendBulkExporter<GraphExportSink> {
         val watch = GraphIoStopwatch()
         val failures = mutableListOf<GraphIoFailure>()
         val (vertexLabels, edgeLabels) = options.resolveLabels(operations)
+        val spool = GraphIoRecordSpool()
+        var primaryFailure: Throwable? = null
 
-        val vertexPropertyKeys = linkedSetOf<String>()
-        for (label in vertexLabels) {
-            operations.findVerticesByLabelChunked(label, chunkSize = options.exportChunkSize).collect { chunk ->
-                chunk.forEach { vertexPropertyKeys.addAll(it.properties.keys) }
-            }
-        }
-        val edgePropertyKeys = linkedSetOf<String>()
-        for (label in edgeLabels) {
-            operations.findEdgesByLabelChunked(label, chunkSize = options.exportChunkSize).collect { chunk ->
-                chunk.forEach { edgePropertyKeys.addAll(it.properties.keys) }
-            }
-        }
-
-        val output = withContext(Dispatchers.IO) { GraphIoPaths.openOutputStream(sink) }
-        val session = try {
-            withContext(Dispatchers.IO) {
-                writer.open(output, graphMlOptions, vertexPropertyKeys, edgePropertyKeys)
-            }
-        } catch (e: Throwable) {
-            withContext(NonCancellable + Dispatchers.IO) { output.close() }
-            throw e
-        }
-
-        val writeResult = try {
+        try {
             for (label in vertexLabels) {
                 operations.findVerticesByLabelChunked(label, chunkSize = options.exportChunkSize).collect { chunk ->
-                    val records = chunk.map { v -> GraphIoVertexRecord(v.id.value, v.label, v.properties) }
-                    withContext(Dispatchers.IO) { session.writeVertices(records) }
+                    withContext(Dispatchers.IO) {
+                        spool.appendVertices(chunk.map { v -> GraphIoVertexRecord(v.id.value, v.label, v.properties) })
+                    }
                 }
             }
             for (label in edgeLabels) {
                 operations.findEdgesByLabelChunked(label, chunkSize = options.exportChunkSize).collect { chunk ->
-                    val records = chunk.map { e ->
-                        GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties)
+                    withContext(Dispatchers.IO) {
+                        spool.appendEdges(
+                            chunk.map { e ->
+                                GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties)
+                            },
+                        )
                     }
-                    withContext(Dispatchers.IO) { session.writeEdges(records) }
                 }
             }
-            withContext(Dispatchers.IO) {
-                session.finish()
-                session.result()
+            withContext(Dispatchers.IO) { spool.finish() }
+
+            val writeResult = withContext(Dispatchers.IO) {
+                writer.write(
+                    output = GraphIoPaths.openOutputStream(sink),
+                    vertices = spool.vertexRecords(),
+                    edges = spool.edgeRecords(),
+                    options = graphMlOptions,
+                    vertexPropertyKeys = spool.vertexPropertyKeys,
+                    edgePropertyKeys = spool.edgePropertyKeys,
+                )
             }
+
+            return GraphExportReport(
+                status = if (failures.isEmpty()) GraphIoStatus.COMPLETED else GraphIoStatus.PARTIAL,
+                format = GraphIoFormat.GRAPHML,
+                verticesWritten = writeResult.verticesWritten,
+                edgesWritten = writeResult.edgesWritten,
+                elapsed = watch.elapsed(),
+                failures = failures,
+            ).also {
+                log.debug {
+                    "Suspend export completed: vertices=${writeResult.verticesWritten}, " +
+                        "edges=${writeResult.edgesWritten}"
+                }
+            }
+        } catch (failure: Throwable) {
+            primaryFailure = failure
+            throw failure
         } finally {
             withContext(NonCancellable + Dispatchers.IO) {
-                session.close()
-                output.close()
-            }
-        }
-
-        return GraphExportReport(
-            status = if (failures.isEmpty()) GraphIoStatus.COMPLETED else GraphIoStatus.PARTIAL,
-            format = GraphIoFormat.GRAPHML,
-            verticesWritten = writeResult.verticesWritten,
-            edgesWritten = writeResult.edgesWritten,
-            elapsed = watch.elapsed(),
-            failures = failures,
-        ).also {
-            log.debug {
-                "Suspend export completed: vertices=${writeResult.verticesWritten}, " +
-                    "edges=${writeResult.edgesWritten}"
+                spool.closeSuppressing(primaryFailure)
             }
         }
     }
