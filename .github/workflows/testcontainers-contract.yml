@@ -10,15 +10,12 @@ on:
       - 'graph/graph-*/README.ko.md'
       - 'graph/graph-falkordb/src/main/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphSchemaManager.kt'
       - 'graph/graph-falkordb/src/main/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphSuspendOperations.kt'
-      - 'docs/manual/**'
       - '.github/testcontainers-images.txt'
       - '.github/testcontainers-image-families.txt'
       - '.github/workflows/testcontainers-contract.yml'
       - 'build.gradle.kts'
       - 'settings.gradle.kts'
       - 'spring-boot/graph-spring-boot/src/test/kotlin/io/bluetape4k/graph/spring/boot/autoconfigure/TestcontainersImageLauncherContractTest.kt'
-      - 'scripts/manual/testcontainers_image_contract.rb'
-      - 'scripts/manual/testcontainers_image_contract_test.rb'
   pull_request:
     branches: [develop, main]
     paths:
@@ -28,15 +25,12 @@ on:
       - 'graph/graph-*/README.ko.md'
       - 'graph/graph-falkordb/src/main/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphSchemaManager.kt'
       - 'graph/graph-falkordb/src/main/kotlin/io/bluetape4k/graph/falkordb/FalkorDBGraphSuspendOperations.kt'
-      - 'docs/manual/**'
       - '.github/testcontainers-images.txt'
       - '.github/testcontainers-image-families.txt'
       - '.github/workflows/testcontainers-contract.yml'
       - 'build.gradle.kts'
       - 'settings.gradle.kts'
       - 'spring-boot/graph-spring-boot/src/test/kotlin/io/bluetape4k/graph/spring/boot/autoconfigure/TestcontainersImageLauncherContractTest.kt'
-      - 'scripts/manual/testcontainers_image_contract.rb'
-      - 'scripts/manual/testcontainers_image_contract_test.rb'
   workflow_dispatch:
 
 permissions:
@@ -50,6 +44,14 @@ jobs:
     steps:
       - name: 그래프 저장소 checkout
         uses: actions/checkout@v7
+
+      - name: 중앙 매뉴얼 사이트 checkout
+        uses: actions/checkout@v7
+        with:
+          repository: bluetape4k/bluetape4k.github.io
+          ref: develop
+          path: .manual-site
+          fetch-depth: 1
 
       - name: 중앙 catalog ref 확인
         id: catalog
@@ -70,4 +72,5 @@ jobs:
       - name: 이미지·문서·baseline drift 검증
         env:
           BLUETAPE4K_CATALOG_PATH: ${{ github.workspace }}/.catalog/bluetape4k-dependencies/gradle/libs.versions.toml
-        run: ruby scripts/manual/testcontainers_image_contract.rb --repository-root . --catalog "${BLUETAPE4K_CATALOG_PATH}"
+        run: ruby .manual-site/scripts/manual/repositories/bluetape4k-graph/testcontainers_image_contract.rb \
+          --repository-root . --catalog "${BLUETAPE4K_CATALOG_PATH}"
