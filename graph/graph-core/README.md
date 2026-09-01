@@ -569,15 +569,14 @@ helpers and no longer publishes a package-local copy, so it does not add a
 third owner for `io.bluetape4k.concurrent.virtualthread`. Upstream PR
 [#1523](https://github.com/bluetape4k/bluetape4k-projects/pull/1523) moves the
 Java 21 API types to `io.bluetape4k.concurrent.virtualthread.api`, leaving the
-core utility owner unchanged. The current `2.0.0-SNAPSHOT` dependency remains
-the pre-migration artifact until that PR is merged and published, so graph
-consumption is intentionally pending. Kotlin source imports remain unchanged
-for core helpers. Consumers that directly reference the removed generated
+core utility owner unchanged. Bluetape4k 2.0.0 contains that migration and the
+Graph 1.0.0 release consumes it through an immutable catalog commit. Kotlin
+source imports remain unchanged for core helpers. Consumers that directly reference the removed generated
 `CompletableFutureNullableSupportKt` class must be recompiled against the
 official `CompletableFutureSupportKt` owner; the external ABI migration is
 tracked in [#562](https://github.com/bluetape4k/bluetape4k-graph/issues/562).
 
-After the upstream artifact is available, verify the resolved JAR pair with:
+Verify the resolved JAR pair with:
 
 ```bash
 python3 scripts/verify_virtualthread_module_boundary.py \

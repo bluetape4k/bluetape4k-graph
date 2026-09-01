@@ -1,21 +1,41 @@
 # WIP - bluetape4k-graph
 
-기준 시점: 2026-08-26 KST
-범위: `1.0.0` milestone closeout 및 `backlog` 후속 큐
+기준 시점: 2026-09-02 KST
+범위: `1.0.0` 정식 배포 및 `backlog` 후속 큐
 
 ## 현재 상태
 
-- local `develop`와 `origin/develop`은 `06f8f256e2f303556b9ca101d6778d7222dd33a5`에서 일치한다.
-- 열린 PR은 0개이며, 열린 issue는 backlog인 [#215](https://github.com/bluetape4k/bluetape4k-graph/issues/215)와 [#30](https://github.com/bluetape4k/bluetape4k-graph/issues/30)뿐이다.
-- `1.0.0` closeout 범위의 [#534](https://github.com/bluetape4k/bluetape4k-graph/issues/534)~[#563](https://github.com/bluetape4k/bluetape4k-graph/issues/563)와 선행 [#525](https://github.com/bluetape4k/bluetape4k-graph/issues/525)~[#527](https://github.com/bluetape4k/bluetape4k-graph/issues/527)은 모두 종료되었다. 대응 PR #530~#532와 #564~#593도 모두 MERGED 상태다.
-- graph-core, graph-io, AGE, TinkerGraph, Spring Boot, examples, CI 계약을 포함한 repository-side stacked train은 완료되었다. 완료된 worktree와 local train branch는 정리했으며 루트 worktree만 남아 있다.
-- 최신 GitHub release는 `0.6.0`(2026-08-05)이다. `baseVersion=1.0.0`은 개발 기준선이며 `1.0.0` tag/release는 아직 만들지 않았다.
-- [#563](https://github.com/bluetape4k/bluetape4k-graph/issues/563)의 upstream 지원 [bluetape4k-projects#1523](https://github.com/bluetape4k/bluetape4k-projects/pull/1523)은 MERGED 되었지만, 새 upstream artifact를 소비하는 graph downstream 검증은 해당 artifact가 배포될 때까지 PENDING이다.
+- `origin/develop`은 `0fd73828818e3a284ba8daae1642fc6792e621bd`이며, 열린 PR은
+  `fix/600-release-gate-dedup` -> `develop`의
+  [#601](https://github.com/bluetape4k/bluetape4k-graph/pull/601) 하나다.
+- `1.0.0` milestone은 열린 issue 2개, 닫힌 issue 131개다. 열린 범위는 release
+  gate [#600](https://github.com/bluetape4k/bluetape4k-graph/issues/600)과 benchmark
+  회귀 [#603](https://github.com/bluetape4k/bluetape4k-graph/issues/603)이며 모두 PR #601이
+  닫는다.
+- 공개된 Projects 2.0.0을 포함하는 `bluetape4k-dependencies` exact commit
+  `791288630092ab17d23ba106c93c1f615b13f02a`를 1.0.0 release source에 고정했다.
+- 최신 공개 Graph release는 `0.6.0`(2026-08-05)이다. `baseVersion=1.0.0`의
+  CHANGELOG와 release checklist를 준비했으며, tag와 GitHub Release는 아직 생성하지
+  않았다.
+- release와 무관한 workflow path-filter 및 Testcontainers 중복 최적화는
+  [#602](https://github.com/bluetape4k/bluetape4k-graph/issues/602)에서 후속 추적한다.
+
+## 1.0.0 배포 순서
+
+1. PR #601의 exact-head CI를 통과시키고 `develop`에 병합한다.
+2. 병합 SHA에서 Full Nightly `scope=full`을 한 번 실행해 exact-head release 증거를 만든다.
+3. 검증된 SHA를 `main`과 signed annotated tag `1.0.0`으로 고정한다.
+4. release workflow의 Maven Central publication과 GitHub Release를 확인한다.
+5. 공개 artifact 검증 후 milestone을 닫고 central catalog의 Graph 버전을 stable로 승격한다.
+
+상세 gate와 증거 기록 위치는
+[`docs/releases/2026-09-02-graph-1.0.0-release-checklist.md`](docs/releases/2026-09-02-graph-1.0.0-release-checklist.md)다.
 
 ## 다음 backlog
 
 | 이슈 | 상태 | 메모 |
 |---|---|---|
+| [#602](https://github.com/bluetape4k/bluetape4k-graph/issues/602) | backlog | 배포와 분리해 workflow·문서 변경의 benchmark 및 Testcontainers 중복 실행을 줄인다. |
 | [#215](https://github.com/bluetape4k/bluetape4k-graph/issues/215) | backlog | Amazon Neptune backend feasibility를 local 또는 신뢰 가능한 integration test 가능성부터 재검증한다. |
 | [#30](https://github.com/bluetape4k/bluetape4k-graph/issues/30) | backlog | #215의 feasibility 결과 전까지 `graph-neptune` 구현을 시작하지 않는다. |
 

@@ -23,10 +23,10 @@ bluetape4k 생태계의 그래프 데이터베이스 통합 라이브러리. Apa
 - CSV, NDJSON, GraphML, OkIO stream 기반의 이식 가능한 그래프 벌크 I/O가 필요할 때
 - code graph, social graph, fraud detection, recommendation, knowledge graph, observability incident, IAM access path, supply-chain impact analysis, data lineage, network topology, security attack path, Ktor integration 예제를 바로 실행해 보고 싶을 때
 
-## 1.0.0 개발선 주요 변경
+## 1.0.0 배포 주요 변경
 
-`baseVersion=1.0.0` repository-side closeout train은 병합되었지만 아직
-`1.0.0` release는 아니다. 최신 release는 `0.6.0`이다. 최근 계약 보강 내용은
+`baseVersion=1.0.0` 배포 train은 공개된 Bluetape4k 2.0.0 artifact와 정렬한다.
+이 train 직전에 공개된 버전은 `0.6.0`이었다. 이번 배포의 주요 계약 보강 내용은
 다음과 같다.
 
 - AGE 구조적 식별자 검증과 안전한 literal 처리
@@ -59,8 +59,8 @@ bluetape4k 생태계의 그래프 데이터베이스 통합 라이브러리. Apa
 - fail-closed Testcontainers image-family/retry evidence와 backend capability
   conformance를 정비했으며, upstream virtual-thread split-package 수정은
   [#563](https://github.com/bluetape4k/bluetape4k-graph/issues/563)에서 추적한다.
-  해당 수정의 downstream 검증은 새 upstream artifact가 배포될 때까지
-  대기한다 ([upstream PR #1523](https://github.com/bluetape4k/bluetape4k-projects/pull/1523)).
+  해당 수정은 Bluetape4k 2.0.0에 포함됐으며 immutable release catalog를 통해
+  소비한다 ([upstream PR #1523](https://github.com/bluetape4k/bluetape4k-projects/pull/1523)).
 
 <!-- README_VISUAL_OVERVIEW:START -->
 ## Overview Diagram
@@ -507,7 +507,7 @@ retry가 진단 자료를 남길 수는 있어도 `release_gate=true`를 설정�
 - **Ktor** 3.x (ApplicationPlugin integration)
 - **jfalkordb** 0.8.0 (FalkorDB / Redis 모듈 그래프)
 - **Testcontainers** (통합 테스트)
-- **bluetape4k** 2.0.0-SNAPSHOT (공통 유틸리티)
+- **bluetape4k** 2.0.0 (공통 유틸리티)
 
 ## 문서
 

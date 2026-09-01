@@ -23,11 +23,11 @@ Use this project when you need:
 - portable graph bulk I/O in CSV, NDJSON, GraphML, and OkIO streams
 - ready-to-run domain examples for code graphs, social graphs, fraud detection, recommendations, knowledge graphs, observability incidents, IAM access paths, supply-chain impact analysis, data lineage, network topology, security attack paths, and Ktor integration
 
-## 1.0.0 Development-Line Highlights
+## 1.0.0 Release Highlights
 
-The repository-side closeout train for `baseVersion=1.0.0` is merged; this is a
-development line, not a `1.0.0` release yet. The latest release remains `0.6.0`.
-Recent contract hardening includes:
+The `baseVersion=1.0.0` release train aligns with the public Bluetape4k 2.0.0
+artifacts. The most recently published version before this train was `0.6.0`.
+Contract hardening in this release includes:
 
 - strict AGE structural-identifier validation and safe literal handling
   ([#534](https://github.com/bluetape4k/bluetape4k-graph/issues/534))
@@ -58,9 +58,9 @@ Recent contract hardening includes:
   [#562](https://github.com/bluetape4k/bluetape4k-graph/issues/562))
 - fail-closed Testcontainers image-family/retry evidence and backend capability
   conformance, with the upstream virtual-thread split-package fix tracked through
-  [#563](https://github.com/bluetape4k/bluetape4k-graph/issues/563). Downstream
-  verification for that fix remains pending until a new upstream snapshot is
-  published ([upstream PR #1523](https://github.com/bluetape4k/bluetape4k-projects/pull/1523)).
+  [#563](https://github.com/bluetape4k/bluetape4k-graph/issues/563). The fix is
+  included in Bluetape4k 2.0.0 and consumed through the immutable release catalog
+  ([upstream PR #1523](https://github.com/bluetape4k/bluetape4k-projects/pull/1523)).
 
 <!-- README_VISUAL_OVERVIEW:START -->
 ## Overview Diagram
@@ -513,7 +513,7 @@ Concrete classes only need to implement `ops` (`GraphOperations` or `GraphSuspen
 - **Ktor** 3.x (ApplicationPlugin integration)
 - **jfalkordb** 0.8.0 (FalkorDB / Redis-module graph)
 - **Testcontainers** (integration tests)
-- **bluetape4k** 2.0.0-SNAPSHOT (common utilities)
+- **bluetape4k** 2.0.0 (common utilities)
 
 ## Documentation
 

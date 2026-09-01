@@ -6,10 +6,7 @@
 하며, 이 프로젝트는 [Semantic Versioning](https://semver.org/spec/v2.0.0.html)을
 따른다.
 
-## [Unreleased]
-
-> 이 섹션은 `baseVersion=1.0.0` 개발선에 병합된 변경을 기록한다. `1.0.0`
-> tag/release는 아직 생성하지 않았으며, 최신 GitHub release는 `0.6.0`이다.
+## [1.0.0] - 2026-09-02
 
 ### 추가
 
@@ -30,6 +27,10 @@
 
 ### 변경
 
+- **Bluetape4k 2.0.0 stable catalog 전환**: 공개 검증이 끝난 Projects 2.0.0을
+  포함하는 `bluetape4k-dependencies` commit
+  `791288630092ab17d23ba106c93c1f615b13f02a`를 build와 CI의 immutable catalog
+  source로 고정했다.
 - **Release Testcontainers 중복 제거**: exact tag SHA의 성공한 Full Nightly에서
   image family gate와 전체 Nightly 상태를 확인하고, release workflow에서는 동일한
   네 graph container workload를 다시 실행하지 않도록 단순화했다. Stable release의
@@ -86,8 +87,8 @@
   `bluetape4k-virtualthread-api` 타입을 `.api` package로 이동하고 core owner를
   유지하도록 정렬했다. graph-core에는 실제 resolved JAR 쌍의 package ownership와
   `java --validate-modules`를 검증하는 fail-closed verifier 및 migration 문서를
-  추가했다. upstream PR은 2026-08-26에 MERGED 되었지만, 새 artifact
-  배포 전까지 downstream 소비 검증은 PENDING으로 유지한다
+  추가했다. upstream PR은 2026-08-26에 MERGED 되었고, 공개된 Bluetape4k 2.0.0
+  artifact를 immutable release catalog로 소비한다
   ([#563](https://github.com/bluetape4k/bluetape4k-graph/issues/563)).
 
 - **Virtual Thread helper owner 정리**: graph-core의 graph-local
@@ -185,6 +186,10 @@
 
 ### 버그 수정
 
+- **Weighted shortest-path benchmark depth**: `vertexCount=100` dataset의 99-hop
+  canonical path를 탐색할 수 있도록 benchmark setup이 `PathOptions.maxDepth`를
+  dataset 깊이에 맞춰 구성한다
+  ([#603](https://github.com/bluetape4k/bluetape4k-graph/issues/603)).
 - **TinkerGraph chunk cursor lifecycle**: sync vertex/edge chunk 경로에
   close-aware cursor를 추가하고 suspend Flow가 조기 `take`, cancellation,
   iterator 예외에서 traversal을 닫도록 정렬했다. 기존 repository `Sequence`
