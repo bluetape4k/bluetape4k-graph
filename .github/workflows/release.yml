@@ -27,6 +27,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
+  actions: read
   contents: read
 
 env:
@@ -65,77 +66,76 @@ jobs:
           echo "ref=refs/tags/$VERSION" >> "$GITHUB_OUTPUT"
           echo "Resolved version=$VERSION"
 
-  # Stable and pre-release publication requires the exact tagged source to pass
-  # every graph image family's startup and representative workload gate.
-  testcontainers-image-gate:
-    name: Testcontainers Image Family Gate
+  # Stable and pre-release publication reuses the successful full Nightly for
+  # the exact tagged source instead of rerunning Testcontainers during release.
+  release-validation:
+    name: Verify exact-head Full Nightly
     needs: resolve-version
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 10
+    outputs:
+      nightly_run_id: ${{ steps.validate.outputs.nightly_run_id }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ needs.resolve-version.outputs.ref }}
           fetch-depth: 0
 
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
-        with:
-          python-version: '3.11'
-
-      - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: ${{ env.JAVA_DISTRIBUTION }}
-
-      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
-        with:
-          gradle-version: wrapper
-          cache-read-only: true
-
-      - name: Restore Testcontainers image cache
-        uses: ./.github/actions/testcontainers-image-cache
-        with:
-          mode: restore
-          cache-key: ${{ runner.os }}-testcontainers-images-v1-${{ github.job }}-${{ hashFiles('.github/testcontainers-images.txt') }}
-          restore-key: ${{ runner.os }}-testcontainers-images-v1-${{ github.job }}-
-
-      - name: Run full graph image family gate
-        run: |
-          python3 scripts/run_testcontainers_image_gate.py \
-            --scope full \
-            --report-dir build/reports/testcontainers-image-gate \
-            --max-attempts 3 \
-            --timeout-minutes 30
-        env:
-          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
-          TESTCONTAINERS_RYUK_DISABLED: "true"
-          DOCKER_HOST: "unix:///var/run/docker.sock"
-
-      - name: Verify release gate is first-attempt complete
+      - name: Verify exact release Nightly evidence
+        id: validate
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          summary=build/reports/testcontainers-image-gate/summary.json
-          test "$(jq -r '.coverage' "$summary")" = "4/4"
-          test "$(jq -r '.release_gate' "$summary")" = "true"
+          release_sha="$(git rev-parse HEAD)"
+          runs_json="$RUNNER_TEMP/nightly-runs.json"
+          jobs_tsv="$RUNNER_TEMP/nightly-jobs.tsv"
 
-      - name: Save Testcontainers image cache
-        if: always()
-        uses: ./.github/actions/testcontainers-image-cache
-        with:
-          mode: save
+          gh api \
+            "/repos/${GITHUB_REPOSITORY}/actions/workflows/nightly-tests.yml/runs?branch=develop&status=completed&per_page=100" \
+            > "$runs_json"
 
-      - name: Upload image family gate evidence
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: testcontainers-image-gate
-          path: build/reports/testcontainers-image-gate/
-          retention-days: 30
+          nightly_run_id="$(jq -r --arg sha "$release_sha" '
+            .workflow_runs[]
+            | select(
+                .head_sha == $sha
+                and .conclusion == "success"
+                and .event == "workflow_dispatch"
+                and .path == ".github/workflows/nightly-tests.yml"
+              )
+            | .id
+          ' "$runs_json" | head -1)"
+
+          if [[ -z "$nightly_run_id" ]]; then
+            echo "::error::No successful workflow_dispatch Full Nightly found for release SHA $release_sha"
+            exit 1
+          fi
+
+          gh api "/repos/${GITHUB_REPOSITORY}/actions/runs/${nightly_run_id}/jobs" \
+            --paginate \
+            --jq '.jobs[] | [.name, .status, .conclusion] | @tsv' \
+            > "$jobs_tsv"
+
+          required_jobs=(
+            "Testcontainers Image Family Gate"
+            "Nightly Status"
+          )
+          for job_name in "${required_jobs[@]}"; do
+            job_result="$(awk -F '\t' -v name="$job_name" '$1 == name { result = $2 "\t" $3 } END { print result }' "$jobs_tsv")"
+            if [[ "$job_result" != $'completed\tsuccess' ]]; then
+              echo "::error::Required Nightly job '$job_name' is not successful in run $nightly_run_id: ${job_result:-missing}"
+              exit 1
+            fi
+          done
+
+          echo "Verified exact-head Full Nightly run $nightly_run_id for $release_sha"
+          echo "nightly_run_id=$nightly_run_id" >> "$GITHUB_OUTPUT"
+          echo "Nightly evidence: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${nightly_run_id}" >> "$GITHUB_STEP_SUMMARY"
 
   publish:
     name: Publish RELEASE to Maven Central Portal
-    needs: [resolve-version, testcontainers-image-gate]
+    needs: [resolve-version, release-validation]
     runs-on: ubuntu-latest
     environment: maven-central-release
 
@@ -151,7 +151,6 @@ jobs:
         env:
           EVENT_NAME: ${{ github.event_name }}
           INPUT_CATALOG_REF: ${{ github.event.inputs.catalogRef || '' }}
-          REPOSITORY_CATALOG_REF: ${{ vars.BLUETAPE4K_DEPENDENCIES_CATALOG_REF || '' }}
         run: |
           set -euo pipefail
           DEFAULT_CATALOG_REF=$(sed -nE 's/^[[:space:]]*\.orElse\("([^"]+)"\).*/\1/p' settings.gradle.kts | head -1)
@@ -164,16 +163,9 @@ jobs:
           if [[ "$EVENT_NAME" == "workflow_dispatch" && -n "$INPUT_CATALOG_REF" ]]; then
             SELECTED_CATALOG_REF="$INPUT_CATALOG_REF"
             CATALOG_SOURCE="workflow_dispatch input catalogRef"
-          elif [[ "$EVENT_NAME" == "workflow_dispatch" && -n "$REPOSITORY_CATALOG_REF" ]]; then
-            SELECTED_CATALOG_REF="$REPOSITORY_CATALOG_REF"
-            CATALOG_SOURCE="repository variable BLUETAPE4K_DEPENDENCIES_CATALOG_REF"
           else
             SELECTED_CATALOG_REF="$DEFAULT_CATALOG_REF"
             CATALOG_SOURCE="checked-in settings.gradle.kts default"
-          fi
-
-          if [[ "$EVENT_NAME" == "push" && -n "$REPOSITORY_CATALOG_REF" && "$REPOSITORY_CATALOG_REF" != "$DEFAULT_CATALOG_REF" ]]; then
-            echo "::notice::Ignoring repository catalog variable '$REPOSITORY_CATALOG_REF' for tag-triggered release. Using checked-in default '$DEFAULT_CATALOG_REF'."
           fi
 
           echo "BLUETAPE4K_DEPENDENCIES_CATALOG_REF=$SELECTED_CATALOG_REF" >> "$GITHUB_ENV"
@@ -185,7 +177,6 @@ jobs:
           echo "catalogRef=$SELECTED_CATALOG_REF"
           echo "catalogSource=$CATALOG_SOURCE"
           echo "checkedInDefault=$DEFAULT_CATALOG_REF"
-          echo "repositoryVariable=${REPOSITORY_CATALOG_REF:-<unset>}"
 
       - name: Verify dependencies catalog aliases
         shell: bash

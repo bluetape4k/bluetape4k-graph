@@ -34,7 +34,9 @@ python3 scripts/run_testcontainers_image_gate.py \
   --report-dir build/reports/testcontainers-image-gate
 ```
 
-Nightly와 release는 네 family를 모두 실행한다.
+Full Nightly는 네 family를 모두 실행한다. Release는 exact tag SHA의 성공한
+workflow-dispatch Full Nightly와 `Testcontainers Image Family Gate`,
+`Nightly Status` 성공을 확인하고 같은 workload를 다시 실행하지 않는다.
 
 ```bash
 python3 scripts/run_testcontainers_image_gate.py \
@@ -45,7 +47,7 @@ python3 scripts/run_testcontainers_image_gate.py \
 ```
 
 CI의 changed gate는 exact base/head diff에서 경로를 수집한다. image manifest,
-shared launcher, Gradle 설정, gate script, CI/Nightly/release workflow가 바뀌면
+shared launcher, Gradle 설정, gate script, CI/Nightly workflow가 바뀌면
 네 family를 모두 선택한다. backend의 test 또는 testFixtures 경로만 바뀌면 해당
 family만 선택하며, unrelated 문서 변경은 `skipped`로 끝난다.
 
@@ -81,8 +83,10 @@ workflow 로그를 함께 확인한다.
 ## Gate 판정과 대응
 
 `summary.json`의 `status`가 `success`이고 `coverage`가 선택 family 수와 같아야
-해당 gate가 통과한다. release workflow는 `coverage=4/4` 및 `release_gate=true`를
-명시적으로 검사한 후에만 Maven Central publication job을 시작한다.
+해당 gate가 통과한다. Full Nightly는 retry 후 성공도 실패로 종료하므로,
+release workflow는 exact tag SHA의 성공한 Full Nightly에서
+`Testcontainers Image Family Gate`와 `Nightly Status`가 모두 성공했는지 확인한
+후에만 Maven Central publication job을 시작한다.
 
 실패 시에는 먼저 `first_failure`와 `diagnostics.image_digest`를 확인하고,
 readiness 문제와 registry rate limit을 application failure로 재분류하지 않는다.

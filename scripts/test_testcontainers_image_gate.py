@@ -37,12 +37,17 @@ class TestTestcontainersImageGate(unittest.TestCase):
         status_start = workflow.index("nightly-status:")
         self.assertIn("- testcontainers-image-gate", workflow[status_start:])
 
-    def test_release_publish_depends_on_exact_full_gate(self) -> None:
+    def test_release_publish_reuses_exact_head_full_nightly(self) -> None:
         workflow = (self.root / ".github/workflows/release.yml").read_text(encoding="utf-8")
-        self.assertIn("testcontainers-image-gate:", workflow)
-        self.assertIn("--scope full", workflow)
-        self.assertIn("test \"$(jq -r '.coverage' \"$summary\")\" = \"4/4\"", workflow)
-        self.assertIn("needs: [resolve-version, testcontainers-image-gate]", workflow)
+        self.assertIn("actions: read", workflow)
+        self.assertIn("release-validation:", workflow)
+        self.assertIn(".github/workflows/nightly-tests.yml", workflow)
+        self.assertIn("Testcontainers Image Family Gate", workflow)
+        self.assertIn("Nightly Status", workflow)
+        self.assertIn("needs: [resolve-version, release-validation]", workflow)
+        self.assertNotIn("testcontainers-image-gate:", workflow)
+        self.assertNotIn("Run full graph image family gate", workflow)
+        self.assertNotIn("vars.BLUETAPE4K_DEPENDENCIES_CATALOG_REF", workflow)
 
     def test_manifest_covers_all_graph_families(self) -> None:
         self.assertEqual(EXPECTED_FAMILY_COUNT, len(self.entries))
