@@ -5,28 +5,35 @@
 
 ## 현재 상태
 
-- `origin/develop`은 `0fd73828818e3a284ba8daae1642fc6792e621bd`이며, 열린 PR은
-  `fix/600-release-gate-dedup` -> `develop`의
-  [#601](https://github.com/bluetape4k/bluetape4k-graph/pull/601) 하나다.
-- `1.0.0` milestone은 열린 issue 2개, 닫힌 issue 131개다. 열린 범위는 release
-  gate [#600](https://github.com/bluetape4k/bluetape4k-graph/issues/600)과 benchmark
-  회귀 [#603](https://github.com/bluetape4k/bluetape4k-graph/issues/603)이며 모두 PR #601이
-  닫는다.
+- `origin/develop`의 release source는
+  `a405300799b36d4d6edb7267ad07ff34d4ad3afe`이며, release 준비
+  [PR #601](https://github.com/bluetape4k/bluetape4k-graph/pull/601)은 병합됐다.
+- `1.0.0` milestone의 issue #600과 #603은 닫혔고 열린 issue는 0개다.
 - 공개된 Projects 2.0.0을 포함하는 `bluetape4k-dependencies` exact commit
   `791288630092ab17d23ba106c93c1f615b13f02a`를 1.0.0 release source에 고정했다.
-- 최신 공개 Graph release는 `0.6.0`(2026-08-05)이다. `baseVersion=1.0.0`의
-  CHANGELOG와 release checklist를 준비했으며, tag와 GitHub Release는 아직 생성하지
-  않았다.
+- signed annotated tag와
+  [GitHub Release 1.0.0](https://github.com/bluetape4k/bluetape4k-graph/releases/tag/1.0.0)을
+  만들었다. Maven Central에서 publication 16개, POM/JAR/sources/javadoc 및 서명
+  122개, metadata 16개를 공개 read-back했고 실패는 0개다.
+- Dependencies [PR #229](https://github.com/bluetape4k/bluetape4k-dependencies/pull/229)가
+  Graph BOM을 stable `1.0.0`으로 승격했으며 immutable catalog handoff SHA는
+  `de22205528a40bc22501168c09cab0860add85e5`다.
+- `main`과 `develop`의 장기 분기로 검증된 release SHA를 변경하지 않았으며, canonical
+  branch 정렬은 [#604](https://github.com/bluetape4k/bluetape4k-graph/issues/604)에서
+  후속 추적한다.
 - release와 무관한 workflow path-filter 및 Testcontainers 중복 최적화는
   [#602](https://github.com/bluetape4k/bluetape4k-graph/issues/602)에서 후속 추적한다.
+- post-merge Dependency Submission 뒤에도 남은 Dependabot alert의 실제 resolved
+  dependency/POM 판정은
+  [#605](https://github.com/bluetape4k/bluetape4k-graph/issues/605)에서 후속 추적한다.
 
 ## 1.0.0 배포 순서
 
-1. PR #601의 exact-head CI를 통과시키고 `develop`에 병합한다.
-2. 병합 SHA에서 Full Nightly `scope=full`을 한 번 실행해 exact-head release 증거를 만든다.
-3. 검증된 SHA를 `main`과 signed annotated tag `1.0.0`으로 고정한다.
-4. release workflow의 Maven Central publication과 GitHub Release를 확인한다.
-5. 공개 artifact 검증 후 milestone을 닫고 central catalog의 Graph 버전을 stable로 승격한다.
+1. [완료] PR #601의 exact-head CI를 통과시키고 `develop`에 병합한다.
+2. [완료] 병합 SHA에서 Full Nightly `scope=full`을 한 번 실행해 exact-head release 증거를 만든다.
+3. [완료] 검증된 SHA에 signed annotated tag `1.0.0`을 만든다. 장기 분기된 `main`은 #604로 분리한다.
+4. [완료] release workflow의 Maven Central publication과 GitHub Release를 확인한다.
+5. [완료] 공개 artifact를 검증하고 milestone을 닫은 뒤 central catalog의 Graph 버전을 stable로 승격한다.
 
 상세 gate와 증거 기록 위치는
 [`docs/releases/2026-09-02-graph-1.0.0-release-checklist.md`](docs/releases/2026-09-02-graph-1.0.0-release-checklist.md)다.
@@ -36,6 +43,8 @@
 | 이슈 | 상태 | 메모 |
 |---|---|---|
 | [#602](https://github.com/bluetape4k/bluetape4k-graph/issues/602) | backlog | 배포와 분리해 workflow·문서 변경의 benchmark 및 Testcontainers 중복 실행을 줄인다. |
+| [#604](https://github.com/bluetape4k/bluetape4k-graph/issues/604) | backlog | 장기 분기된 `main`/`develop`의 canonical branch 및 안전한 history 정렬 정책을 확정한다. |
+| [#605](https://github.com/bluetape4k/bluetape4k-graph/issues/605) | backlog | Dependabot alert를 현재 resolved dependency/POM과 대조하고 실제 repo-tooling 문제만 수정한다. |
 | [#215](https://github.com/bluetape4k/bluetape4k-graph/issues/215) | backlog | Amazon Neptune backend feasibility를 local 또는 신뢰 가능한 integration test 가능성부터 재검증한다. |
 | [#30](https://github.com/bluetape4k/bluetape4k-graph/issues/30) | backlog | #215의 feasibility 결과 전까지 `graph-neptune` 구현을 시작하지 않는다. |
 
