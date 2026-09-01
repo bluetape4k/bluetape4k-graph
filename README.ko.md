@@ -443,10 +443,11 @@ GitHub Actions는 전용 `Examples` workflow도 실행한다. 이 workflow는 �
 
 ## Testcontainers 이미지 패밀리 게이트
 
-CI, full Nightly, release workflow는
+CI와 full Nightly는
 `scripts/testcontainers_image_gate_manifest.json`을 사용해 변경된 graph
 image family를 선택하고 startup readiness와 대표 `GraphCapability`
-workload를 순차적으로 실행한다.
+workload를 순차적으로 실행한다. release workflow는 exact tag SHA의 성공한
+full Nightly를 확인하며 container workload를 다시 실행하지 않는다.
 
 전체 로컬 게이트는 다음과 같이 실행한다.
 

@@ -8,8 +8,9 @@ workload로 재사용한다. 새로운 mock health check를 만들지 않고 실
 backend fixture가 검증하는 readiness 경계를 사용했다.
 
 변경된 backend만 CI에서 선택하되 image manifest, shared launcher, Gradle 설정,
-workflow, gate script 변경은 전체 family를 선택한다. Nightly와 release는 항상
-전체 네 family를 순차 실행한다.
+workflow, gate script 변경은 전체 family를 선택한다. Full Nightly는 항상 전체
+네 family를 순차 실행하고, release는 exact tag SHA의 성공한 Full Nightly 증거를
+재사용한다.
 
 ## 실패를 green으로 만들지 않기
 
@@ -25,6 +26,6 @@ registry가 일시적으로 허용된 상황과 image 또는 product 회귀를 �
 ## 다음 변경에 대한 지침
 
 새 graph backend를 추가할 때는 manifest family 수, image/family 목록, 대표
-conformance class, path selection, diagnostics, CI/Nightly/release dependency를
-한 번에 갱신한다. image tag만 변경하는 PR도 해당 family의 full gate와 hosted
+conformance class, path selection, diagnostics, CI/Nightly dependency와 release
+Nightly attestation을 한 번에 갱신한다. image tag만 변경하는 PR도 해당 family의 full gate와 hosted
 artifact를 확인하기 전에는 release-ready로 취급하지 않는다.

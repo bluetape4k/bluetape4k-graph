@@ -449,10 +449,11 @@ GitHub Actions also runs a dedicated `Examples` workflow daily and on changes to
 
 ## Testcontainers Image Family Gate
 
-CI, full Nightly, and release workflows use
+CI and full Nightly use
 `scripts/testcontainers_image_gate_manifest.json` to select the affected graph
 image family and run startup readiness plus a representative `GraphCapability`
-workload sequentially.
+workload sequentially. The release workflow verifies a successful full Nightly
+for the exact tag SHA and does not rerun the container workload.
 
 Run the full local gate with:
 

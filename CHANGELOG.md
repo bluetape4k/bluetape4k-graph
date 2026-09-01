@@ -30,6 +30,12 @@
 
 ### 변경
 
+- **Release Testcontainers 중복 제거**: exact tag SHA의 성공한 Full Nightly에서
+  image family gate와 전체 Nightly 상태를 확인하고, release workflow에서는 동일한
+  네 graph container workload를 다시 실행하지 않도록 단순화했다. Stable release의
+  catalog 기본값도 repository variable이 아니라 tag에 checked-in 된 immutable SHA로
+  고정하고, manual dispatch의 명시적 `catalogRef`만 override로 허용한다
+  ([#600](https://github.com/bluetape4k/bluetape4k-graph/issues/600)).
 - **AGE SQL 구조적 식별자 경계**: graph·label·column 식별자를 공통
   `requireSafeIdentifier`로 검증하고, dollar-quote 본문 충돌과 property 값
   직렬화 경계를 회귀 테스트로 고정했다 ([#534](https://github.com/bluetape4k/bluetape4k-graph/issues/534)).

@@ -5,7 +5,6 @@
     ".github/testcontainers-image-families.txt",
     ".github/workflows/ci.yml",
     ".github/workflows/nightly-tests.yml",
-    ".github/workflows/release.yml",
     ".github/actions/testcontainers-image-cache/",
     "scripts/testcontainers_image_gate",
     "scripts/run_testcontainers_image_gate.py",

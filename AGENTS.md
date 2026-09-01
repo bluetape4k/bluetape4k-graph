@@ -166,8 +166,9 @@ mocks only.
   For module coverage changes, use `scope=full` unless the change is strictly
   smoke-only.
 - `scripts/testcontainers_image_gate_manifest.json` is the source of truth for
-  the four image families; CI changed-path, full Nightly, and release gates run
-  the families sequentially. Use
+  the four image families; CI changed-path and full Nightly gates run the
+  families sequentially. Release reuses the successful exact-head full Nightly
+  evidence instead of running the families again. Use
   `python3 scripts/run_testcontainers_image_gate.py --scope full --report-dir build/reports/testcontainers-image-gate`
   for the complete local gate.
 
