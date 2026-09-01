@@ -1236,15 +1236,15 @@ val cycles = ops.detectCycles(CycleOptions(edgeLabel = "KNOWS", maxDepth = 5))
 소유자를 추가하지 않는다. upstream
 [#1523](https://github.com/bluetape4k/bluetape4k-projects/pull/1523)은 Java 21
 API 타입을 `io.bluetape4k.concurrent.virtualthread.api`로 이동하고 core
-유틸리티 소유자는 그대로 유지한다. 현재 `2.0.0-SNAPSHOT` dependency는 아직
-이전 artifact이므로 해당 PR이 병합되고 새 artifact가 배포될 때까지 graph 소비
-검증은 의도적으로 대기한다. Core helper의 Kotlin source import 경로는 그대로지만
+유틸리티 소유자는 그대로 유지한다. Bluetape4k 2.0.0은 이 migration을 포함하며
+Graph 1.0.0 release는 immutable catalog commit을 통해 이를 소비한다. Core helper의
+Kotlin source import 경로는 그대로지만
 삭제된 generated `CompletableFutureNullableSupportKt` 클래스를 직접 참조한 소비자
 코드는 공식 `CompletableFutureSupportKt` 소유자에 맞춰 다시 컴파일해야 하며 외부
 ABI migration은 [#562](https://github.com/bluetape4k/bluetape4k-graph/issues/562)에서
 검증한다.
 
-upstream artifact가 준비되면 다음 verifier로 실제 해결된 JAR 쌍을 확인한다.
+다음 verifier로 실제 해결된 JAR 쌍을 확인한다.
 
 ```bash
 python3 scripts/verify_virtualthread_module_boundary.py \
