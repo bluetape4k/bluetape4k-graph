@@ -51,11 +51,7 @@ open class WeightedShortestPathBench {
     var startId: GraphElementId = GraphElementId("0")
     var endId: GraphElementId = GraphElementId("0")
 
-    private val pathOptions = PathOptions(
-        edgeLabel = EDGE_LABEL,
-        weightProperty = COST_PROPERTY,
-        maxVisited = 100_000,
-    )
+    private lateinit var pathOptions: PathOptions
 
     @Setup
     fun setup() {
@@ -71,6 +67,12 @@ open class WeightedShortestPathBench {
 
         startId = ids.first()
         endId = ids.last()
+        pathOptions = PathOptions(
+            edgeLabel = EDGE_LABEL,
+            weightProperty = COST_PROPERTY,
+            maxDepth = vertexCount - 1,
+            maxVisited = 100_000,
+        )
 
         createWeightedEdges(ids)
     }
