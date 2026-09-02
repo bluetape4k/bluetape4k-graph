@@ -6,6 +6,9 @@
 
 현재 개발선: `develop`의 `1.1.0-SNAPSHOT`
 
+개발 빌드는 이 저장소가 고정한 immutable catalog commit을 통해
+`bluetape4k-bom:2.1.0-SNAPSHOT`을 사용합니다.
+
 [![CI](https://github.com/bluetape4k/bluetape4k-graph/actions/workflows/ci.yml/badge.svg)](https://github.com/bluetape4k/bluetape4k-graph/actions/workflows/ci.yml)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.4-7F52FF?logo=kotlin)](https://kotlinlang.org)
 [![JVM](https://img.shields.io/badge/JVM-25-ED8B00?logo=openjdk)](https://openjdk.org)
