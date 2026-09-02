@@ -2,6 +2,10 @@
 
 English | [한국어](README.ko.md)
 
+Current stable version: `1.0.0`
+
+Current development line: `1.1.0-SNAPSHOT` on `develop`
+
 [![CI](https://github.com/bluetape4k/bluetape4k-graph/actions/workflows/ci.yml/badge.svg)](https://github.com/bluetape4k/bluetape4k-graph/actions/workflows/ci.yml)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.4-7F52FF?logo=kotlin)](https://kotlinlang.org)
 [![JVM](https://img.shields.io/badge/JVM-25-ED8B00?logo=openjdk)](https://openjdk.org)
@@ -505,7 +509,7 @@ Concrete classes only need to implement `ops` (`GraphOperations` or `GraphSuspen
 
 ## Tech Stack
 
-- **Development line** 1.0.0 (Kotlin 2.4 / Java 25)
+- **Development line** 1.1.0-SNAPSHOT (Kotlin 2.4 / Java 25)
 - **Kotlin** 2.4.10 (language/API 2.4) + Coroutines 1.11.0
 - **Neo4j Java Driver** 6.2.1
 - **JetBrains Exposed** (JDBC for Apache AGE)
