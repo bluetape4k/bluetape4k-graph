@@ -168,6 +168,11 @@ jobs:
             CATALOG_SOURCE="checked-in settings.gradle.kts default"
           fi
 
+          if [[ ! "$SELECTED_CATALOG_REF" =~ ^([0-9a-f]{40}|[0-9a-f]{64})$ ]]; then
+            echo "::error::Catalog ref must be an immutable Git commit SHA: $SELECTED_CATALOG_REF"
+            exit 1
+          fi
+
           echo "BLUETAPE4K_DEPENDENCIES_CATALOG_REF=$SELECTED_CATALOG_REF" >> "$GITHUB_ENV"
           {
             echo "ref=$SELECTED_CATALOG_REF"
