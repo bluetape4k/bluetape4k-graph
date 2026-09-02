@@ -57,6 +57,9 @@ class CiRoutingPolicyTest(unittest.TestCase):
     def test_benchmarks_remain_manual_only(self) -> None:
         self.assertIn("workflow_dispatch:", self.benchmark)
         self.assertRegex(self.benchmark, r"(?m)^  benchmark-catalog:$")
+        self.assertIn(":graph-benchmark:test", self.benchmark)
+        self.assertIn("BenchmarkCatalogContractTest", self.benchmark)
+        self.assertIn("BenchmarkContainerLifecycleContractTest", self.benchmark)
 
     def test_nightly_retains_full_image_family_gate(self) -> None:
         gate = job_block(self.nightly, "testcontainers-image-gate")
