@@ -2,6 +2,10 @@
 
 [English](README.md) | 한국어
 
+현재 안정 버전: `1.0.0`
+
+현재 개발선: `develop`의 `1.1.0-SNAPSHOT`
+
 [![CI](https://github.com/bluetape4k/bluetape4k-graph/actions/workflows/ci.yml/badge.svg)](https://github.com/bluetape4k/bluetape4k-graph/actions/workflows/ci.yml)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.4-7F52FF?logo=kotlin)](https://kotlinlang.org)
 [![JVM](https://img.shields.io/badge/JVM-25-ED8B00?logo=openjdk)](https://openjdk.org)
@@ -499,7 +503,7 @@ retry가 진단 자료를 남길 수는 있어도 `release_gate=true`를 설정�
 
 ## 기술 스택
 
-- **개발 라인** 1.0.0 (Kotlin 2.4 / Java 25)
+- **개발 라인** 1.1.0-SNAPSHOT (Kotlin 2.4 / Java 25)
 - **Kotlin** 2.4.10 (language/API 2.4) + Coroutines 1.11.0
 - **Neo4j Java Driver** 6.2.1
 - **JetBrains Exposed** (Apache AGE용 JDBC)

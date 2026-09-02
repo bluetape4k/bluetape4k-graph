@@ -6,6 +6,12 @@
 하며, 이 프로젝트는 [Semantic Versioning](https://semver.org/spec/v2.0.0.html)을
 따른다.
 
+## [미배포]
+
+### 변경
+
+- `1.0.0` 정식 배포 후 다음 minor 개발선을 `1.1.0-SNAPSHOT`으로 열었다.
+
 ## [1.0.0] - 2026-09-02
 
 ### 추가
