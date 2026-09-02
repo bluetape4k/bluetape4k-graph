@@ -7,6 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 CI_WORKFLOW = ROOT / ".github/workflows/ci.yml"
 NIGHTLY_WORKFLOW = ROOT / ".github/workflows/nightly-tests.yml"
+BENCHMARK_WORKFLOW = ROOT / ".github/workflows/benchmark.yml"
 
 
 def job_block(workflow: str, job: str) -> str:
@@ -24,6 +25,7 @@ class CiRoutingPolicyTest(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.ci = CI_WORKFLOW.read_text(encoding="utf-8")
         cls.nightly = NIGHTLY_WORKFLOW.read_text(encoding="utf-8")
+        cls.benchmark = BENCHMARK_WORKFLOW.read_text(encoding="utf-8")
 
     def test_ci_workflow_change_is_not_a_common_or_benchmark_change(self) -> None:
         changes = job_block(self.ci, "changes")
@@ -32,14 +34,29 @@ class CiRoutingPolicyTest(unittest.TestCase):
     def test_build_is_limited_to_runtime_changes(self) -> None:
         build = job_block(self.ci, "build")
         self.assertIn("needs.changes.outputs.runtime == 'true'", build)
+        changes = job_block(self.ci, "changes")
+        runtime_filter = changes.split("            runtime:\n", 1)[1]
+        self.assertNotIn("- 'benchmark/**'", runtime_filter)
 
     def test_duplicate_image_family_gate_is_not_in_pr_ci(self) -> None:
         self.assertNotRegex(self.ci, r"(?m)^  testcontainers-image-gate:$")
 
-    def test_benchmark_matrix_stops_after_first_failure(self) -> None:
-        benchmark = job_block(self.ci, "test-graph-benchmark")
-        self.assertIn("fail-fast: true", benchmark)
-        self.assertIn("max-parallel: 1", benchmark)
+    def test_ci_does_not_run_benchmark_lifecycle(self) -> None:
+        self.assertNotRegex(self.ci, r"(?m)^  benchmark-catalog:$")
+        self.assertNotRegex(self.ci, r"(?m)^  test-graph-benchmark:$")
+        self.assertNotIn("graph-benchmarks", self.ci)
+        for project in (
+            "graph-age-benchmark",
+            "graph-benchmark",
+            "graph-io-benchmark",
+            "graph-neo4j-benchmark",
+        ):
+            self.assertIn(f"-x :{project}:build", self.ci)
+            self.assertIn(f"-x :{project}:build", self.nightly)
+
+    def test_benchmarks_remain_manual_only(self) -> None:
+        self.assertIn("workflow_dispatch:", self.benchmark)
+        self.assertRegex(self.benchmark, r"(?m)^  benchmark-catalog:$")
 
     def test_nightly_retains_full_image_family_gate(self) -> None:
         gate = job_block(self.nightly, "testcontainers-image-gate")
