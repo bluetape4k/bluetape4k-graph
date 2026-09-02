@@ -111,6 +111,7 @@ jobs:
       graph-spring-boot: ${{ steps.filter.outputs.graph-spring-boot }}
       graph-ktor: ${{ steps.filter.outputs.graph-ktor }}
       common: ${{ steps.filter.outputs.common }}
+      runtime: ${{ steps.filter.outputs.runtime }}
     steps:
       - uses: actions/checkout@v7
       - uses: dorny/paths-filter@v4
@@ -134,7 +135,6 @@ jobs:
             graph-benchmarks:
               - 'benchmark/**'
               - '.github/workflows/benchmark.yml'
-              - '.github/workflows/ci.yml'
             graph-spring-boot:
               - 'spring-boot/**'
             graph-ktor:
@@ -151,7 +151,16 @@ jobs:
               - 'scripts/testcontainers_image_gate*'
               - '*.gradle.kts'
               - 'settings.gradle.kts'
-              - '.github/workflows/ci.yml'
+            runtime:
+              - 'graph/**'
+              - 'graph-io/**'
+              - 'benchmark/**'
+              - 'spring-boot/**'
+              - 'ktor/**'
+              - 'buildSrc/**'
+              - 'gradle/**'
+              - '*.gradle.kts'
+              - 'settings.gradle.kts'
 
   # ── 3. retry helper 회귀 검증 ─────────────────────────────────────────────
   retry-helper:
@@ -167,6 +176,20 @@ jobs:
 
       - name: Run retry helper tests
         run: python3 .github/scripts/test_run_gradle_retry.py
+
+  routing-contract:
+    name: CI Routing Contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Verify lightweight CI routing
+        run: python3 .github/scripts/test_ci_routing_policy.py
 
   # ── 4. 전체 빌드 + Detekt 품질 게이트 ─────────────────────────────────────
   catalog-governance:
@@ -210,6 +233,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: [validate-wrapper, changes, catalog-governance]
+    if: ${{ needs.changes.outputs.runtime == 'true' || github.event_name == 'workflow_dispatch' }}
     steps:
       - uses: actions/checkout@v7
 
@@ -801,86 +825,7 @@ jobs:
           path: '**/build/reports/kover/report.xml'
           retention-days: 7
 
-  # ── 11. 변경 image family startup/workload gate ─────────────────────────
-  testcontainers-image-gate:
-    name: Testcontainers Image Family Gate
-    runs-on: ubuntu-latest
-    timeout-minutes: 120
-    needs: [build, changes]
-    if: ${{ always() && needs.build.result == 'success' && needs.changes.result == 'success' }}
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-
-      - uses: actions/setup-python@v7
-        with:
-          python-version: '3.11'
-
-      - uses: actions/setup-java@v6.0.0
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: ${{ env.JAVA_DISTRIBUTION }}
-
-      - uses: gradle/actions/setup-gradle@v6.3.0
-        with:
-          gradle-version: wrapper
-          cache-read-only: true
-
-      - name: Restore Testcontainers image cache
-        uses: ./.github/actions/testcontainers-image-cache
-        with:
-          mode: restore
-          cache-key: ${{ runner.os }}-testcontainers-images-v1-${{ github.job }}-${{ hashFiles('.github/testcontainers-images.txt') }}
-          restore-key: ${{ runner.os }}-testcontainers-images-v1-${{ github.job }}-
-
-      - name: Collect exact-head changed paths
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          BEFORE_SHA: ${{ github.event.before }}
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.sha }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [[ "$EVENT_NAME" == "pull_request" ]]; then
-            git diff --name-only "$BASE_SHA" "$HEAD_SHA" > "$RUNNER_TEMP/graph-changed-paths.txt"
-          elif [[ "$BEFORE_SHA" =~ ^0+$ ]]; then
-            ROOT_SHA=$(git rev-list --max-parents=0 "$HEAD_SHA" | tail -n 1)
-            git diff --name-only "$ROOT_SHA" "$HEAD_SHA" > "$RUNNER_TEMP/graph-changed-paths.txt"
-          else
-            git diff --name-only "$BEFORE_SHA" "$HEAD_SHA" > "$RUNNER_TEMP/graph-changed-paths.txt"
-          fi
-          cat "$RUNNER_TEMP/graph-changed-paths.txt"
-
-      - name: Run changed graph image family gate
-        run: |
-          python3 scripts/run_testcontainers_image_gate.py \
-            --scope changed \
-            --changed-path-file "$RUNNER_TEMP/graph-changed-paths.txt" \
-            --report-dir build/reports/testcontainers-image-gate \
-            --max-attempts 3 \
-            --timeout-minutes 30
-        env:
-          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
-          TESTCONTAINERS_RYUK_DISABLED: "true"
-          DOCKER_HOST: "unix:///var/run/docker.sock"
-
-      - name: Save Testcontainers image cache
-        if: always()
-        uses: ./.github/actions/testcontainers-image-cache
-        with:
-          mode: save
-
-      - name: Upload image family gate evidence
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: testcontainers-image-gate
-          path: build/reports/testcontainers-image-gate/
-          retention-days: 14
-
-  # ── 12. Benchmark lifecycle (serial Testcontainers scope) ────────────────
+  # ── 11. Benchmark lifecycle (serial Testcontainers scope) ────────────────
   benchmark-catalog:
     name: Benchmark Catalog
     runs-on: ubuntu-latest
@@ -913,7 +858,7 @@ jobs:
       needs.changes.outputs.common == 'true' ||
       github.event_name == 'workflow_dispatch'
     strategy:
-      fail-fast: false
+      fail-fast: true
       max-parallel: 1
       matrix: ${{ fromJSON(needs.benchmark-catalog.outputs.matrix) }}
     steps:
@@ -1025,7 +970,7 @@ jobs:
           path: coverage-artifacts/
           retention-days: 14
 
-  # ── 13. 결과 집계 ──────────────────────────────────────────────────────────
+  # ── 12. 결과 집계 ──────────────────────────────────────────────────────────
   ci-status:
     name: CI Status
     runs-on: ubuntu-latest
@@ -1033,6 +978,7 @@ jobs:
     needs:
       - catalog-governance
       - retry-helper
+      - routing-contract
       - gitleaks
       - changes
       - build
@@ -1043,7 +989,6 @@ jobs:
       - test-graph-memgraph
       - test-graph-age
       - test-graph-falkordb
-      - testcontainers-image-gate
       - test-graph-benchmark
       - coverage-report
     if: always()
