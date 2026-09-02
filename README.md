@@ -6,6 +6,9 @@ Current stable version: `1.0.0`
 
 Current development line: `1.1.0-SNAPSHOT` on `develop`
 
+Development builds consume `bluetape4k-bom:2.1.0-SNAPSHOT` through the
+immutable catalog commit pinned by this repository.
+
 [![CI](https://github.com/bluetape4k/bluetape4k-graph/actions/workflows/ci.yml/badge.svg)](https://github.com/bluetape4k/bluetape4k-graph/actions/workflows/ci.yml)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.4-7F52FF?logo=kotlin)](https://kotlinlang.org)
 [![JVM](https://img.shields.io/badge/JVM-25-ED8B00?logo=openjdk)](https://openjdk.org)
