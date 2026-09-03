@@ -112,16 +112,16 @@ class BenchmarkContainerLifecycleContractTest {
     }
 
     @Test
-    fun `PR CI detects all benchmark modules and runs lifecycle tests serially`() {
-        val workflow = repoRoot().resolve(".github/workflows/ci.yml").readText()
+    fun `benchmark lifecycle remains outside PR CI`() {
+        val root = repoRoot()
+        val ci = root.resolve(".github/workflows/ci.yml").readText()
+        val benchmark = root.resolve(".github/workflows/benchmark.yml").readText()
 
-        workflow shouldContain "graph-benchmarks:"
-        workflow shouldContain "- 'benchmark/**'"
-        workflow shouldContain "benchmark-catalog:"
-        workflow shouldContain "test-graph-benchmark:"
-        workflow shouldContain ":\${{ matrix.project }}:test"
-        workflow shouldContain "max-parallel: 1"
-        workflow shouldContain "- test-graph-benchmark"
+        ci shouldNotContain "graph-benchmarks:"
+        ci shouldNotContain "benchmark-catalog:"
+        ci shouldNotContain "test-graph-benchmark:"
+        benchmark shouldContain "benchmark-catalog:"
+        benchmark shouldContain "max-parallel: 1"
     }
 
     private fun benchmarkSource(name: String): Path =

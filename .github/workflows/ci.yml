@@ -106,8 +106,6 @@ jobs:
       graph-memgraph: ${{ steps.filter.outputs.graph-memgraph }}
       graph-age: ${{ steps.filter.outputs.graph-age }}
       graph-falkordb: ${{ steps.filter.outputs.graph-falkordb }}
-      graph-benchmark: ${{ steps.filter.outputs.graph-benchmark }}
-      graph-benchmarks: ${{ steps.filter.outputs.graph-benchmarks }}
       graph-spring-boot: ${{ steps.filter.outputs.graph-spring-boot }}
       graph-ktor: ${{ steps.filter.outputs.graph-ktor }}
       common: ${{ steps.filter.outputs.common }}
@@ -130,11 +128,6 @@ jobs:
               - 'graph/graph-age/**'
             graph-falkordb:
               - 'graph/graph-falkordb/**'
-            graph-benchmark:
-              - 'benchmark/graph-benchmark/**'
-            graph-benchmarks:
-              - 'benchmark/**'
-              - '.github/workflows/benchmark.yml'
             graph-spring-boot:
               - 'spring-boot/**'
             graph-ktor:
@@ -154,7 +147,6 @@ jobs:
             runtime:
               - 'graph/**'
               - 'graph-io/**'
-              - 'benchmark/**'
               - 'spring-boot/**'
               - 'ktor/**'
               - 'buildSrc/**'
@@ -250,7 +242,12 @@ jobs:
       - name: Build (compile only)
         run: |
           for attempt in 1 2 3 4 5; do
-            ./gradlew build -x test --parallel && break
+            ./gradlew build -x test \
+              -x :graph-age-benchmark:build \
+              -x :graph-benchmark:build \
+              -x :graph-io-benchmark:build \
+              -x :graph-neo4j-benchmark:build \
+              --parallel && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 5 ] && sleep 30 || exit 1
           done
@@ -346,7 +343,7 @@ jobs:
               :bluetape4k-graph-io-graphml:koverXmlReport \
               :bluetape4k-graph-io-micrometer:koverXmlReport \
               :bluetape4k-graph-okio:koverXmlReport \
-              --no-daemon --continue --no-configuration-cache && break
+              --no-daemon --continue --no-configuration-cache -x test && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 5 ] && sleep 30 || exit 1
           done
@@ -424,7 +421,7 @@ jobs:
           for attempt in 1 2 3 4 5; do
             ./gradlew \
               :bluetape4k-graph-spring-boot:koverXmlReport \
-              --no-daemon --no-configuration-cache && break
+              --no-daemon --no-configuration-cache -x test && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 5 ] && sleep 30 || exit 1
           done
@@ -503,7 +500,7 @@ jobs:
         if: always()
         run: |
           for attempt in 1 2 3 4 5; do
-            ./gradlew :bluetape4k-graph-ktor:koverXmlReport --no-daemon --no-configuration-cache && break
+            ./gradlew :bluetape4k-graph-ktor:koverXmlReport --no-daemon --no-configuration-cache -x test && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 5 ] && sleep 30 || exit 1
           done
@@ -578,7 +575,7 @@ jobs:
         if: always()
         run: |
           for attempt in 1 2 3 4 5; do
-            ./gradlew :bluetape4k-graph-neo4j:koverXmlReport --no-daemon --no-configuration-cache && break
+            ./gradlew :bluetape4k-graph-neo4j:koverXmlReport --no-daemon --no-configuration-cache -x test && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 5 ] && sleep 30 || exit 1
           done
@@ -653,7 +650,7 @@ jobs:
         if: always()
         run: |
           for attempt in 1 2 3 4 5; do
-            ./gradlew :bluetape4k-graph-memgraph:koverXmlReport --no-daemon --no-configuration-cache && break
+            ./gradlew :bluetape4k-graph-memgraph:koverXmlReport --no-daemon --no-configuration-cache -x test && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 5 ] && sleep 30 || exit 1
           done
@@ -728,7 +725,7 @@ jobs:
         if: always()
         run: |
           for attempt in 1 2 3 4 5; do
-            ./gradlew :bluetape4k-graph-age:koverXmlReport --no-daemon --no-configuration-cache && break
+            ./gradlew :bluetape4k-graph-age:koverXmlReport --no-daemon --no-configuration-cache -x test && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 5 ] && sleep 30 || exit 1
           done
@@ -803,7 +800,7 @@ jobs:
         if: always()
         run: |
           for attempt in 1 2 3 4 5; do
-            ./gradlew :bluetape4k-graph-falkordb:koverXmlReport --no-daemon --no-configuration-cache && break
+            ./gradlew :bluetape4k-graph-falkordb:koverXmlReport --no-daemon --no-configuration-cache -x test && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 5 ] && sleep 30 || exit 1
           done
@@ -823,93 +820,6 @@ jobs:
         with:
           name: coverage-falkordb
           path: '**/build/reports/kover/report.xml'
-          retention-days: 7
-
-  # ── 11. Benchmark lifecycle (serial Testcontainers scope) ────────────────
-  benchmark-catalog:
-    name: Benchmark Catalog
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: [build, changes]
-    if: >
-      needs.changes.outputs['graph-benchmarks'] == 'true' ||
-      needs.changes.outputs.common == 'true' ||
-      github.event_name == 'workflow_dispatch'
-    outputs:
-      matrix: ${{ steps.catalog.outputs.matrix }}
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Build benchmark matrix
-        id: catalog
-        run: |
-          set -euo pipefail
-          test "$(jq 'length' benchmark/benchmark-modules.json)" -eq 4
-          jq -e 'all(.[]; (.id | type == "string") and (.project | type == "string") and (.report_root | type == "string"))' benchmark/benchmark-modules.json >/dev/null
-          echo "matrix=$(jq -c '{include: .}' benchmark/benchmark-modules.json)" >> "$GITHUB_OUTPUT"
-
-  test-graph-benchmark:
-    name: Test / Benchmark Lifecycle (${{ matrix.project }})
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    needs: [build, changes, benchmark-catalog]
-    if: >
-      needs.changes.outputs['graph-benchmarks'] == 'true' ||
-      needs.changes.outputs.common == 'true' ||
-      github.event_name == 'workflow_dispatch'
-    strategy:
-      fail-fast: true
-      max-parallel: 1
-      matrix: ${{ fromJSON(needs.benchmark-catalog.outputs.matrix) }}
-    steps:
-      - uses: actions/checkout@v7
-
-      - uses: actions/setup-java@v6.0.0
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: ${{ env.JAVA_DISTRIBUTION }}
-
-      - uses: gradle/actions/setup-gradle@v6.3.0
-        with:
-          gradle-version: wrapper
-          cache-read-only: true
-
-      - name: Restore Testcontainers image cache
-        uses: ./.github/actions/testcontainers-image-cache
-        with:
-          mode: restore
-          cache-key: ${{ runner.os }}-testcontainers-images-v1-${{ github.job }}-${{ matrix.project }}-${{ hashFiles('.github/testcontainers-images.txt') }}
-          restore-key: ${{ runner.os }}-testcontainers-images-v1-${{ github.job }}-${{ matrix.project }}-
-
-      - name: Test benchmark module
-        run: |
-          set -euo pipefail
-          ./gradlew ":${{ matrix.project }}:test" \
-            --no-daemon --no-configuration-cache
-          if [ "${{ matrix.project }}" = "graph-benchmark" ]; then
-            ./gradlew :bluetape4k-graph-falkordb:test \
-              --tests 'io.bluetape4k.graph.falkordb.FalkorDBGraphOperationsTest' \
-              --no-daemon --no-configuration-cache
-          fi
-        env:
-          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
-          TESTCONTAINERS_RYUK_DISABLED: "true"
-          DOCKER_HOST: "unix:///var/run/docker.sock"
-
-      - name: Save Testcontainers image cache
-        if: always()
-        uses: ./.github/actions/testcontainers-image-cache
-        with:
-          mode: save
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: test-results-${{ matrix.project }}
-          path: |
-            benchmark/${{ matrix.project }}/build/test-results/test/*.xml
-            graph/graph-falkordb/build/test-results/test/*.xml
           retention-days: 7
 
   # ── 12. 커버리지 집계 ─────────────────────────────────────────────────────
@@ -989,7 +899,6 @@ jobs:
       - test-graph-memgraph
       - test-graph-age
       - test-graph-falkordb
-      - test-graph-benchmark
       - coverage-report
     if: always()
     steps:

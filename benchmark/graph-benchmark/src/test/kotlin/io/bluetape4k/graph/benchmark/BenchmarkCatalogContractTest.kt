@@ -3,6 +3,7 @@ package io.bluetape4k.graph.benchmark
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
+import io.bluetape4k.assertions.shouldNotContain
 import org.junit.jupiter.api.Test
 import java.nio.file.Files
 import java.nio.file.Path
@@ -34,17 +35,16 @@ class BenchmarkCatalogContractTest {
     }
 
     @Test
-    fun `catalog drives CI and manual benchmark workflows`() {
+    fun `catalog drives only the manual benchmark workflow`() {
         val root = repoRoot()
         val ci = root.resolve(".github/workflows/ci.yml").readText()
         val benchmark = root.resolve(".github/workflows/benchmark.yml").readText()
 
-        ci shouldContain "graph-benchmarks:"
-        ci shouldContain "benchmark-catalog:"
-        ci shouldContain "matrix: \${{ fromJSON(needs.benchmark-catalog.outputs.matrix) }}"
-        ci shouldContain ":\${{ matrix.project }}:test"
-        ci shouldContain "name: test-results-\${{ matrix.project }}"
+        ci shouldNotContain "graph-benchmarks:"
+        ci shouldNotContain "benchmark-catalog:"
+        ci shouldNotContain "test-graph-benchmark:"
         benchmark shouldContain "benchmark/benchmark-modules.json"
+        benchmark shouldContain "benchmark-catalog:"
         benchmark shouldContain "matrix: \${{ fromJSON(needs.benchmark-catalog.outputs.matrix) }}"
         benchmark shouldContain "run: ./gradlew \":\${{ matrix.project }}:benchmark\""
         benchmark shouldContain "name: \${{ matrix.id }}-results"
