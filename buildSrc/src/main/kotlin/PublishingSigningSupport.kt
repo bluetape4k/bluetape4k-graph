@@ -94,8 +94,10 @@ data class PublishingSigningConfig(
  * Publishing signing 설정을 project property / 환경 변수에서 로딩합니다.
  */
 fun Project.resolvePublishingSigningConfig(): PublishingSigningConfig {
-    val keyId = getEnvOrProjectProperty("signingKeyId", "SIGNING_KEY_ID")
-    val key = getEnvOrProjectProperty("signingKey", "SIGNING_KEY").replace("\\n", "\n")
+    val normalizedKeyId = normalizeSigningKeyId(getEnvOrProjectProperty("signingKeyId", "SIGNING_KEY_ID"))
+    normalizedKeyId.warning?.let(logger::warn)
+    val keyId = normalizedKeyId.value
+    val key = resolveSigningKey(getEnvOrProjectProperty("signingKey", "SIGNING_KEY"))
     val password = getEnvOrProjectProperty("signingPassword", "SIGNING_PASSWORD")
     val useGpgCmd = getEnvOrProjectProperty("signingUseGpgCmd", "SIGNING_USE_GPG_CMD").toBoolean()
     val gpgExecutable = getEnvOrProjectProperty("signing.gnupg.executable", "GPG_EXECUTABLE")
