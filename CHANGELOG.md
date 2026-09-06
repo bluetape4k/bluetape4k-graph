@@ -17,6 +17,10 @@
 - CSV `RawJsonColumn`이 정점·간선의 실제 속성 맵을 하나의 JSON 컬럼으로
   직렬화·복원하도록 수정했다. null, 중첩 map/list, CSV 특수문자를 보존하고
   malformed/non-object JSON은 명시적으로 거부한다 ([#613](https://github.com/bluetape4k/bluetape4k-graph/issues/613)).
+- suspend graph-io batch writer가 `CancellationException`을 failure callback으로
+  보고하지 않고 즉시 재전파하도록 수정했다. CSV, Jackson2/3 NDJSON, GraphML
+  importer의 checkpoint는 취소 시 `FAILED`로 기록하지 않고 현재 안전 경계를
+  보존한다 ([#612](https://github.com/bluetape4k/bluetape4k-graph/issues/612)).
 
 ## [1.0.0] - 2026-09-02
 

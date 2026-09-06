@@ -27,6 +27,7 @@ import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.warn
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.collect
 
 /**
@@ -268,6 +269,9 @@ class SuspendCsvGraphBulkImporter : GraphSuspendBulkImporter<CsvGraphImportSourc
         ).also {
             log.debug { "CSV import (suspend) completed: vertices=$verticesCreated/$verticesRead, edges=$edgesCreated/$edgesRead, skipped=$skippedVertices/$skippedEdges, status=$status, elapsed=${watch.elapsed()}" }
         }
+        } catch (error: CancellationException) {
+            checkpoint.cancelled()
+            throw error
         } finally {
             checkpoint.close()
         }

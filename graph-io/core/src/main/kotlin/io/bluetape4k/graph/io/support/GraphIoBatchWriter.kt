@@ -5,6 +5,7 @@ import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.support.requirePositiveNumber
+import kotlinx.coroutines.CancellationException
 
 /**
  * graph-io importer에서 `GraphImportOptions.batchSize` 단위로 backend batch write를 수행한다.
@@ -170,6 +171,8 @@ class SuspendGraphIoBatchWriter(
                     "createVertices('$label', ...) returned ${it.size} rows for ${rows.size} input rows"
                 }
             }
+        } catch (error: CancellationException) {
+            throw error
         } catch (error: Throwable) {
             notifyFailure("VERTICES", error)
             throw error
@@ -192,6 +195,8 @@ class SuspendGraphIoBatchWriter(
                     "createEdges('$label', ...) returned ${it.size} rows for ${rows.size} input rows"
                 }
             }
+        } catch (error: CancellationException) {
+            throw error
         } catch (error: Throwable) {
             notifyFailure("EDGES", error)
             throw error
