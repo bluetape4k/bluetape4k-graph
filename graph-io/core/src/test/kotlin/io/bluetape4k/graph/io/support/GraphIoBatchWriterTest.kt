@@ -1,8 +1,10 @@
 package io.bluetape4k.graph.io.support
 
 import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeNull
+import io.bluetape4k.assertions.shouldBeSameInstanceAs
 import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.graph.io.options.DuplicateVertexPolicy
 import io.bluetape4k.graph.io.testsupport.FakeGraphOperations
@@ -16,6 +18,7 @@ import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphVertex
 import org.junit.jupiter.api.Test
+import kotlinx.coroutines.CancellationException
 
 class GraphIoBatchWriterTest {
 
@@ -193,5 +196,83 @@ class GraphIoBatchWriterTest {
         idMap.resolve("missing").shouldBeNull()
         coVerify(exactly = 0) { operations.createVertices(any(), any()) }
         coVerify(exactly = 0) { operations.createEdges(any(), any()) }
+    }
+
+    @Test
+    fun `suspend vertex cancellation is rethrown without failure callback`() = runSuspendIO {
+        val operations = mockk<GraphSuspendOperations>()
+        val cancellation = CancellationException("vertex-cancelled")
+        val failures = mutableListOf<Pair<String, Throwable>>()
+        coEvery { operations.createVertices("Person", any()) } throws cancellation
+        val writer = SuspendGraphIoBatchWriter(operations, batchSize = 1) { boundary, cause ->
+            failures += boundary to cause
+        }
+        val idMap = GraphIoExternalIdMap(DuplicateVertexPolicy.FAIL)
+        idMap.putFirstOrFail("v1", GraphElementId.of("v1"))
+
+        val thrown = assertFailsWith<CancellationException> {
+            writer.addVertex("v1", "Person", emptyMap(), idMap)
+        }
+
+        thrown shouldBeSameInstanceAs cancellation
+        failures.shouldBeEmpty()
+    }
+
+    @Test
+    fun `suspend edge cancellation is rethrown without failure callback`() = runSuspendIO {
+        val operations = mockk<GraphSuspendOperations>()
+        val cancellation = CancellationException("edge-cancelled")
+        val failures = mutableListOf<Pair<String, Throwable>>()
+        coEvery { operations.createEdges("KNOWS", any()) } throws cancellation
+        val writer = SuspendGraphIoBatchWriter(operations, batchSize = 1) { boundary, cause ->
+            failures += boundary to cause
+        }
+
+        val thrown = assertFailsWith<CancellationException> {
+            writer.addEdge("KNOWS", GraphElementId.of("a"), GraphElementId.of("b"), emptyMap())
+        }
+
+        thrown shouldBeSameInstanceAs cancellation
+        failures.shouldBeEmpty()
+    }
+
+    @Test
+    fun `suspend backend failure still invokes vertex failure callback`() = runSuspendIO {
+        val operations = mockk<GraphSuspendOperations>()
+        val failure = IllegalStateException("backend-failure")
+        val failures = mutableListOf<Pair<String, Throwable>>()
+        coEvery { operations.createVertices("Person", any()) } throws failure
+        val writer = SuspendGraphIoBatchWriter(operations, batchSize = 1) { boundary, cause ->
+            failures += boundary to cause
+        }
+        val idMap = GraphIoExternalIdMap(DuplicateVertexPolicy.FAIL)
+        idMap.putFirstOrFail("v1", GraphElementId.of("v1"))
+
+        val thrown = assertFailsWith<IllegalStateException> {
+            writer.addVertex("v1", "Person", emptyMap(), idMap)
+        }
+
+        thrown shouldBeSameInstanceAs failure
+        failures.shouldHaveSize(1)
+        failures.single().first shouldBeEqualTo "VERTICES"
+        failures.single().second shouldBeSameInstanceAs failure
+    }
+
+    @Test
+    fun `suspend edge row mismatch still invokes edge failure callback`() = runSuspendIO {
+        val operations = mockk<GraphSuspendOperations>()
+        val failures = mutableListOf<Pair<String, Throwable>>()
+        coEvery { operations.createEdges("KNOWS", any()) } returns emptyList()
+        val writer = SuspendGraphIoBatchWriter(operations, batchSize = 1) { boundary, cause ->
+            failures += boundary to cause
+        }
+
+        val thrown = assertFailsWith<IllegalArgumentException> {
+            writer.addEdge("KNOWS", GraphElementId.of("a"), GraphElementId.of("b"), emptyMap())
+        }
+
+        failures.shouldHaveSize(1)
+        failures.single().first shouldBeEqualTo "EDGES"
+        failures.single().second shouldBeSameInstanceAs thrown
     }
 }

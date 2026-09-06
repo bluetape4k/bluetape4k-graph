@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.io.jackson2
 
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.graph.io.checkpoint.GraphImportCheckpointPhase
 import io.bluetape4k.graph.io.checkpoint.InMemoryGraphImportCheckpointStore
@@ -9,7 +10,11 @@ import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
+import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.mockk.coEvery
+import io.mockk.mockk
+import kotlinx.coroutines.CancellationException
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Files
@@ -67,6 +72,27 @@ class Jackson2CheckpointLifecycleTest {
         resumed.verticesCreated.shouldBeEqualTo(0L)
         resumed.edgesCreated.shouldBeEqualTo(1L)
         store.load(KEY).shouldBeEqualTo(null)
+    }
+
+    @Test
+    fun `suspend cancellation does not persist a failed checkpoint`(@TempDir dir: Path) = runSuspendIO {
+        val input = dir.resolve("graph-cancel.ndjson")
+        Files.writeString(input, """{"type":"vertex","id":"v1","label":"Person","properties":{}}""")
+        val store = InMemoryGraphImportCheckpointStore()
+        val options = options(store)
+        val cancellation = CancellationException("jackson2-import-cancelled")
+        val operations = mockk<GraphSuspendOperations>()
+        coEvery { operations.createVertices("Person", any()) } throws cancellation
+
+        val thrown = assertFailsWith<CancellationException> {
+            SuspendJackson2NdJsonBulkImporter().importGraphSuspending(
+                GraphImportSource.PathSource(input), operations, options,
+            )
+        }
+
+        thrown.message.shouldBeEqualTo(cancellation.message)
+        store.load(KEY)?.phase.shouldBeEqualTo(GraphImportCheckpointPhase.DISCOVERED)
+        store.load(KEY)?.failureBoundary.shouldBeEqualTo(null)
     }
 
     @Test

@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.io.csv
 
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.graph.io.checkpoint.GraphImportCheckpointPhase
 import io.bluetape4k.graph.io.checkpoint.InMemoryGraphImportCheckpointStore
@@ -9,7 +10,11 @@ import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
+import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.mockk.coEvery
+import io.mockk.mockk
+import kotlinx.coroutines.CancellationException
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Files
@@ -85,6 +90,36 @@ class CsvCheckpointLifecycleTest {
         resumed.verticesCreated shouldBeEqualTo 0L
         resumed.edgesCreated shouldBeEqualTo 1L
         store.load("csv-suspend-job") shouldBeEqualTo null
+    }
+
+    @Test
+    fun `suspend cancellation does not persist a failed checkpoint`(@TempDir dir: Path) = runSuspendIO {
+        val vertices = dir.resolve("vertices-cancel.csv")
+        val edges = dir.resolve("edges-cancel.csv")
+        Files.writeString(vertices, "id,label\nv1,Person\n")
+        Files.writeString(edges, "id,label,from,to\n")
+        val source = CsvGraphImportSource(
+            GraphImportSource.PathSource(vertices),
+            GraphImportSource.PathSource(edges),
+        )
+        val store = InMemoryGraphImportCheckpointStore()
+        val options = GraphImportOptions(
+            batchSize = 1,
+            checkpointStore = store,
+            checkpointKey = "csv-cancel-job",
+            checkpointSourceIdentity = "csv-cancel-source",
+        )
+        val cancellation = CancellationException("csv-import-cancelled")
+        val operations = mockk<GraphSuspendOperations>()
+        coEvery { operations.createVertices("Person", any()) } throws cancellation
+
+        val thrown = assertFailsWith<CancellationException> {
+            SuspendCsvGraphBulkImporter().importGraphSuspending(source, operations, options)
+        }
+
+        thrown.message shouldBeEqualTo cancellation.message
+        store.load("csv-cancel-job")?.phase shouldBeEqualTo GraphImportCheckpointPhase.DISCOVERED
+        store.load("csv-cancel-job")?.failureBoundary shouldBeEqualTo null
     }
 
     @Test
