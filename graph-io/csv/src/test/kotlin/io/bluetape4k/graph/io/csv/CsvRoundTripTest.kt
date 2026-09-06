@@ -127,6 +127,25 @@ class CsvRoundTripTest {
     }
 
     @Test
+    fun `sync importer rejects trailing raw json tokens`(@TempDir dir: Path) {
+        val vertices = dir.resolve("malformed-raw-json-v.csv").also {
+            Files.writeString(it, "id,label,attributes\nv1,Person,\"{} {}\"\n")
+        }
+        val edges = dir.resolve("malformed-raw-json-e.csv").also {
+            Files.writeString(it, "id,label,from,to\n")
+        }
+
+        assertFailsWith<IllegalArgumentException> {
+            CsvGraphBulkImporter().importGraph(
+                CsvGraphImportSource(GraphImportSource.PathSource(vertices), GraphImportSource.PathSource(edges)),
+                TinkerGraphOperations(),
+                GraphImportOptions(preserveExternalIdProperty = null),
+                CsvGraphIoOptions(propertyMode = CsvPropertyMode.RawJsonColumn("attributes")),
+            )
+        }
+    }
+
+    @Test
     fun `sync export uses bounded chunks once per label and unions properties`(@TempDir dir: Path) {
         val vOut = dir.resolve("bounded-v.csv")
         val eOut = dir.resolve("bounded-e.csv")

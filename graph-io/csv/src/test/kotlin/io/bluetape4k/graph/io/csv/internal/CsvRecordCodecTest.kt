@@ -78,5 +78,11 @@ class CsvRecordCodecTest {
         assertFailsWith<IllegalArgumentException> {
             codec.extractProperties(mapOf("attributes" to "[1, 2]"))
         }
+        assertFailsWith<IllegalArgumentException> {
+            codec.extractProperties(mapOf("attributes" to "{} {}"))
+        }
+        assertFailsWith<IllegalArgumentException> {
+            codec.extractProperties(mapOf("attributes" to "{\"name\": \"Alice\",}"))
+        }
     }
 }

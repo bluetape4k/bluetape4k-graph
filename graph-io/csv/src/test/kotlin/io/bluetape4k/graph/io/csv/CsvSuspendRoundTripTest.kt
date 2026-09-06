@@ -121,6 +121,25 @@ class CsvSuspendRoundTripTest {
     }
 
     @Test
+    fun `suspend importer rejects trailing raw json tokens`(@TempDir dir: Path) = runSuspendIO {
+        val vertices = dir.resolve("malformed-raw-json-suspend-v.csv").also {
+            java.nio.file.Files.writeString(it, "id,label,attributes\nv1,Person,\"{} {}\"\n")
+        }
+        val edges = dir.resolve("malformed-raw-json-suspend-e.csv").also {
+            java.nio.file.Files.writeString(it, "id,label,from,to\n")
+        }
+
+        assertFailsWith<IllegalArgumentException> {
+            SuspendCsvGraphBulkImporter().importGraphSuspending(
+                CsvGraphImportSource(GraphImportSource.PathSource(vertices), GraphImportSource.PathSource(edges)),
+                TinkerGraphSuspendOperations(),
+                GraphImportOptions(preserveExternalIdProperty = null),
+                CsvGraphIoOptions(propertyMode = CsvPropertyMode.RawJsonColumn("attributes")),
+            )
+        }
+    }
+
+    @Test
     fun `suspend csv graph operations stay on caller dispatcher`(@TempDir dir: Path) {
         val dispatcher = Executors.newSingleThreadExecutor { task ->
             Thread(task, "csv-graph-caller")

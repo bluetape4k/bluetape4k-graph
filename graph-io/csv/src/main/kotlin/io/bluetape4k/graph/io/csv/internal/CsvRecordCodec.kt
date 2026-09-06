@@ -1,7 +1,10 @@
 package io.bluetape4k.graph.io.csv.internal
 
 import com.fasterxml.jackson.core.JacksonException
+import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.JsonNode
 import io.bluetape4k.graph.io.csv.CsvPropertyMode
 import io.bluetape4k.graph.io.model.GraphIoEdgeRecord
 import io.bluetape4k.graph.io.model.GraphIoVertexRecord
@@ -77,7 +80,7 @@ internal class CsvRecordCodec(private val mode: CsvPropertyMode) {
 
     private fun decodeRawJson(raw: String, column: String): Map<String, Any?> {
         val node = try {
-            jsonMapper.readTree(raw)
+            strictJsonReader.readValue<JsonNode>(raw)
         } catch (cause: JacksonException) {
             throw IllegalArgumentException("Invalid JSON in RawJsonColumn '$column'", cause)
         }
@@ -94,6 +97,9 @@ internal class CsvRecordCodec(private val mode: CsvPropertyMode) {
     companion object {
         private const val RAW_JSON_SPOOL_KEY = "\u0000bluetape4k.csv.rawJson"
         private val jsonMapper = Jackson.defaultJsonMapper
+        private val strictJsonReader = jsonMapper.readerFor(JsonNode::class.java)
+            .with(DeserializationFeature.FAIL_ON_TRAILING_TOKENS)
+            .without(JsonParser.Feature.ALLOW_TRAILING_COMMA)
         private val PROPERTY_MAP_TYPE = object : TypeReference<Map<String, Any?>>() {}
         internal val RESERVED_VERTEX = listOf("id", "label")
         internal val RESERVED_EDGE = listOf("id", "label", "from", "to")
