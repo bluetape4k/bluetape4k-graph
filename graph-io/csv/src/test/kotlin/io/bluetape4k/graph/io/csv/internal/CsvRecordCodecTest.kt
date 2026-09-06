@@ -32,4 +32,51 @@ class CsvRecordCodecTest {
             codec.unionVertexHeader(recs)
         }
     }
+
+    @Test
+    fun `raw json column is present even when all properties are empty`() {
+        val codec = CsvRecordCodec(CsvPropertyMode.RawJsonColumn("attributes"))
+
+        codec.unionVertexHeader(listOf(GraphIoVertexRecord("v1", "Person", emptyMap()))) shouldBeEqualTo
+            listOf("id", "label", "attributes")
+    }
+
+    @Test
+    fun `raw json properties preserve scalar null nested and escaped values`() {
+        val codec = CsvRecordCodec(CsvPropertyMode.RawJsonColumn("attributes"))
+        val expected = mapOf(
+            "name" to "Alice",
+            "age" to 30,
+            "nullable" to null,
+            "nested" to mapOf(
+                "quote" to "a,\"b",
+                "lines" to "one\ntwo",
+            ),
+            "items" to listOf(1, true),
+        )
+
+        val encoded = codec.encodeProperty("attributes", expected)
+
+        codec.extractProperties(mapOf("attributes" to encoded)) shouldBeEqualTo expected
+    }
+
+    @Test
+    fun `raw json empty properties are encoded as an empty object`() {
+        val codec = CsvRecordCodec(CsvPropertyMode.RawJsonColumn("attributes"))
+
+        codec.encodeProperty("attributes", emptyMap()) shouldBeEqualTo "{}"
+        codec.extractProperties(mapOf("attributes" to "{}")) shouldBeEqualTo emptyMap()
+    }
+
+    @Test
+    fun `raw json malformed or non object values fail explicitly`() {
+        val codec = CsvRecordCodec(CsvPropertyMode.RawJsonColumn("attributes"))
+
+        assertFailsWith<IllegalArgumentException> {
+            codec.extractProperties(mapOf("attributes" to "{broken"))
+        }
+        assertFailsWith<IllegalArgumentException> {
+            codec.extractProperties(mapOf("attributes" to "[1, 2]"))
+        }
+    }
 }

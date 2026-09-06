@@ -13,7 +13,7 @@ CSV format bulk importer/exporter for **bluetape4k-graph**. Seamlessly export gr
 
 - **Property Handling Modes**
   - `PrefixedColumns`: Store properties as separate columns with a prefix (e.g., `prop.name`, `prop.age`)
-  - `RawJsonColumn`: Use one configured column for a JSON property payload
+  - `RawJsonColumn`: Serialize the complete property map, including nulls, nested maps, and lists, into one configured JSON column
   - `None`: Exclude properties entirely
 
 - **Automatic Schema Union**: Header generation automatically discovers all property keys across records
@@ -251,7 +251,11 @@ val options = CsvGraphIoOptions(
 
 #### Raw JSON Column
 
-Use one configured column for the JSON property payload:
+Use one configured column for the complete JSON property payload. Export and
+import share the same codec, so scalar, null, nested, list, quoted, comma, and
+newline values survive a round trip. Empty property maps are written as `{}`;
+the importer rejects malformed JSON and non-object JSON with
+`IllegalArgumentException`.
 
 ```kotlin
 val options = CsvGraphIoOptions(
