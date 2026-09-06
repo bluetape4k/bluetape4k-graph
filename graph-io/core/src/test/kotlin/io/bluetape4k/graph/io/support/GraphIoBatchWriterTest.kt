@@ -17,8 +17,12 @@ import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphVertex
-import org.junit.jupiter.api.Test
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.Test
 
 class GraphIoBatchWriterTest {
 
@@ -233,6 +237,58 @@ class GraphIoBatchWriterTest {
         }
 
         thrown shouldBeSameInstanceAs cancellation
+        failures.shouldBeEmpty()
+    }
+
+    @Test
+    fun `suspend vertex writer propagates cancellation from the active coroutine job`() = runTest {
+        val operations = mockk<GraphSuspendOperations>()
+        val entered = CompletableDeferred<Unit>()
+        val failures = mutableListOf<Pair<String, Throwable>>()
+        coEvery { operations.createVertices("Person", any()) } coAnswers {
+            entered.complete(Unit)
+            awaitCancellation()
+        }
+        val writer = SuspendGraphIoBatchWriter(operations, batchSize = 1) { boundary, cause ->
+            failures += boundary to cause
+        }
+        val idMap = GraphIoExternalIdMap(DuplicateVertexPolicy.FAIL)
+        idMap.putFirstOrFail("v1", GraphElementId.of("v1"))
+        val cancellation = CancellationException("vertex-job-cancelled")
+        val job = async {
+            writer.addVertex("v1", "Person", emptyMap(), idMap)
+        }
+
+        entered.await()
+        job.cancel(cancellation)
+        val thrown = assertFailsWith<CancellationException> { job.await() }
+
+        thrown.message shouldBeEqualTo cancellation.message
+        failures.shouldBeEmpty()
+    }
+
+    @Test
+    fun `suspend edge writer propagates cancellation from the active coroutine job`() = runTest {
+        val operations = mockk<GraphSuspendOperations>()
+        val entered = CompletableDeferred<Unit>()
+        val failures = mutableListOf<Pair<String, Throwable>>()
+        coEvery { operations.createEdges("KNOWS", any()) } coAnswers {
+            entered.complete(Unit)
+            awaitCancellation()
+        }
+        val writer = SuspendGraphIoBatchWriter(operations, batchSize = 1) { boundary, cause ->
+            failures += boundary to cause
+        }
+        val cancellation = CancellationException("edge-job-cancelled")
+        val job = async {
+            writer.addEdge("KNOWS", GraphElementId.of("a"), GraphElementId.of("b"), emptyMap())
+        }
+
+        entered.await()
+        job.cancel(cancellation)
+        val thrown = assertFailsWith<CancellationException> { job.await() }
+
+        thrown.message shouldBeEqualTo cancellation.message
         failures.shouldBeEmpty()
     }
 

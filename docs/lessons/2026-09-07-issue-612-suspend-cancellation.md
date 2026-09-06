@@ -23,10 +23,12 @@ failure boundary를 새로 기록하지 않는다. sync writer와 sync importer�
 
 ## Verification
 
-- core `GraphIoBatchWriterTest`: cancellation vertex/edge, backend failure,
-  row-count mismatch callback 회귀를 검증했다.
-- CSV/Jackson2/Jackson3/GraphML checkpoint lifecycle에서 취소 후
-  `DISCOVERED` phase와 null failure boundary를 검증했다.
+- core `GraphIoBatchWriterTest`: 직접 `CancellationException` 경로와 실제
+  coroutine `Job`의 vertex/edge 중간 취소, backend failure, row-count mismatch
+  callback 회귀를 검증했다.
+- CSV checkpoint lifecycle에서 실제 vertex/edge `Job` 취소가 마지막 안전 phase를
+  보존하고 claim을 재사용 가능하게 하는지 검증했다. Jackson2/Jackson3/GraphML도
+  직접 취소 경계에서 `DISCOVERED` phase와 null failure boundary를 검증했다.
 - 관련 전체 테스트 및 detekt를 모듈별로 실행했다. CSV 전체 71건은
   `CsvStreamingReaderContractTest`의 기존 close/parse 경계 race가 병렬 실행에서
   간헐적으로 실패해 targeted 재실행과 별도 full-suite 결과를 기록한다.
