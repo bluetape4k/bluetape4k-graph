@@ -23,6 +23,8 @@ profile이 다르다. Coverage gate는 module-level이어야 한다.
 
 ## CI/Nightly 계약
 
-Nightly는 coverage artifact를 업로드하고 trend visibility를 유지한다. 향후 이슈가
-명시적으로 해당 gate를 다시 도입하기 전까지 CI와 Nightly는 고정 coverage percentage
-미달만으로 실패해서는 안 된다.
+Nightly는 coverage artifact를 업로드하고 trend visibility를 유지한다. artifact
+manifest와 Kover XML의 `INSTRUCTION` counter는 aggregation 전에 검증하며, malformed
+XML, 유효하지 않은 counter, 또는 기대 artifact 누락은 partial summary를 숨기지
+않도록 fail-closed로 실패시킨다. 향후 이슈가 명시적으로 해당 gate를 다시 도입하기
+전까지 CI와 Nightly는 고정 coverage percentage 미달만으로 실패해서는 안 된다.

@@ -46,6 +46,10 @@
   `./gradlew detektProjectBaseline`로만 재생성한다.
 - Kover report generation은 `continue-on-error: true`를 유지한다. 고정 threshold
   하나만으로 build를 실패시키지 않으면서 coverage data를 볼 수 있어야 한다.
+- 다만 coverage artifact upload/download와 aggregation은 fail-closed로 검증한다.
+  malformed XML, 유효하지 않은 `INSTRUCTION` counter, 또는 기대 artifact 누락은
+  summary에 오류를 남기고 coverage job을 실패시킨다. 이는 coverage percentage
+  threshold를 추가하는 것이 아니라 evidence 완전성을 보장하는 계약이다.
 - 최종 job이 green이어도 `success_after_retry`를 정상 first-attempt success와
   같은 상태로 서술하지 않는다. PR/DoD는 retry-only 통과와 첫 실패 evidence
   artifact를 별도로 기록한다. helper가 적용되지 않은 기존 step의 green은
