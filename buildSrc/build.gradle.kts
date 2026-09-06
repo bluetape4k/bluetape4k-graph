@@ -8,6 +8,15 @@ plugins {
     `kotlin-dsl`
 }
 
+dependencies {
+    testImplementation(kotlin("test"))
+    testImplementation(gradleTestKit())
+}
+
+tasks.test {
+    useJUnitPlatform()
+}
+
 kotlin {
     jvmToolchain(25)
     compilerOptions {
