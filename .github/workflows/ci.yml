@@ -183,6 +183,9 @@ jobs:
       - name: Verify lightweight CI routing
         run: python3 .github/scripts/test_ci_routing_policy.py
 
+      - name: Verify Kover aggregation contract
+        run: python3 .github/scripts/test_aggregate_kover_coverage.py
+
   # ── 4. 전체 빌드 + Detekt 품질 게이트 ─────────────────────────────────────
   catalog-governance:
     name: Central Catalog Governance
@@ -371,7 +374,8 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: coverage-core
-          path: '**/build/reports/kover/report.xml'
+          path: '**/build/reports/kover/report*.xml'
+          if-no-files-found: error
           retention-days: 7
 
   # ── 5. Spring Boot 테스트 (TinkerGraph 프로파일, Docker 불필요) ──
@@ -440,7 +444,8 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: coverage-spring-starters
-          path: '**/build/reports/kover/report.xml'
+          path: '**/build/reports/kover/report*.xml'
+          if-no-files-found: error
           retention-days: 7
 
   # ── 6. Ktor Graph (Testcontainers + TinkerGraph example) ─────────────────
@@ -519,7 +524,8 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: coverage-ktor
-          path: '**/build/reports/kover/report.xml'
+          path: '**/build/reports/kover/report*.xml'
+          if-no-files-found: error
           retention-days: 7
 
   # ── 7. Neo4j (Testcontainers) ─────────────────────────────────────────────
@@ -594,7 +600,8 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: coverage-neo4j
-          path: '**/build/reports/kover/report.xml'
+          path: '**/build/reports/kover/report*.xml'
+          if-no-files-found: error
           retention-days: 7
 
   # ── 8. Memgraph (Testcontainers) ──────────────────────────────────────────
@@ -669,7 +676,8 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: coverage-memgraph
-          path: '**/build/reports/kover/report.xml'
+          path: '**/build/reports/kover/report*.xml'
+          if-no-files-found: error
           retention-days: 7
 
   # ── 9. Apache AGE (Testcontainers) ────────────────────────────────────────
@@ -744,7 +752,8 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: coverage-age
-          path: '**/build/reports/kover/report.xml'
+          path: '**/build/reports/kover/report*.xml'
+          if-no-files-found: error
           retention-days: 7
 
   # ── 10. FalkorDB (Testcontainers) ─────────────────────────────────────────
@@ -819,7 +828,8 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: coverage-falkordb
-          path: '**/build/reports/kover/report.xml'
+          path: '**/build/reports/kover/report*.xml'
+          if-no-files-found: error
           retention-days: 7
 
   # ── 12. 커버리지 집계 ─────────────────────────────────────────────────────
@@ -870,7 +880,50 @@ jobs:
 
       - name: Aggregate Kover coverage summary
         if: always()
-        run: python3 .github/scripts/aggregate-kover-coverage.py coverage-artifacts
+        run: |
+          set -euo pipefail
+          expected_artifacts=()
+          expected_modules=()
+          if [ "${{ needs.test-core.result }}" != "skipped" ]; then
+            expected_artifacts+=(--expected-artifact coverage-core)
+            expected_modules+=(
+              --expected-module graph-core
+              --expected-module graph-tinkerpop
+              --expected-module graph-io-core
+              --expected-module graph-io-csv
+              --expected-module graph-io-jackson2
+              --expected-module graph-io-jackson3
+              --expected-module graph-io-graphml
+              --expected-module graph-io-micrometer
+              --expected-module graph-io-okio
+            )
+          fi
+          if [ "${{ needs.test-spring-starters.result }}" != "skipped" ]; then
+            expected_artifacts+=(--expected-artifact coverage-spring-starters)
+            expected_modules+=(--expected-module graph-spring-boot)
+          fi
+          if [ "${{ needs.test-graph-ktor.result }}" != "skipped" ]; then
+            expected_artifacts+=(--expected-artifact coverage-ktor)
+            expected_modules+=(--expected-module graph-ktor)
+          fi
+          if [ "${{ needs.test-graph-neo4j.result }}" != "skipped" ]; then
+            expected_artifacts+=(--expected-artifact coverage-neo4j)
+            expected_modules+=(--expected-module graph-neo4j)
+          fi
+          if [ "${{ needs.test-graph-memgraph.result }}" != "skipped" ]; then
+            expected_artifacts+=(--expected-artifact coverage-memgraph)
+            expected_modules+=(--expected-module graph-memgraph)
+          fi
+          if [ "${{ needs.test-graph-age.result }}" != "skipped" ]; then
+            expected_artifacts+=(--expected-artifact coverage-age)
+            expected_modules+=(--expected-module graph-age)
+          fi
+          if [ "${{ needs.test-graph-falkordb.result }}" != "skipped" ]; then
+            expected_artifacts+=(--expected-artifact coverage-falkordb)
+            expected_modules+=(--expected-module graph-falkordb)
+          fi
+          python3 .github/scripts/aggregate-kover-coverage.py coverage-artifacts \
+            "${expected_artifacts[@]}" "${expected_modules[@]}"
 
       - name: Upload aggregated coverage
         if: always()
