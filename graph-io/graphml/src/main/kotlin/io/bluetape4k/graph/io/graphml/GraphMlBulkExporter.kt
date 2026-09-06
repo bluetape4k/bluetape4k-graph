@@ -1,6 +1,7 @@
 package io.bluetape4k.graph.io.graphml
 
 import io.bluetape4k.graph.io.contract.GraphBulkExporter
+import io.bluetape4k.graph.io.graphml.internal.GraphMlPropertyTypes
 import io.bluetape4k.graph.io.graphml.internal.StaxGraphMlWriter
 import io.bluetape4k.graph.io.model.GraphIoEdgeRecord
 import io.bluetape4k.graph.io.model.GraphIoVertexRecord
@@ -94,21 +95,24 @@ class GraphMlBulkExporter : GraphBulkExporter<GraphExportSink> {
         val failures = mutableListOf<GraphIoFailure>()
         val (vertexLabels, edgeLabels) = options.resolveLabels(operations)
         val spool = GraphIoRecordSpool()
+        val propertyTypes = GraphMlPropertyTypes()
         var primaryFailure: Throwable? = null
 
         try {
             for (label in vertexLabels) {
                 operations.findVerticesByLabelChunked(label, chunkSize = options.exportChunkSize).forEach { chunk ->
-                    spool.appendVertices(chunk.map { v -> GraphIoVertexRecord(v.id.value, v.label, v.properties) })
+                    val records = chunk.map { v -> GraphIoVertexRecord(v.id.value, v.label, v.properties) }
+                    propertyTypes.observeVertices(records)
+                    spool.appendVertices(records)
                 }
             }
             for (label in edgeLabels) {
                 operations.findEdgesByLabelChunked(label, chunkSize = options.exportChunkSize).forEach { chunk ->
-                    spool.appendEdges(
-                        chunk.map { e ->
-                            GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties)
-                        },
-                    )
+                    val records = chunk.map { e ->
+                        GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties)
+                    }
+                    propertyTypes.observeEdges(records)
+                    spool.appendEdges(records)
                 }
             }
             spool.finish()
@@ -119,8 +123,9 @@ class GraphMlBulkExporter : GraphBulkExporter<GraphExportSink> {
                     vertices = spool.vertexRecords(),
                     edges = spool.edgeRecords(),
                     options = graphMlOptions,
-                    vertexPropertyKeys = spool.vertexPropertyKeys,
-                    edgePropertyKeys = spool.edgePropertyKeys,
+                    vertexPropertyTypes = propertyTypes.vertices,
+                    edgePropertyTypes = propertyTypes.edges,
+                    includeEmptyProperties = options.includeEmptyProperties,
                 )
             }
 
