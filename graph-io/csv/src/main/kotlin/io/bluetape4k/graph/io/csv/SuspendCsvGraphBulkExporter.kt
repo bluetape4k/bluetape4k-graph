@@ -109,7 +109,11 @@ class SuspendCsvGraphBulkExporter : GraphSuspendBulkExporter<CsvGraphExportSink>
             for (label in vertexLabels) {
                 operations.findVerticesByLabelChunked(label, chunkSize = options.exportChunkSize).collect { chunk ->
                     withContext(Dispatchers.IO) {
-                        spool.appendVertices(chunk.map { v -> GraphIoVertexRecord(v.id.value, v.label, v.properties) })
+                        spool.appendVertices(
+                            chunk.map { v ->
+                                GraphIoVertexRecord(v.id.value, v.label, codec.prepareForSpool(v.properties))
+                            },
+                        )
                     }
                 }
             }
@@ -118,7 +122,13 @@ class SuspendCsvGraphBulkExporter : GraphSuspendBulkExporter<CsvGraphExportSink>
                     withContext(Dispatchers.IO) {
                         spool.appendEdges(
                             chunk.map { e ->
-                                GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties)
+                                GraphIoEdgeRecord(
+                                    e.id.value,
+                                    e.label,
+                                    e.startId.value,
+                                    e.endId.value,
+                                    codec.prepareForSpool(e.properties),
+                                )
                             },
                         )
                     }
@@ -132,7 +142,6 @@ class SuspendCsvGraphBulkExporter : GraphSuspendBulkExporter<CsvGraphExportSink>
                 val vHeader = codec.unionVertexHeader(
                     spool.vertexRecords().onEach { exportContext.ensureActive() }.asIterable(),
                 )
-                val prefix = (csvOptions.propertyMode as? CsvPropertyMode.PrefixedColumns)?.prefix ?: ""
                 vertexWriter = GraphIoPaths.openWriter(sink.vertices)
                 val vertexCsv = CsvRecordWriter(requireNotNull(vertexWriter))
                 vertexCsv.writeHeaders(vHeader)
@@ -141,8 +150,7 @@ class SuspendCsvGraphBulkExporter : GraphSuspendBulkExporter<CsvGraphExportSink>
                         add(v.externalId)
                         add(v.label)
                         vHeader.drop(2).forEach { col ->
-                            val key = col.removePrefix(prefix)
-                            add(v.properties[key]?.toString() ?: "")
+                            add(codec.encodeProperty(col, v.properties))
                         }
                     }
                     vertexCsv.writeRow(row)
@@ -163,8 +171,7 @@ class SuspendCsvGraphBulkExporter : GraphSuspendBulkExporter<CsvGraphExportSink>
                         add(ed.fromExternalId)
                         add(ed.toExternalId)
                         eHeader.drop(4).forEach { col ->
-                            val key = col.removePrefix(prefix)
-                            add(ed.properties[key]?.toString() ?: "")
+                            add(codec.encodeProperty(col, ed.properties))
                         }
                     }
                     edgeCsv.writeRow(row)

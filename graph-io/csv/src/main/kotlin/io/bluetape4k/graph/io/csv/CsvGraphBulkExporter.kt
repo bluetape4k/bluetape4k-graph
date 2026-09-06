@@ -101,14 +101,24 @@ class CsvGraphBulkExporter : GraphBulkExporter<CsvGraphExportSink> {
             // 입력은 한 번만 읽어 immutable disk snapshot으로 고정한다.
             for (label in vertexLabels) {
                 operations.findVerticesByLabelChunked(label, chunkSize = options.exportChunkSize).forEach { chunk ->
-                    spool.appendVertices(chunk.map { v -> GraphIoVertexRecord(v.id.value, v.label, v.properties) })
+                    spool.appendVertices(
+                        chunk.map { v ->
+                            GraphIoVertexRecord(v.id.value, v.label, codec.prepareForSpool(v.properties))
+                        },
+                    )
                 }
             }
             for (label in edgeLabels) {
                 operations.findEdgesByLabelChunked(label, chunkSize = options.exportChunkSize).forEach { chunk ->
                     spool.appendEdges(
                         chunk.map { e ->
-                            GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties)
+                            GraphIoEdgeRecord(
+                                e.id.value,
+                                e.label,
+                                e.startId.value,
+                                e.endId.value,
+                                codec.prepareForSpool(e.properties),
+                            )
                         },
                     )
                 }
@@ -117,7 +127,6 @@ class CsvGraphBulkExporter : GraphBulkExporter<CsvGraphExportSink> {
 
             // --- 정점 익스포트 ---
             val vHeader = codec.unionVertexHeader(spool.vertexRecords().asIterable())
-            val prefix = (csvOptions.propertyMode as? CsvPropertyMode.PrefixedColumns)?.prefix ?: ""
             GraphIoPaths.openWriter(sink.vertices).use { w ->
                 val csv = CsvRecordWriter(w)
                 csv.writeHeaders(vHeader)
@@ -126,8 +135,7 @@ class CsvGraphBulkExporter : GraphBulkExporter<CsvGraphExportSink> {
                         add(v.externalId)
                         add(v.label)
                         vHeader.drop(2).forEach { col ->
-                            val key = col.removePrefix(prefix)
-                            add(v.properties[key]?.toString() ?: "")
+                            add(codec.encodeProperty(col, v.properties))
                         }
                     }
                     csv.writeRow(row)
@@ -147,8 +155,7 @@ class CsvGraphBulkExporter : GraphBulkExporter<CsvGraphExportSink> {
                         add(ed.fromExternalId)
                         add(ed.toExternalId)
                         eHeader.drop(4).forEach { col ->
-                            val key = col.removePrefix(prefix)
-                            add(ed.properties[key]?.toString() ?: "")
+                            add(codec.encodeProperty(col, ed.properties))
                         }
                     }
                     csv.writeRow(row)

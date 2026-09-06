@@ -12,6 +12,12 @@
 
 - `1.0.0` 정식 배포 후 다음 minor 개발선을 `1.1.0-SNAPSHOT`으로 열었다.
 
+### 버그 수정
+
+- CSV `RawJsonColumn`이 정점·간선의 실제 속성 맵을 하나의 JSON 컬럼으로
+  직렬화·복원하도록 수정했다. null, 중첩 map/list, CSV 특수문자를 보존하고
+  malformed/non-object JSON은 명시적으로 거부한다 ([#613](https://github.com/bluetape4k/bluetape4k-graph/issues/613)).
+
 ## [1.0.0] - 2026-09-02
 
 ### 추가

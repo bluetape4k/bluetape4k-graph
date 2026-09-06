@@ -13,7 +13,7 @@
 
 - **속성 처리 모드**
   - `PrefixedColumns`: 속성을 접두사가 붙은 별도 컬럼으로 저장 (예: `prop.name`, `prop.age`)
-  - `RawJsonColumn`: 설정한 단일 컬럼에 JSON 속성 payload 저장
+  - `RawJsonColumn`: null, 중첩 map, list를 포함한 전체 속성 맵을 설정한 단일 JSON 컬럼에 저장
   - `None`: 속성 완전 제외
 
 - **자동 스키마 합치기**: 헤더 생성이 레코드 전체의 모든 속성 키를 자동으로 발견
@@ -247,7 +247,11 @@ val options = CsvGraphIoOptions(
 
 #### Raw JSON 컬럼
 
-설정한 단일 컬럼에 JSON 속성 payload를 저장:
+설정한 단일 컬럼에 전체 JSON 속성 payload를 저장합니다. 익스포트와
+임포트가 같은 codec을 공유하므로 scalar, null, 중첩 map, list, 따옴표,
+쉼표, 개행 값이 왕복에서 보존됩니다. 빈 속성 맵은 `{}`로 기록하며,
+임포터는 잘못된 JSON이나 object가 아닌 JSON을 `IllegalArgumentException`으로
+명시적으로 거부합니다.
 
 ```kotlin
 val options = CsvGraphIoOptions(
