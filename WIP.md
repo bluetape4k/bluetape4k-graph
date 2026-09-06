@@ -13,6 +13,10 @@
 `1.1.0` milestone의 #616 Kover fail-closed 수정은 stacked PR #619에서
 검증을 완료했고 최종 병합 승인 대기 중이다. 다음 train인 #613은 PR #619의
 정확한 head 위에서 RawJsonColumn의 sync/suspend JSON 왕복을 구현하고 있다.
+#612는 PR #620의 정확한 head 위에서 suspend graph-io cancellation이 failure
+callback과 checkpoint `FAILED` 상태를 오염시키지 않도록 수정했다. PR #621이
+열려 있으며, 정확한 head `6f3db83a940a5c70286995477a61a383255c0e39`의 hosted
+CI 19/19가 통과했고 최종 병합 승인을 대기 중이다.
 
 ## 다음 개발선 규칙
 

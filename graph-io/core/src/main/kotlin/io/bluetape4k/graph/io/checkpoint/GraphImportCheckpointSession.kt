@@ -156,6 +156,18 @@ class GraphImportCheckpointSession(
         }
     }
 
+    /** 취소는 실패 상태로 기록하지 않고 현재 checkpoint와 claim만 보존·해제한다. */
+    fun cancelled() {
+        val checkpointStore = store ?: return
+        if (!claimAcquired) return
+        val checkpointKey = requireNotNull(key)
+        try {
+            runCatching { checkpointStore.release(checkpointKey, attemptId) }
+        } finally {
+            claimAcquired = false
+        }
+    }
+
     private fun save(
         phase: GraphImportCheckpointPhase,
         verticesProcessed: Long,
