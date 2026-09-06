@@ -11,6 +11,7 @@ import io.bluetape4k.graph.io.report.GraphIoProgressEvent
 import io.bluetape4k.graph.io.report.GraphIoProgressListener
 import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.io.source.GraphImportSource
+import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphVertex
@@ -79,6 +80,69 @@ class CsvRoundTripTest {
         report.verticesCreated shouldBeEqualTo 2L
         report.edgesCreated shouldBeEqualTo 1L
         Files.size(vOut) shouldBeGreaterThan 0L
+    }
+
+    @Test
+    fun `sync raw json column preserves vertex and edge properties`(@TempDir dir: Path) {
+        val vOut = dir.resolve("raw-json-v.csv")
+        val eOut = dir.resolve("raw-json-e.csv")
+        val jsonOptions = CsvGraphIoOptions(propertyMode = CsvPropertyMode.RawJsonColumn("attributes"))
+        val vertexProperties = mapOf(
+            "name" to "Alice, \"A\"",
+            "nullable" to null,
+            "nested" to mapOf("line" to "one\ntwo"),
+            "items" to listOf(1, true),
+        )
+        val edgeProperties = mapOf("weight" to 2.5, "labels" to listOf("friend", "coworker"))
+
+        val alice = GraphVertex(GraphElementId.of("v-alice"), "Person", vertexProperties)
+        val bob = GraphVertex(GraphElementId.of("v-bob"), "Person", mapOf("name" to "Bob"))
+        val source = StaticGraphOperations(
+            vertices = listOf(alice, bob),
+            edges = listOf(GraphEdge(GraphElementId.of("e-knows"), "KNOWS", alice.id, bob.id, edgeProperties)),
+        )
+
+        CsvGraphBulkExporter().exportGraph(
+            CsvGraphExportSink(GraphExportSink.PathSink(vOut), GraphExportSink.PathSink(eOut)),
+            source,
+            GraphExportOptions(vertexLabels = setOf("Person"), edgeLabels = setOf("KNOWS")),
+            jsonOptions,
+        ).status shouldBeEqualTo GraphIoStatus.COMPLETED
+
+        Files.readString(vOut) shouldContain "id,label,attributes"
+        Files.readString(vOut) shouldContain "Alice"
+        Files.readString(eOut) shouldContain "id,label,from,to,attributes"
+
+        val target = CapturingGraphOperations()
+        CsvGraphBulkImporter().importGraph(
+            CsvGraphImportSource(GraphImportSource.PathSource(vOut), GraphImportSource.PathSource(eOut)),
+            target,
+            GraphImportOptions(preserveExternalIdProperty = null),
+            jsonOptions,
+        ).status shouldBeEqualTo GraphIoStatus.COMPLETED
+
+        target.capturedVertices.first { it["name"] == "Alice, \"A\"" } shouldBeEqualTo
+            vertexProperties
+        target.capturedEdges.single().properties shouldBeEqualTo edgeProperties
+    }
+
+    @Test
+    fun `sync importer rejects trailing raw json tokens`(@TempDir dir: Path) {
+        val vertices = dir.resolve("malformed-raw-json-v.csv").also {
+            Files.writeString(it, "id,label,attributes\nv1,Person,\"{} {}\"\n")
+        }
+        val edges = dir.resolve("malformed-raw-json-e.csv").also {
+            Files.writeString(it, "id,label,from,to\n")
+        }
+
+        assertFailsWith<IllegalArgumentException> {
+            CsvGraphBulkImporter().importGraph(
+                CsvGraphImportSource(GraphImportSource.PathSource(vertices), GraphImportSource.PathSource(edges)),
+                TinkerGraphOperations(),
+                GraphImportOptions(preserveExternalIdProperty = null),
+                CsvGraphIoOptions(propertyMode = CsvPropertyMode.RawJsonColumn("attributes")),
+            )
+        }
     }
 
     @Test
@@ -275,5 +339,50 @@ class CsvRoundTripTest {
         override fun write(b: Int): Unit = throw IOException(message)
 
         override fun write(b: ByteArray, off: Int, len: Int): Unit = throw IOException(message)
+    }
+
+    private class CapturingGraphOperations(
+        private val delegate: GraphOperations = TinkerGraphOperations(),
+    ) : GraphOperations by delegate {
+
+        val capturedVertices = mutableListOf<Map<String, Any?>>()
+        val capturedEdges = mutableListOf<BatchEdge>()
+
+        override fun createVertices(
+            label: String,
+            propertiesList: List<Map<String, Any?>>,
+        ): List<GraphVertex> {
+            capturedVertices += propertiesList
+            return delegate.createVertices(label, propertiesList)
+        }
+
+        override fun createEdges(label: String, edges: List<BatchEdge>): List<GraphEdge> {
+            capturedEdges += edges
+            return delegate.createEdges(label, edges)
+        }
+    }
+
+    private class StaticGraphOperations(
+        private val vertices: List<GraphVertex>,
+        private val edges: List<GraphEdge>,
+    ) : GraphOperations by TinkerGraphOperations() {
+
+        override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> =
+            vertices.filter { it.label == label }
+
+        override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): List<GraphEdge> =
+            edges.filter { it.label == label }
+
+        override fun findVerticesByLabelChunked(
+            label: String,
+            filter: Map<String, Any?>,
+            chunkSize: Int,
+        ): Sequence<List<GraphVertex>> = sequenceOf(vertices.filter { it.label == label })
+
+        override fun findEdgesByLabelChunked(
+            label: String,
+            filter: Map<String, Any?>,
+            chunkSize: Int,
+        ): Sequence<List<GraphEdge>> = sequenceOf(edges.filter { it.label == label })
     }
 }

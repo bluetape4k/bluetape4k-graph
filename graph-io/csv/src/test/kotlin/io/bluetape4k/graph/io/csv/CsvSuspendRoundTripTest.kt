@@ -26,6 +26,7 @@ import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -74,6 +75,68 @@ class CsvSuspendRoundTripTest {
         report.status shouldBeEqualTo GraphIoStatus.COMPLETED
         report.verticesCreated shouldBeEqualTo 2L
         report.edgesCreated shouldBeEqualTo 1L
+    }
+
+    @Test
+    fun `suspend raw json column preserves vertex and edge properties`(@TempDir dir: Path) = runSuspendIO {
+        val vOut = dir.resolve("raw-json-suspend-v.csv")
+        val eOut = dir.resolve("raw-json-suspend-e.csv")
+        val jsonOptions = CsvGraphIoOptions(propertyMode = CsvPropertyMode.RawJsonColumn("attributes"))
+        val vertexProperties = mapOf(
+            "name" to "Alice, \"A\"",
+            "nullable" to null,
+            "nested" to mapOf("line" to "one\ntwo"),
+            "items" to listOf(1, true),
+        )
+        val edgeProperties = mapOf("weight" to 2.5, "labels" to listOf("friend", "coworker"))
+
+        val alice = GraphVertex(GraphElementId.of("v-alice"), "Person", vertexProperties)
+        val bob = GraphVertex(GraphElementId.of("v-bob"), "Person", mapOf("name" to "Bob"))
+        val source = StaticGraphSuspendOperations(
+            vertices = listOf(alice, bob),
+            edges = listOf(GraphEdge(GraphElementId.of("e-knows"), "KNOWS", alice.id, bob.id, edgeProperties)),
+        )
+
+        SuspendCsvGraphBulkExporter().exportGraphSuspending(
+            CsvGraphExportSink(GraphExportSink.PathSink(vOut), GraphExportSink.PathSink(eOut)),
+            source,
+            GraphExportOptions(vertexLabels = setOf("Person"), edgeLabels = setOf("KNOWS")),
+            jsonOptions,
+        ).status shouldBeEqualTo GraphIoStatus.COMPLETED
+
+        java.nio.file.Files.readString(vOut) shouldContain "id,label,attributes"
+        java.nio.file.Files.readString(eOut) shouldContain "id,label,from,to,attributes"
+
+        val target = CapturingGraphSuspendOperations()
+        SuspendCsvGraphBulkImporter().importGraphSuspending(
+            CsvGraphImportSource(GraphImportSource.PathSource(vOut), GraphImportSource.PathSource(eOut)),
+            target,
+            GraphImportOptions(preserveExternalIdProperty = null),
+            jsonOptions,
+        ).status shouldBeEqualTo GraphIoStatus.COMPLETED
+
+        target.capturedVertices.first { it["name"] == "Alice, \"A\"" } shouldBeEqualTo
+            vertexProperties
+        target.capturedEdges.single().properties shouldBeEqualTo edgeProperties
+    }
+
+    @Test
+    fun `suspend importer rejects trailing raw json tokens`(@TempDir dir: Path) = runSuspendIO {
+        val vertices = dir.resolve("malformed-raw-json-suspend-v.csv").also {
+            java.nio.file.Files.writeString(it, "id,label,attributes\nv1,Person,\"{} {}\"\n")
+        }
+        val edges = dir.resolve("malformed-raw-json-suspend-e.csv").also {
+            java.nio.file.Files.writeString(it, "id,label,from,to\n")
+        }
+
+        assertFailsWith<IllegalArgumentException> {
+            SuspendCsvGraphBulkImporter().importGraphSuspending(
+                CsvGraphImportSource(GraphImportSource.PathSource(vertices), GraphImportSource.PathSource(edges)),
+                TinkerGraphSuspendOperations(),
+                GraphImportOptions(preserveExternalIdProperty = null),
+                CsvGraphIoOptions(propertyMode = CsvPropertyMode.RawJsonColumn("attributes")),
+            )
+        }
     }
 
     @Test
@@ -479,6 +542,51 @@ class CsvSuspendRoundTripTest {
         override fun write(b: Int): Unit = throw IOException(message)
 
         override fun write(b: ByteArray, off: Int, len: Int): Unit = throw IOException(message)
+    }
+
+    private class CapturingGraphSuspendOperations(
+        private val delegate: GraphSuspendOperations = TinkerGraphSuspendOperations(),
+    ) : GraphSuspendOperations by delegate {
+
+        val capturedVertices = mutableListOf<Map<String, Any?>>()
+        val capturedEdges = mutableListOf<BatchEdge>()
+
+        override suspend fun createVertices(
+            label: String,
+            propertiesList: List<Map<String, Any?>>,
+        ): List<GraphVertex> {
+            capturedVertices += propertiesList
+            return delegate.createVertices(label, propertiesList)
+        }
+
+        override suspend fun createEdges(label: String, edges: List<BatchEdge>): List<GraphEdge> {
+            capturedEdges += edges
+            return delegate.createEdges(label, edges)
+        }
+    }
+
+    private class StaticGraphSuspendOperations(
+        private val vertices: List<GraphVertex>,
+        private val edges: List<GraphEdge>,
+    ) : GraphSuspendOperations by TinkerGraphSuspendOperations() {
+
+        override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphVertex> =
+            flow { vertices.filter { it.label == label }.forEach { emit(it) } }
+
+        override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphEdge> =
+            flow { edges.filter { it.label == label }.forEach { emit(it) } }
+
+        override fun findVerticesByLabelChunked(
+            label: String,
+            filter: Map<String, Any?>,
+            chunkSize: Int,
+        ): Flow<List<GraphVertex>> = flow { emit(vertices.filter { it.label == label }) }
+
+        override fun findEdgesByLabelChunked(
+            label: String,
+            filter: Map<String, Any?>,
+            chunkSize: Int,
+        ): Flow<List<GraphEdge>> = flow { emit(edges.filter { it.label == label }) }
     }
 
     private class CancellingAfterMarkerOutputStream(
