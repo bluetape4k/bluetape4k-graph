@@ -11,7 +11,6 @@ import io.bluetape4k.graph.io.report.GraphIoPhase
 import io.bluetape4k.graph.io.report.GraphIoReadException
 import io.bluetape4k.graph.io.source.GraphImportSource
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 
 /**
  * CSV 정점/간선 파일을 cold [Flow]로 순차 읽는 reader.
@@ -32,14 +31,16 @@ class CsvGraphRecordFlowReader(
             source = source.vertices,
             phase = GraphIoPhase.READ_VERTEX,
             fileRole = GraphIoFileRole.VERTICES,
-        ).map(::toVertex)
+            transform = ::toVertex,
+        )
 
     override fun readEdges(source: CsvGraphImportSource): Flow<GraphIoEdgeRecord> =
         parser.records(
             source = source.edges,
             phase = GraphIoPhase.READ_EDGE,
             fileRole = GraphIoFileRole.EDGES,
-        ).map(::toEdge)
+            transform = ::toEdge,
+        )
 
     private fun toVertex(record: Record): GraphIoVertexRecord {
         val externalId = record.getString("id").orEmpty()
