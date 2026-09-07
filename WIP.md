@@ -29,7 +29,7 @@ group으로 연결하고, caller-owned resource와 실패 action 재시도 경�
 유지한다. 마지막 #604는 `develop`을 canonical/default/release/SNAPSHOT branch로
 확정하고, `main`의 독점 이력을 tree 변경 없는 merge commit으로 보존했다. 동결
 head, parent, tree-equivalence, ancestry와 workflow 대상 branch는 전용 fail-closed
-gate가 검사한다. 각 PR은 로컬
+gate가 검사하며 stacked PR #628을 생성했다. 각 PR은 로컬
 검증과 7-Tier review를 마친 뒤 생성하며, 전체 exact-head CI를 다시 확인한 후
 마지막 단계에서 한 번에 병합한다.
 
