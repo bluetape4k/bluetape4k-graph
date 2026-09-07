@@ -22,6 +22,11 @@
 
 ### 버그 수정
 
+- `GraphPluginState.close()`가 resource 종료 실패 후 전체 state를 닫힌 것으로
+  고정하지 않도록 수정했다. 성공한 action은 한 번만 실행하고 실패한 action만
+  다음 close에서 재시도한다. 동시 close는 진행 중인 action pass 하나로 합쳐
+  resource 종료 순서를 보존한다
+  ([#617](https://github.com/bluetape4k/bluetape4k-graph/issues/617)).
 - GraphML exporter가 node·edge property의 실제 `Int`, `Long`, `Float`,
   `Double`, `Boolean`, `String` 타입을 `attr.type`에 기록해 왕복 시 값과 JVM
   타입을 보존하도록 수정했다. Null은 타입 추론에서 제외하되

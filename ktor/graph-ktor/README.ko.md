@@ -16,6 +16,7 @@
 - `GraphPluginState`는 `GraphOperations`와 `GraphSuspendOperations`를 함께 노출합니다.
 - `Application` / `ApplicationCall` extension은 Ktor attribute에서 state를 읽으며, route handler에서는 suspend facade를 우선 사용합니다.
 - `ApplicationStopped`에서는 등록된 close action만 실행하므로 caller-owned driver와 `DataSource`는 plugin lifecycle 밖에 남습니다.
+- Plugin-owned close action이 실패하면 재시도 가능한 상태를 유지합니다. 이후 `GraphPluginState.close()`는 실패한 action만 재시도하고 성공한 action은 중복 실행하지 않습니다. 동시 호출은 진행 중인 close-action pass 하나로 합치며, 후속 호출은 완료를 기다리지 않고 반환합니다.
 
 ## 주요 기능
 

@@ -19,6 +19,9 @@ import io.ktor.server.routing.routing
 import io.ktor.server.testing.testApplication
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -155,6 +158,110 @@ class GraphPluginTest {
         state.close()
 
         closeCount.get() shouldBeEqualTo 1
+    }
+
+    @Test
+    fun `실패한 close action 만 다음 close 에서 재시도한다`() {
+        val retryAttempts = AtomicInteger(0)
+        val successfulCloseCount = AtomicInteger(0)
+        val state = GraphPluginState(
+            graphOperations = mockk(),
+            graphSuspendOperations = mockk(),
+            closeActions = listOf(
+                GraphPluginCloseAction("retryable resource") {
+                    if (retryAttempts.incrementAndGet() == 1) {
+                        throw IllegalStateException("first close failure")
+                    }
+                },
+                GraphPluginCloseAction("successful resource") {
+                    successfulCloseCount.incrementAndGet()
+                },
+            ),
+        )
+
+        state.close()
+        state.close()
+
+        retryAttempts.get() shouldBeEqualTo 2
+        successfulCloseCount.get() shouldBeEqualTo 1
+    }
+
+    @Test
+    fun `동시 close 는 action 을 중복 실행하지 않고 실패 후 재시도를 허용한다`() {
+        val entered = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        val attempts = AtomicInteger(0)
+        val inFlight = AtomicInteger(0)
+        val maxInFlight = AtomicInteger(0)
+        val closeAction = GraphPluginCloseAction("concurrent resource") {
+            val attempt = attempts.incrementAndGet()
+            val active = inFlight.incrementAndGet()
+            maxInFlight.accumulateAndGet(active, ::maxOf)
+            try {
+                if (attempt == 1) {
+                    entered.countDown()
+                    release.await(5, TimeUnit.SECONDS).shouldBeTrue()
+                    throw IllegalStateException("first close failure")
+                }
+            } finally {
+                inFlight.decrementAndGet()
+            }
+        }
+
+        Executors.newVirtualThreadPerTaskExecutor().use { executor ->
+            val first = executor.submit<Throwable?> {
+                runCatching { closeAction.close() }.exceptionOrNull()
+            }
+            entered.await(5, TimeUnit.SECONDS).shouldBeTrue()
+            val concurrent = executor.submit<Throwable?> {
+                runCatching { closeAction.close() }.exceptionOrNull()
+            }
+
+            val concurrentError = concurrent.get()
+            release.countDown()
+            concurrentError shouldBeEqualTo null
+            first.get()?.message shouldBeEqualTo "first close failure"
+        }
+
+        closeAction.close()
+
+        attempts.get() shouldBeEqualTo 2
+        maxInFlight.get() shouldBeEqualTo 1
+    }
+
+    @Test
+    fun `동시 GraphPluginState close 는 하나의 action pass 로 합친다`() {
+        val firstActionEntered = CountDownLatch(1)
+        val releaseFirstAction = CountDownLatch(1)
+        val secondActionCount = AtomicInteger(0)
+        val state = GraphPluginState(
+            graphOperations = mockk(),
+            graphSuspendOperations = mockk(),
+            closeActions = listOf(
+                GraphPluginCloseAction("first resource") {
+                    firstActionEntered.countDown()
+                    releaseFirstAction.await(5, TimeUnit.SECONDS).shouldBeTrue()
+                },
+                GraphPluginCloseAction("second resource") {
+                    secondActionCount.incrementAndGet()
+                },
+            ),
+        )
+
+        Executors.newVirtualThreadPerTaskExecutor().use { executor ->
+            val first = executor.submit { state.close() }
+            firstActionEntered.await(5, TimeUnit.SECONDS).shouldBeTrue()
+            val concurrent = executor.submit { state.close() }
+
+            concurrent.get(5, TimeUnit.SECONDS)
+            val countBeforeRelease = secondActionCount.get()
+            releaseFirstAction.countDown()
+            first.get(5, TimeUnit.SECONDS)
+
+            countBeforeRelease shouldBeEqualTo 0
+        }
+
+        secondActionCount.get() shouldBeEqualTo 1
     }
 
     @Test
