@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "canonical_branch": "develop",
+  "default_branch": "develop",
+  "release_branch": "develop",
+  "snapshot_branch": "develop",
+  "legacy_branches": {
+    "main": {
+      "mode": "frozen-history-anchor",
+      "frozen_head": "857cf1298734254ebf1715825f5e229ddb974653",
+      "alignment_commit": "4d9d8d962a7bd47c1dd39eaee02d9825814724b4"
+    }
+  }
+}

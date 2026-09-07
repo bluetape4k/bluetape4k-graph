@@ -4,7 +4,7 @@ on:
   schedule:
     - cron: '0 21 * * *'  # Daily example coverage, UTC 21:00 (KST 06:00)
   push:
-    branches: [develop, main]
+    branches: [develop]
     paths:
       - 'examples/**'
       - 'graph/**'
@@ -21,7 +21,7 @@ on:
       - '.github/testcontainers-images.txt'
       - '.github/workflows/examples.yml'
   pull_request:
-    branches: [develop, main, 'fix/**']
+    branches: [develop, 'fix/**']
     paths:
       - 'examples/**'
       - 'graph/**'

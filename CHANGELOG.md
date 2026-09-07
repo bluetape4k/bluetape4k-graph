@@ -19,6 +19,11 @@
 ### 변경
 
 - `1.0.0` 정식 배포 후 다음 minor 개발선을 `1.1.0-SNAPSHOT`으로 열었다.
+- canonical/default/release/SNAPSHOT branch를 `develop`으로 통일하고, 장기 분기된
+  `main`은 신규 변경을 받지 않는 동결 이력 기준점으로 정렬했다. 과거 tree를
+  재도입하지 않는 merge commit과 fail-closed ancestry/tree-equivalence CI로
+  정책 회귀를 차단한다
+  ([#604](https://github.com/bluetape4k/bluetape4k-graph/issues/604)).
 - `graph-ktor`가 plugin 소유 종료 동작을 공통
   `ApplicationResourceRegistry`에 하나의 bounded resource group으로 등록한다.
   Caller-owned operations는 등록하지 않으며, shutdown 실패는 공통 report와 기존

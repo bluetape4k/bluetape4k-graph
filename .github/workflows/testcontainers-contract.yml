@@ -2,7 +2,7 @@ name: Testcontainers 계약 검증
 
 on:
   push:
-    branches: [develop, main]
+    branches: [develop]
     paths:
       - 'README.md'
       - 'README.ko.md'
@@ -17,7 +17,7 @@ on:
       - 'settings.gradle.kts'
       - 'spring-boot/graph-spring-boot/src/test/kotlin/io/bluetape4k/graph/spring/boot/autoconfigure/TestcontainersImageLauncherContractTest.kt'
   pull_request:
-    branches: [develop, main]
+    branches: [develop]
     paths:
       - 'README.md'
       - 'README.ko.md'

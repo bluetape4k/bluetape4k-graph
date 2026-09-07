@@ -6,6 +6,10 @@ Current stable version: `1.0.0`
 
 Current development line: `1.1.0-SNAPSHOT` on `develop`
 
+`develop` is also the default, pull-request, release, and SNAPSHOT source.
+`main` is a frozen legacy-history anchor and does not accept new changes. See
+the [branch governance policy](docs/governance/branch-policy.md).
+
 Development builds consume `bluetape4k-bom:2.1.0-SNAPSHOT` through the
 immutable catalog commit pinned by this repository.
 

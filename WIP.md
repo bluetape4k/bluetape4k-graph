@@ -14,7 +14,7 @@
 `develop`에 병합했다. 현재 기준 head는
 `a76462766edc34f2789a424847266105f375c055`다.
 
-남은 milestone 이슈는 #614, #615, #617, #618, #605, #604 순서의 stacked PR
+남은 milestone 이슈는 #614, #615, #617, #605, #618, #604 순서의 stacked PR
 train으로 진행한다. #614는 GraphML scalar property의 JVM 타입 보존을 구현해
 PR #623의 exact-head CI를 통과했다. #615는 Jackson2·3 NDJSON의 codec 이전
 줄 길이 상한을 구현해 stacked PR #624의 exact-head CI를 통과했다. 그 위에서
@@ -26,7 +26,10 @@ project/build/test configuration을 제출하고, 실제 graph와 중복되는 �
 `detachedConfiguration*` metadata만 제외하도록 수정했다. 그 위에서 #618은
 GraphPlugin 소유 종료 동작을 공통 Ktor `ApplicationResourceRegistry`의 하나의 bounded
 group으로 연결하고, caller-owned resource와 실패 action 재시도 경계는 기존 state에
-유지한다. 각 PR은 로컬
+유지한다. 마지막 #604는 `develop`을 canonical/default/release/SNAPSHOT branch로
+확정하고, `main`의 독점 이력을 tree 변경 없는 merge commit으로 보존했다. 동결
+head, parent, tree-equivalence, ancestry와 workflow 대상 branch는 전용 fail-closed
+gate가 검사한다. 각 PR은 로컬
 검증과 7-Tier review를 마친 뒤 생성하며, 전체 exact-head CI를 다시 확인한 후
 마지막 단계에서 한 번에 병합한다.
 
