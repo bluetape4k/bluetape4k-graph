@@ -19,6 +19,11 @@
 ### 변경
 
 - `1.0.0` 정식 배포 후 다음 minor 개발선을 `1.1.0-SNAPSHOT`으로 열었다.
+- `graph-ktor`가 plugin 소유 종료 동작을 공통
+  `ApplicationResourceRegistry`에 하나의 bounded resource group으로 등록한다.
+  Caller-owned operations는 등록하지 않으며, shutdown 실패는 공통 report와 기존
+  Graph warning 경계에 함께 보존한다
+  ([#618](https://github.com/bluetape4k/bluetape4k-graph/issues/618)).
 - 중앙 `bluetape4k-dependencies` catalog를 최신 검증 commit으로 갱신하고,
   TinkerPop transitive dependency와 root build-tool metadata의 취약 버전을 안전한
   floor로 대체했다. Graph BOM과 모든 공개 POM이 HttpClient5, HttpCore5,
