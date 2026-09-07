@@ -5,14 +5,24 @@ import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.graph.io.options.NdJsonReadOptions
+import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphIoFileRole
 import io.bluetape4k.graph.io.report.GraphIoPhase
 import io.bluetape4k.graph.io.report.GraphIoReadException
+import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.source.GraphImportSource
+import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
+import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.yield
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
+import java.io.InputStream
 
 class Jackson2NdJsonLineLimitTest {
 
@@ -33,6 +43,12 @@ class Jackson2NdJsonLineLimitTest {
         error.failure.fileRole shouldBeEqualTo GraphIoFileRole.UNIFIED
         error.failure.location shouldBeEqualTo "line:1"
         error.message.orEmpty().contains("padding").shouldBeFalse()
+
+        val edgeError = assertFailsWith<GraphIoReadException> {
+            reader.readEdges(sourceOf(longer)).toList()
+        }
+        edgeError.failure.phase shouldBeEqualTo GraphIoPhase.READ_EDGE
+        edgeError.failure.location shouldBeEqualTo "line:1"
     }
 
     @Test
@@ -66,6 +82,55 @@ class Jackson2NdJsonLineLimitTest {
         error.message.orEmpty().contains("secret-record").shouldBeFalse()
     }
 
+    @Test
+    fun `sync suspend virtual thread importer가 같은 줄 길이 상한을 적용한다`() = runSuspendIO {
+        val payload = "{\"type\":\"vertex\",\"id\":\"secret-record\",\"padding\":\"" + "x".repeat(256)
+        val readOptions = NdJsonReadOptions(maxLineChars = 64)
+
+        val sync = Jackson2NdJsonBulkImporter(readOptions).importGraph(
+            sourceOf(payload),
+            TinkerGraphOperations(),
+            GraphImportOptions(),
+        )
+        val suspended = SuspendJackson2NdJsonBulkImporter(readOptions).importGraphSuspending(
+            sourceOf(payload),
+            TinkerGraphSuspendOperations(),
+            GraphImportOptions(),
+        )
+        val virtual = Jackson2NdJsonVirtualThreadBulkImporter(readOptions).importGraphAsync(
+            sourceOf(payload),
+            TinkerGraphOperations(),
+            GraphImportOptions(),
+        ).join()
+
+        listOf(sync, suspended, virtual).forEach { report ->
+            report.status shouldBeEqualTo GraphIoStatus.FAILED
+            report.failures.single().location shouldBeEqualTo "line:1"
+            report.failures.single().fileRole shouldBeEqualTo GraphIoFileRole.UNIFIED
+            report.failures.single().message.contains("secret-record").shouldBeFalse()
+        }
+    }
+
+    @Test
+    fun `빈 줄만 계속되는 Flow도 취소를 관찰하고 owned source를 닫는다`() = runSuspendIO {
+        coroutineScope {
+            val input = EndlessBlankInputStream()
+            val collecting = async {
+                Jackson2NdJsonRecordFlowReader(NdJsonReadOptions(maxLineChars = 64))
+                    .readVertices(GraphImportSource.InputStreamSource(input, closeInput = true))
+                    .toList()
+            }
+
+            withTimeout(5_000) {
+                while (input.readCount == 0) yield()
+            }
+            collecting.cancel()
+
+            assertFailsWith<CancellationException> { collecting.await() }
+            input.closeCount shouldBeEqualTo 1
+        }
+    }
+
     private fun sourceOf(content: String): GraphImportSource =
         GraphImportSource.InputStreamSource(content.byteInputStream())
 
@@ -84,6 +149,29 @@ class Jackson2NdJsonLineLimitTest {
         override fun close() {
             closed = true
             super.close()
+        }
+    }
+
+    private class EndlessBlankInputStream : InputStream() {
+        @Volatile
+        var readCount: Int = 0
+
+        var closeCount: Int = 0
+
+        override fun read(): Int {
+            readCount++
+            return '\n'.code
+        }
+
+        override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
+            val count = length.coerceAtMost(64)
+            buffer.fill('\n'.code.toByte(), offset, offset + count)
+            readCount += count
+            return count
+        }
+
+        override fun close() {
+            closeCount++
         }
     }
 }

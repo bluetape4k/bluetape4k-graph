@@ -9,6 +9,7 @@ import io.bluetape4k.graph.io.jackson3.internal.NdJsonEnvelope
 import io.bluetape4k.graph.io.model.GraphIoEdgeRecord
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.options.MissingEndpointPolicy
+import io.bluetape4k.graph.io.options.NdJsonReadOptions
 import io.bluetape4k.graph.io.report.GraphIoFailure
 import io.bluetape4k.graph.io.report.GraphIoFailureSeverity
 import io.bluetape4k.graph.io.report.GraphIoFileRole
@@ -52,7 +53,9 @@ import io.bluetape4k.logging.warn
  * )
  * ```
  */
-class Jackson3NdJsonBulkImporter : GraphBulkImporter<GraphImportSource> {
+class Jackson3NdJsonBulkImporter(
+    private val readOptions: NdJsonReadOptions = NdJsonReadOptions(),
+) : GraphBulkImporter<GraphImportSource> {
 
     private val codec: Jackson3EnvelopeCodec = Jackson3EnvelopeCodec()
 
@@ -89,6 +92,10 @@ class Jackson3NdJsonBulkImporter : GraphBulkImporter<GraphImportSource> {
             sourceIdentity = GraphImportCheckpointIdentity.resolve(options, source),
             options = options,
             idMap = idMap,
+            importOptionsIdentity = GraphImportCheckpointIdentity.optionsIdentity(
+                options,
+                "maxLineChars=${readOptions.maxLineChars}",
+            ),
         )
         val batchWriter = GraphIoBatchWriter(operations, options.writeBatchSize) { boundary, error ->
             checkpoint.failed(boundary, error.message)
@@ -96,7 +103,7 @@ class Jackson3NdJsonBulkImporter : GraphBulkImporter<GraphImportSource> {
         try {
         val failures = mutableListOf<GraphIoFailure>()
         val bufferedEdges = ArrayDeque<GraphIoEdgeRecord>()
-        val parser = Jackson3RecordParser(codec)
+        val parser = Jackson3RecordParser(codec, readOptions)
         var vr = 0L; var vc = 0L; var er = 0L; var ec = 0L; var sv = 0L; var se = 0L
         var status = GraphIoStatus.COMPLETED
         var failureBoundary = "VERTICES"

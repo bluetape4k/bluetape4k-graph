@@ -2,6 +2,7 @@ package io.bluetape4k.graph.io.jackson3
 
 import io.bluetape4k.graph.io.contract.GraphVirtualThreadBulkImporter
 import io.bluetape4k.graph.io.options.GraphImportOptions
+import io.bluetape4k.graph.io.options.NdJsonReadOptions
 import io.bluetape4k.graph.io.report.GraphImportReport
 import io.bluetape4k.graph.io.report.GraphIoProgressListener
 import io.bluetape4k.graph.io.report.GraphIoFormat
@@ -34,9 +35,11 @@ import java.util.concurrent.CompletableFuture
  * val report = future.join()
  * ```
  */
-class Jackson3NdJsonVirtualThreadBulkImporter : GraphVirtualThreadBulkImporter<GraphImportSource> {
+class Jackson3NdJsonVirtualThreadBulkImporter(
+    readOptions: NdJsonReadOptions = NdJsonReadOptions(),
+) : GraphVirtualThreadBulkImporter<GraphImportSource> {
 
-    private val sync: Jackson3NdJsonBulkImporter = Jackson3NdJsonBulkImporter()
+    private val sync: Jackson3NdJsonBulkImporter = Jackson3NdJsonBulkImporter(readOptions)
 
     override fun importGraphAsync(
         source: GraphImportSource,
