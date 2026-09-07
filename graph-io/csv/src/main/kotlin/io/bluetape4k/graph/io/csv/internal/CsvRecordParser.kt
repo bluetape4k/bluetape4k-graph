@@ -28,7 +28,14 @@ internal class CsvRecordParser {
         source: GraphImportSource,
         phase: GraphIoPhase,
         fileRole: GraphIoFileRole,
-    ): Flow<Record> = channelFlow {
+    ): Flow<Record> = records(source, phase, fileRole) { it }
+
+    fun <T> records(
+        source: GraphImportSource,
+        phase: GraphIoPhase,
+        fileRole: GraphIoFileRole,
+        transform: (Record) -> T,
+    ): Flow<T> = channelFlow {
         val producer = this
         withContext(Dispatchers.IO) {
             parse(
@@ -36,7 +43,8 @@ internal class CsvRecordParser {
                 phase = phase,
                 fileRole = fileRole,
                 onRecord = { record ->
-                    val result = producer.trySendBlocking(record)
+                    // 변환 실패를 source close보다 먼저 관찰해 primary/suppressed 순서를 고정한다.
+                    val result = producer.trySendBlocking(transform(record))
                     if (result.isFailure) {
                         if (!producer.coroutineContext.isActive) {
                             throw CancellationException("CSV record collection cancelled")
@@ -89,6 +97,7 @@ internal class CsvRecordParser {
                 parsedToEof = true
             }
         } catch (error: CallbackFailure) {
+            error.suppressed.forEach(error.error::addSuppressed)
             throw error.error
         } catch (error: CancellationException) {
             throw error

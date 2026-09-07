@@ -33,6 +33,12 @@ gate가 검사하며 stacked PR #628을 생성했다. 각 PR은 로컬
 검증과 7-Tier review를 마친 뒤 생성하며, 전체 exact-head CI를 다시 확인한 후
 마지막 단계에서 한 번에 병합한다.
 
+PR #628 exact-head CI의 retry evidence에서 CSV streaming reader의 validation과
+owned source close가 경쟁해 primary failure 순서가 뒤집히는 회귀를 발견했다.
+후속 #629는 record 변환을 source 소유권 경계 안으로 이동하고 결정적 회귀 테스트를
+추가하며, #628 위의 train 마지막 PR로 검증한다. 따라서 기존 PR의 완료 판정과
+Full Nightly는 #629 exact head가 첫 시도에 통과할 때까지 보류한다.
+
 ## 다음 개발선 규칙
 
 - `gradle.properties`는 `baseVersion=1.1.0`, 빈 `snapshotVersion`을 유지한다.
