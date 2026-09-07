@@ -15,6 +15,7 @@ Ktor 3.x plugin integration for `bluetape4k-graph`. It exposes `GraphOperations`
 - `GraphPluginState` exposes both `GraphOperations` and `GraphSuspendOperations`.
 - `Application` and `ApplicationCall` extensions read the state from Ktor attributes; route handlers should prefer the suspend facade.
 - On `ApplicationStopped`, only registered close actions run, so caller-owned drivers and `DataSource` instances remain outside the plugin lifecycle.
+- A failed plugin-owned close action remains retryable. Later `GraphPluginState.close()` calls retry only failed actions, while successful and concurrently running actions are not duplicated.
 
 ## Features
 

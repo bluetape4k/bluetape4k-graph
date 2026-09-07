@@ -116,16 +116,29 @@ private fun duplicateBackendException(backendName: String): IllegalArgumentExcep
         "GraphPlugin backend can only be configured once. Already configured backend: $backendName",
     )
 
+/** 성공한 close는 한 번만 실행하고 실패한 close는 다음 호출에서 재시도하는 종료 동작. */
 internal class GraphPluginCloseAction(
     val name: String,
     private val action: () -> Unit,
 ) {
-    private val closed = java.util.concurrent.atomic.AtomicBoolean(false)
+    private val state = java.util.concurrent.atomic.AtomicReference(CloseState.OPEN)
 
     fun close() {
-        if (closed.compareAndSet(false, true)) {
-            action()
+        if (state.compareAndSet(CloseState.OPEN, CloseState.CLOSING)) {
+            var completed = false
+            try {
+                action()
+                completed = true
+            } finally {
+                state.set(if (completed) CloseState.CLOSED else CloseState.OPEN)
+            }
         }
+    }
+
+    private enum class CloseState {
+        OPEN,
+        CLOSING,
+        CLOSED,
     }
 }
 
