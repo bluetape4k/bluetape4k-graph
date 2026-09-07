@@ -2,6 +2,7 @@ package io.bluetape4k.graph.ktor
 
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.info
+import io.bluetape4k.ktor.core.installApplicationResourceLifecycle
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationStarted
 import io.ktor.server.application.ApplicationStopped
@@ -16,7 +17,8 @@ import io.ktor.util.AttributeKey
  * - `install(GraphPlugin) { tinkerGraph() }` 또는 `install(GraphPlugin) { operations(sync, suspend) }`로 설치한다.
  * - backend가 선택되지 않으면 설치 시점에 [IllegalArgumentException]을 던진다.
  * - 확정된 [GraphPluginState]는 [Application.attributes]에 저장된다.
- * - stop 시 설정 중 등록된 종료 동작만 실행한다. 호출자 소유 driver와 `DataSource` instance는 닫지 않는다.
+ * - plugin 소유 state는 공통 application resource registry가 `ApplicationStopped`에서 닫는다.
+ * - 설정 중 등록된 종료 동작만 실행하며 호출자 소유 driver와 `DataSource` instance는 닫지 않는다.
  *
  * ```kotlin
  * fun Application.module() {
@@ -28,12 +30,19 @@ import io.ktor.util.AttributeKey
  * }
  * ```
  */
+@Suppress("TooGenericExceptionCaught") // lifecycle 연결 실패가 Error여도 이미 만든 resource를 정리한다.
 val GraphPlugin = createApplicationPlugin(
     name = GraphPluginInternals.NAME,
     createConfiguration = ::GraphPluginConfig,
 ) {
     val state = pluginConfig.resolveState()
-    application.attributes.put(GraphPluginStateKey, state)
+    try {
+        state.registerCloseActions(application.installApplicationResourceLifecycle())
+        application.attributes.put(GraphPluginStateKey, state)
+    } catch (cause: Throwable) {
+        state.close()
+        throw cause
+    }
 
     on(MonitoringEvent(ApplicationStarted)) { application ->
         GraphPluginInternals.log.info {
@@ -45,7 +54,6 @@ val GraphPlugin = createApplicationPlugin(
         GraphPluginInternals.log.info {
             "GraphPlugin stopped - application=${application.javaClass.simpleName}"
         }
-        state.close()
     }
 }
 
