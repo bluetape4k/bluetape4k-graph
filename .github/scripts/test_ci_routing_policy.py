@@ -11,6 +11,9 @@ BENCHMARK_WORKFLOW = ROOT / ".github/workflows/benchmark.yml"
 EXAMPLES_WORKFLOW = ROOT / ".github/workflows/examples.yml"
 TESTCONTAINERS_CONTRACT_WORKFLOW = ROOT / ".github/workflows/testcontainers-contract.yml"
 BRANCH_GOVERNANCE_WORKFLOW = ROOT / ".github/workflows/branch-governance.yml"
+RELEASE_WORKFLOW = ROOT / ".github/workflows/release.yml"
+SNAPSHOT_WORKFLOW = ROOT / ".github/workflows/publish-snapshot.yml"
+DEPENDABOT_CONFIG = ROOT / ".github/dependabot.yml"
 BRANCH_POLICY = ROOT / "config/branch-governance.json"
 
 
@@ -37,6 +40,9 @@ class CiRoutingPolicyTest(unittest.TestCase):
         cls.examples = EXAMPLES_WORKFLOW.read_text(encoding="utf-8")
         cls.testcontainers_contract = TESTCONTAINERS_CONTRACT_WORKFLOW.read_text(encoding="utf-8")
         cls.branch_governance = BRANCH_GOVERNANCE_WORKFLOW.read_text(encoding="utf-8")
+        cls.release = RELEASE_WORKFLOW.read_text(encoding="utf-8")
+        cls.snapshot = SNAPSHOT_WORKFLOW.read_text(encoding="utf-8")
+        cls.dependabot = DEPENDABOT_CONFIG.read_text(encoding="utf-8")
         cls.branch_policy = BRANCH_POLICY.read_text(encoding="utf-8")
 
     def test_active_workflows_do_not_treat_main_as_a_canonical_branch(self) -> None:
@@ -50,11 +56,18 @@ class CiRoutingPolicyTest(unittest.TestCase):
                 trigger_block(workflow),
                 r"(?m)^\s*branches:\s*\[[^\]]*\bmain\b",
             )
+            self.assertNotIn("      - main", trigger_block(workflow))
 
     def test_branch_governance_keeps_develop_canonical_and_main_frozen(self) -> None:
         self.assertIn('"canonical_branch": "develop"', self.branch_policy)
         self.assertIn('"mode": "frozen-history-anchor"', self.branch_policy)
         self.assertIn("verify_branch_governance.py", self.branch_governance)
+
+    def test_release_snapshot_and_dependabot_use_develop(self) -> None:
+        self.assertIn("CANONICAL_BRANCH: 'develop'", self.release)
+        self.assertIn("branch=${CANONICAL_BRANCH}", self.release)
+        self.assertIn("branches: [develop]", trigger_block(self.snapshot))
+        self.assertIn('target-branch: "develop"', self.dependabot)
 
     def test_ci_workflow_change_is_not_a_common_or_benchmark_change(self) -> None:
         changes = job_block(self.ci, "changes")
