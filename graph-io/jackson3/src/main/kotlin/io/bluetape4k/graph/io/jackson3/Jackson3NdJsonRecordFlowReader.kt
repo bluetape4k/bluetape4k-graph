@@ -7,6 +7,7 @@ import io.bluetape4k.graph.io.jackson3.internal.Jackson3RecordParser
 import io.bluetape4k.graph.io.jackson3.internal.NdJsonEnvelope
 import io.bluetape4k.graph.io.model.GraphIoEdgeRecord
 import io.bluetape4k.graph.io.model.GraphIoVertexRecord
+import io.bluetape4k.graph.io.options.NdJsonReadOptions
 import io.bluetape4k.graph.io.report.GraphIoFailure
 import io.bluetape4k.graph.io.report.GraphIoFileRole
 import io.bluetape4k.graph.io.report.GraphIoPhase
@@ -37,8 +38,18 @@ class Jackson3NdJsonRecordFlowReader(
         defaultEdgeLabel.requireNotBlank("defaultEdgeLabel")
     }
 
-    private val parser = Jackson3RecordParser()
+    private var parser = Jackson3RecordParser()
     private val codec = Jackson3EnvelopeCodec()
+
+    /** 기존 label constructor ABI를 유지하면서 NDJSON 줄 길이 옵션을 적용한다. */
+    @JvmOverloads
+    constructor(
+        readOptions: NdJsonReadOptions,
+        defaultVertexLabel: String = "Vertex",
+        defaultEdgeLabel: String = "Edge",
+    ) : this(defaultVertexLabel, defaultEdgeLabel) {
+        parser = Jackson3RecordParser(readOptions = readOptions)
+    }
 
     override fun readVertices(source: GraphImportSource): Flow<GraphIoVertexRecord> =
         parser.records(source)

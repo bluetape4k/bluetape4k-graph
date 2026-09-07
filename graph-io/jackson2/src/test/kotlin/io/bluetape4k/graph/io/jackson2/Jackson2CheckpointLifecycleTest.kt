@@ -1,15 +1,22 @@
 package io.bluetape4k.graph.io.jackson2
 
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.graph.io.checkpoint.GraphImportCheckpointPhase
+import io.bluetape4k.graph.io.checkpoint.GraphImportCheckpointConflictException
 import io.bluetape4k.graph.io.checkpoint.InMemoryGraphImportCheckpointStore
 import io.bluetape4k.graph.io.options.GraphImportOptions
+import io.bluetape4k.graph.io.options.NdJsonReadOptions
 import io.bluetape4k.graph.io.options.copyWithCheckpointSourceIdentity
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
+import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.mockk.coEvery
+import io.mockk.mockk
+import kotlinx.coroutines.CancellationException
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Files
@@ -70,6 +77,27 @@ class Jackson2CheckpointLifecycleTest {
     }
 
     @Test
+    fun `suspend cancellation does not persist a failed checkpoint`(@TempDir dir: Path) = runSuspendIO {
+        val input = dir.resolve("graph-cancel.ndjson")
+        Files.writeString(input, """{"type":"vertex","id":"v1","label":"Person","properties":{}}""")
+        val store = InMemoryGraphImportCheckpointStore()
+        val options = options(store)
+        val cancellation = CancellationException("jackson2-import-cancelled")
+        val operations = mockk<GraphSuspendOperations>()
+        coEvery { operations.createVertices("Person", any()) } throws cancellation
+
+        val thrown = assertFailsWith<CancellationException> {
+            SuspendJackson2NdJsonBulkImporter().importGraphSuspending(
+                GraphImportSource.PathSource(input), operations, options,
+            )
+        }
+
+        thrown.message.shouldBeEqualTo(cancellation.message)
+        store.load(KEY)?.phase.shouldBeEqualTo(GraphImportCheckpointPhase.DISCOVERED)
+        store.load(KEY)?.failureBoundary.shouldBeEqualTo(null)
+    }
+
+    @Test
     fun `virtual thread resume uses the same checkpoint lifecycle`(@TempDir dir: Path) {
         val input = dir.resolve("graph-vt.ndjson")
         Files.writeString(input, fixture("missing"))
@@ -91,6 +119,28 @@ class Jackson2CheckpointLifecycleTest {
         resumed.verticesCreated.shouldBeEqualTo(0L)
         resumed.edgesCreated.shouldBeEqualTo(1L)
         store.load(KEY).shouldBeEqualTo(null)
+    }
+
+    @Test
+    fun `다른 줄 길이 상한으로 checkpoint를 재개할 수 없다`(@TempDir dir: Path) = runSuspendIO {
+        val input = dir.resolve("graph-line-limit.ndjson")
+        Files.writeString(input, fixture("missing"))
+        val store = InMemoryGraphImportCheckpointStore()
+        val options = options(store)
+
+        Jackson2NdJsonBulkImporter(NdJsonReadOptions(maxLineChars = 1_024))
+            .importGraph(GraphImportSource.PathSource(input), TinkerGraphOperations(), options)
+            .status.shouldBeEqualTo(GraphIoStatus.FAILED)
+
+        Files.writeString(input, fixture("v2"))
+        assertFailsWith<GraphImportCheckpointConflictException> {
+            SuspendJackson2NdJsonBulkImporter(NdJsonReadOptions(maxLineChars = 2_048))
+                .importGraphSuspending(
+                    GraphImportSource.PathSource(input),
+                    TinkerGraphSuspendOperations(),
+                    options.copyWithCheckpointSourceIdentity(resumeFromCheckpoint = true),
+                )
+        }
     }
 
     private fun options(store: InMemoryGraphImportCheckpointStore) = GraphImportOptions(

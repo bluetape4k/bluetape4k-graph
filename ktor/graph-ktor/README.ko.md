@@ -15,7 +15,9 @@
 - Backend helper는 caller-owned resource를 감싸거나 managed DSL을 통해 plugin-owned driver/pool을 생성합니다.
 - `GraphPluginState`는 `GraphOperations`와 `GraphSuspendOperations`를 함께 노출합니다.
 - `Application` / `ApplicationCall` extension은 Ktor attribute에서 state를 읽으며, route handler에서는 suspend facade를 우선 사용합니다.
-- `ApplicationStopped`에서는 등록된 close action만 실행하므로 caller-owned driver와 `DataSource`는 plugin lifecycle 밖에 남습니다.
+- Plugin-owned close action은 bluetape4k-ktor-core의 공통 `ApplicationResourceRegistry`에 하나의 bounded group으로 등록합니다. Caller-owned driver와 `DataSource`는 이 lifecycle 밖에 남습니다.
+- 공통 registry는 이 group을 `ApplicationStopped`에 연결하고 Graph 내부 종료 순서를 유지하며, 원래 throwable을 보존하지 않는 group failure와 fatal 여부를 report에 기록합니다.
+- 실패한 plugin-owned close action은 이후 명시적인 `GraphPluginState.close()`에서 재시도할 수 있고 성공한 action은 중복 실행하지 않습니다. 동시 호출은 진행 중인 close-action pass 하나로 합치며, 후속 호출은 완료를 기다리지 않고 반환합니다.
 
 ## 주요 기능
 
@@ -25,11 +27,12 @@
 - Route handler용 `ApplicationCall.graphOperations()` / `ApplicationCall.graphSuspendOperations()`.
 - TinkerGraph, Neo4j, Memgraph, Apache AGE, FalkorDB backend helper.
 - Neo4j, Memgraph, FalkorDB, Apache AGE용 managed property DSL.
-- Plugin-owned resource lifecycle cleanup.
+- Plugin-owned resource를 위한 공통 Ktor application lifecycle cleanup.
 
 ## 의존성
 
 `graph-ktor`와 실제 application에서 사용할 backend module을 함께 선언합니다.
+공통 application resource registry는 `bluetape4k-ktor-core` transitive dependency로 제공됩니다.
 
 ```kotlin
 dependencies {

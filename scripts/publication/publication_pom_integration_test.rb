@@ -14,7 +14,7 @@ class PublicationPomIntegrationTest < Minitest::Test
         <dependencyManagement><dependencies><dependency>
           <groupId>org.junit</groupId><artifactId>junit-bom</artifactId><version>5.10.2</version>
           <type>pom</type><scope>import</scope>
-        </dependency></dependencies></dependencyManagement>
+        </dependency>#{security_dependency_management}</dependencies></dependencyManagement>
         <dependencies><dependency>
           <groupId>org.slf4j</groupId><artifactId>slf4j-api</artifactId>
         </dependency></dependencies>
@@ -36,7 +36,7 @@ class PublicationPomIntegrationTest < Minitest::Test
         <dependencyManagement><dependencies><dependency>
           <groupId>org.junit</groupId><artifactId>junit-bom</artifactId><version>5.10.2</version>
           <type>pom</type><scope>import</scope>
-        </dependency></dependencies></dependencyManagement>
+        </dependency>#{security_dependency_management}</dependencies></dependencyManagement>
         <dependencies><dependency>
           <groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter-api</artifactId>
         </dependency></dependencies>
@@ -49,6 +49,26 @@ class PublicationPomIntegrationTest < Minitest::Test
   end
 
   private
+
+  def security_dependency_management
+    {
+      "org.apache.commons" => { "commons-configuration2" => "2.15.1" },
+      "io.github.classgraph" => { "classgraph" => "4.8.194" },
+      "org.apache.httpcomponents.client5" => { "httpclient5" => "5.6.4" },
+      "org.apache.httpcomponents.core5" => {
+        "httpcore5" => "5.4.3",
+        "httpcore5-h2" => "5.4.3",
+      },
+      "org.apache.tomcat.embed" => { "tomcat-embed-core" => "11.0.25" },
+    }.flat_map do |group_id, artifacts|
+      artifacts.map do |artifact_id, version|
+        <<~XML
+          <dependency><groupId>#{group_id}</groupId><artifactId>#{artifact_id}</artifactId>
+          <version>#{version}</version></dependency>
+        XML
+      end
+    end.join
+  end
 
   def validate(path)
     stdout, stderr, status = Open3.capture3(

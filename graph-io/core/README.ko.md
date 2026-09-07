@@ -79,6 +79,10 @@ data class GraphExportOptions(
     val exportChunkSize: Int = 1_000,
 )
 
+data class NdJsonReadOptions(
+    val maxLineChars: Int = Int.MAX_VALUE,
+)
+
 enum class DuplicateVertexPolicy { FAIL, SKIP }
 enum class MissingEndpointPolicy { FAIL, SKIP_EDGE }
 ```
@@ -91,6 +95,12 @@ checkpoint/resume은 `checkpointStore`와 `checkpointKey`를 함께 지정할 �
 `SuspendGraphIoBatchWriter`는 모두 공유 Bluetape `requirePositiveNumber` 계약으로
 0 또는 음수 값을 거부하며, writer를 직접 생성하는 경우에도 같은 검증이
 적용됩니다.
+
+`NdJsonReadOptions.maxLineChars`는 Jackson codec이 보기 전에 NDJSON 한 줄의 길이를
+제한합니다. 단위는 UTF-16 code unit이고 값은 양수여야 하며, 기본값
+`Int.MAX_VALUE`는 기존의 사실상 제한 없는 입력 동작을 유지합니다. Jackson2와
+Jackson3의 sync, suspend, Virtual Thread, Flow reader가 같은 immutable 옵션을
+사용하고, 설정한 값은 checkpoint 호환성에도 포함됩니다.
 
 `exportChunkSize`는 스트리밍 가능한 exporter가 `findVerticesByLabelChunked`,
 `findEdgesByLabelChunked` 같은 chunk-aware repository API에서 한 번에 요청하는

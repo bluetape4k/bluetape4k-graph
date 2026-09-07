@@ -1,5 +1,7 @@
 package io.bluetape4k.graph.io.graphml.internal
 
+import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.graph.io.graphml.GraphMlAttrType
 import io.bluetape4k.graph.io.graphml.GraphMlExportOptions
 import io.bluetape4k.graph.io.graphml.GraphMlBulkImporter
 import io.bluetape4k.graph.io.graphml.GraphMlImportOptions
@@ -19,6 +21,7 @@ import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
+import java.util.UUID
 
 class StaxGraphMlReaderWriterTest {
 
@@ -75,6 +78,105 @@ class StaxGraphMlReaderWriterTest {
         result.edges[0].fromExternalId shouldBeEqualTo "n1"
         result.edges[0].toExternalId shouldBeEqualTo "n2"
         result.edges[0].properties["since"] shouldBeEqualTo "2020"
+    }
+
+    @Test
+    fun `writer preserves supported property types for vertices and edges`() {
+        val vertices = listOf(
+            GraphIoVertexRecord(
+                "n1",
+                "Metric",
+                mapOf(
+                    "int" to 1,
+                    "long" to 2L,
+                    "float" to 3.5F,
+                    "double" to 4.5,
+                    "boolean" to true,
+                    "string" to "value",
+                ),
+            ),
+            GraphIoVertexRecord("n2", "Metric", emptyMap()),
+        )
+        val edges = listOf(
+            GraphIoEdgeRecord(
+                "e1",
+                "MEASURES",
+                "n1",
+                "n2",
+                mapOf("weight" to 0.75, "enabled" to false),
+            ),
+        )
+
+        val out = ByteArrayOutputStream()
+        writer.write(out, vertices, edges)
+        val result = reader.read(ByteArrayInputStream(out.toByteArray()))
+        val xml = out.toString(Charsets.UTF_8)
+
+        result.failures shouldHaveSize 0
+        result.vertices.single { it.externalId == "n1" }.properties shouldBeEqualTo vertices.first().properties
+        result.edges.single().properties shouldBeEqualTo edges.single().properties
+        GraphMlAttrType.entries.forEach { type ->
+            xml shouldContain "attr.name=\"${type.xmlName}\" attr.type=\"${type.xmlName}\""
+        }
+    }
+
+    @Test
+    fun `writer rejects mixed property types for the same key`() {
+        val vertices = listOf(
+            GraphIoVertexRecord("n1", "Metric", mapOf("rank" to 1)),
+            GraphIoVertexRecord("n2", "Metric", mapOf("rank" to 2L)),
+        )
+
+        val failure = assertFailsWith<IllegalArgumentException> {
+            writer.write(ByteArrayOutputStream(), vertices, emptyList())
+        }
+
+        failure.message shouldContain "node property 'rank'"
+        failure.message shouldContain "Int"
+        failure.message shouldContain "Long"
+    }
+
+    @Test
+    fun `null does not affect type inference and defaults to empty data`() {
+        val vertices = listOf(
+            GraphIoVertexRecord("n1", "Metric", mapOf("rank" to null, "note" to "")),
+            GraphIoVertexRecord("n2", "Metric", mapOf("rank" to 2, "note" to "value")),
+        )
+
+        val out = ByteArrayOutputStream()
+        writer.write(out, vertices, emptyList())
+        val result = reader.read(ByteArrayInputStream(out.toByteArray()))
+        val xml = out.toString(Charsets.UTF_8)
+
+        xml shouldContain "<data key=\"d2\"></data>"
+        result.vertices.first().properties.containsKey("rank") shouldBeEqualTo false
+        result.vertices.first().properties["note"] shouldBeEqualTo ""
+        result.vertices.last().properties["rank"] shouldBeEqualTo 2
+    }
+
+    @Test
+    fun `null data is omitted when empty properties are excluded`() {
+        val vertices = listOf(GraphIoVertexRecord("n1", "Metric", mapOf("rank" to null)))
+
+        val out = ByteArrayOutputStream()
+        writer.write(out, vertices, emptyList(), includeEmptyProperties = false)
+        val result = reader.read(ByteArrayInputStream(out.toByteArray()))
+
+        out.toString(Charsets.UTF_8).contains("<data key=\"d1\">") shouldBeEqualTo false
+        result.vertices.single().properties.containsKey("rank") shouldBeEqualTo false
+    }
+
+    @Test
+    fun `unsupported property type uses deterministic string fallback`() {
+        val id = UUID.fromString("28eb5a52-60d8-4b06-a801-817d225026c2")
+        val vertices = listOf(GraphIoVertexRecord("n1", "Entity", mapOf("uuid" to id)))
+
+        val out = ByteArrayOutputStream()
+        writer.write(out, vertices, emptyList())
+        val result = reader.read(ByteArrayInputStream(out.toByteArray()))
+
+        result.vertices.single().properties["uuid"] shouldBeEqualTo id.toString()
+        out.toString(Charsets.UTF_8) shouldContain "attr.name=\"uuid\" attr.type=\"string\""
     }
 
     @Test

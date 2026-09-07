@@ -8,9 +8,61 @@
 
 ## [미배포]
 
+### 추가
+
+- Jackson2·Jackson3 NDJSON importer와 Flow reader에 codec 호출 전 한 줄의
+  UTF-16 code unit 수를 제한하는 `NdJsonReadOptions.maxLineChars`를 추가했다.
+  기본값은 기존 입력 호환성을 유지하고, 제한을 선택하면 sync, suspend,
+  Virtual Thread, Flow와 checkpoint identity에 동일하게 적용한다
+  ([#615](https://github.com/bluetape4k/bluetape4k-graph/issues/615)).
+
 ### 변경
 
 - `1.0.0` 정식 배포 후 다음 minor 개발선을 `1.1.0-SNAPSHOT`으로 열었다.
+- canonical/default/release/SNAPSHOT branch를 `develop`으로 통일하고, 장기 분기된
+  `main`은 신규 변경을 받지 않는 동결 이력 기준점으로 정렬했다. 과거 tree를
+  재도입하지 않는 merge commit과 fail-closed ancestry/tree-equivalence CI로
+  정책 회귀를 차단한다
+  ([#604](https://github.com/bluetape4k/bluetape4k-graph/issues/604)).
+- `graph-ktor`가 plugin 소유 종료 동작을 공통
+  `ApplicationResourceRegistry`에 하나의 bounded resource group으로 등록한다.
+  Caller-owned operations는 등록하지 않으며, shutdown 실패는 공통 report와 기존
+  Graph warning 경계에 함께 보존한다
+  ([#618](https://github.com/bluetape4k/bluetape4k-graph/issues/618)).
+- 중앙 `bluetape4k-dependencies` catalog를 최신 검증 commit으로 갱신하고,
+  TinkerPop transitive dependency와 root build-tool metadata의 취약 버전을 안전한
+  floor로 대체했다. Graph BOM과 모든 공개 POM이 HttpClient5, HttpCore5,
+  ClassGraph, Commons Configuration과 Tomcat의 최소 안전 버전을 내보내는지
+  fail-closed audit로 검증한다. Dependency submission은 선택한 exact ref의 named
+  project/build/test configuration을 제출하고 실제 graph와 중복되는 임시
+  `detachedConfiguration*` metadata는 제외한다
+  ([#605](https://github.com/bluetape4k/bluetape4k-graph/issues/605)).
+
+### 버그 수정
+
+- CSV streaming reader가 record validation을 source 소유권 경계 안에서 수행하도록
+  수정했다. validation과 owned source close가 함께 실패해도
+  `GraphIoReadException`을 primary로, close `IOException`을 suppressed로
+  exactly once 보존한다
+  ([#629](https://github.com/bluetape4k/bluetape4k-graph/issues/629)).
+- `GraphPluginState.close()`가 resource 종료 실패 후 전체 state를 닫힌 것으로
+  고정하지 않도록 수정했다. 성공한 action은 한 번만 실행하고 실패한 action만
+  다음 close에서 재시도한다. 동시 close는 진행 중인 action pass 하나로 합쳐
+  resource 종료 순서를 보존한다
+  ([#617](https://github.com/bluetape4k/bluetape4k-graph/issues/617)).
+- GraphML exporter가 node·edge property의 실제 `Int`, `Long`, `Float`,
+  `Double`, `Boolean`, `String` 타입을 `attr.type`에 기록해 왕복 시 값과 JVM
+  타입을 보존하도록 수정했다. Null은 타입 추론에서 제외하되
+  `includeEmptyProperties`에 따른 기존 빈 값 출력 계약을 유지하고, 동일 key의
+  mixed non-null 타입은 조기에 거부한다
+  ([#614](https://github.com/bluetape4k/bluetape4k-graph/issues/614)).
+- CSV `RawJsonColumn`이 정점·간선의 실제 속성 맵을 하나의 JSON 컬럼으로
+  직렬화·복원하도록 수정했다. null, 중첩 map/list, CSV 특수문자를 보존하고
+  malformed/non-object JSON은 명시적으로 거부한다 ([#613](https://github.com/bluetape4k/bluetape4k-graph/issues/613)).
+- suspend graph-io batch writer가 `CancellationException`을 failure callback으로
+  보고하지 않고 즉시 재전파하도록 수정했다. CSV, Jackson2/3 NDJSON, GraphML
+  importer의 checkpoint는 취소 시 `FAILED`로 기록하지 않고 현재 안전 경계를
+  보존한다 ([#612](https://github.com/bluetape4k/bluetape4k-graph/issues/612)).
 
 ## [1.0.0] - 2026-09-02
 

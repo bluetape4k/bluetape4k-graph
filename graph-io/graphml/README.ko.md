@@ -206,6 +206,14 @@ data class GraphMlExportOptions(
 ) : Serializable
 ```
 
+Exporter는 node와 edge property의 `attr.type`을 서로 독립적으로 추론합니다.
+동일 key의 non-null 값이 `Int`, `Long`, `Float`, `Double`, `Boolean`, `String`
+중 한 타입으로 일관되면 JVM 타입을 유지해 round-trip합니다. Null 값은 타입 추론에서
+제외합니다. `GraphExportOptions.includeEmptyProperties=true`이면 기존 호환성을 위해
+빈 `<data>`를 기록하고, `false`이면 생략합니다. 그 밖의 단일 JVM 타입은
+`toString()` 값과 `attr.type="string"`을 사용합니다. 동일 property key에 서로 다른
+non-null JVM 타입이 섞이면 XML sink를 열기 전에 즉시 실패합니다.
+
 ## 성능 참고 사항
 
 ### XMLFactory 캐싱 (중요)

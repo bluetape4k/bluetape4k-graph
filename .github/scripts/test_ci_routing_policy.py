@@ -3,11 +3,19 @@ import re
 import unittest
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 CI_WORKFLOW = ROOT / ".github/workflows/ci.yml"
 NIGHTLY_WORKFLOW = ROOT / ".github/workflows/nightly-tests.yml"
 BENCHMARK_WORKFLOW = ROOT / ".github/workflows/benchmark.yml"
+EXAMPLES_WORKFLOW = ROOT / ".github/workflows/examples.yml"
+TESTCONTAINERS_CONTRACT_WORKFLOW = (
+    ROOT / ".github/workflows/testcontainers-contract.yml"
+)
+BRANCH_GOVERNANCE_WORKFLOW = ROOT / ".github/workflows/branch-governance.yml"
+RELEASE_WORKFLOW = ROOT / ".github/workflows/release.yml"
+SNAPSHOT_WORKFLOW = ROOT / ".github/workflows/publish-snapshot.yml"
+DEPENDABOT_CONFIG = ROOT / ".github/dependabot.yml"
+BRANCH_POLICY = ROOT / "config/branch-governance.json"
 
 
 def job_block(workflow: str, job: str) -> str:
@@ -20,12 +28,52 @@ def job_block(workflow: str, job: str) -> str:
     return match.group("body")
 
 
+def trigger_block(workflow: str) -> str:
+    return workflow.split("\nconcurrency:", 1)[0].split("\npermissions:", 1)[0]
+
+
 class CiRoutingPolicyTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.ci = CI_WORKFLOW.read_text(encoding="utf-8")
         cls.nightly = NIGHTLY_WORKFLOW.read_text(encoding="utf-8")
         cls.benchmark = BENCHMARK_WORKFLOW.read_text(encoding="utf-8")
+        cls.examples = EXAMPLES_WORKFLOW.read_text(encoding="utf-8")
+        cls.testcontainers_contract = TESTCONTAINERS_CONTRACT_WORKFLOW.read_text(
+            encoding="utf-8"
+        )
+        cls.branch_governance = BRANCH_GOVERNANCE_WORKFLOW.read_text(encoding="utf-8")
+        cls.release = RELEASE_WORKFLOW.read_text(encoding="utf-8")
+        cls.snapshot = SNAPSHOT_WORKFLOW.read_text(encoding="utf-8")
+        cls.dependabot = DEPENDABOT_CONFIG.read_text(encoding="utf-8")
+        cls.branch_policy = BRANCH_POLICY.read_text(encoding="utf-8")
+
+    def test_build_workflows_do_not_treat_main_as_a_canonical_branch(self) -> None:
+        for workflow in (
+            self.ci,
+            self.examples,
+            self.testcontainers_contract,
+        ):
+            self.assertNotRegex(
+                trigger_block(workflow),
+                r"(?m)^\s*branches:\s*\[[^\]]*\bmain\b",
+            )
+            self.assertNotIn("      - main", trigger_block(workflow))
+
+    def test_branch_governance_observes_main_policy_violations(self) -> None:
+        governance_trigger = trigger_block(self.branch_governance)
+        self.assertEqual(2, governance_trigger.count("      - main"))
+
+    def test_branch_governance_keeps_develop_canonical_and_main_frozen(self) -> None:
+        self.assertIn('"canonical_branch": "develop"', self.branch_policy)
+        self.assertIn('"mode": "frozen-history-anchor"', self.branch_policy)
+        self.assertIn("verify_branch_governance.py", self.branch_governance)
+
+    def test_release_snapshot_and_dependabot_use_develop(self) -> None:
+        self.assertIn("CANONICAL_BRANCH: 'develop'", self.release)
+        self.assertIn("branch=${CANONICAL_BRANCH}", self.release)
+        self.assertIn("branches: [develop]", trigger_block(self.snapshot))
+        self.assertIn('target-branch: "develop"', self.dependabot)
 
     def test_ci_workflow_change_is_not_a_common_or_benchmark_change(self) -> None:
         changes = job_block(self.ci, "changes")

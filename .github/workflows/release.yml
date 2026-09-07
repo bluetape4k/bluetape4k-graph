@@ -33,6 +33,7 @@ permissions:
 env:
   JAVA_VERSION: '25'
   JAVA_DISTRIBUTION: 'temurin'
+  CANONICAL_BRANCH: 'develop'
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
@@ -93,7 +94,7 @@ jobs:
           jobs_tsv="$RUNNER_TEMP/nightly-jobs.tsv"
 
           gh api \
-            "/repos/${GITHUB_REPOSITORY}/actions/workflows/nightly-tests.yml/runs?branch=develop&status=completed&per_page=100" \
+            "/repos/${GITHUB_REPOSITORY}/actions/workflows/nightly-tests.yml/runs?branch=${CANONICAL_BRANCH}&status=completed&per_page=100" \
             > "$runs_json"
 
           nightly_run_id="$(jq -r --arg sha "$release_sha" '

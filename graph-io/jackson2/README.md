@@ -180,3 +180,10 @@ dependencies {
 source order without materializing the full stream. `GraphImportOptions.batchSize` changes only
 backend write flushes; NDJSON edge staging remains bounded by `maxEdgeBufferSize`. Path and owned
 sources are closed by the library, while caller-owned sources remain open after collection.
+
+Use `NdJsonReadOptions(maxLineChars = 1_048_576)` when an input boundary must reject an oversized
+line before Jackson allocates or parses the complete JSON envelope. The limit counts UTF-16 code
+units and supports LF, CRLF, CR, and a final line without a terminator. The default is
+`Int.MAX_VALUE` for compatibility. The same option constructor is available on synchronous,
+suspend, virtual-thread, and Flow import readers. Limit failures expose only phase, line, and file
+role; raw payload and source paths are not included.

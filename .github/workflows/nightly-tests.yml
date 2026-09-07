@@ -214,6 +214,7 @@ jobs:
         with:
           name: coverage-core
           path: '**/build/reports/kover/'
+          if-no-files-found: error
           retention-days: 14
 
   # ── 3. Spring Boot (TinkerGraph + full-scope FalkorDB) ─────────
@@ -306,6 +307,7 @@ jobs:
         with:
           name: coverage-spring-starters
           path: '**/build/reports/kover/'
+          if-no-files-found: error
           retention-days: 14
 
   # ── 4. Ktor Graph (Testcontainers) ───────────────────────────────────────
@@ -378,6 +380,7 @@ jobs:
         with:
           name: coverage-ktor
           path: '**/build/reports/kover/'
+          if-no-files-found: error
           retention-days: 14
 
   # ── 5. Neo4j (Testcontainers) ─────────────────────────────────────────────
@@ -450,6 +453,7 @@ jobs:
         with:
           name: coverage-neo4j
           path: '**/build/reports/kover/'
+          if-no-files-found: error
           retention-days: 14
 
   # ── 6. Memgraph (Testcontainers) ──────────────────────────────────────────
@@ -522,6 +526,7 @@ jobs:
         with:
           name: coverage-memgraph
           path: '**/build/reports/kover/'
+          if-no-files-found: error
           retention-days: 14
 
   # ── 7. Apache AGE (Testcontainers) ────────────────────────────────────────
@@ -594,6 +599,7 @@ jobs:
         with:
           name: coverage-age
           path: '**/build/reports/kover/'
+          if-no-files-found: error
           retention-days: 14
 
   # ── 8. FalkorDB (Testcontainers) ──────────────────────────────────────────
@@ -666,6 +672,7 @@ jobs:
         with:
           name: coverage-falkordb
           path: '**/build/reports/kover/'
+          if-no-files-found: error
           retention-days: 14
 
   # ── 9. 커버리지 집계 ──────────────────────────────────────────────────────
@@ -706,11 +713,34 @@ jobs:
           pattern: coverage-*
           path: coverage-artifacts
           merge-multiple: false
-        continue-on-error: true
 
       - name: Aggregate Kover coverage summary
         if: always()
-        run: python3 .github/scripts/aggregate-kover-coverage.py coverage-artifacts
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/aggregate-kover-coverage.py coverage-artifacts \
+            --expected-artifact coverage-core \
+            --expected-artifact coverage-spring-starters \
+            --expected-artifact coverage-ktor \
+            --expected-artifact coverage-neo4j \
+            --expected-artifact coverage-memgraph \
+            --expected-artifact coverage-age \
+            --expected-artifact coverage-falkordb \
+            --expected-module graph-core \
+            --expected-module graph-tinkerpop \
+            --expected-module graph-io-core \
+            --expected-module graph-io-csv \
+            --expected-module graph-io-jackson2 \
+            --expected-module graph-io-jackson3 \
+            --expected-module graph-io-graphml \
+            --expected-module graph-io-micrometer \
+            --expected-module graph-io-okio \
+            --expected-module graph-spring-boot \
+            --expected-module graph-ktor \
+            --expected-module graph-neo4j \
+            --expected-module graph-memgraph \
+            --expected-module graph-age \
+            --expected-module graph-falkordb
 
       - name: Upload aggregated coverage
         if: always()

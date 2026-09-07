@@ -6,6 +6,10 @@
 
 현재 개발선: `develop`의 `1.1.0-SNAPSHOT`
 
+`develop`은 default, pull request, release, SNAPSHOT 기준 branch이기도 합니다.
+`main`은 신규 변경을 받지 않는 동결 legacy-history 기준점입니다. 자세한 내용은
+[branch governance 정책](docs/governance/branch-policy.md)을 참고하십시오.
+
 개발 빌드는 이 저장소가 고정한 immutable catalog commit을 통해
 `bluetape4k-bom:2.1.0-SNAPSHOT`을 사용합니다.
 

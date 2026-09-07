@@ -26,6 +26,7 @@ import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.warn
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.collect
@@ -263,6 +264,9 @@ class SuspendGraphMlBulkImporter : GraphSuspendBulkImporter<GraphImportSource> {
 
         return GraphImportReport(status, GraphIoFormat.GRAPHML, vr, vc, er, ec, sv, se, watch.elapsed(), failures)
             .also { log.debug { "Suspend import completed: vertices=$vc/$vr, edges=$ec/$er, status=$status" } }
+        } catch (error: CancellationException) {
+            checkpoint.cancelled()
+            throw error
         } finally {
             checkpoint.close()
         }

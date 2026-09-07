@@ -11,6 +11,7 @@ import io.bluetape4k.graph.io.jackson3.internal.NdJsonEnvelope
 import io.bluetape4k.graph.io.model.GraphIoEdgeRecord
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.options.MissingEndpointPolicy
+import io.bluetape4k.graph.io.options.NdJsonReadOptions
 import io.bluetape4k.graph.io.report.GraphIoFailure
 import io.bluetape4k.graph.io.report.GraphIoFailureSeverity
 import io.bluetape4k.graph.io.report.GraphIoFileRole
@@ -32,6 +33,7 @@ import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.warn
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.collect
@@ -54,8 +56,12 @@ import kotlinx.coroutines.flow.collect
  *     options = GraphImportOptions(defaultEdgeLabel = "RELATED_TO"),
  * )
  * ```
+ *
+ * @param readOptions JSON codec 호출 전에 적용할 NDJSON 줄 길이 옵션
  */
-class SuspendJackson3NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSource> {
+class SuspendJackson3NdJsonBulkImporter(
+    private val readOptions: NdJsonReadOptions = NdJsonReadOptions(),
+) : GraphSuspendBulkImporter<GraphImportSource> {
 
     private val codec: Jackson3EnvelopeCodec = Jackson3EnvelopeCodec()
 
@@ -90,6 +96,10 @@ class SuspendJackson3NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
             sourceIdentity = GraphImportCheckpointIdentity.resolve(options, source),
             options = options,
             idMap = idMap,
+            importOptionsIdentity = GraphImportCheckpointIdentity.optionsIdentity(
+                options,
+                "maxLineChars=${readOptions.maxLineChars}",
+            ),
         )
         val batchWriter = SuspendGraphIoBatchWriter(operations, options.writeBatchSize) { boundary, error ->
             checkpoint.failed(boundary, error.message)
@@ -97,7 +107,7 @@ class SuspendJackson3NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
         try {
         val failures = mutableListOf<GraphIoFailure>()
         val bufferedEdges = ArrayDeque<GraphIoEdgeRecord>()
-        val parser = Jackson3RecordParser(codec)
+        val parser = Jackson3RecordParser(codec, readOptions)
         var vr = 0L; var vc = 0L; var er = 0L; var ec = 0L; var sv = 0L; var se = 0L
         var status = GraphIoStatus.COMPLETED
         var failureBoundary = "VERTICES"
@@ -196,6 +206,9 @@ class SuspendJackson3NdJsonBulkImporter : GraphSuspendBulkImporter<GraphImportSo
         return GraphImportReport(status, GraphIoFormat.NDJSON_JACKSON3, vr, vc, er, ec, sv, se, watch.elapsed(), failures).also {
             log.debug { "NDJSON_JACKSON3 import (suspend) completed: vertices=$vc/$vr, edges=$ec/$er, skipped=$sv/$se, status=$status, elapsed=${watch.elapsed()}" }
         }
+        } catch (error: CancellationException) {
+            checkpoint.cancelled()
+            throw error
         } finally {
             checkpoint.close()
         }

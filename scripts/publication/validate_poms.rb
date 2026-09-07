@@ -20,6 +20,16 @@ result.errors.concat(
     ["org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"],
   ),
 )
+result.errors.concat(
+  Publication::PomAudit.new(paths).validate_managed_versions(
+    "org.apache.commons:commons-configuration2" => "2.15.0",
+    "io.github.classgraph:classgraph" => "4.8.112",
+    "org.apache.httpcomponents.client5:httpclient5" => "5.6.3",
+    "org.apache.httpcomponents.core5:httpcore5" => "5.4.3",
+    "org.apache.httpcomponents.core5:httpcore5-h2" => "5.4.3",
+    "org.apache.tomcat.embed:tomcat-embed-core" => "11.0.25",
+  ),
+)
 unless result.errors.empty?
   warn(result.errors.join("\n"))
   abort("publication-poms: failures=#{result.errors.length} files=#{result.file_count} dependencies=#{result.dependency_count}")

@@ -14,7 +14,9 @@ Ktor 3.x plugin integration for `bluetape4k-graph`. It exposes `GraphOperations`
 - Backend helpers either wrap caller-owned resources or create plugin-owned drivers and pools through managed DSLs.
 - `GraphPluginState` exposes both `GraphOperations` and `GraphSuspendOperations`.
 - `Application` and `ApplicationCall` extensions read the state from Ktor attributes; route handlers should prefer the suspend facade.
-- On `ApplicationStopped`, only registered close actions run, so caller-owned drivers and `DataSource` instances remain outside the plugin lifecycle.
+- Plugin-owned close actions are registered as one bounded group with bluetape4k-ktor-core's shared `ApplicationResourceRegistry`; caller-owned drivers and `DataSource` instances stay outside that lifecycle.
+- The shared registry connects that group to `ApplicationStopped`, preserves Graph's internal close order, and records a group failure plus its fatal flag without retaining the original throwable.
+- A failed plugin-owned close action remains retryable through a later explicit `GraphPluginState.close()` call, while successful actions are not duplicated. Concurrent calls coalesce into the in-flight close-action pass and return without waiting for it.
 
 ## Features
 
@@ -24,11 +26,12 @@ Ktor 3.x plugin integration for `bluetape4k-graph`. It exposes `GraphOperations`
 - `ApplicationCall.graphOperations()` / `ApplicationCall.graphSuspendOperations()` for route handlers.
 - Backend helper functions for TinkerGraph, Neo4j, Memgraph, Apache AGE, and FalkorDB.
 - Managed-driver property DSLs for Neo4j, Memgraph, FalkorDB, and Apache AGE.
-- Lifecycle cleanup for plugin-owned resources.
+- Shared Ktor application lifecycle cleanup for plugin-owned resources.
 
 ## Dependencies
 
 Use `graph-ktor` with the backend module your application actually runs.
+The module brings in `bluetape4k-ktor-core` for the shared application resource registry.
 
 ```kotlin
 dependencies {

@@ -12,6 +12,7 @@ dependencies {
     api(project(":bluetape4k-graph-core"))
 
     api(bt4k.bluetape4k.coroutines)
+    implementation(bt4k.bluetape4k.ktor.core)
     implementation(libs.kotlinx.coroutines.core.lib)
 
     // Ktor 3.x — application/plugin DSL
