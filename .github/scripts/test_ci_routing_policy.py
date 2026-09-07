@@ -3,13 +3,14 @@ import re
 import unittest
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 CI_WORKFLOW = ROOT / ".github/workflows/ci.yml"
 NIGHTLY_WORKFLOW = ROOT / ".github/workflows/nightly-tests.yml"
 BENCHMARK_WORKFLOW = ROOT / ".github/workflows/benchmark.yml"
 EXAMPLES_WORKFLOW = ROOT / ".github/workflows/examples.yml"
-TESTCONTAINERS_CONTRACT_WORKFLOW = ROOT / ".github/workflows/testcontainers-contract.yml"
+TESTCONTAINERS_CONTRACT_WORKFLOW = (
+    ROOT / ".github/workflows/testcontainers-contract.yml"
+)
 BRANCH_GOVERNANCE_WORKFLOW = ROOT / ".github/workflows/branch-governance.yml"
 RELEASE_WORKFLOW = ROOT / ".github/workflows/release.yml"
 SNAPSHOT_WORKFLOW = ROOT / ".github/workflows/publish-snapshot.yml"
@@ -38,7 +39,9 @@ class CiRoutingPolicyTest(unittest.TestCase):
         cls.nightly = NIGHTLY_WORKFLOW.read_text(encoding="utf-8")
         cls.benchmark = BENCHMARK_WORKFLOW.read_text(encoding="utf-8")
         cls.examples = EXAMPLES_WORKFLOW.read_text(encoding="utf-8")
-        cls.testcontainers_contract = TESTCONTAINERS_CONTRACT_WORKFLOW.read_text(encoding="utf-8")
+        cls.testcontainers_contract = TESTCONTAINERS_CONTRACT_WORKFLOW.read_text(
+            encoding="utf-8"
+        )
         cls.branch_governance = BRANCH_GOVERNANCE_WORKFLOW.read_text(encoding="utf-8")
         cls.release = RELEASE_WORKFLOW.read_text(encoding="utf-8")
         cls.snapshot = SNAPSHOT_WORKFLOW.read_text(encoding="utf-8")

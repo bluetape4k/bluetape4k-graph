@@ -22,7 +22,9 @@ class GovernanceReport(NamedTuple):
     alignment_commit: str
 
 
-def _git(repository: Path, *arguments: str, check: bool = True) -> subprocess.CompletedProcess[str]:
+def _git(
+    repository: Path, *arguments: str, check: bool = True
+) -> subprocess.CompletedProcess[str]:
     result = subprocess.run(
         ["git", *arguments],
         cwd=repository,
@@ -51,12 +53,16 @@ def _load_policy(policy_path: Path) -> dict[str, Any]:
 def _required_string(mapping: dict[str, Any], key: str) -> str:
     value = mapping.get(key)
     if not isinstance(value, str) or not value.strip():
-        raise GovernanceError(f"branch policy의 {key}는 비어 있지 않은 문자열이어야 합니다")
+        raise GovernanceError(
+            f"branch policy의 {key}는 비어 있지 않은 문자열이어야 합니다"
+        )
     return value
 
 
 def _resolve_commit(repository: Path, reference: str) -> str:
-    return _git(repository, "rev-parse", "--verify", f"{reference}^{{commit}}").stdout.strip()
+    return _git(
+        repository, "rev-parse", "--verify", f"{reference}^{{commit}}"
+    ).stdout.strip()
 
 
 def _parents(repository: Path, commit: str) -> list[str]:
@@ -68,7 +74,9 @@ def _tree(repository: Path, commit: str) -> str:
     return _git(repository, "show", "-s", "--format=%T", commit).stdout.strip()
 
 
-def _require_ancestor(repository: Path, ancestor: str, descendant: str, label: str) -> None:
+def _require_ancestor(
+    repository: Path, ancestor: str, descendant: str, label: str
+) -> None:
     result = _git(
         repository,
         "merge-base",
@@ -78,7 +86,9 @@ def _require_ancestor(repository: Path, ancestor: str, descendant: str, label: s
         check=False,
     )
     if result.returncode != 0:
-        raise GovernanceError(f"{label}: {ancestor}가 {descendant}의 ancestor가 아닙니다")
+        raise GovernanceError(
+            f"{label}: {ancestor}가 {descendant}의 ancestor가 아닙니다"
+        )
 
 
 def _verify_event(
@@ -141,13 +151,17 @@ def verify_branch_governance(
     resolved_alignment = _resolve_commit(repository, alignment_commit)
     parents = _parents(repository, resolved_alignment)
     if len(parents) != 2:
-        raise GovernanceError("정렬 commit은 parent가 정확히 2개인 merge commit이어야 합니다")
+        raise GovernanceError(
+            "정렬 commit은 parent가 정확히 2개인 merge commit이어야 합니다"
+        )
     if parents[1] != frozen_head:
         raise GovernanceError(
             f"정렬 commit의 두 번째 parent가 동결 head와 다릅니다: {parents[1]}"
         )
     if _tree(repository, resolved_alignment) != _tree(repository, parents[0]):
-        raise GovernanceError("정렬 commit tree가 canonical first-parent tree를 변경했습니다")
+        raise GovernanceError(
+            "정렬 commit tree가 canonical first-parent tree를 변경했습니다"
+        )
 
     resolved_canonical = _resolve_commit(repository, canonical_ref)
     _require_ancestor(

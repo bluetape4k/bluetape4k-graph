@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """branch governance 검증기의 회귀 테스트."""
 
 from __future__ import annotations
@@ -10,12 +9,13 @@ import tempfile
 import unittest
 from pathlib import Path
 
-
 SCRIPT_PATH = Path(__file__).with_name("verify_branch_governance.py")
 
 
 def load_verifier():
-    spec = importlib.util.spec_from_file_location("verify_branch_governance", SCRIPT_PATH)
+    spec = importlib.util.spec_from_file_location(
+        "verify_branch_governance", SCRIPT_PATH
+    )
     if spec is None or spec.loader is None:
         raise RuntimeError(f"검증기 module을 불러올 수 없습니다: {SCRIPT_PATH}")
     module = importlib.util.module_from_spec(spec)
