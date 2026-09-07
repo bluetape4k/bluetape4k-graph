@@ -4,7 +4,7 @@ import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.warn
-import java.util.concurrent.atomic.AtomicBoolean
+import kotlinx.atomicfu.atomic
 
 /**
  * [GraphPlugin]이 확정한 graph integration state.
@@ -26,14 +26,14 @@ class GraphPluginState internal constructor(
     val graphSuspendOperations: GraphSuspendOperations,
     private val closeActions: List<GraphPluginCloseAction>,
 ): AutoCloseable {
-    private val closing = AtomicBoolean(false)
+    private val closing = atomic(false)
 
     override fun close() {
         if (closing.compareAndSet(false, true)) {
             try {
                 closeGraphPluginActions(closeActions)
             } finally {
-                closing.set(false)
+                closing.value = false
             }
         }
     }

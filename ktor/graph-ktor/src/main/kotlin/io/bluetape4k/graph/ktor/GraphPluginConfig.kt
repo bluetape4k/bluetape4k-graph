@@ -3,6 +3,7 @@ package io.bluetape4k.graph.ktor
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import java.util.IdentityHashMap
+import kotlinx.atomicfu.atomic
 
 /**
  * [GraphPlugin] 설정 class.
@@ -121,7 +122,7 @@ internal class GraphPluginCloseAction(
     val name: String,
     private val action: () -> Unit,
 ) {
-    private val state = java.util.concurrent.atomic.AtomicReference(CloseState.OPEN)
+    private val state = atomic(CloseState.OPEN)
 
     fun close() {
         if (state.compareAndSet(CloseState.OPEN, CloseState.CLOSING)) {
@@ -130,7 +131,7 @@ internal class GraphPluginCloseAction(
                 action()
                 completed = true
             } finally {
-                state.set(if (completed) CloseState.CLOSED else CloseState.OPEN)
+                state.value = if (completed) CloseState.CLOSED else CloseState.OPEN
             }
         }
     }
