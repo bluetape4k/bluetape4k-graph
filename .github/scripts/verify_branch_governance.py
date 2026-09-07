@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -55,6 +56,15 @@ def _required_string(mapping: dict[str, Any], key: str) -> str:
     if not isinstance(value, str) or not value.strip():
         raise GovernanceError(
             f"branch policy의 {key}는 비어 있지 않은 문자열이어야 합니다"
+        )
+    return value
+
+
+def _required_commit_sha(mapping: dict[str, Any], key: str) -> str:
+    value = _required_string(mapping, key)
+    if re.fullmatch(r"[0-9a-f]{40}", value) is None:
+        raise GovernanceError(
+            f"branch policy의 {key}는 40자리 full commit SHA여야 합니다"
         )
     return value
 
@@ -139,8 +149,8 @@ def verify_branch_governance(
     if legacy_policy.get("mode") != "frozen-history-anchor":
         raise GovernanceError("legacy branch mode는 frozen-history-anchor여야 합니다")
 
-    frozen_head = _required_string(legacy_policy, "frozen_head")
-    alignment_commit = _required_string(legacy_policy, "alignment_commit")
+    frozen_head = _required_commit_sha(legacy_policy, "frozen_head")
+    alignment_commit = _required_commit_sha(legacy_policy, "alignment_commit")
     resolved_legacy = _resolve_commit(repository, legacy_ref)
     if resolved_legacy != frozen_head:
         raise GovernanceError(

@@ -52,7 +52,8 @@ tree-preserving merge를 선택했다.
 `.github/scripts/verify_branch_governance.py`는 이 불변식과 workflow event의
 대상 branch를 fail-closed로 검증한다. `pull_request`의 base와 `push`의 ref가
 `develop`이 아니면 실패하며, schedule과 manual dispatch에서는 현재 이력
-불변식만 검증한다.
+불변식만 검증한다. 일반 build workflow는 `develop`만 활성 branch로 사용하고,
+Branch Governance workflow만 `main` push·PR을 정책 위반으로 관찰한다.
 
 ## GitHub 보호 규칙
 

@@ -147,6 +147,14 @@ class BranchGovernanceVerifierTest(unittest.TestCase):
         with self.assertRaisesRegex(self.verifier.GovernanceError, "canonical branch"):
             self.verify()
 
+    def test_rejects_symbolic_alignment_commit(self) -> None:
+        policy = json.loads(self.policy_path.read_text(encoding="utf-8"))
+        policy["legacy_branches"]["main"]["alignment_commit"] = "develop"
+        self.policy_path.write_text(json.dumps(policy), encoding="utf-8")
+
+        with self.assertRaisesRegex(self.verifier.GovernanceError, "full commit SHA"):
+            self.verify()
+
 
 if __name__ == "__main__":
     unittest.main()

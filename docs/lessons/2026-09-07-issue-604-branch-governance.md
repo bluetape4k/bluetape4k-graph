@@ -34,8 +34,10 @@ SNAPSHOT source는 `develop`이었고, `main`에는 현재 개발선보다 오�
 ancestry 누락, 잘못된 workflow 대상 branch를 검증한다.
 
 활성 CI·Examples·Testcontainers workflow는 `main`을 canonical trigger에서
-제거했다. Stacked PR의 임시 semantic base는 review와 선행 변경 공유를 위한 것이며,
-최종 merge 전에 `develop`으로 retarget하고 exact-head checks를 다시 실행한다.
+제거했다. Branch Governance workflow만 `main` push·PR을 정책 위반으로 즉시
+검출하기 위해 감시한다. Stacked PR의 임시 semantic base는 review와 선행 변경
+공유를 위한 것이며, 최종 merge 전에 `develop`으로 retarget하고 exact-head checks를
+다시 실행한다.
 
 ## 배운 점
 
@@ -51,8 +53,8 @@ ancestry 누락, 잘못된 workflow 대상 branch를 검증한다.
 
 ## 검증
 
-- branch governance unit test 7개 통과
-- CI routing policy unit test 8개 통과
+- branch governance unit test 8개 통과
+- CI routing policy unit test 10개 통과
 - 실제 stacked head의 동결 SHA, merge parent, tree-equivalence, ancestry 검증 통과
 - 변경된 workflow 5개 `actionlint` 통과
 - `git diff --check` 통과

@@ -48,18 +48,21 @@ class CiRoutingPolicyTest(unittest.TestCase):
         cls.dependabot = DEPENDABOT_CONFIG.read_text(encoding="utf-8")
         cls.branch_policy = BRANCH_POLICY.read_text(encoding="utf-8")
 
-    def test_active_workflows_do_not_treat_main_as_a_canonical_branch(self) -> None:
+    def test_build_workflows_do_not_treat_main_as_a_canonical_branch(self) -> None:
         for workflow in (
             self.ci,
             self.examples,
             self.testcontainers_contract,
-            self.branch_governance,
         ):
             self.assertNotRegex(
                 trigger_block(workflow),
                 r"(?m)^\s*branches:\s*\[[^\]]*\bmain\b",
             )
             self.assertNotIn("      - main", trigger_block(workflow))
+
+    def test_branch_governance_observes_main_policy_violations(self) -> None:
+        governance_trigger = trigger_block(self.branch_governance)
+        self.assertEqual(2, governance_trigger.count("      - main"))
 
     def test_branch_governance_keeps_develop_canonical_and_main_frozen(self) -> None:
         self.assertIn('"canonical_branch": "develop"', self.branch_policy)
