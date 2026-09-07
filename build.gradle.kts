@@ -109,10 +109,9 @@ fun libsVersion(alias: String): String {
 }
 val detektSupportedKotlinVersion = bt4kVersion("kotlin")
 
-// 루트 build-tool configuration은 하위 모듈 dependency management의 적용 대상이 아닙니다.
-// 루트 buildscript/Dokka metadata에서 관찰된 버전만 보정해 configuration을 제외하지 않고
-// 실제 dependency graph를 제출합니다.
-val rootToolSecurityVersions = mapOf(
+// buildscript와 Dokka 같은 build-tool configuration은 publication dependency management의 적용 대상이 아닙니다.
+// 실제로 해석되는 모든 project configuration에 검토한 security floor를 적용합니다.
+val buildToolSecurityVersions = mapOf(
     "com.fasterxml.jackson.core:jackson-core" to bt4kVersion("jackson2"),
     "com.fasterxml.jackson.core:jackson-databind" to bt4kVersion("jackson2"),
     "commons-beanutils:commons-beanutils" to bt4kLibraryVersion("commons-beanutils"),
@@ -122,11 +121,13 @@ val rootToolSecurityVersions = mapOf(
     "tools.jackson.core:jackson-databind" to bt4kVersion("jackson3"),
 )
 
-configurations.configureEach {
-    resolutionStrategy.eachDependency {
-        rootToolSecurityVersions["${requested.group}:${requested.name}"]?.let { safeVersion ->
-            useVersion(safeVersion)
-            because("루트 build-tool metadata를 검토한 security floor로 유지한다")
+allprojects {
+    configurations.configureEach {
+        resolutionStrategy.eachDependency {
+            buildToolSecurityVersions["${requested.group}:${requested.name}"]?.let { safeVersion ->
+                useVersion(safeVersion)
+                because("build-tool dependency를 검토한 security floor로 유지한다")
+            }
         }
     }
 }

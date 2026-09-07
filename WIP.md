@@ -21,8 +21,9 @@ PR #623의 exact-head CI를 통과했다. #615는 Jackson2·3 NDJSON의 codec �
 #617이 Ktor `GraphPluginState.close()`의 실패 action 재시도와 동시 close pass 병합
 계약을 고정하고 stacked PR #625를 생성했다. #605는 최신 중앙 catalog를 고정하고
 TinkerPop의 취약 transitive dependency, root build-tool metadata, graph BOM과 공개
-POM의 security floor를 정렬한다. Dependency submission은 선택한 exact ref의 전체
-configuration을 제출하도록 수정했다. 각 PR은 로컬
+POM의 security floor를 정렬한다. Dependency submission은 선택한 exact ref의 named
+project/build/test configuration을 제출하고, 실제 graph와 중복되는 임시
+`detachedConfiguration*` metadata만 제외하도록 수정했다. 각 PR은 로컬
 검증과 7-Tier review를 마친 뒤 생성하며, 전체 exact-head CI를 다시 확인한 후
 마지막 단계에서 한 번에 병합한다.
 

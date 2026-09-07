@@ -23,8 +23,9 @@
   TinkerPop transitive dependency와 root build-tool metadata의 취약 버전을 안전한
   floor로 대체했다. Graph BOM과 모든 공개 POM이 HttpClient5, HttpCore5,
   ClassGraph, Commons Configuration과 Tomcat의 최소 안전 버전을 내보내는지
-  fail-closed audit로 검증하며, dependency submission은 선택한 exact ref의 전체
-  configuration을 제출한다
+  fail-closed audit로 검증한다. Dependency submission은 선택한 exact ref의 named
+  project/build/test configuration을 제출하고 실제 graph와 중복되는 임시
+  `detachedConfiguration*` metadata는 제외한다
   ([#605](https://github.com/bluetape4k/bluetape4k-graph/issues/605)).
 
 ### 버그 수정

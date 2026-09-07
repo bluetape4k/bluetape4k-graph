@@ -36,3 +36,6 @@ jobs:
         uses: gradle/actions/dependency-submission@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
           additional-arguments: --no-configuration-cache --no-daemon
+          # Gradle tool internals resolve duplicate request metadata through ephemeral detached configurations.
+          # Named project/build/test configurations remain included in the submitted graph.
+          dependency-graph-exclude-configurations: '^detachedConfiguration[0-9]+$'
