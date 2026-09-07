@@ -230,7 +230,7 @@ class GraphPluginTest {
     }
 
     @Test
-    fun `동시 GraphPluginState close 는 전체 action pass 를 직렬화한다`() {
+    fun `동시 GraphPluginState close 는 하나의 action pass 로 합친다`() {
         val firstActionEntered = CountDownLatch(1)
         val releaseFirstAction = CountDownLatch(1)
         val secondActionCount = AtomicInteger(0)

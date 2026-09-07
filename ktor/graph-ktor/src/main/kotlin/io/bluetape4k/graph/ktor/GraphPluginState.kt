@@ -14,7 +14,7 @@ import kotlinx.atomicfu.atomic
  * - [graphSuspendOperations]는 Ktor route와 coroutine code에서 우선 사용할 coroutine API다.
  * - [close]는 등록된 종료 동작을 독립적으로 실행한다. 한 동작의 실패가 나머지 동작 실행을 막지 않는다.
  * - 성공한 종료 동작은 다시 실행하지 않고, 실패한 동작만 다음 [close]에서 재시도한다.
- * - 동시에 [close]를 호출해도 전체 종료 순회를 하나만 실행해 동작 순서와 중복 방지를 함께 보존한다.
+ * - 동시에 [close]를 호출하면 하나의 종료 순회로 합치고 후속 호출은 기다리지 않고 반환한다.
  *
  * ```kotlin
  * val state = application.graphPluginState()
