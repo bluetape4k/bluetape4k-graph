@@ -16,7 +16,7 @@
 
 남은 milestone 이슈는 #614, #615, #617, #618, #605, #604 순서의 stacked PR
 train으로 진행한다. #614는 GraphML scalar property의 JVM 타입 보존을 구현해
-PR #623에서 exact-head CI를 확인 중이다. 그 위에서 #615가 Jackson2·3 NDJSON의
+PR #623의 exact-head CI를 통과했다. 그 위에서 #615가 Jackson2·3 NDJSON의
 codec 이전 줄 길이 상한을 공통 `boundedLineReader`로 구현한다. 각 PR은 로컬
 검증과 7-Tier review를 마친 뒤 생성하며, 전체 exact-head CI를 다시 확인한 후
 마지막 단계에서 한 번에 병합한다.
