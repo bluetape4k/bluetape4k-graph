@@ -60,6 +60,14 @@ merge 전 exact-head gate에서 다시 확인한다.
 - Repository compile gate: benchmark build를 제외한 전체 `build -x test` 성공.
 - TinkerPop 3.8.2 probe: `gremlin-core`와 `tinkergraph-gremlin` artifact를 찾지
   못해 의존성 해석 단계에서 fail-closed.
+- Hosted dependency submission: implementation head
+  `cbe0c156a439d4fe92d28d87039db4ad0e5728c8`, run
+  [34078108398](https://github.com/bluetape4k/bluetape4k-graph/actions/runs/34078108398),
+  SUCCESS. Artifact에서 Jackson 2.15.3, BeanUtils 1.9.4, JSoup 1.16.1이 제거되고
+  검토한 safe floor가 남았다.
+- Remaining WATCH: Spring Boot plugin requested metadata의 Commons Lang 3.16.0은 실제
+  `buildEnvironment`에서 3.20.0으로 선택된다. `buildSrc` Kotlin 2.4.0은 중앙 #197의
+  안정판 대기 정책을 유지한다.
 - `actionlint`, `git diff --check`: PASS.
 
 ## DoD Status
@@ -71,8 +79,9 @@ merge 전 exact-head gate에서 다시 확인한다.
 - [x] central/local dependency ownership과 upstream 전환 조건을 기록한다.
 - [x] main lane exact-diff review에서 P0/P1=0으로 수렴했다.
 - [ ] 독립 exact-head `code-reviewer` verdict는 제한 시간 초과로 `PENDING`이다.
-- [ ] PR exact-head hosted CI, dependency graph artifact와 live review/thread read-back은
-  PR 생성 후 수행한다.
+- [x] Implementation head의 hosted CI 17개 job과 dependency graph artifact read-back이
+  통과했다.
+- [ ] 최종 documentation head의 hosted CI와 live review/thread read-back이 남아 있다.
 - [ ] 광범위한 catalog 갱신의 Full Nightly는 train 최종 head에서 수행한다.
 
 최종 로컬 판정: **PASS/WATCH**. PR 생성은 가능하며 merge-ready 판정은 hosted

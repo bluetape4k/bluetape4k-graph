@@ -56,6 +56,14 @@ TinkerPop 3.8.2 source tag와 POM은 `commons-configuration2:2.15.1`로 갱신�
 - 16개 publication POM, 1,923개 dependency entry와 16개 Maven effective model을
   검증했다.
 - benchmark build를 제외한 전체 `build -x test`가 통과했다.
+- Exact implementation head `cbe0c156a439d4fe92d28d87039db4ad0e5728c8`의
+  dependency submission run
+  [34078108398](https://github.com/bluetape4k/bluetape4k-graph/actions/runs/34078108398)이
+  성공했다. Artifact에서 Jackson 2.15.3, BeanUtils 1.9.4와 JSoup 1.16.1은 제거됐고
+  검토한 안전 버전이 남았다.
+- 잔여 Commons Lang 3.16.0은 Spring Boot plugin의 Commons Compress 요청 metadata이며
+  실제 `buildEnvironment`는 constraint로 3.20.0을 선택한다. Kotlin Gradle Plugin
+  2.4.0은 `buildSrc` plugin classpath의 안정판 대기 항목으로 중앙 이슈 #197을 따른다.
 - `actionlint`와 `git diff --check`가 통과했다.
 
 ## 향후 지침
