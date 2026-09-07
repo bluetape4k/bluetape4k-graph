@@ -126,7 +126,7 @@ configurations.configureEach {
     resolutionStrategy.eachDependency {
         rootToolSecurityVersions["${requested.group}:${requested.name}"]?.let { safeVersion ->
             useVersion(safeVersion)
-            because("keep root build-tool metadata on the reviewed security floor")
+            because("루트 build-tool metadata를 검토한 security floor로 유지한다")
         }
     }
 }
@@ -459,7 +459,7 @@ subprojects {
             dependency("org.apache.commons:commons-exec:${bt4kVersion("commons-exec")}")
             dependency("commons-io:commons-io:${bt4kVersion("commons-io")}")
 
-            // Security floors for published consumers and imported BOM precedence.
+            // 공개 소비자와 imported BOM precedence에 적용할 security floor입니다.
             dependency(bt4kLibrary("classgraph").get().toString())
             dependency(bt4kLibrary("httpclient5").get().toString())
             dependency(bt4kLibrary("httpcore5-lib").get().toString())
