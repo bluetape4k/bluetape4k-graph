@@ -8,6 +8,14 @@
 
 ## [미배포]
 
+### 추가
+
+- Jackson2·Jackson3 NDJSON importer와 Flow reader에 codec 호출 전 한 줄의
+  UTF-16 code unit 수를 제한하는 `NdJsonReadOptions.maxLineChars`를 추가했다.
+  기본값은 기존 입력 호환성을 유지하고, 제한을 선택하면 sync, suspend,
+  Virtual Thread, Flow와 checkpoint identity에 동일하게 적용한다
+  ([#615](https://github.com/bluetape4k/bluetape4k-graph/issues/615)).
+
 ### 변경
 
 - `1.0.0` 정식 배포 후 다음 minor 개발선을 `1.1.0-SNAPSHOT`으로 열었다.

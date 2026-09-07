@@ -3,8 +3,10 @@ package io.bluetape4k.graph.io.jackson3
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.graph.io.checkpoint.GraphImportCheckpointPhase
+import io.bluetape4k.graph.io.checkpoint.GraphImportCheckpointConflictException
 import io.bluetape4k.graph.io.checkpoint.InMemoryGraphImportCheckpointStore
 import io.bluetape4k.graph.io.options.GraphImportOptions
+import io.bluetape4k.graph.io.options.NdJsonReadOptions
 import io.bluetape4k.graph.io.options.copyWithCheckpointSourceIdentity
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.source.GraphImportSource
@@ -117,6 +119,28 @@ class Jackson3CheckpointLifecycleTest {
         resumed.verticesCreated.shouldBeEqualTo(0L)
         resumed.edgesCreated.shouldBeEqualTo(1L)
         store.load(KEY).shouldBeEqualTo(null)
+    }
+
+    @Test
+    fun `다른 줄 길이 상한으로 checkpoint를 재개할 수 없다`(@TempDir dir: Path) = runSuspendIO {
+        val input = dir.resolve("graph-line-limit.ndjson")
+        Files.writeString(input, fixture("missing"))
+        val store = InMemoryGraphImportCheckpointStore()
+        val options = options(store)
+
+        Jackson3NdJsonBulkImporter(NdJsonReadOptions(maxLineChars = 1_024))
+            .importGraph(GraphImportSource.PathSource(input), TinkerGraphOperations(), options)
+            .status.shouldBeEqualTo(GraphIoStatus.FAILED)
+
+        Files.writeString(input, fixture("v2"))
+        assertFailsWith<GraphImportCheckpointConflictException> {
+            SuspendJackson3NdJsonBulkImporter(NdJsonReadOptions(maxLineChars = 2_048))
+                .importGraphSuspending(
+                    GraphImportSource.PathSource(input),
+                    TinkerGraphSuspendOperations(),
+                    options.copyWithCheckpointSourceIdentity(resumeFromCheckpoint = true),
+                )
+        }
     }
 
     private fun options(store: InMemoryGraphImportCheckpointStore) = GraphImportOptions(

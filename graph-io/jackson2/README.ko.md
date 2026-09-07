@@ -180,3 +180,10 @@ dependencies {
 읽으며 소스 순서를 유지합니다. `GraphImportOptions.batchSize`는 백엔드 쓰기 플러시만 바꾸고 NDJSON 간선
 staging은 `maxEdgeBufferSize`로 제한됩니다. Path와 소유권을 넘긴 source는 라이브러리가 닫고 호출자 소유
 source는 collect 후에도 열린 상태로 둡니다.
+
+입력 경계에서 Jackson이 JSON envelope 전체를 할당하거나 파싱하기 전에 긴 줄을 거부해야
+하면 `NdJsonReadOptions(maxLineChars = 1_048_576)`를 사용합니다. 상한은 UTF-16 code unit
+수이고 LF, CRLF, CR, 종결 문자가 없는 마지막 줄에 동일하게 적용됩니다. 기본값은 호환성을
+위해 `Int.MAX_VALUE`입니다. sync, suspend, Virtual Thread, Flow import reader가 같은 옵션
+constructor를 제공합니다. 제한 초과 오류는 phase, line, file role만 노출하고 raw payload와
+source path를 포함하지 않습니다.
