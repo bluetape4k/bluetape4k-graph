@@ -5,7 +5,8 @@
 - Issue: [#618](https://github.com/bluetape4k/bluetape4k-graph/issues/618)
 - Branch: `feat/issue-618-common-resource-registry`
 - Review base: `chore/issue-605-dependency-graph`
-- 구현 review head: 커밋 후 아래 검증 receipt에서 고정
+  `89007b70f108cd68183fe156bbf1e5c45d48e11f`
+- 구현 review head: `47468f33dd5f6c7236c4f575f9504644555795a2`
 - Scope: 공통 Ktor resource registry dependency, GraphPlugin lifecycle 연결,
   ownership/failure/late-registration 회귀, EN/KO module 문서와 publication metadata
 
@@ -50,6 +51,10 @@ review다.
 - Publication: generated POM/module metadata에
   `bluetape4k-ktor-core:2.1.0-SNAPSHOT` 포함.
 - POM audit: 1 POM, 125 dependency entries, 1 Maven effective model 성공.
+- Stacked parent rebase 후 module gate와 publication generation을 다시 실행해
+  30 actionable tasks, POM 1개/125 dependencies/1 Maven model이 통과했다.
+- `javap -v`에서 registry 연결 method가 `ACC_PUBLIC, ACC_FINAL, ACC_SYNTHETIC`임을
+  확인했다.
 - `git diff --check`: PASS.
 
 ## DoD Status
