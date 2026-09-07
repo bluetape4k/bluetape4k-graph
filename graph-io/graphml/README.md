@@ -206,6 +206,15 @@ data class GraphMlExportOptions(
 ) : Serializable
 ```
 
+The exporter infers `attr.type` independently for node and edge properties.
+Homogeneous non-null `Int`, `Long`, `Float`, `Double`, `Boolean`, and `String`
+values round-trip with their JVM type. Null values do not affect inference;
+`GraphExportOptions.includeEmptyProperties=true` emits empty `<data>` for
+backward compatibility, while `false` omits it. An unsupported homogeneous JVM
+type uses its `toString()` value with `attr.type="string"`. Mixing different
+non-null JVM types under the same property key fails fast before the XML sink
+is opened.
+
 ## Performance Notes
 
 ### XMLFactory Caching (Critical)

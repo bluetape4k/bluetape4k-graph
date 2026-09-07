@@ -1,6 +1,7 @@
 package io.bluetape4k.graph.io.graphml
 
 import io.bluetape4k.graph.io.contract.GraphSuspendBulkExporter
+import io.bluetape4k.graph.io.graphml.internal.GraphMlPropertyTypes
 import io.bluetape4k.graph.io.graphml.internal.StaxGraphMlWriter
 import io.bluetape4k.graph.io.model.GraphIoEdgeRecord
 import io.bluetape4k.graph.io.model.GraphIoVertexRecord
@@ -97,24 +98,27 @@ class SuspendGraphMlBulkExporter : GraphSuspendBulkExporter<GraphExportSink> {
         val failures = mutableListOf<GraphIoFailure>()
         val (vertexLabels, edgeLabels) = options.resolveLabels(operations)
         val spool = GraphIoRecordSpool()
+        val propertyTypes = GraphMlPropertyTypes()
         var primaryFailure: Throwable? = null
 
         try {
             for (label in vertexLabels) {
                 operations.findVerticesByLabelChunked(label, chunkSize = options.exportChunkSize).collect { chunk ->
                     withContext(Dispatchers.IO) {
-                        spool.appendVertices(chunk.map { v -> GraphIoVertexRecord(v.id.value, v.label, v.properties) })
+                        val records = chunk.map { v -> GraphIoVertexRecord(v.id.value, v.label, v.properties) }
+                        propertyTypes.observeVertices(records)
+                        spool.appendVertices(records)
                     }
                 }
             }
             for (label in edgeLabels) {
                 operations.findEdgesByLabelChunked(label, chunkSize = options.exportChunkSize).collect { chunk ->
                     withContext(Dispatchers.IO) {
-                        spool.appendEdges(
-                            chunk.map { e ->
-                                GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties)
-                            },
-                        )
+                        val records = chunk.map { e ->
+                            GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties)
+                        }
+                        propertyTypes.observeEdges(records)
+                        spool.appendEdges(records)
                     }
                 }
             }
@@ -124,7 +128,13 @@ class SuspendGraphMlBulkExporter : GraphSuspendBulkExporter<GraphExportSink> {
             val output = withContext(Dispatchers.IO) { GraphIoPaths.openOutputStream(sink) }
             val session = try {
                 withContext(Dispatchers.IO) {
-                    writer.open(output, graphMlOptions, spool.vertexPropertyKeys, spool.edgePropertyKeys)
+                    writer.open(
+                        output,
+                        graphMlOptions,
+                        propertyTypes.vertices,
+                        propertyTypes.edges,
+                        options.includeEmptyProperties,
+                    )
                 }
             } catch (failure: Throwable) {
                 primaryFailure = failure

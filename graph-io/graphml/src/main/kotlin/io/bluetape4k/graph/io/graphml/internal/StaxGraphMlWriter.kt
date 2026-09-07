@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.io.graphml.internal
 
+import io.bluetape4k.graph.io.graphml.GraphMlAttrType
 import io.bluetape4k.graph.io.graphml.GraphMlExportOptions
 import io.bluetape4k.graph.io.model.GraphIoEdgeRecord
 import io.bluetape4k.graph.io.model.GraphIoVertexRecord
@@ -24,21 +25,21 @@ internal class StaxGraphMlWriter {
         vertices: List<GraphIoVertexRecord>,
         edges: List<GraphIoEdgeRecord>,
         options: GraphMlExportOptions = GraphMlExportOptions(),
+        includeEmptyProperties: Boolean = true,
     ): GraphMlWriteResult {
-        val vertexPropertyKeys = vertices.asSequence()
-            .flatMap { it.properties.keys.asSequence() }
-            .toSet()
-        val edgePropertyKeys = edges.asSequence()
-            .flatMap { it.properties.keys.asSequence() }
-            .toSet()
+        val propertyTypes = GraphMlPropertyTypes().apply {
+            observeVertices(vertices)
+            observeEdges(edges)
+        }
 
         return write(
             output = output,
             vertices = vertices.asSequence(),
             edges = edges.asSequence(),
             options = options,
-            vertexPropertyKeys = vertexPropertyKeys,
-            edgePropertyKeys = edgePropertyKeys,
+            vertexPropertyTypes = propertyTypes.vertices,
+            edgePropertyTypes = propertyTypes.edges,
+            includeEmptyProperties = includeEmptyProperties,
         )
     }
 
@@ -47,11 +48,18 @@ internal class StaxGraphMlWriter {
         vertices: Sequence<GraphIoVertexRecord>,
         edges: Sequence<GraphIoEdgeRecord>,
         options: GraphMlExportOptions,
-        vertexPropertyKeys: Set<String>,
-        edgePropertyKeys: Set<String>,
+        vertexPropertyTypes: Map<String, GraphMlAttrType>,
+        edgePropertyTypes: Map<String, GraphMlAttrType>,
+        includeEmptyProperties: Boolean,
     ): GraphMlWriteResult {
         output.use { outputStream ->
-            open(outputStream, options, vertexPropertyKeys, edgePropertyKeys).use { session ->
+            open(
+                outputStream,
+                options,
+                vertexPropertyTypes,
+                edgePropertyTypes,
+                includeEmptyProperties,
+            ).use { session ->
                 vertices.forEach(session::writeVertex)
                 edges.forEach(session::writeEdge)
                 session.finish()
@@ -64,12 +72,19 @@ internal class StaxGraphMlWriter {
     fun open(
         output: OutputStream,
         options: GraphMlExportOptions,
-        vertexPropertyKeys: Set<String>,
-        edgePropertyKeys: Set<String>,
+        vertexPropertyTypes: Map<String, GraphMlAttrType>,
+        edgePropertyTypes: Map<String, GraphMlAttrType>,
+        includeEmptyProperties: Boolean,
     ): GraphMlWriteSession {
         val xmlWriter = factory.createXMLStreamWriter(output, options.encoding)
         return try {
-            GraphMlWriteSession(xmlWriter, options, vertexPropertyKeys, edgePropertyKeys)
+            GraphMlWriteSession(
+                xmlWriter,
+                options,
+                vertexPropertyTypes,
+                edgePropertyTypes,
+                includeEmptyProperties,
+            )
         } catch (e: Throwable) {
             xmlWriter.close()
             throw e
@@ -89,8 +104,9 @@ internal data class GraphMlWriteResult(
 internal class GraphMlWriteSession internal constructor(
     private val writer: XMLStreamWriter,
     private val options: GraphMlExportOptions,
-    vertexPropertyKeys: Set<String>,
-    edgePropertyKeys: Set<String>,
+    vertexPropertyTypes: Map<String, GraphMlAttrType>,
+    edgePropertyTypes: Map<String, GraphMlAttrType>,
+    private val includeEmptyProperties: Boolean,
 ) : AutoCloseable {
 
     private val keyMap = mutableMapOf<String, String>()
@@ -101,7 +117,7 @@ internal class GraphMlWriteSession internal constructor(
     private var edgesWritten = 0L
 
     init {
-        writeHeader(vertexPropertyKeys, edgePropertyKeys)
+        writeHeader(vertexPropertyTypes, edgePropertyTypes)
     }
 
     fun writeVertex(vertex: GraphIoVertexRecord) {
@@ -116,7 +132,9 @@ internal class GraphMlWriteSession internal constructor(
         }
         for ((attrName, value) in vertex.properties) {
             keyMap["node:$attrName"]?.let { keyId ->
-                writeDataElement(keyId, value?.toString() ?: "")
+                if (value != null || includeEmptyProperties) {
+                    writeDataElement(keyId, value?.toString().orEmpty())
+                }
             }
         }
 
@@ -144,7 +162,9 @@ internal class GraphMlWriteSession internal constructor(
         }
         for ((attrName, value) in edge.properties) {
             keyMap["edge:$attrName"]?.let { keyId ->
-                writeDataElement(keyId, value?.toString() ?: "")
+                if (value != null || includeEmptyProperties) {
+                    writeDataElement(keyId, value?.toString().orEmpty())
+                }
             }
         }
 
@@ -180,14 +200,17 @@ internal class GraphMlWriteSession internal constructor(
         writer.close()
     }
 
-    private fun writeHeader(vertexPropertyKeys: Set<String>, edgePropertyKeys: Set<String>) {
+    private fun writeHeader(
+        vertexPropertyTypes: Map<String, GraphMlAttrType>,
+        edgePropertyTypes: Map<String, GraphMlAttrType>,
+    ) {
         writer.writeStartDocument(options.encoding, "1.0")
         writer.writeCharacters("\n")
         writer.writeStartElement("graphml")
         writer.writeAttribute("xmlns", "http://graphml.graphdrawing.org/graphml")
         writer.writeCharacters("\n")
 
-        fun writeKeyDef(forElement: String, attrName: String) {
+        fun writeKeyDef(forElement: String, attrName: String, attrType: GraphMlAttrType = GraphMlAttrType.STRING) {
             val keyId = "d${keyIndex++}"
             keyMap["$forElement:$attrName"] = keyId
             writer.writeCharacters("  ")
@@ -195,15 +218,15 @@ internal class GraphMlWriteSession internal constructor(
             writer.writeAttribute("id", keyId)
             writer.writeAttribute("for", forElement)
             writer.writeAttribute("attr.name", attrName)
-            writer.writeAttribute("attr.type", "string")
+            writer.writeAttribute("attr.type", attrType.xmlName)
             writer.writeEndElement()
             writer.writeCharacters("\n")
         }
 
         writeKeyDef("node", options.labelAttrName)
-        vertexPropertyKeys.sorted().forEach { writeKeyDef("node", it) }
+        vertexPropertyTypes.toSortedMap().forEach { (name, type) -> writeKeyDef("node", name, type) }
         writeKeyDef("edge", options.labelAttrName)
-        edgePropertyKeys.sorted().forEach { writeKeyDef("edge", it) }
+        edgePropertyTypes.toSortedMap().forEach { (name, type) -> writeKeyDef("edge", name, type) }
 
         writer.writeCharacters("  ")
         writer.writeStartElement("graph")

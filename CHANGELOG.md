@@ -14,6 +14,12 @@
 
 ### 버그 수정
 
+- GraphML exporter가 node·edge property의 실제 `Int`, `Long`, `Float`,
+  `Double`, `Boolean`, `String` 타입을 `attr.type`에 기록해 왕복 시 값과 JVM
+  타입을 보존하도록 수정했다. Null은 타입 추론에서 제외하되
+  `includeEmptyProperties`에 따른 기존 빈 값 출력 계약을 유지하고, 동일 key의
+  mixed non-null 타입은 조기에 거부한다
+  ([#614](https://github.com/bluetape4k/bluetape4k-graph/issues/614)).
 - CSV `RawJsonColumn`이 정점·간선의 실제 속성 맵을 하나의 JSON 컬럼으로
   직렬화·복원하도록 수정했다. null, 중첩 map/list, CSV 특수문자를 보존하고
   malformed/non-object JSON은 명시적으로 거부한다 ([#613](https://github.com/bluetape4k/bluetape4k-graph/issues/613)).

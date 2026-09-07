@@ -10,13 +10,15 @@
 
 `1.0.0` artifact와 GitHub Release 배포를 완료했다. `develop`은 `1.1.0` minor 개발선을 사용한다. 공개 Graph manual은 `1.0.0` tag source로 갱신한다.
 
-`1.1.0` milestone의 #616 Kover fail-closed 수정은 stacked PR #619에서
-검증을 완료했고 최종 병합 승인 대기 중이다. 다음 train인 #613은 PR #619의
-정확한 head 위에서 RawJsonColumn의 sync/suspend JSON 왕복을 구현하고 있다.
-#612는 PR #620의 정확한 head 위에서 suspend graph-io cancellation이 failure
-callback과 checkpoint `FAILED` 상태를 오염시키지 않도록 수정했다. PR #621이
-열려 있으며, 정확한 head `6f3db83a940a5c70286995477a61a383255c0e39`의 hosted
-CI 19/19가 통과했고 최종 병합 승인을 대기 중이다.
+`1.1.0` milestone의 #616, #613, #612는 stacked PR #619, #620, #621로
+`develop`에 병합했다. 현재 기준 head는
+`a76462766edc34f2789a424847266105f375c055`다.
+
+남은 milestone 이슈는 #614, #615, #617, #618, #605, #604 순서의 stacked PR
+train으로 진행한다. 첫 항목 #614는 GraphML scalar property의 JVM 타입을
+`attr.type`에 보존하고 mixed/null/unsupported 정책을 고정한다. 각 PR은 로컬
+검증과 7-Tier review를 마친 뒤 생성하며, 전체 exact-head CI를 다시 확인한 후
+마지막 단계에서 한 번에 병합한다.
 
 ## 다음 개발선 규칙
 

@@ -49,7 +49,8 @@ class GraphMlSuspendTest {
         src.createEdge(a.id, b.id, "SIMILAR", mapOf("score" to 0.8))
 
         val suspendSrc = TinkerGraphSuspendOperations(src)
-        val suspendTarget = TinkerGraphSuspendOperations(TinkerGraphOperations())
+        val target = TinkerGraphOperations()
+        val suspendTarget = TinkerGraphSuspendOperations(target)
 
         val exportReport = SuspendGraphMlBulkExporter().exportGraphSuspending(
             GraphExportSink.PathSink(out),
@@ -68,6 +69,8 @@ class GraphMlSuspendTest {
         importReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
         importReport.verticesCreated shouldBeEqualTo 2L
         importReport.edgesCreated shouldBeEqualTo 1L
+        target.findVerticesByLabel("Product").map { it.properties["price"] }.toSet() shouldBeEqualTo setOf(9.99, 19.99)
+        target.findEdgesByLabel("SIMILAR").single().properties["score"] shouldBeEqualTo 0.8
     }
 
     @Test
@@ -95,6 +98,32 @@ class GraphMlSuspendTest {
         report.verticesWritten shouldBeEqualTo 5L
         report.edgesWritten shouldBeEqualTo 2L
         requestedChunkSizes shouldBeEqualTo listOf(2, 2)
+    }
+
+    @Test
+    fun `suspend export honors empty property option`(@TempDir dir: Path) = runSuspendIO {
+        val source = NullPropertyGraphSuspendOperations()
+
+        listOf(true, false).forEach { includeEmptyProperties ->
+            val out = dir.resolve("empty-suspend-$includeEmptyProperties.graphml")
+            SuspendGraphMlBulkExporter().exportGraphSuspending(
+                GraphExportSink.PathSink(out),
+                source,
+                GraphExportOptions(
+                    vertexLabels = setOf("Metric"),
+                    edgeLabels = setOf("NONE"),
+                    includeEmptyProperties = includeEmptyProperties,
+                ),
+            )
+            val xml = java.nio.file.Files.readString(out)
+            val keyId = requireNotNull(
+                Regex("""<key id="([^"]+)" for="node" attr.name="optional"""")
+                    .find(xml)
+                    ?.groupValues
+                    ?.get(1),
+            )
+            xml.contains("<data key=\"$keyId\">") shouldBeEqualTo includeEmptyProperties
+        }
     }
 
     @Test
@@ -364,6 +393,18 @@ class GraphMlSuspendTest {
             requestedChunkSizes += chunkSize
             return delegate.findEdgesByLabelChunked(label, filter, chunkSize)
         }
+    }
+
+    private class NullPropertyGraphSuspendOperations :
+        GraphSuspendOperations by TinkerGraphSuspendOperations() {
+
+        override fun findVerticesByLabelChunked(
+            label: String,
+            filter: Map<String, Any?>,
+            chunkSize: Int,
+        ): Flow<List<GraphVertex>> = kotlinx.coroutines.flow.flowOf(
+            listOf(GraphVertex(GraphElementId.of("v-1"), label, mapOf("optional" to null))),
+        )
     }
 
     private class MutatingChunkOnlyGraphSuspendOperations(

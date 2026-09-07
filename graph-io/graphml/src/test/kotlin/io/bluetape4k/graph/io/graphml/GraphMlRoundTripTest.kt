@@ -78,13 +78,30 @@ class GraphMlRoundTripTest {
     }
 
     @Test
-    fun `sync round trip with integer and double properties`(@TempDir dir: Path) {
+    fun `sync round trip preserves supported property types`(@TempDir dir: Path) {
         val out = dir.resolve("typed.graphml")
 
         val src = TinkerGraphOperations()
-        val n1 = src.createVertex("Item", mapOf("price" to 9.99, "stock" to 100))
-        val n2 = src.createVertex("Item", mapOf("price" to 4.5, "stock" to 50))
-        src.createEdge(n1.id, n2.id, "RELATED", emptyMap())
+        val firstProperties = mapOf(
+            "price" to 9.99,
+            "stock" to 100,
+            "sequence" to 1L,
+            "ratio" to 0.5F,
+            "active" to true,
+            "name" to "first",
+        )
+        val secondProperties = mapOf(
+            "price" to 4.5,
+            "stock" to 50,
+            "sequence" to 2L,
+            "ratio" to 0.25F,
+            "active" to false,
+            "name" to "second",
+        )
+        val edgeProperties = mapOf("weight" to 0.75, "enabled" to true)
+        val n1 = src.createVertex("Item", firstProperties)
+        val n2 = src.createVertex("Item", secondProperties)
+        src.createEdge(n1.id, n2.id, "RELATED", edgeProperties)
 
         GraphMlBulkExporter().exportGraph(
             GraphExportSink.PathSink(out),
@@ -101,6 +118,11 @@ class GraphMlRoundTripTest {
         report.status shouldBeEqualTo GraphIoStatus.COMPLETED
         report.verticesCreated shouldBeEqualTo 2L
         report.edgesCreated shouldBeEqualTo 1L
+        target.findVerticesByLabel("Item")
+            .map { vertex -> vertex.properties.filterKeys { it != "_graphIoExternalId" } }
+            .toSet() shouldBeEqualTo setOf(firstProperties, secondProperties)
+        target.findEdgesByLabel("RELATED").single().properties
+            .filterKeys { it != "_graphIoExternalId" } shouldBeEqualTo edgeProperties
     }
 
     @Test
@@ -128,6 +150,51 @@ class GraphMlRoundTripTest {
         report.verticesWritten shouldBeEqualTo 5L
         report.edgesWritten shouldBeEqualTo 2L
         requestedChunkSizes shouldBeEqualTo listOf(2, 2)
+    }
+
+    @Test
+    fun `sync export honors empty property option`(@TempDir dir: Path) {
+        val source = NullPropertyGraphOperations()
+
+        listOf(true, false).forEach { includeEmptyProperties ->
+            val out = dir.resolve("empty-$includeEmptyProperties.graphml")
+            GraphMlBulkExporter().exportGraph(
+                GraphExportSink.PathSink(out),
+                source,
+                GraphExportOptions(
+                    vertexLabels = setOf("Metric"),
+                    edgeLabels = setOf("NONE"),
+                    includeEmptyProperties = includeEmptyProperties,
+                ),
+            )
+            val xml = java.nio.file.Files.readString(out)
+            val keyId = requireNotNull(
+                Regex("""<key id="([^"]+)" for="node" attr.name="optional"""")
+                    .find(xml)
+                    ?.groupValues
+                    ?.get(1),
+            )
+            xml.contains("<data key=\"$keyId\">") shouldBeEqualTo includeEmptyProperties
+        }
+    }
+
+    @Test
+    fun `sync export rejects mixed types across repository chunks before opening sink`(@TempDir dir: Path) {
+        val out = dir.resolve("mixed.graphml")
+        val source = TinkerGraphOperations().also {
+            it.createVertex("Metric", mapOf("rank" to 1))
+            it.createVertex("Metric", mapOf("rank" to 2L))
+        }
+
+        assertFailsWith<IllegalArgumentException> {
+            GraphMlBulkExporter().exportGraph(
+                GraphExportSink.PathSink(out),
+                source,
+                GraphExportOptions(vertexLabels = setOf("Metric"), exportChunkSize = 1),
+            )
+        }
+
+        java.nio.file.Files.notExists(out).shouldBeTrue()
     }
 
     @Test
@@ -304,6 +371,16 @@ class GraphMlRoundTripTest {
             requestedChunkSizes += chunkSize
             return delegate.findEdgesByLabelChunked(label, filter, chunkSize)
         }
+    }
+
+    private class NullPropertyGraphOperations : GraphOperations by TinkerGraphOperations() {
+        override fun findVerticesByLabelChunked(
+            label: String,
+            filter: Map<String, Any?>,
+            chunkSize: Int,
+        ): Sequence<List<GraphVertex>> = sequenceOf(
+            listOf(GraphVertex(GraphElementId.of("v-1"), label, mapOf("optional" to null))),
+        )
     }
 
     private class MutatingChunkOnlyGraphOperations(
