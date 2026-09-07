@@ -56,6 +56,8 @@ import kotlinx.coroutines.flow.collect
  *     options = GraphImportOptions(maxEdgeBufferSize = 50_000),
  * )
  * ```
+ *
+ * @param readOptions JSON codec 호출 전에 적용할 NDJSON 줄 길이 옵션
  */
 class SuspendJackson2NdJsonBulkImporter(
     private val readOptions: NdJsonReadOptions = NdJsonReadOptions(),

@@ -56,6 +56,8 @@ import kotlinx.coroutines.flow.collect
  *     options = GraphImportOptions(defaultEdgeLabel = "RELATED_TO"),
  * )
  * ```
+ *
+ * @param readOptions JSON codec 호출 전에 적용할 NDJSON 줄 길이 옵션
  */
 class SuspendJackson3NdJsonBulkImporter(
     private val readOptions: NdJsonReadOptions = NdJsonReadOptions(),

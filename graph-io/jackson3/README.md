@@ -200,6 +200,16 @@ val report = future.join()
 - `maxEdgeBufferSize: Int` - Memory limit for buffered edges before flushing (default `100_000`)
 - `batchSize: Int` - Backend write flush size for label-grouped vertex/edge batches (default `1_000`)
 
+### NdJsonReadOptions
+
+- `maxLineChars: Int` - Maximum UTF-16 code units in one NDJSON line before Jackson parsing
+  (default `Int.MAX_VALUE`)
+
+Pass `NdJsonReadOptions(maxLineChars = 1_048_576)` to the synchronous, suspend,
+virtual-thread, or Flow reader constructor. LF, CRLF, CR, and an unterminated final line use the
+same boundary. A limit failure exposes phase, line, and file role without including the payload or
+source path, and the configured limit participates in checkpoint compatibility.
+
 ### GraphExportOptions
 
 - `vertexLabels: Set<String>` - Specific labels to export (empty = all)

@@ -52,6 +52,8 @@ import io.bluetape4k.logging.warn
  *     options = GraphImportOptions(batchSize = 1_000),
  * )
  * ```
+ *
+ * @param readOptions JSON codec 호출 전에 적용할 NDJSON 줄 길이 옵션
  */
 class Jackson2NdJsonBulkImporter(
     private val readOptions: NdJsonReadOptions = NdJsonReadOptions(),

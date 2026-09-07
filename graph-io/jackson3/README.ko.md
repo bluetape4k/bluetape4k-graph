@@ -200,6 +200,16 @@ val report = future.join()
 - `maxEdgeBufferSize: Int` - 플러시 전 버퍼된 간선의 메모리 제한 (기본 `100_000`)
 - `batchSize: Int` - 라벨별 정점/간선 배치의 백엔드 쓰기 플러시 크기 (기본 `1_000`)
 
+### NdJsonReadOptions
+
+- `maxLineChars: Int` - Jackson 파싱 전 NDJSON 한 줄에 허용할 최대 UTF-16 code unit 수
+  (기본 `Int.MAX_VALUE`)
+
+sync, suspend, Virtual Thread, Flow reader constructor에
+`NdJsonReadOptions(maxLineChars = 1_048_576)`를 전달합니다. LF, CRLF, CR, 종결 문자가 없는
+마지막 줄에 같은 경계를 적용합니다. 제한 초과 오류는 payload나 source path 없이 phase,
+line, file role만 노출하고, 설정한 상한은 checkpoint 호환성에도 포함됩니다.
+
 ### GraphExportOptions
 
 - `vertexLabels: Set<String>` - 익스포트할 특정 라벨 (비어있으면 모두)

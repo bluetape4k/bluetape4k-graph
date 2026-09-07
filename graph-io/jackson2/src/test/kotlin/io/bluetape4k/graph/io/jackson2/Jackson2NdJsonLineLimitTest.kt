@@ -4,8 +4,8 @@ import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeTrue
-import io.bluetape4k.graph.io.options.NdJsonReadOptions
 import io.bluetape4k.graph.io.options.GraphImportOptions
+import io.bluetape4k.graph.io.options.NdJsonReadOptions
 import io.bluetape4k.graph.io.report.GraphIoFileRole
 import io.bluetape4k.graph.io.report.GraphIoPhase
 import io.bluetape4k.graph.io.report.GraphIoReadException
@@ -22,6 +22,7 @@ import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
+import java.io.IOException
 import java.io.InputStream
 
 class Jackson2NdJsonLineLimitTest {
@@ -80,6 +81,24 @@ class Jackson2NdJsonLineLimitTest {
         (input.bytesRead < payload.toByteArray().size).shouldBeTrue()
         input.closed.shouldBeTrue()
         error.message.orEmpty().contains("secret-record").shouldBeFalse()
+    }
+
+    @Test
+    fun `줄 상한 실패는 owned source close 실패보다 우선한다`() = runSuspendIO {
+        val input = CloseFailingInputStream(
+            ("{\"type\":\"vertex\",\"id\":\"secret-record\",\"padding\":\"" + "x".repeat(256)).toByteArray(),
+        )
+
+        val thrown = assertFailsWith<GraphIoReadException> {
+            Jackson2NdJsonRecordFlowReader(NdJsonReadOptions(maxLineChars = 64))
+                .readVertices(GraphImportSource.InputStreamSource(input, closeInput = true))
+                .toList()
+        }
+
+        thrown.failure.phase shouldBeEqualTo GraphIoPhase.READ_VERTEX
+        thrown.message.orEmpty().contains("secret-record").shouldBeFalse()
+        thrown.suppressed.map { it.message } shouldBeEqualTo listOf("jackson2-close-failure")
+        input.closeCount shouldBeEqualTo 1
     }
 
     @Test
@@ -172,6 +191,16 @@ class Jackson2NdJsonLineLimitTest {
 
         override fun close() {
             closeCount++
+        }
+    }
+
+    private class CloseFailingInputStream(content: ByteArray) : ByteArrayInputStream(content) {
+        var closeCount: Int = 0
+            private set
+
+        override fun close() {
+            closeCount++
+            throw IOException("jackson2-close-failure")
         }
     }
 }
