@@ -230,6 +230,41 @@ class GraphPluginTest {
     }
 
     @Test
+    fun `동시 GraphPluginState close 는 전체 action pass 를 직렬화한다`() {
+        val firstActionEntered = CountDownLatch(1)
+        val releaseFirstAction = CountDownLatch(1)
+        val secondActionCount = AtomicInteger(0)
+        val state = GraphPluginState(
+            graphOperations = mockk(),
+            graphSuspendOperations = mockk(),
+            closeActions = listOf(
+                GraphPluginCloseAction("first resource") {
+                    firstActionEntered.countDown()
+                    releaseFirstAction.await(5, TimeUnit.SECONDS).shouldBeTrue()
+                },
+                GraphPluginCloseAction("second resource") {
+                    secondActionCount.incrementAndGet()
+                },
+            ),
+        )
+
+        Executors.newVirtualThreadPerTaskExecutor().use { executor ->
+            val first = executor.submit { state.close() }
+            firstActionEntered.await(5, TimeUnit.SECONDS).shouldBeTrue()
+            val concurrent = executor.submit { state.close() }
+
+            concurrent.get(5, TimeUnit.SECONDS)
+            val countBeforeRelease = secondActionCount.get()
+            releaseFirstAction.countDown()
+            first.get(5, TimeUnit.SECONDS)
+
+            countBeforeRelease shouldBeEqualTo 0
+        }
+
+        secondActionCount.get() shouldBeEqualTo 1
+    }
+
+    @Test
     fun `backend helper 는 blank 입력을 fail fast 한다`() {
         assertFailsWith<IllegalArgumentException> {
             GraphPluginConfig().age(mockk(), graphName = " ")

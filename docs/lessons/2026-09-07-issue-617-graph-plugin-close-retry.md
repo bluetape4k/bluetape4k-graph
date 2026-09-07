@@ -14,16 +14,22 @@ Action은 `OPEN`, `CLOSING`, `CLOSED` 상태를 원자적으로 전환한다. `O
 호출자 한 명만 종료 동작을 실행하며, 성공한 경우에만 `CLOSED`가 된다. 실패하면
 `OPEN`으로 돌아가 원래 예외를 상위 close loop에 전달한다.
 
-`GraphPluginState.close()`는 호출할 때마다 action 목록을 순회한다. 이미 성공한
-action과 동시에 실행 중인 action은 자체 상태가 건너뛰고, 실패해 `OPEN`으로 돌아온
-action만 다음 호출에서 재시도한다. `closeGraphPluginActions`는 각 실패 원인과 action
-이름을 경고로 남기고 다음 action을 계속 실행하는 기존 정책을 유지한다.
+`GraphPluginState.close()`는 CAS guard로 전체 action pass를 하나만 실행한다. 현재
+pass가 끝난 뒤 다음 호출은 action 목록을 다시 순회하고, 이미 성공한 action은 자체
+상태가 건너뛰며 실패해 `OPEN`으로 돌아온 action만 재시도한다. 이 state-level guard는
+영구적인 `closed` 표식이 아니라 pass의 in-flight 상태만 표현한다.
+
+Action 단위 guard만으로는 서로 다른 action의 동시 실행을 막을 수 없다. 첫 호출이
+첫 번째 action에서 대기하는 동안 두 번째 호출이 그 action을 건너뛰고 다음 action을
+실행하면 등록된 종료 순서가 깨진다. 따라서 action 단위 성공/재시도 상태와 state 단위
+pass 직렬화가 모두 필요하다. `closeGraphPluginActions`는 각 실패 원인과 action 이름을
+경고로 남기고 다음 action을 계속 실행하는 기존 정책을 유지한다.
 
 ## 결과
 
 일부 resource 종료가 실패해도 나머지 resource는 정리된다. 같은 state를 다시
 닫으면 성공한 action을 중복 실행하지 않고 실패한 action만 재시도한다. 동시에 여러
-호출자가 닫아도 한 action의 in-flight 실행 수는 하나를 넘지 않는다.
+호출자가 닫아도 전체 action pass는 하나만 실행되므로 등록된 종료 순서를 보존한다.
 
 ## 검증
 
@@ -31,15 +37,18 @@ action만 다음 호출에서 재시도한다. `closeGraphPluginActions`는 각 
 - 구현 전 concurrent failure 뒤 재호출도 attempt 수가 `1`인 RED를 확인했다.
 - 구현 후 retry action은 2회, 이미 성공한 action은 1회만 실행됨을 검증했다.
 - Virtual Thread 두 개의 동시 close에서 최대 in-flight 수가 1임을 검증했다.
-- `:bluetape4k-graph-ktor:check`와 18개 module test가 통과했다.
+- action 단위 guard만 둔 중간 구현에서 두 번째 action이 첫 번째 action 완료 전에
+  실행되는 RED(`expected 0, actual 1`)를 확인했다.
+- state-level CAS guard를 추가한 뒤 동시 전체 pass 회귀 테스트가 통과했다.
+- `:bluetape4k-graph-ktor:check`와 19개 module test가 통과했다.
 - 예외 회귀는 `io.bluetape4k.assertions.assertFailsWith` 기존 사용 규칙을 유지한다.
 
 ## 향후 지침
 
 Idempotent resource cleanup에서 실행 시도와 성공 완료를 같은 boolean으로 표현하지
-않는다. 실패 후 재시도가 필요하면 action 단위 상태를 두고, 전체 container close는
-성공한 action의 idempotence에 위임한다. 동시성 테스트는 latch에 timeout을 두어
-회귀 실패 자체가 test hang으로 바뀌지 않게 한다.
+않는다. 실패 후 재시도가 필요하면 action 단위 상태를 두고, 여러 action의 순서가
+계약이면 전체 container pass도 별도 in-flight guard로 직렬화한다. 동시성 테스트는
+latch에 timeout을 두어 회귀 실패 자체가 test hang으로 바뀌지 않게 한다.
 
 ## 추적
 
