@@ -24,6 +24,13 @@ fun Project.isNonPublishedModule(): Boolean {
 
 dependencies {
     constraints {
+        api(libs.commons.configuration2)
+        api(bt4k.classgraph)
+        api(bt4k.httpclient5)
+        api(bt4k.httpcore5.h2)
+        api(bt4k.httpcore5.lib)
+        api(bt4k.tomcat.embed.core)
+
         rootProject.subprojects {
             if (name != "bluetape4k-graph-bom" && !isNonPublishedModule()) {
                 api(project(mapOf("path" to path)))

@@ -101,6 +101,34 @@ class PublicationPomAuditTest < Minitest::Test
     end
   end
 
+  def test_rejects_managed_dependency_below_the_required_security_version
+    with_pom(<<~XML) do |path|
+      <project><dependencyManagement><dependencies><dependency>
+        <groupId>org.apache.commons</groupId><artifactId>commons-configuration2</artifactId>
+        <version>2.9.0</version>
+      </dependency></dependencies></dependencyManagement></project>
+    XML
+      errors = Publication::PomAudit.new([path]).validate_managed_versions(
+        "org.apache.commons:commons-configuration2" => "2.15.0",
+      )
+      assert_equal 1, errors.length
+      assert_includes errors.first, "requires managed version 2.15.0"
+    end
+  end
+
+  def test_accepts_the_required_managed_security_version
+    with_pom(<<~XML) do |path|
+      <project><dependencyManagement><dependencies><dependency>
+        <groupId>org.apache.commons</groupId><artifactId>commons-configuration2</artifactId>
+        <version>2.15.0</version>
+      </dependency></dependencies></dependencyManagement></project>
+    XML
+      assert_empty Publication::PomAudit.new([path]).validate_managed_versions(
+        "org.apache.commons:commons-configuration2" => "2.15.0",
+      )
+    end
+  end
+
   private
 
   def with_pom(content)
