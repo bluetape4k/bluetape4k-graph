@@ -19,6 +19,8 @@ neo4j-bolt-connection = "11.0.2"  # https://mvnrepository.com/artifact/org.neo4j
 
 
 caffeine = "3.2.4"  # https://mvnrepository.com/artifact/com.github.ben-manes.caffeine/caffeine
+commons-configuration2 = "2.15.1"  # TinkerPop 3.8.1 transitive security floor; central catalog has no alias.
+jsoup = "1.23.1"  # Dokka generator security floor; central catalog has no alias.
 
 junit-jupiter = "6.0.3"  # https://mvnrepository.com/artifact/org.junit/junit-bom
 junit-platform = "6.0.3"  # https://mvnrepository.com/artifact/org.junit.platform/junit-platform-commons
@@ -58,6 +60,7 @@ kotlinx-coroutines-test-jvm = { module = "org.jetbrains.kotlinx:kotlinx-coroutin
 # Jakarta
 
 # Apache Commons
+commons-configuration2 = { module = "org.apache.commons:commons-configuration2", version.ref = "commons-configuration2" }
 
 # SLF4J
 jcl-over-slf4j = { module = "org.slf4j:jcl-over-slf4j" }
@@ -93,6 +96,7 @@ jackson3-module-blackbird = { module = "tools.jackson.module:jackson-module-blac
 # JSON assertions
 
 # Compression
+jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 
 # Ktor
 ktor-server-core = { module = "io.ktor:ktor-server-core" }

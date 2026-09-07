@@ -11,6 +11,17 @@ import org.gradle.api.tasks.compile.JavaCompile
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
+buildscript {
+    dependencies {
+        constraints {
+            // buildscript는 version catalog accessor 생성 전에 해석되므로 immutable catalog와 함께 갱신합니다.
+            classpath("org.apache.commons:commons-lang3:3.20.0")
+            classpath("tools.jackson.core:jackson-core:3.2.2")
+            classpath("tools.jackson.core:jackson-databind:3.2.2")
+        }
+    }
+}
+
 plugins {
     base
     `maven-publish`
@@ -75,15 +86,51 @@ allprojects {
 // where `libs` is not in scope (different receiver type in the lambda).
 val rootLibs = libs
 val rootBt4k = bt4k
+val libsCatalog = extensions.getByType<org.gradle.api.artifacts.VersionCatalogsExtension>().named("libs")
 val bt4kCatalog = extensions.getByType<org.gradle.api.artifacts.VersionCatalogsExtension>().named("bt4k")
 fun bt4kLibrary(alias: String) = bt4kCatalog.findLibrary(alias).get()
+fun bt4kLibraryVersion(alias: String): String {
+    val version = bt4kLibrary(alias).get().versionConstraint
+    return version.requiredVersion
+        .ifBlank { version.preferredVersion }
+        .ifBlank { version.strictVersion }
+}
 fun bt4kVersion(alias: String): String {
     val version = bt4kCatalog.findVersion(alias).get()
     return version.requiredVersion
         .ifBlank { version.preferredVersion }
         .ifBlank { version.strictVersion }
 }
+fun libsVersion(alias: String): String {
+    val version = libsCatalog.findVersion(alias).get()
+    return version.requiredVersion
+        .ifBlank { version.preferredVersion }
+        .ifBlank { version.strictVersion }
+}
 val detektSupportedKotlinVersion = bt4kVersion("kotlin")
+
+// buildscript와 Dokka 같은 build-tool configuration은 publication dependency management의 적용 대상이 아닙니다.
+// 실제로 해석되는 모든 project configuration에 검토한 security floor를 적용합니다.
+val buildToolSecurityVersions = mapOf(
+    "com.fasterxml.jackson.core:jackson-core" to bt4kVersion("jackson2"),
+    "com.fasterxml.jackson.core:jackson-databind" to bt4kVersion("jackson2"),
+    "commons-beanutils:commons-beanutils" to bt4kLibraryVersion("commons-beanutils"),
+    "org.apache.commons:commons-lang3" to bt4kVersion("commons-lang3"),
+    "org.jsoup:jsoup" to libsVersion("jsoup"),
+    "tools.jackson.core:jackson-core" to bt4kVersion("jackson3"),
+    "tools.jackson.core:jackson-databind" to bt4kVersion("jackson3"),
+)
+
+allprojects {
+    configurations.configureEach {
+        resolutionStrategy.eachDependency {
+            buildToolSecurityVersions["${requested.group}:${requested.name}"]?.let { safeVersion ->
+                useVersion(safeVersion)
+                because("build-tool dependency를 검토한 security floor로 유지한다")
+            }
+        }
+    }
+}
 
 
 fun Project.isNonPublishedModule(): Boolean {
@@ -400,6 +447,7 @@ subprojects {
 
             // Apache Commons
             dependency(rootBt4k.commons.beanutils.get().toString())
+            dependency(rootLibs.commons.configuration2.get().toString())
             dependency(rootBt4k.commons.collections4.get().toString())
             dependency(bt4kLibrary("commons-compress").get().toString())
             dependency("commons-codec:commons-codec:${bt4kVersion("commons-codec")}")
@@ -411,6 +459,13 @@ subprojects {
             dependency(rootBt4k.commons.text.get().toString())
             dependency("org.apache.commons:commons-exec:${bt4kVersion("commons-exec")}")
             dependency("commons-io:commons-io:${bt4kVersion("commons-io")}")
+
+            // 공개 소비자와 imported BOM precedence에 적용할 security floor입니다.
+            dependency(bt4kLibrary("classgraph").get().toString())
+            dependency(bt4kLibrary("httpclient5").get().toString())
+            dependency(bt4kLibrary("httpcore5-lib").get().toString())
+            dependency(bt4kLibrary("httpcore5-h2").get().toString())
+            dependency(bt4kLibrary("tomcat-embed-core").get().toString())
 
             dependency("org.slf4j:slf4j-api:${bt4kVersion("slf4j")}")
             dependency("org.slf4j:jcl-over-slf4j:${bt4kVersion("slf4j")}")

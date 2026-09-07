@@ -1,5 +1,6 @@
 require "rexml/document"
 require "set"
+require "rubygems/version"
 
 module Publication
   class PomAudit
@@ -76,6 +77,37 @@ module Publication
           elsif scope != "compile"
             errors << "#{path}: public ABI dependency must use compile scope: #{dependency_coordinate} (#{scope})"
           end
+        end
+      rescue REXML::ParseException => error
+        errors << "#{path}: invalid XML: #{error.message.lines.first.to_s.strip}"
+      end
+
+      errors.sort
+    end
+
+    def validate_managed_versions(required_versions)
+      required = required_versions.transform_values { |version| Gem::Version.new(version) }
+      return [] if required.empty?
+
+      errors = []
+      @paths.each do |path|
+        document = REXML::Document.new(File.read(path))
+        managed_versions = REXML::XPath.match(
+          document,
+          "/project/dependencyManagement/dependencies/dependency",
+        ).to_h do |dependency|
+          [coordinate(dependency), dependency.elements["version"]&.text.to_s.strip]
+        end
+
+        required.each do |dependency_coordinate, minimum_version|
+          actual = managed_versions[dependency_coordinate]
+          if actual.nil? || actual.empty?
+            errors << "#{path}: required managed dependency missing: #{dependency_coordinate}"
+          elsif Gem::Version.new(actual) < minimum_version
+            errors << "#{path}: #{dependency_coordinate} requires managed version #{minimum_version} or newer (#{actual})"
+          end
+        rescue ArgumentError => error
+          errors << "#{path}: invalid managed version for #{dependency_coordinate}: #{error.message}"
         end
       rescue REXML::ParseException => error
         errors << "#{path}: invalid XML: #{error.message.lines.first.to_s.strip}"
