@@ -35,6 +35,12 @@ route candidate를 확인합니다.
 | core에서 고립된 segment는 무엇인가? | `isolatedSegments()` |
 | 두 device를 잇는 redundant path 후보는 무엇인가? | `redundantDevicePaths(sourceDeviceId, targetDeviceId)` |
 
+### Active Endpoint Contract
+
+Device route는 source와 target device의 `status == "active"`이고, 탐색하는 모든 `CONNECTED_TO` edge의 `status`도
+`"active"`일 때만 반환합니다. `failedDeviceIds`에 포함된 device는 direct 및 service path 조회에서 사용할 수
+없습니다. 같은 endpoint 규칙을 sync와 suspend API의 service 및 redundant route 조회에도 적용합니다.
+
 ## Sample Dataset
 
 모듈은 `src/main/resources/sample-data/network-topology/` 아래에 graph-io CSV fixture를 포함합니다.

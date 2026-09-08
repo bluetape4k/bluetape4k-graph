@@ -50,6 +50,8 @@
   ([#634](https://github.com/bluetape4k/bluetape4k-graph/issues/634)).
 - IAM temporary grant의 expiresAt을 요청 시각과 비교하고 잘못된 만료 문자열을 거부한다.
   ([#635](https://github.com/bluetape4k/bluetape4k-graph/issues/635)).
+- network topology 경로 검색에서 비활성 source와 destination 및 비활성 자기 경로를 제외한다.
+  ([#636](https://github.com/bluetape4k/bluetape4k-graph/issues/636)).
 
 - CSV streaming reader가 record validation을 source 소유권 경계 안에서 수행하도록
   수정했다. validation과 owned source close가 함께 실패해도
