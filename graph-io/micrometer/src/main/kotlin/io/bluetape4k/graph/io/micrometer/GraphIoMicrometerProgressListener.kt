@@ -12,7 +12,11 @@ import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import io.micrometer.core.instrument.Timer
 import java.util.Locale
-import java.util.concurrent.atomic.AtomicLong
+import kotlinx.atomicfu.atomic
+import kotlinx.atomicfu.updateAndGet
+import java.util.WeakHashMap
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 /**
  * graph-io 진행 이벤트를 Micrometer meter로 변환한다.
@@ -24,13 +28,13 @@ class GraphIoMicrometerProgressListener(
     private val registry: MeterRegistry,
 ) : GraphIoProgressListener {
 
-    private val activeCells = Array(GraphIoOperation.entries.size * GraphIoFormat.entries.size) { AtomicLong() }
+    private val activeCells = sharedActiveCells(registry)
 
     init {
         GraphIoOperation.entries.forEach { operation ->
             GraphIoFormat.entries.forEach { format ->
                 val cell = activeCells[cellIndex(operation, format)]
-                Gauge.builder(METER_ACTIVE) { cell.get().toDouble() }
+                Gauge.builder(METER_ACTIVE) { cell.value().toDouble() }
                     .description("Active graph-io runs")
                     .tags(operationFormatTags(operation, format))
                     .register(registry)
@@ -42,7 +46,7 @@ class GraphIoMicrometerProgressListener(
         if (event.runId == 0L) return
 
         when (event.type) {
-            GraphIoProgressEventType.STARTED -> active(event).incrementAndGet()
+            GraphIoProgressEventType.STARTED -> active(event).increment()
             GraphIoProgressEventType.PHASE_COMPLETED -> {
                 val phase = event.phase
                 val elapsed = event.phaseElapsed
@@ -65,7 +69,7 @@ class GraphIoMicrometerProgressListener(
 
     private fun recordTerminal(event: GraphIoProgressEvent) {
         if (event.hasStarted) {
-            active(event).updateAndGet { value -> if (value > 0L) value - 1L else 0L }
+            active(event).decrement()
         }
 
         val status = statusTag(event)
@@ -99,7 +103,7 @@ class GraphIoMicrometerProgressListener(
             .increment(value.toDouble())
     }
 
-    private fun active(event: GraphIoProgressEvent): AtomicLong =
+    private fun active(event: GraphIoProgressEvent): ActiveCell =
         activeCells[cellIndex(event.operation, event.format)]
 
     private fun statusTag(event: GraphIoProgressEvent): String = when (event.type) {
@@ -123,7 +127,31 @@ class GraphIoMicrometerProgressListener(
     private fun cellIndex(operation: GraphIoOperation, format: GraphIoFormat): Int =
         operation.ordinal * GraphIoFormat.entries.size + format.ordinal
 
+    private class ActiveCell {
+        private val count = atomic(0L)
+
+        fun value(): Long = count.value
+
+        fun increment() {
+            count.incrementAndGet()
+        }
+
+        fun decrement() {
+            count.updateAndGet { value -> if (value > 0L) value - 1L else 0L }
+        }
+    }
+
     companion object {
+        private val activeCellsLock = ReentrantLock()
+        private val registryActiveCells = WeakHashMap<MeterRegistry, Array<ActiveCell>>()
+
+        /** 동일 registry의 meter가 공유하는 상태이며 registry 자체를 강하게 참조하지 않는다. */
+        private fun sharedActiveCells(registry: MeterRegistry): Array<ActiveCell> = activeCellsLock.withLock {
+            registryActiveCells.getOrPut(registry) {
+                Array(GraphIoOperation.entries.size * GraphIoFormat.entries.size) { ActiveCell() }
+            }
+        }
+
         const val METER_RUNS: String = "graph.io.runs"
         const val METER_RECORDS: String = "graph.io.records"
         const val METER_BYTES: String = "graph.io.bytes"

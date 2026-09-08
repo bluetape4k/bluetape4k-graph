@@ -14,6 +14,38 @@ import java.time.Duration
 class GraphIoMicrometerProgressListenerTest {
 
     @Test
+    fun `동일 registry의 listener들은 활성 작업 수를 합산한다`() {
+        SimpleMeterRegistry().let { registry ->
+            val first = GraphIoMicrometerProgressListener(registry)
+            val second = GraphIoMicrometerProgressListener(registry)
+            val gauge = registry.get(GraphIoMicrometerProgressListener.METER_ACTIVE)
+                .tag("operation", "import").tag("format", "csv").gauge()
+
+            second.onEvent(event(GraphIoProgressEventType.STARTED, runId = 2L))
+            gauge.value() shouldBeEqualTo 1.0
+            first.onEvent(event(GraphIoProgressEventType.STARTED, runId = 1L))
+            gauge.value() shouldBeEqualTo 2.0
+            first.onEvent(event(GraphIoProgressEventType.COMPLETED, runId = 1L, status = GraphIoStatus.COMPLETED))
+            gauge.value() shouldBeEqualTo 1.0
+            second.onEvent(event(GraphIoProgressEventType.CANCELLED, runId = 2L))
+            gauge.value() shouldBeEqualTo 0.0
+        }
+    }
+
+    @Test
+    fun `다른 registry의 활성 작업 수는 격리된다`() {
+        SimpleMeterRegistry().let { firstRegistry ->
+            SimpleMeterRegistry().let { secondRegistry ->
+                val first = GraphIoMicrometerProgressListener(firstRegistry)
+                GraphIoMicrometerProgressListener(secondRegistry)
+                first.onEvent(event(GraphIoProgressEventType.STARTED))
+                secondRegistry.get(GraphIoMicrometerProgressListener.METER_ACTIVE)
+                    .tag("operation", "import").tag("format", "csv").gauge().value() shouldBeEqualTo 0.0
+            }
+        }
+    }
+
+    @Test
     fun `terminal event maps fixed counters timers and active gauge`() {
         val registry = SimpleMeterRegistry()
         val listener = GraphIoMicrometerProgressListener(registry)

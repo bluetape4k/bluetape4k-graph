@@ -30,3 +30,7 @@ The bridge emits these bounded meters:
 
 Tags are fixed enum values lowercased with `Locale.ROOT`. Dataset paths,
 record IDs, run IDs, and exception messages are never included.
+
+## Active runs across listeners
+
+Listeners using the same MeterRegistry share graph.io.active state for each operation/format pair. Separate registries remain isolated, without introducing listener-specific tags.

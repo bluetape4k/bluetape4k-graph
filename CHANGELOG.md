@@ -57,6 +57,8 @@
   ([#635](https://github.com/bluetape4k/bluetape4k-graph/issues/635)).
 - network topology 경로 검색에서 비활성 source와 destination 및 비활성 자기 경로를 제외한다.
   ([#636](https://github.com/bluetape4k/bluetape4k-graph/issues/636)).
+- 같은 MeterRegistry에 등록한 여러 listener가 graph.io.active 상태를 공유하도록 수정한다.
+  ([#639](https://github.com/bluetape4k/bluetape4k-graph/issues/639)).
 
 - CSV streaming reader가 record validation을 source 소유권 경계 안에서 수행하도록
   수정했다. validation과 owned source close가 함께 실패해도
