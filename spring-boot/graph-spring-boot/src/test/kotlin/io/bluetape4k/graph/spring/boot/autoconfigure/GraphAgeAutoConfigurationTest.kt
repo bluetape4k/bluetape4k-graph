@@ -3,7 +3,11 @@ package io.bluetape4k.graph.spring.boot.autoconfigure
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeNull
+import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.graph.age.AgeGraphOperations
+import io.bluetape4k.graph.age.AgeGraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
@@ -19,6 +23,7 @@ import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
 import org.springframework.boot.autoconfigure.AutoConfigurations
 import org.springframework.boot.test.context.runner.ApplicationContextRunner
+import org.jetbrains.exposed.v1.jdbc.Database
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.sql.Connection
@@ -45,8 +50,23 @@ class GraphAgeAutoConfigurationTest {
         }
     }
 
+    @Configuration(proxyBeanMethods = false)
+    class NamedDataSourceConfig {
+        @Bean(name = ["tenantDataSource"])
+        fun tenantDataSource(): DataSource = mockk(relaxed = true)
+    }
+
     private val runner = ApplicationContextRunner()
         .withUserConfiguration(DataSourceConfig::class.java)
+        .withConfiguration(
+            AutoConfigurations.of(
+                GraphAutoConfiguration::class.java,
+                GraphAgeAutoConfiguration::class.java,
+            )
+        )
+
+    private val namedDataSourceRunner = ApplicationContextRunner()
+        .withUserConfiguration(NamedDataSourceConfig::class.java)
         .withConfiguration(
             AutoConfigurations.of(
                 GraphAutoConfiguration::class.java,
@@ -92,6 +112,36 @@ class GraphAgeAutoConfigurationTest {
                 ctx.getBean(GraphVirtualThreadOperations::class.java)
             }
         }
+    }
+
+    @Test
+    fun `유일한 DataSource 이름이 dataSource가 아니어도 AGE 자동 구성이 시작된다`() {
+        namedDataSourceRunner.withPropertyValues(
+            *ageProperties,
+            "bluetape4k.graph.age.auto-create-graph=false",
+        ).run { ctx ->
+            ctx.startupFailure.shouldBeNull()
+            ctx.getBean("ageExposedDatabase", Database::class.java).shouldNotBeNull()
+            ctx.getBean(GraphOperations::class.java).shouldNotBeNull()
+        }
+    }
+
+    @Test
+    fun `AGE Database와 애플리케이션 Database가 공존하면 AGE Database를 명시적으로 사용한다`() {
+        val ageDatabase = Database.connect(mockk<DataSource>(relaxed = true))
+        val applicationDatabase = Database.connect(mockk<DataSource>(relaxed = true))
+
+        namedDataSourceRunner
+            .withBean("ageExposedDatabase", Database::class.java, java.util.function.Supplier { ageDatabase })
+            .withBean("applicationDatabase", Database::class.java, java.util.function.Supplier { applicationDatabase })
+            .withPropertyValues(
+                *ageProperties,
+                "bluetape4k.graph.age.auto-create-graph=false",
+            ).run { ctx ->
+                ctx.startupFailure.shouldBeNull()
+                (databaseOf(ctx.getBean(AgeGraphOperations::class.java)) === ageDatabase).shouldBeTrue()
+                (databaseOf(ctx.getBean(AgeGraphSuspendOperations::class.java)) === ageDatabase).shouldBeTrue()
+            }
     }
 
     @Test
@@ -148,4 +198,7 @@ class GraphAgeAutoConfigurationTest {
 
         health.status.code shouldBeEqualTo "DOWN"
     }
+
+    private fun databaseOf(bean: Any): Database =
+        bean.javaClass.getDeclaredField("database").apply { isAccessible = true }.get(bean) as Database
 }

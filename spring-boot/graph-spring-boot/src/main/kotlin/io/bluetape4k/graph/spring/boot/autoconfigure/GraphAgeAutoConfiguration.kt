@@ -12,6 +12,7 @@ import io.bluetape4k.logging.info
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
 import org.springframework.beans.factory.InitializingBean
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
@@ -63,9 +64,9 @@ class GraphAgeAutoConfiguration {
     companion object : KLogging()
 
     /**
-     * Connects an Exposed [Database] to the AGE-backed [DataSource].
+     * 선택된 AGE [DataSource]에 Exposed [Database]를 연결한다. bean 이름은 제한하지 않는다.
      *
-     * Application은 graph operations 실행 전에 AGE extension이 load되도록 Hikari connection initialization SQL을
+     * 애플리케이션은 graph operations 실행 전에 AGE extension이 load되도록 Hikari connection initialization SQL을
      * 구성해야 한다:
      * ```yaml
      * spring:
@@ -73,11 +74,9 @@ class GraphAgeAutoConfiguration {
      *     hikari:
      *       connection-init-sql: "LOAD 'age'; SET search_path = ag_catalog, \"$user\", public;"
      * ```
-     * HikariCP seals pool configuration after startup, so this auto-configuration
-     * documents the required setting instead of mutating the pool at runtime.
+     * HikariCP는 시작 후 pool 설정을 고정하므로 실행 중 설정을 변경하지 않고 필요한 초기화 SQL을 안내한다.
      */
     @Bean(name = ["ageExposedDatabase"])
-    @DependsOn("dataSource")
     @ConditionalOnMissingBean(name = ["ageExposedDatabase"])
     fun ageExposedDatabase(dataSource: DataSource): Database {
         log.info { "Connecting Exposed Database to AGE DataSource" }
@@ -93,7 +92,10 @@ class GraphAgeAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(GraphOperations::class)
     @DependsOn("ageExposedDatabase")
-    fun graphOperations(props: AgeGraphProperties, database: Database): AgeGraphOperations {
+    fun graphOperations(
+        props: AgeGraphProperties,
+        @Qualifier("ageExposedDatabase") database: Database,
+    ): AgeGraphOperations {
         log.info { "Registering AgeGraphOperations (graphName=${props.graphName})" }
         return AgeGraphOperations(database, props.graphName)
     }
@@ -128,7 +130,10 @@ class GraphAgeAutoConfiguration {
         havingValue = "true",
         matchIfMissing = true,
     )
-    fun graphSuspendOperations(props: AgeGraphProperties, database: Database): GraphSuspendOperations {
+    fun graphSuspendOperations(
+        props: AgeGraphProperties,
+        @Qualifier("ageExposedDatabase") database: Database,
+    ): GraphSuspendOperations {
         log.info { "Registering AgeGraphSuspendOperations (graphName=${props.graphName})" }
         return AgeGraphSuspendOperations(database, props.graphName)
     }

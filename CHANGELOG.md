@@ -40,6 +40,9 @@
 
 ### 버그 수정
 
+- AGE 자동 설정이 임의 이름의 DataSource를 받고, AGE 전용 Exposed Database를 명시적으로 주입하도록 수정한다.
+  ([#632](https://github.com/bluetape4k/bluetape4k-graph/issues/632)).
+
 - CSV streaming reader가 record validation을 source 소유권 경계 안에서 수행하도록
   수정했다. validation과 owned source close가 함께 실패해도
   `GraphIoReadException`을 primary로, close `IOException`을 suppressed로
