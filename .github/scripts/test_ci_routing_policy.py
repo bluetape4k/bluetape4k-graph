@@ -11,6 +11,7 @@ EXAMPLES_WORKFLOW = ROOT / ".github/workflows/examples.yml"
 TESTCONTAINERS_CONTRACT_WORKFLOW = (
     ROOT / ".github/workflows/testcontainers-contract.yml"
 )
+SETTINGS = ROOT / "settings.gradle.kts"
 BRANCH_GOVERNANCE_WORKFLOW = ROOT / ".github/workflows/branch-governance.yml"
 RELEASE_WORKFLOW = ROOT / ".github/workflows/release.yml"
 SNAPSHOT_WORKFLOW = ROOT / ".github/workflows/publish-snapshot.yml"
@@ -42,6 +43,7 @@ class CiRoutingPolicyTest(unittest.TestCase):
         cls.testcontainers_contract = TESTCONTAINERS_CONTRACT_WORKFLOW.read_text(
             encoding="utf-8"
         )
+        cls.settings = SETTINGS.read_text(encoding="utf-8")
         cls.branch_governance = BRANCH_GOVERNANCE_WORKFLOW.read_text(encoding="utf-8")
         cls.release = RELEASE_WORKFLOW.read_text(encoding="utf-8")
         cls.snapshot = SNAPSHOT_WORKFLOW.read_text(encoding="utf-8")
@@ -113,6 +115,27 @@ class CiRoutingPolicyTest(unittest.TestCase):
         gate = job_block(self.nightly, "testcontainers-image-gate")
         self.assertIn("--scope full", gate)
         self.assertIn("inputs.scope == 'full'", gate)
+
+    def test_testcontainers_catalog_checkout_uses_an_immutable_ref(self) -> None:
+        self.assertNotIn(
+            "ref: ${{ steps.catalog.outputs.ref }}",
+            self.testcontainers_contract,
+        )
+        workflow_ref = re.search(
+            r"(?m)^  BLUETAPE4K_DEPENDENCIES_CATALOG_REF: '([0-9a-f]{40,64})'$",
+            self.testcontainers_contract,
+        )
+        settings_ref = re.search(
+            r'(?m)^\s*\.orElse\("([0-9a-f]{40,64})"\)',
+            self.settings,
+        )
+        self.assertIsNotNone(workflow_ref)
+        self.assertIsNotNone(settings_ref)
+        self.assertEqual(settings_ref.group(1), workflow_ref.group(1))
+        self.assertIn(
+            '[[ "${ref}" == "${BLUETAPE4K_DEPENDENCIES_CATALOG_REF}" ]]',
+            self.testcontainers_contract,
+        )
 
 
 if __name__ == "__main__":
