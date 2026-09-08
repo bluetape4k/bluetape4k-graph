@@ -871,12 +871,54 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Download all coverage artifacts
+      - name: Download coverage-core artifact
+        if: ${{ always() && needs.test-core.result != 'skipped' }}
         uses: actions/download-artifact@v8
         with:
-          pattern: coverage-*
-          path: coverage-artifacts
-          merge-multiple: false
+          name: coverage-core
+          path: coverage-artifacts/coverage-core
+
+      - name: Download coverage-spring-starters artifact
+        if: ${{ always() && needs.test-spring-starters.result != 'skipped' }}
+        uses: actions/download-artifact@v8
+        with:
+          name: coverage-spring-starters
+          path: coverage-artifacts/coverage-spring-starters
+
+      - name: Download coverage-ktor artifact
+        if: ${{ always() && needs.test-graph-ktor.result != 'skipped' }}
+        uses: actions/download-artifact@v8
+        with:
+          name: coverage-ktor
+          path: coverage-artifacts/coverage-ktor
+
+      - name: Download coverage-neo4j artifact
+        if: ${{ always() && needs.test-graph-neo4j.result != 'skipped' }}
+        uses: actions/download-artifact@v8
+        with:
+          name: coverage-neo4j
+          path: coverage-artifacts/coverage-neo4j
+
+      - name: Download coverage-memgraph artifact
+        if: ${{ always() && needs.test-graph-memgraph.result != 'skipped' }}
+        uses: actions/download-artifact@v8
+        with:
+          name: coverage-memgraph
+          path: coverage-artifacts/coverage-memgraph
+
+      - name: Download coverage-age artifact
+        if: ${{ always() && needs.test-graph-age.result != 'skipped' }}
+        uses: actions/download-artifact@v8
+        with:
+          name: coverage-age
+          path: coverage-artifacts/coverage-age
+
+      - name: Download coverage-falkordb artifact
+        if: ${{ always() && needs.test-graph-falkordb.result != 'skipped' }}
+        uses: actions/download-artifact@v8
+        with:
+          name: coverage-falkordb
+          path: coverage-artifacts/coverage-falkordb
 
       - name: Aggregate Kover coverage summary
         if: always()

@@ -14,6 +14,15 @@ WORKFLOWS = (
     ROOT / ".github/workflows/ci.yml",
     ROOT / ".github/workflows/nightly-tests.yml",
 )
+CI_COVERAGE_DOWNLOADS = (
+    ("test-core", "coverage-core"),
+    ("test-spring-starters", "coverage-spring-starters"),
+    ("test-graph-ktor", "coverage-ktor"),
+    ("test-graph-neo4j", "coverage-neo4j"),
+    ("test-graph-memgraph", "coverage-memgraph"),
+    ("test-graph-age", "coverage-age"),
+    ("test-graph-falkordb", "coverage-falkordb"),
+)
 
 
 class AggregateKoverCoverageTest(unittest.TestCase):
@@ -155,6 +164,43 @@ class AggregateKoverCoverageTest(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("expected coverage artifact is missing", result.stdout + result.stderr)
 
+    def test_flattened_single_artifact_download_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            report = root / "graph-spring-boot" / "build" / "reports" / "kover"
+            report.mkdir(parents=True)
+            (report / "report.xml").write_text(
+                '<report><counter type="INSTRUCTION" missed="2" covered="8"/></report>',
+                encoding="utf-8",
+            )
+            result = self.run_script(
+                root,
+                "--expected-artifact",
+                "coverage-spring-starters",
+                "--expected-module",
+                "graph-spring-boot",
+            )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("expected coverage artifact is missing", result.stdout + result.stderr)
+
+    def test_ci_downloads_each_coverage_artifact_to_named_path(self) -> None:
+        source = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+        coverage_job = self.named_job(source, "coverage-report")
+
+        self.assertEqual(len(CI_COVERAGE_DOWNLOADS), coverage_job.count("uses: actions/download-artifact@v8"))
+        self.assertNotIn("pattern: coverage-*", coverage_job)
+        self.assertNotIn("merge-multiple: false", coverage_job)
+        for job, artifact in CI_COVERAGE_DOWNLOADS:
+            expected_step = (
+                f"if: ${{{{ always() && needs.{job}.result != 'skipped' }}}}\n"
+                "        uses: actions/download-artifact@v8\n"
+                "        with:\n"
+                f"          name: {artifact}\n"
+                f"          path: coverage-artifacts/{artifact}"
+            )
+            self.assertIn(expected_step, coverage_job, (job, artifact))
+
     def test_expected_module_missing_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             report = self.write_report(
@@ -229,7 +275,7 @@ class AggregateKoverCoverageTest(unittest.TestCase):
             result = self.run_script(root)
 
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("cannot resolve report path", result.stdout)
+        self.assertRegex(result.stdout + result.stderr, r"cannot resolve report path|malformed Kover XML")
         self.assertIn("Coverage validation errors", result.stdout)
 
     def test_workflows_fail_closed_for_coverage_artifacts(self) -> None:

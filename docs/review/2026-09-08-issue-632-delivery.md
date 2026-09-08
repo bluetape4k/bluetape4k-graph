@@ -21,3 +21,7 @@ Writer SPW-01~05: 한국어 개발자용 리뷰·lesson의 목적과 source 근�
 ## 남은 단계
 
 PR 생성 후 실제 head의 CI 및 review threads를 확인한다. 전체 #641 PR을 준비한 뒤 머지를 별도로 판단한다. 현재 문서는 머지 완료나 CI 성공을 주장하지 않는다.
+
+## PR CI 경로 수정
+
+CI run 34226159656의 Coverage Report 실패는 정상 Spring XML의 단일 artifact 경로 배치가 원인이다. ci.yml에서 artifact별 name/path를 명시하고 누락 검증을 유지했다. Python 19+10개와 actionlint를 리더가 재실행해 통과했다. Nightly 변경은 없다. 최종 독립 검토와 새 HEAD의 hosted CI는 별도로 확인한다.
