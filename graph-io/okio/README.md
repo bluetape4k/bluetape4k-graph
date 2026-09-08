@@ -378,3 +378,7 @@ ordered `Flow`. `GraphImportOptions.batchSize` remains the backend write-flush a
 change reader buffering or source ownership. `PathSource` and sources with `ownsSource`/`ownsStream=true`
 are closed by the library; caller-owned sources remain open. CSV reader dispatch requires paired
 `{stem}_vertices.csv` and `{stem}_edges.csv` files, so stream-backed CSV is explicitly unsupported.
+
+## Stream bridge ownership
+
+`toInputStream()` and `toOutputStream()` preserve caller ownership of the Source/Sink. Closing the output stream only flushes it. The caller closes the underlying resource; use an explicit closing adapter when ownership should transfer.

@@ -23,6 +23,27 @@ class BridgesTest {
     }
 
     @Test
+    fun `input stream close 이후에도 호출자가 source를 읽을 수 있다`() {
+        val path = "/caller-source.bin".toPath()
+        fakeFs.write(path) { writeUtf8("hello") }
+        fakeFs.source(path).buffer().use { source ->
+            source.toInputStream().close()
+            source.readUtf8() shouldBeEqualTo "hello"
+        }
+    }
+
+    @Test
+    fun `output stream close는 flush하고 호출자 sink를 유지한다`() {
+        val bytes = ByteArrayOutputStream()
+        bytes.sink().buffer().use { sink ->
+            sink.toOutputStream().use { stream -> stream.write("first".toByteArray()) }
+            bytes.toString(Charsets.UTF_8) shouldBeEqualTo "first"
+            sink.writeUtf8("second")
+        }
+        bytes.toString(Charsets.UTF_8) shouldBeEqualTo "firstsecond"
+    }
+
+    @Test
     fun `toInputStream reads all bytes`() {
         val data = "hello okio".toByteArray()
         val bs = Buffer().also { it.write(data) }.buffer()
