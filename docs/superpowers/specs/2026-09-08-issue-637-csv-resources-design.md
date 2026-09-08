@@ -42,3 +42,13 @@ rollback은 helper와 8개 호출부 commit을 함께 되돌린다. 이미 게�
 SPW-01~05: 한국어 설계, source-to-claim 대조, 대안·수명·예외·AC 기록, Markdown readback 완료. 코드 토큰·정확한 메시지는 유지한다.
 
 Loader 탐색은 null 반환만 miss로 취급한다. SecurityException/RuntimeException은 같은 예외를 전파하고 fallback으로 우회하지 않는다. SecurityException을 던지는 TCCL fixture에서 예외 identity와 fallback 호출 0회를 검증한다.
+
+## 구현 검증에서 확인한 취소 예외 보존
+
+첫 구현은 CSV 82개 중 81개를 통과했지만 실제 Job 취소의 terminal cause에 close 실패가 남지 않았다. 중첩 withContext가 전달한 취소 예외와 호출자 Job의 원래 원인이 달랐다. callback 경계에서 CancellationException만 잡고 callerContext.ensureActive()로 호출자의 취소 원인을 전파한 다음 nested use가 닫기 실패를 suppressed로 붙이도록 보완했다. 호출자 Job이 취소되지 않은 callback 자체의 CancellationException은 그대로 다시 던진다. 자원 열기/닫기 dispatcher와 공개 계약은 유지한다. 재검증 637-helper-green2에서 82개 테스트와 detekt가 통과했다.
+
+활성 Job에서 callback 자체가 CancellationException을 던지는 추가 회귀 테스트는 dispatcher 복귀 중 예외 identity 손실도 재현했다. callback과 IO 자원 처리 결과를 Result로 경계 너머에 전달하고, 자원을 소유한 use 내부 및 최종 호출자 위치에서 getOrThrow하여 같은 예외와 suppressed를 보존한다. 실제 Job 취소는 ensureActive로 먼저 전파한다. 637-helper-green4에서 동작 테스트 83개가 통과했으며, Throwable 전달 경계의 제한된 detekt suppression에는 원래 예외를 다시 던지는 목적을 명시했다.
+
+## Pre-PR 안정성 P1의 재현과 수정
+
+독립 architect(gpt-5.6-sol/high)는 callback 정상 반환 뒤 close/dispatcher 복귀 시점의 취소가 이미 발생한 close 실패를 버릴 수 있다고 지적했다. edge close 진입을 latch로 고정하고 Job 취소 후 edge/vertex close 실패를 발생시키는 테스트에서 suppressed 누락을 재현했다(637-close-race-red). IO 종료 전에 failure를 외부 지역 변수에 기록하고 바깥 withContext의 취소 경계에서 별도 failure를 원래 취소 예외에 보존한다. nested use의 edge→vertex 예외 연결은 그대로 유지한다. captureFailure의 실패 기록은 ensureActive보다 먼저 수행하므로 close가 CancellationException을 던지는 경우에도 기록을 잃지 않는다. 637-close-race-green의 동작 테스트 84개는 통과했고, 두 줄의 스타일 경고를 정리한 뒤 637-final-green에서 전체 검증을 진행한다.

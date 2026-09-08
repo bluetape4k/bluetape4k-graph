@@ -26,7 +26,7 @@
 
 ```kotlin
 dependencies {
-    implementation("io.bluetape4k:graph-io-csv:$version")
+    implementation("io.bluetape4k:bluetape4k-graph-io-csv:$version")
 }
 ```
 
@@ -335,3 +335,19 @@ boundedness를 주장하지는 않습니다.
 닫고 호출자 소유 stream은 열린 상태로 둡니다.
 
 `None`은 구조 컬럼(`id`, `label`, 간선의 `from`/`to`)만 출력한다. 임시 spool에도 속성을 기록하지 않으며, 구조 컬럼과 같은 속성 이름이 있어도 충돌하지 않는다.
+
+### Classpath CSV 가져오기
+
+`withClasspathCsvGraphImportSource`와 `withClasspathCsvGraphImportSourceSuspending`은 callback이 끝날 때까지 두 입력 스트림을 소유한다. 리소스 이름은 신뢰할 수 있는 애플리케이션 설정이며 정규화 없이 전달한다. 호출 시점의 context classloader를 먼저 사용하고, 리소스가 없을 때만 명시적으로 전달한 fallback classloader에서 찾는다. 조회 도중 발생한 예외는 그대로 전파한다.
+
+```kotlin
+val report = withClasspathCsvGraphImportSource(
+    verticesResource = "sample-data/vertices.csv",
+    edgesResource = "sample-data/edges.csv",
+    fallbackClassLoader = MyApplication::class.java.classLoader,
+) { source ->
+    CsvGraphBulkImporter().importGraph(source, operations)
+}
+```
+
+callback 실패 시에도 간선, 정점 순서로 스트림을 닫는다. suspend 함수는 열기와 닫기를 `Dispatchers.IO`에서 처리하고 callback은 호출자의 coroutine context에서 실행한다. 입력은 callback 안에서 모두 소비해야 한다. 소스 자체나 이를 사용하는 지연 Sequence/Flow, Deferred를 반환하면 안 된다. 기존 예제 loader의 공개 API와 기본 리소스 이름은 유지된다.
