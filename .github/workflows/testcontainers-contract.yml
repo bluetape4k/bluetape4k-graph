@@ -36,6 +36,9 @@ on:
 permissions:
   contents: read
 
+env:
+  BLUETAPE4K_DEPENDENCIES_CATALOG_REF: '55b5269bddd2bd041d5f282abcd0238dc242c171'
+
 jobs:
   image-contract:
     name: 이미지·문서 drift contract
@@ -54,19 +57,18 @@ jobs:
           fetch-depth: 1
 
       - name: 중앙 catalog ref 확인
-        id: catalog
         shell: bash
         run: |
           set -euo pipefail
           ref=$(sed -n 's/.*\.orElse("\([0-9a-f]\{40,64\}\)").*/\1/p' settings.gradle.kts | head -n 1)
           [[ "${ref}" =~ ^[0-9a-f]{40,64}$ ]]
-          echo "ref=${ref}" >> "${GITHUB_OUTPUT}"
+          [[ "${ref}" == "${BLUETAPE4K_DEPENDENCIES_CATALOG_REF}" ]]
 
       - name: 중앙 catalog checkout
         uses: actions/checkout@v7
         with:
           repository: bluetape4k/bluetape4k-dependencies
-          ref: ${{ steps.catalog.outputs.ref }}
+          ref: ${{ env.BLUETAPE4K_DEPENDENCIES_CATALOG_REF }}
           path: .catalog/bluetape4k-dependencies
 
       - name: 이미지·문서·baseline drift 검증
