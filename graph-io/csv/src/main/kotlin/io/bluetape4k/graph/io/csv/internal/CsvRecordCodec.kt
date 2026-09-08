@@ -26,6 +26,7 @@ internal class CsvRecordCodec(private val mode: CsvPropertyMode) {
     private fun unionHeader(reserved: List<String>, propertyKeys: Sequence<String>): List<String> {
         val columns = when (mode) {
             is CsvPropertyMode.RawJsonColumn -> sequenceOf(mode.columnName)
+            CsvPropertyMode.None -> emptySequence()
             else -> propertyKeys.map(::propertyColumn)
         }
         val propCols = columns.toSortedSet()
@@ -54,17 +55,15 @@ internal class CsvRecordCodec(private val mode: CsvPropertyMode) {
             }
             mapOf(RAW_JSON_SPOOL_KEY to jsonMapper.writeValueAsString(properties))
         }
-        is CsvPropertyMode.PrefixedColumns,
-        CsvPropertyMode.None,
-        -> properties
+        CsvPropertyMode.None -> emptyMap()
+        is CsvPropertyMode.PrefixedColumns -> properties
     }
 
     fun encodeProperty(column: String, properties: Map<String, Any?>): String = when (mode) {
         is CsvPropertyMode.RawJsonColumn -> properties[RAW_JSON_SPOOL_KEY]?.toString()
             ?: jsonMapper.writeValueAsString(properties)
-        is CsvPropertyMode.PrefixedColumns,
-        CsvPropertyMode.None,
-        -> properties[propertyKey(column)]?.toString() ?: ""
+        CsvPropertyMode.None -> ""
+        is CsvPropertyMode.PrefixedColumns -> properties[propertyKey(column)]?.toString() ?: ""
     }
 
     fun extractProperties(row: Map<String, String?>): Map<String, Any?> = when (mode) {
