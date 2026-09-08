@@ -8,6 +8,6 @@
 
 ## 범위와 한계
 
-Kotlin source/caller, validation, 취소·resource·동시성 경계, 기존 공개 함수와 신규 Clock 생성자 형태, README locale·KDoc를 대조했다. 신규 dependency·module·workflow·BOM·catalog 변경은 없다. lifecycle 테스트에는 timeout과 종료 후 재사용 검증을 포함한다.
+Kotlin source/caller, validation, 취소·resource·동시성 경계, 기존 공개 함수와 신규 Clock 생성자 형태, README locale·KDoc를 대조했다. 신규 dependency·module·workflow·BOM·catalog 변경은 없다. 시간 경계 테스트는 고정 Clock으로 재현한다.
 
 WIP·CHANGELOG·lesson은 현재 동작과 검증 결과를 반영한다. SPW-01~05에서 한국어 구조·기술 의미·검증 수치 및 Markdown을 readback했다. GNO index는 정상 실행했으나 worktree 제외 정책 때문에 새 lesson 검색은 merge 후 반영한다. 실제 PR head의 CI와 threads는 별도로 확인한다. 전체 #641 PR 준비 전까지 merge하지 않는다.
