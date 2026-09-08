@@ -59,6 +59,8 @@
   ([#636](https://github.com/bluetape4k/bluetape4k-graph/issues/636)).
 - 같은 MeterRegistry에 등록한 여러 listener가 graph.io.active 상태를 공유하도록 수정한다.
   ([#639](https://github.com/bluetape4k/bluetape4k-graph/issues/639)).
+- TinkerGraph transaction 중 외부 mutation을 명시적으로 거부하여 rollback의 외부 변경 손실을 차단한다.
+  ([#640](https://github.com/bluetape4k/bluetape4k-graph/issues/640)).
 
 - CSV streaming reader가 record validation을 source 소유권 경계 안에서 수행하도록
   수정했다. validation과 owned source close가 함께 실패해도

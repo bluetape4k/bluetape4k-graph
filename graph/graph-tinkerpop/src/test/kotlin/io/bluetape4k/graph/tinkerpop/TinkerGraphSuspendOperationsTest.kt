@@ -327,6 +327,10 @@ class TinkerGraphSuspendOperationsTest {
 
         ops.findVertexById("Person", existing.id)?.properties?.get("name") shouldBeEqualTo "Existing"
         ops.countVertices("Person") shouldBeEqualTo 1L
+
+        val afterCancellation = ops.createVertex("Person", mapOf("name" to "AfterCancellation"))
+        afterCancellation.properties["name"] shouldBeEqualTo "AfterCancellation"
+        ops.countVertices("Person") shouldBeEqualTo 2L
     }
 
     @Test
@@ -362,31 +366,33 @@ class TinkerGraphSuspendOperationsTest {
         val delegate = TinkerGraphOperations()
         val suspendOps = TinkerGraphSuspendOperations(delegate)
         try {
-            coroutineScope {
-                val started = CompletableDeferred<Unit>()
-                val release = CompletableDeferred<Unit>()
-                val suspendTx = async(Dispatchers.IO) {
-                    assertFailsWith<IllegalStateException> {
-                        suspendOps.suspendTransaction {
-                            createVertex("Person", mapOf("name" to "Suspending"))
-                            started.complete(Unit)
-                            release.await()
-                            error("rollback")
+            withTimeout(5_000) {
+                coroutineScope {
+                    val started = CompletableDeferred<Unit>()
+                    val release = CompletableDeferred<Unit>()
+                    val suspendTx = async(Dispatchers.IO) {
+                        assertFailsWith<IllegalStateException> {
+                            suspendOps.suspendTransaction {
+                                createVertex("Person", mapOf("name" to "Suspending"))
+                                started.complete(Unit)
+                                release.await()
+                                error("rollback")
+                            }
                         }
                     }
-                }
 
-                started.await()
-                val syncTx = async(Dispatchers.IO) {
-                    delegate.transaction {
-                        createVertex("Person", mapOf("name" to "Sync"))
+                    withTimeout(1_000) { started.await() }
+                    val syncTx = async(Dispatchers.IO) {
+                        delegate.transaction {
+                            createVertex("Person", mapOf("name" to "Sync"))
+                        }
                     }
-                }
 
-                delay(100)
-                release.complete(Unit)
-                suspendTx.await()
-                syncTx.await()
+                    delay(100)
+                    release.complete(Unit)
+                    suspendTx.await()
+                    syncTx.await()
+                }
             }
 
             val names = delegate.findVerticesByLabel("Person").map { it.properties["name"] }
@@ -395,6 +401,76 @@ class TinkerGraphSuspendOperationsTest {
         } finally {
             suspendOps.close()
         }
+    }
+
+    @Test
+    @Order(332)
+    fun `suspendTransaction은 transaction 외부의 graph와 schema mutation을 거부한다`() = runSuspendIO {
+        val delegate = TinkerGraphOperations()
+        val suspendOps = TinkerGraphSuspendOperations(delegate)
+        try {
+            withTimeout(5_000) {
+                coroutineScope {
+                    val transactionStarted = CompletableDeferred<Unit>()
+                    val releaseTransaction = CompletableDeferred<Unit>()
+                    val transaction = async(Dispatchers.IO) {
+                        assertFailsWith<IllegalStateException> {
+                            suspendOps.suspendTransaction {
+                                createVertex("Person", mapOf("name" to "transaction"))
+                                transactionStarted.complete(Unit)
+                                releaseTransaction.await()
+                                error("rollback")
+                            }
+                        }
+                    }
+
+                    withTimeout(1_000) { transactionStarted.await() }
+                    val externalMutation = async(Dispatchers.IO) {
+                        assertFailsWith<IllegalStateException> {
+                            delegate.createVertex("Person", mapOf("name" to "external"))
+                        }
+                    }
+                    val externalFailure = withTimeout(1_000) { externalMutation.await() }
+                    externalFailure.message shouldContain "external mutations"
+
+                    val externalSchemaMutation = async(Dispatchers.IO) {
+                        assertFailsWith<IllegalStateException> {
+                            delegate.schemaManager().createIndex("Person", "email")
+                        }
+                    }
+                    val schemaFailure = withTimeout(1_000) { externalSchemaMutation.await() }
+                    schemaFailure.message shouldContain "external mutations"
+
+                    releaseTransaction.complete(Unit)
+                    transaction.await()
+
+                    val externalVertex = delegate.createVertex("Person", mapOf("name" to "external"))
+                    delegate.findVertexById("Person", externalVertex.id)
+                        ?.properties
+                        ?.get("name") shouldBeEqualTo "external"
+                    delegate.countVertices("Person") shouldBeEqualTo 1L
+                    delegate.schemaManager().createIndex("Person", "email")
+                    delegate.schemaManager().dropIndex("Person", "email")
+                }
+            }
+        } finally {
+            suspendOps.close()
+        }
+    }
+
+    @Test
+    @Order(333)
+    fun `nested suspendTransaction reuses the active transaction`() = runSuspendIO {
+        withTimeout(5_000) {
+            ops.suspendTransaction {
+                createVertex("Person", mapOf("name" to "Outer"))
+                ops.suspendTransaction {
+                    createVertex("Person", mapOf("name" to "Inner"))
+                }
+            }
+        }
+
+        ops.findVerticesByLabel("Person").toList().shouldHaveSize(2)
     }
 
     // ----- 간선(Edge) CRUD -----
