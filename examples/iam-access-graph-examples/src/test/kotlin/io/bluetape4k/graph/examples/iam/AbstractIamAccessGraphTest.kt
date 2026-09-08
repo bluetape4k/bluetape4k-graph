@@ -11,6 +11,9 @@ import io.bluetape4k.logging.KLogging
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneOffset
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AbstractIamAccessGraphTest {
@@ -19,7 +22,10 @@ abstract class AbstractIamAccessGraphTest {
 
     protected abstract val ops: GraphOperations
     protected open val graphName: String = "iam_access_test"
-    protected val service: IamAccessGraphService by lazy { IamAccessGraphService(ops, graphName) }
+    protected open val clock: Clock = Clock.fixed(Instant.parse("2026-06-01T00:00:00Z"), ZoneOffset.UTC)
+    protected val service: IamAccessGraphService by lazy {
+        IamAccessGraphService(ops = ops, graphName = graphName, clock = clock)
+    }
 
     @BeforeEach
     fun cleanGraph() {

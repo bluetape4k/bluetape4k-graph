@@ -23,13 +23,16 @@ import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.info
 import io.bluetape4k.support.requireNotBlank
 import kotlinx.coroutines.flow.toList
+import java.time.Clock
+import java.time.Instant
 
 /**
  * [IamAccessGraphService]의 coroutine 버전이다.
  */
-class IamAccessGraphSuspendService(
+class IamAccessGraphSuspendService @JvmOverloads constructor(
     private val ops: GraphSuspendOperations,
     private val graphName: String = "iam_access",
+    private val clock: Clock = Clock.systemUTC(),
 ) {
     companion object: KLoggingChannel() {
         private const val EFFECT_ALLOW = "allow"
@@ -206,7 +209,8 @@ class IamAccessGraphSuspendService(
             )
         }
 
-        allowPaths(user, resourceId, action).firstOrNull()?.let { path ->
+        val evaluatedAt = clock.instant()
+        allowPaths(user, resourceId, action, evaluatedAt).firstOrNull()?.let { path ->
             return IamAccessExplanation(
                 userId = userId,
                 resourceId = resourceId,
@@ -247,7 +251,8 @@ class IamAccessGraphSuspendService(
         userId.requireNotBlank("userId")
         val user = userById(userId) ?: return emptyList()
 
-        return allowPaths(user, resourceId = null, action = null)
+        val evaluatedAt = clock.instant()
+        return allowPaths(user, resourceId = null, action = null, evaluatedAt = evaluatedAt)
             .map { path ->
                 val permission = path.first { it.label == IamPermissionLabel.label }
                 val resource = path.last()
@@ -267,8 +272,13 @@ class IamAccessGraphSuspendService(
             }
     }
 
-    private suspend fun allowPaths(user: GraphVertex, resourceId: String?, action: String?): List<List<GraphVertex>> =
-        policyPaths(user, EFFECT_ALLOW, resourceId, action) + temporaryPaths(user, resourceId, action)
+    private suspend fun allowPaths(
+        user: GraphVertex,
+        resourceId: String?,
+        action: String?,
+        evaluatedAt: Instant,
+    ): List<List<GraphVertex>> =
+        policyPaths(user, EFFECT_ALLOW, resourceId, action) + temporaryPaths(user, resourceId, action, evaluatedAt)
 
     private suspend fun denyPaths(user: GraphVertex, resourceId: String, action: String): List<List<GraphVertex>> =
         policyPaths(user, EFFECT_DENY, resourceId, action)
@@ -296,9 +306,18 @@ class IamAccessGraphSuspendService(
         return paths
     }
 
-    private suspend fun temporaryPaths(user: GraphVertex, resourceId: String?, action: String?): List<List<GraphVertex>> {
+    private suspend fun temporaryPaths(
+        user: GraphVertex,
+        resourceId: String?,
+        action: String?,
+        evaluatedAt: Instant,
+    ): List<List<GraphVertex>> {
         val paths = mutableListOf<List<GraphVertex>>()
-        for (grant in outgoing(user, HasTempGrantLabel.label, IamSessionGrantLabel.label)) {
+        val activeGrants = outgoing(user, HasTempGrantLabel.label, IamSessionGrantLabel.label)
+            .filter { grant ->
+                isTemporaryGrantActive(grant.properties[IamSessionGrantLabel.expiresAt.name], evaluatedAt)
+            }
+        for (grant in activeGrants) {
             for (permission in outgoing(grant, TemporaryPermissionLabel.label, IamPermissionLabel.label)) {
                 if (action != null && permission.properties[IamPermissionLabel.action.name] != action) continue
                 matchingResources(permission, resourceId).forEach { resource ->

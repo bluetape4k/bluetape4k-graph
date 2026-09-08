@@ -48,6 +48,8 @@
   ([#633](https://github.com/bluetape4k/bluetape4k-graph/issues/633)).
 - OkIO stream bridge를 닫아도 caller-owned Source/Sink가 유지되도록 하고 출력 close는 flush만 수행한다.
   ([#634](https://github.com/bluetape4k/bluetape4k-graph/issues/634)).
+- IAM temporary grant의 expiresAt을 요청 시각과 비교하고 잘못된 만료 문자열을 거부한다.
+  ([#635](https://github.com/bluetape4k/bluetape4k-graph/issues/635)).
 
 - CSV streaming reader가 record validation을 source 소유권 경계 안에서 수행하도록
   수정했다. validation과 owned source close가 함께 실패해도

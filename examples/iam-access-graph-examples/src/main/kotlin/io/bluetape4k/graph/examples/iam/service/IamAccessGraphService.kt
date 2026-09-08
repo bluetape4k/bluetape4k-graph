@@ -23,6 +23,8 @@ import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.info
 import io.bluetape4k.support.requireNotBlank
 import java.io.Serializable
+import java.time.Clock
+import java.time.Instant
 
 /**
  * IAM user가 resource에 action을 수행할 수 있는지, 어떤 graph path가 이를 grant 또는 block하는지 설명한다.
@@ -60,9 +62,10 @@ data class IamPrivilegeChain(
  * 이 service는 의도적으로 full policy engine이 아니다. identity, group, role, policy, permission,
  * resource, temporary-grant reachability를 backend-independent graph traversal로 보여준다.
  */
-class IamAccessGraphService(
+class IamAccessGraphService @JvmOverloads constructor(
     private val ops: GraphOperations,
     private val graphName: String = "iam_access",
+    private val clock: Clock = Clock.systemUTC(),
 ) {
     companion object: KLogging() {
         private const val EFFECT_ALLOW = "allow"
@@ -242,7 +245,8 @@ class IamAccessGraphService(
             )
         }
 
-        allowPaths(user, resourceId, action).firstOrNull()?.let { path ->
+        val evaluatedAt = clock.instant()
+        allowPaths(user, resourceId, action, evaluatedAt).firstOrNull()?.let { path ->
             return IamAccessExplanation(
                 userId = userId,
                 resourceId = resourceId,
@@ -283,7 +287,8 @@ class IamAccessGraphService(
         userId.requireNotBlank("userId")
         val user = userById(userId) ?: return emptyList()
 
-        return allowPaths(user, resourceId = null, action = null)
+        val evaluatedAt = clock.instant()
+        return allowPaths(user, resourceId = null, action = null, evaluatedAt = evaluatedAt)
             .map { path ->
                 val permission = path.first { it.label == IamPermissionLabel.label }
                 val resource = path.last()
@@ -303,8 +308,13 @@ class IamAccessGraphService(
             }
     }
 
-    private fun allowPaths(user: GraphVertex, resourceId: String?, action: String?): List<List<GraphVertex>> =
-        policyPaths(user, EFFECT_ALLOW, resourceId, action) + temporaryPaths(user, resourceId, action)
+    private fun allowPaths(
+        user: GraphVertex,
+        resourceId: String?,
+        action: String?,
+        evaluatedAt: Instant,
+    ): List<List<GraphVertex>> =
+        policyPaths(user, EFFECT_ALLOW, resourceId, action) + temporaryPaths(user, resourceId, action, evaluatedAt)
 
     private fun denyPaths(user: GraphVertex, resourceId: String, action: String): List<List<GraphVertex>> =
         policyPaths(user, EFFECT_DENY, resourceId, action)
@@ -331,16 +341,23 @@ class IamAccessGraphService(
             }
         }
 
-    private fun temporaryPaths(user: GraphVertex, resourceId: String?, action: String?): List<List<GraphVertex>> =
-        outgoing(user, HasTempGrantLabel.label, IamSessionGrantLabel.label).flatMap { grant ->
-            outgoing(grant, TemporaryPermissionLabel.label, IamPermissionLabel.label)
-                .filter { permission -> action == null || permission.properties[IamPermissionLabel.action.name] == action }
-                .flatMap { permission ->
-                    matchingResources(permission, resourceId).map { resource ->
-                        listOf(user, grant, permission, resource)
+    private fun temporaryPaths(
+        user: GraphVertex,
+        resourceId: String?,
+        action: String?,
+        evaluatedAt: Instant,
+    ): List<List<GraphVertex>> =
+        outgoing(user, HasTempGrantLabel.label, IamSessionGrantLabel.label)
+            .filter { grant -> isTemporaryGrantActive(grant.properties[IamSessionGrantLabel.expiresAt.name], evaluatedAt) }
+            .flatMap { grant ->
+                outgoing(grant, TemporaryPermissionLabel.label, IamPermissionLabel.label)
+                    .filter { permission -> action == null || permission.properties[IamPermissionLabel.action.name] == action }
+                    .flatMap { permission ->
+                        matchingResources(permission, resourceId).map { resource ->
+                            listOf(user, grant, permission, resource)
+                        }
                     }
-                }
-        }
+            }
 
     private fun principalPaths(user: GraphVertex): List<VertexPath> {
         val paths = mutableListOf(VertexPath(user, listOf(user)))
