@@ -10,6 +10,8 @@
 
 ### 추가
 
+- CSV classpath 입력 쌍의 소유권을 관리하는 sync/suspend helper를 추가하고, 8개 예제 loader가 이를 재사용하도록 정리했다 ([#637](https://github.com/bluetape4k/bluetape4k-graph/issues/637)).
+
 - Jackson2·Jackson3 NDJSON importer와 Flow reader에 codec 호출 전 한 줄의
   UTF-16 code unit 수를 제한하는 `NdJsonReadOptions.maxLineChars`를 추가했다.
   기본값은 기존 입력 호환성을 유지하고, 제한을 선택하면 sync, suspend,

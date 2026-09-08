@@ -26,7 +26,7 @@ Add to your `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("io.bluetape4k:graph-io-csv:$version")
+    implementation("io.bluetape4k:bluetape4k-graph-io-csv:$version")
 }
 ```
 
@@ -343,3 +343,19 @@ chunk is yielded.
 the input order. `GraphImportOptions.batchSize` controls backend write flushing only; it does not
 change reader buffering or source close ownership. Each CSV import uses the vertex/edge pair, and
 path or explicitly owned streams are closed by the library while caller-owned streams remain open.
+
+### Classpath CSV import
+
+Use `withClasspathCsvGraphImportSource` or `withClasspathCsvGraphImportSourceSuspending` to own both input streams for the callback lifetime. Resource names are trusted application configuration, are passed unchanged, and are resolved with the context classloader captured at invocation followed by the explicitly supplied fallback classloader. Lookup exceptions propagate; fallback is attempted only for a missing resource.
+
+```kotlin
+val report = withClasspathCsvGraphImportSource(
+    verticesResource = "sample-data/vertices.csv",
+    edgesResource = "sample-data/edges.csv",
+    fallbackClassLoader = MyApplication::class.java.classLoader,
+) { source ->
+    CsvGraphBulkImporter().importGraph(source, operations)
+}
+```
+
+The helper closes edges before vertices, including on callback failure. The suspend helper opens and closes streams on `Dispatchers.IO` and runs the callback in the caller's coroutine context. Consume the source completely inside the callback; do not return the source, a lazy sequence/Flow, or a Deferred that still uses it. Existing example loader APIs and default resource names remain unchanged.
