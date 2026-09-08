@@ -97,6 +97,14 @@ runBlocking {
 driver.close()
 ```
 
+### 순회 `edgeLabel` 검증
+
+`neighbors`, `shortestPath`, `allPaths`의 `edgeLabel`은 Cypher 관계 패턴에
+삽입되므로 `^[A-Za-z_][A-Za-z0-9_]*$`에 맞는 안전한 식별자만 허용합니다.
+`null`은 기존처럼 모든 label을 순회합니다. blank 또는 안전하지 않은 label은
+FalkorDB driver를 호출하기 전에 `IllegalArgumentException`으로 거부합니다.
+동기 API와 코루틴 API는 같은 검증 계약을 사용합니다.
+
 ## 테스트
 
 Testcontainers (`FalkorDBServer`)로 `falkordb/falkordb:v4.20.2` 컨테이너를 자동 실행합니다:

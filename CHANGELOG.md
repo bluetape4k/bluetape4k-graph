@@ -42,6 +42,8 @@
 
 - AGE 자동 설정이 임의 이름의 DataSource를 받고, AGE 전용 Exposed Database를 명시적으로 주입하도록 수정한다.
   ([#632](https://github.com/bluetape4k/bluetape4k-graph/issues/632)).
+- FalkorDB traversal의 edgeLabel을 query 실행 전에 검증하여 sync/suspend의 식별자 우회 경로를 차단한다.
+  ([#631](https://github.com/bluetape4k/bluetape4k-graph/issues/631)).
 
 - CSV streaming reader가 record validation을 source 소유권 경계 안에서 수행하도록
   수정했다. validation과 owned source close가 함께 실패해도

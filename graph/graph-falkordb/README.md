@@ -98,6 +98,15 @@ runBlocking {
 driver.close()
 ```
 
+### Traversal `edgeLabel` validation
+
+`edgeLabel` values in `neighbors`, `shortestPath`, and `allPaths` are inserted
+into Cypher relationship patterns, so these methods accept only safe
+identifiers matching `^[A-Za-z_][A-Za-z0-9_]*$`. A `null` label keeps the
+existing all-label traversal behavior. Blank or unsafe labels are rejected with
+`IllegalArgumentException` before the FalkorDB driver is called. The
+synchronous and coroutine APIs share this validation contract.
+
 ## Testing
 
 Uses Testcontainers (`FalkorDBServer`) to spin up `falkordb/falkordb:v4.20.2`:

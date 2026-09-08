@@ -411,10 +411,10 @@ class FalkorDBGraphSuspendOperations(
     ): Flow<GraphVertex> {
         startId.value.toLongOrNull()
             ?: throw GraphQueryException("FalkorDB requires numeric ID, got: $startId")
-        options.edgeLabel?.requireNotBlank("edgeLabel")
+        val edgeLabel = options.edgeLabel?.requireNotBlank("edgeLabel")?.requireSafeIdentifier("edgeLabel")
 
         val depthStr = if (options.maxDepth == 1) "" else $$"*1..$${options.maxDepth}"
-        val edgePart = if (options.edgeLabel != null) $$":$${options.edgeLabel}$$depthStr" else depthStr
+        val edgePart = if (edgeLabel != null) $$":$${edgeLabel}$$depthStr" else depthStr
         val pattern = when (options.direction) {
             Direction.OUTGOING -> $$"(start)-[$$edgePart]->(neighbor)"
             Direction.INCOMING -> $$"(start)<-[$$edgePart]-(neighbor)"
@@ -434,7 +434,7 @@ class FalkorDBGraphSuspendOperations(
         toId: GraphElementId,
         options: PathOptions,
     ): GraphPath? {
-        options.edgeLabel?.requireNotBlank("edgeLabel")
+        val edgeLabel = options.edgeLabel?.requireNotBlank("edgeLabel")?.requireSafeIdentifier("edgeLabel")
         fromId.value.toLongOrNull()
             ?: throw GraphQueryException("FalkorDB requires numeric ID, got: $fromId")
         toId.value.toLongOrNull()
@@ -447,7 +447,7 @@ class FalkorDBGraphSuspendOperations(
         }
 
         val relPattern =
-            if (options.edgeLabel != null) ":" + options.edgeLabel + "*1.." + options.maxDepth
+            if (edgeLabel != null) ":" + edgeLabel + "*1.." + options.maxDepth
             else "*1.." + options.maxDepth
 
         return queryListIO(
@@ -486,10 +486,10 @@ class FalkorDBGraphSuspendOperations(
             ?: throw GraphQueryException("FalkorDB requires numeric ID, got: $fromId")
         toId.value.toLongOrNull()
             ?: throw GraphQueryException("FalkorDB requires numeric ID, got: $toId")
-        options.edgeLabel?.requireNotBlank("edgeLabel")
+        val edgeLabel = options.edgeLabel?.requireNotBlank("edgeLabel")?.requireSafeIdentifier("edgeLabel")
 
         val relPattern =
-            if (options.edgeLabel != null) $$":$${options.edgeLabel}*1..$${options.maxDepth}"
+            if (edgeLabel != null) $$":$${edgeLabel}*1..$${options.maxDepth}"
             else $$"*1..$${options.maxDepth}"
 
         return flowQuery(
