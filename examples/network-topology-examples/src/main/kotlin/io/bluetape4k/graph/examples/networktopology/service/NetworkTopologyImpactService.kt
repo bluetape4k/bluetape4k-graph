@@ -118,6 +118,9 @@ class NetworkTopologyImpactService(
 
         val source = deviceById(sourceDeviceId) ?: return emptyList()
         val target = deviceById(targetDeviceId) ?: return emptyList()
+        if (!isActiveDevice(source) || !isActiveDevice(target)) {
+            return emptyList()
+        }
         val paths = mutableListOf<List<GraphVertex>>()
         val queue = ArrayDeque<List<GraphVertex>>()
         queue += listOf(source)
@@ -163,7 +166,9 @@ class NetworkTopologyImpactService(
         failedDeviceIds: Set<String> = emptySet(),
         failedLinkIds: Set<String> = emptySet(),
     ): List<GraphVertex>? {
-        if (deviceId(source) in failedDeviceIds || deviceId(target) in failedDeviceIds) {
+        if (!isActiveDevice(source) || !isActiveDevice(target) ||
+            deviceId(source) in failedDeviceIds || deviceId(target) in failedDeviceIds
+        ) {
             return null
         }
         val visited = mutableSetOf(source.id)
@@ -196,7 +201,7 @@ class NetworkTopologyImpactService(
                 val nextId = if (edge.startId == device.id) edge.endId else edge.startId
                 ops.findVertexById(nextId)
             }
-            .filter { it.label == DeviceLabel.label && it.properties[DeviceLabel.status.name] == "active" }
+            .filter(::isActiveDevice)
             .distinctBy { it.id }
 
     private fun activeConnectedEdges(
@@ -234,4 +239,8 @@ class NetworkTopologyImpactService(
 
     private fun serviceId(service: GraphVertex): String =
         service.properties[ServiceLabel.serviceId.name].toString()
+
+    private fun isActiveDevice(device: GraphVertex): Boolean =
+        device.label == DeviceLabel.label &&
+            device.properties[DeviceLabel.status.name] == "active"
 }

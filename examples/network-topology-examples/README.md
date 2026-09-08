@@ -36,6 +36,13 @@ which segments are isolated from the core, and whether redundant route candidate
 | Which segments are isolated from the core? | `isolatedSegments()` |
 | Which redundant paths connect two devices? | `redundantDevicePaths(sourceDeviceId, targetDeviceId)` |
 
+### Active Endpoint Contract
+
+Device routes are returned only when both the source and target devices have `status == "active"` and every traversed
+`CONNECTED_TO` edge also has `status == "active"`. A device listed in `failedDeviceIds` is unavailable for direct and
+service path queries. The same endpoint rule applies to sync and suspend APIs, including service and redundant route
+lookups.
+
 ## Sample Dataset
 
 The module bundles graph-io CSV fixtures under `src/main/resources/sample-data/network-topology/`.
