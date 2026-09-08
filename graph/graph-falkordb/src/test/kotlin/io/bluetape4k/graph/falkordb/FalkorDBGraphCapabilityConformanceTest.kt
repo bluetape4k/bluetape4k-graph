@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.falkordb
 
+import io.bluetape4k.codec.Base58
 import com.falkordb.FalkorDB
 import com.falkordb.Driver
 import io.bluetape4k.graph.conformance.AbstractGraphCapabilityConformanceTest
@@ -7,7 +8,6 @@ import io.bluetape4k.graph.repository.GraphCapability
 import io.bluetape4k.graph.repository.GraphOperations
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
-import java.util.UUID
 
 /** FalkorDB Testcontainers lane에서 transaction 미지원 계약까지 검증한다. */
 class FalkorDBGraphCapabilityConformanceTest : AbstractGraphCapabilityConformanceTest() {
@@ -19,7 +19,7 @@ class FalkorDBGraphCapabilityConformanceTest : AbstractGraphCapabilityConformanc
         get() = delegate
 
     override val graphName: String =
-        "conformance_${UUID.randomUUID().toString().replace("-", "").take(12)}"
+        "conformance_${Base58.randomString(12)}"
 
     override val expectedCapabilities: Set<GraphCapability> = backendCapabilities(transactional = false)
 

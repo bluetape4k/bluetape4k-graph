@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.memgraph
 
+import io.bluetape4k.codec.Base58
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.graph.model.GraphConstraintType
@@ -17,7 +18,6 @@ import org.neo4j.driver.AuthTokens
 import org.neo4j.driver.Driver
 import org.neo4j.driver.GraphDatabase
 import org.neo4j.driver.SessionConfig
-import java.util.UUID
 
 class MemgraphGraphSchemaManagerTest {
 
@@ -96,5 +96,5 @@ class MemgraphGraphSchemaManagerTest {
     }
 
     private fun uniqueLabel(): String =
-        "SchemaPerson${UUID.randomUUID().toString().replace("-", "").take(10)}"
+        "SchemaPerson${Base58.randomString(10)}"
 }
