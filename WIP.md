@@ -20,6 +20,9 @@ CSV None 모드에서 vertex/edge property를 header, spool 및 출력 값에서
 ### #641 후속 #634
 
 OkIO stream bridge를 닫아도 caller-owned Source/Sink가 유지되도록 하고 출력 close는 flush만 수행한다. 이슈별 브랜치에서 PR을 준비하며, 전체 PR 검증 후 머지를 모아서 진행한다.
+### #641 후속 #635
+
+IAM temporary grant의 expiresAt을 요청 시각과 비교하고 잘못된 만료 문자열을 거부한다. 개별 PR을 준비하며 전체 검증 후 머지를 모아서 진행한다.
 
 `1.0.0` artifact와 GitHub Release 배포를 완료했다. `develop`은 `1.1.0` minor 개발선을 사용한다. 공개 Graph manual은 `1.0.0` tag source로 갱신한다.
 

@@ -12,6 +12,10 @@ Engineering 사용자는 group을 통해 staging deploy 권한을 받고, nested
 권한까지 상속받습니다. Auditor는 direct read-only role을 받고, operations 사용자는 임시 break-glass grant를 받으며,
 contractor는 deny policy로 차단됩니다.
 
+Temporary grant는 service의 `Clock`을 기준으로 평가합니다. ISO-8601 `expiresAt`이 평가 시각보다 엄격하게 뒤에 있을
+때만 활성으로 취급하며, 누락되거나 잘못된 값은 fail-closed로 거부하고 explicit deny policy를 우선합니다. 테스트나
+walkthrough에서 평가 시각을 고정하려면 `Clock.fixed(...)`을 사용합니다.
+
 ## 아키텍처
 
 ![iam access graph examples architecture](../../docs/images/readme-diagrams/examples-iam-access-graph-examples-architecture-01.png)
@@ -61,7 +65,7 @@ val denied = service.explainAccess("eve", "prod-db", "delete")
 | `explainAccess("eve", "prod-db", "delete")` | `deny-prod-delete-policy`로 deny됩니다. |
 | `explainAccess("bob", "prod-db", "delete")` | matching grant path가 없습니다. |
 | `riskyPrivilegeChains("alice")` | `engineering -> platform-admins -> prod-admin-role` nested chain입니다. |
-| `explainAccess("carol", "prod-db", "read")` | temporary `break-glass-1001` path입니다. |
+| `explainAccess("carol", "prod-db", "read")` | `2026-06-02T00:00:00Z` 이전에는 temporary `break-glass-1001` path이고, 이후에는 matching grant path가 없습니다. |
 
 ## 테스트 실행
 

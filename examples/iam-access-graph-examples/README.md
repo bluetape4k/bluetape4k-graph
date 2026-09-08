@@ -12,6 +12,10 @@ An engineering user inherits staging deploy access through a group, then inherit
 nested privileged group. An auditor receives a direct read-only role, an operations user receives a temporary break-glass
 grant, and a contractor is blocked by a deny policy.
 
+Temporary grants are evaluated against the service's `Clock`. An ISO-8601 `expiresAt` is active only while it is strictly
+after the evaluation instant; missing or malformed values fail closed, and an explicit deny policy takes precedence. Use
+`Clock.fixed(...)` when a deterministic evaluation instant is needed in tests or walkthroughs.
+
 ## Architecture
 
 ![iam access graph examples architecture](../../docs/images/readme-diagrams/examples-iam-access-graph-examples-architecture-01.png)
@@ -61,7 +65,7 @@ val denied = service.explainAccess("eve", "prod-db", "delete")
 | `explainAccess("eve", "prod-db", "delete")` | Denied by `deny-prod-delete-policy`. |
 | `explainAccess("bob", "prod-db", "delete")` | No matching grant path. |
 | `riskyPrivilegeChains("alice")` | Nested `engineering -> platform-admins -> prod-admin-role` chain. |
-| `explainAccess("carol", "prod-db", "read")` | Temporary `break-glass-1001` path. |
+| `explainAccess("carol", "prod-db", "read")` | Temporary `break-glass-1001` path when evaluated before `2026-06-02T00:00:00Z`; otherwise no matching grant path. |
 
 ## Running Tests
 
