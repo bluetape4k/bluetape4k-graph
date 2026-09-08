@@ -33,6 +33,9 @@ network topology 경로 검색에서 비활성 source와 destination 및 비활�
 ### #641 후속 #639
 
 같은 MeterRegistry에 등록한 여러 listener가 graph.io.active 상태를 공유하도록 수정한다. 이슈별 브랜치에서 PR을 준비하며, 전체 PR 검증 후 머지를 모아서 진행한다.
+### #641 후속 #640
+
+TinkerGraph transaction 중 외부 mutation을 명시적으로 거부하여 rollback의 외부 변경 손실을 차단한다. 개별 PR을 준비하며 전체 검증 후 머지를 모아서 진행한다.
 
 `1.0.0` artifact와 GitHub Release 배포를 완료했다. `develop`은 `1.1.0` minor 개발선을 사용한다. 공개 Graph manual은 `1.0.0` tag source로 갱신한다.
 

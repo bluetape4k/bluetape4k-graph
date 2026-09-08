@@ -89,6 +89,8 @@ private fun closeChunkSequence(
  * named graph catalog는 제공하지 않으므로 `createGraph(name)`은 logical current name을
  * 선택한다. `dropGraph(name)`은 선택된 이름과 일치할 때만 현재 graph를 비우며, 다른 이름은
  * [GraphQueryException]으로 거부한다.
+ * transaction이 활성화된 동안 transaction block 밖의 graph/session/schema mutation은
+ * [IllegalStateException]으로 거부한다. transaction scope 안의 mutation은 suspend 전환 후에도 허용한다.
  *
  * ```kotlin
  * val ops = TinkerGraphSuspendOperations()
@@ -138,25 +140,34 @@ class TinkerGraphSuspendOperations(
 
     @Suppress("TooGenericExceptionCaught")
     override suspend fun <T> suspendTransaction(block: suspend GraphSuspendTransactionScope.() -> T): T {
+        if (delegate.isTransactionContext()) {
+            return withContext(delegate.transactionContextElement() + Dispatchers.IO) {
+                val result = delegate.transactionScope().asSuspendTransactionScope().block()
+                materializeSuspendTransactionResult(result)
+            }
+        }
+
         acquireTransactionGate()
         return try {
-            val snapshot = withContext(Dispatchers.IO) {
-                delegate.createTransactionSnapshot()
-            }
-            try {
-                withContext(Dispatchers.IO) {
-                    val result = delegate.transactionScope().asSuspendTransactionScope().block()
-                    materializeSuspendTransactionResult(result)
-                }
-            } catch (e: Throwable) {
+            withContext(Dispatchers.IO) {
+                val snapshot = delegate.beginTransaction()
                 try {
-                    withContext(NonCancellable + Dispatchers.IO) {
-                        delegate.restoreTransactionSnapshot(snapshot)
+                    withContext(delegate.transactionContextElement() + Dispatchers.IO) {
+                        val result = delegate.transactionScope().asSuspendTransactionScope().block()
+                        materializeSuspendTransactionResult(result)
                     }
-                } catch (restoreFailure: Throwable) {
-                    e.addSuppressed(restoreFailure)
+                } catch (e: Throwable) {
+                    try {
+                        withContext(NonCancellable + Dispatchers.IO) {
+                            delegate.restoreTransactionSnapshot(snapshot)
+                        }
+                    } catch (restoreFailure: Throwable) {
+                        e.addSuppressed(restoreFailure)
+                    }
+                    throw e
+                } finally {
+                    delegate.endTransaction()
                 }
-                throw e
             }
         } finally {
             delegate.releaseTransactionGate()

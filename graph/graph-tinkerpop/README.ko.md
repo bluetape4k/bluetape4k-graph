@@ -91,6 +91,10 @@ val indexes = schema.listIndexes()
 
 TinkerGraph backend는 Gremlin get-or-create/update 방식의 `GraphMergeOperations`와 in-memory `Transaction DSL`을
 제공한다. 외부 DB transaction은 없지만, 테스트와 local prototype에서 동일한 API surface를 검증할 수 있다.
+transaction이 활성화된 동안 transaction block 밖에서 graph, session, schema mutation을 호출하면
+`IllegalStateException`이 발생한다. transaction scope를 통한 mutation은 suspend 전환 중에도 허용되며,
+실패한 transaction은 graph snapshot을 복원하고 동시 외부 write를 받아들이지 않는다. 외부 mutation은
+transaction이 끝난 뒤 다시 시도한다.
 
 ```kotlin
 import io.bluetape4k.graph.repository.mergeVertex

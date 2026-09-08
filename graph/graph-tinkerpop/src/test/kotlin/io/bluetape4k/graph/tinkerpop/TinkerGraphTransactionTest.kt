@@ -81,4 +81,16 @@ class TinkerGraphTransactionTest {
 
         ops.findVertexById("Person", vertexId)?.properties?.get("name") shouldBeEqualTo "Alice"
     }
+
+    @Test
+    fun `nested transaction reuses the active transaction`() {
+        ops.transaction {
+            createVertex("Person", mapOf("name" to "Outer"))
+            ops.transaction {
+                createVertex("Person", mapOf("name" to "Inner"))
+            }
+        }
+
+        ops.findVerticesByLabel("Person").shouldHaveSize(2)
+    }
 }

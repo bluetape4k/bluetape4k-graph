@@ -94,6 +94,10 @@ schema.listIndexes()
 
 TinkerGraph supports `GraphMergeOperations` with Gremlin get-or-create/update semantics and an in-memory
 `Transaction DSL`. This keeps tests and local prototypes on the same API surface as server-backed modules.
+While a transaction is active, graph, session, and schema mutations issued outside its transaction block fail with
+`IllegalStateException`. Mutations through the transaction scope remain valid across suspension, and a failed
+transaction restores the graph snapshot without accepting concurrent external writes. Retry external mutations after
+the transaction completes.
 
 ```kotlin
 import io.bluetape4k.graph.repository.mergeVertex

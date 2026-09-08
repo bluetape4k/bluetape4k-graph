@@ -14,29 +14,41 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class TinkerGraphSchemaManager: GraphSchemaManager {
 
+    internal var mutationLock: ((() -> Unit) -> Unit)? = null
+
     private val indexes = ConcurrentHashMap.newKeySet<GraphIndex>()
 
     override fun createIndex(label: String, property: String) {
         val (safeLabel, safeProperty) = GraphSchemaNames.validateLabelAndProperty(label, property)
-        indexes += GraphIndex(
-            name = GraphSchemaNames.indexName(safeLabel, safeProperty),
-            label = safeLabel,
-            property = safeProperty,
-        )
+        mutate {
+            indexes += GraphIndex(
+                name = GraphSchemaNames.indexName(safeLabel, safeProperty),
+                label = safeLabel,
+                property = safeProperty,
+            )
+        }
     }
 
     override fun createUniqueConstraint(label: String, property: String) {
         GraphSchemaNames.validateLabelAndProperty(label, property)
-        throw UnsupportedOperationException("TinkerGraph does not enforce unique constraints.")
+        mutate {
+            throw UnsupportedOperationException("TinkerGraph does not enforce unique constraints.")
+        }
     }
 
     override fun dropIndex(label: String, property: String) {
         val (safeLabel, safeProperty) = GraphSchemaNames.validateLabelAndProperty(label, property)
-        indexes.removeIf { it.label == safeLabel && it.property == safeProperty }
+        mutate {
+            indexes.removeIf { it.label == safeLabel && it.property == safeProperty }
+        }
     }
 
     override fun listIndexes(): List<GraphIndex> =
         indexes.sortedWith(compareBy(GraphIndex::label, GraphIndex::property, GraphIndex::name))
 
     override fun listConstraints(): List<GraphConstraint> = emptyList()
+
+    private fun mutate(action: () -> Unit) {
+        mutationLock?.invoke(action) ?: action()
+    }
 }
