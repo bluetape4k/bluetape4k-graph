@@ -30,6 +30,9 @@ network topology 경로 검색에서 비활성 source와 destination 및 비활�
 ### #641 후속 #638
 
 테스트 graph 이름의 UUID 가공 21곳을 기존 Base58.randomString으로 통일하고 prefix와 길이를 유지한다. 이슈별 브랜치에서 PR을 준비하며, 전체 PR 검증 후 머지를 모아서 진행한다.
+### #641 후속 #639
+
+같은 MeterRegistry에 등록한 여러 listener가 graph.io.active 상태를 공유하도록 수정한다. 이슈별 브랜치에서 PR을 준비하며, 전체 PR 검증 후 머지를 모아서 진행한다.
 
 `1.0.0` artifact와 GitHub Release 배포를 완료했다. `develop`은 `1.1.0` minor 개발선을 사용한다. 공개 Graph manual은 `1.0.0` tag source로 갱신한다.
 

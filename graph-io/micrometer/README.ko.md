@@ -30,3 +30,7 @@ bridge가 생성하는 meter는 다음과 같습니다.
 
 tag는 `Locale.ROOT`로 소문자화한 고정 enum 값만 사용합니다. dataset 경로,
 record ID, run ID, exception message는 기록하지 않습니다.
+
+## 여러 listener의 활성 작업 수
+
+같은 `MeterRegistry`를 사용하는 listener는 operation/format별 `graph.io.active` 값을 공유합니다. 서로 다른 registry의 값은 분리되며 listener별 tag를 추가하지 않습니다.
