@@ -302,3 +302,7 @@ read-only `graph` Actuator endpoint가 등록됩니다. 기본값은 비활성�
 `graph`와 `database`는 backend별 설정 property에서 읽으며, `schema`는 실제
 `GraphOperations.capabilities()` 결과를, `graphIo`는 operations bean과 graph-io
 계약 classpath가 모두 존재할 때만 `true`로 보고합니다.
+
+## AGE DataSource와 Database 선택
+
+DataSource bean 이름은 자유롭게 지정할 수 있습니다. 자동 설정은 `ageExposedDatabase` bean을 sync/suspend operations에 주입하므로 다른 용도의 Exposed `Database`와 함께 등록할 수 있습니다.

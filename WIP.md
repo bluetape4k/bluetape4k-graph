@@ -8,6 +8,10 @@
 
 ## 현재 상태
 
+### #641 후속 #632
+
+AGE 자동 설정이 임의 이름의 DataSource를 받고, AGE 전용 Exposed Database를 명시적으로 주입하도록 수정한다. 이슈별 브랜치에서 PR을 준비하며, 전체 PR 검증 후 머지를 모아서 진행한다.
+
 `1.0.0` artifact와 GitHub Release 배포를 완료했다. `develop`은 `1.1.0` minor 개발선을 사용한다. 공개 Graph manual은 `1.0.0` tag source로 갱신한다.
 
 `1.1.0` milestone의 #616, #613, #612는 stacked PR #619, #620, #621로

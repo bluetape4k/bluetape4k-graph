@@ -307,3 +307,7 @@ Spring Boot 4 splits several previously bundled modules. Add them explicitly if 
 The `HealthIndicator` package also changed:
 - Boot 3: `org.springframework.boot.actuate.health.HealthIndicator`
 - Boot 4: `org.springframework.boot.health.contributor.HealthIndicator`
+
+## AGE DataSource and Database selection
+
+The DataSource bean may use any name. Auto-configuration explicitly injects `ageExposedDatabase` into both synchronous and suspend operations, allowing unrelated Exposed Database beans to coexist.
