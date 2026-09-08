@@ -266,6 +266,9 @@ val options = CsvGraphIoOptions(
 
 #### None
 
+`None` writes only structural columns (`id`, `label`, and edge `from`/`to`). Properties are also excluded from the temporary spool; property keys matching structural names do not cause collisions.
+
+
 Exclude properties entirely:
 
 ```kotlin

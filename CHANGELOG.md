@@ -44,6 +44,8 @@
   ([#632](https://github.com/bluetape4k/bluetape4k-graph/issues/632)).
 - FalkorDB traversal의 edgeLabel을 query 실행 전에 검증하여 sync/suspend의 식별자 우회 경로를 차단한다.
   ([#631](https://github.com/bluetape4k/bluetape4k-graph/issues/631)).
+- CSV None 모드에서 vertex/edge property를 header, spool 및 출력 값에서 제외한다.
+  ([#633](https://github.com/bluetape4k/bluetape4k-graph/issues/633)).
 
 - CSV streaming reader가 record validation을 source 소유권 경계 안에서 수행하도록
   수정했다. validation과 owned source close가 함께 실패해도

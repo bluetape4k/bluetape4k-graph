@@ -333,3 +333,5 @@ boundedness를 주장하지는 않습니다.
 `GraphImportOptions.batchSize`는 백엔드 쓰기 플러시만 제어하고 reader 버퍼링이나 source close 소유권은 바꾸지
 않습니다. CSV import는 정점/간선 파일 쌍을 사용하며, path 또는 명시적으로 소유권을 넘긴 stream은 라이브러리가
 닫고 호출자 소유 stream은 열린 상태로 둡니다.
+
+`None`은 구조 컬럼(`id`, `label`, 간선의 `from`/`to`)만 출력한다. 임시 spool에도 속성을 기록하지 않으며, 구조 컬럼과 같은 속성 이름이 있어도 충돌하지 않는다.

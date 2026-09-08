@@ -35,6 +35,28 @@ class CsvRoundTripTest {
     companion object: KLogging()
 
     @Test
+    fun `None export는 정점과 간선의 속성을 출력하지 않는다`(@TempDir dir: Path) {
+        TinkerGraphOperations().use { source ->
+            val alice = source.createVertex("Person", mapOf("name" to "secret-alice"))
+            val bob = source.createVertex("Person", mapOf("name" to "secret-bob"))
+            source.createEdge(alice.id, bob.id, "KNOWS", mapOf("secret" to "edge-value"))
+            val vertices = dir.resolve("vertices.csv")
+            val edges = dir.resolve("edges.csv")
+            CsvGraphBulkExporter().exportGraph(
+                CsvGraphExportSink(GraphExportSink.PathSink(vertices), GraphExportSink.PathSink(edges)),
+                source,
+                GraphExportOptions(vertexLabels = setOf("Person"), edgeLabels = setOf("KNOWS")),
+                csvOptions = CsvGraphIoOptions(propertyMode = CsvPropertyMode.None),
+            ).status shouldBeEqualTo GraphIoStatus.COMPLETED
+
+            Files.readString(vertices).lineSequence().first() shouldBeEqualTo "id,label"
+            Files.readString(edges).lineSequence().first() shouldBeEqualTo "id,label,from,to"
+            Files.readString(vertices) shouldNotContain "secret"
+            Files.readString(edges) shouldNotContain "edge-value"
+        }
+    }
+
+    @Test
     fun `round trip two vertices and one edge`(@TempDir dir: Path) {
         val vOut = dir.resolve("v.csv")
         val eOut = dir.resolve("e.csv")

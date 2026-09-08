@@ -1,6 +1,7 @@
 package io.bluetape4k.graph.io.csv.internal
 
 import io.bluetape4k.graph.io.csv.CsvPropertyMode
+import io.bluetape4k.graph.io.model.GraphIoEdgeRecord
 import io.bluetape4k.graph.io.model.GraphIoVertexRecord
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
@@ -22,15 +23,16 @@ class CsvRecordCodecTest {
     }
 
     @Test
-    fun `prefixed column collision with reserved id fails`() {
-        // prefix "x_" with property key "id" -> column "x_id", no collision.
-        // Use CsvPropertyMode.None so the property key "id" maps directly to column "id" causing collision.
+    fun `None은 예약 이름을 포함한 모든 속성을 헤더에서 제외한다`() {
         val codec = CsvRecordCodec(CsvPropertyMode.None)
-        val recs = listOf(GraphIoVertexRecord("v1", "L", mapOf("id" to "x")))
+        val properties = mapOf("id" to "secret-id", "name" to "secret-name")
 
-        assertFailsWith<IllegalStateException> {
-            codec.unionVertexHeader(recs)
-        }
+        codec.unionVertexHeader(listOf(GraphIoVertexRecord("v1", "L", properties))) shouldBeEqualTo
+            listOf("id", "label")
+        codec.unionEdgeHeader(listOf(GraphIoEdgeRecord("e1", "E", "v1", "v2", properties))) shouldBeEqualTo
+            listOf("id", "label", "from", "to")
+        codec.prepareForSpool(properties) shouldBeEqualTo emptyMap()
+        codec.encodeProperty("name", properties) shouldBeEqualTo ""
     }
 
     @Test
