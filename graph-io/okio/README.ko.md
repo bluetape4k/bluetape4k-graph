@@ -360,3 +360,7 @@ dependencies {
 `PathSource`와 `ownsSource`/`ownsStream=true` source는 라이브러리가 닫고 호출자 소유 source는 열린 상태로 둡니다.
 CSV reader dispatch는 `{stem}_vertices.csv`와 `{stem}_edges.csv` 파일 쌍이 필요하므로 stream-backed CSV는 명시적으로
 지원하지 않습니다.
+
+## Stream bridge의 소유권
+
+`toInputStream()`과 `toOutputStream()`은 caller-owned Source/Sink를 닫지 않습니다. 반환된 output stream의 `close()`는 flush만 수행합니다. Source/Sink의 최종 종료는 호출자가 담당하며, 소유권 이전이 필요한 경우 명시적인 closing adapter를 사용합니다.

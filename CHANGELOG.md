@@ -46,6 +46,8 @@
   ([#631](https://github.com/bluetape4k/bluetape4k-graph/issues/631)).
 - CSV None 모드에서 vertex/edge property를 header, spool 및 출력 값에서 제외한다.
   ([#633](https://github.com/bluetape4k/bluetape4k-graph/issues/633)).
+- OkIO stream bridge를 닫아도 caller-owned Source/Sink가 유지되도록 하고 출력 close는 flush만 수행한다.
+  ([#634](https://github.com/bluetape4k/bluetape4k-graph/issues/634)).
 
 - CSV streaming reader가 record validation을 source 소유권 경계 안에서 수행하도록
   수정했다. validation과 owned source close가 함께 실패해도

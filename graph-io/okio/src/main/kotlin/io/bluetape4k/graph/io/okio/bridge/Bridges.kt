@@ -5,6 +5,8 @@ import io.bluetape4k.graph.io.okio.OkioGraphExportSink
 import io.bluetape4k.graph.io.okio.OkioGraphImportSource
 import okio.BufferedSink
 import okio.BufferedSource
+import java.io.FilterInputStream
+import java.io.FilterOutputStream
 import java.io.InputStream
 import java.io.OutputStream
 import java.io.Reader
@@ -16,14 +18,19 @@ import java.nio.charset.Charset
  *
  * 하위 [BufferedSource]는 닫지 않는다 (호출자 소유).
  */
-fun BufferedSource.toInputStream(): InputStream = inputStream()
+fun BufferedSource.toInputStream(): InputStream = object : FilterInputStream(inputStream()) {
+    override fun close() = Unit
+}
 
 /**
  * OkIO [BufferedSink]를 [OutputStream]으로 변환한다.
  *
- * 하위 [BufferedSink]는 닫지 않는다 (호출자 소유).
+ * 반환된 스트림을 닫으면 버퍼를 flush하지만 하위 [BufferedSink]는 닫지 않는다 (호출자 소유).
  */
-fun BufferedSink.toOutputStream(): OutputStream = outputStream()
+fun BufferedSink.toOutputStream(): OutputStream = object : FilterOutputStream(outputStream()) {
+    override fun write(bytes: ByteArray, offset: Int, length: Int) = out.write(bytes, offset, length)
+    override fun close() = flush()
+}
 
 /**
  * OkIO [BufferedSink]를 **소유권 이전** [OutputStream]으로 변환한다.
