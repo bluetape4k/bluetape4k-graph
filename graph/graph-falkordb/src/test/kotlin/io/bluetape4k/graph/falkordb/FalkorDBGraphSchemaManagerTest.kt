@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.falkordb
 
+import io.bluetape4k.codec.Base58
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
@@ -11,7 +12,6 @@ import kotlinx.coroutines.CancellationException
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.util.UUID
 
 class FalkorDBGraphSchemaManagerTest: AbstractFalkorDBTest() {
 
@@ -74,5 +74,5 @@ class FalkorDBGraphSchemaManagerTest: AbstractFalkorDBTest() {
     }
 
     private fun uniqueLabel(): String =
-        "SchemaPerson${UUID.randomUUID().toString().replace("-", "").take(10)}"
+        "SchemaPerson${Base58.randomString(10)}"
 }

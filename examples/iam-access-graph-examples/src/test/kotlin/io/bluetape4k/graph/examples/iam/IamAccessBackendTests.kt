@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.examples.iam
 
+import io.bluetape4k.codec.Base58
 import com.falkordb.FalkorDB
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
@@ -26,7 +27,6 @@ import org.junit.jupiter.api.BeforeAll
 import org.neo4j.driver.AuthTokens
 import org.neo4j.driver.Driver
 import org.neo4j.driver.GraphDatabase
-import java.util.UUID
 
 class TinkerGraphIamAccessGraphTest: AbstractIamAccessGraphTest() {
     override val ops = TinkerGraphOperations()
@@ -145,7 +145,7 @@ class AgeIamAccessGraphSuspendTest: AbstractIamAccessGraphSuspendTest() {
 class FalkorDBIamAccessGraphTest: AbstractIamAccessGraphTest() {
     private lateinit var driver: com.falkordb.Driver
     override lateinit var ops: FalkorDBGraphOperations
-    override val graphName: String = "iam_access_${UUID.randomUUID().toString().replace("-", "").take(8)}"
+    override val graphName: String = "iam_access_${Base58.randomString(8)}"
 
     @BeforeAll
     fun startServer() {
@@ -164,7 +164,7 @@ class FalkorDBIamAccessGraphTest: AbstractIamAccessGraphTest() {
 class FalkorDBIamAccessGraphSuspendTest: AbstractIamAccessGraphSuspendTest() {
     private lateinit var driver: com.falkordb.Driver
     override lateinit var ops: FalkorDBGraphSuspendOperations
-    override val graphName: String = "iam_access_${UUID.randomUUID().toString().replace("-", "").take(8)}"
+    override val graphName: String = "iam_access_${Base58.randomString(8)}"
 
     @BeforeAll
     fun startServer() {

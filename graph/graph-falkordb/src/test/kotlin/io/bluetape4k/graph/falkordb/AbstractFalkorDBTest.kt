@@ -1,16 +1,16 @@
 package io.bluetape4k.graph.falkordb
 
+import io.bluetape4k.codec.Base58
 import com.falkordb.FalkorDB
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
-import java.util.UUID
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AbstractFalkorDBTest {
 
     protected lateinit var driver: com.falkordb.Driver
-    protected val graphName = "test_${UUID.randomUUID().toString().replace("-", "").take(12)}"
+    protected val graphName = "test_${Base58.randomString(12)}"
 
     @BeforeAll
     open fun setupAll() {

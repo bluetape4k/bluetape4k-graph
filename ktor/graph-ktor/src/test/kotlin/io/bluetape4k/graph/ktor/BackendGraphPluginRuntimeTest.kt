@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.ktor
 
+import io.bluetape4k.codec.Base58
 import com.falkordb.FalkorDB
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
@@ -25,7 +26,6 @@ import org.jetbrains.exposed.v1.jdbc.Database
 import org.junit.jupiter.api.Test
 import org.neo4j.driver.AuthTokens
 import org.neo4j.driver.GraphDatabase
-import java.util.UUID
 
 class BackendGraphPluginRuntimeTest {
 
@@ -194,5 +194,5 @@ class BackendGraphPluginRuntimeTest {
         "KtorCity${randomId()}"
 
     private fun randomId(): String =
-        UUID.randomUUID().toString().replace("-", "").take(12)
+        Base58.randomString(12)
 }

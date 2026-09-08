@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.neo4j
 
+import io.bluetape4k.codec.Base58
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldBeEqualTo
@@ -16,7 +17,6 @@ import org.junit.jupiter.api.Test
 import org.neo4j.driver.AuthTokens
 import org.neo4j.driver.Driver
 import org.neo4j.driver.GraphDatabase
-import java.util.UUID
 
 class Neo4jGraphSchemaManagerTest {
 
@@ -87,5 +87,5 @@ class Neo4jGraphSchemaManagerTest {
     }
 
     private fun uniqueLabel(): String =
-        "SchemaPerson${UUID.randomUUID().toString().replace("-", "").take(10)}"
+        "SchemaPerson${Base58.randomString(10)}"
 }

@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.spring.boot.autoconfigure
 
+import io.bluetape4k.codec.Base58
 import com.falkordb.Driver
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldNotBeNull
@@ -20,7 +21,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
-import java.util.UUID
 
 @SpringBootTest(
     classes = [FalkorDBSpringBootIntegrationTest.TestApp::class],
@@ -32,7 +32,7 @@ class FalkorDBSpringBootIntegrationTest {
 
     companion object {
         private val server = FalkorDBServer.Launcher.falkordb
-        private val graphName = "spring_boot_${UUID.randomUUID().toString().replace("-", "").take(12)}"
+        private val graphName = "spring_boot_${Base58.randomString(12)}"
 
         @JvmStatic
         @DynamicPropertySource

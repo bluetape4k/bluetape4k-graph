@@ -20,6 +20,9 @@
 
 ### 변경
 
+- 테스트 graph 이름의 UUID 가공 21곳을 기존 Base58.randomString으로 통일하고 prefix와 길이를 유지한다.
+  ([#638](https://github.com/bluetape4k/bluetape4k-graph/issues/638)).
+
 - `1.0.0` 정식 배포 후 다음 minor 개발선을 `1.1.0-SNAPSHOT`으로 열었다.
 - canonical/default/release/SNAPSHOT branch를 `develop`으로 통일하고, 장기 분기된
   `main`은 신규 변경을 받지 않는 동결 이력 기준점으로 정렬했다. 과거 tree를
