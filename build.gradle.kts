@@ -116,7 +116,7 @@ val buildToolSecurityVersions = mapOf(
     "com.fasterxml.jackson.core:jackson-databind" to bt4kVersion("jackson2"),
     "commons-beanutils:commons-beanutils" to bt4kLibraryVersion("commons-beanutils"),
     "org.apache.commons:commons-lang3" to bt4kVersion("commons-lang3"),
-    "org.jsoup:jsoup" to libsVersion("jsoup"),
+    "org.jsoup:jsoup" to bt4kVersion("jsoup"),
     "tools.jackson.core:jackson-core" to bt4kVersion("jackson3"),
     "tools.jackson.core:jackson-databind" to bt4kVersion("jackson3"),
 )
