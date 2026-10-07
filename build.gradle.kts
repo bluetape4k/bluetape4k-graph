@@ -1,4 +1,5 @@
 import dev.detekt.gradle.DetektCreateBaselineTask
+import dev.detekt.gradle.plugin.getSupportedKotlinVersion
 import groovy.json.JsonOutput
 import io.bluetape4k.gradle.applyBluetape4kPomMetadata
 import io.bluetape4k.gradle.centralSnapshotsRepository
@@ -107,8 +108,6 @@ fun libsVersion(alias: String): String {
         .ifBlank { version.preferredVersion }
         .ifBlank { version.strictVersion }
 }
-val detektSupportedKotlinVersion = bt4kVersion("kotlin")
-
 // buildscript와 Dokka 같은 build-tool configuration은 publication dependency management의 적용 대상이 아닙니다.
 // 실제로 해석되는 모든 project configuration에 검토한 security floor를 적용합니다.
 val buildToolSecurityVersions = mapOf(
@@ -231,8 +230,8 @@ subprojects {
         configurations.named("detekt") {
             resolutionStrategy.eachDependency {
                 if (requested.group == "org.jetbrains.kotlin") {
-                    useVersion(detektSupportedKotlinVersion)
-                    because("detekt and Kotlin compiler artifacts must use the centrally governed Kotlin version")
+                    useVersion(getSupportedKotlinVersion())
+                    because("Detekt must run with the Kotlin compiler version it was built against")
                 }
             }
         }
