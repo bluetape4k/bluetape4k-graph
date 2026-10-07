@@ -131,6 +131,35 @@ class PublishingSigningSupportTest {
     }
 
     @Test
+    fun `normalizes identical managed entries when repeated child values are reordered`() {
+        val pom = Node(null, "project")
+        val dependencyManagement = Node(pom, "dependencyManagement")
+        val dependencies = Node(dependencyManagement, "dependencies")
+        listOf(
+            listOf("first", "second"),
+            listOf("second", "first"),
+        ).forEach { exclusionOrder ->
+            val dependency = Node(dependencies, "dependency")
+            Node(dependency, "groupId", "io.example")
+            Node(dependency, "artifactId", "example-bom")
+            Node(dependency, "version", "1.0.0")
+            val exclusions = Node(dependency, "exclusions")
+            exclusionOrder.forEach { artifactId ->
+                val exclusion = Node(exclusions, "exclusion")
+                Node(exclusion, "groupId", "io.example")
+                Node(exclusion, "artifactId", artifactId)
+            }
+        }
+
+        normalizeMavenPomDependencyManagement(pom)
+
+        val normalizedDependencies = dependencies.children()
+            .filterIsInstance<Node>()
+            .filter { it.name() == "dependency" }
+        assertEquals(1, normalizedDependencies.size)
+    }
+
+    @Test
     fun `fails when dependencyManagement entries share a coordinate but differ`() {
         val pom = pomWithManagedDependencies(
             groupId = "io.netty",

@@ -163,7 +163,7 @@ private fun nodeFingerprint(node: Node): String {
     return listOf(
         node.name().toString(),
         node.attributes(),
-        children.sortedBy { it.name().toString() }.joinToString(";") { nodeFingerprint(it) },
+        children.sortedBy { nodeFingerprint(it) }.joinToString(";") { nodeFingerprint(it) },
     ).joinToString("|")
 }
 
@@ -247,7 +247,7 @@ private fun elementFingerprint(element: Element): String {
     return listOf(
         elementLocalName(element),
         element.attributes.asMap(),
-        children.sortedBy { elementLocalName(it) }.joinToString(";") { elementFingerprint(it) },
+        children.sortedBy { elementFingerprint(it) }.joinToString(";") { elementFingerprint(it) },
     ).joinToString("|")
 }
 
