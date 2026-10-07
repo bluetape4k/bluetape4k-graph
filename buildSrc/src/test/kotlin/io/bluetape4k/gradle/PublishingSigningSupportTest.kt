@@ -190,6 +190,23 @@ class PublishingSigningSupportTest {
     }
 
     @Test
+    fun `GenerateMavenPom actions remove identical managed entries when XML child values are reordered`() {
+        val (task, pomFile) = generatedPomTask(
+            groupId = "io.example",
+            artifactId = "example-bom",
+            versions = listOf("1.0.0", "1.0.0"),
+            exclusionOrders = listOf(
+                listOf("first", "second"),
+                listOf("second", "first"),
+            ),
+        )
+
+        task.actions.forEach { action -> action.execute(task) }
+
+        assertEquals(1, managedDependencyCount(pomFile, "io.example", "example-bom"))
+    }
+
+    @Test
     fun `GenerateMavenPom actions reject conflicting managed entries`() {
         val (task, _) = generatedPomTask(
             groupId = "io.netty",
@@ -212,6 +229,7 @@ class PublishingSigningSupportTest {
         versions: List<String>,
         type: String? = null,
         scope: String? = null,
+        exclusionOrders: List<List<String>> = emptyList(),
     ): Pair<GenerateMavenPom, File> {
         val project = ProjectBuilder.builder().build()
         project.pluginManager.apply("maven-publish")
@@ -224,13 +242,21 @@ class PublishingSigningSupportTest {
         publication.pom.withXml {
             val dependencyManagement = asNode().appendNode("dependencyManagement") as Node
             val dependencies = dependencyManagement.appendNode("dependencies") as Node
-            versions.forEach { version ->
+            versions.forEachIndexed { index, version ->
                 val dependency = dependencies.appendNode("dependency") as Node
                 dependency.appendNode("groupId", groupId)
                 dependency.appendNode("artifactId", artifactId)
                 dependency.appendNode("version", version)
                 type?.let { dependency.appendNode("type", it) }
                 scope?.let { dependency.appendNode("scope", it) }
+                exclusionOrders.getOrNull(index)?.let { artifactIds ->
+                    val exclusions = dependency.appendNode("exclusions") as Node
+                    artifactIds.forEach { excludedArtifactId ->
+                        val exclusion = exclusions.appendNode("exclusion") as Node
+                        exclusion.appendNode("groupId", "io.example")
+                        exclusion.appendNode("artifactId", excludedArtifactId)
+                    }
+                }
             }
         }
 
