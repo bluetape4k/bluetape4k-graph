@@ -22,7 +22,7 @@ Ktor 3 integration, Spring Boot 4 auto-configuration, examples, benchmarks,
 and a BOM.
 
 - Base version: 1.0.0
-- Kotlin: 2.4.10 (language/API 2.4)
+- Kotlin: 2.4.20 (language/API 2.4)
 - Java: 25 with preview enabled
 - Dependency versions: `gradle/libs.versions.toml`
 
