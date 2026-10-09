@@ -1,4 +1,5 @@
 import dev.detekt.gradle.DetektCreateBaselineTask
+import dev.detekt.gradle.plugin.getSupportedKotlinVersion
 import groovy.json.JsonOutput
 import io.bluetape4k.gradle.applyBluetape4kPomMetadata
 import io.bluetape4k.gradle.centralSnapshotsRepository
@@ -16,8 +17,8 @@ buildscript {
         constraints {
             // buildscript는 version catalog accessor 생성 전에 해석되므로 immutable catalog와 함께 갱신합니다.
             classpath("org.apache.commons:commons-lang3:3.20.0")
-            classpath("tools.jackson.core:jackson-core:3.2.2")
-            classpath("tools.jackson.core:jackson-databind:3.2.2")
+            classpath("tools.jackson.core:jackson-core:3.2.3")
+            classpath("tools.jackson.core:jackson-databind:3.2.3")
         }
     }
 }
@@ -107,8 +108,6 @@ fun libsVersion(alias: String): String {
         .ifBlank { version.preferredVersion }
         .ifBlank { version.strictVersion }
 }
-val detektSupportedKotlinVersion = bt4kVersion("kotlin")
-
 // buildscript와 Dokka 같은 build-tool configuration은 publication dependency management의 적용 대상이 아닙니다.
 // 실제로 해석되는 모든 project configuration에 검토한 security floor를 적용합니다.
 val buildToolSecurityVersions = mapOf(
@@ -116,7 +115,7 @@ val buildToolSecurityVersions = mapOf(
     "com.fasterxml.jackson.core:jackson-databind" to bt4kVersion("jackson2"),
     "commons-beanutils:commons-beanutils" to bt4kLibraryVersion("commons-beanutils"),
     "org.apache.commons:commons-lang3" to bt4kVersion("commons-lang3"),
-    "org.jsoup:jsoup" to libsVersion("jsoup"),
+    "org.jsoup:jsoup" to bt4kVersion("jsoup"),
     "tools.jackson.core:jackson-core" to bt4kVersion("jackson3"),
     "tools.jackson.core:jackson-databind" to bt4kVersion("jackson3"),
 )
@@ -231,8 +230,8 @@ subprojects {
         configurations.named("detekt") {
             resolutionStrategy.eachDependency {
                 if (requested.group == "org.jetbrains.kotlin") {
-                    useVersion(detektSupportedKotlinVersion)
-                    because("detekt and Kotlin compiler artifacts must use the centrally governed Kotlin version")
+                    useVersion(getSupportedKotlinVersion())
+                    because("Detekt must run with the Kotlin compiler version it was built against")
                 }
             }
         }
@@ -391,7 +390,7 @@ subprojects {
             mavenBom(rootBt4k.junit.bom.get().toString())
             mavenBom(rootBt4k.okhttp3.bom.get().toString())
             mavenBom("io.netty:netty-bom:${bt4kVersion("netty")}")
-            mavenBom("com.fasterxml.jackson:jackson-bom:${bt4kVersion("jackson")}")
+            mavenBom("com.fasterxml.jackson:jackson-bom:${bt4kVersion("jackson2")}")
             mavenBom("tools.jackson:jackson-bom:${bt4kVersion("jackson3")}")
             mavenBom(rootBt4k.neo4j.bolt.connection.bom.get().toString())
 
@@ -400,10 +399,10 @@ subprojects {
         }
         dependencies {
             // <central-catalog-local-aliases>
-            dependency("com.fasterxml.jackson.core:jackson-core:${bt4kVersion("jackson")}")
-            dependency("com.fasterxml.jackson.module:jackson-module-blackbird:${bt4kVersion("jackson")}")
-            dependency("com.fasterxml.jackson.module:jackson-module-kotlin:${bt4kVersion("jackson")}")
-            dependency("com.fasterxml.jackson:jackson-bom:${bt4kVersion("jackson")}")
+            dependency("com.fasterxml.jackson.core:jackson-core:${bt4kVersion("jackson2")}")
+            dependency("com.fasterxml.jackson.module:jackson-module-blackbird:${bt4kVersion("jackson2")}")
+            dependency("com.fasterxml.jackson.module:jackson-module-kotlin:${bt4kVersion("jackson2")}")
+            dependency("com.fasterxml.jackson:jackson-bom:${bt4kVersion("jackson2")}")
             dependency("org.jetbrains.exposed:exposed-dao:${bt4kVersion("exposed")}")
             dependency("org.jetbrains.kotlin:kotlin-bom:${bt4kVersion("kotlin")}")
             dependency("org.jetbrains.kotlin:kotlin-reflect:${bt4kVersion("kotlin")}")
@@ -492,7 +491,7 @@ subprojects {
 
             // Jackson
             dependency("com.fasterxml.jackson.core:jackson-annotations:${bt4kVersion("jackson-annotations")}")
-            dependency("com.fasterxml.jackson.core:jackson-core:${bt4kVersion("jackson")}")
+            dependency("com.fasterxml.jackson.core:jackson-core:${bt4kVersion("jackson2")}")
             dependency("tools.jackson.core:jackson-core:${bt4kVersion("jackson3")}")
 
             // Compressor
