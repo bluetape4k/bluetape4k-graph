@@ -17,8 +17,10 @@ package io.bluetape4k.graph.model
 enum class Direction {
     /** From start vertex to end vertex. */
     OUTGOING,
+
     /** From end vertex to start vertex. */
     INCOMING,
+
     /** Both directions. */
     BOTH,
 }

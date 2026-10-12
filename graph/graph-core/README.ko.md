@@ -28,6 +28,7 @@ Graph Database (Apache AGE, Neo4j, Memgraph, Apache TinkerPop 등) 공통 추상
 ![PathStep and GraphPath model diagram](../../docs/images/readme-diagrams/graph-graph-core-class-03.png)
 
 **PathStep 교차 순서 예시**:
+
 ```
 A --KNOWS--> B --WORKS_AT--> Company
 steps = [VertexStep(A), EdgeStep(KNOWS), VertexStep(B), EdgeStep(WORKS_AT), VertexStep(Company)]
@@ -54,40 +55,24 @@ if (capabilities.supports(GraphCapability.MERGE)) {
 }
 ```
 
-`GRAPH_ALGORITHM`은 portable JVM 알고리즘을 의미한다. `NATIVE_ALGORITHM`은
-명시적으로 설치한 backend provider가 있을 때만 보고되며, 플래그가 없다고
-자동 fallback이 보장되는 것은 아니다. Kotlin `by` 위임을 사용하는 decorator는
-delegate 매핑을 보존하기 위해 `GraphCapabilitiesOperations`를 구현해야 한다.
+`GRAPH_ALGORITHM`은 portable JVM 알고리즘을 의미한다. `NATIVE_ALGORITHM`은 명시적으로 설치한 backend provider가 있을 때만 보고되며, 플래그가 없다고 자동 fallback이 보장되는 것은 아니다. Kotlin `by` 위임을 사용하는 decorator는 delegate 매핑을 보존하기 위해 `GraphCapabilitiesOperations`를 구현해야 한다.
 
 #### Capability 호환성 정책
 
-`GraphCapability` enum 이름은 serialization 경계의 계약이다. 새 값은 기존
-ordinal을 보존하도록 enum 마지막에만 추가하지만, 소비자는 `ordinal`을 저장하거나
-비교하지 말고 enum `name`을 사용해야 한다. capability를 `when`으로 처리하는
-외부 소비자는 이후 라이브러리에서 값이 추가될 수 있으므로 반드시 명시적인
-`else` 분기를 둬야 한다. 이 분기는 알 수 없는 값을 unsupported로 취급하고
-(필요하면 telemetry를 남기며) 확인하지 않은 연산을 호출하지 않아야 한다.
+`GraphCapability` enum 이름은 serialization 경계의 계약이다. 새 값은 기존 ordinal을 보존하도록 enum 마지막에만 추가하지만, 소비자는 `ordinal`을 저장하거나 비교하지 말고 enum `name`을 사용해야 한다. capability를 `when`으로 처리하는 외부 소비자는 이후 라이브러리에서 값이 추가될 수 있으므로 반드시 명시적인
+`else` 분기를 둬야 한다. 이 분기는 알 수 없는 값을 unsupported로 취급하고 (필요하면 telemetry를 남기며) 확인하지 않은 연산을 호출하지 않아야 한다.
 
 설정·저장소·remote peer에서 capability 이름을 읽을 때는
-`GraphCapability.fromSerializedNameOrNull(name)`을 사용한다. 이후 버전에서
-추가된 이름은 `null`을 반환하며 `Enum.valueOf`처럼 예외를 발생시키지 않는다.
-이는 forward-compatible parsing 경계일 뿐, 구버전 binary가 신규 연산을
-자동으로 이해하게 하지는 않는다.
+`GraphCapability.fromSerializedNameOrNull(name)`을 사용한다. 이후 버전에서 추가된 이름은 `null`을 반환하며 `Enum.valueOf`처럼 예외를 발생시키지 않는다. 이는 forward-compatible parsing 경계일 뿐, 구버전 binary가 신규 연산을 자동으로 이해하게 하지는 않는다.
 
 CORE-2 conformance slice는 `MERGE`, `SCHEMA`, `TRANSACTION`, `BATCH_INSERT`,
 `CHUNKED_READ`, `CHUNKED_EXPORT`, `BOUNDED_CHUNKED_READ`,
 `BOUNDED_CHUNKED_EXPORT`, `WEIGHTED_PATH`, `GRAPH_ALGORITHM`,
-`NATIVE_ALGORITHM` 플래그를 공통 계약으로 검증한다. `CHUNKED_*`는 API 결과를
-chunk로 나누는 계약일 뿐이다. backend source가 전체 결과를 먼저 materialize하지
-않는다는 근거가 있을 때만 `BOUNDED_CHUNKED_*`를 광고할 수 있다. 지원하지 않는
-optional 연산은 조용히 무시하지 않고 `UnsupportedOperationException`으로
-명시적으로 실패해야 한다.
+`NATIVE_ALGORITHM` 플래그를 공통 계약으로 검증한다. `CHUNKED_*`는 API 결과를 chunk로 나누는 계약일 뿐이다. backend source가 전체 결과를 먼저 materialize하지 않는다는 근거가 있을 때만 `BOUNDED_CHUNKED_*`를 광고할 수 있다. 지원하지 않는 optional 연산은 조용히 무시하지 않고 `UnsupportedOperationException`으로 명시적으로 실패해야 한다.
 
 ### Cross-backend capability conformance
 
-재사용 가능한 `AbstractGraphCapabilityConformanceTest` fixture가 TinkerGraph
-인메모리 lane과 각 container backend에 같은 계약을 적용한다. Testcontainers
-lifecycle이 겹치지 않도록 아래 task를 순차 실행한다.
+재사용 가능한 `AbstractGraphCapabilityConformanceTest` fixture가 TinkerGraph 인메모리 lane과 각 container backend에 같은 계약을 적용한다. Testcontainers lifecycle이 겹치지 않도록 아래 task를 순차 실행한다.
 
 ```bash
 ./gradlew :bluetape4k-graph-tinkerpop:test --tests '*GraphCapabilityConformanceTest'
@@ -97,9 +82,7 @@ lifecycle이 겹치지 않도록 아래 task를 순차 실행한다.
 ./gradlew :bluetape4k-graph-falkordb:test --tests '*GraphCapabilityConformanceTest'
 ```
 
-`graph-core` 변경은 일반 CI의 backend test job을 트리거하며, 전체 container
-matrix는 Full Nightly scope에서 실행한다. TinkerGraph는 빠른 인메모리 기준
-lane으로 유지한다.
+`graph-core` 변경은 일반 CI의 backend test job을 트리거하며, 전체 container matrix는 Full Nightly scope에서 실행한다. TinkerGraph는 빠른 인메모리 기준 lane으로 유지한다.
 
 ## 순회와 알고리즘 API
 
@@ -122,13 +105,8 @@ lane으로 유지한다.
 
 ### 선택적 Native Algorithm Provider SPI
 
-`graph-core`는 GDS/MAGE SDK를 base backend에 추가하지 않고 선택 모듈이
-native capability를 선언할 수 있도록 `GraphAlgorithmProvider`,
-`GraphAlgorithmProviderDescriptor`, `GraphAlgorithmProviderSelector`를
-제공한다. `AUTO` 정책은 descriptor가 요청 알고리즘을 실제로 선언한
-provider만 선택하며, provider가 없으면 `JVM_FALLBACK`과 이유를 함께
-기록한다. `NATIVE_ONLY`에서 capability가 없으면 조용히 JVM으로 바꾸지
-않고 `GraphAlgorithmProviderUnavailableException`을 발생시킨다.
+`graph-core`는 GDS/MAGE SDK를 base backend에 추가하지 않고 선택 모듈이 native capability를 선언할 수 있도록 `GraphAlgorithmProvider`,
+`GraphAlgorithmProviderDescriptor`, `GraphAlgorithmProviderSelector`를 제공한다. `AUTO` 정책은 descriptor가 요청 알고리즘을 실제로 선언한 provider만 선택하며, provider가 없으면 `JVM_FALLBACK`과 이유를 함께 기록한다. `NATIVE_ONLY`에서 capability가 없으면 조용히 JVM으로 바꾸지 않고 `GraphAlgorithmProviderUnavailableException`을 발생시킨다.
 
 ```kotlin
 val execution = GraphAlgorithmProviderSelector.select(GraphAlgorithmId.PAGE_RANK)
@@ -137,9 +115,7 @@ check(execution.path == GraphAlgorithmExecutionPath.JVM_FALLBACK)
 
 native provider 모듈의 driver 호출은 이 모듈의 범위가 아니다. backend는
 `GraphAlgorithmExecutionObservable`로 마지막 실행 경로를 노출하고,
-`GraphAlgorithmExecutionObserver`로 metrics/audit 관찰 callback을 받을 수
-있다. 현재 Neo4j와 Memgraph의 PageRank는 `NO_PROVIDER` 이유의 JVM
-fallback으로 관찰된다.
+`GraphAlgorithmExecutionObserver`로 metrics/audit 관찰 callback을 받을 수 있다. 현재 Neo4j와 Memgraph의 PageRank는 `NO_PROVIDER` 이유의 JVM fallback으로 관찰된다.
 
 ### 스키마 DSL 클래스
 
@@ -149,9 +125,7 @@ fallback으로 관찰된다.
 
 ### Schema Drift 계획
 
-`GraphSchemaDefinition`으로 desired 선언과 live metadata를 비교한 뒤 DDL 적용 계획을 만들 수 있습니다.
-기본값은 dry-run이며, extra index는 destructive drop을 명시적으로 허용하기 전까지 `SKIP`으로 남습니다.
-공통 manager에는 constraint 삭제 API가 없으므로 constraint drop은 `UNSUPPORTED`로 보고됩니다.
+`GraphSchemaDefinition`으로 desired 선언과 live metadata를 비교한 뒤 DDL 적용 계획을 만들 수 있습니다. 기본값은 dry-run이며, extra index는 destructive drop을 명시적으로 허용하기 전까지 `SKIP`으로 남습니다. 공통 manager에는 constraint 삭제 API가 없으므로 constraint drop은 `UNSUPPORTED`로 보고됩니다.
 
 ```kotlin
 val desired = GraphSchemaDefinition(
@@ -161,8 +135,7 @@ val plan = ops.schemaManager().plan(desired) // 기본 dry-run
 val report = plan.apply(ops.schemaManager())
 ```
 
-삭제가 필요한 승인된 migration에서만 `GraphSchemaPlanOptions(dryRun = false, allowDestructiveDrops = true)`를
-사용하세요. backend가 지원하지 않는 작업은 조용히 성공 처리하지 않고 `UNSUPPORTED` 결과로 남습니다.
+삭제가 필요한 승인된 migration에서만 `GraphSchemaPlanOptions(dryRun = false, allowDestructiveDrops = true)`를 사용하세요. backend가 지원하지 않는 작업은 조용히 성공 처리하지 않고 `UNSUPPORTED` 결과로 남습니다.
 
 ### VertexLabel 정의
 
@@ -197,6 +170,7 @@ object PostLabel : VertexLabel("Post") {
 ```
 
 **지원 타입**:
+
 - `string(name)` - 문자열
 - `integer(name)` - 32bit 정수
 - `long(name)` - 64bit 정수
@@ -243,6 +217,7 @@ object FollowsLabel : EdgeLabel("FOLLOWS", PersonLabel, PersonLabel) {
 ```
 
 **제약**:
+
 - `from`, `to`는 시작 정점과 도착 정점의 `VertexLabel` (방향 그래프)
 - 무방향 관계는 `BOTH` 방향으로 쿼리하면 됨
 
@@ -277,43 +252,34 @@ object FollowsLabel : EdgeLabel("FOLLOWS", PersonLabel, PersonLabel) {
 ### 가중치 경로의 `maxDepth` 계약
 
 `graph-core`의 `DijkstraRunner`와 `AStarRunner`는 모든 백엔드가 공유하는
-`ShortestPathFallback` 구현이다. 가중치 탐색은 `PathOptions.maxDepth`를 간선 수의
-포함 상한으로 적용한다. 탐색 상태에 현재 깊이를 포함하므로 더 싸지만 깊은 경로가
-유효한 얕은 경로를 가리지 않는다. `maxDepth = 0`이면 source와 target이 같은
-vertex-only 결과만 허용한다.
+`ShortestPathFallback` 구현이다. 가중치 탐색은 `PathOptions.maxDepth`를 간선 수의 포함 상한으로 적용한다. 탐색 상태에 현재 깊이를 포함하므로 더 싸지만 깊은 경로가 유효한 얕은 경로를 가리지 않는다. `maxDepth = 0`이면 source와 target이 같은 vertex-only 결과만 허용한다.
 
-| 필드 | 기본값 | 설명 |
-|------|--------|------|
-| `weightProperty` | `null` | 간선 weight 속성 이름. 가중치 탐색에서 필수다. |
-| `edgeLabel` | `null` | 간선 label 필터. `null`이면 모든 label을 사용한다. |
-| `maxDepth` | `10` | 가중치 경로의 최대 간선 수. |
-| `missingWeightPolicy` | `Fail` | weight가 없는 간선의 처리 정책. |
-| `direction` | `OUTGOING` | 탐색 방향. |
-| `maxVisited` | `100_000` | 가중치 탐색 상태의 최대 방문 수. |
+| 필드                  | 기본값     | 설명                                               |
+|-----------------------|------------|----------------------------------------------------|
+| `weightProperty`      | `null`     | 간선 weight 속성 이름. 가중치 탐색에서 필수다.     |
+| `edgeLabel`           | `null`     | 간선 label 필터. `null`이면 모든 label을 사용한다. |
+| `maxDepth`            | `10`       | 가중치 경로의 최대 간선 수.                        |
+| `missingWeightPolicy` | `Fail`     | weight가 없는 간선의 처리 정책.                    |
+| `direction`           | `OUTGOING` | 탐색 방향.                                         |
+| `maxVisited`          | `100_000`  | 가중치 탐색 상태의 최대 방문 수.                   |
 
 ### 가중치 경로 백엔드 매트릭스
 
-다섯 백엔드는 sync와 suspend 가중치 경로에서 같은 JVM runner를 사용한다.
-virtual-thread API는 각 백엔드의 sync 구현에 위임하므로 세 표면의 depth 계약이
-같다. native 백엔드 경로 쿼리는 unweighted 구현이며 자체 `PathOptions.maxDepth`
+다섯 백엔드는 sync와 suspend 가중치 경로에서 같은 JVM runner를 사용한다. virtual-thread API는 각 백엔드의 sync 구현에 위임하므로 세 표면의 depth 계약이 같다. native 백엔드 경로 쿼리는 unweighted 구현이며 자체 `PathOptions.maxDepth`
 처리를 계속 따른다.
 
-| 백엔드 | Sync weighted path | Suspend weighted path | Virtual-thread weighted path | 증거 |
-|--------|--------------------|-----------------------|------------------------------|------|
-| Neo4j | `ShortestPathFallback` | `Dispatchers.IO`의 sync delegate | sync delegate | Testcontainers weighted-path TCK |
-| Memgraph | `ShortestPathFallback` | `Dispatchers.IO`의 sync delegate | sync delegate | Testcontainers weighted-path TCK |
-| Apache AGE | `ShortestPathFallback` | `Dispatchers.IO`의 sync delegate | sync delegate | Testcontainers weighted-path TCK |
-| TinkerGraph | `ShortestPathFallback` | `Dispatchers.IO`의 sync delegate | sync delegate | in-memory weighted-path TCK |
-| FalkorDB | `ShortestPathFallback` | `Dispatchers.IO`의 sync delegate | sync delegate | Testcontainers weighted-path TCK |
+| 백엔드      | Sync weighted path     | Suspend weighted path            | Virtual-thread weighted path | 증거                             |
+|-------------|------------------------|----------------------------------|------------------------------|----------------------------------|
+| Neo4j       | `ShortestPathFallback` | `Dispatchers.IO`의 sync delegate | sync delegate                | Testcontainers weighted-path TCK |
+| Memgraph    | `ShortestPathFallback` | `Dispatchers.IO`의 sync delegate | sync delegate                | Testcontainers weighted-path TCK |
+| Apache AGE  | `ShortestPathFallback` | `Dispatchers.IO`의 sync delegate | sync delegate                | Testcontainers weighted-path TCK |
+| TinkerGraph | `ShortestPathFallback` | `Dispatchers.IO`의 sync delegate | sync delegate                | in-memory weighted-path TCK      |
+| FalkorDB    | `ShortestPathFallback` | `Dispatchers.IO`의 sync delegate | sync delegate                | Testcontainers weighted-path TCK |
 
 ### Serializable option invariant 계약
 
 `GraphTraversalOptions`, `GraphAlgorithmOptions`의 구체 옵션과
-`MissingWeightPolicy.UseDefault`는 안정적인 Java serialization 계약을 구현한다.
-round-trip은 public property와 `serialVersionUID = 1L`을 보존한다. 생성자는 잘못된
-값을 `IllegalArgumentException`으로 거부하고, 역직렬화도 같은 검사를 반복해 변조된
-payload를 잘못된 필드명과 값이 포함된 `InvalidObjectException`으로 거부한다. Java
-serialization은 신뢰 경계가 아니므로 신뢰할 수 없는 stream에는
+`MissingWeightPolicy.UseDefault`는 안정적인 Java serialization 계약을 구현한다. round-trip은 public property와 `serialVersionUID = 1L`을 보존한다. 생성자는 잘못된 값을 `IllegalArgumentException`으로 거부하고, 역직렬화도 같은 검사를 반복해 변조된 payload를 잘못된 필드명과 값이 포함된 `InvalidObjectException`으로 거부한다. Java serialization은 신뢰 경계가 아니므로 신뢰할 수 없는 stream에는
 `ObjectInputFilter`를 설정해야 한다.
 
 ## 사용 예시
@@ -1020,6 +986,7 @@ val id2 = GraphElementId.of(12345L)
 ```
 
 **변환**:
+
 - Apache AGE: Long 내부 ID → `GraphElementId("$longId")`
 - Neo4j: `elementId()` (String) → `GraphElementId` 직접 매핑
 
@@ -1091,17 +1058,20 @@ dependencies {
 
 이 모듈의 인터페이스를 구현하는 백엔드별 모듈:
 
-| 모듈 | 설명 |
-|------|------|
-| `graph-age` | Apache AGE + PostgreSQL + Exposed (관계형 DB 위의 그래프) |
-| `graph-neo4j` | Neo4j Java Driver + Coroutines (전용 그래프 DB) |
+| 모듈          | 설명                                                      |
+|---------------|-----------------------------------------------------------|
+| `graph-age`   | Apache AGE + PostgreSQL + Exposed (관계형 DB 위의 그래프) |
+| `graph-neo4j` | Neo4j Java Driver + Coroutines (전용 그래프 DB)           |
 
 각 구현체는 `GraphOperations` 인터페이스를 구현하며, graph-core의 모델과 인터페이스를 사용한다.
 
 ## 참고
 
-- **AutoCloseable**: `GraphOperations`는 `GraphSession`을 상속하며 `AutoCloseable`을 구현. 외부 리소스(Database/Driver)의 생명주기는 호출자가 관리.
-- **트랜잭션**: `GraphTransactionalOperations` 또는 `GraphSuspendTransactionalOperations`를 구현한 백엔드는 `ops.transaction { }` / `ops.suspendTransaction { }` DSL을 제공한다. 미지원 백엔드는 auto-commit fallback 없이 명시적으로 실패한다.
+-
+
+**AutoCloseable**: `GraphOperations`는 `GraphSession`을 상속하며 `AutoCloseable`을 구현. 외부 리소스 (Database/Driver)의 생명주기는 호출자가 관리.
+-
+**트랜잭션**: `GraphTransactionalOperations` 또는 `GraphSuspendTransactionalOperations`를 구현한 백엔드는 `ops.transaction { }` / `ops.suspendTransaction { }` DSL을 제공한다. 미지원 백엔드는 auto-commit fallback 없이 명시적으로 실패한다.
 - **백엔드 차이**: AGE는 SQL 기반이므로 쿼리 최적화, Neo4j는 Cypher 쿼리 최적화에 따라 성능이 달라질 수 있음.
 
 ### 트랜잭션 DSL
@@ -1126,20 +1096,14 @@ val edge = suspendOps.suspendTransaction {
 }
 ```
 
-코루틴 transaction 결과 계약은 transaction을 지원하는 모든 코루틴 backend에서 동일하다. 최상위 `Flow`는 commit
-전에 materialize하므로 transaction이 반환된 뒤에도 수집할 수 있다. `Pair`, `Triple`, `Map`, `Collection`, 배열
-안에 중첩된 `Flow`는 `IllegalArgumentException`으로 거부한다. composite 값을 반환해야 하면 transaction block
-안에서 `toList()` 등으로 명시적으로 materialize한 뒤 반환한다. `Sequence`와 임의 사용자 wrapper/data class 내부는
-검사하지 않으므로 해당 carrier의 materialization은 호출자가 책임진다.
+코루틴 transaction 결과 계약은 transaction을 지원하는 모든 코루틴 backend에서 동일하다. 최상위 `Flow`는 commit 전에 materialize하므로 transaction이 반환된 뒤에도 수집할 수 있다. `Pair`, `Triple`, `Map`, `Collection`, 배열 안에 중첩된 `Flow`는 `IllegalArgumentException`으로 거부한다. composite 값을 반환해야 하면 transaction block 안에서 `toList()` 등으로 명시적으로 materialize한 뒤 반환한다. `Sequence`와 임의 사용자 wrapper/data class 내부는 검사하지 않으므로 해당 carrier의 materialization은 호출자가 책임진다.
 
-이번 1차 구현은 Neo4j, Memgraph, AGE, TinkerGraph의 동기/코루틴 트랜잭션을 지원한다.
-FalkorDB는 Redis `MULTI`에서 그래프 쿼리 결과가 `EXEC`까지 지연되어, 생성한 정점 ID를 같은 DSL 블록의 다음 호출에서 즉시 사용해야 하는 repository DSL과 맞지 않으므로 명시적으로 미지원한다.
+이번 1차 구현은 Neo4j, Memgraph, AGE, TinkerGraph의 동기/코루틴 트랜잭션을 지원한다. FalkorDB는 Redis `MULTI`에서 그래프 쿼리 결과가 `EXEC`까지 지연되어, 생성한 정점 ID를 같은 DSL 블록의 다음 호출에서 즉시 사용해야 하는 repository DSL과 맞지 않으므로 명시적으로 미지원한다.
 
 ### Merge / Upsert
 
 `GraphMergeOperations`를 구현한 백엔드는 정점/간선 upsert를 `mergeVertex`, `mergeEdge` 확장 함수로 제공한다.
-`matchProperties`는 안정적인 식별자이며, 정점 merge에서는 비어 있을 수 없다. `setProperties`는 생성된 요소와
-기존 요소 모두에 적용되며, match key를 덮어쓸 수 없다.
+`matchProperties`는 안정적인 식별자이며, 정점 merge에서는 비어 있을 수 없다. `setProperties`는 생성된 요소와 기존 요소 모두에 적용되며, match key를 덮어쓸 수 없다.
 
 ```kotlin
 import io.bluetape4k.graph.repository.mergeEdge
@@ -1159,35 +1123,33 @@ val edge = ops.mergeEdge(
 )
 ```
 
-코루틴 백엔드는 같은 API를 suspend 함수로 제공한다. 레이블과 속성 이름은 쿼리 생성 전에 검증되므로
-안전하지 않은 식별자는 백엔드에 도달하기 전에 실패한다.
+코루틴 백엔드는 같은 API를 suspend 함수로 제공한다. 레이블과 속성 이름은 쿼리 생성 전에 검증되므로 안전하지 않은 식별자는 백엔드에 도달하기 전에 실패한다.
 
-| 백엔드 | 정점 merge | 간선 merge | 비고 |
-|--------|------------|------------|------|
-| Neo4j | 네이티브 `MERGE` | 네이티브 relationship `MERGE` | endpoint 조회에 `elementId()` 사용 |
-| Memgraph | 네이티브 `MERGE` | 네이티브 relationship `MERGE` | endpoint 조회에 정수 `id()` 사용 |
-| FalkorDB | 네이티브 `MERGE` | 네이티브 relationship `MERGE` | 속성별 파라미터 사용 |
-| AGE | 트랜잭션 기반 match/update/create fallback | 트랜잭션 기반 match/update/create fallback | 현재 AGE 이미지가 `ON CREATE SET` / `ON MATCH SET` 미지원 |
-| TinkerGraph | Gremlin get-or-create/update | Gremlin get-or-create/update | in-memory semantics |
+| 백엔드      | 정점 merge                                 | 간선 merge                                 | 비고                                                      |
+|-------------|--------------------------------------------|--------------------------------------------|-----------------------------------------------------------|
+| Neo4j       | 네이티브 `MERGE`                           | 네이티브 relationship `MERGE`              | endpoint 조회에 `elementId()` 사용                        |
+| Memgraph    | 네이티브 `MERGE`                           | 네이티브 relationship `MERGE`              | endpoint 조회에 정수 `id()` 사용                          |
+| FalkorDB    | 네이티브 `MERGE`                           | 네이티브 relationship `MERGE`              | 속성별 파라미터 사용                                      |
+| AGE         | 트랜잭션 기반 match/update/create fallback | 트랜잭션 기반 match/update/create fallback | 현재 AGE 이미지가 `ON CREATE SET` / `ON MATCH SET` 미지원 |
+| TinkerGraph | Gremlin get-or-create/update               | Gremlin get-or-create/update               | in-memory semantics                                       |
 
 ## 그래프 알고리즘
 
-`graph-core`는 `GraphAlgorithmRepository` / `GraphSuspendAlgorithmRepository` 인터페이스를 정의하고, 네이티브 쿼리가 없는 백엔드를 위한 JVM 폴백 구현체(`UnionFind`, `BfsDfsRunner`, `CycleDetector`, `PageRankCalculator`)를 제공한다.
+`graph-core`는 `GraphAlgorithmRepository` / `GraphSuspendAlgorithmRepository` 인터페이스를 정의하고, 네이티브 쿼리가 없는 백엔드를 위한 JVM 폴백 구현체 (`UnionFind`, `BfsDfsRunner`, `CycleDetector`, `PageRankCalculator`)를 제공한다.
 
 ### 알고리즘 지원 매트릭스
 
-| 알고리즘 | 인터페이스 메서드 | 옵션 타입 | 결과 타입 |
-|----------|-----------------|-----------|-----------|
-| PageRank | `pageRank(options)` | `PageRankOptions` | `List<PageRankScore>` |
-| Degree Centrality | `degreeCentrality(vertexId, options)` | `DegreeOptions` | `DegreeResult` |
-| Connected Components | `connectedComponents(options)` | `ComponentOptions` | `List<GraphComponent>` |
-| BFS | `bfs(startId, options)` | `BfsDfsOptions` | `List<TraversalVisit>` |
-| DFS | `dfs(startId, options)` | `BfsDfsOptions` | `List<TraversalVisit>` |
-| Cycle Detection | `detectCycles(options)` | `CycleOptions` | `List<GraphCycle>` |
+| 알고리즘             | 인터페이스 메서드                     | 옵션 타입          | 결과 타입              |
+|----------------------|---------------------------------------|--------------------|------------------------|
+| PageRank             | `pageRank(options)`                   | `PageRankOptions`  | `List<PageRankScore>`  |
+| Degree Centrality    | `degreeCentrality(vertexId, options)` | `DegreeOptions`    | `DegreeResult`         |
+| Connected Components | `connectedComponents(options)`        | `ComponentOptions` | `List<GraphComponent>` |
+| BFS                  | `bfs(startId, options)`               | `BfsDfsOptions`    | `List<TraversalVisit>` |
+| DFS                  | `dfs(startId, options)`               | `BfsDfsOptions`    | `List<TraversalVisit>` |
+| Cycle Detection      | `detectCycles(options)`               | `CycleOptions`     | `List<GraphCycle>`     |
 
 모든 순회·알고리즘 option은 public constructor에서 입력을 검증한다.
-`NeighborOptions.maxDepth`와 `PathOptions.maxDepth`는 각각 이웃 확장 없음·vertex-only
-path 의미의 0을 허용하고, `BfsDfsOptions.maxDepth`도 0을 허용해 시작 정점만 반환한다.
+`NeighborOptions.maxDepth`와 `PathOptions.maxDepth`는 각각 이웃 확장 없음·vertex-only path 의미의 0을 허용하고, `BfsDfsOptions.maxDepth`도 0을 허용해 시작 정점만 반환한다.
 `CycleOptions.maxDepth`와 방문·반복·결과·사이클·컴포넌트 한도는 양수여야 한다.
 `PageRankOptions.tolerance`는 양의 유한값이어야 하고 `dampingFactor`는 유한한
 `[0.0, 1.0]` 범위여야 한다. 잘못된 값은 backend query를 만들기 전에
@@ -1231,18 +1193,8 @@ val cycles = ops.detectCycles(CycleOptions(edgeLabel = "KNOWS", maxDepth = 5))
 ## Virtual Threads
 
 `virtualFutureOf`와 `virtualFutureOfNullable`은 상위 `bluetape4k-core`
-의존성이 제공한다. `graph-core`는 공식 helper를 import하고 패키지 로컬 복사본을
-더 이상 배포하지 않으므로 `io.bluetape4k.concurrent.virtualthread`에 세 번째
-소유자를 추가하지 않는다. upstream
-[#1523](https://github.com/bluetape4k/bluetape4k-projects/pull/1523)은 Java 21
-API 타입을 `io.bluetape4k.concurrent.virtualthread.api`로 이동하고 core
-유틸리티 소유자는 그대로 유지한다. Bluetape4k 2.0.0은 이 migration을 포함하며
-Graph 1.0.0 release는 immutable catalog commit을 통해 이를 소비한다. Core helper의
-Kotlin source import 경로는 그대로지만
-삭제된 generated `CompletableFutureNullableSupportKt` 클래스를 직접 참조한 소비자
-코드는 공식 `CompletableFutureSupportKt` 소유자에 맞춰 다시 컴파일해야 하며 외부
-ABI migration은 [#562](https://github.com/bluetape4k/bluetape4k-graph/issues/562)에서
-검증한다.
+의존성이 제공한다. `graph-core`는 공식 helper를 import하고 패키지 로컬 복사본을 더 이상 배포하지 않으므로 `io.bluetape4k.concurrent.virtualthread`에 세 번째 소유자를 추가하지 않는다. upstream
+[#1523](https://github.com/bluetape4k/bluetape4k-projects/pull/1523)은 Java 21 API 타입을 `io.bluetape4k.concurrent.virtualthread.api`로 이동하고 core 유틸리티 소유자는 그대로 유지한다. Bluetape4k 2.0.0은 이 migration을 포함하며 Graph 1.0.0 release는 immutable catalog commit을 통해 이를 소비한다. Core helper의 Kotlin source import 경로는 그대로지만 삭제된 generated `CompletableFutureNullableSupportKt` 클래스를 직접 참조한 소비자 코드는 공식 `CompletableFutureSupportKt` 소유자에 맞춰 다시 컴파일해야 하며 외부 ABI migration은 [#562](https://github.com/bluetape4k/bluetape4k-graph/issues/562)에서 검증한다.
 
 다음 verifier로 실제 해결된 JAR 쌍을 확인한다.
 
@@ -1255,23 +1207,16 @@ python3 scripts/verify_virtualthread_module_boundary.py \
 verifier는 shared class package, 이전 package의 API class, 누락된 API owner 또는
 `java --validate-modules`의 non-zero 결과를 거부한다.
 
-#562 ABI TCK는 삭제된 owner를 기준으로 미리 컴파일한 최소 Java consumer를
-legacy class 없이 실행해 예상한 `NoClassDefFoundError`를 재현한다. 같은 consumer를
-공식 owner 기준으로 다시 컴파일한 fixture는 nullable `CompletableFuture`를 정상
-완료해야 한다. classfile의 owner 참조와 공식 owner의
-`ProtectionDomain.codeSource`도 함께 검사하므로 source compile 성공만으로 artifact
-소유권을 증명했다고 간주하지 않는다.
+#562 ABI TCK는 삭제된 owner를 기준으로 미리 컴파일한 최소 Java consumer를 legacy class 없이 실행해 예상한 `NoClassDefFoundError`를 재현한다. 같은 consumer를 공식 owner 기준으로 다시 컴파일한 fixture는 nullable `CompletableFuture`를 정상 완료해야 한다. classfile의 owner 참조와 공식 owner의
+`ProtectionDomain.codeSource`도 함께 검사하므로 source compile 성공만으로 artifact 소유권을 증명했다고 간주하지 않는다.
 
 `GraphOperations`를 Virtual Thread 어댑터로 감싸면 Java 상호운용을 위한
 `CompletableFuture` 기반 비동기 API를 사용할 수 있다. 어댑터는 Bluetape4k의
 `virtualFutureOf` helper를 사용하며 별도 executor를 만들지 않는다.
 
-`GraphVirtualThreadOperations.capabilities()`는 facade에서 실제 호출할 수 있는
-비동기 surface를 보고한다. 빌린 동기 delegate의 전체 capability 매핑은
+`GraphVirtualThreadOperations.capabilities()`는 facade에서 실제 호출할 수 있는 비동기 surface를 보고한다. 빌린 동기 delegate의 전체 capability 매핑은
 `delegateCapabilities()`로 확인한다. delegate가 `GraphMergeOperations`,
-`GraphSchemaManagementOperations`, `GraphTransactionalOperations` 중 하나를
-구현한 경우 대응하는 optional async surface가 제공된다. 지원하지 않는 delegate는
-해당 capability를 광고하지 않으며 optional future를
+`GraphSchemaManagementOperations`, `GraphTransactionalOperations` 중 하나를 구현한 경우 대응하는 optional async surface가 제공된다. 지원하지 않는 delegate는 해당 capability를 광고하지 않으며 optional future를
 `UnsupportedOperationException`으로 완료한다.
 
 지원하는 optional surface는 다음과 같다.
@@ -1282,13 +1227,8 @@ legacy class 없이 실행해 예상한 `NoClassDefFoundError`를 재현한다. 
 - 전체 block을 하나의 virtual thread에서 실행하는 `transactionAsync`
 - `findVerticesByLabelChunkedAsync` / `findEdgesByLabelChunkedAsync`
 
-각 operation block은 Bluetape4k virtual-thread task 하나에서 실행된다.
-Completion-stage callback의 executor는 호출자가 선택하며, 동기 delegate 예외는
-원인 예외를 보존한 exceptional completion으로 전달된다. 표준
-`CompletableFuture.cancel(true)`와 `orTimeout`의 상태는 관찰할 수 있지만 blocking
-driver의 중단까지 보장하지 않으므로 backend별 interruption 계약은 호출자가
-확인해야 한다. 어댑터는 delegate를 빌려 쓴다. 따라서 `close()`는 facade만 닫고
-delegate는 닫지 않으며, chunk source는 끝까지 소비한 뒤 닫는다.
+각 operation block은 Bluetape4k virtual-thread task 하나에서 실행된다. Completion-stage callback의 executor는 호출자가 선택하며, 동기 delegate 예외는 원인 예외를 보존한 exceptional completion으로 전달된다. 표준
+`CompletableFuture.cancel(true)`와 `orTimeout`의 상태는 관찰할 수 있지만 blocking driver의 중단까지 보장하지 않으므로 backend별 interruption 계약은 호출자가 확인해야 한다. 어댑터는 delegate를 빌려 쓴다. 따라서 `close()`는 facade만 닫고 delegate는 닫지 않으며, chunk source는 끝까지 소비한 뒤 닫는다.
 
 ```kotlin
 import io.bluetape4k.graph.repository.GraphCapability
@@ -1328,6 +1268,4 @@ pipeline.join()
 
 기존 facade에서 `capabilities()`를 delegate 조회 용도로 사용하던 호출자는
 `delegateCapabilities()`로 같은 정보를 읽고, 새 비동기 API 호출 전에는
-`capabilities()`로 surface 지원 여부를 확인한다. 비동기 chunk 결과는 chunk 경계를
-유지하지만 future 완료 전에 전체 결과를 materialize한다. streaming 또는 조기
-close가 필요하면 synchronous close-aware cursor API를 사용한다.
+`capabilities()`로 surface 지원 여부를 확인한다. 비동기 chunk 결과는 chunk 경계를 유지하지만 future 완료 전에 전체 결과를 materialize한다. streaming 또는 조기 close가 필요하면 synchronous close-aware cursor API를 사용한다.

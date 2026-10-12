@@ -3,7 +3,8 @@ package io.bluetape4k.graph.algo.internal
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.TraversalVisit
-import java.util.ArrayDeque
+import io.bluetape4k.logging.KLogging
+import java.util.*
 
 /**
  * Adjacency-list BFS/DFS runner used as a JVM fallback.
@@ -16,11 +17,12 @@ import java.util.ArrayDeque
  * val visits = BfsDfsRunner.bfs(start.id, adjacency, maxDepth = 3, maxVertices = 1000)
  * ```
  */
-object BfsDfsRunner {
+@Deprecated("use TreeTraverser instead", replaceWith = ReplaceWith("TreeTraverser"))
+object BfsDfsRunner: KLogging() {
 
     /**
      * Returns BFS visit results in level order.
-	*
+     *
      * @param startId start vertex ID.
      * @param adjacency adjacency list of out-edges.
      * @param maxDepth maximum traversal depth.

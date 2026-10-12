@@ -1,27 +1,27 @@
 package io.bluetape4k.graph.falkordb
 
 import io.bluetape4k.assertions.assertFailsWith
-import io.bluetape4k.graph.model.BfsDfsOptions
-import io.bluetape4k.graph.model.ComponentOptions
-import io.bluetape4k.graph.model.CycleOptions
-import io.bluetape4k.graph.model.DegreeOptions
-import io.bluetape4k.graph.model.GraphElementId
-import io.bluetape4k.graph.model.PageRankOptions
-import io.bluetape4k.logging.KLogging
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldNotBeEmpty
+import io.bluetape4k.graph.model.ComponentOptions
+import io.bluetape4k.graph.model.CycleOptions
+import io.bluetape4k.graph.model.DegreeOptions
+import io.bluetape4k.graph.model.GraphElementId
+import io.bluetape4k.graph.model.PageRankOptions
+import io.bluetape4k.graph.model.TreeTraversalOptions
+import io.bluetape4k.logging.KLogging
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class FalkorDBAlgorithmTest : AbstractFalkorDBTest() {
+class FalkorDBAlgorithmTest: AbstractFalkorDBTest() {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     private lateinit var ops: FalkorDBGraphOperations
 
@@ -94,7 +94,7 @@ class FalkorDBAlgorithmTest : AbstractFalkorDBTest() {
         ops.createEdge(a.id, b.id, "E")
         ops.createEdge(b.id, c.id, "E")
 
-        val visits = ops.bfs(a.id, BfsDfsOptions(edgeLabel = "E", maxDepth = 2))
+        val visits = ops.bfs(a.id, TreeTraversalOptions(edgeLabel = "E", maxDepth = 2))
         visits.first().vertex.id shouldBeEqualTo a.id
         visits.size shouldBeGreaterOrEqualTo 3
     }
@@ -105,7 +105,7 @@ class FalkorDBAlgorithmTest : AbstractFalkorDBTest() {
         val b = ops.createVertex("Node", emptyMap())
         ops.createEdge(a.id, b.id, "E")
 
-        val visits = ops.dfs(a.id, BfsDfsOptions(edgeLabel = "E", maxDepth = 2))
+        val visits = ops.dfs(a.id, TreeTraversalOptions(edgeLabel = "E", maxDepth = 2))
         visits.first().vertex.id shouldBeEqualTo a.id
         visits.size shouldBeGreaterOrEqualTo 2
     }

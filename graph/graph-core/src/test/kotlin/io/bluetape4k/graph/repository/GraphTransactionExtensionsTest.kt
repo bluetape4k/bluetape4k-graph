@@ -3,7 +3,9 @@ package io.bluetape4k.graph.repository
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeInstanceOf
 import io.bluetape4k.assertions.shouldContain
-import io.bluetape4k.graph.model.BfsDfsOptions
+import io.bluetape4k.graph.AbstractGraphTest
+import io.bluetape4k.graph.GraphException
+import io.bluetape4k.graph.GraphUnsupportedOperationException
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
 import io.bluetape4k.graph.model.DegreeOptions
@@ -19,27 +21,34 @@ import io.bluetape4k.graph.model.PageRankOptions
 import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.TraversalVisit
+import io.bluetape4k.graph.model.TreeTraversalOptions
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import org.junit.jupiter.api.Test
 
-class GraphTransactionExtensionsTest {
+class GraphTransactionExtensionsTest: AbstractGraphTest() {
+
+    companion object: KLogging()
 
     @Test
     fun `top-level Flow is materialized before transaction commit`() = runSuspendIO {
         val values = materializeSuspendTransactionResult(flowOf("Alice", "Bob")).toList()
 
+        log.debug { "values=$values" }
         values shouldContain "Alice"
         values shouldContain "Bob"
     }
 
     @Test
     fun `nested Flow is rejected with an explicit transaction contract`() = runSuspendIO {
-        val ex = assertFailsWith<IllegalArgumentException> {
+        val ex = assertFailsWith<GraphException> {
             materializeSuspendTransactionResult("Person" to flowOf("Alice"))
         }
 
+        log.debug { "ex=$ex" }
         ex.message shouldContain "nested Flow"
         ex.message shouldContain "result.second"
     }
@@ -47,10 +56,10 @@ class GraphTransactionExtensionsTest {
     @Test
     fun `nested Flow is rejected in standard result containers`() = runSuspendIO {
         suspend fun assertRejected(result: Any) {
-            val ex = assertFailsWith<IllegalArgumentException> {
+            val ex = assertFailsWith<GraphException> {
                 materializeSuspendTransactionResult(result)
             }
-
+            log.debug { "ex=$ex" }
             ex.message shouldContain "nested Flow"
         }
 
@@ -62,13 +71,14 @@ class GraphTransactionExtensionsTest {
 
     @Test
     fun `transaction fails clearly when backend does not support transactions`() {
-        val ex = assertFailsWith<UnsupportedOperationException> {
+        val ex = assertFailsWith<GraphUnsupportedOperationException> {
             UnsupportedGraphOperations.transaction {
                 createVertex("Person")
             }
         }
 
-        ex shouldBeInstanceOf UnsupportedOperationException::class
+        log.debug { "ex=$ex" }
+        ex shouldBeInstanceOf GraphUnsupportedOperationException::class
         ex.message shouldContain "does not support graph transactions"
     }
 
@@ -145,10 +155,10 @@ class GraphTransactionExtensionsTest {
         override fun connectedComponents(options: ComponentOptions): List<GraphComponent> =
             unsupported()
 
-        override fun bfs(startId: GraphElementId, options: BfsDfsOptions): List<TraversalVisit> =
+        override fun bfs(startId: GraphElementId, options: TreeTraversalOptions): List<TraversalVisit> =
             unsupported()
 
-        override fun dfs(startId: GraphElementId, options: BfsDfsOptions): List<TraversalVisit> =
+        override fun dfs(startId: GraphElementId, options: TreeTraversalOptions): List<TraversalVisit> =
             unsupported()
 
         override fun detectCycles(options: CycleOptions): List<GraphCycle> =

@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.model
 
+import io.bluetape4k.graph.GraphException
 import java.io.InvalidObjectException
 import java.io.ObjectInputStream
 import java.io.Serializable
@@ -20,14 +21,15 @@ import java.io.Serializable
  * val opts = PathOptions(weightProperty = "cost", missingWeightPolicy = MissingWeightPolicy.UseDefault(1.0))
  * ```
  */
-sealed class MissingWeightPolicy : Serializable {
+sealed class MissingWeightPolicy: Serializable {
 
     /**
      * Throws [MissingWeightException] when a weight is missing. This is the default policy.
      *
      * Use this when data integrity matters and every edge must have a weight.
      */
-    data object Fail : MissingWeightPolicy() {
+    data object Fail: MissingWeightPolicy() {
+        private fun readResolve(): Any = Fail
         private const val serialVersionUID: Long = 1L
     }
 
@@ -36,7 +38,8 @@ sealed class MissingWeightPolicy : Serializable {
      *
      * Useful for sparse graphs where only some edges have weights.
      */
-    data object Skip : MissingWeightPolicy() {
+    data object Skip: MissingWeightPolicy() {
+        private fun readResolve(): Any = Skip
         private const val serialVersionUID: Long = 1L
     }
 
@@ -54,7 +57,7 @@ sealed class MissingWeightPolicy : Serializable {
      * @param value Default cost for missing edge weights. Must be finite and `> 0.0`.
      * @throws IllegalArgumentException if value is non-positive, infinite, or NaN.
      */
-    data class UseDefault(val value: Double) : MissingWeightPolicy() {
+    data class UseDefault(val value: Double): MissingWeightPolicy() {
         companion object {
             private const val serialVersionUID: Long = 1L
         }
@@ -65,6 +68,7 @@ sealed class MissingWeightPolicy : Serializable {
             }
         }
 
+        // TODO: Java BuiltIn Serializer 에서만 호출된다. Kryo, Fory 에서는 무시된다 -> 사용하지 말자
         private fun readObject(input: ObjectInputStream) {
             input.defaultReadObject()
             if (value <= 0.0 || !value.isFinite()) {
@@ -89,4 +93,5 @@ sealed class MissingWeightPolicy : Serializable {
 class MissingWeightException(
     val edgeId: GraphElementId,
     val key: String,
-) : IllegalStateException("edge $edgeId missing weight property '$key'")
+    cause: Throwable? = null,
+): GraphException("edge $edgeId missing weight property '$key'", cause)

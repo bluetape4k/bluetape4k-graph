@@ -1,19 +1,22 @@
 package io.bluetape4k.graph.vt
 
-import io.bluetape4k.graph.model.BatchEdge
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.graph.AbstractGraphTest
+import io.bluetape4k.graph.model.batchEdgeOf
 import io.bluetape4k.graph.repository.GraphVirtualThreadCapabilitiesOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
 import io.bluetape4k.graph.repository.capabilities
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.junit5.concurrency.StructuredTaskScopeTester
 import io.bluetape4k.logging.KLogging
-import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.logging.debug
+import io.bluetape4k.utils.Runtimex
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class VirtualThreadOperationsAdapterTest {
+class VirtualThreadOperationsAdapterTest: AbstractGraphTest() {
 
     companion object: KLogging()
 
@@ -33,7 +36,9 @@ class VirtualThreadOperationsAdapterTest {
 
     @Test
     fun `createVertexAsync works through facade`() {
-        val v = vtOps.createVertexAsync("Person", mapOf("name" to "Alice")).join()
+        val v = vtOps.createVertexAsync("Person", mapOf("name" to "Alice")).get()
+
+        log.debug { "v=$v" }
         v.shouldNotBeNull()
         v.label shouldBeEqualTo "Person"
     }
@@ -42,17 +47,32 @@ class VirtualThreadOperationsAdapterTest {
     fun `createEdgeAsync works through facade`() {
         val from = ops.createVertex("Person")
         val to = ops.createVertex("Person")
-        val edge = vtOps.createEdgeAsync(from.id, to.id, "KNOWS").join()
+        val edge = vtOps.createEdgeAsync(from.id, to.id, "KNOWS").get()
+
+        log.debug { "edge=$edge" }
         edge.shouldNotBeNull()
         edge.label shouldBeEqualTo "KNOWS"
     }
 
     @Test
     fun `batch create async works through facade`() {
-        val vertices = vtOps.createVerticesAsync("Person", listOf(mapOf("name" to "Alice"), mapOf("name" to "Bob")))
+        val vertices = vtOps
+            .createVerticesAsync(
+                "Person",
+                listOf(mapOf("name" to "Alice"), mapOf("name" to "Bob"))
+            )
             .join()
-        val edge = vtOps.createEdgesAsync("KNOWS", listOf(BatchEdge(vertices[0].id, vertices[1].id))).join().single()
+        log.debug { "vertices=$vertices" }
 
+        val edge = vtOps
+            .createEdgesAsync(
+                "KNOWS",
+                listOf(batchEdgeOf(vertices[0].id, vertices[1].id))
+            )
+            .get()
+            .single()
+        log.debug { "edge=$edge" }
+        
         vertices.map { it.properties["name"] } shouldBeEqualTo listOf("Alice", "Bob")
         edge.label shouldBeEqualTo "KNOWS"
     }
@@ -61,6 +81,7 @@ class VirtualThreadOperationsAdapterTest {
     fun `close does not affect delegate`() {
         val virtualThread: GraphVirtualThreadOperations = vtOps
         virtualThread.close()
+
         // delegate 는 여전히 사용 가능
         val v = ops.createVertex("Person")
         v.shouldNotBeNull()
@@ -68,7 +89,7 @@ class VirtualThreadOperationsAdapterTest {
 
     @Test
     fun `asVirtualThread returns GraphVirtualThreadOperations`() {
-        val result: io.bluetape4k.graph.repository.GraphVirtualThreadOperations = ops.asVirtualThread()
+        val result: GraphVirtualThreadOperations = ops.asVirtualThread()
         result.shouldNotBeNull()
     }
 
@@ -83,9 +104,13 @@ class VirtualThreadOperationsAdapterTest {
     @Test
     fun `facade operations are thread-safe under concurrent load`() {
         val v = ops.createVertex("Person", mapOf("name" to "Alice"))
+
         StructuredTaskScopeTester()
-            .rounds(50)
-            .add { vtOps.findVertexByIdAsync("Person", v.id).join().shouldNotBeNull() }
+            .rounds(Runtimex.availableProcessors * 4)
+            .add {
+                val vertex = vtOps.findVertexByIdAsync("Person", v.id).get()
+                vertex.shouldNotBeNull()
+            }
             .run()
     }
 }

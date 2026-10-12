@@ -26,8 +26,22 @@ data class BatchEdge(
     val fromId: GraphElementId,
     val toId: GraphElementId,
     val properties: Map<String, Any?> = emptyMap(),
-) : Serializable {
+): Serializable {
     companion object {
         private const val serialVersionUID: Long = 1L
     }
 }
+
+fun batchEdgeOf(
+    fromId: GraphElementId,
+    toId: GraphElementId,
+    properties: Map<String, Any?> = emptyMap(),
+): BatchEdge =
+    BatchEdge(fromId, toId, properties)
+
+fun batchEdgeOf(
+    fromId: Any,
+    toId: Any,
+    properties: Map<String, Any?> = emptyMap(),
+): BatchEdge =
+    BatchEdge(elementIdOf(fromId), elementIdOf(toId), properties)

@@ -13,6 +13,6 @@ package io.bluetape4k.graph.repository
  * }
  * ```
  */
-interface GraphSuspendGenericRepository :
+interface GraphSuspendGenericRepository:
     GraphSuspendTraversalRepository,
     GraphSuspendAlgorithmRepository

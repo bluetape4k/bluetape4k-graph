@@ -1,7 +1,8 @@
 package io.bluetape4k.graph.algo
 
+import io.bluetape4k.concurrent.futureOf
+import io.bluetape4k.concurrent.virtualthread.VirtualThreadExecutor
 import io.bluetape4k.concurrent.virtualthread.virtualFutureOf
-import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
 import io.bluetape4k.graph.model.DegreeOptions
@@ -12,6 +13,7 @@ import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.PageRankOptions
 import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.TraversalVisit
+import io.bluetape4k.graph.model.TreeTraversalOptions
 import io.bluetape4k.graph.repository.GraphAlgorithmRepository
 import io.bluetape4k.graph.repository.GraphVirtualThreadAlgorithmRepository
 import io.bluetape4k.logging.KLogging
@@ -33,35 +35,41 @@ import java.util.concurrent.CompletableFuture
  */
 class VirtualThreadAlgorithmAdapter(
     private val delegate: GraphAlgorithmRepository,
-) : GraphVirtualThreadAlgorithmRepository {
+): GraphVirtualThreadAlgorithmRepository {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
-    override fun pageRankAsync(options: PageRankOptions): CompletableFuture<List<PageRankScore>> =
-        virtualFutureOf { delegate.pageRank(options) }
+    override fun pageRankAsync(
+        options: PageRankOptions,
+    ): CompletableFuture<List<PageRankScore>> =
+        futureOf(VirtualThreadExecutor) { delegate.pageRank(options) }
 
     override fun degreeCentralityAsync(
         vertexId: GraphElementId,
         options: DegreeOptions,
     ): CompletableFuture<DegreeResult> =
-        virtualFutureOf { delegate.degreeCentrality(vertexId, options) }
+        futureOf(VirtualThreadExecutor) { delegate.degreeCentrality(vertexId, options) }
 
-    override fun connectedComponentsAsync(options: ComponentOptions): CompletableFuture<List<GraphComponent>> =
-        virtualFutureOf { delegate.connectedComponents(options) }
+    override fun connectedComponentsAsync(
+        options: ComponentOptions,
+    ): CompletableFuture<List<GraphComponent>> =
+        futureOf(VirtualThreadExecutor) { delegate.connectedComponents(options) }
 
     override fun bfsAsync(
         startId: GraphElementId,
-        options: BfsDfsOptions,
+        options: TreeTraversalOptions,
     ): CompletableFuture<List<TraversalVisit>> =
-        virtualFutureOf { delegate.bfs(startId, options) }
+        futureOf(VirtualThreadExecutor) { delegate.bfs(startId, options) }
 
     override fun dfsAsync(
         startId: GraphElementId,
-        options: BfsDfsOptions,
+        options: TreeTraversalOptions,
     ): CompletableFuture<List<TraversalVisit>> =
-        virtualFutureOf { delegate.dfs(startId, options) }
+        futureOf(VirtualThreadExecutor) { delegate.dfs(startId, options) }
 
-    override fun detectCyclesAsync(options: CycleOptions): CompletableFuture<List<GraphCycle>> =
+    override fun detectCyclesAsync(
+        options: CycleOptions,
+    ): CompletableFuture<List<GraphCycle>> =
         virtualFutureOf { delegate.detectCycles(options) }
 }
 

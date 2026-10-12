@@ -15,9 +15,9 @@ import java.util.concurrent.CompletableFuture
  */
 class VirtualThreadSessionAdapter(
     private val delegate: GraphSession,
-) : GraphVirtualThreadSession {
+): GraphVirtualThreadSession {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     override fun createGraphAsync(name: String): CompletableFuture<Unit> =
         virtualFutureOf { delegate.createGraph(name) }

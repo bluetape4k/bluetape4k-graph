@@ -1,10 +1,9 @@
 package io.bluetape4k.graph.age
 
 import io.bluetape4k.graph.GraphQueryException
-import io.bluetape4k.graph.algo.ShortestPathFallback
 import io.bluetape4k.graph.age.sql.AgeSql
 import io.bluetape4k.graph.age.sql.AgeTypeParser
-import io.bluetape4k.graph.model.BfsDfsOptions
+import io.bluetape4k.graph.algo.ShortestPathFallback
 import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
@@ -21,6 +20,7 @@ import io.bluetape4k.graph.model.PageRankOptions
 import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.TraversalVisit
+import io.bluetape4k.graph.model.TreeTraversalOptions
 import io.bluetape4k.graph.repository.GraphSuspendMergeOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphSuspendTransactionScope
@@ -37,6 +37,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.trySendBlocking
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
@@ -51,13 +52,12 @@ import org.jetbrains.exposed.v1.jdbc.JdbcTransaction
 import org.jetbrains.exposed.v1.jdbc.statements.BlockingExecutable
 import org.jetbrains.exposed.v1.jdbc.statements.api.JdbcPreparedStatementApi
 import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
-import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction as exposedSuspendTransaction
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.coroutineContext
+import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction as exposedSuspendTransaction
 
 private const val DEFAULT_STREAM_FETCH_SIZE = 100
 
@@ -97,7 +97,6 @@ private const val DEFAULT_STREAM_FETCH_SIZE = 100
  * @param database 이 facade가 사용할 Exposed 데이터베이스
  * @param graphName AGE 그래프 이름
  */
-@Suppress("DEPRECATION")
 class AgeGraphSuspendOperations(
     private val database: Database,
     private val graphName: String,
@@ -142,7 +141,7 @@ class AgeGraphSuspendOperations(
         statementText: String,
         transform: (ResultSet) -> Unit,
     ) {
-        val context = coroutineContext
+        val context = currentCoroutineContext()
         val activeStatement = AtomicReference<JdbcPreparedStatementApi?>()
         val cancellationRequested = AtomicBoolean()
         val statementCancelled = AtomicBoolean()
@@ -160,7 +159,7 @@ class AgeGraphSuspendOperations(
                 }
             }
         }
-        val cancellationHandle = coroutineContext[Job]?.invokeOnCompletion(onCancelling = true) { cause ->
+        val cancellationHandle = currentCoroutineContext()[Job]?.invokeOnCompletion(onCancelling = true) { cause ->
             if (cause is CancellationException) {
                 cancellationRequested.set(true)
                 cancelActiveStatement()
@@ -175,7 +174,7 @@ class AgeGraphSuspendOperations(
                     listOf(emptyList())
             }
 
-            override fun JdbcPreparedStatementApi.executeInternal(transaction: JdbcTransaction): Unit? {
+            override fun JdbcPreparedStatementApi.executeInternal(transaction: JdbcTransaction) {
                 activeStatement.set(this)
                 fetchSize = transaction.db.defaultFetchSize?.takeIf { it > 0 } ?: DEFAULT_STREAM_FETCH_SIZE
                 context.ensureActive()
@@ -183,7 +182,7 @@ class AgeGraphSuspendOperations(
                 context.ensureActive()
                 try {
                     executeQuery().result.use(transform)
-                    return Unit
+                    return 
                 } finally {
                     statementExecuting.set(false)
                     activeStatement.compareAndSet(this, null)
@@ -194,7 +193,7 @@ class AgeGraphSuspendOperations(
         try {
             exec(executable)
         } catch (cause: SQLException) {
-            coroutineContext.ensureActive()
+            currentCoroutineContext().ensureActive()
             throw cause
         } finally {
             cancellationHandle?.dispose()
@@ -562,12 +561,12 @@ class AgeGraphSuspendOperations(
         syncDelegate.degreeCentrality(vertexId, options)
     }
 
-    override fun bfs(startId: GraphElementId, options: BfsDfsOptions): Flow<TraversalVisit> = flow {
+    override fun bfs(startId: GraphElementId, options: TreeTraversalOptions): Flow<TraversalVisit> = flow {
         val list = withContext(Dispatchers.IO) { syncDelegate.bfs(startId, options) }
         list.forEach { emit(it) }
     }
 
-    override fun dfs(startId: GraphElementId, options: BfsDfsOptions): Flow<TraversalVisit> = flow {
+    override fun dfs(startId: GraphElementId, options: TreeTraversalOptions): Flow<TraversalVisit> = flow {
         val list = withContext(Dispatchers.IO) { syncDelegate.dfs(startId, options) }
         list.forEach { emit(it) }
     }

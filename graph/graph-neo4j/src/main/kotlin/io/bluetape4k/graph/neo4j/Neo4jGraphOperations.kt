@@ -2,16 +2,15 @@ package io.bluetape4k.graph.neo4j
 
 import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.algo.ShortestPathFallback
-import io.bluetape4k.graph.algo.internal.BfsDfsRunner
 import io.bluetape4k.graph.algo.internal.CycleDetector
 import io.bluetape4k.graph.algo.internal.PageRankCalculator
+import io.bluetape4k.graph.algo.internal.TreeTraverser
 import io.bluetape4k.graph.algo.internal.UnionFind
 import io.bluetape4k.graph.algo.provider.GraphAlgorithmExecution
 import io.bluetape4k.graph.algo.provider.GraphAlgorithmExecutionObservable
 import io.bluetape4k.graph.algo.provider.GraphAlgorithmExecutionObserver
 import io.bluetape4k.graph.algo.provider.GraphAlgorithmId
 import io.bluetape4k.graph.algo.provider.GraphAlgorithmProviderSelector
-import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
@@ -30,15 +29,14 @@ import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.TraversalVisit
+import io.bluetape4k.graph.model.TreeTraversalOptions
 import io.bluetape4k.graph.repository.GraphBatchValidation
-import io.bluetape4k.graph.repository.GraphEdgeRepository
 import io.bluetape4k.graph.repository.GraphMergeOperations
 import io.bluetape4k.graph.repository.GraphMergeProperties
 import io.bluetape4k.graph.repository.GraphMergeValidation
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphTransactionScope
 import io.bluetape4k.graph.repository.GraphTransactionalOperations
-import io.bluetape4k.graph.repository.GraphVertexRepository
 import io.bluetape4k.graph.schema.GraphSchemaManagementOperations
 import io.bluetape4k.graph.schema.GraphSchemaManager
 import io.bluetape4k.graph.support.requireSafeIdentifier
@@ -597,10 +595,10 @@ class Neo4jGraphOperations(
         }
     }
 
-    override fun bfs(startId: GraphElementId, options: BfsDfsOptions): List<TraversalVisit> {
+    override fun bfs(startId: GraphElementId, options: TreeTraversalOptions): List<TraversalVisit> {
         options.edgeLabel?.requireNotBlank("edgeLabel")
         val (adjacency, vertexById) = loadAdjacency(options.edgeLabel, options.direction)
-        return BfsDfsRunner.bfs(
+        return TreeTraverser.bfs(
             startId = startId,
             adjacency = adjacency,
             maxDepth = options.maxDepth,
@@ -609,10 +607,10 @@ class Neo4jGraphOperations(
         )
     }
 
-    override fun dfs(startId: GraphElementId, options: BfsDfsOptions): List<TraversalVisit> {
+    override fun dfs(startId: GraphElementId, options: TreeTraversalOptions): List<TraversalVisit> {
         options.edgeLabel?.requireNotBlank("edgeLabel")
         val (adjacency, vertexById) = loadAdjacency(options.edgeLabel, options.direction)
-        return BfsDfsRunner.dfs(
+        return TreeTraverser.dfs(
             startId = startId,
             adjacency = adjacency,
             maxDepth = options.maxDepth,

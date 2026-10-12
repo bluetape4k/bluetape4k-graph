@@ -1,5 +1,7 @@
 package io.bluetape4k.graph.schema
 
+import io.bluetape4k.support.hashOf
+
 /**
  * Graph edge schema definition.
  *
@@ -21,4 +23,19 @@ abstract class EdgeLabel(
     val label: String,
     val from: VertexLabel,
     val to: VertexLabel,
-) : PropertyHolder()
+): PropertyHolder() {
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null) return false
+
+        return other is EdgeLabel &&
+                label == other.label &&
+                from == other.from &&
+                to == other.to
+    }
+
+    override fun hashCode(): Int = hashOf(label, from, to)
+
+    override fun toString(): String = "EdgeLabel($label, from=$from, to=$to)"
+}

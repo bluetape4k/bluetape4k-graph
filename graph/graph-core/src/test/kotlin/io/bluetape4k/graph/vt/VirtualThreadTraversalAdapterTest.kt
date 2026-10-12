@@ -1,25 +1,28 @@
 package io.bluetape4k.graph.vt
 
-import io.bluetape4k.graph.model.NeighborOptions
-import io.bluetape4k.graph.model.PathOptions
-import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
-import io.bluetape4k.junit5.concurrency.StructuredTaskScopeTester
-import io.bluetape4k.logging.KLogging
-import io.mockk.clearMocks
-import io.mockk.spyk
-import io.mockk.verify
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.graph.AbstractGraphTest
+import io.bluetape4k.graph.model.NeighborOptions
+import io.bluetape4k.graph.model.PathOptions
+import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
+import io.bluetape4k.junit5.concurrency.StructuredTaskScopeTester
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
+import io.bluetape4k.utils.Runtimex
+import io.mockk.clearMocks
+import io.mockk.spyk
+import io.mockk.verify
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class VirtualThreadTraversalAdapterTest {
+class VirtualThreadTraversalAdapterTest: AbstractGraphTest() {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     private lateinit var delegate: TinkerGraphOperations
     private lateinit var adapter: VirtualThreadTraversalAdapter
@@ -42,8 +45,10 @@ class VirtualThreadTraversalAdapterTest {
     fun `neighborsAsync returns empty list when no neighbors exist`() {
         val v = delegate.createVertex("Node", mapOf("name" to "lonely"))
         val result = adapter.neighborsAsync(v.id).join()
-        result.shouldNotBeNull()
+
+        result.forEach { log.debug { "result=$result" } }
         result shouldHaveSize 0
+
         verify(exactly = 1) { delegate.neighbors(v.id, NeighborOptions.Default) }
     }
 
@@ -54,6 +59,7 @@ class VirtualThreadTraversalAdapterTest {
         delegate.createEdge(from.id, to.id, "KNOWS", emptyMap())
 
         val result = adapter.neighborsAsync(from.id, NeighborOptions(edgeLabel = "KNOWS")).join()
+        log.debug { "result=$result" }
         result.shouldNotBeNull()
         result shouldHaveSize 1
         result.first().id shouldBeEqualTo to.id
@@ -63,9 +69,12 @@ class VirtualThreadTraversalAdapterTest {
     @Test
     fun `neighborsAsync is thread-safe under concurrent load`() {
         val v = delegate.createVertex("Node", mapOf("name" to "A"))
+
         StructuredTaskScopeTester()
             .rounds(50)
-            .add { adapter.neighborsAsync(v.id).join().shouldNotBeNull() }
+            .add {
+                adapter.neighborsAsync(v.id).join().shouldNotBeNull()
+            }
             .run()
     }
 
@@ -78,6 +87,7 @@ class VirtualThreadTraversalAdapterTest {
 
         val result = adapter.shortestPathAsync(isolated.id, other.id).join()
         result.shouldBeNull()
+
         verify(exactly = 1) { delegate.shortestPath(isolated.id, other.id, PathOptions.Default) }
     }
 
@@ -86,12 +96,15 @@ class VirtualThreadTraversalAdapterTest {
         val alice = delegate.createVertex("Person", mapOf("name" to "Alice"))
         val bob = delegate.createVertex("Person", mapOf("name" to "Bob"))
         val carol = delegate.createVertex("Person", mapOf("name" to "Carol"))
+
         delegate.createEdge(alice.id, bob.id, "KNOWS", emptyMap())
         delegate.createEdge(bob.id, carol.id, "KNOWS", emptyMap())
 
         val result = adapter.shortestPathAsync(alice.id, carol.id, PathOptions(edgeLabel = "KNOWS")).join()
+        log.debug { "result=$result" }
         result.shouldNotBeNull()
         result.vertices.shouldNotBeEmpty()
+
         verify(exactly = 1) { delegate.shortestPath(alice.id, carol.id, PathOptions(edgeLabel = "KNOWS")) }
     }
 
@@ -102,8 +115,14 @@ class VirtualThreadTraversalAdapterTest {
         delegate.createEdge(from.id, to.id, "LINK", emptyMap())
 
         StructuredTaskScopeTester()
-            .rounds(50)
-            .add { adapter.shortestPathAsync(from.id, to.id, PathOptions(edgeLabel = "LINK")).join() }
+            .rounds(Runtimex.availableProcessors * 4)
+            .add {
+                adapter.shortestPathAsync(
+                    from.id,
+                    to.id,
+                    PathOptions(edgeLabel = "LINK")
+                ).join()
+            }
             .run()
     }
 
@@ -114,9 +133,12 @@ class VirtualThreadTraversalAdapterTest {
         val a = delegate.createVertex("Node", mapOf("name" to "A"))
         val b = delegate.createVertex("Node", mapOf("name" to "B"))
 
-        val result = adapter.allPathsAsync(a.id, b.id).join()
-        result.shouldNotBeNull()
-        result shouldHaveSize 0
+        val results = adapter.allPathsAsync(a.id, b.id).join()
+
+        results.forEach { log.debug { "result=$it" } }
+        results.shouldNotBeNull()
+        results shouldHaveSize 0
+
         verify(exactly = 1) { delegate.allPaths(a.id, b.id, PathOptions.Default) }
     }
 
@@ -130,18 +152,24 @@ class VirtualThreadTraversalAdapterTest {
         delegate.createEdge(c.id, b.id, "LINK", emptyMap())
 
         val result = adapter.allPathsAsync(a.id, b.id, PathOptions(edgeLabel = "LINK")).join()
+        result.forEach { log.debug { "path=$it" } }
         result.shouldNotBeNull()
+
         // At least the direct path exists
         result.shouldNotBeEmpty()
+
         verify(exactly = 1) { delegate.allPaths(a.id, b.id, PathOptions(edgeLabel = "LINK")) }
     }
 
     @Test
     fun `allPathsAsync is thread-safe under concurrent load`() {
         val v = delegate.createVertex("Node", mapOf("name" to "A"))
+
         StructuredTaskScopeTester()
-            .rounds(50)
-            .add { adapter.allPathsAsync(v.id, v.id).join().shouldNotBeNull() }
+            .rounds(Runtimex.availableProcessors * 4)
+            .add {
+                adapter.allPathsAsync(v.id, v.id).join().shouldNotBeNull()
+            }
             .run()
     }
 

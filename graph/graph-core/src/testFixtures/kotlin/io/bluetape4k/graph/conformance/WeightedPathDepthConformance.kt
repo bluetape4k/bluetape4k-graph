@@ -10,6 +10,7 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.vt.asVirtualThread
+import io.bluetape4k.logging.coroutines.KLoggingChannel
 
 /**
  * Shared TCK for weighted path depth semantics across sync, suspend, and virtual-thread APIs.
@@ -17,7 +18,7 @@ import io.bluetape4k.graph.vt.asVirtualThread
  * The fixture deliberately uses only [GraphOperations] contracts so each backend can execute the
  * same boundary cases without importing another backend implementation.
  */
-object WeightedPathDepthConformance {
+object WeightedPathDepthConformance: KLoggingChannel() {
 
     /** Verifies Dijkstra and A* depth boundaries on a synchronous backend and its VT facade. */
     fun assertSyncAndVirtual(ops: GraphOperations) {

@@ -15,4 +15,8 @@ package io.bluetape4k.graph.schema
  *
  * @property label vertex label name, such as `"Person"` or `"Company"`.
  */
-abstract class VertexLabel(val label: String) : PropertyHolder()
+abstract class VertexLabel(val label: String): PropertyHolder() {
+
+    override fun toString(): String = "VertexLabel($label)"
+
+}

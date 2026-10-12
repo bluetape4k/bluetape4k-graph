@@ -1,10 +1,12 @@
 package io.bluetape4k.graph.vt
 
+import io.bluetape4k.concurrent.failedCompletableFutureOf
 import io.bluetape4k.concurrent.virtualthread.virtualFutureOf
 import io.bluetape4k.concurrent.virtualthread.virtualFutureOfNullable
+import io.bluetape4k.graph.GraphUnsupportedOperationException
+import io.bluetape4k.graph.model.GraphConstraint
 import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphElementId
-import io.bluetape4k.graph.model.GraphConstraint
 import io.bluetape4k.graph.model.GraphIndex
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.repository.GraphMergeOperations
@@ -20,8 +22,8 @@ import io.bluetape4k.logging.KLogging
 import java.util.concurrent.CompletableFuture
 
 private fun <T> unsupportedFuture(operation: String): CompletableFuture<T> =
-    CompletableFuture.failedFuture(
-        UnsupportedOperationException("Virtual Thread surface does not support $operation."),
+    failedCompletableFutureOf(
+        GraphUnsupportedOperationException("Virtual Thread surface does not support $operation."),
     )
 
 /**
@@ -32,9 +34,9 @@ private fun <T> unsupportedFuture(operation: String): CompletableFuture<T> =
  */
 class VirtualThreadMergeAdapter internal constructor(
     private val delegate: GraphMergeOperations?,
-) : GraphVirtualThreadMergeOperations {
+): GraphVirtualThreadMergeOperations {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     override fun mergeVertexAsync(
         label: String,
@@ -52,9 +54,12 @@ class VirtualThreadMergeAdapter internal constructor(
         matchProperties: Map<String, Any?>,
         setProperties: Map<String, Any?>,
     ): CompletableFuture<GraphEdge> =
-        delegate?.let { merge ->
-            virtualFutureOf { merge.mergeEdge(fromId, toId, label, matchProperties, setProperties) }
-        } ?: unsupportedFuture("mergeEdgeAsync")
+        delegate
+            ?.let { merge ->
+                virtualFutureOf {
+                    merge.mergeEdge(fromId, toId, label, matchProperties, setProperties)
+                }
+            } ?: unsupportedFuture("mergeEdgeAsync")
 }
 
 /**
@@ -62,9 +67,9 @@ class VirtualThreadMergeAdapter internal constructor(
  */
 class VirtualThreadSchemaAdapter internal constructor(
     private val delegate: GraphSchemaManager?,
-) : GraphVirtualThreadSchemaManagementOperations {
+): GraphVirtualThreadSchemaManagementOperations {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     override fun createIndexAsync(label: String, property: String): CompletableFuture<Unit> =
         delegate?.let { schema -> virtualFutureOf { schema.createIndex(label, property) } }
@@ -95,15 +100,15 @@ class VirtualThreadSchemaAdapter internal constructor(
  */
 class VirtualThreadTransactionalAdapter internal constructor(
     private val delegate: GraphTransactionalOperations?,
-) : GraphVirtualThreadTransactionalOperations {
+): GraphVirtualThreadTransactionalOperations {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     @Suppress("UNCHECKED_CAST")
     override fun <T> transactionAsync(block: GraphTransactionScope.() -> T): CompletableFuture<T> =
         virtualFutureOfNullable {
             delegate?.transaction(block)
-                ?: throw UnsupportedOperationException("Virtual Thread surface does not support transactionAsync.")
+                ?: throw GraphUnsupportedOperationException("Virtual Thread surface does not support transactionAsync.")
         } as CompletableFuture<T>
 }
 
@@ -113,9 +118,9 @@ class VirtualThreadTransactionalAdapter internal constructor(
  */
 class VirtualThreadChunkedAdapter internal constructor(
     private val delegate: GraphOperations,
-) : GraphVirtualThreadChunkedOperations {
+): GraphVirtualThreadChunkedOperations {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     override fun findVerticesByLabelChunkedAsync(
         label: String,
@@ -136,14 +141,8 @@ class VirtualThreadChunkedAdapter internal constructor(
         }
 
     private fun <T> collectChunks(sequence: Sequence<List<T>>): List<List<T>> =
-        if (sequence is AutoCloseable) {
-            try {
-                sequence.toList()
-            } finally {
-                sequence.close()
-            }
-        } else {
-            sequence.toList()
+        sequence.toList().apply {
+            (sequence as? AutoCloseable)?.close()
         }
 }
 

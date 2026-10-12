@@ -8,6 +8,7 @@ import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.repository.GraphEdgeRepository
 import io.bluetape4k.graph.repository.GraphOperations
+import io.bluetape4k.logging.KLogging
 
 /**
  * synchronous backend를 위한 JVM weighted shortest-path helper.
@@ -39,7 +40,7 @@ import io.bluetape4k.graph.repository.GraphOperations
  * traversal algorithm은 vertex와 edge lookup을 위해 full [GraphOperations] access가 필요하지만,
  * `GraphTraversalRepository.this` does not satisfy that type. Backend overrides call this object directly.
  */
-object ShortestPathFallback {
+object ShortestPathFallback: KLogging() {
 
     /**
      * [GraphOperations]를 사용해 weighted Dijkstra shortest path를 계산한다.
@@ -83,8 +84,9 @@ object ShortestPathFallback {
     ): List<GraphEdge> = when (direction) {
         Direction.OUTGOING -> ops.findEdgesByStartId(id, edgeLabel)
         Direction.INCOMING -> ops.findEdgesByEndId(id, edgeLabel)
-        Direction.BOTH -> (ops.findEdgesByStartId(id, edgeLabel) + ops.findEdgesByEndId(id, edgeLabel))
-            .distinctBy { it.id }
-            .sortedBy { it.id.value }
+        Direction.BOTH ->
+            (ops.findEdgesByStartId(id, edgeLabel) + ops.findEdgesByEndId(id, edgeLabel))
+                .distinctBy { it.id }
+                .sortedBy { it.id.value }
     }
 }

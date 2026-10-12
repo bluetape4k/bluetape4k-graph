@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.model
 
+import io.bluetape4k.support.unsafeLazy
 import java.io.Serializable
 
 /**
@@ -21,7 +22,7 @@ data class DegreeResult(
     val outDegree: Int,
 ): Serializable {
     /** Sum of incoming and outgoing edges. */
-    val total: Int get() = inDegree + outDegree
+    val total: Int by unsafeLazy { inDegree + outDegree }
 
     companion object {
         private const val serialVersionUID: Long = 1L

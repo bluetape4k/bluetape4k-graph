@@ -1,14 +1,22 @@
 package io.bluetape4k.graph.tinkerpop
 
 import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeFalse
+import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
+import io.bluetape4k.assertions.shouldBeNull
+import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldContain
+import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.assertions.shouldNotBeEmpty
+import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.graph.GraphQueryException
-import io.bluetape4k.graph.model.BfsDfsOptions
-import io.bluetape4k.graph.model.Direction
 import io.bluetape4k.graph.model.DegreeOptions
+import io.bluetape4k.graph.model.Direction
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
-import io.bluetape4k.graph.repository.suspendTransaction
+import io.bluetape4k.graph.model.TreeTraversalOptions
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import kotlinx.coroutines.CompletableDeferred
@@ -21,18 +29,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withTimeout
-import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldBeFalse
-import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
-import io.bluetape4k.assertions.shouldBeNull
-import io.bluetape4k.assertions.shouldBeTrue
-import io.bluetape4k.assertions.shouldContain
-import io.bluetape4k.assertions.shouldHaveSize
-import io.bluetape4k.assertions.shouldNotBeEmpty
-import io.bluetape4k.assertions.shouldNotBeNull
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.MethodOrderer
@@ -198,8 +197,8 @@ class TinkerGraphSuspendOperationsTest {
             { ops.aStarPath(malformedId, missingId, PathOptions(weightProperty = "weight")) { 0.0 } },
             { ops.allPaths(malformedId, missingId, PathOptions()).toList() },
             { ops.degreeCentrality(malformedId, DegreeOptions()) },
-            { ops.bfs(malformedId, BfsDfsOptions()).toList() },
-            { ops.dfs(malformedId, BfsDfsOptions()).toList() },
+            { ops.bfs(malformedId, TreeTraversalOptions()).toList() },
+            { ops.dfs(malformedId, TreeTraversalOptions()).toList() },
         )
 
         operations.forEach { operation ->

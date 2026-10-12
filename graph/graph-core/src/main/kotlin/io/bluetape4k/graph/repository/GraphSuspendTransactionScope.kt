@@ -1,13 +1,14 @@
 package io.bluetape4k.graph.repository
 
+import io.bluetape4k.graph.GraphException
+import io.bluetape4k.graph.GraphUnsupportedOperationException
 import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphVertex
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.toList
-import java.util.Collections
-import java.util.IdentityHashMap
+import java.util.*
 
 /**
  * Operation scope available inside a coroutine graph transaction block.
@@ -24,7 +25,7 @@ import java.util.IdentityHashMap
  * [GraphSuspendTransactionalOperations] only when it can provide real coroutine transaction semantics.
  */
 @GraphTransactionDsl
-interface GraphSuspendTransactionScope :
+interface GraphSuspendTransactionScope:
     GraphSuspendVertexRepository,
     GraphSuspendEdgeRepository
 
@@ -139,9 +140,9 @@ private fun requireNoNestedFlow(
 ) {
     if (value == null) return
     if (value is Flow<*>) {
-        throw IllegalArgumentException(
+        throw GraphException(
             "suspendTransaction result contains a nested Flow at $path. " +
-                "Materialize it inside the transaction before returning."
+                    "Materialize it inside the transaction before returning."
         )
     }
     if (!visited.add(value)) return
@@ -163,7 +164,7 @@ private fun requireNoNestedFlow(
             requireNoNestedFlow(entryValue, "$path[$key]", visited)
         }
 
-        is Collection<*> -> value.forEachIndexed { index, entryValue ->
+        is Iterable<*> -> value.forEachIndexed { index, entryValue ->
             requireNoNestedFlow(entryValue, "$path[$index]", visited)
         }
 
@@ -183,7 +184,7 @@ suspend fun <T> GraphSuspendOperations.suspendTransaction(
     block: suspend GraphSuspendTransactionScope.() -> T,
 ): T {
     val transactional = this as? GraphSuspendTransactionalOperations
-        ?: throw UnsupportedOperationException(
+        ?: throw GraphUnsupportedOperationException(
             "${this::class.qualifiedName ?: this::class.simpleName} does not support suspend graph transactions."
         )
     return transactional.suspendTransaction(block)

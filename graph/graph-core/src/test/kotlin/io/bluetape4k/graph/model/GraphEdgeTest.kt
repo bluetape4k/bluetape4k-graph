@@ -4,13 +4,18 @@ import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldNotBeEqualTo
+import io.bluetape4k.graph.AbstractGraphTest
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 
-class GraphEdgeTest {
+class GraphEdgeTest: AbstractGraphTest() {
 
-    private val edgeId = GraphElementId("e-1")
-    private val startId = GraphElementId("v-1")
-    private val endId = GraphElementId("v-2")
+    companion object: KLogging()
+
+    private val edgeId = elementIdOf("e-1")
+    private val startId = elementIdOf("v-1")
+    private val endId = elementIdOf("v-2")
 
     @Test
     fun `시작 정점과 도착 정점을 가지는 간선을 만든다`() {
@@ -22,6 +27,7 @@ class GraphEdgeTest {
             properties = mapOf("since" to 2020),
         )
 
+        log.debug { "edge=$edge" }
         edge.id shouldBeEqualTo edgeId
         edge.label shouldBeEqualTo "KNOWS"
         edge.startId shouldBeEqualTo startId
@@ -32,12 +38,16 @@ class GraphEdgeTest {
     @Test
     fun `properties 기본값은 빈 맵이다`() {
         val edge = GraphEdge(edgeId, "KNOWS", startId, endId)
+
+        log.debug { "edge=$edge" }
         edge.properties shouldBeEqualTo emptyMap()
     }
 
     @Test
     fun `자기 자신을 가리키는 간선도 허용된다`() {
         val self = GraphEdge(edgeId, "LOOP", startId, startId)
+
+        log.debug { "self=$self" }
         self.startId shouldBeEqualTo self.endId
     }
 
@@ -59,6 +69,8 @@ class GraphEdgeTest {
     @Test
     fun `null 값을 포함한 properties도 허용된다`() {
         val edge = GraphEdge(edgeId, "KNOWS", startId, endId, mapOf("weight" to null))
+
+        log.debug { "edge=$edge" }
         edge.properties.keys shouldContain "weight"
         edge.properties["weight"].shouldBeNull()
     }
@@ -68,6 +80,7 @@ class GraphEdgeTest {
         val original = GraphEdge(edgeId, "KNOWS", startId, endId, mapOf("since" to 2020))
         val updated = original.copy(properties = mapOf("since" to 2024))
 
+        log.debug { "updated=$updated" }
         updated.id shouldBeEqualTo original.id
         updated.label shouldBeEqualTo original.label
         updated.startId shouldBeEqualTo original.startId

@@ -36,9 +36,9 @@ interface GraphEdgeRepository {
 
     /**
      * Creates multiple edges with the same label and returns them in input order.
-	*
+     *
      * ## Contract
-	*
+     *
      * - Empty input returns `emptyList()` without calling the backend.
      * - The default implementation is a compatibility fallback that calls [createEdge] sequentially.
      * - If the default implementation fails mid-batch, previously created edges may remain.
@@ -61,7 +61,9 @@ interface GraphEdgeRepository {
     ): List<GraphEdge> {
         GraphBatchValidation.validateEdgeBatch(label, edges)
         if (edges.isEmpty()) return emptyList()
-        return edges.map { edge -> createEdge(edge.fromId, edge.toId, label, edge.properties) }
+        return edges.map { edge ->
+            createEdge(edge.fromId, edge.toId, label, edge.properties)
+        }
     }
 
     /**
@@ -108,7 +110,7 @@ interface GraphEdgeRepository {
 
     /**
      * Finds edges that start at a specific vertex.
-	*
+     *
      * Used to collect adjacent edges for Dijkstra/A* algorithms.
      *
      * ```kotlin
@@ -124,7 +126,7 @@ interface GraphEdgeRepository {
 
     /**
      * Finds edges that end at a specific vertex.
-	*
+     *
      * Used for `Direction.INCOMING` and `Direction.BOTH` traversal.
      *
      * ```kotlin

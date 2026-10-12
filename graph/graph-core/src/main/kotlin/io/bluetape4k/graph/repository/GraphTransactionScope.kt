@@ -1,5 +1,7 @@
 package io.bluetape4k.graph.repository
 
+import io.bluetape4k.graph.GraphUnsupportedOperationException
+
 /**
  * Marker for graph transaction DSL receivers.
  *
@@ -24,7 +26,7 @@ annotation class GraphTransactionDsl
  * Backends must commit when the block completes normally and roll back when it throws.
  */
 @GraphTransactionDsl
-interface GraphTransactionScope :
+interface GraphTransactionScope:
     GraphVertexRepository,
     GraphEdgeRepository
 
@@ -51,9 +53,10 @@ interface GraphTransactionalOperations {
  * A silent fallback would make callers believe atomicity is guaranteed.
  */
 fun <T> GraphOperations.transaction(block: GraphTransactionScope.() -> T): T {
-    val transactional = this as? GraphTransactionalOperations
-        ?: throw UnsupportedOperationException(
+    val transactional: GraphTransactionalOperations = this as? GraphTransactionalOperations
+        ?: throw GraphUnsupportedOperationException(
             "${this::class.qualifiedName ?: this::class.simpleName} does not support graph transactions."
         )
+
     return transactional.transaction(block)
 }
