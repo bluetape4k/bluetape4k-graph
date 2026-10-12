@@ -106,8 +106,8 @@ class AgeKnowledgeGraphTest : AbstractKnowledgeGraphTest() {
             connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
             maximumPoolSize = 5
         })
-        Database.connect(dataSource)
-        ops = AgeGraphOperations(graphName)
+        val database = Database.connect(dataSource)
+        ops = AgeGraphOperations(database, graphName)
     }
 
     @AfterAll
