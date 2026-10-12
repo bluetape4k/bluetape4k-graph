@@ -21,7 +21,7 @@ package io.bluetape4k.graph.repository
  * val path      = ops.shortestPath(alice.id, bob.id, PathOptions())
  * ```
  */
-interface GraphOperations :
+interface GraphOperations:
     GraphSession,
     GraphVertexRepository,
     GraphEdgeRepository,

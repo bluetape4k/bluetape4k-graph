@@ -39,3 +39,51 @@ data class GraphEdge(
         private const val serialVersionUID: Long = 1L
     }
 }
+
+fun graphEdgeOf(
+    id: GraphElementId,
+    label: String,
+    startId: GraphElementId,
+    endId: GraphElementId,
+    properties: Map<String, Any?> = emptyMap(),
+): GraphEdge =
+    GraphEdge(id, label, startId, endId, properties)
+
+fun graphEdgeOf(
+    id: Any,
+    label: String,
+    startId: Any,
+    endId: Any,
+    properties: Map<String, Any?> = emptyMap(),
+): GraphEdge =
+    GraphEdge(
+        graphElementIdOf(id),
+        label,
+        graphElementIdOf(startId),
+        graphElementIdOf(endId),
+        properties
+    )
+
+fun edgeOf(
+    id: GraphElementId,
+    label: String,
+    startId: GraphElementId,
+    endId: GraphElementId,
+    properties: Map<String, Any?> = emptyMap(),
+): GraphEdge =
+    GraphEdge(id, label, startId, endId, properties)
+
+fun edgeOf(
+    id: Any,
+    label: String,
+    startId: Any,
+    endId: Any,
+    properties: Map<String, Any?> = emptyMap(),
+): GraphEdge =
+    GraphEdge(
+        elementIdOf(id),
+        label,
+        elementIdOf(startId),
+        elementIdOf(endId),
+        properties
+    )

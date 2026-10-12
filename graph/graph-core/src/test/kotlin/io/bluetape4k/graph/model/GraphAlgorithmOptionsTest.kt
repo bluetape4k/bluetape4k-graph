@@ -2,17 +2,25 @@ package io.bluetape4k.graph.model
 
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeInstanceOf
 import io.bluetape4k.assertions.shouldBeNull
+import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
+import io.bluetape4k.graph.AbstractGraphTest
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 
-class GraphAlgorithmOptionsTest {
+class GraphAlgorithmOptionsTest: AbstractGraphTest() {
+
+    companion object: KLogging()
 
     @Test
     fun `PageRankOptions 기본값은 전체 정점과 간선을 대상으로 한다`() {
         val opts = PageRankOptions()
 
+        log.debug { "opts=$opts" }
         opts.vertexLabel.shouldBeNull()
         opts.edgeLabel.shouldBeNull()
         opts.iterations shouldBeEqualTo 20
@@ -37,6 +45,7 @@ class GraphAlgorithmOptionsTest {
             topK = 25,
         )
 
+        log.debug { "opts=$opts" }
         opts.vertexLabel shouldBeEqualTo "Account"
         opts.edgeLabel shouldBeEqualTo "TRANSFERRED_TO"
         opts.iterations shouldBeEqualTo 50
@@ -50,6 +59,7 @@ class GraphAlgorithmOptionsTest {
         val base = PageRankOptions(vertexLabel = "Person", topK = 10)
         val updated = base.copy(edgeLabel = "KNOWS", iterations = 30)
 
+        log.debug { "updated=$updated" }
         updated.vertexLabel shouldBeEqualTo "Person"
         updated.edgeLabel shouldBeEqualTo "KNOWS"
         updated.iterations shouldBeEqualTo 30
@@ -63,6 +73,7 @@ class GraphAlgorithmOptionsTest {
                 PageRankOptions(iterations = iterations)
             }
 
+            log.debug { "ex=$ex" }
             ex.message shouldContain "iterations"
         }
     }
@@ -74,6 +85,7 @@ class GraphAlgorithmOptionsTest {
                 PageRankOptions(topK = topK)
             }
 
+            log.debug { "ex=$ex" }
             ex.message shouldContain "topK"
         }
     }
@@ -85,6 +97,7 @@ class GraphAlgorithmOptionsTest {
                 PageRankOptions(dampingFactor = dampingFactor)
             }
 
+            log.debug { "ex=$ex" }
             ex.message shouldContain "dampingFactor"
         }
     }
@@ -103,6 +116,7 @@ class GraphAlgorithmOptionsTest {
                 PageRankOptions(tolerance = tolerance)
             }
 
+            log.debug { "ex=$ex" }
             ex.message shouldContain "tolerance"
         }
     }
@@ -124,6 +138,7 @@ class GraphAlgorithmOptionsTest {
     fun `DegreeOptions 기본값은 모든 간선과 양방향이다`() {
         val opts = DegreeOptions()
 
+        log.debug { "opts=$opts" }
         opts.edgeLabel.shouldBeNull()
         opts.direction shouldBeEqualTo Direction.BOTH
     }
@@ -137,6 +152,7 @@ class GraphAlgorithmOptionsTest {
     fun `DegreeOptions는 모든 필드를 명시해서 생성할 수 있다`() {
         val opts = DegreeOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING)
 
+        log.debug { "opts=$opts" }
         opts.edgeLabel shouldBeEqualTo "KNOWS"
         opts.direction shouldBeEqualTo Direction.OUTGOING
     }
@@ -145,9 +161,10 @@ class GraphAlgorithmOptionsTest {
     fun `ComponentOptions 기본값은 weak component 전체 반환이다`() {
         val opts = ComponentOptions()
 
+        log.debug { "opts=$opts" }
         opts.vertexLabel.shouldBeNull()
         opts.edgeLabel.shouldBeNull()
-        opts.weakly shouldBeEqualTo true
+        opts.weakly.shouldBeTrue()
         opts.minSize shouldBeEqualTo 1
     }
 
@@ -165,9 +182,10 @@ class GraphAlgorithmOptionsTest {
             minSize = 3,
         )
 
+        log.debug { "opts=$opts" }
         opts.vertexLabel shouldBeEqualTo "Account"
         opts.edgeLabel shouldBeEqualTo "TRANSFERRED_TO"
-        opts.weakly shouldBeEqualTo false
+        opts.weakly.shouldBeFalse()
         opts.minSize shouldBeEqualTo 3
     }
 
@@ -178,6 +196,7 @@ class GraphAlgorithmOptionsTest {
                 ComponentOptions(minSize = minSize)
             }
 
+            log.debug { "ex=$ex" }
             ex.message shouldContain "minSize"
         }
     }

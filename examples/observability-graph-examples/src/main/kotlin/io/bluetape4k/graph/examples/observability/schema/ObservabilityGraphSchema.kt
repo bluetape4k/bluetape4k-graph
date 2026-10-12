@@ -11,6 +11,8 @@ object ServiceLabel: VertexLabel("Service") {
     val name = string("name")
     val tier = string("tier")
     val status = string("status")
+
+    private fun readResolve(): Any = ServiceLabel
 }
 
 /**
@@ -21,6 +23,8 @@ object ApiLabel: VertexLabel("Api") {
     val name = string("name")
     val tier = string("tier")
     val status = string("status")
+
+    private fun readResolve(): Any = ApiLabel
 }
 
 /**
@@ -30,6 +34,8 @@ object TeamLabel: VertexLabel("Team") {
     val teamId = string("teamId")
     val name = string("name")
     val status = string("status")
+
+    private fun readResolve(): Any = TeamLabel
 }
 
 /**
@@ -40,6 +46,8 @@ object AlertLabel: VertexLabel("Alert") {
     val name = string("name")
     val severity = string("severity")
     val status = string("status")
+
+    private fun readResolve(): Any = AlertLabel
 }
 
 /**
@@ -50,6 +58,8 @@ object IncidentLabel: VertexLabel("Incident") {
     val name = string("name")
     val severity = string("severity")
     val status = string("status")
+
+    private fun readResolve(): Any = IncidentLabel
 }
 
 /**
@@ -57,6 +67,7 @@ object IncidentLabel: VertexLabel("Incident") {
  */
 object DependsOnLabel: EdgeLabel("DEPENDS_ON", ServiceLabel, ServiceLabel) {
     val kind = string("kind")
+    private fun readResolve(): Any = DependsOnLabel
 }
 
 /**
@@ -64,6 +75,7 @@ object DependsOnLabel: EdgeLabel("DEPENDS_ON", ServiceLabel, ServiceLabel) {
  */
 object OwnedByLabel: EdgeLabel("OWNED_BY", ServiceLabel, TeamLabel) {
     val kind = string("kind")
+    private fun readResolve(): Any = OwnedByLabel
 }
 
 /**
@@ -71,6 +83,7 @@ object OwnedByLabel: EdgeLabel("OWNED_BY", ServiceLabel, TeamLabel) {
  */
 object AlertsOnLabel: EdgeLabel("ALERTS_ON", AlertLabel, ServiceLabel) {
     val kind = string("kind")
+    private fun readResolve(): Any = AlertsOnLabel
 }
 
 /**
@@ -78,4 +91,5 @@ object AlertsOnLabel: EdgeLabel("ALERTS_ON", AlertLabel, ServiceLabel) {
  */
 object RootCauseLabel: EdgeLabel("ROOT_CAUSE", IncidentLabel, ServiceLabel) {
     val kind = string("kind")
+    private fun readResolve(): Any = RootCauseLabel
 }

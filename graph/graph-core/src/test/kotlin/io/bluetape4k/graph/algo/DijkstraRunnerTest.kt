@@ -1,20 +1,21 @@
 package io.bluetape4k.graph.algo
 
+import io.bluetape4k.assertions.DOUBLE_EPSILON
+import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeNear
+import io.bluetape4k.assertions.shouldBeNull
+import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.graph.AbstractGraphTest
 import io.bluetape4k.graph.model.Direction
 import io.bluetape4k.graph.model.GraphEdge
-import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.MissingWeightPolicy
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.logging.KLogging
-import io.bluetape4k.assertions.shouldBeNear
-import io.bluetape4k.assertions.shouldBeNull
-import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.assertFailsWith
-import io.bluetape4k.assertions.shouldContainAll
-import io.bluetape4k.assertions.shouldHaveSize
-import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 
 /**
@@ -27,9 +28,9 @@ import org.junit.jupiter.api.Test
  * 최단 경로 A→C: A→B→C (cost=3.0)
  * 최단 경로 A→B: A→B (cost=1.0)
  */
-class DijkstraRunnerTest {
+class DijkstraRunnerTest: AbstractGraphTest() {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     private val eAB = edge("eAB", "A", "B", 1.0)
     private val eBC = edge("eBC", "B", "C", 2.0)
@@ -67,16 +68,18 @@ class DijkstraRunnerTest {
     fun `A에서 C까지 최단 경로는 A-B-C이다`() {
         val path = runner().run(id("A"), id("C"), options()).shouldNotBeNull()
 
-        path.totalWeight.shouldBeNear(3.0, 0.001)
-        path.vertexIds() shouldContainAll listOf("A", "B", "C")
+        log.debug { "path=$path" }
+        path.totalWeight.shouldBeNear(3.0, DOUBLE_EPSILON)
+        path.vertexIds() shouldBeEqualTo listOf("A", "B", "C")
     }
 
     @Test
     fun `A에서 B까지 최단 경로는 A-B이다`() {
         val path = runner().run(id("A"), id("B"), options()).shouldNotBeNull()
 
-        path.totalWeight.shouldBeNear(1.0, 0.001)
-        path.vertexIds() shouldContainAll listOf("A", "B")
+        log.debug { "path=$path" }
+        path.totalWeight.shouldBeNear(1.0, DOUBLE_EPSILON)
+        path.vertexIds() shouldBeEqualTo listOf("A", "B")
     }
 
     @Test
@@ -84,19 +87,22 @@ class DijkstraRunnerTest {
         val cheapDetour = mapOf(
             "A" to listOf(edge("eAC_exp", "A", "C", 10.0), edge("eAB2", "A", "B", 1.0)),
             "B" to listOf(edge("eBC2", "B", "C", 1.0)),
-            "C" to emptyList<GraphEdge>(),
+            "C" to emptyList(),
         )
         val path = runner(cheapDetour).run(id("A"), id("C"), options()).shouldNotBeNull()
 
-        path.totalWeight.shouldBeNear(2.0, 0.001)
-        path.vertexIds() shouldContainAll listOf("A", "B", "C")
+        log.debug { "path=$path" }
+        path.totalWeight.shouldBeNear(2.0, DOUBLE_EPSILON)
+        path.vertexIds() shouldBeEqualTo listOf("A", "B", "C")
     }
 
     @Test
     fun `동일 출발지와 도착지는 단일 정점 경로 반환`() {
         val path = runner().run(id("A"), id("A"), options()).shouldNotBeNull()
 
-        path.totalWeight.shouldBeNear(0.0, 0.001)
+        log.debug { "path=$path" }
+        path.totalWeight.shouldBeNear(0.0, DOUBLE_EPSILON)
+
         // 출발 정점만 있고 간선 없음
         path.steps shouldHaveSize 1
         path.steps.filterIsInstance<PathStep.VertexStep>() shouldHaveSize 1
@@ -127,7 +133,8 @@ class DijkstraRunnerTest {
         val opts = PathOptions(weightProperty = "cost", direction = Direction.BOTH)
         val path = bothRunner.run(id("Z"), id("X"), opts).shouldNotBeNull()
 
-        path.totalWeight.shouldBeNear(7.0, 0.001)
+        log.debug { "path=$path" }
+        path.totalWeight.shouldBeNear(7.0, DOUBLE_EPSILON)
     }
 
     // ─── maxVisited 제한 ─────────────────────────────────────────────────────────
@@ -145,7 +152,7 @@ class DijkstraRunnerTest {
         val path = runner().run(id("A"), id("C"), opts).shouldNotBeNull()
 
         path.vertexIds() shouldBeEqualTo listOf("A", "C")
-        path.totalWeight.shouldBeNear(5.0, 0.001)
+        path.totalWeight.shouldBeNear(5.0, DOUBLE_EPSILON)
     }
 
     @Test
@@ -162,14 +169,15 @@ class DijkstraRunnerTest {
             "A" to listOf(edge("eAX", "A", "X", 0.1), edge("eAB_shallow", "A", "B", 5.0)),
             "X" to listOf(edge("eXB", "X", "B", 0.1)),
             "B" to listOf(edge("eBC", "B", "C", 1.0)),
-            "C" to emptyList<GraphEdge>(),
+            "C" to emptyList(),
         )
         val opts = PathOptions(weightProperty = "cost", maxDepth = 2)
 
         val path = runner(boundedGraph).run(id("A"), id("C"), opts).shouldNotBeNull()
 
+        log.debug { "path=$path" }
         path.vertexIds() shouldBeEqualTo listOf("A", "B", "C")
-        path.totalWeight.shouldBeNear(6.0, 0.001)
+        path.totalWeight.shouldBeNear(6.0, DOUBLE_EPSILON)
     }
 
     // ─── MissingWeightPolicy 통합 ─────────────────────────────────────────────────
@@ -179,7 +187,7 @@ class DijkstraRunnerTest {
         val skipGraph = mapOf(
             "A" to listOf(edge("eAB_nw", "A", "B", null)),
             "B" to listOf(eBC),
-            "C" to emptyList<GraphEdge>(),
+            "C" to emptyList(),
         )
         val opts = PathOptions(weightProperty = "cost", missingWeightPolicy = MissingWeightPolicy.Skip)
         runner(skipGraph).run(id("A"), id("C"), opts).shouldBeNull()
@@ -190,7 +198,7 @@ class DijkstraRunnerTest {
         val defaultGraph = mapOf(
             "A" to listOf(edge("eAB_nw", "A", "B", null)),
             "B" to listOf(eBC),
-            "C" to emptyList<GraphEdge>(),
+            "C" to emptyList(),
         )
         val opts = PathOptions(
             weightProperty = "cost",
@@ -198,14 +206,17 @@ class DijkstraRunnerTest {
         )
         val path = runner(defaultGraph).run(id("A"), id("C"), opts).shouldNotBeNull()
 
-        path.totalWeight.shouldBeNear(3.0, 0.001)
+        log.debug { "path=$path" }
+        path.totalWeight.shouldBeNear(3.0, DOUBLE_EPSILON)
     }
 
     // ─── weightProperty 필수 ─────────────────────────────────────────────────────
 
     @Test
     fun `weightProperty가 null이면 IllegalArgumentException을 던진다`() {
-        assertFailsWith<IllegalArgumentException> { runner().run(id("A"), id("C"), PathOptions()) }
+        assertFailsWith<IllegalArgumentException> {
+            runner().run(id("A"), id("C"), PathOptions())
+        }
     }
 
     // ─── fetchVertex mid-traversal null ──────────────────────────────────────────
@@ -234,23 +245,7 @@ class DijkstraRunnerTest {
     fun `totalWeight는 경로상 모든 간선 가중치 합과 같다`() {
         val path = runner(linearGraph).run(id("X"), id("Z"), options()).shouldNotBeNull()
 
-        path.totalWeight.shouldBeNear(7.0, 0.001)
+        log.debug { "path=$path" }
+        path.totalWeight.shouldBeNear(7.0, DOUBLE_EPSILON)
     }
-
-    // ─── 헬퍼 함수 ────────────────────────────────────────────────────────────────
-
-    private fun id(v: String) = GraphElementId.of(v)
-
-    private fun vertex(id: String) = GraphVertex(GraphElementId.of(id), "V", emptyMap())
-
-    private fun edge(id: String, from: String, to: String, weight: Double?) = GraphEdge(
-        GraphElementId.of(id),
-        "ROAD",
-        GraphElementId.of(from),
-        GraphElementId.of(to),
-        if (weight != null) mapOf("cost" to weight) else emptyMap(),
-    )
-
-    private fun io.bluetape4k.graph.model.GraphPath.vertexIds(): List<String> =
-        steps.filterIsInstance<PathStep.VertexStep>().map { it.vertex.id.value }
 }

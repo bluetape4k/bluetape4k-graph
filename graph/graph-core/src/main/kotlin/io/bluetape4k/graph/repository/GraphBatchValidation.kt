@@ -2,6 +2,7 @@ package io.bluetape4k.graph.repository
 
 import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.support.requireSafeIdentifier
+import io.bluetape4k.logging.KLogging
 import io.bluetape4k.support.requireNotBlank
 
 /**
@@ -10,7 +11,7 @@ import io.bluetape4k.support.requireNotBlank
  * Backend implementations should call this validator before building query strings
  * or Gremlin traversals.
  */
-object GraphBatchValidation {
+object GraphBatchValidation: KLogging() {
 
     /**
      * Validates vertex batch input.

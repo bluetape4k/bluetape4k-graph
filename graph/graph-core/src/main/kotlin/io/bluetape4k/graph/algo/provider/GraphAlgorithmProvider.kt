@@ -1,6 +1,10 @@
 package io.bluetape4k.graph.algo.provider
 
+import io.bluetape4k.logging.KLogging
 import io.bluetape4k.support.requireNotBlank
+import io.bluetape4k.support.requireNotEmpty
+import io.bluetape4k.support.requireNotNull
+import io.bluetape4k.support.requireNull
 import java.io.Serializable
 
 /**
@@ -39,7 +43,7 @@ data class GraphAlgorithmProviderDescriptor(
 
     init {
         id.requireNotBlank("id")
-        require(algorithms.isNotEmpty()) { "algorithms must not be empty" }
+        algorithms.requireNotEmpty { "algorithms must not be empty" }
         version?.requireNotBlank("version")
         constraints.forEach { it.requireNotBlank("constraints") }
     }
@@ -91,10 +95,10 @@ data class GraphAlgorithmExecution(
         providerId.requireNotBlank("providerId")
         when (path) {
             GraphAlgorithmExecutionPath.NATIVE ->
-                require(fallbackReason == null) { "native execution cannot have a fallback reason" }
+                fallbackReason.requireNull { "native execution cannot have a fallback reason" }
 
             GraphAlgorithmExecutionPath.JVM_FALLBACK ->
-                require(fallbackReason != null) { "JVM fallback execution requires a reason" }
+                fallbackReason.requireNotNull { "JVM fallback execution requires a reason" }
         }
     }
 
@@ -131,7 +135,7 @@ class GraphAlgorithmProviderUnavailableException(
  * 전달해 native 선택을 검증할 수 있지만, 이 selector가 native 실행을
  * 대신하지는 않는다.
  */
-object GraphAlgorithmProviderSelector {
+object GraphAlgorithmProviderSelector: KLogging() {
     /** 현재 portable JVM 구현을 나타내는 관찰용 provider ID다. */
     const val JVM_PROVIDER_ID: String = "jvm-fallback"
 
@@ -151,9 +155,10 @@ object GraphAlgorithmProviderSelector {
 
         GraphAlgorithmProviderPolicy.AUTO,
         GraphAlgorithmProviderPolicy.NATIVE_ONLY,
-        -> {
+            -> {
             val providerList = providers.toList()
             val provider = providerList.firstOrNull { algorithm in it.descriptor.algorithms }
+
             when {
                 provider != null -> GraphAlgorithmExecution(
                     algorithm = algorithm,
@@ -167,9 +172,7 @@ object GraphAlgorithmProviderSelector {
                     } else {
                         "no provider supports $algorithm"
                     }
-                    throw GraphAlgorithmProviderUnavailableException(
-                        "Native provider is required for $algorithm, but $reason",
-                    )
+                    throw GraphAlgorithmProviderUnavailableException("Native provider is required for $algorithm, but $reason")
                 }
 
                 else -> fallback(

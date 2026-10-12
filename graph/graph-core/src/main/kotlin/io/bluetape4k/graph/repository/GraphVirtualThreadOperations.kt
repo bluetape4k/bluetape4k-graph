@@ -25,7 +25,7 @@ package io.bluetape4k.graph.repository
  * }
  * ```
  */
-interface GraphVirtualThreadOperations :
+interface GraphVirtualThreadOperations:
     AutoCloseable,
     GraphVirtualThreadCapabilitiesOperations,
     GraphVirtualThreadSession,

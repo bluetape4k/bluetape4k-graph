@@ -5,13 +5,19 @@ import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldContain
+import io.bluetape4k.graph.AbstractGraphTest
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
 import io.bluetape4k.graph.vt.VirtualThreadOperationsAdapter
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 
-class GraphCapabilitiesTest {
+class GraphCapabilitiesTest: AbstractGraphTest() {
+
+    companion object: KLogging()
 
     @Test
     fun `capability names and existing ordinals remain serialization compatible`() {
@@ -27,8 +33,9 @@ class GraphCapabilitiesTest {
         GraphCapability.BOUNDED_CHUNKED_READ.ordinal shouldBeEqualTo 9
         GraphCapability.BOUNDED_CHUNKED_EXPORT.ordinal shouldBeEqualTo 10
 
-        GraphCapability.fromSerializedNameOrNull("BOUNDED_CHUNKED_READ") shouldBeEqualTo
-            GraphCapability.BOUNDED_CHUNKED_READ
+        GraphCapability
+            .fromSerializedNameOrNull("BOUNDED_CHUNKED_READ") shouldBeEqualTo GraphCapability.BOUNDED_CHUNKED_READ
+        
         GraphCapability.fromSerializedNameOrNull("CAPABILITY_ADDED_LATER").shouldBeNull()
         GraphCapability.fromSerializedNameOrNull("bounded_chunked_read").shouldBeNull()
     }
@@ -36,6 +43,8 @@ class GraphCapabilitiesTest {
     @Test
     fun `blocking capability lookup reflects declared backend contracts`() {
         val capabilities = TinkerGraphOperations().capabilities()
+
+        log.debug { "capabilities=$capabilities" }
 
         capabilities.supports(GraphCapability.MERGE).shouldBeTrue()
         capabilities.supports(GraphCapability.SCHEMA).shouldBeTrue()
@@ -45,12 +54,11 @@ class GraphCapabilitiesTest {
         capabilities.supports(GraphCapability.CHUNKED_EXPORT).shouldBeTrue()
         capabilities.supports(GraphCapability.BOUNDED_CHUNKED_READ).shouldBeTrue()
         capabilities.supports(GraphCapability.BOUNDED_CHUNKED_EXPORT).shouldBeTrue()
-        capabilities.constraints(GraphCapability.CHUNKED_READ).contains("api-chunking-only").shouldBeTrue()
-        capabilities.constraints(GraphCapability.CHUNKED_EXPORT).contains("api-chunking-only").shouldBeTrue()
-        capabilities.constraints(GraphCapability.BOUNDED_CHUNKED_READ)
-            .contains("native-traversal-bounded").shouldBeTrue()
-        capabilities.constraints(GraphCapability.BOUNDED_CHUNKED_EXPORT)
-            .contains("native-traversal-bounded").shouldBeTrue()
+
+        capabilities.constraints(GraphCapability.CHUNKED_READ) shouldContain "api-chunking-only"
+        capabilities.constraints(GraphCapability.CHUNKED_EXPORT) shouldContain "api-chunking-only"
+        capabilities.constraints(GraphCapability.BOUNDED_CHUNKED_READ) shouldContain "native-traversal-bounded"
+        capabilities.constraints(GraphCapability.BOUNDED_CHUNKED_EXPORT) shouldContain "native-traversal-bounded"
         capabilities.supports(GraphCapability.WEIGHTED_PATH).shouldBeTrue()
         capabilities.supports(GraphCapability.GRAPH_ALGORITHM).shouldBeTrue()
         capabilities.supports(GraphCapability.NATIVE_ALGORITHM).shouldBeFalse()
@@ -72,6 +80,7 @@ class GraphCapabilitiesTest {
         operations.capabilities().supports(GraphCapability.WEIGHTED_PATH).shouldBeTrue()
         operations.capabilities().supports(GraphCapability.GRAPH_ALGORITHM).shouldBeTrue()
         operations.capabilities().supports(GraphCapability.NATIVE_ALGORITHM).shouldBeFalse()
+
         operations.close()
     }
 
@@ -97,6 +106,7 @@ class GraphCapabilitiesTest {
         decorator.capabilities().supports(GraphCapability.CHUNKED_EXPORT).shouldBeTrue()
         decorator.capabilities().supports(GraphCapability.BOUNDED_CHUNKED_READ).shouldBeFalse()
         decorator.capabilities().supports(GraphCapability.BOUNDED_CHUNKED_EXPORT).shouldBeFalse()
+
         decorator.close()
     }
 

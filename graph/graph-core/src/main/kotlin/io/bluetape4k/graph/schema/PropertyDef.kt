@@ -1,5 +1,7 @@
 package io.bluetape4k.graph.schema
 
+import io.bluetape4k.support.requireNotEmpty
+import java.io.Serializable
 import kotlin.reflect.KClass
 
 /**
@@ -21,7 +23,11 @@ import kotlin.reflect.KClass
 data class PropertyDef<T: Any>(
     val name: String,
     val type: KClass<out T>,
-)
+): Serializable {
+    init {
+        name.requireNotEmpty("name")
+    }
+}
 
 /**
  * reified type parameter로 [PropertyDef]를 생성하는 inline factory.
@@ -35,4 +41,21 @@ data class PropertyDef<T: Any>(
  *
  * @param name property name.
  */
-inline fun <reified T: Any> PropertyDef(name: String): PropertyDef<T> = PropertyDef(name, T::class)
+inline fun <reified T: Any> PropertyDef(name: String): PropertyDef<T> =
+    PropertyDef(name, T::class)
+
+
+/**
+ * reified type parameter로 [PropertyDef]를 생성하는 inline factory.
+ *
+ * ```kotlin
+ * val nameDef: PropertyDef<String> = propertyDefOf<String>("name")       // inline factory
+ * val ageDef: PropertyDef<Int>    = PropertyDef("age", Int::class)  // explicit
+ * println(nameDef.name)  // "name"
+ * println(nameDef.type)  // class kotlin.String
+ * ```
+ *
+ * @param name property name.
+ */
+inline fun <reified T: Any> propertyDefOf(name: String): PropertyDef<T> =
+    PropertyDef(name, T::class)

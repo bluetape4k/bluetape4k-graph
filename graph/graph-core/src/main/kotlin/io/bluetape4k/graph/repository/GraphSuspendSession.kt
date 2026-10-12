@@ -19,7 +19,7 @@ package io.bluetape4k.graph.repository
  *
  * @see GraphSession synchronous blocking variant
  */
-interface GraphSuspendSession : AutoCloseable {
+interface GraphSuspendSession: AutoCloseable {
     /**
      * Creates a graph with the given name.
      *

@@ -16,6 +16,11 @@ enum class GraphSchemaEntityType {
     /** Schema object for an edge/relationship type. */
     EDGE,
 
+    /**
+     * Schema object for an vertex + edge composite type
+     */
+    COMPOSITE,
+
     /** Schema object whose entity type cannot be determined from backend metadata. */
     UNKNOWN,
 }

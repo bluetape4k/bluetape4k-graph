@@ -8,25 +8,17 @@ import io.bluetape4k.assertions.shouldBeInstanceOf
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContainSame
 import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.graph.AbstractGraphTest
+import io.bluetape4k.io.serializer.BinarySerializationException
+import io.bluetape4k.io.serializer.JdkBinarySerializer
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.NotSerializableException
-import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
 
-class GraphPathTest {
+class GraphPathTest: AbstractGraphTest() {
 
-    private fun vertex(id: String, label: String = "Person") =
-        GraphVertex(GraphElementId(id), label)
-
-    private fun edge(id: String, start: String, end: String, label: String = "KNOWS") =
-        GraphEdge(
-            GraphElementId(id),
-            label,
-            GraphElementId(start),
-            GraphElementId(end)
-        )
+    companion object: KLogging()
 
     @Test
     fun `EMPTY 경로는 비어있다`() {
@@ -66,6 +58,7 @@ class GraphPathTest {
             ),
         )
 
+        log.debug { "path=$path" }
         path.vertices shouldHaveSize 3
         path.vertices shouldContainSame listOf(v1, v2, v3)
         path.edges shouldHaveSize 2
@@ -77,6 +70,8 @@ class GraphPathTest {
     @Test
     fun `length는 edges 수로 정의된다`() {
         val single = GraphPath.of(vertex("1"))
+
+        log.debug { "single=$single" }
         single.length shouldBeEqualTo 0
 
         val twoHop = GraphPath(
@@ -86,6 +81,8 @@ class GraphPathTest {
                 PathStep.VertexStep(vertex("2")),
             ),
         )
+
+        log.debug { "twoHop=$twoHop" }
         twoHop.length shouldBeEqualTo 1
     }
 
@@ -102,6 +99,7 @@ class GraphPathTest {
     fun `단일 정점 경로는 length가 0이고 비어있지 않다`() {
         val path = GraphPath.of(vertex("1"))
 
+        log.debug { "path=$path" }
         path.length shouldBeEqualTo 0
         path.isEmpty.shouldBeFalse()
         path.vertices shouldHaveSize 1
@@ -116,21 +114,21 @@ class GraphPathTest {
 
     @Test
     fun `채워진 경로는 Java serialization round-trip을 지원한다`() {
-        val v1 = GraphVertex(
-            GraphElementId("1"),
+        val v1 = vertex(
+            "1",
             "Person",
             linkedMapOf("profile" to linkedMapOf("skills" to arrayListOf("kotlin", "graph")), "active" to true),
         )
-        val v2 = GraphVertex(
-            GraphElementId("2"),
+        val v2 = vertex(
+            "2",
             "Person",
             linkedMapOf("profile" to linkedMapOf("skills" to arrayListOf("java")), "active" to null),
         )
-        val e1 = GraphEdge(
-            GraphElementId("e1"),
+        val e1 = edgeOf(
+            "e1",
             "KNOWS",
-            GraphElementId("1"),
-            GraphElementId("2"),
+            "1",
+            "2",
             linkedMapOf("metadata" to linkedMapOf("since" to 2024L, "trusted" to true)),
         )
         val path = GraphPath(
@@ -141,27 +139,25 @@ class GraphPathTest {
             ),
             totalWeight = 2.5,
         )
+        log.debug { "path=$path" }
 
-        val bytes = ByteArrayOutputStream().use { output ->
-            ObjectOutputStream(output).use { it.writeObject(path) }
-            output.toByteArray()
-        }
+        val serializer = JdkBinarySerializer(objectInputFilter = null)
+        val bytes = serializer.serialize(path)
+        val restored = serializer.deserialize<GraphPath>(bytes).shouldNotBeNull()
 
-        val restored = ObjectInputStream(ByteArrayInputStream(bytes)).use {
-            it.readObject() as GraphPath
-        }
-
+        log.debug { "restored=$restored" }
         restored shouldBeEqualTo path
     }
 
     @Test
     fun `지원하지 않는 property 값은 Java serialization 계약 밖이다`() {
-        val path = GraphPath.of(
-            GraphVertex(GraphElementId("1"), "Person", mapOf("unsupported" to Any())),
+        val path = graphPathOf(
+            vertex("1", "Person", mapOf("unsupported" to Any())),
         )
 
-        assertFailsWith<NotSerializableException> {
-            ObjectOutputStream(ByteArrayOutputStream()).use { it.writeObject(path) }
+        val serializer = JdkBinarySerializer(objectInputFilter = null)
+        assertFailsWith<BinarySerializationException> {
+            serializer.serialize(path)
         }
     }
 
@@ -177,6 +173,7 @@ class GraphPathTest {
         val e = edge("e1", "1", "2")
         val path = GraphPath(listOf(PathStep.EdgeStep(e)))
 
+        log.debug { "path=$path" }
         path.edges shouldHaveSize 1
         path.vertices.shouldBeEmpty()
         path.length shouldBeEqualTo 1
@@ -199,6 +196,8 @@ class GraphPathTest {
         val v2 = vertex("2")
         val e1 = edge("e1", "1", "2")
         val path = graphPathOf(PathStep.VertexStep(v1), PathStep.EdgeStep(e1), PathStep.VertexStep(v2))
+
+        log.debug { "path=$path" }
         path.vertices shouldHaveSize 2
         path.edges shouldHaveSize 1
         path.length shouldBeEqualTo 1
@@ -209,6 +208,8 @@ class GraphPathTest {
         val v1 = vertex("1")
         val steps = listOf(PathStep.VertexStep(v1))
         val path = graphPathOf(steps)
+
+        log.debug { "path=$path" }
         path.vertices shouldHaveSize 1
         path.isEmpty.shouldBeFalse()
     }
@@ -218,6 +219,8 @@ class GraphPathTest {
         val v1 = vertex("1")
         val v2 = vertex("2")
         val path = graphPathOf(v1, v2)
+
+        log.debug { "path=$path" }
         path.vertices shouldContainSame listOf(v1, v2)
         path.edges.shouldBeEmpty()
         path.length shouldBeEqualTo 0
@@ -227,6 +230,8 @@ class GraphPathTest {
     fun `graphPathOf GraphVertex List로 경로를 만든다`() {
         val vertices = listOf(vertex("1"), vertex("2"))
         val path = graphPathOf(vertices)
+
+        log.debug { "path=$path" }
         path.vertices shouldContainSame vertices
         path.edges.shouldBeEmpty()
     }
@@ -236,6 +241,8 @@ class GraphPathTest {
         val e1 = edge("e1", "1", "2")
         val e2 = edge("e2", "2", "3")
         val path = graphPathOf(e1, e2)
+
+        log.debug { "path=$path" }
         path.edges shouldContainSame listOf(e1, e2)
         path.vertices.shouldBeEmpty()
         path.length shouldBeEqualTo 2
@@ -245,6 +252,8 @@ class GraphPathTest {
     fun `graphPathOf GraphEdge List로 경로를 만든다`() {
         val edges = listOf(edge("e1", "1", "2"))
         val path = graphPathOf(edges)
+
+        log.debug { "path=$path" }
         path.edges shouldContainSame edges
         path.vertices.shouldBeEmpty()
     }
@@ -260,6 +269,8 @@ class GraphPathTest {
     fun `graphPathOf vararg 단일 정점으로 경로를 만든다`() {
         val v = vertex("1")
         val path = graphPathOf(v)
+
+        log.debug { "path=$path" }
         path.vertices shouldHaveSize 1
         path.edges.shouldBeEmpty()
     }
@@ -268,6 +279,8 @@ class GraphPathTest {
     fun `graphPathOf vararg 단일 간선으로 경로를 만든다`() {
         val e = edge("e1", "1", "2")
         val path = graphPathOf(e)
+
+        log.debug { "path=$path" }
         path.edges shouldHaveSize 1
         path.vertices.shouldBeEmpty()
     }

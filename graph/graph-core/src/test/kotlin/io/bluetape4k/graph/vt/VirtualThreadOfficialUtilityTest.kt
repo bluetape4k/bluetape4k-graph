@@ -5,9 +5,13 @@ import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.concurrent.virtualthread.virtualFutureOfNullable
+import io.bluetape4k.graph.AbstractGraphTest
+import io.bluetape4k.logging.KLogging
 import org.junit.jupiter.api.Test
 
-class VirtualThreadOfficialUtilityTest {
+class VirtualThreadOfficialUtilityTest: AbstractGraphTest() {
+
+    companion object: KLogging()
 
     @Test
     fun `virtualFutureOfNullable is owned by bluetape core`() {
@@ -17,7 +21,7 @@ class VirtualThreadOfficialUtilityTest {
 
         val officialOwner = Class.forName("io.bluetape4k.concurrent.virtualthread.CompletableFutureSupportKt")
         officialOwner.shouldNotBeNull().name shouldBeEqualTo
-            "io.bluetape4k.concurrent.virtualthread.CompletableFutureSupportKt"
+                "io.bluetape4k.concurrent.virtualthread.CompletableFutureSupportKt"
 
         virtualFutureOfNullable<String> { null }.join().shouldBeNull()
     }

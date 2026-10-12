@@ -1,9 +1,12 @@
 package io.bluetape4k.concurrent.virtualthread;
 
-import java.util.concurrent.CompletableFuture;
 import kotlin.jvm.functions.Function0;
 
-/** Compile-only shape of the graph-core owner removed by #542. */
+import java.util.concurrent.CompletableFuture;
+
+/**
+ * Compile-only shape of the graph-core owner removed by #542.
+ */
 public final class CompletableFutureNullableSupportKt {
 
     private CompletableFutureNullableSupportKt() {

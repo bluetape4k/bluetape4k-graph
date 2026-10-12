@@ -5,12 +5,10 @@ import com.falkordb.Record
 import com.falkordb.ResultSet
 import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.algo.ShortestPathFallback
-import io.bluetape4k.graph.algo.internal.BfsDfsRunner
 import io.bluetape4k.graph.algo.internal.CycleDetector
 import io.bluetape4k.graph.algo.internal.PageRankCalculator
+import io.bluetape4k.graph.algo.internal.TreeTraverser
 import io.bluetape4k.graph.algo.internal.UnionFind
-import io.bluetape4k.graph.support.requireSafeIdentifier
-import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
@@ -29,6 +27,7 @@ import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.TraversalVisit
+import io.bluetape4k.graph.model.TreeTraversalOptions
 import io.bluetape4k.graph.repository.GraphBatchValidation
 import io.bluetape4k.graph.repository.GraphMergeOperations
 import io.bluetape4k.graph.repository.GraphMergeProperties
@@ -36,6 +35,7 @@ import io.bluetape4k.graph.repository.GraphMergeValidation
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.schema.GraphSchemaManagementOperations
 import io.bluetape4k.graph.schema.GraphSchemaManager
+import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.info
@@ -144,7 +144,8 @@ class FalkorDBGraphOperations(
         }
     }
 
-    override fun close() { /* driver는 외부 소유 */ }
+    override fun close() { /* driver는 외부 소유 */
+    }
 
     // -- GraphVertexRepository --
 
@@ -330,7 +331,7 @@ class FalkorDBGraphOperations(
 
         return queryList(
             "MATCH (a), (b) WHERE id(a) = toInteger(\$fromId) AND id(b) = toInteger(\$toId) " +
-                "CREATE (a)-[r:$label$propsClause]->(b) RETURN r",
+                    "CREATE (a)-[r:$label$propsClause]->(b) RETURN r",
             params,
         ) {
             it.toEdge()
@@ -495,7 +496,7 @@ class FalkorDBGraphOperations(
         val pattern = when (options.direction) {
             Direction.OUTGOING -> $$"(start)-[$$edgePart]->(neighbor)"
             Direction.INCOMING -> $$"(start)<-[$$edgePart]-(neighbor)"
-            Direction.BOTH     -> $$"(start)-[$$edgePart]-(neighbor)"
+            Direction.BOTH -> $$"(start)-[$$edgePart]-(neighbor)"
         }
         return queryList(
             $$"MATCH $$pattern WHERE id(start) = toInteger($startId) RETURN DISTINCT neighbor",
@@ -526,8 +527,8 @@ class FalkorDBGraphOperations(
 
         return queryList(
             "MATCH p = (a)-[$relPattern]-(b) " +
-                "WHERE id(a) = toInteger(\$fromId) AND id(b) = toInteger(\$toId) " +
-                "RETURN p ORDER BY length(p) LIMIT 1",
+                    "WHERE id(a) = toInteger(\$fromId) AND id(b) = toInteger(\$toId) " +
+                    "RETURN p ORDER BY length(p) LIMIT 1",
             mapOf("fromId" to fromId.value, "toId" to toId.value),
         ) {
             it.toPath()
@@ -566,7 +567,7 @@ class FalkorDBGraphOperations(
 
         return queryList(
             $$"MATCH p = (a)-[$$relPattern]-(b) " +
-                $$"WHERE id(a) = toInteger($fromId) AND id(b) = toInteger($toId) RETURN p",
+                    $$"WHERE id(a) = toInteger($fromId) AND id(b) = toInteger($toId) RETURN p",
             mapOf("fromId" to fromId.value, "toId" to toId.value),
         ) {
             it.toPath()
@@ -605,14 +606,14 @@ class FalkorDBGraphOperations(
         return when (options.direction) {
             Direction.OUTGOING -> DegreeResult(vertexId, 0, out)
             Direction.INCOMING -> DegreeResult(vertexId, inn, 0)
-            Direction.BOTH     -> DegreeResult(vertexId, inn, out)
+            Direction.BOTH -> DegreeResult(vertexId, inn, out)
         }
     }
 
-    override fun bfs(startId: GraphElementId, options: BfsDfsOptions): List<TraversalVisit> {
+    override fun bfs(startId: GraphElementId, options: TreeTraversalOptions): List<TraversalVisit> {
         options.edgeLabel?.requireNotBlank("edgeLabel")
         val (adjacency, vertexById) = loadAdjacency(options.edgeLabel, options.direction)
-        return BfsDfsRunner.bfs(
+        return TreeTraverser.bfs(
             startId = startId,
             adjacency = adjacency,
             maxDepth = options.maxDepth,
@@ -621,10 +622,10 @@ class FalkorDBGraphOperations(
         )
     }
 
-    override fun dfs(startId: GraphElementId, options: BfsDfsOptions): List<TraversalVisit> {
+    override fun dfs(startId: GraphElementId, options: TreeTraversalOptions): List<TraversalVisit> {
         options.edgeLabel?.requireNotBlank("edgeLabel")
         val (adjacency, vertexById) = loadAdjacency(options.edgeLabel, options.direction)
-        return BfsDfsRunner.dfs(
+        return TreeTraverser.dfs(
             startId = startId,
             adjacency = adjacency,
             maxDepth = options.maxDepth,
@@ -675,7 +676,7 @@ class FalkorDBGraphOperations(
 
         val edges = queryList(
             "MATCH (a$labelClause)-[r$edgePattern]->(b$labelClause) " +
-                "RETURN id(a) AS sa, id(b) AS sb",
+                    "RETURN id(a) AS sa, id(b) AS sb",
         ) { rec ->
             val sa = (rec.getValue<Any>("sa") as Number).toLong()
             val sb = (rec.getValue<Any>("sb") as Number).toLong()
@@ -712,7 +713,7 @@ class FalkorDBGraphOperations(
         val outAdjacency = HashMap<GraphElementId, MutableList<GraphElementId>>()
         queryList(
             "MATCH (a$labelClause)-[r$edgePattern]->(b$labelClause) " +
-                "RETURN id(a) AS sa, id(b) AS sb",
+                    "RETURN id(a) AS sa, id(b) AS sb",
         ) { rec ->
             val sa = (rec.getValue<Any>("sa") as Number).toLong()
             val sb = (rec.getValue<Any>("sb") as Number).toLong()
@@ -755,7 +756,7 @@ class FalkorDBGraphOperations(
             when (direction) {
                 Direction.OUTGOING -> adjacency.getOrPut(av.id) { ArrayList() }.add(bv.id)
                 Direction.INCOMING -> adjacency.getOrPut(bv.id) { ArrayList() }.add(av.id)
-                Direction.BOTH     -> {
+                Direction.BOTH -> {
                     adjacency.getOrPut(av.id) { ArrayList() }.add(bv.id)
                     adjacency.getOrPut(bv.id) { ArrayList() }.add(av.id)
                 }
@@ -778,7 +779,7 @@ class FalkorDBGraphOperations(
         val adjacency = HashMap<GraphElementId, MutableList<GraphElementId>>()
         queryList(
             "MATCH (a$labelClause)-[r$edgePattern]->(b$labelClause) " +
-                "RETURN id(a) AS sa, id(b) AS sb",
+                    "RETURN id(a) AS sa, id(b) AS sb",
         ) { rec ->
             val sa = (rec.getValue<Any>("sa") as Number).toLong()
             val sb = (rec.getValue<Any>("sb") as Number).toLong()

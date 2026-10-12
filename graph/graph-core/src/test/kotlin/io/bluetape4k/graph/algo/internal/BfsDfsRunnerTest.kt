@@ -1,11 +1,13 @@
 package io.bluetape4k.graph.algo.internal
 
-import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldContainAll
 import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.graph.model.GraphElementId
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
+@Disabled("use GraphVisitorTest")
 class BfsDfsRunnerTest {
 
     private fun id(v: String) = GraphElementId.of(v)

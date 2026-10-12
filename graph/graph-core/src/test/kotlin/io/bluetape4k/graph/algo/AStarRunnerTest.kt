@@ -1,21 +1,23 @@
 package io.bluetape4k.graph.algo
 
+import io.bluetape4k.assertions.DOUBLE_EPSILON
+import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeNear
+import io.bluetape4k.assertions.shouldBeNull
+import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.graph.AbstractGraphTest
 import io.bluetape4k.graph.model.Direction
 import io.bluetape4k.graph.model.GraphEdge
-import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.MissingWeightPolicy
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.logging.KLogging
-import io.bluetape4k.assertions.assertFailsWith
-import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldBeNear
-import io.bluetape4k.assertions.shouldBeNull
-import io.bluetape4k.assertions.shouldContainAll
-import io.bluetape4k.assertions.shouldHaveSize
-import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
+import java.io.Serializable
 import kotlin.math.sqrt
 
 /**
@@ -27,11 +29,11 @@ import kotlin.math.sqrt
  *
  * A→C 최단 경로: A→B→C (cost=2.0)
  */
-class AStarRunnerTest {
+class AStarRunnerTest: AbstractGraphTest() {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
-    data class Coord(val x: Double, val y: Double)
+    data class Coord(val x: Double, val y: Double): Serializable
 
     private val coords = mapOf(
         "A" to Coord(0.0, 0.0),
@@ -54,23 +56,25 @@ class AStarRunnerTest {
     private val mainGraph = mapOf(
         "A" to listOf(eAB, eAC),
         "B" to listOf(eBC),
-        "C" to emptyList<GraphEdge>(),
+        "C" to emptyList(),
     )
 
     private val vertices: Map<String, GraphVertex> = mapOf(
-        "A" to vertex("A"), "B" to vertex("B"), "C" to vertex("C"),
+        "A" to vertex("A"),
+        "B" to vertex("B"),
+        "C" to vertex("C"),
     )
 
     private fun runner(
         edgeMap: Map<String, List<GraphEdge>> = mainGraph,
         goalId: String = "C",
-    ) = AStarRunner(
+    ): AStarRunner = AStarRunner(
         fetchEdges = { id -> edgeMap[id.value] ?: emptyList() },
         fetchVertex = { id -> vertices[id.value] },
         heuristic = { v -> euclidean(v, goalId) },
     )
 
-    private fun options(weight: String = "cost") = PathOptions(weightProperty = weight)
+    private fun options(weight: String = "cost"): PathOptions = PathOptions(weightProperty = weight)
 
     // ─── 기본 경로 탐색 ─────────────────────────────────────────────────────────
 
@@ -78,8 +82,9 @@ class AStarRunnerTest {
     fun `A에서 C까지 최단 경로는 A-B-C이다`() {
         val path = runner().run(id("A"), id("C"), options()).shouldNotBeNull()
 
-        path.totalWeight.shouldBeNear(2.0, 0.001)
-        path.vertexIds() shouldContainAll listOf("A", "B", "C")
+        log.debug { "path=$path" }
+        path.totalWeight.shouldBeNear(2.0, DOUBLE_EPSILON)
+        path.vertexIds() shouldBeEqualTo listOf("A", "B", "C")
     }
 
     @Test
@@ -91,7 +96,8 @@ class AStarRunnerTest {
         )
         val path = bRunner.run(id("A"), id("B"), options()).shouldNotBeNull()
 
-        path.totalWeight.shouldBeNear(1.0, 0.001)
+        log.debug { "path=$path" }
+        path.totalWeight.shouldBeNear(1.0, DOUBLE_EPSILON)
     }
 
     @Test
@@ -103,7 +109,8 @@ class AStarRunnerTest {
     fun `출발지와 도착지가 같으면 단일 정점 경로 반환`() {
         val path = runner().run(id("A"), id("A"), options()).shouldNotBeNull()
 
-        path.totalWeight.shouldBeNear(0.0, 0.001)
+        log.debug { "path=$path" }
+        path.totalWeight.shouldBeNear(0.0, DOUBLE_EPSILON)
         path.steps shouldHaveSize 1
         path.steps.filterIsInstance<PathStep.VertexStep>() shouldHaveSize 1
     }
@@ -124,7 +131,8 @@ class AStarRunnerTest {
         )
         val path = zeroH.run(id("A"), id("C"), options()).shouldNotBeNull()
 
-        path.totalWeight.shouldBeNear(2.0, 0.001)
+        log.debug { "path=$path" }
+        path.totalWeight.shouldBeNear(2.0, DOUBLE_EPSILON)
     }
 
     // ─── maxVisited 제한 ─────────────────────────────────────────────────────────
@@ -141,8 +149,9 @@ class AStarRunnerTest {
 
         val path = runner().run(id("A"), id("C"), opts).shouldNotBeNull()
 
+        log.debug { "path=$path" }
         path.vertexIds() shouldBeEqualTo listOf("A", "C")
-        path.totalWeight.shouldBeNear(3.0, 0.001)
+        path.totalWeight.shouldBeNear(3.0, DOUBLE_EPSILON)
     }
 
     @Test
@@ -154,19 +163,20 @@ class AStarRunnerTest {
     }
 
     @Test
-    fun `더 싼 깊은 경로가 shallow 경로를 가리지 않고 maxDepth 내 후속 경로를 보존한다`() {
+    fun `더 싼 깊은 경로가 얕은 경로를 가리지 않고 maxDepth 내 후속 경로를 보존한다`() {
         val boundedGraph = mapOf(
             "A" to listOf(edge("eAX", "A", "X", 0.1), edge("eAB_shallow", "A", "B", 5.0)),
             "X" to listOf(edge("eXB", "X", "B", 0.1)),
             "B" to listOf(edge("eBC", "B", "C", 1.0)),
-            "C" to emptyList<GraphEdge>(),
+            "C" to emptyList(),
         )
         val opts = PathOptions(weightProperty = "cost", maxDepth = 2)
 
         val path = runner(boundedGraph).run(id("A"), id("C"), opts).shouldNotBeNull()
 
+        log.debug { "path=$path" }
         path.vertexIds() shouldBeEqualTo listOf("A", "B", "C")
-        path.totalWeight.shouldBeNear(6.0, 0.001)
+        path.totalWeight.shouldBeNear(6.0, DOUBLE_EPSILON)
     }
 
     // ─── MissingWeightPolicy ─────────────────────────────────────────────────────
@@ -176,7 +186,7 @@ class AStarRunnerTest {
         val skipGraph = mapOf(
             "A" to listOf(edge("eAB_nw", "A", "B", null)),
             "B" to listOf(eBC),
-            "C" to emptyList<GraphEdge>(),
+            "C" to emptyList(),
         )
         val opts = PathOptions(weightProperty = "cost", missingWeightPolicy = MissingWeightPolicy.Skip)
         runner(skipGraph).run(id("A"), id("C"), opts).shouldBeNull()
@@ -187,22 +197,27 @@ class AStarRunnerTest {
         val defaultGraph = mapOf(
             "A" to listOf(edge("eAB_nw", "A", "B", null)),
             "B" to listOf(eBC),
-            "C" to emptyList<GraphEdge>(),
+            "C" to emptyList(),
         )
         val opts = PathOptions(
             weightProperty = "cost",
             missingWeightPolicy = MissingWeightPolicy.UseDefault(1.0),
         )
-        val path = runner(defaultGraph).run(id("A"), id("C"), opts).shouldNotBeNull()
+        val path = runner(defaultGraph)
+            .run(id("A"), id("C"), opts)
+            .shouldNotBeNull()
 
-        path.totalWeight.shouldBeNear(2.0, 0.001)
+        log.debug { "path=$path" }
+        path.totalWeight.shouldBeNear(2.0, DOUBLE_EPSILON)
     }
 
     // ─── weightProperty 필수 ──────────────────────────────────────────────────���──
 
     @Test
     fun `weightProperty 없으면 IllegalArgumentException 발생`() {
-        assertFailsWith<IllegalArgumentException> { runner().run(id("A"), id("C"), PathOptions()) }
+        assertFailsWith<IllegalArgumentException> {
+            runner().run(id("A"), id("C"), PathOptions())
+        }
     }
 
     // ─── Direction.BOTH ───────────────────────────────────────────────────────────
@@ -220,10 +235,12 @@ class AStarRunnerTest {
             heuristic = { v -> euclidean(v, "A") },
         )
         val opts = PathOptions(weightProperty = "cost", direction = Direction.BOTH)
+
         // C에서 A로 역방향: BOTH 모드에서는 B→A 역방향 간선을 활용
         val path = bothRunner.run(id("C"), id("A"), opts).shouldNotBeNull()
 
-        path.totalWeight.shouldBeNear(2.0, 0.001)
+        log.debug { "path=$path" }
+        path.totalWeight.shouldBeNear(2.0, DOUBLE_EPSILON)
     }
 
     // ─── null neighbor mid-traversal ───────────────────────────────────────────
@@ -237,26 +254,11 @@ class AStarRunnerTest {
             fetchVertex = { vid -> partialVertices[vid.value] },
             heuristic = { v -> euclidean(v, "C") },
         )
+
         val path = partialRunner.run(id("A"), id("C"), options()).shouldNotBeNull()
 
+        log.debug { "path=$path" }
         // A→B 경로에서 B 정점을 찾지 못하므로 A→C 직선 경로(cost=3.0)만 유효
-        path.totalWeight.shouldBeNear(3.0, 0.001)
+        path.totalWeight.shouldBeNear(3.0, DOUBLE_EPSILON)
     }
-
-    // ─── 헬퍼 ────────────────────────────────────────────────────────────────────
-
-    private fun id(v: String) = GraphElementId.of(v)
-
-    private fun vertex(id: String) = GraphVertex(GraphElementId.of(id), "V", emptyMap())
-
-    private fun edge(id: String, from: String, to: String, weight: Double?) = GraphEdge(
-        GraphElementId.of(id),
-        "ROAD",
-        GraphElementId.of(from),
-        GraphElementId.of(to),
-        if (weight != null) mapOf("cost" to weight) else emptyMap(),
-    )
-
-    private fun io.bluetape4k.graph.model.GraphPath.vertexIds(): List<String> =
-        steps.filterIsInstance<PathStep.VertexStep>().map { it.vertex.id.value }
 }

@@ -8,6 +8,7 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.warn
+import io.bluetape4k.support.requireNotNull
 import java.util.*
 
 /**
@@ -52,10 +53,14 @@ class AStarRunner(
     private val fetchVertex: (GraphElementId) -> GraphVertex?,
     private val heuristic: (GraphVertex) -> Double,
 ) {
-    companion object : KLogging()
+    companion object: KLogging()
 
     /** PriorityQueue entry; avoids two boxing operations compared with Triple. */
-    private data class AStarNode(val f: Double, val g: Double, val state: WeightedPathState) : Comparable<AStarNode> {
+    private data class AStarNode(
+        val f: Double,
+        val g: Double,
+        val state: WeightedPathState,
+    ): Comparable<AStarNode> {
         override fun compareTo(other: AStarNode): Int {
             val cmp = f.compareTo(other.f)
             val gCmp = g.compareTo(other.g)
@@ -71,7 +76,7 @@ class AStarRunner(
 
     /**
      * Computes the shortest path from [fromId] to [toId] with the A* algorithm.
-	*
+     *
      * @param fromId source vertex ID.
      * @param toId target vertex ID.
      * @param options traversal options (`weightProperty`, `missingWeightPolicy`, `maxDepth`, `maxVisited`).
@@ -83,9 +88,7 @@ class AStarRunner(
         toId: GraphElementId,
         options: PathOptions,
     ): GraphPath? {
-        val weightProperty = requireNotNull(options.weightProperty) {
-            "PathOptions.weightProperty must be set for A*"
-        }
+        val weightProperty = options.weightProperty.requireNotNull { "PathOptions.weightProperty must be set for A*" }
         val extractor = WeightExtractor(weightProperty, options.missingWeightPolicy)
 
         // f = g + h; AStarNode is Comparable, so no Comparator is needed.
@@ -124,6 +127,8 @@ class AStarRunner(
                 log.warn { "A*: fetchVertex($currentId) returned null mid-traversal — skipping neighbors" }
                 continue@outer
             }
+            log.debug { "current vertex = $currentVertex" }
+
             val edges = fetchEdges(currentId)
 
             for (edge in edges) {
@@ -132,6 +137,7 @@ class AStarRunner(
 
                 val tentativeG = g + w
                 val neighborState = WeightedPathState(neighborId, currentState.depth + 1)
+
                 if (tentativeG < (gScore[neighborState] ?: Double.MAX_VALUE)) {
                     gScore[neighborState] = tentativeG
                     cameFrom[neighborState] = WeightedPathPredecessor(currentState, edge)

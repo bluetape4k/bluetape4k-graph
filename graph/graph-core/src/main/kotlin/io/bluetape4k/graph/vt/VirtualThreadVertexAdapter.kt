@@ -18,9 +18,9 @@ import java.util.concurrent.CompletableFuture
  */
 class VirtualThreadVertexAdapter(
     private val delegate: GraphVertexRepository,
-) : GraphVirtualThreadVertexRepository {
+): GraphVirtualThreadVertexRepository {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     override fun createVertexAsync(
         label: String,

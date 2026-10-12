@@ -21,9 +21,9 @@ import java.util.concurrent.CompletableFuture
  */
 class VirtualThreadTraversalAdapter(
     private val delegate: GraphTraversalRepository,
-) : GraphVirtualThreadTraversalRepository {
+): GraphVirtualThreadTraversalRepository {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     override fun neighborsAsync(
         startId: GraphElementId,

@@ -1,5 +1,7 @@
 package io.bluetape4k.graph
 
+import io.bluetape4k.exceptions.BluetapeException
+
 /**
  * Base exception for the graph module.
  *
@@ -13,7 +15,7 @@ package io.bluetape4k.graph
  * }
  * ```
  */
-open class GraphException: RuntimeException {
+open class GraphException: BluetapeException {
     constructor(): super()
     constructor(message: String): super(message)
     constructor(message: String, cause: Throwable?): super(message, cause)
@@ -70,6 +72,20 @@ class GraphQueryException: GraphException {
  * ```
  */
 class GraphNotInitializedException: GraphException {
+    constructor(): super()
+    constructor(message: String): super(message)
+    constructor(message: String, cause: Throwable?): super(message, cause)
+    constructor(cause: Throwable): super(cause)
+}
+
+/**
+ * Thrown when run unsupported graph operations
+ *
+ * ```kotlin
+ * throw GraphUnsupportedOperationException("GraphXxxOperations does not support suspend graph transactions.")
+ * ```
+ */
+class GraphUnsupportedOperationException: GraphException {
     constructor(): super()
     constructor(message: String): super(message)
     constructor(message: String, cause: Throwable?): super(message, cause)

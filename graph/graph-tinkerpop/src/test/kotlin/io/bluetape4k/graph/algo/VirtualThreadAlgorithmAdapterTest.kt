@@ -1,13 +1,13 @@
 package io.bluetape4k.graph.algo
 
-import io.bluetape4k.graph.model.BfsDfsOptions
-import io.bluetape4k.graph.model.PageRankOptions
-import io.bluetape4k.graph.model.graphElementIdOf
-import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
-import io.bluetape4k.logging.KLogging
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
 import io.bluetape4k.assertions.shouldNotBeEmpty
+import io.bluetape4k.graph.model.PageRankOptions
+import io.bluetape4k.graph.model.TreeTraversalOptions
+import io.bluetape4k.graph.model.graphElementIdOf
+import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
+import io.bluetape4k.logging.KLogging
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -48,7 +48,7 @@ class VirtualThreadAlgorithmAdapterTest {
         val a = ops.createVertex("Node", emptyMap())
         val b = ops.createVertex("Node", emptyMap())
         ops.createEdge(a.id, b.id, "E")
-        val visits = vtOps.bfsAsync(a.id, BfsDfsOptions(edgeLabel = "E", maxDepth = 2)).join()
+        val visits = vtOps.bfsAsync(a.id, TreeTraversalOptions(edgeLabel = "E", maxDepth = 2)).join()
         visits.size shouldBeGreaterOrEqualTo 2
     }
 
@@ -58,7 +58,7 @@ class VirtualThreadAlgorithmAdapterTest {
         val b = ops.createVertex("Node", emptyMap())
         ops.createEdge(a.id, b.id, "E")
 
-        val futures = (1..10).map { vtOps.bfsAsync(a.id, BfsDfsOptions(edgeLabel = "E", maxDepth = 2)) }
+        val futures = (1..10).map { vtOps.bfsAsync(a.id, TreeTraversalOptions(edgeLabel = "E", maxDepth = 2)) }
         val results = futures.map { it.join() }
         results.size shouldBeEqualTo 10
         results.all { it.isNotEmpty() } shouldBeEqualTo true

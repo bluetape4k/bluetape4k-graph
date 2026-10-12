@@ -1,6 +1,5 @@
 package io.bluetape4k.graph.io.testsupport
 
-import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
 import io.bluetape4k.graph.model.DegreeOptions
@@ -16,6 +15,7 @@ import io.bluetape4k.graph.model.PageRankOptions
 import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.TraversalVisit
+import io.bluetape4k.graph.model.TreeTraversalOptions
 import io.bluetape4k.graph.repository.GraphOperations
 
 /**
@@ -111,10 +111,10 @@ open class FakeGraphOperations: GraphOperations {
     override fun connectedComponents(options: ComponentOptions): List<GraphComponent> =
         error("not used in this test")
 
-    override fun bfs(startId: GraphElementId, options: BfsDfsOptions): List<TraversalVisit> =
+    override fun bfs(startId: GraphElementId, options: TreeTraversalOptions): List<TraversalVisit> =
         error("not used in this test")
 
-    override fun dfs(startId: GraphElementId, options: BfsDfsOptions): List<TraversalVisit> =
+    override fun dfs(startId: GraphElementId, options: TreeTraversalOptions): List<TraversalVisit> =
         error("not used in this test")
 
     override fun detectCycles(options: CycleOptions): List<GraphCycle> =

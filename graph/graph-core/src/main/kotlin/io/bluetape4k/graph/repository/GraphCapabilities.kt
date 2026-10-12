@@ -50,15 +50,15 @@ enum class GraphCapability {
     /** 전체 결과를 먼저 materialize하지 않는 bounded graph export를 제공한다. */
     BOUNDED_CHUNKED_EXPORT;
 
-    public companion object {
+    companion object {
         /**
          * 이름 기반 capability를 forward-compatible하게 해석한다.
          *
-         * [Enum.valueOf]와 달리 현재 라이브러리에 없는 미래 capability 이름을
+         * [GraphCapability.valueOf]와 달리 현재 라이브러리에 없는 미래 capability 이름을
          * 예외로 처리하지 않고 `null`로 반환한다. 이름은 enum serialization과
          * 동일하게 대소문자를 구분한다.
          */
-        public fun fromSerializedNameOrNull(name: String): GraphCapability? =
+        fun fromSerializedNameOrNull(name: String): GraphCapability? =
             entries.firstOrNull { it.name == name }
     }
 }
@@ -83,16 +83,10 @@ data class GraphCapabilities(
         require(constraints.keys.all(supported::contains)) {
             "constraints may describe only supported capabilities"
         }
-        require(
-            GraphCapability.BOUNDED_CHUNKED_READ !in supported ||
-                GraphCapability.CHUNKED_READ in supported,
-        ) {
+        require(GraphCapability.BOUNDED_CHUNKED_READ !in supported || GraphCapability.CHUNKED_READ in supported) {
             "BOUNDED_CHUNKED_READ requires CHUNKED_READ"
         }
-        require(
-            GraphCapability.BOUNDED_CHUNKED_EXPORT !in supported ||
-                GraphCapability.CHUNKED_EXPORT in supported,
-        ) {
+        require(GraphCapability.BOUNDED_CHUNKED_EXPORT !in supported || GraphCapability.CHUNKED_EXPORT in supported) {
             "BOUNDED_CHUNKED_EXPORT requires CHUNKED_EXPORT"
         }
     }
@@ -126,15 +120,19 @@ data class GraphCapabilities(
         internal fun from(operation: Any): GraphCapabilities {
             val supported = buildSet {
                 when (operation) {
-                    is GraphMergeOperations, is GraphSuspendMergeOperations -> add(GraphCapability.MERGE)
+                    is GraphMergeOperations,
+                    is GraphSuspendMergeOperations,
+                        -> add(GraphCapability.MERGE)
                 }
                 when (operation) {
-                    is GraphSchemaManagementOperations, is GraphSuspendSchemaManagementOperations ->
-                        add(GraphCapability.SCHEMA)
+                    is GraphSchemaManagementOperations,
+                    is GraphSuspendSchemaManagementOperations,
+                        -> add(GraphCapability.SCHEMA)
                 }
                 when (operation) {
-                    is GraphTransactionalOperations, is GraphSuspendTransactionalOperations ->
-                        add(GraphCapability.TRANSACTION)
+                    is GraphTransactionalOperations,
+                    is GraphSuspendTransactionalOperations,
+                        -> add(GraphCapability.TRANSACTION)
                 }
                 when (operation) {
                     is GraphVertexRepository,
@@ -142,7 +140,7 @@ data class GraphCapabilities(
                     is GraphSuspendVertexRepository,
                     is GraphSuspendEdgeRepository,
                     is GraphVirtualThreadVertexRepository,
-                    -> {
+                        -> {
                         add(GraphCapability.BATCH_INSERT)
                         add(GraphCapability.CHUNKED_EXPORT)
                         add(GraphCapability.CHUNKED_READ)
@@ -156,13 +154,13 @@ data class GraphCapabilities(
                     is GraphTraversalRepository,
                     is GraphSuspendTraversalRepository,
                     is GraphVirtualThreadTraversalRepository,
-                    -> add(GraphCapability.WEIGHTED_PATH)
+                        -> add(GraphCapability.WEIGHTED_PATH)
                 }
                 when (operation) {
                     is GraphGenericRepository,
                     is GraphSuspendGenericRepository,
                     is GraphVirtualThreadAlgorithmRepository,
-                    -> add(GraphCapability.GRAPH_ALGORITHM)
+                        -> add(GraphCapability.GRAPH_ALGORITHM)
                 }
                 if (operation is GraphNativeAlgorithmOperations) {
                     add(GraphCapability.NATIVE_ALGORITHM)
@@ -180,6 +178,7 @@ data class GraphCapabilities(
         /** Adds optional capabilities for focused adapters, not the integrated facade. */
         private fun MutableSet<GraphCapability>.addVirtualThreadOptionalCapabilities(operation: Any) {
             if (operation is GraphVirtualThreadOperations) return
+
             when (operation) {
                 is GraphVirtualThreadMergeOperations -> add(GraphCapability.MERGE)
                 is GraphVirtualThreadSchemaManagementOperations -> add(GraphCapability.SCHEMA)
