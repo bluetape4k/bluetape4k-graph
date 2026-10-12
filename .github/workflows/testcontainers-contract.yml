@@ -37,7 +37,7 @@ permissions:
   contents: read
 
 env:
-  BLUETAPE4K_DEPENDENCIES_CATALOG_REF: 'ef161acbdbad93376ce01846c646cf1d15e8d7c9'
+  BLUETAPE4K_DEPENDENCIES_CATALOG_REF: '198147fd6ca2992fae32e175bd5f3d396c497096'
 
 jobs:
   image-contract:
