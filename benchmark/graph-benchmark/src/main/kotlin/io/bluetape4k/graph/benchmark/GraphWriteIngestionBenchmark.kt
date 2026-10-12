@@ -163,8 +163,8 @@ open class GraphWriteIngestionState {
                     maximumPoolSize = 4
                 })
                 dataSource = source
-                Database.connect(source)
-                AgeGraphOperations(GRAPH_NAME)
+                val database = Database.connect(source)
+                AgeGraphOperations(database, GRAPH_NAME)
             }
             "falkordb" -> {
                 falkorServerReusable = BenchmarkContainerReuse.isEnabled()

@@ -16,8 +16,8 @@ class AgeAuthzInheritanceEngine(
     override val implementationName: String = "age-cypher"
 
     private val ops: GraphOperations by lazy {
-        Database.connect(dataSource)
-        AgeGraphOperations(graphName)
+        val database = Database.connect(dataSource)
+        AgeGraphOperations(database, graphName)
     }
     private var fixture: AuthzInheritanceFixture? = null
 
