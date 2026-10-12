@@ -4,6 +4,7 @@ import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import java.util.*
 
 
@@ -45,12 +46,18 @@ object TreeTraverser: KLogging() {
 
         while (queue.isNotEmpty() && result.size < maxVertices) {
             val (id, depth, parentId) = queue.poll()
-            result.add(TraversalVisit(vertexResolver(id), depth, parentId))
-            if (depth >= maxDepth) continue
+            val visitElement = TraversalVisit(vertexResolver(id), depth, parentId)
+            log.debug { "visit $visitElement" }
+            result.add(visitElement)
+
+            if (depth >= maxDepth) {
+                log.debug { "depth[$depth] 가 maxDepth[$maxDepth] 와 같거나 이상입니다. 다음 depth 탐색은 중단합니다." }
+                continue
+            }
 
             adjacency[id].orEmpty().forEach { next ->
                 if (visited.add(next)) {
-                    queue.add(Triple(next, depth + 1, id))
+                    queue += Triple(next, depth + 1, id)
                 }
             }
         }
@@ -76,8 +83,15 @@ object TreeTraverser: KLogging() {
         while (stack.isNotEmpty() && result.size < maxVertices) {
             val (id, depth, parentId) = stack.pop()
             if (!visited.add(id)) continue
-            result.add(TraversalVisit(vertexResolver(id), depth, parentId))
-            if (depth >= maxDepth) continue
+
+            val visitElement = TraversalVisit(vertexResolver(id), depth, parentId)
+            log.debug { "visit $visitElement" }
+            result.add(visitElement)
+
+            if (depth >= maxDepth) {
+                log.debug { "depth[$depth] 가 maxDepth[$maxDepth] 와 같거나 이상입니다. 다음 depth 탐색은 중단합니다." }
+                continue
+            }
 
             // push in reverse so first neighbor is popped first
             adjacency[id].orEmpty().asReversed().forEach { next ->

@@ -3,7 +3,6 @@ package io.bluetape4k.graph.algo.internal
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.TraversalVisit
-import io.bluetape4k.logging.KLogging
 import java.util.*
 
 /**
@@ -18,7 +17,7 @@ import java.util.*
  * ```
  */
 @Deprecated("use TreeTraverser instead", replaceWith = ReplaceWith("TreeTraverser"))
-object BfsDfsRunner: KLogging() {
+object BfsDfsRunner {
 
     /**
      * Returns BFS visit results in level order.

@@ -210,7 +210,7 @@ class GraphTraversalOptionsTest: AbstractGraphTest() {
         fun `BfsDfsOptions는 0 이하 maxVertices를 거부한다`() {
             listOf(0, -1).forEach { maxVertices ->
                 val ex = assertFailsWith<IllegalArgumentException> {
-                    BfsDfsOptions(maxVertices = maxVertices)
+                    TreeTraversalOptions(maxVertices = maxVertices)
                 }
 
                 ex.message shouldContain "maxVertices"

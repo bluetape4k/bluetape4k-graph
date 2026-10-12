@@ -53,7 +53,12 @@ class GraphOptionsSerializationTest: AbstractGraphTest() {
                     direction = Direction.INCOMING,
                     maxVisited = 200,
                 ),
-                BfsDfsOptions(edgeLabel = "KNOWS", direction = Direction.INCOMING, maxDepth = 0, maxVertices = 25),
+                TreeTraversalOptions(
+                    edgeLabel = "KNOWS",
+                    direction = Direction.INCOMING,
+                    maxDepth = 0,
+                    maxVertices = 25
+                ),
                 CycleOptions(vertexLabel = "Person", edgeLabel = "KNOWS", maxDepth = 3, maxCycles = 7),
             )
 
@@ -87,7 +92,7 @@ class GraphOptionsSerializationTest: AbstractGraphTest() {
             val options = listOf(
                 NeighborOptions(),
                 PathOptions(),
-                BfsDfsOptions(),
+                TreeTraversalOptions(),
                 CycleOptions(),
                 PageRankOptions(),
                 DegreeOptions(),
@@ -108,8 +113,8 @@ class GraphOptionsSerializationTest: AbstractGraphTest() {
                 serializedWithField(NeighborOptions(), "maxDepth", -1) to listOf("maxDepth", "-1"),
                 serializedWithField(PathOptions(), "maxDepth", -1) to listOf("maxDepth", "-1"),
                 serializedWithField(PathOptions(), "maxVisited", 0) to listOf("maxVisited", "0"),
-                serializedWithField(BfsDfsOptions(), "maxDepth", -1) to listOf("maxDepth", "-1"),
-                serializedWithField(BfsDfsOptions(), "maxVertices", 0) to listOf("maxVertices", "0"),
+                serializedWithField(TreeTraversalOptions(), "maxDepth", -1) to listOf("maxDepth", "-1"),
+                serializedWithField(TreeTraversalOptions(), "maxVertices", 0) to listOf("maxVertices", "0"),
                 serializedWithField(CycleOptions(), "maxDepth", 0) to listOf("maxDepth", "0"),
                 serializedWithField(CycleOptions(), "maxDepth", -1) to listOf("maxDepth", "-1"),
                 serializedWithField(CycleOptions(), "maxCycles", 0) to listOf("maxCycles", "0"),
@@ -175,7 +180,7 @@ class GraphOptionsSerializationTest: AbstractGraphTest() {
                 serialize(objectWithField(NeighborOptions(), "direction", null)) to "direction",
                 serialize(objectWithField(PathOptions(), "direction", null)) to "direction",
                 serialize(objectWithField(PathOptions(), "missingWeightPolicy", null)) to "missingWeightPolicy",
-                serialize(objectWithField(BfsDfsOptions(), "direction", null)) to "direction",
+                serialize(objectWithField(TreeTraversalOptions(), "direction", null)) to "direction",
                 serialize(objectWithField(DegreeOptions(), "direction", null)) to "direction",
             )
 
@@ -215,7 +220,12 @@ class GraphOptionsSerializationTest: AbstractGraphTest() {
                     direction = Direction.INCOMING,
                     maxVisited = 200,
                 ),
-                BfsDfsOptions(edgeLabel = "KNOWS", direction = Direction.INCOMING, maxDepth = 0, maxVertices = 25),
+                TreeTraversalOptions(
+                    edgeLabel = "KNOWS",
+                    direction = Direction.INCOMING,
+                    maxDepth = 0,
+                    maxVertices = 25
+                ),
                 CycleOptions(vertexLabel = "Person", edgeLabel = "KNOWS", maxDepth = 3, maxCycles = 7),
             )
 
@@ -265,7 +275,12 @@ class GraphOptionsSerializationTest: AbstractGraphTest() {
                     direction = Direction.INCOMING,
                     maxVisited = 200,
                 ),
-                BfsDfsOptions(edgeLabel = "KNOWS", direction = Direction.INCOMING, maxDepth = 0, maxVertices = 25),
+                TreeTraversalOptions(
+                    edgeLabel = "KNOWS",
+                    direction = Direction.INCOMING,
+                    maxDepth = 0,
+                    maxVertices = 25
+                ),
                 CycleOptions(vertexLabel = "Person", edgeLabel = "KNOWS", maxDepth = 3, maxCycles = 7),
             )
 

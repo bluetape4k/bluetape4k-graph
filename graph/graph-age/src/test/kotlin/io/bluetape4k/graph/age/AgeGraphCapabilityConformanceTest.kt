@@ -36,7 +36,7 @@ class AgeGraphCapabilityConformanceTest : AbstractGraphCapabilityConformanceTest
             maximumPoolSize = 5
         })
         database = Database.connect(dataSource)
-        delegate = AgeGraphOperations(graphName)
+        delegate = AgeGraphOperations(database, graphName)
     }
 
     @AfterAll

@@ -17,9 +17,10 @@ import kotlinx.coroutines.withTimeout
 import org.junit.jupiter.api.Test
 import java.io.IOException
 import java.io.InputStream
-import java.util.concurrent.Executors
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.seconds
 
 class CsvGraphClasspathResourcesTest {
     @Test
@@ -183,7 +184,7 @@ class CsvGraphClasspathResourcesTest {
 
     @Test
     fun `callback 반환 후 close 중 취소도 닫기 실패를 잃지 않는다`() = runSuspendIO {
-        withTimeout(5_000) {
+        withTimeout(5.seconds) {
             val closing = CompletableDeferred<Unit>()
             val release = CountDownLatch(1)
             val terminal = CompletableDeferred<Throwable?>()

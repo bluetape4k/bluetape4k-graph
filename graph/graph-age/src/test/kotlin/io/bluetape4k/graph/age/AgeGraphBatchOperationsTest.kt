@@ -17,7 +17,9 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AgeGraphBatchOperationsTest {
 
     private lateinit var dataSource: HikariDataSource
@@ -37,9 +39,9 @@ class AgeGraphBatchOperationsTest {
             connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
             maximumPoolSize = 5
         })
-        Database.connect(dataSource)
-        ops = AgeGraphOperations(graphName)
-        suspendOps = AgeGraphSuspendOperations(graphName)
+        val database = Database.connect(dataSource)
+        ops = AgeGraphOperations(database, graphName)
+        suspendOps = AgeGraphSuspendOperations(database, graphName)
     }
 
     @AfterAll

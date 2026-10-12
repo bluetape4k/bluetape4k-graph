@@ -25,8 +25,8 @@ class AgeLinkedInGraphSuspendTest: AbstractLinkedInGraphSuspendTest() {
             maximumPoolSize = 5
         })
         // Registers the DataSource globally in Exposed — required side-effect
-        Database.connect(dataSource)
-        ops = AgeGraphSuspendOperations(graphName)
+        val database = Database.connect(dataSource)
+        ops = AgeGraphSuspendOperations(database, graphName)
     }
 
     @AfterAll

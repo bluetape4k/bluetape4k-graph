@@ -27,8 +27,8 @@ class AgeCodeGraphTest: AbstractCodeGraphTest() {
             maximumPoolSize = 5
         })
         // Registers the DataSource globally in Exposed — required side-effect
-        Database.connect(dataSource)
-        ops = AgeGraphOperations(graphName)
+        val database = Database.connect(dataSource)
+        ops = AgeGraphOperations(database, graphName)
     }
 
     @AfterAll
