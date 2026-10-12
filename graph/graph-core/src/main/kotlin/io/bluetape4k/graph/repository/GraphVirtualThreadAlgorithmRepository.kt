@@ -1,6 +1,5 @@
 package io.bluetape4k.graph.repository
 
-import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
 import io.bluetape4k.graph.model.DegreeOptions
@@ -11,6 +10,7 @@ import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.PageRankOptions
 import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.TraversalVisit
+import io.bluetape4k.graph.model.TreeTraversalOptions
 import java.util.concurrent.CompletableFuture
 
 /**
@@ -47,12 +47,12 @@ interface GraphVirtualThreadAlgorithmRepository {
 
     fun bfsAsync(
         startId: GraphElementId,
-        options: BfsDfsOptions = BfsDfsOptions.Default,
+        options: TreeTraversalOptions = TreeTraversalOptions.Default,
     ): CompletableFuture<List<TraversalVisit>>
 
     fun dfsAsync(
         startId: GraphElementId,
-        options: BfsDfsOptions = BfsDfsOptions.Default,
+        options: TreeTraversalOptions = TreeTraversalOptions.Default,
     ): CompletableFuture<List<TraversalVisit>>
 
     fun detectCyclesAsync(

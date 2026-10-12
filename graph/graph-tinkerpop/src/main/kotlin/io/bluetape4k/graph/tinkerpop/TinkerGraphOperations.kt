@@ -2,7 +2,7 @@ package io.bluetape4k.graph.tinkerpop
 
 import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.algo.ShortestPathFallback
-import io.bluetape4k.graph.model.BfsDfsOptions
+import io.bluetape4k.graph.algo.internal.TreeTraverser
 import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
@@ -21,13 +21,14 @@ import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.TraversalVisit
+import io.bluetape4k.graph.model.TreeTraversalOptions
+import io.bluetape4k.graph.repository.DEFAULT_GRAPH_EXPORT_CHUNK_SIZE
 import io.bluetape4k.graph.repository.GraphAlgorithmRepository
 import io.bluetape4k.graph.repository.GraphBatchValidation
-import io.bluetape4k.graph.repository.GraphEdgeRepository
-import io.bluetape4k.graph.repository.DEFAULT_GRAPH_EXPORT_CHUNK_SIZE
 import io.bluetape4k.graph.repository.GraphBoundedChunkOperations
-import io.bluetape4k.graph.repository.GraphMergeOperations
+import io.bluetape4k.graph.repository.GraphEdgeRepository
 import io.bluetape4k.graph.repository.GraphLabelDiscovery
+import io.bluetape4k.graph.repository.GraphMergeOperations
 import io.bluetape4k.graph.repository.GraphMergeValidation
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphTransactionScope
@@ -37,11 +38,10 @@ import io.bluetape4k.graph.schema.GraphSchemaManagementOperations
 import io.bluetape4k.graph.schema.GraphSchemaManager
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
-import io.bluetape4k.logging.warn
 import io.bluetape4k.support.requireNotBlank
 import io.bluetape4k.support.requirePositiveNumber
-import kotlinx.coroutines.asContextElement
 import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.asContextElement
 import org.apache.tinkerpop.gremlin.process.traversal.P
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
@@ -812,7 +812,7 @@ class TinkerGraphOperations :
             }
     }
 
-    override fun bfs(startId: GraphElementId, options: BfsDfsOptions): List<TraversalVisit> {
+    override fun bfs(startId: GraphElementId, options: TreeTraversalOptions): List<TraversalVisit> {
         options.edgeLabel?.requireNotBlank("edgeLabel")
         val idValue = requireNumericId(startId)
 
@@ -836,7 +836,7 @@ class TinkerGraphOperations :
         // ensure start vertex resolved
         g.V(idValue).tryNext().ifPresent { collectedVertices[startId] = GremlinRecordMapper.vertexToGraphVertex(it) }
 
-        return io.bluetape4k.graph.algo.internal.BfsDfsRunner.bfs(
+        return TreeTraverser.bfs(
             startId = startId,
             adjacency = adjacency,
             maxDepth = options.maxDepth,
@@ -845,7 +845,7 @@ class TinkerGraphOperations :
         )
     }
 
-    override fun dfs(startId: GraphElementId, options: BfsDfsOptions): List<TraversalVisit> {
+    override fun dfs(startId: GraphElementId, options: TreeTraversalOptions): List<TraversalVisit> {
         options.edgeLabel?.requireNotBlank("edgeLabel")
         val idValue = requireNumericId(startId)
 
@@ -868,7 +868,7 @@ class TinkerGraphOperations :
         }
         g.V(idValue).tryNext().ifPresent { collectedVertices[startId] = GremlinRecordMapper.vertexToGraphVertex(it) }
 
-        return io.bluetape4k.graph.algo.internal.BfsDfsRunner.dfs(
+        return TreeTraverser.dfs(
             startId = startId,
             adjacency = adjacency,
             maxDepth = options.maxDepth,

@@ -2,9 +2,9 @@ package io.bluetape4k.graph.benchmark
 
 import io.bluetape4k.concurrent.virtualthread.virtualFutureOf
 import io.bluetape4k.graph.algo.VirtualThreadAlgorithmAdapter
-import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.PageRankOptions
+import io.bluetape4k.graph.model.TreeTraversalOptions
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
 import kotlinx.coroutines.async
@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit
 @Fork(1)
 @Warmup(iterations = 3, time = 2, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 5, time = 3, timeUnit = TimeUnit.SECONDS)
-open class ApiModelBenchmark : GraphBenchmarkState() {
+open class ApiModelBenchmark: GraphBenchmarkState() {
 
     private val tinkerOps: TinkerGraphOperations
         get() = syncOps as TinkerGraphOperations
@@ -49,7 +49,7 @@ open class ApiModelBenchmark : GraphBenchmarkState() {
     }
 
     private val pageRankOptions = PageRankOptions(vertexLabel = PERSON_LABEL, topK = 4)
-    private val bfsOptions = BfsDfsOptions(maxDepth = 5)
+    private val bfsOptions = TreeTraversalOptions(maxDepth = 5)
 
     private val concurrentStartIds: List<GraphElementId> by lazy {
         val seeds = listOf(aliceId, bobId, charlieId, daveId)

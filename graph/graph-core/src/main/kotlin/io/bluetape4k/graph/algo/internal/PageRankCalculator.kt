@@ -3,8 +3,9 @@ package io.bluetape4k.graph.algo.internal
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.warn
+import io.bluetape4k.support.requireInRange
+import io.bluetape4k.support.requirePositiveNumber
 import kotlin.math.abs
-
 
 /**
  * Normalized iterative PageRank calculator used as a JVM fallback.
@@ -23,13 +24,13 @@ import kotlin.math.abs
  * )
  * ```
  */
-object PageRankCalculator : KLogging() {
+object PageRankCalculator: KLogging() {
 
     private const val HASH_LOAD_FACTOR = 0.75
 
     /**
      * Computes normalized PageRank scores.
-	*
+     *
      * @param vertices complete vertex ID set.
      * @param outAdjacency out-edge adjacency list. It must not reference vertices outside [vertices].
      * @param iterations maximum iteration count. Must be positive.
@@ -44,18 +45,21 @@ object PageRankCalculator : KLogging() {
         dampingFactor: Double,
         tolerance: Double,
     ): Map<GraphElementId, Double> {
-        require(iterations > 0) { "iterations must be > 0, was $iterations" }
-        require(dampingFactor in 0.0..1.0) { "dampingFactor must be in [0, 1], was $dampingFactor" }
-        require(tolerance > 0.0) { "tolerance must be > 0.0, was $tolerance" }
+        iterations.requirePositiveNumber("iterations")
+        dampingFactor.requireInRange(0.0, 1.0, "dampingFactor")
+        tolerance.requirePositiveNumber("tolerance")
 
         if (vertices.isEmpty()) return emptyMap()
 
         val n = vertices.size
+
         // Avoid HashMap rehashing; Double division preserves precision for very large graphs.
         val mapCapacity = ((n / HASH_LOAD_FACTOR) + 1).toInt()
         val initial = 1.0 / n
         var ranks = HashMap<GraphElementId, Double>(mapCapacity)
-        vertices.forEach { ranks[it] = initial }
+        vertices.forEach { id ->
+            ranks[id] = initial
+        }
 
         // The graph structure is fixed, so dangling nodes are computed once outside the loop.
         val danglingNodes = vertices.filter { outAdjacency[it].isNullOrEmpty() }

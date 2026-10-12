@@ -1,8 +1,17 @@
 package io.bluetape4k.graph.memgraph
 
 import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeFalse
+import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
+import io.bluetape4k.assertions.shouldBeInstanceOf
+import io.bluetape4k.assertions.shouldBeNull
+import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldContain
+import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.assertions.shouldNotBeEmpty
+import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.graph.GraphQueryException
-import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
 import io.bluetape4k.graph.model.DegreeOptions
@@ -11,28 +20,18 @@ import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PageRankOptions
 import io.bluetape4k.graph.model.PathOptions
-import io.bluetape4k.graph.repository.suspendTransaction
+import io.bluetape4k.graph.model.TreeTraversalOptions
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
 import io.bluetape4k.testcontainers.graphdb.MemgraphServer
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withTimeout
-import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldBeFalse
-import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
-import io.bluetape4k.assertions.shouldBeNull
-import io.bluetape4k.assertions.shouldBeTrue
-import io.bluetape4k.assertions.shouldContain
-import io.bluetape4k.assertions.shouldHaveSize
-import io.bluetape4k.assertions.shouldBeInstanceOf
-import io.bluetape4k.assertions.shouldNotBeEmpty
-import io.bluetape4k.assertions.shouldNotBeNull
-import io.mockk.every
-import io.mockk.mockk
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -549,8 +548,8 @@ class MemgraphGraphSuspendOperationsTest {
         ops.createEdge(a.id, b.id, "E")
         ops.createEdge(b.id, c.id, "E")
 
-        val bfsVisits = ops.bfs(a.id, BfsDfsOptions(edgeLabel = "E", maxDepth = 2)).toList()
-        val dfsVisits = ops.dfs(a.id, BfsDfsOptions(edgeLabel = "E", maxDepth = 2)).toList()
+        val bfsVisits = ops.bfs(a.id, TreeTraversalOptions(edgeLabel = "E", maxDepth = 2)).toList()
+        val dfsVisits = ops.dfs(a.id, TreeTraversalOptions(edgeLabel = "E", maxDepth = 2)).toList()
 
         bfsVisits.first().vertex.id shouldBeEqualTo a.id
         bfsVisits.size shouldBeGreaterOrEqualTo 3

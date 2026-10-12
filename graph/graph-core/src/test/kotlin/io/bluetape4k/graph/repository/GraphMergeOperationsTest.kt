@@ -3,7 +3,7 @@ package io.bluetape4k.graph.repository
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldContain
-import io.bluetape4k.graph.model.BfsDfsOptions
+import io.bluetape4k.graph.AbstractGraphTest
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
 import io.bluetape4k.graph.model.DegreeOptions
@@ -19,9 +19,16 @@ import io.bluetape4k.graph.model.PageRankOptions
 import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.TraversalVisit
+import io.bluetape4k.graph.model.TreeTraversalOptions
+import io.bluetape4k.graph.model.edgeOf
+import io.bluetape4k.graph.model.vertexOf
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 
-class GraphMergeOperationsTest {
+class GraphMergeOperationsTest: AbstractGraphTest() {
+
+    companion object: KLogging()
 
     @Test
     fun `mergeVertex fails clearly when backend does not support merge operations`() {
@@ -29,13 +36,14 @@ class GraphMergeOperationsTest {
             UnsupportedGraphOperations.mergeVertex("Person", mapOf("email" to "a@example.com"))
         }
 
+        log.debug { "ex=$ex" }
         ex.message shouldContain "does not support graph merge operations"
     }
 
     @Test
     fun `merge extensions delegate to backend capability`() {
-        val vertex = GraphVertex(GraphElementId.of("v1"), "Person", mapOf("email" to "a@example.com"))
-        val edge = GraphEdge(GraphElementId.of("e1"), "KNOWS", GraphElementId.of("v1"), GraphElementId.of("v2"), emptyMap())
+        val vertex = vertexOf("v1", "Person", mapOf("email" to "a@example.com"))
+        val edge = edgeOf("e1", "KNOWS", "v1", "v2", emptyMap())
         val ops: GraphOperations = MergeAwareGraphOperations(vertex, edge)
 
         ops.mergeVertex(
@@ -45,8 +53,8 @@ class GraphMergeOperationsTest {
         ) shouldBeEqualTo vertex
 
         ops.mergeEdge(
-            fromId = GraphElementId.of("v1"),
-            toId = GraphElementId.of("v2"),
+            fromId = id("v1"),
+            toId = id("v2"),
             label = "KNOWS",
         ) shouldBeEqualTo edge
     }
@@ -54,7 +62,11 @@ class GraphMergeOperationsTest {
     @Test
     fun `vertex validation rejects empty match properties`() {
         val ex = assertFailsWith<IllegalArgumentException> {
-            GraphMergeValidation.validateVertex("Person", emptyMap(), emptyMap())
+            GraphMergeValidation.validateVertex(
+                "Person",
+                emptyMap(),
+                emptyMap()
+            )
         }
 
         ex.message shouldContain "must not be empty"
@@ -63,7 +75,11 @@ class GraphMergeOperationsTest {
     @Test
     fun `merge validation rejects null match property values`() {
         val ex = assertFailsWith<IllegalArgumentException> {
-            GraphMergeValidation.validateVertex("Person", mapOf("email" to null), emptyMap())
+            GraphMergeValidation.validateVertex(
+                "Person",
+                mapOf("email" to null),
+                emptyMap()
+            )
         }
 
         ex.message shouldContain "must not contain null"
@@ -72,7 +88,11 @@ class GraphMergeOperationsTest {
     @Test
     fun `merge validation rejects unsafe property names`() {
         val ex = assertFailsWith<IllegalArgumentException> {
-            GraphMergeValidation.validateVertex("Person", mapOf("email) DELETE n" to "a@example.com"), emptyMap())
+            GraphMergeValidation.validateVertex(
+                "Person",
+                mapOf("email) DELETE n" to "a@example.com"),
+                emptyMap()
+            )
         }
 
         ex.message shouldContain "valid identifier"
@@ -94,13 +114,14 @@ class GraphMergeOperationsTest {
     @Test
     fun `edge validation allows empty match properties`() {
         val properties = GraphMergeValidation.validateEdge(
-            fromId = GraphElementId.of("v1"),
-            toId = GraphElementId.of("v2"),
+            fromId = id("v1"),
+            toId = id("v2"),
             label = "KNOWS",
             matchProperties = emptyMap(),
             setProperties = mapOf("since" to 2024),
         )
 
+        log.debug { "properties=$properties" }
         properties.matchProperties shouldBeEqualTo emptyMap()
         properties.setProperties shouldBeEqualTo mapOf("since" to 2024)
     }
@@ -137,6 +158,7 @@ class GraphMergeOperationsTest {
         override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> = unsupported()
         override fun updateVertex(label: String, id: GraphElementId, properties: Map<String, Any?>): GraphVertex? =
             unsupported()
+
         override fun deleteVertex(label: String, id: GraphElementId): Boolean = unsupported()
         override fun countVertices(label: String): Long = unsupported()
         override fun createEdge(
@@ -145,6 +167,7 @@ class GraphMergeOperationsTest {
             label: String,
             properties: Map<String, Any?>,
         ): GraphEdge = unsupported()
+
         override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): List<GraphEdge> = unsupported()
         override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): List<GraphEdge> = unsupported()
         override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): List<GraphEdge> = unsupported()
@@ -153,19 +176,22 @@ class GraphMergeOperationsTest {
         override fun neighbors(startId: GraphElementId, options: NeighborOptions): List<GraphVertex> = unsupported()
         override fun shortestPath(fromId: GraphElementId, toId: GraphElementId, options: PathOptions): GraphPath? =
             unsupported()
+
         override fun allPaths(fromId: GraphElementId, toId: GraphElementId, options: PathOptions): List<GraphPath> =
             unsupported()
+
         override fun aStarPath(
             fromId: GraphElementId,
             toId: GraphElementId,
             options: PathOptions,
             heuristic: (GraphVertex) -> Double,
         ): GraphPath? = unsupported()
+
         override fun pageRank(options: PageRankOptions): List<PageRankScore> = unsupported()
         override fun degreeCentrality(vertexId: GraphElementId, options: DegreeOptions): DegreeResult = unsupported()
         override fun connectedComponents(options: ComponentOptions): List<GraphComponent> = unsupported()
-        override fun bfs(startId: GraphElementId, options: BfsDfsOptions): List<TraversalVisit> = unsupported()
-        override fun dfs(startId: GraphElementId, options: BfsDfsOptions): List<TraversalVisit> = unsupported()
+        override fun bfs(startId: GraphElementId, options: TreeTraversalOptions): List<TraversalVisit> = unsupported()
+        override fun dfs(startId: GraphElementId, options: TreeTraversalOptions): List<TraversalVisit> = unsupported()
         override fun detectCycles(options: CycleOptions): List<GraphCycle> = unsupported()
 
         private fun unsupported(): Nothing =

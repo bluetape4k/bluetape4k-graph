@@ -61,7 +61,10 @@ interface GraphSuspendEdgeRepository {
     ): List<GraphEdge> {
         GraphBatchValidation.validateEdgeBatch(label, edges)
         if (edges.isEmpty()) return emptyList()
-        return edges.map { edge -> createEdge(edge.fromId, edge.toId, label, edge.properties) }
+
+        return edges.map { edge ->
+            createEdge(edge.fromId, edge.toId, label, edge.properties)
+        }
     }
 
     /**

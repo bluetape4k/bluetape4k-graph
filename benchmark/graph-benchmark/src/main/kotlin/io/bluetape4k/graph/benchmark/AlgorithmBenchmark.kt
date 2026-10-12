@@ -1,8 +1,8 @@
 package io.bluetape4k.graph.benchmark
 
 import io.bluetape4k.graph.algo.VirtualThreadAlgorithmAdapter
-import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.PageRankOptions
+import io.bluetape4k.graph.model.TreeTraversalOptions
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import kotlinx.benchmark.Benchmark
 import kotlinx.benchmark.BenchmarkMode
@@ -37,17 +37,17 @@ open class AlgorithmBenchmark : GraphBenchmarkState() {
 
     @Benchmark
     fun syncBfs(): Int =
-        tinkerOps.bfs(aliceId, BfsDfsOptions()).size
+        tinkerOps.bfs(aliceId, TreeTraversalOptions()).size
 
     @Benchmark
     fun vtBfs(): Int =
-        vtAlgoOps.bfsAsync(aliceId, BfsDfsOptions()).join().size
+        vtAlgoOps.bfsAsync(aliceId, TreeTraversalOptions()).join().size
 
     @Benchmark
     fun syncDfs(): Int =
-        tinkerOps.dfs(aliceId, BfsDfsOptions()).size
+        tinkerOps.dfs(aliceId, TreeTraversalOptions()).size
 
     @Benchmark
     fun vtDfs(): Int =
-        vtAlgoOps.dfsAsync(aliceId, BfsDfsOptions()).join().size
+        vtAlgoOps.dfsAsync(aliceId, TreeTraversalOptions()).join().size
 }

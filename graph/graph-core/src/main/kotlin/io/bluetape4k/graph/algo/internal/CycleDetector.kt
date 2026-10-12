@@ -1,6 +1,8 @@
 package io.bluetape4k.graph.algo.internal
 
 import io.bluetape4k.graph.model.GraphElementId
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.support.requirePositiveNumber
 
 /**
  * DFS-based simple cycle detector used as a JVM fallback.
@@ -16,7 +18,7 @@ import io.bluetape4k.graph.model.GraphElementId
  * cycles.forEach { println("cycle: ${it.joinToString(" -> ")}") }
  * ```
  */
-object CycleDetector {
+object CycleDetector: KLogging() {
 
     /**
      * @param adjacency adjacency list of out-edges.
@@ -29,8 +31,8 @@ object CycleDetector {
         maxDepth: Int,
         maxCycles: Int,
     ): List<List<GraphElementId>> {
-        require(maxDepth > 0) { "maxDepth must be > 0, was $maxDepth" }
-        require(maxCycles > 0) { "maxCycles must be > 0, was $maxCycles" }
+        maxDepth.requirePositiveNumber("maxDepth")
+        maxCycles.requirePositiveNumber("maxCycles")
 
         val result = ArrayList<List<GraphElementId>>()
         val seenSignatures = HashSet<List<GraphElementId>>()
@@ -51,7 +53,10 @@ object CycleDetector {
         seenSignatures: MutableSet<List<GraphElementId>>,
     ) {
         // Frame: current vertex and neighbors not yet visited from it.
-        data class Frame(val vertex: GraphElementId, val remaining: ArrayDeque<GraphElementId>)
+        data class Frame(
+            val vertex: GraphElementId,
+            val remaining: ArrayDeque<GraphElementId>,
+        )
 
         val path = ArrayList<GraphElementId>()  // Current traversal path, equivalent to recursive DFS stack.
         val onPath = HashSet<GraphElementId>()  // Vertices on the current path for fast lookup.
@@ -107,8 +112,11 @@ object CycleDetector {
         for (i in 1 until core.size) {
             if (core[i].value < core[minIdx].value) minIdx = i
         }
+
         val rotated = ArrayList<GraphElementId>(core.size)
-        for (i in core.indices) rotated.add(core[(minIdx + i) % core.size])
+        for (i in core.indices) {
+            rotated.add(core[(minIdx + i) % core.size])
+        }
         rotated.add(rotated[0])
         return rotated
     }

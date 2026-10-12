@@ -2,17 +2,23 @@ package io.bluetape4k.graph.algo.provider
 
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldBeFalse
-import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldContain
+import io.bluetape4k.assertions.shouldNotBeEqualTo
+import io.bluetape4k.graph.AbstractGraphTest
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 
-class GraphAlgorithmProviderTest {
+class GraphAlgorithmProviderTest: AbstractGraphTest() {
+
+    companion object: KLogging()
 
     @Test
     fun `AUTO policy records explicit JVM fallback when no provider is configured`() {
         val execution = GraphAlgorithmProviderSelector.select(GraphAlgorithmId.PAGE_RANK)
 
+        log.debug { "execution=$execution" }
         execution.algorithm shouldBeEqualTo GraphAlgorithmId.PAGE_RANK
         execution.providerId shouldBeEqualTo GraphAlgorithmProviderSelector.JVM_PROVIDER_ID
         execution.path shouldBeEqualTo GraphAlgorithmExecutionPath.JVM_FALLBACK
@@ -33,10 +39,10 @@ class GraphAlgorithmProviderTest {
             algorithm = GraphAlgorithmId.PAGE_RANK,
             providers = listOf(provider),
         )
-
+        log.debug { "execution=$execution" }
         execution.path shouldBeEqualTo GraphAlgorithmExecutionPath.NATIVE
         execution.providerId shouldBeEqualTo "neo4j-gds"
-        execution.fallbackReason shouldBeEqualTo null
+        execution.fallbackReason.shouldBeNull()
     }
 
     @Test
@@ -56,8 +62,8 @@ class GraphAlgorithmProviderTest {
             )
         }
 
-        exception.message.shouldContain("PAGE_RANK")
-        exception.message.shouldContain("no provider supports")
+        exception.message shouldContain "PAGE_RANK"
+        exception.message shouldContain "no provider supports"
     }
 
     @Test
@@ -75,20 +81,24 @@ class GraphAlgorithmProviderTest {
             policy = GraphAlgorithmProviderPolicy.JVM_ONLY,
         )
 
+        log.debug { "execution=$execution" }
         execution.path shouldBeEqualTo GraphAlgorithmExecutionPath.JVM_FALLBACK
         execution.fallbackReason shouldBeEqualTo GraphAlgorithmFallbackReason.JVM_ONLY_POLICY
-        (execution.providerId == "neo4j-gds").shouldBeFalse()
-        (execution.providerId == GraphAlgorithmProviderSelector.JVM_PROVIDER_ID).shouldBeTrue()
+        execution.providerId shouldNotBeEqualTo "neo4j-gds"
+        execution.providerId shouldBeEqualTo GraphAlgorithmProviderSelector.JVM_PROVIDER_ID
     }
 
     @Test
     fun `execution observer receives the selected provider`() {
         val observed = mutableListOf<GraphAlgorithmExecution>()
         val observer = GraphAlgorithmExecutionObserver { observed += it }
+
         val execution = GraphAlgorithmProviderSelector.select(GraphAlgorithmId.DFS)
+        log.debug { "execution=$execution" }
 
         observer.onExecution(execution)
 
+        log.debug { "observed=$observed" }
         observed shouldBeEqualTo listOf(execution)
     }
 

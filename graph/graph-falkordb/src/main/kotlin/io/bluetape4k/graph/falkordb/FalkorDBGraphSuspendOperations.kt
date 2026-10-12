@@ -5,12 +5,10 @@ import com.falkordb.Record
 import com.falkordb.ResultSet
 import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.algo.ShortestPathFallback
-import io.bluetape4k.graph.algo.internal.BfsDfsRunner
 import io.bluetape4k.graph.algo.internal.CycleDetector
 import io.bluetape4k.graph.algo.internal.PageRankCalculator
+import io.bluetape4k.graph.algo.internal.TreeTraverser
 import io.bluetape4k.graph.algo.internal.UnionFind
-import io.bluetape4k.graph.support.requireSafeIdentifier
-import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
@@ -29,11 +27,13 @@ import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.TraversalVisit
+import io.bluetape4k.graph.model.TreeTraversalOptions
 import io.bluetape4k.graph.repository.GraphSuspendMergeOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.schema.GraphSuspendSchemaManagementOperations
 import io.bluetape4k.graph.schema.GraphSuspendSchemaManager
 import io.bluetape4k.graph.schema.asSuspendSchemaManager
+import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.info
@@ -537,12 +537,12 @@ class FalkorDBGraphSuspendOperations(
         }
     }
 
-    override fun bfs(startId: GraphElementId, options: BfsDfsOptions): Flow<TraversalVisit> = flow {
+    override fun bfs(startId: GraphElementId, options: TreeTraversalOptions): Flow<TraversalVisit> = flow {
         options.edgeLabel?.requireNotBlank("edgeLabel")
         val (adjacency, vertexById) = withContext(Dispatchers.IO) {
             loadAdjacency(options.edgeLabel, options.direction)
         }
-        val visits = BfsDfsRunner.bfs(
+        val visits = TreeTraverser.bfs(
             startId = startId,
             adjacency = adjacency,
             maxDepth = options.maxDepth,
@@ -552,12 +552,12 @@ class FalkorDBGraphSuspendOperations(
         visits.forEach { emit(it) }
     }
 
-    override fun dfs(startId: GraphElementId, options: BfsDfsOptions): Flow<TraversalVisit> = flow {
+    override fun dfs(startId: GraphElementId, options: TreeTraversalOptions): Flow<TraversalVisit> = flow {
         options.edgeLabel?.requireNotBlank("edgeLabel")
         val (adjacency, vertexById) = withContext(Dispatchers.IO) {
             loadAdjacency(options.edgeLabel, options.direction)
         }
-        val visits = BfsDfsRunner.dfs(
+        val visits = TreeTraverser.dfs(
             startId = startId,
             adjacency = adjacency,
             maxDepth = options.maxDepth,

@@ -5,7 +5,6 @@ import io.bluetape4k.graph.algo.ShortestPathFallback
 import io.bluetape4k.graph.algo.provider.GraphAlgorithmExecution
 import io.bluetape4k.graph.algo.provider.GraphAlgorithmExecutionObservable
 import io.bluetape4k.graph.algo.provider.GraphAlgorithmExecutionObserver
-import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
@@ -23,13 +22,14 @@ import io.bluetape4k.graph.model.PageRankOptions
 import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.TraversalVisit
-import io.bluetape4k.graph.repository.GraphSuspendOperations
+import io.bluetape4k.graph.model.TreeTraversalOptions
 import io.bluetape4k.graph.repository.GraphSuspendMergeOperations
+import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphSuspendTransactionScope
 import io.bluetape4k.graph.repository.GraphSuspendTransactionalOperations
 import io.bluetape4k.graph.repository.materializeSuspendTransactionResult
-import io.bluetape4k.graph.schema.GraphSuspendSchemaManager
 import io.bluetape4k.graph.schema.GraphSuspendSchemaManagementOperations
+import io.bluetape4k.graph.schema.GraphSuspendSchemaManager
 import io.bluetape4k.graph.schema.asSuspendSchemaManager
 import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.coroutines.KLoggingChannel
@@ -44,7 +44,6 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.reactive.asFlow as asReactiveFlow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.sync.Mutex
@@ -56,6 +55,7 @@ import org.neo4j.driver.Record
 import org.neo4j.driver.SessionConfig
 import org.neo4j.driver.reactivestreams.ReactiveSession
 import org.neo4j.driver.reactivestreams.ReactiveTransaction
+import kotlinx.coroutines.reactive.asFlow as asReactiveFlow
 
 /**
  * Memgraph용 [GraphSuspendOperations] 구현체 (코루틴 방식).
@@ -609,12 +609,12 @@ class MemgraphGraphSuspendOperations(
         list.forEach { emit(it) }
     }
 
-    override fun bfs(startId: GraphElementId, options: BfsDfsOptions): Flow<TraversalVisit> = flow {
+    override fun bfs(startId: GraphElementId, options: TreeTraversalOptions): Flow<TraversalVisit> = flow {
         val list = withContext(Dispatchers.IO) { syncDelegate.bfs(startId, options) }
         list.forEach { emit(it) }
     }
 
-    override fun dfs(startId: GraphElementId, options: BfsDfsOptions): Flow<TraversalVisit> = flow {
+    override fun dfs(startId: GraphElementId, options: TreeTraversalOptions): Flow<TraversalVisit> = flow {
         val list = withContext(Dispatchers.IO) { syncDelegate.dfs(startId, options) }
         list.forEach { emit(it) }
     }

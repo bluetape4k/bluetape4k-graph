@@ -25,7 +25,7 @@ sealed class PathStep: Serializable {
      * path 안의 vertex step.
      *
      * ```kotlin
-     * val step = PathStep.VertexStep(GraphVertex(GraphElementId.of("v1"), "Person", mapOf("name" to "Alice")))
+     * val step = PathStep.VertexStep(GraphVertex(graphElementIdOf("v1"), "Person", mapOf("name" to "Alice")))
      * println(step.vertex.label)  // "Person"
      * ```
      *
@@ -98,6 +98,9 @@ data class GraphPath(
     val isEmpty: Boolean
         get() = steps.isEmpty()
 
+    val isNotEmpty: Boolean
+        get() = steps.isNotEmpty()
+
     companion object {
         private const val serialVersionUID: Long = 1L
 
@@ -116,8 +119,23 @@ data class GraphPath(
          *
          * @param vertices path에 포함할 vertex 목록.
          */
-        fun of(vararg vertices: GraphVertex): GraphPath =
+        fun of(vararg vertices: GraphVertex): GraphPath = invoke(*vertices)
+
+        fun of(vertices: Iterable<GraphVertex>): GraphPath = invoke(vertices)
+
+        operator fun invoke(vararg vertices: GraphVertex): GraphPath =
             GraphPath(vertices.map { PathStep.VertexStep(it) })
+
+        @JvmName("graphPathOfGraphVertices")
+        operator fun invoke(vertices: Iterable<GraphVertex>): GraphPath =
+            GraphPath(vertices.map { PathStep.VertexStep(it) })
+
+        operator fun invoke(vararg edges: GraphEdge): GraphPath =
+            GraphPath(edges.map { PathStep.EdgeStep(it) })
+
+        @JvmName("graphPathOfGraphEdges")
+        operator fun invoke(edges: Iterable<GraphEdge>): GraphPath =
+            GraphPath(edges.map { PathStep.EdgeStep(it) })
     }
 }
 
@@ -150,7 +168,7 @@ fun graphPathOf(steps: List<PathStep>): GraphPath = GraphPath(steps)
  * ```
  */
 @JvmName("graphPathOfGraphVertices")
-fun graphPathOf(vararg vertices: GraphVertex): GraphPath = GraphPath(vertices.map { PathStep.VertexStep(it) })
+fun graphPathOf(vararg vertices: GraphVertex): GraphPath = GraphPath(*vertices)
 
 /**
  * Creates a vertex-only path from a vertex list, with no edges.
@@ -160,7 +178,7 @@ fun graphPathOf(vararg vertices: GraphVertex): GraphPath = GraphPath(vertices.ma
  * ```
  */
 @JvmName("graphPathOfGraphVertexList")
-fun graphPathOf(vertices: List<GraphVertex>): GraphPath = GraphPath(vertices.map { PathStep.VertexStep(it) })
+fun graphPathOf(vertices: Iterable<GraphVertex>): GraphPath = GraphPath(vertices)
 
 /**
  * Creates an edge-only path from edges, with no vertices.
@@ -181,7 +199,7 @@ fun graphPathOf(vararg edges: GraphEdge): GraphPath = GraphPath(edges.map { Path
  * ```
  */
 @JvmName("graphPathOfGraphEdgeList")
-fun graphPathOf(edges: List<GraphEdge>): GraphPath = GraphPath(edges.map { PathStep.EdgeStep(it) })
+fun graphPathOf(edges: Iterable<GraphEdge>): GraphPath = GraphPath(edges.map { PathStep.EdgeStep(it) })
 
 /**
  * Returns the empty path ([GraphPath.EMPTY]).

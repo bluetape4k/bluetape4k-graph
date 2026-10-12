@@ -1,14 +1,7 @@
 package io.bluetape4k.graph.tinkerpop
 
 import io.bluetape4k.assertions.assertFailsWith
-import io.bluetape4k.graph.GraphQueryException
-import io.bluetape4k.graph.model.BfsDfsOptions
-import io.bluetape4k.graph.model.Direction
-import io.bluetape4k.graph.model.DegreeOptions
-import io.bluetape4k.graph.model.GraphElementId
-import io.bluetape4k.graph.model.NeighborOptions
-import io.bluetape4k.graph.model.PathOptions
-import io.bluetape4k.logging.KLogging
+import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
@@ -16,16 +9,23 @@ import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldHaveSize
-import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.graph.GraphQueryException
+import io.bluetape4k.graph.model.DegreeOptions
+import io.bluetape4k.graph.model.Direction
+import io.bluetape4k.graph.model.GraphElementId
+import io.bluetape4k.graph.model.NeighborOptions
+import io.bluetape4k.graph.model.PathOptions
+import io.bluetape4k.graph.model.TreeTraversalOptions
+import io.bluetape4k.logging.KLogging
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import java.lang.reflect.Proxy
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
@@ -179,8 +179,8 @@ class TinkerGraphOperationsTest {
             { ops.aStarPath(malformedId, missingId, PathOptions(weightProperty = "weight")) { 0.0 } },
             { ops.allPaths(malformedId, missingId, PathOptions()) },
             { ops.degreeCentrality(malformedId, DegreeOptions()) },
-            { ops.bfs(malformedId, BfsDfsOptions()) },
-            { ops.dfs(malformedId, BfsDfsOptions()) },
+            { ops.bfs(malformedId, TreeTraversalOptions()) },
+            { ops.dfs(malformedId, TreeTraversalOptions()) },
         )
 
         operations.forEach { operation ->

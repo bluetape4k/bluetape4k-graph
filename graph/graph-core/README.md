@@ -6,7 +6,8 @@ Common abstraction layer for Graph Databases (Apache AGE, Neo4j, Memgraph, Apach
 
 ## Module Description
 
-- **Backend-Independent Abstraction**: Common interface for various graph databases (Apache AGE, Neo4j, Memgraph, TinkerPop, etc.)
+- **Backend-Independent
+  Abstraction**: Common interface for various graph databases (Apache AGE, Neo4j, Memgraph, TinkerPop, etc.)
 - **Coroutine-Based API**: All suspend-variant repository methods use Kotlin Coroutines
 - **Dual API Pattern**: Both synchronous (`GraphOperations`) and coroutine (`GraphSuspendOperations`) interfaces
 - **Schema DSL**: Declarative schema definition through `VertexLabel` and `EdgeLabel`
@@ -60,24 +61,23 @@ GraphSuspendOperations = GraphSuspendSession
                        + GraphSuspendTraversalRepository
 ```
 
-| Interface | Responsibility |
-|-----------|----------------|
-| `GraphSession` / `GraphSuspendSession` | Graph lifecycle and connection-facing session operations |
-| `GraphVertexRepository` | Vertex CRUD (create / find / update / delete / count) |
-| `GraphEdgeRepository` | Edge CRUD and relationship queries |
-| `GraphTraversalRepository` | `neighbors`, `shortestPath`, `allPaths`, etc. |
-| `GraphTransactionalOperations` | Optional sync transaction capability used by `ops.transaction { }` |
-| `GraphSuspendTransactionalOperations` | Optional coroutine transaction capability used by `ops.suspendTransaction { }` |
-| `GraphSchemaManagementOperations` | Optional sync schema/index capability used by `ops.schemaManager()` |
-| `GraphSuspendSchemaManagementOperations` | Optional coroutine schema/index capability used by `suspendOps.schemaManager()` |
-| `GraphMergeOperations` | Optional sync merge/upsert capability used by `ops.mergeVertex()` and `ops.mergeEdge()` |
-| `GraphSuspendMergeOperations` | Optional coroutine merge/upsert capability used by suspend merge extensions |
+| Interface                                | Responsibility                                                                          |
+|------------------------------------------|-----------------------------------------------------------------------------------------|
+| `GraphSession` / `GraphSuspendSession`   | Graph lifecycle and connection-facing session operations                                |
+| `GraphVertexRepository`                  | Vertex CRUD (create / find / update / delete / count)                                   |
+| `GraphEdgeRepository`                    | Edge CRUD and relationship queries                                                      |
+| `GraphTraversalRepository`               | `neighbors`, `shortestPath`, `allPaths`, etc.                                           |
+| `GraphTransactionalOperations`           | Optional sync transaction capability used by `ops.transaction { }`                      |
+| `GraphSuspendTransactionalOperations`    | Optional coroutine transaction capability used by `ops.suspendTransaction { }`          |
+| `GraphSchemaManagementOperations`        | Optional sync schema/index capability used by `ops.schemaManager()`                     |
+| `GraphSuspendSchemaManagementOperations` | Optional coroutine schema/index capability used by `suspendOps.schemaManager()`         |
+| `GraphMergeOperations`                   | Optional sync merge/upsert capability used by `ops.mergeVertex()` and `ops.mergeEdge()` |
+| `GraphSuspendMergeOperations`            | Optional coroutine merge/upsert capability used by suspend merge extensions             |
 
 ### Capability Discovery
 
 Use `capabilities()` before invoking optional operations. The returned immutable
-`GraphCapabilities` value exposes support flags, the `core-0.7` contract version,
-and capability-specific constraints without probing by exception.
+`GraphCapabilities` value exposes support flags, the `core-0.7` contract version, and capability-specific constraints without probing by exception.
 
 ```kotlin
 import io.bluetape4k.graph.repository.GraphCapability
@@ -89,41 +89,23 @@ if (capabilities.supports(GraphCapability.MERGE)) {
 }
 ```
 
-`GRAPH_ALGORITHM` means portable JVM algorithms. `NATIVE_ALGORITHM` is reported
-only by an explicitly installed backend provider; an absent flag must not be
-interpreted as a silent fallback guarantee. Decorators that use Kotlin
-`by`-delegation must implement `GraphCapabilitiesOperations` to preserve their
-delegate mapping.
+`GRAPH_ALGORITHM` means portable JVM algorithms. `NATIVE_ALGORITHM` is reported only by an explicitly installed backend provider; an absent flag must not be interpreted as a silent fallback guarantee. Decorators that use Kotlin
+`by`-delegation must implement `GraphCapabilitiesOperations` to preserve their delegate mapping.
 
 #### Capability compatibility policy
 
-`GraphCapability` enum names are the serialization-facing contract. New values
-are appended to the enum so existing ordinals remain stable, but consumers must
-not persist or compare `ordinal`; use the enum `name` instead. A consumer that
-handles capabilities with `when` must include an explicit `else` branch because
-new values can be added in a later library version. The branch should treat an
-unknown value as unsupported (and may emit telemetry) rather than invoking an
-operation it cannot verify.
+`GraphCapability` enum names are the serialization-facing contract. New values are appended to the enum so existing ordinals remain stable, but consumers must not persist or compare `ordinal`; use the enum `name` instead. A consumer that handles capabilities with `when` must include an explicit `else` branch because new values can be added in a later library version. The branch should treat an unknown value as unsupported (and may emit telemetry) rather than invoking an operation it cannot verify.
 
-When reading capability names from configuration, storage, or a remote peer,
-use `GraphCapability.fromSerializedNameOrNull(name)`. It returns `null` for a
-name introduced by a newer library, while `Enum.valueOf` throws. This is a
-forward-compatible parsing boundary; it does not make an older binary aware of
-new operations.
+When reading capability names from configuration, storage, or a remote peer, use `GraphCapability.fromSerializedNameOrNull(name)`. It returns `null` for a name introduced by a newer library, while `Enum.valueOf` throws. This is a forward-compatible parsing boundary; it does not make an older binary aware of new operations.
 
 The CORE-2 conformance slice covers `MERGE`, `SCHEMA`, `TRANSACTION`,
 `BATCH_INSERT`, `CHUNKED_READ`, `CHUNKED_EXPORT`, `BOUNDED_CHUNKED_READ`,
 `BOUNDED_CHUNKED_EXPORT`, `WEIGHTED_PATH`, `GRAPH_ALGORITHM`, and
-`NATIVE_ALGORITHM`. `CHUNKED_*` is an API chunking contract only. A backend may
-advertise `BOUNDED_CHUNKED_*` only when its source traversal does not
-materialize the complete result before producing chunks. Unsupported optional
-operations must remain explicit `UnsupportedOperationException` failures.
+`NATIVE_ALGORITHM`. `CHUNKED_*` is an API chunking contract only. A backend may advertise `BOUNDED_CHUNKED_*` only when its source traversal does not materialize the complete result before producing chunks. Unsupported optional operations must remain explicit `UnsupportedOperationException` failures.
 
 ### Cross-backend capability conformance
 
-The reusable `AbstractGraphCapabilityConformanceTest` fixture runs the same
-contract against the in-memory TinkerGraph lane and each container backend. Run
-the lanes sequentially so Testcontainers lifecycles do not overlap:
+The reusable `AbstractGraphCapabilityConformanceTest` fixture runs the same contract against the in-memory TinkerGraph lane and each container backend. Run the lanes sequentially so Testcontainers lifecycles do not overlap:
 
 ```bash
 ./gradlew :bluetape4k-graph-tinkerpop:test --tests '*GraphCapabilityConformanceTest'
@@ -133,9 +115,7 @@ the lanes sequentially so Testcontainers lifecycles do not overlap:
 ./gradlew :bluetape4k-graph-falkordb:test --tests '*GraphCapabilityConformanceTest'
 ```
 
-The normal CI backend jobs are triggered by `graph-core` changes. The complete
-container matrix belongs to the Full Nightly scope; TinkerGraph remains the
-fast in-memory reference lane.
+The normal CI backend jobs are triggered by `graph-core` changes. The complete container matrix belongs to the Full Nightly scope; TinkerGraph remains the fast in-memory reference lane.
 
 ## Traversal and Algorithm APIs
 
@@ -160,20 +140,14 @@ fast in-memory reference lane.
 
 `graph-core` exposes a dependency-free provider boundary through
 `GraphAlgorithmProvider`, `GraphAlgorithmProviderDescriptor`, and
-`GraphAlgorithmProviderSelector`. Optional modules can advertise native
-capabilities without adding a GDS/MAGE SDK to a base backend. `AUTO` selects a
-provider only when its descriptor lists the requested algorithm; otherwise the
-selector returns an explicit `JVM_FALLBACK` observation. `NATIVE_ONLY` fails
-with `GraphAlgorithmProviderUnavailableException` instead of silently changing
-the execution path.
+`GraphAlgorithmProviderSelector`. Optional modules can advertise native capabilities without adding a GDS/MAGE SDK to a base backend. `AUTO` selects a provider only when its descriptor lists the requested algorithm; otherwise the selector returns an explicit `JVM_FALLBACK` observation. `NATIVE_ONLY` fails with `GraphAlgorithmProviderUnavailableException` instead of silently changing the execution path.
 
 ```kotlin
 val execution = GraphAlgorithmProviderSelector.select(GraphAlgorithmId.PAGE_RANK)
 check(execution.path == GraphAlgorithmExecutionPath.JVM_FALLBACK)
 ```
 
-Native provider modules and their driver calls are intentionally outside this
-module. Backends expose the last selected path through
+Native provider modules and their driver calls are intentionally outside this module. Backends expose the last selected path through
 `GraphAlgorithmExecutionObservable` and may receive a
 `GraphAlgorithmExecutionObserver` for metrics or audit logging.
 
@@ -207,19 +181,13 @@ val edge = suspendOps.suspendTransaction {
 
 The coroutine transaction result contract is shared by every transaction-capable coroutine backend. A top-level `Flow`
 is materialized before commit and can be collected after the transaction returns. A `Flow` nested in a `Pair`,
-`Triple`, `Map`, `Collection`, or array is rejected with `IllegalArgumentException`; call `toList()` (or another
-explicit materializer) inside the transaction block before returning a composite value. `Sequence` and arbitrary
-user-wrapper/data-class internals are not inspected, so callers own materialization for those carriers.
+`Triple`, `Map`, `Collection`, or array is rejected with `IllegalArgumentException`; call `toList()` (or another explicit materializer) inside the transaction block before returning a composite value. `Sequence` and arbitrary user-wrapper/data-class internals are not inspected, so callers own materialization for those carriers.
 
-This first slice adds transaction support for Neo4j, Memgraph, AGE, and TinkerGraph sync/coroutine backends.
-FalkorDB remains explicitly unsupported because its Redis `MULTI` API queues graph query results until `EXEC`, while
-this repository DSL needs each created vertex ID immediately for later calls in the same block.
+This first slice adds transaction support for Neo4j, Memgraph, AGE, and TinkerGraph sync/coroutine backends. FalkorDB remains explicitly unsupported because its Redis `MULTI` API queues graph query results until `EXEC`, while this repository DSL needs each created vertex ID immediately for later calls in the same block.
 
 ### Schema / Index Manager
 
-Backends that implement `GraphSchemaManagementOperations` expose schema DDL through `schemaManager()`.
-The API validates labels and property names before building backend DDL, and unsupported backends fail explicitly
-instead of silently pretending that constraints were enforced.
+Backends that implement `GraphSchemaManagementOperations` expose schema DDL through `schemaManager()`. The API validates labels and property names before building backend DDL, and unsupported backends fail explicitly instead of silently pretending that constraints were enforced.
 
 ```kotlin
 import io.bluetape4k.graph.schema.schemaManager
@@ -238,19 +206,17 @@ schema.createIndex("Person", "email")
 
 Support matrix:
 
-| Backend | Indexes | Unique constraints | Notes |
-|---------|---------|--------------------|-------|
-| Neo4j | Create / list / drop | Create / list | Uses Neo4j `CREATE INDEX` and `CREATE CONSTRAINT` |
-| Memgraph | Create / list / drop | Create / list | Uses Memgraph `SHOW INDEX INFO` and `SHOW CONSTRAINT INFO` |
-| TinkerGraph | In-memory recorded no-op | Unsupported | Constraints cannot be enforced by TinkerGraph |
-| AGE | Unsupported | Unsupported | PostgreSQL-side AGE indexes are not portable yet |
-| FalkorDB | Create / list / drop | Unsupported | Unique constraints require raw `GRAPH.CONSTRAINT CREATE` support |
+| Backend     | Indexes                  | Unique constraints | Notes                                                            |
+|-------------|--------------------------|--------------------|------------------------------------------------------------------|
+| Neo4j       | Create / list / drop     | Create / list      | Uses Neo4j `CREATE INDEX` and `CREATE CONSTRAINT`                |
+| Memgraph    | Create / list / drop     | Create / list      | Uses Memgraph `SHOW INDEX INFO` and `SHOW CONSTRAINT INFO`       |
+| TinkerGraph | In-memory recorded no-op | Unsupported        | Constraints cannot be enforced by TinkerGraph                    |
+| AGE         | Unsupported              | Unsupported        | PostgreSQL-side AGE indexes are not portable yet                 |
+| FalkorDB    | Create / list / drop     | Unsupported        | Unique constraints require raw `GRAPH.CONSTRAINT CREATE` support |
 
 ### Schema Drift Planning
 
-Use `GraphSchemaDefinition` to compare a desired declaration with live metadata before applying DDL.
-Planning is dry-run by default; extra live indexes become `SKIP` entries until destructive drops are explicitly enabled.
-Constraint drops are reported as `UNSUPPORTED` because the common manager intentionally has no drop-constraint API.
+Use `GraphSchemaDefinition` to compare a desired declaration with live metadata before applying DDL. Planning is dry-run by default; extra live indexes become `SKIP` entries until destructive drops are explicitly enabled. Constraint drops are reported as `UNSUPPORTED` because the common manager intentionally has no drop-constraint API.
 
 ```kotlin
 import io.bluetape4k.graph.model.GraphIndex
@@ -265,14 +231,12 @@ val plan = ops.schemaManager().plan(desired) // dry-run, no mutation
 val report = plan.apply(ops.schemaManager()) // applies creates only when dryRun=false
 ```
 
-Set `GraphSchemaPlanOptions(dryRun = false, allowDestructiveDrops = true)` only in an explicitly approved
-migration path. A failed backend operation is surfaced as `UNSUPPORTED` rather than treated as a silent success.
+Set `GraphSchemaPlanOptions(dryRun = false, allowDestructiveDrops = true)` only in an explicitly approved migration path. A failed backend operation is surfaced as `UNSUPPORTED` rather than treated as a silent success.
 
 ### Merge / Upsert
 
 Backends that implement `GraphMergeOperations` expose idempotent vertex and edge upserts through extension functions.
-`matchProperties` are stable identity keys and cannot be empty for vertices. `setProperties` are applied to both the
-create and match branches and cannot overwrite match keys.
+`matchProperties` are stable identity keys and cannot be empty for vertices. `setProperties` are applied to both the create and match branches and cannot overwrite match keys.
 
 ```kotlin
 import io.bluetape4k.graph.repository.mergeEdge
@@ -292,18 +256,17 @@ val edge = ops.mergeEdge(
 )
 ```
 
-Coroutine backends expose the same API as suspend functions. Merge keys are validated before query construction, so
-unsafe labels and property names fail before reaching the backend.
+Coroutine backends expose the same API as suspend functions. Merge keys are validated before query construction, so unsafe labels and property names fail before reaching the backend.
 
 Support matrix:
 
-| Backend | Vertex merge | Edge merge | Notes |
-|---------|--------------|------------|-------|
-| Neo4j | Native `MERGE` | Native relationship `MERGE` | Uses `elementId()` for endpoints |
-| Memgraph | Native `MERGE` | Native relationship `MERGE` | Uses integer `id()` endpoint lookup |
-| FalkorDB | Native `MERGE` | Native relationship `MERGE` | Uses per-property parameters |
-| AGE | Transactional match/update/create fallback | Transactional match/update/create fallback | AGE image does not support `ON CREATE SET` / `ON MATCH SET` |
-| TinkerGraph | Gremlin get-or-create/update | Gremlin get-or-create/update | In-memory semantics |
+| Backend     | Vertex merge                               | Edge merge                                 | Notes                                                       |
+|-------------|--------------------------------------------|--------------------------------------------|-------------------------------------------------------------|
+| Neo4j       | Native `MERGE`                             | Native relationship `MERGE`                | Uses `elementId()` for endpoints                            |
+| Memgraph    | Native `MERGE`                             | Native relationship `MERGE`                | Uses integer `id()` endpoint lookup                         |
+| FalkorDB    | Native `MERGE`                             | Native relationship `MERGE`                | Uses per-property parameters                                |
+| AGE         | Transactional match/update/create fallback | Transactional match/update/create fallback | AGE image does not support `ON CREATE SET` / `ON MATCH SET` |
+| TinkerGraph | Gremlin get-or-create/update               | Gremlin get-or-create/update               | In-memory semantics                                         |
 
 ### Schema DSL
 
@@ -415,30 +378,26 @@ dependencies {
 
 ### PathOptions
 
-| Field | Default | Description |
-|-------|---------|-------------|
-| `weightProperty` | `null` | Edge property name for weight. Required for weighted traversal. |
-| `edgeLabel` | `null` | Filter edges by label (`null` = all labels). |
-| `maxDepth` | `10` | Inclusive maximum number of edges in a weighted path. `0` allows only a vertex-only source-to-self result. |
-| `missingWeightPolicy` | `Fail` | What to do when an edge lacks the weight property. |
-| `direction` | `OUTGOING` | Edge direction to follow. |
-| `maxVisited` | `100_000` | Abort if more weighted search states are visited. |
+| Field                 | Default    | Description                                                                                                |
+|-----------------------|------------|------------------------------------------------------------------------------------------------------------|
+| `weightProperty`      | `null`     | Edge property name for weight. Required for weighted traversal.                                            |
+| `edgeLabel`           | `null`     | Filter edges by label (`null` = all labels).                                                               |
+| `maxDepth`            | `10`       | Inclusive maximum number of edges in a weighted path. `0` allows only a vertex-only source-to-self result. |
+| `missingWeightPolicy` | `Fail`     | What to do when an edge lacks the weight property.                                                         |
+| `direction`           | `OUTGOING` | Edge direction to follow.                                                                                  |
+| `maxVisited`          | `100_000`  | Abort if more weighted search states are visited.                                                          |
 
 ### Weighted path backend matrix
 
-All five backends use the same JVM weighted runner for sync and suspend APIs. The
-virtual-thread API delegates to the corresponding sync implementation, so the
-depth contract is identical across all three surfaces. Native backend path
-queries remain the unweighted path implementation and are still bounded by
-their own `PathOptions.maxDepth` handling.
+All five backends use the same JVM weighted runner for sync and suspend APIs. The virtual-thread API delegates to the corresponding sync implementation, so the depth contract is identical across all three surfaces. Native backend path queries remain the unweighted path implementation and are still bounded by their own `PathOptions.maxDepth` handling.
 
-| Backend | Sync weighted path | Suspend weighted path | Virtual-thread weighted path | Evidence |
-|---------|--------------------|-----------------------|------------------------------|----------|
-| Neo4j | `ShortestPathFallback` | sync delegate on `Dispatchers.IO` | sync delegate | Testcontainers weighted-path TCK |
-| Memgraph | `ShortestPathFallback` | sync delegate on `Dispatchers.IO` | sync delegate | Testcontainers weighted-path TCK |
-| Apache AGE | `ShortestPathFallback` | sync delegate on `Dispatchers.IO` | sync delegate | Testcontainers weighted-path TCK |
-| TinkerGraph | `ShortestPathFallback` | sync delegate on `Dispatchers.IO` | sync delegate | in-memory weighted-path TCK |
-| FalkorDB | `ShortestPathFallback` | sync delegate on `Dispatchers.IO` | sync delegate | Testcontainers weighted-path TCK |
+| Backend     | Sync weighted path     | Suspend weighted path             | Virtual-thread weighted path | Evidence                         |
+|-------------|------------------------|-----------------------------------|------------------------------|----------------------------------|
+| Neo4j       | `ShortestPathFallback` | sync delegate on `Dispatchers.IO` | sync delegate                | Testcontainers weighted-path TCK |
+| Memgraph    | `ShortestPathFallback` | sync delegate on `Dispatchers.IO` | sync delegate                | Testcontainers weighted-path TCK |
+| Apache AGE  | `ShortestPathFallback` | sync delegate on `Dispatchers.IO` | sync delegate                | Testcontainers weighted-path TCK |
+| TinkerGraph | `ShortestPathFallback` | sync delegate on `Dispatchers.IO` | sync delegate                | in-memory weighted-path TCK      |
+| FalkorDB    | `ShortestPathFallback` | sync delegate on `Dispatchers.IO` | sync delegate                | Testcontainers weighted-path TCK |
 
 ### MissingWeightPolicy
 
@@ -453,12 +412,7 @@ sealed class MissingWeightPolicy {
 ### Serializable option invariant
 
 `GraphTraversalOptions` and `GraphAlgorithmOptions` concrete options, plus
-`MissingWeightPolicy.UseDefault`, implement a stable Java serialization contract.
-Round-trips preserve public properties and `serialVersionUID = 1L`. Constructors
-reject invalid values with `IllegalArgumentException`; deserialization repeats
-the checks and rejects forged payloads with `InvalidObjectException` that names
-the invalid field and value. Java serialization is not a trust boundary, so
-configure an `ObjectInputFilter` for untrusted streams.
+`MissingWeightPolicy.UseDefault`, implement a stable Java serialization contract. Round-trips preserve public properties and `serialVersionUID = 1L`. Constructors reject invalid values with `IllegalArgumentException`; deserialization repeats the checks and rejects forged payloads with `InvalidObjectException` that names the invalid field and value. Java serialization is not a trust boundary, so configure an `ObjectInputFilter` for untrusted streams.
 
 ### Usage Example
 
@@ -506,22 +460,21 @@ data class GraphPath(
 
 ### Algorithm Support Matrix
 
-| Algorithm | Interface method | Options type | Result type |
-|-----------|-----------------|--------------|-------------|
-| Dijkstra (weighted) | `shortestPath(from, to, options)` | `PathOptions` | `GraphPath?` |
-| A* (weighted) | `aStarPath(from, to, options, heuristic)` | `PathOptions` | `GraphPath?` |
-| PageRank | `pageRank(options)` | `PageRankOptions` | `List<PageRankScore>` |
-| Degree Centrality | `degreeCentrality(vertexId, options)` | `DegreeOptions` | `DegreeResult` |
-| Connected Components | `connectedComponents(options)` | `ComponentOptions` | `List<GraphComponent>` |
-| BFS | `bfs(startId, options)` | `BfsDfsOptions` | `List<TraversalVisit>` |
-| DFS | `dfs(startId, options)` | `BfsDfsOptions` | `List<TraversalVisit>` |
-| Cycle Detection | `detectCycles(options)` | `CycleOptions` | `List<GraphCycle>` |
+| Algorithm            | Interface method                          | Options type       | Result type            |
+|----------------------|-------------------------------------------|--------------------|------------------------|
+| Dijkstra (weighted)  | `shortestPath(from, to, options)`         | `PathOptions`      | `GraphPath?`           |
+| A* (weighted)        | `aStarPath(from, to, options, heuristic)` | `PathOptions`      | `GraphPath?`           |
+| PageRank             | `pageRank(options)`                       | `PageRankOptions`  | `List<PageRankScore>`  |
+| Degree Centrality    | `degreeCentrality(vertexId, options)`     | `DegreeOptions`    | `DegreeResult`         |
+| Connected Components | `connectedComponents(options)`            | `ComponentOptions` | `List<GraphComponent>` |
+| BFS                  | `bfs(startId, options)`                   | `BfsDfsOptions`    | `List<TraversalVisit>` |
+| DFS                  | `dfs(startId, options)`                   | `BfsDfsOptions`    | `List<TraversalVisit>` |
+| Cycle Detection      | `detectCycles(options)`                   | `CycleOptions`     | `List<GraphCycle>`     |
 
 All traversal and algorithm options validate their public constructor inputs.
 `NeighborOptions.maxDepth` may be zero (no neighbor expansion),
 `PathOptions.maxDepth` may be zero (only a vertex-only path), and
-`BfsDfsOptions.maxDepth` may be zero (only the start vertex); cycle depth and
-all visit, iteration, result, cycle, and component limits must be positive.
+`BfsDfsOptions.maxDepth` may be zero (only the start vertex); cycle depth and all visit, iteration, result, cycle, and component limits must be positive.
 `PageRankOptions.tolerance` must be positive and finite, and `dampingFactor`
 must be finite in the inclusive range `[0.0, 1.0]`. Invalid values throw
 `IllegalArgumentException` before a backend query is built.
@@ -563,18 +516,9 @@ val cycles = ops.detectCycles(CycleOptions(edgeLabel = "KNOWS", maxDepth = 5))
 
 ## Virtual Threads
 
-The `virtualFutureOf` and `virtualFutureOfNullable` helpers come from the
-upstream `bluetape4k-core` dependency. `graph-core` imports the official
-helpers and no longer publishes a package-local copy, so it does not add a
-third owner for `io.bluetape4k.concurrent.virtualthread`. Upstream PR
-[#1523](https://github.com/bluetape4k/bluetape4k-projects/pull/1523) moves the
-Java 21 API types to `io.bluetape4k.concurrent.virtualthread.api`, leaving the
-core utility owner unchanged. Bluetape4k 2.0.0 contains that migration and the
-Graph 1.0.0 release consumes it through an immutable catalog commit. Kotlin
-source imports remain unchanged for core helpers. Consumers that directly reference the removed generated
-`CompletableFutureNullableSupportKt` class must be recompiled against the
-official `CompletableFutureSupportKt` owner; the external ABI migration is
-tracked in [#562](https://github.com/bluetape4k/bluetape4k-graph/issues/562).
+The `virtualFutureOf` and `virtualFutureOfNullable` helpers come from the upstream `bluetape4k-core` dependency. `graph-core` imports the official helpers and no longer publishes a package-local copy, so it does not add a third owner for `io.bluetape4k.concurrent.virtualthread`. Upstream PR
+[#1523](https://github.com/bluetape4k/bluetape4k-projects/pull/1523) moves the Java 21 API types to `io.bluetape4k.concurrent.virtualthread.api`, leaving the core utility owner unchanged. Bluetape4k 2.0.0 contains that migration and the Graph 1.0.0 release consumes it through an immutable catalog commit. Kotlin source imports remain unchanged for core helpers. Consumers that directly reference the removed generated
+`CompletableFutureNullableSupportKt` class must be recompiled against the official `CompletableFutureSupportKt` owner; the external ABI migration is tracked in [#562](https://github.com/bluetape4k/bluetape4k-graph/issues/562).
 
 Verify the resolved JAR pair with:
 
@@ -584,28 +528,18 @@ python3 scripts/verify_virtualthread_module_boundary.py \
   /path/to/bluetape4k-virtualthread-api-<version>.jar
 ```
 
-The verifier rejects shared class packages, legacy API classes in the old
-package, missing API owners, or a non-zero `java --validate-modules` result.
+The verifier rejects shared class packages, legacy API classes in the old package, missing API owners, or a non-zero `java --validate-modules` result.
 
-The #562 ABI TCK keeps a minimal Java consumer precompiled against the removed
-owner and runs it without the legacy class to reproduce the expected
-`NoClassDefFoundError`. A second fixture is recompiled against the official
-owner and must complete a nullable `CompletableFuture` successfully. The TCK
-also checks the classfile owner reference and the official owner's
-`ProtectionDomain.codeSource`, so a source-level compile alone is not treated as
-proof of artifact ownership.
+The #562 ABI TCK keeps a minimal Java consumer precompiled against the removed owner and runs it without the legacy class to reproduce the expected
+`NoClassDefFoundError`. A second fixture is recompiled against the official owner and must complete a nullable `CompletableFuture` successfully. The TCK also checks the classfile owner reference and the official owner's
+`ProtectionDomain.codeSource`, so a source-level compile alone is not treated as proof of artifact ownership.
 
 `GraphOperations` can be wrapped with a Virtual Thread adapter to expose
-`CompletableFuture`-based async APIs for Java interop. The adapter uses the
-Bluetape4k `virtualFutureOf` helpers and does not create a second executor.
+`CompletableFuture`-based async APIs for Java interop. The adapter uses the Bluetape4k `virtualFutureOf` helpers and does not create a second executor.
 
-`GraphVirtualThreadOperations.capabilities()` reports the async surface that the
-facade can call. `delegateCapabilities()` keeps the complete capability mapping
-of the borrowed synchronous delegate. A delegate implementing
+`GraphVirtualThreadOperations.capabilities()` reports the async surface that the facade can call. `delegateCapabilities()` keeps the complete capability mapping of the borrowed synchronous delegate. A delegate implementing
 `GraphMergeOperations`, `GraphSchemaManagementOperations`, or
-`GraphTransactionalOperations` exposes the corresponding optional async
-surface; unsupported delegates omit that capability and complete the optional
-future exceptionally with `UnsupportedOperationException`.
+`GraphTransactionalOperations` exposes the corresponding optional async surface; unsupported delegates omit that capability and complete the optional future exceptionally with `UnsupportedOperationException`.
 
 The optional surface is:
 
@@ -615,13 +549,8 @@ The optional surface is:
 - `transactionAsync`, whose whole block runs on one virtual thread
 - `findVerticesByLabelChunkedAsync` / `findEdgesByLabelChunkedAsync`
 
-Each operation body runs on one Bluetape4k virtual-thread task. Completion-stage
-callbacks use the executor selected by the caller. A synchronous delegate
-exception becomes the original cause of exceptional completion. Standard
-`CompletableFuture.cancel(true)` and `orTimeout` remain observable, but neither
-guarantees that a blocking driver stops; backend-specific interruption remains
-the caller's responsibility. The adapter borrows the delegate: `close()` closes
-only the facade, while a chunk source is closed after it has been drained.
+Each operation body runs on one Bluetape4k virtual-thread task. Completion-stage callbacks use the executor selected by the caller. A synchronous delegate exception becomes the original cause of exceptional completion. Standard
+`CompletableFuture.cancel(true)` and `orTimeout` remain observable, but neither guarantees that a blocking driver stops; backend-specific interruption remains the caller's responsibility. The adapter borrows the delegate: `close()` closes only the facade, while a chunk source is closed after it has been drained.
 
 ```kotlin
 import io.bluetape4k.graph.repository.GraphCapability
@@ -659,9 +588,5 @@ val pipeline = vtOps.pageRankAsync()
 pipeline.join()
 ```
 
-For callers migrating from a facade whose `capabilities()` represented only
-the delegate, use `delegateCapabilities()` for that old lookup and use
-`capabilities()` to gate calls on the new async surface. Chunked async results
-preserve chunk boundaries but are fully materialized before the future
-completes; use the synchronous close-aware cursor when streaming or early close
-is required.
+For callers migrating from a facade whose `capabilities()` represented only the delegate, use `delegateCapabilities()` for that old lookup and use
+`capabilities()` to gate calls on the new async surface. Chunked async results preserve chunk boundaries but are fully materialized before the future completes; use the synchronous close-aware cursor when streaming or early close is required.

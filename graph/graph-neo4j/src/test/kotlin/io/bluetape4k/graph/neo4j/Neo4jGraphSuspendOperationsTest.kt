@@ -1,24 +1,6 @@
 package io.bluetape4k.graph.neo4j
 
 import io.bluetape4k.assertions.assertFailsWith
-import io.bluetape4k.graph.GraphQueryException
-import io.bluetape4k.graph.model.BfsDfsOptions
-import io.bluetape4k.graph.model.ComponentOptions
-import io.bluetape4k.graph.model.CycleOptions
-import io.bluetape4k.graph.model.DegreeOptions
-import io.bluetape4k.graph.model.Direction
-import io.bluetape4k.graph.model.NeighborOptions
-import io.bluetape4k.graph.model.PathOptions
-import io.bluetape4k.graph.repository.suspendTransaction
-import io.bluetape4k.junit5.coroutines.runSuspendIO
-import io.bluetape4k.logging.coroutines.KLoggingChannel
-import io.bluetape4k.logging.debug
-import io.bluetape4k.testcontainers.graphdb.Neo4jServer
-import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.withTimeout
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
@@ -29,6 +11,25 @@ import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.graph.GraphQueryException
+import io.bluetape4k.graph.model.ComponentOptions
+import io.bluetape4k.graph.model.CycleOptions
+import io.bluetape4k.graph.model.DegreeOptions
+import io.bluetape4k.graph.model.Direction
+import io.bluetape4k.graph.model.NeighborOptions
+import io.bluetape4k.graph.model.PathOptions
+import io.bluetape4k.graph.model.TreeTraversalOptions
+import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.logging.coroutines.KLoggingChannel
+import io.bluetape4k.logging.debug
+import io.bluetape4k.testcontainers.graphdb.Neo4jServer
+import io.mockk.every
+import io.mockk.mockk
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.withTimeout
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -42,13 +43,11 @@ import org.neo4j.driver.GraphDatabase
 import org.neo4j.driver.SessionConfig
 import org.neo4j.driver.exceptions.ServiceUnavailableException
 import org.neo4j.driver.reactivestreams.ReactiveSession
-import io.mockk.every
-import io.mockk.mockk
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 class Neo4jGraphSuspendOperationsTest {
 
-    companion object : KLoggingChannel()
+    companion object: KLoggingChannel()
 
     private lateinit var driver: Driver
     private lateinit var ops: Neo4jGraphSuspendOperations
@@ -499,7 +498,7 @@ class Neo4jGraphSuspendOperationsTest {
         val b = ops.createVertex("Node", emptyMap())
         ops.createEdge(a.id, b.id, "E")
 
-        val visits = ops.dfs(a.id, BfsDfsOptions(edgeLabel = "E", maxDepth = 2)).toList()
+        val visits = ops.dfs(a.id, TreeTraversalOptions(edgeLabel = "E", maxDepth = 2)).toList()
         visits.first().vertex.id shouldBeEqualTo a.id
         visits.size shouldBeGreaterOrEqualTo 2
     }

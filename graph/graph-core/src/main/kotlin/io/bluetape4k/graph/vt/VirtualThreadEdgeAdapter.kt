@@ -18,9 +18,9 @@ import java.util.concurrent.CompletableFuture
  */
 class VirtualThreadEdgeAdapter(
     private val delegate: GraphEdgeRepository,
-) : GraphVirtualThreadEdgeRepository {
+): GraphVirtualThreadEdgeRepository {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     override fun createEdgeAsync(
         fromId: GraphElementId,

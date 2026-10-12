@@ -1,6 +1,5 @@
 package io.bluetape4k.graph.repository
 
-import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
 import io.bluetape4k.graph.model.DegreeOptions
@@ -11,6 +10,7 @@ import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.PageRankOptions
 import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.TraversalVisit
+import io.bluetape4k.graph.model.TreeTraversalOptions
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -35,7 +35,9 @@ interface GraphSuspendAlgorithmRepository {
     /**
      * PageRank score를 score 내림차순 Flow로 emit한다.
      */
-    fun pageRank(options: PageRankOptions = PageRankOptions.Default): Flow<PageRankScore>
+    fun pageRank(
+        options: PageRankOptions = PageRankOptions.Default,
+    ): Flow<PageRankScore>
 
     /**
      * 단일 vertex의 degree centrality를 계산한다.
@@ -57,7 +59,7 @@ interface GraphSuspendAlgorithmRepository {
      */
     fun bfs(
         startId: GraphElementId,
-        options: BfsDfsOptions = BfsDfsOptions.Default,
+        options: TreeTraversalOptions = TreeTraversalOptions.Default,
     ): Flow<TraversalVisit>
 
     /**
@@ -65,7 +67,7 @@ interface GraphSuspendAlgorithmRepository {
      */
     fun dfs(
         startId: GraphElementId,
-        options: BfsDfsOptions = BfsDfsOptions.Default,
+        options: TreeTraversalOptions = TreeTraversalOptions.Default,
     ): Flow<TraversalVisit>
 
     /**

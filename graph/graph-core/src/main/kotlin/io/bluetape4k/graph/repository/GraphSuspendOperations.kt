@@ -20,7 +20,7 @@ package io.bluetape4k.graph.repository
  * val neighbors = ops.neighbors(alice.id).toList()  // Flow to List
  * ```
  */
-interface GraphSuspendOperations :
+interface GraphSuspendOperations:
     GraphSuspendSession,
     GraphSuspendVertexRepository,
     GraphSuspendEdgeRepository,

@@ -9,7 +9,10 @@ import java.util.concurrent.CompletableFuture
  * `CompletableFuture<T>`를 반환한다.
  */
 interface GraphVirtualThreadSession {
+
     fun createGraphAsync(name: String): CompletableFuture<Unit>
+
     fun dropGraphAsync(name: String): CompletableFuture<Unit>
+
     fun graphExistsAsync(name: String): CompletableFuture<Boolean>
 }

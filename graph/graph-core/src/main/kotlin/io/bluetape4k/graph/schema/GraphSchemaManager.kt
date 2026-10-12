@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.schema
 
+import io.bluetape4k.graph.GraphUnsupportedOperationException
 import io.bluetape4k.graph.model.GraphConstraint
 import io.bluetape4k.graph.model.GraphIndex
 import io.bluetape4k.graph.repository.GraphOperations
@@ -33,7 +34,7 @@ interface GraphSchemaManager {
 
     /**
      * 주어진 vertex label과 property에 lookup index를 생성한다.
-	*
+     *
      * @param label vertex label.
      * @param property index 대상 property name.
      */
@@ -41,7 +42,7 @@ interface GraphSchemaManager {
 
     /**
      * 주어진 vertex label과 property에 unique constraint를 생성한다.
-	*
+     *
      * @param label vertex label.
      * @param property unique해야 하는 property name.
      */
@@ -49,7 +50,7 @@ interface GraphSchemaManager {
 
     /**
      * 주어진 vertex label과 property의 lookup index를 삭제한다.
-	*
+     *
      * @param label vertex label.
      * @param property index가 걸린 property name.
      */
@@ -212,8 +213,8 @@ class UnsupportedGraphSchemaManager(
 
     override fun listConstraints(): List<GraphConstraint> = emptyList()
 
-    private fun unsupported(operation: String): UnsupportedOperationException =
-        UnsupportedOperationException("$backendName does not support $operation through GraphSchemaManager: $reason")
+    private fun unsupported(operation: String): GraphUnsupportedOperationException =
+        GraphUnsupportedOperationException("$backendName does not support $operation through GraphSchemaManager: $reason")
 }
 
 /**
@@ -231,7 +232,7 @@ class UnsupportedGraphSchemaManager(
  */
 fun GraphOperations.schemaManager(): GraphSchemaManager {
     val management = this as? GraphSchemaManagementOperations
-        ?: throw UnsupportedOperationException(
+        ?: throw GraphUnsupportedOperationException(
             "${this::class.qualifiedName ?: this::class.simpleName} does not support graph schema management."
         )
     return management.schemaManager()
@@ -252,7 +253,7 @@ fun GraphOperations.schemaManager(): GraphSchemaManager {
  */
 fun GraphSuspendOperations.schemaManager(): GraphSuspendSchemaManager {
     val management = this as? GraphSuspendSchemaManagementOperations
-        ?: throw UnsupportedOperationException(
+        ?: throw GraphUnsupportedOperationException(
             "${this::class.qualifiedName ?: this::class.simpleName} does not support suspend graph schema management."
         )
     return management.schemaManager()

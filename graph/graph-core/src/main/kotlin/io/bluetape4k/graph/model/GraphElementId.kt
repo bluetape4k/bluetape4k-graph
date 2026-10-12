@@ -2,6 +2,8 @@ package io.bluetape4k.graph.model
 
 import io.bluetape4k.support.requireNotBlank
 import java.io.Serializable
+import java.util.*
+import kotlin.uuid.Uuid
 
 /**
  * Backend-independent ID for graph elements: vertices and edges.
@@ -28,6 +30,12 @@ value class GraphElementId(val value: String): Serializable {
 
     companion object {
         private const val serialVersionUID: Long = 1L
+
+        operator fun invoke(value: String): GraphElementId = GraphElementId(value)
+        operator fun invoke(value: Long): GraphElementId = GraphElementId(value.toString())
+        operator fun invoke(value: Number): GraphElementId = GraphElementId(value.toString())
+        operator fun invoke(value: UUID): GraphElementId = GraphElementId(value.toString())
+        operator fun invoke(value: Uuid): GraphElementId = GraphElementId(value.toString())
 
         /**
          * Creates a [GraphElementId] from a string value.
@@ -56,6 +64,21 @@ value class GraphElementId(val value: String): Serializable {
         fun of(value: Long): GraphElementId {
             return GraphElementId(value.toString())
         }
+
+        /**
+         * Converts a numeric [Number] ID to [GraphElementId].
+         *
+         * Use this for backends such as Apache AGE whose internal IDs are [Long] values.
+         *
+         * ```kotlin
+         * val id = GraphElementId.of(42)  // AGE Long ID -> "42"
+         * ```
+         *
+         * @param value Numeric [Long] ID.
+         */
+        fun of(value: Number): GraphElementId {
+            return GraphElementId(value.toString())
+        }
     }
 }
 
@@ -76,6 +99,29 @@ value class GraphElementId(val value: String): Serializable {
  */
 fun graphElementIdOf(value: Any): GraphElementId = when (value) {
     is GraphElementId -> value
-    is Long -> GraphElementId.of(value)
+    is CharSequence -> GraphElementId.of(value.toString())
+    is Number -> GraphElementId.of(value)
+    else -> GraphElementId.of(value.toString())
+}
+
+/**
+ * Converts a value of any type to [GraphElementId].
+ *
+ * - Returns [GraphElementId] values unchanged.
+ * - Delegates [Number] values to the [GraphElementId.of] overload.
+ * - Uses `toString()` as the ID value for other types.
+ *
+ * ```kotlin
+ * elementIdOf("node-1")           // GraphElementId("node-1")
+ * elementIdOf(42L)                // GraphElementId("42")
+ * elementIdOf(GraphElementId("x")) // GraphElementId("x") - no duplicate conversion
+ * ```
+ *
+ * @param value Value to convert to an ID. Its `toString()` result must not be blank.
+ */
+fun elementIdOf(value: Any): GraphElementId = when (value) {
+    is GraphElementId -> value
+    is CharSequence -> GraphElementId.of(value.toString())
+    is Number -> GraphElementId.of(value)
     else -> GraphElementId.of(value.toString())
 }

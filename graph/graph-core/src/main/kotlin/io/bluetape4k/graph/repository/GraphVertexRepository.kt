@@ -33,9 +33,9 @@ interface GraphVertexRepository {
 
     /**
      * Creates multiple vertices with the same label and returns them in input order.
-	*
+     *
      * ## Contract
-	*
+     *
      * - Empty input returns `emptyList()` without calling the backend.
      * - The default implementation is a compatibility fallback that calls [createVertex] sequentially.
      * - If the default implementation fails mid-batch, previously created vertices may remain.
@@ -80,7 +80,7 @@ interface GraphVertexRepository {
 
     /**
      * Finds one vertex by ID without a label.
-	*
+     *
      * Use this when the backend can query vertices by ID alone. Dijkstra/A* algorithms need it
      * when only the vertex ID is known.
      *

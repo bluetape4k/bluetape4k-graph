@@ -1,16 +1,23 @@
 package io.bluetape4k.graph.schema
 
+import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.assertions.shouldNotBeEqualTo
+import io.bluetape4k.graph.AbstractGraphTest
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-class VertexLabelTest {
+class VertexLabelTest: AbstractGraphTest() {
+
+    companion object: KLogging()
 
     private object PersonLabel: VertexLabel("Person") {
+        private fun readResolve(): Any = PersonLabel
         val name = string("name")
         val age = integer("age")
         val score = long("score")
@@ -35,6 +42,8 @@ class VertexLabelTest {
     @Test
     fun `선언한 프로퍼티가 순서대로 수집된다`() {
         val props = PersonLabel.properties
+        log.debug { "props=$props" }
+        
         props.map { it.name } shouldBeEqualTo listOf(
             "name", "age", "score", "active",
             "skills", "meta", "birthday", "lastLogin", "status",
@@ -57,6 +66,8 @@ class VertexLabelTest {
     @Test
     fun `properties 리스트는 불변 스냅샷이다`() {
         val snapshot = PersonLabel.properties
+
+        log.debug { "snapshot=$snapshot" }
         snapshot shouldHaveSize 9
         // 동일 레이블 재참조해도 프로퍼티가 중복 추가되지 않는다
         PersonLabel.properties shouldHaveSize 9
@@ -65,6 +76,8 @@ class VertexLabelTest {
     @Test
     fun `PropertyDef는 이름과 타입으로 정의된다`() {
         val def = PropertyDef("x", Int::class)
+
+        log.debug { "def=$def" }
         def.name shouldBeEqualTo "x"
         def.type shouldBeEqualTo Int::class
     }
@@ -72,6 +85,8 @@ class VertexLabelTest {
     @Test
     fun `VertexLabel 서브클래스는 각각 독립된 properties 상태를 가진다`() {
         val companyProps = TestCompanyLabel.properties.map { it.name }
+
+        log.debug { "companyProps=$companyProps" }
         companyProps shouldContain "industry"
         companyProps shouldHaveSize 2
     }
@@ -79,13 +94,17 @@ class VertexLabelTest {
     @Test
     fun `프로퍼티가 없는 VertexLabel도 허용된다`() {
         val emptyLabel = object: VertexLabel("Empty") {}
+
+        log.debug { "emptyLabel=$emptyLabel" }
         emptyLabel.label shouldBeEqualTo "Empty"
-        emptyLabel.properties shouldHaveSize 0
+        emptyLabel.properties.shouldBeEmpty()
     }
 
     @Test
     fun `inline PropertyDef 팩토리가 reified 타입을 올바르게 캡처한다`() {
         val intDef = PropertyDef<Int>("score")
+
+        log.debug { "intDef=$intDef" }
         intDef.name shouldBeEqualTo "score"
         intDef.type shouldBeEqualTo Int::class
     }
@@ -96,11 +115,13 @@ class VertexLabelTest {
         val b = PropertyDef<String>("tag")
         val c = PropertyDef<Int>("tag")
 
+        log.debug { "a=$a, b=$b, c=$c" }
         a shouldBeEqualTo b
         a shouldNotBeEqualTo c
     }
 
     private object TestCompanyLabel: VertexLabel("Company") {
+        private fun readResolve(): Any = TestCompanyLabel
         val name = string("name")
         val industry = string("industry")
     }

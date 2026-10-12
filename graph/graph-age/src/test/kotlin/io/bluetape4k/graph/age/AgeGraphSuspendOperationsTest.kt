@@ -4,30 +4,6 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEmpty
-import io.bluetape4k.graph.GraphQueryException
-import io.bluetape4k.graph.model.BfsDfsOptions
-import io.bluetape4k.graph.model.ComponentOptions
-import io.bluetape4k.graph.model.CycleOptions
-import io.bluetape4k.graph.model.DegreeOptions
-import io.bluetape4k.graph.model.Direction
-import io.bluetape4k.graph.model.GraphElementId
-import io.bluetape4k.graph.model.NeighborOptions
-import io.bluetape4k.graph.model.PageRankOptions
-import io.bluetape4k.graph.model.PathOptions
-import io.bluetape4k.graph.repository.suspendTransaction
-import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
-import io.bluetape4k.junit5.coroutines.runSuspendIO
-import io.bluetape4k.logging.KLogging
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.withTimeout
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeGreaterThan
@@ -36,6 +12,28 @@ import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.graph.GraphQueryException
+import io.bluetape4k.graph.model.ComponentOptions
+import io.bluetape4k.graph.model.CycleOptions
+import io.bluetape4k.graph.model.DegreeOptions
+import io.bluetape4k.graph.model.Direction
+import io.bluetape4k.graph.model.GraphElementId
+import io.bluetape4k.graph.model.NeighborOptions
+import io.bluetape4k.graph.model.PageRankOptions
+import io.bluetape4k.graph.model.PathOptions
+import io.bluetape4k.graph.model.TreeTraversalOptions
+import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.withTimeout
 import org.jetbrains.exposed.v1.core.DatabaseConfig
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
@@ -646,11 +644,11 @@ class AgeGraphSuspendOperationsTest {
         degree.outDegree shouldBeEqualTo 1
         degree.inDegree shouldBeEqualTo 1
 
-        val bfs = ops.bfs(a.id, BfsDfsOptions(edgeLabel = "E", maxDepth = 3)).toList()
+        val bfs = ops.bfs(a.id, TreeTraversalOptions(edgeLabel = "E", maxDepth = 3)).toList()
         bfs.first().vertex.id shouldBeEqualTo a.id
         bfs.size shouldBeGreaterThan 2
 
-        val dfs = ops.dfs(a.id, BfsDfsOptions(edgeLabel = "E", maxDepth = 3)).toList()
+        val dfs = ops.dfs(a.id, TreeTraversalOptions(edgeLabel = "E", maxDepth = 3)).toList()
         dfs.first().vertex.id shouldBeEqualTo a.id
         dfs.size shouldBeGreaterThan 2
 

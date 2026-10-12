@@ -1,21 +1,24 @@
 package io.bluetape4k.graph.vt
 
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.graph.AbstractGraphTest
 import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.junit5.concurrency.StructuredTaskScopeTester
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import io.mockk.clearMocks
 import io.mockk.spyk
 import io.mockk.verify
-import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldNotBeNull
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class VirtualThreadEdgeAdapterTest {
+class VirtualThreadEdgeAdapterTest: AbstractGraphTest() {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     private lateinit var delegate: TinkerGraphOperations
     private lateinit var adapter: VirtualThreadEdgeAdapter
@@ -36,10 +39,15 @@ class VirtualThreadEdgeAdapterTest {
     fun `createEdgeAsync creates and returns edge`() {
         val from = delegate.createVertex("Person", mapOf("name" to "Alice"))
         val to = delegate.createVertex("Person", mapOf("name" to "Bob"))
-        val edge = adapter.createEdgeAsync(from.id, to.id, "KNOWS", mapOf("since" to 2024)).join()
+        val edge = adapter.createEdgeAsync(from.id, to.id, "KNOWS", mapOf("since" to 2024)).get()
+
+        log.debug { "from=$from, to=$to, edge=$edge" }
         edge.shouldNotBeNull()
         edge.label shouldBeEqualTo "KNOWS"
-        verify(exactly = 1) { delegate.createEdge(from.id, to.id, "KNOWS", mapOf("since" to 2024)) }
+
+        verify(exactly = 1) {
+            delegate.createEdge(from.id, to.id, "KNOWS", mapOf("since" to 2024))
+        }
     }
 
     @Test
@@ -48,9 +56,13 @@ class VirtualThreadEdgeAdapterTest {
         val to = delegate.createVertex("Person", mapOf("name" to "Bob"))
         val rows = listOf(BatchEdge(from.id, to.id, mapOf("since" to 2024)))
 
-        val edges = adapter.createEdgesAsync("KNOWS", rows).join()
+        val edges = adapter.createEdgesAsync("KNOWS", rows).get()
+
+        log.debug { "from=$from, to=$to" }
+        edges.forEach { log.debug { "edge=$it" } }
 
         edges.single().properties["since"] shouldBeEqualTo 2024
+
         verify(exactly = 1) { delegate.createEdges("KNOWS", rows) }
     }
 
@@ -58,9 +70,13 @@ class VirtualThreadEdgeAdapterTest {
     fun `findEdgesByLabelAsync returns edges`() {
         val from = delegate.createVertex("Person")
         val to = delegate.createVertex("Person")
+
         delegate.createEdge(from.id, to.id, "KNOWS")
         delegate.createEdge(from.id, to.id, "KNOWS")
-        val edges = adapter.findEdgesByLabelAsync("KNOWS").join()
+
+        val edges = adapter.findEdgesByLabelAsync("KNOWS").get()
+
+        edges.forEach { log.debug { "edge=$it" } }
         edges.size shouldBeEqualTo 2
     }
 
@@ -69,17 +85,22 @@ class VirtualThreadEdgeAdapterTest {
         val from = delegate.createVertex("Person")
         val to = delegate.createVertex("Person")
         val edge = delegate.createEdge(from.id, to.id, "KNOWS")
-        adapter.deleteEdgeAsync("KNOWS", edge.id).join() shouldBeEqualTo true
+
+        adapter.deleteEdgeAsync("KNOWS", edge.id).get().shouldBeTrue()
     }
 
     @Test
     fun `findEdgesByLabelAsync is thread-safe under concurrent load`() {
         val from = delegate.createVertex("Person")
         val to = delegate.createVertex("Person")
-        delegate.createEdge(from.id, to.id, "KNOWS")
+        val edge = delegate.createEdge(from.id, to.id, "KNOWS")
+        log.debug { "edge=$edge" }
+
         StructuredTaskScopeTester()
             .rounds(50)
-            .add { adapter.findEdgesByLabelAsync("KNOWS").join().shouldNotBeNull() }
+            .add {
+                adapter.findEdgesByLabelAsync("KNOWS").get().shouldNotBeNull()
+            }
             .run()
     }
 
@@ -88,7 +109,11 @@ class VirtualThreadEdgeAdapterTest {
         val from = delegate.createVertex("Person", mapOf("name" to "Alice"))
         val to = delegate.createVertex("Person", mapOf("name" to "Bob"))
         val vtEdge = delegate.asVirtualThreadEdge()
-        val edge = vtEdge.createEdgeAsync(from.id, to.id, "KNOWS").join()
+        val edge = vtEdge.createEdgeAsync(from.id, to.id, "KNOWS").get()
+
+        log.debug { "from=$from, to=$to" }
+        log.debug { "edge=$edge" }
+
         edge.shouldNotBeNull()
         edge.label shouldBeEqualTo "KNOWS"
     }

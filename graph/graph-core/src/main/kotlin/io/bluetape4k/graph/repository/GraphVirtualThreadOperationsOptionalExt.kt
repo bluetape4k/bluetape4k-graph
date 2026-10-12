@@ -1,5 +1,7 @@
 package io.bluetape4k.graph.repository
 
+import io.bluetape4k.concurrent.failedCompletableFutureOf
+import io.bluetape4k.graph.GraphUnsupportedOperationException
 import io.bluetape4k.graph.model.GraphConstraint
 import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphElementId
@@ -8,8 +10,8 @@ import io.bluetape4k.graph.model.GraphVertex
 import java.util.concurrent.CompletableFuture
 
 private fun <T> unsupportedOptionalSurface(operation: String): CompletableFuture<T> =
-    CompletableFuture.failedFuture(
-        UnsupportedOperationException(
+    failedCompletableFutureOf(
+        GraphUnsupportedOperationException(
             "${GraphVirtualThreadOperations::class.simpleName} does not support $operation."
         ),
     )

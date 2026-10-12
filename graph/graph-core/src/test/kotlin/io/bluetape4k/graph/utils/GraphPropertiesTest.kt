@@ -4,11 +4,16 @@ import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldEndWith
 import io.bluetape4k.assertions.shouldStartWith
+import io.bluetape4k.graph.AbstractGraphTest
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-class GraphPropertiesTest {
+class GraphPropertiesTest: AbstractGraphTest() {
+
+    companion object: KLogging()
 
     // ----- toCypherValue -----
 
@@ -26,6 +31,8 @@ class GraphPropertiesTest {
     fun `문자열 내부 작은따옴표는 escape 된다`() {
         // "it's" -> 'it\'s'
         val encoded = GraphProperties.toCypherValue("it's")
+
+        log.debug { "encoded=$encoded" }
         encoded shouldStartWith "'"
         encoded shouldEndWith "'"
         encoded shouldContain "\\'"
@@ -177,5 +184,8 @@ class GraphPropertiesTest {
         GraphProperties.toCypherValue(map) shouldBeEqualTo "{my-key: 'val'}"
     }
 
-    private enum class TestEnum { ACTIVE, INACTIVE }
+    private enum class TestEnum {
+        ACTIVE,
+        INACTIVE
+    }
 }
