@@ -1,29 +1,15 @@
 package io.bluetape4k.graph.tinkerpop
 
 import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldHaveSize
-import io.bluetape4k.assertions.shouldBeEmpty
+import io.bluetape4k.graph.GraphUnsupportedOperationException
 import io.bluetape4k.junit5.coroutines.runSuspendIO
-import io.bluetape4k.graph.schema.schemaManager
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class TinkerGraphSchemaManagerTest {
-
-    private lateinit var ops: TinkerGraphOperations
-
-    @BeforeEach
-    fun setUp() {
-        ops = TinkerGraphOperations()
-    }
-
-    @AfterEach
-    fun tearDown() {
-        ops.close()
-    }
+class TinkerGraphSchemaManagerTest: AbstractTinkerGraphTest() {
 
     @Test
     fun `records indexes in memory for current operations instance`() {
@@ -49,7 +35,7 @@ class TinkerGraphSchemaManagerTest {
 
     @Test
     fun `unique constraints fail explicitly because TinkerGraph cannot enforce them`() {
-        val ex = assertFailsWith<UnsupportedOperationException> {
+        val ex = assertFailsWith<GraphUnsupportedOperationException> {
             ops.schemaManager().createUniqueConstraint("Person", "email")
         }
 

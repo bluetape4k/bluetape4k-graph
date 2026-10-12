@@ -1,17 +1,17 @@
 package io.bluetape4k.graph.tinkerpop
 
-import io.bluetape4k.graph.model.MissingWeightPolicy
-import io.bluetape4k.graph.model.PathOptions
-import io.bluetape4k.graph.conformance.WeightedPathDepthConformance
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeNear
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.graph.conformance.WeightedPathDepthConformance
+import io.bluetape4k.graph.model.MissingWeightPolicy
+import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.logging.KLogging
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeEach
+import io.bluetape4k.logging.debug
+import io.bluetape4k.support.asDouble
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
+import kotlin.math.sqrt
 
 /**
  * TinkerGraph 기반 가중치 최단 경로(Dijkstra/A*) 통합 테스트.
@@ -24,22 +24,9 @@ import org.junit.jupiter.api.TestInstance
  *
  * 최단 경로 A→C: A→B→C (cost=3.0)
  */
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class TinkerGraphWeightedPathTest {
+class TinkerGraphWeightedPathTest: AbstractTinkerGraphTest() {
 
-    companion object : KLogging()
-
-    private val ops = TinkerGraphOperations()
-
-    @AfterAll
-    fun teardown() {
-        ops.close()
-    }
-
-    @BeforeEach
-    fun reset() {
-        ops.dropGraph("default")
-    }
+    companion object: KLogging()
 
     // ─── Dijkstra ───────────────────────────────────────────────────────────────
 
@@ -57,7 +44,7 @@ class TinkerGraphWeightedPathTest {
             PathOptions(weightProperty = "cost", edgeLabel = "ROAD"),
         ).shouldNotBeNull()
 
-        path.totalWeight.shouldBeNear(3.0, 0.001)
+        path.totalWeight.shouldBeNear(3.0)
         path.vertices.map { it.properties["name"] } shouldContainInOrder listOf("A", "B", "C")
     }
 
@@ -103,7 +90,8 @@ class TinkerGraphWeightedPathTest {
             ),
         ).shouldNotBeNull()
 
-        path.totalWeight.shouldBeNear(3.0, 0.001)
+        log.debug { "path=$path" }
+        path.totalWeight.shouldBeNear(3.0)
     }
 
     @Test
@@ -126,23 +114,24 @@ class TinkerGraphWeightedPathTest {
         val a = ops.createVertex("City", mapOf("name" to "A", "x" to 0.0, "y" to 0.0))
         val b = ops.createVertex("City", mapOf("name" to "B", "x" to 1.0, "y" to 0.0))
         val c = ops.createVertex("City", mapOf("name" to "C", "x" to 2.0, "y" to 0.0))
+
         ops.createEdge(a.id, b.id, "ROAD", mapOf("cost" to 1.0))
         ops.createEdge(b.id, c.id, "ROAD", mapOf("cost" to 2.0))
         ops.createEdge(a.id, c.id, "ROAD", mapOf("cost" to 5.0))
 
-        val goalX = c.properties["x"] as? Double ?: 2.0
-        val goalY = c.properties["y"] as? Double ?: 0.0
+        val goalX = c.properties["x"].asDouble(2.0)
+        val goalY = c.properties["y"].asDouble()
 
         val path = ops.aStarPath(
             a.id, c.id,
             PathOptions(weightProperty = "cost", edgeLabel = "ROAD"),
         ) { v ->
-            val vx = v.properties["x"] as? Double ?: 0.0
-            val vy = v.properties["y"] as? Double ?: 0.0
-            Math.sqrt((vx - goalX) * (vx - goalX) + (vy - goalY) * (vy - goalY))
+            val vx = v.properties["x"].asDouble()
+            val vy = v.properties["y"].asDouble()
+            sqrt((vx - goalX) * (vx - goalX) + (vy - goalY) * (vy - goalY))
         }.shouldNotBeNull()
 
-        path.totalWeight.shouldBeNear(3.0, 0.001)
+        path.totalWeight.shouldBeNear(3.0)
     }
 
     @Test

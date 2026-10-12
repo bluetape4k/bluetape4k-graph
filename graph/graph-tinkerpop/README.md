@@ -6,19 +6,18 @@
 
 ## Overview
 
-Implements the `graph-core` interfaces using TinkerGraph (an in-memory JVM graph DB).
-It runs standalone without an external server, making it well suited for testing and prototyping.
+Implements the `graph-core` interfaces using TinkerGraph (an in-memory JVM graph DB). It runs standalone without an external server, making it well suited for testing and prototyping.
 
 ![graph-tinkerpop architecture](../../docs/images/readme-diagrams/graph-graph-tinkerpop-architecture-01.png)
 
 ## Key Classes
 
-| Class | Description |
-|-------|-------------|
-| `TinkerGraphOperations` | Synchronous (blocking) implementation |
-| `TinkerGraphSuspendOperations` | Coroutine (suspend + Flow) implementation |
-| `TinkerGraphSchemaManager` | In-memory schema/index manager for test-friendly index metadata |
-| `GremlinRecordMapper` | Converts TinkerPop Vertex/Edge/Path into GraphVertex/GraphEdge/GraphPath |
+| Class                          | Description                                                              |
+|--------------------------------|--------------------------------------------------------------------------|
+| `TinkerGraphOperations`        | Synchronous (blocking) implementation                                    |
+| `TinkerGraphSuspendOperations` | Coroutine (suspend + Flow) implementation                                |
+| `TinkerGraphSchemaManager`     | In-memory schema/index manager for test-friendly index metadata          |
+| `GremlinRecordMapper`          | Converts TinkerPop Vertex/Edge/Path into GraphVertex/GraphEdge/GraphPath |
 
 ## Class Model
 
@@ -41,7 +40,7 @@ val ops = TinkerGraphOperations()
 
 // Create vertices
 val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
-val bob   = ops.createVertex("Person", mapOf("name" to "Bob"))
+val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
 
 // Create edge
 ops.createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to 2024L))
@@ -55,10 +54,7 @@ ops.close()
 ## Bounded Chunk Cursor Lifecycle
 
 `findVerticesByLabelChunkedCursor` and `findEdgesByLabelChunkedCursor` return a
-`CloseableChunkSequence`. The cursor consumes at most `chunkSize` records per
-chunk and closes the underlying TinkerPop traversal when it is exhausted,
-fails, or is explicitly closed. Close the cursor when a partial consumer such
-as `take(1)` stops early:
+`CloseableChunkSequence`. The cursor consumes at most `chunkSize` records per chunk and closes the underlying TinkerPop traversal when it is exhausted, fails, or is explicitly closed. Close the cursor when a partial consumer such as `take(1)` stops early:
 
 ```kotlin
 val cursor = ops.findVerticesByLabelChunkedCursor("Person", chunkSize = 256)
@@ -70,17 +66,11 @@ try {
 ```
 
 The repository-compatible `findVerticesByLabelChunked` and
-`findEdgesByLabelChunked` methods still return `Sequence` for ABI compatibility;
-that interface type has no close handle, so use the concrete `*Cursor` methods
-when early-close or a source-memory bound is part of the caller's contract.
-Suspend/Flow chunk methods close the cursor from `finally` on early `take`,
-cancellation, and downstream failure.
+`findEdgesByLabelChunked` methods still return `Sequence` for ABI compatibility; that interface type has no close handle, so use the concrete `*Cursor` methods when early-close or a source-memory bound is part of the caller's contract. Suspend/Flow chunk methods close the cursor from `finally` on early `take`, cancellation, and downstream failure.
 
 ## Schema / Index Management
 
-TinkerGraph has no durable schema DDL. `schemaManager().createIndex(label, property)` records index metadata in the
-current operations instance so tests can assert expected schema setup. Unique constraints fail explicitly because
-TinkerGraph cannot enforce them.
+TinkerGraph has no durable schema DDL. `schemaManager().createIndex(label, property)` records index metadata in the current operations instance so tests can assert expected schema setup. Unique constraints fail explicitly because TinkerGraph cannot enforce them.
 
 ```kotlin
 import io.bluetape4k.graph.schema.schemaManager
@@ -93,11 +83,8 @@ schema.listIndexes()
 ## Merge / Upsert and Transaction DSL
 
 TinkerGraph supports `GraphMergeOperations` with Gremlin get-or-create/update semantics and an in-memory
-`Transaction DSL`. This keeps tests and local prototypes on the same API surface as server-backed modules.
-While a transaction is active, graph, session, and schema mutations issued outside its transaction block fail with
-`IllegalStateException`. Mutations through the transaction scope remain valid across suspension, and a failed
-transaction restores the graph snapshot without accepting concurrent external writes. Retry external mutations after
-the transaction completes.
+`Transaction DSL`. This keeps tests and local prototypes on the same API surface as server-backed modules. While a transaction is active, graph, session, and schema mutations issued outside its transaction block fail with
+`IllegalStateException`. Mutations through the transaction scope remain valid across suspension, and a failed transaction restores the graph snapshot without accepting concurrent external writes. Retry external mutations after the transaction completes.
 
 ```kotlin
 import io.bluetape4k.graph.repository.mergeVertex
@@ -117,20 +104,18 @@ ops.transaction {
 
 ## Graph Algorithms
 
-TinkerPop uses Gremlin traversals for graph access and local JVM helpers where TinkerGraph does not expose the
-required GraphComputer-style execution path. Weighted shortest path and A* path also use the shared graph-core
-fallback implementations.
+TinkerPop uses Gremlin traversals for graph access and local JVM helpers where TinkerGraph does not expose the required GraphComputer-style execution path. Weighted shortest path and A* path also use the shared graph-core fallback implementations.
 
 ### Algorithm Support Matrix
 
-| Algorithm | Implementation | Notes |
-|-----------|---------------|-------|
-| `degreeCentrality` | Gremlin edge counts | Uses `inE` / `outE` counts |
-| `bfs` | JVM helper over Gremlin-loaded adjacency | Deterministic ordering across TinkerPop versions |
-| `dfs` | JVM helper over Gremlin-loaded adjacency | Deterministic ordering across TinkerPop versions |
-| `detectCycles` | JVM helper over Gremlin-loaded adjacency | Builds `GraphCycle` from mapped vertices and edges |
-| `connectedComponents` | JVM `UnionFind` over Gremlin-loaded edges | Consistent component ordering |
-| `pageRank` | JVM `PageRankCalculator` | Avoids GraphComputer dependency in standard TinkerGraph |
+| Algorithm             | Implementation                            | Notes                                                   |
+|-----------------------|-------------------------------------------|---------------------------------------------------------|
+| `degreeCentrality`    | Gremlin edge counts                       | Uses `inE` / `outE` counts                              |
+| `bfs`                 | JVM helper over Gremlin-loaded adjacency  | Deterministic ordering across TinkerPop versions        |
+| `dfs`                 | JVM helper over Gremlin-loaded adjacency  | Deterministic ordering across TinkerPop versions        |
+| `detectCycles`        | JVM helper over Gremlin-loaded adjacency  | Builds `GraphCycle` from mapped vertices and edges      |
+| `connectedComponents` | JVM `UnionFind` over Gremlin-loaded edges | Consistent component ordering                           |
+| `pageRank`            | JVM `PageRankCalculator`                  | Avoids GraphComputer dependency in standard TinkerGraph |
 
 ### Usage Example
 

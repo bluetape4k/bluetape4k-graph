@@ -5,9 +5,13 @@ import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.PathOptions
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 
-class TinkerGraphTraversalFailuresTest {
+class TinkerGraphTraversalFailuresTest: AbstractTinkerGraphTest() {
+
+    companion object: KLogging()
 
     @Test
     fun `unexpected traversal failure is wrapped with backend context`() {
@@ -21,6 +25,7 @@ class TinkerGraphTraversalFailuresTest {
             cause = cause,
         )
 
+        log.debug { "ex=$ex" }
         ex.message shouldContain "TinkerGraph shortestPath traversal failed"
         ex.message shouldContain "from=1"
         ex.message shouldContain "to=2"
@@ -39,6 +44,7 @@ class TinkerGraphTraversalFailuresTest {
             cause = original,
         )
 
+        log.debug { "ex=$ex" }
         ex.message shouldContain "already contextual"
     }
 }

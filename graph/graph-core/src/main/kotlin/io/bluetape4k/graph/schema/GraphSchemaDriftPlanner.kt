@@ -194,7 +194,7 @@ private fun MutableList<GraphSchemaPlanItem>.addMissingIndexes(
     desired: Set<GraphIndex>,
 ) {
     desired
-        .filterNot { live.any { it.sameSchema(it) } }
+        .filterNot { wanted -> live.any { it.sameSchema(wanted) } }
         .forEach {
             add(
                 GraphSchemaPlanItem(
@@ -211,7 +211,7 @@ private fun MutableList<GraphSchemaPlanItem>.addMissingConstraints(
     desired: Set<GraphConstraint>,
 ) {
     desired
-        .filterNot { live.any { it.sameSchema(it) } }
+        .filterNot { wanted -> live.any { it.sameSchema(wanted) } }
         .forEach {
             add(
                 GraphSchemaPlanItem(
@@ -229,7 +229,7 @@ private fun MutableList<GraphSchemaPlanItem>.addExtraIndexes(
     options: GraphSchemaPlanOptions,
 ) {
     live
-        .filterNot { desired.any { it.sameSchema(it) } }
+        .filterNot { existing -> desired.any { it.sameSchema(existing) } }
         .forEach {
             add(
                 GraphSchemaPlanItem(
@@ -247,7 +247,7 @@ private fun MutableList<GraphSchemaPlanItem>.addExtraConstraints(
     options: GraphSchemaPlanOptions,
 ) {
     live
-        .filterNot { desired.any { it.sameSchema(it) } }
+        .filterNot { existing -> desired.any { it.sameSchema(existing) } }
         .forEach {
             add(
                 GraphSchemaPlanItem(
