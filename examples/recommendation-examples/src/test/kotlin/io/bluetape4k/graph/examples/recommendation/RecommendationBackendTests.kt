@@ -1,9 +1,9 @@
 package io.bluetape4k.graph.examples.recommendation
 
-import io.bluetape4k.codec.Base58
 import com.falkordb.FalkorDB
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import io.bluetape4k.codec.Base58
 import io.bluetape4k.graph.age.AgeGraphOperations
 import io.bluetape4k.graph.age.AgeGraphSuspendOperations
 import io.bluetape4k.graph.falkordb.FalkorDBGraphOperations
@@ -106,8 +106,8 @@ class AgeRecommendationTest : AbstractRecommendationTest() {
             connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
             maximumPoolSize = 5
         })
-        Database.connect(dataSource)
-        ops = AgeGraphOperations(graphName)
+        val database = Database.connect(dataSource)
+        ops = AgeGraphOperations(database, graphName)
     }
 
     @AfterAll
@@ -132,8 +132,8 @@ class AgeRecommendationSuspendTest : AbstractRecommendationSuspendTest() {
             connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
             maximumPoolSize = 5
         })
-        Database.connect(dataSource)
-        ops = AgeGraphSuspendOperations(graphName)
+        val database = Database.connect(dataSource)
+        ops = AgeGraphSuspendOperations(database, graphName)
     }
 
     @AfterAll

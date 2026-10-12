@@ -44,7 +44,7 @@ class AgeAlgorithmTest {
             maximumPoolSize = 5
         })
         database = Database.connect(dataSource)
-        ops = AgeGraphOperations(graphName)
+        ops = AgeGraphOperations(database, graphName)
     }
 
     @AfterAll

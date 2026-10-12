@@ -5,10 +5,10 @@ import com.zaxxer.hikari.HikariDataSource
 import io.bluetape4k.assertions.shouldBeNear
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.graph.conformance.WeightedPathDepthConformance
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.MissingWeightPolicy
 import io.bluetape4k.graph.model.PathOptions
-import io.bluetape4k.graph.conformance.WeightedPathDepthConformance
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
@@ -41,7 +41,7 @@ class AgeSuspendWeightedPathTest {
             maximumPoolSize = 5
         })
         database = Database.connect(dataSource)
-        ops = AgeGraphSuspendOperations(graphName)
+        ops = AgeGraphSuspendOperations(database, graphName)
     }
 
     @AfterAll

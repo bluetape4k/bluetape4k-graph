@@ -2,15 +2,15 @@ package io.bluetape4k.graph.age
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import io.bluetape4k.graph.model.MissingWeightPolicy
-import io.bluetape4k.graph.model.PathOptions
-import io.bluetape4k.graph.conformance.WeightedPathDepthConformance
-import io.bluetape4k.junit5.coroutines.runSuspendIO
-import io.bluetape4k.logging.KLogging
-import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
 import io.bluetape4k.assertions.shouldBeNear
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.graph.conformance.WeightedPathDepthConformance
+import io.bluetape4k.graph.model.MissingWeightPolicy
+import io.bluetape4k.graph.model.PathOptions
+import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -41,7 +41,7 @@ class AgeWeightedPathTest {
             maximumPoolSize = 5
         })
         database = Database.connect(dataSource)
-        ops = AgeGraphOperations(graphName)
+        ops = AgeGraphOperations(database, graphName)
     }
 
     @AfterAll

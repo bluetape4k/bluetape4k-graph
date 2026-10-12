@@ -26,10 +26,10 @@ class AgeBatchInsertSmokeTest {
             connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
             maximumPoolSize = 4
         }).use { dataSource ->
-            Database.connect(dataSource)
+            val database = Database.connect(dataSource)
             val graphName = "batch_smoke_graph"
             val result = runSmoke("age") {
-                AgeGraphOperations(graphName).also { ops ->
+                AgeGraphOperations(database, graphName).also { ops ->
                     if (ops.graphExists(graphName)) {
                         ops.dropGraph(graphName)
                     }

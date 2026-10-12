@@ -3,7 +3,6 @@ package io.bluetape4k.graph.age
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldContain
-import io.bluetape4k.graph.schema.schemaManager
 import org.junit.jupiter.api.Test
 
 class AgeGraphSchemaManagerTest {

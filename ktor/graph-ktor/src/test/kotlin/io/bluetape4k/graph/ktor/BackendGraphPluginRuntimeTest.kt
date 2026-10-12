@@ -1,10 +1,10 @@
 package io.bluetape4k.graph.ktor
 
-import io.bluetape4k.codec.Base58
 import com.falkordb.FalkorDB
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.codec.Base58
 import io.bluetape4k.graph.age.AgeGraphOperations
 import io.bluetape4k.graph.falkordb.FalkorDBServer
 import io.bluetape4k.junit5.coroutines.runSuspendIO
@@ -86,9 +86,9 @@ class BackendGraphPluginRuntimeTest {
                 connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
                 maximumPoolSize = 1
             }).use { cleanupDataSource ->
-                Database.connect(cleanupDataSource)
+                val database = Database.connect(cleanupDataSource)
                 runCatching {
-                    val ops = AgeGraphOperations(graphName)
+                    val ops = AgeGraphOperations(database, graphName)
                     if (ops.graphExists(graphName)) {
                         ops.dropGraph(graphName)
                     }
@@ -112,14 +112,14 @@ class BackendGraphPluginRuntimeTest {
             maximumPoolSize = 2
         })
 
+        val database = Database.connect(dataSource)
         try {
-            Database.connect(dataSource)
             backendSmoke(graphName = graphName) {
-                age(graphName)
+                age(database, graphName)
             }
         } finally {
             runCatching {
-                val ops = AgeGraphOperations(graphName)
+                val ops = AgeGraphOperations(database, graphName)
                 if (ops.graphExists(graphName)) {
                     ops.dropGraph(graphName)
                 }

@@ -122,16 +122,17 @@ open class GraphDbComparisonState {
             }
             "age" -> {
                 val server = PostgreSQLAgeServer.Launcher.postgresqlAge
-                dataSource = HikariDataSource(HikariConfig().apply {
+                val config = HikariConfig().apply {
                     jdbcUrl = server.jdbcUrl
                     username = server.username
                     password = server.password
                     driverClassName = "org.postgresql.Driver"
                     connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
                     maximumPoolSize = 4
-                })
-                Database.connect(dataSource!!)
-                AgeGraphOperations(GRAPH_NAME)
+                }
+                dataSource = HikariDataSource(config)
+                val database = Database.connect(dataSource!!)
+                AgeGraphOperations(database, GRAPH_NAME)
             }
             "falkordb" -> {
                 falkorServerReusable = BenchmarkContainerReuse.isEnabled()
