@@ -141,8 +141,7 @@ private fun requireNoNestedFlow(
     if (value == null) return
     if (value is Flow<*>) {
         throw GraphException(
-            "suspendTransaction result contains a nested Flow at $path. " +
-                    "Materialize it inside the transaction before returning."
+            "suspendTransaction result contains a nested Flow at [$path]. Materialize it inside the transaction before returning."
         )
     }
     if (!visited.add(value)) return

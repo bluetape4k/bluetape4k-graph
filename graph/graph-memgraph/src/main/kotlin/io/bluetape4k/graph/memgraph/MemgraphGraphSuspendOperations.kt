@@ -286,7 +286,7 @@ class MemgraphGraphSuspendOperations(
             if (!isCurrentGraph(name)) {
                 throw GraphQueryException(
                     "Memgraph cannot drop graph '$name': current graph is '$current'. " +
-                        "Call createGraph('$name') before dropping it."
+                            "Call createGraph('$name') before dropping it."
                 )
             }
             runQuery("MATCH (n) DETACH DELETE n") { it }
@@ -514,7 +514,7 @@ class MemgraphGraphSuspendOperations(
         val pattern = when (options.direction) {
             Direction.OUTGOING -> $$"(start)-[$$edgePart]->(neighbor)"
             Direction.INCOMING -> $$"(start)<-[$$edgePart]-(neighbor)"
-            Direction.BOTH     -> $$"(start)-[$$edgePart]-(neighbor)"
+            Direction.BOTH -> $$"(start)-[$$edgePart]-(neighbor)"
         }
 
         return flowQuery(
@@ -561,7 +561,15 @@ class MemgraphGraphSuspendOperations(
     ): GraphPath? {
         fromId.value.requireNotBlank("fromId.value")
         toId.value.requireNotBlank("toId.value")
-        return withContext(Dispatchers.IO) { ShortestPathFallback.aStar(syncDelegate, fromId, toId, options, heuristic) }
+        return withContext(Dispatchers.IO) {
+            ShortestPathFallback.aStar(
+                syncDelegate,
+                fromId,
+                toId,
+                options,
+                heuristic
+            )
+        }
     }
 
     override fun allPaths(

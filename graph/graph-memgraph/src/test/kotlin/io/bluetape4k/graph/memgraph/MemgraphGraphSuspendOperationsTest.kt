@@ -1,6 +1,7 @@
 package io.bluetape4k.graph.memgraph
 
 import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
@@ -8,67 +9,64 @@ import io.bluetape4k.assertions.shouldBeInstanceOf
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
+import io.bluetape4k.assertions.shouldContainAll
 import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.coroutines.flow.extensions.log
+import io.bluetape4k.graph.GraphException
 import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
 import io.bluetape4k.graph.model.DegreeOptions
 import io.bluetape4k.graph.model.Direction
-import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PageRankOptions
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.TreeTraversalOptions
+import io.bluetape4k.graph.model.elementIdOf
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
-import io.bluetape4k.testcontainers.graphdb.MemgraphServer
+import io.bluetape4k.support.asString
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withTimeout
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
-import org.neo4j.driver.AuthTokens
 import org.neo4j.driver.Driver
-import org.neo4j.driver.GraphDatabase
 import org.neo4j.driver.SessionConfig
 import org.neo4j.driver.exceptions.ServiceUnavailableException
 import org.neo4j.driver.reactivestreams.ReactiveSession
+import kotlin.time.Duration.Companion.milliseconds
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
-class MemgraphGraphSuspendOperationsTest {
+class MemgraphGraphSuspendOperationsTest: AbstractMemgraphTest() {
 
     companion object: KLoggingChannel()
 
-    private lateinit var driver: Driver
-    private lateinit var ops: MemgraphGraphSuspendOperations
-
-    @BeforeAll
-    fun setup() {
-        driver = GraphDatabase.driver(MemgraphServer.Launcher.memgraph.boltUrl, AuthTokens.none())
-        ops = MemgraphGraphSuspendOperations(driver)
-    }
-
-    @AfterAll
-    fun teardown() {
-        driver.close()
-    }
+    private val driver: Driver = getMemgraphDriver()
+    private val ops: MemgraphGraphSuspendOperations = MemgraphGraphSuspendOperations(driver)
 
     @BeforeEach
     fun clearGraph() = runSuspendIO {
         ops.createGraph("default")
         ops.dropGraph("default")
+    }
+
+    @AfterAll
+    fun teardown() {
+        driver.close()
     }
 
     // ----- 그래프 초기화 -----
@@ -81,7 +79,7 @@ class MemgraphGraphSuspendOperationsTest {
 
     @Test
     @Order(11)
-    fun `graphExists preserves driver failures`() = runSuspendIO {
+    fun `graphExists preserves driver failures`() = runTest {
         val failingDriver = mockk<Driver>()
         every {
             failingDriver.session(ReactiveSession::class.java, any<SessionConfig>())
@@ -91,7 +89,7 @@ class MemgraphGraphSuspendOperationsTest {
         val ex = assertFailsWith<GraphQueryException> {
             failingOps.graphExists("default")
         }
-
+        log.debug { "ex=$ex" }
         ex.message shouldContain "Memgraph graphExists failed"
         ex.cause shouldBeInstanceOf ServiceUnavailableException::class
     }
@@ -107,8 +105,9 @@ class MemgraphGraphSuspendOperationsTest {
         val ex = assertFailsWith<GraphQueryException> {
             ops.dropGraph("other")
         }
-
+        log.debug { "ex=$ex" }
         ex.message shouldContain "current"
+
         ops.countVertices("Person") shouldBeEqualTo 1L
 
         ops.dropGraph("current")
@@ -122,7 +121,6 @@ class MemgraphGraphSuspendOperationsTest {
         ops.countVertices("Person") shouldBeGreaterOrEqualTo 1L
 
         ops.dropGraph("default")
-
         ops.countVertices("Person") shouldBeEqualTo 0L
     }
 
@@ -132,6 +130,8 @@ class MemgraphGraphSuspendOperationsTest {
     @Order(20)
     fun `정점을 생성하면 elementId가 부여된다`() = runSuspendIO {
         val vertex = ops.createVertex("Person")
+
+        log.debug { "vertex=$vertex" }
         vertex.id.value.shouldNotBeEmpty()
         vertex.label shouldBeEqualTo "Person"
     }
@@ -163,7 +163,7 @@ class MemgraphGraphSuspendOperationsTest {
     @Test
     @Order(23)
     fun `존재하지 않는 id로 조회하면 null 반환`() = runSuspendIO {
-        val fakeId = GraphElementId.of("999999999")
+        val fakeId = elementIdOf("999999999")
         val result = ops.findVertexById("Person", fakeId)
         result.shouldBeNull()
     }
@@ -176,11 +176,10 @@ class MemgraphGraphSuspendOperationsTest {
         ops.createVertex("Car", mapOf("model" to "Tesla"))
 
         val persons = ops.findVerticesByLabel("Person").toList()
-        persons.shouldHaveSize(2)
+
+        persons.forEach { log.debug { "person=$it" } }
+        persons shouldHaveSize 2
         persons.all { it.label == "Person" }.shouldBeTrue()
-        persons.forEach { person ->
-            log.debug { "person=$person" }
-        }
     }
 
     @Test
@@ -190,9 +189,10 @@ class MemgraphGraphSuspendOperationsTest {
         ops.createVertex("Person", mapOf("name" to "Bob", "city" to "Busan"))
 
         val result = ops.findVerticesByLabel("Person", mapOf("city" to "Seoul")).toList()
-        result shouldHaveSize 1
-        result[0].properties["name"] shouldBeEqualTo "Alice"
+
         log.debug { "result[0]=${result[0]}" }
+        result shouldHaveSize 1
+        result.single().properties["name"] shouldBeEqualTo "Alice"
     }
 
     @Test
@@ -242,7 +242,7 @@ class MemgraphGraphSuspendOperationsTest {
 
         ops.findVertexById("Person", existing.id)?.properties?.get("name") shouldBeEqualTo "Existing"
         ops.countVertices("Person") shouldBeEqualTo 1L
-        ops.findEdgesByLabel("KNOWS").toList().shouldHaveSize(0)
+        ops.findEdgesByLabel("KNOWS").toList().shouldBeEmpty()
     }
 
     @Test
@@ -251,7 +251,7 @@ class MemgraphGraphSuspendOperationsTest {
         val existing = ops.createVertex("Person", mapOf("name" to "Existing"))
 
         assertFailsWith<TimeoutCancellationException> {
-            withTimeout(500) {
+            withTimeout(500.milliseconds) {
                 ops.suspendTransaction {
                     createVertex("Person", mapOf("name" to "Cancelled"))
                     awaitCancellation()
@@ -271,19 +271,23 @@ class MemgraphGraphSuspendOperationsTest {
             findVerticesByLabel("Person")
         }
 
-        val names = people.toList().map { it.properties["name"] }
+        val names = people
+            .log("Person")
+            .map { it.properties["name"].asString() }
+            .toList()
         names shouldContain "Alice"
     }
 
     @Test
     @Order(330)
     fun `suspendTransaction은 nested Flow 반환을 명시적으로 거부한다`() = runSuspendIO {
-        val ex = assertFailsWith<IllegalArgumentException> {
+        val ex = assertFailsWith<GraphException> {
             ops.suspendTransaction<Pair<String, Flow<*>>> {
                 createVertex("Person", mapOf("name" to "Alice"))
                 "Person" to findVerticesByLabel("Person")
             }
         }
+        log.debug { "ex=$ex" }
 
         ex.message shouldContain "nested Flow"
         ex.message shouldContain "result.second"
@@ -297,7 +301,7 @@ class MemgraphGraphSuspendOperationsTest {
             ops.findVerticesByLabel("Person", mapOf("name) RETURN n MATCH (m" to "Alice")).toList()
         }
         assertFailsWith<IllegalArgumentException> {
-            ops.findEdgesByStartId(GraphElementId.of("0"), "KNOWS) MATCH (m").toList()
+            ops.findEdgesByStartId(elementIdOf("0"), "KNOWS) MATCH (m").toList()
         }
     }
 
@@ -329,8 +333,8 @@ class MemgraphGraphSuspendOperationsTest {
         ops.createEdge(b.id, c.id, "KNOWS")
         ops.createEdge(a.id, c.id, "FOLLOWS")
 
-        val knowsEdges = ops.findEdgesByLabel("KNOWS").toList()
-        knowsEdges.shouldHaveSize(2)
+        val knowsEdges = ops.findEdgesByLabel("KNOWS").log("EDGE").toList()
+        knowsEdges shouldHaveSize 2
         knowsEdges.all { it.label == "KNOWS" }.shouldBeTrue()
     }
 
@@ -341,10 +345,9 @@ class MemgraphGraphSuspendOperationsTest {
         val b = ops.createVertex("Person", mapOf("name" to "B"))
         val edge = ops.createEdge(a.id, b.id, "KNOWS")
 
-        val deleted = ops.deleteEdge("KNOWS", edge.id)
-        deleted.shouldBeTrue()
+        ops.deleteEdge("KNOWS", edge.id).shouldBeTrue()
 
-        ops.findEdgesByLabel("KNOWS").toList().shouldHaveSize(0)
+        ops.findEdgesByLabel("KNOWS").toList().shouldBeEmpty()
     }
 
     // ----- 그래프 탐색 (Traversal) -----
@@ -359,12 +362,17 @@ class MemgraphGraphSuspendOperationsTest {
         ops.createEdge(alice.id, bob.id, "KNOWS")
         ops.createEdge(alice.id, carol.id, "KNOWS")
 
-        val neighbors =
-            ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING)).toList()
-        neighbors.shouldHaveSize(2)
-        val names = neighbors.map { it.properties["name"] }
-        names shouldContain "Bob"
-        names shouldContain "Carol"
+        val neighbors = ops
+            .neighbors(
+                alice.id,
+                NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING)
+            )
+            .log("NEIGHBORS")
+            .toList()
+
+        neighbors shouldHaveSize 2
+        val names = neighbors.map { it.properties["name"].asString() }
+        names shouldContainAll listOf("Bob", "Carol")
     }
 
     @Test
@@ -377,12 +385,17 @@ class MemgraphGraphSuspendOperationsTest {
         ops.createEdge(bob.id, alice.id, "KNOWS")
         ops.createEdge(carol.id, alice.id, "KNOWS")
 
-        val neighbors =
-            ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.INCOMING)).toList()
-        neighbors.shouldHaveSize(2)
-        val names = neighbors.map { it.properties["name"] }
-        names shouldContain "Bob"
-        names shouldContain "Carol"
+        val neighbors = ops
+            .neighbors(
+                alice.id,
+                NeighborOptions(edgeLabel = "KNOWS", direction = Direction.INCOMING)
+            )
+            .log("NEIGHBORS")
+            .toList()
+
+        neighbors shouldHaveSize 2
+        val names = neighbors.map { it.properties["name"].asString() }
+        names shouldContainAll listOf("Bob", "Carol")
     }
 
     @Test
@@ -395,12 +408,17 @@ class MemgraphGraphSuspendOperationsTest {
         ops.createEdge(alice.id, bob.id, "KNOWS")
         ops.createEdge(carol.id, alice.id, "KNOWS")
 
-        val neighbors =
-            ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.BOTH)).toList()
-        neighbors.shouldHaveSize(2)
-        val names = neighbors.map { it.properties["name"] }
-        names shouldContain "Bob"
-        names shouldContain "Carol"
+        val neighbors = ops
+            .neighbors(
+                alice.id,
+                NeighborOptions(edgeLabel = "KNOWS", direction = Direction.BOTH)
+            )
+            .log("NEIGHBORS")
+            .toList()
+
+        neighbors shouldHaveSize 2
+        val names = neighbors.map { it.properties["name"].asString() }
+        names shouldContainAll listOf("Bob", "Carol")
     }
 
     @Test
@@ -413,13 +431,17 @@ class MemgraphGraphSuspendOperationsTest {
         ops.createEdge(a.id, b.id, "KNOWS")
         ops.createEdge(b.id, c.id, "KNOWS")
 
-        val neighbors =
-            ops.neighbors(a.id, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING, maxDepth = 2))
-                .toList()
+        val neighbors = ops
+            .neighbors(
+                a.id,
+                NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING, maxDepth = 2)
+            )
+            .log("NEIGHBORS")
+            .toList()
+
         neighbors.shouldNotBeEmpty()
-        val names = neighbors.map { it.properties["name"] }
-        names shouldContain "B"
-        names shouldContain "C"
+        val names = neighbors.map { it.properties["name"].asString() }
+        names shouldContainAll listOf("B", "C")
     }
 
     @Test
@@ -433,6 +455,8 @@ class MemgraphGraphSuspendOperationsTest {
         ops.createEdge(b.id, c.id, "KNOWS")
 
         val path = ops.shortestPath(a.id, c.id, PathOptions(edgeLabel = "KNOWS"))
+
+        log.debug { "path=$path" }
         path.shouldNotBeNull()
         path.vertices.shouldNotBeEmpty()
     }
@@ -459,7 +483,11 @@ class MemgraphGraphSuspendOperationsTest {
         ops.createEdge(b.id, c.id, "KNOWS")
         ops.createEdge(a.id, c.id, "KNOWS")
 
-        val paths = ops.allPaths(a.id, c.id, PathOptions(edgeLabel = "KNOWS")).toList()
+        val paths = ops
+            .allPaths(a.id, c.id, PathOptions(edgeLabel = "KNOWS"))
+            .log("ALL_PATHS")
+            .toList()
+
         paths.shouldNotBeEmpty()
         paths.size shouldBeGreaterOrEqualTo 2
     }
@@ -473,21 +501,37 @@ class MemgraphGraphSuspendOperationsTest {
 
             findVertexById("Person", alice.id)?.properties?.get("name") shouldBeEqualTo "Alice"
             findVertexById(bob.id)?.properties?.get("name") shouldBeEqualTo "Bob"
-            findVerticesByLabel("Person", mapOf("city" to "Seoul")).toList().shouldHaveSize(2)
+            findVerticesByLabel("Person", mapOf("city" to "Seoul"))
+                .log("By Label")
+                .toList() shouldHaveSize 2
 
-            updateVertex("Person", alice.id, mapOf("city" to "Busan"))
-                ?.properties?.get("city") shouldBeEqualTo "Busan"
+            updateVertex(
+                "Person",
+                alice.id,
+                mapOf("city" to "Busan")
+            )?.properties?.get("city") shouldBeEqualTo "Busan"
+
             countVertices("Person") shouldBeEqualTo 2L
 
             val edge = createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to 2024L))
-            findEdgesByLabel("KNOWS", mapOf("since" to 2024L)).toList().shouldHaveSize(1)
-            findEdgesByStartId(alice.id, "KNOWS").toList().shouldHaveSize(1)
-            findEdgesByEndId(bob.id, null).toList().shouldHaveSize(1)
+            log.debug { "edge=$edge" }
+
+            findEdgesByLabel("KNOWS", mapOf("since" to 2024L))
+                .log("By Label")
+                .toList() shouldHaveSize 1
+
+            findEdgesByStartId(alice.id, "KNOWS")
+                .log("By StartId")
+                .toList() shouldHaveSize 1
+
+            findEdgesByEndId(bob.id, null)
+                .log("By EndId")
+                .toList() shouldHaveSize 1
 
             deleteEdge("KNOWS", edge.id).shouldBeTrue()
             deleteVertex("Person", bob.id).shouldBeTrue()
 
-            countVertices("Person")
+            countVertices("Person") shouldBeEqualTo 1L
         }
 
         remaining shouldBeEqualTo 1L
@@ -504,6 +548,7 @@ class MemgraphGraphSuspendOperationsTest {
 
         val degree = ops.degreeCentrality(a.id, DegreeOptions(edgeLabel = "KNOWS"))
 
+        log.debug { "degree=$degree" }
         degree.outDegree shouldBeEqualTo 1
         degree.inDegree shouldBeEqualTo 1
         degree.total shouldBeEqualTo 2
@@ -518,9 +563,11 @@ class MemgraphGraphSuspendOperationsTest {
             ops.createEdge(leaf.id, hub.id, "FOLLOWS")
         }
 
-        val scores = ops.pageRank(PageRankOptions(vertexLabel = "Person", iterations = 30)).toList()
+        val scores = ops.pageRank(PageRankOptions(vertexLabel = "Person", iterations = 30))
+            .log("PageRank")
+            .toList()
 
-        scores.shouldNotBeEmpty()
+        scores shouldHaveSize 4
         scores.first().vertex.properties["name"] shouldBeEqualTo "Hub"
     }
 
@@ -531,10 +578,13 @@ class MemgraphGraphSuspendOperationsTest {
         val a2 = ops.createVertex("Person", mapOf("group" to "A"))
         val b1 = ops.createVertex("Person", mapOf("group" to "B"))
         val b2 = ops.createVertex("Person", mapOf("group" to "B"))
+
         ops.createEdge(a1.id, a2.id, "REL")
         ops.createEdge(b1.id, b2.id, "REL")
 
-        val components = ops.connectedComponents(ComponentOptions(vertexLabel = "Person", edgeLabel = "REL")).toList()
+        val components = ops.connectedComponents(ComponentOptions(vertexLabel = "Person", edgeLabel = "REL"))
+            .log("Components")
+            .toList()
 
         components.size shouldBeGreaterOrEqualTo 2
     }
@@ -548,11 +598,16 @@ class MemgraphGraphSuspendOperationsTest {
         ops.createEdge(a.id, b.id, "E")
         ops.createEdge(b.id, c.id, "E")
 
-        val bfsVisits = ops.bfs(a.id, TreeTraversalOptions(edgeLabel = "E", maxDepth = 2)).toList()
-        val dfsVisits = ops.dfs(a.id, TreeTraversalOptions(edgeLabel = "E", maxDepth = 2)).toList()
-
+        val bfsVisits = ops.bfs(a.id, TreeTraversalOptions(edgeLabel = "E", maxDepth = 2))
+            .log("Bfs")
+            .toList()
         bfsVisits.first().vertex.id shouldBeEqualTo a.id
         bfsVisits.size shouldBeGreaterOrEqualTo 3
+
+        val dfsVisits = ops.dfs(a.id, TreeTraversalOptions(edgeLabel = "E", maxDepth = 2))
+            .log("Dfs")
+            .toList()
+
         dfsVisits.first().vertex.id shouldBeEqualTo a.id
         dfsVisits.size shouldBeGreaterOrEqualTo 2
     }
@@ -563,12 +618,15 @@ class MemgraphGraphSuspendOperationsTest {
         val a = ops.createVertex("Node", emptyMap())
         val b = ops.createVertex("Node", emptyMap())
         val c = ops.createVertex("Node", emptyMap())
+
         ops.createEdge(a.id, b.id, "E")
         ops.createEdge(b.id, c.id, "E")
         ops.createEdge(c.id, a.id, "E")
 
-        val cycles = ops.detectCycles(CycleOptions(edgeLabel = "E", maxDepth = 5)).toList()
+        val cycles = ops.detectCycles(CycleOptions(edgeLabel = "E", maxDepth = 5))
+            .log("Cycles")
+            .toList()
 
-        cycles.shouldNotBeEmpty()
+        cycles shouldHaveSize 3
     }
 }

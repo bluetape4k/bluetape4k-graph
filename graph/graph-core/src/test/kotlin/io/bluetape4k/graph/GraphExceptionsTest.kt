@@ -15,6 +15,7 @@ class GraphExceptionsTest {
     @Test
     fun `GraphException은 RuntimeException 하위 타입이다`() {
         val ex: Throwable = GraphException("boom")
+        ex shouldBeInstanceOf BluetapeException::class
         ex shouldBeInstanceOf RuntimeException::class
         ex.message shouldBeEqualTo "boom"
     }
@@ -51,6 +52,12 @@ class GraphExceptionsTest {
     @Test
     fun `GraphNotInitializedException은 GraphException이다`() {
         val ex: Throwable = GraphNotInitializedException("graph missing")
+        ex shouldBeInstanceOf GraphException::class
+    }
+
+    @Test
+    fun `GraphUnsupportedOperationException은 GraphException이다`() {
+        val ex = GraphUnsupportedOperationException("unsuppoerted operation")
         ex shouldBeInstanceOf GraphException::class
     }
 
