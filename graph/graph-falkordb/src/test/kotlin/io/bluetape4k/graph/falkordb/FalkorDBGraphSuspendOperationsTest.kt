@@ -1,7 +1,17 @@
 package io.bluetape4k.graph.falkordb
 
 import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
+import io.bluetape4k.assertions.shouldBeInstanceOf
+import io.bluetape4k.assertions.shouldBeNull
+import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldContain
+import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.assertions.shouldNotBeEmpty
+import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.graph.GraphQueryException
+import io.bluetape4k.graph.GraphUnsupportedOperationException
 import io.bluetape4k.graph.model.Direction
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.NeighborOptions
@@ -17,15 +27,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.toList
-import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
-import io.bluetape4k.assertions.shouldBeNull
-import io.bluetape4k.assertions.shouldBeTrue
-import io.bluetape4k.assertions.shouldContain
-import io.bluetape4k.assertions.shouldBeInstanceOf
-import io.bluetape4k.assertions.shouldHaveSize
-import io.bluetape4k.assertions.shouldNotBeEmpty
-import io.bluetape4k.assertions.shouldNotBeNull
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.MethodOrderer
@@ -219,7 +220,7 @@ class FalkorDBGraphSuspendOperationsTest : AbstractFalkorDBTest() {
     @Test
     @Order(28)
     fun `suspendTransaction은 중간 결과가 필요한 repository DSL을 지원하지 않는다`() = runSuspendIO {
-        val ex = assertFailsWith<UnsupportedOperationException> {
+        val ex = assertFailsWith<GraphUnsupportedOperationException> {
             ops.suspendTransaction {
                 createVertex("Person")
             }

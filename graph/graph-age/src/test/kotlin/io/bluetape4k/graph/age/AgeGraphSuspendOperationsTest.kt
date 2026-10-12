@@ -12,6 +12,7 @@ import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.graph.GraphException
 import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
@@ -56,6 +57,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import javax.sql.DataSource
+import kotlin.time.Duration.Companion.seconds
 
 @TestMethodOrder(OrderAnnotation::class)
 class AgeGraphSuspendOperationsTest {
@@ -304,7 +306,7 @@ class AgeGraphSuspendOperationsTest {
     @Test
     @Order(330)
     fun `suspendTransaction은 nested Flow 반환을 명시적으로 거부한다`() = runSuspendIO {
-        val ex = assertFailsWith<IllegalArgumentException> {
+        val ex = assertFailsWith<GraphException> {
             ops.suspendTransaction<Pair<String, Flow<*>>> {
                 createVertex("Person", mapOf("name" to "Alice"))
                 "Person" to findVerticesByLabel("Person")
@@ -325,7 +327,7 @@ class AgeGraphSuspendOperationsTest {
             }
         }
 
-        withTimeout(5_000) {
+        withTimeout(5.seconds) {
             repeat(8) {
                 ops.findVerticesByLabel("Person").first()
             }

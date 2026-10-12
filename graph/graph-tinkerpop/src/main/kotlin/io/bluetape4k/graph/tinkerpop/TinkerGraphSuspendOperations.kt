@@ -148,6 +148,7 @@ class TinkerGraphSuspendOperations(
         }
 
         acquireTransactionGate()
+
         return try {
             withContext(Dispatchers.IO) {
                 val snapshot = delegate.beginTransaction()
@@ -176,7 +177,7 @@ class TinkerGraphSuspendOperations(
 
     private suspend fun acquireTransactionGate() {
         while (!delegate.tryAcquireTransactionGate()) {
-            delay(TRANSACTION_GATE_RETRY_DELAY_MILLIS)
+            delay(timeMillis = TRANSACTION_GATE_RETRY_DELAY_MILLIS)
         }
     }
 
@@ -184,10 +185,9 @@ class TinkerGraphSuspendOperations(
         label: String,
         matchProperties: Map<String, Any?>,
         setProperties: Map<String, Any?>,
-    ): GraphVertex =
-        withContext(Dispatchers.IO) {
-            delegate.mergeVertex(label, matchProperties, setProperties)
-        }
+    ): GraphVertex = withContext(Dispatchers.IO) {
+        delegate.mergeVertex(label, matchProperties, setProperties)
+    }
 
     override suspend fun mergeEdge(
         fromId: GraphElementId,
@@ -195,10 +195,9 @@ class TinkerGraphSuspendOperations(
         label: String,
         matchProperties: Map<String, Any?>,
         setProperties: Map<String, Any?>,
-    ): GraphEdge =
-        withContext(Dispatchers.IO) {
-            delegate.mergeEdge(fromId, toId, label, matchProperties, setProperties)
-        }
+    ): GraphEdge = withContext(Dispatchers.IO) {
+        delegate.mergeEdge(fromId, toId, label, matchProperties, setProperties)
+    }
 
     // -- GraphSuspendSession --
 
@@ -225,27 +224,35 @@ class TinkerGraphSuspendOperations(
 
     // -- GraphSuspendVertexRepository --
 
-    override suspend fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex =
-        withContext(Dispatchers.IO) {
-            delegate.createVertex(label, properties)
-        }
+    override suspend fun createVertex(
+        label: String,
+        properties: Map<String, Any?>,
+    ): GraphVertex = withContext(Dispatchers.IO) {
+        delegate.createVertex(label, properties)
+    }
 
-    override suspend fun createVertices(label: String, propertiesList: List<Map<String, Any?>>): List<GraphVertex> =
-        withContext(Dispatchers.IO) {
-            delegate.createVertices(label, propertiesList)
-        }
+    override suspend fun createVertices(
+        label: String,
+        propertiesList: List<Map<String, Any?>>,
+    ): List<GraphVertex> = withContext(Dispatchers.IO) {
+        delegate.createVertices(label, propertiesList)
+    }
 
-    override suspend fun findVertexById(label: String, id: GraphElementId): GraphVertex? =
-        withContext(Dispatchers.IO) {
-            delegate.findVertexById(label, id)
-        }
+    override suspend fun findVertexById(
+        label: String,
+        id: GraphElementId,
+    ): GraphVertex? = withContext(Dispatchers.IO) {
+        delegate.findVertexById(label, id)
+    }
 
-    override suspend fun findVertexById(id: GraphElementId): GraphVertex? =
-        withContext(Dispatchers.IO) {
-            delegate.findVertexById(id)
-        }
+    override suspend fun findVertexById(id: GraphElementId): GraphVertex? = withContext(Dispatchers.IO) {
+        delegate.findVertexById(id)
+    }
 
-    override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphVertex> = flow {
+    override fun findVerticesByLabel(
+        label: String,
+        filter: Map<String, Any?>,
+    ): Flow<GraphVertex> = flow {
         val list = withContext(Dispatchers.IO) {
             delegate.findVerticesByLabel(label, filter)
         }
@@ -260,20 +267,24 @@ class TinkerGraphSuspendOperations(
         delegate.findVerticesByLabelChunkedCursor(label, filter, chunkSize)
     }
 
-    override suspend fun updateVertex(label: String, id: GraphElementId, properties: Map<String, Any?>): GraphVertex? =
-        withContext(Dispatchers.IO) {
-            delegate.updateVertex(label, id, properties)
-        }
+    override suspend fun updateVertex(
+        label: String,
+        id: GraphElementId,
+        properties: Map<String, Any?>,
+    ): GraphVertex? = withContext(Dispatchers.IO) {
+        delegate.updateVertex(label, id, properties)
+    }
 
-    override suspend fun deleteVertex(label: String, id: GraphElementId): Boolean =
-        withContext(Dispatchers.IO) {
-            delegate.deleteVertex(label, id)
-        }
+    override suspend fun deleteVertex(
+        label: String,
+        id: GraphElementId,
+    ): Boolean = withContext(Dispatchers.IO) {
+        delegate.deleteVertex(label, id)
+    }
 
-    override suspend fun countVertices(label: String): Long =
-        withContext(Dispatchers.IO) {
-            delegate.countVertices(label)
-        }
+    override suspend fun countVertices(label: String): Long = withContext(Dispatchers.IO) {
+        delegate.countVertices(label)
+    }
 
     // -- GraphSuspendEdgeRepository --
 
@@ -306,24 +317,32 @@ class TinkerGraphSuspendOperations(
         delegate.findEdgesByLabelChunkedCursor(label, filter, chunkSize)
     }
 
-    override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): Flow<GraphEdge> = flow {
+    override fun findEdgesByStartId(
+        startId: GraphElementId,
+        edgeLabel: String?,
+    ): Flow<GraphEdge> = flow {
         val list = withContext(Dispatchers.IO) {
             delegate.findEdgesByStartId(startId, edgeLabel)
         }
         list.forEach { emit(it) }
     }
 
-    override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): Flow<GraphEdge> = flow {
+    override fun findEdgesByEndId(
+        endId: GraphElementId,
+        edgeLabel: String?,
+    ): Flow<GraphEdge> = flow {
         val list = withContext(Dispatchers.IO) {
             delegate.findEdgesByEndId(endId, edgeLabel)
         }
         list.forEach { emit(it) }
     }
 
-    override suspend fun deleteEdge(label: String, id: GraphElementId): Boolean =
-        withContext(Dispatchers.IO) {
-            delegate.deleteEdge(label, id)
-        }
+    override suspend fun deleteEdge(
+        label: String,
+        id: GraphElementId,
+    ): Boolean = withContext(Dispatchers.IO) {
+        delegate.deleteEdge(label, id)
+    }
 
     // -- GraphSuspendTraversalRepository --
 
@@ -388,12 +407,18 @@ class TinkerGraphSuspendOperations(
         list.forEach { emit(it) }
     }
 
-    override fun bfs(startId: GraphElementId, options: TreeTraversalOptions): Flow<TraversalVisit> = flow {
+    override fun bfs(
+        startId: GraphElementId,
+        options: TreeTraversalOptions,
+    ): Flow<TraversalVisit> = flow {
         val list = withContext(Dispatchers.Default) { delegate.bfs(startId, options) }
         list.forEach { emit(it) }
     }
 
-    override fun dfs(startId: GraphElementId, options: TreeTraversalOptions): Flow<TraversalVisit> = flow {
+    override fun dfs(
+        startId: GraphElementId,
+        options: TreeTraversalOptions,
+    ): Flow<TraversalVisit> = flow {
         val list = withContext(Dispatchers.Default) { delegate.dfs(startId, options) }
         list.forEach { emit(it) }
     }

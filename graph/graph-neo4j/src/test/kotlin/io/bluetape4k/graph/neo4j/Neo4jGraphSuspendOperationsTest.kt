@@ -11,6 +11,7 @@ import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.graph.GraphException
 import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
@@ -253,7 +254,7 @@ class Neo4jGraphSuspendOperationsTest {
     @Test
     @Order(330)
     fun `suspendTransaction은 nested Flow 반환을 명시적으로 거부한다`() = runSuspendIO {
-        val ex = assertFailsWith<IllegalArgumentException> {
+        val ex = assertFailsWith<GraphException> {
             ops.suspendTransaction<Pair<String, Flow<*>>> {
                 createVertex("Person", mapOf("name" to "Alice"))
                 "Person" to findVerticesByLabel("Person")

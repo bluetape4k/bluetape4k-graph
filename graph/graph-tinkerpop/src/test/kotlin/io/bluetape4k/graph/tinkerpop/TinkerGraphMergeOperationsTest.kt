@@ -2,28 +2,15 @@ package io.bluetape4k.graph.tinkerpop
 
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.coroutines.flow.extensions.log
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.logging.KLogging
 import kotlinx.coroutines.flow.toList
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class TinkerGraphMergeOperationsTest {
+class TinkerGraphMergeOperationsTest: AbstractTinkerGraphTest() {
 
-    private val ops = TinkerGraphOperations()
-    private val suspendOps = TinkerGraphSuspendOperations(TinkerGraphOperations())
-
-    @AfterAll
-    fun teardown() {
-        ops.close()
-        suspendOps.close()
-    }
-
-    @BeforeEach
-    fun clearGraph() = runSuspendIO {
-        ops.dropGraph("default")
-        suspendOps.dropGraph("default")
-    }
+    companion object: KLogging()
 
     @Test
     fun `mergeVertex is idempotent and updates existing vertex`() {
@@ -42,7 +29,7 @@ class TinkerGraphMergeOperationsTest {
         second.properties["email"] shouldBeEqualTo "alice@example.com"
         second.properties["name"] shouldBeEqualTo "Alice A"
         second.properties["age"] shouldBeEqualTo 31L
-        ops.findVerticesByLabel("Person").shouldHaveSize(1)
+        ops.findVerticesByLabel("Person") shouldHaveSize 1
     }
 
     @Test
@@ -55,7 +42,7 @@ class TinkerGraphMergeOperationsTest {
 
         second.id shouldBeEqualTo first.id
         second.properties["since"] shouldBeEqualTo 2025L
-        ops.findEdgesByLabel("KNOWS").shouldHaveSize(1)
+        ops.findEdgesByLabel("KNOWS") shouldHaveSize 1
     }
 
     @Test
@@ -81,6 +68,6 @@ class TinkerGraphMergeOperationsTest {
 
         edge2.id shouldBeEqualTo edge1.id
         edge2.properties["since"] shouldBeEqualTo 2025L
-        suspendOps.findEdgesByLabel("KNOWS").toList().shouldHaveSize(1)
+        suspendOps.findEdgesByLabel("KNOWS").log("KNOWS").toList() shouldHaveSize 1
     }
 }

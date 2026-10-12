@@ -11,6 +11,9 @@ import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.concurrent.await
+import io.bluetape4k.concurrent.awaitTermination
+import io.bluetape4k.concurrent.get
 import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.model.DegreeOptions
 import io.bluetape4k.graph.model.Direction
@@ -20,7 +23,6 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.TreeTraversalOptions
 import io.bluetape4k.logging.KLogging
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
@@ -29,22 +31,15 @@ import org.junit.jupiter.api.TestMethodOrder
 import java.lang.reflect.Proxy
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.seconds
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
-class TinkerGraphOperationsTest {
+class TinkerGraphOperationsTest: AbstractTinkerGraphTest() {
 
     companion object: KLogging()
 
-    private val ops = TinkerGraphOperations()
-
-    @AfterAll
-    fun teardown() {
-        ops.close()
-    }
-
     @BeforeEach
-    fun clearGraph() {
+    override fun beforeEach() {
         ops.createGraph("default")
         ops.dropGraph("default")
     }
@@ -96,15 +91,15 @@ class TinkerGraphOperationsTest {
                     ops.createVertex("Person", mapOf("iteration" to iteration))
                 }
 
-                ready.await(5, TimeUnit.SECONDS)
+                ready.await(5.seconds)
                 start.countDown()
-                drop.get(5, TimeUnit.SECONDS)
-                select.get(5, TimeUnit.SECONDS)
+                drop.get(5.seconds)
+                select.get(5.seconds)
 
                 ops.countVertices("Person") shouldBeEqualTo 1L
             } finally {
                 executor.shutdownNow()
-                executor.awaitTermination(5, TimeUnit.SECONDS)
+                executor.awaitTermination(5.seconds)
             }
         }
     }
@@ -116,7 +111,6 @@ class TinkerGraphOperationsTest {
         ops.countVertices("Person") shouldBeGreaterOrEqualTo 1L
 
         ops.dropGraph("default")
-
         ops.countVertices("Person") shouldBeEqualTo 0L
     }
 
@@ -213,7 +207,7 @@ class TinkerGraphOperationsTest {
         ops.createVertex("Car", mapOf("model" to "Tesla"))
 
         val persons = ops.findVerticesByLabel("Person")
-        persons.shouldHaveSize(2)
+        persons shouldHaveSize 2
         persons.all { it.label == "Person" }.shouldBeTrue()
     }
 
@@ -224,7 +218,7 @@ class TinkerGraphOperationsTest {
         ops.createVertex("Person", mapOf("name" to "Bob", "city" to "Busan"))
 
         val result = ops.findVerticesByLabel("Person", mapOf("city" to "Seoul"))
-        result.shouldHaveSize(1)
+        result shouldHaveSize 1
         result[0].properties["name"] shouldBeEqualTo "Alice"
     }
 
@@ -238,8 +232,8 @@ class TinkerGraphOperationsTest {
         val chunks = ops.findVerticesByLabelChunked("Person", chunkSize = 2).toList()
 
         chunks.map { it.size } shouldBeEqualTo listOf(2, 2, 1)
-        chunks.flatten().map { it.properties["name"] }.toSet() shouldBeEqualTo
-                setOf("Person-1", "Person-2", "Person-3", "Person-4", "Person-5")
+        chunks.flatten().map { it.properties["name"] }
+            .toSet() shouldBeEqualTo setOf("Person-1", "Person-2", "Person-3", "Person-4", "Person-5")
     }
 
     @Test

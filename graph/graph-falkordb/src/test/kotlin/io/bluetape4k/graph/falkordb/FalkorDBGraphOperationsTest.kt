@@ -1,21 +1,22 @@
 package io.bluetape4k.graph.falkordb
 
 import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
+import io.bluetape4k.assertions.shouldBeInstanceOf
+import io.bluetape4k.assertions.shouldBeNull
+import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldContain
+import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.assertions.shouldNotBeEmpty
+import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.graph.GraphQueryException
+import io.bluetape4k.graph.GraphUnsupportedOperationException
 import io.bluetape4k.graph.model.Direction
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.repository.transaction
-import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
-import io.bluetape4k.assertions.shouldBeNull
-import io.bluetape4k.assertions.shouldBeTrue
-import io.bluetape4k.assertions.shouldContain
-import io.bluetape4k.assertions.shouldHaveSize
-import io.bluetape4k.assertions.shouldBeInstanceOf
-import io.bluetape4k.assertions.shouldNotBeEmpty
-import io.bluetape4k.assertions.shouldNotBeNull
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.BeforeAll
@@ -188,7 +189,7 @@ class FalkorDBGraphOperationsTest : AbstractFalkorDBTest() {
     @Test
     @Order(28)
     fun `transaction은 중간 결과가 필요한 repository DSL을 지원하지 않는다`() {
-        val ex = assertFailsWith<UnsupportedOperationException> {
+        val ex = assertFailsWith<GraphUnsupportedOperationException> {
             ops.transaction {
                 createVertex("Person")
             }

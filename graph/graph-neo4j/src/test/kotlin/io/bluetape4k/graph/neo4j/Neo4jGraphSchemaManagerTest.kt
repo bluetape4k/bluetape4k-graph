@@ -1,15 +1,14 @@
 package io.bluetape4k.graph.neo4j
 
-import io.bluetape4k.codec.Base58
 import io.bluetape4k.assertions.assertFailsWith
-import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.codec.Base58
 import io.bluetape4k.graph.model.GraphConstraintType
 import io.bluetape4k.graph.model.GraphIndex
 import io.bluetape4k.graph.schema.GraphSchemaDefinition
 import io.bluetape4k.graph.schema.GraphSchemaPlanOptions
 import io.bluetape4k.graph.schema.plan
-import io.bluetape4k.graph.schema.schemaManager
 import io.bluetape4k.testcontainers.graphdb.Neo4jServer
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll

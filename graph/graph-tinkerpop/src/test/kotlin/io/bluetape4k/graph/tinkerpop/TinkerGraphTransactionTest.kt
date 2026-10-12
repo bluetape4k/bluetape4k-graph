@@ -3,24 +3,12 @@ package io.bluetape4k.graph.tinkerpop
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldHaveSize
-import io.bluetape4k.graph.repository.transaction
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
+import io.bluetape4k.logging.KLogging
 import org.junit.jupiter.api.Test
 
-class TinkerGraphTransactionTest {
+class TinkerGraphTransactionTest: AbstractTinkerGraphTest() {
 
-    private lateinit var ops: TinkerGraphOperations
-
-    @BeforeEach
-    fun setUp() {
-        ops = TinkerGraphOperations()
-    }
-
-    @AfterEach
-    fun tearDown() {
-        ops.close()
-    }
+    companion object: KLogging()
 
     @Test
     fun `transaction commits created vertices and edge when block succeeds`() {
@@ -31,8 +19,8 @@ class TinkerGraphTransactionTest {
         }
 
         edge.label shouldBeEqualTo "KNOWS"
-        ops.findVerticesByLabel("Person").shouldHaveSize(2)
-        ops.findEdgesByLabel("KNOWS").shouldHaveSize(1)
+        ops.findVerticesByLabel("Person") shouldHaveSize 2
+        ops.findEdgesByLabel("KNOWS") shouldHaveSize 1
     }
 
     @Test
@@ -49,8 +37,8 @@ class TinkerGraphTransactionTest {
         }
 
         ops.findVertexById("Person", existing.id)?.properties?.get("name") shouldBeEqualTo "Existing"
-        ops.findVerticesByLabel("Person").shouldHaveSize(1)
-        ops.findEdgesByLabel("KNOWS").shouldHaveSize(0)
+        ops.findVerticesByLabel("Person") shouldHaveSize 1
+        ops.findEdgesByLabel("KNOWS") shouldHaveSize 0
     }
 
     @Test
@@ -70,7 +58,7 @@ class TinkerGraphTransactionTest {
 
         ops.findVertexById("Person", alice.id)?.properties?.get("name") shouldBeEqualTo "Alice"
         ops.findVertexById("Person", bob.id)?.properties?.get("name") shouldBeEqualTo "Bob"
-        ops.findEdgesByLabel("KNOWS").shouldHaveSize(1)
+        ops.findEdgesByLabel("KNOWS") shouldHaveSize 1
     }
 
     @Test
@@ -91,6 +79,6 @@ class TinkerGraphTransactionTest {
             }
         }
 
-        ops.findVerticesByLabel("Person").shouldHaveSize(2)
+        ops.findVerticesByLabel("Person") shouldHaveSize 2
     }
 }

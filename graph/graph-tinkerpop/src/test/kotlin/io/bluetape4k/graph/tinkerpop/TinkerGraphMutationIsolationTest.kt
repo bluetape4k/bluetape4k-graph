@@ -4,9 +4,12 @@ import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
-import io.bluetape4k.graph.model.GraphElementId
+import io.bluetape4k.concurrent.await
+import io.bluetape4k.coroutines.support.log
 import io.bluetape4k.graph.model.BatchEdge
+import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.logging.coroutines.KLoggingChannel
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -15,9 +18,12 @@ import kotlinx.coroutines.withTimeout
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.seconds
 
-class TinkerGraphMutationIsolationTest {
+class TinkerGraphMutationIsolationTest: AbstractTinkerGraphTest() {
+
+    companion object: KLoggingChannel()
+
     @ParameterizedTest
     @ValueSource(booleans = [false, true])
     fun `sync와 suspend transaction은 외부 mutation 전체를 거부한다`(suspending: Boolean) = runSuspendIO {
@@ -27,8 +33,9 @@ class TinkerGraphMutationIsolationTest {
         val b = delegate.createVertex("Person", mapOf("name" to "B"))
         val edge = delegate.createEdge(a.id, b.id, "KNOWS")
         val release = CountDownLatch(1)
+
         try {
-            withTimeout(10_000) {
+            withTimeout(10.seconds) {
                 coroutineScope {
                     val started = CompletableDeferred<Unit>()
                     val transaction = async(Dispatchers.IO) {
@@ -36,18 +43,19 @@ class TinkerGraphMutationIsolationTest {
                             if (suspending) {
                                 ops.suspendTransaction {
                                     started.complete(Unit)
-                                    release.await(5, TimeUnit.SECONDS).shouldBeTrue()
+                                    release.await(5.seconds).shouldBeTrue()
                                     error("rollback")
                                 }
                             } else {
                                 delegate.transaction {
                                     started.complete(Unit)
-                                    release.await(5, TimeUnit.SECONDS).shouldBeTrue()
+                                    release.await(5.seconds).shouldBeTrue()
                                     error("rollback")
                                 }
                             }
                         }
-                    }
+                    }.log("Tx")
+                    
                     try {
                         started.await()
                         val mutations = mutations(delegate, a.id, b.id, edge.id)
@@ -55,8 +63,9 @@ class TinkerGraphMutationIsolationTest {
                             assertFailsWith<IllegalStateException> { mutation() }
                                 .message.shouldContain("external mutations")
                         }
-                        assertFailsWith<IllegalStateException> { ops.createVertex("Person") }
-                            .message.shouldContain("external mutations")
+                        assertFailsWith<IllegalStateException> {
+                            ops.createVertex("Person")
+                        }.message shouldContain "external mutations"
                     } finally {
                         release.countDown()
                     }

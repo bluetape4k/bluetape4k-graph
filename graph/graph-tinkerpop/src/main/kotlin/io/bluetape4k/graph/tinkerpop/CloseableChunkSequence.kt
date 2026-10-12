@@ -1,7 +1,9 @@
 package io.bluetape4k.graph.tinkerpop
 
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
+import io.bluetape4k.support.checkBeFalse
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import java.util.NoSuchElementException
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
@@ -13,11 +15,11 @@ import kotlin.concurrent.withLock
  * 일반 `Sequence`처럼 사용할 수 있고, 부분 소비는 `try/finally` 또는
  * `use`로 수명 경계를 명시한다.
  */
-public class CloseableChunkSequence<T> private constructor(
+class CloseableChunkSequence<T> private constructor(
     private val iteratorFactory: () -> CloseableChunkIterator<T>,
-) : Sequence<T>, AutoCloseable {
+): Sequence<T>, AutoCloseable {
 
-    internal companion object {
+    internal companion object: KLogging() {
         @JvmSynthetic
         fun <T> create(
             iteratorFactory: () -> CloseableChunkIterator<T>,
@@ -29,16 +31,14 @@ public class CloseableChunkSequence<T> private constructor(
     private var closed = false
 
     override fun iterator(): Iterator<T> {
-        val iterator = lock.withLock {
-            check(!closed) { "CloseableChunkSequence is already closed" }
-            TrackedCloseableChunkIterator(iteratorFactory())
-                .also { activeIterators += it }
+        return lock.withLock {
+            closed.checkBeFalse { "CloseableChunkSequence is already closed" }
+            TrackedCloseableChunkIterator(iteratorFactory()).also { activeIterators += it }
         }
-        return iterator
     }
 
-    @Suppress("TooGenericExceptionCaught")
     override fun close() {
+        log.debug { "Closing CloseableChunkSequence" }
         val iterators: List<TrackedCloseableChunkIterator> = lock.withLock {
             if (closed) {
                 emptyList()
@@ -58,16 +58,18 @@ public class CloseableChunkSequence<T> private constructor(
             }
         }
         failure?.let { throw it }
+        log.debug { "Closed CloseableChunkSequence" }
     }
 
     private inner class TrackedCloseableChunkIterator(
         private val delegate: CloseableChunkIterator<T>,
-    ) : CloseableChunkIterator<T> {
+    ): CloseableChunkIterator<T> {
+        @Volatile
         private var closed = false
 
-        @Suppress("TooGenericExceptionCaught")
         override fun hasNext(): Boolean {
             if (closed) return false
+
             return try {
                 val result = delegate.hasNext()
                 if (!result) close()
@@ -78,7 +80,6 @@ public class CloseableChunkSequence<T> private constructor(
             }
         }
 
-        @Suppress("TooGenericExceptionCaught")
         override fun next(): T {
             if (closed) throw NoSuchElementException("CloseableChunkSequence is closed")
             return try {
@@ -89,7 +90,6 @@ public class CloseableChunkSequence<T> private constructor(
             }
         }
 
-        @Suppress("TooGenericExceptionCaught")
         override fun close() {
             if (closed) return
             closed = true
@@ -100,7 +100,6 @@ public class CloseableChunkSequence<T> private constructor(
             }
         }
 
-        @Suppress("TooGenericExceptionCaught")
         private fun closeAfterFailure(error: Throwable) {
             try {
                 close()
@@ -117,7 +116,7 @@ internal fun <T> closeableChunkSequence(
 ): CloseableChunkSequence<T> = CloseableChunkSequence.create(iteratorFactory)
 
 /** [CloseableChunkSequence]가 소유하는 close 가능한 iterator다. */
-internal interface CloseableChunkIterator<T> : Iterator<T>, AutoCloseable
+internal interface CloseableChunkIterator<T>: Iterator<T>, AutoCloseable
 
 /**
  * TinkerPop traversal 기반 bounded chunk cursor다. chunk마다 최대 [chunkSize]개의
@@ -127,7 +126,9 @@ internal class TraversalChunkIterator<E, R>(
     private val traversal: Traversal<*, E>,
     private val chunkSize: Int,
     private val mapper: (E) -> R,
-) : CloseableChunkIterator<List<R>> {
+): CloseableChunkIterator<List<R>> {
+
+    companion object: KLogging()
 
     private var nextChunk: List<R>? = null
     private var exhausted = false
@@ -167,14 +168,12 @@ internal class TraversalChunkIterator<E, R>(
         return nextChunk?.also { nextChunk = null } ?: throw NoSuchElementException()
     }
 
-    @Suppress("TooGenericExceptionCaught")
     override fun close() {
         if (closed) return
         closed = true
         traversal.close()
     }
 
-    @Suppress("TooGenericExceptionCaught")
     private fun closeAfterFailure(error: Throwable) {
         try {
             close()

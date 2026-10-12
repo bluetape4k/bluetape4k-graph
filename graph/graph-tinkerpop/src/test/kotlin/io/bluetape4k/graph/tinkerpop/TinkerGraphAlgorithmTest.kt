@@ -2,7 +2,6 @@ package io.bluetape4k.graph.tinkerpop
 
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
-import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
@@ -10,37 +9,25 @@ import io.bluetape4k.graph.model.DegreeOptions
 import io.bluetape4k.graph.model.PageRankOptions
 import io.bluetape4k.graph.model.TreeTraversalOptions
 import io.bluetape4k.logging.KLogging
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeEach
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class TinkerGraphAlgorithmTest {
+class TinkerGraphAlgorithmTest: AbstractTinkerGraphTest() {
 
     companion object: KLogging()
-
-    private val ops = TinkerGraphOperations()
-
-    @AfterAll
-    fun teardown() {
-        ops.close()
-    }
-
-    @BeforeEach
-    fun reset() {
-        ops.dropGraph("default")
-    }
 
     @Test
     fun `degreeCentrality counts in and out edges`() {
         val a = ops.createVertex("Person", mapOf("name" to "A"))
         val b = ops.createVertex("Person", mapOf("name" to "B"))
         val c = ops.createVertex("Person", mapOf("name" to "C"))
+
         ops.createEdge(a.id, b.id, "KNOWS")
         ops.createEdge(c.id, a.id, "KNOWS")
 
         val degree = ops.degreeCentrality(a.id, DegreeOptions(edgeLabel = "KNOWS"))
+
+        log.debug { "degree=$degree" }
         degree.outDegree shouldBeEqualTo 1
         degree.inDegree shouldBeEqualTo 1
         degree.total shouldBeEqualTo 2
@@ -55,8 +42,11 @@ class TinkerGraphAlgorithmTest {
         }
         val scores = ops.pageRank(PageRankOptions(vertexLabel = "Person", iterations = 30))
         scores.shouldNotBeEmpty()
+
         // descending order
-        scores.zipWithNext { a, b -> (a.score >= b.score).shouldBeTrue() }
+        scores.zipWithNext { a, b ->
+            a.score shouldBeGreaterOrEqualTo b.score
+        }
         // hub should be top
         scores.first().vertex.properties["name"] shouldBeEqualTo "Hub"
     }
@@ -67,10 +57,12 @@ class TinkerGraphAlgorithmTest {
         val a2 = ops.createVertex("Person", mapOf("g" to "A"))
         val b1 = ops.createVertex("Person", mapOf("g" to "B"))
         val b2 = ops.createVertex("Person", mapOf("g" to "B"))
+
         ops.createEdge(a1.id, a2.id, "REL")
         ops.createEdge(b1.id, b2.id, "REL")
 
         val components = ops.connectedComponents(ComponentOptions(vertexLabel = "Person", edgeLabel = "REL"))
+        components.forEach { log.debug { "component=$it" } }
         components.size shouldBeGreaterOrEqualTo 2
     }
 
@@ -80,12 +72,14 @@ class TinkerGraphAlgorithmTest {
         val b = ops.createVertex("Node", emptyMap())
         val c = ops.createVertex("Node", emptyMap())
         val d = ops.createVertex("Node", emptyMap())
+
         ops.createEdge(a.id, b.id, "E")
         ops.createEdge(a.id, c.id, "E")
         ops.createEdge(b.id, d.id, "E")
         ops.createEdge(c.id, d.id, "E")
 
         val visits = ops.bfs(a.id, TreeTraversalOptions(edgeLabel = "E", maxDepth = 3))
+
         visits.first().depth shouldBeEqualTo 0
         visits.first().vertex.id shouldBeEqualTo a.id
         visits.size shouldBeGreaterOrEqualTo 4
@@ -95,9 +89,12 @@ class TinkerGraphAlgorithmTest {
     fun `dfs starts from given vertex`() {
         val a = ops.createVertex("Node", emptyMap())
         val b = ops.createVertex("Node", emptyMap())
+
         ops.createEdge(a.id, b.id, "E")
 
         val visits = ops.dfs(a.id, TreeTraversalOptions(edgeLabel = "E", maxDepth = 3))
+
+        visits.forEach { log.debug { "visit=$it" } }
         visits.first().vertex.id shouldBeEqualTo a.id
         visits.size shouldBeGreaterOrEqualTo 2
     }
@@ -107,11 +104,14 @@ class TinkerGraphAlgorithmTest {
         val a = ops.createVertex("Node", emptyMap())
         val b = ops.createVertex("Node", emptyMap())
         val c = ops.createVertex("Node", emptyMap())
+
         ops.createEdge(a.id, b.id, "E")
         ops.createEdge(b.id, c.id, "E")
         ops.createEdge(c.id, a.id, "E")
 
         val cycles = ops.detectCycles(CycleOptions(maxDepth = 5))
+
+        cycles.forEach { log.debug { "cycles=$it" } }
         cycles.shouldNotBeEmpty()
         cycles.first().path.vertices.first().id shouldBeEqualTo cycles.first().path.vertices.last().id
     }
