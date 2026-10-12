@@ -24,7 +24,7 @@ import org.neo4j.driver.types.Relationship
  * ```
  */
 @Suppress("DEPRECATION")
-object MemgraphRecordMapper : KLogging() {
+object MemgraphRecordMapper: KLogging() {
 
     /**
      * Memgraph [Node]를 [GraphVertex]로 변환합니다.

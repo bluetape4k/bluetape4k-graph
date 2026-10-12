@@ -1,27 +1,28 @@
 package io.bluetape4k.graph.memgraph
 
-import io.bluetape4k.graph.model.BatchEdge
-import io.bluetape4k.graph.model.GraphEdge
-import io.bluetape4k.graph.model.GraphElementId
-import io.bluetape4k.graph.model.GraphPath
+import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeNull
+import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
-import io.bluetape4k.graph.repository.transaction
+import io.bluetape4k.graph.model.batchEdgeOf
+import io.bluetape4k.graph.model.edgeOf
+import io.bluetape4k.graph.model.elementIdOf
+import io.bluetape4k.graph.model.graphPathOf
+import io.bluetape4k.graph.model.vertexOf
+import io.bluetape4k.javatimes.millis
 import io.bluetape4k.logging.KLogging
-import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.logging.debug
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldBeNull
-import io.bluetape4k.assertions.shouldBeTrue
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
 import java.time.Duration
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
@@ -33,38 +34,34 @@ import java.util.concurrent.TimeUnit
  * MockK 로 delegate 를 모킹하여 delegate 호출 횟수를 정확히 검증한다.
  * 실제 Memgraph 서버 없이 순수 캐시 레이어만 테스트한다.
  */
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class CachingMemgraphGraphOperationsTest {
+class CachingMemgraphGraphOperationsTest: AbstractMemgraphTest() {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
-    private lateinit var delegate: MemgraphGraphOperations
-    private lateinit var caching: CachingMemgraphGraphOperations
+    private val delegate: MemgraphGraphOperations = mockk(relaxed = true)
+    private val caching: CachingMemgraphGraphOperations = CachingMemgraphGraphOperations(delegate)
 
-    private val aliceId = GraphElementId.of("alice-1")
-    private val bobId = GraphElementId.of("bob-1")
-    private val edgeId = GraphElementId.of("edge-1")
+    private val aliceId = elementIdOf("alice-1")
+    private val bobId = elementIdOf("bob-1")
+    private val edgeId = elementIdOf("edge-1")
 
-    private val alice = GraphVertex(aliceId, "Person", mapOf("name" to "Alice"))
-    private val bob = GraphVertex(bobId, "Person", mapOf("name" to "Bob"))
-    private val edge = GraphEdge(edgeId, "KNOWS", aliceId, bobId)
-    private val path = GraphPath(
-        listOf(
-            PathStep.VertexStep(alice),
-            PathStep.EdgeStep(edge),
-            PathStep.VertexStep(bob),
-        )
+    private val alice = vertexOf(aliceId, "Person", mapOf("name" to "Alice"))
+    private val bob = vertexOf(bobId, "Person", mapOf("name" to "Bob"))
+    private val edge = edgeOf(edgeId, "KNOWS", aliceId, bobId)
+    private val path = graphPathOf(
+        PathStep.VertexStep(alice),
+        PathStep.EdgeStep(edge),
+        PathStep.VertexStep(bob),
     )
 
     @BeforeEach
-    fun setup() {
-        delegate = mockk(relaxed = true)
-        caching = CachingMemgraphGraphOperations(delegate)
+    fun beforeEach() {
+        clearMocks(delegate)
     }
 
     @AfterEach
-    fun tearDown() {
-        clearMocks(delegate)
+    fun afterEach() {
+        caching.clearCaches()
     }
 
     // ───── findVertexById 캐싱 ─────
@@ -161,6 +158,7 @@ class CachingMemgraphGraphOperationsTest {
 
         first.shouldBeNull()
         second.shouldBeNull()
+
         verify(exactly = 1) { delegate.shortestPath(aliceId, bobId, opts) }
     }
 
@@ -196,7 +194,7 @@ class CachingMemgraphGraphOperationsTest {
     @Test
     fun `findEdgesByLabel는 filter 포함 캐시 히트 시 delegate를 1회만 호출한다`() {
         val filter = mapOf("since" to 2020)
-        val filteredEdge = GraphEdge(edgeId, "KNOWS", aliceId, bobId, filter)
+        val filteredEdge = edgeOf(edgeId, "KNOWS", aliceId, bobId, filter)
         every { delegate.findEdgesByLabel("KNOWS", filter) } returns listOf(filteredEdge)
 
         val first = caching.findEdgesByLabel("KNOWS", filter)
@@ -214,7 +212,10 @@ class CachingMemgraphGraphOperationsTest {
         val updated = alice.copy(properties = mapOf("name" to "Alice Updated"))
         val readStarted = CountDownLatch(1)
         val releaseRead = CountDownLatch(1)
-        every { delegate.findVertexById("Person", aliceId) } answers {
+
+        every {
+            delegate.findVertexById("Person", aliceId)
+        } answers {
             readStarted.countDown()
             releaseRead.await(5, TimeUnit.SECONDS)
             alice
@@ -260,6 +261,7 @@ class CachingMemgraphGraphOperationsTest {
 
         caching.findVertexById("Person", aliceId)
         val committed = caching.transaction { updated }
+        log.debug { "committed=$committed" }
         committed shouldBeEqualTo updated
         caching.findVertexById("Person", aliceId) shouldBeEqualTo updated
         verify(exactly = 2) { delegate.findVertexById("Person", aliceId) }
@@ -267,8 +269,11 @@ class CachingMemgraphGraphOperationsTest {
         val failure = IllegalStateException("rollback")
         every { delegate.transaction<GraphVertex>(any()) } throws failure
         caching.findVertexById("Person", aliceId)
+
         assertFailsWith<IllegalStateException> {
-            caching.transaction { error("transaction block should not execute") }
+            caching.transaction {
+                error("transaction block should not execute")
+            }
         }
         caching.findVertexById("Person", aliceId) shouldBeEqualTo updated
         verify(exactly = 2) { delegate.transaction<GraphVertex>(any()) }
@@ -283,6 +288,7 @@ class CachingMemgraphGraphOperationsTest {
         caching.findVertexById("Person", aliceId)   // 캐시 적재
         caching.deleteVertex("Person", aliceId)     // 전체 캐시 무효화
         val after = caching.findVertexById("Person", aliceId)  // delegate 재호출
+        log.debug { "after=$after" }
 
         after.shouldBeNull()
         verify(exactly = 2) { delegate.findVertexById("Person", aliceId) }
@@ -297,6 +303,7 @@ class CachingMemgraphGraphOperationsTest {
         caching.findVertexById("Person", aliceId)   // 캐시 적재
         caching.updateVertex("Person", aliceId, mapOf("name" to "Alice Updated"))
         val after = caching.findVertexById("Person", aliceId)  // delegate 재호출
+        log.debug { "after=$after" }
 
         after shouldBeEqualTo updated
         verify(exactly = 2) { delegate.findVertexById("Person", aliceId) }
@@ -310,6 +317,7 @@ class CachingMemgraphGraphOperationsTest {
         caching.findVerticesByLabel("Person")   // 캐시 적재
         caching.deleteEdge("KNOWS", edgeId)     // 전체 캐시 무효화
         val after = caching.findVerticesByLabel("Person")  // delegate 재호출
+        log.debug { "after=$after" }
 
         after shouldBeEqualTo emptyList()
         verify(exactly = 2) { delegate.findVerticesByLabel("Person", emptyMap()) }
@@ -320,11 +328,13 @@ class CachingMemgraphGraphOperationsTest {
     @Test
     fun `createVertex는 동일 인자 반복 호출마다 delegate를 호출한다`() {
         val props = mapOf("name" to "Alice")
-        val secondVertex = alice.copy(id = GraphElementId.of("alice-2"))
+        val secondVertex = alice.copy(id = elementIdOf("alice-2"))
         every { delegate.createVertex("Person", props) } returns alice andThen secondVertex
 
         val first = caching.createVertex("Person", props)
         val second = caching.createVertex("Person", props)
+        log.debug { "first=$first" }
+        log.debug { "second=$second" }
 
         first shouldBeEqualTo alice
         second shouldBeEqualTo secondVertex
@@ -333,11 +343,15 @@ class CachingMemgraphGraphOperationsTest {
 
     @Test
     fun `createEdge는 동일 인자 반복 호출마다 delegate를 호출한다`() {
-        val secondEdge = edge.copy(id = GraphElementId.of("edge-2"))
-        every { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) } returns edge andThen secondEdge
+        val secondEdge = edge.copy(id = elementIdOf("edge-2"))
+        every {
+            delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap())
+        } returns edge andThen secondEdge
 
         val first = caching.createEdge(aliceId, bobId, "KNOWS", emptyMap())
         val second = caching.createEdge(aliceId, bobId, "KNOWS", emptyMap())
+        log.debug { "first=$first" }
+        log.debug { "second=$second" }
 
         first shouldBeEqualTo edge
         second shouldBeEqualTo secondEdge
@@ -346,8 +360,9 @@ class CachingMemgraphGraphOperationsTest {
 
     @Test
     fun `createEdge는 생성마다 위임하고 읽기 캐시를 무효화한다`() {
-        every { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) } returns edge andThen
-            edge.copy(id = GraphElementId.of("edge-2"))
+        every {
+            delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap())
+        } returns edge andThen edge.copy(id = elementIdOf("edge-2"))
         every { delegate.findEdgesByLabel("KNOWS", emptyMap()) } returns listOf(edge)
 
         caching.findEdgesByLabel("KNOWS")              // 읽기 캐시 적재
@@ -365,7 +380,10 @@ class CachingMemgraphGraphOperationsTest {
     @Test
     fun `createVertex는 생성마다 위임하고 읽기 캐시를 무효화한다`() {
         val props = mapOf("name" to "Alice")
-        every { delegate.createVertex("Person", props) } returns alice andThen alice.copy(id = GraphElementId.of("alice-2"))
+
+        every {
+            delegate.createVertex("Person", props)
+        } returns alice andThen alice.copy(id = elementIdOf("alice-2"))
         every { delegate.findVertexById("Person", aliceId) } returns alice
 
         caching.findVertexById("Person", aliceId)   // 읽기 캐시 적재
@@ -385,7 +403,9 @@ class CachingMemgraphGraphOperationsTest {
         val props = mapOf("name" to "Alice")
         val batch = listOf(props, mapOf("name" to "Bob"))
         every { delegate.findVertexById("Person", aliceId) } returns alice
-        every { delegate.createVertex("Person", props) } returns alice andThen alice.copy(id = GraphElementId.of("alice-2"))
+        every {
+            delegate.createVertex("Person", props)
+        } returns alice andThen alice.copy(id = elementIdOf("alice-2"))
         every { delegate.createVertices("Person", batch) } returns listOf(alice, bob)
 
         caching.findVertexById("Person", aliceId)
@@ -402,13 +422,14 @@ class CachingMemgraphGraphOperationsTest {
     @Test
     fun `createEdges 후 읽기 캐시가 무효화되고 이후 생성도 위임된다`() {
         val batch = listOf(
-            BatchEdge(aliceId, bobId),
-            BatchEdge(bobId, aliceId, mapOf("since" to 2025L)),
+            batchEdgeOf(aliceId, bobId),
+            batchEdgeOf(bobId, aliceId, mapOf("since" to 2025L)),
         )
         every { delegate.findEdgesByLabel("KNOWS", emptyMap()) } returns listOf(edge)
-        every { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) } returns edge andThen
-            edge.copy(id = GraphElementId.of("edge-2"))
-        every { delegate.createEdges("KNOWS", batch) } returns listOf(edge, edge.copy(id = GraphElementId.of("edge-3")))
+        every {
+            delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap())
+        } returns edge andThen edge.copy(id = elementIdOf("edge-2"))
+        every { delegate.createEdges("KNOWS", batch) } returns listOf(edge, edge.copy(id = elementIdOf("edge-3")))
 
         caching.findEdgesByLabel("KNOWS")
         caching.createEdge(aliceId, bobId, "KNOWS")
@@ -430,6 +451,8 @@ class CachingMemgraphGraphOperationsTest {
 
         val r1 = caching.createVertex("Person", propsAlice)
         val r2 = caching.createVertex("Person", propsBob)
+        log.debug { "r1=$r1" }
+        log.debug { "r2=$r2" }
 
         r1 shouldBeEqualTo alice
         r2 shouldBeEqualTo bob
@@ -439,15 +462,18 @@ class CachingMemgraphGraphOperationsTest {
 
     @Test
     fun `createEdge는 다른 속성 맵으로 호출 시 delegate를 각각 호출한다`() {
-        val edge2 = GraphEdge(GraphElementId.of("edge-2"), "KNOWS", aliceId, bobId, mapOf("since" to 2025))
+        val edge2 = edgeOf(elementIdOf("edge-2"), "KNOWS", aliceId, bobId, mapOf("since" to 2025))
         every { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) } returns edge
         every { delegate.createEdge(aliceId, bobId, "KNOWS", mapOf("since" to 2025)) } returns edge2
 
         val r1 = caching.createEdge(aliceId, bobId, "KNOWS", emptyMap())
         val r2 = caching.createEdge(aliceId, bobId, "KNOWS", mapOf("since" to 2025))
+        log.debug { "r1=$r1" }
+        log.debug { "r2=$r2" }
 
         r1 shouldBeEqualTo edge
         r2 shouldBeEqualTo edge2
+
         verify(exactly = 1) { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) }
         verify(exactly = 1) { delegate.createEdge(aliceId, bobId, "KNOWS", mapOf("since" to 2025)) }
     }
@@ -470,7 +496,7 @@ class CachingMemgraphGraphOperationsTest {
 
     @Test
     fun `expireAfterWrite 후 read cache가 만료되어 delegate를 다시 호출한다`() {
-        val expiring = CachingMemgraphGraphOperations(delegate, expireAfterWrite = Duration.ofMillis(20))
+        val expiring = CachingMemgraphGraphOperations(delegate, expireAfterWrite = 20.millis())
         every { delegate.findVertexById("Person", aliceId) } returns alice
 
         expiring.findVertexById("Person", aliceId)

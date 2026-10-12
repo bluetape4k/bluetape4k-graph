@@ -1,44 +1,33 @@
 package io.bluetape4k.graph.memgraph
 
-import io.bluetape4k.codec.Base58
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.codec.Base58
 import io.bluetape4k.graph.model.GraphConstraintType
-import io.bluetape4k.graph.schema.schemaManager
-import io.bluetape4k.testcontainers.graphdb.MemgraphServer
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.CancellationException
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.neo4j.driver.AuthTokens
 import org.neo4j.driver.Driver
-import org.neo4j.driver.GraphDatabase
 import org.neo4j.driver.SessionConfig
 
-class MemgraphGraphSchemaManagerTest {
+class MemgraphGraphSchemaManagerTest: AbstractMemgraphTest() {
 
-    private lateinit var driver: Driver
-    private lateinit var ops: MemgraphGraphOperations
+    private val driver: Driver = getMemgraphDriver()
+    private val ops: MemgraphGraphOperations = MemgraphGraphOperations(driver)
     private val cancellationDriver = mockk<Driver>()
 
-    @BeforeAll
-    fun setup() {
-        driver = GraphDatabase.driver(MemgraphServer.Launcher.memgraph.boltUrl, AuthTokens.none())
-        ops = MemgraphGraphOperations(driver)
+    @BeforeEach
+    fun clearMockDriver() {
+        clearMocks(cancellationDriver)
     }
 
     @AfterAll
     fun teardown() {
         driver.close()
-    }
-
-    @BeforeEach
-    fun clearMockDriver() {
-        clearMocks(cancellationDriver)
     }
 
     @Test
@@ -61,9 +50,10 @@ class MemgraphGraphSchemaManagerTest {
 
         manager.createUniqueConstraint(label, "email")
 
-        manager.listConstraints().any {
-            it.label == label && it.property == "email" && it.type == GraphConstraintType.UNIQUE
-        }.shouldBeTrue()
+        manager.listConstraints()
+            .any {
+                it.label == label && it.property == "email" && it.type == GraphConstraintType.UNIQUE
+            }.shouldBeTrue()
     }
 
     @Test
@@ -75,7 +65,9 @@ class MemgraphGraphSchemaManagerTest {
 
     @Test
     fun `createIndex propagates cancellation before already exists fallback`() {
-        every { cancellationDriver.session(any<SessionConfig>()) } throws CancellationException("already exists")
+        every {
+            cancellationDriver.session(any<SessionConfig>())
+        } throws CancellationException("already exists")
 
         val manager = MemgraphGraphSchemaManager(cancellationDriver)
 
@@ -86,7 +78,9 @@ class MemgraphGraphSchemaManagerTest {
 
     @Test
     fun `dropIndex propagates cancellation before missing fallback`() {
-        every { cancellationDriver.session(any<SessionConfig>()) } throws CancellationException("does not exist")
+        every {
+            cancellationDriver.session(any<SessionConfig>())
+        } throws CancellationException("does not exist")
 
         val manager = MemgraphGraphSchemaManager(cancellationDriver)
 
@@ -96,5 +90,5 @@ class MemgraphGraphSchemaManagerTest {
     }
 
     private fun uniqueLabel(): String =
-        "SchemaPerson${Base58.randomString(10)}"
+        "SchemaPerson_${Base58.randomString(12)}"
 }

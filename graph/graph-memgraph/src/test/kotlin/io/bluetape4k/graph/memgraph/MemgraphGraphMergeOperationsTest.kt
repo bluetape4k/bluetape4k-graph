@@ -3,28 +3,20 @@ package io.bluetape4k.graph.memgraph
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.junit5.coroutines.runSuspendIO
-import io.bluetape4k.testcontainers.graphdb.MemgraphServer
+import io.bluetape4k.logging.KLogging
 import kotlinx.coroutines.flow.toList
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.neo4j.driver.AuthTokens
 import org.neo4j.driver.Driver
-import org.neo4j.driver.GraphDatabase
 
-class MemgraphGraphMergeOperationsTest {
+class MemgraphGraphMergeOperationsTest: AbstractMemgraphTest() {
 
-    private lateinit var driver: Driver
-    private lateinit var ops: MemgraphGraphOperations
-    private lateinit var suspendOps: MemgraphGraphSuspendOperations
+    companion object: KLogging()
 
-    @BeforeAll
-    fun setup() {
-        driver = GraphDatabase.driver(MemgraphServer.Launcher.memgraph.boltUrl, AuthTokens.none())
-        ops = MemgraphGraphOperations(driver)
-        suspendOps = MemgraphGraphSuspendOperations(driver)
-    }
+    private val driver: Driver = getMemgraphDriver()
+    private val ops: MemgraphGraphOperations = MemgraphGraphOperations(driver)
+    private val suspendOps: MemgraphGraphSuspendOperations = MemgraphGraphSuspendOperations(driver)
 
     @AfterAll
     fun teardown() {
@@ -53,7 +45,7 @@ class MemgraphGraphMergeOperationsTest {
         second.properties["email"] shouldBeEqualTo "alice@example.com"
         second.properties["name"] shouldBeEqualTo "Alice A"
         second.properties["age"] shouldBeEqualTo 31L
-        ops.findVerticesByLabel("Person").shouldHaveSize(1)
+        ops.findVerticesByLabel("Person") shouldHaveSize 1
     }
 
     @Test
@@ -66,7 +58,7 @@ class MemgraphGraphMergeOperationsTest {
 
         second.id shouldBeEqualTo first.id
         second.properties["since"] shouldBeEqualTo 2025L
-        ops.findEdgesByLabel("KNOWS").shouldHaveSize(1)
+        ops.findEdgesByLabel("KNOWS") shouldHaveSize 1
     }
 
     @Test
@@ -84,7 +76,7 @@ class MemgraphGraphMergeOperationsTest {
 
         second.id shouldBeEqualTo first.id
         second.properties["name"] shouldBeEqualTo "Alice A"
-        suspendOps.findVerticesByLabel("Person").toList().shouldHaveSize(1)
+        suspendOps.findVerticesByLabel("Person").toList() shouldHaveSize 1
 
         val bob = suspendOps.mergeVertex("Person", mapOf("email" to "bob@example.com"))
         val edge1 = suspendOps.mergeEdge(first.id, bob.id, "KNOWS", setProperties = mapOf("since" to 2024L))
@@ -92,6 +84,6 @@ class MemgraphGraphMergeOperationsTest {
 
         edge2.id shouldBeEqualTo edge1.id
         edge2.properties["since"] shouldBeEqualTo 2025L
-        suspendOps.findEdgesByLabel("KNOWS").toList().shouldHaveSize(1)
+        suspendOps.findEdgesByLabel("KNOWS").toList() shouldHaveSize 1
     }
 }

@@ -43,6 +43,7 @@ import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.info
+import io.bluetape4k.logging.trace
 import io.bluetape4k.logging.warn
 import io.bluetape4k.support.requireNotBlank
 import org.neo4j.driver.Driver
@@ -134,6 +135,7 @@ class MemgraphGraphOperations(
         mapper: (Record) -> T,
     ): List<T> {
         cypher.requireNotBlank("cypher")
+        log.trace { "cypher=$cypher" }
         return session().use { s ->
             s.run(cypher, params).list(mapper)
         }
@@ -156,7 +158,7 @@ class MemgraphGraphOperations(
             if (!isCurrentGraph(name)) {
                 throw GraphQueryException(
                     "Memgraph cannot drop graph '$name': current graph is '$current'. " +
-                        "Call createGraph('$name') before dropping it."
+                            "Call createGraph('$name') before dropping it."
                 )
             }
 
@@ -505,7 +507,7 @@ class MemgraphGraphOperations(
         val pattern = when (options.direction) {
             Direction.OUTGOING -> $$"(start)-[$$edgePart]->(neighbor)"
             Direction.INCOMING -> $$"(start)<-[$$edgePart]-(neighbor)"
-            Direction.BOTH     -> $$"(start)-[$$edgePart]-(neighbor)"
+            Direction.BOTH -> $$"(start)-[$$edgePart]-(neighbor)"
         }
         return runQuery(
             $$"MATCH $$pattern WHERE id(start) = toInteger($startId) RETURN DISTINCT neighbor",
@@ -600,7 +602,7 @@ class MemgraphGraphOperations(
         return when (options.direction) {
             Direction.OUTGOING -> DegreeResult(vertexId, 0, out)
             Direction.INCOMING -> DegreeResult(vertexId, inn, 0)
-            Direction.BOTH     -> DegreeResult(vertexId, inn, out)
+            Direction.BOTH -> DegreeResult(vertexId, inn, out)
         }
     }
 
@@ -754,7 +756,7 @@ class MemgraphGraphOperations(
             when (direction) {
                 Direction.OUTGOING -> adjacency.getOrPut(av.id) { ArrayList() }.add(bv.id)
                 Direction.INCOMING -> adjacency.getOrPut(bv.id) { ArrayList() }.add(av.id)
-                Direction.BOTH     -> {
+                Direction.BOTH -> {
                     adjacency.getOrPut(av.id) { ArrayList() }.add(bv.id)
                     adjacency.getOrPut(bv.id) { ArrayList() }.add(av.id)
                 }

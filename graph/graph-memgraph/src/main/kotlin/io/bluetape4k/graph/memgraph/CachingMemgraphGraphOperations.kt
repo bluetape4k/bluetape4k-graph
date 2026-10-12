@@ -1,7 +1,7 @@
 package io.bluetape4k.graph.memgraph
 
 import com.github.benmanes.caffeine.cache.Cache
-import com.github.benmanes.caffeine.cache.Caffeine
+import io.bluetape4k.cache.caffeine.caffeine
 import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphElementId
@@ -15,11 +15,13 @@ import io.bluetape4k.graph.repository.GraphTransactionScope
 import io.bluetape4k.graph.repository.GraphTransactionalOperations
 import io.bluetape4k.graph.schema.GraphSchemaManagementOperations
 import io.bluetape4k.graph.schema.GraphSchemaManager
+import io.bluetape4k.javatimes.minutes
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.warn
 import io.bluetape4k.support.requireGt
 import io.bluetape4k.support.requirePositiveNumber
 import java.time.Duration
-import java.util.Optional
+import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 
 /**
@@ -65,8 +67,7 @@ import java.util.concurrent.atomic.AtomicLong
  * // 삭제 후 조회: 캐시 미스 → DB 재조회
  * val afterDelete = ops.findVertexById("Person", aliceId)  // null
  * ```
- */
-/**
+ * 
  * @param delegate 실제 DB 호출을 위임할 [MemgraphGraphOperations] 인스턴스.
  * @param maxSize 각 읽기 캐시의 최대 엔트리 수. 양수여야 한다.
  * @param expireAfterWrite 읽기 캐시 엔트리의 쓰기 후 만료 시간. 양수여야 한다.
@@ -75,10 +76,10 @@ import java.util.concurrent.atomic.AtomicLong
 class CachingMemgraphGraphOperations(
     private val delegate: MemgraphGraphOperations,
     private val maxSize: Long = 10_000,
-    private val expireAfterWrite: Duration = Duration.ofMinutes(5),
+    private val expireAfterWrite: Duration = 5.minutes(),
 ): GraphOperations by delegate, GraphTransactionalOperations, GraphSchemaManagementOperations, GraphMergeOperations {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     init {
         maxSize.requirePositiveNumber("maxSize")
@@ -108,20 +109,20 @@ class CachingMemgraphGraphOperations(
     private data class NeighborKey(val startId: GraphElementId, val options: NeighborOptions)
     private data class PathKey(val fromId: GraphElementId, val toId: GraphElementId, val options: PathOptions)
     private data class EdgeLabelKey(val label: String, val filter: Map<String, Any?>)
-    private fun <K : Any, V : Any> newReadCache(): Cache<K, V> =
-        Caffeine.newBuilder()
-            .maximumSize(maxSize)
-            .expireAfterWrite(expireAfterWrite)
-            .build<K, V>()
 
-    private fun <K : Any, V : Any> putReadCache(cache: Cache<K, V>, key: K, value: V) {
+    private fun <K: Any, V: Any> newReadCache(): Cache<K, V> = caffeine {
+        maximumSize(maxSize)
+        expireAfterWrite(expireAfterWrite)
+    }.build()
+
+    private fun <K: Any, V: Any> putReadCache(cache: Cache<K, V>, key: K, value: V) {
         cache.put(key, value)
         cache.cleanUp()
     }
 
     private val cacheGeneration = AtomicLong()
 
-    private fun <K : Any, V : Any> readThrough(
+    private inline fun <K: Any, V: Any> readThrough(
         cache: Cache<K, V>,
         key: K,
         loader: () -> V,
@@ -291,4 +292,16 @@ class CachingMemgraphGraphOperations(
         setProperties: Map<String, Any?>,
     ): GraphEdge =
         delegate.mergeEdge(fromId, toId, label, matchProperties, setProperties).also { clearReadCaches() }
+
+    fun clearCaches() {
+        clearReadCaches()
+    }
+
+    override fun close() {
+        runCatching {
+            clearReadCaches()
+        }.onFailure {
+            log.warn(it) { "Failed to clear caches" }
+        }
+    }
 }

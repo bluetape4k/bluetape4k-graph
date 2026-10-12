@@ -81,7 +81,10 @@ class MemgraphGraphSchemaManager(
         val property = record.stringOrNull("property", "Property", "properties").orEmpty()
         val type = record.stringOrNull("constraint type", "type", "Type").orEmpty()
         return GraphConstraint(
-            name = if (property.isNotBlank()) GraphSchemaNames.uniqueConstraintName(label, property) else "bt4k_constraint_$label",
+            name = if (property.isNotBlank()) GraphSchemaNames.uniqueConstraintName(
+                label,
+                property
+            ) else "bt4k_constraint_$label",
             label = label,
             property = property,
             type = if (type.contains("UNIQUE", ignoreCase = true)) {
@@ -115,7 +118,10 @@ class MemgraphGraphSchemaManager(
             throw e
         } catch (e: Exception) {
             val message = e.message.orEmpty()
-            if (!message.contains("not found", ignoreCase = true) && !message.contains("does not exist", ignoreCase = true)) {
+            if (!message.contains("not found", ignoreCase = true) && !message.contains(
+                    "does not exist",
+                    ignoreCase = true
+                )) {
                 throw e
             }
         }
