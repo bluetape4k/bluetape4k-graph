@@ -505,13 +505,13 @@ retry가 진단 자료를 남길 수는 있어도 `release_gate=true`를 설정�
 ## 요구 사항
 
 - Java 25 (preview 기능 활성화)
-- Kotlin 2.4.10 (language/API 2.4)
+- Kotlin 2.4.20 (language/API 2.4)
 - Docker (통합 테스트용)
 
 ## 기술 스택
 
 - **개발 라인** 1.1.0-SNAPSHOT (Kotlin 2.4 / Java 25)
-- **Kotlin** 2.4.10 (language/API 2.4) + Coroutines 1.11.0
+- **Kotlin** 2.4.20 (language/API 2.4) + Coroutines 1.11.0
 - **Neo4j Java Driver** 6.2.1
 - **JetBrains Exposed** (Apache AGE용 JDBC)
 - **Apache TinkerPop** (Gremlin)

@@ -511,13 +511,13 @@ Concrete classes only need to implement `ops` (`GraphOperations` or `GraphSuspen
 ## Requirements
 
 - Java 25 (with preview features enabled)
-- Kotlin 2.4.10 (language/API 2.4)
+- Kotlin 2.4.20 (language/API 2.4)
 - Docker (for integration tests)
 
 ## Tech Stack
 
 - **Development line** 1.1.0-SNAPSHOT (Kotlin 2.4 / Java 25)
-- **Kotlin** 2.4.10 (language/API 2.4) + Coroutines 1.11.0
+- **Kotlin** 2.4.20 (language/API 2.4) + Coroutines 1.11.0
 - **Neo4j Java Driver** 6.2.1
 - **JetBrains Exposed** (JDBC for Apache AGE)
 - **Apache TinkerPop** (Gremlin)
