@@ -1,7 +1,5 @@
 package io.bluetape4k.graph.age
 
-import com.zaxxer.hikari.HikariConfig
-import com.zaxxer.hikari.HikariDataSource
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
@@ -24,8 +22,7 @@ import io.bluetape4k.graph.model.PageRankOptions
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.TreeTraversalOptions
 import io.bluetape4k.junit5.coroutines.runSuspendIO
-import io.bluetape4k.logging.KLogging
-import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
+import io.bluetape4k.logging.coroutines.KLoggingChannel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
@@ -38,8 +35,6 @@ import kotlinx.coroutines.withTimeout
 import org.jetbrains.exposed.v1.core.DatabaseConfig
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation
 import org.junit.jupiter.api.Order
@@ -60,47 +55,22 @@ import javax.sql.DataSource
 import kotlin.time.Duration.Companion.seconds
 
 @TestMethodOrder(OrderAnnotation::class)
-class AgeGraphSuspendOperationsTest {
+class AgeGraphSuspendOperationsTest: AbstractAgeTest() {
 
-    companion object: KLogging()
-
-    private lateinit var dataSource: HikariDataSource
-    private lateinit var database: Database
-    private lateinit var ops: AgeGraphSuspendOperations
-
-    private val graphName = "test_graph"
-
-    @BeforeAll
-    fun setup() {
-        val server = PostgreSQLAgeServer.Launcher.postgresqlAge
-        dataSource = HikariDataSource(HikariConfig().apply {
-            jdbcUrl = server.jdbcUrl
-            username = server.username
-            password = server.password
-            driverClassName = "org.postgresql.Driver"
-            connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
-            maximumPoolSize = 5
-        })
-        database = Database.connect(
-            dataSource,
-            databaseConfig = DatabaseConfig {
-                defaultFetchSize = 8
-            }
-        )
-        ops = AgeGraphSuspendOperations(database, graphName)
+    companion object: KLoggingChannel() {
+        private const val TEST_GRAPH_NAME = "suspend_operations_graph"
     }
 
-    @AfterAll
-    fun teardown() {
-        dataSource.close()
+    private val ops: AgeGraphSuspendOperations by lazy {
+        AgeGraphSuspendOperations(database, TEST_GRAPH_NAME)
     }
 
     @BeforeEach
     fun resetGraph() = runSuspendIO {
-        if (ops.graphExists(graphName)) {
-            ops.dropGraph(graphName)
+        if (ops.graphExists(TEST_GRAPH_NAME)) {
+            ops.dropGraph(TEST_GRAPH_NAME)
         }
-        ops.createGraph(graphName)
+        ops.createGraph(TEST_GRAPH_NAME)
     }
 
     // ───────────────────────── 그래프 생성/삭제/존재 여부 ─────────────────────────
@@ -108,22 +78,21 @@ class AgeGraphSuspendOperationsTest {
     @Test
     @Order(10)
     fun `그래프를 생성하면 존재 여부가 true 반환`() = runSuspendIO {
-        ops.graphExists(graphName).shouldBeTrue()
+        ops.graphExists(TEST_GRAPH_NAME).shouldBeTrue()
     }
 
     @Test
     @Order(11)
     fun `이미 존재하는 그래프 생성은 호환성 duplicate로 허용한다`() = runSuspendIO {
-        ops.createGraph(graphName)
-
-        ops.graphExists(graphName).shouldBeTrue()
+        ops.createGraph(TEST_GRAPH_NAME)
+        ops.graphExists(TEST_GRAPH_NAME).shouldBeTrue()
     }
 
     @Test
     @Order(12)
     fun `그래프를 삭제하면 존재 여부가 false 반환`() = runSuspendIO {
-        ops.dropGraph(graphName)
-        ops.graphExists(graphName).shouldBeFalse()
+        ops.dropGraph(TEST_GRAPH_NAME)
+        ops.graphExists(TEST_GRAPH_NAME).shouldBeFalse()
     }
 
     @Test
@@ -143,7 +112,7 @@ class AgeGraphSuspendOperationsTest {
 
     @Test
     @Order(20)
-    fun `정점을 생성하면 id가 부여된다`() = runSuspendIO {
+    fun `Vertx을 생성하면 id가 부여된다`() = runSuspendIO {
         val vertex = ops.createVertex("Person")
         vertex.id.shouldNotBeNull()
         vertex.id.value.shouldNotBeNull()
@@ -482,7 +451,7 @@ class AgeGraphSuspendOperationsTest {
             }
         )
         return try {
-            block(AgeGraphSuspendOperations(probedDatabase, graphName))
+            block(AgeGraphSuspendOperations(probedDatabase, TEST_GRAPH_NAME))
         } finally {
             TransactionManager.closeAndUnregister(probedDatabase)
         }

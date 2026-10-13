@@ -6,6 +6,7 @@ import io.bluetape4k.graph.model.GraphPath
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.trace
 
 /**
  * Apache AGE의 agtype 결과를 파싱하여 Graph 모델로 변환합니다.
@@ -16,7 +17,7 @@ import io.bluetape4k.logging.KLogging
  * val path   = AgeTypeParser.parsePath(rs.getString("p"))
  * ```
  */
-object AgeTypeParser : KLogging() {
+object AgeTypeParser: KLogging() {
 
     /**
      * AGE vertex agtype 문자열을 [GraphVertex]로 파싱한다.
@@ -30,13 +31,16 @@ object AgeTypeParser : KLogging() {
      * @param agtype AGE가 반환하는 vertex agtype 문자열. 예: `{"id": 1, "label": "Person", "properties": {"name": "Alice"}}::vertex`
      * @return 파싱된 [GraphVertex].
      */
+    @Suppress("UNCHECKED_CAST")
     fun parseVertex(agtype: String): GraphVertex {
+        log.trace { "Parse vertex: $agtype" }
+
         val json = agtype.removeSuffix("::vertex").trim()
         val map = parseJsonObject(json)
         val id = GraphElementId.of((map["id"] as Number).toLong())
         val label = map["label"] as String
-        @Suppress("UNCHECKED_CAST")
         val properties = (map["properties"] as? Map<String, Any?>) ?: emptyMap()
+
         return GraphVertex(id, label, properties)
     }
 
@@ -51,15 +55,18 @@ object AgeTypeParser : KLogging() {
      * @param agtype AGE가 반환하는 edge agtype 문자열.
      * @return 파싱된 [GraphEdge].
      */
+    @Suppress("UNCHECKED_CAST")
     fun parseEdge(agtype: String): GraphEdge {
+        log.trace { "Parse edge: $agtype" }
+
         val json = agtype.removeSuffix("::edge").trim()
         val map = parseJsonObject(json)
         val id = GraphElementId.of((map["id"] as Number).toLong())
         val label = map["label"] as String
         val startId = GraphElementId.of((map["start_id"] as Number).toLong())
         val endId = GraphElementId.of((map["end_id"] as Number).toLong())
-        @Suppress("UNCHECKED_CAST")
         val properties = (map["properties"] as? Map<String, Any?>) ?: emptyMap()
+
         return GraphEdge(id, label, startId, endId, properties)
     }
 
@@ -78,6 +85,8 @@ object AgeTypeParser : KLogging() {
      * @return 파싱된 [GraphPath].
      */
     fun parsePath(agtype: String): GraphPath {
+        log.trace { "Parse GraphPath: $agtype" }
+
         val json = agtype.removeSuffix("::path").trim()
         // path는 [{...}::vertex, {...}::edge, ...] 형태의 agtype 배열
         val content = json.trim().removePrefix("[").removeSuffix("]").trim()
@@ -162,6 +171,8 @@ object AgeTypeParser : KLogging() {
      *
      */
     fun parseJsonObject(json: String): Map<String, Any?> {
+        log.trace { "Parse JSON: $json" }
+
         val content = json.trim().removePrefix("{").removeSuffix("}").trim()
         if (content.isEmpty()) return emptyMap()
 
@@ -189,22 +200,22 @@ object AgeTypeParser : KLogging() {
 
     private fun parseValue(content: String, start: Int): Pair<Any?, Int> {
         return when {
-            content[start] == '"'              -> {
+            content[start] == '"' -> {
                 val end = content.indexOf('"', start + 1)
                 content.substring(start + 1, end) to end + 1
             }
-            content[start] == '{'              -> {
+            content[start] == '{' -> {
                 val end = findClosing(content, start, '{', '}')
                 parseJsonObject(content.substring(start, end + 1)) to end + 1
             }
-            content[start] == '['              -> {
+            content[start] == '[' -> {
                 val end = findClosing(content, start, '[', ']')
                 parseJsonArray(content.substring(start, end + 1)) to end + 1
             }
-            content.startsWith("null", start)  -> null to start + 4
-            content.startsWith("true", start)  -> true to start + 4
+            content.startsWith("null", start) -> null to start + 4
+            content.startsWith("true", start) -> true to start + 4
             content.startsWith("false", start) -> false to start + 5
-            else                               -> {
+            else -> {
                 val commaPos = content.indexOf(',', start)
                 val bracePos = content.indexOf('}', start)
                 val end = when {
@@ -232,6 +243,8 @@ object AgeTypeParser : KLogging() {
      * @return 파싱된 불변 [List].
      */
     fun parseJsonArray(json: String): List<Any?> {
+        log.trace { "Parse JsonArray: $json" }
+
         val content = json.trim().removePrefix("[").removeSuffix("]").trim()
         if (content.isEmpty()) return emptyList()
         val result = mutableListOf<Any?>()

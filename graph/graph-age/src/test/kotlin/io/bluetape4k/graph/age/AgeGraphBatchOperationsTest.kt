@@ -1,64 +1,45 @@
 package io.bluetape4k.graph.age
 
-import com.zaxxer.hikari.HikariConfig
-import com.zaxxer.hikari.HikariDataSource
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.coroutines.flow.extensions.log
 import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.junit5.coroutines.runSuspendIO
-import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
+import io.bluetape4k.support.asLong
 import kotlinx.coroutines.flow.toList
-import org.jetbrains.exposed.v1.jdbc.Database
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class AgeGraphBatchOperationsTest {
+class AgeGraphBatchOperationsTest: AbstractAgeTest() {
 
-    private lateinit var dataSource: HikariDataSource
-    private lateinit var ops: AgeGraphOperations
-    private lateinit var suspendOps: AgeGraphSuspendOperations
-
-    private val graphName = "test_batch_graph"
-
-    @BeforeAll
-    fun setup() {
-        val server = PostgreSQLAgeServer.Launcher.postgresqlAge
-        dataSource = HikariDataSource(HikariConfig().apply {
-            jdbcUrl = server.jdbcUrl
-            username = server.username
-            password = server.password
-            driverClassName = "org.postgresql.Driver"
-            connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
-            maximumPoolSize = 5
-        })
-        val database = Database.connect(dataSource)
-        ops = AgeGraphOperations(database, graphName)
-        suspendOps = AgeGraphSuspendOperations(database, graphName)
+    companion object: KLogging() {
+        private const val TEST_GRAPH_NAME = "test_batch_graph"
     }
 
-    @AfterAll
-    fun teardown() {
-        dataSource.close()
+    private val ops: AgeGraphOperations by lazy { createAgeGraphOperations(database, TEST_GRAPH_NAME) }
+    private val suspendOps: AgeGraphSuspendOperations by lazy {
+        createAgeGraphSuspendOperations(
+            database,
+            TEST_GRAPH_NAME
+        )
     }
 
     @BeforeEach
-    fun resetGraph() = runSuspendIO {
-        if (ops.graphExists(graphName)) {
-            ops.dropGraph(graphName)
+    fun resetGraph() {
+        if (ops.graphExists(TEST_GRAPH_NAME)) {
+            ops.dropGraph(TEST_GRAPH_NAME)
         }
-        ops.createGraph(graphName)
+        ops.createGraph(TEST_GRAPH_NAME)
     }
 
     @Test
-    fun `createVertices returns vertices in input order`() = runSuspendIO {
+    fun `createVertices returns vertices in input order`() {
         val vertices = ops.createVertices(
             "Person",
             listOf(
@@ -68,14 +49,15 @@ class AgeGraphBatchOperationsTest {
             ),
         )
 
-        vertices.shouldHaveSize(3)
+        vertices shouldHaveSize 3
         vertices.map { it.properties["name"] } shouldBeEqualTo listOf("Alice", "Bob", "Carol")
         vertices.map { it.properties["rank"] } shouldBeEqualTo listOf(1L, 2L, 3L)
+
         ops.countVertices("Person") shouldBeEqualTo 3L
     }
 
     @Test
-    fun `empty and size one batches preserve write semantics`() = runSuspendIO {
+    fun `empty and size one batches preserve write semantics`() {
         ops.createVertices("Person", emptyList()).shouldBeEmpty()
         ops.createEdges("KNOWS", emptyList()).shouldBeEmpty()
 
@@ -90,7 +72,7 @@ class AgeGraphBatchOperationsTest {
     }
 
     @Test
-    fun `createVertices supports mixed property key groups while preserving order`() = runSuspendIO {
+    fun `createVertices supports mixed property key groups while preserving order`() {
         val vertices = ops.createVertices(
             "Person",
             listOf(
@@ -99,15 +81,15 @@ class AgeGraphBatchOperationsTest {
                 mapOf("name" to "Bob", "city" to "Seoul"),
                 mapOf("name" to "Carol"),
             ),
-        )
+        ).onEach { log.debug { "vertex=$it" } }
 
         vertices.map { it.properties["name"] } shouldBeEqualTo listOf("Alice", "Alice", "Bob", "Carol")
-        vertices.map { it.id }.toSet().shouldHaveSize(4)
+        vertices.map { it.id }.toSet() shouldHaveSize 4
         vertices[2].properties["city"] shouldBeEqualTo "Seoul"
     }
 
     @Test
-    fun `createEdges returns edges in input order`() = runSuspendIO {
+    fun `createEdges returns edges in input order`() {
         val (alice, bob, carol) = ops.createVertices(
             "Person",
             listOf(
@@ -124,17 +106,18 @@ class AgeGraphBatchOperationsTest {
                 BatchEdge(bob.id, carol.id, mapOf("rank" to 2L)),
                 BatchEdge(carol.id, alice.id, mapOf("rank" to 3L)),
             ),
-        )
+        ).onEach { log.debug { "edge=$it" } }
 
-        edges.shouldHaveSize(3)
+        edges shouldHaveSize 3
         edges.map { it.startId } shouldBeEqualTo listOf(alice.id, bob.id, carol.id)
         edges.map { it.endId } shouldBeEqualTo listOf(bob.id, carol.id, alice.id)
         edges.map { it.properties["rank"] } shouldBeEqualTo listOf(1L, 2L, 3L)
+
         ops.findEdgesByLabel("KNOWS").shouldHaveSize(3)
     }
 
     @Test
-    fun `createEdges rejects missing endpoint without partial writes`() = runSuspendIO {
+    fun `createEdges rejects missing endpoint without partial writes`() {
         val (alice, bob) = ops.createVertices(
             "Person",
             listOf(
@@ -164,7 +147,7 @@ class AgeGraphBatchOperationsTest {
                 mapOf("name" to "Alice"),
                 mapOf("name" to "Bob"),
             ),
-        )
+        ).onEach { log.debug { "vertex=$it" } }
 
         val edges = suspendOps.createEdges(
             "KNOWS",
@@ -172,11 +155,13 @@ class AgeGraphBatchOperationsTest {
                 BatchEdge(vertices[0].id, vertices[1].id, mapOf("rank" to 1L)),
                 BatchEdge(vertices[1].id, vertices[0].id, mapOf("rank" to 2L)),
             ),
-        )
+        ).onEach { log.debug { "edge=$it" } }
 
         vertices.map { it.properties["name"] } shouldBeEqualTo listOf("Alice", "Bob")
-        edges.map { it.startId } shouldBeEqualTo listOf(vertices[0].id, vertices[1].id)
-        edges.map { it.properties["rank"] } shouldBeEqualTo listOf(1L, 2L)
-        suspendOps.findEdgesByLabel("KNOWS").toList().shouldHaveSize(2)
+
+        edges.map { it.startId } shouldBeEqualTo vertices.map { it.id }
+        edges.map { it.properties["rank"].asLong() } shouldBeEqualTo listOf(1L, 2L)
+
+        suspendOps.findEdgesByLabel("KNOWS").log("KNOWS").toList() shouldHaveSize 2
     }
 }

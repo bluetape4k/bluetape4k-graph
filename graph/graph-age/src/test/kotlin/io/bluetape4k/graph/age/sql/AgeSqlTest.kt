@@ -3,9 +3,13 @@ package io.bluetape4k.graph.age.sql
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldNotContain
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 
 class AgeSqlTest {
+
+    companion object: KLogging()
 
     private val graph = "test_graph"
 
@@ -39,7 +43,9 @@ class AgeSqlTest {
         )
 
         calls.forEachIndexed { index, call ->
-            assertFailsWith<IllegalArgumentException>("unsafe identifier call index=$index") { call() }
+            assertFailsWith<IllegalArgumentException>("unsafe identifier call index=$index") {
+                call()
+            }
         }
     }
 
@@ -60,6 +66,7 @@ class AgeSqlTest {
     fun `cypher 본문에 dollar quote가 포함되어도 SQL delimiter 경계를 탈출하지 않는다`() {
         val value = "\$\$; DROP TABLE users; --"
         val sql = AgeSql.createVertex(graph, "Person", mapOf("payload" to value))
+            .also { log.debug { "sql=$it" } }
 
         sql shouldContain "\$bt4k\$"
         sql shouldContain value
@@ -70,6 +77,7 @@ class AgeSqlTest {
     fun `cypher 본문이 기본 delimiter 태그를 포함하면 다음 태그를 선택한다`() {
         val query = "RETURN '\$bt4k\$' AS first, '\$bt4k_\$' AS second"
         val sql = AgeSql.cypher(graph, query, listOf("v" to "agtype"))
+            .also { log.debug { "sql=$it" } }
 
         sql shouldContain "\$bt4k__\$"
         sql shouldContain query
@@ -79,14 +87,17 @@ class AgeSqlTest {
 
     @Test
     fun `createGraph - 그래프 이름을 포함한 SQL을 생성한다`() {
-        val sql = AgeSql.createGraph(graph)
+        val sql = AgeSql.createGraph(graph).also { log.debug { "sql=$it" } }
+
         sql shouldContain "create_graph"
         sql shouldContain graph
     }
 
     @Test
     fun `dropGraph - 그래프 이름과 cascade 여부를 포함한 SQL을 생성한다`() {
-        val sql = AgeSql.dropGraph(graph, cascade = true)
+        val sql = AgeSql.dropGraph(graph, cascade = true).also { log.debug { "sql=$it" } }
+
+
         sql shouldContain "drop_graph"
         sql shouldContain graph
         sql shouldContain "true"
@@ -94,13 +105,15 @@ class AgeSqlTest {
 
     @Test
     fun `dropGraph - cascade false이면 false가 포함된다`() {
-        val sql = AgeSql.dropGraph(graph, cascade = false)
+        val sql = AgeSql.dropGraph(graph, cascade = false).also { log.debug { "sql=$it" } }
+
         sql shouldContain "false"
     }
 
     @Test
     fun `graphExists - ag_graph 테이블 조회 SQL을 생성한다`() {
-        val sql = AgeSql.graphExists(graph)
+        val sql = AgeSql.graphExists(graph).also { log.debug { "sql=$it" } }
+
         sql shouldContain "ag_catalog.ag_graph"
         sql shouldContain graph
     }
@@ -110,6 +123,8 @@ class AgeSqlTest {
     @Test
     fun `createVertex - properties가 있을 때 CREATE 절과 label을 포함한다`() {
         val sql = AgeSql.createVertex(graph, "Person", mapOf("name" to "Alice", "age" to 30))
+            .also { log.debug { "sql=$it" } }
+
         sql shouldContain "CREATE"
         sql shouldContain "Person"
         sql shouldContain "RETURN v"
@@ -118,6 +133,8 @@ class AgeSqlTest {
     @Test
     fun `createVertex - properties가 없을 때도 정상 Cypher를 생성한다`() {
         val sql = AgeSql.createVertex(graph, "Company", emptyMap())
+            .also { log.debug { "sql=$it" } }
+
         sql shouldContain "CREATE"
         sql shouldContain "Company"
     }
@@ -125,6 +142,8 @@ class AgeSqlTest {
     @Test
     fun `createVertex - cypher 래퍼 안에 agtype 컬럼 정의가 있다`() {
         val sql = AgeSql.createVertex(graph, "Person", emptyMap())
+            .also { log.debug { "sql=$it" } }
+
         sql shouldContain "ag_catalog.cypher"
         sql shouldContain "agtype"
     }
@@ -138,7 +157,7 @@ class AgeSqlTest {
                 AgeSql.BatchVertexRow(0, mapOf("name" to "Alice")),
                 AgeSql.BatchVertexRow(1, mapOf("name" to "Bob")),
             ),
-        )
+        ).also { log.debug { "sql=$it" } }
 
         sql shouldContain "UNWIND"
         sql shouldContain "CREATE (v:Person {name: row.p0})"
@@ -151,6 +170,8 @@ class AgeSqlTest {
     @Test
     fun `matchVertices - filter 없을 때 MATCH와 label만 포함한다`() {
         val sql = AgeSql.matchVertices(graph, "Person")
+            .also { log.debug { "sql=$it" } }
+
         sql shouldContain "MATCH"
         sql shouldContain "Person"
         sql shouldContain "RETURN v"
@@ -159,6 +180,8 @@ class AgeSqlTest {
     @Test
     fun `matchVertices - filter 있을 때 filter 값을 Cypher에 포함한다`() {
         val sql = AgeSql.matchVertices(graph, "Person", mapOf("name" to "Alice"))
+            .also { log.debug { "sql=$it" } }
+
         sql shouldContain "MATCH"
         sql shouldContain "Person"
         sql shouldContain "Alice"
@@ -169,6 +192,8 @@ class AgeSqlTest {
     @Test
     fun `matchVertexById - WHERE id(v) = N 조건을 포함한다`() {
         val sql = AgeSql.matchVertexById(graph, "Person", 10L)
+            .also { log.debug { "sql=$it" } }
+
         sql shouldContain "WHERE id(v) = 10"
         sql shouldContain "RETURN v"
     }
@@ -176,6 +201,8 @@ class AgeSqlTest {
     @Test
     fun `matchVertexById - label을 포함한다`() {
         val sql = AgeSql.matchVertexById(graph, "Employee", 5L)
+            .also { log.debug { "sql=$it" } }
+
         sql shouldContain "Employee"
     }
 
@@ -184,6 +211,8 @@ class AgeSqlTest {
     @Test
     fun `updateVertex - SET 절이 포함된다`() {
         val sql = AgeSql.updateVertex(graph, "Person", 1L, mapOf("name" to "Bob"))
+            .also { log.debug { "sql=$it" } }
+
         sql shouldContain "SET"
         sql shouldContain "v.name"
         sql shouldContain "RETURN v"
@@ -192,6 +221,8 @@ class AgeSqlTest {
     @Test
     fun `updateVertex - WHERE id(v) = N 조건을 포함한다`() {
         val sql = AgeSql.updateVertex(graph, "Person", 7L, mapOf("age" to 25))
+            .also { log.debug { "sql=$it" } }
+
         sql shouldContain "WHERE id(v) = 7"
     }
 
@@ -200,12 +231,16 @@ class AgeSqlTest {
     @Test
     fun `deleteVertex - DETACH DELETE를 포함한다`() {
         val sql = AgeSql.deleteVertex(graph, "Person", 3L)
+            .also { log.debug { "sql=$it" } }
+
         sql shouldContain "DETACH DELETE v"
     }
 
     @Test
     fun `deleteVertex - WHERE id(v) = N 조건을 포함한다`() {
         val sql = AgeSql.deleteVertex(graph, "Person", 3L)
+            .also { log.debug { "sql=$it" } }
+
         sql shouldContain "WHERE id(v) = 3"
     }
 
@@ -214,12 +249,16 @@ class AgeSqlTest {
     @Test
     fun `countVertices - count(v) 를 포함한다`() {
         val sql = AgeSql.countVertices(graph, "Person")
+            .also { log.debug { "sql=$it" } }
+
         sql shouldContain "count(v)"
     }
 
     @Test
     fun `countVertices - label을 포함한다`() {
         val sql = AgeSql.countVertices(graph, "Company")
+            .also { log.debug { "sql=$it" } }
+
         sql shouldContain "Company"
     }
 
@@ -228,6 +267,8 @@ class AgeSqlTest {
     @Test
     fun `createEdge - 간선 방향 패턴 a-e-LABEL-방향-b 을 포함한다`() {
         val sql = AgeSql.createEdge(graph, 1L, 2L, "KNOWS", emptyMap())
+            .also { log.debug { "sql=$it" } }
+
         sql shouldContain "(a)-[e:KNOWS"
         sql shouldContain "]->(b)"
         sql shouldContain "RETURN e"
@@ -236,6 +277,8 @@ class AgeSqlTest {
     @Test
     fun `createEdge - 시작 및 끝 id 조건을 포함한다`() {
         val sql = AgeSql.createEdge(graph, 10L, 20L, "LIKES", emptyMap())
+            .also { log.debug { "sql=$it" } }
+
         sql shouldContain "id(a) = 10"
         sql shouldContain "id(b) = 20"
     }
@@ -243,6 +286,8 @@ class AgeSqlTest {
     @Test
     fun `createEdge - properties가 있을 때 해당 값을 포함한다`() {
         val sql = AgeSql.createEdge(graph, 1L, 2L, "KNOWS", mapOf("since" to 2023))
+            .also { log.debug { "sql=$it" } }
+
         sql shouldContain "2023"
     }
 
@@ -255,7 +300,7 @@ class AgeSqlTest {
                 AgeSql.BatchEdgeRow(0, 1L, 2L, mapOf("since" to 2024)),
                 AgeSql.BatchEdgeRow(1, 2L, 3L, mapOf("since" to 2025)),
             ),
-        )
+        ).also { log.debug { "sql=$it" } }
 
         sql shouldContain "UNWIND"
         sql shouldContain "id(a) = row.fromId"
@@ -269,7 +314,8 @@ class AgeSqlTest {
         val sql = AgeSql.matchBatchEdgeEndpoints(
             graph,
             listOf(AgeSql.BatchEdgeRow(0, 1L, 2L)),
-        )
+        ).also { log.debug { "sql=$it" } }
+
 
         sql shouldContain "MATCH (a), (b)"
         sql shouldContain "RETURN row.idx AS idx"
@@ -281,6 +327,8 @@ class AgeSqlTest {
     @Test
     fun `matchEdgesByLabel - edge 패턴과 label을 포함한다`() {
         val sql = AgeSql.matchEdgesByLabel(graph, "KNOWS")
+            .also { log.debug { "sql=$it" } }
+
         sql shouldContain "[e:KNOWS"
         sql shouldContain "RETURN e"
     }
@@ -288,6 +336,8 @@ class AgeSqlTest {
     @Test
     fun `matchEdgesByLabel - filter 있을 때 filter 값을 포함한다`() {
         val sql = AgeSql.matchEdgesByLabel(graph, "KNOWS", mapOf("since" to 2020))
+            .also { log.debug { "sql=$it" } }
+
         sql shouldContain "2020"
     }
 
@@ -296,12 +346,16 @@ class AgeSqlTest {
     @Test
     fun `deleteEdge - DELETE e를 포함한다`() {
         val sql = AgeSql.deleteEdge(graph, "KNOWS", 99L)
+            .also { log.debug { "sql=$it" } }
+
         sql shouldContain "DELETE e"
     }
 
     @Test
     fun `deleteEdge - WHERE id(e) = N 조건을 포함한다`() {
         val sql = AgeSql.deleteEdge(graph, "KNOWS", 99L)
+            .also { log.debug { "sql=$it" } }
+
         sql shouldContain "WHERE id(e) = 99"
     }
 
@@ -310,6 +364,8 @@ class AgeSqlTest {
     @Test
     fun `neighbors - OUTGOING 방향이면 start에서 neighbor로 향하는 패턴을 사용한다`() {
         val sql = AgeSql.neighbors(graph, 1L, null, "OUTGOING", 1)
+            .also { log.debug { "sql=$it" } }
+
         sql shouldContain "(start)-["
         sql shouldContain "]->(neighbor)"
     }
@@ -317,6 +373,8 @@ class AgeSqlTest {
     @Test
     fun `neighbors - INCOMING 방향이면 neighbor에서 start로 들어오는 패턴을 사용한다`() {
         val sql = AgeSql.neighbors(graph, 1L, null, "INCOMING", 1)
+            .also { log.debug { "sql=$it" } }
+
         sql shouldContain "(start)<-["
         sql shouldContain "]-(neighbor)"
     }
@@ -324,6 +382,8 @@ class AgeSqlTest {
     @Test
     fun `neighbors - BOTH 방향이면 양방향 패턴을 사용한다`() {
         val sql = AgeSql.neighbors(graph, 1L, null, "BOTH", 1)
+            .also { log.debug { "sql=$it" } }
+
         sql shouldContain "(start)-["
         sql shouldContain "]-(neighbor)"
     }
@@ -331,18 +391,24 @@ class AgeSqlTest {
     @Test
     fun `neighbors - depth가 2 이상이면 가변 길이 패턴을 포함한다`() {
         val sql = AgeSql.neighbors(graph, 1L, null, "OUTGOING", 3)
+            .also { log.debug { "sql=$it" } }
+
         sql shouldContain "*1..3"
     }
 
     @Test
     fun `neighbors - depth가 1이면 가변 길이 패턴을 포함하지 않는다`() {
         val sql = AgeSql.neighbors(graph, 1L, null, "OUTGOING", 1)
+            .also { log.debug { "sql=$it" } }
+
         sql shouldNotContain "*1..1"
     }
 
     @Test
     fun `neighbors - edgeLabel이 있으면 간선 label을 포함한다`() {
         val sql = AgeSql.neighbors(graph, 1L, "KNOWS", "OUTGOING", 1)
+            .also { log.debug { "sql=$it" } }
+
         sql shouldContain ":KNOWS"
     }
 
@@ -351,12 +417,16 @@ class AgeSqlTest {
     @Test
     fun `shortestPath - LIMIT 1을 포함한다`() {
         val sql = AgeSql.shortestPath(graph, 1L, 5L, null, 5)
+            .also { log.debug { "sql=$it" } }
+
         sql shouldContain "LIMIT 1"
     }
 
     @Test
     fun `shortestPath - 시작 및 끝 id 조건을 포함한다`() {
         val sql = AgeSql.shortestPath(graph, 2L, 8L, null, 4)
+            .also { log.debug { "sql=$it" } }
+
         sql shouldContain "id(a) = 2"
         sql shouldContain "id(b) = 8"
     }
@@ -364,6 +434,8 @@ class AgeSqlTest {
     @Test
     fun `shortestPath - edgeLabel이 있으면 간선 label을 포함한다`() {
         val sql = AgeSql.shortestPath(graph, 1L, 3L, "FRIENDS", 3)
+            .also { log.debug { "sql=$it" } }
+
         sql shouldContain ":FRIENDS"
     }
 
@@ -372,12 +444,16 @@ class AgeSqlTest {
     @Test
     fun `allPaths - LIMIT가 없다`() {
         val sql = AgeSql.allPaths(graph, 1L, 5L, null, 5)
+            .also { log.debug { "sql=$it" } }
+
         sql shouldNotContain "LIMIT"
     }
 
     @Test
     fun `allPaths - 시작 및 끝 id 조건을 포함한다`() {
         val sql = AgeSql.allPaths(graph, 3L, 9L, null, 3)
+            .also { log.debug { "sql=$it" } }
+
         sql shouldContain "id(a) = 3"
         sql shouldContain "id(b) = 9"
     }
@@ -385,6 +461,8 @@ class AgeSqlTest {
     @Test
     fun `allPaths - edgeLabel이 있으면 간선 label을 포함한다`() {
         val sql = AgeSql.allPaths(graph, 1L, 4L, "CONNECTS", 2)
+            .also { log.debug { "sql=$it" } }
+
         sql shouldContain ":CONNECTS"
     }
 }

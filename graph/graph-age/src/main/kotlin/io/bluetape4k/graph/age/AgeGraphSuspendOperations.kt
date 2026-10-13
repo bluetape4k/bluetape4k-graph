@@ -31,6 +31,7 @@ import io.bluetape4k.graph.schema.GraphSuspendSchemaManager
 import io.bluetape4k.graph.schema.asSuspendSchemaManager
 import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.coroutines.KLoggingChannel
+import io.bluetape4k.logging.warn
 import io.bluetape4k.support.requireNotBlank
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -40,6 +41,7 @@ import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
@@ -58,8 +60,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.CoroutineContext
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction as exposedSuspendTransaction
-
-private const val DEFAULT_STREAM_FETCH_SIZE = 100
 
 /**
  * Apache AGE + PostgreSQL 기반 [GraphSuspendOperations] 구현체 (코루틴 방식).
@@ -113,19 +113,23 @@ class AgeGraphSuspendOperations(
     @Deprecated("명시적인 Database를 전달하는 생성자를 사용하세요.")
     constructor(graphName: String): this(requirePrimaryDatabase(), graphName)
 
-    companion object: KLoggingChannel()
+    companion object: KLoggingChannel() {
+        const val DEFAULT_STREAM_FETCH_SIZE = 100
+    }
 
     init {
         graphName.requireNotBlank("graphName").requireSafeIdentifier("graphName")
     }
 
+    private val delegate = AgeGraphOperations(database, graphName)
+
     private suspend fun <T> newSuspendedTransaction(
         context: CoroutineContext = Dispatchers.IO,
-        attempts: Int? = null,
+        maxAttemps: Int? = null,
         statement: suspend JdbcTransaction.() -> T,
-    ): T = withContext(context) {
+    ): T = withContext(Dispatchers.IO) {
         exposedSuspendTransaction(db = database) {
-            attempts?.let { maxAttempts = it }
+            maxAttemps?.let { maxAttempts = it }
             statement()
         }
     }
@@ -146,6 +150,7 @@ class AgeGraphSuspendOperations(
         val cancellationRequested = AtomicBoolean()
         val statementCancelled = AtomicBoolean()
         val statementExecuting = AtomicBoolean()
+
         fun cancelActiveStatement() {
             val statement = activeStatement.get() ?: return
             if (statementExecuting.get() &&
@@ -155,10 +160,11 @@ class AgeGraphSuspendOperations(
                 try {
                     statement.cancel()
                 } catch (cancelFailure: SQLException) {
-                    log.warn("AGE JDBC statement cancellation failed", cancelFailure)
+                    log.warn(cancelFailure) { "AGE JDBC statement cancellation failed" }
                 }
             }
         }
+
         val cancellationHandle = currentCoroutineContext()[Job]?.invokeOnCompletion(onCancelling = true) { cause ->
             if (cause is CancellationException) {
                 cancellationRequested.set(true)
@@ -166,8 +172,8 @@ class AgeGraphSuspendOperations(
             }
         }
 
-        val executable = object : BlockingExecutable<Unit, Statement<Unit>> {
-            override val statement = object : Statement<Unit>(StatementType.SELECT, emptyList()) {
+        val executable = object: BlockingExecutable<Unit, Statement<Unit>> {
+            override val statement = object: Statement<Unit>(StatementType.SELECT, emptyList()) {
                 override fun prepareSQL(transaction: Transaction, prepared: Boolean): String = statementText
 
                 override fun arguments(): Iterable<Iterable<Pair<IColumnType<*>, Any?>>> =
@@ -182,7 +188,7 @@ class AgeGraphSuspendOperations(
                 context.ensureActive()
                 try {
                     executeQuery().result.use(transform)
-                    return 
+                    return
                 } finally {
                     statementExecuting.set(false)
                     activeStatement.compareAndSet(this, null)
@@ -223,7 +229,7 @@ class AgeGraphSuspendOperations(
         mapper: (ResultSet) -> T,
     ): Flow<T> = channelFlow {
         val output = this@channelFlow
-        newSuspendedTransaction(Dispatchers.IO, attempts = 1) {
+        newSuspendedTransaction(Dispatchers.IO, maxAttemps = 1) {
             execStreaming(statement) { resultSet ->
                 while (resultSet.next()) {
                     output.trySendBlocking(mapper(resultSet)).getOrThrow()
@@ -245,10 +251,9 @@ class AgeGraphSuspendOperations(
         label: String,
         matchProperties: Map<String, Any?>,
         setProperties: Map<String, Any?>,
-    ): GraphVertex =
-        withContext(Dispatchers.IO) {
-            AgeGraphOperations(database, graphName).mergeVertex(label, matchProperties, setProperties)
-        }
+    ): GraphVertex = withContext(Dispatchers.IO) {
+        delegate.mergeVertex(label, matchProperties, setProperties)
+    }
 
     override suspend fun mergeEdge(
         fromId: GraphElementId,
@@ -256,10 +261,9 @@ class AgeGraphSuspendOperations(
         label: String,
         matchProperties: Map<String, Any?>,
         setProperties: Map<String, Any?>,
-    ): GraphEdge =
-        withContext(Dispatchers.IO) {
-            AgeGraphOperations(database, graphName).mergeEdge(fromId, toId, label, matchProperties, setProperties)
-        }
+    ): GraphEdge = withContext(Dispatchers.IO) {
+        delegate.mergeEdge(fromId, toId, label, matchProperties, setProperties)
+    }
 
     override suspend fun createGraph(name: String) {
         name.requireNotBlank("name")
@@ -323,10 +327,9 @@ class AgeGraphSuspendOperations(
     override suspend fun createVertices(
         label: String,
         propertiesList: List<Map<String, Any?>>,
-    ): List<GraphVertex> =
-        withContext(Dispatchers.IO) {
-            AgeGraphOperations(database, graphName).createVertices(label, propertiesList)
-        }
+    ): List<GraphVertex> = withContext(Dispatchers.IO) {
+        delegate.createVertices(label, propertiesList)
+    }
 
     override suspend fun findVertexById(label: String, id: GraphElementId): GraphVertex? {
         label.requireNotBlank("label")
@@ -443,12 +446,14 @@ class AgeGraphSuspendOperations(
 
     override suspend fun createEdges(label: String, edges: List<BatchEdge>): List<GraphEdge> =
         withContext(Dispatchers.IO) {
-            AgeGraphOperations(database, graphName).createEdges(label, edges)
+            delegate.createEdges(label, edges)
         }
 
     override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphEdge> {
         label.requireNotBlank("label")
-        return streamQuery(AgeSql.matchEdgesByLabel(graphName, label, filter)) { resultSet ->
+
+        val stmt = AgeSql.matchEdgesByLabel(graphName, label, filter)
+        return streamQuery(stmt) { resultSet ->
             AgeTypeParser.parseEdge(resultSet.getString("e"))
         }
     }
@@ -456,7 +461,9 @@ class AgeGraphSuspendOperations(
     override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): Flow<GraphEdge> {
         val longId = startId.value.toLongOrNull()
             ?: throw GraphQueryException("AGE requires numeric ID, got: ${startId.value}")
-        return streamQuery(AgeSql.matchEdgesByStartId(graphName, longId, edgeLabel)) { resultSet ->
+
+        val stmt = AgeSql.matchEdgesByStartId(graphName, longId, edgeLabel)
+        return streamQuery(stmt) { resultSet ->
             AgeTypeParser.parseEdge(resultSet.getString("e"))
         }
     }
@@ -464,7 +471,9 @@ class AgeGraphSuspendOperations(
     override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): Flow<GraphEdge> {
         val longId = endId.value.toLongOrNull()
             ?: throw GraphQueryException("AGE requires numeric ID, got: ${endId.value}")
-        return streamQuery(AgeSql.matchEdgesByEndId(graphName, longId, edgeLabel)) { resultSet ->
+
+        val stmt = AgeSql.matchEdgesByEndId(graphName, longId, edgeLabel)
+        return streamQuery(stmt) { resultSet ->
             AgeTypeParser.parseEdge(resultSet.getString("e"))
         }
     }
@@ -491,9 +500,8 @@ class AgeGraphSuspendOperations(
         val longId = startId.value.toLongOrNull()
             ?: throw GraphQueryException("AGE requires numeric ID, got: ${startId.value}")
 
-        return streamQuery(
-            AgeSql.neighbors(graphName, longId, options.edgeLabel, options.direction.name, options.maxDepth)
-        ) { resultSet ->
+        val stmt = AgeSql.neighbors(graphName, longId, options.edgeLabel, options.direction.name, options.maxDepth)
+        return streamQuery(stmt) { resultSet ->
             AgeTypeParser.parseVertex(resultSet.getString("neighbor"))
         }
     }
@@ -511,8 +519,8 @@ class AgeGraphSuspendOperations(
 
         val from = fromId.value.toLongOrNull()
             ?: throw GraphQueryException("AGE requires numeric ID, got: ${fromId.value}")
-        val to =
-            toId.value.toLongOrNull() ?: throw GraphQueryException("AGE requires numeric ID, got: ${toId.value}")
+        val to = toId.value.toLongOrNull()
+            ?: throw GraphQueryException("AGE requires numeric ID, got: ${toId.value}")
 
         return newSuspendedTransaction {
             var path: GraphPath? = null
@@ -545,14 +553,15 @@ class AgeGraphSuspendOperations(
         val to = toId.value.toLongOrNull()
             ?: throw GraphQueryException("AGE requires numeric ID, got: ${toId.value}")
 
-        return streamQuery(AgeSql.allPaths(graphName, from, to, options.edgeLabel, options.maxDepth)) { resultSet ->
+        val stmt = AgeSql.allPaths(graphName, from, to, options.edgeLabel, options.maxDepth)
+        return streamQuery(stmt) { resultSet ->
             AgeTypeParser.parsePath(resultSet.getString("p"))
         }
     }
 
     // -- GraphSuspendAlgorithmRepository --
 
-    private val syncDelegate by lazy { AgeGraphOperations(database, graphName) }
+    private val syncDelegate by lazy { delegate }
 
     override suspend fun degreeCentrality(
         vertexId: GraphElementId,
@@ -561,30 +570,26 @@ class AgeGraphSuspendOperations(
         syncDelegate.degreeCentrality(vertexId, options)
     }
 
-    override fun bfs(startId: GraphElementId, options: TreeTraversalOptions): Flow<TraversalVisit> = flow {
-        val list = withContext(Dispatchers.IO) { syncDelegate.bfs(startId, options) }
-        list.forEach { emit(it) }
-    }
+    override fun bfs(
+        startId: GraphElementId,
+        options: TreeTraversalOptions,
+    ): Flow<TraversalVisit> =
+        syncDelegate.bfs(startId, options).asFlow()
 
-    override fun dfs(startId: GraphElementId, options: TreeTraversalOptions): Flow<TraversalVisit> = flow {
-        val list = withContext(Dispatchers.IO) { syncDelegate.dfs(startId, options) }
-        list.forEach { emit(it) }
-    }
+    override fun dfs(
+        startId: GraphElementId,
+        options: TreeTraversalOptions,
+    ): Flow<TraversalVisit> =
+        syncDelegate.dfs(startId, options).asFlow()
 
-    override fun detectCycles(options: CycleOptions): Flow<GraphCycle> = flow {
-        val list = withContext(Dispatchers.IO) { syncDelegate.detectCycles(options) }
-        list.forEach { emit(it) }
-    }
+    override fun detectCycles(options: CycleOptions): Flow<GraphCycle> =
+        syncDelegate.detectCycles(options).asFlow()
 
-    override fun connectedComponents(options: ComponentOptions): Flow<GraphComponent> = flow {
-        val list = withContext(Dispatchers.IO) { syncDelegate.connectedComponents(options) }
-        list.forEach { emit(it) }
-    }
+    override fun connectedComponents(options: ComponentOptions): Flow<GraphComponent> =
+        syncDelegate.connectedComponents(options).asFlow()
 
-    override fun pageRank(options: PageRankOptions): Flow<PageRankScore> = flow {
-        val list = withContext(Dispatchers.IO) { syncDelegate.pageRank(options) }
-        list.forEach { emit(it) }
-    }
+    override fun pageRank(options: PageRankOptions): Flow<PageRankScore> =
+        syncDelegate.pageRank(options).asFlow()
 }
 
 @Suppress("TooManyFunctions")
