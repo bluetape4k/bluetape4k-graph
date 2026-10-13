@@ -177,6 +177,61 @@ class PublishingSigningSupportTest {
     }
 
     @Test
+    fun `does not normalize distinct exclusions with a delimiter collision`() {
+        val pom = Node(null, "project")
+        val dependencies = Node(Node(pom, "dependencyManagement"), "dependencies")
+        listOf(
+            "z" to "x;groupId|{}|y",
+            "y;groupId|{}|z" to "x",
+        ).forEach { (groupId, artifactId) ->
+            val dependency = Node(dependencies, "dependency")
+            Node(dependency, "groupId", "org.example")
+            Node(dependency, "artifactId", "managed")
+            Node(dependency, "version", "1.0")
+            val exclusion = Node(Node(dependency, "exclusions"), "exclusion")
+            Node(exclusion, "groupId", groupId)
+            Node(exclusion, "artifactId", artifactId)
+        }
+
+        val error = assertFailsWith<org.gradle.api.GradleException> {
+            normalizeMavenPomDependencyManagement(pom)
+        }
+
+        assertTrue(error.message.orEmpty().contains("org.example:managed:jar"))
+    }
+
+    @Test
+    fun `generated POM normalization rejects distinct exclusions with a delimiter collision`() {
+        val pomFile = File.createTempFile("pom-fingerprint-collision", ".xml")
+        try {
+            pomFile.writeText(
+                """
+                    <project xmlns="http://maven.apache.org/POM/4.0.0">
+                        <dependencyManagement><dependencies>
+                            <dependency>
+                                <groupId>org.example</groupId><artifactId>managed</artifactId><version>1.0</version>
+                                <exclusions><exclusion><groupId>z</groupId><artifactId>x;groupId||y</artifactId></exclusion></exclusions>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.example</groupId><artifactId>managed</artifactId><version>1.0</version>
+                                <exclusions><exclusion><groupId>y;groupId||z</groupId><artifactId>x</artifactId></exclusion></exclusions>
+                            </dependency>
+                        </dependencies></dependencyManagement>
+                    </project>
+                """.trimIndent(),
+            )
+
+            val error = assertFailsWith<org.gradle.api.GradleException> {
+                normalizeMavenPomDependencyManagementFile(pomFile)
+            }
+
+            assertTrue(error.message.orEmpty().contains("org.example:managed:jar"))
+        } finally {
+            pomFile.delete()
+        }
+    }
+
+    @Test
     fun `GenerateMavenPom actions remove identical managed entries from the generated file`() {
         val (task, pomFile) = generatedPomTask(
             groupId = "org.jetbrains.kotlin",

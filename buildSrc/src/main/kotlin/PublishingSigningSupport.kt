@@ -155,16 +155,30 @@ private fun childText(node: Node, childName: String): String =
         .orEmpty()
 
 private fun nodeFingerprint(node: Node): String {
-    val children = node.children().filterIsInstance<Node>()
-    if (children.isEmpty()) {
-        return listOf(node.name().toString(), node.attributes(), node.text().trim()).joinToString("|")
-    }
+    val attributes = (node.attributes() as Map<*, *>).entries.sortedBy { it.key.toString() }
+    val children = node.children()
+        .filterIsInstance<Node>()
+        .map(::nodeFingerprint)
+        .sorted()
 
-    return listOf(
-        node.name().toString(),
-        node.attributes(),
-        children.sortedBy { nodeFingerprint(it) }.joinToString(";") { nodeFingerprint(it) },
-    ).joinToString("|")
+    return buildString {
+        appendFingerprintPart('E', node.name().toString())
+        append('A').append(attributes.size).append(':')
+        attributes.forEach { attribute ->
+            appendFingerprintPart('K', attribute.key.toString())
+            appendFingerprintPart('V', attribute.value?.toString().orEmpty())
+        }
+        if (children.isEmpty()) {
+            appendFingerprintPart('T', node.text().trim())
+        } else {
+            append('C').append(children.size).append(':')
+            children.forEach { child -> appendFingerprintPart('N', child) }
+        }
+    }
+}
+
+private fun StringBuilder.appendFingerprintPart(kind: Char, value: String) {
+    append(kind).append(value.length).append(':').append(value)
 }
 
 /**
@@ -237,25 +251,29 @@ private fun elementLocalName(element: Element): String =
     element.localName ?: element.nodeName.substringAfter(':')
 
 private fun elementFingerprint(element: Element): String {
+    val attributes = (0 until element.attributes.length)
+        .map { element.attributes.item(it) }
+        .sortedBy { it.nodeName }
     val children = (0 until element.childNodes.length)
         .mapNotNull { index -> element.childNodes.item(index) as? Element }
-    if (children.isEmpty()) {
-        return listOf(elementLocalName(element), element.attributes.asMap(), element.textContent.trim())
-            .joinToString("|")
+        .map(::elementFingerprint)
+        .sorted()
+
+    return buildString {
+        appendFingerprintPart('E', elementLocalName(element))
+        append('A').append(attributes.size).append(':')
+        attributes.forEach { attribute ->
+            appendFingerprintPart('K', attribute.nodeName)
+            appendFingerprintPart('V', attribute.nodeValue.orEmpty())
+        }
+        if (children.isEmpty()) {
+            appendFingerprintPart('T', element.textContent.trim())
+        } else {
+            append('C').append(children.size).append(':')
+            children.forEach { child -> appendFingerprintPart('N', child) }
+        }
     }
-
-    return listOf(
-        elementLocalName(element),
-        element.attributes.asMap(),
-        children.sortedBy { elementFingerprint(it) }.joinToString(";") { elementFingerprint(it) },
-    ).joinToString("|")
 }
-
-private fun org.w3c.dom.NamedNodeMap.asMap(): String =
-    (0 until length)
-        .map { item(it).nodeName to item(it).nodeValue }
-        .sortedBy { it.first }
-        .joinToString(",") { (name, value) -> "$name=$value" }
 
 data class PublishingSigningConfig(
     val keyId: String,
