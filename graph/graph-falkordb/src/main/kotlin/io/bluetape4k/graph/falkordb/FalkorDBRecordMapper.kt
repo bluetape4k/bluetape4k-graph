@@ -8,7 +8,8 @@ import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphPath
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.PathStep
-import io.bluetape4k.graph.model.toGraphElementId
+import io.bluetape4k.graph.model.edgeOf
+import io.bluetape4k.graph.model.vertexOf
 
 /**
  * FalkorDB [Node]를 [GraphVertex]로 변환합니다.
@@ -22,11 +23,10 @@ import io.bluetape4k.graph.model.toGraphElementId
  * ```
  */
 internal fun Node.toGraphVertex(): GraphVertex {
-    val graphId = id.toGraphElementId()
     val label = if (numberOfLabels > 0) getLabel(0) else "Unknown"
     val properties = entityPropertyNames.associateWith { name -> getProperty(name)?.value }
 
-    return GraphVertex(graphId, label, properties)
+    return vertexOf(id, label, properties)
 }
 
 /**
@@ -37,12 +37,9 @@ internal fun Node.toGraphVertex(): GraphVertex {
  * ```
  */
 internal fun Edge.toGraphEdge(): GraphEdge {
-    val graphId = this.id.toGraphElementId()
-    val startId = source.toGraphElementId()
-    val endId = destination.toGraphElementId()
     val properties = entityPropertyNames.associateWith { name -> getProperty(name)?.value }
 
-    return GraphEdge(graphId, relationshipType, startId, endId, properties)
+    return edgeOf(id, relationshipType, source, destination, properties)
 }
 
 /**

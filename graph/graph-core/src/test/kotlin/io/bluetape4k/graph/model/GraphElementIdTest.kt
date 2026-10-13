@@ -169,4 +169,38 @@ class GraphElementIdTest: AbstractGraphTest() {
         val id = elementIdOf(100)
         id.value shouldBeEqualTo "100"
     }
+
+    // --- toGraphElementId() 유틸 함수 테스트 ---
+
+    @Test
+    fun `toGraphElementId - String을 GraphElementId로 변환한다`() {
+        val id = "node-1".toGraphElementId()
+
+        log.debug { "id=$id" }
+        id.value shouldBeEqualTo "node-1"
+        id shouldBeEqualTo GraphElementId("node-1")
+    }
+
+    @Test
+    fun `toGraphElementId - Long을 GraphElementId로 변환한다`() {
+        val id = 42L.toGraphElementId()
+
+        log.debug { "id=$id" }
+        id.value shouldBeEqualTo "42"
+    }
+
+    @Test
+    fun `toGraphElementId - GraphElementId를 전달하면 이중 변환 없이 반환한다`() {
+        val original = GraphElementId("v-1")
+        val result = original.toGraphElementId()
+        result shouldBeEqualTo original
+        // toString()이 "GraphElementId(value=v-1)"이므로 이중 변환 시 값이 오염된다
+        result.value shouldBeEqualTo "v-1"
+    }
+
+    @Test
+    fun `toGraphElementId - 정수 타입을 String으로 변환한다`() {
+        val id = 100.toGraphElementId()
+        id.value shouldBeEqualTo "100"
+    }
 }

@@ -5,6 +5,8 @@ import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphPath
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.PathStep
+import io.bluetape4k.graph.model.edgeOf
+import io.bluetape4k.graph.model.vertexOf
 import io.bluetape4k.logging.KLogging
 import org.neo4j.driver.Record
 import org.neo4j.driver.types.Node
@@ -40,10 +42,8 @@ object MemgraphRecordMapper: KLogging() {
      * @return 변환된 [GraphVertex].
      */
     fun nodeToVertex(node: Node): GraphVertex {
-        val id = GraphElementId(node.id().toString())
         val label = node.labels().firstOrNull() ?: "Unknown"
-        val properties = node.asMap()
-        return GraphVertex(id, label, properties)
+        return vertexOf(node.id(), label, node.asMap())
     }
 
     /**
@@ -57,10 +57,7 @@ object MemgraphRecordMapper: KLogging() {
      * @return 변환된 [GraphEdge].
      */
     fun relationshipToEdge(rel: Relationship): GraphEdge {
-        val id = GraphElementId(rel.id().toString())
-        val startId = GraphElementId(rel.startNodeId().toString())
-        val endId = GraphElementId(rel.endNodeId().toString())
-        return GraphEdge(id, rel.type(), startId, endId, rel.asMap())
+        return edgeOf(rel.id(), rel.type(), rel.startNodeId(), rel.endNodeId(), rel.asMap())
     }
 
     /**

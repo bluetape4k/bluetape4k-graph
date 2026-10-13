@@ -3,7 +3,6 @@ package io.bluetape4k.graph.neo4j
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
-import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotBeNull
@@ -17,6 +16,7 @@ import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.PageRankOptions
 import io.bluetape4k.graph.model.TreeTraversalOptions
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import io.bluetape4k.testcontainers.graphdb.Neo4jServer
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
@@ -67,6 +67,7 @@ class Neo4jAlgorithmTest {
         degree.inDegree shouldBeEqualTo 1
     }
 
+    // FIXME: 왜 score 가 똑같지???
     @Test
     fun `pageRank returns descending scores`() {
         val hub = ops.createVertex("Person", mapOf("name" to "Hub"))
@@ -74,9 +75,16 @@ class Neo4jAlgorithmTest {
             val leaf = ops.createVertex("Person", mapOf("name" to "L$i"))
             ops.createEdge(leaf.id, hub.id, "FOLLOWS")
         }
+
         val scores = ops.pageRank(PageRankOptions(vertexLabel = "Person", iterations = 30))
+            .onEach { log.debug { "rank source=$it" } }
+
         scores.shouldNotBeEmpty()
-        scores.zipWithNext { x, y -> (x.score >= y.score).shouldBeTrue() }
+
+        // descending order
+        scores.zipWithNext { x, y -> x.score shouldBeGreaterOrEqualTo y.score }
+
+        // hub should be top
         scores.first().vertex.properties["name"] shouldBeEqualTo "Hub"
     }
 

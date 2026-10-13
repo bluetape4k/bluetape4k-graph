@@ -30,6 +30,9 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.model.TreeTraversalOptions
+import io.bluetape4k.graph.model.edgeOf
+import io.bluetape4k.graph.model.toGraphElementId
+import io.bluetape4k.graph.model.vertexOf
 import io.bluetape4k.graph.repository.GraphBatchValidation
 import io.bluetape4k.graph.repository.GraphMergeOperations
 import io.bluetape4k.graph.repository.GraphMergeProperties
@@ -43,6 +46,7 @@ import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.warn
+import io.bluetape4k.support.EMPTY_STRING
 import io.bluetape4k.support.requireNotBlank
 import org.neo4j.driver.Driver
 import org.neo4j.driver.Record
@@ -603,7 +607,7 @@ class Neo4jGraphOperations(
             adjacency = adjacency,
             maxDepth = options.maxDepth,
             maxVertices = options.maxVertices,
-            vertexResolver = { vertexById[it] ?: GraphVertex(it, "", emptyMap()) },
+            vertexResolver = { vertexById[it] ?: vertexOf(it, EMPTY_STRING) },
         )
     }
 
@@ -615,7 +619,7 @@ class Neo4jGraphOperations(
             adjacency = adjacency,
             maxDepth = options.maxDepth,
             maxVertices = options.maxVertices,
-            vertexResolver = { vertexById[it] ?: GraphVertex(it, "", emptyMap()) },
+            vertexResolver = { vertexById[it] ?: vertexOf(it, EMPTY_STRING) },
         )
     }
 
@@ -711,8 +715,8 @@ class Neo4jGraphOperations(
                     "RETURN elementId(a) AS sa, elementId(b) AS sb",
             emptyMap<String, Any>(),
         ) { rec ->
-            val s = GraphElementId.of(rec["sa"].asString())
-            val e = GraphElementId.of(rec["sb"].asString())
+            val s = rec["sa"].toGraphElementId()
+            val e = rec["sb"].toGraphElementId()
             outAdjacency.getOrPut(s) { ArrayList() }.add(e)
             Unit
         }
@@ -777,13 +781,13 @@ class Neo4jGraphOperations(
         return cycles.map { ids ->
             val steps = ArrayList<PathStep>(ids.size * 2)
             ids.forEachIndexed { i, vid ->
-                val gv = vertexById[vid] ?: GraphVertex(vid, "", emptyMap())
+                val gv = vertexById[vid] ?: vertexOf(vid, EMPTY_STRING)
                 steps.add(PathStep.VertexStep(gv))
                 if (i < ids.size - 1) {
                     steps.add(
                         PathStep.EdgeStep(
-                            GraphEdge(
-                                id = GraphElementId.of("${vid.value}->${ids[i + 1].value}"),
+                            edgeOf(
+                                id = "${vid.value}->${ids[i + 1].value}".toGraphElementId(),
                                 label = options.edgeLabel ?: "",
                                 startId = vid,
                                 endId = ids[i + 1],

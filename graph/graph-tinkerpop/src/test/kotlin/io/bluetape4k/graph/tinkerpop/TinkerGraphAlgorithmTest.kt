@@ -41,6 +41,8 @@ class TinkerGraphAlgorithmTest: AbstractTinkerGraphTest() {
             ops.createEdge(leaf.id, hub.id, "FOLLOWS")
         }
         val scores = ops.pageRank(PageRankOptions(vertexLabel = "Person", iterations = 30))
+            .onEach { log.debug { "pageRank=$it" } }
+        
         scores.shouldNotBeEmpty()
 
         // descending order

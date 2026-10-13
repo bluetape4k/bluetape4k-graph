@@ -13,7 +13,7 @@ import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.batchEdgeOf
 import io.bluetape4k.graph.model.edgeOf
-import io.bluetape4k.graph.model.elementIdOf
+import io.bluetape4k.graph.model.toGraphElementId
 import io.bluetape4k.graph.model.vertexOf
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
@@ -57,8 +57,8 @@ class GraphBatchOperationsTest: AbstractGraphTest() {
     @Test
     fun `default createEdges preserves order and calls createEdge per row`() {
         val repo = RecordingEdgeRepository()
-        val from = elementIdOf("v1")
-        val to = elementIdOf("v2")
+        val from = "v1".toGraphElementId()
+        val to = "v2".toGraphElementId()
         val rows = listOf(
             batchEdgeOf(from, to, mapOf("since" to 2024)),
             batchEdgeOf(to, from, mapOf("since" to 2025)),
@@ -291,7 +291,7 @@ class GraphBatchOperationsTest: AbstractGraphTest() {
 
         override fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex {
             createdProperties += properties
-            return GraphVertex(elementIdOf("v${createdProperties.size}"), label, properties)
+            return vertexOf("v${createdProperties.size}", label, properties)
         }
 
         override fun findVertexById(label: String, id: GraphElementId): GraphVertex? = unsupported()
@@ -314,7 +314,7 @@ class GraphBatchOperationsTest: AbstractGraphTest() {
             properties: Map<String, Any?>,
         ): GraphEdge {
             createdEdges += BatchEdge(fromId, toId, properties)
-            return GraphEdge(elementIdOf("e${createdEdges.size}"), label, fromId, toId, properties)
+            return edgeOf("e${createdEdges.size}", label, fromId, toId, properties)
         }
 
         override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): List<GraphEdge> = unsupported()
@@ -364,7 +364,7 @@ class GraphBatchOperationsTest: AbstractGraphTest() {
 
         override suspend fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex {
             createdProperties += properties
-            return GraphVertex(elementIdOf("v${createdProperties.size}"), label, properties)
+            return vertexOf("v${createdProperties.size}", label, properties)
         }
 
         override suspend fun findVertexById(label: String, id: GraphElementId): GraphVertex? = unsupported()
@@ -390,7 +390,7 @@ class GraphBatchOperationsTest: AbstractGraphTest() {
             properties: Map<String, Any?>,
         ): GraphEdge {
             createdEdges += BatchEdge(fromId, toId, properties)
-            return GraphEdge(elementIdOf("e${createdEdges.size}"), label, fromId, toId, properties)
+            return edgeOf("e${createdEdges.size}", label, fromId, toId, properties)
         }
 
         override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphEdge> = unsupported()

@@ -34,6 +34,14 @@ interface GraphEdgeRepository {
         properties: Map<String, Any?> = emptyMap(),
     ): GraphEdge
 
+    fun createEdge(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        label: String,
+        vararg params: Pair<String, Any?>,
+    ): GraphEdge =
+        createEdge(fromId, toId, label, params.toMap())
+
     /**
      * Creates multiple edges with the same label and returns them in input order.
      *
@@ -80,6 +88,9 @@ interface GraphEdgeRepository {
      */
     fun findEdgesByLabel(label: String, filter: Map<String, Any?> = emptyMap()): List<GraphEdge>
 
+    fun findEdgesByLabel(label: String, vararg params: Pair<String, Any?>): List<GraphEdge> =
+        findEdgesByLabel(label, params.toMap())
+
     /**
      * label과 property filter로 간선을 API chunk 단위로 조회한다.
      *
@@ -107,6 +118,13 @@ interface GraphEdgeRepository {
         chunkSize: Int = DEFAULT_GRAPH_EXPORT_CHUNK_SIZE,
     ): Sequence<List<GraphEdge>> =
         findEdgesByLabel(label, filter).asGraphExportChunks(chunkSize)
+
+    fun findEdgesByLabelChunked(
+        label: String,
+        vararg params: Pair<String, Any?>,
+        chunkSize: Int = DEFAULT_GRAPH_EXPORT_CHUNK_SIZE,
+    ): Sequence<List<GraphEdge>> =
+        findEdgesByLabelChunked(label, params.toMap(), chunkSize)
 
     /**
      * Finds edges that start at a specific vertex.

@@ -6,7 +6,7 @@ import io.bluetape4k.graph.model.GraphPath
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.edgeOf
-import io.bluetape4k.graph.model.elementIdOf
+import io.bluetape4k.graph.model.toGraphElementId
 import io.bluetape4k.graph.model.vertexOf
 import io.bluetape4k.logging.KLogging
 import java.nio.file.Files
@@ -16,7 +16,7 @@ abstract class AbstractGraphTest {
 
     companion object: KLogging() {
         @JvmStatic
-        protected fun id(value: Any): GraphElementId = elementIdOf(value)
+        protected fun id(value: Any): GraphElementId = value.toGraphElementId()
 
         @JvmStatic
         protected fun vertex(

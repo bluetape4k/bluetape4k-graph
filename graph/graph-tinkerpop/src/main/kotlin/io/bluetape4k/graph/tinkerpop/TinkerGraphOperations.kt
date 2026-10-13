@@ -23,6 +23,8 @@ import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.model.TreeTraversalOptions
 import io.bluetape4k.graph.model.elementIdOf
+import io.bluetape4k.graph.model.toGraphElementId
+import io.bluetape4k.graph.model.vertexOf
 import io.bluetape4k.graph.repository.DEFAULT_GRAPH_EXPORT_CHUNK_SIZE
 import io.bluetape4k.graph.repository.GraphAlgorithmRepository
 import io.bluetape4k.graph.repository.GraphBatchValidation
@@ -39,6 +41,7 @@ import io.bluetape4k.graph.schema.GraphSchemaManagementOperations
 import io.bluetape4k.graph.schema.GraphSchemaManager
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
+import io.bluetape4k.support.EMPTY_STRING
 import io.bluetape4k.support.closeSafe
 import io.bluetape4k.support.requireNotBlank
 import io.bluetape4k.support.requirePositiveNumber
@@ -840,8 +843,8 @@ class TinkerGraphOperations:
         val collectedVertices = HashMap<GraphElementId, GraphVertex>()
         val edgesQuery = if (options.edgeLabel != null) g.E().hasLabel(options.edgeLabel) else g.E()
         edgesQuery.toList().forEach { e ->
-            val src = elementIdOf(e.outVertex().id().toString())
-            val dst = elementIdOf(e.inVertex().id().toString())
+            val src = e.outVertex().id().toGraphElementId()
+            val dst = e.inVertex().id().toGraphElementId()
             collectedVertices[src] = GremlinRecordMapper.vertexToGraphVertex(e.outVertex())
             collectedVertices[dst] = GremlinRecordMapper.vertexToGraphVertex(e.inVertex())
             when (options.direction) {
@@ -861,7 +864,7 @@ class TinkerGraphOperations:
             adjacency = adjacency,
             maxDepth = options.maxDepth,
             maxVertices = options.maxVertices,
-            vertexResolver = { collectedVertices[it] ?: GraphVertex(it, "", emptyMap()) },
+            vertexResolver = { collectedVertices[it] ?: vertexOf(it, EMPTY_STRING) },
         )
     }
 
@@ -873,8 +876,8 @@ class TinkerGraphOperations:
         val collectedVertices = HashMap<GraphElementId, GraphVertex>()
         val edgesQuery = if (options.edgeLabel != null) g.E().hasLabel(options.edgeLabel) else g.E()
         edgesQuery.toList().forEach { e ->
-            val src = elementIdOf(e.outVertex().id().toString())
-            val dst = elementIdOf(e.inVertex().id().toString())
+            val src = e.outVertex().id().toGraphElementId()
+            val dst = e.inVertex().id().toString().toGraphElementId()
             collectedVertices[src] = GremlinRecordMapper.vertexToGraphVertex(e.outVertex())
             collectedVertices[dst] = GremlinRecordMapper.vertexToGraphVertex(e.inVertex())
             when (options.direction) {
@@ -893,7 +896,7 @@ class TinkerGraphOperations:
             adjacency = adjacency,
             maxDepth = options.maxDepth,
             maxVertices = options.maxVertices,
-            vertexResolver = { collectedVertices[it] ?: GraphVertex(it, "", emptyMap()) },
+            vertexResolver = { collectedVertices[it] ?: vertexOf(it, EMPTY_STRING) },
         )
     }
 
@@ -926,7 +929,7 @@ class TinkerGraphOperations:
         return cycles.map { ids ->
             val steps = ArrayList<PathStep>(ids.size * 2)
             for (i in ids.indices) {
-                val v = verticesById[ids[i]] ?: GraphVertex(ids[i], "", emptyMap())
+                val v = verticesById[ids[i]] ?: vertexOf(ids[i], EMPTY_STRING)
                 steps.add(PathStep.VertexStep(v))
                 if (i < ids.size - 1) {
                     val edge = edgesById[ids[i] to ids[i + 1]]

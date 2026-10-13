@@ -4,7 +4,9 @@ import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphPath
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.PathStep
-import io.bluetape4k.graph.model.elementIdOf
+import io.bluetape4k.graph.model.edgeOf
+import io.bluetape4k.graph.model.toGraphElementId
+import io.bluetape4k.graph.model.vertexOf
 import io.bluetape4k.logging.KLogging
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Vertex
@@ -39,13 +41,13 @@ object GremlinRecordMapper: KLogging() {
      * @return 변환된 [GraphVertex].
      */
     fun vertexToGraphVertex(v: Vertex): GraphVertex {
-        val id = elementIdOf(v.id())
+        val id = v.id().toGraphElementId()
         val label = v.label()
         val properties = mutableMapOf<String, Any?>()
         v.properties<Any>().forEachRemaining { vp ->
             properties[vp.key()] = vp.value()
         }
-        return GraphVertex(id, label, properties)
+        return vertexOf(id, label, properties)
     }
 
     /**
@@ -63,16 +65,16 @@ object GremlinRecordMapper: KLogging() {
      * @return 변환된 [GraphEdge].
      */
     fun edgeToGraphEdge(e: Edge): GraphEdge {
-        val id = elementIdOf(e.id())
-        val startId = elementIdOf(e.outVertex().id())
-        val endId = elementIdOf(e.inVertex().id())
+        val id = e.id().toGraphElementId()
+        val startId = e.outVertex().id().toGraphElementId()
+        val endId = e.inVertex().id().toGraphElementId()
 
         val properties = mutableMapOf<String, Any?>()
         e.properties<Any>().forEachRemaining { ep ->
             properties[ep.key()] = ep.value()
         }
 
-        return GraphEdge(id, e.label(), startId, endId, properties)
+        return edgeOf(id, e.label(), startId, endId, properties)
     }
 
     /**

@@ -43,7 +43,7 @@ class VertexLabelTest: AbstractGraphTest() {
     fun `선언한 프로퍼티가 순서대로 수집된다`() {
         val props = PersonLabel.properties
         log.debug { "props=$props" }
-        
+
         props.map { it.name } shouldBeEqualTo listOf(
             "name", "age", "score", "active",
             "skills", "meta", "birthday", "lastLogin", "status",

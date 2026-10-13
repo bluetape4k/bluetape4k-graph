@@ -3,6 +3,7 @@ package io.bluetape4k.graph.algo.internal
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.TraversalVisit
+import io.bluetape4k.graph.model.vertexOf
 import java.util.*
 
 /**
@@ -33,7 +34,7 @@ object BfsDfsRunner {
         adjacency: Map<GraphElementId, List<GraphElementId>>,
         maxDepth: Int,
         maxVertices: Int,
-        vertexResolver: (GraphElementId) -> GraphVertex = { GraphVertex(it, "", emptyMap()) },
+        vertexResolver: (GraphElementId) -> GraphVertex = { vertexOf(it, "") },
     ): List<TraversalVisit> {
         val visited = HashSet<GraphElementId>()
         val result = ArrayList<TraversalVisit>()
@@ -64,7 +65,7 @@ object BfsDfsRunner {
         adjacency: Map<GraphElementId, List<GraphElementId>>,
         maxDepth: Int,
         maxVertices: Int,
-        vertexResolver: (GraphElementId) -> GraphVertex = { GraphVertex(it, "", emptyMap()) },
+        vertexResolver: (GraphElementId) -> GraphVertex = { vertexOf(it, "") },
     ): List<TraversalVisit> {
         val visited = HashSet<GraphElementId>()
         val result = ArrayList<TraversalVisit>()

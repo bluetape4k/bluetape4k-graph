@@ -4,9 +4,14 @@ import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphPath
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.PathStep
-import io.bluetape4k.graph.model.elementIdOf
+import io.bluetape4k.graph.model.edgeOf
+import io.bluetape4k.graph.model.graphPathOf
+import io.bluetape4k.graph.model.toGraphElementId
+import io.bluetape4k.graph.model.vertexOf
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.trace
+import io.bluetape4k.support.asLong
+import io.bluetape4k.support.asString
 
 /**
  * Apache AGE의 agtype 결과를 파싱하여 Graph 모델로 변환합니다.
@@ -37,11 +42,11 @@ object AgeTypeParser: KLogging() {
 
         val json = agtype.removeSuffix("::vertex").trim()
         val map = parseJsonObject(json)
-        val id = elementIdOf((map["id"] as Number).toLong())
-        val label = map["label"] as String
+        val id = map["id"].asLong().toGraphElementId()
+        val label = map["label"].asString()
         val properties = (map["properties"] as? Map<String, Any?>) ?: emptyMap()
 
-        return GraphVertex(id, label, properties)
+        return vertexOf(id, label, properties)
     }
 
     /**
@@ -61,13 +66,13 @@ object AgeTypeParser: KLogging() {
 
         val json = agtype.removeSuffix("::edge").trim()
         val map = parseJsonObject(json)
-        val id = elementIdOf((map["id"] as Number).toLong())
-        val label = map["label"] as String
-        val startId = elementIdOf((map["start_id"] as Number).toLong())
-        val endId = elementIdOf((map["end_id"] as Number).toLong())
+        val id = map["id"].asLong().toGraphElementId()
+        val label = map["label"].asString()
+        val startId = map["start_id"].asLong().toGraphElementId()
+        val endId = map["end_id"].asLong().toGraphElementId()
         val properties = (map["properties"] as? Map<String, Any?>) ?: emptyMap()
 
-        return GraphEdge(id, label, startId, endId, properties)
+        return edgeOf(id, label, startId, endId, properties)
     }
 
     /**
@@ -98,7 +103,7 @@ object AgeTypeParser: KLogging() {
                 else -> null.also { log.warn("Unknown agtype element: $element") }
             }
         }
-        return GraphPath(steps)
+        return graphPathOf(steps)
     }
 
     /**

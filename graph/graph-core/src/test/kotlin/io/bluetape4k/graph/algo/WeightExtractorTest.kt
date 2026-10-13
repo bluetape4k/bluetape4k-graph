@@ -6,9 +6,9 @@ import io.bluetape4k.assertions.shouldBeNear
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.graph.AbstractGraphTest
-import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.MissingWeightException
 import io.bluetape4k.graph.model.MissingWeightPolicy
+import io.bluetape4k.graph.model.edgeOf
 import io.bluetape4k.logging.KLogging
 import org.junit.jupiter.api.Test
 
@@ -17,7 +17,7 @@ class WeightExtractorTest: AbstractGraphTest() {
     companion object: KLogging() {
 
         private fun edge(vararg props: Pair<String, Any?>) =
-            GraphEdge(
+            edgeOf(
                 id("e1"),
                 "ROAD",
                 id("v1"),

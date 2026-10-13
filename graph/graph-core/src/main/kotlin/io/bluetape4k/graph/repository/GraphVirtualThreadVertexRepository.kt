@@ -17,6 +17,12 @@ interface GraphVirtualThreadVertexRepository {
         properties: Map<String, Any?> = emptyMap(),
     ): CompletableFuture<GraphVertex>
 
+    fun createVertexAsync(
+        label: String,
+        vararg params: Pair<String, Any?>,
+    ): CompletableFuture<GraphVertex> =
+        createVertexAsync(label, params.toMap())
+
     fun createVerticesAsync(
         label: String,
         propertiesList: List<Map<String, Any?>>,
@@ -34,11 +40,24 @@ interface GraphVirtualThreadVertexRepository {
         filter: Map<String, Any?> = emptyMap(),
     ): CompletableFuture<List<GraphVertex>>
 
+    fun findVerticesByLabelAsync(
+        label: String,
+        vararg params: Pair<String, Any?>,
+    ): CompletableFuture<List<GraphVertex>> =
+        findVerticesByLabelAsync(label, params.toMap())
+
     fun updateVertexAsync(
         label: String,
         id: GraphElementId,
         properties: Map<String, Any?>,
     ): CompletableFuture<GraphVertex?>
+
+    fun updateVertexAsync(
+        label: String,
+        id: GraphElementId,
+        vararg params: Pair<String, Any?>,
+    ): CompletableFuture<GraphVertex?> =
+        updateVertexAsync(label, id, params.toMap())
 
     fun deleteVertexAsync(
         label: String,

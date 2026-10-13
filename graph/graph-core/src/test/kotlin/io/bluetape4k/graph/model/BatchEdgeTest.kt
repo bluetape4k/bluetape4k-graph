@@ -12,8 +12,8 @@ class BatchEdgeTest: AbstractGraphTest() {
 
     @Test
     fun `BatchEdge stores endpoints and properties`() {
-        val from = id("v1")
-        val to = id("v2")
+        val from = "v1".toGraphElementId()
+        val to = "v2".toGraphElementId()
         val edge = BatchEdge(from, to, mapOf("since" to 2024))
 
         log.debug { "edge=$edge" }
@@ -24,7 +24,7 @@ class BatchEdgeTest: AbstractGraphTest() {
 
     @Test
     fun `BatchEdge defaults properties to empty map`() {
-        val edge = BatchEdge(elementIdOf("v1"), elementIdOf("v2"))
+        val edge = batchEdgeOf("v1", "v2")
 
         log.debug { "edge=$edge" }
         edge.properties shouldBeEqualTo emptyMap()
