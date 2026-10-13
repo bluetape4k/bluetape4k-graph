@@ -7,12 +7,12 @@ import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.GraphEdge
-import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphPath
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
+import io.bluetape4k.graph.model.elementIdOf
 import io.bluetape4k.logging.KLogging
 import io.mockk.clearMocks
 import io.mockk.every
@@ -50,9 +50,9 @@ class CachingAgeGraphOperationsTest: AbstractAgeTest() {
     private val delegate: AgeGraphOperations = mockk(relaxed = true)
     private lateinit var caching: CachingAgeGraphOperations
 
-    private val aliceId = GraphElementId.of("alice-1")
-    private val bobId = GraphElementId.of("bob-1")
-    private val edgeId = GraphElementId.of("edge-1")
+    private val aliceId = elementIdOf("alice-1")
+    private val bobId = elementIdOf("bob-1")
+    private val edgeId = elementIdOf("edge-1")
 
     private val alice = GraphVertex(aliceId, "Person", mapOf("name" to "Alice"))
     private val bob = GraphVertex(bobId, "Person", mapOf("name" to "Bob"))
@@ -359,7 +359,7 @@ class CachingAgeGraphOperationsTest: AbstractAgeTest() {
     @Test
     fun `createVertex는 동일 인자 반복 호출마다 delegate를 호출한다`() {
         val props = mapOf("name" to "Alice")
-        val secondVertex = alice.copy(id = GraphElementId.of("alice-2"))
+        val secondVertex = alice.copy(id = elementIdOf("alice-2"))
         every { delegate.createVertex("Person", props) } returns alice andThen secondVertex
 
         val first = caching.createVertex("Person", props)
@@ -372,7 +372,7 @@ class CachingAgeGraphOperationsTest: AbstractAgeTest() {
 
     @Test
     fun `createEdge는 동일 인자 반복 호출마다 delegate를 호출한다`() {
-        val secondEdge = edge.copy(id = GraphElementId.of("edge-2"))
+        val secondEdge = edge.copy(id = elementIdOf("edge-2"))
         every { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) } returns edge andThen secondEdge
 
         val first = caching.createEdge(aliceId, bobId, "KNOWS", emptyMap())
@@ -386,7 +386,7 @@ class CachingAgeGraphOperationsTest: AbstractAgeTest() {
     @Test
     fun `createEdge는 생성마다 위임하고 읽기 캐시를 무효화한다`() {
         every { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) } returns edge andThen
-                edge.copy(id = GraphElementId.of("edge-2"))
+                edge.copy(id = elementIdOf("edge-2"))
         every { delegate.findEdgesByLabel("KNOWS", emptyMap()) } returns listOf(edge)
 
         caching.findEdgesByLabel("KNOWS")              // 읽기 캐시 적재
@@ -409,7 +409,7 @@ class CachingAgeGraphOperationsTest: AbstractAgeTest() {
                 "Person",
                 props
             )
-        } returns alice andThen alice.copy(id = GraphElementId.of("alice-2"))
+        } returns alice andThen alice.copy(id = elementIdOf("alice-2"))
         every { delegate.findVertexById("Person", aliceId) } returns alice
 
         caching.findVertexById("Person", aliceId)   // 읽기 캐시 적재
@@ -434,7 +434,7 @@ class CachingAgeGraphOperationsTest: AbstractAgeTest() {
                 "Person",
                 props
             )
-        } returns alice andThen alice.copy(id = GraphElementId.of("alice-2"))
+        } returns alice andThen alice.copy(id = elementIdOf("alice-2"))
         every { delegate.createVertices("Person", batch) } returns listOf(alice, bob)
 
         caching.findVertexById("Person", aliceId)
@@ -456,8 +456,8 @@ class CachingAgeGraphOperationsTest: AbstractAgeTest() {
         )
         every { delegate.findEdgesByLabel("KNOWS", emptyMap()) } returns listOf(edge)
         every { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) } returns edge andThen
-                edge.copy(id = GraphElementId.of("edge-2"))
-        every { delegate.createEdges("KNOWS", batch) } returns listOf(edge, edge.copy(id = GraphElementId.of("edge-3")))
+                edge.copy(id = elementIdOf("edge-2"))
+        every { delegate.createEdges("KNOWS", batch) } returns listOf(edge, edge.copy(id = elementIdOf("edge-3")))
 
         caching.findEdgesByLabel("KNOWS")
         caching.createEdge(aliceId, bobId, "KNOWS")
@@ -488,7 +488,7 @@ class CachingAgeGraphOperationsTest: AbstractAgeTest() {
 
     @Test
     fun `createEdge는 다른 속성 맵으로 호출 시 delegate를 각각 호출한다`() {
-        val edge2 = GraphEdge(GraphElementId.of("edge-2"), "KNOWS", aliceId, bobId, mapOf("since" to 2025))
+        val edge2 = GraphEdge(elementIdOf("edge-2"), "KNOWS", aliceId, bobId, mapOf("since" to 2025))
         every { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) } returns edge
         every { delegate.createEdge(aliceId, bobId, "KNOWS", mapOf("since" to 2025)) } returns edge2
 

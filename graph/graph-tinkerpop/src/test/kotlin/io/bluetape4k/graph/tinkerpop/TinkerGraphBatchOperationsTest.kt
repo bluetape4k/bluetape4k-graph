@@ -7,7 +7,7 @@ import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.coroutines.flow.extensions.log
 import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.model.BatchEdge
-import io.bluetape4k.graph.model.GraphElementId
+import io.bluetape4k.graph.model.elementIdOf
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import kotlinx.coroutines.flow.toList
@@ -114,7 +114,7 @@ class TinkerGraphBatchOperationsTest: AbstractTinkerGraphTest() {
                 "KNOWS",
                 listOf(
                     BatchEdge(alice.id, bob.id),
-                    BatchEdge(alice.id, GraphElementId.of("999999999")),
+                    BatchEdge(alice.id, elementIdOf("999999999")),
                 ),
             )
         }

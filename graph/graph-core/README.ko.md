@@ -981,8 +981,8 @@ value class GraphElementId(val value: String) {
 }
 
 // 사용
-val id1 = GraphElementId.of("some-uuid")
-val id2 = GraphElementId.of(12345L)
+val id1 = elementIdOf("some-uuid")
+val id2 = elementIdOf(12345L)
 ```
 
 **변환**:
@@ -1026,7 +1026,7 @@ val id2 = graphElementIdOf(42L)                  // Long → GraphElementId("42"
 val id3 = graphElementIdOf(existingId)           // GraphElementId 그대로 반환 (이중 변환 없음)
 
 // GraphVertex
-val v1 = graphVertexOf(GraphElementId.of("v1"), "Person", mapOf("name" to "Alice"))
+val v1 = graphVertexOf(elementIdOf("v1"), "Person", mapOf("name" to "Alice"))
 val v2 = graphVertexOf("v2", "Person")           // Any 타입 id 오버로드
 val v3 = graphVertexOf(42L, "Item", mapOf("weight" to 10.0))
 

@@ -5,7 +5,7 @@ import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.conformance.AbstractGraphCapabilityConformanceTest
-import io.bluetape4k.graph.model.elementIdOf
+import io.bluetape4k.graph.model.toGraphElementId
 import io.bluetape4k.graph.repository.GraphCapability
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.debug
@@ -25,8 +25,8 @@ class TinkerGraphCapabilityConformanceTest: AbstractGraphCapabilityConformanceTe
 
     @Test
     fun `malformed and valid-missing IDs remain distinct in the conformance lane`() {
-        val malformedId = elementIdOf("not-a-number")
-        val missingId = elementIdOf("99999999")
+        val malformedId = "not-a-number".toGraphElementId()
+        val missingId = "99999999".toGraphElementId()
 
         val failure = assertFailsWith<GraphQueryException> {
             operations.findVertexById(malformedId)

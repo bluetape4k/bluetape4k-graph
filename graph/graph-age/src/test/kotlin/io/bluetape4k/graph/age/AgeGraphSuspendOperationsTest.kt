@@ -16,11 +16,11 @@ import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
 import io.bluetape4k.graph.model.DegreeOptions
 import io.bluetape4k.graph.model.Direction
-import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PageRankOptions
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.TreeTraversalOptions
+import io.bluetape4k.graph.model.elementIdOf
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import kotlinx.coroutines.CancellationException
@@ -141,7 +141,7 @@ class AgeGraphSuspendOperationsTest: AbstractAgeTest() {
     @Test
     @Order(23)
     fun `존재하지 않는 id로 조회하면 null 반환`() = runSuspendIO {
-        val fakeId = GraphElementId.of(999999999L)
+        val fakeId = elementIdOf(999999999L)
         val found = ops.findVertexById("Person", fakeId)
         found.shouldBeNull()
     }

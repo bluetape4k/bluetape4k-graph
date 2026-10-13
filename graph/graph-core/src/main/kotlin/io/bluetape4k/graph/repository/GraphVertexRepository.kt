@@ -69,7 +69,7 @@ interface GraphVertexRepository {
      *
      * ```kotlin
      * val found = ops.findVertexById("Person", vertex.id)  // non-null
-     * val none  = ops.findVertexById("Person", GraphElementId.of("unknown"))  // null
+     * val none  = ops.findVertexById("Person", elementIdOf("unknown"))  // null
      * ```
      *
      * @param label vertex label.

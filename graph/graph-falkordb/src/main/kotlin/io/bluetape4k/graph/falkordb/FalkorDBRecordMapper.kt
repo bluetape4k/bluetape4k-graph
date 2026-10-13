@@ -5,10 +5,10 @@ import com.falkordb.graph_entities.Edge
 import com.falkordb.graph_entities.Node
 import com.falkordb.graph_entities.Path
 import io.bluetape4k.graph.model.GraphEdge
-import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphPath
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.PathStep
+import io.bluetape4k.graph.model.toGraphElementId
 
 /**
  * FalkorDB [Node]를 [GraphVertex]로 변환합니다.
@@ -22,9 +22,10 @@ import io.bluetape4k.graph.model.PathStep
  * ```
  */
 internal fun Node.toGraphVertex(): GraphVertex {
-    val graphId = GraphElementId(this.id.toString())
+    val graphId = id.toGraphElementId()
     val label = if (numberOfLabels > 0) getLabel(0) else "Unknown"
     val properties = entityPropertyNames.associateWith { name -> getProperty(name)?.value }
+
     return GraphVertex(graphId, label, properties)
 }
 
@@ -36,10 +37,11 @@ internal fun Node.toGraphVertex(): GraphVertex {
  * ```
  */
 internal fun Edge.toGraphEdge(): GraphEdge {
-    val graphId = GraphElementId(this.id.toString())
-    val startId = GraphElementId(source.toString())
-    val endId = GraphElementId(destination.toString())
+    val graphId = this.id.toGraphElementId()
+    val startId = source.toGraphElementId()
+    val endId = destination.toGraphElementId()
     val properties = entityPropertyNames.associateWith { name -> getProperty(name)?.value }
+
     return GraphEdge(graphId, relationshipType, startId, endId, properties)
 }
 
@@ -56,6 +58,7 @@ internal fun Path.toGraphPath(): GraphPath {
     val steps = mutableListOf<PathStep>()
     val nodeList = nodes
     val edgeList = edges
+
     nodeList.forEachIndexed { index, node ->
         steps.add(PathStep.VertexStep(node.toGraphVertex()))
         if (index < edgeList.size) {

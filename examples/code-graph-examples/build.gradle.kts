@@ -19,5 +19,4 @@ dependencies {
     testImplementation(bt4k.hikaricp)
     testImplementation(libs.kotlinx.coroutines.test.lib)
     testImplementation(project(":bluetape4k-graph-falkordb"))
-    testImplementation(testFixtures(project(":bluetape4k-graph-falkordb")))
 }

@@ -27,6 +27,7 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.model.TreeTraversalOptions
+import io.bluetape4k.graph.model.elementIdOf
 import io.bluetape4k.graph.repository.GraphBatchValidation
 import io.bluetape4k.graph.repository.GraphEdgeRepository
 import io.bluetape4k.graph.repository.GraphMergeOperations
@@ -665,7 +666,7 @@ class AgeGraphOperations(
                     steps.add(
                         PathStep.EdgeStep(
                             GraphEdge(
-                                id = GraphElementId.of("${vid.value}->${ids[i + 1].value}"),
+                                id = elementIdOf("${vid.value}->${ids[i + 1].value}"),
                                 label = options.edgeLabel ?: "",
                                 startId = vid,
                                 endId = ids[i + 1],

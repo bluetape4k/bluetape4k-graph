@@ -23,7 +23,7 @@ class GraphElementIdTest: AbstractGraphTest() {
 
     @Test
     fun `of(String) 팩토리는 동일한 값을 생성한다`() {
-        val id = GraphElementId.of("node-1")
+        val id = elementIdOf("node-1")
 
         log.debug { "id=$id" }
         id shouldBeEqualTo id("node-1")
@@ -31,7 +31,7 @@ class GraphElementIdTest: AbstractGraphTest() {
 
     @Test
     fun `of(Long) 팩토리는 숫자 ID를 문자열로 변환한다`() {
-        val id = GraphElementId.of(42L)
+        val id = elementIdOf(42L)
 
         log.debug { "id=$id" }
         id.value shouldBeEqualTo "42"
@@ -74,7 +74,7 @@ class GraphElementIdTest: AbstractGraphTest() {
 
     @Test
     fun `of(Long) - Long MAX_VALUE도 문자열로 변환된다`() {
-        val id = GraphElementId.of(Long.MAX_VALUE)
+        val id = elementIdOf(Long.MAX_VALUE)
         id.value shouldBeEqualTo Long.MAX_VALUE.toString()
     }
 

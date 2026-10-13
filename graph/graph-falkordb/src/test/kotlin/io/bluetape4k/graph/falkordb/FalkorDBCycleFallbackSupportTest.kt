@@ -5,9 +5,12 @@ import io.bluetape4k.assertions.shouldBeInstanceOf
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.graph.model.CycleOptions
+import io.bluetape4k.logging.KLogging
 import org.junit.jupiter.api.Test
 
 class FalkorDBCycleFallbackSupportTest {
+
+    companion object: KLogging()
 
     @Test
     fun `known unsupported cycle query can use JVM fallback`() {

@@ -9,7 +9,7 @@ internal fun Throwable.isMissingFalkorGraph(): Boolean =
     generateSequence(this) { it.cause }.any { cause ->
         cause.message.orEmpty().let { message ->
             message.contains("Invalid graph operation on empty key", ignoreCase = true) ||
-                message.contains("graph does not exist", ignoreCase = true) ||
-                message.contains("graph not found", ignoreCase = true)
+                    message.contains("graph does not exist", ignoreCase = true) ||
+                    message.contains("graph not found", ignoreCase = true)
         }
     }

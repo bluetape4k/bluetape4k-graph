@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.schema
 
+import io.bluetape4k.graph.GraphUnsupportedOperationException
 import io.bluetape4k.graph.model.GraphConstraint
 import io.bluetape4k.graph.model.GraphIndex
 import io.bluetape4k.support.requireNotNull
@@ -135,6 +136,8 @@ data class GraphSchemaPlan(
         try {
             action()
             ApplyOutcome.APPLIED
+        } catch (error: GraphUnsupportedOperationException) {
+            ApplyOutcome.Unsupported(error.message ?: "GraphSchemaManager does not support this operation.")
         } catch (error: UnsupportedOperationException) {
             ApplyOutcome.Unsupported(error.message ?: "GraphSchemaManager does not support this operation.")
         }

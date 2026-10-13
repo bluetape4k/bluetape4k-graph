@@ -17,10 +17,10 @@ import io.bluetape4k.concurrent.get
 import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.model.DegreeOptions
 import io.bluetape4k.graph.model.Direction
-import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.TreeTraversalOptions
+import io.bluetape4k.graph.model.elementIdOf
 import io.bluetape4k.logging.KLogging
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.junit.jupiter.api.BeforeEach
@@ -149,7 +149,7 @@ class TinkerGraphOperationsTest: AbstractTinkerGraphTest() {
     @Test
     @Order(23)
     fun `존재하지 않는 id로 조회하면 null 반환`() {
-        val fakeId = GraphElementId.of("99999999")
+        val fakeId = elementIdOf("99999999")
         val result = ops.findVertexById("Person", fakeId)
         result.shouldBeNull()
     }
@@ -157,8 +157,8 @@ class TinkerGraphOperationsTest: AbstractTinkerGraphTest() {
     @Test
     @Order(231)
     fun `malformed id는 sync repository와 traversal에서 GraphQueryException으로 거부한다`() {
-        val malformedId = GraphElementId.of("not-a-number")
-        val missingId = GraphElementId.of("99999999")
+        val malformedId = elementIdOf("not-a-number")
+        val missingId = elementIdOf("99999999")
         val operations = listOf<() -> Any?>(
             { ops.findVertexById("Person", malformedId) },
             { ops.findVertexById(malformedId) },
@@ -186,7 +186,7 @@ class TinkerGraphOperationsTest: AbstractTinkerGraphTest() {
     @Test
     @Order(232)
     fun `valid but missing numeric id는 absence semantics를 유지한다`() {
-        val missingId = GraphElementId.of("99999999")
+        val missingId = elementIdOf("99999999")
 
         ops.findVertexById("Person", missingId).shouldBeNull()
         ops.updateVertex("Person", missingId, emptyMap()).shouldBeNull()

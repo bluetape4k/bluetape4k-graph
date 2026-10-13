@@ -6,8 +6,7 @@ FalkorDB graph database backend for bluetape4k-graph.
 
 ## Overview
 
-[FalkorDB](https://falkordb.com/) is a Redis-module based graph database supporting openCypher queries.
-This module provides sync and coroutine implementations of `GraphOperations` / `GraphSuspendOperations`
+[FalkorDB](https://falkordb.com/) is a Redis-module based graph database supporting openCypher queries. This module provides sync and coroutine implementations of `GraphOperations` / `GraphSuspendOperations`
 using the [jfalkordb](https://github.com/FalkorDB/jfalkordb) 0.8.0 Java driver.
 
 ## Architecture Diagram
@@ -43,8 +42,7 @@ driver.close()
 ## Schema / Index Management
 
 FalkorDB supports range indexes through Cypher. Unique constraints require the raw Redis
-`GRAPH.CONSTRAINT CREATE` command, so this manager fails explicitly for unique constraints until that command path is
-added.
+`GRAPH.CONSTRAINT CREATE` command, so this manager fails explicitly for unique constraints until that command path is added.
 
 ```kotlin
 import io.bluetape4k.graph.schema.schemaManager
@@ -57,8 +55,7 @@ schema.dropIndex("Person", "email")
 
 ## Merge / Upsert and Transaction DSL
 
-FalkorDB supports `GraphMergeOperations` with native Cypher `MERGE` for vertices and relationships.
-It does not expose the repository-style `Transaction DSL` because Redis `MULTI` defers graph query results until
+FalkorDB supports `GraphMergeOperations` with native Cypher `MERGE` for vertices and relationships. It does not expose the repository-style `Transaction DSL` because Redis `MULTI` defers graph query results until
 `EXEC`, while the DSL needs created vertex IDs immediately inside the same block.
 
 ```kotlin
@@ -100,12 +97,8 @@ driver.close()
 
 ### Traversal `edgeLabel` validation
 
-`edgeLabel` values in `neighbors`, `shortestPath`, and `allPaths` are inserted
-into Cypher relationship patterns, so these methods accept only safe
-identifiers matching `^[A-Za-z_][A-Za-z0-9_]*$`. A `null` label keeps the
-existing all-label traversal behavior. Blank or unsafe labels are rejected with
-`IllegalArgumentException` before the FalkorDB driver is called. The
-synchronous and coroutine APIs share this validation contract.
+`edgeLabel` values in `neighbors`, `shortestPath`, and `allPaths` are inserted into Cypher relationship patterns, so these methods accept only safe identifiers matching `^[A-Za-z_][A-Za-z0-9_]*$`. A `null` label keeps the existing all-label traversal behavior. Blank or unsafe labels are rejected with
+`IllegalArgumentException` before the FalkorDB driver is called. The synchronous and coroutine APIs share this validation contract.
 
 ## Testing
 
@@ -122,6 +115,7 @@ val driver = FalkorDB.driver(server.host, server.port)
 
 ## Notes
 
-- FalkorDB Cypher subset does **not** support `$props` map-expansion in `CREATE` — properties are passed as individual named parameters.
+- FalkorDB Cypher subset does
+  **not** support `$props` map-expansion in `CREATE` — properties are passed as individual named parameters.
 - Node IDs are integers; `GraphElementId.value` must be numeric for ID-based lookups.
 - `FalkorDB.driver()` is the entry point (not Neo4j Driver).

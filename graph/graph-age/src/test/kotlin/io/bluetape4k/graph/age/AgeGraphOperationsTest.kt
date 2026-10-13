@@ -11,9 +11,9 @@ import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.model.Direction
-import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
+import io.bluetape4k.graph.model.elementIdOf
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.KLogging
 import org.jetbrains.exposed.v1.jdbc.Database
@@ -130,7 +130,7 @@ class AgeGraphOperationsTest: AbstractAgeTest() {
     @Test
     @Order(23)
     fun `존재하지 않는 id로 조회하면 null 반환`() = runSuspendIO {
-        val fakeId = GraphElementId.of(999999999L)
+        val fakeId = elementIdOf(999999999L)
         val found = ops.findVertexById("Person", fakeId)
         found.shouldBeNull()
     }

@@ -16,7 +16,7 @@ import java.io.Serializable
  * ### Usage
  * ```kotlin
  * val person = GraphVertex(
- *     id = GraphElementId.of("v-1"),
+ *     id = elementIdOf("v-1"),
  *     label = "Person",
  *     properties = mapOf("name" to "Alice", "age" to 30)
  * )
@@ -37,7 +37,7 @@ data class GraphVertex(
  * Creates a vertex from a [GraphElementId] and label.
  *
  * ```kotlin
- * val v = graphVertexOf(GraphElementId.of("v-1"), "Person", mapOf("name" to "Alice"))
+ * val v = graphVertexOf(elementIdOf("v-1"), "Person", mapOf("name" to "Alice"))
  * ```
  *
  * @param id Vertex ID.
@@ -68,7 +68,7 @@ fun graphVertexOf(id: Any, label: String, properties: Map<String, Any?> = emptyM
  * Creates a vertex from a [GraphElementId] and label.
  *
  * ```kotlin
- * val v = graphVertexOf(GraphElementId.of("v-1"), "Person", mapOf("name" to "Alice"))
+ * val v = graphVertexOf(elementIdOf("v-1"), "Person", mapOf("name" to "Alice"))
  * ```
  *
  * @param id Vertex ID.

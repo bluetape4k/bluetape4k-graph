@@ -297,7 +297,7 @@ val id2 = graphElementIdOf(42L)                  // from Long → "42"
 val id3 = graphElementIdOf(existingId)           // GraphElementId pass-through (no double-wrap)
 
 // GraphVertex
-val v1 = graphVertexOf(GraphElementId.of("v1"), "Person", mapOf("name" to "Alice"))
+val v1 = graphVertexOf(elementIdOf("v1"), "Person", mapOf("name" to "Alice"))
 val v2 = graphVertexOf("v2", "Person")           // Any id overload
 val v3 = graphVertexOf(42L, "Item", mapOf("weight" to 10.0))
 
