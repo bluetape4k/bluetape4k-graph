@@ -20,10 +20,10 @@ import java.io.Serializable
  * ### Usage
  * ```kotlin
  * val edge = GraphEdge(
- *     id = elementIdOf("e-1"),
+ *     id = "e-1".toGraphElementId(),
  *     label = "KNOWS",
- *     startId = elementIdOf("v-1"),
- *     endId = elementIdOf("v-2"),
+ *     startId = "v-1".toGraphElementId(),
+ *     endId = "v-2".toGraphElementId(),
  *     properties = mapOf("since" to 2023)
  * )
  * ```
@@ -57,10 +57,10 @@ fun graphEdgeOf(
     properties: Map<String, Any?> = emptyMap(),
 ): GraphEdge =
     GraphEdge(
-        graphElementIdOf(id),
+        id.toGraphElementId(),
         label,
-        graphElementIdOf(startId),
-        graphElementIdOf(endId),
+        startId.toGraphElementId(),
+        endId.toGraphElementId(),
         properties
     )
 
@@ -74,6 +74,16 @@ fun edgeOf(
     GraphEdge(id, label, startId, endId, properties)
 
 fun edgeOf(
+    id: GraphElementId,
+    label: String,
+    startId: GraphElementId,
+    endId: GraphElementId,
+    vararg params: Pair<String, Any?>,
+): GraphEdge =
+    GraphEdge(id, label, startId, endId, params.toMap())
+
+
+fun edgeOf(
     id: Any,
     label: String,
     startId: Any,
@@ -81,9 +91,24 @@ fun edgeOf(
     properties: Map<String, Any?> = emptyMap(),
 ): GraphEdge =
     GraphEdge(
-        elementIdOf(id),
+        id.toGraphElementId(),
         label,
-        elementIdOf(startId),
-        elementIdOf(endId),
+        startId.toGraphElementId(),
+        endId.toGraphElementId(),
         properties
+    )
+
+fun edgeOf(
+    id: Any,
+    label: String,
+    startId: Any,
+    endId: Any,
+    vararg params: Pair<String, Any?>,
+): GraphEdge =
+    GraphEdge(
+        id.toGraphElementId(),
+        label,
+        startId.toGraphElementId(),
+        endId.toGraphElementId(),
+        params.toMap()
     )

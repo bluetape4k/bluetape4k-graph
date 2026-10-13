@@ -27,7 +27,9 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.model.TreeTraversalOptions
-import io.bluetape4k.graph.model.elementIdOf
+import io.bluetape4k.graph.model.edgeOf
+import io.bluetape4k.graph.model.toGraphElementId
+import io.bluetape4k.graph.model.vertexOf
 import io.bluetape4k.graph.repository.GraphBatchValidation
 import io.bluetape4k.graph.repository.GraphEdgeRepository
 import io.bluetape4k.graph.repository.GraphMergeOperations
@@ -628,7 +630,7 @@ class AgeGraphOperations(
             adjacency = adjacency,
             maxDepth = options.maxDepth,
             maxVertices = options.maxVertices,
-            vertexResolver = { vertexById[it] ?: GraphVertex(it, "", emptyMap()) },
+            vertexResolver = { vertexById[it] ?: vertexOf(it, "") },
         )
     }
 
@@ -640,7 +642,7 @@ class AgeGraphOperations(
             adjacency = adjacency,
             maxDepth = options.maxDepth,
             maxVertices = options.maxVertices,
-            vertexResolver = { vertexById[it] ?: GraphVertex(it, "", emptyMap()) },
+            vertexResolver = { vertexById[it] ?: vertexOf(it, "") },
         )
     }
 
@@ -660,13 +662,13 @@ class AgeGraphOperations(
         return cycles.map { ids ->
             val steps = ArrayList<PathStep>(ids.size * 2)
             ids.forEachIndexed { i, vid ->
-                val gv = vertexById[vid] ?: GraphVertex(vid, options.vertexLabel ?: "", emptyMap())
+                val gv = vertexById[vid] ?: vertexOf(vid, options.vertexLabel ?: "")
                 steps.add(PathStep.VertexStep(gv))
                 if (i < ids.size - 1) {
                     steps.add(
                         PathStep.EdgeStep(
-                            GraphEdge(
-                                id = elementIdOf("${vid.value}->${ids[i + 1].value}"),
+                            edgeOf(
+                                id = "${vid.value}->${ids[i + 1].value}".toGraphElementId(),
                                 label = options.edgeLabel ?: "",
                                 startId = vid,
                                 endId = ids[i + 1],
@@ -760,8 +762,8 @@ class AgeGraphOperations(
             exec(edgeSql) { rs ->
                 while (rs.next()) {
                     val ed = AgeTypeParser.parseEdge(rs.getString("e"))
-                    if (ed.startId !in vertexById) vertexById[ed.startId] = GraphVertex(ed.startId, "", emptyMap())
-                    if (ed.endId !in vertexById) vertexById[ed.endId] = GraphVertex(ed.endId, "", emptyMap())
+                    if (ed.startId !in vertexById) vertexById[ed.startId] = vertexOf(ed.startId, "")
+                    if (ed.endId !in vertexById) vertexById[ed.endId] = vertexOf(ed.endId, "")
                     when (direction) {
                         Direction.OUTGOING -> adjacency.getOrPut(ed.startId) { ArrayList() }.add(ed.endId)
                         Direction.INCOMING -> adjacency.getOrPut(ed.endId) { ArrayList() }.add(ed.startId)

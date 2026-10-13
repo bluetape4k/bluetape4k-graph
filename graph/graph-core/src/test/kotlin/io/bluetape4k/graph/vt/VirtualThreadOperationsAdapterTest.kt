@@ -72,7 +72,7 @@ class VirtualThreadOperationsAdapterTest: AbstractGraphTest() {
             .get()
             .single()
         log.debug { "edge=$edge" }
-        
+
         vertices.map { it.properties["name"] } shouldBeEqualTo listOf("Alice", "Bob")
         edge.label shouldBeEqualTo "KNOWS"
     }

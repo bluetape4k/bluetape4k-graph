@@ -19,7 +19,7 @@ import io.bluetape4k.graph.model.Direction
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
-import io.bluetape4k.graph.model.elementIdOf
+import io.bluetape4k.graph.model.toGraphElementId
 import io.bluetape4k.logging.debug
 import io.bluetape4k.support.asString
 import io.mockk.every
@@ -81,7 +81,7 @@ class MemgraphGraphOperationsTest: AbstractMemgraphTest() {
     @Test
     @Order(12)
     fun `dropGraph로 전체 데이터를 삭제한다`() {
-        ops.createVertex("Person", mapOf("name" to "Alice"))
+        ops.createVertex("Person", "name" to "Alice")
         ops.countVertices("Person") shouldBeGreaterOrEqualTo 1L
 
         ops.dropGraph("default")
@@ -93,7 +93,7 @@ class MemgraphGraphOperationsTest: AbstractMemgraphTest() {
     @Order(13)
     fun `다른 graph name으로 dropGraph하면 현재 graph를 삭제하지 않는다`() {
         ops.createGraph("current")
-        ops.createVertex("Person", mapOf("name" to "Alice"))
+        ops.createVertex("Person", "name" to "Alice")
         ops.graphExists("current").shouldBeTrue()
         ops.graphExists("other").shouldBeFalse()
 
@@ -133,7 +133,7 @@ class MemgraphGraphOperationsTest: AbstractMemgraphTest() {
     @Test
     @Order(22)
     fun `id로 정점을 조회한다`() {
-        val created = ops.createVertex("Person", mapOf("name" to "Bob"))
+        val created = ops.createVertex("Person", "name" to "Bob")
         val found = ops.findVertexById("Person", created.id)
 
         found.shouldNotBeNull()
@@ -144,7 +144,7 @@ class MemgraphGraphOperationsTest: AbstractMemgraphTest() {
     @Test
     @Order(23)
     fun `존재하지 않는 id로 조회하면 null 반환`() {
-        val fakeId = elementIdOf("999999999")
+        val fakeId = 999_999_999L.toGraphElementId()
         val result = ops.findVertexById("Person", fakeId)
         result.shouldBeNull()
     }
@@ -152,9 +152,9 @@ class MemgraphGraphOperationsTest: AbstractMemgraphTest() {
     @Test
     @Order(24)
     fun `label로 정점 목록을 조회한다`() {
-        ops.createVertex("Person", mapOf("name" to "Alice"))
-        ops.createVertex("Person", mapOf("name" to "Bob"))
-        ops.createVertex("Car", mapOf("model" to "Tesla"))
+        ops.createVertex("Person", "name" to "Alice")
+        ops.createVertex("Person", "name" to "Bob")
+        ops.createVertex("Car", "model" to "Tesla")
 
         val persons = ops.findVerticesByLabel("Person")
 
@@ -166,8 +166,8 @@ class MemgraphGraphOperationsTest: AbstractMemgraphTest() {
     @Test
     @Order(25)
     fun `filter 조건으로 정점을 조회한다`() {
-        ops.createVertex("Person", mapOf("name" to "Alice", "city" to "Seoul"))
-        ops.createVertex("Person", mapOf("name" to "Bob", "city" to "Busan"))
+        ops.createVertex("Person", "name" to "Alice", "city" to "Seoul")
+        ops.createVertex("Person", "name" to "Bob", "city" to "Busan")
 
         val result = ops.findVerticesByLabel("Person", mapOf("city" to "Seoul"))
 
@@ -179,7 +179,7 @@ class MemgraphGraphOperationsTest: AbstractMemgraphTest() {
     @Test
     @Order(26)
     fun `정점의 properties를 업데이트한다`() {
-        val vertex = ops.createVertex("Person", mapOf("name" to "Charlie", "age" to 25L))
+        val vertex = ops.createVertex("Person", "name" to "Charlie", "age" to 25L)
         val updated = ops.updateVertex("Person", vertex.id, mapOf("age" to 26L))
 
         log.debug { "updated=$updated" }

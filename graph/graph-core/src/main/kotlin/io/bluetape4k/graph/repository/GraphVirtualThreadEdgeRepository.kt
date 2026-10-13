@@ -20,6 +20,14 @@ interface GraphVirtualThreadEdgeRepository {
         properties: Map<String, Any?> = emptyMap(),
     ): CompletableFuture<GraphEdge>
 
+    fun createEdgeAsync(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        label: String,
+        vararg params: Pair<String, Any?>,
+    ): CompletableFuture<GraphEdge> =
+        createEdgeAsync(fromId, toId, label, params.toMap())
+
     fun createEdgesAsync(
         label: String,
         edges: List<BatchEdge>,
@@ -29,6 +37,12 @@ interface GraphVirtualThreadEdgeRepository {
         label: String,
         filter: Map<String, Any?> = emptyMap(),
     ): CompletableFuture<List<GraphEdge>>
+
+    fun findEdgesByLabelAsync(
+        label: String,
+        vararg params: Pair<String, Any?>,
+    ): CompletableFuture<List<GraphEdge>> =
+        findEdgesByLabelAsync(label, params.toMap())
 
     fun findEdgesByStartIdAsync(
         startId: GraphElementId,

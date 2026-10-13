@@ -1,10 +1,12 @@
 package io.bluetape4k.graph.neo4j
 
 import io.bluetape4k.graph.model.GraphEdge
-import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphPath
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.PathStep
+import io.bluetape4k.graph.model.edgeOf
+import io.bluetape4k.graph.model.toGraphElementId
+import io.bluetape4k.graph.model.vertexOf
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.support.requireNotBlank
 import org.neo4j.driver.Record
@@ -30,7 +32,7 @@ object Neo4jRecordMapper: KLogging() {
 
     /**
      * Neo4j [Node]를 [GraphVertex]로 변환한다.
-	*
+     *
      * 첫 번째 node label을 [GraphVertex.label]로 사용한다. label이 없는 node는 `"Unknown"`을 사용한다.
      *
      * ```kotlin
@@ -43,10 +45,8 @@ object Neo4jRecordMapper: KLogging() {
      * @return 변환된 [GraphVertex].
      */
     fun nodeToVertex(node: Node): GraphVertex {
-        val id = GraphElementId(node.elementId())
         val label = node.labels().firstOrNull() ?: "Unknown"
-        val properties = node.asMap()
-        return GraphVertex(id, label, properties)
+        return vertexOf(node.elementId().toGraphElementId(), label, node.asMap())
     }
 
     /**
@@ -62,15 +62,12 @@ object Neo4jRecordMapper: KLogging() {
      * @return 변환된 [GraphEdge].
      */
     fun relationshipToEdge(rel: Relationship): GraphEdge {
-        val id = GraphElementId(rel.elementId())
-        val startId = GraphElementId(rel.startNodeElementId())
-        val endId = GraphElementId(rel.endNodeElementId())
-        return GraphEdge(id, rel.type(), startId, endId, rel.asMap())
+        return edgeOf(rel.elementId(), rel.type(), rel.startNodeElementId(), rel.endNodeElementId(), rel.asMap())
     }
 
     /**
      * Neo4j [Path]를 [GraphPath]로 변환한다.
-	*
+     *
      * Node와 relationship을 [PathStep.VertexStep]과 [PathStep.EdgeStep]이 교차하는 값으로 변환한다.
      *
      * ```kotlin

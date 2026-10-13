@@ -35,7 +35,7 @@ class GraphCapabilitiesTest: AbstractGraphTest() {
 
         GraphCapability
             .fromSerializedNameOrNull("BOUNDED_CHUNKED_READ") shouldBeEqualTo GraphCapability.BOUNDED_CHUNKED_READ
-        
+
         GraphCapability.fromSerializedNameOrNull("CAPABILITY_ADDED_LATER").shouldBeNull()
         GraphCapability.fromSerializedNameOrNull("bounded_chunked_read").shouldBeNull()
     }

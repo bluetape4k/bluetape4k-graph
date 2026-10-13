@@ -3,6 +3,7 @@ package io.bluetape4k.graph.neo4j
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
 import io.bluetape4k.assertions.shouldNotBeEmpty
+import io.bluetape4k.coroutines.flow.extensions.log
 import io.bluetape4k.graph.model.PageRankOptions
 import io.bluetape4k.graph.model.TreeTraversalOptions
 import io.bluetape4k.junit5.coroutines.runSuspendIO
@@ -39,7 +40,11 @@ class Neo4jAlgorithmSuspendTest {
             val leaf = ops.createVertex("Person", mapOf("name" to "L$i"))
             ops.createEdge(leaf.id, hub.id, "FOLLOWS")
         }
-        val scores = ops.pageRank(PageRankOptions(vertexLabel = "Person", iterations = 30)).toList()
+        val scores = ops
+            .pageRank(PageRankOptions(vertexLabel = "Person", iterations = 30))
+            .log("PageRank")
+            .toList()
+        
         scores.shouldNotBeEmpty()
         scores.first().vertex.properties["name"] shouldBeEqualTo "Hub"
     }

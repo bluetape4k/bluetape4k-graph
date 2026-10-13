@@ -83,7 +83,7 @@ class WeightExtractor(
 
         value.requireFinite("value") { "edge ${edge.id} weight must be finite, was $value" }
         value.requireGt(0.0) { "edge ${edge.id} weight must be > 0.0, was $value" }
-        
+
         return value
     }
 }

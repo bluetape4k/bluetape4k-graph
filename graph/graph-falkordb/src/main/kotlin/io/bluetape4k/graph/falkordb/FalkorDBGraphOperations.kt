@@ -28,7 +28,9 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.model.TreeTraversalOptions
+import io.bluetape4k.graph.model.edgeOf
 import io.bluetape4k.graph.model.toGraphElementId
+import io.bluetape4k.graph.model.vertexOf
 import io.bluetape4k.graph.repository.GraphBatchValidation
 import io.bluetape4k.graph.repository.GraphMergeOperations
 import io.bluetape4k.graph.repository.GraphMergeProperties
@@ -629,7 +631,7 @@ class FalkorDBGraphOperations(
             adjacency = adjacency,
             maxDepth = options.maxDepth,
             maxVertices = options.maxVertices,
-            vertexResolver = { vertexById[it] ?: GraphVertex(it, "", emptyMap()) },
+            vertexResolver = { vertexById[it] ?: vertexOf(it, "") },
         )
     }
 
@@ -642,7 +644,7 @@ class FalkorDBGraphOperations(
             adjacency = adjacency,
             maxDepth = options.maxDepth,
             maxVertices = options.maxVertices,
-            vertexResolver = { vertexById[it] ?: GraphVertex(it, "", emptyMap()) },
+            vertexResolver = { vertexById[it] ?: vertexOf(it, "") },
         )
     }
 
@@ -803,12 +805,12 @@ class FalkorDBGraphOperations(
         return cycles.map { ids ->
             val steps = ArrayList<PathStep>(ids.size * 2)
             ids.forEachIndexed { i, vid ->
-                val gv = vertexById[vid] ?: GraphVertex(vid, "", emptyMap())
+                val gv = vertexById[vid] ?: vertexOf(vid, EMPTY_STRING)
                 steps.add(PathStep.VertexStep(gv))
                 if (i < ids.size - 1) {
                     steps.add(
                         PathStep.EdgeStep(
-                            GraphEdge(
+                            edgeOf(
                                 id = "${vid.value}->${ids[i + 1].value}".toGraphElementId(),
                                 label = options.edgeLabel ?: "",
                                 startId = vid,

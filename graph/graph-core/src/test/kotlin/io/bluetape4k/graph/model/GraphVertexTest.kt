@@ -19,7 +19,7 @@ class GraphVertexTest: AbstractGraphTest() {
 
     @Test
     fun `label과 properties로 정점을 만든다`() {
-        val v = GraphVertex(
+        val v = vertexOf(
             id = id,
             label = "Person",
             properties = mapOf("name" to "Alice", "age" to 30),
@@ -34,15 +34,15 @@ class GraphVertexTest: AbstractGraphTest() {
 
     @Test
     fun `properties 기본값은 빈 맵이다`() {
-        val v = GraphVertex(id = id, label = "Person")
+        val v = vertexOf(id = id, label = "Person")
         v.properties.shouldBeEmpty()
     }
 
     @Test
     fun `data class 동등성은 id-label-properties에 의해 결정된다`() {
-        val a = GraphVertex(id, "Person", mapOf("k" to 1))
-        val b = GraphVertex(id, "Person", mapOf("k" to 1))
-        val c = GraphVertex(id, "Person", mapOf("k" to 2))
+        val a = vertexOf(id, "Person", "k" to 1)
+        val b = vertexOf(id, "Person", "k" to 1)
+        val c = vertexOf(id, "Person", "k" to 2)
 
         b shouldBeEqualTo a
         c shouldNotBeEqualTo a
@@ -50,7 +50,7 @@ class GraphVertexTest: AbstractGraphTest() {
 
     @Test
     fun `copy로 properties만 변경한다`() {
-        val v = GraphVertex(id, "Person", mapOf("name" to "Alice"))
+        val v = vertexOf(id, "Person", "name" to "Alice")
         val updated = v.copy(properties = mapOf("name" to "Bob"))
 
         log.debug { "updated=$updated" }
@@ -61,7 +61,7 @@ class GraphVertexTest: AbstractGraphTest() {
 
     @Test
     fun `null 값을 포함한 properties도 허용된다`() {
-        val v = GraphVertex(id, "Person", mapOf("nickname" to null))
+        val v = vertexOf(id, "Person", "nickname" to null)
 
         log.debug { "v=$v" }
         v.properties.keys shouldContain "nickname"
@@ -70,8 +70,8 @@ class GraphVertexTest: AbstractGraphTest() {
 
     @Test
     fun `중첩 맵을 포함한 properties도 허용된다`() {
-        val nested = mapOf("address" to mapOf("city" to "Seoul", "zip" to "04524"))
-        val v = GraphVertex(id, "Person", nested)
+        val nested = "address" to mapOf("city" to "Seoul", "zip" to "04524")
+        val v = vertexOf(id, "Person", nested)
 
         @Suppress("UNCHECKED_CAST")
         val address = v.properties["address"] as Map<String, Any?>
@@ -80,7 +80,7 @@ class GraphVertexTest: AbstractGraphTest() {
 
     @Test
     fun `copy로 label만 변경한다`() {
-        val original = GraphVertex(id, "Person", mapOf("name" to "Alice"))
+        val original = vertexOf(id, "Person", "name" to "Alice")
         val renamed = original.copy(label = "Employee")
 
         log.debug { "renamed=$renamed" }
@@ -91,15 +91,15 @@ class GraphVertexTest: AbstractGraphTest() {
 
     @Test
     fun `서로 다른 id를 가진 정점은 동등하지 않다`() {
-        val v1 = GraphVertex(id("a"), "Person")
-        val v2 = GraphVertex(id("b"), "Person")
+        val v1 = vertexOf(id("a"), "Person")
+        val v2 = vertexOf(id("b"), "Person")
         v1 shouldNotBeEqualTo v2
     }
 
     @Test
     fun `서로 다른 label을 가진 정점은 동등하지 않다`() {
-        val v1 = GraphVertex(id, "Person")
-        val v2 = GraphVertex(id, "Company")
+        val v1 = vertexOf(id, "Person")
+        val v2 = vertexOf(id, "Company")
         v1 shouldNotBeEqualTo v2
     }
 
@@ -110,7 +110,7 @@ class GraphVertexTest: AbstractGraphTest() {
 
         @Test
         fun `graphVertexOf - GraphElementId로 정점을 생성한다`() {
-            val v = graphVertexOf(id, "Person", mapOf("name" to "Alice"))
+            val v = graphVertexOf(id, "Person", "name" to "Alice")
             log.debug { "v=$v" }
             v.id shouldBeEqualTo id
             v.label shouldBeEqualTo "Person"
@@ -153,7 +153,7 @@ class GraphVertexTest: AbstractGraphTest() {
 
         @Test
         fun `graphVertexOf - Any id에 properties도 전달할 수 있다`() {
-            val v = graphVertexOf("v-3", "Person", mapOf("age" to 30))
+            val v = graphVertexOf("v-3", "Person", "age" to 30)
 
             log.debug { "v=$v" }
             v.id.value shouldBeEqualTo "v-3"
@@ -164,11 +164,11 @@ class GraphVertexTest: AbstractGraphTest() {
     // --- vertexOf 유틸 함수 테스트 ---
 
     @Nested
-    inner class VertxOfTest {
+    inner class VertexOfTest {
 
         @Test
         fun `vertexOf - GraphElementId로 정점을 생성한다`() {
-            val v = vertexOf(id, "Person", mapOf("name" to "Alice"))
+            val v = vertexOf(id, "Person", "name" to "Alice")
 
             log.debug { "v=$v" }
             v.id shouldBeEqualTo id
@@ -215,7 +215,7 @@ class GraphVertexTest: AbstractGraphTest() {
 
         @Test
         fun `vertexOf - Any id에 properties도 전달할 수 있다`() {
-            val v = vertexOf("v-3", "Person", mapOf("age" to 30))
+            val v = vertexOf("v-3", "Person", "age" to 30)
 
             log.debug { "v=$v" }
             v.id.value shouldBeEqualTo "v-3"

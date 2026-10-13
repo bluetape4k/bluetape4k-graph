@@ -35,6 +35,9 @@ interface GraphSuspendVertexRepository {
      */
     suspend fun createVertex(label: String, properties: Map<String, Any?> = emptyMap()): GraphVertex
 
+    suspend fun createVertex(label: String, vararg params: Pair<String, Any?>): GraphVertex =
+        createVertex(label, params.toMap())
+
     /**
      * Creates multiple vertices with the same label and returns them in input order.
      *
@@ -99,6 +102,9 @@ interface GraphSuspendVertexRepository {
      */
     fun findVerticesByLabel(label: String, filter: Map<String, Any?> = emptyMap()): Flow<GraphVertex>
 
+    fun findVerticesByLabel(label: String, vararg params: Pair<String, Any?>): Flow<GraphVertex> =
+        findVerticesByLabel(label, params.toMap())
+
     /**
      * label과 property filter로 정점을 API chunk Flow로 조회한다.
      *
@@ -136,6 +142,9 @@ interface GraphSuspendVertexRepository {
      * @return updated [GraphVertex], or `null` when the ID is absent.
      */
     suspend fun updateVertex(label: String, id: GraphElementId, properties: Map<String, Any?>): GraphVertex?
+
+    suspend fun updateVertex(label: String, id: GraphElementId, vararg params: Pair<String, Any?>): GraphVertex? =
+        updateVertex(label, id, params.toMap())
 
     /**
      * Deletes a vertex.

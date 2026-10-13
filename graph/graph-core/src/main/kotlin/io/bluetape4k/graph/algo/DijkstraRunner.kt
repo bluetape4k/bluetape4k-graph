@@ -118,7 +118,7 @@ class DijkstraRunner(
                 continue@outer
             }
             log.debug { "current vertex = $currentVertex" }
-            
+
             val edges = fetchEdges(currentId)
 
             for (edge in edges) {

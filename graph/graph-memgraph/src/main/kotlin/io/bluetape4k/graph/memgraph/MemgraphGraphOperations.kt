@@ -30,6 +30,9 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.model.TreeTraversalOptions
+import io.bluetape4k.graph.model.edgeOf
+import io.bluetape4k.graph.model.toGraphElementId
+import io.bluetape4k.graph.model.vertexOf
 import io.bluetape4k.graph.repository.GraphBatchValidation
 import io.bluetape4k.graph.repository.GraphMergeOperations
 import io.bluetape4k.graph.repository.GraphMergeProperties
@@ -45,6 +48,7 @@ import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.info
 import io.bluetape4k.logging.trace
 import io.bluetape4k.logging.warn
+import io.bluetape4k.support.EMPTY_STRING
 import io.bluetape4k.support.requireNotBlank
 import org.neo4j.driver.Driver
 import org.neo4j.driver.Record
@@ -614,7 +618,7 @@ class MemgraphGraphOperations(
             adjacency = adjacency,
             maxDepth = options.maxDepth,
             maxVertices = options.maxVertices,
-            vertexResolver = { vertexById[it] ?: GraphVertex(it, "", emptyMap()) },
+            vertexResolver = { vertexById[it] ?: vertexOf(it, EMPTY_STRING) },
         )
     }
 
@@ -626,7 +630,7 @@ class MemgraphGraphOperations(
             adjacency = adjacency,
             maxDepth = options.maxDepth,
             maxVertices = options.maxVertices,
-            vertexResolver = { vertexById[it] ?: GraphVertex(it, "", emptyMap()) },
+            vertexResolver = { vertexById[it] ?: vertexOf(it, EMPTY_STRING) },
         )
     }
 
@@ -644,7 +648,7 @@ class MemgraphGraphOperations(
         """.trimIndent()
 
         return try {
-            runQuery(cypher, emptyMap<String, Any>()) { rec ->
+            runQuery(cypher) { rec ->
                 val path = rec["p"].asPath()
                 val orderedSteps = ArrayList<PathStep>()
                 val nodes = path.nodes().toList()
@@ -788,13 +792,13 @@ class MemgraphGraphOperations(
         return cycles.map { ids ->
             val steps = ArrayList<PathStep>(ids.size * 2)
             ids.forEachIndexed { i, vid ->
-                val gv = vertexById[vid] ?: GraphVertex(vid, "", emptyMap())
+                val gv = vertexById[vid] ?: vertexOf(vid, EMPTY_STRING)
                 steps.add(PathStep.VertexStep(gv))
                 if (i < ids.size - 1) {
                     steps.add(
                         PathStep.EdgeStep(
-                            GraphEdge(
-                                id = GraphElementId.of("${vid.value}->${ids[i + 1].value}"),
+                            edgeOf(
+                                "${vid.value}->${ids[i + 1].value}".toGraphElementId(),
                                 label = options.edgeLabel ?: "",
                                 startId = vid,
                                 endId = ids[i + 1],

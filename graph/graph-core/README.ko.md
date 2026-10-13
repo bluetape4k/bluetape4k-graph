@@ -141,7 +141,7 @@ val report = plan.apply(ops.schemaManager())
 
 ```kotlin
 // 기본 정점 스키마
-object PersonLabel : VertexLabel("Person") {
+object PersonLabel: VertexLabel("Person") {
     val id = string("id")
     val name = string("name")
     val age = integer("age")
@@ -152,7 +152,7 @@ object PersonLabel : VertexLabel("Person") {
 }
 
 // 다른 정점 예
-object CompanyLabel : VertexLabel("Company") {
+object CompanyLabel: VertexLabel("Company") {
     val id = string("id")
     val name = string("name")
     val industry = string("industry")
@@ -160,7 +160,7 @@ object CompanyLabel : VertexLabel("Company") {
     val employees = integer("employee_count")
 }
 
-object PostLabel : VertexLabel("Post") {
+object PostLabel: VertexLabel("Post") {
     val id = string("id")
     val title = string("title")
     val content = string("content")
@@ -185,14 +185,14 @@ object PostLabel : VertexLabel("Post") {
 
 ```kotlin
 // Person-to-Person 관계 (양방향)
-object KnowsLabel : EdgeLabel("KNOWS", PersonLabel, PersonLabel) {
+object KnowsLabel: EdgeLabel("KNOWS", PersonLabel, PersonLabel) {
     val since = localDate("since")
     val strength = integer("strength")
     val notes = string("notes")
 }
 
 // Person -> Company 관계 (일방향)
-object WorksAtLabel : EdgeLabel("WORKS_AT", PersonLabel, CompanyLabel) {
+object WorksAtLabel: EdgeLabel("WORKS_AT", PersonLabel, CompanyLabel) {
     val startDate = localDate("start_date")
     val role = string("role")
     val department = string("department")
@@ -200,17 +200,17 @@ object WorksAtLabel : EdgeLabel("WORKS_AT", PersonLabel, CompanyLabel) {
 }
 
 // Person -> Post 관계 (작성)
-object AuthorLabel : EdgeLabel("AUTHOR", PersonLabel, PostLabel) {
+object AuthorLabel: EdgeLabel("AUTHOR", PersonLabel, PostLabel) {
     val createdAt = localDateTime("created_at")
 }
 
 // Person -> Post 관계 (좋아요)
-object LikesLabel : EdgeLabel("LIKES", PersonLabel, PostLabel) {
+object LikesLabel: EdgeLabel("LIKES", PersonLabel, PostLabel) {
     val likedAt = localDateTime("liked_at")
 }
 
 // Person -> Person 관계 (팔로우)
-object FollowsLabel : EdgeLabel("FOLLOWS", PersonLabel, PersonLabel) {
+object FollowsLabel: EdgeLabel("FOLLOWS", PersonLabel, PersonLabel) {
     val followedAt = localDateTime("followed_at")
     val notifications = boolean("notifications_enabled")
 }
@@ -645,9 +645,13 @@ val pathViaKnows = ops.shortestPath(
 if (pathViaKnows != null) {
     println("Shortest KNOWS path from Alice to Charlie:")
     println("  Length: ${pathViaKnows.length} edges")
-    println("  Vertices: ${pathViaKnows.vertices.mapIndexed { i, v ->
-        "#${i}: ${v.properties[PersonLabel.name.name]}"
-    }}")
+    println(
+        "  Vertices: ${
+            pathViaKnows.vertices.mapIndexed { i, v ->
+                "#${i}: ${v.properties[PersonLabel.name.name]}"
+            }
+        }"
+    )
 
     // 경로 시각화
     val pathStr = pathViaKnows.steps.joinToString(" → ") { step ->
@@ -803,9 +807,11 @@ class GraphOperationsTest {
         val ops = createTestGraphOperations()
 
         // CREATE
-        val vertex = ops.createVertex(PersonLabel.label, mapOf(
-            PersonLabel.name.name to "Bob"
-        ))
+        val vertex = ops.createVertex(
+            PersonLabel.label, mapOf(
+                PersonLabel.name.name to "Bob"
+            )
+        )
         assertNotNull(vertex.id)
         assertEquals(PersonLabel.label, vertex.label)
 
@@ -814,9 +820,11 @@ class GraphOperationsTest {
         assertEquals("Bob", found?.properties?.get(PersonLabel.name.name))
 
         // UPDATE
-        val updated = ops.updateVertex(PersonLabel.label, vertex.id, mapOf(
-            PersonLabel.name.name to "Charlie"
-        ))
+        val updated = ops.updateVertex(
+            PersonLabel.label, vertex.id, mapOf(
+                PersonLabel.name.name to "Charlie"
+            )
+        )
         assertEquals("Charlie", updated?.properties?.get(PersonLabel.name.name))
 
         // DELETE
@@ -829,12 +837,16 @@ class GraphOperationsTest {
         val ops = createTestGraphOperations()
 
         // 정점 생성
-        val v1 = ops.createVertex(PersonLabel.label, mapOf(
-            PersonLabel.name.name to "Alice"
-        ))
-        val v2 = ops.createVertex(PersonLabel.label, mapOf(
-            PersonLabel.name.name to "Bob"
-        ))
+        val v1 = ops.createVertex(
+            PersonLabel.label, mapOf(
+                PersonLabel.name.name to "Alice"
+            )
+        )
+        val v2 = ops.createVertex(
+            PersonLabel.label, mapOf(
+                PersonLabel.name.name to "Bob"
+            )
+        )
 
         // CREATE Edge
         val edge = ops.createEdge(
@@ -884,9 +896,11 @@ class GraphOperationsTest {
         val ops = createTestGraphOperations()
 
         // Star topology 생성: center --KNOWS--> [v1, v2, v3]
-        val center = ops.createVertex(PersonLabel.label, mapOf(
-            PersonLabel.name.name to "Center"
-        ))
+        val center = ops.createVertex(
+            PersonLabel.label, mapOf(
+                PersonLabel.name.name to "Center"
+            )
+        )
         val v1 = ops.createVertex(PersonLabel.label, mapOf(PersonLabel.name.name to "V1"))
         val v2 = ops.createVertex(PersonLabel.label, mapOf(PersonLabel.name.name to "V2"))
         val v3 = ops.createVertex(PersonLabel.label, mapOf(PersonLabel.name.name to "V3"))
@@ -1031,10 +1045,10 @@ val v2 = graphVertexOf("v2", "Person")           // Any 타입 id 오버로드
 val v3 = graphVertexOf(42L, "Item", mapOf("weight" to 10.0))
 
 // GraphPath — vararg 오버로드
-val pathFromSteps    = graphPathOf(PathStep.VertexStep(v1), PathStep.EdgeStep(e1), PathStep.VertexStep(v2))
+val pathFromSteps = graphPathOf(PathStep.VertexStep(v1), PathStep.EdgeStep(e1), PathStep.VertexStep(v2))
 val pathFromVertices = graphPathOf(v1, v2, v3)   // 정점만 있는 경로
-val pathFromEdges    = graphPathOf(e1, e2)        // 간선만 있는 경로
-val empty            = emptyGraphPath()           // GraphPath.EMPTY
+val pathFromEdges = graphPathOf(e1, e2)        // 간선만 있는 경로
+val empty = emptyGraphPath()           // GraphPath.EMPTY
 
 // GraphCycle
 val cycle = detectedPath.toCycle()               // GraphPath → GraphCycle
@@ -1072,6 +1086,7 @@ dependencies {
 **AutoCloseable**: `GraphOperations`는 `GraphSession`을 상속하며 `AutoCloseable`을 구현. 외부 리소스 (Database/Driver)의 생명주기는 호출자가 관리.
 -
 **트랜잭션**: `GraphTransactionalOperations` 또는 `GraphSuspendTransactionalOperations`를 구현한 백엔드는 `ops.transaction { }` / `ops.suspendTransaction { }` DSL을 제공한다. 미지원 백엔드는 auto-commit fallback 없이 명시적으로 실패한다.
+
 - **백엔드 차이**: AGE는 SQL 기반이므로 쿼리 최적화, Neo4j는 Cypher 쿼리 최적화에 따라 성능이 달라질 수 있음.
 
 ### 트랜잭션 DSL

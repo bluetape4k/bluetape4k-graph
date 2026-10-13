@@ -10,8 +10,8 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.batchEdgeOf
 import io.bluetape4k.graph.model.edgeOf
-import io.bluetape4k.graph.model.elementIdOf
 import io.bluetape4k.graph.model.graphPathOf
+import io.bluetape4k.graph.model.toGraphElementId
 import io.bluetape4k.graph.model.vertexOf
 import io.bluetape4k.javatimes.millis
 import io.bluetape4k.logging.KLogging
@@ -41,12 +41,12 @@ class CachingMemgraphGraphOperationsTest: AbstractMemgraphTest() {
     private val delegate: MemgraphGraphOperations = mockk(relaxed = true)
     private val caching: CachingMemgraphGraphOperations = CachingMemgraphGraphOperations(delegate)
 
-    private val aliceId = elementIdOf("alice-1")
-    private val bobId = elementIdOf("bob-1")
-    private val edgeId = elementIdOf("edge-1")
+    private val aliceId = "alice-1".toGraphElementId()
+    private val bobId = "bob-1".toGraphElementId()
+    private val edgeId = "edge-1".toGraphElementId()
 
-    private val alice = vertexOf(aliceId, "Person", mapOf("name" to "Alice"))
-    private val bob = vertexOf(bobId, "Person", mapOf("name" to "Bob"))
+    private val alice = vertexOf(aliceId, "Person", "name" to "Alice")
+    private val bob = vertexOf(bobId, "Person", "name" to "Bob")
     private val edge = edgeOf(edgeId, "KNOWS", aliceId, bobId)
     private val path = graphPathOf(
         PathStep.VertexStep(alice),
@@ -220,7 +220,8 @@ class CachingMemgraphGraphOperationsTest: AbstractMemgraphTest() {
             releaseRead.await(5, TimeUnit.SECONDS)
             alice
         } andThen updated
-        every { delegate.updateVertex("Person", aliceId, any()) } returns updated
+
+        every { delegate.updateVertex("Person", aliceId, any<Map<String, Any?>>()) } returns updated
 
         val executor = Executors.newSingleThreadExecutor()
         try {
@@ -298,7 +299,7 @@ class CachingMemgraphGraphOperationsTest: AbstractMemgraphTest() {
     fun `updateVertex 후 읽기 캐시가 무효화된다`() {
         val updated = alice.copy(properties = mapOf("name" to "Alice Updated"))
         every { delegate.findVertexById("Person", aliceId) } returns alice andThen updated
-        every { delegate.updateVertex("Person", aliceId, any()) } returns updated
+        every { delegate.updateVertex("Person", aliceId, any<Map<String, Any?>>()) } returns updated
 
         caching.findVertexById("Person", aliceId)   // 캐시 적재
         caching.updateVertex("Person", aliceId, mapOf("name" to "Alice Updated"))
@@ -328,7 +329,7 @@ class CachingMemgraphGraphOperationsTest: AbstractMemgraphTest() {
     @Test
     fun `createVertex는 동일 인자 반복 호출마다 delegate를 호출한다`() {
         val props = mapOf("name" to "Alice")
-        val secondVertex = alice.copy(id = elementIdOf("alice-2"))
+        val secondVertex = alice.copy(id = "alice-2".toGraphElementId())
         every { delegate.createVertex("Person", props) } returns alice andThen secondVertex
 
         val first = caching.createVertex("Person", props)
@@ -343,7 +344,7 @@ class CachingMemgraphGraphOperationsTest: AbstractMemgraphTest() {
 
     @Test
     fun `createEdge는 동일 인자 반복 호출마다 delegate를 호출한다`() {
-        val secondEdge = edge.copy(id = elementIdOf("edge-2"))
+        val secondEdge = edge.copy(id = "edge-2".toGraphElementId())
         every {
             delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap())
         } returns edge andThen secondEdge
@@ -362,7 +363,7 @@ class CachingMemgraphGraphOperationsTest: AbstractMemgraphTest() {
     fun `createEdge는 생성마다 위임하고 읽기 캐시를 무효화한다`() {
         every {
             delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap())
-        } returns edge andThen edge.copy(id = elementIdOf("edge-2"))
+        } returns edge andThen edge.copy(id = "edge-2".toGraphElementId())
         every { delegate.findEdgesByLabel("KNOWS", emptyMap()) } returns listOf(edge)
 
         caching.findEdgesByLabel("KNOWS")              // 읽기 캐시 적재
@@ -383,7 +384,7 @@ class CachingMemgraphGraphOperationsTest: AbstractMemgraphTest() {
 
         every {
             delegate.createVertex("Person", props)
-        } returns alice andThen alice.copy(id = elementIdOf("alice-2"))
+        } returns alice andThen alice.copy(id = "alice-2".toGraphElementId())
         every { delegate.findVertexById("Person", aliceId) } returns alice
 
         caching.findVertexById("Person", aliceId)   // 읽기 캐시 적재
@@ -405,7 +406,7 @@ class CachingMemgraphGraphOperationsTest: AbstractMemgraphTest() {
         every { delegate.findVertexById("Person", aliceId) } returns alice
         every {
             delegate.createVertex("Person", props)
-        } returns alice andThen alice.copy(id = elementIdOf("alice-2"))
+        } returns alice andThen alice.copy(id = "alice-2".toGraphElementId())
         every { delegate.createVertices("Person", batch) } returns listOf(alice, bob)
 
         caching.findVertexById("Person", aliceId)
@@ -428,8 +429,10 @@ class CachingMemgraphGraphOperationsTest: AbstractMemgraphTest() {
         every { delegate.findEdgesByLabel("KNOWS", emptyMap()) } returns listOf(edge)
         every {
             delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap())
-        } returns edge andThen edge.copy(id = elementIdOf("edge-2"))
-        every { delegate.createEdges("KNOWS", batch) } returns listOf(edge, edge.copy(id = elementIdOf("edge-3")))
+        } returns edge andThen edge.copy(id = "edge-2".toGraphElementId())
+        every {
+            delegate.createEdges("KNOWS", batch)
+        } returns listOf(edge, edge.copy(id = "edge-3".toGraphElementId()))
 
         caching.findEdgesByLabel("KNOWS")
         caching.createEdge(aliceId, bobId, "KNOWS")
@@ -462,7 +465,7 @@ class CachingMemgraphGraphOperationsTest: AbstractMemgraphTest() {
 
     @Test
     fun `createEdge는 다른 속성 맵으로 호출 시 delegate를 각각 호출한다`() {
-        val edge2 = edgeOf(elementIdOf("edge-2"), "KNOWS", aliceId, bobId, mapOf("since" to 2025))
+        val edge2 = edgeOf("edge-2".toGraphElementId(), "KNOWS", aliceId, bobId, "since" to 2025)
         every { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) } returns edge
         every { delegate.createEdge(aliceId, bobId, "KNOWS", mapOf("since" to 2025)) } returns edge2
 

@@ -52,7 +52,7 @@ class EdgeLabelTest: AbstractGraphTest() {
     fun `선언한 프로퍼티가 순서대로 수집된다`() {
         val names = WorksAtLabel.properties.map { it.name }
         log.debug { "names=$names" }
-        
+
         names shouldBeEqualTo listOf(
             "role", "since", "updatedAt", "level", "tenure", "current",
             "tags", "meta", "status",

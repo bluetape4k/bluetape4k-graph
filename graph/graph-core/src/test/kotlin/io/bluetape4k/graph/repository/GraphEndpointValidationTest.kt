@@ -4,7 +4,7 @@ import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeInstanceOf
 import io.bluetape4k.graph.AbstractGraphTest
-import io.bluetape4k.graph.model.elementIdOf
+import io.bluetape4k.graph.model.toGraphElementId
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
 import io.bluetape4k.graph.vt.asVirtualThreadVertexRepository
@@ -48,7 +48,7 @@ class GraphEndpointValidationTest: AbstractGraphTest() {
     @Test
     fun `동기 endpoint가 없으면 IllegalArgumentException을 던진다`() {
         assertFailsWith<IllegalArgumentException> {
-            ops.requireEndpoint(elementIdOf("99999999"), "Person", "personId")
+            ops.requireEndpoint(999_999_999.toGraphElementId(), "Person", "personId")
         }
     }
 
@@ -73,7 +73,7 @@ class GraphEndpointValidationTest: AbstractGraphTest() {
     @Test
     fun `suspend endpoint가 없으면 IllegalArgumentException을 던진다`() = runSuspendIO {
         assertFailsWith<IllegalArgumentException> {
-            suspendOps.requireEndpoint(elementIdOf("99999999"), "Person", "personId")
+            suspendOps.requireEndpoint(999_999_999.toGraphElementId(), "Person", "personId")
         }
     }
 
@@ -99,7 +99,7 @@ class GraphEndpointValidationTest: AbstractGraphTest() {
     @Test
     fun `virtual thread endpoint가 없으면 IllegalArgumentException으로 실패한다`() {
         val error = assertFailsWith<CompletionException> {
-            virtualThreadOps.requireEndpointAsync(elementIdOf("99999999"), "Person", "personId").join()
+            virtualThreadOps.requireEndpointAsync(999_999_999.toGraphElementId(), "Person", "personId").join()
         }
 
         error.cause shouldBeInstanceOf IllegalArgumentException::class
@@ -109,7 +109,7 @@ class GraphEndpointValidationTest: AbstractGraphTest() {
     fun `virtual thread endpoint label이 다르면 IllegalArgumentException으로 실패한다`() {
         val company = ops.createVertex("Company")
         log.debug { "company=$company" }
-        
+
         val error = assertFailsWith<CompletionException> {
             virtualThreadOps.requireEndpointAsync(company.id, "Person", "personId").join()
         }

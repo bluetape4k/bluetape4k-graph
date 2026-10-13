@@ -41,6 +41,14 @@ interface GraphSuspendEdgeRepository {
         properties: Map<String, Any?> = emptyMap(),
     ): GraphEdge
 
+    suspend fun createEdge(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        label: String,
+        vararg params: Pair<String, Any?>,
+    ): GraphEdge =
+        createEdge(fromId, toId, label, params.toMap())
+
     /**
      * Creates multiple edges with the same label and returns them in input order.
      *
@@ -83,6 +91,9 @@ interface GraphSuspendEdgeRepository {
      */
     fun findEdgesByLabel(label: String, filter: Map<String, Any?> = emptyMap()): Flow<GraphEdge>
 
+    fun findEdgesByLabel(label: String, vararg params: Pair<String, Any?>): Flow<GraphEdge> =
+        findEdgesByLabel(label, params.toMap())
+
     /**
      * label과 property filter로 간선을 API chunk Flow로 조회한다.
      *
@@ -106,6 +117,13 @@ interface GraphSuspendEdgeRepository {
         chunkSize: Int = DEFAULT_GRAPH_EXPORT_CHUNK_SIZE,
     ): Flow<List<GraphEdge>> =
         findEdgesByLabel(label, filter).asGraphExportChunks(chunkSize)
+
+    fun findEdgesByLabelChunked(
+        label: String,
+        vararg params: Pair<String, Any?>,
+        chunkSize: Int = DEFAULT_GRAPH_EXPORT_CHUNK_SIZE,
+    ): Flow<List<GraphEdge>> =
+        findEdgesByLabelChunked(label, params.toMap(), chunkSize)
 
     /**
      * Finds edges that start at a specific vertex as a stream.

@@ -3,6 +3,7 @@ package io.bluetape4k.graph.algo.internal
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.TraversalVisit
+import io.bluetape4k.graph.model.vertexOf
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import java.util.*
@@ -35,7 +36,7 @@ object TreeTraverser: KLogging() {
         adjacency: Map<GraphElementId, List<GraphElementId>>,
         maxDepth: Int,
         maxVertices: Int,
-        vertexResolver: (GraphElementId) -> GraphVertex = { GraphVertex(it, "", emptyMap()) },
+        vertexResolver: (GraphElementId) -> GraphVertex = { vertexOf(it, "") },
     ): List<TraversalVisit> {
         val visited = HashSet<GraphElementId>()
         val result = ArrayList<TraversalVisit>()
@@ -72,7 +73,7 @@ object TreeTraverser: KLogging() {
         adjacency: Map<GraphElementId, List<GraphElementId>>,
         maxDepth: Int,
         maxVertices: Int,
-        vertexResolver: (GraphElementId) -> GraphVertex = { GraphVertex(it, "", emptyMap()) },
+        vertexResolver: (GraphElementId) -> GraphVertex = { vertexOf(it, "") },
     ): List<TraversalVisit> {
         val visited = HashSet<GraphElementId>()
         val result = ArrayList<TraversalVisit>()

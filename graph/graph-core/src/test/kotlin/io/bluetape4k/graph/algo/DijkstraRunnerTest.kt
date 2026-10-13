@@ -14,6 +14,7 @@ import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.MissingWeightPolicy
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
+import io.bluetape4k.graph.model.vertexOf
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
@@ -234,7 +235,7 @@ class DijkstraRunnerTest: AbstractGraphTest() {
                     else -> emptyList()
                 }
             },
-            fetchVertex = { id -> if (id.value == "B") null else GraphVertex(id, "V", emptyMap()) },
+            fetchVertex = { id -> if (id.value == "B") null else vertexOf(id, "V") },
         )
         nullVertexRunner.run(id("A"), id("C"), PathOptions(weightProperty = "cost")).shouldBeNull()
     }

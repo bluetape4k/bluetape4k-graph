@@ -28,7 +28,9 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.model.TreeTraversalOptions
+import io.bluetape4k.graph.model.edgeOf
 import io.bluetape4k.graph.model.toGraphElementId
+import io.bluetape4k.graph.model.vertexOf
 import io.bluetape4k.graph.repository.GraphSuspendMergeOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.schema.GraphSuspendSchemaManagementOperations
@@ -39,6 +41,7 @@ import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.info
 import io.bluetape4k.logging.warn
+import io.bluetape4k.support.EMPTY_STRING
 import io.bluetape4k.support.asInt
 import io.bluetape4k.support.asLong
 import io.bluetape4k.support.asLongOrNull
@@ -555,7 +558,7 @@ class FalkorDBGraphSuspendOperations(
             adjacency = adjacency,
             maxDepth = options.maxDepth,
             maxVertices = options.maxVertices,
-            vertexResolver = { vertexById[it] ?: GraphVertex(it, "", emptyMap()) },
+            vertexResolver = { vertexById[it] ?: vertexOf(it, EMPTY_STRING) },
         )
 
         visits.forEach { emit(it) }
@@ -571,7 +574,7 @@ class FalkorDBGraphSuspendOperations(
             adjacency = adjacency,
             maxDepth = options.maxDepth,
             maxVertices = options.maxVertices,
-            vertexResolver = { vertexById[it] ?: GraphVertex(it, "", emptyMap()) },
+            vertexResolver = { vertexById[it] ?: vertexOf(it, EMPTY_STRING) },
         )
         visits.forEach { emit(it) }
 
@@ -750,12 +753,12 @@ class FalkorDBGraphSuspendOperations(
         return cycles.map { ids ->
             val steps = ArrayList<PathStep>(ids.size * 2)
             ids.forEachIndexed { i, vid ->
-                val gv = vertexById[vid] ?: GraphVertex(vid, "", emptyMap())
+                val gv = vertexById[vid] ?: vertexOf(vid, EMPTY_STRING)
                 steps.add(PathStep.VertexStep(gv))
                 if (i < ids.size - 1) {
                     steps.add(
                         PathStep.EdgeStep(
-                            GraphEdge(
+                            edgeOf(
                                 id = "${vid.value}->${ids[i + 1].value}".toGraphElementId(),
                                 label = options.edgeLabel ?: "",
                                 startId = vid,

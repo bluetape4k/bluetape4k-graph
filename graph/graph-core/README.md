@@ -40,8 +40,8 @@ data class GraphEdge(
 )
 
 sealed class PathStep {
-    data class VertexStep(val vertex: GraphVertex) : PathStep()
-    data class EdgeStep(val edge: GraphEdge) : PathStep()
+    data class VertexStep(val vertex: GraphVertex): PathStep()
+    data class EdgeStep(val edge: GraphEdge): PathStep()
 }
 
 data class GraphPath(val steps: List<PathStep>)
@@ -273,15 +273,15 @@ Support matrix:
 Exposed Table-style declarative schema. Works across backends.
 
 ```kotlin
-object PersonLabel : VertexLabel("Person") {
-    val id       = string("id")
-    val name     = string("name")
-    val age      = integer("age")
-    val email    = string("email")
+object PersonLabel: VertexLabel("Person") {
+    val id = string("id")
+    val name = string("name")
+    val age = integer("age")
+    val email = string("email")
     val joinedAt = localDate("joinedAt")
 }
 
-object KnowsLabel : EdgeLabel("KNOWS", PersonLabel, PersonLabel) {
+object KnowsLabel: EdgeLabel("KNOWS", PersonLabel, PersonLabel) {
     val since = localDate("since")
 }
 ```
@@ -302,10 +302,10 @@ val v2 = graphVertexOf("v2", "Person")           // Any id overload
 val v3 = graphVertexOf(42L, "Item", mapOf("weight" to 10.0))
 
 // GraphPath — vararg overloads
-val pathFromSteps    = graphPathOf(PathStep.VertexStep(v1), PathStep.EdgeStep(e1), PathStep.VertexStep(v2))
+val pathFromSteps = graphPathOf(PathStep.VertexStep(v1), PathStep.EdgeStep(e1), PathStep.VertexStep(v2))
 val pathFromVertices = graphPathOf(v1, v2, v3)   // vertex-only path
-val pathFromEdges    = graphPathOf(e1, e2)        // edge-only path
-val empty            = emptyGraphPath()           // GraphPath.EMPTY
+val pathFromEdges = graphPathOf(e1, e2)        // edge-only path
+val empty = emptyGraphPath()           // GraphPath.EMPTY
 
 // GraphCycle
 val cycle = detectedPath.toCycle()               // GraphPath → GraphCycle
@@ -403,9 +403,9 @@ All five backends use the same JVM weighted runner for sync and suspend APIs. Th
 
 ```kotlin
 sealed class MissingWeightPolicy {
-    object Fail    : MissingWeightPolicy()   // throws MissingWeightException (default)
-    object Skip    : MissingWeightPolicy()   // treats edge as absent (returns null path)
-    data class UseDefault(val weight: Double) : MissingWeightPolicy()  // substitutes value
+    object Fail: MissingWeightPolicy()   // throws MissingWeightException (default)
+    object Skip: MissingWeightPolicy()   // treats edge as absent (returns null path)
+    data class UseDefault(val weight: Double): MissingWeightPolicy()  // substitutes value
 }
 ```
 
@@ -422,10 +422,10 @@ val ops: GraphOperations = Neo4jGraphOperations(driver)
 // Dijkstra — weighted shortest path
 val path = ops.shortestPath(
     fromId = alice.id,
-    toId   = charlie.id,
+    toId = charlie.id,
     options = PathOptions(
-        weightProperty      = "cost",
-        edgeLabel           = "ROAD",
+        weightProperty = "cost",
+        edgeLabel = "ROAD",
         missingWeightPolicy = MissingWeightPolicy.UseDefault(1.0),
     ),
 )
@@ -433,8 +433,8 @@ println("total cost: ${path?.totalWeight}")
 
 // A* — with Euclidean heuristic
 val aStarPath = ops.aStarPath(
-    fromId  = alice.id,
-    toId    = charlie.id,
+    fromId = alice.id,
+    toId = charlie.id,
     options = PathOptions(weightProperty = "cost", edgeLabel = "ROAD"),
 ) { v ->
     val vx = v.properties["x"] as? Double ?: 0.0
@@ -447,9 +447,9 @@ val aStarPath = ops.aStarPath(
 
 ```kotlin
 data class GraphPath(
-    val vertices : List<GraphVertex>,
-    val edges    : List<GraphEdge>,
-    val steps    : List<PathStep>,          // interleaved VertexStep / EdgeStep
+    val vertices: List<GraphVertex>,
+    val edges: List<GraphEdge>,
+    val steps: List<PathStep>,          // interleaved VertexStep / EdgeStep
     val totalWeight: Double = 0.0,          // sum of edge weights (0.0 for unweighted)
 )
 ```

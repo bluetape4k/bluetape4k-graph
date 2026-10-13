@@ -40,8 +40,22 @@ fun batchEdgeOf(
     BatchEdge(fromId, toId, properties)
 
 fun batchEdgeOf(
+    fromId: GraphElementId,
+    toId: GraphElementId,
+    vararg params: Pair<String, Any?>,
+): BatchEdge =
+    BatchEdge(fromId, toId, params.toMap())
+
+fun batchEdgeOf(
     fromId: Any,
     toId: Any,
     properties: Map<String, Any?> = emptyMap(),
 ): BatchEdge =
-    BatchEdge(elementIdOf(fromId), elementIdOf(toId), properties)
+    BatchEdge(fromId.toGraphElementId(), toId.toGraphElementId(), properties)
+
+fun batchEdgeOf(
+    fromId: Any,
+    toId: Any,
+    vararg params: Pair<String, Any?>,
+): BatchEdge =
+    BatchEdge(fromId.toGraphElementId(), toId.toGraphElementId(), params.toMap())

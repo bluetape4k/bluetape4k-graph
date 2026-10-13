@@ -31,6 +31,9 @@ interface GraphVertexRepository {
      */
     fun createVertex(label: String, properties: Map<String, Any?> = emptyMap()): GraphVertex
 
+    fun createVertex(label: String, vararg params: Pair<String, Any?>): GraphVertex =
+        createVertex(label, params.toMap())
+
     /**
      * Creates multiple vertices with the same label and returns them in input order.
      *
@@ -69,7 +72,7 @@ interface GraphVertexRepository {
      *
      * ```kotlin
      * val found = ops.findVertexById("Person", vertex.id)  // non-null
-     * val none  = ops.findVertexById("Person", elementIdOf("unknown"))  // null
+     * val none  = ops.findVertexById("Person", "unknown".toGraphElementId())  // null
      * ```
      *
      * @param label vertex label.
@@ -106,6 +109,9 @@ interface GraphVertexRepository {
      * @return matching [GraphVertex] values.
      */
     fun findVerticesByLabel(label: String, filter: Map<String, Any?> = emptyMap()): List<GraphVertex>
+
+    fun findVerticesByLabel(label: String, vararg params: Pair<String, Any?>): List<GraphVertex> =
+        findVerticesByLabel(label, params.toMap())
 
     /**
      * label과 property filter로 정점을 API chunk 단위로 조회한다.
@@ -148,6 +154,9 @@ interface GraphVertexRepository {
      * @return updated [GraphVertex], or `null` when the ID is absent.
      */
     fun updateVertex(label: String, id: GraphElementId, properties: Map<String, Any?>): GraphVertex?
+
+    fun updateVertex(label: String, id: GraphElementId, vararg params: Pair<String, Any?>): GraphVertex? =
+        updateVertex(label, id, params.toMap())
 
     /**
      * Deletes a vertex.
