@@ -1,32 +1,25 @@
 package io.bluetape4k.graph.falkordb
 
-import io.bluetape4k.codec.Base58
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
-import io.bluetape4k.graph.schema.schemaManager
+import io.bluetape4k.codec.Base58
+import io.bluetape4k.logging.debug
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.CancellationException
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class FalkorDBGraphSchemaManagerTest: AbstractFalkorDBTest() {
 
-    private lateinit var ops: FalkorDBGraphOperations
-    private val cancellationDriver = mockk<com.falkordb.Driver>()
+    private val cancellationDriver = mockk<com.falkordb.Driver>(relaxed = true)
 
     @BeforeEach
-    fun setUp() {
+    override fun beforeEach() {
+        super.beforeEach()
         clearMocks(cancellationDriver)
-        ops = FalkorDBGraphOperations(driver, graphName)
-    }
-
-    @AfterEach
-    fun tearDown() {
-        runCatching { driver.graph(graphName).use { it.deleteGraph() } }
     }
 
     @Test
@@ -48,6 +41,7 @@ class FalkorDBGraphSchemaManagerTest: AbstractFalkorDBTest() {
             ops.schemaManager().createUniqueConstraint("Person", "email")
         }
 
+        log.debug { "ex=$ex" }
         ex.message shouldContain "GRAPH.CONSTRAINT CREATE"
     }
 

@@ -1,34 +1,31 @@
 package io.bluetape4k.graph.falkordb
 
-import io.bluetape4k.codec.Base58
-import com.falkordb.FalkorDB
 import com.falkordb.Driver
+import com.falkordb.FalkorDB
+import io.bluetape4k.codec.Base58
 import io.bluetape4k.graph.conformance.AbstractGraphCapabilityConformanceTest
 import io.bluetape4k.graph.repository.GraphCapability
 import io.bluetape4k.graph.repository.GraphOperations
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.testcontainers.graphdb.FalkorDBServer
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 
 /** FalkorDB Testcontainers lane에서 transaction 미지원 계약까지 검증한다. */
-class FalkorDBGraphCapabilityConformanceTest : AbstractGraphCapabilityConformanceTest() {
+class FalkorDBGraphCapabilityConformanceTest: AbstractGraphCapabilityConformanceTest() {
 
-    private lateinit var driver: Driver
-    private lateinit var delegate: FalkorDBGraphOperations
+    companion object: KLogging() {
+        private val falkordb by lazy { FalkorDBServer.Launcher.falkordb }
+    }
+
+    override val graphName: String = "conformance_${Base58.randomString(12)}"
+    override val expectedCapabilities: Set<GraphCapability> = backendCapabilities(transactional = false)
+
+    private val driver: Driver by lazy { FalkorDB.driver(falkordb.host, falkordb.port) }
+    private val delegate: FalkorDBGraphOperations by lazy { FalkorDBGraphOperations(driver, graphName) }
 
     override val operations: GraphOperations
         get() = delegate
 
-    override val graphName: String =
-        "conformance_${Base58.randomString(12)}"
-
-    override val expectedCapabilities: Set<GraphCapability> = backendCapabilities(transactional = false)
-
-    @BeforeAll
-    fun startServer() {
-        val server = FalkorDBServer.Launcher.falkordb
-        driver = FalkorDB.driver(server.host, server.port)
-        delegate = FalkorDBGraphOperations(driver, graphName)
-    }
 
     @AfterAll
     fun closeDriver() {

@@ -1,7 +1,9 @@
 package io.bluetape4k.graph.falkordb
 
 import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
 import io.bluetape4k.assertions.shouldBeInstanceOf
 import io.bluetape4k.assertions.shouldBeNull
@@ -13,34 +15,23 @@ import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.GraphUnsupportedOperationException
 import io.bluetape4k.graph.model.Direction
-import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
+import io.bluetape4k.graph.model.toGraphElementId
 import io.bluetape4k.graph.repository.transaction
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import io.mockk.every
 import io.mockk.mockk
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
-class FalkorDBGraphOperationsTest : AbstractFalkorDBTest() {
+class FalkorDBGraphOperationsTest: AbstractFalkorDBTest() {
 
-    private lateinit var ops: FalkorDBGraphOperations
-
-    @BeforeAll
-    override fun setupAll() {
-        super.setupAll()
-        ops = FalkorDBGraphOperations(driver, graphName)
-    }
-
-    @BeforeEach
-    fun cleanup() {
-        ops.dropGraph(graphName)
-    }
+    companion object: KLogging()
 
     // ----- 그래프 초기화 -----
 
@@ -65,7 +56,7 @@ class FalkorDBGraphOperationsTest : AbstractFalkorDBTest() {
     fun `graphExists returns false for non-existent graph`() {
         val result = ops.graphExists("non_existent_graph_xyz_12345")
         // 존재하지 않으면 false
-        result shouldBeEqualTo false
+        result.shouldBeFalse()
     }
 
     @Test
@@ -78,6 +69,7 @@ class FalkorDBGraphOperationsTest : AbstractFalkorDBTest() {
         val ex = assertFailsWith<GraphQueryException> {
             failingOps.graphExists(graphName)
         }
+        log.debug { "ex=$ex" }
 
         ex.message shouldContain "FalkorDB graphExists failed"
         ex.cause shouldBeInstanceOf IllegalStateException::class
@@ -86,15 +78,18 @@ class FalkorDBGraphOperationsTest : AbstractFalkorDBTest() {
     @Test
     @Order(14)
     fun `dropGraph preserves driver failures`() {
-        val failingDriver = mockk<com.falkordb.Driver>()
+        val failingDriver = mockk<com.falkordb.Driver>(relaxed = true)
         val failingGraph = mockk<com.falkordb.GraphContextGenerator>(relaxed = true)
+
         every { failingDriver.graph(graphName) } returns failingGraph
         every { failingGraph.deleteGraph() } throws IllegalStateException("redis unavailable")
+
         val failingOps = FalkorDBGraphOperations(failingDriver, graphName)
 
         val ex = assertFailsWith<GraphQueryException> {
             failingOps.dropGraph(graphName)
         }
+        log.debug { "ex=$ex" }
 
         ex.message shouldContain "FalkorDB dropGraph failed"
         ex.cause shouldBeInstanceOf IllegalStateException::class
@@ -108,6 +103,7 @@ class FalkorDBGraphOperationsTest : AbstractFalkorDBTest() {
         val props = mapOf("name" to "Alice", "age" to 30L)
         val vertex = ops.createVertex("Person", props)
 
+        log.debug { "vertex=$vertex" }
         vertex.label shouldBeEqualTo "Person"
         vertex.properties["name"] shouldBeEqualTo "Alice"
         vertex.properties["age"] shouldBeEqualTo 30L
@@ -119,6 +115,7 @@ class FalkorDBGraphOperationsTest : AbstractFalkorDBTest() {
         val created = ops.createVertex("Person", mapOf("name" to "Bob"))
         val found = ops.findVertexById("Person", created.id)
 
+        log.debug { "found=$found" }
         found.shouldNotBeNull()
         found.id shouldBeEqualTo created.id
         found.properties["name"] shouldBeEqualTo "Bob"
@@ -127,7 +124,7 @@ class FalkorDBGraphOperationsTest : AbstractFalkorDBTest() {
     @Test
     @Order(22)
     fun `존재하지 않는 id로 조회하면 null 반환`() {
-        val fakeId = GraphElementId.of("999999999")
+        val fakeId = 999_999_999.toGraphElementId()
         val result = ops.findVertexById("Person", fakeId)
         result.shouldBeNull()
     }
@@ -139,8 +136,8 @@ class FalkorDBGraphOperationsTest : AbstractFalkorDBTest() {
         ops.createVertex("Person", mapOf("name" to "Bob"))
         ops.createVertex("Car", mapOf("model" to "Tesla"))
 
-        val persons = ops.findVerticesByLabel("Person")
-        persons.shouldHaveSize(2)
+        val persons = ops.findVerticesByLabel("Person").onEach { log.debug { "vertex=$it" } }
+        persons shouldHaveSize 2
         persons.all { it.label == "Person" }.shouldBeTrue()
     }
 
@@ -150,9 +147,12 @@ class FalkorDBGraphOperationsTest : AbstractFalkorDBTest() {
         ops.createVertex("Person", mapOf("name" to "Alice", "city" to "Seoul"))
         ops.createVertex("Person", mapOf("name" to "Bob", "city" to "Busan"))
 
-        val result = ops.findVerticesByLabel("Person", mapOf("city" to "Seoul"))
-        result.shouldHaveSize(1)
-        result[0].properties["name"] shouldBeEqualTo "Alice"
+        val result = ops
+            .findVerticesByLabel("Person", mapOf("city" to "Seoul"))
+            .onEach { log.debug { "result=$it" } }
+
+        result shouldHaveSize 1
+        result.single().properties["name"] shouldBeEqualTo "Alice"
     }
 
     @Test
@@ -170,9 +170,8 @@ class FalkorDBGraphOperationsTest : AbstractFalkorDBTest() {
     @Order(26)
     fun `deleteVertex로 정점을 삭제하면 재조회 시 null 반환`() {
         val vertex = ops.createVertex("Person", mapOf("name" to "Dave"))
-        val deleted = ops.deleteVertex("Person", vertex.id)
-        deleted.shouldBeTrue()
 
+        ops.deleteVertex("Person", vertex.id).shouldBeTrue()
         ops.findVertexById("Person", vertex.id).shouldBeNull()
     }
 
@@ -195,6 +194,7 @@ class FalkorDBGraphOperationsTest : AbstractFalkorDBTest() {
             }
         }
 
+        log.debug { "ex=$ex" }
         ex.message shouldContain "does not support graph transactions"
     }
 
@@ -208,6 +208,7 @@ class FalkorDBGraphOperationsTest : AbstractFalkorDBTest() {
 
         val edge = ops.createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to 2020L))
 
+        log.debug { "edge=$edge" }
         edge.label shouldBeEqualTo "KNOWS"
         edge.startId shouldBeEqualTo alice.id
         edge.endId shouldBeEqualTo bob.id
@@ -225,8 +226,9 @@ class FalkorDBGraphOperationsTest : AbstractFalkorDBTest() {
         ops.createEdge(b.id, c.id, "KNOWS")
         ops.createEdge(a.id, c.id, "FOLLOWS")
 
-        val knowsEdges = ops.findEdgesByLabel("KNOWS")
-        knowsEdges.shouldHaveSize(2)
+        val knowsEdges = ops.findEdgesByLabel("KNOWS").onEach { log.debug { "edge=$it" } }
+
+        knowsEdges shouldHaveSize 2
         knowsEdges.all { it.label == "KNOWS" }.shouldBeTrue()
     }
 
@@ -237,10 +239,9 @@ class FalkorDBGraphOperationsTest : AbstractFalkorDBTest() {
         val b = ops.createVertex("Person", mapOf("name" to "B"))
         val edge = ops.createEdge(a.id, b.id, "KNOWS")
 
-        val deleted = ops.deleteEdge("KNOWS", edge.id)
-        deleted.shouldBeTrue()
+        ops.deleteEdge("KNOWS", edge.id).shouldBeTrue()
 
-        ops.findEdgesByLabel("KNOWS").shouldHaveSize(0)
+        ops.findEdgesByLabel("KNOWS").shouldBeEmpty()
     }
 
     // ----- 그래프 탐색 (Traversal) -----
@@ -255,11 +256,12 @@ class FalkorDBGraphOperationsTest : AbstractFalkorDBTest() {
         ops.createEdge(alice.id, bob.id, "KNOWS")
         ops.createEdge(alice.id, carol.id, "KNOWS")
 
-        val neighbors = ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING))
-        neighbors.shouldHaveSize(2)
-        val names = neighbors.map { it.properties["name"] }
-        names shouldContain "Bob"
-        names shouldContain "Carol"
+        val neighbors = ops
+            .neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING))
+            .onEach { log.debug { "neighbor=$it" } }
+
+        neighbors shouldHaveSize 2
+        neighbors.map { it.properties["name"] } shouldBeEqualTo listOf("Bob", "Carol")
     }
 
     @Test
@@ -272,11 +274,12 @@ class FalkorDBGraphOperationsTest : AbstractFalkorDBTest() {
         ops.createEdge(bob.id, alice.id, "KNOWS")
         ops.createEdge(carol.id, alice.id, "KNOWS")
 
-        val neighbors = ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.INCOMING))
-        neighbors.shouldHaveSize(2)
-        val names = neighbors.map { it.properties["name"] }
-        names shouldContain "Bob"
-        names shouldContain "Carol"
+        val neighbors = ops
+            .neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.INCOMING))
+            .onEach { log.debug { "neighbor=$it" } }
+
+        neighbors shouldHaveSize 2
+        neighbors.map { it.properties["name"] } shouldBeEqualTo listOf("Bob", "Carol")
     }
 
     @Test
@@ -289,11 +292,12 @@ class FalkorDBGraphOperationsTest : AbstractFalkorDBTest() {
         ops.createEdge(alice.id, bob.id, "KNOWS")
         ops.createEdge(carol.id, alice.id, "KNOWS")
 
-        val neighbors = ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.BOTH))
-        neighbors.shouldHaveSize(2)
-        val names = neighbors.map { it.properties["name"] }
-        names shouldContain "Bob"
-        names shouldContain "Carol"
+        val neighbors = ops
+            .neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.BOTH))
+            .onEach { log.debug { "neighbor=$it" } }
+
+        neighbors shouldHaveSize 2
+        neighbors.map { it.properties["name"] } shouldBeEqualTo listOf("Bob", "Carol")
     }
 
     @Test
@@ -306,14 +310,15 @@ class FalkorDBGraphOperationsTest : AbstractFalkorDBTest() {
         ops.createEdge(a.id, b.id, "KNOWS")
         ops.createEdge(b.id, c.id, "KNOWS")
 
-        val neighbors = ops.neighbors(
-            a.id,
-            NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING, maxDepth = 2)
-        )
+        val neighbors = ops
+            .neighbors(
+                a.id,
+                NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING, maxDepth = 2)
+            )
+            .onEach { log.debug { "neighbor=$it" } }
+
         neighbors.shouldNotBeEmpty()
-        val names = neighbors.map { it.properties["name"] }
-        names shouldContain "B"
-        names shouldContain "C"
+        neighbors.map { it.properties["name"] } shouldBeEqualTo listOf("B", "C")
     }
 
     @Test
@@ -327,6 +332,8 @@ class FalkorDBGraphOperationsTest : AbstractFalkorDBTest() {
         ops.createEdge(b.id, c.id, "KNOWS")
 
         val path = ops.shortestPath(a.id, c.id, PathOptions(edgeLabel = "KNOWS"))
+
+        log.debug { "path=$path" }
         path.shouldNotBeNull()
         path.vertices.shouldNotBeEmpty()
     }
@@ -353,7 +360,10 @@ class FalkorDBGraphOperationsTest : AbstractFalkorDBTest() {
         ops.createEdge(b.id, c.id, "KNOWS")
         ops.createEdge(a.id, c.id, "KNOWS")
 
-        val paths = ops.allPaths(a.id, c.id, PathOptions(edgeLabel = "KNOWS"))
+        val paths = ops
+            .allPaths(a.id, c.id, PathOptions(edgeLabel = "KNOWS"))
+            .onEach { log.debug { "path=$it" } }
+
         paths.shouldNotBeEmpty()
         paths.size shouldBeGreaterOrEqualTo 2
     }

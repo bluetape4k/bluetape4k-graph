@@ -20,10 +20,10 @@ import java.io.Serializable
  * ### Usage
  * ```kotlin
  * val edge = GraphEdge(
- *     id = GraphElementId.of("e-1"),
+ *     id = elementIdOf("e-1"),
  *     label = "KNOWS",
- *     startId = GraphElementId.of("v-1"),
- *     endId = GraphElementId.of("v-2"),
+ *     startId = elementIdOf("v-1"),
+ *     endId = elementIdOf("v-2"),
  *     properties = mapOf("since" to 2023)
  * )
  * ```

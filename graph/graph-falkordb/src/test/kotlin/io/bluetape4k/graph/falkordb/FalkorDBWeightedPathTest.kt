@@ -1,41 +1,30 @@
 package io.bluetape4k.graph.falkordb
 
-import io.bluetape4k.graph.model.MissingWeightPolicy
-import io.bluetape4k.graph.model.PathOptions
-import io.bluetape4k.graph.conformance.WeightedPathDepthConformance
-import io.bluetape4k.logging.KLogging
+import io.bluetape4k.assertions.DOUBLE_EPSILON
 import io.bluetape4k.assertions.shouldBeNear
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldNotBeNull
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
+import io.bluetape4k.graph.conformance.WeightedPathDepthConformance
+import io.bluetape4k.graph.model.MissingWeightPolicy
+import io.bluetape4k.graph.model.PathOptions
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
+import io.bluetape4k.support.asDouble
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import kotlin.math.sqrt
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class FalkorDBWeightedPathTest : AbstractFalkorDBTest() {
+class FalkorDBWeightedPathTest: AbstractFalkorDBTest() {
 
-    companion object : KLogging()
-
-    private lateinit var ops: FalkorDBGraphOperations
-
-    @BeforeAll
-    override fun setupAll() {
-        super.setupAll()
-        ops = FalkorDBGraphOperations(driver, graphName)
-    }
-
-    @BeforeEach
-    fun cleanup() {
-        ops.dropGraph(graphName)
-    }
+    companion object: KLogging()
 
     @Test
     fun `가중치 최단 경로 A에서 C까지는 A-B-C이다`() {
         val a = ops.createVertex("City", mapOf("name" to "A"))
         val b = ops.createVertex("City", mapOf("name" to "B"))
         val c = ops.createVertex("City", mapOf("name" to "C"))
+
         ops.createEdge(a.id, b.id, "ROAD", mapOf("cost" to 1.0))
         ops.createEdge(b.id, c.id, "ROAD", mapOf("cost" to 2.0))
         ops.createEdge(a.id, c.id, "ROAD", mapOf("cost" to 5.0))
@@ -45,7 +34,8 @@ class FalkorDBWeightedPathTest : AbstractFalkorDBTest() {
             PathOptions(weightProperty = "cost", edgeLabel = "ROAD"),
         ).shouldNotBeNull()
 
-        path.totalWeight.shouldBeNear(3.0, 0.001)
+        log.debug { "path=$path" }
+        path.totalWeight.shouldBeNear(3.0, DOUBLE_EPSILON)
     }
 
     @Test
@@ -84,22 +74,23 @@ class FalkorDBWeightedPathTest : AbstractFalkorDBTest() {
         val a = ops.createVertex("City", mapOf("name" to "A", "x" to 0.0, "y" to 0.0))
         val b = ops.createVertex("City", mapOf("name" to "B", "x" to 1.0, "y" to 0.0))
         val c = ops.createVertex("City", mapOf("name" to "C", "x" to 2.0, "y" to 0.0))
+
         ops.createEdge(a.id, b.id, "ROAD", mapOf("cost" to 1.0))
         ops.createEdge(b.id, c.id, "ROAD", mapOf("cost" to 2.0))
         ops.createEdge(a.id, c.id, "ROAD", mapOf("cost" to 5.0))
 
-        val goalX = c.properties["x"] as? Double ?: 2.0
-        val goalY = c.properties["y"] as? Double ?: 0.0
+        val goalX = c.properties["x"].asDouble(2.0)
+        val goalY = c.properties["y"].asDouble()
 
         val path = ops.aStarPath(
             a.id, c.id,
             PathOptions(weightProperty = "cost", edgeLabel = "ROAD"),
         ) { v ->
-            val vx = v.properties["x"] as? Double ?: 0.0
-            val vy = v.properties["y"] as? Double ?: 0.0
+            val vx = v.properties["x"].asDouble()
+            val vy = v.properties["y"].asDouble()
             sqrt((vx - goalX) * (vx - goalX) + (vy - goalY) * (vy - goalY))
         }.shouldNotBeNull()
 
-        path.totalWeight.shouldBeNear(3.0, 0.001)
+        path.totalWeight.shouldBeNear(3.0, DOUBLE_EPSILON)
     }
 }

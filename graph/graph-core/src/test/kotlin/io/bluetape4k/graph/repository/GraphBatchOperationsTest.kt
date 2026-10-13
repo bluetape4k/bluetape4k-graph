@@ -291,7 +291,7 @@ class GraphBatchOperationsTest: AbstractGraphTest() {
 
         override fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex {
             createdProperties += properties
-            return GraphVertex(GraphElementId.of("v${createdProperties.size}"), label, properties)
+            return GraphVertex(elementIdOf("v${createdProperties.size}"), label, properties)
         }
 
         override fun findVertexById(label: String, id: GraphElementId): GraphVertex? = unsupported()
@@ -314,7 +314,7 @@ class GraphBatchOperationsTest: AbstractGraphTest() {
             properties: Map<String, Any?>,
         ): GraphEdge {
             createdEdges += BatchEdge(fromId, toId, properties)
-            return GraphEdge(GraphElementId.of("e${createdEdges.size}"), label, fromId, toId, properties)
+            return GraphEdge(elementIdOf("e${createdEdges.size}"), label, fromId, toId, properties)
         }
 
         override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): List<GraphEdge> = unsupported()
@@ -364,7 +364,7 @@ class GraphBatchOperationsTest: AbstractGraphTest() {
 
         override suspend fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex {
             createdProperties += properties
-            return GraphVertex(GraphElementId.of("v${createdProperties.size}"), label, properties)
+            return GraphVertex(elementIdOf("v${createdProperties.size}"), label, properties)
         }
 
         override suspend fun findVertexById(label: String, id: GraphElementId): GraphVertex? = unsupported()
@@ -390,7 +390,7 @@ class GraphBatchOperationsTest: AbstractGraphTest() {
             properties: Map<String, Any?>,
         ): GraphEdge {
             createdEdges += BatchEdge(fromId, toId, properties)
-            return GraphEdge(GraphElementId.of("e${createdEdges.size}"), label, fromId, toId, properties)
+            return GraphEdge(elementIdOf("e${createdEdges.size}"), label, fromId, toId, properties)
         }
 
         override fun findEdgesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphEdge> = unsupported()

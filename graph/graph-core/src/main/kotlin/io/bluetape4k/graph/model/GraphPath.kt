@@ -66,9 +66,9 @@ sealed class PathStep: Serializable {
  *
  * ### Usage
  * ```kotlin
- * val v1 = GraphVertex(GraphElementId.of("1"), "Person")
- * val v2 = GraphVertex(GraphElementId.of("2"), "Person")
- * val e  = GraphEdge(GraphElementId.of("e1"), "KNOWS", v1.id, v2.id)
+ * val v1 = GraphVertex(elementIdOf("1"), "Person")
+ * val v2 = GraphVertex(elementIdOf("2"), "Person")
+ * val e  = GraphEdge(elementIdOf("e1"), "KNOWS", v1.id, v2.id)
  *
  * val path = GraphPath(listOf(
  *     PathStep.VertexStep(v1),

@@ -12,6 +12,7 @@ import io.bluetape4k.graph.GraphUnsupportedOperationException
 import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphVertex
+import io.bluetape4k.graph.model.elementIdOf
 import io.bluetape4k.graph.repository.GraphCapabilities
 import io.bluetape4k.graph.repository.GraphCapability
 import io.bluetape4k.graph.repository.GraphMergeOperations
@@ -206,7 +207,7 @@ class VirtualThreadOptionalSurfaceTddTest: AbstractGraphTest() {
         ): GraphVertex {
             started.countDown()
             release.await()
-            return GraphVertex(GraphElementId.of("v-1"), label, matchProperties + setProperties)
+            return GraphVertex(elementIdOf("v-1"), label, matchProperties + setProperties)
         }
 
         override fun mergeEdge(
@@ -218,7 +219,7 @@ class VirtualThreadOptionalSurfaceTddTest: AbstractGraphTest() {
         ): GraphEdge {
             started.countDown()
             release.await()
-            return GraphEdge(GraphElementId.of("e-1"), label, fromId, toId, matchProperties + setProperties)
+            return GraphEdge(elementIdOf("e-1"), label, fromId, toId, matchProperties + setProperties)
         }
     }
 }

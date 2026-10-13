@@ -18,8 +18,8 @@ import kotlin.uuid.Uuid
  *
  * ### Usage
  * ```kotlin
- * val id1 = GraphElementId.of("node-abc")
- * val id2 = GraphElementId.of(42L)  // AGE Long ID
+ * val id1 = elementIdOf("node-abc")
+ * val id2 = elementIdOf(42L)  // AGE Long ID
  * ```
  */
 @JvmInline
@@ -41,7 +41,7 @@ value class GraphElementId(val value: String): Serializable {
          * Creates a [GraphElementId] from a string value.
          *
          * ```kotlin
-         * val id = GraphElementId.of("node-abc")
+         * val id = elementIdOf("node-abc")
          * ```
          *
          * @param value ID string value.
@@ -56,7 +56,7 @@ value class GraphElementId(val value: String): Serializable {
          * Use this for backends such as Apache AGE whose internal IDs are [Long] values.
          *
          * ```kotlin
-         * val id = GraphElementId.of(42L)  // AGE Long ID -> "42"
+         * val id = elementIdOf(42L)  // AGE Long ID -> "42"
          * ```
          *
          * @param value Numeric [Long] ID.
@@ -71,7 +71,7 @@ value class GraphElementId(val value: String): Serializable {
          * Use this for backends such as Apache AGE whose internal IDs are [Long] values.
          *
          * ```kotlin
-         * val id = GraphElementId.of(42)  // AGE Long ID -> "42"
+         * val id = elementIdOf(42)  // AGE Long ID -> "42"
          * ```
          *
          * @param value Numeric [Long] ID.
@@ -99,9 +99,9 @@ value class GraphElementId(val value: String): Serializable {
  */
 fun graphElementIdOf(value: Any): GraphElementId = when (value) {
     is GraphElementId -> value
-    is CharSequence -> GraphElementId.of(value.toString())
-    is Number -> GraphElementId.of(value)
-    else -> GraphElementId.of(value.toString())
+    is CharSequence -> GraphElementId(value.toString())
+    is Number -> GraphElementId(value)
+    else -> GraphElementId(value.toString())
 }
 
 /**
@@ -121,7 +121,9 @@ fun graphElementIdOf(value: Any): GraphElementId = when (value) {
  */
 fun elementIdOf(value: Any): GraphElementId = when (value) {
     is GraphElementId -> value
-    is CharSequence -> GraphElementId.of(value.toString())
-    is Number -> GraphElementId.of(value)
-    else -> GraphElementId.of(value.toString())
+    is CharSequence -> GraphElementId(value.toString())
+    is Number -> GraphElementId(value)
+    else -> GraphElementId(value.toString())
 }
+
+fun Any.toGraphElementId(): GraphElementId = elementIdOf(this)

@@ -2,24 +2,32 @@ package io.bluetape4k.graph.falkordb
 
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldContain
-import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
+import io.bluetape4k.graph.model.toGraphElementId
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
+import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.toList
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class FalkorDBTraversalValidationTest {
 
-    private val driver = mockk<com.falkordb.Driver>()
+    companion object: KLogging()
+
+    private val driver = mockk<com.falkordb.Driver>(relaxed = true)
     private val graphName = "test"
     private val unsafeLabel = "KNOWS) MATCH (other)"
-    private val startId = GraphElementId.of("0")
-    private val endId = GraphElementId.of("1")
+    private val startId = 0.toGraphElementId()
+    private val endId = 1.toGraphElementId()
 
-    init {
+    @BeforeEach
+    fun beforeEach() {
+        clearMocks(driver)
         every { driver.graph(graphName) } throws AssertionError("driver call must not be reached")
     }
 
@@ -31,7 +39,8 @@ class FalkorDBTraversalValidationTest {
             ops.neighbors(startId, NeighborOptions(edgeLabel = unsafeLabel))
         }
 
-        ex.message.shouldContain("valid identifier")
+        log.debug { "ex=$ex" }
+        ex.message shouldContain "valid identifier"
     }
 
     @Test
@@ -42,7 +51,8 @@ class FalkorDBTraversalValidationTest {
             ops.shortestPath(startId, endId, PathOptions(edgeLabel = unsafeLabel))
         }
 
-        ex.message.shouldContain("valid identifier")
+        log.debug { "ex=$ex" }
+        ex.message shouldContain "valid identifier"
     }
 
     @Test
@@ -53,7 +63,8 @@ class FalkorDBTraversalValidationTest {
             ops.allPaths(startId, endId, PathOptions(edgeLabel = unsafeLabel))
         }
 
-        ex.message.shouldContain("valid identifier")
+        log.debug { "ex=$ex" }
+        ex.message shouldContain "valid identifier"
     }
 
     @Test
@@ -64,7 +75,8 @@ class FalkorDBTraversalValidationTest {
             ops.neighbors(startId, NeighborOptions(edgeLabel = unsafeLabel)).toList()
         }
 
-        ex.message.shouldContain("valid identifier")
+        log.debug { "ex=$ex" }
+        ex.message shouldContain "valid identifier"
     }
 
     @Test
@@ -75,7 +87,8 @@ class FalkorDBTraversalValidationTest {
             ops.shortestPath(startId, endId, PathOptions(edgeLabel = unsafeLabel))
         }
 
-        ex.message.shouldContain("valid identifier")
+        log.debug { "ex=$ex" }
+        ex.message shouldContain "valid identifier"
     }
 
     @Test
@@ -86,6 +99,7 @@ class FalkorDBTraversalValidationTest {
             ops.allPaths(startId, endId, PathOptions(edgeLabel = unsafeLabel)).toList()
         }
 
-        ex.message.shouldContain("valid identifier")
+        log.debug { "ex=$ex" }
+        ex.message shouldContain "valid identifier"
     }
 }

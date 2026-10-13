@@ -1,10 +1,10 @@
 package io.bluetape4k.graph.age.sql
 
 import io.bluetape4k.graph.model.GraphEdge
-import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphPath
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.PathStep
+import io.bluetape4k.graph.model.elementIdOf
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.trace
 
@@ -37,7 +37,7 @@ object AgeTypeParser: KLogging() {
 
         val json = agtype.removeSuffix("::vertex").trim()
         val map = parseJsonObject(json)
-        val id = GraphElementId.of((map["id"] as Number).toLong())
+        val id = elementIdOf((map["id"] as Number).toLong())
         val label = map["label"] as String
         val properties = (map["properties"] as? Map<String, Any?>) ?: emptyMap()
 
@@ -61,10 +61,10 @@ object AgeTypeParser: KLogging() {
 
         val json = agtype.removeSuffix("::edge").trim()
         val map = parseJsonObject(json)
-        val id = GraphElementId.of((map["id"] as Number).toLong())
+        val id = elementIdOf((map["id"] as Number).toLong())
         val label = map["label"] as String
-        val startId = GraphElementId.of((map["start_id"] as Number).toLong())
-        val endId = GraphElementId.of((map["end_id"] as Number).toLong())
+        val startId = elementIdOf((map["start_id"] as Number).toLong())
+        val endId = elementIdOf((map["end_id"] as Number).toLong())
         val properties = (map["properties"] as? Map<String, Any?>) ?: emptyMap()
 
         return GraphEdge(id, label, startId, endId, properties)

@@ -22,6 +22,7 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.model.TreeTraversalOptions
+import io.bluetape4k.graph.model.elementIdOf
 import io.bluetape4k.graph.repository.DEFAULT_GRAPH_EXPORT_CHUNK_SIZE
 import io.bluetape4k.graph.repository.GraphAlgorithmRepository
 import io.bluetape4k.graph.repository.GraphBatchValidation
@@ -754,8 +755,8 @@ class TinkerGraphOperations:
         val outAdjacency = HashMap<GraphElementId, MutableList<GraphElementId>>()
         vertexIds.forEach { outAdjacency[it] = mutableListOf() }
         gEdges.forEach { e ->
-            val src = GraphElementId.of(e.outVertex().id().toString())
-            val dst = GraphElementId.of(e.inVertex().id().toString())
+            val src = elementIdOf(e.outVertex().id().toString())
+            val dst = elementIdOf(e.inVertex().id().toString())
             if (src in vertexIds && dst in vertexIds) {
                 outAdjacency.getOrPut(src) { mutableListOf() }.add(dst)
             }
@@ -810,8 +811,8 @@ class TinkerGraphOperations:
         val uf = io.bluetape4k.graph.algo.internal.UnionFind(ids)
         val edges = (if (options.edgeLabel != null) g.E().hasLabel(options.edgeLabel) else g.E()).toList()
         edges.forEach { e ->
-            val src = GraphElementId.of(e.outVertex().id().toString())
-            val dst = GraphElementId.of(e.inVertex().id().toString())
+            val src = elementIdOf(e.outVertex().id().toString())
+            val dst = elementIdOf(e.inVertex().id().toString())
             if (src in ids && dst in ids) {
                 uf.union(src, dst)
             }
@@ -839,8 +840,8 @@ class TinkerGraphOperations:
         val collectedVertices = HashMap<GraphElementId, GraphVertex>()
         val edgesQuery = if (options.edgeLabel != null) g.E().hasLabel(options.edgeLabel) else g.E()
         edgesQuery.toList().forEach { e ->
-            val src = GraphElementId.of(e.outVertex().id().toString())
-            val dst = GraphElementId.of(e.inVertex().id().toString())
+            val src = elementIdOf(e.outVertex().id().toString())
+            val dst = elementIdOf(e.inVertex().id().toString())
             collectedVertices[src] = GremlinRecordMapper.vertexToGraphVertex(e.outVertex())
             collectedVertices[dst] = GremlinRecordMapper.vertexToGraphVertex(e.inVertex())
             when (options.direction) {
@@ -872,8 +873,8 @@ class TinkerGraphOperations:
         val collectedVertices = HashMap<GraphElementId, GraphVertex>()
         val edgesQuery = if (options.edgeLabel != null) g.E().hasLabel(options.edgeLabel) else g.E()
         edgesQuery.toList().forEach { e ->
-            val src = GraphElementId.of(e.outVertex().id().toString())
-            val dst = GraphElementId.of(e.inVertex().id().toString())
+            val src = elementIdOf(e.outVertex().id().toString())
+            val dst = elementIdOf(e.inVertex().id().toString())
             collectedVertices[src] = GremlinRecordMapper.vertexToGraphVertex(e.outVertex())
             collectedVertices[dst] = GremlinRecordMapper.vertexToGraphVertex(e.inVertex())
             when (options.direction) {
@@ -909,8 +910,8 @@ class TinkerGraphOperations:
         val edgesById = HashMap<Pair<GraphElementId, GraphElementId>, GraphEdge>()
         val edgeQuery = if (options.edgeLabel != null) g.E().hasLabel(options.edgeLabel) else g.E()
         edgeQuery.toList().forEach { e ->
-            val src = GraphElementId.of(e.outVertex().id().toString())
-            val dst = GraphElementId.of(e.inVertex().id().toString())
+            val src = elementIdOf(e.outVertex().id().toString())
+            val dst = elementIdOf(e.inVertex().id().toString())
             if (src in verticesById && dst in verticesById) {
                 adjacency.getOrPut(src) { ArrayList() }.add(dst)
                 edgesById[src to dst] = GremlinRecordMapper.edgeToGraphEdge(e)

@@ -24,7 +24,7 @@ class BatchEdgeTest: AbstractGraphTest() {
 
     @Test
     fun `BatchEdge defaults properties to empty map`() {
-        val edge = BatchEdge(GraphElementId.of("v1"), GraphElementId.of("v2"))
+        val edge = BatchEdge(elementIdOf("v1"), elementIdOf("v2"))
 
         log.debug { "edge=$edge" }
         edge.properties shouldBeEqualTo emptyMap()

@@ -6,8 +6,7 @@ bluetape4k-graph의 FalkorDB 그래프 데이터베이스 백엔드 모듈.
 
 ## 개요
 
-[FalkorDB](https://falkordb.com/)는 Redis 모듈 기반 그래프 데이터베이스로 openCypher 쿼리를 지원합니다.
-이 모듈은 [jfalkordb](https://github.com/FalkorDB/jfalkordb) 0.8.0 Java 드라이버를 사용하여
+[FalkorDB](https://falkordb.com/)는 Redis 모듈 기반 그래프 데이터베이스로 openCypher 쿼리를 지원합니다. 이 모듈은 [jfalkordb](https://github.com/FalkorDB/jfalkordb) 0.8.0 Java 드라이버를 사용하여
 `GraphOperations` / `GraphSuspendOperations`의 동기 및 코루틴 구현을 제공합니다.
 
 ## Architecture Diagram
@@ -33,7 +32,7 @@ val driver = FalkorDB.driver("localhost", 6379)
 val ops = FalkorDBGraphOperations(driver, graphName = "social")
 
 val alice = ops.createVertex("Person", mapOf("name" to "Alice", "age" to 30))
-val bob   = ops.createVertex("Person", mapOf("name" to "Bob",   "age" to 25))
+val bob = ops.createVertex("Person", mapOf("name" to "Bob", "age" to 25))
 ops.createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to 2024))
 
 val count = ops.countVertices("Person")  // 2
@@ -56,9 +55,7 @@ schema.dropIndex("Person", "email")
 
 ## Merge / Upsert and Transaction DSL
 
-FalkorDB backend는 native Cypher `MERGE` 기반 `GraphMergeOperations`를 지원한다.
-다만 Redis `MULTI`는 graph query result를 `EXEC`까지 지연시키므로, 같은 block 안에서 생성된 vertex id를
-즉시 사용해야 하는 repository-style `Transaction DSL`은 명시적으로 지원하지 않는다.
+FalkorDB backend는 native Cypher `MERGE` 기반 `GraphMergeOperations`를 지원한다. 다만 Redis `MULTI`는 graph query result를 `EXEC`까지 지연시키므로, 같은 block 안에서 생성된 vertex id를 즉시 사용해야 하는 repository-style `Transaction DSL`은 명시적으로 지원하지 않는다.
 
 ```kotlin
 import io.bluetape4k.graph.repository.mergeEdge
@@ -99,11 +96,8 @@ driver.close()
 
 ### 순회 `edgeLabel` 검증
 
-`neighbors`, `shortestPath`, `allPaths`의 `edgeLabel`은 Cypher 관계 패턴에
-삽입되므로 `^[A-Za-z_][A-Za-z0-9_]*$`에 맞는 안전한 식별자만 허용합니다.
-`null`은 기존처럼 모든 label을 순회합니다. blank 또는 안전하지 않은 label은
-FalkorDB driver를 호출하기 전에 `IllegalArgumentException`으로 거부합니다.
-동기 API와 코루틴 API는 같은 검증 계약을 사용합니다.
+`neighbors`, `shortestPath`, `allPaths`의 `edgeLabel`은 Cypher 관계 패턴에 삽입되므로 `^[A-Za-z_][A-Za-z0-9_]*$`에 맞는 안전한 식별자만 허용합니다.
+`null`은 기존처럼 모든 label을 순회합니다. blank 또는 안전하지 않은 label은 FalkorDB driver를 호출하기 전에 `IllegalArgumentException`으로 거부합니다. 동기 API와 코루틴 API는 같은 검증 계약을 사용합니다.
 
 ## 테스트
 

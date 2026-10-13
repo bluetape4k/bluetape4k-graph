@@ -8,6 +8,8 @@ import io.bluetape4k.graph.model.GraphIndex
 import io.bluetape4k.graph.model.GraphSchemaEntityType
 import io.bluetape4k.graph.schema.GraphSchemaManager
 import io.bluetape4k.graph.schema.GraphSchemaNames
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.trace
 import kotlinx.coroutines.CancellationException
 
 /**
@@ -22,13 +24,17 @@ class FalkorDBGraphSchemaManager(
     private val graphName: String = FalkorDBGraphOperations.DEFAULT_GRAPH_NAME,
 ): GraphSchemaManager {
 
-    private fun withGraph(block: (com.falkordb.Graph) -> ResultSet): ResultSet =
+    companion object: KLogging()
+
+    private inline fun withGraph(block: (com.falkordb.Graph) -> ResultSet): ResultSet =
         driver.graph(graphName).use(block)
 
     override fun createIndex(label: String, property: String) {
         val (safeLabel, safeProperty) = GraphSchemaNames.validateLabelAndProperty(label, property)
         ignoreAlreadyExists {
             withGraph { graph ->
+                val query = "CREATE INDEX FOR (n:$safeLabel) ON (n.$safeProperty)"
+                log.trace { "Create Index. query=$query" }
                 graph.query("CREATE INDEX FOR (n:$safeLabel) ON (n.$safeProperty)")
             }
         }
@@ -45,7 +51,9 @@ class FalkorDBGraphSchemaManager(
         val (safeLabel, safeProperty) = GraphSchemaNames.validateLabelAndProperty(label, property)
         ignoreMissing {
             withGraph { graph ->
-                graph.query("DROP INDEX ON :$safeLabel($safeProperty)")
+                val query = "DROP INDEX ON :$safeLabel($safeProperty)"
+                log.trace { "Drop Index. `  query=$query" }
+                graph.query(query)
             }
         }
     }
@@ -62,9 +70,9 @@ class FalkorDBGraphSchemaManager(
         val label = record.stringOrNull("label").orEmpty()
         val property = record.stringOrNull("properties", "property")
         val entityType = when (record.stringOrNull("entitytype", "entityType")?.uppercase()) {
-            "NODE", "VERTEX"              -> GraphSchemaEntityType.VERTEX
+            "NODE", "VERTEX" -> GraphSchemaEntityType.VERTEX
             "RELATIONSHIP", "EDGE", "REL" -> GraphSchemaEntityType.EDGE
-            else                          -> GraphSchemaEntityType.UNKNOWN
+            else -> GraphSchemaEntityType.UNKNOWN
         }
 
         return GraphIndex(
@@ -77,7 +85,7 @@ class FalkorDBGraphSchemaManager(
     }
 
     @Suppress("TooGenericExceptionCaught")
-    private fun ignoreAlreadyExists(block: () -> Unit) {
+    private inline fun ignoreAlreadyExists(block: () -> Unit) {
         try {
             block()
         } catch (e: CancellationException) {
@@ -91,14 +99,17 @@ class FalkorDBGraphSchemaManager(
     }
 
     @Suppress("TooGenericExceptionCaught")
-    private fun ignoreMissing(block: () -> Unit) {
+    private inline fun ignoreMissing(block: () -> Unit) {
         try {
             block()
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
             val message = e.message.orEmpty()
-            if (!message.contains("not found", ignoreCase = true) && !message.contains("does not exist", ignoreCase = true)) {
+            if (!message.contains("not found", ignoreCase = true) && !message.contains(
+                    "does not exist",
+                    ignoreCase = true
+                )) {
                 throw e
             }
         }
@@ -111,6 +122,6 @@ private fun Record.stringOrNull(vararg keys: String): String? =
         val value = runCatching { getValue<Any?>(key) }.getOrNull() ?: return@firstNotNullOfOrNull null
         when (value) {
             is List<*> -> value.firstOrNull()?.toString()
-            else       -> value.toString()
+            else -> value.toString()
         }
     }

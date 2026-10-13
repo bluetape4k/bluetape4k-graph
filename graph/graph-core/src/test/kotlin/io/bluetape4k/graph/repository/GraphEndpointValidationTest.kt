@@ -4,7 +4,7 @@ import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeInstanceOf
 import io.bluetape4k.graph.AbstractGraphTest
-import io.bluetape4k.graph.model.GraphElementId
+import io.bluetape4k.graph.model.elementIdOf
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
 import io.bluetape4k.graph.vt.asVirtualThreadVertexRepository
@@ -48,7 +48,7 @@ class GraphEndpointValidationTest: AbstractGraphTest() {
     @Test
     fun `동기 endpoint가 없으면 IllegalArgumentException을 던진다`() {
         assertFailsWith<IllegalArgumentException> {
-            ops.requireEndpoint(GraphElementId.of("99999999"), "Person", "personId")
+            ops.requireEndpoint(elementIdOf("99999999"), "Person", "personId")
         }
     }
 
@@ -73,7 +73,7 @@ class GraphEndpointValidationTest: AbstractGraphTest() {
     @Test
     fun `suspend endpoint가 없으면 IllegalArgumentException을 던진다`() = runSuspendIO {
         assertFailsWith<IllegalArgumentException> {
-            suspendOps.requireEndpoint(GraphElementId.of("99999999"), "Person", "personId")
+            suspendOps.requireEndpoint(elementIdOf("99999999"), "Person", "personId")
         }
     }
 
@@ -99,7 +99,7 @@ class GraphEndpointValidationTest: AbstractGraphTest() {
     @Test
     fun `virtual thread endpoint가 없으면 IllegalArgumentException으로 실패한다`() {
         val error = assertFailsWith<CompletionException> {
-            virtualThreadOps.requireEndpointAsync(GraphElementId.of("99999999"), "Person", "personId").join()
+            virtualThreadOps.requireEndpointAsync(elementIdOf("99999999"), "Person", "personId").join()
         }
 
         error.cause shouldBeInstanceOf IllegalArgumentException::class

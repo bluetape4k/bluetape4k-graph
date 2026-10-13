@@ -3,6 +3,8 @@ package io.bluetape4k.graph.falkordb
 import com.falkordb.Driver
 import com.falkordb.Record
 import io.bluetape4k.graph.support.requireSafeIdentifier
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.trace
 import io.bluetape4k.support.requireNotBlank
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -27,6 +29,13 @@ data class FalkorDBAtomicCypherCommand(
 
     companion object {
         private val PARAMETER_NAME = Regex("[A-Za-z_][A-Za-z0-9_]*")
+
+        operator fun invoke(
+            cypher: String,
+            vararg parameters: Pair<String, Any?>,
+        ): FalkorDBAtomicCypherCommand {
+            return FalkorDBAtomicCypherCommand(cypher, parameters.toMap())
+        }
     }
 }
 
@@ -39,12 +48,18 @@ class FalkorDBAtomicCypherCommandExecutor(
         graphName.requireNotBlank("graphName").requireSafeIdentifier("graphName")
     }
 
-    fun execute(command: FalkorDBAtomicCypherCommand): List<Record> =
-        driver.graph(graphName).use { graph ->
-            @Suppress("UNCHECKED_CAST")
+    companion object: KLogging()
+
+    @Suppress("UNCHECKED_CAST")
+    fun execute(command: FalkorDBAtomicCypherCommand): List<Record> {
+        return driver.graph(graphName).use { graph ->
+            log.trace { "Execute query. query=${command.cypher}, params=${command.parameters}" }
             graph.query(command.cypher, command.parameters as Map<String, Any>).toList()
         }
+    }
 
     suspend fun executeSuspending(command: FalkorDBAtomicCypherCommand): List<Record> =
-        withContext(Dispatchers.IO) { execute(command) }
+        withContext(Dispatchers.IO) {
+            execute(command)
+        }
 }
