@@ -2,6 +2,10 @@ plugins {
     id("java-test-fixtures")
 }
 
+configurations {
+    testImplementation.get().extendsFrom(compileOnly.get(), runtimeOnly.get())
+}
+
 dependencies {
     api(bt4k.bluetape4k.core)
     implementation(bt4k.bluetape4k.virtualthread.api)

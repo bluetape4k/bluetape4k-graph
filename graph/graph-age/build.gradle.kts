@@ -1,12 +1,19 @@
+configurations {
+    testImplementation.get().extendsFrom(compileOnly.get(), runtimeOnly.get())
+}
+
 dependencies {
     api(project(":bluetape4k-graph-core"))
 
-api(bt4k.exposed.core)
-api(libs.exposed.dao)
-api(bt4k.exposed.jdbc)
-api(bt4k.exposed.java.time)
+    api(bt4k.exposed.core)
+    api(libs.exposed.dao)
+    api(bt4k.exposed.jdbc)
+    api(bt4k.exposed.java.time)
     api(bt4k.postgresql)
-    implementation(bt4k.caffeine.core)
+
+    // Caches
+    compileOnly(bt4k.bluetape4k.cache.core)
+    compileOnly(bt4k.caffeine.core)
 
     implementation(bt4k.bluetape4k.coroutines)
     implementation(libs.kotlinx.coroutines.core.lib)

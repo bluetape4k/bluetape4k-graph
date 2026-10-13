@@ -4,10 +4,14 @@ import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeInstanceOf
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 import java.sql.SQLException
 
-class AgeCreateGraphFailuresTest {
+class AgeCreateGraphFailuresTest: AbstractAgeTest() {
+
+    companion object: KLogging()
 
     @Test
     fun `duplicate graph SQLState is treated as compatibility duplicate`() {
@@ -35,6 +39,7 @@ class AgeCreateGraphFailuresTest {
         val cause = SQLException("ERROR: permission denied for schema ag_catalog", "42501")
         val ex = cause.asCreateGraphFailure("test_graph")
 
+        log.debug { "ex=$ex" }
         ex.message shouldContain "AGE createGraph failed"
         ex.cause shouldBeInstanceOf SQLException::class
     }

@@ -13,6 +13,7 @@ internal fun Throwable.isDuplicateGraphFailure(): Boolean {
         .filterIsInstance<SQLException>()
         .mapNotNull { it.sqlState }
         .any { it in duplicateGraphSqlStates }
+
     if (sqlStateMatches) return true
 
     val diagnosticText = generateSequence(this) { it.cause }

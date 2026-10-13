@@ -1,6 +1,10 @@
 package io.bluetape4k.graph.age
 
 import com.github.benmanes.caffeine.cache.Ticker
+import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeNull
+import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphElementId
@@ -9,17 +13,11 @@ import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
-import io.bluetape4k.graph.repository.transaction
 import io.bluetape4k.logging.KLogging
-import io.bluetape4k.assertions.assertFailsWith
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldBeNull
-import io.bluetape4k.assertions.shouldBeTrue
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -35,9 +33,9 @@ import java.util.concurrent.TimeUnit
  * 실제 PostgreSQL AGE 서버 없이 순수 캐시 레이어만 테스트한다.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class CachingAgeGraphOperationsTest {
+class CachingAgeGraphOperationsTest: AbstractAgeTest() {
 
-    private class TestTicker : Ticker {
+    private class TestTicker: Ticker {
         private var nanos = 0L
 
         override fun read(): Long = nanos
@@ -47,9 +45,9 @@ class CachingAgeGraphOperationsTest {
         }
     }
 
-    companion object : KLogging()
+    companion object: KLogging()
 
-    private lateinit var delegate: AgeGraphOperations
+    private val delegate: AgeGraphOperations = mockk(relaxed = true)
     private lateinit var caching: CachingAgeGraphOperations
 
     private val aliceId = GraphElementId.of("alice-1")
@@ -68,14 +66,9 @@ class CachingAgeGraphOperationsTest {
     )
 
     @BeforeEach
-    fun setup() {
-        delegate = mockk(relaxed = true)
-        caching = CachingAgeGraphOperations(delegate)
-    }
-
-    @AfterEach
-    fun tearDown() {
+    fun beforeEach() {
         clearMocks(delegate)
+        caching = CachingAgeGraphOperations(delegate)
     }
 
     // ───── findVertexById 캐싱 ─────
@@ -393,7 +386,7 @@ class CachingAgeGraphOperationsTest {
     @Test
     fun `createEdge는 생성마다 위임하고 읽기 캐시를 무효화한다`() {
         every { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) } returns edge andThen
-            edge.copy(id = GraphElementId.of("edge-2"))
+                edge.copy(id = GraphElementId.of("edge-2"))
         every { delegate.findEdgesByLabel("KNOWS", emptyMap()) } returns listOf(edge)
 
         caching.findEdgesByLabel("KNOWS")              // 읽기 캐시 적재
@@ -411,7 +404,12 @@ class CachingAgeGraphOperationsTest {
     @Test
     fun `createVertex는 생성마다 위임하고 읽기 캐시를 무효화한다`() {
         val props = mapOf("name" to "Alice")
-        every { delegate.createVertex("Person", props) } returns alice andThen alice.copy(id = GraphElementId.of("alice-2"))
+        every {
+            delegate.createVertex(
+                "Person",
+                props
+            )
+        } returns alice andThen alice.copy(id = GraphElementId.of("alice-2"))
         every { delegate.findVertexById("Person", aliceId) } returns alice
 
         caching.findVertexById("Person", aliceId)   // 읽기 캐시 적재
@@ -431,7 +429,12 @@ class CachingAgeGraphOperationsTest {
         val props = mapOf("name" to "Alice")
         val batch = listOf(props, mapOf("name" to "Bob"))
         every { delegate.findVertexById("Person", aliceId) } returns alice
-        every { delegate.createVertex("Person", props) } returns alice andThen alice.copy(id = GraphElementId.of("alice-2"))
+        every {
+            delegate.createVertex(
+                "Person",
+                props
+            )
+        } returns alice andThen alice.copy(id = GraphElementId.of("alice-2"))
         every { delegate.createVertices("Person", batch) } returns listOf(alice, bob)
 
         caching.findVertexById("Person", aliceId)
@@ -453,7 +456,7 @@ class CachingAgeGraphOperationsTest {
         )
         every { delegate.findEdgesByLabel("KNOWS", emptyMap()) } returns listOf(edge)
         every { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) } returns edge andThen
-            edge.copy(id = GraphElementId.of("edge-2"))
+                edge.copy(id = GraphElementId.of("edge-2"))
         every { delegate.createEdges("KNOWS", batch) } returns listOf(edge, edge.copy(id = GraphElementId.of("edge-3")))
 
         caching.findEdgesByLabel("KNOWS")

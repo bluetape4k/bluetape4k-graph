@@ -8,9 +8,13 @@ import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.assertions.shouldNotBeEmpty
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 
 class AgeTypeParserTest {
+
+    companion object: KLogging()
 
     // ── isVertex / isEdge / isPath ────────────────────────────────────────
 
@@ -128,15 +132,14 @@ class AgeTypeParserTest {
     fun `parsePath - 정점-간선-정점 형태의 path를 파싱한다`() {
         val agtype =
             """[{"id": 1, "label": "Person", "properties": {}}::vertex, {"id": 2, "label": "KNOWS", "start_id": 1, "end_id": 3, "properties": {}}::edge, {"id": 3, "label": "Person", "properties": {}}::vertex]::path"""
-        val path = AgeTypeParser.parsePath(agtype)
-
+        val path = AgeTypeParser.parsePath(agtype).also { log.debug { "path: $it" } }
         path.steps shouldHaveSize 3
     }
 
     @Test
     fun `parsePath - 빈 path 배열을 파싱하면 steps가 비어 있다`() {
         val agtype = """[]::path"""
-        val path = AgeTypeParser.parsePath(agtype)
+        val path = AgeTypeParser.parsePath(agtype).also { log.debug { "path: $it" } }
 
         path.steps.shouldBeEmpty()
     }
@@ -176,13 +179,14 @@ class AgeTypeParserTest {
         result["deleted"] shouldBeEqualTo false
     }
 
+    @Suppress("UNCHECKED_CAST")
     @Test
     fun `parseJsonObject - 중첩 객체를 파싱한다`() {
         val json = """{"id": 1, "properties": {"name": "Bob"}}"""
         val result = AgeTypeParser.parseJsonObject(json)
 
         result["id"] shouldBeEqualTo 1L
-        @Suppress("UNCHECKED_CAST")
+
         val props = result["properties"] as Map<String, Any?>
         props["name"] shouldBeEqualTo "Bob"
     }
@@ -213,7 +217,7 @@ class AgeTypeParserTest {
 
     @Test
     fun `parseJsonArray - 숫자 요소들을 파싱한다`() {
-        val result = AgeTypeParser.parseJsonArray("[1, 2, 3]")
+        val result = AgeTypeParser.parseJsonArray("[1, 2, 3]").also { log.debug { "result=$it" } }
 
         result shouldHaveSize 3
         result shouldContain 1L
@@ -232,13 +236,14 @@ class AgeTypeParserTest {
         result[3].shouldBeNull()
     }
 
+    @Suppress("UNCHECKED_CAST")
     @Test
     fun `parseJsonArray - 중첩 객체를 포함한 배열을 파싱한다`() {
         val result = AgeTypeParser.parseJsonArray("""[{"key": "val"}]""")
 
         result shouldHaveSize 1
         result.shouldNotBeEmpty()
-        @Suppress("UNCHECKED_CAST")
+
         val obj = result[0] as Map<String, Any?>
         obj["key"] shouldBeEqualTo "val"
     }

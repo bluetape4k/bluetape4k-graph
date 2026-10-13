@@ -1,6 +1,7 @@
 package io.bluetape4k.graph.age.sql
 
 import io.bluetape4k.graph.support.requireSafeIdentifier
+import io.bluetape4k.support.EMPTY_STRING
 import io.bluetape4k.support.requireNotBlank
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -40,7 +41,7 @@ object AgePropertySerializer {
      */
     fun toCypherProps(properties: Map<String, Any?>): String =
         if (properties.isEmpty()) {
-            ""
+            EMPTY_STRING
         } else {
             properties.entries.joinToString(", ", "{", "}") { (key, value) ->
                 "${safeKey(key)}: ${toCypherValue(value)}"
@@ -85,9 +86,7 @@ object AgePropertySerializer {
     }
 
     private fun safeNestedKey(key: Any?): String {
-        require(key is String) {
-            "nested property key must be a String: $key"
-        }
+        require(key is String) { "nested property key must be a String: $key" }
         return safeKey(key)
     }
 

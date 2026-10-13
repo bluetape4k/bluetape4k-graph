@@ -40,6 +40,7 @@ import io.bluetape4k.graph.schema.GraphSchemaManager
 import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.warn
+import io.bluetape4k.support.asLong
 import io.bluetape4k.support.requireNotBlank
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.JdbcTransaction
@@ -88,7 +89,9 @@ class AgeGraphOperations(
     @Deprecated("명시적인 Database를 전달하는 생성자를 사용하세요.")
     constructor(graphName: String): this(requirePrimaryDatabase(), graphName)
 
-    companion object: KLogging()
+    companion object: KLogging() {
+        const val DEFAULT_BATCH_CHUNK_SIZE = 500
+    }
 
     private data class IndexedProperties(
         val index: Int,
@@ -102,7 +105,7 @@ class AgeGraphOperations(
         val properties: Map<String, Any?>,
     )
 
-    private val batchChunkSize: Int = 500
+    private val batchChunkSize: Int = DEFAULT_BATCH_CHUNK_SIZE
 
     private fun <T> exposedTransaction(statement: JdbcTransaction.() -> T): T =
         transaction(db = database, statement = statement)
@@ -122,7 +125,7 @@ class AgeGraphOperations(
                 exec(AgeSql.createGraph(name))
             } catch (e: Exception) {
                 if (e.isDuplicateGraphFailure()) {
-                    log.debug("Graph '$name' already exists: ${e.message}")
+                    log.warn { "Graph '$name' already exists: ${e.message}" }
                 } else {
                     throw e.asCreateGraphFailure(name)
                 }
@@ -205,6 +208,7 @@ class AgeGraphOperations(
             val longId = id.value.toLongOrNull()
                 ?: throw GraphQueryException("AGE requires numeric ID, got: ${id.value}")
             var vertex: GraphVertex? = null
+
             exec(AgeSql.matchVertexById(graphName, label, longId)) { rs ->
                 if (rs.next()) vertex = AgeTypeParser.parseVertex(rs.getString("v"))
             }
@@ -217,6 +221,7 @@ class AgeGraphOperations(
             val longId = id.value.toLongOrNull()
                 ?: throw GraphQueryException("AGE requires numeric ID, got: ${id.value}")
             var vertex: GraphVertex? = null
+
             exec(AgeSql.matchVertexById(graphName, longId)) { rs ->
                 if (rs.next()) vertex = AgeTypeParser.parseVertex(rs.getString("v"))
             }
@@ -275,7 +280,7 @@ class AgeGraphOperations(
             var count = 0L
             exec(AgeSql.countVertices(graphName, label)) { rs ->
                 if (rs.next()) {
-                    count = rs.getString("count").trim().toLongOrNull() ?: 0L
+                    count = rs.getString("count").trim().asLong()
                 }
             }
             count
@@ -303,14 +308,17 @@ class AgeGraphOperations(
                     var updated: GraphVertex? = null
                     val id = matched.id.value.toLongOrNull()
                         ?: throw GraphQueryException("AGE requires numeric ID, got: ${matched.id.value}")
-                    exec(AgeSql.updateVertex(graphName, label, id, properties.setProperties)) { rs ->
+
+                    val stmt = AgeSql.updateVertex(graphName, label, id, properties.setProperties)
+                    exec(stmt) { rs ->
                         if (rs.next()) updated = AgeTypeParser.parseVertex(rs.getString("v"))
                     }
                     updated ?: throw GraphQueryException("Failed to update merged vertex with label=$label")
                 }
             } else {
                 var created: GraphVertex? = null
-                exec(AgeSql.createVertex(graphName, label, properties.matchProperties + properties.setProperties)) { rs ->
+                val stmt = AgeSql.createVertex(graphName, label, properties.matchProperties + properties.setProperties)
+                exec(stmt) { rs ->
                     if (rs.next()) created = AgeTypeParser.parseVertex(rs.getString("v"))
                 }
                 created ?: throw GraphQueryException("Failed to merge vertex with label=$label")
@@ -344,14 +352,22 @@ class AgeGraphOperations(
                     var updated: GraphEdge? = null
                     val id = matched.id.value.toLongOrNull()
                         ?: throw GraphQueryException("AGE requires numeric ID, got: ${matched.id.value}")
-                    exec(AgeSql.updateEdge(graphName, label, id, properties.setProperties)) { rs ->
+
+                    val stmt = AgeSql.updateEdge(graphName, label, id, properties.setProperties)
+                    exec(stmt) { rs ->
                         if (rs.next()) updated = AgeTypeParser.parseEdge(rs.getString("e"))
                     }
                     updated ?: throw GraphQueryException("Failed to update merged edge: $label ($fromId -> $toId)")
                 }
             } else {
                 var created: GraphEdge? = null
-                val stmt = AgeSql.createEdge(graphName, from, to, label, properties.matchProperties + properties.setProperties)
+                val stmt = AgeSql.createEdge(
+                    graphName,
+                    from,
+                    to,
+                    label,
+                    properties.matchProperties + properties.setProperties
+                )
                 exec(stmt) { rs ->
                     if (rs.next()) created = AgeTypeParser.parseEdge(rs.getString("e"))
                 }
@@ -419,9 +435,12 @@ class AgeGraphOperations(
                     val sqlRows = chunk.map {
                         AgeSql.BatchEdgeRow(it.index, it.fromId, it.toId, it.properties)
                     }
-                    exec(AgeSql.createEdgesBatch(graphName, label, sqlRows)) { rs ->
+                    val stmt = AgeSql.createEdgesBatch(graphName, label, sqlRows)
+                    exec(stmt) { rs ->
                         while (rs.next()) {
-                            created.add(parseBatchIndex(rs.getString("idx")) to AgeTypeParser.parseEdge(rs.getString("e")))
+                            created.add(
+                                parseBatchIndex(rs.getString("idx")) to AgeTypeParser.parseEdge(rs.getString("e"))
+                            )
                         }
                     }
                 }
@@ -596,7 +615,7 @@ class AgeGraphOperations(
         return when (options.direction) {
             Direction.OUTGOING -> DegreeResult(vertexId, 0, outDeg)
             Direction.INCOMING -> DegreeResult(vertexId, inDeg, 0)
-            Direction.BOTH     -> DegreeResult(vertexId, inDeg, outDeg)
+            Direction.BOTH -> DegreeResult(vertexId, inDeg, outDeg)
         }
     }
 
@@ -704,7 +723,10 @@ class AgeGraphOperations(
             tolerance = options.tolerance,
         )
         val sorted = scores.entries.sortedByDescending { it.value }
-            .mapNotNull { e -> filtered[e.key]?.let { PageRankScore(it, e.value) } }
+            .mapNotNull { e ->
+                filtered[e.key]?.let { PageRankScore(it, e.value) }
+            }
+
         return if (options.topK == Int.MAX_VALUE) sorted else sorted.take(options.topK)
     }
 
@@ -742,7 +764,7 @@ class AgeGraphOperations(
                     when (direction) {
                         Direction.OUTGOING -> adjacency.getOrPut(ed.startId) { ArrayList() }.add(ed.endId)
                         Direction.INCOMING -> adjacency.getOrPut(ed.endId) { ArrayList() }.add(ed.startId)
-                        Direction.BOTH     -> {
+                        Direction.BOTH -> {
                             adjacency.getOrPut(ed.startId) { ArrayList() }.add(ed.endId)
                             adjacency.getOrPut(ed.endId) { ArrayList() }.add(ed.startId)
                         }
@@ -763,8 +785,8 @@ class AgeGraphOperations(
     private class AgeGraphTransactionScope(
         private val delegate: AgeGraphOperations,
     ): GraphTransactionScope,
-        GraphVertexRepository by delegate,
-        GraphEdgeRepository by delegate
+       GraphVertexRepository by delegate,
+       GraphEdgeRepository by delegate
 }
 
 private fun requirePrimaryDatabase(): Database =

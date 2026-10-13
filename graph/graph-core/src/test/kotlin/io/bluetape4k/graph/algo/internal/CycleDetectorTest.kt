@@ -61,8 +61,8 @@ class CycleDetectorTest: AbstractGraphTest() {
             id("c") to listOf(id("c")),
         )
         val cycles = CycleDetector.findCycles(adjacency, maxDepth = 5, maxCycles = 2)
+            .onEach { log.debug { "cycle=$it" } }
 
-        cycles.forEach { log.debug { "id=$it" } }
         cycles shouldHaveSize 2
     }
 
@@ -76,8 +76,8 @@ class CycleDetectorTest: AbstractGraphTest() {
     fun `self-loop 정점은 순환으로 탐지된다`() {
         val adjacency = mapOf(id("a") to listOf(id("a")))
         val cycles = CycleDetector.findCycles(adjacency, maxDepth = 2, maxCycles = 10)
+            .onEach { log.debug { "cycle=$it" } }
 
-        cycles.forEach { log.debug { "id=$it" } }
         cycles shouldHaveSize 1
         cycles[0].first() shouldBeEqualTo cycles[0].last()
     }
@@ -91,6 +91,7 @@ class CycleDetectorTest: AbstractGraphTest() {
             id("c") to listOf(id("a")),
         )
         val result = CycleDetector.findCycles(adjacency, maxDepth = 4, maxCycles = 10)
+            .onEach { log.debug { "cycle=$it" } }
 
         result.forEach { log.debug { "id=$it" } }
         result shouldHaveSize 1
