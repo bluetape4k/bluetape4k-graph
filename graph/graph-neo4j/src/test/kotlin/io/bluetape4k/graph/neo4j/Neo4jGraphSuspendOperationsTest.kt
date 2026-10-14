@@ -1,6 +1,7 @@
 package io.bluetape4k.graph.neo4j
 
 import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
@@ -11,6 +12,7 @@ import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.coroutines.flow.extensions.log
 import io.bluetape4k.graph.GraphException
 import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.model.ComponentOptions
@@ -20,10 +22,10 @@ import io.bluetape4k.graph.model.Direction
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.TreeTraversalOptions
+import io.bluetape4k.graph.model.toGraphElementId
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
-import io.bluetape4k.testcontainers.graphdb.Neo4jServer
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.TimeoutCancellationException
@@ -31,44 +33,26 @@ import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withTimeout
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
-import org.neo4j.driver.AuthTokens
 import org.neo4j.driver.Driver
-import org.neo4j.driver.GraphDatabase
 import org.neo4j.driver.SessionConfig
 import org.neo4j.driver.exceptions.ServiceUnavailableException
 import org.neo4j.driver.reactivestreams.ReactiveSession
+import kotlin.time.Duration.Companion.milliseconds
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
-class Neo4jGraphSuspendOperationsTest {
+class Neo4jGraphSuspendOperationsTest: AbstractNeo4jTest() {
 
     companion object: KLoggingChannel()
 
-    private lateinit var driver: Driver
-    private lateinit var ops: Neo4jGraphSuspendOperations
-
-    @BeforeAll
-    fun setup() {
-        val server = Neo4jServer.Launcher.neo4j
-        driver = GraphDatabase.driver(server.boltUrl, AuthTokens.none())
-        ops = Neo4jGraphSuspendOperations(driver)
-    }
-
-    @AfterAll
-    fun teardown() {
-        driver.close()
-    }
-
     @BeforeEach
     fun clearGraph() = runSuspendIO {
-        ops.createGraph("default")
-        ops.dropGraph("default")
+        suspendOps.createGraph(graphName)
+        suspendOps.dropGraph(graphName)
     }
 
     // ----- 그래프 초기화 -----
@@ -76,7 +60,7 @@ class Neo4jGraphSuspendOperationsTest {
     @Test
     @Order(10)
     fun `기본 current graph가 존재하면 true 반환`() = runSuspendIO {
-        ops.graphExists("default").shouldBeTrue()
+        suspendOps.graphExists("default").shouldBeTrue()
     }
 
     @Test
@@ -86,10 +70,11 @@ class Neo4jGraphSuspendOperationsTest {
         every {
             failingDriver.session(ReactiveSession::class.java, any<SessionConfig>())
         } throws ServiceUnavailableException("neo4j unavailable")
-        val failingOps = Neo4jGraphSuspendOperations(failingDriver)
+
+        val faillingOps = Neo4jGraphSuspendOperations(failingDriver)
 
         val ex = assertFailsWith<GraphQueryException> {
-            failingOps.graphExists("default")
+            faillingOps.graphExists("default")
         }
 
         ex.message shouldContain "Neo4j graphExists failed"
@@ -99,30 +84,30 @@ class Neo4jGraphSuspendOperationsTest {
     @Test
     @Order(13)
     fun `다른 graph name으로 dropGraph하면 현재 graph를 삭제하지 않는다`() = runSuspendIO {
-        ops.createGraph("current")
-        ops.createVertex("Person", mapOf("name" to "Alice"))
-        ops.graphExists("current").shouldBeTrue()
-        ops.graphExists("other").shouldBeFalse()
+        suspendOps.createGraph("current")
+        suspendOps.createVertex("Person", "name" to "Alice")
+        suspendOps.graphExists("current").shouldBeTrue()
+        suspendOps.graphExists("other").shouldBeFalse()
 
         val ex = assertFailsWith<GraphQueryException> {
-            ops.dropGraph("other")
+            suspendOps.dropGraph("other")
         }
-
+        log.debug { "ex=$ex" }
         ex.message shouldContain "current"
-        ops.countVertices("Person") shouldBeEqualTo 1L
+        suspendOps.countVertices("Person") shouldBeEqualTo 1L
 
-        ops.dropGraph("current")
-        ops.countVertices("Person") shouldBeEqualTo 0L
+        suspendOps.dropGraph("current")
+        suspendOps.countVertices("Person") shouldBeEqualTo 0L
     }
 
     @Test
     @Order(11)
     fun `dropGraph로 전체 데이터를 삭제한다`() = runSuspendIO {
-        ops.createVertex("Person", mapOf("name" to "Alice"))
-        ops.countVertices("Person") shouldBeGreaterOrEqualTo 1L
+        suspendOps.createVertex("Person", "name" to "Alice")
+        suspendOps.countVertices("Person") shouldBeGreaterOrEqualTo 1L
 
-        ops.dropGraph("default")
-        ops.countVertices("Person") shouldBeEqualTo 0L
+        suspendOps.dropGraph("default")
+        suspendOps.countVertices("Person") shouldBeEqualTo 0L
     }
 
     // ----- 정점(Vertex) CRUD -----
@@ -130,7 +115,7 @@ class Neo4jGraphSuspendOperationsTest {
     @Test
     @Order(20)
     fun `정점을 label만으로 생성한다`() = runSuspendIO {
-        val vertex = ops.createVertex("Person")
+        val vertex = suspendOps.createVertex("Person")
 
         log.debug { "vertex=$vertex" }
         vertex.id.value.shouldNotBeEmpty()
@@ -141,7 +126,7 @@ class Neo4jGraphSuspendOperationsTest {
     @Order(21)
     fun `label과 properties로 정점을 생성한다`() = runSuspendIO {
         val props = mapOf("name" to "Alice", "age" to 30L)
-        val vertex = ops.createVertex("Person", props)
+        val vertex = suspendOps.createVertex("Person", props)
 
         log.debug { "vertex=$vertex" }
         vertex.label shouldBeEqualTo "Person"
@@ -152,9 +137,10 @@ class Neo4jGraphSuspendOperationsTest {
     @Test
     @Order(22)
     fun `findVertexById로 정점을 조회한다`() = runSuspendIO {
-        val created = ops.createVertex("Person", mapOf("name" to "Bob"))
-        val found = ops.findVertexById("Person", created.id)
+        val created = suspendOps.createVertex("Person", "name" to "Bob")
+        val found = suspendOps.findVertexById("Person", created.id)
 
+        log.debug { "found=$found" }
         found.shouldNotBeNull()
         found.id shouldBeEqualTo created.id
         found.properties["name"] shouldBeEqualTo "Bob"
@@ -163,38 +149,44 @@ class Neo4jGraphSuspendOperationsTest {
     @Test
     @Order(23)
     fun `존재하지 않는 id로 조회하면 null 반환`() = runSuspendIO {
-        val found = ops.findVertexById("Person", io.bluetape4k.graph.model.GraphElementId.of("0:nonexist:0"))
+        val found = suspendOps.findVertexById("Person", "0:nonexist:0".toGraphElementId())
         found.shouldBeNull()
     }
 
     @Test
     @Order(24)
     fun `findVerticesByLabel로 레이블로 정점을 검색한다`() = runSuspendIO {
-        ops.createVertex("Person", mapOf("name" to "Alice"))
-        ops.createVertex("Person", mapOf("name" to "Bob"))
-        ops.createVertex("City", mapOf("name" to "Seoul"))
+        suspendOps.createVertex("Person", "name" to "Alice")
+        suspendOps.createVertex("Person", "name" to "Bob")
+        suspendOps.createVertex("City", "name" to "Seoul")
 
-        val people = ops.findVerticesByLabel("Person").toList()
-        people.shouldHaveSize(2)
+        val people = suspendOps.findVerticesByLabel("Person")
+            .log("Person")
+            .toList()
+
+        people shouldHaveSize 2
         people.map { it.properties["name"] } shouldContain "Alice"
     }
 
     @Test
     @Order(25)
     fun `findVerticesByLabel with filter로 필터링한다`() = runSuspendIO {
-        ops.createVertex("Person", mapOf("name" to "Alice"))
-        ops.createVertex("Person", mapOf("name" to "Bob"))
+        suspendOps.createVertex("Person", "name" to "Alice")
+        suspendOps.createVertex("Person", "name" to "Bob")
 
-        val found = ops.findVerticesByLabel("Person", mapOf("name" to "Alice")).toList()
-        found.shouldHaveSize(1)
-        found[0].properties["name"] shouldBeEqualTo "Alice"
+        val found = suspendOps.findVerticesByLabel("Person", "name" to "Alice")
+            .log("Find")
+            .toList()
+
+        found shouldHaveSize 1
+        found.single().properties["name"] shouldBeEqualTo "Alice"
     }
 
     @Test
     @Order(26)
     fun `updateVertex로 정점 속성을 갱신한다`() = runSuspendIO {
-        val created = ops.createVertex("Person", mapOf("name" to "Alice", "age" to 25L))
-        val updated = ops.updateVertex("Person", created.id, mapOf("age" to 30L))
+        val created = suspendOps.createVertex("Person", "name" to "Alice", "age" to 25L)
+        val updated = suspendOps.updateVertex("Person", created.id, "age" to 30L)
 
         updated.shouldNotBeNull()
         updated.properties["age"] shouldBeEqualTo 30L
@@ -203,50 +195,50 @@ class Neo4jGraphSuspendOperationsTest {
     @Test
     @Order(27)
     fun `deleteVertex로 정점을 삭제한다`() = runSuspendIO {
-        val created = ops.createVertex("Person", mapOf("name" to "ToDelete"))
-        val deleted = ops.deleteVertex("Person", created.id)
+        val created = suspendOps.createVertex("Person", mapOf("name" to "ToDelete"))
+        val deleted = suspendOps.deleteVertex("Person", created.id)
         deleted.shouldBeTrue()
 
-        ops.countVertices("Person") shouldBeEqualTo 0L
+        suspendOps.countVertices("Person") shouldBeEqualTo 0L
     }
 
     @Test
     @Order(28)
     fun `countVertices로 레이블별 정점 수를 센다`() = runSuspendIO {
-        ops.createVertex("Person", mapOf("name" to "Alice"))
-        ops.createVertex("Person", mapOf("name" to "Bob"))
-        ops.createVertex("City", mapOf("name" to "Seoul"))
+        suspendOps.createVertex("Person", "name" to "Alice")
+        suspendOps.createVertex("Person", "name" to "Bob")
+        suspendOps.createVertex("City", "name" to "Seoul")
 
-        ops.countVertices("Person") shouldBeEqualTo 2L
-        ops.countVertices("City") shouldBeEqualTo 1L
+        suspendOps.countVertices("Person") shouldBeEqualTo 2L
+        suspendOps.countVertices("City") shouldBeEqualTo 1L
     }
 
     @Test
     @Order(29)
     fun `suspendTransaction은 실패 시 생성한 정점과 간선을 rollback한다`() = runSuspendIO {
-        val existing = ops.createVertex("Person", mapOf("name" to "Existing"))
+        val existing = suspendOps.createVertex("Person", "name" to "Existing")
 
         assertFailsWith<IllegalStateException> {
-            ops.suspendTransaction {
-                val alice = createVertex("Person", mapOf("name" to "Alice"))
-                val bob = createVertex("Person", mapOf("name" to "Bob"))
+            suspendOps.suspendTransaction {
+                val alice = createVertex("Person", "name" to "Alice")
+                val bob = createVertex("Person", "name" to "Bob")
                 createEdge(alice.id, bob.id, "KNOWS")
                 error("rollback")
             }
         }
 
-        ops.findVertexById("Person", existing.id)?.properties?.get("name") shouldBeEqualTo "Existing"
-        ops.countVertices("Person") shouldBeEqualTo 1L
-        ops.findEdgesByLabel("KNOWS").toList().shouldHaveSize(0)
+        suspendOps.findVertexById("Person", existing.id)?.properties?.get("name") shouldBeEqualTo "Existing"
+        suspendOps.countVertices("Person") shouldBeEqualTo 1L
+        suspendOps.findEdgesByLabel("KNOWS").toList().shouldBeEmpty()
     }
 
     @Test
     @Order(30)
     fun `suspendTransaction은 반환된 Flow를 commit 전에 materialize한다`() = runSuspendIO {
-        val people = ops.suspendTransaction {
+        val people = suspendOps.suspendTransaction {
             createVertex("Person", mapOf("name" to "Alice"))
             findVerticesByLabel("Person")
-        }
+        }.log("Person")
 
         people.toList().map { it.properties["name"] } shouldContain "Alice"
     }
@@ -255,34 +247,35 @@ class Neo4jGraphSuspendOperationsTest {
     @Order(330)
     fun `suspendTransaction은 nested Flow 반환을 명시적으로 거부한다`() = runSuspendIO {
         val ex = assertFailsWith<GraphException> {
-            ops.suspendTransaction<Pair<String, Flow<*>>> {
+            suspendOps.suspendTransaction<Pair<String, Flow<*>>> {
                 createVertex("Person", mapOf("name" to "Alice"))
                 "Person" to findVerticesByLabel("Person")
             }
         }
 
+        log.debug { "ex=$ex" }
         ex.message shouldContain "nested Flow"
         ex.message shouldContain "result.second"
-        ops.countVertices("Person") shouldBeEqualTo 0L
+        suspendOps.countVertices("Person") shouldBeEqualTo 0L
     }
 
     @Test
     @Order(31)
     fun `suspendTransaction은 scoped vertex와 edge CRUD를 지원한다`() = runSuspendIO {
-        val result = ops.suspendTransaction {
-            val alice = createVertex("Person", mapOf("name" to "Alice"))
-            val bob = createVertex("Person", mapOf("name" to "Bob"))
+        val result = suspendOps.suspendTransaction {
+            val alice = createVertex("Person", "name" to "Alice")
+            val bob = createVertex("Person", "name" to "Bob")
 
             findVertexById("Person", alice.id)?.properties?.get("name") shouldBeEqualTo "Alice"
             findVertexById(bob.id)?.properties?.get("name") shouldBeEqualTo "Bob"
             countVertices("Person") shouldBeEqualTo 2L
 
-            updateVertex("Person", alice.id, mapOf("age" to 30L))?.properties?.get("age") shouldBeEqualTo 30L
+            updateVertex("Person", alice.id, "age" to 30L)?.properties?.get("age") shouldBeEqualTo 30L
 
-            val edge = createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to 2026L))
-            findEdgesByLabel("KNOWS", mapOf("since" to 2026L)).toList().shouldHaveSize(1)
-            findEdgesByStartId(alice.id, "KNOWS").toList().shouldHaveSize(1)
-            findEdgesByEndId(bob.id).toList().shouldHaveSize(1)
+            val edge = createEdge(alice.id, bob.id, "KNOWS", "since" to 2026L)
+            findEdgesByLabel("KNOWS", mapOf("since" to 2026L)).toList() shouldHaveSize 1
+            findEdgesByStartId(alice.id, "KNOWS").toList() shouldHaveSize 1
+            findEdgesByEndId(bob.id).toList() shouldHaveSize 1
 
             deleteEdge("KNOWS", edge.id).shouldBeTrue()
             deleteVertex("Person", bob.id).shouldBeTrue()
@@ -291,35 +284,35 @@ class Neo4jGraphSuspendOperationsTest {
         }
 
         result shouldBeEqualTo 1L
-        ops.countVertices("Person") shouldBeEqualTo 1L
+        suspendOps.countVertices("Person") shouldBeEqualTo 1L
     }
 
     @Test
     @Order(32)
     fun `suspendTransaction은 취소 시 빠르게 반환하고 rollback한다`() = runSuspendIO {
-        val existing = ops.createVertex("Person", mapOf("name" to "Existing"))
+        val existing = suspendOps.createVertex("Person", "name" to "Existing")
 
         assertFailsWith<TimeoutCancellationException> {
-            withTimeout(500) {
-                ops.suspendTransaction {
+            withTimeout(500.milliseconds) {
+                suspendOps.suspendTransaction {
                     createVertex("Person", mapOf("name" to "Cancelled"))
                     awaitCancellation()
                 }
             }
         }
 
-        ops.findVertexById("Person", existing.id)?.properties?.get("name") shouldBeEqualTo "Existing"
-        ops.countVertices("Person") shouldBeEqualTo 1L
+        suspendOps.findVertexById("Person", existing.id)?.properties?.get("name") shouldBeEqualTo "Existing"
+        suspendOps.countVertices("Person") shouldBeEqualTo 1L
     }
 
     @Test
     @Order(33)
     fun `unsafe Cypher identifiers are rejected before query execution`() = runSuspendIO {
         assertFailsWith<IllegalArgumentException> {
-            ops.findVerticesByLabel("Person", mapOf("name) RETURN n MATCH (m" to "Alice")).toList()
+            suspendOps.findVerticesByLabel("Person", mapOf("name) RETURN n MATCH (m" to "Alice")).toList()
         }
         assertFailsWith<IllegalArgumentException> {
-            ops.findEdgesByStartId(io.bluetape4k.graph.model.GraphElementId.of("0"), "KNOWS) MATCH (m").toList()
+            suspendOps.findEdgesByStartId(0.toGraphElementId(), "KNOWS) MATCH (m").toList()
         }
     }
 
@@ -328,9 +321,9 @@ class Neo4jGraphSuspendOperationsTest {
     @Test
     @Order(34)
     fun `createEdge로 간선을 생성한다`() = runSuspendIO {
-        val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
-        val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
-        val edge = ops.createEdge(alice.id, bob.id, "KNOWS")
+        val alice = suspendOps.createVertex("Person", "name" to "Alice")
+        val bob = suspendOps.createVertex("Person", "name" to "Bob")
+        val edge = suspendOps.createEdge(alice.id, bob.id, "KNOWS")
 
         log.debug { "edge=$edge" }
         edge.id.value.shouldNotBeEmpty()
@@ -342,38 +335,40 @@ class Neo4jGraphSuspendOperationsTest {
     @Test
     @Order(33)
     fun `createEdge with properties로 간선 속성을 저장한다`() = runSuspendIO {
-        val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
-        val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
-        val edge = ops.createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to 2024L))
+        val alice = suspendOps.createVertex("Person", "name" to "Alice")
+        val bob = suspendOps.createVertex("Person", "name" to "Bob")
+        val edge = suspendOps.createEdge(alice.id, bob.id, "KNOWS", "since" to 2024L)
 
+        log.debug { "edge=$edge" }
         edge.properties["since"] shouldBeEqualTo 2024L
     }
 
     @Test
     @Order(34)
     fun `findEdgesByLabel로 간선을 검색한다`() = runSuspendIO {
-        val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
-        val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
-        ops.createEdge(alice.id, bob.id, "KNOWS")
-        ops.createEdge(alice.id, bob.id, "LIKES")
+        val alice = suspendOps.createVertex("Person", "name" to "Alice")
+        val bob = suspendOps.createVertex("Person", "name" to "Bob")
 
-        val knows = ops.findEdgesByLabel("KNOWS").toList()
-        knows.shouldHaveSize(1)
-        knows[0].label shouldBeEqualTo "KNOWS"
+        suspendOps.createEdge(alice.id, bob.id, "KNOWS")
+        suspendOps.createEdge(alice.id, bob.id, "LIKES")
+
+        val knows = suspendOps.findEdgesByLabel("KNOWS").log("Edge").toList()
+
+        knows shouldHaveSize 1
+        knows.single().label shouldBeEqualTo "KNOWS"
     }
 
     @Test
     @Order(35)
     fun `deleteEdge로 간선을 삭제한다`() = runSuspendIO {
-        val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
-        val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
-        val edge = ops.createEdge(alice.id, bob.id, "KNOWS")
+        val alice = suspendOps.createVertex("Person", mapOf("name" to "Alice"))
+        val bob = suspendOps.createVertex("Person", mapOf("name" to "Bob"))
+        val edge = suspendOps.createEdge(alice.id, bob.id, "KNOWS")
 
-        val deleted = ops.deleteEdge("KNOWS", edge.id)
-        deleted.shouldBeTrue()
+        suspendOps.deleteEdge("KNOWS", edge.id).shouldBeTrue()
 
-        val remaining = ops.findEdgesByLabel("KNOWS").toList()
-        remaining.shouldNotBeNull()
+        val remaining = suspendOps.findEdgesByLabel("KNOWS").log("KNOWS").toList()
+        remaining.shouldBeEmpty()
     }
 
     // ----- 탐색(Traversal) -----
@@ -381,13 +376,13 @@ class Neo4jGraphSuspendOperationsTest {
     @Test
     @Order(40)
     fun `neighbors로 이웃 정점을 조회한다`() = runSuspendIO {
-        val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
-        val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
-        val charlie = ops.createVertex("Person", mapOf("name" to "Charlie"))
-        ops.createEdge(alice.id, bob.id, "KNOWS")
-        ops.createEdge(alice.id, charlie.id, "KNOWS")
+        val alice = suspendOps.createVertex("Person", mapOf("name" to "Alice"))
+        val bob = suspendOps.createVertex("Person", mapOf("name" to "Bob"))
+        val charlie = suspendOps.createVertex("Person", mapOf("name" to "Charlie"))
+        suspendOps.createEdge(alice.id, bob.id, "KNOWS")
+        suspendOps.createEdge(alice.id, charlie.id, "KNOWS")
 
-        val neighbors = ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS")).toList()
+        val neighbors = suspendOps.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS")).toList()
         neighbors.shouldHaveSize(2)
         neighbors.map { it.properties["name"] } shouldContain "Bob"
         neighbors.map { it.properties["name"] } shouldContain "Charlie"
@@ -396,11 +391,11 @@ class Neo4jGraphSuspendOperationsTest {
     @Test
     @Order(41)
     fun `neighbors with INCOMING direction으로 역방향 탐색한다`() = runSuspendIO {
-        val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
-        val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
-        ops.createEdge(alice.id, bob.id, "KNOWS")
+        val alice = suspendOps.createVertex("Person", mapOf("name" to "Alice"))
+        val bob = suspendOps.createVertex("Person", mapOf("name" to "Bob"))
+        suspendOps.createEdge(alice.id, bob.id, "KNOWS")
 
-        val incoming = ops.neighbors(
+        val incoming = suspendOps.neighbors(
             bob.id,
             NeighborOptions(edgeLabel = "KNOWS", direction = Direction.INCOMING),
         ).toList()
@@ -411,11 +406,11 @@ class Neo4jGraphSuspendOperationsTest {
     @Test
     @Order(42)
     fun `neighbors with BOTH direction으로 양방향 탐색한다`() = runSuspendIO {
-        val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
-        val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
-        ops.createEdge(alice.id, bob.id, "KNOWS")
+        val alice = suspendOps.createVertex("Person", mapOf("name" to "Alice"))
+        val bob = suspendOps.createVertex("Person", mapOf("name" to "Bob"))
+        suspendOps.createEdge(alice.id, bob.id, "KNOWS")
 
-        val both = ops.neighbors(
+        val both = suspendOps.neighbors(
             alice.id,
             NeighborOptions(edgeLabel = "KNOWS", direction = Direction.BOTH),
         ).toList()
@@ -425,13 +420,13 @@ class Neo4jGraphSuspendOperationsTest {
     @Test
     @Order(43)
     fun `shortestPath로 최단 경로를 찾는다`() = runSuspendIO {
-        val a = ops.createVertex("Node", mapOf("name" to "A"))
-        val b = ops.createVertex("Node", mapOf("name" to "B"))
-        val c = ops.createVertex("Node", mapOf("name" to "C"))
-        ops.createEdge(a.id, b.id, "E")
-        ops.createEdge(b.id, c.id, "E")
+        val a = suspendOps.createVertex("Node", mapOf("name" to "A"))
+        val b = suspendOps.createVertex("Node", mapOf("name" to "B"))
+        val c = suspendOps.createVertex("Node", mapOf("name" to "C"))
+        suspendOps.createEdge(a.id, b.id, "E")
+        suspendOps.createEdge(b.id, c.id, "E")
 
-        val path = ops.shortestPath(a.id, c.id, PathOptions(edgeLabel = "E"))
+        val path = suspendOps.shortestPath(a.id, c.id, PathOptions(edgeLabel = "E"))
         path.shouldNotBeNull()
         path.vertices.shouldNotBeEmpty()
     }
@@ -439,24 +434,24 @@ class Neo4jGraphSuspendOperationsTest {
     @Test
     @Order(44)
     fun `연결되지 않은 정점 사이의 최단 경로는 null`() = runSuspendIO {
-        val a = ops.createVertex("Node", mapOf("name" to "A"))
-        val b = ops.createVertex("Node", mapOf("name" to "B"))
+        val a = suspendOps.createVertex("Node", mapOf("name" to "A"))
+        val b = suspendOps.createVertex("Node", mapOf("name" to "B"))
 
-        val path = ops.shortestPath(a.id, b.id, PathOptions())
+        val path = suspendOps.shortestPath(a.id, b.id, PathOptions())
         path.shouldBeNull()
     }
 
     @Test
     @Order(45)
     fun `allPaths로 모든 경로를 찾는다`() = runSuspendIO {
-        val a = ops.createVertex("Node", mapOf("name" to "A"))
-        val b = ops.createVertex("Node", mapOf("name" to "B"))
-        val c = ops.createVertex("Node", mapOf("name" to "C"))
-        ops.createEdge(a.id, b.id, "E")
-        ops.createEdge(a.id, c.id, "E")
-        ops.createEdge(b.id, c.id, "E")
+        val a = suspendOps.createVertex("Node", mapOf("name" to "A"))
+        val b = suspendOps.createVertex("Node", mapOf("name" to "B"))
+        val c = suspendOps.createVertex("Node", mapOf("name" to "C"))
+        suspendOps.createEdge(a.id, b.id, "E")
+        suspendOps.createEdge(a.id, c.id, "E")
+        suspendOps.createEdge(b.id, c.id, "E")
 
-        val paths = ops.allPaths(a.id, c.id, PathOptions(edgeLabel = "E", maxDepth = 3)).toList()
+        val paths = suspendOps.allPaths(a.id, c.id, PathOptions(edgeLabel = "E", maxDepth = 3)).toList()
         paths.shouldNotBeEmpty()
     }
 
@@ -465,13 +460,13 @@ class Neo4jGraphSuspendOperationsTest {
     @Test
     @Order(50)
     fun `degreeCentrality로 차수를 계산한다`() = runSuspendIO {
-        val a = ops.createVertex("Person", mapOf("name" to "A"))
-        val b = ops.createVertex("Person", mapOf("name" to "B"))
-        val c = ops.createVertex("Person", mapOf("name" to "C"))
-        ops.createEdge(a.id, b.id, "KNOWS")
-        ops.createEdge(c.id, a.id, "KNOWS")
+        val a = suspendOps.createVertex("Person", mapOf("name" to "A"))
+        val b = suspendOps.createVertex("Person", mapOf("name" to "B"))
+        val c = suspendOps.createVertex("Person", mapOf("name" to "C"))
+        suspendOps.createEdge(a.id, b.id, "KNOWS")
+        suspendOps.createEdge(c.id, a.id, "KNOWS")
 
-        val degree = ops.degreeCentrality(a.id, DegreeOptions(edgeLabel = "KNOWS"))
+        val degree = suspendOps.degreeCentrality(a.id, DegreeOptions(edgeLabel = "KNOWS"))
         degree.outDegree shouldBeEqualTo 1
         degree.inDegree shouldBeEqualTo 1
     }
@@ -479,14 +474,14 @@ class Neo4jGraphSuspendOperationsTest {
     @Test
     @Order(51)
     fun `connectedComponents로 연결 컴포넌트를 찾는다`() = runSuspendIO {
-        val a1 = ops.createVertex("Person", mapOf("g" to "A"))
-        val a2 = ops.createVertex("Person", mapOf("g" to "A"))
-        val b1 = ops.createVertex("Person", mapOf("g" to "B"))
-        val b2 = ops.createVertex("Person", mapOf("g" to "B"))
-        ops.createEdge(a1.id, a2.id, "REL")
-        ops.createEdge(b1.id, b2.id, "REL")
+        val a1 = suspendOps.createVertex("Person", mapOf("g" to "A"))
+        val a2 = suspendOps.createVertex("Person", mapOf("g" to "A"))
+        val b1 = suspendOps.createVertex("Person", mapOf("g" to "B"))
+        val b2 = suspendOps.createVertex("Person", mapOf("g" to "B"))
+        suspendOps.createEdge(a1.id, a2.id, "REL")
+        suspendOps.createEdge(b1.id, b2.id, "REL")
 
-        val components = ops.connectedComponents(
+        val components = suspendOps.connectedComponents(
             ComponentOptions(vertexLabel = "Person", edgeLabel = "REL"),
         ).toList()
         components.size shouldBeGreaterOrEqualTo 2
@@ -495,11 +490,11 @@ class Neo4jGraphSuspendOperationsTest {
     @Test
     @Order(52)
     fun `dfs로 깊이 우선 탐색을 한다`() = runSuspendIO {
-        val a = ops.createVertex("Node", emptyMap())
-        val b = ops.createVertex("Node", emptyMap())
-        ops.createEdge(a.id, b.id, "E")
+        val a = suspendOps.createVertex("Node", emptyMap())
+        val b = suspendOps.createVertex("Node", emptyMap())
+        suspendOps.createEdge(a.id, b.id, "E")
 
-        val visits = ops.dfs(a.id, TreeTraversalOptions(edgeLabel = "E", maxDepth = 2)).toList()
+        val visits = suspendOps.dfs(a.id, TreeTraversalOptions(edgeLabel = "E", maxDepth = 2)).toList()
         visits.first().vertex.id shouldBeEqualTo a.id
         visits.size shouldBeGreaterOrEqualTo 2
     }
@@ -507,14 +502,14 @@ class Neo4jGraphSuspendOperationsTest {
     @Test
     @Order(53)
     fun `detectCycles로 순환을 감지한다`() = runSuspendIO {
-        val a = ops.createVertex("Node", emptyMap())
-        val b = ops.createVertex("Node", emptyMap())
-        val c = ops.createVertex("Node", emptyMap())
-        ops.createEdge(a.id, b.id, "E")
-        ops.createEdge(b.id, c.id, "E")
-        ops.createEdge(c.id, a.id, "E")
+        val a = suspendOps.createVertex("Node", emptyMap())
+        val b = suspendOps.createVertex("Node", emptyMap())
+        val c = suspendOps.createVertex("Node", emptyMap())
+        suspendOps.createEdge(a.id, b.id, "E")
+        suspendOps.createEdge(b.id, c.id, "E")
+        suspendOps.createEdge(c.id, a.id, "E")
 
-        val cycles = ops.detectCycles(CycleOptions(edgeLabel = "E", maxDepth = 5)).toList()
+        val cycles = suspendOps.detectCycles(CycleOptions(edgeLabel = "E", maxDepth = 5)).toList()
         cycles.shouldNotBeEmpty()
     }
 }

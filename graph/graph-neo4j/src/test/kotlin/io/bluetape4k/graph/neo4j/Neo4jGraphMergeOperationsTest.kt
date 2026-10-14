@@ -2,39 +2,15 @@ package io.bluetape4k.graph.neo4j
 
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.coroutines.flow.extensions.log
 import io.bluetape4k.junit5.coroutines.runSuspendIO
-import io.bluetape4k.testcontainers.graphdb.Neo4jServer
+import io.bluetape4k.logging.KLogging
 import kotlinx.coroutines.flow.toList
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.neo4j.driver.AuthTokens
-import org.neo4j.driver.Driver
-import org.neo4j.driver.GraphDatabase
 
-class Neo4jGraphMergeOperationsTest {
+class Neo4jGraphMergeOperationsTest: AbstractNeo4jTest() {
 
-    private lateinit var driver: Driver
-    private lateinit var ops: Neo4jGraphOperations
-    private lateinit var suspendOps: Neo4jGraphSuspendOperations
-
-    @BeforeAll
-    fun setup() {
-        driver = GraphDatabase.driver(Neo4jServer.Launcher.neo4j.boltUrl, AuthTokens.none())
-        ops = Neo4jGraphOperations(driver)
-        suspendOps = Neo4jGraphSuspendOperations(driver)
-    }
-
-    @AfterAll
-    fun teardown() {
-        driver.close()
-    }
-
-    @BeforeEach
-    fun clearGraph() {
-        ops.dropGraph("default")
-    }
+    companion object: KLogging()
 
     @Test
     fun `mergeVertex is idempotent and updates existing vertex`() {
@@ -53,7 +29,8 @@ class Neo4jGraphMergeOperationsTest {
         second.properties["email"] shouldBeEqualTo "alice@example.com"
         second.properties["name"] shouldBeEqualTo "Alice A"
         second.properties["age"] shouldBeEqualTo 31L
-        ops.findVerticesByLabel("Person").shouldHaveSize(1)
+
+        ops.findVerticesByLabel("Person") shouldHaveSize 1
     }
 
     @Test
@@ -66,7 +43,8 @@ class Neo4jGraphMergeOperationsTest {
 
         second.id shouldBeEqualTo first.id
         second.properties["since"] shouldBeEqualTo 2025L
-        ops.findEdgesByLabel("KNOWS").shouldHaveSize(1)
+
+        ops.findEdgesByLabel("KNOWS") shouldHaveSize 1
     }
 
     @Test
@@ -92,6 +70,6 @@ class Neo4jGraphMergeOperationsTest {
 
         edge2.id shouldBeEqualTo edge1.id
         edge2.properties["since"] shouldBeEqualTo 2025L
-        suspendOps.findEdgesByLabel("KNOWS").toList().shouldHaveSize(1)
+        suspendOps.findEdgesByLabel("KNOWS").log("KNOWS").toList() shouldHaveSize 1
     }
 }

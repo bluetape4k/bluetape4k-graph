@@ -1,57 +1,29 @@
 package io.bluetape4k.graph.neo4j
 
+import io.bluetape4k.assertions.DOUBLE_EPSILON
 import io.bluetape4k.assertions.shouldBeNear
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.graph.conformance.WeightedPathDepthConformance
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.MissingWeightPolicy
 import io.bluetape4k.graph.model.PathOptions
-import io.bluetape4k.graph.conformance.WeightedPathDepthConformance
 import io.bluetape4k.junit5.coroutines.runSuspendIO
-import io.bluetape4k.logging.KLogging
-import io.bluetape4k.testcontainers.graphdb.Neo4jServer
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
+import io.bluetape4k.logging.coroutines.KLoggingChannel
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
-import org.neo4j.driver.AuthTokens
-import org.neo4j.driver.Driver
-import org.neo4j.driver.GraphDatabase
 
 /**
  * Neo4j `GraphSuspendOperations` 가중치 최단 경로(Dijkstra/A*) 통합 테스트.
  */
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class Neo4jSuspendWeightedPathTest {
+class Neo4jSuspendWeightedPathTest: AbstractNeo4jTest() {
 
-    companion object : KLogging()
-
-    private lateinit var driver: Driver
-    private lateinit var ops: Neo4jGraphSuspendOperations
-
-    @BeforeAll
-    fun setup() {
-        val server = Neo4jServer.Launcher.neo4j
-        driver = GraphDatabase.driver(server.boltUrl, AuthTokens.none())
-        ops = Neo4jGraphSuspendOperations(driver)
-    }
-
-    @AfterAll
-    fun teardown() {
-        driver.close()
-    }
-
-    @BeforeEach
-    fun clearGraph() = runSuspendIO {
-        ops.dropGraph("default")
-    }
+    companion object: KLoggingChannel()
 
     @Test
     fun `Dijkstra 최단 경로 A에서 C까지는 A-B-C이다`() = runSuspendIO {
         val (a, _, c) = createWeightedRoadGraph()
 
-        val path = ops.shortestPath(
+        val path = suspendOps.shortestPath(
             a.id,
             c.id,
             PathOptions(weightProperty = "cost", edgeLabel = "ROAD"),
@@ -62,18 +34,19 @@ class Neo4jSuspendWeightedPathTest {
 
     @Test
     fun `suspend weighted path가 maxDepth 경계를 준수한다`() = runSuspendIO {
-        WeightedPathDepthConformance.assertSuspend(ops)
+        WeightedPathDepthConformance.assertSuspend(suspendOps)
     }
 
     @Test
     fun `Skip 정책에서 weight 없는 간선은 경로에서 제외한다`() = runSuspendIO {
-        val a = ops.createVertex("City", mapOf("name" to "A"))
-        val b = ops.createVertex("City", mapOf("name" to "B"))
-        val c = ops.createVertex("City", mapOf("name" to "C"))
-        ops.createEdge(a.id, b.id, "ROAD")
-        ops.createEdge(b.id, c.id, "ROAD", mapOf("cost" to 2.0))
+        val a = suspendOps.createVertex("City", "name" to "A")
+        val b = suspendOps.createVertex("City", "name" to "B")
+        val c = suspendOps.createVertex("City", "name" to "C")
 
-        ops.shortestPath(
+        suspendOps.createEdge(a.id, b.id, "ROAD")
+        suspendOps.createEdge(b.id, c.id, "ROAD", "cost" to 2.0)
+
+        suspendOps.shortestPath(
             a.id,
             c.id,
             PathOptions(
@@ -86,10 +59,10 @@ class Neo4jSuspendWeightedPathTest {
 
     @Test
     fun `연결되지 않으면 가중치 경로는 null이다`() = runSuspendIO {
-        val a = ops.createVertex("City", mapOf("name" to "A"))
-        val isolated = ops.createVertex("City", mapOf("name" to "Z"))
+        val a = suspendOps.createVertex("City", "name" to "A")
+        val isolated = suspendOps.createVertex("City", "name" to "Z")
 
-        ops.shortestPath(
+        suspendOps.shortestPath(
             a.id,
             isolated.id,
             PathOptions(weightProperty = "cost", edgeLabel = "ROAD"),
@@ -100,24 +73,29 @@ class Neo4jSuspendWeightedPathTest {
     fun `AStar 최단 경로 A에서 C까지는 A-B-C이다`() = runSuspendIO {
         val (a, _, c) = createWeightedRoadGraph()
 
-        val path = ops.aStarPath(
+        val path = suspendOps.aStarPath(
             a.id,
             c.id,
             PathOptions(weightProperty = "cost", edgeLabel = "ROAD"),
         ) { _ -> 0.0 }.shouldNotBeNull()
 
-        path.totalWeight.shouldBeNear(3.0, 0.001)
+        path.totalWeight.shouldBeNear(3.0, DOUBLE_EPSILON)
     }
 
     private suspend fun createWeightedRoadGraph(): WeightedRoadGraph {
-        val a = ops.createVertex("City", mapOf("name" to "A"))
-        val b = ops.createVertex("City", mapOf("name" to "B"))
-        val c = ops.createVertex("City", mapOf("name" to "C"))
-        ops.createEdge(a.id, b.id, "ROAD", mapOf("cost" to 1.0))
-        ops.createEdge(b.id, c.id, "ROAD", mapOf("cost" to 2.0))
-        ops.createEdge(a.id, c.id, "ROAD", mapOf("cost" to 5.0))
+        val a = suspendOps.createVertex("City", "name" to "A")
+        val b = suspendOps.createVertex("City", "name" to "B")
+        val c = suspendOps.createVertex("City", "name" to "C")
+        suspendOps.createEdge(a.id, b.id, "ROAD", "cost" to 1.0)
+        suspendOps.createEdge(b.id, c.id, "ROAD", "cost" to 2.0)
+        suspendOps.createEdge(a.id, c.id, "ROAD", "cost" to 5.0)
+        
         return WeightedRoadGraph(a, b, c)
     }
 
-    private data class WeightedRoadGraph(val a: GraphVertex, val b: GraphVertex, val c: GraphVertex)
+    private data class WeightedRoadGraph(
+        val a: GraphVertex,
+        val b: GraphVertex,
+        val c: GraphVertex,
+    )
 }

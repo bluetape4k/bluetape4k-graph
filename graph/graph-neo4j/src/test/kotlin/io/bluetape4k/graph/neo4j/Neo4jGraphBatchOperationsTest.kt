@@ -6,40 +6,14 @@ import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.model.BatchEdge
-import io.bluetape4k.graph.model.GraphElementId
+import io.bluetape4k.graph.model.batchEdgeOf
+import io.bluetape4k.graph.model.toGraphElementId
 import io.bluetape4k.junit5.coroutines.runSuspendIO
-import io.bluetape4k.testcontainers.graphdb.Neo4jServer
+import io.bluetape4k.logging.debug
 import kotlinx.coroutines.flow.toList
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.neo4j.driver.AuthTokens
-import org.neo4j.driver.Driver
-import org.neo4j.driver.GraphDatabase
 
-class Neo4jGraphBatchOperationsTest {
-
-    private lateinit var driver: Driver
-    private lateinit var ops: Neo4jGraphOperations
-    private lateinit var suspendOps: Neo4jGraphSuspendOperations
-
-    @BeforeAll
-    fun setup() {
-        driver = GraphDatabase.driver(Neo4jServer.Launcher.neo4j.boltUrl, AuthTokens.none())
-        ops = Neo4jGraphOperations(driver)
-        suspendOps = Neo4jGraphSuspendOperations(driver)
-    }
-
-    @AfterAll
-    fun teardown() {
-        driver.close()
-    }
-
-    @BeforeEach
-    fun clearGraph() {
-        ops.dropGraph("default")
-    }
+class Neo4jGraphBatchOperationsTest: AbstractNeo4jTest() {
 
     @Test
     fun `createVertices returns vertices in input order`() {
@@ -50,12 +24,12 @@ class Neo4jGraphBatchOperationsTest {
                 mapOf("name" to "Bob", "rank" to 2L),
                 mapOf("name" to "Carol", "rank" to 3L),
             ),
-        )
+        ).onEach { log.debug { "vertex=$it" } }
 
-        vertices.shouldHaveSize(3)
+        vertices shouldHaveSize 3
         vertices.map { it.properties["name"] } shouldBeEqualTo listOf("Alice", "Bob", "Carol")
         vertices.map { it.properties["rank"] } shouldBeEqualTo listOf(1L, 2L, 3L)
-        ops.findVerticesByLabel("Person").shouldHaveSize(3)
+        ops.findVerticesByLabel("Person") shouldHaveSize 3
     }
 
     @Test
@@ -64,13 +38,17 @@ class Neo4jGraphBatchOperationsTest {
         ops.createEdges("KNOWS", emptyList()).shouldBeEmpty()
 
         val vertices = ops.createVertices("Person", listOf(mapOf("name" to "Solo")))
-        val edge = ops.createEdges("SELF", listOf(BatchEdge(vertices.single().id, vertices.single().id))).single()
+        val edge = ops
+            .createEdges("SELF", listOf(BatchEdge(vertices.single().id, vertices.single().id)))
+            .single()
 
         vertices.single().properties["name"] shouldBeEqualTo "Solo"
+
         edge.startId shouldBeEqualTo vertices.single().id
         edge.endId shouldBeEqualTo vertices.single().id
-        ops.findVerticesByLabel("Person").shouldHaveSize(1)
-        ops.findEdgesByLabel("SELF").shouldHaveSize(1)
+
+        ops.findVerticesByLabel("Person") shouldHaveSize 1
+        ops.findEdgesByLabel("SELF") shouldHaveSize 1
     }
 
     @Test
@@ -82,10 +60,10 @@ class Neo4jGraphBatchOperationsTest {
                 mapOf("name" to "Alice"),
                 mapOf("name" to "Bob", "city" to "Seoul"),
             ),
-        )
+        ).onEach { log.debug { "vertex=$it" } }
 
         vertices.map { it.properties["name"] } shouldBeEqualTo listOf("Alice", "Alice", "Bob")
-        vertices.map { it.id }.toSet().shouldHaveSize(3)
+        vertices.map { it.id }.toSet() shouldHaveSize 3
         vertices[2].properties["city"] shouldBeEqualTo "Seoul"
     }
 
@@ -103,17 +81,18 @@ class Neo4jGraphBatchOperationsTest {
         val edges = ops.createEdges(
             "KNOWS",
             listOf(
-                BatchEdge(alice.id, bob.id, mapOf("rank" to 1L)),
-                BatchEdge(bob.id, carol.id, mapOf("rank" to 2L)),
-                BatchEdge(carol.id, alice.id, mapOf("rank" to 3L)),
+                batchEdgeOf(alice.id, bob.id, "rank" to 1L),
+                batchEdgeOf(bob.id, carol.id, "rank" to 2L),
+                batchEdgeOf(carol.id, alice.id, "rank" to 3L),
             ),
-        )
+        ).onEach { log.debug { "edge=$it" } }
 
-        edges.shouldHaveSize(3)
+        edges shouldHaveSize 3
         edges.map { it.startId } shouldBeEqualTo listOf(alice.id, bob.id, carol.id)
         edges.map { it.endId } shouldBeEqualTo listOf(bob.id, carol.id, alice.id)
         edges.map { it.properties["rank"] } shouldBeEqualTo listOf(1L, 2L, 3L)
-        ops.findEdgesByLabel("KNOWS").shouldHaveSize(3)
+
+        ops.findEdgesByLabel("KNOWS") shouldHaveSize 3
     }
 
     @Test
@@ -130,8 +109,8 @@ class Neo4jGraphBatchOperationsTest {
             ops.createEdges(
                 "KNOWS",
                 listOf(
-                    BatchEdge(alice.id, bob.id),
-                    BatchEdge(alice.id, GraphElementId.of("missing")),
+                    batchEdgeOf(alice.id, bob.id),
+                    batchEdgeOf(alice.id, "missing".toGraphElementId()),
                 ),
             )
         }
@@ -152,14 +131,16 @@ class Neo4jGraphBatchOperationsTest {
         val edges = suspendOps.createEdges(
             "KNOWS",
             listOf(
-                BatchEdge(vertices[0].id, vertices[1].id, mapOf("rank" to 1L)),
-                BatchEdge(vertices[1].id, vertices[0].id, mapOf("rank" to 2L)),
+                batchEdgeOf(vertices[0].id, vertices[1].id, "rank" to 1L),
+                batchEdgeOf(vertices[1].id, vertices[0].id, "rank" to 2L),
             ),
-        )
+        ).onEach { log.debug { "edge=$it" } }
 
         vertices.map { it.properties["name"] } shouldBeEqualTo listOf("Alice", "Bob")
+
         edges.map { it.startId } shouldBeEqualTo listOf(vertices[0].id, vertices[1].id)
         edges.map { it.properties["rank"] } shouldBeEqualTo listOf(1L, 2L)
-        suspendOps.findEdgesByLabel("KNOWS").toList().shouldHaveSize(2)
+
+        suspendOps.findEdgesByLabel("KNOWS").toList() shouldHaveSize 2
     }
 }

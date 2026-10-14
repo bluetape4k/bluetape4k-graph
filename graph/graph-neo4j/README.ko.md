@@ -1,7 +1,6 @@
 # Module graph-neo4j
 
-Neo4j Java Driver 6.2.1 + Kotlin Coroutines를 사용하여 `GraphOperations` 인터페이스를 구현한 모듈입니다.
-Reactive Streams API를 `kotlinx-coroutines-reactive`로 브릿지하여 Virtual Thread/Coroutines 친화적이고 non-blocking한 그래프 데이터베이스 접근을 제공합니다.
+Neo4j Java Driver 6.2.1 + Kotlin Coroutines를 사용하여 `GraphOperations` 인터페이스를 구현한 모듈입니다. Reactive Streams API를 `kotlinx-coroutines-reactive`로 브릿지하여 Virtual Thread/Coroutines 친화적이고 non-blocking한 그래프 데이터베이스 접근을 제공합니다.
 
 > 🇺🇸 [English](README.md)
 
@@ -10,7 +9,7 @@ Reactive Streams API를 `kotlinx-coroutines-reactive`로 브릿지하여 Virtual
 - **Neo4j Reactive API** (`org.neo4j.driver.reactivestreams.ReactiveSession`) 사용
 - **Coroutine 기반 suspend API** — `Publisher<T>.asFlow()` / `Publisher<T>.awaitFirstOrNull()`로 async 변환
 - **Virtual Thread 친화적** — blocking 호출 없음, 효율적인 리소스 활용
-- **elementId() 기반 조회** — Neo4j 5.x의 stable element ID 지원
+- **elementId () 기반 조회** — Neo4j 5.x의 stable element ID 지원
 - **Neo4j Cypher 쿼리 직접 사용** — 복잡한 그래프 연산 (최단 경로, 모든 경로, 이웃 탐색)
 
 ## 최근 변경
@@ -18,7 +17,7 @@ Reactive Streams API를 `kotlinx-coroutines-reactive`로 브릿지하여 Virtual
 - Reactive API 기반 `Neo4jCoroutineSession`으로 모든 쿼리를 suspend 메서드로 제공
 - `Neo4jRecordMapper`가 Path 객체를 `PathStep` 리스트로 변환 (VertexStep + EdgeStep 교차)
 - Direction 기반 neighbors 쿼리 패턴 (OUTGOING / INCOMING / BOTH)
-- elementId() 기반 고유 레코드 검색 및 업데이트
+- elementId () 기반 고유 레코드 검색 및 업데이트
 
 ![graph neo4j Architecture diagram](../../docs/images/readme-diagrams/graph-graph-neo4j-architecture-01.png)
 
@@ -404,24 +403,24 @@ class Neo4jGraphOperationsTest {
 
 ## AGE vs Neo4j 비교
 
-| 항목 | Apache AGE | Neo4j |
-|------|-----------|-------|
-| **기반 DB** | PostgreSQL (확장) | 그래프 전용 DB |
-| **쿼리 언어** | Cypher (SQL 래퍼) | Native Cypher |
-| **드라이버** | JDBC / PostgreSQL 드라이버 | Neo4j Java Driver (Reactive API) |
-| **성능** | 관계형 최적화 → 그래프 쿼리 저하 | 그래프 최적화 (아직도 가장 빠름) |
-| **확장성** | PostgreSQL 상속 (horizontal scale 어려움) | Cluster / Federation 지원 |
-| **RESP3 / Reactive** | 제한적 | 완전 지원 (Client Tracking) |
-| **Virtual Thread / Coroutine** | 일반적 JDBC → Loom 미지원 | ReactiveSession → Non-blocking |
-| **사용 사례** | 기존 PostgreSQL에 그래프 추가 | 그래프 전용 시스템 (소셜, 추천, 보안) |
+| 항목                           | Apache AGE                                | Neo4j                                 |
+|--------------------------------|-------------------------------------------|---------------------------------------|
+| **기반 DB**                    | PostgreSQL (확장)                         | 그래프 전용 DB                        |
+| **쿼리 언어**                  | Cypher (SQL 래퍼)                         | Native Cypher                         |
+| **드라이버**                   | JDBC / PostgreSQL 드라이버                | Neo4j Java Driver (Reactive API)      |
+| **성능**                       | 관계형 최적화 → 그래프 쿼리 저하          | 그래프 최적화 (아직도 가장 빠름)      |
+| **확장성**                     | PostgreSQL 상속 (horizontal scale 어려움) | Cluster / Federation 지원             |
+| **RESP3 / Reactive**           | 제한적                                    | 완전 지원 (Client Tracking)           |
+| **Virtual Thread / Coroutine** | 일반적 JDBC → Loom 미지원                 | ReactiveSession → Non-blocking        |
+| **사용 사례**                  | 기존 PostgreSQL에 그래프 추가             | 그래프 전용 시스템 (소셜, 추천, 보안) |
 
 ## 제공 클래스
 
-| 클래스 | 역할 |
-|--------|------|
-| `Neo4jGraphOperations` | `GraphOperations` 구현체 (모든 CRUD + 탐색) |
-| `Neo4jCoroutineSession` | Reactive API를 Coroutine으로 브릿지 |
-| `Neo4jRecordMapper` | Neo4j Record → Domain 모델 변환 |
+| 클래스                  | 역할                                        |
+|-------------------------|---------------------------------------------|
+| `Neo4jGraphOperations`  | `GraphOperations` 구현체 (모든 CRUD + 탐색) |
+| `Neo4jCoroutineSession` | Reactive API를 Coroutine으로 브릿지         |
+| `Neo4jRecordMapper`     | Neo4j Record → Domain 모델 변환             |
 
 ## 주의사항
 
@@ -437,7 +436,7 @@ graphOps.close()  // no-op
 driver.close()    // 호출자가 명시적으로 닫아야 함
 ```
 
-### elementId() 사용
+### elementId () 사용
 
 Neo4j 5.x에서는 `elementId()` (stable ID)를 사용하므로, 4.x 드라이버와 호환 불가.
 
@@ -475,21 +474,19 @@ graphOps.shortestPath(fromId, toId, edgeLabel = "KNOWS", maxDepth = 10)
 
 ## 캐싱 데코레이터
 
-`CachingNeo4jGraphOperations`는 `Neo4jGraphOperations`를 Caffeine 기반 bounded/expiring 캐시로 감싸는 데코레이터입니다.
-읽기 결과를 메모이제이션하며 모든 읽기 캐시에 `maxSize` 엔트리 상한과 `expireAfterWrite` TTL을 적용합니다.
-반복 읽기가 많은 벤치마크 및 워크로드에 적합합니다.
+`CachingNeo4jGraphOperations`는 `Neo4jGraphOperations`를 Caffeine 기반 bounded/expiring 캐시로 감싸는 데코레이터입니다. 읽기 결과를 메모이제이션하며 모든 읽기 캐시에 `maxSize` 엔트리 상한과 `expireAfterWrite` TTL을 적용합니다. 반복 읽기가 많은 벤치마크 및 워크로드에 적합합니다.
 
 ### 캐시 동작
 
-| 연산 | 효과 |
-|------|------|
-| `findVertexById`, `findVerticesByLabel`, `neighbors`, `shortestPath`, `allPaths`, `findEdgesByLabel` | 첫 번째 호출 시 DB 조회 후 캐시 저장, 이후 호출은 캐시 히트 |
-| `maxSize` | 여섯 읽기 캐시에 각각 적용되는 엔트리 상한입니다. 래퍼 전체 합계나 heap 바이트 상한이 아니며 양수여야 합니다 |
-| `expireAfterWrite`, `ticker` | `expireAfterWrite`는 각 캐시의 양수 TTL이며, `ticker` 기본값은 system clock입니다. 결정적 테스트에서는 fake clock을 주입할 수 있습니다 |
-| `createVertex`, `createEdge` | 동일 인자라도 매번 기본 연산에 위임하여 새 레코드를 생성합니다. 생성 후 읽기 캐시를 무효화합니다 |
-| `updateVertex`, `deleteVertex`, `deleteEdge` | 읽기 캐시 전체를 무효화합니다 |
-| `dropGraph` | 먼저 기본 연산에 위임하고 graph 삭제가 성공하면 읽기 캐시 전체를 무효화합니다 |
-| `transaction { ... }` | backend transaction capability를 전달하며 commit 후에는 읽기 캐시를 무효화하고 rollback 후에는 기존 캐시를 유지합니다 |
+| 연산                                                                                                 | 효과                                                                                                                                   |
+|------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| `findVertexById`, `findVerticesByLabel`, `neighbors`, `shortestPath`, `allPaths`, `findEdgesByLabel` | 첫 번째 호출 시 DB 조회 후 캐시 저장, 이후 호출은 캐시 히트                                                                            |
+| `maxSize`                                                                                            | 여섯 읽기 캐시에 각각 적용되는 엔트리 상한입니다. 래퍼 전체 합계나 heap 바이트 상한이 아니며 양수여야 합니다                           |
+| `expireAfterWrite`, `ticker`                                                                         | `expireAfterWrite`는 각 캐시의 양수 TTL이며, `ticker` 기본값은 system clock입니다. 결정적 테스트에서는 fake clock을 주입할 수 있습니다 |
+| `createVertex`, `createEdge`                                                                         | 동일 인자라도 매번 기본 연산에 위임하여 새 레코드를 생성합니다. 생성 후 읽기 캐시를 무효화합니다                                       |
+| `updateVertex`, `deleteVertex`, `deleteEdge`                                                         | 읽기 캐시 전체를 무효화합니다                                                                                                          |
+| `dropGraph`                                                                                          | 먼저 기본 연산에 위임하고 graph 삭제가 성공하면 읽기 캐시 전체를 무효화합니다                                                          |
+| `transaction { ... }`                                                                                | backend transaction capability를 전달하며 commit 후에는 읽기 캐시를 무효화하고 rollback 후에는 기존 캐시를 유지합니다                  |
 
 각 cache miss는 delegate 읽기 전에 generation을 캡처합니다. wrapper를 통한 쓰기, `dropGraph`, 또는 commit된 transaction이 읽기 중 generation을 증가시키면 해당 결과를 캐시에 재적재하지 않습니다. 이미 진행 중인 호출은 쓰기 전에 읽은 값을 반환할 수 있으며, 다른 delegate 인스턴스에서 직접 수행한 쓰기는 이 wrapper의 무효화 경계 밖입니다.
 
@@ -556,20 +553,17 @@ WHERE elementId(a) = $fromId AND elementId(b) = $toId RETURN p
 
 ## 그래프 알고리즘 지원 매트릭스
 
-| 알고리즘 | 구현 방식 |
-|----------|-----------|
-| `degreeCentrality` | Cypher native (`OPTIONAL MATCH ... count`) |
-| `bfs` / `dfs` | JVM fallback (`BfsDfsRunner`) |
-| `detectCycles` | Cypher native (variable-length path) |
-| `connectedComponents` | JVM fallback (`UnionFind`) |
-| `pageRank` | JVM fallback (`PageRankCalculator`) — GDS 옵션 모듈은 Phase 7 |
+| 알고리즘              | 구현 방식                                                     |
+|-----------------------|---------------------------------------------------------------|
+| `degreeCentrality`    | Cypher native (`OPTIONAL MATCH ... count`)                    |
+| `bfs` / `dfs`         | JVM fallback (`BfsDfsRunner`)                                 |
+| `detectCycles`        | Cypher native (variable-length path)                          |
+| `connectedComponents` | JVM fallback (`UnionFind`)                                    |
+| `pageRank`            | JVM fallback (`PageRankCalculator`) — GDS 옵션 모듈은 Phase 7 |
 
-현재 PageRank fallback은 `GraphAlgorithmExecutionObservable.lastAlgorithmExecution`으로
-관찰할 수 있으며 provider `jvm-fallback`, 경로 `JVM_FALLBACK`, 이유
+현재 PageRank fallback은 `GraphAlgorithmExecutionObservable.lastAlgorithmExecution`으로 관찰할 수 있으며 provider `jvm-fallback`, 경로 `JVM_FALLBACK`, 이유
 `NO_PROVIDER`를 기록한다. 선택적 provider 모듈은 dependency-free
-`graph-core` provider SPI를 사용할 수 있고, 기본 Neo4j 모듈은 GDS를
-설치하거나 native 실행을 주장하지 않는다. native provider 실행 실패는
-결과 의미를 바꾸지 않도록 명시적인 실패로 남긴다.
+`graph-core` provider SPI를 사용할 수 있고, 기본 Neo4j 모듈은 GDS를 설치하거나 native 실행을 주장하지 않는다. native provider 실행 실패는 결과 의미를 바꾸지 않도록 명시적인 실패로 남긴다.
 
 ### 사용 예제
 
