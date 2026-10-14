@@ -1,29 +1,29 @@
 # Module graph-neo4j
 
-`GraphOperations` interface implementation that uses Neo4j Java Driver 6.2.1 + Kotlin Coroutines.
-It bridges the Reactive Streams API through `kotlinx-coroutines-reactive` to provide Virtual Thread / Coroutine-friendly, non-blocking access to Neo4j.
+`GraphOperations` interface implementation that uses Neo4j Java Driver 6.2.1 + Kotlin Coroutines. It bridges the Reactive Streams API through `kotlinx-coroutines-reactive` to provide Virtual Thread / Coroutine-friendly, non-blocking access to Neo4j.
 
 > 🇰🇷 [한국어 문서](README.ko.md)
 
 ## Overview
 
 - **Reactive-Coroutine Bridge**: All queries are exposed as `suspend` methods via `Neo4jCoroutineSession`
-- **Path Mapping**: `Neo4jRecordMapper` converts Neo4j `Path` objects to `PathStep` lists (interleaved `VertexStep` + `EdgeStep`)
+- **Path
+  Mapping**: `Neo4jRecordMapper` converts Neo4j `Path` objects to `PathStep` lists (interleaved `VertexStep` + `EdgeStep`)
 - **Direction-Based Traversal**: `neighbors` queries support `OUTGOING` / `INCOMING` / `BOTH` patterns
-- **elementId()**: Uses `elementId()` for stable record lookup and updates (replacement for the deprecated `id()`)
+- **elementId ()**: Uses `elementId()` for stable record lookup and updates (replacement for the deprecated `id()`)
 
 ![Overview diagram](../../docs/images/readme-diagrams/graph-graph-neo4j-architecture-01.png)
 
 ## Key Classes
 
-| Class | Description |
-|-------|-------------|
-| `Neo4jGraphOperations` | Synchronous `GraphOperations` implementation over the Neo4j driver |
-| `Neo4jGraphSuspendOperations` | Coroutine-based `GraphSuspendOperations` implementation |
-| `CachingNeo4jGraphOperations` | Caffeine bounded/expiring caching decorator over `Neo4jGraphOperations` |
-| `Neo4jGraphSchemaManager` | Schema/index manager for Neo4j indexes and unique constraints |
-| `Neo4jCoroutineSession` | Bridges `ReactiveSession` and Kotlin Coroutines |
-| `Neo4jRecordMapper` | Converts Neo4j `Record`, `Node`, `Relationship`, and `Path` to graph-core domain types |
+| Class                         | Description                                                                            |
+|-------------------------------|----------------------------------------------------------------------------------------|
+| `Neo4jGraphOperations`        | Synchronous `GraphOperations` implementation over the Neo4j driver                     |
+| `Neo4jGraphSuspendOperations` | Coroutine-based `GraphSuspendOperations` implementation                                |
+| `CachingNeo4jGraphOperations` | Caffeine bounded/expiring caching decorator over `Neo4jGraphOperations`                |
+| `Neo4jGraphSchemaManager`     | Schema/index manager for Neo4j indexes and unique constraints                          |
+| `Neo4jCoroutineSession`       | Bridges `ReactiveSession` and Kotlin Coroutines                                        |
+| `Neo4jRecordMapper`           | Converts Neo4j `Record`, `Node`, `Relationship`, and `Path` to graph-core domain types |
 
 ## Class Model
 
@@ -42,6 +42,7 @@ It bridges the Reactive Streams API through `kotlinx-coroutines-reactive` to pro
 ## Key Methods
 
 ### Vertex Management
+
 - `createVertex(label, properties)` — Create a new node
 - `findVertexById(label, id)` — Look up by `elementId()`
 - `updateVertex(label, id, properties)` — Update properties
@@ -49,16 +50,19 @@ It bridges the Reactive Streams API through `kotlinx-coroutines-reactive` to pro
 - `countVertices(label)` — Count nodes of label
 
 ### Edge Management
+
 - `createEdge(startId, endId, label, properties)` — Create a relationship
 - `findEdgeById(label, id)` — Look up by `elementId()`
 - `deleteEdge(label, id)` — Delete relationship
 
 ### Graph Traversal
+
 - `neighbors(vertexId, edgeLabel, direction, depth)` — Fetch neighboring nodes
 - `shortestPath(fromId, toId, edgeLabel, maxDepth)` — Find shortest path
 - `allPaths(fromId, toId, edgeLabel, maxDepth)` — Enumerate all paths
 
 ### Schema / Index Management
+
 - `ops.schemaManager().createIndex(label, property)` — Create a node property index
 - `ops.schemaManager().createUniqueConstraint(label, property)` — Create a node property uniqueness constraint
 - `ops.schemaManager().listIndexes()` / `listConstraints()` — Inspect schema metadata
@@ -81,8 +85,7 @@ val graphOps = Neo4jGraphOperations(driver, database = "neo4j")
 
 ### Merge / Upsert and Transaction DSL
 
-Neo4j supports `GraphMergeOperations` with native Cypher `MERGE` and repository-style `Transaction DSL` backed by
-driver transactions. Relationship merge uses Neo4j 5.x `elementId()` for endpoint lookup.
+Neo4j supports `GraphMergeOperations` with native Cypher `MERGE` and repository-style `Transaction DSL` backed by driver transactions. Relationship merge uses Neo4j 5.x `elementId()` for endpoint lookup.
 
 ```kotlin
 import io.bluetape4k.graph.repository.mergeVertex
@@ -179,19 +182,20 @@ class Neo4jGraphOperationsTest {
 
 ## AGE vs Neo4j Comparison
 
-| Item | Apache AGE | Neo4j |
-|------|-----------|-------|
-| Base DB | PostgreSQL (extension) | Native graph DB |
-| Query Language | Cypher (SQL-wrapped) | Native Cypher |
-| Driver | JDBC / PostgreSQL driver | Neo4j Java Driver (Reactive API) |
-| Performance | Relational-optimized → slower on graph queries | Graph-optimized (still the fastest) |
-| Scalability | Inherits PostgreSQL (horizontal scale is hard) | Cluster / Federation support |
-| Virtual Thread / Coroutine | Plain JDBC → no Loom support | ReactiveSession → non-blocking |
-| Use Case | Adding graph to existing PostgreSQL | Dedicated graph systems (social, recommendation, security) |
+| Item                       | Apache AGE                                     | Neo4j                                                      |
+|----------------------------|------------------------------------------------|------------------------------------------------------------|
+| Base DB                    | PostgreSQL (extension)                         | Native graph DB                                            |
+| Query Language             | Cypher (SQL-wrapped)                           | Native Cypher                                              |
+| Driver                     | JDBC / PostgreSQL driver                       | Neo4j Java Driver (Reactive API)                           |
+| Performance                | Relational-optimized → slower on graph queries | Graph-optimized (still the fastest)                        |
+| Scalability                | Inherits PostgreSQL (horizontal scale is hard) | Cluster / Federation support                               |
+| Virtual Thread / Coroutine | Plain JDBC → no Loom support                   | ReactiveSession → non-blocking                             |
+| Use Case                   | Adding graph to existing PostgreSQL            | Dedicated graph systems (social, recommendation, security) |
 
 ## Notes
 
 ### Driver Ownership
+
 ```kotlin
 // Driver creation is caller-managed
 val driver = GraphDatabase.driver("bolt://localhost:7687")
@@ -202,13 +206,16 @@ graphOps.close()   // no-op
 driver.close()     // caller must close explicitly
 ```
 
-### elementId() Usage
+### elementId () Usage
+
 Neo4j 5.x replaces the deprecated `id()` with `elementId()`. All queries in this module use `elementId()` for stable record lookup.
 
 ### Cypher Parameterization
+
 All queries use Neo4j driver parameter binding. Never concatenate user-supplied strings into Cypher.
 
 ### Depth Limits
+
 `shortestPath` and `allPaths` enforce a `maxDepth` to prevent runaway traversals.
 
 ## Caching Decorator
@@ -217,15 +224,15 @@ All queries use Neo4j driver parameter binding. Never concatenate user-supplied 
 
 ### Cache Behaviour
 
-| Operation | Effect |
-|-----------|--------|
-| `findVertexById`, `findVerticesByLabel`, `neighbors`, `shortestPath`, `allPaths`, `findEdgesByLabel` | Results cached on first call; subsequent calls return the cached value without hitting the DB |
-| `maxSize` | Applied independently to each of the six read caches; it bounds entries per cache, not the wrapper's combined entries or heap bytes. Must be positive |
-| `expireAfterWrite`, `ticker` | `expireAfterWrite` is the positive TTL for each cache; `ticker` defaults to the system clock and can be replaced with a fake clock for deterministic tests |
-| `createVertex`, `createEdge` | Every call delegates to the underlying operation, even with identical arguments. Read caches are invalidated after the write |
-| `updateVertex`, `deleteVertex`, `deleteEdge` | All read caches invalidated |
-| `dropGraph` | Delegates first and invalidates all read caches after a successful graph deletion |
-| `transaction { ... }` | Forwards the backend transaction capability; commit invalidates all read caches, while rollback keeps the existing cache |
+| Operation                                                                                            | Effect                                                                                                                                                     |
+|------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `findVertexById`, `findVerticesByLabel`, `neighbors`, `shortestPath`, `allPaths`, `findEdgesByLabel` | Results cached on first call; subsequent calls return the cached value without hitting the DB                                                              |
+| `maxSize`                                                                                            | Applied independently to each of the six read caches; it bounds entries per cache, not the wrapper's combined entries or heap bytes. Must be positive      |
+| `expireAfterWrite`, `ticker`                                                                         | `expireAfterWrite` is the positive TTL for each cache; `ticker` defaults to the system clock and can be replaced with a fake clock for deterministic tests |
+| `createVertex`, `createEdge`                                                                         | Every call delegates to the underlying operation, even with identical arguments. Read caches are invalidated after the write                               |
+| `updateVertex`, `deleteVertex`, `deleteEdge`                                                         | All read caches invalidated                                                                                                                                |
+| `dropGraph`                                                                                          | Delegates first and invalidates all read caches after a successful graph deletion                                                                          |
+| `transaction { ... }`                                                                                | Forwards the backend transaction capability; commit invalidates all read caches, while rollback keeps the existing cache                                   |
 
 Each cache miss captures a generation before the delegate read. If a wrapper-visible write, `dropGraph`, or committed transaction advances that generation while the read is in flight, the returned value is not reinserted into the cache. The in-flight call may still return the value it read before the write; writes performed through another delegate instance remain outside this wrapper's invalidation boundary.
 
@@ -260,14 +267,17 @@ val afterDelete = ops.findVertexById("Person", aliceId)  // null (cache miss →
 ## Performance Tips
 
 ### Index Usage
+
 ```cypher
 CREATE INDEX person_name IF NOT EXISTS FOR (p:Person) ON (p.name);
 ```
 
 ### Batch Operations
+
 For bulk inserts, prefer `UNWIND $rows AS row CREATE (:Person {...row})` over a per-row loop.
 
 ### Query Profiling
+
 ```cypher
 PROFILE MATCH p = shortestPath((a)-[:KNOWS*..10]-(b))
 WHERE elementId(a) = $fromId AND elementId(b) = $toId
@@ -278,21 +288,16 @@ RETURN p
 
 ### Algorithm Support Matrix
 
-| Algorithm | Implementation | Notes |
-|-----------|---------------|-------|
-| `degreeCentrality` | Cypher native (`OPTIONAL MATCH ... count`) | |
-| `bfs` / `dfs` | JVM fallback (`BfsDfsRunner`) | |
-| `detectCycles` | Cypher native (variable-length path) | |
-| `connectedComponents` | JVM fallback (`UnionFind`) | |
-| `pageRank` | JVM fallback (`PageRankCalculator`) | GDS optional module planned for Phase 7 |
+| Algorithm             | Implementation                             | Notes                                   |
+|-----------------------|--------------------------------------------|-----------------------------------------|
+| `degreeCentrality`    | Cypher native (`OPTIONAL MATCH ... count`) |                                         |
+| `bfs` / `dfs`         | JVM fallback (`BfsDfsRunner`)              |                                         |
+| `detectCycles`        | Cypher native (variable-length path)       |                                         |
+| `connectedComponents` | JVM fallback (`UnionFind`)                 |                                         |
+| `pageRank`            | JVM fallback (`PageRankCalculator`)        | GDS optional module planned for Phase 7 |
 
 The current PageRank fallback is observable through
-`GraphAlgorithmExecutionObservable.lastAlgorithmExecution`, which reports
-provider `jvm-fallback`, path `JVM_FALLBACK`, and reason `NO_PROVIDER`. An
-optional provider module can use the dependency-free `graph-core` provider SPI;
-the base Neo4j module does not install GDS or claim native execution. Native
-provider failures must remain explicit instead of silently changing result
-semantics.
+`GraphAlgorithmExecutionObservable.lastAlgorithmExecution`, which reports provider `jvm-fallback`, path `JVM_FALLBACK`, and reason `NO_PROVIDER`. An optional provider module can use the dependency-free `graph-core` provider SPI; the base Neo4j module does not install GDS or claim native execution. Native provider failures must remain explicit instead of silently changing result semantics.
 
 ### Usage Example
 

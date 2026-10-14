@@ -6,29 +6,31 @@ import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldBeTrue
-import io.bluetape4k.graph.model.BatchEdge
-import io.bluetape4k.graph.model.GraphElementId
+import io.bluetape4k.concurrent.await
+import io.bluetape4k.concurrent.awaitTermination
+import io.bluetape4k.concurrent.get
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
+import io.bluetape4k.graph.model.batchEdgeOf
 import io.bluetape4k.graph.model.edgeOf
 import io.bluetape4k.graph.model.graphPathOf
 import io.bluetape4k.graph.model.toGraphElementId
 import io.bluetape4k.graph.model.vertexOf
+import io.bluetape4k.javatimes.seconds
 import io.bluetape4k.logging.KLogging
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.time.Duration
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * [CachingNeo4jGraphOperations] 의 읽기 캐시 히트·무효화와 생성 위임 계약을 검증한다.
@@ -39,19 +41,9 @@ import java.util.concurrent.TimeUnit
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CachingNeo4jGraphOperationsTest {
 
-    private class TestTicker: Ticker {
-        private var nanos = 0L
-
-        override fun read(): Long = nanos
-
-        fun advance(duration: Duration) {
-            nanos += duration.toNanos()
-        }
-    }
-
     companion object: KLogging()
 
-    private lateinit var delegate: Neo4jGraphOperations
+    private val delegate: Neo4jGraphOperations = mockk(relaxed = true)
     private lateinit var caching: CachingNeo4jGraphOperations
 
     private val aliceId = "alice-1".toGraphElementId()
@@ -69,13 +61,8 @@ class CachingNeo4jGraphOperationsTest {
 
     @BeforeEach
     fun setup() {
-        delegate = mockk(relaxed = true)
-        caching = CachingNeo4jGraphOperations(delegate)
-    }
-
-    @AfterEach
-    fun tearDown() {
         clearMocks(delegate)
+        caching = CachingNeo4jGraphOperations(delegate)
     }
 
     // ───── findVertexById 캐싱 ─────
@@ -89,6 +76,7 @@ class CachingNeo4jGraphOperationsTest {
 
         first shouldBeEqualTo alice
         second shouldBeEqualTo alice
+
         verify(exactly = 1) { delegate.findVertexById("Person", aliceId) }
     }
 
@@ -101,6 +89,7 @@ class CachingNeo4jGraphOperationsTest {
 
         first.shouldBeNull()
         second.shouldBeNull()
+
         verify(exactly = 1) { delegate.findVertexById("Person", aliceId) }
     }
 
@@ -208,6 +197,7 @@ class CachingNeo4jGraphOperationsTest {
     fun `findEdgesByLabel는 filter 포함 캐시 히트 시 delegate를 1회만 호출한다`() {
         val filter = mapOf("since" to 2020)
         val filteredEdge = edgeOf(edgeId, "KNOWS", aliceId, bobId, filter)
+
         every { delegate.findEdgesByLabel("KNOWS", filter) } returns listOf(filteredEdge)
 
         val first = caching.findEdgesByLabel("KNOWS", filter)
@@ -215,6 +205,7 @@ class CachingNeo4jGraphOperationsTest {
 
         first shouldBeEqualTo listOf(filteredEdge)
         second shouldBeEqualTo listOf(filteredEdge)
+
         verify(exactly = 1) { delegate.findEdgesByLabel("KNOWS", filter) }
     }
 
@@ -225,30 +216,34 @@ class CachingNeo4jGraphOperationsTest {
         val updated = alice.copy(properties = mapOf("name" to "Alice Updated"))
         val readStarted = CountDownLatch(1)
         val releaseRead = CountDownLatch(1)
-        every { delegate.findVertexById("Person", aliceId) } answers {
+        every {
+            delegate.findVertexById("Person", aliceId)
+        } answers {
             readStarted.countDown()
-            releaseRead.await(5, TimeUnit.SECONDS)
+            releaseRead.await(5.seconds)
             alice
         } andThen updated
 
-        every { delegate.updateVertex("Person", aliceId, any<Map<String, Any?>>()) } returns updated
+        every {
+            delegate.updateVertex("Person", aliceId, any<Map<String, Any?>>())
+        } returns updated
 
         val executor = Executors.newSingleThreadExecutor()
         try {
             val pendingRead = executor.submit<GraphVertex?> {
                 caching.findVertexById("Person", aliceId)
             }
-            readStarted.await(5, TimeUnit.SECONDS).shouldBeTrue()
+            readStarted.await(5.seconds).shouldBeTrue()
 
             caching.updateVertex("Person", aliceId, mapOf("name" to "Alice Updated"))
             releaseRead.countDown()
-            pendingRead.get(5, TimeUnit.SECONDS) shouldBeEqualTo alice
+            pendingRead.get(5.seconds) shouldBeEqualTo alice
 
             caching.findVertexById("Person", aliceId) shouldBeEqualTo updated
             verify(exactly = 2) { delegate.findVertexById("Person", aliceId) }
         } finally {
             executor.shutdownNow()
-            executor.awaitTermination(5, TimeUnit.SECONDS)
+            executor.awaitTermination(5.seconds)
         }
     }
 
@@ -260,6 +255,7 @@ class CachingNeo4jGraphOperationsTest {
         caching.dropGraph("default")
 
         caching.findVertexById("Person", aliceId).shouldBeNull()
+
         verify(exactly = 1) { delegate.dropGraph("default") }
         verify(exactly = 2) { delegate.findVertexById("Person", aliceId) }
     }
@@ -271,6 +267,7 @@ class CachingNeo4jGraphOperationsTest {
         every { delegate.transaction<GraphVertex>(any()) } returns updated
 
         caching.findVertexById("Person", aliceId)
+
         val committed = caching.transaction { updated }
         committed shouldBeEqualTo updated
         caching.findVertexById("Person", aliceId) shouldBeEqualTo updated
@@ -279,10 +276,13 @@ class CachingNeo4jGraphOperationsTest {
         val failure = IllegalStateException("rollback")
         every { delegate.transaction<GraphVertex>(any()) } throws failure
         caching.findVertexById("Person", aliceId)
+
         assertFailsWith<IllegalStateException> {
             caching.transaction { error("transaction block should not execute") }
         }
+
         caching.findVertexById("Person", aliceId) shouldBeEqualTo updated
+
         verify(exactly = 2) { delegate.transaction<GraphVertex>(any()) }
         verify(exactly = 2) { delegate.findVertexById("Person", aliceId) }
     }
@@ -294,9 +294,10 @@ class CachingNeo4jGraphOperationsTest {
 
         caching.findVertexById("Person", aliceId)   // 캐시 적재
         caching.deleteVertex("Person", aliceId)     // 전체 캐시 무효화
-        val after = caching.findVertexById("Person", aliceId)  // delegate 재호출
 
+        val after = caching.findVertexById("Person", aliceId)  // delegate 재호출
         after.shouldBeNull()
+
         verify(exactly = 2) { delegate.findVertexById("Person", aliceId) }
     }
 
@@ -308,9 +309,10 @@ class CachingNeo4jGraphOperationsTest {
 
         caching.findVertexById("Person", aliceId)   // 캐시 적재
         caching.updateVertex("Person", aliceId, mapOf("name" to "Alice Updated"))
-        val after = caching.findVertexById("Person", aliceId)  // delegate 재호출
 
+        val after = caching.findVertexById("Person", aliceId)  // delegate 재호출
         after shouldBeEqualTo updated
+
         verify(exactly = 2) { delegate.findVertexById("Person", aliceId) }
     }
 
@@ -321,9 +323,10 @@ class CachingNeo4jGraphOperationsTest {
 
         caching.findVerticesByLabel("Person")   // 캐시 적재
         caching.deleteEdge("KNOWS", edgeId)     // 전체 캐시 무효화
-        val after = caching.findVerticesByLabel("Person")  // delegate 재호출
 
+        val after = caching.findVerticesByLabel("Person")  // delegate 재호출
         after.shouldBeEmpty()
+
         verify(exactly = 2) { delegate.findVerticesByLabel("Person", emptyMap()) }
     }
 
@@ -367,7 +370,7 @@ class CachingNeo4jGraphOperationsTest {
     @Test
     fun `createVertex는 동일 인자 반복 호출마다 delegate를 호출한다`() {
         val props = mapOf("name" to "Alice")
-        val secondVertex = alice.copy(id = GraphElementId.of("alice-2"))
+        val secondVertex = alice.copy(id = "alice-2".toGraphElementId())
         every { delegate.createVertex("Person", props) } returns alice andThen secondVertex
 
         val first = caching.createVertex("Person", props)
@@ -375,26 +378,31 @@ class CachingNeo4jGraphOperationsTest {
 
         first shouldBeEqualTo alice
         second shouldBeEqualTo secondVertex
+
         verify(exactly = 2) { delegate.createVertex("Person", props) }
     }
 
     @Test
     fun `createEdge는 동일 인자 반복 호출마다 delegate를 호출한다`() {
-        val secondEdge = edge.copy(id = GraphElementId.of("edge-2"))
-        every { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) } returns edge andThen secondEdge
+        val secondEdge = edge.copy(id = "edge-2".toGraphElementId())
+        every {
+            delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap())
+        } returns edge andThen secondEdge
 
         val first = caching.createEdge(aliceId, bobId, "KNOWS", emptyMap())
         val second = caching.createEdge(aliceId, bobId, "KNOWS", emptyMap())
 
         first shouldBeEqualTo edge
         second shouldBeEqualTo secondEdge
+
         verify(exactly = 2) { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) }
     }
 
     @Test
     fun `createEdge는 생성마다 위임하고 읽기 캐시를 무효화한다`() {
-        every { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) } returns edge andThen
-                edge.copy(id = GraphElementId.of("edge-2"))
+        every {
+            delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap())
+        } returns edge andThen edge.copy(id = "edge-2".toGraphElementId())
         every { delegate.findEdgesByLabel("KNOWS", emptyMap()) } returns listOf(edge)
 
         caching.findEdgesByLabel("KNOWS")              // 읽기 캐시 적재
@@ -406,6 +414,7 @@ class CachingNeo4jGraphOperationsTest {
 
         // 동일 인자라도 생성 요청은 다시 delegate에 위임한다.
         caching.createEdge(aliceId, bobId, "KNOWS")
+
         verify(exactly = 2) { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) }
     }
 
@@ -413,11 +422,8 @@ class CachingNeo4jGraphOperationsTest {
     fun `createVertex는 생성마다 위임하고 읽기 캐시를 무효화한다`() {
         val props = mapOf("name" to "Alice")
         every {
-            delegate.createVertex(
-                "Person",
-                props
-            )
-        } returns alice andThen alice.copy(id = GraphElementId.of("alice-2"))
+            delegate.createVertex("Person", props)
+        } returns alice andThen alice.copy(id = "alice-2".toGraphElementId())
         every { delegate.findVertexById("Person", aliceId) } returns alice
 
         caching.findVertexById("Person", aliceId)   // 읽기 캐시 적재
@@ -438,11 +444,8 @@ class CachingNeo4jGraphOperationsTest {
         val batch = listOf(props, mapOf("name" to "Bob"))
         every { delegate.findVertexById("Person", aliceId) } returns alice
         every {
-            delegate.createVertex(
-                "Person",
-                props
-            )
-        } returns alice andThen alice.copy(id = GraphElementId.of("alice-2"))
+            delegate.createVertex("Person", props)
+        } returns alice andThen alice.copy(id = "alice-2".toGraphElementId())
         every { delegate.createVertices("Person", batch) } returns listOf(alice, bob)
 
         caching.findVertexById("Person", aliceId)
@@ -459,13 +462,20 @@ class CachingNeo4jGraphOperationsTest {
     @Test
     fun `createEdges 후 읽기 캐시가 무효화되고 이후 생성도 위임된다`() {
         val batch = listOf(
-            BatchEdge(aliceId, bobId),
-            BatchEdge(bobId, aliceId, mapOf("since" to 2025L)),
+            batchEdgeOf(aliceId, bobId),
+            batchEdgeOf(bobId, aliceId, "since" to 2025L),
         )
-        every { delegate.findEdgesByLabel("KNOWS", emptyMap()) } returns listOf(edge)
-        every { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) } returns edge andThen
-                edge.copy(id = GraphElementId.of("edge-2"))
-        every { delegate.createEdges("KNOWS", batch) } returns listOf(edge, edge.copy(id = GraphElementId.of("edge-3")))
+        every {
+            delegate.findEdgesByLabel("KNOWS")
+        } returns listOf(edge)
+
+        every {
+            delegate.createEdge(aliceId, bobId, "KNOWS")
+        } returns edge andThen edge.copy(id = "edge-2".toGraphElementId())
+
+        every {
+            delegate.createEdges("KNOWS", batch)
+        } returns listOf(edge, edge.copy(id = "edge-3".toGraphElementId()))
 
         caching.findEdgesByLabel("KNOWS")
         caching.createEdge(aliceId, bobId, "KNOWS")
@@ -473,8 +483,8 @@ class CachingNeo4jGraphOperationsTest {
         caching.findEdgesByLabel("KNOWS")
         caching.createEdge(aliceId, bobId, "KNOWS")
 
-        verify(exactly = 2) { delegate.findEdgesByLabel("KNOWS", emptyMap()) }
-        verify(exactly = 2) { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) }
+        verify(exactly = 2) { delegate.findEdgesByLabel("KNOWS") }
+        verify(exactly = 2) { delegate.createEdge(aliceId, bobId, "KNOWS") }
         verify(exactly = 1) { delegate.createEdges("KNOWS", batch) }
     }
 
@@ -497,16 +507,17 @@ class CachingNeo4jGraphOperationsTest {
     @Test
     fun `createEdge는 다른 속성 맵으로 호출 시 delegate를 각각 호출한다`() {
         val edge2 = edgeOf("edge-2".toGraphElementId(), "KNOWS", aliceId, bobId, "since" to 2025)
-        every { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) } returns edge
-        every { delegate.createEdge(aliceId, bobId, "KNOWS", mapOf("since" to 2025)) } returns edge2
+        every { delegate.createEdge(aliceId, bobId, "KNOWS") } returns edge
+        every { delegate.createEdge(aliceId, bobId, "KNOWS", "since" to 2025) } returns edge2
 
-        val r1 = caching.createEdge(aliceId, bobId, "KNOWS", emptyMap())
-        val r2 = caching.createEdge(aliceId, bobId, "KNOWS", mapOf("since" to 2025))
+        val r1 = caching.createEdge(aliceId, bobId, "KNOWS")
+        val r2 = caching.createEdge(aliceId, bobId, "KNOWS", "since" to 2025)
 
         r1 shouldBeEqualTo edge
         r2 shouldBeEqualTo edge2
-        verify(exactly = 1) { delegate.createEdge(aliceId, bobId, "KNOWS", emptyMap()) }
-        verify(exactly = 1) { delegate.createEdge(aliceId, bobId, "KNOWS", mapOf("since" to 2025)) }
+
+        verify(exactly = 1) { delegate.createEdge(aliceId, bobId, "KNOWS") }
+        verify(exactly = 1) { delegate.createEdge(aliceId, bobId, "KNOWS", "since" to 2025) }
     }
 
     // ───── bounded/expiring read cache ─────
@@ -534,13 +545,15 @@ class CachingNeo4jGraphOperationsTest {
         val ticker = TestTicker()
         val expiring = CachingNeo4jGraphOperations(
             delegate,
-            expireAfterWrite = Duration.ofSeconds(1),
+            expireAfterWrite = 1.seconds(),
             ticker = ticker,
         )
         every { delegate.findVertexById("Person", aliceId) } returns alice
 
         expiring.findVertexById("Person", aliceId)
-        ticker.advance(Duration.ofSeconds(1))
+
+        ticker.advance(1.seconds())
+
         expiring.findVertexById("Person", aliceId)
 
         verify(exactly = 2) { delegate.findVertexById("Person", aliceId) }
@@ -557,6 +570,16 @@ class CachingNeo4jGraphOperationsTest {
     fun `expireAfterWrite는 양수여야 한다`() {
         assertFailsWith<IllegalArgumentException> {
             CachingNeo4jGraphOperations(delegate, expireAfterWrite = Duration.ZERO)
+        }
+    }
+
+    private class TestTicker: Ticker {
+        private var nanos = 0L
+
+        override fun read(): Long = nanos
+
+        fun advance(duration: Duration) {
+            nanos += duration.toNanos()
         }
     }
 }

@@ -3,30 +3,19 @@ package io.bluetape4k.graph.neo4j
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.coroutines.flow.extensions.log
 import io.bluetape4k.junit5.coroutines.runSuspendIO
-import io.bluetape4k.testcontainers.graphdb.Neo4jServer
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitSingle
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
-import org.neo4j.driver.AuthTokens
-import org.neo4j.driver.GraphDatabase
-import org.neo4j.driver.Query
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class Neo4jCoroutineSessionTest {
+class Neo4jCoroutineSessionTest: AbstractNeo4jTest() {
 
-    private val driver = GraphDatabase.driver(Neo4jServer.Launcher.neo4j.boltUrl, AuthTokens.none())
-    private val session = Neo4jCoroutineSession(driver)
-
-    @AfterAll
-    fun teardown() {
-        session.close()
-        driver.close()
-    }
+    companion object: KLogging()
 
     @BeforeEach
     fun clearGraph() = runSuspendIO {
@@ -35,12 +24,14 @@ class Neo4jCoroutineSessionTest {
 
     @Test
     fun `write materializes reactive records and closes the session`() = runSuspendIO {
-        val names = session.write { s ->
-            s.run(Query("CREATE (n:Person {name: 'Alice'}) RETURN n.name AS name"))
-                .awaitSingle()
+        val names = session.write { session ->
+            val query = queryOf("CREATE (n:Person {name: 'Alice'}) RETURN n.name AS name")
+
+            session.run(query).awaitSingle()
                 .records()
                 .asFlow()
                 .map { it["name"].asString() }
+                .log("WRITE")
         }
 
         names shouldBeEqualTo listOf("Alice")
@@ -54,16 +45,16 @@ class Neo4jCoroutineSessionTest {
         )
 
         val names = session.read { s ->
-            s.run(
-                Query(
-                    "MATCH (n:Person {name: \$name}) RETURN n.name AS name",
-                    mapOf("name" to "Bob"),
-                ),
+            val query = queryOf(
+                "MATCH (n:Person {name: \$name}) RETURN n.name AS name",
+                "name" to "Bob"
             )
+            s.run(query)
                 .awaitSingle()
                 .records()
                 .asFlow()
                 .map { it["name"].asString() }
+                .log("READ")
         }
 
         names shouldBeEqualTo listOf("Bob")
@@ -71,20 +62,22 @@ class Neo4jCoroutineSessionTest {
 
     @Test
     fun `runReadQuery and runWriteQuery return materialized records`() = runSuspendIO {
-        val created = session.runWriteQuery(
-            "CREATE (n:Person {name: \$name}) RETURN n.name AS name",
-            mapOf("name" to "Carol"),
+        val writeQuery = queryOf(
+            $$"CREATE (n:Person {name: $name}) RETURN n.name AS name",
+            "name" to "Carol"
         )
+        val created = session.runWriteQuery(writeQuery).onEach { log.debug { "Write=$it" } }
 
-        created.shouldHaveSize(1)
+        created shouldHaveSize 1
         created.single()["name"].asString() shouldBeEqualTo "Carol"
 
-        val found = session.runReadQuery(
-            "MATCH (n:Person {name: \$name}) RETURN n.name AS name",
-            mapOf("name" to "Carol"),
+        val readQuery = queryOf(
+            $$"MATCH (n:Person {name: $name}) RETURN n.name AS name",
+            "name" to "Carol"
         )
+        val found = session.runReadQuery(readQuery).onEach { log.debug { "Read=$it" } }
 
-        found.shouldHaveSize(1)
+        found shouldHaveSize 1
         found.single()["name"].asString() shouldBeEqualTo "Carol"
     }
 

@@ -57,11 +57,8 @@ class Neo4jCoroutineSession(
      *
      */
     suspend fun <T> read(block: suspend (ReactiveSession) -> Flow<T>): List<T> {
-        val session = driver.session(ReactiveSession::class.java, sessionConfig())
-        return try {
+        return withSession { session ->
             block(session).toList()
-        } finally {
-            session.close<Void>().awaitFirstOrNull()
         }
     }
 
@@ -77,13 +74,11 @@ class Neo4jCoroutineSession(
      *
      */
     suspend fun <T> write(block: suspend (ReactiveSession) -> Flow<T>): List<T> {
-        val session = driver.session(ReactiveSession::class.java, sessionConfig())
-        return try {
+        return withSession { session ->
             block(session).toList()
-        } finally {
-            session.close<Void>().awaitFirstOrNull()
         }
     }
+
 
     /**
      * 읽기 query를 실행하고 materialized record 목록을 반환한다.
@@ -99,13 +94,13 @@ class Neo4jCoroutineSession(
      */
     suspend fun runReadQuery(cypher: String, params: Map<String, Any?> = emptyMap()): List<Record> {
         cypher.requireNotBlank("cypher")
+        val query = queryOf(cypher, params)
+        return runReadQuery(query)
+    }
 
-        val session = driver.session(ReactiveSession::class.java, sessionConfig())
-        return try {
-            val result = session.run(Query(cypher, params)).awaitSingle()
-            result.records().asFlow().toList()
-        } finally {
-            session.close<Void>().awaitFirstOrNull()
+    suspend fun runReadQuery(query: Query): List<Record> {
+        return withSession { session ->
+            session.run(query).awaitSingle().records().asFlow().toList()
         }
     }
 
@@ -122,11 +117,27 @@ class Neo4jCoroutineSession(
      */
     suspend fun runWriteQuery(cypher: String, params: Map<String, Any?> = emptyMap()): List<Record> {
         cypher.requireNotBlank("cypher")
-        return runReadQuery(cypher, params)
+        val query = queryOf(cypher, params)
+        return runWriteQuery(query)
+    }
+
+    suspend fun runWriteQuery(query: Query): List<Record> {
+        return withSession { session ->
+            session.run(query).awaitSingle().records().asFlow().toList()
+        }
     }
 
     override fun close() {
         // driver는 외부 소유이다.
+    }
+
+    suspend fun <T> withSession(block: suspend (session: ReactiveSession) -> T): T {
+        val session = driver.session(ReactiveSession::class.java, sessionConfig())
+        return try {
+            block(session)
+        } finally {
+            session.close<Void>().awaitFirstOrNull()
+        }
     }
 
     private fun sessionConfig(): SessionConfig =

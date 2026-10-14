@@ -1,73 +1,52 @@
 package io.bluetape4k.graph.neo4j
 
 import io.bluetape4k.assertions.assertFailsWith
-import io.bluetape4k.graph.GraphQueryException
-import io.bluetape4k.graph.model.Direction
-import io.bluetape4k.graph.model.GraphElementId
-import io.bluetape4k.graph.model.NeighborOptions
-import io.bluetape4k.graph.model.PathOptions
-import io.bluetape4k.graph.repository.transaction
-import io.bluetape4k.testcontainers.graphdb.Neo4jServer
-import io.bluetape4k.junit5.coroutines.runSuspendIO
-import io.bluetape4k.logging.KLogging
-import io.bluetape4k.logging.debug
 import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
+import io.bluetape4k.assertions.shouldBeInstanceOf
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
+import io.bluetape4k.assertions.shouldContainSame
 import io.bluetape4k.assertions.shouldHaveSize
-import io.bluetape4k.assertions.shouldBeInstanceOf
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.graph.GraphQueryException
+import io.bluetape4k.graph.model.Direction
+import io.bluetape4k.graph.model.NeighborOptions
+import io.bluetape4k.graph.model.PathOptions
+import io.bluetape4k.graph.model.toGraphElementId
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import io.mockk.every
 import io.mockk.mockk
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
-import org.neo4j.driver.AuthTokens
 import org.neo4j.driver.Driver
-import org.neo4j.driver.GraphDatabase
 import org.neo4j.driver.SessionConfig
 import org.neo4j.driver.exceptions.ServiceUnavailableException
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
-class Neo4jGraphOperationsTest {
+class Neo4jGraphOperationsTest: AbstractNeo4jTest() {
 
     companion object: KLogging()
 
-    private lateinit var driver: Driver
-    private lateinit var ops: Neo4jGraphOperations
-
-    @BeforeAll
-    fun setup() {
-        val server = Neo4jServer.Launcher.neo4j
-        driver = GraphDatabase.driver(server.boltUrl, AuthTokens.none())
-        ops = Neo4jGraphOperations(driver)
-    }
-
-    @AfterAll
-    fun teardown() {
-        driver.close()
-    }
-
     @BeforeEach
-    fun clearGraph() = runSuspendIO {
-        ops.createGraph("default")
-        ops.dropGraph("default")
+    override fun beforeEach() {
+        ops.createGraph(graphName)
+        ops.dropGraph(graphName)
     }
 
     // ----- 그래프 초기화 -----
 
     @Test
     @Order(10)
-    fun `기본 current graph가 존재하면 true 반환`() = runSuspendIO {
+    fun `기본 current graph가 존재하면 true 반환`() {
         ops.graphExists("default").shouldBeTrue()
     }
 
@@ -75,7 +54,10 @@ class Neo4jGraphOperationsTest {
     @Order(11)
     fun `graphExists preserves driver failures`() {
         val failingDriver = mockk<Driver>()
-        every { failingDriver.session(any<SessionConfig>()) } throws ServiceUnavailableException("neo4j unavailable")
+        every {
+            failingDriver.session(any<SessionConfig>())
+        } throws ServiceUnavailableException("neo4j unavailable")
+
         val failingOps = Neo4jGraphOperations(failingDriver)
 
         val ex = assertFailsWith<GraphQueryException> {
@@ -88,30 +70,31 @@ class Neo4jGraphOperationsTest {
 
     @Test
     @Order(13)
-    fun `다른 graph name으로 dropGraph하면 현재 graph를 삭제하지 않는다`() = runSuspendIO {
-        ops.createGraph("current")
+    fun `다른 graph name으로 dropGraph하면 현재 graph를 삭제하지 않는다`() {
+        val currentGraph = "current"
+        ops.createGraph(currentGraph)
         ops.createVertex("Person", mapOf("name" to "Alice"))
-        ops.graphExists("current").shouldBeTrue()
+        ops.graphExists(currentGraph).shouldBeTrue()
         ops.graphExists("other").shouldBeFalse()
 
         val ex = assertFailsWith<GraphQueryException> {
             ops.dropGraph("other")
         }
 
-        ex.message shouldContain "current"
+        ex.message shouldContain currentGraph
         ops.countVertices("Person") shouldBeEqualTo 1L
 
-        ops.dropGraph("current")
+        ops.dropGraph(currentGraph)
         ops.countVertices("Person") shouldBeEqualTo 0L
     }
 
     @Test
     @Order(12)
-    fun `dropGraph로 전체 데이터를 삭제한다`() = runSuspendIO {
+    fun `dropGraph로 전체 데이터를 삭제한다`() {
         ops.createVertex("Person", mapOf("name" to "Alice"))
         ops.countVertices("Person") shouldBeGreaterOrEqualTo 1L
 
-        ops.dropGraph("default")
+        ops.dropGraph(graphName)
         ops.countVertices("Person") shouldBeEqualTo 0L
     }
 
@@ -119,7 +102,7 @@ class Neo4jGraphOperationsTest {
 
     @Test
     @Order(20)
-    fun `정점을 생성하면 elementId가 부여된다`() = runSuspendIO {
+    fun `정점을 생성하면 elementId가 부여된다`() {
         val vertex = ops.createVertex("Person")
 
         log.debug { "vertx=$vertex" }
@@ -129,7 +112,7 @@ class Neo4jGraphOperationsTest {
 
     @Test
     @Order(21)
-    fun `label과 properties로 정점을 생성한다`() = runSuspendIO {
+    fun `label과 properties로 정점을 생성한다`() {
         val props = mapOf("name" to "Alice", "age" to 30L)
         val vertex = ops.createVertex("Person", props)
 
@@ -141,7 +124,7 @@ class Neo4jGraphOperationsTest {
 
     @Test
     @Order(22)
-    fun `id로 정점을 조회한다`() = runSuspendIO {
+    fun `id로 정점을 조회한다`() {
         val created = ops.createVertex("Person", mapOf("name" to "Bob"))
         val found = ops.findVertexById("Person", created.id)
 
@@ -153,44 +136,41 @@ class Neo4jGraphOperationsTest {
 
     @Test
     @Order(23)
-    fun `존재하지 않는 id로 조회하면 null 반환`() = runSuspendIO {
-        val fakeId = GraphElementId.of("4:00000000-0000-0000-0000-000000000000:9999")
-        val result = ops.findVertexById("Person", fakeId)
-        result.shouldBeNull()
+    fun `존재하지 않는 id로 조회하면 null 반환`() {
+        val fakeId = "4:00000000-0000-0000-0000-000000000000:9999".toGraphElementId()
+        ops.findVertexById("Person", fakeId).shouldBeNull()
     }
 
     @Test
     @Order(24)
-    fun `label로 정점 목록을 조회한다`() = runSuspendIO {
+    fun `label로 정점 목록을 조회한다`() {
         ops.createVertex("Person", mapOf("name" to "Alice"))
         ops.createVertex("Person", mapOf("name" to "Bob"))
         ops.createVertex("Car", mapOf("model" to "Tesla"))
 
         val persons = ops.findVerticesByLabel("Person")
+            .onEach { log.debug { "person=$it" } }
 
-        persons.forEach { person ->
-            log.debug { "person=$person" }
-        }
         persons shouldHaveSize 2
         persons.all { it.label == "Person" }.shouldBeTrue()
     }
 
     @Test
     @Order(25)
-    fun `filter 조건으로 정점을 조회한다`() = runSuspendIO {
+    fun `filter 조건으로 정점을 조회한다`() {
         ops.createVertex("Person", mapOf("name" to "Alice", "city" to "Seoul"))
         ops.createVertex("Person", mapOf("name" to "Bob", "city" to "Busan"))
 
         val result = ops.findVerticesByLabel("Person", mapOf("city" to "Seoul"))
+            .onEach { log.debug { "person=$it" } }
 
         result shouldHaveSize 1
-        result[0].properties["name"] shouldBeEqualTo "Alice"
-        log.debug { "result[0]=${result[0]}" }
+        result.single().properties["name"] shouldBeEqualTo "Alice"
     }
 
     @Test
     @Order(26)
-    fun `정점의 properties를 업데이트한다`() = runSuspendIO {
+    fun `정점의 properties를 업데이트한다`() {
         val vertex = ops.createVertex("Person", mapOf("name" to "Charlie", "age" to 25L))
         val updated = ops.updateVertex("Person", vertex.id, mapOf("age" to 26L))
 
@@ -201,7 +181,7 @@ class Neo4jGraphOperationsTest {
 
     @Test
     @Order(27)
-    fun `정점을 삭제한다`() = runSuspendIO {
+    fun `정점을 삭제한다`() {
         val vertex = ops.createVertex("Person", mapOf("name" to "Dave"))
         val deleted = ops.deleteVertex("Person", vertex.id)
 
@@ -211,7 +191,7 @@ class Neo4jGraphOperationsTest {
 
     @Test
     @Order(28)
-    fun `정점 개수를 조회한다`() = runSuspendIO {
+    fun `정점 개수를 조회한다`() {
         ops.createVertex("Person", mapOf("name" to "Alice"))
         ops.createVertex("Person", mapOf("name" to "Bob"))
 
@@ -221,7 +201,7 @@ class Neo4jGraphOperationsTest {
 
     @Test
     @Order(29)
-    fun `transaction은 실패 시 생성한 정점과 간선을 rollback한다`() = runSuspendIO {
+    fun `transaction은 실패 시 생성한 정점과 간선을 rollback한다`() {
         val existing = ops.createVertex("Person", mapOf("name" to "Existing"))
 
         assertFailsWith<IllegalStateException> {
@@ -234,18 +214,18 @@ class Neo4jGraphOperationsTest {
         }
 
         ops.findVertexById("Person", existing.id)?.properties?.get("name") shouldBeEqualTo "Existing"
-        ops.findVerticesByLabel("Person").shouldHaveSize(1)
+        ops.findVerticesByLabel("Person") shouldHaveSize 1
         ops.findEdgesByLabel("KNOWS").shouldBeEmpty()
     }
 
     @Test
     @Order(29)
-    fun `unsafe Cypher identifiers are rejected before query execution`() = runSuspendIO {
+    fun `unsafe Cypher identifiers are rejected before query execution`() {
         assertFailsWith<IllegalArgumentException> {
             ops.findVerticesByLabel("Person", mapOf("name) RETURN n MATCH (m" to "Alice"))
         }
         assertFailsWith<IllegalArgumentException> {
-            ops.findEdgesByStartId(GraphElementId.of("0"), "KNOWS) MATCH (m")
+            ops.findEdgesByStartId(0.toGraphElementId(), "KNOWS) MATCH (m")
         }
     }
 
@@ -253,7 +233,7 @@ class Neo4jGraphOperationsTest {
 
     @Test
     @Order(30)
-    fun `두 정점 사이에 간선을 생성한다`() = runSuspendIO {
+    fun `두 정점 사이에 간선을 생성한다`() {
         val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
         val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
 
@@ -268,7 +248,7 @@ class Neo4jGraphOperationsTest {
 
     @Test
     @Order(31)
-    fun `label로 간선 목록을 조회한다`() = runSuspendIO {
+    fun `label로 간선 목록을 조회한다`() {
         val a = ops.createVertex("Person", mapOf("name" to "A"))
         val b = ops.createVertex("Person", mapOf("name" to "B"))
         val c = ops.createVertex("Person", mapOf("name" to "C"))
@@ -277,17 +257,14 @@ class Neo4jGraphOperationsTest {
         ops.createEdge(b.id, c.id, "KNOWS")
         ops.createEdge(a.id, c.id, "FOLLOWS")
 
-        val knowsEdges = ops.findEdgesByLabel("KNOWS")
+        val knowsEdges = ops.findEdgesByLabel("KNOWS").onEach { log.debug { "person=$it" } }
         knowsEdges shouldHaveSize 2
         knowsEdges.all { it.label == "KNOWS" }.shouldBeTrue()
-        knowsEdges.forEach { edge ->
-            log.debug { "edge=$edge" }
-        }
     }
 
     @Test
     @Order(32)
-    fun `간선을 삭제한다`() = runSuspendIO {
+    fun `간선을 삭제한다`() {
         val a = ops.createVertex("Person", mapOf("name" to "A"))
         val b = ops.createVertex("Person", mapOf("name" to "B"))
         val edge = ops.createEdge(a.id, b.id, "KNOWS")
@@ -302,7 +279,7 @@ class Neo4jGraphOperationsTest {
 
     @Test
     @Order(40)
-    fun `이웃 정점을 조회한다 - OUTGOING`() = runSuspendIO {
+    fun `이웃 정점을 조회한다 - OUTGOING`() {
         val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
         val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
         val carol = ops.createVertex("Person", mapOf("name" to "Carol"))
@@ -310,11 +287,13 @@ class Neo4jGraphOperationsTest {
         ops.createEdge(alice.id, bob.id, "KNOWS")
         ops.createEdge(alice.id, carol.id, "KNOWS")
 
-        val neighbors = ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING))
+        val neighbors = ops
+            .neighbors(
+                alice.id,
+                NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING)
+            )
+            .onEach { log.debug { "neighbor=$it" } }
 
-        neighbors.forEach { vertex ->
-            log.debug { "neighbor=$vertex" }
-        }
         neighbors shouldHaveSize 2
 
         val names = neighbors.map { it.properties["name"] }
@@ -324,7 +303,7 @@ class Neo4jGraphOperationsTest {
 
     @Test
     @Order(41)
-    fun `이웃 정점을 조회한다 - INCOMING`() = runSuspendIO {
+    fun `이웃 정점을 조회한다 - INCOMING`() {
         val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
         val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
         val carol = ops.createVertex("Person", mapOf("name" to "Carol"))
@@ -332,7 +311,12 @@ class Neo4jGraphOperationsTest {
         ops.createEdge(bob.id, alice.id, "KNOWS")
         ops.createEdge(carol.id, alice.id, "KNOWS")
 
-        val neighbors = ops.neighbors(alice.id, NeighborOptions(edgeLabel = "KNOWS", direction = Direction.INCOMING))
+        val neighbors = ops
+            .neighbors(
+                alice.id,
+                NeighborOptions(edgeLabel = "KNOWS", direction = Direction.INCOMING)
+            )
+            .onEach { log.debug { "neighbor=$it" } }
 
         neighbors.forEach { vertex ->
             log.debug { "neighbor=$vertex" }
@@ -346,7 +330,7 @@ class Neo4jGraphOperationsTest {
 
     @Test
     @Order(42)
-    fun `이웃 정점을 조회한다 - BOTH`() = runSuspendIO {
+    fun `이웃 정점을 조회한다 - BOTH`() {
         val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
         val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
         val carol = ops.createVertex("Person", mapOf("name" to "Carol"))
@@ -354,24 +338,22 @@ class Neo4jGraphOperationsTest {
         ops.createEdge(alice.id, bob.id, "KNOWS")
         ops.createEdge(carol.id, alice.id, "KNOWS")
 
-        val neighbors = ops.neighbors(
-            alice.id,
-            NeighborOptions(edgeLabel = "KNOWS", direction = Direction.BOTH)
-        )
+        val neighbors = ops
+            .neighbors(
+                alice.id,
+                NeighborOptions(edgeLabel = "KNOWS", direction = Direction.BOTH)
+            )
+            .onEach { log.debug { "neighbor=$it" } }
 
-        neighbors.forEach { vertex ->
-            log.debug { "neighbor=$vertex" }
-        }
         neighbors shouldHaveSize 2
 
         val names = neighbors.map { it.properties["name"] }
-        names shouldContain "Bob"
-        names shouldContain "Carol"
+        names shouldContainSame listOf("Bob", "Carol")
     }
 
     @Test
     @Order(43)
-    fun `depth=2로 2단계 이웃을 조회한다`() = runSuspendIO {
+    fun `depth=2로 2단계 이웃을 조회한다`() {
         val a = ops.createVertex("Person", mapOf("name" to "A"))
         val b = ops.createVertex("Person", mapOf("name" to "B"))
         val c = ops.createVertex("Person", mapOf("name" to "C"))
@@ -379,23 +361,22 @@ class Neo4jGraphOperationsTest {
         ops.createEdge(a.id, b.id, "KNOWS")
         ops.createEdge(b.id, c.id, "KNOWS")
 
-        val neighbors = ops.neighbors(
-            a.id,
-            NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING, maxDepth = 2)
-        )
-        neighbors.forEach { neighbor ->
-            log.debug { "neighbor=$neighbor" }
-        }
+        val neighbors = ops
+            .neighbors(
+                a.id,
+                NeighborOptions(edgeLabel = "KNOWS", direction = Direction.OUTGOING, maxDepth = 2)
+            )
+            .onEach { log.debug { "neighbor=$it" } }
+
         neighbors.shouldNotBeEmpty()
 
         val names = neighbors.map { it.properties["name"] }
-        names shouldContain "B"
-        names shouldContain "C"
+        names shouldContainSame listOf("B", "C")
     }
 
     @Test
     @Order(50)
-    fun `최단 경로를 탐색한다`() = runSuspendIO {
+    fun `최단 경로를 탐색한다`() {
         val a = ops.createVertex("Person", mapOf("name" to "A"))
         val b = ops.createVertex("Person", mapOf("name" to "B"))
         val c = ops.createVertex("Person", mapOf("name" to "C"))
@@ -403,17 +384,20 @@ class Neo4jGraphOperationsTest {
         ops.createEdge(a.id, b.id, "KNOWS")
         ops.createEdge(b.id, c.id, "KNOWS")
 
-        val path = ops.shortestPath(a.id, c.id, PathOptions(edgeLabel = "KNOWS")).shouldNotBeNull()
+        val path = ops
+            .shortestPath(
+                a.id,
+                c.id,
+                PathOptions(edgeLabel = "KNOWS")
+            ).shouldNotBeNull()
 
-        path.vertices.forEach { vertex ->
-            log.debug { "vertex=$vertex" }
-        }
+        path.vertices.forEach { log.debug { "vertex=$it" } }
         path.vertices.shouldNotBeEmpty()
     }
 
     @Test
     @Order(51)
-    fun `연결되지 않은 경우 shortestPath는 null 반환`() = runSuspendIO {
+    fun `연결되지 않은 경우 shortestPath는 null 반환`() {
         val a = ops.createVertex("Person", mapOf("name" to "A"))
         val b = ops.createVertex("Person", mapOf("name" to "B"))
 
@@ -424,7 +408,7 @@ class Neo4jGraphOperationsTest {
 
     @Test
     @Order(52)
-    fun `모든 경로를 탐색한다`() = runSuspendIO {
+    fun `모든 경로를 탐색한다`() {
         val a = ops.createVertex("Person", mapOf("name" to "A"))
         val b = ops.createVertex("Person", mapOf("name" to "B"))
         val c = ops.createVertex("Person", mapOf("name" to "C"))
@@ -433,11 +417,14 @@ class Neo4jGraphOperationsTest {
         ops.createEdge(b.id, c.id, "KNOWS")
         ops.createEdge(a.id, c.id, "KNOWS")
 
-        val paths = ops.allPaths(a.id, c.id, PathOptions(edgeLabel = "KNOWS"))
+        val paths = ops
+            .allPaths(
+                a.id,
+                c.id,
+                PathOptions(edgeLabel = "KNOWS")
+            )
+            .onEach { log.debug { "path=$it" } }
 
-        paths.forEach { path ->
-            log.debug { "path=$path" }
-        }
         paths.shouldNotBeEmpty()
         paths.size shouldBeGreaterOrEqualTo 2
     }
