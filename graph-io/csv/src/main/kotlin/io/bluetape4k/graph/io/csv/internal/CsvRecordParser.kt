@@ -10,14 +10,14 @@ import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.graph.io.support.GraphIoPaths
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.channels.trySendBlocking
-import java.io.IOException
 import java.io.FilterInputStream
+import java.io.IOException
 import java.io.InputStream
 import java.nio.charset.Charset
 
@@ -131,12 +131,12 @@ internal class CsvRecordParser {
 
     private class CallbackFailure(
         val error: Throwable,
-    ) : RuntimeException(error)
+    ): RuntimeException(error)
 
     /** CsvRecordReader가 lexer를 닫을 때 source 소유권을 중복 반납하지 않도록 한다. */
     private class NonClosingInputStream(
         input: InputStream,
-    ) : FilterInputStream(input) {
+    ): FilterInputStream(input) {
         override fun close() {
             // GraphIoPaths.openInputStream(source).use가 유일한 소유자다.
         }

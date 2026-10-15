@@ -1,27 +1,31 @@
 package io.bluetape4k.graph.io.csv
 
 import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeFalse
+import io.bluetape4k.assertions.shouldBeGreaterThan
+import io.bluetape4k.assertions.shouldContain
+import io.bluetape4k.assertions.shouldNotContain
 import io.bluetape4k.graph.io.options.DuplicateVertexPolicy
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.options.MissingEndpointPolicy
-import io.bluetape4k.graph.io.report.GraphIoStatus
-import io.bluetape4k.graph.io.report.GraphIoProgressEventType
 import io.bluetape4k.graph.io.report.GraphIoProgressEvent
-import io.bluetape4k.graph.io.report.GraphIoProgressListener
+import io.bluetape4k.graph.io.report.GraphIoProgressEventType
+import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.io.source.GraphImportSource
+import io.bluetape4k.graph.io.source.asSink
+import io.bluetape4k.graph.io.source.asSource
 import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.GraphEdge
-import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphVertex
+import io.bluetape4k.graph.model.edgeOf
+import io.bluetape4k.graph.model.vertexOf
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.logging.KLogging
-import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldBeGreaterThan
-import io.bluetape4k.assertions.shouldContain
-import io.bluetape4k.assertions.shouldNotContain
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.ByteArrayOutputStream
@@ -37,13 +41,14 @@ class CsvRoundTripTest {
     @Test
     fun `None export는 정점과 간선의 속성을 출력하지 않는다`(@TempDir dir: Path) {
         TinkerGraphOperations().use { source ->
-            val alice = source.createVertex("Person", mapOf("name" to "secret-alice"))
-            val bob = source.createVertex("Person", mapOf("name" to "secret-bob"))
-            source.createEdge(alice.id, bob.id, "KNOWS", mapOf("secret" to "edge-value"))
+            val alice = source.createVertex("Person", "name" to "secret-alice")
+            val bob = source.createVertex("Person", "name" to "secret-bob")
+            source.createEdge(alice.id, bob.id, "KNOWS", "secret" to "edge-value")
             val vertices = dir.resolve("vertices.csv")
             val edges = dir.resolve("edges.csv")
+
             CsvGraphBulkExporter().exportGraph(
-                CsvGraphExportSink(GraphExportSink.PathSink(vertices), GraphExportSink.PathSink(edges)),
+                CsvGraphExportSink(vertices.asSink(), edges.asSink()),
                 source,
                 GraphExportOptions(vertexLabels = setOf("Person"), edgeLabels = setOf("KNOWS")),
                 csvOptions = CsvGraphIoOptions(propertyMode = CsvPropertyMode.None),
@@ -62,22 +67,24 @@ class CsvRoundTripTest {
         val eOut = dir.resolve("e.csv")
 
         val source = TinkerGraphOperations()
-        val alice = source.createVertex("Person", mapOf("name" to "Alice"))
-        val bob = source.createVertex("Person", mapOf("name" to "Bob"))
-        source.createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to "2024"))
+        val alice = source.createVertex("Person", "name" to "Alice")
+        val bob = source.createVertex("Person", "name" to "Bob")
+        source.createEdge(alice.id, bob.id, "KNOWS", "since" to "2024")
         val events = mutableListOf<GraphIoProgressEventType>()
         val snapshots = mutableListOf<GraphIoProgressEvent>()
 
         val exporter = CsvGraphBulkExporter()
         exporter.exportGraph(
-            CsvGraphExportSink(GraphExportSink.PathSink(vOut), GraphExportSink.PathSink(eOut)),
+            CsvGraphExportSink(vOut.asSink(), eOut.asSink()),
             source,
             GraphExportOptions(vertexLabels = setOf("Person"), edgeLabels = setOf("KNOWS")),
-            GraphIoProgressListener {
-                events += it.type
-                snapshots += it
-            },
-        ).status shouldBeEqualTo GraphIoStatus.COMPLETED
+        ) {
+            events += it.type
+            snapshots += it
+        }.status shouldBeEqualTo GraphIoStatus.COMPLETED
+
+        events.forEach { log.debug { "event=$it" } }
+
         events shouldBeEqualTo listOf(
             GraphIoProgressEventType.STARTED,
             GraphIoProgressEventType.PHASE_COMPLETED,
@@ -98,6 +105,7 @@ class CsvRoundTripTest {
                 onMissingEdgeEndpoint = MissingEndpointPolicy.FAIL,
             ),
         )
+        log.debug { "report=$report" }
         report.status shouldBeEqualTo GraphIoStatus.COMPLETED
         report.verticesCreated shouldBeEqualTo 2L
         report.edgesCreated shouldBeEqualTo 1L
@@ -109,6 +117,7 @@ class CsvRoundTripTest {
         val vOut = dir.resolve("raw-json-v.csv")
         val eOut = dir.resolve("raw-json-e.csv")
         val jsonOptions = CsvGraphIoOptions(propertyMode = CsvPropertyMode.RawJsonColumn("attributes"))
+
         val vertexProperties = mapOf(
             "name" to "Alice, \"A\"",
             "nullable" to null,
@@ -117,15 +126,15 @@ class CsvRoundTripTest {
         )
         val edgeProperties = mapOf("weight" to 2.5, "labels" to listOf("friend", "coworker"))
 
-        val alice = GraphVertex(GraphElementId.of("v-alice"), "Person", vertexProperties)
-        val bob = GraphVertex(GraphElementId.of("v-bob"), "Person", mapOf("name" to "Bob"))
+        val alice = vertexOf("v-alice", "Person", vertexProperties)
+        val bob = vertexOf("v-bob", "Person", "name" to "Bob")
         val source = StaticGraphOperations(
             vertices = listOf(alice, bob),
-            edges = listOf(GraphEdge(GraphElementId.of("e-knows"), "KNOWS", alice.id, bob.id, edgeProperties)),
+            edges = listOf(edgeOf("e-knows", "KNOWS", alice.id, bob.id, edgeProperties)),
         )
 
         CsvGraphBulkExporter().exportGraph(
-            CsvGraphExportSink(GraphExportSink.PathSink(vOut), GraphExportSink.PathSink(eOut)),
+            CsvGraphExportSink(vOut.asSink(), eOut.asSink()),
             source,
             GraphExportOptions(vertexLabels = setOf("Person"), edgeLabels = setOf("KNOWS")),
             jsonOptions,
@@ -137,14 +146,14 @@ class CsvRoundTripTest {
 
         val target = CapturingGraphOperations()
         CsvGraphBulkImporter().importGraph(
-            CsvGraphImportSource(GraphImportSource.PathSource(vOut), GraphImportSource.PathSource(eOut)),
+            CsvGraphImportSource(vOut.asSource(), eOut.asSource()),
             target,
             GraphImportOptions(preserveExternalIdProperty = null),
             jsonOptions,
         ).status shouldBeEqualTo GraphIoStatus.COMPLETED
 
-        target.capturedVertices.first { it["name"] == "Alice, \"A\"" } shouldBeEqualTo
-            vertexProperties
+        target.capturedVertices
+            .first { it["name"] == "Alice, \"A\"" } shouldBeEqualTo vertexProperties
         target.capturedEdges.single().properties shouldBeEqualTo edgeProperties
     }
 
@@ -159,7 +168,7 @@ class CsvRoundTripTest {
 
         assertFailsWith<IllegalArgumentException> {
             CsvGraphBulkImporter().importGraph(
-                CsvGraphImportSource(GraphImportSource.PathSource(vertices), GraphImportSource.PathSource(edges)),
+                CsvGraphImportSource(vertices.asSource(), edges.asSource()),
                 TinkerGraphOperations(),
                 GraphImportOptions(preserveExternalIdProperty = null),
                 CsvGraphIoOptions(propertyMode = CsvPropertyMode.RawJsonColumn("attributes")),
@@ -172,13 +181,13 @@ class CsvRoundTripTest {
         val vOut = dir.resolve("bounded-v.csv")
         val eOut = dir.resolve("bounded-e.csv")
         val source = TinkerGraphOperations()
-        val person = source.createVertex("Person", mapOf("name" to "Alice"))
-        val company = source.createVertex("Company", mapOf("industry" to "Software"))
-        source.createEdge(person.id, company.id, "WORKS", mapOf("since" to 2024))
+        val person = source.createVertex("Person", "name" to "Alice")
+        val company = source.createVertex("Company", "industry" to "Software")
+        source.createEdge(person.id, company.id, "WORKS", "since" to 2024)
         val requests = mutableListOf<String>()
 
         val report = CsvGraphBulkExporter().exportGraph(
-            CsvGraphExportSink(GraphExportSink.PathSink(vOut), GraphExportSink.PathSink(eOut)),
+            CsvGraphExportSink(vOut.asSink(), eOut.asSink()),
             ChunkOnlyGraphOperations(source, requests),
             GraphExportOptions(
                 vertexLabels = setOf("Person", "Company"),
@@ -202,12 +211,12 @@ class CsvRoundTripTest {
         val vertexProperties = linkedMapOf<String, Any?>("name" to "before")
         val edgeProperties = linkedMapOf<String, Any?>("state" to "before")
         val backend = MutatingChunkOnlyGraphOperations(
-            vertex = GraphVertex(GraphElementId.of("v-1"), "Person", vertexProperties),
-            edge = GraphEdge(
-                GraphElementId.of("e-1"),
+            vertex = vertexOf("v-1", "Person", vertexProperties),
+            edge = edgeOf(
+                "e-1",
                 "KNOWS",
-                GraphElementId.of("v-1"),
-                GraphElementId.of("v-2"),
+                "v-1",
+                "v-2",
                 edgeProperties,
             ),
             vertexProperties = vertexProperties,
@@ -215,7 +224,7 @@ class CsvRoundTripTest {
         )
 
         val report = CsvGraphBulkExporter().exportGraph(
-            CsvGraphExportSink(GraphExportSink.PathSink(vOut), GraphExportSink.PathSink(eOut)),
+            CsvGraphExportSink(vOut.asSink(), eOut.asSink()),
             backend,
             GraphExportOptions(
                 vertexLabels = setOf("Person"),
@@ -228,6 +237,7 @@ class CsvRoundTripTest {
         report.verticesWritten shouldBeEqualTo 1L
         report.edgesWritten shouldBeEqualTo 1L
         backend.requests shouldBeEqualTo listOf("vertices:1", "edges:1")
+
         Files.readString(vOut).also {
             it shouldContain "before"
             it shouldNotContain "after"
@@ -252,23 +262,25 @@ class CsvRoundTripTest {
             GraphExportOptions(vertexLabels = setOf("Person"), edgeLabels = setOf("KNOWS")),
         )
 
-        vertices.closed shouldBeEqualTo false
-        edges.closed shouldBeEqualTo false
+        vertices.closed.shouldBeFalse()
+        edges.closed.shouldBeFalse()
+
         vertices.write('x'.code)
         edges.write('x'.code)
     }
 
     @Test
     fun `sync export preserves the primary sink failure while closing spool`() {
-        val source = TinkerGraphOperations().also {
-            it.createVertex("Person", mapOf("name" to "Alice"))
-        }
+        val source = TinkerGraphOperations()
+            .also {
+                it.createVertex("Person", "name" to "Alice")
+            }
 
         val thrown = assertFailsWith<IOException> {
             CsvGraphBulkExporter().exportGraph(
                 CsvGraphExportSink(
-                    GraphExportSink.OutputStreamSink(FailingOutputStream("csv-sink-failure")),
-                    GraphExportSink.OutputStreamSink(ByteArrayOutputStream()),
+                    FailingOutputStream("csv-sink-failure").asSink(),
+                    ByteArrayOutputStream().asSink(),
                 ),
                 source,
                 GraphExportOptions(vertexLabels = setOf("Person")),
@@ -281,7 +293,7 @@ class CsvRoundTripTest {
     private class ChunkOnlyGraphOperations(
         private val delegate: GraphOperations,
         private val requests: MutableList<String>,
-    ) : GraphOperations by delegate {
+    ): GraphOperations by delegate {
 
         override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> =
             error("full vertex list lookup must not be used by CSV export")
@@ -313,7 +325,7 @@ class CsvRoundTripTest {
         private val edge: GraphEdge,
         private val vertexProperties: MutableMap<String, Any?>,
         private val edgeProperties: MutableMap<String, Any?>,
-    ) : GraphOperations by TinkerGraphOperations() {
+    ): GraphOperations by TinkerGraphOperations() {
 
         val requests = mutableListOf<String>()
 
@@ -346,7 +358,7 @@ class CsvRoundTripTest {
         }
     }
 
-    private class TrackingOutputStream : ByteArrayOutputStream() {
+    private class TrackingOutputStream: ByteArrayOutputStream() {
         var closed: Boolean = false
 
         override fun close() {
@@ -357,7 +369,7 @@ class CsvRoundTripTest {
 
     private class FailingOutputStream(
         private val message: String,
-    ) : OutputStream() {
+    ): OutputStream() {
         override fun write(b: Int): Unit = throw IOException(message)
 
         override fun write(b: ByteArray, off: Int, len: Int): Unit = throw IOException(message)
@@ -365,7 +377,7 @@ class CsvRoundTripTest {
 
     private class CapturingGraphOperations(
         private val delegate: GraphOperations = TinkerGraphOperations(),
-    ) : GraphOperations by delegate {
+    ): GraphOperations by delegate {
 
         val capturedVertices = mutableListOf<Map<String, Any?>>()
         val capturedEdges = mutableListOf<BatchEdge>()
@@ -387,7 +399,7 @@ class CsvRoundTripTest {
     private class StaticGraphOperations(
         private val vertices: List<GraphVertex>,
         private val edges: List<GraphEdge>,
-    ) : GraphOperations by TinkerGraphOperations() {
+    ): GraphOperations by TinkerGraphOperations() {
 
         override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> =
             vertices.filter { it.label == label }

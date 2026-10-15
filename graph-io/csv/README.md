@@ -2,19 +2,21 @@
 
 English | [한국어](README.ko.md)
 
-CSV format bulk importer/exporter for **bluetape4k-graph**. Seamlessly export graph vertices and edges to CSV files, with support for three execution models: synchronous, virtual thread-based, and Kotlin coroutine-based suspend operations.
+CSV format bulk importer/exporter for
+**bluetape4k-graph**. Seamlessly export graph vertices and edges to CSV files, with support for three execution models: synchronous, virtual thread-based, and Kotlin coroutine-based suspend operations.
 
 ## Features
 
 - **Flexible Execution Models**
-  - **Sync (`CsvGraphBulkExporter`)**: Blocking I/O, suitable for simple scripts and batch jobs
-  - **Virtual Thread (`CsvGraphVirtualThreadBulkExporter`)**: Async via Java virtual threads, lightweight concurrency
-  - **Suspend (`SuspendCsvGraphBulkExporter`)**: Kotlin coroutine-based, structured concurrency with `suspend` functions
+    - **Sync (`CsvGraphBulkExporter`)**: Blocking I/O, suitable for simple scripts and batch jobs
+    - **Virtual Thread (`CsvGraphVirtualThreadBulkExporter`)**: Async via Java virtual threads, lightweight concurrency
+    -
+  **Suspend (`SuspendCsvGraphBulkExporter`)**: Kotlin coroutine-based, structured concurrency with `suspend` functions
 
 - **Property Handling Modes**
-  - `PrefixedColumns`: Store properties as separate columns with a prefix (e.g., `prop.name`, `prop.age`)
-  - `RawJsonColumn`: Serialize the complete property map, including nulls, nested maps, and lists, into one configured JSON column
-  - `None`: Exclude properties entirely
+    - `PrefixedColumns`: Store properties as separate columns with a prefix (e.g., `prop.name`, `prop.age`)
+    - `RawJsonColumn`: Serialize the complete property map, including nulls, nested maps, and lists, into one configured JSON column
+    - `None`: Exclude properties entirely
 
 - **Automatic Schema Union**: Header generation automatically discovers all property keys across records
 
@@ -188,13 +190,13 @@ id,label,from,to,prop.since
 
 ### Import Options
 
-| Option | Type | Default | Description |
-|------|------|--------|------|
-| `defaultVertexLabel` | `String` | `"Vertex"` | Default label when the `label` column is blank |
-| `defaultEdgeLabel` | `String` | `"Edge"` | Default label when the `label` column is blank |
-| `onDuplicateVertexId` | `DuplicateVertexPolicy` | `FAIL` | Duplicate vertex handling: `FAIL` immediately or `SKIP` the duplicate |
-| `onMissingEdgeEndpoint` | `MissingEndpointPolicy` | `FAIL` | Missing edge endpoint handling: `FAIL` immediately or `SKIP_EDGE` |
-| `preserveExternalIdProperty` | `String?` | `null` | Property key used to preserve external IDs, such as `"_externalId"` |
+| Option                       | Type                    | Default    | Description                                                           |
+|------------------------------|-------------------------|------------|-----------------------------------------------------------------------|
+| `defaultVertexLabel`         | `String`                | `"Vertex"` | Default label when the `label` column is blank                        |
+| `defaultEdgeLabel`           | `String`                | `"Edge"`   | Default label when the `label` column is blank                        |
+| `onDuplicateVertexId`        | `DuplicateVertexPolicy` | `FAIL`     | Duplicate vertex handling: `FAIL` immediately or `SKIP` the duplicate |
+| `onMissingEdgeEndpoint`      | `MissingEndpointPolicy` | `FAIL`     | Missing edge endpoint handling: `FAIL` immediately or `SKIP_EDGE`     |
+| `preserveExternalIdProperty` | `String?`               | `null`     | Property key used to preserve external IDs, such as `"_externalId"`   |
 
 ### Import Report
 
@@ -251,10 +253,7 @@ val options = CsvGraphIoOptions(
 
 #### Raw JSON Column
 
-Use one configured column for the complete JSON property payload. Export and
-import share the same codec, so scalar, null, nested, list, quoted, comma, and
-newline values survive a round trip. Empty property maps are written as `{}`;
-the importer rejects malformed JSON and non-object JSON with
+Use one configured column for the complete JSON property payload. Export and import share the same codec, so scalar, null, nested, list, quoted, comma, and newline values survive a round trip. Empty property maps are written as `{}`; the importer rejects malformed JSON and non-object JSON with
 `IllegalArgumentException`.
 
 ```kotlin
@@ -267,7 +266,6 @@ val options = CsvGraphIoOptions(
 #### None
 
 `None` writes only structural columns (`id`, `label`, and edge `from`/`to`). Properties are also excluded from the temporary spool; property keys matching structural names do not cause collisions.
-
 
 Exclude properties entirely:
 
@@ -304,45 +302,25 @@ if (report.failures.isNotEmpty()) {
 - **Suspend**: Optimal for large-scale operations with non-blocking I/O and structured concurrency
 
 Choose based on your workload:
+
 - **Small datasets** (<100K records): Use sync
 - **Medium to large** (100K–1M records): Use virtual threads or suspend
 - **High-concurrency** environments: Use suspend with coroutine supervisors
 
 CSV export reads each selected vertex and edge label through
-`findVerticesByLabelChunked` / `findEdgesByLabelChunked`. When the backend
-overrides the chunk-aware repository API (or provides a cursor-backed
-implementation), records are written once to the shared `GraphIoRecordSpool`
-and replayed for header discovery and row output. The spool avoids
-exporter-side whole-list materialization and a live second backend pass; the
-compatibility list/Flow fallback may still materialize a label before the
-exporter receives it. Active replay streams are closed during spool cleanup,
-and cleanup failures are suppressed behind the original source, sink, or
-cancellation failure. The temporary spool is removed on success, failure, and
-coroutine cancellation.
+`findVerticesByLabelChunked` / `findEdgesByLabelChunked`. When the backend overrides the chunk-aware repository API (or provides a cursor-backed implementation), records are written once to the shared `GraphIoRecordSpool`
+and replayed for header discovery and row output. The spool avoids exporter-side whole-list materialization and a live second backend pass; the compatibility list/Flow fallback may still materialize a label before the exporter receives it. Active replay streams are closed during spool cleanup, and cleanup failures are suppressed behind the original source, sink, or cancellation failure. The temporary spool is removed on success, failure, and coroutine cancellation.
 
-The shared spool enforces a 128 MiB per-record encoding cap without creating a
-second full-record `toByteArray()` copy, and constructor setup removes already
-created temporary files if a later file or output stream cannot be opened.
+The shared spool enforces a 128 MiB per-record encoding cap without creating a second full-record `toByteArray()` copy, and constructor setup removes already created temporary files if a later file or output stream cannot be opened.
 
-Suspend replay checks the coroutine context at every record boundary, so a
-cancellation request is observed before the next row is written. This is a
-bounded checkpoint between blocking writes, not an interrupt guarantee for a
-single write call. Suspend cleanup runs under `NonCancellable`: caller-owned
-`OutputStreamSink(closeOutput = false)` is flushed but left open, owned sinks are
-closed, and cleanup failures are suppressed behind the original failure.
+Suspend replay checks the coroutine context at every record boundary, so a cancellation request is observed before the next row is written. This is a bounded checkpoint between blocking writes, not an interrupt guarantee for a single write call. Suspend cleanup runs under `NonCancellable`: caller-owned
+`OutputStreamSink(closeOutput = false)` is flushed but left open, owned sinks are closed, and cleanup failures are suppressed behind the original failure.
 
-The CSV bounded-chunk TCK asserts the requested chunk size, one lookup per
-selected label, and preservation of stage-time values when the backend mutates
-after the first chunk. It does not claim bounded source execution for the
-compatibility fallback, whose full label lookup can occur before the first
-chunk is yielded.
+The CSV bounded-chunk TCK asserts the requested chunk size, one lookup per selected label, and preservation of stage-time values when the backend mutates after the first chunk. It does not claim bounded source execution for the compatibility fallback, whose full label lookup can occur before the first chunk is yielded.
 
 ## Streaming reader contract
 
-`CsvGraphRecordFlowReader` emits vertex and edge records as a cold, sequential `Flow` and preserves
-the input order. `GraphImportOptions.batchSize` controls backend write flushing only; it does not
-change reader buffering or source close ownership. Each CSV import uses the vertex/edge pair, and
-path or explicitly owned streams are closed by the library while caller-owned streams remain open.
+`CsvGraphRecordFlowReader` emits vertex and edge records as a cold, sequential `Flow` and preserves the input order. `GraphImportOptions.batchSize` controls backend write flushing only; it does not change reader buffering or source close ownership. Each CSV import uses the vertex/edge pair, and path or explicitly owned streams are closed by the library while caller-owned streams remain open.
 
 ### Classpath CSV import
 

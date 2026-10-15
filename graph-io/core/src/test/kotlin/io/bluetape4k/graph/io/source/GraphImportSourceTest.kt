@@ -14,7 +14,7 @@ class GraphImportSourceTest {
 
     @Test
     fun `path source defaults to UTF-8`() {
-        val src = Path.of("in.csv").toSource()
+        val src = Path.of("in.csv").asSource()
 
         log.debug { "src=$src" }
         src.charset shouldBeEqualTo Charsets.UTF_8
@@ -22,7 +22,7 @@ class GraphImportSourceTest {
 
     @Test
     fun `input stream source defaults to caller-owned close`() {
-        val src = ByteArrayInputStream(ByteArray(0)).toSource()
+        val src = ByteArrayInputStream(ByteArray(0)).asSource()
 
         log.debug { "src=$src" }
         src.closeInput.shouldBeFalse()

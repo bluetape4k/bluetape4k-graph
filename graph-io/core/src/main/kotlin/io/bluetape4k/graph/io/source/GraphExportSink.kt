@@ -31,13 +31,13 @@ sealed interface GraphExportSink: Serializable {
     }
 }
 
-fun Path.toSink(
+fun Path.asSink(
     append: Boolean = false,
     charset: Charset = Charsets.UTF_8,
 ): GraphExportSink.PathSink =
     GraphExportSink.PathSink(this, charset, append)
 
-fun OutputStream.toSink(
+fun OutputStream.asSink(
     closeOutput: Boolean = false,
     charset: Charset = Charsets.UTF_8,
 ): GraphExportSink.OutputStreamSink =

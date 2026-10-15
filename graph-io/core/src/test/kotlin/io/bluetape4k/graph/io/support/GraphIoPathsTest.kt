@@ -7,8 +7,8 @@ import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.io.source.GraphImportSource
-import io.bluetape4k.graph.io.source.toSink
-import io.bluetape4k.graph.io.source.toSource
+import io.bluetape4k.graph.io.source.asSink
+import io.bluetape4k.graph.io.source.asSource
 import io.bluetape4k.io.toInputStream
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.support.toUtf8Bytes
@@ -41,7 +41,7 @@ class GraphIoPathsTest {
     @Test
     fun `openReader with inputStream source closeInput=true reads data`() {
         val bytes = "hello\nworld".toUtf8Bytes()
-        val src = bytes.toInputStream().toSource(true)
+        val src = bytes.toInputStream().asSource(true)
 
         src.openReader().use { r ->
             r.readLines() shouldBeEqualTo listOf("hello", "world")
@@ -57,7 +57,7 @@ class GraphIoPathsTest {
                 super.close()
             }
         }
-        val src = underlying.toSource(closeInput = false)
+        val src = underlying.asSource(closeInput = false)
         val reader = GraphIoPaths.openReader(src)
         reader.readLine() shouldBeEqualTo "line1"
         reader.close()
@@ -72,7 +72,7 @@ class GraphIoPathsTest {
     @Test
     fun `openWriter creates parent directory for path sink`(@TempDir dir: Path) {
         val nested = dir.resolve("nested/a.txt")
-        nested.toSink().openWriter().use { it.write("hi") }
+        nested.asSink().openWriter().use { it.write("hi") }
 
         Files.exists(nested).shouldBeTrue()
         Files.deleteIfExists(nested)
@@ -81,7 +81,7 @@ class GraphIoPathsTest {
     @Test
     fun `openWriter appends when PathSink append=true`(@TempDir dir: Path) {
         val file = dir.resolve("app.txt").also { Files.writeString(it, "first\n") }
-        val sink = file.toSink(append = true)
+        val sink = file.asSink(append = true)
         sink.openWriter().use { it.write("second") }
         Files.readString(file) shouldBeEqualTo "first\nsecond"
         file.deleteIfExists()
@@ -90,7 +90,7 @@ class GraphIoPathsTest {
     @Test
     fun `openWriter truncates when PathSink append=false`(@TempDir dir: Path) {
         val file = dir.resolve("trunc.txt").also { Files.writeString(it, "old content") }
-        val sink = file.toSink(append = false)
+        val sink = file.asSink(append = false)
         sink.openWriter().use { it.write("new") }
         Files.readString(file) shouldBeEqualTo "new"
     }
@@ -98,7 +98,7 @@ class GraphIoPathsTest {
     @Test
     fun `openWriter with outputStream sink closeOutput=true writes data`() {
         val out = ByteArrayOutputStream()
-        val sink = out.toSink(closeOutput = true)
+        val sink = out.asSink(closeOutput = true)
         sink.openWriter().use { it.write("data") }
         out.toString() shouldBeEqualTo "data"
     }
@@ -121,7 +121,7 @@ class GraphIoPathsTest {
     @Test
     fun `openInputStream returns buffered stream for path source`(@TempDir dir: Path) {
         val file = dir.resolve("b.bin").also { Files.write(it, byteArrayOf(1, 2, 3)) }
-        file.toSource().openInputStream().use { stream ->
+        file.asSource().openInputStream().use { stream ->
             stream.readBytes() shouldBeEqualTo byteArrayOf(1, 2, 3)
         }
     }
@@ -129,7 +129,7 @@ class GraphIoPathsTest {
     @Test
     fun `openInputStream returns underlying stream for inputStream source closeInput=true`() {
         val data = byteArrayOf(10, 20, 30)
-        data.toInputStream().toSource(closeInput = true).openInputStream().use { stream ->
+        data.toInputStream().asSource(closeInput = true).openInputStream().use { stream ->
             stream.readBytes() shouldBeEqualTo data
         }
     }
@@ -143,7 +143,7 @@ class GraphIoPathsTest {
                 super.close()
             }
         }
-        val src = underlying.toSource(closeInput = false)
+        val src = underlying.asSource(closeInput = false)
         val stream = src.openInputStream()
         stream.read() // 7 읽기
         stream.close()
@@ -161,7 +161,7 @@ class GraphIoPathsTest {
     @Test
     fun `openOutputStream creates parent directory for path sink`(@TempDir dir: Path) {
         val nested = dir.resolve("sub/dir/out.bin")
-        nested.toSink(append = false).openOutputStream().use { stream ->
+        nested.asSink(append = false).openOutputStream().use { stream ->
             stream.write(byteArrayOf(1))
         }
         Files.exists(nested).shouldBeTrue()
@@ -170,7 +170,7 @@ class GraphIoPathsTest {
     @Test
     fun `openOutputStream writes to path sink append=false`(@TempDir dir: Path) {
         val file = dir.resolve("out.bin").also { Files.write(it, byteArrayOf(99)) }
-        file.toSink(append = false).openOutputStream().use { stream ->
+        file.asSink(append = false).openOutputStream().use { stream ->
             stream.write(byteArrayOf(1, 2))
         }
         Files.readAllBytes(file) shouldBeEqualTo byteArrayOf(1, 2)
@@ -179,7 +179,7 @@ class GraphIoPathsTest {
     @Test
     fun `openOutputStream appends to path sink append=true`(@TempDir dir: Path) {
         val file = dir.resolve("app.bin").also { Files.write(it, byteArrayOf(1)) }
-        file.toSink(append = true).openOutputStream().use { stream ->
+        file.asSink(append = true).openOutputStream().use { stream ->
             stream.write(byteArrayOf(2, 3))
         }
         Files.readAllBytes(file) shouldBeEqualTo byteArrayOf(1, 2, 3)
@@ -188,7 +188,7 @@ class GraphIoPathsTest {
     @Test
     fun `openOutputStream with outputStream sink closeOutput=true writes data`() {
         val out = ByteArrayOutputStream()
-        val sink = out.toSink(closeOutput = true)
+        val sink = out.asSink(closeOutput = true)
         sink.openOutputStream().use { stream ->
             stream.write(byteArrayOf(5, 6))
         }
@@ -198,7 +198,7 @@ class GraphIoPathsTest {
     @Test
     fun `openOutputStream with outputStream sink closeOutput=false flushes but keeps stream open`() {
         val out = ByteArrayOutputStream()
-        val sink = out.toSink(closeOutput = false)
+        val sink = out.asSink(closeOutput = false)
         val stream = sink.openOutputStream()
         stream.write(42)
         stream.close()
@@ -213,7 +213,7 @@ class GraphIoPathsTest {
     @Test
     fun `describeSource returns path string for path source`(@TempDir dir: Path) {
         val file = dir.resolve("x.txt")
-        val src = file.toSource()
+        val src = file.asSource()
         src.describe().shouldNotBeNull()
         src.describe() shouldBeEqualTo file.toString()
     }
@@ -229,11 +229,11 @@ class GraphIoPathsTest {
     @Test
     fun `sizeOf returns path file size and ignores streams`(@TempDir dir: Path) {
         val file = dir.resolve("bytes.bin").also { Files.write(it, byteArrayOf(1, 2, 3, 4)) }
-        file.toSource().sizeOf() shouldBeEqualTo 4L
-        file.toSink().sizeOf() shouldBeEqualTo 4L
+        file.asSource().sizeOf() shouldBeEqualTo 4L
+        file.asSink().sizeOf() shouldBeEqualTo 4L
 
-        byteArrayOf().toInputStream().toSource().sizeOf().shouldBeNull()
-        ByteArrayOutputStream().toSink().sizeOf().shouldBeNull()
+        byteArrayOf().toInputStream().asSource().sizeOf().shouldBeNull()
+        ByteArrayOutputStream().asSink().sizeOf().shouldBeNull()
     }
 
     @Test

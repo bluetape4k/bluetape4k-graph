@@ -1,16 +1,16 @@
 package io.bluetape4k.graph.io.csv
 
-import io.bluetape4k.csv.CsvRecordReader
-import io.bluetape4k.logging.KLogging
 import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.csv.CsvRecordReader
+import io.bluetape4k.logging.KLogging
 import org.junit.jupiter.api.Test
 
 class RecordExtensionsTest {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     @Test
     fun `toColumnMap returns header-to-value pairs`() {

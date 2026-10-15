@@ -7,14 +7,14 @@
 ## 기능
 
 - **유연한 실행 모델**
-  - **동기 (`CsvGraphBulkExporter`)**: 블로킹 I/O, 간단한 스크립트 및 배치 작업에 적합
-  - **가상 스레드 (`CsvGraphVirtualThreadBulkExporter`)**: Java 가상 스레드를 통한 비동기, 가벼운 동시성
-  - **Suspend (`SuspendCsvGraphBulkExporter`)**: Kotlin 코루틴 기반, `suspend` 함수를 통한 구조화된 동시성
+    - **동기 (`CsvGraphBulkExporter`)**: 블로킹 I/O, 간단한 스크립트 및 배치 작업에 적합
+    - **가상 스레드 (`CsvGraphVirtualThreadBulkExporter`)**: Java 가상 스레드를 통한 비동기, 가벼운 동시성
+    - **Suspend (`SuspendCsvGraphBulkExporter`)**: Kotlin 코루틴 기반, `suspend` 함수를 통한 구조화된 동시성
 
 - **속성 처리 모드**
-  - `PrefixedColumns`: 속성을 접두사가 붙은 별도 컬럼으로 저장 (예: `prop.name`, `prop.age`)
-  - `RawJsonColumn`: null, 중첩 map, list를 포함한 전체 속성 맵을 설정한 단일 JSON 컬럼에 저장
-  - `None`: 속성 완전 제외
+    - `PrefixedColumns`: 속성을 접두사가 붙은 별도 컬럼으로 저장 (예: `prop.name`, `prop.age`)
+    - `RawJsonColumn`: null, 중첩 map, list를 포함한 전체 속성 맵을 설정한 단일 JSON 컬럼에 저장
+    - `None`: 속성 완전 제외
 
 - **자동 스키마 합치기**: 헤더 생성이 레코드 전체의 모든 속성 키를 자동으로 발견
 
@@ -188,13 +188,13 @@ id,label,from,to,prop.since
 
 ### 임포트 옵션
 
-| 옵션 | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `defaultVertexLabel` | `String` | `"Vertex"` | `label` 컬럼이 비어 있을 때 사용하는 기본 정점 레이블 |
-| `defaultEdgeLabel` | `String` | `"Edge"` | `label` 컬럼이 비어 있을 때 사용하는 기본 간선 레이블 |
-| `onDuplicateVertexId` | `DuplicateVertexPolicy` | `FAIL` | 중복 정점 ID 처리: 즉시 실패하거나 중복을 건너뜀 |
-| `onMissingEdgeEndpoint` | `MissingEndpointPolicy` | `FAIL` | 누락된 간선 끝점 처리: 즉시 실패하거나 해당 간선을 건너뜀 |
-| `preserveExternalIdProperty` | `String?` | `null` | 외부 ID를 속성으로 보존할 때 사용할 키 |
+| 옵션                         | 타입                    | 기본값     | 설명                                                      |
+|------------------------------|-------------------------|------------|-----------------------------------------------------------|
+| `defaultVertexLabel`         | `String`                | `"Vertex"` | `label` 컬럼이 비어 있을 때 사용하는 기본 정점 레이블     |
+| `defaultEdgeLabel`           | `String`                | `"Edge"`   | `label` 컬럼이 비어 있을 때 사용하는 기본 간선 레이블     |
+| `onDuplicateVertexId`        | `DuplicateVertexPolicy` | `FAIL`     | 중복 정점 ID 처리: 즉시 실패하거나 중복을 건너뜀          |
+| `onMissingEdgeEndpoint`      | `MissingEndpointPolicy` | `FAIL`     | 누락된 간선 끝점 처리: 즉시 실패하거나 해당 간선을 건너뜀 |
+| `preserveExternalIdProperty` | `String?`               | `null`     | 외부 ID를 속성으로 보존할 때 사용할 키                    |
 
 ### 임포트 리포트
 
@@ -247,11 +247,7 @@ val options = CsvGraphIoOptions(
 
 #### Raw JSON 컬럼
 
-설정한 단일 컬럼에 전체 JSON 속성 payload를 저장합니다. 익스포트와
-임포트가 같은 codec을 공유하므로 scalar, null, 중첩 map, list, 따옴표,
-쉼표, 개행 값이 왕복에서 보존됩니다. 빈 속성 맵은 `{}`로 기록하며,
-임포터는 잘못된 JSON이나 object가 아닌 JSON을 `IllegalArgumentException`으로
-명시적으로 거부합니다.
+설정한 단일 컬럼에 전체 JSON 속성 payload를 저장합니다. 익스포트와 임포트가 같은 codec을 공유하므로 scalar, null, 중첩 map, list, 따옴표, 쉼표, 개행 값이 왕복에서 보존됩니다. 빈 속성 맵은 `{}`로 기록하며, 임포터는 잘못된 JSON이나 object가 아닌 JSON을 `IllegalArgumentException`으로 명시적으로 거부합니다.
 
 ```kotlin
 val options = CsvGraphIoOptions(
@@ -297,44 +293,30 @@ if (report.failures.isNotEmpty()) {
 - **Suspend**: 논블로킹 I/O 및 구조화된 동시성으로 대규모 작업에 최적
 
 워크로드에 따라 선택하세요:
+
 - **소규모 데이터셋** (<100K 레코드): 동기 사용
 - **중간~대규모** (100K–1M 레코드): 가상 스레드 또는 suspend 사용
 - **높은 동시성** 환경: 코루틴 감시자와 함께 suspend 사용
 
 CSV export는 선택한 정점·간선 라벨을 `findVerticesByLabelChunked` /
-`findEdgesByLabelChunked`로 읽습니다. 백엔드가 chunk-aware repository API를
-override하거나 cursor 기반 구현을 제공하면, 각 bounded chunk를 공용
-`GraphIoRecordSpool`에 한 번 저장한 뒤 header 탐색과 row 출력에서 불변 기준 데이터를
-replay합니다. 이 spool은 exporter 자체의 전체 list materialization과 live backend
-두 번째 조회를 없애지만, 호환성 list/Flow fallback은 exporter에 전달되기 전에 라벨
-전체를 materialize할 수 있습니다. active replay stream은 spool 정리 때 닫고, 정리
-실패는 원래 source·sink·취소 예외의 suppressed exception으로 연결합니다. 정상
-완료·실패·코루틴 취소 시 임시 spool 파일을 삭제합니다.
+`findEdgesByLabelChunked`로 읽습니다. 백엔드가 chunk-aware repository API를 override하거나 cursor 기반 구현을 제공하면, 각 bounded chunk를 공용
+`GraphIoRecordSpool`에 한 번 저장한 뒤 header 탐색과 row 출력에서 불변 기준 데이터를 replay합니다. 이 spool은 exporter 자체의 전체 list materialization과 live backend 두 번째 조회를 없애지만, 호환성 list/Flow fallback은 exporter에 전달되기 전에 라벨 전체를 materialize할 수 있습니다. active replay stream은 spool 정리 때 닫고, 정리 실패는 원래 source·sink·취소 예외의 suppressed exception으로 연결합니다. 정상 완료·실패·코루틴 취소 시 임시 spool 파일을 삭제합니다.
 
 공용 spool은 레코드별 인코딩을 128 MiB까지 제한하면서 전체 레코드의 두 번째
-`toByteArray()` 복사본을 만들지 않습니다. constructor 초기화 중 뒤의 파일이나
-output stream을 열지 못하면 먼저 만든 임시 파일과 stream도 정리합니다.
+`toByteArray()` 복사본을 만들지 않습니다. constructor 초기화 중 뒤의 파일이나 output stream을 열지 못하면 먼저 만든 임시 파일과 stream도 정리합니다.
 
-suspend replay는 각 record 경계에서 coroutine context를 확인하므로 취소 요청이
-다음 row를 쓰기 전에 관찰됩니다. 이는 blocking write 하나를 interrupt한다는
-뜻이 아니라 write 사이의 bounded checkpoint입니다. suspend cleanup은
+suspend replay는 각 record 경계에서 coroutine context를 확인하므로 취소 요청이 다음 row를 쓰기 전에 관찰됩니다. 이는 blocking write 하나를 interrupt한다는 뜻이 아니라 write 사이의 bounded checkpoint입니다. suspend cleanup은
 `NonCancellable`에서 수행하며, 호출자 소유
-`OutputStreamSink(closeOutput = false)`는 flush 후 열어 두고 owned sink만 닫으며,
-정리 실패는 원래 예외의 suppressed exception으로 연결합니다.
+`OutputStreamSink(closeOutput = false)`는 flush 후 열어 두고 owned sink만 닫으며, 정리 실패는 원래 예외의 suppressed exception으로 연결합니다.
 
-CSV bounded-chunk TCK는 요청 chunk 크기, 선택한 label별 단일 조회, 첫 chunk 이후
-backend mutation이 발생해도 stage 시점 값이 유지되는지를 검증합니다. 첫 chunk를
-내보내기 전에 전체 label 조회가 실행될 수 있는 호환성 fallback의 source
-boundedness를 주장하지는 않습니다.
+CSV bounded-chunk TCK는 요청 chunk 크기, 선택한 label별 단일 조회, 첫 chunk 이후 backend mutation이 발생해도 stage 시점 값이 유지되는지를 검증합니다. 첫 chunk를 내보내기 전에 전체 label 조회가 실행될 수 있는 호환성 fallback의 source boundedness를 주장하지는 않습니다.
 
 ## 스트리밍 reader 계약
 
 `CsvGraphRecordFlowReader`는 정점과 간선 레코드를 cold·순차 `Flow`로 방출하며 입력 순서를 유지합니다.
-`GraphImportOptions.batchSize`는 백엔드 쓰기 플러시만 제어하고 reader 버퍼링이나 source close 소유권은 바꾸지
-않습니다. CSV import는 정점/간선 파일 쌍을 사용하며, path 또는 명시적으로 소유권을 넘긴 stream은 라이브러리가
-닫고 호출자 소유 stream은 열린 상태로 둡니다.
+`GraphImportOptions.batchSize`는 백엔드 쓰기 플러시만 제어하고 reader 버퍼링이나 source close 소유권은 바꾸지 않습니다. CSV import는 정점/간선 파일 쌍을 사용하며, path 또는 명시적으로 소유권을 넘긴 stream은 라이브러리가 닫고 호출자 소유 stream은 열린 상태로 둡니다.
 
-`None`은 구조 컬럼(`id`, `label`, 간선의 `from`/`to`)만 출력한다. 임시 spool에도 속성을 기록하지 않으며, 구조 컬럼과 같은 속성 이름이 있어도 충돌하지 않는다.
+`None`은 구조 컬럼 (`id`, `label`, 간선의 `from`/`to`)만 출력한다. 임시 spool에도 속성을 기록하지 않으며, 구조 컬럼과 같은 속성 이름이 있어도 충돌하지 않는다.
 
 ### Classpath CSV 가져오기
 

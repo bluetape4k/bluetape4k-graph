@@ -1,15 +1,16 @@
 package io.bluetape4k.graph.io.csv
 
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeGreaterThan
+import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.graph.io.options.DuplicateVertexPolicy
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.options.MissingEndpointPolicy
 import io.bluetape4k.graph.io.report.GraphIoStatus
-import io.bluetape4k.graph.io.source.GraphImportSource
+import io.bluetape4k.graph.io.source.asSource
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.logging.KLogging
-import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldBeGreaterThan
-import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
@@ -17,7 +18,7 @@ import kotlin.io.path.writeText
 
 class VirtualThreadCsvImportErrorTest {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     private fun importer() = CsvGraphVirtualThreadBulkImporter()
     private fun ops() = TinkerGraphOperations()
@@ -25,7 +26,7 @@ class VirtualThreadCsvImportErrorTest {
     private fun source(dir: Path, vCsv: String, eCsv: String): CsvGraphImportSource {
         val vFile = dir.resolve("v.csv").also { it.writeText(vCsv) }
         val eFile = dir.resolve("e.csv").also { it.writeText(eCsv) }
-        return CsvGraphImportSource(GraphImportSource.PathSource(vFile), GraphImportSource.PathSource(eFile))
+        return CsvGraphImportSource(vFile.asSource(), eFile.asSource())
     }
 
     @Test
@@ -35,8 +36,13 @@ class VirtualThreadCsvImportErrorTest {
             vCsv = "id,label\n,Person\n",
             eCsv = "id,label,from,to\n",
         )
-        val report = importer().importGraphAsync(src, ops(), GraphImportOptions()).get()
+        val report = importer().importGraphAsync(
+            src,
+            ops(),
+            GraphImportOptions()
+        ).get()
 
+        log.debug { "report=$report" }
         report.status shouldBeEqualTo GraphIoStatus.FAILED
         report.verticesCreated shouldBeEqualTo 0L
         report.failures shouldHaveSize 1
@@ -55,6 +61,7 @@ class VirtualThreadCsvImportErrorTest {
             GraphImportOptions(onDuplicateVertexId = DuplicateVertexPolicy.SKIP),
         ).get()
 
+        log.debug { "report=$report" }
         report.status shouldBeEqualTo GraphIoStatus.PARTIAL
         report.verticesCreated shouldBeEqualTo 1L
         report.skippedVertices shouldBeEqualTo 1L
@@ -74,6 +81,7 @@ class VirtualThreadCsvImportErrorTest {
             GraphImportOptions(onMissingEdgeEndpoint = MissingEndpointPolicy.SKIP_EDGE),
         ).get()
 
+        log.debug { "report=$report" }
         report.status shouldBeEqualTo GraphIoStatus.PARTIAL
         report.verticesCreated shouldBeEqualTo 1L
         report.edgesCreated shouldBeEqualTo 0L
@@ -94,6 +102,7 @@ class VirtualThreadCsvImportErrorTest {
             GraphImportOptions(onMissingEdgeEndpoint = MissingEndpointPolicy.FAIL),
         ).get()
 
+        log.debug { "report=$report" }
         report.status shouldBeEqualTo GraphIoStatus.FAILED
         report.edgesCreated shouldBeEqualTo 0L
         report.failures shouldHaveSize 1
@@ -106,8 +115,13 @@ class VirtualThreadCsvImportErrorTest {
             vCsv = "id,label,prop.name\nv1,Person,Alice\nv2,Person,Bob\nv3,Person,Carol\n",
             eCsv = "id,label,from,to\n,KNOWS,v1,v2\n,KNOWS,v2,v3\n",
         )
-        val report = importer().importGraphAsync(src, ops(), GraphImportOptions()).get()
+        val report = importer().importGraphAsync(
+            src,
+            ops(),
+            GraphImportOptions()
+        ).get()
 
+        log.debug { "report=$report" }
         report.status shouldBeEqualTo GraphIoStatus.COMPLETED
         report.verticesRead shouldBeEqualTo 3L
         report.verticesCreated shouldBeEqualTo 3L

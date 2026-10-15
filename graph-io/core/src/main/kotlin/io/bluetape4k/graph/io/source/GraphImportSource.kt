@@ -30,10 +30,10 @@ sealed interface GraphImportSource: Serializable {
     }
 }
 
-fun Path.toSource(charset: Charset = Charsets.UTF_8): GraphImportSource.PathSource =
+fun Path.asSource(charset: Charset = Charsets.UTF_8): GraphImportSource.PathSource =
     GraphImportSource.PathSource(this, charset)
 
-fun InputStream.toSource(
+fun InputStream.asSource(
     closeInput: Boolean = false,
     charset: Charset = Charsets.UTF_8,
 ): GraphImportSource.InputStreamSource =

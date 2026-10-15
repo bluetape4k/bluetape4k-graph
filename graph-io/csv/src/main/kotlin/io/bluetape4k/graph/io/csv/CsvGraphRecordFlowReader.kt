@@ -2,6 +2,7 @@ package io.bluetape4k.graph.io.csv
 
 import io.bluetape4k.csv.Record
 import io.bluetape4k.graph.io.contract.GraphRecordFlowReader
+import io.bluetape4k.graph.io.csv.internal.CsvRecordCodec
 import io.bluetape4k.graph.io.csv.internal.CsvRecordParser
 import io.bluetape4k.graph.io.model.GraphIoEdgeRecord
 import io.bluetape4k.graph.io.model.GraphIoVertexRecord
@@ -10,6 +11,7 @@ import io.bluetape4k.graph.io.report.GraphIoFileRole
 import io.bluetape4k.graph.io.report.GraphIoPhase
 import io.bluetape4k.graph.io.report.GraphIoReadException
 import io.bluetape4k.graph.io.source.GraphImportSource
+import io.bluetape4k.logging.KLogging
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -20,11 +22,13 @@ import kotlinx.coroutines.flow.Flow
  * one-shot stream을 다시 읽으려면 새 source를 제공해야 한다.
  */
 class CsvGraphRecordFlowReader(
-    private val csvOptions: CsvGraphIoOptions = CsvGraphIoOptions(),
-) : GraphRecordFlowReader<CsvGraphImportSource> {
+    csvOptions: CsvGraphIoOptions = CsvGraphIoOptions(),
+): GraphRecordFlowReader<CsvGraphImportSource> {
+
+    companion object: KLogging()
 
     private val parser = CsvRecordParser()
-    private val codec = io.bluetape4k.graph.io.csv.internal.CsvRecordCodec(csvOptions.propertyMode)
+    private val codec = CsvRecordCodec(csvOptions.propertyMode)
 
     override fun readVertices(source: CsvGraphImportSource): Flow<GraphIoVertexRecord> =
         parser.records(
@@ -83,5 +87,4 @@ class CsvGraphRecordFlowReader(
             properties = codec.extractProperties(record.toColumnMap()),
         )
     }
-
 }
