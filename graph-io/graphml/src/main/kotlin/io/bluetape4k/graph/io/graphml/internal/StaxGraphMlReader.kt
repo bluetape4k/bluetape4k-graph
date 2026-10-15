@@ -19,8 +19,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
-import java.io.InputStream
 import java.io.FilterInputStream
+import java.io.InputStream
 import javax.xml.stream.XMLInputFactory
 import javax.xml.stream.XMLStreamConstants
 import javax.xml.stream.XMLStreamException
@@ -33,10 +33,19 @@ import javax.xml.stream.XMLStreamReader
 @Suppress("TooManyFunctions")
 internal class StaxGraphMlReader {
 
+    companion object: KLogging() {
+        private val factory: XMLInputFactory = XMLInputFactory.newInstance().apply {
+            setProperty(XMLInputFactory.IS_COALESCING, true)
+            setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, false)
+            setProperty(XMLInputFactory.SUPPORT_DTD, false)
+            setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false)
+        }
+    }
+
     internal sealed interface GraphMlRecordEvent {
-        data class Vertex(val record: GraphIoVertexRecord) : GraphMlRecordEvent
-        data class Edge(val record: GraphIoEdgeRecord) : GraphMlRecordEvent
-        data class Failure(val failure: GraphIoFailure) : GraphMlRecordEvent
+        data class Vertex(val record: GraphIoVertexRecord): GraphMlRecordEvent
+        data class Edge(val record: GraphIoEdgeRecord): GraphMlRecordEvent
+        data class Failure(val failure: GraphIoFailure): GraphMlRecordEvent
     }
 
     internal interface GraphMlRecordSink {
@@ -51,22 +60,24 @@ internal class StaxGraphMlReader {
         val failures: List<GraphIoFailure>,
     )
 
-    fun read(input: InputStream, options: GraphMlImportOptions = GraphMlImportOptions()): GraphMlReadResult {
+    fun read(
+        input: InputStream,
+        options: GraphMlImportOptions = GraphMlImportOptions(),
+    ): GraphMlReadResult {
+
         val vertices = mutableListOf<GraphIoVertexRecord>()
         val edges = mutableListOf<GraphIoEdgeRecord>()
         val failures = mutableListOf<GraphIoFailure>()
         read(
             input = input,
             options = options,
-            sink = object : GraphMlRecordSink {
+            sink = object: GraphMlRecordSink {
                 override fun onVertex(record: GraphIoVertexRecord) {
                     vertices += record
                 }
-
                 override fun onEdge(record: GraphIoEdgeRecord) {
                     edges += record
                 }
-
                 override fun onFailure(failure: GraphIoFailure) {
                     failures += failure
                 }
@@ -133,7 +144,7 @@ internal class StaxGraphMlReader {
             read(
                 input = input,
                 options = options,
-                sink = object : GraphMlRecordSink {
+                sink = object: GraphMlRecordSink {
                     override fun onVertex(record: GraphIoVertexRecord) {
                         producer.sendEvent(GraphMlRecordEvent.Vertex(record))
                     }
@@ -391,7 +402,7 @@ internal class StaxGraphMlReader {
         }
     }
 
-    private class NonClosingInputStream(input: InputStream) : FilterInputStream(input) {
+    private class NonClosingInputStream(input: InputStream): FilterInputStream(input) {
         private val phaseTracker = RecordPhaseTracker()
 
         val malformedRecordPhase: GraphIoPhase?
@@ -432,8 +443,7 @@ internal class StaxGraphMlReader {
 
         private enum class RecordName(val phase: GraphIoPhase, val token: String) {
             NODE(GraphIoPhase.READ_VERTEX, "node"),
-            EDGE(GraphIoPhase.READ_EDGE, "edge"),
-            ;
+            EDGE(GraphIoPhase.READ_EDGE, "edge");
 
             fun matches(index: Int, byte: Int): Boolean = index < token.length && token[index] == byte.toChar()
         }
@@ -522,16 +532,8 @@ internal class StaxGraphMlReader {
 
         private fun isTagNameDelimiter(byte: Int): Boolean =
             byte == '>'.code || byte == '/'.code || byte == ' '.code || byte == '\t'.code ||
-                byte == '\r'.code || byte == '\n'.code
+                    byte == '\r'.code || byte == '\n'.code
 
     }
 
-    companion object : KLogging() {
-        private val factory: XMLInputFactory = XMLInputFactory.newInstance().apply {
-            setProperty(XMLInputFactory.IS_COALESCING, true)
-            setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, false)
-            setProperty(XMLInputFactory.SUPPORT_DTD, false)
-            setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false)
-        }
-    }
 }

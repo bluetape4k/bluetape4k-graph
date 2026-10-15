@@ -3,43 +3,61 @@ package io.bluetape4k.graph.io.graphml
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
+import io.bluetape4k.assertions.shouldBeLessOrEqualTo
+import io.bluetape4k.assertions.shouldBeLessThan
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldNotContain
+import io.bluetape4k.concurrent.await
+import io.bluetape4k.coroutines.flow.extensions.log
+import io.bluetape4k.coroutines.support.log
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphIoPhase
-import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.report.GraphIoReadException
+import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.source.GraphImportSource
+import io.bluetape4k.graph.io.source.asSource
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.logging.coroutines.KLoggingChannel
+import io.bluetape4k.logging.debug
+import io.bluetape4k.support.toUtf8Bytes
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.toList
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 class GraphMlStreamingReaderContractTest {
+
+    private companion object: KLoggingChannel() {
+        // The StAX channel currently exposes 64 records while the collector is delayed.
+        const val MAX_READ_AHEAD_RECORDS = 96
+    }
 
     @Test
     fun `slow collector stays within measured graphml read ahead bound`() = runSuspendIO {
         val xml = graphMl((1..10_000).joinToString("\n") { "<node id=\"v$it\"/>" })
-        val input = MarkerInputStream(xml.toByteArray())
+        val input = MarkerInputStream(xml.toUtf8Bytes())
 
-        val first = GraphMlRecordFlowReader().readVertices(
-            GraphImportSource.InputStreamSource(input, closeInput = true),
-        ).onEach { delay(25) }.take(1).toList()
+        val first = GraphMlRecordFlowReader()
+            .readVertices(input.asSource(true))
+            .log("Vertex")
+            .onEach { delay(25.milliseconds) }
+            .take(1)
+            .toList()
 
         first.single().externalId shouldBeEqualTo "v1"
-        (input.markerCount <= MAX_READ_AHEAD_RECORDS).shouldBeTrue()
-        (input.bytesRead < xml.toByteArray().size).shouldBeTrue()
+        input.markerCount shouldBeLessOrEqualTo MAX_READ_AHEAD_RECORDS
+        input.bytesRead shouldBeLessThan xml.toByteArray().size
         input.closeCount shouldBeEqualTo 1
     }
 
@@ -50,14 +68,16 @@ class GraphMlStreamingReaderContractTest {
         )
 
         val error = assertFailsWith<GraphIoReadException> {
-            GraphMlRecordFlowReader().readVertices(
-                GraphImportSource.InputStreamSource(input, closeInput = true),
-            ).toList()
+            GraphMlRecordFlowReader()
+                .readVertices(input.asSource(true))
+                .log("V")
+                .toList()
         }
 
+        log.debug { "error=$error" }
         error.failure.phase shouldBeEqualTo GraphIoPhase.READ_VERTEX
-        error.message.orEmpty() shouldNotContain "secret-record"
-        error.message.orEmpty() shouldNotContain "secret-payload"
+        error.message shouldNotContain "secret-record"
+        error.message shouldNotContain "secret-payload"
         error.suppressed.map { it.message } shouldBeEqualTo listOf("graphml-close-failure")
         input.closeCount shouldBeEqualTo 1
     }
@@ -72,9 +92,16 @@ class GraphMlStreamingReaderContractTest {
             """.trimIndent(),
         )
 
-        GraphMlRecordFlowReader().readVertices(sourceOf(xml)).toList()
+        GraphMlRecordFlowReader()
+            .readVertices(xml.byteInputStream().asSource())
+            .log("Vertex")
+            .toList()
             .map { it.externalId } shouldBeEqualTo listOf("v1", "v2")
-        GraphMlRecordFlowReader().readEdges(sourceOf(xml)).toList()
+
+        GraphMlRecordFlowReader()
+            .readEdges(xml.byteInputStream().asSource())
+            .log("Edge")
+            .toList()
             .map { it.externalId } shouldBeEqualTo listOf("e1")
     }
 
@@ -128,16 +155,15 @@ class GraphMlStreamingReaderContractTest {
     @Test
     fun `sync importer reports malformed edge phase`() {
         val report = GraphMlBulkImporter().importGraph(
-            source = sourceOf(
-                graphMl(
-                    """
-                    <node id="v1"/>
-                    <node id="v2"/>
-                    <edge id="secret-edge" source="v1" target="v2">
-                      <data key="payload">secret-payload
-                    """.trimIndent(),
-                ),
-            ),
+            source = graphMl(
+                """
+                <node id="v1"/>
+                <node id="v2"/>
+                <edge id="secret-edge" source="v1" target="v2">
+                  <data key="payload">secret-payload
+                """.trimIndent(),
+            ).byteInputStream().asSource(),
+
             operations = TinkerGraphOperations(),
         )
 
@@ -148,16 +174,14 @@ class GraphMlStreamingReaderContractTest {
     @Test
     fun `suspend importer reports malformed edge phase`() = runSuspendIO {
         val report = SuspendGraphMlBulkImporter().importGraphSuspending(
-            source = sourceOf(
-                graphMl(
-                    """
-                    <node id="v1"/>
-                    <node id="v2"/>
-                    <edge id="secret-edge" source="v1" target="v2">
-                      <data key="payload">secret-payload
-                    """.trimIndent(),
-                ),
-            ),
+            source = graphMl(
+                """
+                <node id="v1"/>
+                <node id="v2"/>
+                <edge id="secret-edge" source="v1" target="v2">
+                  <data key="payload">secret-payload
+                """.trimIndent(),
+            ).byteInputStream().asSource(),
             operations = TinkerGraphSuspendOperations(TinkerGraphOperations()),
         )
 
@@ -168,13 +192,11 @@ class GraphMlStreamingReaderContractTest {
     @Test
     fun `sync importer reports malformed edge opening phase`() {
         val report = GraphMlBulkImporter().importGraph(
-            source = sourceOf(
-                graphMl(
-                    """
-                    <edge id="secret-edge" source="v1"
-                    """.trimIndent(),
-                ),
-            ),
+            source = graphMl(
+                """
+                <edge id="secret-edge" source="v1"
+                """.trimIndent(),
+            ).byteInputStream().asSource(),
             operations = TinkerGraphOperations(),
         )
 
@@ -186,13 +208,11 @@ class GraphMlStreamingReaderContractTest {
     @Test
     fun `suspend importer reports malformed edge opening phase`() = runSuspendIO {
         val report = SuspendGraphMlBulkImporter().importGraphSuspending(
-            source = sourceOf(
-                graphMl(
-                    """
-                    <edge id="secret-edge" source="v1"
-                    """.trimIndent(),
-                ),
-            ),
+            source = graphMl(
+                """
+                <edge id="secret-edge" source="v1"
+                """.trimIndent(),
+            ).byteInputStream().asSource(),
             operations = TinkerGraphSuspendOperations(TinkerGraphOperations()),
         )
 
@@ -204,37 +224,43 @@ class GraphMlStreamingReaderContractTest {
     @Test
     fun `streaming reader reports malformed edge phase`() = runSuspendIO {
         val error = assertFailsWith<GraphIoReadException> {
-            GraphMlRecordFlowReader().readEdges(
-                sourceOf(
+            GraphMlRecordFlowReader()
+                .readEdges(
                     graphMl(
                         """
-                        <node id="v1"/>
-                        <node id="v2"/>
-                        <edge id="secret-edge" source="v1" target="v2">
-                          <data key="payload">secret-payload
-                        """.trimIndent(),
-                    ),
-                ),
-            ).toList()
+                            <node id="v1"/>
+                            <node id="v2"/>
+                            <edge id="secret-edge" source="v1" target="v2">
+                              <data key="payload">secret-payload
+                            """.trimIndent(),
+                    )
+                        .byteInputStream()
+                        .asSource(),
+                )
+                .log("Edge")
+                .toList()
         }
 
+        log.debug { "error=$error" }
         error.failure.phase shouldBeEqualTo GraphIoPhase.READ_EDGE
     }
 
     @Test
     fun `streaming reader reports malformed edge opening phase`() = runSuspendIO {
         val error = assertFailsWith<GraphIoReadException> {
-            GraphMlRecordFlowReader().readEdges(
-                sourceOf(
+            GraphMlRecordFlowReader()
+                .readEdges(
                     graphMl(
                         """
                         <edge id="secret-edge" source="v1"
                         """.trimIndent(),
-                    ),
-                ),
-            ).toList()
+                    ).byteInputStream().asSource(),
+                )
+                .log("Edge")
+                .toList()
         }
 
+        log.debug { "error=$error" }
         error.failure.phase shouldBeEqualTo GraphIoPhase.READ_EDGE
         error.failure.toString() shouldNotContain "secret-edge"
         error.message.orEmpty() shouldNotContain "secret-edge"
@@ -243,28 +269,34 @@ class GraphMlStreamingReaderContractTest {
     @Test
     fun `streaming reader retains phase for truncated self closing edge`() = runSuspendIO {
         val error = assertFailsWith<GraphIoReadException> {
-            GraphMlRecordFlowReader().readEdges(
-                sourceOf(graphMl("<edge/")),
-            ).toList()
+            GraphMlRecordFlowReader()
+                .readEdges(
+                    graphMl("<edge/").byteInputStream().asSource(),
+                )
+                .log("Edge")
+                .toList()
         }
 
+        log.debug { "error=$error" }
         error.failure.phase shouldBeEqualTo GraphIoPhase.READ_EDGE
     }
 
     @Test
     fun `streaming reader keeps vertex fallback for malformed node opening`() = runSuspendIO {
         val error = assertFailsWith<GraphIoReadException> {
-            GraphMlRecordFlowReader().readVertices(
-                sourceOf(
+            GraphMlRecordFlowReader()
+                .readVertices(
                     graphMl(
                         """
                         <node id="secret-node"
                         """.trimIndent(),
-                    ),
-                ),
-            ).toList()
+                    ).byteInputStream().asSource(),
+                )
+                .log("Vertex")
+                .toList()
         }
 
+        log.debug { "error=$error" }
         error.failure.phase shouldBeEqualTo GraphIoPhase.READ_VERTEX
         error.failure.toString() shouldNotContain "secret-node"
         error.message.orEmpty() shouldNotContain "secret-node"
@@ -287,7 +319,7 @@ class GraphMlStreamingReaderContractTest {
         val input = TrackingInputStream(bytes)
 
         val report = GraphMlBulkImporter().importGraph(
-            source = GraphImportSource.InputStreamSource(input),
+            source = input.asSource(),
             operations = TinkerGraphOperations(),
             options = GraphImportOptions(maxEdgeBufferSize = 1),
         )
@@ -296,8 +328,8 @@ class GraphMlStreamingReaderContractTest {
         report.edgesRead shouldBeEqualTo 2L
         report.edgesCreated shouldBeEqualTo 0L
         report.failures.single().message shouldBeEqualTo
-            "Edge buffer exceeded maxEdgeBufferSize=1; verticesCreated=0 remain in graph as partial state"
-        (input.bytesRead < bytes.size).shouldBeTrue()
+                "Edge buffer exceeded maxEdgeBufferSize=1; verticesCreated=0 remain in graph as partial state"
+        input.bytesRead shouldBeLessThan bytes.size
     }
 
     @Test
@@ -317,11 +349,12 @@ class GraphMlStreamingReaderContractTest {
         val input = TrackingInputStream(bytes)
 
         val report = SuspendGraphMlBulkImporter().importGraphSuspending(
-            source = GraphImportSource.InputStreamSource(input, closeInput = true),
+            source = input.asSource(true),
             operations = TinkerGraphSuspendOperations(TinkerGraphOperations()),
             options = GraphImportOptions(maxEdgeBufferSize = 1),
         )
 
+        log.debug { "report=$report" }
         report.status shouldBeEqualTo GraphIoStatus.FAILED
         report.verticesRead shouldBeEqualTo 3L
         report.verticesCreated shouldBeEqualTo 0L
@@ -329,49 +362,55 @@ class GraphMlStreamingReaderContractTest {
         report.edgesCreated shouldBeEqualTo 0L
         report.failures.single().location shouldBeEqualTo "edge-buffer:2"
         report.failures.single().message shouldBeEqualTo
-            "Edge buffer exceeded maxEdgeBufferSize=1; verticesCreated=0 remain in graph as partial state"
-        (input.bytesRead < bytes.size).shouldBeTrue()
+                "Edge buffer exceeded maxEdgeBufferSize=1; verticesCreated=0 remain in graph as partial state"
+        input.bytesRead shouldBeLessThan bytes.size
         input.closed.shouldBeTrue()
         input.closeCount shouldBeEqualTo 1
     }
 
     @Test
     fun `suspend bulk importer preserves source ownership and closes owned input once`() = runSuspendIO {
-        val callerOwned = TrackingInputStream(graphMl("<node id=\"caller\"/>").toByteArray())
-        val owned = TrackingInputStream(graphMl("<node id=\"owned\"/>").toByteArray())
+        val callerOwned = TrackingInputStream(graphMl("<node id=\"caller\"/>").toUtf8Bytes())
+        val owned = TrackingInputStream(graphMl("<node id=\"owned\"/>").toUtf8Bytes())
         val importer = SuspendGraphMlBulkImporter()
 
         importer.importGraphSuspending(
-            source = GraphImportSource.InputStreamSource(callerOwned),
+            source = callerOwned.asSource(),
             operations = TinkerGraphSuspendOperations(TinkerGraphOperations()),
         ).status shouldBeEqualTo GraphIoStatus.COMPLETED
+
         importer.importGraphSuspending(
-            source = GraphImportSource.InputStreamSource(owned, closeInput = true),
+            source = owned.asSource(true),
             operations = TinkerGraphSuspendOperations(TinkerGraphOperations()),
         ).status shouldBeEqualTo GraphIoStatus.COMPLETED
 
         callerOwned.closed.shouldBeFalse()
         callerOwned.closeCount shouldBeEqualTo 0
+
         owned.closed.shouldBeTrue()
         owned.closeCount shouldBeEqualTo 1
     }
 
     @Test
     fun `suspend bulk importer closes owned input once after real cancellation`() = runSuspendIO {
-        val input = BlockingInputStream(graphMl("<node id=\"v1\"/>").toByteArray())
+        val input = BlockingInputStream(graphMl("<node id=\"v1\"/>").toUtf8Bytes())
+
         val job = async(Dispatchers.IO) {
-            SuspendGraphMlBulkImporter().importGraphSuspending(
-                source = GraphImportSource.InputStreamSource(input, closeInput = true),
-                operations = TinkerGraphSuspendOperations(TinkerGraphOperations()),
-            )
-        }
+            SuspendGraphMlBulkImporter()
+                .importGraphSuspending(
+                    source = input.asSource(true),
+                    operations = TinkerGraphSuspendOperations(TinkerGraphOperations()),
+                )
+        }.log("Job")
 
         try {
-            input.entered.await(5, TimeUnit.SECONDS).shouldBeTrue()
+            input.entered.await(5.seconds).shouldBeTrue()
             job.cancel(CancellationException("controlled-cancellation"))
             input.release.countDown()
 
-            assertFailsWith<CancellationException> { job.await() }
+            assertFailsWith<CancellationException> {
+                job.await()
+            }
         } finally {
             input.release.countDown()
             job.cancel()
@@ -385,24 +424,22 @@ class GraphMlStreamingReaderContractTest {
     fun `suspend bulk importer preserves source cancellation and suppresses owned close failure`() = runSuspendIO {
         val cancellation = CancellationException("controlled-source-cancellation")
         val input = CancellationCloseFailingInputStream(
-            content = graphMl("<node id=\"v1\"/>").toByteArray(),
+            content = graphMl("<node id=\"v1\"/>").toUtf8Bytes(),
             cancellation = cancellation,
         )
 
         val thrown = assertFailsWith<CancellationException> {
             SuspendGraphMlBulkImporter().importGraphSuspending(
-                source = GraphImportSource.InputStreamSource(input, closeInput = true),
+                source = input.asSource(true),
                 operations = TinkerGraphSuspendOperations(TinkerGraphOperations()),
             )
         }
 
+        log.debug { "thrown=$thrown" }
         thrown.message shouldBeEqualTo cancellation.message
         thrown.suppressed.map { it.message } shouldBeEqualTo listOf("graphml-close-failure")
         input.closeCount shouldBeEqualTo 1
     }
-
-    private fun sourceOf(xml: String): GraphImportSource =
-        GraphImportSource.InputStreamSource(xml.byteInputStream())
 
     private fun graphMl(body: String): String =
         """<?xml version="1.0" encoding="UTF-8"?>
@@ -412,7 +449,7 @@ class GraphMlStreamingReaderContractTest {
            |  </graph>
            |</graphml>""".trimMargin()
 
-    private class TrackingInputStream(content: ByteArray) : ByteArrayInputStream(content) {
+    private class TrackingInputStream(content: ByteArray): ByteArrayInputStream(content) {
         var closed: Boolean = false
             private set
         var closeCount: Int = 0
@@ -439,7 +476,7 @@ class GraphMlStreamingReaderContractTest {
         }
     }
 
-    private class MarkerInputStream(private val content: ByteArray) : ByteArrayInputStream(content) {
+    private class MarkerInputStream(private val content: ByteArray): ByteArrayInputStream(content) {
         var bytesRead: Int = 0
             private set
         var closeCount: Int = 0
@@ -459,7 +496,7 @@ class GraphMlStreamingReaderContractTest {
         }
     }
 
-    private class BlockingInputStream(content: ByteArray) : ByteArrayInputStream(content) {
+    private class BlockingInputStream(content: ByteArray): ByteArrayInputStream(content) {
 
         val entered = CountDownLatch(1)
         val release = CountDownLatch(1)
@@ -483,14 +520,14 @@ class GraphMlStreamingReaderContractTest {
 
         private fun awaitRelease() {
             entered.countDown()
-            check(release.await(5, TimeUnit.SECONDS)) { "test input release timed out" }
+            check(release.await(5.seconds)) { "test input release timed out" }
         }
     }
 
     private class CancellationCloseFailingInputStream(
         content: ByteArray,
         private val cancellation: CancellationException,
-    ) : ByteArrayInputStream(content) {
+    ): ByteArrayInputStream(content) {
 
         var closeCount: Int = 0
             private set
@@ -505,7 +542,7 @@ class GraphMlStreamingReaderContractTest {
         }
     }
 
-    private class ParseCloseFailingInputStream(content: ByteArray) : ByteArrayInputStream(content) {
+    private class ParseCloseFailingInputStream(content: ByteArray): ByteArrayInputStream(content) {
         var closeCount: Int = 0
             private set
 
@@ -515,8 +552,4 @@ class GraphMlStreamingReaderContractTest {
         }
     }
 
-    private companion object {
-        // The StAX channel currently exposes 64 records while the collector is delayed.
-        const val MAX_READ_AHEAD_RECORDS = 96
-    }
 }

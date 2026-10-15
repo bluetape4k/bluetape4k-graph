@@ -1,36 +1,43 @@
 package io.bluetape4k.graph.io.graphml
 
 import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldContain
+import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.assertions.shouldNotContain
 import io.bluetape4k.graph.io.options.DuplicateVertexPolicy
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.options.MissingEndpointPolicy
 import io.bluetape4k.graph.io.report.GraphIoFailureSeverity
-import io.bluetape4k.graph.io.report.GraphIoStatus
-import io.bluetape4k.graph.io.report.GraphIoProgressEventType
 import io.bluetape4k.graph.io.report.GraphIoProgressEvent
-import io.bluetape4k.graph.io.report.GraphIoProgressListener
+import io.bluetape4k.graph.io.report.GraphIoProgressEventType
+import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.io.source.GraphImportSource
+import io.bluetape4k.graph.io.source.asSink
+import io.bluetape4k.graph.io.source.asSource
 import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
-import io.bluetape4k.assertions.shouldContain
-import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldBeTrue
-import io.bluetape4k.assertions.shouldHaveSize
-import io.bluetape4k.assertions.shouldNotContain
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.IOException
 import java.io.OutputStream
+import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.io.path.writeText
 import javax.xml.stream.XMLStreamException
+import kotlin.io.path.writeText
 
 class GraphMlRoundTripTest {
+
+    companion object: KLogging()
 
     @Test
     fun `sync round trip three vertices two edges`(@TempDir dir: Path) {
@@ -47,14 +54,16 @@ class GraphMlRoundTripTest {
 
         val exporter = GraphMlBulkExporter()
         exporter.exportGraph(
-            GraphExportSink.PathSink(out),
+            out.asSink(),
             src,
             GraphExportOptions(vertexLabels = setOf("Person"), edgeLabels = setOf("KNOWS")),
-            GraphIoProgressListener {
-                events += it.type
-                snapshots += it
-            },
-        ).status shouldBeEqualTo GraphIoStatus.COMPLETED
+        ) {
+            events += it.type
+            snapshots += it
+        }.status shouldBeEqualTo GraphIoStatus.COMPLETED
+
+        log.debug { "events=$events" }
+
         events shouldBeEqualTo listOf(
             GraphIoProgressEventType.STARTED,
             GraphIoProgressEventType.PHASE_COMPLETED,
@@ -62,8 +71,8 @@ class GraphMlRoundTripTest {
             GraphIoProgressEventType.PROGRESS,
             GraphIoProgressEventType.COMPLETED,
         )
-        snapshots.last().bytesProcessed shouldBeEqualTo java.nio.file.Files.size(out)
-        snapshots.last().bytesTotal shouldBeEqualTo java.nio.file.Files.size(out)
+        snapshots.last().bytesProcessed shouldBeEqualTo Files.size(out)
+        snapshots.last().bytesTotal shouldBeEqualTo Files.size(out)
 
         val target = TinkerGraphOperations()
         val importer = GraphMlBulkImporter()
@@ -72,6 +81,8 @@ class GraphMlRoundTripTest {
             target,
             GraphImportOptions(),
         )
+
+        log.debug { "report=$report" }
         report.status shouldBeEqualTo GraphIoStatus.COMPLETED
         report.verticesCreated shouldBeEqualTo 3L
         report.edgesCreated shouldBeEqualTo 2L
@@ -104,7 +115,7 @@ class GraphMlRoundTripTest {
         src.createEdge(n1.id, n2.id, "RELATED", edgeProperties)
 
         GraphMlBulkExporter().exportGraph(
-            GraphExportSink.PathSink(out),
+            out.asSink(),
             src,
             GraphExportOptions(vertexLabels = setOf("Item"), edgeLabels = setOf("RELATED")),
         )
@@ -118,8 +129,11 @@ class GraphMlRoundTripTest {
         report.status shouldBeEqualTo GraphIoStatus.COMPLETED
         report.verticesCreated shouldBeEqualTo 2L
         report.edgesCreated shouldBeEqualTo 1L
+
         target.findVerticesByLabel("Item")
-            .map { vertex -> vertex.properties.filterKeys { it != "_graphIoExternalId" } }
+            .map { vertex ->
+                vertex.properties.filterKeys { it != "_graphIoExternalId" }
+            }
             .toSet() shouldBeEqualTo setOf(firstProperties, secondProperties)
         target.findEdgesByLabel("RELATED").single().properties
             .filterKeys { it != "_graphIoExternalId" } shouldBeEqualTo edgeProperties
@@ -129,15 +143,15 @@ class GraphMlRoundTripTest {
     fun `sync export uses chunked repository API without full label materialization`(@TempDir dir: Path) {
         val out = dir.resolve("chunked.graphml")
         val src = TinkerGraphOperations()
-        val vertices = (1..5).map { index ->
-            src.createVertex("Person", mapOf("name" to "Person-$index"))
+        val vertices = List(5) { index ->
+            src.createVertex("Person", "name" to "Person-$index")
         }
-        src.createEdge(vertices[0].id, vertices[1].id, "KNOWS", mapOf("rank" to 1))
-        src.createEdge(vertices[1].id, vertices[2].id, "KNOWS", mapOf("rank" to 2))
+        src.createEdge(vertices[0].id, vertices[1].id, "KNOWS", "rank" to 1)
+        src.createEdge(vertices[1].id, vertices[2].id, "KNOWS", "rank" to 2)
         val requestedChunkSizes = mutableListOf<Int>()
 
         val report = GraphMlBulkExporter().exportGraph(
-            GraphExportSink.PathSink(out),
+            out.asSink(),
             ChunkOnlyGraphOperations(src, requestedChunkSizes),
             GraphExportOptions(
                 vertexLabels = setOf("Person"),
@@ -146,6 +160,7 @@ class GraphMlRoundTripTest {
             ),
         )
 
+        log.debug { "report=$report" }
         report.status shouldBeEqualTo GraphIoStatus.COMPLETED
         report.verticesWritten shouldBeEqualTo 5L
         report.edgesWritten shouldBeEqualTo 2L
@@ -159,7 +174,7 @@ class GraphMlRoundTripTest {
         listOf(true, false).forEach { includeEmptyProperties ->
             val out = dir.resolve("empty-$includeEmptyProperties.graphml")
             GraphMlBulkExporter().exportGraph(
-                GraphExportSink.PathSink(out),
+                out.asSink(),
                 source,
                 GraphExportOptions(
                     vertexLabels = setOf("Metric"),
@@ -167,13 +182,13 @@ class GraphMlRoundTripTest {
                     includeEmptyProperties = includeEmptyProperties,
                 ),
             )
-            val xml = java.nio.file.Files.readString(out)
-            val keyId = requireNotNull(
-                Regex("""<key id="([^"]+)" for="node" attr.name="optional"""")
-                    .find(xml)
-                    ?.groupValues
-                    ?.get(1),
-            )
+            val xml = Files.readString(out)
+            val keyId = Regex("""<key id="([^"]+)" for="node" attr.name="optional"""")
+                .find(xml)
+                ?.groupValues
+                ?.get(1)
+                .shouldNotBeNull()
+
             xml.contains("<data key=\"$keyId\">") shouldBeEqualTo includeEmptyProperties
         }
     }
@@ -188,13 +203,13 @@ class GraphMlRoundTripTest {
 
         assertFailsWith<IllegalArgumentException> {
             GraphMlBulkExporter().exportGraph(
-                GraphExportSink.PathSink(out),
+                out.asSink(),
                 source,
                 GraphExportOptions(vertexLabels = setOf("Metric"), exportChunkSize = 1),
             )
         }
 
-        java.nio.file.Files.notExists(out).shouldBeTrue()
+        Files.notExists(out).shouldBeTrue()
     }
 
     @Test
@@ -216,7 +231,7 @@ class GraphMlRoundTripTest {
         )
 
         val report = GraphMlBulkExporter().exportGraph(
-            GraphExportSink.PathSink(out),
+            out.asSink(),
             backend,
             GraphExportOptions(
                 vertexLabels = setOf("Person"),
@@ -225,11 +240,13 @@ class GraphMlRoundTripTest {
             ),
         )
 
+        log.debug { "report=$report" }
         report.status shouldBeEqualTo GraphIoStatus.COMPLETED
         report.verticesWritten shouldBeEqualTo 1L
         report.edgesWritten shouldBeEqualTo 1L
         backend.requests shouldBeEqualTo listOf("vertices:1", "edges:1")
-        java.nio.file.Files.readString(out).also {
+
+        Files.readString(out).also {
             it shouldContain "before"
             it shouldNotContain "after"
         }
@@ -259,21 +276,22 @@ class GraphMlRoundTripTest {
         val graphml = dir.resolve("duplicate.graphml").also {
             it.writeText(
                 """<?xml version="1.0" encoding="UTF-8"?>
-<graphml xmlns="http://graphml.graphdrawing.org/graphml">
-  <graph id="G" edgedefault="directed">
-    <node id="n1"/>
-    <node id="n1"/>
-  </graph>
-</graphml>""",
+                <graphml xmlns="http://graphml.graphdrawing.org/graphml">
+                  <graph id="G" edgedefault="directed">
+                    <node id="n1"/>
+                    <node id="n1"/>
+                  </graph>
+                </graphml>""".trimIndent(),
             )
         }
 
         val report = GraphMlBulkImporter().importGraph(
-            GraphImportSource.PathSource(graphml),
+            graphml.asSource(),
             TinkerGraphOperations(),
             GraphImportOptions(onDuplicateVertexId = DuplicateVertexPolicy.SKIP),
         )
 
+        log.debug { "report=$report" }
         report.status shouldBeEqualTo GraphIoStatus.PARTIAL
         report.verticesRead shouldBeEqualTo 2L
         report.verticesCreated shouldBeEqualTo 1L
@@ -288,21 +306,22 @@ class GraphMlRoundTripTest {
         val graphml = dir.resolve("missing-endpoint.graphml").also {
             it.writeText(
                 """<?xml version="1.0" encoding="UTF-8"?>
-<graphml xmlns="http://graphml.graphdrawing.org/graphml">
-  <graph id="G" edgedefault="directed">
-    <node id="n1"/>
-    <edge id="e1" source="n1" target="missing"/>
-  </graph>
-</graphml>""",
+                <graphml xmlns="http://graphml.graphdrawing.org/graphml">
+                  <graph id="G" edgedefault="directed">
+                    <node id="n1"/>
+                    <edge id="e1" source="n1" target="missing"/>
+                  </graph>
+                </graphml>""".trimIndent(),
             )
         }
 
         val report = GraphMlBulkImporter().importGraph(
-            GraphImportSource.PathSource(graphml),
+            graphml.asSource(),
             TinkerGraphOperations(),
             GraphImportOptions(onMissingEdgeEndpoint = MissingEndpointPolicy.SKIP_EDGE),
         )
 
+        log.debug { "report=$report" }
         report.status shouldBeEqualTo GraphIoStatus.PARTIAL
         report.verticesCreated shouldBeEqualTo 1L
         report.edgesRead shouldBeEqualTo 1L
@@ -318,23 +337,24 @@ class GraphMlRoundTripTest {
         val graphml = dir.resolve("unsupported-port.graphml").also {
             it.writeText(
                 """<?xml version="1.0" encoding="UTF-8"?>
-<graphml xmlns="http://graphml.graphdrawing.org/graphml">
-  <graph id="G" edgedefault="directed">
-    <node id="n1">
-      <port name="p1"/>
-    </node>
-  </graph>
-</graphml>""",
+                <graphml xmlns="http://graphml.graphdrawing.org/graphml">
+                  <graph id="G" edgedefault="directed">
+                    <node id="n1">
+                      <port name="p1"/>
+                    </node>
+                  </graph>
+                </graphml>""".trimIndent(),
             )
         }
 
         val report = GraphMlBulkImporter().importGraph(
-            GraphImportSource.PathSource(graphml),
+            graphml.asSource(),
             TinkerGraphOperations(),
             GraphImportOptions(),
             GraphMlImportOptions(unsupportedElementPolicy = UnsupportedGraphMlElementPolicy.FAIL),
         )
 
+        log.debug { "report=$report" }
         report.status shouldBeEqualTo GraphIoStatus.FAILED
         report.verticesRead shouldBeEqualTo 1L
         report.verticesCreated shouldBeEqualTo 0L
@@ -346,7 +366,7 @@ class GraphMlRoundTripTest {
     private class ChunkOnlyGraphOperations(
         private val delegate: GraphOperations,
         private val requestedChunkSizes: MutableList<Int>,
-    ) : GraphOperations by delegate {
+    ): GraphOperations by delegate {
 
         override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> =
             error("full vertex list lookup must not be used by GraphML export")
@@ -373,7 +393,7 @@ class GraphMlRoundTripTest {
         }
     }
 
-    private class NullPropertyGraphOperations : GraphOperations by TinkerGraphOperations() {
+    private class NullPropertyGraphOperations: GraphOperations by TinkerGraphOperations() {
         override fun findVerticesByLabelChunked(
             label: String,
             filter: Map<String, Any?>,
@@ -388,7 +408,7 @@ class GraphMlRoundTripTest {
         private val edge: GraphEdge,
         private val vertexProperties: MutableMap<String, Any?>,
         private val edgeProperties: MutableMap<String, Any?>,
-    ) : GraphOperations by TinkerGraphOperations() {
+    ): GraphOperations by TinkerGraphOperations() {
 
         val requests = mutableListOf<String>()
 
@@ -423,7 +443,7 @@ class GraphMlRoundTripTest {
 
     private class FailingOutputStream(
         private val message: String,
-    ) : OutputStream() {
+    ): OutputStream() {
         override fun write(b: Int): Unit = throw IOException(message)
 
         override fun write(b: ByteArray, off: Int, len: Int): Unit = throw IOException(message)

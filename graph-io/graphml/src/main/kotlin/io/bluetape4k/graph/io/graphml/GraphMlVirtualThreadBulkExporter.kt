@@ -3,13 +3,14 @@ package io.bluetape4k.graph.io.graphml
 import io.bluetape4k.graph.io.contract.GraphVirtualThreadBulkExporter
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.report.GraphExportReport
-import io.bluetape4k.graph.io.report.GraphIoProgressListener
 import io.bluetape4k.graph.io.report.GraphIoFormat
 import io.bluetape4k.graph.io.report.GraphIoOperation
+import io.bluetape4k.graph.io.report.GraphIoProgressListener
 import io.bluetape4k.graph.io.report.GraphIoProgressReporter
 import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.io.support.GraphIoPaths
-import io.bluetape4k.graph.io.support.VirtualThreadGraphBulkAdapter
+import io.bluetape4k.graph.io.support.asVirtualThreadExporter
+import io.bluetape4k.graph.io.support.cancellableVirtualFuture
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
 import java.util.concurrent.CompletableFuture
@@ -37,14 +38,16 @@ import java.util.concurrent.CompletableFuture
  */
 class GraphMlVirtualThreadBulkExporter(
     private val sync: GraphMlBulkExporter = GraphMlBulkExporter(),
-) : GraphVirtualThreadBulkExporter<GraphExportSink> {
+): GraphVirtualThreadBulkExporter<GraphExportSink> {
+
+    companion object: KLogging()
 
     override fun exportGraphAsync(
         sink: GraphExportSink,
         operations: GraphOperations,
         options: GraphExportOptions,
     ): CompletableFuture<GraphExportReport> =
-        VirtualThreadGraphBulkAdapter.wrapExporter(sync).exportGraphAsync(sink, operations, options)
+        sync.asVirtualThreadExporter().exportGraphAsync(sink, operations, options)
 
     override fun exportGraphAsync(
         sink: GraphExportSink,
@@ -66,7 +69,7 @@ class GraphMlVirtualThreadBulkExporter(
             listener = listener,
             bytesProvider = { GraphIoPaths.sizeOf(sink) },
         )
-        return VirtualThreadGraphBulkAdapter.cancellableVirtualFuture(
+        return cancellableVirtualFuture(
             reporter = reporter,
             block = { sync.exportGraph(sink, operations, options) },
             onCompleted = { report -> reporter.completed(report) },
@@ -79,7 +82,7 @@ class GraphMlVirtualThreadBulkExporter(
         options: GraphExportOptions = GraphExportOptions(),
         graphMlOptions: GraphMlExportOptions = GraphMlExportOptions(),
     ): CompletableFuture<GraphExportReport> =
-        VirtualThreadGraphBulkAdapter.cancellableVirtualFuture {
+        cancellableVirtualFuture {
             sync.exportGraph(sink, operations, options, graphMlOptions)
         }
 
@@ -96,12 +99,10 @@ class GraphMlVirtualThreadBulkExporter(
             listener = listener,
             bytesProvider = { GraphIoPaths.sizeOf(sink) },
         )
-        return VirtualThreadGraphBulkAdapter.cancellableVirtualFuture(
+        return cancellableVirtualFuture(
             reporter = reporter,
             block = { sync.exportGraph(sink, operations, options, graphMlOptions) },
             onCompleted = { report -> reporter.completed(report) },
         )
     }
-
-    companion object : KLogging()
 }
