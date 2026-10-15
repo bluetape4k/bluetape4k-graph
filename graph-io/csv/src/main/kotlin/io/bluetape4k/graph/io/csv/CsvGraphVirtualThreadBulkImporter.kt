@@ -3,12 +3,13 @@ package io.bluetape4k.graph.io.csv
 import io.bluetape4k.graph.io.contract.GraphVirtualThreadBulkImporter
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphImportReport
-import io.bluetape4k.graph.io.report.GraphIoProgressListener
-import io.bluetape4k.graph.io.report.GraphIoOperation
 import io.bluetape4k.graph.io.report.GraphIoFormat
+import io.bluetape4k.graph.io.report.GraphIoOperation
+import io.bluetape4k.graph.io.report.GraphIoProgressListener
 import io.bluetape4k.graph.io.report.GraphIoProgressReporter
 import io.bluetape4k.graph.io.support.GraphIoPaths
-import io.bluetape4k.graph.io.support.VirtualThreadGraphBulkAdapter
+import io.bluetape4k.graph.io.support.asVirtualThreadImporter
+import io.bluetape4k.graph.io.support.cancellableVirtualFuture
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
 import java.util.concurrent.CompletableFuture
@@ -32,14 +33,16 @@ import java.util.concurrent.CompletableFuture
  */
 class CsvGraphVirtualThreadBulkImporter(
     private val sync: CsvGraphBulkImporter = CsvGraphBulkImporter(),
-) : GraphVirtualThreadBulkImporter<CsvGraphImportSource> {
+): GraphVirtualThreadBulkImporter<CsvGraphImportSource> {
+
+    companion object: KLogging()
 
     override fun importGraphAsync(
         source: CsvGraphImportSource,
         operations: GraphOperations,
         options: GraphImportOptions,
     ): CompletableFuture<GraphImportReport> =
-        VirtualThreadGraphBulkAdapter.wrapImporter(sync).importGraphAsync(source, operations, options)
+        sync.asVirtualThreadImporter().importGraphAsync(source, operations, options)
 
     override fun importGraphAsync(
         source: CsvGraphImportSource,
@@ -58,7 +61,7 @@ class CsvGraphVirtualThreadBulkImporter(
                 )
             },
         )
-        return VirtualThreadGraphBulkAdapter.cancellableVirtualFuture(
+        return cancellableVirtualFuture(
             reporter = reporter,
             block = { sync.importGraph(source, operations, options) },
             onCompleted = { report -> reporter.completed(report) },
@@ -71,7 +74,7 @@ class CsvGraphVirtualThreadBulkImporter(
         options: GraphImportOptions = GraphImportOptions(),
         csvOptions: CsvGraphIoOptions = CsvGraphIoOptions(),
     ): CompletableFuture<GraphImportReport> =
-        VirtualThreadGraphBulkAdapter.cancellableVirtualFuture {
+        cancellableVirtualFuture {
             sync.importGraph(source, operations, options, csvOptions)
         }
 
@@ -93,12 +96,11 @@ class CsvGraphVirtualThreadBulkImporter(
                 )
             },
         )
-        return VirtualThreadGraphBulkAdapter.cancellableVirtualFuture(
+        return cancellableVirtualFuture(
             reporter = reporter,
             block = { sync.importGraph(source, operations, options, csvOptions) },
             onCompleted = { report -> reporter.completed(report) },
         )
     }
 
-    companion object : KLogging()
 }

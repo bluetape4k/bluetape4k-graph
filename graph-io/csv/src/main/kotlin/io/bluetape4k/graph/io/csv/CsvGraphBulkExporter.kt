@@ -41,7 +41,7 @@ import io.bluetape4k.logging.debug
  * println("exported ${report.verticesWritten} vertices in ${report.elapsed.toMillis()}ms")
  * ```
  */
-class CsvGraphBulkExporter : GraphBulkExporter<CsvGraphExportSink> {
+class CsvGraphBulkExporter: GraphBulkExporter<CsvGraphExportSink> {
 
     override fun exportGraph(
         sink: CsvGraphExportSink,
@@ -130,12 +130,12 @@ class CsvGraphBulkExporter : GraphBulkExporter<CsvGraphExportSink> {
             GraphIoPaths.openWriter(sink.vertices).use { w ->
                 val csv = CsvRecordWriter(w)
                 csv.writeHeaders(vHeader)
-                for (v in spool.vertexRecords()) {
+                spool.vertexRecords().forEach { (externalId, label, properties) ->
                     val row = buildList<Any?> {
-                        add(v.externalId)
-                        add(v.label)
+                        add(externalId)
+                        add(label)
                         vHeader.drop(2).forEach { col ->
-                            add(codec.encodeProperty(col, v.properties))
+                            add(codec.encodeProperty(col, properties))
                         }
                     }
                     csv.writeRow(row)
@@ -148,7 +148,7 @@ class CsvGraphBulkExporter : GraphBulkExporter<CsvGraphExportSink> {
             GraphIoPaths.openWriter(sink.edges).use { w ->
                 val csv = CsvRecordWriter(w)
                 csv.writeHeaders(eHeader)
-                for (ed in spool.edgeRecords()) {
+                spool.edgeRecords().forEach { ed ->
                     val row = buildList<Any?> {
                         add(ed.externalId ?: "")
                         add(ed.label)
@@ -174,7 +174,7 @@ class CsvGraphBulkExporter : GraphBulkExporter<CsvGraphExportSink> {
             ).also {
                 log.debug {
                     "CSV export completed: verticesWritten=$vWritten, edgesWritten=$eWritten, " +
-                        "status=$status, elapsed=${watch.elapsed()}"
+                            "status=$status, elapsed=${watch.elapsed()}"
                 }
             }
         } catch (failure: Throwable) {
@@ -185,5 +185,5 @@ class CsvGraphBulkExporter : GraphBulkExporter<CsvGraphExportSink> {
         }
     }
 
-    companion object : KLogging()
+    companion object: KLogging()
 }

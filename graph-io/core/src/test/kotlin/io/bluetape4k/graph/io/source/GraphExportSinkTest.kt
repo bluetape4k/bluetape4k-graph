@@ -13,7 +13,7 @@ class GraphExportSinkTest {
 
     @Test
     fun `path sink defaults do not append`() {
-        val sink = Path.of("out.csv").toSink()
+        val sink = Path.of("out.csv").asSink()
 
         log.debug { "sink=$sink" }
         sink.append.shouldBeFalse()
@@ -21,7 +21,7 @@ class GraphExportSinkTest {
 
     @Test
     fun `output stream sink defaults to caller-owned close`() {
-        val sink = ByteArrayOutputStream().toSink()
+        val sink = ByteArrayOutputStream().asSink()
 
         log.debug { "sink=$sink" }
         sink.closeOutput.shouldBeFalse()

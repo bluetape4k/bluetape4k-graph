@@ -1,32 +1,36 @@
 package io.bluetape4k.graph.io.csv
 
 import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeFalse
+import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldContain
+import io.bluetape4k.assertions.shouldNotBeEmpty
+import io.bluetape4k.assertions.shouldNotContain
+import io.bluetape4k.coroutines.support.log
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphExportReport
 import io.bluetape4k.graph.io.report.GraphIoStatus
-import io.bluetape4k.graph.io.source.GraphExportSink
-import io.bluetape4k.graph.io.source.GraphImportSource
+import io.bluetape4k.graph.io.source.asSink
+import io.bluetape4k.graph.io.source.asSource
 import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.GraphEdge
-import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphVertex
+import io.bluetape4k.graph.model.edgeOf
+import io.bluetape4k.graph.model.vertexOf
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
-import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldBeTrue
-import io.bluetape4k.assertions.shouldContain
-import io.bluetape4k.assertions.shouldNotContain
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.coroutines.KLoggingChannel
-import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.async
-import kotlinx.coroutines.cancelAndJoin
+import io.bluetape4k.logging.debug
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -34,18 +38,19 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import java.nio.file.Path
-import java.io.IOException
 import java.io.ByteArrayOutputStream
+import java.io.IOException
 import java.io.OutputStream
-import java.util.Collections
+import java.nio.file.Files
+import java.nio.file.Path
+import java.util.*
 import java.util.concurrent.Executors
-import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 class CsvSuspendRoundTripTest {
 
-    companion object : KLoggingChannel()
+    companion object: KLoggingChannel()
 
     @Test
     fun `suspend round trip two vertices and one edge`(@TempDir dir: Path) = runSuspendIO {
@@ -53,13 +58,13 @@ class CsvSuspendRoundTripTest {
         val eOut = dir.resolve("e.csv")
 
         val sourceOps = TinkerGraphSuspendOperations()
-        val alice = sourceOps.createVertex("Person", mapOf("name" to "Alice"))
-        val bob = sourceOps.createVertex("Person", mapOf("name" to "Bob"))
-        sourceOps.createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to "2024"))
+        val alice = sourceOps.createVertex("Person", "name" to "Alice")
+        val bob = sourceOps.createVertex("Person", "name" to "Bob")
+        sourceOps.createEdge(alice.id, bob.id, "KNOWS", "since" to "2024")
 
         val exporter = SuspendCsvGraphBulkExporter()
         exporter.exportGraphSuspending(
-            CsvGraphExportSink(GraphExportSink.PathSink(vOut), GraphExportSink.PathSink(eOut)),
+            CsvGraphExportSink(vOut.asSink(), eOut.asSink()),
             sourceOps,
             GraphExportOptions(vertexLabels = setOf("Person"), edgeLabels = setOf("KNOWS")),
         ).status shouldBeEqualTo GraphIoStatus.COMPLETED
@@ -67,7 +72,7 @@ class CsvSuspendRoundTripTest {
         val targetOps = TinkerGraphSuspendOperations()
         val importer = SuspendCsvGraphBulkImporter()
         val report = importer.importGraphSuspending(
-            CsvGraphImportSource(GraphImportSource.PathSource(vOut), GraphImportSource.PathSource(eOut)),
+            CsvGraphImportSource(vOut.asSource(), eOut.asSource()),
             targetOps,
             GraphImportOptions(),
         )
@@ -90,48 +95,47 @@ class CsvSuspendRoundTripTest {
         )
         val edgeProperties = mapOf("weight" to 2.5, "labels" to listOf("friend", "coworker"))
 
-        val alice = GraphVertex(GraphElementId.of("v-alice"), "Person", vertexProperties)
-        val bob = GraphVertex(GraphElementId.of("v-bob"), "Person", mapOf("name" to "Bob"))
+        val alice = vertexOf("v-alice", "Person", vertexProperties)
+        val bob = vertexOf("v-bob", "Person", "name" to "Bob")
         val source = StaticGraphSuspendOperations(
             vertices = listOf(alice, bob),
-            edges = listOf(GraphEdge(GraphElementId.of("e-knows"), "KNOWS", alice.id, bob.id, edgeProperties)),
+            edges = listOf(edgeOf("e-knows", "KNOWS", alice.id, bob.id, edgeProperties)),
         )
 
         SuspendCsvGraphBulkExporter().exportGraphSuspending(
-            CsvGraphExportSink(GraphExportSink.PathSink(vOut), GraphExportSink.PathSink(eOut)),
+            CsvGraphExportSink(vOut.asSink(), eOut.asSink()),
             source,
             GraphExportOptions(vertexLabels = setOf("Person"), edgeLabels = setOf("KNOWS")),
             jsonOptions,
         ).status shouldBeEqualTo GraphIoStatus.COMPLETED
 
-        java.nio.file.Files.readString(vOut) shouldContain "id,label,attributes"
-        java.nio.file.Files.readString(eOut) shouldContain "id,label,from,to,attributes"
+        Files.readString(vOut) shouldContain "id,label,attributes"
+        Files.readString(eOut) shouldContain "id,label,from,to,attributes"
 
         val target = CapturingGraphSuspendOperations()
         SuspendCsvGraphBulkImporter().importGraphSuspending(
-            CsvGraphImportSource(GraphImportSource.PathSource(vOut), GraphImportSource.PathSource(eOut)),
+            CsvGraphImportSource(vOut.asSource(), eOut.asSource()),
             target,
             GraphImportOptions(preserveExternalIdProperty = null),
             jsonOptions,
         ).status shouldBeEqualTo GraphIoStatus.COMPLETED
 
-        target.capturedVertices.first { it["name"] == "Alice, \"A\"" } shouldBeEqualTo
-            vertexProperties
+        target.capturedVertices.first { it["name"] == "Alice, \"A\"" } shouldBeEqualTo vertexProperties
         target.capturedEdges.single().properties shouldBeEqualTo edgeProperties
     }
 
     @Test
     fun `suspend importer rejects trailing raw json tokens`(@TempDir dir: Path) = runSuspendIO {
         val vertices = dir.resolve("malformed-raw-json-suspend-v.csv").also {
-            java.nio.file.Files.writeString(it, "id,label,attributes\nv1,Person,\"{} {}\"\n")
+            Files.writeString(it, "id,label,attributes\nv1,Person,\"{} {}\"\n")
         }
         val edges = dir.resolve("malformed-raw-json-suspend-e.csv").also {
-            java.nio.file.Files.writeString(it, "id,label,from,to\n")
+            Files.writeString(it, "id,label,from,to\n")
         }
 
         assertFailsWith<IllegalArgumentException> {
             SuspendCsvGraphBulkImporter().importGraphSuspending(
-                CsvGraphImportSource(GraphImportSource.PathSource(vertices), GraphImportSource.PathSource(edges)),
+                CsvGraphImportSource(vertices.asSource(), edges.asSource()),
                 TinkerGraphSuspendOperations(),
                 GraphImportOptions(preserveExternalIdProperty = null),
                 CsvGraphIoOptions(propertyMode = CsvPropertyMode.RawJsonColumn("attributes")),
@@ -151,13 +155,14 @@ class CsvSuspendRoundTripTest {
                 val eOut = dir.resolve("caller-e.csv")
 
                 val sourceOps = ThreadRecordingSuspendOperations(TinkerGraphSuspendOperations())
-                val alice = sourceOps.createVertex("Person", mapOf("name" to "Alice"))
-                val bob = sourceOps.createVertex("Person", mapOf("name" to "Bob"))
-                sourceOps.createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to "2024"))
+
+                val alice = sourceOps.createVertex("Person", "name" to "Alice")
+                val bob = sourceOps.createVertex("Person", "name" to "Bob")
+                sourceOps.createEdge(alice.id, bob.id, "KNOWS", "since" to "2024")
                 sourceOps.clear()
 
                 SuspendCsvGraphBulkExporter().exportGraphSuspending(
-                    CsvGraphExportSink(GraphExportSink.PathSink(vOut), GraphExportSink.PathSink(eOut)),
+                    CsvGraphExportSink(vOut.asSink(), eOut.asSink()),
                     sourceOps,
                     GraphExportOptions(vertexLabels = setOf("Person"), edgeLabels = setOf("KNOWS")),
                 )
@@ -167,12 +172,12 @@ class CsvSuspendRoundTripTest {
 
                 val targetOps = ThreadRecordingSuspendOperations(TinkerGraphSuspendOperations())
                 SuspendCsvGraphBulkImporter().importGraphSuspending(
-                    CsvGraphImportSource(GraphImportSource.PathSource(vOut), GraphImportSource.PathSource(eOut)),
+                    CsvGraphImportSource(vOut.asSource(), eOut.asSource()),
                     targetOps,
                     GraphImportOptions(),
                 )
 
-                targetOps.recordedThreads.isNotEmpty().shouldBeTrue()
+                targetOps.recordedThreads.shouldNotBeEmpty()
                 targetOps.recordedThreads.all { it.startsWith("csv-graph-caller") }.shouldBeTrue()
             }
         } finally {
@@ -191,7 +196,7 @@ class CsvSuspendRoundTripTest {
         val requests = Collections.synchronizedList(mutableListOf<String>())
 
         val report = SuspendCsvGraphBulkExporter().exportGraphSuspending(
-            CsvGraphExportSink(GraphExportSink.PathSink(vOut), GraphExportSink.PathSink(eOut)),
+            CsvGraphExportSink(vOut.asSink(), eOut.asSink()),
             ChunkOnlyGraphSuspendOperations(source, requests),
             GraphExportOptions(
                 vertexLabels = setOf("Person", "Company"),
@@ -204,8 +209,11 @@ class CsvSuspendRoundTripTest {
         report.verticesWritten shouldBeEqualTo 2L
         report.edgesWritten shouldBeEqualTo 1L
         requests.sorted() shouldBeEqualTo listOf("Company:1", "Person:1", "WORKS:1")
-        java.nio.file.Files.readString(vOut) shouldContain "prop.industry"
-        java.nio.file.Files.readString(vOut) shouldContain "prop.name"
+
+        Files.readString(vOut).also {
+            it shouldContain "prop.industry"
+            it shouldContain "prop.name"
+        }
     }
 
     @Test
@@ -215,12 +223,12 @@ class CsvSuspendRoundTripTest {
         val vertexProperties = linkedMapOf<String, Any?>("name" to "before")
         val edgeProperties = linkedMapOf<String, Any?>("state" to "before")
         val backend = MutatingChunkOnlyGraphSuspendOperations(
-            vertex = GraphVertex(GraphElementId.of("v-1"), "Person", vertexProperties),
-            edge = GraphEdge(
-                GraphElementId.of("e-1"),
+            vertex = vertexOf("v-1", "Person", vertexProperties),
+            edge = edgeOf(
+                "e-1",
                 "KNOWS",
-                GraphElementId.of("v-1"),
-                GraphElementId.of("v-2"),
+                "v-1",
+                "v-2",
                 edgeProperties,
             ),
             vertexProperties = vertexProperties,
@@ -228,7 +236,7 @@ class CsvSuspendRoundTripTest {
         )
 
         val report = SuspendCsvGraphBulkExporter().exportGraphSuspending(
-            CsvGraphExportSink(GraphExportSink.PathSink(vOut), GraphExportSink.PathSink(eOut)),
+            CsvGraphExportSink(vOut.asSink(), eOut.asSink()),
             backend,
             GraphExportOptions(
                 vertexLabels = setOf("Person"),
@@ -241,11 +249,11 @@ class CsvSuspendRoundTripTest {
         report.verticesWritten shouldBeEqualTo 1L
         report.edgesWritten shouldBeEqualTo 1L
         backend.requests shouldBeEqualTo listOf("vertices:1", "edges:1")
-        java.nio.file.Files.readString(vOut).also {
+        Files.readString(vOut).also {
             it shouldContain "before"
             it shouldNotContain "after"
         }
-        java.nio.file.Files.readString(eOut).also {
+        Files.readString(eOut).also {
             it shouldContain "before"
             it shouldNotContain "after"
         }
@@ -258,8 +266,8 @@ class CsvSuspendRoundTripTest {
         val job = launch {
             exporter.exportGraphSuspending(
                 CsvGraphExportSink(
-                    GraphExportSink.OutputStreamSink(java.io.ByteArrayOutputStream(), closeOutput = false),
-                    GraphExportSink.OutputStreamSink(java.io.ByteArrayOutputStream(), closeOutput = false),
+                    ByteArrayOutputStream().asSink(closeOutput = false),
+                    ByteArrayOutputStream().asSink(closeOutput = false),
                 ),
                 CancellingGraphSuspendOperations(cancelled),
                 GraphExportOptions(vertexLabels = setOf("Person"), edgeLabels = setOf("KNOWS")),
@@ -280,8 +288,8 @@ class CsvSuspendRoundTripTest {
         val thrown = assertFailsWith<IOException> {
             SuspendCsvGraphBulkExporter().exportGraphSuspending(
                 CsvGraphExportSink(
-                    GraphExportSink.OutputStreamSink(FailingOutputStream("csv-suspend-sink-failure")),
-                    GraphExportSink.OutputStreamSink(java.io.ByteArrayOutputStream()),
+                    FailingOutputStream("csv-suspend-sink-failure").asSink(),
+                    ByteArrayOutputStream().asSink(),
                 ),
                 source,
                 GraphExportOptions(vertexLabels = setOf("Person")),
@@ -300,23 +308,24 @@ class CsvSuspendRoundTripTest {
         }
         val source = TinkerGraphSuspendOperations().also {
             repeat(4) { index ->
-                it.createVertex("Person", mapOf("name" to "row-$index-${"x".repeat(9_000)}"))
+                it.createVertex("Person", "name" to "row-$index-${"x".repeat(9_000)}")
             }
         }
         val deferred = async(start = CoroutineStart.LAZY) {
             SuspendCsvGraphBulkExporter().exportGraphSuspending(
-                CsvGraphExportSink(
-                    GraphExportSink.OutputStreamSink(vertices, closeOutput = false),
-                    GraphExportSink.OutputStreamSink(ByteArrayOutputStream(), closeOutput = false),
-                ),
+                CsvGraphExportSink(vertices.asSink(false), edges = ByteArrayOutputStream().asSink(false)),
                 source,
                 GraphExportOptions(vertexLabels = setOf("Person")),
             )
-        }
+        }.log("Export")
+
         deferredRef.set(deferred)
         deferred.start()
 
-        val thrown = assertFailsWith<CancellationException> { deferred.await() }
+        val thrown = assertFailsWith<CancellationException> {
+            deferred.await()
+        }
+        log.debug { "thrown=$thrown" }
         thrown.message shouldBeEqualTo cancellation.message
         vertices.text shouldContain "row-0"
         vertices.text shouldNotContain "row-3"
@@ -331,16 +340,13 @@ class CsvSuspendRoundTripTest {
         }
 
         SuspendCsvGraphBulkExporter().exportGraphSuspending(
-            CsvGraphExportSink(
-                GraphExportSink.OutputStreamSink(vertices, closeOutput = false),
-                GraphExportSink.OutputStreamSink(edges, closeOutput = false),
-            ),
+            CsvGraphExportSink(vertices.asSink(false), edges.asSink(false)),
             source,
             GraphExportOptions(vertexLabels = setOf("Person")),
         )
 
-        vertices.closed shouldBeEqualTo false
-        edges.closed shouldBeEqualTo false
+        vertices.closed.shouldBeFalse()
+        edges.closed.shouldBeFalse()
         vertices.write('!'.code)
         edges.write('!'.code)
     }
@@ -354,16 +360,13 @@ class CsvSuspendRoundTripTest {
         }
 
         SuspendCsvGraphBulkExporter().exportGraphSuspending(
-            CsvGraphExportSink(
-                GraphExportSink.OutputStreamSink(vertices, closeOutput = true),
-                GraphExportSink.OutputStreamSink(edges, closeOutput = true),
-            ),
+            CsvGraphExportSink(vertices.asSink(true), edges.asSink(true)),
             source,
             GraphExportOptions(vertexLabels = setOf("Person")),
         )
 
-        vertices.closed shouldBeEqualTo true
-        edges.closed shouldBeEqualTo true
+        vertices.closed.shouldBeTrue()
+        edges.closed.shouldBeTrue()
     }
 
     @Test
@@ -376,15 +379,12 @@ class CsvSuspendRoundTripTest {
         )
         val source = TinkerGraphSuspendOperations().also {
             repeat(4) { index ->
-                it.createVertex("Person", mapOf("name" to "row-$index-${"x".repeat(9_000)}"))
+                it.createVertex("Person", "name" to "row-$index-${"x".repeat(9_000)}")
             }
         }
         val thrown = assertFailsWith<CancellationException> {
             SuspendCsvGraphBulkExporter().exportGraphSuspending(
-                CsvGraphExportSink(
-                    GraphExportSink.OutputStreamSink(vertices, closeOutput = true),
-                    GraphExportSink.OutputStreamSink(ByteArrayOutputStream(), closeOutput = true),
-                ),
+                CsvGraphExportSink(vertices.asSink(true), ByteArrayOutputStream().asSink(true)),
                 source,
                 GraphExportOptions(vertexLabels = setOf("Person")),
             )
@@ -453,7 +453,7 @@ class CsvSuspendRoundTripTest {
     private class ChunkOnlyGraphSuspendOperations(
         private val delegate: GraphSuspendOperations,
         private val requests: MutableList<String>,
-    ) : GraphSuspendOperations by delegate {
+    ): GraphSuspendOperations by delegate {
 
         override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphVertex> =
             error("full vertex Flow lookup must not be used by CSV export")
@@ -485,7 +485,7 @@ class CsvSuspendRoundTripTest {
         private val edge: GraphEdge,
         private val vertexProperties: MutableMap<String, Any?>,
         private val edgeProperties: MutableMap<String, Any?>,
-    ) : GraphSuspendOperations by TinkerGraphSuspendOperations() {
+    ): GraphSuspendOperations by TinkerGraphSuspendOperations() {
 
         val requests = Collections.synchronizedList(mutableListOf<String>())
 
@@ -520,7 +520,7 @@ class CsvSuspendRoundTripTest {
 
     private class CancellingGraphSuspendOperations(
         private val cancelled: AtomicBoolean,
-    ) : GraphSuspendOperations by TinkerGraphSuspendOperations() {
+    ): GraphSuspendOperations by TinkerGraphSuspendOperations() {
 
         override fun findVerticesByLabelChunked(
             label: String,
@@ -538,7 +538,7 @@ class CsvSuspendRoundTripTest {
 
     private class FailingOutputStream(
         private val message: String,
-    ) : OutputStream() {
+    ): OutputStream() {
         override fun write(b: Int): Unit = throw IOException(message)
 
         override fun write(b: ByteArray, off: Int, len: Int): Unit = throw IOException(message)
@@ -546,7 +546,7 @@ class CsvSuspendRoundTripTest {
 
     private class CapturingGraphSuspendOperations(
         private val delegate: GraphSuspendOperations = TinkerGraphSuspendOperations(),
-    ) : GraphSuspendOperations by delegate {
+    ): GraphSuspendOperations by delegate {
 
         val capturedVertices = mutableListOf<Map<String, Any?>>()
         val capturedEdges = mutableListOf<BatchEdge>()
@@ -568,7 +568,7 @@ class CsvSuspendRoundTripTest {
     private class StaticGraphSuspendOperations(
         private val vertices: List<GraphVertex>,
         private val edges: List<GraphEdge>,
-    ) : GraphSuspendOperations by TinkerGraphSuspendOperations() {
+    ): GraphSuspendOperations by TinkerGraphSuspendOperations() {
 
         override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphVertex> =
             flow { vertices.filter { it.label == label }.forEach { emit(it) } }
@@ -594,7 +594,7 @@ class CsvSuspendRoundTripTest {
         private val closeFailure: String? = null,
         private val failure: Throwable? = null,
         private val onMarker: () -> Unit = {},
-    ) : OutputStream() {
+    ): OutputStream() {
         private val delegate = ByteArrayOutputStream()
         private var triggered = false
 
@@ -624,7 +624,7 @@ class CsvSuspendRoundTripTest {
         }
     }
 
-    private class TrackingOutputStream : OutputStream() {
+    private class TrackingOutputStream: OutputStream() {
         private val delegate = ByteArrayOutputStream()
         var closed: Boolean = false
             private set

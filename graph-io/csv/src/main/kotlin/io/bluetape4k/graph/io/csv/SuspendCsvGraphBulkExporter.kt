@@ -24,7 +24,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.withContext
 import java.io.BufferedWriter
 
@@ -46,7 +45,9 @@ import java.io.BufferedWriter
  * println("exported ${report.verticesWritten} vertices - ${report.status}")
  * ```
  */
-class SuspendCsvGraphBulkExporter : GraphSuspendBulkExporter<CsvGraphExportSink> {
+class SuspendCsvGraphBulkExporter: GraphSuspendBulkExporter<CsvGraphExportSink> {
+
+    companion object: KLoggingChannel()
 
     override suspend fun exportGraphSuspending(
         sink: CsvGraphExportSink,
@@ -190,7 +191,7 @@ class SuspendCsvGraphBulkExporter : GraphSuspendBulkExporter<CsvGraphExportSink>
             ).also {
                 log.debug {
                     "CSV export (suspend) completed: verticesWritten=$vWritten, edgesWritten=$eWritten, " +
-                        "status=$status, elapsed=${watch.elapsed()}"
+                            "status=$status, elapsed=${watch.elapsed()}"
                 }
             }
         } catch (failure: Throwable) {
@@ -201,34 +202,32 @@ class SuspendCsvGraphBulkExporter : GraphSuspendBulkExporter<CsvGraphExportSink>
         }
     }
 
-    companion object : KLoggingChannel()
-}
-
-@Suppress("TooGenericExceptionCaught")
-private fun closeSuppressing(resource: AutoCloseable?, primaryFailure: Throwable?): Throwable? {
-    if (resource == null) return primaryFailure
-    return try {
-        resource.close()
-        primaryFailure
-    } catch (cleanupFailure: Throwable) {
-        primaryFailure?.let {
-            it.addSuppressed(cleanupFailure)
-            it
-        } ?: cleanupFailure
+    @Suppress("TooGenericExceptionCaught")
+    private fun closeSuppressing(resource: AutoCloseable?, primaryFailure: Throwable?): Throwable? {
+        if (resource == null) return primaryFailure
+        return try {
+            resource.close()
+            primaryFailure
+        } catch (cleanupFailure: Throwable) {
+            primaryFailure?.let {
+                it.addSuppressed(cleanupFailure)
+                it
+            } ?: cleanupFailure
+        }
     }
-}
 
-private suspend fun closeCsvResources(
-    vertexWriter: BufferedWriter?,
-    edgeWriter: BufferedWriter?,
-    spool: GraphIoRecordSpool,
-    primaryFailure: Throwable?,
-) = withContext(NonCancellable + Dispatchers.IO) {
-    var cleanupFailure = primaryFailure
-    cleanupFailure = closeSuppressing(vertexWriter, cleanupFailure)
-    cleanupFailure = closeSuppressing(edgeWriter, cleanupFailure)
-    cleanupFailure = closeSuppressing(spool, cleanupFailure)
-    if (primaryFailure == null && cleanupFailure != null) {
-        throw cleanupFailure
+    private suspend fun closeCsvResources(
+        vertexWriter: BufferedWriter?,
+        edgeWriter: BufferedWriter?,
+        spool: GraphIoRecordSpool,
+        primaryFailure: Throwable?,
+    ) = withContext(NonCancellable + Dispatchers.IO) {
+        var cleanupFailure = primaryFailure
+        cleanupFailure = closeSuppressing(vertexWriter, cleanupFailure)
+        cleanupFailure = closeSuppressing(edgeWriter, cleanupFailure)
+        cleanupFailure = closeSuppressing(spool, cleanupFailure)
+        if (primaryFailure == null && cleanupFailure != null) {
+            throw cleanupFailure
+        }
     }
 }

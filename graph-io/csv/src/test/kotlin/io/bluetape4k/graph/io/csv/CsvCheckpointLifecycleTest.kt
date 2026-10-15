@@ -2,18 +2,22 @@ package io.bluetape4k.graph.io.csv
 
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeNull
+import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.graph.io.checkpoint.GraphImportCheckpointPhase
 import io.bluetape4k.graph.io.checkpoint.InMemoryGraphImportCheckpointStore
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.options.copyWithCheckpointSourceIdentity
 import io.bluetape4k.graph.io.report.GraphIoStatus
-import io.bluetape4k.graph.io.source.GraphImportSource
+import io.bluetape4k.graph.io.source.asSource
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphVertex
+import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
-import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.logging.KLogging
+import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.CancellationException
@@ -21,6 +25,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Files
@@ -28,16 +33,23 @@ import java.nio.file.Path
 
 class CsvCheckpointLifecycleTest {
 
+    companion object: KLogging()
+
+    private val operations = mockk<GraphSuspendOperations>()
+
+    @BeforeEach
+    fun beforeEach() {
+        clearMocks(operations)
+    }
+
     @Test
     fun `failed edge phase resumes without duplicating vertices`(@TempDir dir: Path) {
         val vertices = dir.resolve("vertices.csv")
         val edges = dir.resolve("edges.csv")
         Files.writeString(vertices, "id,label\nv1,Person\nv2,Person\n")
         Files.writeString(edges, "id,label,from,to\ne1,KNOWS,v1,missing\n")
-        val source = CsvGraphImportSource(
-            GraphImportSource.PathSource(vertices),
-            GraphImportSource.PathSource(edges),
-        )
+
+        val source = CsvGraphImportSource(vertices.asSource(), edges.asSource())
         val store = InMemoryGraphImportCheckpointStore()
         val options = GraphImportOptions(
             batchSize = 1,
@@ -61,7 +73,7 @@ class CsvCheckpointLifecycleTest {
         resumed.status shouldBeEqualTo GraphIoStatus.COMPLETED
         resumed.verticesCreated shouldBeEqualTo 0L
         resumed.edgesCreated shouldBeEqualTo 1L
-        store.load("csv-job") shouldBeEqualTo null
+        store.load("csv-job").shouldBeNull()
     }
 
     @Test
@@ -70,10 +82,8 @@ class CsvCheckpointLifecycleTest {
         val edges = dir.resolve("edges-suspend.csv")
         Files.writeString(vertices, "id,label\nv1,Person\nv2,Person\n")
         Files.writeString(edges, "id,label,from,to\ne1,KNOWS,v1,missing\n")
-        val source = CsvGraphImportSource(
-            GraphImportSource.PathSource(vertices),
-            GraphImportSource.PathSource(edges),
-        )
+
+        val source = CsvGraphImportSource(vertices.asSource(), edges.asSource())
         val store = InMemoryGraphImportCheckpointStore()
         val options = GraphImportOptions(
             batchSize = 2,
@@ -95,7 +105,7 @@ class CsvCheckpointLifecycleTest {
         resumed.status shouldBeEqualTo GraphIoStatus.COMPLETED
         resumed.verticesCreated shouldBeEqualTo 0L
         resumed.edgesCreated shouldBeEqualTo 1L
-        store.load("csv-suspend-job") shouldBeEqualTo null
+        store.load("csv-suspend-job").shouldBeNull()
     }
 
     @Test
@@ -104,10 +114,8 @@ class CsvCheckpointLifecycleTest {
         val edges = dir.resolve("edges-cancel.csv")
         Files.writeString(vertices, "id,label\nv1,Person\n")
         Files.writeString(edges, "id,label,from,to\n")
-        val source = CsvGraphImportSource(
-            GraphImportSource.PathSource(vertices),
-            GraphImportSource.PathSource(edges),
-        )
+
+        val source = CsvGraphImportSource(vertices.asSource(), edges.asSource())
         val store = InMemoryGraphImportCheckpointStore()
         val options = GraphImportOptions(
             batchSize = 1,
@@ -116,7 +124,6 @@ class CsvCheckpointLifecycleTest {
             checkpointSourceIdentity = "csv-cancel-source",
         )
         val cancellation = CancellationException("csv-import-cancelled")
-        val operations = mockk<GraphSuspendOperations>()
         coEvery { operations.createVertices("Person", any()) } throws cancellation
 
         val thrown = assertFailsWith<CancellationException> {
@@ -125,7 +132,7 @@ class CsvCheckpointLifecycleTest {
 
         thrown.message shouldBeEqualTo cancellation.message
         store.load("csv-cancel-job")?.phase shouldBeEqualTo GraphImportCheckpointPhase.DISCOVERED
-        store.load("csv-cancel-job")?.failureBoundary shouldBeEqualTo null
+        store.load("csv-cancel-job")?.failureBoundary.shouldBeNull()
     }
 
     @Test
@@ -134,10 +141,8 @@ class CsvCheckpointLifecycleTest {
         val edges = dir.resolve("edges-active-cancel.csv")
         Files.writeString(vertices, "id,label\nv1,Person\n")
         Files.writeString(edges, "id,label,from,to\n")
-        val source = CsvGraphImportSource(
-            GraphImportSource.PathSource(vertices),
-            GraphImportSource.PathSource(edges),
-        )
+
+        val source = CsvGraphImportSource(vertices.asSource(), edges.asSource())
         val store = InMemoryGraphImportCheckpointStore()
         val options = GraphImportOptions(
             batchSize = 1,
@@ -146,8 +151,9 @@ class CsvCheckpointLifecycleTest {
             checkpointSourceIdentity = "csv-active-cancel-source",
         )
         val entered = CompletableDeferred<Unit>()
-        val operations = mockk<GraphSuspendOperations>()
-        coEvery { operations.createVertices("Person", any()) } coAnswers {
+        coEvery {
+            operations.createVertices("Person", any())
+        } coAnswers {
             entered.complete(Unit)
             awaitCancellation()
         }
@@ -162,8 +168,8 @@ class CsvCheckpointLifecycleTest {
 
         thrown.message shouldBeEqualTo cancellation.message
         store.load("csv-active-vertex-cancel-job")?.phase shouldBeEqualTo GraphImportCheckpointPhase.DISCOVERED
-        store.load("csv-active-vertex-cancel-job")?.failureBoundary shouldBeEqualTo null
-        store.claim("csv-active-vertex-cancel-job", "retry-attempt") shouldBeEqualTo true
+        store.load("csv-active-vertex-cancel-job")?.failureBoundary.shouldBeNull()
+        store.claim("csv-active-vertex-cancel-job", "retry-attempt").shouldBeTrue()
         store.release("csv-active-vertex-cancel-job", "retry-attempt")
     }
 
@@ -173,10 +179,8 @@ class CsvCheckpointLifecycleTest {
         val edges = dir.resolve("edges-active-edge-cancel.csv")
         Files.writeString(vertices, "id,label\nv1,Person\nv2,Person\n")
         Files.writeString(edges, "id,label,from,to\ne1,KNOWS,v1,v2\n")
-        val source = CsvGraphImportSource(
-            GraphImportSource.PathSource(vertices),
-            GraphImportSource.PathSource(edges),
-        )
+
+        val source = CsvGraphImportSource(vertices.asSource(), edges.asSource())
         val store = InMemoryGraphImportCheckpointStore()
         val options = GraphImportOptions(
             batchSize = 1,
@@ -185,13 +189,16 @@ class CsvCheckpointLifecycleTest {
             checkpointSourceIdentity = "csv-active-edge-cancel-source",
         )
         val entered = CompletableDeferred<Unit>()
-        val operations = mockk<GraphSuspendOperations>()
         var vertexSequence = 0
-        coEvery { operations.createVertices("Person", any()) } coAnswers {
+        coEvery {
+            operations.createVertices("Person", any())
+        } coAnswers {
             vertexSequence++
             listOf(GraphVertex(GraphElementId.of("v$vertexSequence"), "Person"))
         }
-        coEvery { operations.createEdges("KNOWS", any()) } coAnswers {
+        coEvery {
+            operations.createEdges("KNOWS", any())
+        } coAnswers {
             entered.complete(Unit)
             awaitCancellation()
         }
@@ -207,8 +214,8 @@ class CsvCheckpointLifecycleTest {
         thrown.message shouldBeEqualTo cancellation.message
         store.load("csv-active-edge-cancel-job")?.phase shouldBeEqualTo GraphImportCheckpointPhase.VERTICES
         store.load("csv-active-edge-cancel-job")?.verticesProcessed shouldBeEqualTo 2L
-        store.load("csv-active-edge-cancel-job")?.failureBoundary shouldBeEqualTo null
-        store.claim("csv-active-edge-cancel-job", "retry-attempt") shouldBeEqualTo true
+        store.load("csv-active-edge-cancel-job")?.failureBoundary.shouldBeNull()
+        store.claim("csv-active-edge-cancel-job", "retry-attempt").shouldBeTrue()
         store.release("csv-active-edge-cancel-job", "retry-attempt")
     }
 
@@ -218,10 +225,8 @@ class CsvCheckpointLifecycleTest {
         val edges = dir.resolve("edges-vt.csv")
         Files.writeString(vertices, "id,label\nv1,Person\nv2,Person\n")
         Files.writeString(edges, "id,label,from,to\ne1,KNOWS,v1,missing\n")
-        val source = CsvGraphImportSource(
-            GraphImportSource.PathSource(vertices),
-            GraphImportSource.PathSource(edges),
-        )
+
+        val source = CsvGraphImportSource(vertices.asSource(), edges.asSource())
         val store = InMemoryGraphImportCheckpointStore()
         val options = GraphImportOptions(
             batchSize = 2,
@@ -234,6 +239,7 @@ class CsvCheckpointLifecycleTest {
 
         importer.importGraphAsync(source, graph, options).join().status shouldBeEqualTo GraphIoStatus.FAILED
         Files.writeString(edges, "id,label,from,to\ne1,KNOWS,v1,v2\n")
+
         val resumed = importer.importGraphAsync(
             source, graph, options.copyWithCheckpointSourceIdentity(resumeFromCheckpoint = true),
         ).join()
@@ -241,6 +247,6 @@ class CsvCheckpointLifecycleTest {
         resumed.status shouldBeEqualTo GraphIoStatus.COMPLETED
         resumed.verticesCreated shouldBeEqualTo 0L
         resumed.edgesCreated shouldBeEqualTo 1L
-        store.load("csv-vt-job") shouldBeEqualTo null
+        store.load("csv-vt-job").shouldBeNull()
     }
 }

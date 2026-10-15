@@ -3,10 +3,17 @@ package io.bluetape4k.graph.io.csv
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
+import io.bluetape4k.assertions.shouldBeLessOrEqualTo
+import io.bluetape4k.assertions.shouldBeLessThan
 import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldNotContain
+import io.bluetape4k.coroutines.flow.extensions.log
 import io.bluetape4k.graph.io.report.GraphIoReadException
-import io.bluetape4k.graph.io.source.GraphImportSource
+import io.bluetape4k.graph.io.source.asSource
+import io.bluetape4k.io.toInputStream
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.support.toUtf8Bytes
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.count
@@ -17,43 +24,55 @@ import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStream
+import kotlin.time.Duration.Companion.milliseconds
 
 class CsvStreamingReaderContractTest {
+
+    private companion object: KLogging() {
+        // Observed with a 1-byte source and a 25 ms collector delay; keep room for
+        // parser implementation variance without permitting unbounded prefetch.
+        const val MAX_READ_AHEAD_RECORDS = 8
+    }
 
     @Test
     fun `slow collector stays within measured csv read ahead bound`() = runSuspendIO {
         val payload = generatedVertices()
-        val input = MarkerInputStream(payload.toByteArray())
+        val input = MarkerInputStream(payload.toUtf8Bytes())
 
-        val first = CsvGraphRecordFlowReader().readVertices(
-            CsvGraphImportSource(
-                vertices = GraphImportSource.InputStreamSource(input, closeInput = true),
-                edges = GraphImportSource.InputStreamSource(ByteArrayInputStream("id,label,from,to\n".toByteArray())),
-            ),
-        ).onEach { delay(25) }.take(1).toList()
+        val first = CsvGraphRecordFlowReader()
+            .readVertices(
+                CsvGraphImportSource(
+                    vertices = input.asSource(closeInput = true),
+                    edges = "id,label,from,to\n".toInputStream().asSource(),
+                ),
+            ).onEach { delay(25.milliseconds) }
+            .log("E")
+            .take(1)
+            .toList()
 
         first.map { it.externalId } shouldBeEqualTo listOf("v0")
-        (input.markerCount <= MAX_READ_AHEAD_RECORDS).shouldBeTrue()
-        (input.bytesRead < payload.toByteArray().size).shouldBeTrue()
+        input.markerCount shouldBeLessOrEqualTo MAX_READ_AHEAD_RECORDS
+        input.bytesRead shouldBeLessThan payload.toUtf8Bytes().size
         input.closeCount shouldBeEqualTo 1
     }
 
     @Test
     fun `parse failure remains primary when owned close also fails`() = runSuspendIO {
-        val input = CloseFailingInputStream("id,label\n,Person\n".toByteArray())
+        val input = CloseFailingInputStream("id,label\n,Person\n".toUtf8Bytes())
 
         val thrown = assertFailsWith<GraphIoReadException> {
-            CsvGraphRecordFlowReader().readVertices(
-                CsvGraphImportSource(
-                    vertices = GraphImportSource.InputStreamSource(input, closeInput = true),
-                    edges = GraphImportSource.InputStreamSource(
-                        ByteArrayInputStream("id,label,from,to\n".toByteArray()),
+            CsvGraphRecordFlowReader()
+                .readVertices(
+                    CsvGraphImportSource(
+                        vertices = input.asSource(closeInput = true),
+                        edges = "id,label,from,to\n".toInputStream().asSource(),
                     ),
-                ),
-            ).toList()
+                )
+                .log("V")
+                .toList()
         }
 
-        thrown.message.orEmpty().contains("Person").shouldBeFalse()
+        thrown.message shouldNotContain "Person"
         thrown.suppressed.map { it.message } shouldBeEqualTo listOf("csv-close-failure")
         input.closeCount shouldBeEqualTo 1
     }
@@ -66,21 +85,19 @@ class CsvStreamingReaderContractTest {
             edges = "id,label,from,to\ne1,KNOWS,v1,v2\n",
         )
 
-        reader.readVertices(source).toList().map { it.externalId } shouldBeEqualTo listOf("v1", "v2")
-        reader.readEdges(source).toList().map { it.externalId } shouldBeEqualTo listOf("e1")
+        reader.readVertices(source).log("V").toList().map { it.externalId } shouldBeEqualTo listOf("v1", "v2")
+        reader.readEdges(source).log("E").toList().map { it.externalId } shouldBeEqualTo listOf("e1")
     }
 
     @Test
     fun `caller owned streams remain open after collection`() = runSuspendIO {
-        val vertices = TrackingInputStream("id,label\nv1,Person\n".toByteArray())
-        val edges = TrackingInputStream("id,label,from,to\ne1,KNOWS,v1,v1\n".toByteArray())
-        val source = CsvGraphImportSource(
-            vertices = GraphImportSource.InputStreamSource(vertices),
-            edges = GraphImportSource.InputStreamSource(edges),
-        )
+        val vertices = TrackingInputStream("id,label\nv1,Person\n".toUtf8Bytes())
+        val edges = TrackingInputStream("id,label,from,to\ne1,KNOWS,v1,v1\n".toUtf8Bytes())
 
-        CsvGraphRecordFlowReader().readVertices(source).toList()
-        CsvGraphRecordFlowReader().readEdges(source).toList()
+        val source = CsvGraphImportSource(vertices = vertices.asSource(), edges = edges.asSource())
+
+        CsvGraphRecordFlowReader().readVertices(source).log("V").toList()
+        CsvGraphRecordFlowReader().readEdges(source).log("E").toList()
 
         vertices.closed.shouldBeFalse()
         edges.closed.shouldBeFalse()
@@ -88,11 +105,11 @@ class CsvStreamingReaderContractTest {
 
     @Test
     fun `owned streams close after collection`() = runSuspendIO {
-        val vertices = TrackingInputStream("id,label\nv1,Person\n".toByteArray())
-        val edges = TrackingInputStream("id,label,from,to\ne1,KNOWS,v1,v1\n".toByteArray())
+        val vertices = TrackingInputStream("id,label\nv1,Person\n".toUtf8Bytes())
+        val edges = TrackingInputStream("id,label,from,to\ne1,KNOWS,v1,v1\n".toUtf8Bytes())
         val source = CsvGraphImportSource(
-            vertices = GraphImportSource.InputStreamSource(vertices, closeInput = true),
-            edges = GraphImportSource.InputStreamSource(edges, closeInput = true),
+            vertices = vertices.asSource(closeInput = true),
+            edges = edges.asSource(closeInput = true),
         )
 
         CsvGraphRecordFlowReader().readVertices(source).toList()
@@ -108,11 +125,12 @@ class CsvStreamingReaderContractTest {
     fun `take one emits one record before eof and closes owned streams exactly once`() = runSuspendIO {
         val vertexPayload = generatedVertices()
         val edgePayload = generatedEdges()
-        val vertices = TrackingInputStream(vertexPayload.toByteArray(), maxChunk = 1)
-        val edges = TrackingInputStream(edgePayload.toByteArray(), maxChunk = 1)
+        val vertices = TrackingInputStream(vertexPayload.toUtf8Bytes(), maxChunk = 1)
+        val edges = TrackingInputStream(edgePayload.toUtf8Bytes(), maxChunk = 1)
+
         val source = CsvGraphImportSource(
-            vertices = GraphImportSource.InputStreamSource(vertices, closeInput = true),
-            edges = GraphImportSource.InputStreamSource(edges, closeInput = true),
+            vertices = vertices.asSource(closeInput = true),
+            edges = edges.asSource(closeInput = true),
         )
         val reader = CsvGraphRecordFlowReader()
 
@@ -121,8 +139,8 @@ class CsvStreamingReaderContractTest {
 
         firstVertex.map { it.externalId } shouldBeEqualTo listOf("v0")
         firstEdge.map { it.externalId } shouldBeEqualTo listOf("e0")
-        (vertices.bytesRead < vertexPayload.toByteArray().size).shouldBeTrue()
-        (edges.bytesRead < edgePayload.toByteArray().size).shouldBeTrue()
+        vertices.bytesRead shouldBeLessThan vertexPayload.toUtf8Bytes().size
+        edges.bytesRead shouldBeLessThan edgePayload.toUtf8Bytes().size
         vertices.closed.shouldBeTrue()
         edges.closed.shouldBeTrue()
         vertices.closeCount shouldBeEqualTo 1
@@ -131,16 +149,14 @@ class CsvStreamingReaderContractTest {
 
     @Test
     fun `take one leaves caller owned vertex and edge streams open`() = runSuspendIO {
-        val vertices = TrackingInputStream(generatedVertices().toByteArray(), maxChunk = 1)
-        val edges = TrackingInputStream(generatedEdges().toByteArray(), maxChunk = 1)
-        val source = CsvGraphImportSource(
-            vertices = GraphImportSource.InputStreamSource(vertices),
-            edges = GraphImportSource.InputStreamSource(edges),
-        )
+        val vertices = TrackingInputStream(generatedVertices().toUtf8Bytes(), maxChunk = 1)
+        val edges = TrackingInputStream(generatedEdges().toUtf8Bytes(), maxChunk = 1)
+
+        val source = CsvGraphImportSource(vertices = vertices.asSource(), edges = edges.asSource())
         val reader = CsvGraphRecordFlowReader()
 
-        reader.readVertices(source).take(1).toList()
-        reader.readEdges(source).take(1).toList()
+        reader.readVertices(source).log("V").take(1).toList()
+        reader.readEdges(source).log("E").take(1).toList()
 
         vertices.closed.shouldBeFalse()
         edges.closed.shouldBeFalse()
@@ -152,24 +168,25 @@ class CsvStreamingReaderContractTest {
     fun `suspend reader rethrows source cancellation without exposing raw input`() = runSuspendIO {
         val cancellation = CancellationException("controlled-cancellation")
         val input = CancellationInputStream(
-            bytes = "id,label\nsecret-record,Person\n".toByteArray(),
+            bytes = "id,label\nsecret-record,Person\n".toUtf8Bytes(),
             cancelAfter = 12,
             cancellation = cancellation,
         )
 
         val thrown = assertFailsWith<CancellationException> {
-            CsvGraphRecordFlowReader().readVertices(
-                CsvGraphImportSource(
-                    vertices = GraphImportSource.InputStreamSource(input, closeInput = true),
-                    edges = GraphImportSource.InputStreamSource(
-                        ByteArrayInputStream("id,label,from,to\n".toByteArray()),
+            CsvGraphRecordFlowReader()
+                .readVertices(
+                    CsvGraphImportSource(
+                        vertices = input.asSource(true),
+                        edges = "id,label,from,to\n".toInputStream().asSource()
                     ),
-                ),
-            ).toList()
+                )
+                .log("V")
+                .toList()
         }
 
         thrown.message shouldBeEqualTo cancellation.message
-        thrown.message.orEmpty().contains("secret-record").shouldBeFalse()
+        thrown.message shouldNotContain "secret-record"
         input.closeCount shouldBeEqualTo 1
     }
 
@@ -179,9 +196,12 @@ class CsvStreamingReaderContractTest {
             append("id,label\n")
             repeat(10_000) { append("v$it,Person\n") }
         }
-        val count = CsvGraphRecordFlowReader().readVertices(
-            sourceOf(vertices, "id,label,from,to\n"),
-        ).count()
+        val count = CsvGraphRecordFlowReader()
+            .readVertices(
+                sourceOf(vertices, "id,label,from,to\n"),
+            )
+            .log("V")
+            .count()
 
         count shouldBeEqualTo 10_000
     }
@@ -194,43 +214,40 @@ class CsvStreamingReaderContractTest {
         )
 
         val error = assertFailsWith<GraphIoReadException> {
-            CsvGraphRecordFlowReader().readVertices(source).toList()
+            CsvGraphRecordFlowReader().readVertices(source).log("V").toList()
         }
 
         error.failure.location shouldBeEqualTo "row:1"
-        error.message.orEmpty().contains("Person").shouldBeFalse()
+        error.message shouldNotContain "Person"
     }
 
     @Test
     fun `fatal input errors are not converted to malformed csv`() = runSuspendIO {
         val source = CsvGraphImportSource(
-            vertices = GraphImportSource.InputStreamSource(FatalInputStream()),
-            edges = GraphImportSource.InputStreamSource(ByteArrayInputStream("id,label\n".toByteArray())),
+            vertices = FatalInputStream().asSource(),
+            edges = "id,label\n".toInputStream().asSource(),
         )
 
         assertFailsWith<AssertionError> {
-            CsvGraphRecordFlowReader().readVertices(source).toList()
+            CsvGraphRecordFlowReader().readVertices(source).log("V").toList()
         }
     }
 
     @Test
     fun `owned stream close failures remain infrastructure failures`() = runSuspendIO {
         val source = CsvGraphImportSource(
-            vertices = GraphImportSource.InputStreamSource(
-                CloseFailingInputStream("id,label\nv1,Person\n".toByteArray()),
-                closeInput = true,
-            ),
-            edges = GraphImportSource.InputStreamSource(ByteArrayInputStream("id,label,from,to\n".toByteArray())),
+            vertices = CloseFailingInputStream("id,label\nv1,Person\n".toUtf8Bytes()).asSource(closeInput = true),
+            edges = "id,label,from,to\n".toInputStream().asSource(),
         )
 
         assertFailsWith<IOException> {
-            CsvGraphRecordFlowReader().readVertices(source).toList()
+            CsvGraphRecordFlowReader().readVertices(source).log("V").toList()
         }
     }
 
     private fun sourceOf(vertices: String, edges: String): CsvGraphImportSource = CsvGraphImportSource(
-        vertices = GraphImportSource.InputStreamSource(ByteArrayInputStream(vertices.toByteArray())),
-        edges = GraphImportSource.InputStreamSource(ByteArrayInputStream(edges.toByteArray())),
+        vertices = vertices.toInputStream().asSource(),
+        edges = edges.toInputStream().asSource(),
     )
 
     private fun generatedVertices(): String = buildString {
@@ -248,7 +265,7 @@ class CsvStreamingReaderContractTest {
     private class TrackingInputStream(
         bytes: ByteArray,
         private val maxChunk: Int = Int.MAX_VALUE,
-    ) : ByteArrayInputStream(bytes) {
+    ): ByteArrayInputStream(bytes) {
         var closed: Boolean = false
             private set
         var closeCount: Int = 0
@@ -279,7 +296,7 @@ class CsvStreamingReaderContractTest {
         }
     }
 
-    private class MarkerInputStream(private val content: ByteArray) : ByteArrayInputStream(content) {
+    private class MarkerInputStream(private val content: ByteArray): ByteArrayInputStream(content) {
         var bytesRead: Int = 0
             private set
         var closeCount: Int = 0
@@ -305,11 +322,11 @@ class CsvStreamingReaderContractTest {
         }
     }
 
-    private class FatalInputStream : InputStream() {
+    private class FatalInputStream: InputStream() {
         override fun read(): Int = throw AssertionError("fatal-csv-input")
     }
 
-    private class CloseFailingInputStream(bytes: ByteArray) : ByteArrayInputStream(bytes) {
+    private class CloseFailingInputStream(bytes: ByteArray): ByteArrayInputStream(bytes) {
         var closeCount: Int = 0
             private set
 
@@ -323,7 +340,7 @@ class CsvStreamingReaderContractTest {
         bytes: ByteArray,
         private val cancelAfter: Int,
         private val cancellation: CancellationException,
-    ) : ByteArrayInputStream(bytes) {
+    ): ByteArrayInputStream(bytes) {
         private var bytesRead: Int = 0
         var closeCount: Int = 0
             private set
@@ -348,9 +365,4 @@ class CsvStreamingReaderContractTest {
         }
     }
 
-    private companion object {
-        // Observed with a 1-byte source and a 25 ms collector delay; keep room for
-        // parser implementation variance without permitting unbounded prefetch.
-        const val MAX_READ_AHEAD_RECORDS = 8
-    }
 }

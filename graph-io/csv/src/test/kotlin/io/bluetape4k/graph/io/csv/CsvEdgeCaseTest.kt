@@ -1,20 +1,21 @@
 package io.bluetape4k.graph.io.csv
 
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphIoStatus
-import io.bluetape4k.graph.io.source.GraphExportSink
-import io.bluetape4k.graph.io.source.GraphImportSource
+import io.bluetape4k.graph.io.source.asSink
+import io.bluetape4k.graph.io.source.asSource
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.logging.KLogging
-import io.bluetape4k.assertions.shouldBeEqualTo
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
 
 class CsvEdgeCaseTest {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     @Test
     fun `export and import of empty graph completes successfully`(@TempDir dir: Path) {
@@ -24,7 +25,7 @@ class CsvEdgeCaseTest {
         val source = TinkerGraphOperations()
         val exporter = CsvGraphBulkExporter()
         val exportReport = exporter.exportGraph(
-            CsvGraphExportSink(GraphExportSink.PathSink(vOut), GraphExportSink.PathSink(eOut)),
+            CsvGraphExportSink(vOut.asSink(), eOut.asSink()),
             source,
             GraphExportOptions(vertexLabels = setOf("Person"), edgeLabels = setOf("KNOWS")),
         )
@@ -35,7 +36,7 @@ class CsvEdgeCaseTest {
         val target = TinkerGraphOperations()
         val importer = CsvGraphBulkImporter()
         val importReport = importer.importGraph(
-            CsvGraphImportSource(GraphImportSource.PathSource(vOut), GraphImportSource.PathSource(eOut)),
+            CsvGraphImportSource(vOut.asSource(), eOut.asSource()),
             target,
             GraphImportOptions(),
         )
@@ -55,7 +56,7 @@ class CsvEdgeCaseTest {
 
         val exporter = CsvGraphBulkExporter()
         val exportReport = exporter.exportGraph(
-            CsvGraphExportSink(GraphExportSink.PathSink(vOut), GraphExportSink.PathSink(eOut)),
+            CsvGraphExportSink(vOut.asSink(), eOut.asSink()),
             source,
             GraphExportOptions(vertexLabels = setOf("Person"), edgeLabels = setOf("KNOWS")),
         )
@@ -66,7 +67,7 @@ class CsvEdgeCaseTest {
         val target = TinkerGraphOperations()
         val importer = CsvGraphBulkImporter()
         val importReport = importer.importGraph(
-            CsvGraphImportSource(GraphImportSource.PathSource(vOut), GraphImportSource.PathSource(eOut)),
+            CsvGraphImportSource(vOut.asSource(), eOut.asSource()),
             target,
             GraphImportOptions(),
         )
@@ -89,7 +90,7 @@ class CsvEdgeCaseTest {
         val defaultOptions = CsvGraphIoOptions()
         val exporter = CsvGraphBulkExporter()
         val exportReport = exporter.exportGraph(
-            CsvGraphExportSink(GraphExportSink.PathSink(vOut), GraphExportSink.PathSink(eOut)),
+            CsvGraphExportSink(vOut.asSink(), eOut.asSink()),
             source,
             GraphExportOptions(vertexLabels = setOf("Person"), edgeLabels = setOf("KNOWS")),
             defaultOptions,
@@ -101,7 +102,7 @@ class CsvEdgeCaseTest {
         val target = TinkerGraphOperations()
         val importer = CsvGraphBulkImporter()
         val importReport = importer.importGraph(
-            CsvGraphImportSource(GraphImportSource.PathSource(vOut), GraphImportSource.PathSource(eOut)),
+            CsvGraphImportSource(vOut.asSource(), eOut.asSource()),
             target,
             GraphImportOptions(),
             CsvGraphIoOptions(propertyMode = CsvPropertyMode.None),
@@ -112,7 +113,7 @@ class CsvEdgeCaseTest {
 
         val createdVertices = target.findVerticesByLabel("Person")
         // None mode extractProperties returns emptyMap — no properties preserved
-        createdVertices.all { it.properties["name"] == null && it.properties["age"] == null } shouldBeEqualTo true
+        createdVertices.all { it.properties["name"] == null && it.properties["age"] == null }.shouldBeTrue()
     }
 
     @Test
@@ -125,7 +126,7 @@ class CsvEdgeCaseTest {
         val target = TinkerGraphOperations()
         val importer = CsvGraphBulkImporter()
         val report = importer.importGraph(
-            CsvGraphImportSource(GraphImportSource.PathSource(vFile), GraphImportSource.PathSource(eFile)),
+            CsvGraphImportSource(vFile.asSource(), eFile.asSource()),
             target,
             GraphImportOptions(preserveExternalIdProperty = "_extId"),
         )
@@ -134,6 +135,6 @@ class CsvEdgeCaseTest {
         report.verticesCreated shouldBeEqualTo 1L
 
         val vertices = target.findVerticesByLabel("Person")
-        vertices.all { it.properties["_extId"] == "v-alice" } shouldBeEqualTo true
+        vertices.all { it.properties["_extId"] == "v-alice" }.shouldBeTrue()
     }
 }
