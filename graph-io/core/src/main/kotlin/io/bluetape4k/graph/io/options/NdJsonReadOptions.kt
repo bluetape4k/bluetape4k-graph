@@ -20,6 +20,8 @@ data class NdJsonReadOptions(
     companion object {
         private const val serialVersionUID: Long = 1L
 
+        val Default = NdJsonReadOptions()
+
         /** 기존 입력을 사실상 제한하지 않는 호환 기본값. */
         const val UNLIMITED_MAX_LINE_CHARS: Int = Int.MAX_VALUE
     }

@@ -7,18 +7,19 @@ import io.bluetape4k.graph.io.report.GraphIoFileRole
 import io.bluetape4k.graph.io.report.GraphIoPhase
 import io.bluetape4k.graph.io.report.GraphIoReadException
 import io.bluetape4k.graph.io.source.GraphImportSource
-import io.bluetape4k.graph.io.support.GraphIoPaths
+import io.bluetape4k.graph.io.support.openReader
 import io.bluetape4k.io.LineLimitExceededException
 import io.bluetape4k.io.boundedLineReader
+import io.bluetape4k.logging.KLogging
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.trySendBlocking
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.channels.trySendBlocking
 import java.io.IOException
 
 internal data class Jackson2ParsedRecord(
@@ -28,16 +29,20 @@ internal data class Jackson2ParsedRecord(
 
 /** Jackson2 NDJSON를 한 줄씩 해석하고 source ownership을 관리하는 내부 parser. */
 internal class Jackson2RecordParser(
-    private val codec: Jackson2EnvelopeCodec = Jackson2EnvelopeCodec(),
-    private val readOptions: NdJsonReadOptions = NdJsonReadOptions(),
+    private val codec: Jackson2EnvelopeCodec = Jackson2EnvelopeCodec.Default,
+    private val readOptions: NdJsonReadOptions = NdJsonReadOptions.Default,
 ) {
+
+    companion object: KLogging() {
+        val Default = Jackson2RecordParser()
+    }
 
     fun records(
         source: GraphImportSource,
         phase: GraphIoPhase = GraphIoPhase.READ_VERTEX,
-    ): Flow<Jackson2ParsedRecord> = channelFlow {
-        val producer = this
-        withContext(Dispatchers.IO) {
+    ): Flow<Jackson2ParsedRecord> =
+        channelFlow {
+            val producer = this
             parse(
                 source = source,
                 onRecord = { record ->
@@ -54,8 +59,10 @@ internal class Jackson2RecordParser(
                 phase = phase,
                 ensureActive = { producer.coroutineContext.ensureActive() },
             )
+
         }
-    }.buffer(0)
+            .buffer(0)
+            .flowOn(Dispatchers.IO)
 
     @Suppress("CyclomaticComplexMethod", "LoopWithTooManyJumpStatements", "TooGenericExceptionCaught", "ThrowsCount")
     fun parse(
@@ -68,7 +75,7 @@ internal class Jackson2RecordParser(
         var lineNumber = 0
         var parsing = true
         try {
-            GraphIoPaths.openReader(source).use { reader ->
+            source.openReader().use { reader ->
                 val boundedReader = reader.boundedLineReader(readOptions.maxLineChars)
                 while (parsing) {
                     ensureActive()
@@ -79,9 +86,11 @@ internal class Jackson2RecordParser(
                         parsing = false
                         continue
                     } ?: break
+
                     lineNumber++
                     val line = raw.trim()
                     if (line.isBlank()) continue
+
                     val envelope = try {
                         codec.parseLine(line)
                     } catch (_: JsonProcessingException) {
@@ -109,21 +118,23 @@ internal class Jackson2RecordParser(
         }
     }
 
-    private fun malformedFailure(phase: GraphIoPhase, lineNumber: Int): GraphIoFailure = GraphIoFailure(
-        phase = phase,
-        fileRole = GraphIoFileRole.UNIFIED,
-        location = "line:$lineNumber",
-        message = "Malformed JSON",
-    )
+    private fun malformedFailure(phase: GraphIoPhase, lineNumber: Int): GraphIoFailure =
+        GraphIoFailure(
+            phase = phase,
+            fileRole = GraphIoFileRole.UNIFIED,
+            location = "line:$lineNumber",
+            message = "Malformed JSON",
+        )
 
-    private fun lineLimitFailure(phase: GraphIoPhase, lineNumber: Int): GraphIoFailure = GraphIoFailure(
-        phase = phase,
-        fileRole = GraphIoFileRole.UNIFIED,
-        location = "line:$lineNumber",
-        message = "NDJSON line exceeds maxLineChars=${readOptions.maxLineChars}",
-    )
+    private fun lineLimitFailure(phase: GraphIoPhase, lineNumber: Int): GraphIoFailure =
+        GraphIoFailure(
+            phase = phase,
+            fileRole = GraphIoFileRole.UNIFIED,
+            location = "line:$lineNumber",
+            message = "NDJSON line exceeds maxLineChars=${readOptions.maxLineChars}",
+        )
 
     private class CallbackFailure(
         val error: Throwable,
-    ) : RuntimeException(error)
+    ): RuntimeException(error)
 }

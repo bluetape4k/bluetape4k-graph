@@ -24,19 +24,19 @@ The module uses a single NDJSON stream and delegates graph writes to `graph-io-c
 ### Three Execution Models
 
 1. **Synchronous API** (`Jackson2NdJsonBulkImporter`, `Jackson2NdJsonBulkExporter`)
-   - Blocking I/O operations
-   - Straightforward sequential processing
-   - Best for small to medium graphs or when simplicity is preferred
+    - Blocking I/O operations
+    - Straightforward sequential processing
+    - Best for small to medium graphs or when simplicity is preferred
 
 2. **Virtual Thread API** (`Jackson2NdJsonVirtualThreadBulkImporter`, `Jackson2NdJsonVirtualThreadBulkExporter`)
-   - Java 21+ Virtual Threads for lightweight concurrency
-   - Scales to thousands of concurrent I/O operations
-   - Ideal for CPU-constrained systems with high I/O workloads
+    - Java 21+ Virtual Threads for lightweight concurrency
+    - Scales to thousands of concurrent I/O operations
+    - Ideal for CPU-constrained systems with high I/O workloads
 
 3. **Coroutine Suspend API** (`SuspendJackson2NdJsonBulkImporter`, `SuspendJackson2NdJsonBulkExporter`)
-   - Kotlin coroutines for non-blocking operations
-   - Integrates seamlessly with async/await code
-   - Best for applications already using coroutines
+    - Kotlin coroutines for non-blocking operations
+    - Integrates seamlessly with async/await code
+    - Best for applications already using coroutines
 
 ### NDJSON Envelope Format
 
@@ -48,6 +48,7 @@ The module uses a structured JSON envelope format for both vertices and edges:
 ```
 
 **Envelope Fields:**
+
 - `type` (string) - "vertex" or "edge"
 - `id` (string) - Unique identifier within the import/export
 - `label` (string) - Vertex or edge label
@@ -58,6 +59,7 @@ The module uses a structured JSON envelope format for both vertices and edges:
 ### Edge Buffering
 
 Edges are buffered during import to ensure all referenced vertices are created first:
+
 - Vertices are processed and created immediately
 - Edges are accumulated in a buffer (default max size: 10,000)
 - All vertices are committed before edges are created
@@ -176,14 +178,7 @@ dependencies {
 
 ## Streaming reader contract
 
-`Jackson2NdJsonRecordFlowReader` reads one NDJSON record at a time as a cold `Flow`, preserving
-source order without materializing the full stream. `GraphImportOptions.batchSize` changes only
-backend write flushes; NDJSON edge staging remains bounded by `maxEdgeBufferSize`. Path and owned
-sources are closed by the library, while caller-owned sources remain open after collection.
+`Jackson2NdJsonRecordFlowReader` reads one NDJSON record at a time as a cold `Flow`, preserving source order without materializing the full stream. `GraphImportOptions.batchSize` changes only backend write flushes; NDJSON edge staging remains bounded by `maxEdgeBufferSize`. Path and owned sources are closed by the library, while caller-owned sources remain open after collection.
 
-Use `NdJsonReadOptions(maxLineChars = 1_048_576)` when an input boundary must reject an oversized
-line before Jackson allocates or parses the complete JSON envelope. The limit counts UTF-16 code
-units and supports LF, CRLF, CR, and a final line without a terminator. The default is
-`Int.MAX_VALUE` for compatibility. The same option constructor is available on synchronous,
-suspend, virtual-thread, and Flow import readers. Limit failures expose only phase, line, and file
-role; raw payload and source paths are not included.
+Use `NdJsonReadOptions(maxLineChars = 1_048_576)` when an input boundary must reject an oversized line before Jackson allocates or parses the complete JSON envelope. The limit counts UTF-16 code units and supports LF, CRLF, CR, and a final line without a terminator. The default is
+`Int.MAX_VALUE` for compatibility. The same option constructor is available on synchronous, suspend, virtual-thread, and Flow import readers. Limit failures expose only phase, line, and file role; raw payload and source paths are not included.

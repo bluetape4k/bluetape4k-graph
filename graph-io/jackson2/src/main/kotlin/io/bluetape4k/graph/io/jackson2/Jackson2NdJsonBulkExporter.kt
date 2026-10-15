@@ -2,8 +2,8 @@ package io.bluetape4k.graph.io.jackson2
 
 import io.bluetape4k.graph.io.contract.GraphBulkExporter
 import io.bluetape4k.graph.io.jackson2.internal.Jackson2EnvelopeCodec
-import io.bluetape4k.graph.io.model.GraphIoEdgeRecord
-import io.bluetape4k.graph.io.model.GraphIoVertexRecord
+import io.bluetape4k.graph.io.model.edgeRecordOf
+import io.bluetape4k.graph.io.model.vertexRecordOf
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.report.GraphExportReport
 import io.bluetape4k.graph.io.report.GraphIoFailure
@@ -15,6 +15,7 @@ import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.io.support.GraphIoPaths
 import io.bluetape4k.graph.io.support.GraphIoStopwatch
+import io.bluetape4k.graph.io.support.openWriter
 import io.bluetape4k.graph.io.support.resolveLabels
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
@@ -42,9 +43,13 @@ import io.bluetape4k.logging.debug
  * )
  * ```
  */
-class Jackson2NdJsonBulkExporter : GraphBulkExporter<GraphExportSink> {
+class Jackson2NdJsonBulkExporter: GraphBulkExporter<GraphExportSink> {
 
-    private val codec: Jackson2EnvelopeCodec = Jackson2EnvelopeCodec()
+    companion object: KLogging() {
+        val Default = Jackson2NdJsonBulkExporter()
+    }
+
+    private val codec: Jackson2EnvelopeCodec = Jackson2EnvelopeCodec.Default
 
     override fun exportGraph(
         sink: GraphExportSink,
@@ -69,29 +74,32 @@ class Jackson2NdJsonBulkExporter : GraphBulkExporter<GraphExportSink> {
         operations: GraphOperations,
         options: GraphExportOptions,
     ): GraphExportReport {
-        log.debug { "Starting NDJSON_JACKSON2 export: vertexLabels=${options.vertexLabels}, edgeLabels=${options.edgeLabels}" }
+        log.debug {
+            "Starting NDJSON_JACKSON2 export: vertexLabels=${options.vertexLabels}, edgeLabels=${options.edgeLabels}"
+        }
         val watch = GraphIoStopwatch()
         val failures = mutableListOf<GraphIoFailure>()
-        var vWritten = 0L; var eWritten = 0L
+        var vWritten = 0L
+        var eWritten = 0L
         val (vertexLabels, edgeLabels) = options.resolveLabels(operations)
 
-        GraphIoPaths.openWriter(sink).use { writer ->
-            // 정점 쓰기
-            for (label in vertexLabels) {
-                for (chunk in operations.findVerticesByLabelChunked(label, chunkSize = options.exportChunkSize)) {
-                    for (v in chunk) {
-                        val rec = GraphIoVertexRecord(v.id.value, v.label, v.properties)
+        sink.openWriter().use { writer ->
+            // Vertex 쓰기
+            vertexLabels.forEach { label ->
+                operations.findVerticesByLabelChunked(label, chunkSize = options.exportChunkSize).forEach { chunk ->
+                    chunk.forEach { v ->
+                        val rec = vertexRecordOf(v.id.value, v.label, v.properties)
                         writer.write(codec.writeVertex(rec))
                         writer.newLine()
                         vWritten++
                     }
                 }
             }
-            // 간선 쓰기
-            for (label in edgeLabels) {
-                for (chunk in operations.findEdgesByLabelChunked(label, chunkSize = options.exportChunkSize)) {
-                    for (e in chunk) {
-                        val rec = GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties)
+            // Edge 쓰기
+            edgeLabels.forEach { label ->
+                operations.findEdgesByLabelChunked(label, chunkSize = options.exportChunkSize).forEach { chunk ->
+                    chunk.forEach { e ->
+                        val rec = edgeRecordOf(e.id.value, e.label, e.startId.value, e.endId.value, e.properties)
                         writer.write(codec.writeEdge(rec))
                         writer.newLine()
                         eWritten++
@@ -109,9 +117,9 @@ class Jackson2NdJsonBulkExporter : GraphBulkExporter<GraphExportSink> {
             elapsed = watch.elapsed(),
             failures = failures,
         ).also {
-            log.debug { "NDJSON_JACKSON2 export completed: verticesWritten=$vWritten, edgesWritten=$eWritten, status=$status, elapsed=${watch.elapsed()}" }
+            log.debug {
+                "NDJSON_JACKSON2 export completed: verticesWritten=$vWritten, edgesWritten=$eWritten, status=$status, elapsed=${watch.elapsed()}"
+            }
         }
     }
-
-    companion object : KLogging()
 }
