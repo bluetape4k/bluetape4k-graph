@@ -7,19 +7,26 @@ import io.bluetape4k.graph.io.report.GraphIoPhase
 import io.bluetape4k.graph.io.report.GraphIoProgressEvent
 import io.bluetape4k.graph.io.report.GraphIoProgressEventType
 import io.bluetape4k.graph.io.report.GraphIoStatus
+import io.bluetape4k.javatimes.millis
+import io.bluetape4k.logging.KLogging
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.junit.jupiter.api.Test
 import java.time.Duration
 
 class GraphIoMicrometerProgressListenerTest {
 
+    companion object: KLogging()
+
     @Test
     fun `동일 registry의 listener들은 활성 작업 수를 합산한다`() {
         SimpleMeterRegistry().let { registry ->
             val first = GraphIoMicrometerProgressListener(registry)
             val second = GraphIoMicrometerProgressListener(registry)
-            val gauge = registry.get(GraphIoMicrometerProgressListener.METER_ACTIVE)
-                .tag("operation", "import").tag("format", "csv").gauge()
+            val gauge = registry
+                .get(GraphIoMicrometerProgressListener.METER_ACTIVE)
+                .tag("operation", "import")
+                .tag("format", "csv")
+                .gauge()
 
             second.onEvent(event(GraphIoProgressEventType.STARTED, runId = 2L))
             gauge.value() shouldBeEqualTo 1.0
@@ -39,8 +46,12 @@ class GraphIoMicrometerProgressListenerTest {
                 val first = GraphIoMicrometerProgressListener(firstRegistry)
                 GraphIoMicrometerProgressListener(secondRegistry)
                 first.onEvent(event(GraphIoProgressEventType.STARTED))
-                secondRegistry.get(GraphIoMicrometerProgressListener.METER_ACTIVE)
-                    .tag("operation", "import").tag("format", "csv").gauge().value() shouldBeEqualTo 0.0
+                secondRegistry
+                    .get(GraphIoMicrometerProgressListener.METER_ACTIVE)
+                    .tag("operation", "import")
+                    .tag("format", "csv")
+                    .gauge()
+                    .value() shouldBeEqualTo 0.0
             }
         }
     }
@@ -68,7 +79,7 @@ class GraphIoMicrometerProgressListenerTest {
                 skippedEdges = 1,
                 failures = 2,
                 bytesProcessed = 128,
-                elapsed = Duration.ofMillis(20),
+                elapsed = 20.millis(),
             )
         )
 
@@ -76,36 +87,43 @@ class GraphIoMicrometerProgressListenerTest {
             .tag("operation", "import")
             .tag("format", "csv")
             .tag("status", "partial")
-            .counter().count() shouldBeEqualTo 1.0
+            .counter()
+            .count() shouldBeEqualTo 1.0
         registry.get(GraphIoMicrometerProgressListener.METER_RECORDS)
             .tag("operation", "import")
             .tag("format", "csv")
             .tag("kind", "vertices")
-            .counter().count() shouldBeEqualTo 3.0
+            .counter()
+            .count() shouldBeEqualTo 3.0
         registry.get(GraphIoMicrometerProgressListener.METER_BYTES)
             .tag("operation", "import")
             .tag("format", "csv")
-            .counter().count() shouldBeEqualTo 128.0
+            .counter()
+            .count() shouldBeEqualTo 128.0
         registry.get(GraphIoMicrometerProgressListener.METER_DURATION)
             .tag("operation", "import")
             .tag("format", "csv")
             .tag("status", "partial")
-            .timer().count() shouldBeEqualTo 1L
+            .timer()
+            .count() shouldBeEqualTo 1L
         registry.get(GraphIoMicrometerProgressListener.METER_PHASE_DURATION)
             .tag("operation", "import")
             .tag("format", "csv")
             .tag("phase", "create_vertex")
-            .timer().count() shouldBeEqualTo 1L
+            .timer()
+            .count() shouldBeEqualTo 1L
         registry.get(GraphIoMicrometerProgressListener.METER_ACTIVE)
             .tag("operation", "import")
             .tag("format", "csv")
-            .gauge().value() shouldBeEqualTo 0.0
+            .gauge()
+            .value() shouldBeEqualTo 0.0
     }
 
     @Test
     fun `run zero and duplicate terminal do not create unbounded tags or negative active`() {
         val registry = SimpleMeterRegistry()
         val listener = GraphIoMicrometerProgressListener(registry)
+
         listener.onEvent(event(GraphIoProgressEventType.PROGRESS, runId = 0L))
         listener.onEvent(event(GraphIoProgressEventType.CANCELLED, hasStarted = true))
         listener.onEvent(event(GraphIoProgressEventType.CANCELLED, hasStarted = true))
@@ -114,11 +132,14 @@ class GraphIoMicrometerProgressListenerTest {
             .tag("operation", "import")
             .tag("format", "csv")
             .tag("status", "cancelled")
-            .counter().count() shouldBeEqualTo 2.0
+            .counter()
+            .count() shouldBeEqualTo 2.0
+
         registry.get(GraphIoMicrometerProgressListener.METER_ACTIVE)
             .tag("operation", "import")
             .tag("format", "csv")
-            .gauge().value() shouldBeEqualTo 0.0
+            .gauge()
+            .value() shouldBeEqualTo 0.0
     }
 
     private fun event(
