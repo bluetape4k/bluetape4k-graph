@@ -4,13 +4,14 @@ import io.bluetape4k.graph.io.contract.GraphVirtualThreadBulkImporter
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.options.NdJsonReadOptions
 import io.bluetape4k.graph.io.report.GraphImportReport
-import io.bluetape4k.graph.io.report.GraphIoProgressListener
 import io.bluetape4k.graph.io.report.GraphIoFormat
 import io.bluetape4k.graph.io.report.GraphIoOperation
+import io.bluetape4k.graph.io.report.GraphIoProgressListener
 import io.bluetape4k.graph.io.report.GraphIoProgressReporter
 import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.graph.io.support.GraphIoPaths
-import io.bluetape4k.graph.io.support.VirtualThreadGraphBulkAdapter
+import io.bluetape4k.graph.io.support.asVirtualThreadImporter
+import io.bluetape4k.graph.io.support.cancellableVirtualFuture
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
 import java.util.concurrent.CompletableFuture
@@ -38,8 +39,12 @@ import java.util.concurrent.CompletableFuture
  * @param readOptions JSON codec 호출 전에 적용할 NDJSON 줄 길이 옵션
  */
 class Jackson3NdJsonVirtualThreadBulkImporter(
-    readOptions: NdJsonReadOptions = NdJsonReadOptions(),
-) : GraphVirtualThreadBulkImporter<GraphImportSource> {
+    readOptions: NdJsonReadOptions = NdJsonReadOptions.Default,
+): GraphVirtualThreadBulkImporter<GraphImportSource> {
+
+    companion object: KLogging() {
+        val Default = Jackson3NdJsonVirtualThreadBulkImporter()
+    }
 
     private val sync: Jackson3NdJsonBulkImporter = Jackson3NdJsonBulkImporter(readOptions)
 
@@ -48,7 +53,7 @@ class Jackson3NdJsonVirtualThreadBulkImporter(
         operations: GraphOperations,
         options: GraphImportOptions,
     ): CompletableFuture<GraphImportReport> =
-        VirtualThreadGraphBulkAdapter.wrapImporter(sync).importGraphAsync(source, operations, options)
+        sync.asVirtualThreadImporter().importGraphAsync(source, operations, options)
 
     override fun importGraphAsync(
         source: GraphImportSource,
@@ -70,12 +75,10 @@ class Jackson3NdJsonVirtualThreadBulkImporter(
             listener = listener,
             bytesProvider = { GraphIoPaths.sizeOf(source) },
         )
-        return VirtualThreadGraphBulkAdapter.cancellableVirtualFuture(
+        return cancellableVirtualFuture(
             reporter = reporter,
             block = { sync.importGraph(source, operations, options) },
             onCompleted = { report -> reporter.completed(report) },
         )
     }
-
-    companion object : KLogging()
 }

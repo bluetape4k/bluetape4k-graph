@@ -21,7 +21,6 @@ import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.toList
 import org.awaitility.kotlin.atMost
 import org.awaitility.kotlin.await
@@ -155,25 +154,23 @@ class Jackson2NdJsonLineLimitTest {
 
     @Test
     fun `빈 줄만 계속되는 Flow도 취소를 관찰하고 owned source를 닫는다`() = runSuspendIO {
-        coroutineScope {
-            val input = EndlessBlankInputStream()
-            val collecting = async {
-                Jackson2NdJsonRecordFlowReader(NdJsonReadOptions(maxLineChars = 64))
-                    .readVertices(input.asSource(true))
-                    .log("V")
-                    .toList()
-            }.log("Collecting")
+        val input = EndlessBlankInputStream()
+        val collecting = async {
+            Jackson2NdJsonRecordFlowReader(NdJsonReadOptions(maxLineChars = 64))
+                .readVertices(input.asSource(true))
+                .log("V")
+                .toList()
+        }.log("Collecting")
 
-            await atMost 5.seconds withPollInterval 100.milliseconds untilSuspending {
-                input.readCount > 0
-            }
-            collecting.cancel()
-
-            assertFailsWith<CancellationException> {
-                collecting.await()
-            }
-            input.closeCount shouldBeEqualTo 1
+        await atMost 5.seconds withPollInterval 100.milliseconds untilSuspending {
+            input.readCount > 0
         }
+        collecting.cancel()
+
+        assertFailsWith<CancellationException> {
+            collecting.await()
+        }
+        input.closeCount shouldBeEqualTo 1
     }
 
     private fun vertexLine(id: String = "v1", paddingSize: Int): String =

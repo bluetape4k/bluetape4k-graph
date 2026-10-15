@@ -2,8 +2,11 @@ package io.bluetape4k.graph.io.jackson3
 
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldBeFalse
+import io.bluetape4k.assertions.shouldBeLessThan
 import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldNotContain
+import io.bluetape4k.coroutines.flow.extensions.log
+import io.bluetape4k.coroutines.support.log
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.options.NdJsonReadOptions
 import io.bluetape4k.graph.io.report.GraphIoFileRole
@@ -11,21 +14,31 @@ import io.bluetape4k.graph.io.report.GraphIoPhase
 import io.bluetape4k.graph.io.report.GraphIoReadException
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.source.GraphImportSource
+import io.bluetape4k.graph.io.source.asSource
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
+import io.bluetape4k.junit5.awaitility.untilSuspending
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.logging.coroutines.KLoggingChannel
+import io.bluetape4k.logging.debug
+import io.bluetape4k.support.toUtf8Bytes
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
+import org.awaitility.kotlin.atMost
+import org.awaitility.kotlin.await
+import org.awaitility.kotlin.withPollInterval
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStream
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 class Jackson3NdJsonLineLimitTest {
+
+    companion object: KLoggingChannel()
 
     @Test
     fun `상한보다 하나 짧거나 같은 줄은 허용하고 하나 긴 줄은 거부한다`() = runSuspendIO {
@@ -34,20 +47,29 @@ class Jackson3NdJsonLineLimitTest {
         val longer = vertexLine(paddingSize = 17)
         val reader = Jackson3NdJsonRecordFlowReader(NdJsonReadOptions(exact.length))
 
-        reader.readVertices(sourceOf(shorter)).toList().single().externalId shouldBeEqualTo "v1"
-        reader.readVertices(sourceOf(exact)).toList().single().externalId shouldBeEqualTo "v1"
+        reader.readVertices(shorter.byteInputStream().asSource())
+            .log("Shorter")
+            .toList()
+            .single().externalId shouldBeEqualTo "v1"
+
+        reader.readVertices(exact.byteInputStream().asSource())
+            .log("Exact")
+            .toList()
+            .single().externalId shouldBeEqualTo "v1"
 
         val error = assertFailsWith<GraphIoReadException> {
-            reader.readVertices(sourceOf(longer)).toList()
+            reader.readVertices(longer.byteInputStream().asSource()).toList()
         }
+        log.debug { "error=$error" }
         error.failure.phase shouldBeEqualTo GraphIoPhase.READ_VERTEX
         error.failure.fileRole shouldBeEqualTo GraphIoFileRole.UNIFIED
         error.failure.location shouldBeEqualTo "line:1"
-        error.message.orEmpty().contains("padding").shouldBeFalse()
+        error.message shouldNotContain "padding"
 
         val edgeError = assertFailsWith<GraphIoReadException> {
-            reader.readEdges(sourceOf(longer)).toList()
+            reader.readEdges(longer.byteInputStream().asSource()).toList()
         }
+        log.debug { "edgeError=$edgeError" }
         edgeError.failure.phase shouldBeEqualTo GraphIoPhase.READ_EDGE
         edgeError.failure.location shouldBeEqualTo "line:1"
     }
@@ -61,7 +83,8 @@ class Jackson3NdJsonLineLimitTest {
         val payload = "$first\r\n$second\r$third\n"
 
         val records = Jackson3NdJsonRecordFlowReader(NdJsonReadOptions(limit))
-            .readVertices(sourceOf(payload))
+            .readVertices(payload.byteInputStream().asSource())
+            .log("CRLF")
             .toList()
 
         records.map { it.externalId } shouldBeEqualTo listOf("한글", "emoji-😀", "v3")
@@ -70,17 +93,18 @@ class Jackson3NdJsonLineLimitTest {
     @Test
     fun `개행 없는 긴 입력은 전체 source를 소비하기 전에 실패한다`() = runSuspendIO {
         val payload = "{\"type\":\"vertex\",\"id\":\"secret-record\",\"padding\":\"" + "x".repeat(20_000)
-        val input = CountingInputStream(payload.toByteArray())
+        val input = CountingInputStream(payload.toUtf8Bytes())
 
         val error = assertFailsWith<GraphIoReadException> {
             Jackson3NdJsonRecordFlowReader(NdJsonReadOptions(maxLineChars = 64))
-                .readVertices(GraphImportSource.InputStreamSource(input, closeInput = true))
+                .readVertices(input.asSource(true))
+                .log("FAIL")
                 .toList()
         }
 
-        (input.bytesRead < payload.toByteArray().size).shouldBeTrue()
+        input.bytesRead shouldBeLessThan payload.toByteArray().size
         input.closed.shouldBeTrue()
-        error.message.orEmpty().contains("secret-record").shouldBeFalse()
+        error.message shouldNotContain "secret-record"
     }
 
     @Test
@@ -92,11 +116,12 @@ class Jackson3NdJsonLineLimitTest {
         val thrown = assertFailsWith<GraphIoReadException> {
             Jackson3NdJsonRecordFlowReader(NdJsonReadOptions(maxLineChars = 64))
                 .readVertices(GraphImportSource.InputStreamSource(input, closeInput = true))
+                .log("FAIL")
                 .toList()
         }
 
         thrown.failure.phase shouldBeEqualTo GraphIoPhase.READ_VERTEX
-        thrown.message.orEmpty().contains("secret-record").shouldBeFalse()
+        thrown.message shouldNotContain "secret-record"
         thrown.suppressed.map { it.message } shouldBeEqualTo listOf("jackson3-close-failure")
         input.closeCount shouldBeEqualTo 1
     }
@@ -107,56 +132,56 @@ class Jackson3NdJsonLineLimitTest {
         val readOptions = NdJsonReadOptions(maxLineChars = 64)
 
         val sync = Jackson3NdJsonBulkImporter(readOptions).importGraph(
-            sourceOf(payload),
+            payload.byteInputStream().asSource(),
             TinkerGraphOperations(),
             GraphImportOptions(),
         )
         val suspended = SuspendJackson3NdJsonBulkImporter(readOptions).importGraphSuspending(
-            sourceOf(payload),
+            payload.byteInputStream().asSource(),
             TinkerGraphSuspendOperations(),
             GraphImportOptions(),
         )
         val virtual = Jackson3NdJsonVirtualThreadBulkImporter(readOptions).importGraphAsync(
-            sourceOf(payload),
+            payload.byteInputStream().asSource(),
             TinkerGraphOperations(),
             GraphImportOptions(),
         ).join()
 
         listOf(sync, suspended, virtual).forEach { report ->
+            log.debug { "report=$report" }
             report.status shouldBeEqualTo GraphIoStatus.FAILED
             report.failures.single().location shouldBeEqualTo "line:1"
             report.failures.single().fileRole shouldBeEqualTo GraphIoFileRole.UNIFIED
-            report.failures.single().message.contains("secret-record").shouldBeFalse()
+            report.failures.single().message shouldNotContain "secret-record"
         }
     }
 
     @Test
     fun `빈 줄만 계속되는 Flow도 취소를 관찰하고 owned source를 닫는다`() = runSuspendIO {
-        coroutineScope {
-            val input = EndlessBlankInputStream()
-            val collecting = async {
-                Jackson3NdJsonRecordFlowReader(NdJsonReadOptions(maxLineChars = 64))
-                    .readVertices(GraphImportSource.InputStreamSource(input, closeInput = true))
-                    .toList()
-            }
+        val input = EndlessBlankInputStream()
+        val collecting = async {
+            Jackson3NdJsonRecordFlowReader(NdJsonReadOptions(maxLineChars = 64))
+                .readVertices(input.asSource(true))
+                .log("V")
+                .toList()
+        }.log("Collecting")
 
-            withTimeout(5_000) {
-                while (input.readCount == 0) yield()
-            }
-            collecting.cancel()
-
-            assertFailsWith<CancellationException> { collecting.await() }
-            input.closeCount shouldBeEqualTo 1
+        await atMost 5.seconds withPollInterval 100.milliseconds untilSuspending {
+            input.readCount > 0
         }
-    }
+        yield()
+        collecting.cancel()
 
-    private fun sourceOf(content: String): GraphImportSource =
-        GraphImportSource.InputStreamSource(content.byteInputStream())
+        assertFailsWith<CancellationException> {
+            collecting.await()
+        }
+        input.closeCount shouldBeEqualTo 1
+    }
 
     private fun vertexLine(id: String = "v1", paddingSize: Int): String =
         "{\"type\":\"vertex\",\"id\":\"$id\",\"properties\":{\"padding\":\"${"x".repeat(paddingSize)}\"}}"
 
-    private class CountingInputStream(bytes: ByteArray) : ByteArrayInputStream(bytes) {
+    private class CountingInputStream(bytes: ByteArray): ByteArrayInputStream(bytes) {
         var bytesRead: Int = 0
         var closed: Boolean = false
 
@@ -171,7 +196,7 @@ class Jackson3NdJsonLineLimitTest {
         }
     }
 
-    private class EndlessBlankInputStream : InputStream() {
+    private class EndlessBlankInputStream: InputStream() {
         @Volatile
         var readCount: Int = 0
 
@@ -194,7 +219,7 @@ class Jackson3NdJsonLineLimitTest {
         }
     }
 
-    private class CloseFailingInputStream(content: ByteArray) : ByteArrayInputStream(content) {
+    private class CloseFailingInputStream(content: ByteArray): ByteArrayInputStream(content) {
         var closeCount: Int = 0
             private set
 
