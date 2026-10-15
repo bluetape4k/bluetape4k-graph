@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.io.report
 
+import io.bluetape4k.support.requireGe
 import java.io.Serializable
 import java.time.Duration
 
@@ -32,12 +33,12 @@ data class GraphExportReport(
     val skippedEdges: Long = 0,
     val elapsed: Duration,
     val failures: List<GraphIoFailure> = emptyList(),
-) : Serializable {
+): Serializable {
     init {
-        require(verticesWritten >= 0) { "verticesWritten must be >= 0" }
-        require(edgesWritten >= 0) { "edgesWritten must be >= 0" }
-        require(skippedVertices >= 0) { "skippedVertices must be >= 0" }
-        require(skippedEdges >= 0) { "skippedEdges must be >= 0" }
+        verticesWritten.requireGe(0, "verticesWritten")
+        edgesWritten.requireGe(0, "edgesWritten")
+        skippedVertices.requireGe(0, "skippedVertices")
+        skippedEdges.requireGe(0, "skippedEdges")
     }
 
     companion object {

@@ -62,8 +62,9 @@ object GraphIoPaths {
         is GraphImportSource.InputStreamSource -> {
             val isr = InputStreamReader(source.input, source.charset)
             if (source.closeInput) BufferedReader(isr)
-            else object : BufferedReader(isr) {
-                override fun close() { /* caller owns the stream */ }
+            else object: BufferedReader(isr) {
+                override fun close() { /* caller owns the stream */
+                }
             }
         }
     }
@@ -89,8 +90,10 @@ object GraphIoPaths {
         is GraphExportSink.OutputStreamSink -> {
             val osw = OutputStreamWriter(sink.output, sink.charset)
             if (sink.closeOutput) BufferedWriter(osw)
-            else object : BufferedWriter(osw) {
-                override fun close() { flush() /* caller owns the stream */ }
+            else object: BufferedWriter(osw) {
+                override fun close() {
+                    flush() /* caller owns the stream */
+                }
             }
         }
     }
@@ -111,8 +114,9 @@ object GraphIoPaths {
             if (source.closeInput) source.input
             // FilterInputStream이 skip/mark/reset/available 등을 자동 위임하므로
             // close()만 억제하면 된다.
-            else object : FilterInputStream(source.input) {
-                override fun close() { /* caller owns the stream */ }
+            else object: FilterInputStream(source.input) {
+                override fun close() { /* caller owns the stream */
+                }
             }
     }
 
@@ -138,12 +142,14 @@ object GraphIoPaths {
         }
         is GraphExportSink.OutputStreamSink -> {
             if (sink.closeOutput) BufferedOutputStream(sink.output)
-            else object : OutputStream() {
+            else object: OutputStream() {
                 private val buf = BufferedOutputStream(sink.output)
                 override fun write(b: Int) = buf.write(b)
                 override fun write(b: ByteArray, off: Int, len: Int) = buf.write(b, off, len)
                 override fun flush() = buf.flush()
-                override fun close() { flush() /* caller owns the stream */ }
+                override fun close() {
+                    flush() /* caller owns the stream */
+                }
             }
         }
     }
@@ -178,7 +184,7 @@ object GraphIoPaths {
         } else {
             try {
                 sizes.fold(0L) { total, size ->
-                    Math.addExact(total, requireNotNull(size))
+                    Math.addExact(total, size ?: 0L)
                 }
             } catch (_: ArithmeticException) {
                 null
@@ -193,3 +199,12 @@ object GraphIoPaths {
         null
     }
 }
+
+fun GraphImportSource.openReader(): BufferedReader = GraphIoPaths.openReader(this)
+fun GraphImportSource.openInputStream(): InputStream = GraphIoPaths.openInputStream(this)
+fun GraphImportSource.describe(): String? = GraphIoPaths.describeSource(this)
+fun GraphImportSource.sizeOf(): Long? = GraphIoPaths.sizeOf(this)
+
+fun GraphExportSink.openWriter(): BufferedWriter = GraphIoPaths.openWriter(this)
+fun GraphExportSink.openOutputStream(): OutputStream = GraphIoPaths.openOutputStream(this)
+fun GraphExportSink.sizeOf(): Long? = GraphIoPaths.sizeOf(this)

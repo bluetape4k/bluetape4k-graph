@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.io.report
 
+import io.bluetape4k.support.requireGe
 import java.io.Serializable
 import java.time.Duration
 
@@ -36,14 +37,14 @@ data class GraphImportReport(
     val skippedEdges: Long = 0,
     val elapsed: Duration,
     val failures: List<GraphIoFailure> = emptyList(),
-) : Serializable {
+): Serializable {
     init {
-        require(verticesRead >= 0) { "verticesRead must be >= 0" }
-        require(verticesCreated >= 0) { "verticesCreated must be >= 0" }
-        require(edgesRead >= 0) { "edgesRead must be >= 0" }
-        require(edgesCreated >= 0) { "edgesCreated must be >= 0" }
-        require(skippedVertices >= 0) { "skippedVertices must be >= 0" }
-        require(skippedEdges >= 0) { "skippedEdges must be >= 0" }
+        verticesRead.requireGe(0, "verticesRead")
+        verticesCreated.requireGe(0, "verticesWritten")
+        edgesRead.requireGe(0, "edgesWritten")
+        edgesCreated.requireGe(0, "skippedVertices")
+        skippedVertices.requireGe(0, "skippedVertices")
+        skippedEdges.requireGe(0, "skippedEdges")
         require(verticesCreated <= verticesRead) {
             "verticesCreated ($verticesCreated) must be <= verticesRead ($verticesRead)"
         }

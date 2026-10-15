@@ -3,38 +3,49 @@ package io.bluetape4k.graph.io.report
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeNull
+import io.bluetape4k.io.serializer.BinarySerializers
+import io.bluetape4k.io.serializer.JdkBinarySerializer
+import io.bluetape4k.javatimes.millis
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
-import java.time.Duration
 
 class GraphIoProgressEventTest {
 
+    companion object: KLogging()
+
+    private val original = GraphIoProgressEvent(
+        runId = 7L,
+        type = GraphIoProgressEventType.PHASE_COMPLETED,
+        operation = GraphIoOperation.IMPORT,
+        format = GraphIoFormat.CSV,
+        phase = GraphIoPhase.CREATE_VERTEX,
+        vertices = 10L,
+        successfulVertices = 8L,
+        skippedVertices = 2L,
+        failures = 1L,
+        bytesProcessed = 128L,
+        bytesTotal = 256L,
+        elapsed = 20.millis(),
+        phaseElapsed = 5.millis(),
+    )
+
     @Test
-    fun `event is serializable and retains aggregate snapshot`() {
-        val original = GraphIoProgressEvent(
-            runId = 7L,
-            type = GraphIoProgressEventType.PHASE_COMPLETED,
-            operation = GraphIoOperation.IMPORT,
-            format = GraphIoFormat.CSV,
-            phase = GraphIoPhase.CREATE_VERTEX,
-            vertices = 10L,
-            successfulVertices = 8L,
-            skippedVertices = 2L,
-            failures = 1L,
-            bytesProcessed = 128L,
-            bytesTotal = 256L,
-            elapsed = Duration.ofMillis(20),
-            phaseElapsed = Duration.ofMillis(5),
-        )
+    fun `event is java serializable and retains aggregate snapshot`() {
+        val serializer = JdkBinarySerializer(objectInputFilter = null)
+        val bytes = serializer.serialize(original)
+        val restored = serializer.deserialize<GraphIoProgressEvent>(bytes)
+        log.debug { "restored=$restored" }
+        restored shouldBeEqualTo original
+    }
 
-        val bytes = ByteArrayOutputStream()
-        ObjectOutputStream(bytes).use { it.writeObject(original) }
-        val copy = ObjectInputStream(ByteArrayInputStream(bytes.toByteArray())).use { it.readObject() }
-
-        copy shouldBeEqualTo original
+    @Test
+    fun `event is fory serializable and retains aggregate snapshot`() {
+        val serializer = BinarySerializers.FastFory
+        val bytes = serializer.serialize(original)
+        val restored = serializer.deserialize<GraphIoProgressEvent>(bytes)
+        log.debug { "restored=$restored" }
+        restored shouldBeEqualTo original
     }
 
     @Test
@@ -46,6 +57,7 @@ class GraphIoProgressEventTest {
             format = GraphIoFormat.GRAPHML,
         )
 
+        log.debug { "event=$event" }
         event.status.shouldBeNull()
         event.phase.shouldBeNull()
         event.bytesProcessed.shouldBeNull()

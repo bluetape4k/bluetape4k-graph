@@ -4,21 +4,26 @@ import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 import java.time.Duration
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
-import java.util.concurrent.TimeUnit
 
 class GraphNativeBulkLoaderTest {
+
+    companion object: KLogging()
 
     @Test
     fun `loader validates raw source and executes only validated artifact`() {
         val loader = RecordingLoader()
         val report = loader.load(request(source = RawSource("raw-source")))
 
+        log.debug { "report=$report" }
         report.outcome shouldBeEqualTo GraphNativeBulkLoadOutcome.COMPLETED
         loader.validatedValue shouldBeEqualTo "validated:raw-source"
         loader.validatorCalls.get() shouldBeEqualTo 1
@@ -116,7 +121,7 @@ class GraphNativeBulkLoaderTest {
 
     @Test
     fun `report postcondition violations are contract failures`() {
-        val loader = object : RecordingLoader() {
+        val loader = object: RecordingLoader() {
             override fun loadValidated(
                 execution: GraphNativeBulkLoadExecution<String>,
                 listener: GraphNativeBulkLoadProgressListener?,
@@ -146,7 +151,7 @@ class GraphNativeBulkLoaderTest {
     @Test
     fun `adapter errors are redacted at the native command boundary`() {
         val failure = assertFailsWith<GraphNativeBulkLoadException> {
-            object : RecordingLoader() {
+            object: RecordingLoader() {
                 override fun loadValidated(
                     execution: GraphNativeBulkLoadExecution<String>,
                     listener: GraphNativeBulkLoadProgressListener?,
@@ -250,7 +255,7 @@ class GraphNativeBulkLoaderTest {
         loader.close()
         loadDone.await(5, TimeUnit.SECONDS).shouldBeTrue()
         (loadFailure.get() as GraphNativeBulkLoadException).code shouldBeEqualTo
-            GraphNativeBulkLoadFailureCode.NATIVE_COMMAND_FAILED
+                GraphNativeBulkLoadFailureCode.NATIVE_COMMAND_FAILED
         loader.closeResourcesCalls.get() shouldBeEqualTo 1
     }
 
@@ -267,7 +272,7 @@ class GraphNativeBulkLoaderTest {
     private open class RecordingLoader(
         private val counters: Counters = Counters(),
         observer: GraphNativeBulkLoadDiagnosticObserver? = null,
-    ) : GraphNativeBulkLoader<RawSource, String>(
+    ): GraphNativeBulkLoader<RawSource, String>(
         capabilities = capabilities,
         sourceValidator = GraphNativeBulkLoadSourceValidator { request, _, cancellation, _ ->
             counters.validatorCalls.incrementAndGet()
@@ -354,13 +359,13 @@ class GraphNativeBulkLoaderTest {
 
     private class RecordingValidatedSource(
         private val value: String,
-    ) : GraphNativeBulkLoadValidatedSource<String>() {
+    ): GraphNativeBulkLoadValidatedSource<String>() {
         override fun takeOnce(): String = value
 
         override fun closeOnce(deadline: GraphNativeBulkLoadDeadline) = Unit
     }
 
-    private class OverBudgetLoader : RecordingLoader() {
+    private class OverBudgetLoader: RecordingLoader() {
         override fun loadValidated(
             execution: GraphNativeBulkLoadExecution<String>,
             listener: GraphNativeBulkLoadProgressListener?,
@@ -388,7 +393,7 @@ class GraphNativeBulkLoaderTest {
         }
     }
 
-    private class BlockingLoader : RecordingLoader() {
+    private class BlockingLoader: RecordingLoader() {
         val started = CountDownLatch(1)
         val release = CountDownLatch(1)
 

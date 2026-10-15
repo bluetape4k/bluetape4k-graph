@@ -8,9 +8,7 @@ package io.bluetape4k.graph.io.report
  */
 class GraphIoReadException(
     failure: GraphIoFailure,
-) : RuntimeException(
-    buildMessage(failure),
-) {
+): RuntimeException(buildMessage(failure)) {
 
     /** 원본 payload/식별자를 제거한 public 진단 정보. */
     val failure: GraphIoFailure = failure.redacted()

@@ -14,6 +14,15 @@
 
 package io.bluetape4k.graph.io.nativebulk
 
+import io.bluetape4k.concurrent.virtualthread.virtualThread
+import io.bluetape4k.graph.GraphException
+import io.bluetape4k.javatimes.nanos
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.support.requireEquals
+import io.bluetape4k.support.requireGe
+import io.bluetape4k.support.requireNotEquals
+import io.bluetape4k.support.requireNotNull
+import okio.withLock
 import java.io.Serializable
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicBoolean
@@ -30,11 +39,15 @@ fun interface GraphNativeBulkLoadProgressListener {
 private class GraphNativeBulkLoadListenerFailure(
     val original: Throwable,
     val cancellationFailure: GraphNativeBulkLoadException?,
-) : RuntimeException()
+): GraphException()
 
 /** Loader lifecycle diagnostic의 종류다. */
 enum class GraphNativeBulkLoadDiagnosticKind {
-    STARTED, COMPLETED, FAILED, CANCELLED, CLOSED
+    STARTED,
+    COMPLETED,
+    FAILED,
+    CANCELLED,
+    CLOSED
 }
 
 /** Secret-free lifecycle correlation에 사용하는 diagnostic snapshot이다. */
@@ -48,7 +61,8 @@ data class GraphNativeBulkLoadDiagnostic(
     val outcome: GraphNativeBulkLoadOutcome?,
     val code: GraphNativeBulkLoadFailureCode?,
     val cancellationReason: GraphNativeBulkLoadCancellationReason? = null,
-) : Serializable {
+): Serializable {
+
     init {
         diagnosticId.requireLogSafe("diagnosticId", 64)
         backend.requireLogSafe("backend", GraphNativeBulkLoaderCapabilities.MAX_BACKEND_LENGTH)
@@ -56,31 +70,33 @@ data class GraphNativeBulkLoadDiagnostic(
             "operationName",
             GraphNativeBulkLoadRequest.MAX_OPERATION_NAME_LENGTH,
         )
-        require(operationName == GraphNativeBulkLoadRequest.REQUIRED_OPERATION_NAME) {
+        operationName.requireEquals(GraphNativeBulkLoadRequest.REQUIRED_OPERATION_NAME) {
             "operationName must be the fixed native-bulk-load operation label"
         }
-        require(elapsed >= Duration.ZERO) { "elapsed must be >= 0" }
+        elapsed.requireGe(Duration.ZERO, "elapsed")
+
         when (kind) {
             GraphNativeBulkLoadDiagnosticKind.COMPLETED -> {
-                require(outcome == GraphNativeBulkLoadOutcome.COMPLETED) {
+                outcome.requireEquals(GraphNativeBulkLoadOutcome.COMPLETED) {
                     "COMPLETED diagnostic requires a COMPLETED outcome"
                 }
             }
             GraphNativeBulkLoadDiagnosticKind.CANCELLED -> {
-                require(outcome == GraphNativeBulkLoadOutcome.CANCELLED) {
+                outcome.requireEquals(GraphNativeBulkLoadOutcome.CANCELLED) {
                     "CANCELLED diagnostic requires a CANCELLED outcome"
                 }
-                require(cancellationReason != null) {
+                cancellationReason.requireNotNull {
                     "CANCELLED diagnostic requires a cancellation reason"
                 }
             }
             GraphNativeBulkLoadDiagnosticKind.FAILED -> {
-                require(outcome != GraphNativeBulkLoadOutcome.COMPLETED) {
+                outcome.requireNotEquals(GraphNativeBulkLoadOutcome.COMPLETED) {
                     "FAILED diagnostic cannot report a COMPLETED outcome"
                 }
             }
             GraphNativeBulkLoadDiagnosticKind.STARTED,
-            GraphNativeBulkLoadDiagnosticKind.CLOSED -> Unit
+            GraphNativeBulkLoadDiagnosticKind.CLOSED,
+                -> Unit
         }
     }
 
@@ -170,9 +186,10 @@ private class GraphNativeBulkLoadProgressVerifier(
         contractRequire(terminal.outcome == report.outcome) {
             "terminal progress outcome does not match report"
         }
-        contractRequire(terminal.processed == report.processed &&
-            terminal.succeeded == report.succeeded &&
-            terminal.failed == report.failed
+        contractRequire(
+            terminal.processed == report.processed &&
+                    terminal.succeeded == report.succeeded &&
+                    terminal.failed == report.failed
         ) {
             "terminal progress counts do not match report"
         }
@@ -184,18 +201,27 @@ private class GraphNativeBulkLoadProgressVerifier(
 private val graphNativeBulkLoadDiagnosticSequence = AtomicLong()
 
 /** Raw request 검증과 typed native command 실행을 조율하는 base SPI다. */
-abstract class GraphNativeBulkLoader<R : Any, V : Any>(
-    final val capabilities: GraphNativeBulkLoaderCapabilities,
-    final val sourceValidator: GraphNativeBulkLoadSourceValidator<R, V>,
+abstract class GraphNativeBulkLoader<R: Any, V: Any>(
+    val capabilities: GraphNativeBulkLoaderCapabilities,
+    val sourceValidator: GraphNativeBulkLoadSourceValidator<R, V>,
     private val diagnosticObserver: GraphNativeBulkLoadDiagnosticObserver? = null,
-) : AutoCloseable {
-    private enum class State { OPEN, LOADING, CLOSING, CLOSED }
+): AutoCloseable {
+
+    companion object: KLogging()
+
+    private enum class State {
+        OPEN,
+        LOADING,
+        CLOSING,
+        CLOSED
+    }
 
     private val lifecycleLock = ReentrantLock()
     private val lifecycleChanged: Condition = lifecycleLock.newCondition()
     private val diagnosticInFlight = AtomicBoolean(false)
     private val diagnosticDisabled = AtomicBoolean(false)
     private val pendingDiagnostic = AtomicReference<GraphNativeBulkLoadDiagnostic?>(null)
+
     /** Allows one bounded retry after the observer circuit opens. */
     private val timeoutDiagnosticAttempted = AtomicBoolean(false)
     private var state = State.OPEN
@@ -207,15 +233,18 @@ abstract class GraphNativeBulkLoader<R : Any, V : Any>(
     private var activeCancellation: GraphNativeBulkLoadCancellationToken? = null
     private var activeDiagnosticId: String? = null
 
+    // TODO: 함수가 너무 길다. 여러 함수로 분해해야 한다.
     /** Request를 검증하고 progress/report/lifecycle 계약을 적용해 실행한다. */
-    final fun load(
+    fun load(
         request: GraphNativeBulkLoadRequest<R>,
         listener: GraphNativeBulkLoadProgressListener? = null,
     ): GraphNativeBulkLoadReport {
         val startedNanos = System.nanoTime()
         val diagnosticId = newDiagnosticId()
         requireSupportedRequest(request)
+
         val cancellation = beginLoad(request.timeout, diagnosticId)
+
         emitDiagnostic(
             kind = GraphNativeBulkLoadDiagnosticKind.STARTED,
             startedNanos = startedNanos,
@@ -323,9 +352,9 @@ abstract class GraphNativeBulkLoader<R : Any, V : Any>(
                     else -> GraphNativeBulkLoadCancellationReason.LISTENER_FAILURE
                 }
                 val isCancelled = terminal?.outcome == GraphNativeBulkLoadOutcome.CANCELLED ||
-                    reportCancellation != null ||
-                    failureCode == GraphNativeBulkLoadFailureCode.CANCELLED ||
-                    failureCode == GraphNativeBulkLoadFailureCode.TIMEOUT
+                        reportCancellation != null ||
+                        failureCode == GraphNativeBulkLoadFailureCode.CANCELLED ||
+                        failureCode == GraphNativeBulkLoadFailureCode.TIMEOUT
                 val diagnosticOutcome = when {
                     isCancelled -> GraphNativeBulkLoadOutcome.CANCELLED
                     finalFailure == null -> terminal?.outcome
@@ -376,16 +405,13 @@ abstract class GraphNativeBulkLoader<R : Any, V : Any>(
             timeoutNanos = effectiveTimeout.toNanos(),
             cancellationHook = ::requestCancellationSafely,
         )
-        lifecycleLock.lock()
-        try {
+        lifecycleLock.withLock {
             check(state == State.OPEN) { "native bulk loader is not open" }
             state = State.LOADING
             loadInFlight = true
             loadingThread = Thread.currentThread()
             activeCancellation = cancellation
             activeDiagnosticId = diagnosticId
-        } finally {
-            lifecycleLock.unlock()
         }
         return cancellation
     }
@@ -398,34 +424,27 @@ abstract class GraphNativeBulkLoader<R : Any, V : Any>(
 
     /** Marks the command finished while keeping close behind terminal diagnostics. */
     private fun beginTerminalization() {
-        lifecycleLock.lock()
-        try {
+        lifecycleLock.withLock {
             loadInFlight = false
             loadingThread = null
             activeCancellation = null
             terminalizationInFlight = true
             lifecycleChanged.signalAll()
-        } finally {
-            lifecycleLock.unlock()
         }
     }
 
     /** Releases the lifecycle barrier after terminal diagnostics have been emitted. */
-    private fun finishTerminalization(): Boolean {
-        lifecycleLock.lock()
-        try {
-            terminalizationInFlight = false
-            val deferredOwner = state == State.CLOSING && closeStarted.compareAndSet(false, true)
-            if (deferredOwner) closingThread = Thread.currentThread()
-            if (state == State.LOADING) {
-                state = State.OPEN
-                activeDiagnosticId = null
-            }
-            lifecycleChanged.signalAll()
-            return deferredOwner
-        } finally {
-            lifecycleLock.unlock()
+    private fun finishTerminalization(): Boolean = lifecycleLock.withLock {
+        terminalizationInFlight = false
+        val deferredOwner = state == State.CLOSING && closeStarted.compareAndSet(false, true)
+        if (deferredOwner) closingThread = Thread.currentThread()
+        if (state == State.LOADING) {
+            state = State.OPEN
+            activeDiagnosticId = null
         }
+        lifecycleChanged.signalAll()
+
+        deferredOwner
     }
 
     override fun close() {
@@ -434,8 +453,7 @@ abstract class GraphNativeBulkLoader<R : Any, V : Any>(
         var interrupted = Thread.interrupted()
         var closeFailure: GraphNativeBulkLoadException? = null
         var cancellation: GraphNativeBulkLoadCancellationToken? = null
-        lifecycleLock.lock()
-        try {
+        lifecycleLock.withLock {
             val currentThread = Thread.currentThread()
             if ((state == State.LOADING && loadingThread === currentThread) ||
                 (state == State.CLOSING && (loadingThread === currentThread || closingThread === currentThread))
@@ -459,8 +477,6 @@ abstract class GraphNativeBulkLoader<R : Any, V : Any>(
                 }
                 State.CLOSED -> Unit
             }
-        } finally {
-            lifecycleLock.unlock()
         }
         if (stateSnapshot() == State.CLOSED) {
             if (interrupted) Thread.currentThread().interrupt()
@@ -472,16 +488,12 @@ abstract class GraphNativeBulkLoader<R : Any, V : Any>(
         )
         cancellation?.request(GraphNativeBulkLoadCancellationReason.CLOSE, closeDeadline)
         cancellation?.cancellationHookFailure()?.let { closeFailure = it }
-        lifecycleLock.lock()
-        try {
+        lifecycleLock.withLock {
             loadingThread?.takeUnless { it === Thread.currentThread() }?.interrupt()
-        } finally {
-            lifecycleLock.unlock()
         }
         var ownsClose = false
         var closeTimedOut = false
-        lifecycleLock.lock()
-        try {
+        lifecycleLock.withLock {
             while (loadInFlight || terminalizationInFlight) {
                 val remaining = closeDeadline.remainingNanos()
                 if (remaining <= 0L) {
@@ -511,9 +523,7 @@ abstract class GraphNativeBulkLoader<R : Any, V : Any>(
                     }
                 }
             }
-        } finally {
-            lifecycleLock.unlock()
-        }
+        } 
         cancellation?.cancellationHookFailure()?.let { closeFailure = mergeFailure(closeFailure, it) }
         if (closeTimedOut) closeFailure = mergeFailure(
             closeFailure,
@@ -600,9 +610,8 @@ abstract class GraphNativeBulkLoader<R : Any, V : Any>(
         return failure
     }
 
-    private fun stateSnapshot(): State {
-        lifecycleLock.lock()
-        return try { state } finally { lifecycleLock.unlock() }
+    private fun stateSnapshot(): State = lifecycleLock.withLock {
+        state
     }
 
     private fun requestCancellationSafely(
@@ -639,13 +648,14 @@ abstract class GraphNativeBulkLoader<R : Any, V : Any>(
             backend = capabilities.backend,
             operationName = operationName,
             phase = phase,
-            elapsed = Duration.ofNanos(elapsedNanos),
+            elapsed = elapsedNanos.nanos(),
             outcome = outcome,
             code = code,
             cancellationReason = cancellationReason,
         )
         val timeoutDiagnostic = diagnostic.kind == GraphNativeBulkLoadDiagnosticKind.CANCELLED &&
-            diagnostic.code == GraphNativeBulkLoadFailureCode.TIMEOUT
+                diagnostic.code == GraphNativeBulkLoadFailureCode.TIMEOUT
+
         if (diagnosticDisabled.get()) {
             if (timeoutDiagnostic) {
                 pendingDiagnostic.set(diagnostic)
@@ -667,7 +677,7 @@ abstract class GraphNativeBulkLoader<R : Any, V : Any>(
         retryAttempt: Boolean,
     ) {
         if (deadline.isExpired) {
-            Thread.startVirtualThread {
+            virtualThread {
                 try {
                     val dispatchCall = runBounded(
                         GraphNativeBulkLoadDeadline(
@@ -737,9 +747,12 @@ abstract class GraphNativeBulkLoader<R : Any, V : Any>(
             return
         }
         val timeoutDiagnostic = pending.kind == GraphNativeBulkLoadDiagnosticKind.CANCELLED &&
-            pending.code == GraphNativeBulkLoadFailureCode.TIMEOUT
-        val retryAttempt = diagnosticDisabled.get() && timeoutDiagnostic &&
-            timeoutDiagnosticAttempted.compareAndSet(false, true)
+                pending.code == GraphNativeBulkLoadFailureCode.TIMEOUT
+
+        val retryAttempt = diagnosticDisabled.get() &&
+                timeoutDiagnostic &&
+                timeoutDiagnosticAttempted.compareAndSet(false, true)
+
         if (diagnosticDisabled.get() && !retryAttempt) {
             diagnosticInFlight.set(false)
             pendingDiagnostic.set(pending)
@@ -768,7 +781,8 @@ abstract class GraphNativeBulkLoader<R : Any, V : Any>(
     protected open fun requestCancellation(
         reason: GraphNativeBulkLoadCancellationReason,
         deadline: GraphNativeBulkLoadDeadline,
-    ) {}
+    ) {
+    }
 
     /** 독립 resource를 모두 시도하고 failure를 합산하는 terminal cleanup hook이다. */
     protected open fun closeResources(deadline: GraphNativeBulkLoadDeadline) {}
@@ -799,9 +813,9 @@ abstract class GraphNativeBulkLoader<R : Any, V : Any>(
 }
 
 /** Backend가 native bulk command를 지원하지 않음을 명시하는 loader다. */
-class UnsupportedGraphNativeBulkLoader<R : Any, V : Any>(
+class UnsupportedGraphNativeBulkLoader<R: Any, V: Any>(
     backend: String,
-) : GraphNativeBulkLoader<R, V>(
+): GraphNativeBulkLoader<R, V>(
     capabilities = GraphNativeBulkLoaderCapabilities(
         backend = backend,
         supported = false,

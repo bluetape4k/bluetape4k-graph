@@ -7,9 +7,10 @@
 package io.bluetape4k.graph.io.report
 
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.warn
 import java.time.Duration
-import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.CancellationException
+import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
@@ -23,7 +24,12 @@ class GraphIoProgressReporter(
     private val format: GraphIoFormat,
     private val listener: GraphIoProgressListener,
     private val bytesProvider: () -> Long? = { null },
-) : KLogging() {
+) {
+
+    companion object: KLogging() {
+        private const val USE_CURRENT_COUNT: Long = Long.MIN_VALUE
+        private val RUN_IDS = AtomicLong(0L)
+    }
 
     private enum class State {
         NEW,
@@ -49,10 +55,6 @@ class GraphIoProgressReporter(
     private var snapshot = Snapshot()
 
     val runId: Long = RUN_IDS.incrementAndGet()
-
-    init {
-        requireNotNull(listener) { "listener must not be null" }
-    }
 
     /** 시작 event를 한 번만 발행한다. */
     fun started(): GraphIoProgressEvent? = lifecycleLock.withLock {
@@ -523,7 +525,7 @@ class GraphIoProgressReporter(
     }
 
     private fun warnListenerFailure() {
-        log.warn("Graph I/O progress listener callback failed; callback was isolated")
+        log.warn { "Graph I/O progress listener callback failed; callback was isolated" }
     }
 
     /** 시작 callback에서 [Error]가 발생해도 bridge가 active 상태에 남지 않도록 terminalize한다. */
@@ -609,11 +611,7 @@ class GraphIoProgressReporter(
         require(next.failures >= snapshot.failures) { "failures must be monotonic" }
         val previousBytesProcessed = snapshot.bytesProcessed
         val previousBytesTotal = snapshot.bytesTotal
-        require(
-            next.bytesProcessed == null ||
-                previousBytesProcessed == null ||
-                next.bytesProcessed >= previousBytesProcessed
-        ) {
+        require(next.bytesProcessed == null || previousBytesProcessed == null || next.bytesProcessed >= previousBytesProcessed) {
             "bytesProcessed must be monotonic"
         }
         require(next.bytesTotal == null || previousBytesTotal == null || next.bytesTotal >= previousBytesTotal) {
@@ -628,9 +626,4 @@ class GraphIoProgressReporter(
 
     private fun currentElapsed(value: Duration, previous: Duration): Duration =
         if (value.isZero && !previous.isZero) previous else value
-
-    companion object : KLogging() {
-        private const val USE_CURRENT_COUNT: Long = Long.MIN_VALUE
-        private val RUN_IDS = AtomicLong(0L)
-    }
 }

@@ -1,5 +1,11 @@
 package io.bluetape4k.graph.io.support
 
+import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeFalse
+import io.bluetape4k.assertions.shouldBeInstanceOf
+import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.concurrent.await
 import io.bluetape4k.graph.io.contract.GraphBulkExporter
 import io.bluetape4k.graph.io.contract.GraphBulkImporter
 import io.bluetape4k.graph.io.options.GraphExportOptions
@@ -9,27 +15,36 @@ import io.bluetape4k.graph.io.report.GraphImportReport
 import io.bluetape4k.graph.io.report.GraphIoFormat
 import io.bluetape4k.graph.io.report.GraphIoOperation
 import io.bluetape4k.graph.io.report.GraphIoProgressEventType
-import io.bluetape4k.graph.io.report.GraphIoProgressListener
 import io.bluetape4k.graph.io.report.GraphIoProgressReporter
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.testsupport.FakeGraphOperations
 import io.bluetape4k.graph.repository.GraphOperations
-import io.bluetape4k.assertions.assertFailsWith
-import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldBeInstanceOf
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 import java.time.Duration
+import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutionException
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.time.Duration.Companion.seconds
 
 class VirtualThreadGraphBulkAdapterTest {
 
+    companion object: KLogging()
+
     private val stubImportReport = GraphImportReport(
-        GraphIoStatus.COMPLETED, GraphIoFormat.CSV, 0L, 0L, 0L, 0L, 0L, 0L, Duration.ZERO
+        status = GraphIoStatus.COMPLETED,
+        format = GraphIoFormat.CSV,
+        verticesRead = 0L,
+        verticesCreated = 0L,
+        edgesRead = 0L,
+        edgesCreated = 0L,
+        skippedVertices = 0L,
+        skippedEdges = 0L,
+        elapsed = Duration.ZERO
     )
     private val stubExportReport = GraphExportReport(
         status = GraphIoStatus.COMPLETED,
@@ -40,13 +55,13 @@ class VirtualThreadGraphBulkAdapterTest {
     )
 
     private fun stubImporter(block: (String, GraphOperations, GraphImportOptions) -> GraphImportReport) =
-        object : GraphBulkImporter<String> {
+        object: GraphBulkImporter<String> {
             override fun importGraph(source: String, operations: GraphOperations, options: GraphImportOptions) =
                 block(source, operations, options)
         }
 
     private fun stubExporter(block: (String, GraphOperations, GraphExportOptions) -> GraphExportReport) =
-        object : GraphBulkExporter<String> {
+        object: GraphBulkExporter<String> {
             override fun exportGraph(sink: String, operations: GraphOperations, options: GraphExportOptions) =
                 block(sink, operations, options)
         }
@@ -56,33 +71,47 @@ class VirtualThreadGraphBulkAdapterTest {
     @Test
     fun `importAsync wraps sync importer with virtual thread future`() {
         val importer = stubImporter { _, _, _ -> stubImportReport }
-        val vt = VirtualThreadGraphBulkAdapter.wrapImporter(importer)
-        vt.importGraphAsync("src", FakeGraphOperations(), GraphImportOptions()).get() shouldBeEqualTo stubImportReport
+        val vt = importer.asVirtualThreadImporter()
+        vt.importGraphAsync(
+            source = "src",
+            operations = FakeGraphOperations(),
+            options = GraphImportOptions()
+        ).get() shouldBeEqualTo stubImportReport
     }
 
     @Test
     fun `importAsync with default options uses interface default parameter`() {
         val importer = stubImporter { _, _, _ -> stubImportReport }
-        val vt = VirtualThreadGraphBulkAdapter.wrapImporter(importer)
+        val vt = importer.asVirtualThreadImporter()
+
         // omit options → triggers GraphVirtualThreadBulkImporter DefaultImpls stub
-        vt.importGraphAsync("src", FakeGraphOperations()).get() shouldBeEqualTo stubImportReport
+        vt.importGraphAsync(
+            source = "src",
+            operations = FakeGraphOperations()
+        ).get() shouldBeEqualTo stubImportReport
     }
 
     @Test
     fun `importAsync propagates sync failure`() {
         val boom = RuntimeException("boom")
         val importer = stubImporter { _, _, _ -> throw boom }
-        val vt = VirtualThreadGraphBulkAdapter.wrapImporter(importer)
+        val vt = importer.asVirtualThreadImporter()
+
         val ee = assertFailsWith<ExecutionException> {
-            vt.importGraphAsync("x", FakeGraphOperations(), GraphImportOptions()).get()
+            vt.importGraphAsync(
+                source = "x",
+                operations = FakeGraphOperations(),
+                options = GraphImportOptions()
+            ).get()
         }
+        log.debug { "ee=$ee" }
         ee.cause shouldBeInstanceOf RuntimeException::class
     }
 
     @Test
     fun `import adapter closes sync importer exactly once`() {
         val closeCalls = AtomicInteger()
-        val importer = object : GraphBulkImporter<String> {
+        val importer = object: GraphBulkImporter<String> {
             override fun importGraph(source: String, operations: GraphOperations, options: GraphImportOptions) =
                 stubImportReport
 
@@ -90,7 +119,7 @@ class VirtualThreadGraphBulkAdapterTest {
                 closeCalls.incrementAndGet()
             }
         }
-        val vt = VirtualThreadGraphBulkAdapter.wrapImporter(importer)
+        val vt = importer.asVirtualThreadImporter()
 
         vt.close()
         vt.close()
@@ -103,33 +132,48 @@ class VirtualThreadGraphBulkAdapterTest {
     @Test
     fun `exportAsync wraps sync exporter with virtual thread future`() {
         val exporter = stubExporter { _, _, _ -> stubExportReport }
-        val vt = VirtualThreadGraphBulkAdapter.wrapExporter(exporter)
-        vt.exportGraphAsync("sink", FakeGraphOperations(), GraphExportOptions()).get() shouldBeEqualTo stubExportReport
+        val vt = exporter.asVirtualThreadExporter()
+
+        vt.exportGraphAsync(
+            sink = "sink",
+            operations = FakeGraphOperations(),
+            options = GraphExportOptions()
+        ).get() shouldBeEqualTo stubExportReport
     }
 
     @Test
     fun `exportAsync with default options uses interface default parameter`() {
         val exporter = stubExporter { _, _, _ -> stubExportReport }
-        val vt = VirtualThreadGraphBulkAdapter.wrapExporter(exporter)
+        val vt = exporter.asVirtualThreadExporter()
+
         // omit options → triggers GraphVirtualThreadBulkExporter DefaultImpls stub
-        vt.exportGraphAsync("sink", FakeGraphOperations()).get() shouldBeEqualTo stubExportReport
+        vt.exportGraphAsync(
+            sink = "sink",
+            operations = FakeGraphOperations()
+        ).get() shouldBeEqualTo stubExportReport
     }
 
     @Test
     fun `exportAsync propagates sync failure`() {
         val boom = RuntimeException("export boom")
         val exporter = stubExporter { _, _, _ -> throw boom }
-        val vt = VirtualThreadGraphBulkAdapter.wrapExporter(exporter)
+        val vt = exporter.asVirtualThreadExporter()
+
         val ee = assertFailsWith<ExecutionException> {
-            vt.exportGraphAsync("sink", FakeGraphOperations(), GraphExportOptions()).get()
+            vt.exportGraphAsync(
+                "sink",
+                FakeGraphOperations(),
+                GraphExportOptions()
+            ).get()
         }
+        log.debug { "ee=$ee" }
         ee.cause shouldBeInstanceOf RuntimeException::class
     }
 
     @Test
     fun `export adapter closes sync exporter exactly once`() {
         val closeCalls = AtomicInteger()
-        val exporter = object : GraphBulkExporter<String> {
+        val exporter = object: GraphBulkExporter<String> {
             override fun exportGraph(sink: String, operations: GraphOperations, options: GraphExportOptions) =
                 stubExportReport
 
@@ -137,7 +181,7 @@ class VirtualThreadGraphBulkAdapterTest {
                 closeCalls.incrementAndGet()
             }
         }
-        val vt = VirtualThreadGraphBulkAdapter.wrapExporter(exporter)
+        val vt = exporter.asVirtualThreadExporter()
 
         vt.close()
         vt.close()
@@ -154,11 +198,11 @@ class VirtualThreadGraphBulkAdapterTest {
         val cancelCalls = AtomicInteger()
         val cancelInterrupt = AtomicBoolean(true)
 
-        val future = VirtualThreadGraphBulkAdapter.cancellableVirtualFuture(
+        val future = cancellableVirtualFuture(
             onCancel = { mayInterruptIfRunning, started ->
                 cancelCalls.incrementAndGet()
                 cancelInterrupt.set(mayInterruptIfRunning)
-                started shouldBeEqualTo true
+                started.shouldBeTrue()
             },
         ) {
             entered.countDown()
@@ -173,16 +217,16 @@ class VirtualThreadGraphBulkAdapterTest {
             }
         }
 
-        entered.await(5, TimeUnit.SECONDS) shouldBeEqualTo true
-        future.cancel(false) shouldBeEqualTo true
-        future.cancel(false) shouldBeEqualTo false
+        entered.await(5.seconds).shouldBeTrue()
+        future.cancel(false).shouldBeTrue()
+        future.cancel(false).shouldBeFalse()
         release.countDown()
-        completed.await(5, TimeUnit.SECONDS) shouldBeEqualTo true
+        completed.await(5.seconds).shouldBeTrue()
 
-        future.isCancelled shouldBeEqualTo true
-        interrupted.get() shouldBeEqualTo false
+        future.isCancelled.shouldBeTrue()
+        interrupted.get().shouldBeFalse()
         cancelCalls.get() shouldBeEqualTo 1
-        cancelInterrupt.get() shouldBeEqualTo false
+        cancelInterrupt.get().shouldBeFalse()
     }
 
     @Test
@@ -192,9 +236,9 @@ class VirtualThreadGraphBulkAdapterTest {
         val cancelCalls = AtomicInteger()
         val startedAtCancel = AtomicReference<Boolean>()
 
-        val future = VirtualThreadGraphBulkAdapter.cancellableVirtualFuture(
+        val future = cancellableVirtualFuture(
             onCancel = { mayInterruptIfRunning, started ->
-                mayInterruptIfRunning shouldBeEqualTo true
+                mayInterruptIfRunning.shouldBeTrue()
                 startedAtCancel.set(started)
                 cancelCalls.incrementAndGet()
             },
@@ -209,13 +253,13 @@ class VirtualThreadGraphBulkAdapterTest {
             42
         }
 
-        entered.await(5, TimeUnit.SECONDS) shouldBeEqualTo true
-        future.cancel(true) shouldBeEqualTo true
-        interrupted.await(5, TimeUnit.SECONDS) shouldBeEqualTo true
-        future.cancel(true) shouldBeEqualTo false
+        entered.await(5.seconds).shouldBeTrue()
+        future.cancel(true).shouldBeTrue()
+        interrupted.await(5.seconds).shouldBeTrue()
+        future.cancel(true).shouldBeFalse()
 
-        future.isCancelled shouldBeEqualTo true
-        startedAtCancel.get() shouldBeEqualTo true
+        future.isCancelled.shouldBeTrue()
+        startedAtCancel.get().shouldBeTrue()
         cancelCalls.get() shouldBeEqualTo 1
     }
 
@@ -224,7 +268,7 @@ class VirtualThreadGraphBulkAdapterTest {
         val entered = CountDownLatch(1)
         val release = CountDownLatch(1)
         val listenerError = AssertionError("listener failure")
-        val future = VirtualThreadGraphBulkAdapter.cancellableVirtualFuture(
+        val future = cancellableVirtualFuture(
             onCancel = { _, _ -> throw listenerError },
         ) {
             entered.countDown()
@@ -232,9 +276,9 @@ class VirtualThreadGraphBulkAdapterTest {
             42
         }
 
-        entered.await(5, TimeUnit.SECONDS) shouldBeEqualTo true
+        entered.await(5.seconds).shouldBeTrue()
         assertFailsWith<AssertionError> { future.cancel(false) } shouldBeEqualTo listenerError
-        future.isCancelled shouldBeEqualTo true
+        future.isCancelled.shouldBeTrue()
         release.countDown()
     }
 
@@ -243,16 +287,17 @@ class VirtualThreadGraphBulkAdapterTest {
         val entered = CountDownLatch(1)
         val release = CountDownLatch(1)
         val terminal = CountDownLatch(1)
-        val events = java.util.Collections.synchronizedList(mutableListOf<GraphIoProgressEventType>())
+        val events = ConcurrentLinkedQueue<GraphIoProgressEventType>()
+        
         val reporter = GraphIoProgressReporter(
             operation = GraphIoOperation.IMPORT,
             format = GraphIoFormat.CSV,
-            listener = GraphIoProgressListener {
+            listener = {
                 events += it.type
                 if (it.type == GraphIoProgressEventType.CANCELLED) terminal.countDown()
             },
         )
-        val future = VirtualThreadGraphBulkAdapter.cancellableVirtualFuture(
+        val future = cancellableVirtualFuture(
             reporter = reporter,
             block = {
                 entered.countDown()
@@ -262,16 +307,18 @@ class VirtualThreadGraphBulkAdapterTest {
             onCompleted = { report -> reporter.completed(report) },
         )
 
-        entered.await(5, TimeUnit.SECONDS) shouldBeEqualTo true
-        future.cancel(false) shouldBeEqualTo true
-        events shouldBeEqualTo listOf(GraphIoProgressEventType.STARTED)
+        entered.await(5.seconds).shouldBeTrue()
+        future.cancel(false).shouldBeTrue()
+
+        events.toList() shouldBeEqualTo listOf(GraphIoProgressEventType.STARTED)
+        
         release.countDown()
-        terminal.await(5, TimeUnit.SECONDS) shouldBeEqualTo true
-        events shouldBeEqualTo listOf(
+        terminal.await(5.seconds).shouldBeTrue()
+
+        events.toList() shouldBeEqualTo listOf(
             GraphIoProgressEventType.STARTED,
             GraphIoProgressEventType.CANCELLED,
         )
-        reporter.isTerminal() shouldBeEqualTo true
+        reporter.isTerminal().shouldBeTrue()
     }
-
 }

@@ -1,12 +1,15 @@
 package io.bluetape4k.graph.io.support
 
 import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.graph.io.model.GraphIoEdgeRecord
 import io.bluetape4k.graph.io.model.GraphIoVertexRecord
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 import java.io.DataOutputStream
 import java.io.IOException
@@ -16,31 +19,29 @@ import java.nio.file.Path
 
 class GraphIoRecordSpoolTest {
 
+    companion object: KLogging()
+
     @Test
     fun `spool replays normalized records and preserves property key order`() {
         GraphIoRecordSpool().use { spool ->
             spool.appendVertices(
-                listOf(
-                    GraphIoVertexRecord("v-1", "Person", linkedMapOf("name" to "Alice", "age" to 30)),
-                    GraphIoVertexRecord("v-2", "Person", linkedMapOf("name" to "Bob", "city" to null)),
-                ),
+                GraphIoVertexRecord("v-1", "Person", "name" to "Alice", "age" to 30),
+                GraphIoVertexRecord("v-2", "Person", "name" to "Bob", "city" to null),
             )
             spool.appendEdges(
-                listOf(
-                    GraphIoEdgeRecord("e-1", "KNOWS", "v-1", "v-2", linkedMapOf("since" to 2024)),
-                ),
+                GraphIoEdgeRecord("e-1", "KNOWS", "v-1", "v-2", "since" to 2024),
             )
             spool.finish()
 
             spool.vertexPropertyKeys.toList() shouldBeEqualTo listOf("name", "age", "city")
             spool.edgePropertyKeys.toList() shouldBeEqualTo listOf("since")
             spool.vertexRecords().toList() shouldBeEqualTo listOf(
-                GraphIoVertexRecord("v-1", "Person", linkedMapOf("name" to "Alice", "age" to "30")),
-                GraphIoVertexRecord("v-2", "Person", linkedMapOf("name" to "Bob", "city" to null)),
+                GraphIoVertexRecord("v-1", "Person", "name" to "Alice", "age" to "30"),
+                GraphIoVertexRecord("v-2", "Person", "name" to "Bob", "city" to null),
             )
             spool.vertexRecords().toList() shouldBeEqualTo spool.vertexRecords().toList()
             spool.edgeRecords().toList() shouldBeEqualTo listOf(
-                GraphIoEdgeRecord("e-1", "KNOWS", "v-1", "v-2", linkedMapOf("since" to "2024")),
+                GraphIoEdgeRecord("e-1", "KNOWS", "v-1", "v-2", "since" to "2024"),
             )
         }
     }
@@ -50,10 +51,14 @@ class GraphIoRecordSpoolTest {
         GraphIoRecordSpool().use { spool ->
             spool.appendVertices(emptyList())
             spool.appendEdges(emptyList())
-            assertFailsWith<IllegalStateException> { spool.vertexRecords().toList() }
+
+            assertFailsWith<IllegalStateException> {
+                spool.vertexRecords().toList()
+            }
+
             spool.finish()
-            spool.vertexRecords().toList() shouldBeEqualTo emptyList()
-            spool.edgeRecords().toList() shouldBeEqualTo emptyList()
+            spool.vertexRecords().toList().shouldBeEmpty()
+            spool.edgeRecords().toList().shouldBeEmpty()
         }
     }
 
@@ -61,11 +66,15 @@ class GraphIoRecordSpoolTest {
     fun `spool rejects writes after finish and replay after close`() {
         val spool = GraphIoRecordSpool()
         spool.finish()
+
         assertFailsWith<IllegalStateException> {
-            spool.appendVertices(listOf(GraphIoVertexRecord("v-1", "Person")))
+            spool.appendVertices(GraphIoVertexRecord("v-1", "Person"))
         }
         spool.close()
-        assertFailsWith<IllegalStateException> { spool.vertexRecords().toList() }
+
+        assertFailsWith<IllegalStateException> {
+            spool.vertexRecords().toList()
+        }
         spool.close()
     }
 
@@ -73,10 +82,8 @@ class GraphIoRecordSpoolTest {
     fun `closing spool closes an abandoned replay input`() {
         val spool = GraphIoRecordSpool()
         spool.appendVertices(
-            listOf(
-                GraphIoVertexRecord("v-1", "Person"),
-                GraphIoVertexRecord("v-2", "Person"),
-            ),
+            GraphIoVertexRecord("v-1", "Person"),
+            GraphIoVertexRecord("v-2", "Person"),
         )
         spool.finish()
 
@@ -84,7 +91,9 @@ class GraphIoRecordSpoolTest {
         iterator.next().externalId shouldBeEqualTo "v-1"
         spool.close()
 
-        assertFailsWith<IOException> { iterator.next() }
+        assertFailsWith<IOException> {
+            iterator.next()
+        }
     }
 
     @Test
@@ -95,7 +104,7 @@ class GraphIoRecordSpoolTest {
         )
 
         spool.use {
-            it.appendVertices(listOf(GraphIoVertexRecord("v-1", "Person", mapOf("name" to "Alice"))))
+            it.appendVertices(GraphIoVertexRecord("v-1", "Person", "name" to "Alice"))
             it.finish()
             it.vertexRecords().toList().single().externalId shouldBeEqualTo "v-1"
         }
@@ -106,13 +115,14 @@ class GraphIoRecordSpoolTest {
         GraphIoRecordSpool(maxRecordBytes = 32).use { spool ->
             val ex = assertFailsWith<IllegalArgumentException> {
                 spool.appendVertices(
-                    listOf(GraphIoVertexRecord("v-1", "Person", mapOf("payload" to "x".repeat(256)))),
+                    GraphIoVertexRecord("v-1", "Person", "payload" to "x".repeat(256))
                 )
             }
 
+            log.debug { "ex=$ex" }
             ex.message shouldContain "limit"
             spool.finish()
-            spool.vertexRecords().toList() shouldBeEqualTo emptyList()
+            spool.vertexRecords().toList().shouldBeEmpty()
         }
     }
 
@@ -164,11 +174,11 @@ class GraphIoRecordSpoolTest {
         createdFiles.forEach { Files.exists(it).shouldBeFalse() }
     }
 
-    private class NoCopyByteArrayOutputStream : java.io.ByteArrayOutputStream() {
+    private class NoCopyByteArrayOutputStream: java.io.ByteArrayOutputStream() {
         override fun toByteArray(): ByteArray = error("record payload must be written without copying")
     }
 
-    private class TrackingOutputStream : OutputStream() {
+    private class TrackingOutputStream: OutputStream() {
         var closed = false
 
         override fun write(value: Int) = Unit

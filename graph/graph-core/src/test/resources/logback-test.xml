@@ -15,8 +15,6 @@
     <logger name="io.bluetape4k.graph" level="DEBUG"/>
     <logger name="bluetape4k" level="DEBUG"/>
 
-    <logger name="org.apache.tinkerpop" level="DEBUG"/>
-
     <root level="INFO">
         <appender-ref ref="Console"/>
     </root>

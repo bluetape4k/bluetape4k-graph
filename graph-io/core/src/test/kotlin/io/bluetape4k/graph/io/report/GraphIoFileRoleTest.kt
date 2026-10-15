@@ -2,18 +2,25 @@ package io.bluetape4k.graph.io.report
 
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldContain
+import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 
 class GraphIoFileRoleTest {
 
+    companion object: KLogging()
+
     @Test
     fun `GraphIoFileRole has three entries`() {
-        GraphIoFileRole.entries.size shouldBeEqualTo 3
+        GraphIoFileRole.entries shouldHaveSize 3
     }
 
     @Test
     fun `GraphIoFileRole entries contain all expected values`() {
         val entries = GraphIoFileRole.entries
+
+        log.debug { "entries=$entries" }
         entries shouldContain GraphIoFileRole.VERTICES
         entries shouldContain GraphIoFileRole.EDGES
         entries shouldContain GraphIoFileRole.UNIFIED

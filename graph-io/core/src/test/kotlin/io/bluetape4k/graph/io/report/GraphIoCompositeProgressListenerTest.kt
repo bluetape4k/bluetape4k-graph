@@ -1,10 +1,14 @@
 package io.bluetape4k.graph.io.report
 
 import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBe
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.logging.KLogging
 import org.junit.jupiter.api.Test
 
 class GraphIoCompositeProgressListenerTest {
+
+    companion object: KLogging()
 
     private val event = GraphIoProgressEvent(
         runId = 1L,
@@ -17,15 +21,17 @@ class GraphIoCompositeProgressListenerTest {
     fun `delegates are called in order and exception does not stop later delegates`() {
         val calls = mutableListOf<String>()
         val composite = GraphIoCompositeProgressListener.of(
-            GraphIoProgressListener { calls += "first" },
-            GraphIoProgressListener {
+            { calls += "first" },
+            {
                 calls += "second"
-                throw IllegalStateException("secret-message")
+                error("secret-message")
             },
-            GraphIoProgressListener { calls += "third" },
+            { calls += "third" },
         )
 
-        assertFailsWith<IllegalStateException> { composite.onEvent(event) }
+        assertFailsWith<IllegalStateException> {
+            composite.onEvent(event)
+        }
         calls shouldBeEqualTo listOf("first", "second", "third")
     }
 
@@ -34,15 +40,17 @@ class GraphIoCompositeProgressListenerTest {
         val calls = mutableListOf<String>()
         val error = AssertionError("listener-error")
         val composite = GraphIoCompositeProgressListener.of(
-            GraphIoProgressListener {
+            {
                 calls += "first"
                 throw error
             },
-            GraphIoProgressListener { calls += "second" },
+            { calls += "second" },
         )
 
-        val thrown = assertFailsWith<AssertionError> { composite.onEvent(event) }
-        (thrown === error) shouldBeEqualTo true
+        val thrown = assertFailsWith<AssertionError> {
+            composite.onEvent(event)
+        }
+        thrown shouldBe error
         calls shouldBeEqualTo listOf("first", "second")
     }
 
@@ -56,12 +64,12 @@ class GraphIoCompositeProgressListenerTest {
         val calls = mutableListOf<String>()
         var warnings = 0
         val composite = GraphIoCompositeProgressListener.of(
-            GraphIoProgressListener { calls += "first" },
-            GraphIoProgressListener {
+            { calls += "first" },
+            {
                 calls += "second"
                 throw IllegalArgumentException("redacted")
             },
-            GraphIoProgressListener { calls += "third" },
+            { calls += "third" },
         )
 
         composite.dispatch(

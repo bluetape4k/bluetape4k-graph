@@ -1,28 +1,39 @@
 package io.bluetape4k.graph.io.nativebulk
 
 import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.fail
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeFalse
+import io.bluetape4k.assertions.shouldBeInstanceOf
 import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldNotContain
+import io.bluetape4k.concurrent.await
+import io.bluetape4k.io.serializer.BinarySerializers
+import io.bluetape4k.io.serializer.JdkBinarySerializer
+import io.bluetape4k.javatimes.inNanos
+import io.bluetape4k.javatimes.seconds
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
 import java.time.Duration
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.time.Duration.Companion.seconds
 
 class GraphNativeBulkLoadModelsTest {
+
+    companion object: KLogging()
 
     @Test
     fun `request has fixed operation label and does not expose source`() {
         val request = request(source = "tenant-secret")
 
+        log.debug { "request=$request" }
         request.operationName shouldBeEqualTo GraphNativeBulkLoadRequest.REQUIRED_OPERATION_NAME
-        (!request.toString().contains("tenant-secret")).shouldBeTrue()
-        (!request.toString().contains(request.operationName)).shouldBeTrue()
+        request.toString() shouldNotContain "tenant-secret"
+        request.toString() shouldNotContain request.operationName
+
         assertFailsWith<IllegalArgumentException> {
             GraphNativeBulkLoadRequest(
                 source = "source",
@@ -35,7 +46,12 @@ class GraphNativeBulkLoadModelsTest {
     @Test
     fun `models survive Java serialization`() {
         val original = request(source = "serializable-source")
+        roundTrip(original) shouldBeEqualTo original
+    }
 
+    @Test
+    fun `models survive Fory serialization`() {
+        val original = request(source = "serializable-source")
         roundTrip(original) shouldBeEqualTo original
     }
 
@@ -47,6 +63,7 @@ class GraphNativeBulkLoadModelsTest {
             allowedUriOrigins = setOf(origin),
         )
 
+        log.debug { "policy=$policy" }
         policy.allowedUriOrigins.size shouldBeEqualTo 1
         assertFailsWith<IllegalArgumentException> {
             GraphNativeBulkLoadUriOrigin("https", "example..com")
@@ -110,8 +127,9 @@ class GraphNativeBulkLoadModelsTest {
             null
         }
 
+        log.debug { "token=$token" }
         token.request(GraphNativeBulkLoadCancellationReason.CLOSE).shouldBeTrue()
-        (!token.request(GraphNativeBulkLoadCancellationReason.TIMEOUT)).shouldBeTrue()
+        token.request(GraphNativeBulkLoadCancellationReason.TIMEOUT).shouldBeFalse()
         token.reason shouldBeEqualTo GraphNativeBulkLoadCancellationReason.CLOSE
         hookCalls.get() shouldBeEqualTo 1
     }
@@ -171,7 +189,10 @@ class GraphNativeBulkLoadModelsTest {
         val source = CountingValidatedSource()
 
         source.take() shouldBeEqualTo "validated"
-        assertFailsWith<IllegalStateException> { source.take() }
+
+        assertFailsWith<IllegalStateException> {
+            source.take()
+        }
         source.close()
         source.close()
         source.closeCount.get() shouldBeEqualTo 1
@@ -180,12 +201,12 @@ class GraphNativeBulkLoadModelsTest {
     @Test
     fun `bounded worker redacts assertion errors`() {
         val bounded = runBounded(closeGraceDeadline()) {
-            throw AssertionError("secret-error")
+            fail("secret-error")
         }
 
         bounded.completed.shouldBeTrue()
         bounded.failure?.code shouldBeEqualTo GraphNativeBulkLoadFailureCode.UNKNOWN
-        (!bounded.failure.toString().contains("secret-error")).shouldBeTrue()
+        bounded.failure.toString() shouldNotContain "secret-error"
     }
 
     @Test
@@ -204,11 +225,13 @@ class GraphNativeBulkLoadModelsTest {
             }
         }
 
-        source.started.await(5, TimeUnit.SECONDS).shouldBeTrue()
+        source.started.await(5.seconds).shouldBeTrue()
         source.close()
-        done.await(5, TimeUnit.SECONDS).shouldBeTrue()
-        (failure.get() as GraphNativeBulkLoadException).code shouldBeEqualTo
-            GraphNativeBulkLoadFailureCode.CANCELLED
+        done.await(5.seconds).shouldBeTrue()
+
+        val error = failure.get()
+        error.shouldBeInstanceOf<GraphNativeBulkLoadException>().code shouldBeEqualTo GraphNativeBulkLoadFailureCode.CANCELLED
+
         source.closeCount.get() shouldBeEqualTo 1
         source.observedDeadline.shouldBeTrue()
     }
@@ -217,10 +240,10 @@ class GraphNativeBulkLoadModelsTest {
     fun `validation rollback runs registered resources in reverse order`() {
         val closed = mutableListOf<String>()
         val context = GraphNativeBulkLoadValidationContext()
-        context.registerRollback(AutoCloseable { closed += "first" })
-        context.registerRollback(AutoCloseable { closed += "second" })
+        context.registerRollback { closed += "first" }
+        context.registerRollback { closed += "second" }
 
-        context.rollback(GraphNativeBulkLoadDeadline(System.nanoTime() + Duration.ofSeconds(1).toNanos()))
+        context.rollback(GraphNativeBulkLoadDeadline(System.nanoTime() + 1.seconds().inNanos()))
 
         closed shouldBeEqualTo listOf("second", "first")
     }
@@ -247,14 +270,18 @@ class GraphNativeBulkLoadModelsTest {
         shutdownGuarantee = GraphNativeBulkLoadShutdownGuarantee.BOUNDED,
     )
 
-    private fun <T> roundTrip(value: T): T {
-        val bytes = ByteArrayOutputStream()
-        ObjectOutputStream(bytes).use { it.writeObject(value) }
-        @Suppress("UNCHECKED_CAST")
-        return ObjectInputStream(ByteArrayInputStream(bytes.toByteArray())).use { it.readObject() as T }
+    private fun <T: Any> roundTrip(value: T): T? {
+        val jdkSerializer = JdkBinarySerializer(objectInputFilter = null)
+        val bytes = jdkSerializer.serialize(value)
+        return jdkSerializer.deserialize(bytes)
     }
 
-    private class CountingValidatedSource : GraphNativeBulkLoadValidatedSource<String>() {
+    private fun <T: Any> roundTripFory(value: T): T? {
+        val bytes = BinarySerializers.FastFory.serialize(value)
+        return BinarySerializers.FastFory.deserialize(bytes)
+    }
+
+    private class CountingValidatedSource: GraphNativeBulkLoadValidatedSource<String>() {
         val closeCount = AtomicInteger()
 
         override fun takeOnce(): String = "validated"
@@ -264,7 +291,7 @@ class GraphNativeBulkLoadModelsTest {
         }
     }
 
-    private class BlockingValidatedSource : GraphNativeBulkLoadValidatedSource<String>() {
+    private class BlockingValidatedSource: GraphNativeBulkLoadValidatedSource<String>() {
         val started = CountDownLatch(1)
         val closeCount = AtomicInteger()
         var observedDeadline = false

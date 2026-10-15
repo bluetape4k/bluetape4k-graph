@@ -2,6 +2,9 @@ package io.bluetape4k.graph.io.workflow
 
 import io.bluetape4k.graph.io.checkpoint.GraphImportCheckpoint
 import io.bluetape4k.graph.io.report.GraphIoFormat
+import io.bluetape4k.support.requireBeTrue
+import io.bluetape4k.support.requireNotBlank
+import io.bluetape4k.support.requireNotEmpty
 import java.io.Serializable
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
@@ -17,7 +20,11 @@ enum class GraphImportWorkflowState {
     FAILED,
 }
 
-enum class GraphImportSourceRole { VERTICES, EDGES, SCHEMA }
+enum class GraphImportSourceRole {
+    VERTICES,
+    EDGES,
+    SCHEMA
+}
 
 data class GraphImportSourceSpec(
     val id: String,
@@ -28,25 +35,29 @@ data class GraphImportSourceSpec(
     val compression: String? = null,
     val encrypted: Boolean = false,
     val dependsOn: Set<String> = emptySet(),
-) : Serializable {
+): Serializable {
     init {
-        require(id.isNotBlank()) { "source id must not be blank" }
-        require(sourceIdentity.isNotBlank()) { "sourceIdentity must not be blank" }
+        id.requireNotBlank { "source id must not be blank" }
+        sourceIdentity.requireNotBlank { "sourceIdentity must not be blank" }
         require(dependsOn.none { it == id }) { "source cannot depend on itself" }
     }
 
-    companion object { private const val serialVersionUID: Long = 1L }
+    companion object {
+        private const val serialVersionUID: Long = 1L
+    }
 }
 
 data class GraphImportManifest(
     val jobId: String,
     val sources: List<GraphImportSourceSpec>,
-) : Serializable {
+): Serializable {
     init {
-        require(jobId.isNotBlank()) { "jobId must not be blank" }
-        require(sources.isNotEmpty()) { "at least one source is required" }
+        jobId.requireNotBlank { "jobId must not be blank" }
+        sources.requireNotEmpty { "at least one source is required" }
+
         val ids = sources.map { it.id }
         require(ids.size == ids.toSet().size) { "source ids must be unique" }
+
         val knownIds = ids.toSet()
         require(sources.all { it.dependsOn.all(knownIds::contains) }) {
             "source dependency refers to an unknown source"
@@ -56,7 +67,9 @@ data class GraphImportManifest(
         }
     }
 
-    companion object { private const val serialVersionUID: Long = 1L }
+    companion object {
+        private const val serialVersionUID: Long = 1L
+    }
 }
 
 data class GraphImportSourceReport(
@@ -64,8 +77,10 @@ data class GraphImportSourceReport(
     val recordsRead: Long = 0,
     val recordsSkipped: Long = 0,
     val failure: String? = null,
-) : Serializable {
-    companion object { private const val serialVersionUID: Long = 1L }
+): Serializable {
+    companion object {
+        private const val serialVersionUID: Long = 1L
+    }
 }
 
 data class GraphImportWorkflowReport(
@@ -74,8 +89,10 @@ data class GraphImportWorkflowReport(
     val sources: List<GraphImportSourceReport> = emptyList(),
     val elapsed: Duration = Duration.ZERO,
     val checkpoint: GraphImportCheckpoint? = null,
-) : Serializable {
-    companion object { private const val serialVersionUID: Long = 1L }
+): Serializable {
+    companion object {
+        private const val serialVersionUID: Long = 1L
+    }
 }
 
 interface GraphImportJobStateStore {
@@ -115,7 +132,7 @@ interface GraphImportJobStateStore {
  * durable store는 [GraphImportJobStateStore.update]를 native transaction 또는
  * CAS로 구현해야 합니다.
  */
-class InMemoryGraphImportJobStateStore : GraphImportJobStateStore {
+class InMemoryGraphImportJobStateStore: GraphImportJobStateStore {
     private val reports = ConcurrentHashMap<String, GraphImportWorkflowReport>()
     private val lockRegistryMonitor = Any()
     private val lockRegistry = mutableMapOf<String, JobLock>()
@@ -181,9 +198,11 @@ class GraphImportWorkflow(
 ) {
     fun validate(): GraphImportWorkflowReport {
         val edgeSources = manifest.sources.filter { it.role == GraphImportSourceRole.EDGES }
-        require(edgeSources.all { edge -> edge.dependsOn.any { dependency ->
-            manifest.sources.any { it.id == dependency && it.role == GraphImportSourceRole.VERTICES }
-        } || edge.dependsOn.isEmpty() }) {
+        edgeSources.all { edge ->
+            edge.dependsOn.any { dependency ->
+                manifest.sources.any { it.id == dependency && it.role == GraphImportSourceRole.VERTICES }
+            } || edge.dependsOn.isEmpty()
+        }.requireBeTrue {
             "edge sources must depend on a vertex source or declare no dependency"
         }
         return persist(GraphImportWorkflowState.VALIDATED)

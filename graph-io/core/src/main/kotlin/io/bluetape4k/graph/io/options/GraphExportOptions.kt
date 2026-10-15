@@ -2,7 +2,7 @@ package io.bluetape4k.graph.io.options
 
 import io.bluetape4k.graph.repository.DEFAULT_GRAPH_EXPORT_CHUNK_SIZE
 import io.bluetape4k.logging.KLogging
-import io.bluetape4k.support.requireNotBlank
+import io.bluetape4k.support.requireBeTrue
 import io.bluetape4k.support.requirePositiveNumber
 import java.io.Serializable
 
@@ -23,14 +23,14 @@ data class GraphExportOptions(
     val edgeLabels: Set<String> = emptySet(),
     val includeEmptyProperties: Boolean = true,
     val exportChunkSize: Int = DEFAULT_GRAPH_EXPORT_CHUNK_SIZE,
-) : Serializable {
+): Serializable {
     init {
-        vertexLabels.forEach { it.requireNotBlank("vertexLabels element") }
-        edgeLabels.forEach { it.requireNotBlank("edgeLabels element") }
+        vertexLabels.all { it.isNotBlank() }.requireBeTrue { "vertexLabels elements must not be empty" }
+        edgeLabels.all { it.isNotBlank() }.requireBeTrue { "edgeLabels elements must not be empty" }
         exportChunkSize.requirePositiveNumber("exportChunkSize")
     }
 
-    companion object : KLogging() {
+    companion object: KLogging() {
         private const val serialVersionUID: Long = 1L
     }
 }

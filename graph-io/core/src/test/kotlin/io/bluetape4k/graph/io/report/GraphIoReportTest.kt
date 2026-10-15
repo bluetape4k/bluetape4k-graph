@@ -1,16 +1,24 @@
 package io.bluetape4k.graph.io.report
 
 import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.javatimes.millis
+import io.bluetape4k.javatimes.seconds
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 import java.time.Duration
 
 class GraphIoReportTest {
 
+    companion object: KLogging()
+
     @Test
     fun `GraphIoFailure requires non-blank message`() {
-        assertFailsWith<IllegalArgumentException> { GraphIoFailure(phase = GraphIoPhase.READ_VERTEX, message = " ") }
+        assertFailsWith<IllegalArgumentException> {
+            GraphIoFailure(phase = GraphIoPhase.READ_VERTEX, message = " ")
+        }
     }
 
     @Test
@@ -30,11 +38,19 @@ class GraphIoReportTest {
             edgesCreated = 195L,
             skippedVertices = 2L,
             skippedEdges = 5L,
-            elapsed = Duration.ofSeconds(3),
+            elapsed = 3.seconds(),
         )
+        log.debug { "report=$report" }
         report.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        report.format shouldBeEqualTo GraphIoFormat.CSV
         report.verticesRead shouldBeEqualTo 100L
-        report.failures.isEmpty().shouldBeTrue()
+        report.verticesCreated shouldBeEqualTo 98L
+        report.edgesRead shouldBeEqualTo 200L
+        report.edgesCreated shouldBeEqualTo 195L
+        report.skippedVertices shouldBeEqualTo 2L
+        report.skippedEdges shouldBeEqualTo 5L
+        report.elapsed shouldBeEqualTo 3.seconds()
+        report.failures.shouldBeEmpty()
     }
 
     @Test
@@ -44,8 +60,9 @@ class GraphIoReportTest {
             format = GraphIoFormat.NDJSON_JACKSON2,
             verticesWritten = 50L,
             edgesWritten = 80L,
-            elapsed = Duration.ofMillis(500),
+            elapsed = 500.millis(),
         )
+        log.debug { "report=$report" }
         report.skippedVertices shouldBeEqualTo 0L
         report.skippedEdges shouldBeEqualTo 0L
     }
@@ -129,7 +146,7 @@ class GraphIoReportTest {
             verticesCreated = 10L,
             edgesRead = 5L,
             edgesCreated = 5L,
-            elapsed = Duration.ofMillis(100),
+            elapsed = 100.millis(),
         )
         report.skippedVertices shouldBeEqualTo 0L
         report.skippedEdges shouldBeEqualTo 0L
@@ -151,11 +168,11 @@ class GraphIoReportTest {
             edgesCreated = 4L,
             skippedVertices = 0L,
             skippedEdges = 1L,
-            elapsed = Duration.ofMillis(100),
+            elapsed = 100.millis(),
             failures = listOf(failure),
         )
+        log.debug { "report=$report" }
         report.status shouldBeEqualTo GraphIoStatus.PARTIAL
-        report.failures.size shouldBeEqualTo 1
-        report.failures[0].severity shouldBeEqualTo GraphIoFailureSeverity.WARN
+        report.failures.single().severity shouldBeEqualTo GraphIoFailureSeverity.WARN
     }
 }

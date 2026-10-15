@@ -4,9 +4,13 @@ import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.javatimes.millis
+import io.bluetape4k.javatimes.seconds
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.time.Duration
+
 
 /**
  * graph-io state store 구현이 공유해야 하는 기본 contract TCK다.
@@ -15,6 +19,8 @@ import java.time.Duration
  * 최신 report 기반 update 계약을 동일하게 검증할 수 있다.
  */
 abstract class AbstractGraphImportJobStateStoreContractTest {
+
+    companion object: KLogging()
 
     protected abstract fun createStore(): GraphImportJobStateStore
 
@@ -34,12 +40,13 @@ abstract class AbstractGraphImportJobStateStoreContractTest {
             current shouldBeEqualTo initialReport()
             current.shouldNotBeNull().copy(
                 state = GraphImportWorkflowState.VALIDATED,
-                elapsed = Duration.ofSeconds(1),
+                elapsed = 1.seconds(),
             )
         }
 
+        log.debug { "updated: $updated" }
         updated.state shouldBeEqualTo GraphImportWorkflowState.VALIDATED
-        updated.elapsed shouldBeEqualTo Duration.ofSeconds(1)
+        updated.elapsed shouldBeEqualTo 1.seconds()
         store.load(jobId) shouldBeEqualTo updated
     }
 
@@ -52,6 +59,7 @@ abstract class AbstractGraphImportJobStateStoreContractTest {
             GraphImportWorkflowReport(jobId, GraphImportWorkflowState.DISCOVERED)
         }
 
+        log.debug { "created: $created" }
         created.jobId shouldBeEqualTo jobId
         freshStore.load(jobId) shouldBeEqualTo created
     }
@@ -66,7 +74,7 @@ abstract class AbstractGraphImportJobStateStoreContractTest {
                 )
             }
         }
-
+        log.debug { "report[$jobId]=${store.load(jobId)}" }
         store.load(jobId) shouldBeEqualTo initialReport()
         store.load("other-job").shouldBeNull()
     }
@@ -86,7 +94,7 @@ abstract class AbstractGraphImportJobStateStoreContractTest {
         GraphImportWorkflowReport(
             jobId = jobId,
             state = GraphImportWorkflowState.DISCOVERED,
-            elapsed = Duration.ofMillis(10),
+            elapsed = 10.millis(),
         )
 }
 
@@ -95,13 +103,15 @@ abstract class AbstractGraphImportJobStateStoreContractTest {
  * 실패의 구체적인 예외 타입은 adapter 구현의 계약이며 이 harness가 고정하지
  * 않는다. TCK는 저장 실패가 관찰되고 기존 report가 보존되는지만 검증한다.
  */
-interface GraphImportJobStateStoreFailureHarness : GraphImportJobStateStore {
+interface GraphImportJobStateStoreFailureHarness: GraphImportJobStateStore {
     fun failNextSave()
 }
 
 /** adapter의 원자적 save 실패 경계를 검증하는 추가 contract TCK다. */
-abstract class AbstractGraphImportJobStateStoreFailureContractTest :
+abstract class AbstractGraphImportJobStateStoreFailureContractTest:
     AbstractGraphImportJobStateStoreContractTest() {
+
+    companion object: KLogging()
 
     protected abstract fun createFailureStore(): GraphImportJobStateStoreFailureHarness
 
@@ -118,6 +128,7 @@ abstract class AbstractGraphImportJobStateStoreFailureContractTest :
             }
         }
 
+        log.debug { "failingStore report=${failingStore.load(initial.jobId)}" }
         failingStore.load(initial.jobId) shouldBeEqualTo initial
     }
 }
@@ -128,7 +139,7 @@ abstract class AbstractGraphImportJobStateStoreFailureContractTest :
  * 실제 durable adapter는 충돌 시점에 [arrangeRetry]를 주입하는 adapter 전용
  * harness를 구현해 이 TCK를 재사용한다.
  */
-interface GraphImportJobStateStoreRetryHarness : GraphImportJobStateStore {
+interface GraphImportJobStateStoreRetryHarness: GraphImportJobStateStore {
     val saveInvocations: Int
 
     fun arrangeRetry(interveningReport: GraphImportWorkflowReport)
@@ -137,8 +148,10 @@ interface GraphImportJobStateStoreRetryHarness : GraphImportJobStateStore {
 /**
  * CAS/transaction 구현이 추가로 검증해야 하는 retry contract TCK다.
  */
-abstract class AbstractGraphImportJobStateStoreRetryContractTest :
+abstract class AbstractGraphImportJobStateStoreRetryContractTest:
     AbstractGraphImportJobStateStoreFailureContractTest() {
+
+    companion object: KLogging()
 
     protected abstract fun createRetryingStore(): GraphImportJobStateStoreRetryHarness
 
@@ -162,8 +175,8 @@ abstract class AbstractGraphImportJobStateStoreRetryContractTest :
     @Test
     fun `retry jobId mismatch fails before the retry result is saved`() {
         val retryingStore = createRetryingStore()
-        val initial = initialReport().copy(elapsed = Duration.ofSeconds(1))
-        val intervening = initial.copy(elapsed = Duration.ofSeconds(2))
+        val initial = initialReport().copy(elapsed = 1.seconds())
+        val intervening = initial.copy(elapsed = 2.seconds())
         retryingStore.save(initial)
         retryingStore.arrangeRetry(intervening)
         val savesBeforeMismatch = retryingStore.saveInvocations
@@ -182,6 +195,8 @@ abstract class AbstractGraphImportJobStateStoreRetryContractTest :
 
         evaluations shouldBeEqualTo 2
         retryingStore.saveInvocations shouldBeEqualTo savesBeforeMismatch + 1
+
+        log.debug { "retrying report=${retryingStore.load(initial.jobId)}" }
         retryingStore.load(initial.jobId) shouldBeEqualTo intervening
         retryingStore.load("other-job").shouldBeNull()
     }
@@ -189,8 +204,8 @@ abstract class AbstractGraphImportJobStateStoreRetryContractTest :
     @Test
     fun `retry evaluates transform against the latest report and commits only the retry result`() {
         val retryingStore = createRetryingStore()
-        val initial = initialReport().copy(elapsed = Duration.ofSeconds(1))
-        val intervening = initial.copy(elapsed = Duration.ofSeconds(2))
+        val initial = initialReport().copy(elapsed = 1.seconds())
+        val intervening = initial.copy(elapsed = 2.seconds())
         retryingStore.save(initial)
         retryingStore.arrangeRetry(intervening)
         val savesBeforeRetry = retryingStore.saveInvocations
@@ -204,10 +219,13 @@ abstract class AbstractGraphImportJobStateStoreRetryContractTest :
             }
             current.shouldNotBeNull().copy(state = GraphImportWorkflowState.VALIDATED)
         }
+        log.debug { "updated=$updated" }
 
         evaluations shouldBeEqualTo 2
         retryingStore.saveInvocations shouldBeEqualTo savesBeforeRetry + 2
         updated shouldBeEqualTo intervening.copy(state = GraphImportWorkflowState.VALIDATED)
+
+        log.debug { "updated=${retryingStore.load(initial.jobId)}" }
         retryingStore.load(initial.jobId) shouldBeEqualTo updated
     }
 }
