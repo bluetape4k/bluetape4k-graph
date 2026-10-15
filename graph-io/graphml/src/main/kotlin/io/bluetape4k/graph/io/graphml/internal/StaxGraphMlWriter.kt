@@ -7,8 +7,8 @@ import io.bluetape4k.graph.io.model.GraphIoVertexRecord
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import java.io.OutputStream
-import javax.xml.stream.XMLStreamWriter
 import javax.xml.stream.XMLOutputFactory
+import javax.xml.stream.XMLStreamWriter
 
 /**
  * StAX 기반 GraphML 라이터.
@@ -19,6 +19,10 @@ import javax.xml.stream.XMLOutputFactory
  * API chunk씩 전달한다. source bounded 여부는 graph facade capability에 따른다.
  */
 internal class StaxGraphMlWriter {
+
+    companion object: KLogging() {
+        private val factory: XMLOutputFactory = XMLOutputFactory.newInstance()
+    }
 
     fun write(
         output: OutputStream,
@@ -52,6 +56,7 @@ internal class StaxGraphMlWriter {
         edgePropertyTypes: Map<String, GraphMlAttrType>,
         includeEmptyProperties: Boolean,
     ): GraphMlWriteResult {
+        log.debug { "Export to GraphML Stream. options=$options" }
         output.use { outputStream ->
             open(
                 outputStream,
@@ -91,9 +96,6 @@ internal class StaxGraphMlWriter {
         }
     }
 
-    companion object : KLogging() {
-        private val factory: XMLOutputFactory = XMLOutputFactory.newInstance()
-    }
 }
 
 internal data class GraphMlWriteResult(
@@ -107,7 +109,9 @@ internal class GraphMlWriteSession internal constructor(
     vertexPropertyTypes: Map<String, GraphMlAttrType>,
     edgePropertyTypes: Map<String, GraphMlAttrType>,
     private val includeEmptyProperties: Boolean,
-) : AutoCloseable {
+): AutoCloseable {
+
+    companion object: KLogging()
 
     private val keyMap = mutableMapOf<String, String>()
     private var keyIndex = 0
@@ -248,6 +252,4 @@ internal class GraphMlWriteSession internal constructor(
         check(!closed) { "GraphML writer session is closed" }
         check(!finished) { "GraphML writer session is finished" }
     }
-
-    companion object : KLogging()
 }

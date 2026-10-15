@@ -1,43 +1,55 @@
 package io.bluetape4k.graph.io.graphml
 
 import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeFalse
+import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldContain
+import io.bluetape4k.assertions.shouldNotBeEmpty
+import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.assertions.shouldNotContain
+import io.bluetape4k.coroutines.support.log
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphExportReport
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.source.GraphExportSink
-import io.bluetape4k.graph.io.source.GraphImportSource
+import io.bluetape4k.graph.io.source.asSink
+import io.bluetape4k.graph.io.source.asSource
 import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphVertex
+import io.bluetape4k.graph.model.edgeOf
+import io.bluetape4k.graph.model.vertexOf
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
-import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldBeTrue
-import io.bluetape4k.assertions.shouldContain
-import io.bluetape4k.assertions.shouldNotContain
 import io.bluetape4k.junit5.coroutines.runSuspendIO
-import kotlinx.coroutines.asCoroutineDispatcher
+import io.bluetape4k.logging.coroutines.KLoggingChannel
+import io.bluetape4k.logging.debug
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.async
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import java.io.IOException
 import java.io.ByteArrayOutputStream
+import java.io.IOException
 import java.io.OutputStream
+import java.nio.file.Files
 import java.nio.file.Path
-import java.util.Collections
+import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
 import javax.xml.stream.XMLStreamException
 
 class GraphMlSuspendTest {
+
+    companion object: KLoggingChannel()
 
     @Test
     fun `suspend import and export round trip`(@TempDir dir: Path) = runSuspendIO {
@@ -53,22 +65,27 @@ class GraphMlSuspendTest {
         val suspendTarget = TinkerGraphSuspendOperations(target)
 
         val exportReport = SuspendGraphMlBulkExporter().exportGraphSuspending(
-            GraphExportSink.PathSink(out),
+            out.asSink(),
             suspendSrc,
             GraphExportOptions(vertexLabels = setOf("Product"), edgeLabels = setOf("SIMILAR")),
         )
+
+        log.debug { "exportReport=$exportReport" }
         exportReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
         exportReport.verticesWritten shouldBeEqualTo 2L
         exportReport.edgesWritten shouldBeEqualTo 1L
 
         val importReport = SuspendGraphMlBulkImporter().importGraphSuspending(
-            GraphImportSource.PathSource(out),
+            out.asSource(),
             suspendTarget,
             GraphImportOptions(),
         )
+
+        log.debug { "importReport=$importReport" }
         importReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
         importReport.verticesCreated shouldBeEqualTo 2L
         importReport.edgesCreated shouldBeEqualTo 1L
+
         target.findVerticesByLabel("Product").map { it.properties["price"] }.toSet() shouldBeEqualTo setOf(9.99, 19.99)
         target.findEdgesByLabel("SIMILAR").single().properties["score"] shouldBeEqualTo 0.8
     }
@@ -77,15 +94,15 @@ class GraphMlSuspendTest {
     fun `suspend export uses chunked repository API without full label materialization`(@TempDir dir: Path) = runTest {
         val out = dir.resolve("chunked-suspend.graphml")
         val src = TinkerGraphSuspendOperations()
-        val vertices = (1..5).map { index ->
+        val vertices = List(5) { index ->
             src.createVertex("Person", mapOf("name" to "Person-$index"))
         }
-        src.createEdge(vertices[0].id, vertices[1].id, "KNOWS", mapOf("rank" to 1))
-        src.createEdge(vertices[1].id, vertices[2].id, "KNOWS", mapOf("rank" to 2))
+        src.createEdge(vertices[0].id, vertices[1].id, "KNOWS", "rank" to 1)
+        src.createEdge(vertices[1].id, vertices[2].id, "KNOWS", "rank" to 2)
         val requestedChunkSizes = mutableListOf<Int>()
 
         val report = SuspendGraphMlBulkExporter().exportGraphSuspending(
-            GraphExportSink.PathSink(out),
+            out.asSink(),
             ChunkOnlyGraphSuspendOperations(src, requestedChunkSizes),
             GraphExportOptions(
                 vertexLabels = setOf("Person"),
@@ -94,6 +111,7 @@ class GraphMlSuspendTest {
             ),
         )
 
+        log.debug { "report=$report" }
         report.status shouldBeEqualTo GraphIoStatus.COMPLETED
         report.verticesWritten shouldBeEqualTo 5L
         report.edgesWritten shouldBeEqualTo 2L
@@ -107,7 +125,7 @@ class GraphMlSuspendTest {
         listOf(true, false).forEach { includeEmptyProperties ->
             val out = dir.resolve("empty-suspend-$includeEmptyProperties.graphml")
             SuspendGraphMlBulkExporter().exportGraphSuspending(
-                GraphExportSink.PathSink(out),
+                out.asSink(),
                 source,
                 GraphExportOptions(
                     vertexLabels = setOf("Metric"),
@@ -115,13 +133,13 @@ class GraphMlSuspendTest {
                     includeEmptyProperties = includeEmptyProperties,
                 ),
             )
-            val xml = java.nio.file.Files.readString(out)
-            val keyId = requireNotNull(
-                Regex("""<key id="([^"]+)" for="node" attr.name="optional"""")
-                    .find(xml)
-                    ?.groupValues
-                    ?.get(1),
-            )
+            val xml = Files.readString(out)
+            val keyId = Regex("""<key id="([^"]+)" for="node" attr.name="optional"""")
+                .find(xml)
+                ?.groupValues
+                ?.get(1)
+                .shouldNotBeNull()
+
             xml.contains("<data key=\"$keyId\">") shouldBeEqualTo includeEmptyProperties
         }
     }
@@ -132,12 +150,12 @@ class GraphMlSuspendTest {
         val vertexProperties = linkedMapOf<String, Any?>("name" to "before")
         val edgeProperties = linkedMapOf<String, Any?>("state" to "before")
         val backend = MutatingChunkOnlyGraphSuspendOperations(
-            vertex = GraphVertex(GraphElementId.of("v-1"), "Person", vertexProperties),
-            edge = GraphEdge(
-                GraphElementId.of("e-1"),
+            vertex = vertexOf("v-1", "Person", vertexProperties),
+            edge = edgeOf(
+                "e-1",
                 "KNOWS",
-                GraphElementId.of("v-1"),
-                GraphElementId.of("v-2"),
+                "v-1",
+                "v-2",
                 edgeProperties,
             ),
             vertexProperties = vertexProperties,
@@ -145,7 +163,7 @@ class GraphMlSuspendTest {
         )
 
         val report = SuspendGraphMlBulkExporter().exportGraphSuspending(
-            GraphExportSink.PathSink(out),
+            out.asSink(),
             backend,
             GraphExportOptions(
                 vertexLabels = setOf("Person"),
@@ -154,11 +172,13 @@ class GraphMlSuspendTest {
             ),
         )
 
+        log.debug { "report=$report" }
         report.status shouldBeEqualTo GraphIoStatus.COMPLETED
         report.verticesWritten shouldBeEqualTo 1L
         report.edgesWritten shouldBeEqualTo 1L
         backend.requests shouldBeEqualTo listOf("vertices:1", "edges:1")
-        java.nio.file.Files.readString(out).also {
+
+        Files.readString(out).also {
             it shouldContain "before"
             it shouldNotContain "after"
         }
@@ -192,21 +212,25 @@ class GraphMlSuspendTest {
         }
         val source = TinkerGraphSuspendOperations().also {
             repeat(4) { index ->
-                it.createVertex("Person", mapOf("name" to "row-$index-${"x".repeat(9_000)}"))
+                it.createVertex("Person", "name" to "row-$index-${"x".repeat(9_000)}")
             }
         }
         val deferred = async(start = CoroutineStart.LAZY) {
             SuspendGraphMlBulkExporter().exportGraphSuspending(
-                GraphExportSink.OutputStreamSink(output, closeOutput = false),
+                output.asSink(false),
                 source,
                 GraphExportOptions(vertexLabels = setOf("Person")),
             )
-        }
+        }.log("Job")
+
         deferredRef.set(deferred)
         deferred.start()
 
-        val thrown = assertFailsWith<CancellationException> { deferred.await() }
+        val thrown = assertFailsWith<CancellationException> {
+            deferred.await()
+        }
         thrown.message shouldBeEqualTo cancellation.message
+        log.debug { "output.text=${output.text}" }
         output.text shouldContain "row-0"
         output.text shouldNotContain "row-3"
     }
@@ -219,12 +243,12 @@ class GraphMlSuspendTest {
         }
 
         SuspendGraphMlBulkExporter().exportGraphSuspending(
-            GraphExportSink.OutputStreamSink(output, closeOutput = false),
+            output.asSink(false),
             source,
             GraphExportOptions(vertexLabels = setOf("Person")),
         )
 
-        output.closed shouldBeEqualTo false
+        output.closed.shouldBeFalse()
         output.write('!'.code)
     }
 
@@ -236,12 +260,12 @@ class GraphMlSuspendTest {
         }
 
         SuspendGraphMlBulkExporter().exportGraphSuspending(
-            GraphExportSink.OutputStreamSink(output, closeOutput = true),
+            output.asSink(true),
             source,
             GraphExportOptions(vertexLabels = setOf("Person")),
         )
 
-        output.closed shouldBeEqualTo true
+        output.closed.shouldBeTrue()
     }
 
     @Test
@@ -259,7 +283,7 @@ class GraphMlSuspendTest {
         }
         val thrown = assertFailsWith<CancellationException> {
             SuspendGraphMlBulkExporter().exportGraphSuspending(
-                GraphExportSink.OutputStreamSink(output, closeOutput = true),
+                output.asSink(true),
                 source,
                 GraphExportOptions(vertexLabels = setOf("Person")),
             )
@@ -286,7 +310,7 @@ class GraphMlSuspendTest {
                 sourceOps.clear()
 
                 SuspendGraphMlBulkExporter().exportGraphSuspending(
-                    GraphExportSink.PathSink(out),
+                    out.asSink(),
                     sourceOps,
                     GraphExportOptions(vertexLabels = setOf("Product"), edgeLabels = setOf("SIMILAR")),
                 )
@@ -296,12 +320,12 @@ class GraphMlSuspendTest {
 
                 val targetOps = ThreadRecordingSuspendOperations(TinkerGraphSuspendOperations(TinkerGraphOperations()))
                 SuspendGraphMlBulkImporter().importGraphSuspending(
-                    GraphImportSource.PathSource(out),
+                    out.asSource(),
                     targetOps,
                     GraphImportOptions(),
                 )
 
-                targetOps.recordedThreads.isNotEmpty().shouldBeTrue()
+                targetOps.recordedThreads.shouldNotBeEmpty()
                 targetOps.recordedThreads.all { it.startsWith("graphml-graph-caller") }.shouldBeTrue()
             }
         } finally {
@@ -368,7 +392,7 @@ class GraphMlSuspendTest {
     private class ChunkOnlyGraphSuspendOperations(
         private val delegate: GraphSuspendOperations,
         private val requestedChunkSizes: MutableList<Int>,
-    ) : GraphSuspendOperations by delegate {
+    ): GraphSuspendOperations by delegate {
 
         override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): Flow<GraphVertex> =
             error("full vertex Flow lookup must not be used by GraphML export")
@@ -395,7 +419,7 @@ class GraphMlSuspendTest {
         }
     }
 
-    private class NullPropertyGraphSuspendOperations :
+    private class NullPropertyGraphSuspendOperations:
         GraphSuspendOperations by TinkerGraphSuspendOperations() {
 
         override fun findVerticesByLabelChunked(
@@ -412,7 +436,7 @@ class GraphMlSuspendTest {
         private val edge: GraphEdge,
         private val vertexProperties: MutableMap<String, Any?>,
         private val edgeProperties: MutableMap<String, Any?>,
-    ) : GraphSuspendOperations by TinkerGraphSuspendOperations() {
+    ): GraphSuspendOperations by TinkerGraphSuspendOperations() {
 
         val requests = Collections.synchronizedList(mutableListOf<String>())
 
@@ -447,7 +471,7 @@ class GraphMlSuspendTest {
 
     private class FailingOutputStream(
         private val message: String,
-    ) : OutputStream() {
+    ): OutputStream() {
         override fun write(b: Int): Unit = throw IOException(message)
 
         override fun write(b: ByteArray, off: Int, len: Int): Unit = throw IOException(message)
@@ -458,7 +482,7 @@ class GraphMlSuspendTest {
         private val closeFailure: String? = null,
         private val failure: Throwable? = null,
         private val onMarker: () -> Unit = {},
-    ) : OutputStream() {
+    ): OutputStream() {
         private val delegate = ByteArrayOutputStream()
         private var triggered = false
 
@@ -488,7 +512,7 @@ class GraphMlSuspendTest {
         }
     }
 
-    private class TrackingOutputStream : OutputStream() {
+    private class TrackingOutputStream: OutputStream() {
         private val delegate = ByteArrayOutputStream()
         var closed: Boolean = false
             private set

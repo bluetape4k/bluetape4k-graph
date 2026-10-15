@@ -4,7 +4,6 @@ import io.bluetape4k.graph.io.contract.GraphRecordFlowReader
 import io.bluetape4k.graph.io.graphml.internal.StaxGraphMlReader
 import io.bluetape4k.graph.io.model.GraphIoEdgeRecord
 import io.bluetape4k.graph.io.model.GraphIoVertexRecord
-import io.bluetape4k.graph.io.report.GraphIoFailure
 import io.bluetape4k.graph.io.report.GraphIoFailureSeverity
 import io.bluetape4k.graph.io.report.GraphIoReadException
 import io.bluetape4k.graph.io.source.GraphImportSource
@@ -25,7 +24,7 @@ import kotlinx.coroutines.flow.map
  */
 class GraphMlRecordFlowReader(
     private val options: GraphMlImportOptions = GraphMlImportOptions(),
-) : GraphRecordFlowReader<GraphImportSource> {
+): GraphRecordFlowReader<GraphImportSource> {
 
     private val reader = StaxGraphMlReader()
 
@@ -35,7 +34,7 @@ class GraphMlRecordFlowReader(
     override fun readEdges(source: GraphImportSource): Flow<GraphIoEdgeRecord> =
         stream(source, vertexMapper = { null }, edgeMapper = { it })
 
-    private fun <T : Any> stream(
+    private fun <T: Any> stream(
         source: GraphImportSource,
         vertexMapper: (GraphIoVertexRecord) -> T?,
         edgeMapper: (GraphIoEdgeRecord) -> T?,

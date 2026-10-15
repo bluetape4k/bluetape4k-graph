@@ -15,4 +15,7 @@ package io.bluetape4k.graph.io.graphml
  * )
  * ```
  */
-enum class UnsupportedGraphMlElementPolicy { SKIP, FAIL }
+enum class UnsupportedGraphMlElementPolicy {
+    SKIP,
+    FAIL
+}

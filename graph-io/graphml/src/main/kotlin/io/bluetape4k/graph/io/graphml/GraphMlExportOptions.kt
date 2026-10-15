@@ -35,7 +35,7 @@ data class GraphMlExportOptions(
     val edgeDefault: GraphMlEdgeDefault = GraphMlEdgeDefault.DIRECTED,
     val graphId: String = "G",
     val encoding: String = "UTF-8",
-) : Serializable {
+): Serializable {
     companion object {
         private const val serialVersionUID = 1L
     }

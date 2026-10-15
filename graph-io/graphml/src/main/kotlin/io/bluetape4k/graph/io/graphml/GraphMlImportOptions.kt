@@ -29,7 +29,7 @@ data class GraphMlImportOptions(
     val unsupportedElementPolicy: UnsupportedGraphMlElementPolicy = UnsupportedGraphMlElementPolicy.SKIP,
     val defaultVertexLabel: String = "Vertex",
     val defaultEdgeLabel: String = "EDGE",
-) : Serializable {
+): Serializable {
     companion object {
         private const val serialVersionUID = 1L
     }

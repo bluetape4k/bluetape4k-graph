@@ -1,19 +1,23 @@
 package io.bluetape4k.graph.io.cross
 
+import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.graph.io.graphml.GraphMlBulkExporter
 import io.bluetape4k.graph.io.graphml.GraphMlBulkImporter
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphIoStatus
-import io.bluetape4k.graph.io.source.GraphExportSink
-import io.bluetape4k.graph.io.source.GraphImportSource
+import io.bluetape4k.graph.io.source.asSink
+import io.bluetape4k.graph.io.source.asSource
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
-import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
 
 class CrossFormatGraphMlTest {
+
+    companion object: KLogging()
 
     @Test
     fun `GraphML export and import round trip with 10 vertices and 10 edges`(@TempDir dir: Path) {
@@ -21,19 +25,19 @@ class CrossFormatGraphMlTest {
 
         val src = TinkerGraphOperations()
 
-        val vertices = (1..10).map { i ->
-            src.createVertex("Person", mapOf("name" to "Person$i", "age" to (20 + i)))
+        val vertices = List(10) { i ->
+            src.createVertex("Person", "name" to "Person$i", "age" to (20 + i))
         }
 
-        (0 until 10).forEach { i ->
+        repeat(10) { i ->
             val from = vertices[i]
             val to = vertices[(i + 1) % 10]
-            src.createEdge(from.id, to.id, "KNOWS", mapOf("since" to "200${i}"))
+            src.createEdge(from.id, to.id, "KNOWS", "since" to "200${i}")
         }
 
         val exporter = GraphMlBulkExporter()
         exporter.exportGraph(
-            GraphExportSink.PathSink(out),
+            out.asSink(),
             src,
             GraphExportOptions(vertexLabels = setOf("Person"), edgeLabels = setOf("KNOWS")),
         ).status shouldBeEqualTo GraphIoStatus.COMPLETED
@@ -41,11 +45,12 @@ class CrossFormatGraphMlTest {
         val target = TinkerGraphOperations()
         val importer = GraphMlBulkImporter()
         val report = importer.importGraph(
-            GraphImportSource.PathSource(out),
+            out.asSource(),
             target,
             GraphImportOptions(),
         )
 
+        log.debug { "report=$report" }
         report.status shouldBeEqualTo GraphIoStatus.COMPLETED
         report.verticesCreated shouldBeEqualTo 10L
         report.edgesCreated shouldBeEqualTo 10L
