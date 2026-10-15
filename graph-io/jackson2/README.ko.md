@@ -2,11 +2,11 @@
 
 [English](README.md) | 한국어
 
-Jackson 2.x를 사용한 NDJSON(Newline-Delimited JSON) 그래프 데이터 벌크 임포터/익스포터.
+Jackson 2.x를 사용한 NDJSON (Newline-Delimited JSON) 그래프 데이터 벌크 임포터/익스포터.
 
 ## 개요
 
-`graph-io-jackson2`는 NDJSON 형식을 이용한 고성능 그래프 데이터 임포트/익스포트를 제공합니다. 각 줄이 정점(vertex) 또는 간선(edge)을 나타내는 완전한 JSON 객체이므로 전체 데이터를 메모리에 로드하지 않고 스트리밍 방식으로 대용량 그래프를 처리할 수 있습니다.
+`graph-io-jackson2`는 NDJSON 형식을 이용한 고성능 그래프 데이터 임포트/익스포트를 제공합니다. 각 줄이 정점 (vertex) 또는 간선 (edge)을 나타내는 완전한 JSON 객체이므로 전체 데이터를 메모리에 로드하지 않고 스트리밍 방식으로 대용량 그래프를 처리할 수 있습니다.
 
 ## 아키텍처
 
@@ -24,19 +24,19 @@ Jackson 2.x를 사용한 NDJSON(Newline-Delimited JSON) 그래프 데이터 벌�
 ### 세 가지 실행 모델
 
 1. **동기 API** (`Jackson2NdJsonBulkImporter`, `Jackson2NdJsonBulkExporter`)
-   - 블로킹 I/O 작업
-   - 간단한 순차 처리
-   - 소규모~중규모 그래프 또는 단순성이 필요한 경우에 최적
+    - 블로킹 I/O 작업
+    - 간단한 순차 처리
+    - 소규모~중규모 그래프 또는 단순성이 필요한 경우에 최적
 
 2. **가상 스레드 API** (`Jackson2NdJsonVirtualThreadBulkImporter`, `Jackson2NdJsonVirtualThreadBulkExporter`)
-   - Java 21+ 가상 스레드를 활용한 경량 동시성
-   - 수천 개의 동시 I/O 작업으로 확장 가능
-   - CPU 제약이 있는 시스템에서 높은 I/O 워크로드에 이상적
+    - Java 21+ 가상 스레드를 활용한 경량 동시성
+    - 수천 개의 동시 I/O 작업으로 확장 가능
+    - CPU 제약이 있는 시스템에서 높은 I/O 워크로드에 이상적
 
 3. **코루틴 서스펜드 API** (`SuspendJackson2NdJsonBulkImporter`, `SuspendJackson2NdJsonBulkExporter`)
-   - Kotlin 코루틴을 이용한 논블로킹 작업
-   - 기존 async/await 코드와 완벽 통합
-   - 코루틴을 이미 사용 중인 애플리케이션에 최적
+    - Kotlin 코루틴을 이용한 논블로킹 작업
+    - 기존 async/await 코드와 완벽 통합
+    - 코루틴을 이미 사용 중인 애플리케이션에 최적
 
 ### NDJSON 엔벨로프 형식
 
@@ -48,6 +48,7 @@ Jackson 2.x를 사용한 NDJSON(Newline-Delimited JSON) 그래프 데이터 벌�
 ```
 
 **엔벨로프 필드:**
+
 - `type` (string) - "vertex" 또는 "edge"
 - `id` (string) - 임포트/익스포트 내에서의 고유 식별자
 - `label` (string) - 정점 또는 간선 라벨
@@ -58,6 +59,7 @@ Jackson 2.x를 사용한 NDJSON(Newline-Delimited JSON) 그래프 데이터 벌�
 ### 간선 버퍼링
 
 임포트 중 간선을 버퍼에 쌓아 참조되는 모든 정점이 먼저 생성되도록 보장합니다:
+
 - 정점은 즉시 처리 및 생성
 - 간선은 버퍼에 누적 (기본 최대 크기: 10,000)
 - 모든 정점이 커밋된 후 간선 생성
@@ -176,14 +178,6 @@ dependencies {
 
 ## 스트리밍 reader 계약
 
-`Jackson2NdJsonRecordFlowReader`는 전체 스트림을 materialize하지 않고 NDJSON 레코드를 한 건씩 cold `Flow`로
-읽으며 소스 순서를 유지합니다. `GraphImportOptions.batchSize`는 백엔드 쓰기 플러시만 바꾸고 NDJSON 간선
-staging은 `maxEdgeBufferSize`로 제한됩니다. Path와 소유권을 넘긴 source는 라이브러리가 닫고 호출자 소유
-source는 collect 후에도 열린 상태로 둡니다.
+`Jackson2NdJsonRecordFlowReader`는 전체 스트림을 materialize하지 않고 NDJSON 레코드를 한 건씩 cold `Flow`로 읽으며 소스 순서를 유지합니다. `GraphImportOptions.batchSize`는 백엔드 쓰기 플러시만 바꾸고 NDJSON 간선 staging은 `maxEdgeBufferSize`로 제한됩니다. Path와 소유권을 넘긴 source는 라이브러리가 닫고 호출자 소유 source는 collect 후에도 열린 상태로 둡니다.
 
-입력 경계에서 Jackson이 JSON envelope 전체를 할당하거나 파싱하기 전에 긴 줄을 거부해야
-하면 `NdJsonReadOptions(maxLineChars = 1_048_576)`를 사용합니다. 상한은 UTF-16 code unit
-수이고 LF, CRLF, CR, 종결 문자가 없는 마지막 줄에 동일하게 적용됩니다. 기본값은 호환성을
-위해 `Int.MAX_VALUE`입니다. sync, suspend, Virtual Thread, Flow import reader가 같은 옵션
-constructor를 제공합니다. 제한 초과 오류는 phase, line, file role만 노출하고 raw payload와
-source path를 포함하지 않습니다.
+입력 경계에서 Jackson이 JSON envelope 전체를 할당하거나 파싱하기 전에 긴 줄을 거부해야 하면 `NdJsonReadOptions(maxLineChars = 1_048_576)`를 사용합니다. 상한은 UTF-16 code unit 수이고 LF, CRLF, CR, 종결 문자가 없는 마지막 줄에 동일하게 적용됩니다. 기본값은 호환성을 위해 `Int.MAX_VALUE`입니다. sync, suspend, Virtual Thread, Flow import reader가 같은 옵션 constructor를 제공합니다. 제한 초과 오류는 phase, line, file role만 노출하고 raw payload와 source path를 포함하지 않습니다.

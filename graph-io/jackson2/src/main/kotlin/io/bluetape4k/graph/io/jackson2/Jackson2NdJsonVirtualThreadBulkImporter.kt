@@ -4,9 +4,9 @@ import io.bluetape4k.graph.io.contract.GraphVirtualThreadBulkImporter
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.options.NdJsonReadOptions
 import io.bluetape4k.graph.io.report.GraphImportReport
-import io.bluetape4k.graph.io.report.GraphIoProgressListener
 import io.bluetape4k.graph.io.report.GraphIoFormat
 import io.bluetape4k.graph.io.report.GraphIoOperation
+import io.bluetape4k.graph.io.report.GraphIoProgressListener
 import io.bluetape4k.graph.io.report.GraphIoProgressReporter
 import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.graph.io.support.GraphIoPaths
@@ -39,7 +39,11 @@ import java.util.concurrent.CompletableFuture
  */
 class Jackson2NdJsonVirtualThreadBulkImporter(
     readOptions: NdJsonReadOptions = NdJsonReadOptions(),
-) : GraphVirtualThreadBulkImporter<GraphImportSource> {
+): GraphVirtualThreadBulkImporter<GraphImportSource> {
+
+    companion object: KLogging() {
+        val Default = Jackson2NdJsonVirtualThreadBulkImporter()
+    }
 
     private val sync: Jackson2NdJsonBulkImporter = Jackson2NdJsonBulkImporter(readOptions)
 
@@ -76,6 +80,4 @@ class Jackson2NdJsonVirtualThreadBulkImporter(
             onCompleted = { report -> reporter.completed(report) },
         )
     }
-
-    companion object : KLogging()
 }

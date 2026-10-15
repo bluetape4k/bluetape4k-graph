@@ -1,17 +1,26 @@
 package io.bluetape4k.graph.io.jackson2.internal
 
+import com.fasterxml.jackson.databind.json.JsonMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.bluetape4k.graph.io.model.GraphIoEdgeRecord
 import io.bluetape4k.graph.io.model.GraphIoVertexRecord
 import io.bluetape4k.jackson.Jackson
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.support.requireEquals
 
 internal class Jackson2EnvelopeCodec(
-    private val mapper: com.fasterxml.jackson.databind.ObjectMapper = Jackson.defaultJsonMapper,
+    private val mapper: JsonMapper = Jackson.defaultJsonMapper,
 ) {
-    fun parseLine(line: String): NdJsonEnvelope = mapper.readValue(line, NdJsonEnvelope::class.java)
+    companion object: KLogging() {
+        val Default = Jackson2EnvelopeCodec()
+    }
+
+    fun parseLine(line: String): NdJsonEnvelope =
+        mapper.readValue<NdJsonEnvelope>(line)
 
     fun toVertex(env: NdJsonEnvelope, defaultLabel: String): GraphIoVertexRecord {
-        require(env.type == NdJsonEnvelope.TYPE_VERTEX) { "Expected vertex envelope" }
+        env.type.requireEquals(NdJsonEnvelope.TYPE_VERTEX) { "Expected vertex envelope" }
+
         return GraphIoVertexRecord(
             externalId = requireNotNull(env.id) { "vertex envelope missing id" },
             label = env.label?.ifBlank { null } ?: defaultLabel,
@@ -20,7 +29,8 @@ internal class Jackson2EnvelopeCodec(
     }
 
     fun toEdge(env: NdJsonEnvelope, defaultLabel: String): GraphIoEdgeRecord {
-        require(env.type == NdJsonEnvelope.TYPE_EDGE) { "Expected edge envelope" }
+        env.type.requireEquals(NdJsonEnvelope.TYPE_EDGE) { "Expected edge envelope" }
+
         return GraphIoEdgeRecord(
             externalId = env.id,
             label = env.label?.ifBlank { null } ?: defaultLabel,
@@ -37,8 +47,13 @@ internal class Jackson2EnvelopeCodec(
 
     fun writeEdge(e: GraphIoEdgeRecord): String =
         mapper.writeValueAsString(
-            NdJsonEnvelope(NdJsonEnvelope.TYPE_EDGE, e.externalId, e.label, e.fromExternalId, e.toExternalId, e.properties)
+            NdJsonEnvelope(
+                NdJsonEnvelope.TYPE_EDGE,
+                e.externalId,
+                e.label,
+                e.fromExternalId,
+                e.toExternalId,
+                e.properties
+            )
         )
-
-    companion object : KLogging()
 }
