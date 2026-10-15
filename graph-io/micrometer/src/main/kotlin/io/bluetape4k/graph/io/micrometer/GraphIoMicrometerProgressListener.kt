@@ -6,15 +6,15 @@ import io.bluetape4k.graph.io.report.GraphIoPhase
 import io.bluetape4k.graph.io.report.GraphIoProgressEvent
 import io.bluetape4k.graph.io.report.GraphIoProgressEventType
 import io.bluetape4k.graph.io.report.GraphIoProgressListener
+import io.bluetape4k.logging.KLogging
 import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.Gauge
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import io.micrometer.core.instrument.Timer
-import java.util.Locale
 import kotlinx.atomicfu.atomic
 import kotlinx.atomicfu.updateAndGet
-import java.util.WeakHashMap
+import java.util.*
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
@@ -27,6 +27,25 @@ import kotlin.concurrent.withLock
 class GraphIoMicrometerProgressListener(
     private val registry: MeterRegistry,
 ) : GraphIoProgressListener {
+
+    companion object: KLogging() {
+        private val activeCellsLock = ReentrantLock()
+        private val registryActiveCells = WeakHashMap<MeterRegistry, Array<ActiveCell>>()
+
+        /** 동일 registry의 meter가 공유하는 상태이며 registry 자체를 강하게 참조하지 않는다. */
+        private fun sharedActiveCells(registry: MeterRegistry): Array<ActiveCell> = activeCellsLock.withLock {
+            registryActiveCells.getOrPut(registry) {
+                Array(GraphIoOperation.entries.size * GraphIoFormat.entries.size) { ActiveCell() }
+            }
+        }
+
+        const val METER_RUNS: String = "graph.io.runs"
+        const val METER_RECORDS: String = "graph.io.records"
+        const val METER_BYTES: String = "graph.io.bytes"
+        const val METER_DURATION: String = "graph.io.duration"
+        const val METER_PHASE_DURATION: String = "graph.io.phase.duration"
+        const val METER_ACTIVE: String = "graph.io.active"
+    }
 
     private val activeCells = sharedActiveCells(registry)
 
@@ -139,24 +158,5 @@ class GraphIoMicrometerProgressListener(
         fun decrement() {
             count.updateAndGet { value -> if (value > 0L) value - 1L else 0L }
         }
-    }
-
-    companion object {
-        private val activeCellsLock = ReentrantLock()
-        private val registryActiveCells = WeakHashMap<MeterRegistry, Array<ActiveCell>>()
-
-        /** 동일 registry의 meter가 공유하는 상태이며 registry 자체를 강하게 참조하지 않는다. */
-        private fun sharedActiveCells(registry: MeterRegistry): Array<ActiveCell> = activeCellsLock.withLock {
-            registryActiveCells.getOrPut(registry) {
-                Array(GraphIoOperation.entries.size * GraphIoFormat.entries.size) { ActiveCell() }
-            }
-        }
-
-        const val METER_RUNS: String = "graph.io.runs"
-        const val METER_RECORDS: String = "graph.io.records"
-        const val METER_BYTES: String = "graph.io.bytes"
-        const val METER_DURATION: String = "graph.io.duration"
-        const val METER_PHASE_DURATION: String = "graph.io.phase.duration"
-        const val METER_ACTIVE: String = "graph.io.active"
     }
 }
