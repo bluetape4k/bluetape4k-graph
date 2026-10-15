@@ -29,7 +29,7 @@ data class GraphIoProgressEvent(
     val bytesTotal: Long? = null,
     val elapsed: Duration = Duration.ZERO,
     val phaseElapsed: Duration? = null,
-) : Serializable {
+): Serializable {
 
     init {
         require(runId >= 0L) { "runId must be >= 0" }
@@ -83,7 +83,7 @@ data class GraphIoProgressEvent(
 
             GraphIoProgressEventType.COMPLETED,
             GraphIoProgressEventType.FAILED,
-            -> {
+                -> {
                 require(hasStarted) { "terminal event must have hasStarted=true" }
                 requireNotNull(status) { "${type.name} event requires status" }
                 require(phase == null) { "terminal event must not have phase" }

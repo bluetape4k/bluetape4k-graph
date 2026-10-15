@@ -11,7 +11,7 @@ data class GraphIoEdgeRecord(
     val fromExternalId: String,
     val toExternalId: String,
     val properties: Map<String, Any?> = emptyMap(),
-) : Serializable {
+): Serializable {
     init {
         label.requireNotBlank("label")
         fromExternalId.requireNotBlank("fromExternalId")
@@ -19,7 +19,36 @@ data class GraphIoEdgeRecord(
         externalId?.requireNotBlank("externalId")
     }
 
-    companion object : KLogging() {
+    companion object: KLogging() {
         private const val serialVersionUID: Long = 1L
+
+        operator fun invoke(
+            externalId: String? = null,
+            label: String,
+            fromExternalId: String,
+            toExternalId: String,
+            vararg params: Pair<String, Any?>,
+        ): GraphIoEdgeRecord {
+            return GraphIoEdgeRecord(externalId, label, fromExternalId, toExternalId, params.toMap())
+        }
     }
 }
+
+fun edgeRecordOf(
+    externalId: String? = null,
+    label: String,
+    fromExternalId: String,
+    toExternalId: String,
+    parameters: Map<String, Any?> = emptyMap(),
+): GraphIoEdgeRecord =
+    GraphIoEdgeRecord(externalId, label, fromExternalId, toExternalId, parameters)
+
+
+fun edgeRecordOf(
+    externalId: String? = null,
+    label: String,
+    fromExternalId: String,
+    toExternalId: String,
+    vararg params: Pair<String, Any?>,
+): GraphIoEdgeRecord =
+    GraphIoEdgeRecord(externalId, label, fromExternalId, toExternalId, params.toMap())

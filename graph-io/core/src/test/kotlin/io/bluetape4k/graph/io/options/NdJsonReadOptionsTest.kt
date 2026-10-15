@@ -2,13 +2,15 @@ package io.bluetape4k.graph.io.options
 
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.io.serializer.BinarySerializers
+import io.bluetape4k.io.serializer.JdkBinarySerializer
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
 
 class NdJsonReadOptionsTest {
+
+    companion object: KLogging()
 
     @Test
     fun `기본값은 기존 입력을 사실상 제한하지 않는다`() {
@@ -19,6 +21,7 @@ class NdJsonReadOptionsTest {
     fun `copy는 줄 길이 상한을 보존하고 변경한다`() {
         val original = NdJsonReadOptions(maxLineChars = 128)
 
+        log.debug { "original=$original" }
         original.copy().maxLineChars shouldBeEqualTo 128
         original.copy(maxLineChars = 256).maxLineChars shouldBeEqualTo 256
     }
@@ -30,15 +33,22 @@ class NdJsonReadOptionsTest {
     }
 
     @Test
-    fun `직렬화 왕복은 줄 길이 상한을 보존한다`() {
-        val bytes = ByteArrayOutputStream().also { output ->
-            ObjectOutputStream(output).use { it.writeObject(NdJsonReadOptions(maxLineChars = 4_096)) }
-        }.toByteArray()
+    fun `Java 직렬화 왕복은 줄 길이 상한을 보존한다`() {
+        val options = NdJsonReadOptions(maxLineChars = 4_096)
+        val serializer = JdkBinarySerializer(objectInputFilter = null)
+        val bytes = serializer.serialize(options)
+        val restored = serializer.deserialize<NdJsonReadOptions>(bytes)
 
-        val restored = ObjectInputStream(ByteArrayInputStream(bytes)).use {
-            it.readObject() as NdJsonReadOptions
-        }
+        restored shouldBeEqualTo options
+    }
 
-        restored shouldBeEqualTo NdJsonReadOptions(maxLineChars = 4_096)
+    @Test
+    fun `Fory 직렬화 왕복은 줄 길이 상한을 보존한다`() {
+        val options = NdJsonReadOptions(maxLineChars = 4_096)
+        val serializer = BinarySerializers.FastFory
+        val bytes = serializer.serialize(options)
+        val restored = serializer.deserialize<NdJsonReadOptions>(bytes)
+
+        restored shouldBeEqualTo options
     }
 }

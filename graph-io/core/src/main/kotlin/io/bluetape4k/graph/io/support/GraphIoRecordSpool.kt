@@ -2,17 +2,25 @@ package io.bluetape4k.graph.io.support
 
 import io.bluetape4k.graph.io.model.GraphIoEdgeRecord
 import io.bluetape4k.graph.io.model.GraphIoVertexRecord
-import java.io.BufferedInputStream
-import java.io.BufferedOutputStream
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.support.checkBeFalse
+import io.bluetape4k.support.checkBeTrue
+import io.bluetape4k.support.requireInRange
+import io.bluetape4k.support.requireLe
+import io.bluetape4k.support.requireNotNull
+import io.bluetape4k.support.requirePositiveNumber
+import io.bluetape4k.support.toUtf8Bytes
+import io.bluetape4k.support.toUtf8String
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.EOFException
-import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.Collections
+import java.util.*
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 private const val DEFAULT_MAX_RECORD_BYTES = 128 * 1024 * 1024
 private const val INITIAL_PAYLOAD_BUFFER_BYTES = 8 * 1024
@@ -28,7 +36,7 @@ private data class SpoolResources(
 private fun createSpoolFile(prefix: String, suffix: String): Path = Files.createTempFile(prefix, suffix)
 
 private fun openSpoolOutput(file: Path): DataOutputStream =
-    DataOutputStream(BufferedOutputStream(Files.newOutputStream(file)))
+    DataOutputStream(Files.newOutputStream(file).buffered())
 
 @Suppress("TooGenericExceptionCaught")
 private fun openSpoolResources(
@@ -36,17 +44,20 @@ private fun openSpoolResources(
     createTempFile: (String, String) -> Path,
     openOutput: (Path) -> DataOutputStream,
 ): SpoolResources {
-    require(maxRecordBytes > 0) { "maxRecordBytes must be positive" }
+    maxRecordBytes.requirePositiveNumber("maxRecordBytes")
 
     var vertexFile: Path? = null
     var edgeFile: Path? = null
     var vertexOutput: DataOutputStream? = null
     var edgeOutput: DataOutputStream? = null
+
     try {
         vertexFile = createTempFile("bluetape4k-graph-io-vertices-", ".spool")
         vertexOutput = openOutput(vertexFile)
+
         edgeFile = createTempFile("bluetape4k-graph-io-edges-", ".spool")
         edgeOutput = openOutput(edgeFile)
+
         return SpoolResources(
             vertexFile = vertexFile,
             edgeFile = edgeFile,
@@ -75,7 +86,7 @@ private fun openSpoolResources(
 
 private class CappedByteArrayOutputStream(
     private val maxBytes: Int,
-) : ByteArrayOutputStream(minOf(maxBytes, INITIAL_PAYLOAD_BUFFER_BYTES)) {
+): ByteArrayOutputStream(minOf(maxBytes, INITIAL_PAYLOAD_BUFFER_BYTES)) {
 
     override fun write(value: Int) {
         requireCapacity(1)
@@ -107,14 +118,14 @@ private class CappedByteArrayOutputStream(
 class GraphIoRecordSpool private constructor(
     resources: SpoolResources,
     private val payloadFactory: (Int) -> ByteArrayOutputStream,
-) : AutoCloseable {
+): AutoCloseable {
 
-    constructor() : this(
+    constructor(): this(
         openSpoolResources(DEFAULT_MAX_RECORD_BYTES, ::createSpoolFile, ::openSpoolOutput),
         ::CappedByteArrayOutputStream,
     )
 
-    internal constructor(maxRecordBytes: Int) : this(
+    internal constructor(maxRecordBytes: Int): this(
         openSpoolResources(maxRecordBytes, ::createSpoolFile, ::openSpoolOutput),
         ::CappedByteArrayOutputStream,
     )
@@ -122,7 +133,7 @@ class GraphIoRecordSpool private constructor(
     internal constructor(
         maxRecordBytes: Int,
         payloadFactory: (Int) -> ByteArrayOutputStream,
-    ) : this(
+    ): this(
         openSpoolResources(maxRecordBytes, ::createSpoolFile, ::openSpoolOutput),
         payloadFactory,
     )
@@ -132,7 +143,7 @@ class GraphIoRecordSpool private constructor(
         createTempFile: (String, String) -> Path,
         openOutput: (Path) -> DataOutputStream,
         payloadFactory: (Int) -> ByteArrayOutputStream = ::CappedByteArrayOutputStream,
-    ) : this(
+    ): this(
         openSpoolResources(maxRecordBytes, createTempFile, openOutput),
         payloadFactory,
     )
@@ -147,6 +158,7 @@ class GraphIoRecordSpool private constructor(
     private var finished = false
     private var closed = false
     private val replayInputs = Collections.synchronizedSet(mutableSetOf<DataInputStream>())
+    private val lock = ReentrantLock()
 
     /** 입력 정점에서 관찰된 속성 키를 발견 순서대로 반환한다. */
     val vertexPropertyKeys: Set<String>
@@ -159,7 +171,7 @@ class GraphIoRecordSpool private constructor(
     /** 정점 레코드를 spool에 추가한다. 호출 시점에 속성 값을 문자열로 고정한다. */
     fun appendVertices(records: Iterable<GraphIoVertexRecord>) {
         ensureWritable()
-        val output = requireNotNull(vertexOutput)
+        val output = vertexOutput.requireNotNull("vertxOutput")
         records.forEach { record ->
             val normalized = normalize(record.properties, vertexKeys)
             writeRecord(output) {
@@ -170,10 +182,14 @@ class GraphIoRecordSpool private constructor(
         }
     }
 
+    fun appendVertices(vararg records: GraphIoVertexRecord) {
+        appendVertices(records.toList())
+    }
+
     /** 간선 레코드를 spool에 추가한다. 호출 시점에 속성 값을 문자열로 고정한다. */
     fun appendEdges(records: Iterable<GraphIoEdgeRecord>) {
         ensureWritable()
-        val output = requireNotNull(edgeOutput)
+        val output = edgeOutput.requireNotNull("edgeOutput")
         records.forEach { record ->
             val normalized = normalize(record.properties, edgeKeys)
             writeRecord(output) {
@@ -184,6 +200,10 @@ class GraphIoRecordSpool private constructor(
                 writeProperties(normalized)
             }
         }
+    }
+
+    fun appendEdges(vararg records: GraphIoEdgeRecord) {
+        appendEdges(records.toList())
     }
 
     /** 모든 입력 스트림을 닫고 replay 가능한 읽기 상태로 전환한다. */
@@ -251,13 +271,13 @@ class GraphIoRecordSpool private constructor(
     }
 
     private fun ensureWritable() {
-        check(!closed) { "GraphIoRecordSpool is already closed" }
-        check(!finished) { "GraphIoRecordSpool has already been finished" }
+        closed.checkBeFalse { "GraphIoRecordSpool is already closed" }
+        finished.checkBeFalse { "GraphIoRecordSpool has already been finished" }
     }
 
     private fun ensureReadable() {
-        check(!closed) { "GraphIoRecordSpool is already closed" }
-        check(finished) { "GraphIoRecordSpool must be finished before replay" }
+        closed.checkBeFalse { "GraphIoRecordSpool is already closed" }
+        finished.checkBeTrue { "GraphIoRecordSpool must be finished before replay" }
     }
 
     private fun normalize(
@@ -275,10 +295,10 @@ class GraphIoRecordSpool private constructor(
     private fun writeRecord(output: DataOutputStream, writePayload: DataOutputStream.() -> Unit) {
         val payload = payloadFactory(maxRecordBytes)
         DataOutputStream(payload).use(writePayload)
+
         val size = payload.size()
-        require(size <= maxRecordBytes) {
-            "A graph-io spool record exceeds the ${maxRecordBytes} byte limit"
-        }
+        size.requireLe(maxRecordBytes) { "A graph-io spool record exceeds the $maxRecordBytes byte limit" }
+
         output.writeInt(size)
         payload.writeTo(output)
     }
@@ -287,7 +307,7 @@ class GraphIoRecordSpool private constructor(
         file: Path,
         readPayload: DataInputStream.() -> T,
     ): Sequence<T> = sequence {
-        val input = DataInputStream(BufferedInputStream(Files.newInputStream(file)))
+        val input = DataInputStream(Files.newInputStream(file).buffered())
         if (!registerReplayInput(input)) {
             input.close()
             error("GraphIoRecordSpool is already closed")
@@ -300,7 +320,7 @@ class GraphIoRecordSpool private constructor(
                     } catch (_: EOFException) {
                         break
                     }
-                    require(length in 0..maxRecordBytes) {
+                    length.requireInRange(0, maxRecordBytes) {
                         "Invalid graph-io spool record length: $length"
                     }
                     val bytes = ByteArray(length)
@@ -313,7 +333,7 @@ class GraphIoRecordSpool private constructor(
         }
     }
 
-    private fun registerReplayInput(input: DataInputStream): Boolean = synchronized(replayInputs) {
+    private fun registerReplayInput(input: DataInputStream): Boolean = lock.withLock {
         if (closed) {
             false
         } else {
@@ -323,7 +343,7 @@ class GraphIoRecordSpool private constructor(
     }
 
     private fun closeReplayInputs() {
-        val inputs = synchronized(replayInputs) {
+        val inputs = lock.withLock {
             replayInputs.toList().also { replayInputs.clear() }
         }
         var failure: Throwable? = null
@@ -346,9 +366,9 @@ class GraphIoRecordSpool private constructor(
             if (previous == null) error else previous.apply { addSuppressed(error) }
         }
 
-    private companion object {
+    private companion object: KLogging() {
         fun DataOutputStream.writeString(value: String) {
-            val bytes = value.toByteArray(StandardCharsets.UTF_8)
+            val bytes = value.toUtf8Bytes()
             writeInt(bytes.size)
             write(bytes)
         }
@@ -368,12 +388,11 @@ class GraphIoRecordSpool private constructor(
                 writeNullableString(value)
             }
         }
-
     }
 
     private fun DataInputStream.readString(): String {
         val length = readInt()
-        require(length >= 0) { "A required spool string cannot be null" }
+        length.requirePositiveNumber { "A required spool string cannot be null" }
         return readStringBytes(length)
     }
 
@@ -383,10 +402,10 @@ class GraphIoRecordSpool private constructor(
     }
 
     private fun DataInputStream.readStringBytes(length: Int): String {
-        require(length <= maxRecordBytes) { "Invalid graph-io spool string length: $length" }
+        length.requireLe(maxRecordBytes) { "Invalid graph-io spool string length: $length" }
         val bytes = ByteArray(length)
         readFully(bytes)
-        return bytes.toString(StandardCharsets.UTF_8)
+        return bytes.toUtf8String()
     }
 
     private fun DataInputStream.readProperties(): Map<String, String?> {

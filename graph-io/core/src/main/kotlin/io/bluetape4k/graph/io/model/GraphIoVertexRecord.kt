@@ -9,13 +9,35 @@ data class GraphIoVertexRecord(
     val externalId: String,
     val label: String,
     val properties: Map<String, Any?> = emptyMap(),
-) : Serializable {
+): Serializable {
     init {
         externalId.requireNotBlank("externalId")
         label.requireNotBlank("label")
     }
 
-    companion object : KLogging() {
+    companion object: KLogging() {
         private const val serialVersionUID: Long = 1L
+
+        operator fun invoke(
+            externalId: String,
+            label: String,
+            vararg params: Pair<String, Any?>,
+        ): GraphIoVertexRecord {
+            return GraphIoVertexRecord(externalId, label, params.toMap())
+        }
     }
 }
+
+fun vertexRecordOf(
+    externalId: String,
+    label: String,
+    parameters: Map<String, Any?> = emptyMap(),
+): GraphIoVertexRecord =
+    GraphIoVertexRecord(externalId, label, parameters)
+
+fun vertexRecordOf(
+    externalId: String,
+    label: String,
+    vararg params: Pair<String, Any?>,
+): GraphIoVertexRecord =
+    GraphIoVertexRecord(externalId, label, params.toMap())

@@ -1,20 +1,23 @@
 package io.bluetape4k.graph.io.report
 
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.io.serializer.BinarySerializers
+import io.bluetape4k.io.serializer.JdkBinarySerializer
+import io.bluetape4k.javatimes.seconds
 import org.junit.jupiter.api.Test
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
-import java.time.Duration
 
 class GraphIoSerializationTest {
 
-    private fun <T> roundTrip(obj: T): T {
-        val baos = ByteArrayOutputStream()
-        ObjectOutputStream(baos).use { it.writeObject(obj) }
-        @Suppress("UNCHECKED_CAST")
-        return ObjectInputStream(ByteArrayInputStream(baos.toByteArray())).use { it.readObject() } as T
+    private fun <T: Any> jdkRoundtrip(origin: T): T? {
+        val serializer = JdkBinarySerializer(objectInputFilter = null)
+        val bytes = serializer.serialize(origin)
+        return serializer.deserialize(bytes)
+    }
+
+    private fun <T: Any> foryRoundTrip(origin: T): T? {
+        val bytes = BinarySerializers.FastFory.serialize(origin)
+        return BinarySerializers.FastFory.deserialize(bytes)
     }
 
     @Test
@@ -25,8 +28,11 @@ class GraphIoSerializationTest {
             message = "test failure",
             recordId = "rec-42",
         )
-        val deserialized = roundTrip(original)
-        deserialized shouldBeEqualTo original
+        val jdkRestored = jdkRoundtrip(original).shouldNotBeNull()
+        jdkRestored shouldBeEqualTo original
+
+        val foryRestored = foryRoundTrip(original).shouldNotBeNull()
+        foryRestored shouldBeEqualTo original
     }
 
     @Test
@@ -40,10 +46,13 @@ class GraphIoSerializationTest {
             edgesCreated = 5L,
             skippedVertices = 0L,
             skippedEdges = 0L,
-            elapsed = Duration.ofSeconds(1),
+            elapsed = 1.seconds(),
         )
-        val deserialized = roundTrip(original)
-        deserialized shouldBeEqualTo original
+        val jdkRestored = jdkRoundtrip(original).shouldNotBeNull()
+        jdkRestored shouldBeEqualTo original
+
+        val foryRestored = foryRoundTrip(original).shouldNotBeNull()
+        foryRestored shouldBeEqualTo original
     }
 
     @Test
@@ -53,13 +62,17 @@ class GraphIoSerializationTest {
             format = GraphIoFormat.NDJSON_JACKSON3,
             verticesWritten = 0L,
             edgesWritten = 0L,
-            elapsed = Duration.ofMillis(50),
+            elapsed = 50.seconds(),
             failures = listOf(
                 GraphIoFailure(phase = GraphIoPhase.WRITE_EDGE, message = "connection lost"),
             ),
         )
-        val deserialized = roundTrip(original)
-        deserialized shouldBeEqualTo original
-        deserialized.failures[0].message shouldBeEqualTo "connection lost"
+        val jdkRestored = jdkRoundtrip(original).shouldNotBeNull()
+        jdkRestored shouldBeEqualTo original
+        jdkRestored.failures.single().message shouldBeEqualTo "connection lost"
+
+        val foryRestored = foryRoundTrip(original).shouldNotBeNull()
+        foryRestored shouldBeEqualTo original
+        foryRestored.failures.single().message shouldBeEqualTo "connection lost"
     }
 }

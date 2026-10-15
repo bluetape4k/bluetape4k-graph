@@ -83,7 +83,8 @@
   - 확장 함수: `BufferedSource.toInputStream()`, `BufferedSink.toOutputStream()`,
     `BufferedSink.asClosingOutputStream()` (close 시 sink도 함께 close), `BufferedSource.toReader(charset=UTF_8)`,
     `BufferedSink.toWriter(charset=UTF_8)`
-  - **close 컨벤션 노트 (KDoc)**: `asClosingOutputStream`이면 underlying `BufferedSink`까지 닫는다 (즉, `OutputStream.close()` 호출 시 sink·압축 체인 전체가 닫힘). `toOutputStream`은 underlying sink를 닫지 않으므로 호출자가 직접 sink를 닫아야 한다.
+  - **close 컨벤션 노트 (
+    KDoc)**: `asClosingOutputStream`이면 underlying `BufferedSink`까지 닫는다 (즉, `OutputStream.close()` 호출 시 sink·압축 체인 전체가 닫힘). `openOutputStream`은 underlying sink를 닫지 않으므로 호출자가 직접 sink를 닫아야 한다.
   - 고수준 헬퍼:
     - `inline fun writeAsOutputStream(sink: OkioGraphExportSink, block: (OutputStream) -> Unit)` — top-level 함수, `GraphIoOkioPaths.openSink(sink).use { bs -> bs.asClosingOutputStream().use { os -> block(os) } }`
     - `inline fun readAsInputStream(source: OkioGraphImportSource, block: (InputStream) -> Unit)` — 대응 top-level 함수
@@ -246,7 +247,8 @@
 - **체크포인트**:
   - 모든 `Compressor` 변형에 대한 round-trip 테스트 (FakeFileSystem `Path` 기반)
   - `@TestInstance(PER_CLASS)` + `@BeforeAll/@AfterAll` + `@AfterAll fakeFileSystem.checkNoOpenFiles()` 필수
-  - Bridges: write/read 일관성, **`asClosingOutputStream` close 시 sink close 검증**, 비-owning 케이스(`toOutputStream`)에서는 sink 미-close 검증
+  - Bridges: write/read 일관성, **`asClosingOutputStream` close 시 sink close
+    검증**, 비-owning 케이스 (`openOutputStream`)에서는 sink 미-close 검증
   - GraphIoOkioPaths: 선택 압축기 미존재 시 명확한 에러 메시지 검증 (`requireOnClasspath` 위반, build.gradle.kts 스니펫 포함)
   - GZIP/DEFLATE 항상 통과, LZ4/SNAPPY/ZSTD/BZIP2 는 `@EnabledIfClassPresent` 또는 try/catch 분기
   - 단위 테스트는 컨테이너 미사용 (FakeFileSystem 만)

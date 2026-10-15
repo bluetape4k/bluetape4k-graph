@@ -1,9 +1,10 @@
 package io.bluetape4k.graph.io.contract
 
-import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.report.GraphExportReport
 import io.bluetape4k.graph.io.report.GraphIoProgressListener
+import io.bluetape4k.graph.repository.GraphOperations
+import io.bluetape4k.support.requireNotNull
 
 /**
  * 공통 동기(blocking) 벌크 익스포터 계약.
@@ -38,7 +39,7 @@ import io.bluetape4k.graph.io.report.GraphIoProgressListener
  * @see GraphSuspendBulkExporter 코루틴 suspend 변형
  * @see GraphVirtualThreadBulkExporter Virtual Thread 비동기 변형
  */
-interface GraphBulkExporter<T : Any> : AutoCloseable {
+interface GraphBulkExporter<T: Any>: AutoCloseable {
 
     override fun close() {}
 
@@ -66,7 +67,7 @@ interface GraphBulkExporter<T : Any> : AutoCloseable {
         options: GraphExportOptions = GraphExportOptions(),
         listener: GraphIoProgressListener,
     ): GraphExportReport {
-        requireNotNull(listener) { "listener must not be null" }
+        listener.requireNotNull("listener")
         return exportGraph(sink, operations, options)
     }
 }

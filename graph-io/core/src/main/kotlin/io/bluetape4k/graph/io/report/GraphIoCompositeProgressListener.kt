@@ -5,7 +5,7 @@ package io.bluetape4k.graph.io.report
 /** 여러 진행 listener를 등록 순서대로 호출하는 composite listener. */
 class GraphIoCompositeProgressListener(
     listeners: Iterable<GraphIoProgressListener>,
-) : GraphIoProgressListener {
+): GraphIoProgressListener {
 
     private val delegates: List<GraphIoProgressListener> = listeners.toList()
 

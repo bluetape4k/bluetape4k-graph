@@ -2,12 +2,15 @@
 
 package io.bluetape4k.graph.io.support
 
+import io.bluetape4k.concurrent.virtualthread.virtualThread
 import io.bluetape4k.graph.io.contract.GraphBulkExporter
 import io.bluetape4k.graph.io.contract.GraphBulkImporter
 import io.bluetape4k.graph.io.contract.GraphVirtualThreadBulkExporter
 import io.bluetape4k.graph.io.contract.GraphVirtualThreadBulkImporter
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.options.GraphImportOptions
+import io.bluetape4k.graph.io.report.GraphExportReport
+import io.bluetape4k.graph.io.report.GraphImportReport
 import io.bluetape4k.graph.io.report.GraphIoProgressReporter
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
@@ -24,7 +27,7 @@ import kotlin.concurrent.withLock
  * 명시적으로 보존한다. `cancel(false)`는 future 상태만 취소하고, `cancel(true)`는
  * worker interrupt를 요청한다.
  */
-object VirtualThreadGraphBulkAdapter : KLogging() {
+object VirtualThreadGraphBulkAdapter: KLogging() {
 
     /**
      * 동기 임포터를 Virtual Thread 비동기 임포터로 감싼다.
@@ -33,8 +36,8 @@ object VirtualThreadGraphBulkAdapter : KLogging() {
      * 호출하며, 반복 호출은 no-op이다. source 소유권과 비동기 작업 중 close
      * 시점의 의미는 delegate 계약을 따른다.
      */
-    fun <S : Any> wrapImporter(sync: GraphBulkImporter<S>): GraphVirtualThreadBulkImporter<S> =
-        object : GraphVirtualThreadBulkImporter<S> {
+    fun <S: Any> wrapImporter(sync: GraphBulkImporter<S>): GraphVirtualThreadBulkImporter<S> =
+        object: GraphVirtualThreadBulkImporter<S> {
             private val delegateClose = CloseOnce(sync)
 
             override fun close() = delegateClose.close()
@@ -43,7 +46,8 @@ object VirtualThreadGraphBulkAdapter : KLogging() {
                 source: S,
                 operations: GraphOperations,
                 options: GraphImportOptions,
-            ) = cancellableVirtualFuture { sync.importGraph(source, operations, options) }
+            ): CompletableFuture<GraphImportReport> =
+                cancellableVirtualFuture { sync.importGraph(source, operations, options) }
         }
 
     /**
@@ -53,8 +57,8 @@ object VirtualThreadGraphBulkAdapter : KLogging() {
      * 호출하며, 반복 호출은 no-op이다. sink 소유권과 비동기 작업 중 close
      * 시점의 의미는 delegate 계약을 따른다.
      */
-    fun <T : Any> wrapExporter(sync: GraphBulkExporter<T>): GraphVirtualThreadBulkExporter<T> =
-        object : GraphVirtualThreadBulkExporter<T> {
+    fun <T: Any> wrapExporter(sync: GraphBulkExporter<T>): GraphVirtualThreadBulkExporter<T> =
+        object: GraphVirtualThreadBulkExporter<T> {
             private val delegateClose = CloseOnce(sync)
 
             override fun close() = delegateClose.close()
@@ -63,7 +67,8 @@ object VirtualThreadGraphBulkAdapter : KLogging() {
                 sink: T,
                 operations: GraphOperations,
                 options: GraphExportOptions,
-            ) = cancellableVirtualFuture { sync.exportGraph(sink, operations, options) }
+            ): CompletableFuture<GraphExportReport> =
+                cancellableVirtualFuture { sync.exportGraph(sink, operations, options) }
         }
 
     /** Virtual Thread worker와 public future를 연결하는 취소 가능한 제출기. */
@@ -71,9 +76,7 @@ object VirtualThreadGraphBulkAdapter : KLogging() {
         onCancel: (mayInterruptIfRunning: Boolean, started: Boolean) -> Unit = { _, _ -> },
         block: () -> T,
     ): CompletableFuture<T> {
-        val future = CancellableVirtualFuture(block, onCancel)
-        future.start()
-        return future
+        return CancellableVirtualFuture(block, onCancel).apply { start() }
     }
 
     /** Reporter lifecycle을 취소 요청 이후 작업 종료 시점까지 유지하는 VT helper. */
@@ -98,76 +101,98 @@ object VirtualThreadGraphBulkAdapter : KLogging() {
         }
     }
 
-    private class CloseOnce(private val delegate: AutoCloseable) : AutoCloseable {
+    private class CloseOnce(private val delegate: AutoCloseable): AutoCloseable {
         private val closed = AtomicBoolean(false)
 
         override fun close() {
             if (closed.compareAndSet(false, true)) delegate.close()
         }
     }
+}
 
-    private class CancellableVirtualFuture<T>(
-        private val block: () -> T,
-        private val onCancel: (Boolean, Boolean) -> Unit,
-    ) : CompletableFuture<T>() {
 
-        private val worker = AtomicReference<Thread>()
-        private val cancelRequested = AtomicBoolean(false)
-        private val started = AtomicBoolean(false)
-        private val startGate = CountDownLatch(1)
-        private val lifecycleLock = ReentrantLock()
+fun <S: Any> GraphBulkImporter<S>.asVirtualThreadImporter(): GraphVirtualThreadBulkImporter<S> =
+    VirtualThreadGraphBulkAdapter.wrapImporter(this)
 
-        fun start() {
-            val thread = Thread.ofVirtual().unstarted {
-                try {
-                    startGate.await()
-                    lifecycleLock.withLock {
-                        if (cancelRequested.get()) return@unstarted
-                        started.set(true)
-                    }
-                    complete(block())
-                } catch (error: InterruptedException) {
-                    Thread.currentThread().interrupt()
-                    completeExceptionally(error)
-                } catch (error: Throwable) {
-                    completeExceptionally(error)
-                }
-            }
-            worker.set(thread)
-            thread.start()
-            startGate.countDown()
-        }
+fun <T: Any> GraphBulkExporter<T>.asVirtualThreadExporter(): GraphVirtualThreadBulkExporter<T> =
+    VirtualThreadGraphBulkAdapter.wrapExporter(this)
 
-        override fun cancel(mayInterruptIfRunning: Boolean): Boolean {
-            val cancellation = lifecycleLock.withLock {
-                if (cancelRequested.get()) return@withLock false to false
-                val didCancel = super.cancel(false)
-                if (didCancel) {
-                    cancelRequested.set(true)
-                    didCancel to started.get()
-                } else {
-                    false to false
-                }
-            }
-            val accepted = cancellation.first
-            val running = cancellation.second
-            if (!accepted) return false
 
-            var callbackError: Error? = null
+// TODO: 이건 bluetape4k-core 로 이동하는게 낫겠다.
+internal class CancellableVirtualFuture<T>(
+    private val block: () -> T,
+    private val onCancel: (Boolean, Boolean) -> Unit,
+): CompletableFuture<T>() {
+
+    private val worker = AtomicReference<Thread>()
+    private val cancelRequested = AtomicBoolean(false)
+    private val started = AtomicBoolean(false)
+    private val startGate = CountDownLatch(1)
+    private val lifecycleLock = ReentrantLock()
+
+    fun start() {
+        val thread = virtualThread(false) {
             try {
-                onCancel(mayInterruptIfRunning, running)
-            } catch (error: Error) {
-                // Cancellation state must not be undone by an observer hook, but
-                // an Error from a lifecycle listener remains visible to the caller.
-                callbackError = error
-            } catch (_: Exception) {
-                // Listener/observer exceptions are isolated after cancellation is accepted.
+                startGate.await()
+                lifecycleLock.withLock {
+                    if (cancelRequested.get()) return@virtualThread
+                    started.set(true)
+                }
+                complete(block())
+            } catch (error: InterruptedException) {
+                Thread.currentThread().interrupt()
+                completeExceptionally(error)
+            } catch (error: Throwable) {
+                completeExceptionally(error)
             }
-            if (mayInterruptIfRunning) {
-                worker.get()?.interrupt()
-            }
-            callbackError?.let { throw it }
-            return accepted
         }
+        worker.set(thread)
+        thread.start()
+        startGate.countDown()
+    }
+
+    override fun cancel(mayInterruptIfRunning: Boolean): Boolean {
+        val cancellation = lifecycleLock.withLock {
+            if (cancelRequested.get()) return@withLock false to false
+            val didCancel = super.cancel(false)
+            if (didCancel) {
+                cancelRequested.set(true)
+                didCancel to started.get()
+            } else {
+                false to false
+            }
+        }
+        val accepted = cancellation.first
+        val running = cancellation.second
+        if (!accepted) return false
+
+        var callbackError: Error? = null
+        try {
+            onCancel(mayInterruptIfRunning, running)
+        } catch (error: Error) {
+            // Cancellation state must not be undone by an observer hook, but
+            // an Error from a lifecycle listener remains visible to the caller.
+            callbackError = error
+        } catch (_: Exception) {
+            // Listener/observer exceptions are isolated after cancellation is accepted.
+        }
+        if (mayInterruptIfRunning) {
+            worker.get()?.interrupt()
+        }
+        callbackError?.let { throw it }
+        return true
     }
 }
+
+fun <T> cancellableVirtualFuture(
+    onCancel: (mayInterruptIfRunning: Boolean, started: Boolean) -> Unit = { _, _ -> },
+    block: () -> T,
+): CompletableFuture<T> =
+    VirtualThreadGraphBulkAdapter.cancellableVirtualFuture(onCancel, block)
+
+fun <T> cancellableVirtualFuture(
+    reporter: GraphIoProgressReporter,
+    block: () -> T,
+    onCompleted: (T) -> Unit,
+): CompletableFuture<T> =
+    VirtualThreadGraphBulkAdapter.cancellableVirtualFuture(reporter, block, onCompleted)

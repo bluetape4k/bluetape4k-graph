@@ -11,7 +11,8 @@ import java.io.Serializable
  */
 data class NdJsonReadOptions(
     val maxLineChars: Int = UNLIMITED_MAX_LINE_CHARS,
-) : Serializable {
+): Serializable {
+
     init {
         maxLineChars.requirePositiveNumber("maxLineChars")
     }

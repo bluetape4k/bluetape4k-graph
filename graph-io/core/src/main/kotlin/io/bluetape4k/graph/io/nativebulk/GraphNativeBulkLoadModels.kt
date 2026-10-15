@@ -12,11 +12,16 @@
 
 package io.bluetape4k.graph.io.nativebulk
 
+import io.bluetape4k.ToStringBuilder
+import io.bluetape4k.concurrent.virtualthread.virtualThread
+import io.bluetape4k.support.requireEquals
+import io.bluetape4k.support.requireGt
+import io.bluetape4k.support.requireInRange
+import io.bluetape4k.support.requireLe
+import io.bluetape4k.support.requireMatches
 import java.io.Serializable
 import java.time.Duration
-import java.util.ArrayList
-import java.util.Collections
-import java.util.LinkedHashSet
+import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
@@ -27,12 +32,9 @@ internal fun <T> immutableSet(values: Set<T>): Set<T> =
 internal fun <T> immutableList(values: List<T>): List<T> =
     Collections.unmodifiableList(ArrayList(values))
 
-internal fun String.requireLogSafe(field: String, maxLength: Int): String {
-    require(length in 1..maxLength) { "$field must be a non-empty bounded identifier" }
-    require(matches(Regex("[A-Za-z0-9][A-Za-z0-9._-]*"))) {
-        "$field contains unsupported characters"
-    }
-    return this
+internal fun String.requireLogSafe(field: String, maxLength: Int): String = apply {
+    length.requireInRange(1, maxLength, "length")
+    this.requireMatches(Regex("[A-Za-z0-9][A-Za-z0-9._-]*"), field)
 }
 
 internal fun saturatingAdd(base: Long, delta: Long): Long = when {
@@ -64,26 +66,44 @@ internal fun boundedByCloseGrace(
 ): GraphNativeBulkLoadDeadline = earliestDeadline(deadline, closeGraceDeadline(nowNanos))
 
 /** Native loader가 받을 수 있는 원시 source 종류다. */
-enum class GraphNativeBulkLoadSourceKind { FILE, DIRECTORY, URI }
+enum class GraphNativeBulkLoadSourceKind {
+    FILE,
+    DIRECTORY,
+    URI
+}
 
 /** Native command가 보장하는 durable transaction 경계다. */
 enum class GraphNativeBulkLoadTransactionGuarantee {
-    ATOMIC, BATCHED, NONE, UNKNOWN
+    ATOMIC,
+    BATCHED,
+    NONE,
+    UNKNOWN
 }
 
 /** Adapter가 보존할 수 있는 failure detail의 최소 단위다. */
 enum class GraphNativeBulkLoadFailureDetail {
-    RECORD, BATCH, COMMAND, SUMMARY, NONE
+    RECORD,
+    BATCH,
+    COMMAND,
+    SUMMARY,
+    NONE
 }
 
 /** Bulk command가 통과하는 검증 phase 순서다. */
 enum class GraphNativeBulkLoadPhase {
-    PREPARE, LOAD_VERTEX, LOAD_EDGE, VERIFY, COMPLETE
+    PREPARE,
+    LOAD_VERTEX,
+    LOAD_EDGE,
+    VERIFY,
+    COMPLETE
 }
 
 /** Bulk command의 terminal 결과다. */
 enum class GraphNativeBulkLoadOutcome {
-    COMPLETED, PARTIAL, FAILED, CANCELLED
+    COMPLETED,
+    PARTIAL,
+    FAILED,
+    CANCELLED
 }
 
 /** Caller에게 노출하는 비밀값 없는 고정 failure code다. */
@@ -101,13 +121,16 @@ enum class GraphNativeBulkLoadFailureCode(val publicMessage: String) {
 
 /** Cancellation을 유발한 lifecycle 사건이다. */
 enum class GraphNativeBulkLoadCancellationReason {
-    TIMEOUT, INTERRUPT, CLOSE, LISTENER_FAILURE
+    TIMEOUT,
+    INTERRUPT,
+    CLOSE,
+    LISTENER_FAILURE
 }
 
 /** Native loader가 caller에게 반환하는 redacted 예외다. */
 open class GraphNativeBulkLoadException(
     val code: GraphNativeBulkLoadFailureCode,
-) : RuntimeException(code.publicMessage) {
+): RuntimeException(code.publicMessage) {
     companion object {
         private const val serialVersionUID: Long = 1L
     }
@@ -116,7 +139,7 @@ open class GraphNativeBulkLoadException(
 /** Cancellation reason을 보존하는 redacted 예외다. */
 class GraphNativeBulkLoadCancellationException(
     val reason: GraphNativeBulkLoadCancellationReason,
-) : GraphNativeBulkLoadException(
+): GraphNativeBulkLoadException(
     if (reason == GraphNativeBulkLoadCancellationReason.TIMEOUT) {
         GraphNativeBulkLoadFailureCode.TIMEOUT
     } else {
@@ -140,28 +163,31 @@ internal fun redactNativeBulkLoadFailure(
 
 /** URI 접근 허용 방식이다. */
 enum class GraphNativeBulkLoadUriAccess {
-    DENIED, ALLOWLISTED
+    DENIED,
+    ALLOWLISTED
 }
 
 /** Source를 읽는 실행 위치다. */
 enum class GraphNativeBulkLoadSourceExecution {
-    CALLER_JVM, BACKEND_SERVER
+    CALLER_JVM,
+    BACKEND_SERVER
 }
 
 /** Adapter shutdown이 bounded하다는 선언이다. */
 enum class GraphNativeBulkLoadShutdownGuarantee {
-    BOUNDED, UNKNOWN
+    BOUNDED,
+    UNKNOWN
 }
 
 /** Monotonic clock 기반의 bounded deadline이다. */
 data class GraphNativeBulkLoadDeadline(
     val deadlineNanos: Long,
-) : Serializable {
+): Serializable {
     fun remainingNanos(nowNanos: Long = System.nanoTime()): Long =
         saturatingSubtract(deadlineNanos, nowNanos).coerceAtLeast(0L)
 
     val isExpired: Boolean
-        get() = remainingNanos() == 0L
+        get() = remainingNanos() <= 0L
 
     companion object {
         private const val serialVersionUID: Long = 1L
@@ -196,7 +222,8 @@ internal fun runBounded(
     action: () -> Unit,
 ): GraphNativeBulkLoadBoundedCall {
     val completion = CompletableFuture<GraphNativeBulkLoadException?>()
-    val worker = Thread.startVirtualThread {
+
+    val worker = virtualThread {
         var failure: GraphNativeBulkLoadException? = null
         try {
             action()
@@ -211,10 +238,11 @@ internal fun runBounded(
         }
     }
     var interrupted = false
-    return try {
+
+    try {
         while (true) {
             val remaining = deadline.remainingNanos()
-            if (remaining == 0L) {
+            if (remaining <= 0L) {
                 worker.interrupt()
                 return GraphNativeBulkLoadBoundedCall(
                     GraphNativeBulkLoadException(GraphNativeBulkLoadFailureCode.TIMEOUT),
@@ -248,21 +276,21 @@ data class GraphNativeBulkLoadUriOrigin(
     val scheme: String,
     val host: String,
     val port: Int? = null,
-) : Serializable {
+): Serializable {
     init {
-        require(scheme.matches(Regex("[a-z][a-z0-9+.-]{0,31}"))) {
+        scheme.requireMatches(Regex("[a-z][a-z0-9+.-]{0,31}"), "schme") {
             "URI scheme must be normalized lowercase bounded identifier"
         }
         require(host.length in 1..253 && host == host.lowercase()) {
             "URI host must be normalized lowercase exact host"
         }
-        require(host.matches(Regex("[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?"))) {
+        host.requireMatches(Regex("[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?"), "host") {
             "URI host contains unsupported characters"
         }
         require(!host.contains("..") && !host.contains('*')) {
             "URI host must not contain wildcards or empty labels"
         }
-        require(port == null || port in 1..65_535) { "URI port is out of range" }
+        port?.requireInRange(1, 65_535, "port")
     }
 
     companion object {
@@ -271,7 +299,7 @@ data class GraphNativeBulkLoadUriOrigin(
 }
 
 /** Source와 timeout/progress/failure-detail 정책을 담는 raw bulk-load request다. */
-data class GraphNativeBulkLoadRequest<R : Any>(
+data class GraphNativeBulkLoadRequest<R: Any>(
     val source: R,
     val sourceKind: GraphNativeBulkLoadSourceKind,
     /** Secret-free fixed operation label; never use a tenant/request identifier. */
@@ -279,20 +307,16 @@ data class GraphNativeBulkLoadRequest<R : Any>(
     val timeout: Duration? = null,
     val maxFailureDetails: Int = DEFAULT_MAX_FAILURE_DETAILS,
     val progressInterval: Long = DEFAULT_PROGRESS_INTERVAL,
-) : Serializable {
+): Serializable {
     init {
         operationName.requireLogSafe("operationName", MAX_OPERATION_NAME_LENGTH)
-        require(operationName == REQUIRED_OPERATION_NAME) {
-            "operationName must be the fixed native-bulk-load operation label"
-        }
+        operationName.requireEquals(REQUIRED_OPERATION_NAME, "operationName")
         timeout?.let {
-            require(!it.isNegative && !it.isZero) { "timeout must be positive" }
-            require(it <= MAX_TIMEOUT) { "timeout exceeds the supported finite maximum" }
+            it.requireGt(Duration.ZERO, "timeout")
+            it.requireLe(MAX_TIMEOUT, "timeout")
         }
-        require(maxFailureDetails in 0..MAX_FAILURE_DETAILS) {
-            "maxFailureDetails must be between 0 and $MAX_FAILURE_DETAILS"
-        }
-        require(progressInterval > 0) { "progressInterval must be > 0" }
+        maxFailureDetails.requireInRange(0, MAX_FAILURE_DETAILS, "maxFailureDetails")
+        progressInterval.requireGt(0, "progressInterval")
     }
 
     companion object {
@@ -310,7 +334,7 @@ data class GraphNativeBulkLoadRequest<R : Any>(
 
     override fun toString(): String =
         "GraphNativeBulkLoadRequest(sourceKind=$sourceKind, " +
-            "timeout=$timeout, maxFailureDetails=$maxFailureDetails, progressInterval=$progressInterval)"
+                "timeout=$timeout, maxFailureDetails=$maxFailureDetails, progressInterval=$progressInterval)"
 
 }
 
@@ -323,7 +347,7 @@ class GraphNativeBulkLoaderCapabilities(
     val failureDetail: GraphNativeBulkLoadFailureDetail,
     val shutdownGuarantee: GraphNativeBulkLoadShutdownGuarantee = GraphNativeBulkLoadShutdownGuarantee.UNKNOWN,
     sourcePolicy: GraphNativeBulkLoadSourcePolicy = GraphNativeBulkLoadSourcePolicy(),
-) : Serializable {
+): Serializable {
     val backend: String = backend.requireLogSafe("backend", MAX_BACKEND_LENGTH)
     val sourceKinds: Set<GraphNativeBulkLoadSourceKind> = immutableSet(sourceKinds)
     val sourcePolicy: GraphNativeBulkLoadSourcePolicy = sourcePolicy
@@ -401,7 +425,7 @@ class GraphNativeBulkLoadSourcePolicy(
     val requiresApprovedStagingRoot: Boolean = true,
     val backendRevalidatesOrigin: Boolean = false,
     val backendRevalidatesArtifact: Boolean = false,
-) : Serializable {
+): Serializable {
     companion object {
         const val MAX_URI_ALLOWLIST_ENTRIES: Int = 32
         const val MAX_URI_ALLOWLIST_BYTES: Int = 4_096
@@ -441,16 +465,31 @@ class GraphNativeBulkLoadSourcePolicy(
 
     fun isDeniedByDefault(): Boolean =
         uriAccess == GraphNativeBulkLoadUriAccess.DENIED &&
-            allowedUriOrigins.isEmpty() &&
-            execution == GraphNativeBulkLoadSourceExecution.CALLER_JVM &&
-            !allowPrivateNetworks &&
-            !allowRedirects &&
-            maxRedirectHops == 0 &&
-            maxUriLength == DEFAULT_MAX_URI_LENGTH &&
-            !allowCredentials &&
-            requiresApprovedStagingRoot &&
-            !backendRevalidatesOrigin &&
-            !backendRevalidatesArtifact
+                allowedUriOrigins.isEmpty() &&
+                execution == GraphNativeBulkLoadSourceExecution.CALLER_JVM &&
+                !allowPrivateNetworks &&
+                !allowRedirects &&
+                maxRedirectHops == 0 &&
+                maxUriLength == DEFAULT_MAX_URI_LENGTH &&
+                !allowCredentials &&
+                requiresApprovedStagingRoot &&
+                !backendRevalidatesOrigin &&
+                !backendRevalidatesArtifact
+
+    override fun toString(): String =
+        ToStringBuilder(this)
+            .add("uriAccess", uriAccess)
+            .add("allowedUriOrigins", allowedUriOrigins)
+            .add("execution", execution)
+            .add("allowPrivateNetworks", allowPrivateNetworks)
+            .add("allowRedirects", allowRedirects)
+            .add("maxRedirectHops", maxRedirectHops)
+            .add("maxUriLength", maxUriLength)
+            .add("allowCredentials", allowCredentials)
+            .add("requiresApprovedStagingRoot", requiresApprovedStagingRoot)
+            .add("backendRevalidatesOrigin", backendRevalidatesOrigin)
+            .add("backendRevalidatesArtifact", backendRevalidatesArtifact)
+            .toString()
 }
 
 /** Caller thread에 전달하는 누적 progress snapshot이다. */
@@ -461,7 +500,7 @@ data class GraphNativeBulkLoadProgress(
     val failed: Long,
     val outcome: GraphNativeBulkLoadOutcome? = null,
     val eventKind: GraphNativeBulkLoadProgressEventKind = GraphNativeBulkLoadProgressEventKind.PHASE,
-) : Serializable {
+): Serializable {
     init {
         require(processed >= 0 && succeeded >= 0 && failed >= 0) { "progress counts must be >= 0" }
         require(succeeded <= processed && failed <= processed - succeeded) {
@@ -479,14 +518,15 @@ data class GraphNativeBulkLoadProgress(
 
 /** Progress가 phase 경계인지 token 경계인지 구분한다. */
 enum class GraphNativeBulkLoadProgressEventKind {
-    PHASE, INTERVAL
+    PHASE,
+    INTERVAL
 }
 
 /** Report에 보존되는 redacted record/batch/command failure다. */
 data class GraphNativeBulkLoadFailure(
     val phase: GraphNativeBulkLoadPhase,
     val code: GraphNativeBulkLoadFailureCode,
-) : Serializable {
+): Serializable {
     companion object {
         private const val serialVersionUID: Long = 1L
     }
@@ -521,7 +561,8 @@ class GraphNativeBulkLoadReport private constructor(
     val omittedFailureDetails: Long,
     val cancellationReason: GraphNativeBulkLoadCancellationReason?,
     val elapsed: Duration,
-) : Serializable {
+): Serializable {
+
     val failures: List<GraphNativeBulkLoadFailure> = immutableList(failures)
 
     companion object {
@@ -560,7 +601,7 @@ class GraphNativeBulkLoadReport private constructor(
                 }
                 GraphNativeBulkLoadOutcome.PARTIAL -> require(
                     succeeded > 0 && failed > 0 &&
-                        (omittedFailureDetails > 0 || failures.isNotEmpty())
+                            (omittedFailureDetails > 0 || failures.isNotEmpty())
                 ) {
                     "PARTIAL outcome requires durable successes and failed records"
                 }
@@ -612,5 +653,19 @@ class GraphNativeBulkLoadReport private constructor(
         }
         return this
     }
+
+    override fun toString(): String =
+        ToStringBuilder(this)
+            .add("operationName", operationName)
+            .add("outcome", outcome)
+            .add("processed", processed)
+            .add("succeeded", succeeded)
+            .add("failed", failed)
+            .add("failures", failures)
+            .add("failureDetailsLimit", failureDetailsLimit)
+            .add("omittedFailureDetails", omittedFailureDetails)
+            .add("cancellationReason", cancellationReason)
+            .add("elapsed", elapsed)
+            .toString()
 
 }

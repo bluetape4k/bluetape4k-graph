@@ -1,11 +1,20 @@
 package io.bluetape4k.graph.io.checkpoint
 
 import io.bluetape4k.graph.io.report.GraphIoFormat
+import io.bluetape4k.support.requireGe
+import io.bluetape4k.support.requireNotBlank
+import io.bluetape4k.support.requirePositiveNumber
 import java.io.Serializable
 import java.util.concurrent.ConcurrentHashMap
 
 /** 모든 graph-io 포맷이 공유하는 import checkpoint 단계. */
-enum class GraphImportCheckpointPhase { DISCOVERED, VERTICES, EDGES, COMPLETED, FAILED }
+enum class GraphImportCheckpointPhase {
+    DISCOVERED,
+    VERTICES,
+    EDGES,
+    COMPLETED,
+    FAILED
+}
 
 /**
  * backend와 무관하게 영속화할 수 있는 import 위치.
@@ -22,12 +31,18 @@ data class GraphImportCheckpoint(
     val externalIdMappingState: String? = null,
     val failureBoundary: String? = null,
     val version: Int = CURRENT_VERSION,
-) : Serializable {
+): Serializable {
+
+    companion object {
+        private const val serialVersionUID: Long = 1L
+        const val CURRENT_VERSION: Int = 2
+    }
+
     init {
-        require(sourceIdentity.isNotBlank()) { "sourceIdentity must not be blank" }
-        require(verticesProcessed >= 0) { "verticesProcessed must be >= 0" }
-        require(edgesProcessed >= 0) { "edgesProcessed must be >= 0" }
-        require(version > 0) { "version must be positive" }
+        sourceIdentity.requireNotBlank("sourceIdentity")
+        verticesProcessed.requireGe(0, "verticesProcessed")
+        edgesProcessed.requireGe(0, "edgesProcessed")
+        version.requirePositiveNumber("version")
     }
 
     /**
@@ -45,7 +60,7 @@ data class GraphImportCheckpoint(
         externalIdMappingState: String? = null,
         failureBoundary: String? = null,
         version: Int = CURRENT_VERSION,
-    ) : this(
+    ): this(
         format = format,
         sourceIdentity = sourceIdentity,
         phase = phase,
@@ -75,11 +90,6 @@ data class GraphImportCheckpoint(
             it.importOptionsIdentityValue = importOptionsIdentity
             it.attemptIdValue = attemptId
         }
-
-    companion object {
-        private const val serialVersionUID: Long = 1L
-        const val CURRENT_VERSION: Int = 2
-    }
 }
 
 /** 선택적으로 활성화하는 checkpoint/resume의 영속 저장소 추상화. */
@@ -104,7 +114,7 @@ interface GraphImportCheckpointStore {
 }
 
 /** 테스트와 단일 프로세스 호출자에 유용한 작은 프로세스 로컬 저장소. */
-class InMemoryGraphImportCheckpointStore : GraphImportCheckpointStore {
+class InMemoryGraphImportCheckpointStore: GraphImportCheckpointStore {
     private val checkpoints = mutableMapOf<String, GraphImportCheckpoint>()
 
     @Synchronized
@@ -124,9 +134,10 @@ class InMemoryGraphImportCheckpointStore : GraphImportCheckpointStore {
 class GraphImportCheckpointConflictException(
     message: String,
     cause: Throwable? = null,
-) : IllegalStateException(message, cause)
+): IllegalStateException(message, cause)
 
 private object GraphImportCheckpointClaims {
+
     private data class ClaimKey(val store: GraphImportCheckpointStore, val key: String)
     private data class Claim(val attemptId: String)
 
@@ -136,6 +147,7 @@ private object GraphImportCheckpointClaims {
     fun claim(store: GraphImportCheckpointStore, key: String, attemptId: String): Boolean {
         val claimKey = ClaimKey(store, key)
         val next = Claim(attemptId)
+
         while (true) {
             val current = claims[claimKey]
             if (current == null) {

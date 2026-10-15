@@ -2,15 +2,26 @@ package io.bluetape4k.graph.io.checkpoint
 
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.graph.io.report.GraphIoFormat
+import io.bluetape4k.assertions.shouldBeFalse
+import io.bluetape4k.assertions.shouldBeNull
+import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.graph.io.options.DuplicateVertexPolicy
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.options.copyWithCheckpointSourceIdentity
+import io.bluetape4k.graph.io.report.GraphIoFormat
+import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.graph.io.support.GraphIoExternalIdMap
 import io.bluetape4k.graph.model.GraphElementId
+import io.bluetape4k.graph.model.toGraphElementId
+import io.bluetape4k.logging.KLogging
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
 
 class GraphImportCheckpointTest {
+
+    companion object: KLogging()
+
     private val checkpoint = GraphImportCheckpoint(
         format = GraphIoFormat.NDJSON_JACKSON3,
         sourceIdentity = "sha256:source",
@@ -25,7 +36,7 @@ class GraphImportCheckpointTest {
         store.save("job-1", checkpoint)
         store.load("job-1") shouldBeEqualTo checkpoint
         store.delete("job-1")
-        store.load("job-1") shouldBeEqualTo null
+        store.load("job-1").shouldBeNull()
     }
 
     @Test
@@ -42,8 +53,9 @@ class GraphImportCheckpointTest {
     @Test
     fun `session saves mapping and restores a resumable vertex boundary`() {
         val store = InMemoryGraphImportCheckpointStore()
-        val firstMap = GraphIoExternalIdMap(io.bluetape4k.graph.io.options.DuplicateVertexPolicy.FAIL)
+        val firstMap = GraphIoExternalIdMap(DuplicateVertexPolicy.FAIL)
         firstMap.putFirstOrFail("external-1", GraphElementId("backend-101"))
+
         val first = GraphImportCheckpointSession(
             format = GraphIoFormat.NDJSON_JACKSON3,
             sourceIdentity = "sha256:source-v1",
@@ -53,7 +65,7 @@ class GraphImportCheckpointTest {
 
         first.verticesCommitted(1)
         first.failed("VERTICES")
-        val resumedMap = GraphIoExternalIdMap(io.bluetape4k.graph.io.options.DuplicateVertexPolicy.FAIL)
+        val resumedMap = GraphIoExternalIdMap(DuplicateVertexPolicy.FAIL)
         val resumed = GraphImportCheckpointSession(
             format = GraphIoFormat.NDJSON_JACKSON3,
             sourceIdentity = "sha256:source-v1",
@@ -65,9 +77,9 @@ class GraphImportCheckpointTest {
             idMap = resumedMap,
         )
 
-        resumed.shouldSkipVertex(1) shouldBeEqualTo true
-        resumed.shouldSkipVertex(2) shouldBeEqualTo false
-        resumedMap.resolve("external-1") shouldBeEqualTo GraphElementId("backend-101")
+        resumed.shouldSkipVertex(1).shouldBeTrue()
+        resumed.shouldSkipVertex(2).shouldBeFalse()
+        resumedMap.resolve("external-1") shouldBeEqualTo "backend-101".toGraphElementId()
     }
 
     @Test
@@ -81,7 +93,7 @@ class GraphImportCheckpointTest {
                     checkpointKey = "missing",
                     resumeFromCheckpoint = true,
                 ),
-                idMap = GraphIoExternalIdMap(io.bluetape4k.graph.io.options.DuplicateVertexPolicy.FAIL),
+                idMap = GraphIoExternalIdMap(DuplicateVertexPolicy.FAIL),
             )
         }
     }
@@ -103,7 +115,7 @@ class GraphImportCheckpointTest {
                     checkpointKey = "job-2",
                     resumeFromCheckpoint = true,
                 ),
-                idMap = GraphIoExternalIdMap(io.bluetape4k.graph.io.options.DuplicateVertexPolicy.FAIL),
+                idMap = GraphIoExternalIdMap(DuplicateVertexPolicy.FAIL),
             )
         }
     }
@@ -129,7 +141,7 @@ class GraphImportCheckpointTest {
                     checkpointKey = "job-3",
                     resumeFromCheckpoint = true,
                 ),
-                idMap = GraphIoExternalIdMap(io.bluetape4k.graph.io.options.DuplicateVertexPolicy.FAIL),
+                idMap = GraphIoExternalIdMap(DuplicateVertexPolicy.FAIL),
             )
         }
     }
@@ -151,10 +163,10 @@ class GraphImportCheckpointTest {
                 format = GraphIoFormat.CSV,
                 sourceIdentity = "sha256:source-v4",
                 options = initial.copy(
-                    onDuplicateVertexId = io.bluetape4k.graph.io.options.DuplicateVertexPolicy.SKIP,
+                    onDuplicateVertexId = DuplicateVertexPolicy.SKIP,
                     resumeFromCheckpoint = true,
                 ),
-                idMap = GraphIoExternalIdMap(io.bluetape4k.graph.io.options.DuplicateVertexPolicy.SKIP),
+                idMap = GraphIoExternalIdMap(DuplicateVertexPolicy.SKIP),
             )
         }
     }
@@ -169,7 +181,7 @@ class GraphImportCheckpointTest {
                 format = GraphIoFormat.NDJSON_JACKSON3,
                 sourceIdentity = checkpoint.sourceIdentity,
                 options = GraphImportOptions(checkpointStore = store, checkpointKey = "job-5"),
-                idMap = GraphIoExternalIdMap(io.bluetape4k.graph.io.options.DuplicateVertexPolicy.FAIL),
+                idMap = GraphIoExternalIdMap(DuplicateVertexPolicy.FAIL),
             )
         }
     }
@@ -214,8 +226,11 @@ class GraphImportCheckpointTest {
             options = options,
             idMap = GraphIoExternalIdMap(options.onDuplicateVertexId),
         )
-        val current = requireNotNull(store.load("job-fence"))
-        store.save("job-fence", current.withMetadata(current.importOptionsIdentity, "other-attempt"))
+        val current = store.load("job-fence").shouldNotBeNull()
+        store.save(
+            "job-fence",
+            current.withMetadata(current.importOptionsIdentity, "other-attempt")
+        )
 
         assertFailsWith<GraphImportCheckpointConflictException> {
             session.verticesCommitted(1)
@@ -231,6 +246,7 @@ class GraphImportCheckpointTest {
             checkpointStore = store,
             checkpointKey = "job-6",
         ).writeBatchSize shouldBeEqualTo 1
+
         GraphImportOptions(batchSize = 100).writeBatchSize shouldBeEqualTo 100
     }
 
@@ -242,7 +258,7 @@ class GraphImportCheckpointTest {
                     checkpointStore = InMemoryGraphImportCheckpointStore(),
                     checkpointKey = "job-7",
                 ),
-                io.bluetape4k.graph.io.source.GraphImportSource.InputStreamSource(ByteArrayInputStream(byteArrayOf())),
+                GraphImportSource.InputStreamSource(ByteArrayInputStream(byteArrayOf())),
             )
         }
     }

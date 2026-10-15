@@ -15,8 +15,8 @@ import java.io.Serializable
  * stream 소스는 재시도 사이에 유지되는 `checkpointSourceIdentity`를 명시해야 한다.
  */
 data class GraphImportOptions(
-    val batchSize: Int = 1_000,
-    val maxEdgeBufferSize: Int = 100_000,
+    val batchSize: Int = BATCH_SIZE,
+    val maxEdgeBufferSize: Int = MAX_EDGE_BUFFER_SIZE,
     val onDuplicateVertexId: DuplicateVertexPolicy = DuplicateVertexPolicy.FAIL,
     val onMissingEdgeEndpoint: MissingEndpointPolicy = MissingEndpointPolicy.FAIL,
     val defaultVertexLabel: String = "Vertex",
@@ -28,7 +28,15 @@ data class GraphImportOptions(
     val checkpointKey: String? = null,
     /** 호환되는 기존 checkpoint가 있을 때만 재개한다. */
     val resumeFromCheckpoint: Boolean = false,
-) : Serializable {
+): Serializable {
+
+    companion object: KLogging() {
+        private const val serialVersionUID: Long = 1L
+        private const val MAX_CHECKPOINT_SOURCE_IDENTITY_LENGTH: Int = 4_096
+        const val BATCH_SIZE: Int = 1_000
+        const val MAX_EDGE_BUFFER_SIZE: Int = 100_000
+    }
+    
     init {
         batchSize.requirePositiveNumber("batchSize")
         maxEdgeBufferSize.requirePositiveNumber("maxEdgeBufferSize")
@@ -60,7 +68,7 @@ data class GraphImportOptions(
         checkpointStore: GraphImportCheckpointStore? = null,
         checkpointKey: String? = null,
         resumeFromCheckpoint: Boolean = false,
-    ) : this(
+    ): this(
         batchSize = batchSize,
         maxEdgeBufferSize = maxEdgeBufferSize,
         onDuplicateVertexId = onDuplicateVertexId,
@@ -93,10 +101,6 @@ data class GraphImportOptions(
     val writeBatchSize: Int
         get() = if (checkpointStore == null) batchSize else 1
 
-    companion object : KLogging() {
-        private const val serialVersionUID: Long = 1L
-        private const val MAX_CHECKPOINT_SOURCE_IDENTITY_LENGTH: Int = 4_096
-    }
 }
 
 /**

@@ -1,21 +1,32 @@
 package io.bluetape4k.graph.io.workflow
 
 import io.bluetape4k.assertions.assertFailsWith
-import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeEmpty
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeNull
+import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.concurrent.await
+import io.bluetape4k.concurrent.awaitTermination
+import io.bluetape4k.concurrent.get
 import io.bluetape4k.graph.io.checkpoint.GraphImportCheckpoint
 import io.bluetape4k.graph.io.checkpoint.GraphImportCheckpointPhase
 import io.bluetape4k.graph.io.report.GraphIoFormat
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 import java.time.Duration
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.time.Duration.Companion.seconds
 
 class GraphImportWorkflowTest {
+
+    companion object: KLogging()
+
     private val manifest = GraphImportManifest(
         jobId = "job-1",
         sources = listOf(
@@ -34,6 +45,7 @@ class GraphImportWorkflowTest {
     fun `workflow enforces vertex before edge ordering and persists state`() {
         val store = InMemoryGraphImportJobStateStore()
         val workflow = GraphImportWorkflow(manifest, store)
+
         workflow.validate().also { report ->
             report.state shouldBeEqualTo GraphImportWorkflowState.VALIDATED
             report.sources.shouldBeEmpty()
@@ -41,9 +53,12 @@ class GraphImportWorkflowTest {
             report.elapsed shouldBeEqualTo Duration.ZERO
         }
         workflow.transition(GraphImportWorkflowState.VERTICES_LOADED)
-        workflow.transition(GraphImportWorkflowState.EDGES_LOADED).state shouldBeEqualTo
-            GraphImportWorkflowState.EDGES_LOADED
-        store.load("job-1")?.state shouldBeEqualTo GraphImportWorkflowState.EDGES_LOADED
+        workflow.transition(GraphImportWorkflowState.EDGES_LOADED)
+            .state shouldBeEqualTo GraphImportWorkflowState.EDGES_LOADED
+
+        val report = store.load("job-1").shouldNotBeNull()
+        log.debug { "report=$report" }
+        report.state shouldBeEqualTo GraphImportWorkflowState.EDGES_LOADED
     }
 
     @Test
@@ -70,12 +85,16 @@ class GraphImportWorkflowTest {
         )
         store.save(existing)
 
-        val report = GraphImportWorkflow(manifest, store).transition(GraphImportWorkflowState.VERTICES_LOADED)
+        val report = GraphImportWorkflow(manifest, store)
+            .transition(GraphImportWorkflowState.VERTICES_LOADED)
+
+        log.debug { "report=$report" }
 
         report.state shouldBeEqualTo GraphImportWorkflowState.VERTICES_LOADED
         report.sources shouldBeEqualTo existing.sources
         report.elapsed shouldBeEqualTo existing.elapsed
         report.checkpoint shouldBeEqualTo existing.checkpoint
+
         store.load(manifest.jobId) shouldBeEqualTo report
     }
 
@@ -98,22 +117,22 @@ class GraphImportWorkflowTest {
             val first = executor.submit<GraphImportWorkflowReport> {
                 GraphImportWorkflow(manifest, store).transition(GraphImportWorkflowState.VERTICES_LOADED)
             }
-            store.firstSaveEntered.await(5, TimeUnit.SECONDS) shouldBeEqualTo true
+            store.firstSaveEntered.await(5.seconds).shouldBeTrue()
 
             val secondTaskStarted = CountDownLatch(1)
             val second = executor.submit<GraphImportWorkflowReport> {
                 secondTaskStarted.countDown()
                 GraphImportWorkflow(manifest, store).transition(GraphImportWorkflowState.VERTICES_LOADED)
             }
-            secondTaskStarted.await(5, TimeUnit.SECONDS) shouldBeEqualTo true
-            store.secondSaveEntered.await(1, TimeUnit.SECONDS) shouldBeEqualTo false
+            secondTaskStarted.await(5.seconds).shouldBeTrue()
+            store.secondSaveEntered.await(1.seconds).shouldBeFalse()
             store.releaseFirstSave.countDown()
 
             var successes = 0
             var failures = 0
             listOf(first, second).forEach { future ->
                 try {
-                    future.get(5, TimeUnit.SECONDS)
+                    future.get(5.seconds)
                     successes++
                 } catch (error: ExecutionException) {
                     val cause = error.cause ?: error
@@ -127,14 +146,18 @@ class GraphImportWorkflowTest {
 
             successes shouldBeEqualTo 1
             failures shouldBeEqualTo 1
-            store.load(manifest.jobId)?.state shouldBeEqualTo GraphImportWorkflowState.VERTICES_LOADED
+
+            val report = store.load(manifest.jobId).shouldNotBeNull()
+            log.debug { "report=$report" }
+            report.state shouldBeEqualTo GraphImportWorkflowState.VERTICES_LOADED
         } finally {
             store.releaseFirstSave.countDown()
             executor.shutdownNow()
+            executor.awaitTermination(5.seconds)
         }
     }
 
-    private class BlockingFirstSaveStore : GraphImportJobStateStore {
+    private class BlockingFirstSaveStore: GraphImportJobStateStore {
         private val delegate = InMemoryGraphImportJobStateStore()
         private val saveCount = AtomicInteger()
         private var blockFirstSave = false
@@ -154,7 +177,7 @@ class GraphImportWorkflowTest {
             when (saveCount.incrementAndGet()) {
                 1 -> if (blockFirstSave) {
                     firstSaveEntered.countDown()
-                    releaseFirstSave.await(5, TimeUnit.SECONDS)
+                    releaseFirstSave.await(5.seconds)
                 }
                 2 -> if (blockFirstSave) secondSaveEntered.countDown()
             }

@@ -2,13 +2,23 @@ package io.bluetape4k.graph.io.report
 
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeNull
+import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.javatimes.millis
+import io.bluetape4k.junit5.concurrency.MultithreadingTester
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 import java.time.Duration
-import java.util.Collections
+import java.util.*
+import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.Executors
 
 class GraphIoProgressReporterTest {
+
+    companion object: KLogging()
 
     @Test
     fun `reporter emits start progress and one terminal event`() {
@@ -16,7 +26,7 @@ class GraphIoProgressReporterTest {
         val reporter = GraphIoProgressReporter(
             operation = GraphIoOperation.IMPORT,
             format = GraphIoFormat.CSV,
-            listener = GraphIoProgressListener { events += it },
+            listener = { events += it },
         )
 
         reporter.started()
@@ -29,12 +39,13 @@ class GraphIoProgressReporterTest {
         )
         reporter.completed(status = GraphIoStatus.COMPLETED)
 
+        events.forEach { log.debug { "event=$it" } }
         events.map { it.type } shouldBeEqualTo listOf(
             GraphIoProgressEventType.STARTED,
             GraphIoProgressEventType.PROGRESS,
             GraphIoProgressEventType.COMPLETED,
         )
-        events.map { it.runId }.distinct().size shouldBeEqualTo 1
+        events.map { it.runId }.distinct() shouldHaveSize 1
     }
 
     @Test
@@ -43,10 +54,10 @@ class GraphIoProgressReporterTest {
         val reporter = GraphIoProgressReporter(
             operation = GraphIoOperation.EXPORT,
             format = GraphIoFormat.GRAPHML,
-            listener = GraphIoProgressListener {
+            listener = {
                 events += it.type
                 if (it.type == GraphIoProgressEventType.PROGRESS) {
-                    throw IllegalStateException("must not escape")
+                    error("must not escape")
                 }
             },
         )
@@ -55,6 +66,7 @@ class GraphIoProgressReporterTest {
         reporter.progress()
         reporter.completed(status = GraphIoStatus.COMPLETED)
 
+        events.forEach { log.debug { "event=$it" } }
         events shouldBeEqualTo listOf(
             GraphIoProgressEventType.STARTED,
             GraphIoProgressEventType.PROGRESS,
@@ -68,7 +80,7 @@ class GraphIoProgressReporterTest {
         val reporter = GraphIoProgressReporter(
             operation = GraphIoOperation.IMPORT,
             format = GraphIoFormat.CSV,
-            listener = GraphIoProgressListener { events += it.type },
+            listener = { events += it.type },
         )
 
         reporter.completed(
@@ -101,9 +113,11 @@ class GraphIoProgressReporterTest {
         reporter.started()
         reporter.progress(vertices = 2L)
 
-        assertFailsWith<IllegalArgumentException> { reporter.progress(vertices = 1L) }
+        assertFailsWith<IllegalArgumentException> {
+            reporter.progress(vertices = 1L)
+        }
         reporter.completed(status = GraphIoStatus.COMPLETED, vertices = 2L)
-        reporter.isTerminal() shouldBeEqualTo true
+        reporter.isTerminal().shouldBeTrue()
     }
 
     @Test
@@ -112,15 +126,17 @@ class GraphIoProgressReporterTest {
         val reporter = GraphIoProgressReporter(
             operation = GraphIoOperation.IMPORT,
             format = GraphIoFormat.CSV,
-            listener = GraphIoProgressListener { events += it },
+            listener = { events += it },
         )
 
         val first = reporter.cancelled()
         val second = reporter.cancelled()
 
         first?.type shouldBeEqualTo GraphIoProgressEventType.CANCELLED
-        first?.hasStarted shouldBeEqualTo false
+        first?.hasStarted.shouldBeFalse()
         second.shouldBeNull()
+
+        events.forEach { log.debug { "event=$it" } }
         events.size shouldBeEqualTo 1
     }
 
@@ -132,7 +148,7 @@ class GraphIoProgressReporterTest {
         val reporter = GraphIoProgressReporter(
             operation = GraphIoOperation.IMPORT,
             format = GraphIoFormat.CSV,
-            listener = GraphIoProgressListener {
+            listener = {
                 events += it.type
                 if (it.type == GraphIoProgressEventType.FAILED) throw listenerError
             },
@@ -147,7 +163,9 @@ class GraphIoProgressReporterTest {
 
         thrown shouldBeEqualTo primary
         thrown.suppressed.toList() shouldBeEqualTo listOf(listenerError)
-        reporter.isTerminal() shouldBeEqualTo true
+        reporter.isTerminal().shouldBeTrue()
+
+        events.forEach { log.debug { "event=$it" } }
         events shouldBeEqualTo listOf(
             GraphIoProgressEventType.STARTED,
             GraphIoProgressEventType.FAILED,
@@ -161,7 +179,7 @@ class GraphIoProgressReporterTest {
         val reporter = GraphIoProgressReporter(
             operation = GraphIoOperation.EXPORT,
             format = GraphIoFormat.GRAPHML,
-            listener = GraphIoProgressListener {
+            listener = {
                 events += it.type
                 if (it.type == GraphIoProgressEventType.PROGRESS) throw listenerError
             },
@@ -174,7 +192,9 @@ class GraphIoProgressReporterTest {
             )
         } shouldBeEqualTo listenerError
 
-        reporter.isTerminal() shouldBeEqualTo true
+        reporter.isTerminal().shouldBeTrue()
+
+        events.forEach { log.debug { "event=$it" } }
         events shouldBeEqualTo listOf(
             GraphIoProgressEventType.STARTED,
             GraphIoProgressEventType.PROGRESS,
@@ -190,15 +210,16 @@ class GraphIoProgressReporterTest {
             operation = GraphIoOperation.IMPORT,
             format = GraphIoFormat.CSV,
             listener = GraphIoCompositeProgressListener.of(
-                GraphIoProgressListener {
+                {
                     if (it.type == GraphIoProgressEventType.STARTED) throw listenerError
                 },
-                GraphIoProgressListener { events += it.type },
+                { events += it.type },
             ),
         )
 
         assertFailsWith<AssertionError> { reporter.started() } shouldBeEqualTo listenerError
-        reporter.isTerminal() shouldBeEqualTo true
+
+        reporter.isTerminal().shouldBeTrue()
         events shouldBeEqualTo listOf(
             GraphIoProgressEventType.STARTED,
             GraphIoProgressEventType.FAILED,
@@ -207,23 +228,47 @@ class GraphIoProgressReporterTest {
 
     @Test
     fun `default snapshots are resolved while lifecycle lock is held`() {
-        val events = Collections.synchronizedList(mutableListOf<GraphIoProgressEvent>())
+        val events = ConcurrentLinkedQueue<GraphIoProgressEvent>()
         val reporter = GraphIoProgressReporter(
             operation = GraphIoOperation.IMPORT,
             format = GraphIoFormat.CSV,
-            listener = GraphIoProgressListener { events += it },
+            listener = { events += it },
         )
         reporter.started()
 
+        val eventSize = 32
         val executor = Executors.newFixedThreadPool(4)
         try {
-            val futures = (1..32).map { executor.submit { reporter.progress() } }
+            val futures = List(eventSize) { executor.submit { reporter.progress() } }
             futures.forEach { it.get() }
         } finally {
             executor.shutdownNow()
         }
 
-        events.count { it.type == GraphIoProgressEventType.PROGRESS } shouldBeEqualTo 32
+        events.forEach { log.debug { "event=$it" } }
+        events.count { it.type == GraphIoProgressEventType.PROGRESS } shouldBeEqualTo eventSize
+    }
+
+    @Test
+    fun `default snapshots are resolved while lifecycle lock is held in multithreads`() {
+        val events = ConcurrentLinkedQueue<GraphIoProgressEvent>()
+        val reporter = GraphIoProgressReporter(
+            operation = GraphIoOperation.IMPORT,
+            format = GraphIoFormat.CSV,
+            listener = { events += it },
+        )
+        reporter.started()
+
+        MultithreadingTester()
+            .workers(4)
+            .rounds(8)
+            .add {
+                reporter.progress()
+            }
+            .run()
+
+        events.forEach { log.debug { "event=$it" } }
+        events.count { it.type == GraphIoProgressEventType.PROGRESS } shouldBeEqualTo 4 * 8
     }
 
     @Test
@@ -233,10 +278,10 @@ class GraphIoProgressReporterTest {
         reporter = GraphIoProgressReporter(
             operation = GraphIoOperation.IMPORT,
             format = GraphIoFormat.CSV,
-            listener = GraphIoProgressListener {
+            listener = {
                 events += it.type
                 if (it.type == GraphIoProgressEventType.STARTED) {
-                    reporter.progress(vertices = 1L, successfulVertices = 1L, elapsed = Duration.ofMillis(1))
+                    reporter.progress(vertices = 1L, successfulVertices = 1L, elapsed = 1.millis())
                 }
             },
         )
@@ -246,9 +291,10 @@ class GraphIoProgressReporterTest {
             status = GraphIoStatus.COMPLETED,
             vertices = 1L,
             successfulVertices = 1L,
-            elapsed = Duration.ofMillis(2),
+            elapsed = 2.millis(),
         )
 
+        events.forEach { log.debug { "event=$it" } }
         events shouldBeEqualTo listOf(
             GraphIoProgressEventType.STARTED,
             GraphIoProgressEventType.PROGRESS,
@@ -262,8 +308,9 @@ class GraphIoProgressReporterTest {
         fun newReporter() = GraphIoProgressReporter(
             operation = GraphIoOperation.EXPORT,
             format = GraphIoFormat.GRAPHML,
-            listener = GraphIoProgressListener { events += it },
+            listener = { events += it },
         )
+
         val reporters = listOf(newReporter(), newReporter())
         val executor = Executors.newFixedThreadPool(2)
         try {
@@ -279,6 +326,38 @@ class GraphIoProgressReporterTest {
             executor.shutdownNow()
         }
 
+        events.forEach { log.debug { "event=$it" } }
+        events.map { it.runId }.distinct().size shouldBeEqualTo 2
+        events.groupBy { it.runId }.values.forEach { runEvents ->
+            runEvents.first().type shouldBeEqualTo GraphIoProgressEventType.STARTED
+            runEvents.last().type shouldBeEqualTo GraphIoProgressEventType.COMPLETED
+        }
+    }
+
+    @Test
+    fun `multi threading reporters isolate run ids and preserve per-run order`() {
+        val events = ConcurrentLinkedQueue<GraphIoProgressEvent>()
+        fun newReporter() = GraphIoProgressReporter(
+            operation = GraphIoOperation.EXPORT,
+            format = GraphIoFormat.GRAPHML,
+            listener = { events += it },
+        )
+
+        val reporters = listOf(newReporter(), newReporter())
+        MultithreadingTester()
+            .workers(2)
+            .rounds(1)
+            .add {
+                reporters.forEach { reporter ->
+                    reporter.run(
+                        { Thread.yield() },
+                        { reporter.completed(status = GraphIoStatus.COMPLETED) }
+                    )
+                }
+            }
+            .run()
+
+        events.forEach { log.debug { "event=$it" } }
         events.map { it.runId }.distinct().size shouldBeEqualTo 2
         events.groupBy { it.runId }.values.forEach { runEvents ->
             runEvents.first().type shouldBeEqualTo GraphIoProgressEventType.STARTED

@@ -2,8 +2,10 @@ package io.bluetape4k.graph.io.support
 
 import io.bluetape4k.graph.io.options.DuplicateVertexPolicy
 import io.bluetape4k.graph.model.GraphElementId
-import java.nio.charset.StandardCharsets
-import java.util.Base64
+import io.bluetape4k.graph.model.toGraphElementId
+import io.bluetape4k.support.toUtf8Bytes
+import io.bluetape4k.support.toUtf8String
+import java.util.*
 
 /**
  * 외부 ID와 백엔드가 발급한 [GraphElementId] 간의 매핑.
@@ -42,7 +44,10 @@ class GraphIoExternalIdMap(
     /**
      * [putFirstOrFail] 결과: [CREATED]는 신규 삽입, [SKIPPED]는 중복 정책에 의해 건너뜀.
      */
-    enum class PutResult { CREATED, SKIPPED }
+    enum class PutResult {
+        CREATED,
+        SKIPPED
+    }
 
     /**
      * 주어진 [externalId]가 이미 등록되어 있는지 확인한다.
@@ -138,15 +143,15 @@ class GraphIoExternalIdMap(
             }
             val externalId = decode(entry.substring(0, separator))
             val backendId = decode(entry.substring(separator + 1))
-            mapping[externalId] = GraphElementId(backendId)
+            mapping[externalId] = backendId.toGraphElementId()
         }
     }
 
     private fun encode(value: String): String =
-        Base64.getUrlEncoder().withoutPadding().encodeToString(value.toByteArray(StandardCharsets.UTF_8))
+        Base64.getUrlEncoder().withoutPadding().encodeToString(value.toUtf8Bytes())
 
     private fun decode(value: String): String =
-        String(Base64.getUrlDecoder().decode(value), StandardCharsets.UTF_8)
+        Base64.getUrlDecoder().decode(value).toUtf8String()
 
     private companion object {
         const val SNAPSHOT_VERSION = "v1"

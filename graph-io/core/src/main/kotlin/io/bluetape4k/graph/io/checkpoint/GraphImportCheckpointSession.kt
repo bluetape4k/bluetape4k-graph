@@ -3,7 +3,9 @@ package io.bluetape4k.graph.io.checkpoint
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphIoFormat
 import io.bluetape4k.graph.io.support.GraphIoExternalIdMap
-import java.util.UUID
+import io.bluetape4k.support.checkBeTrue
+import io.bluetape4k.support.requireNotNull
+import java.util.*
 
 /**
  * 하나의 importer 시도에 대한 checkpoint lifecycle을 조정한다.
@@ -35,7 +37,7 @@ class GraphImportCheckpointSession(
             resumeVerticesProcessed = 0L
             resumeEdgesProcessed = 0L
         } else {
-            val checkpointKey = requireNotNull(key)
+            val checkpointKey = key.requireNotNull("key")
             val checkpoint = store.load(checkpointKey)
             if (!options.resumeFromCheckpoint && checkpoint != null) {
                 throw GraphImportCheckpointConflictException(
@@ -48,9 +50,8 @@ class GraphImportCheckpointSession(
             claimAcquired = true
             try {
                 if (options.resumeFromCheckpoint) {
-                    val existing = checkpoint ?: throw GraphImportCheckpointConflictException(
-                        "no checkpoint exists for key '$key'",
-                    )
+                    val existing = checkpoint
+                        ?: throw GraphImportCheckpointConflictException("no checkpoint exists for key '$key'")
                     GraphImportCheckpointValidator.requireCompatible(
                         existing,
                         format,
@@ -62,22 +63,26 @@ class GraphImportCheckpointSession(
                         idMap.restore(existing.externalIdMappingState)
                     } catch (error: IllegalArgumentException) {
                         throw GraphImportCheckpointConflictException(
-                            "checkpoint external ID mapping is invalid: ${error.message}",
-                            error,
+                            "checkpoint external ID mapping is invalid.",
+                            error
                         )
                     }
                     if (existing.verticesProcessed > 0 && idMap.size == 0) {
-                        throw GraphImportCheckpointConflictException(
-                            "checkpoint external ID mapping is empty for committed vertices",
-                        )
+                        throw GraphImportCheckpointConflictException("checkpoint external ID mapping is empty for committed vertices")
                     }
-                    store.save(checkpointKey, existing.withMetadata(existing.importOptionsIdentity, attemptId))
+                    store.save(
+                        checkpointKey,
+                        existing.withMetadata(existing.importOptionsIdentity, attemptId)
+                    )
                     resumeVerticesProcessed = existing.verticesProcessed
                     resumeEdgesProcessed = existing.edgesProcessed
                     committedVertices = existing.verticesProcessed
                     committedEdges = existing.edgesProcessed
                 } else {
-                    store.save(checkpointKey, checkpoint(format, GraphImportCheckpointPhase.DISCOVERED, 0L, 0L, null))
+                    store.save(
+                        checkpointKey,
+                        checkpoint(format, GraphImportCheckpointPhase.DISCOVERED, 0L, 0L, null)
+                    )
                     resumeVerticesProcessed = 0L
                     resumeEdgesProcessed = 0L
                 }
@@ -119,7 +124,7 @@ class GraphImportCheckpointSession(
     /** 성공 또는 부분 import가 정상 반환된 뒤 checkpoint를 삭제한다. */
     fun completed() {
         if (store == null || !claimAcquired) return
-        val checkpointKey = requireNotNull(key)
+        val checkpointKey = key.requireNotNull("key")
         try {
             val current = store.load(checkpointKey)
             if (current?.attemptId != attemptId) {
@@ -139,7 +144,7 @@ class GraphImportCheckpointSession(
     ) {
         if (store == null || !claimAcquired) return
         lastBoundary = failureBoundary
-        val checkpointKey = requireNotNull(key)
+        val checkpointKey = key.requireNotNull("key")
         try {
             val current = store.load(checkpointKey)
             if (current?.attemptId != attemptId) return
@@ -160,7 +165,7 @@ class GraphImportCheckpointSession(
     fun cancelled() {
         val checkpointStore = store ?: return
         if (!claimAcquired) return
-        val checkpointKey = requireNotNull(key)
+        val checkpointKey = key.requireNotNull("key")
         try {
             runCatching { checkpointStore.release(checkpointKey, attemptId) }
         } finally {
@@ -176,8 +181,8 @@ class GraphImportCheckpointSession(
         message: String? = null,
     ) {
         if (store == null) return
-        val checkpointKey = requireNotNull(key)
-        check(claimAcquired) { "checkpoint key '$checkpointKey' is not claimed by this import attempt" }
+        val checkpointKey = key.requireNotNull("key")
+        claimAcquired.checkBeTrue { "checkpoint key '$checkpointKey' is not claimed by this import attempt" }
         val current = store.load(checkpointKey)
         if (current?.attemptId != attemptId) {
             throw GraphImportCheckpointConflictException("checkpoint ownership was lost for key '$checkpointKey'")
@@ -214,7 +219,7 @@ class GraphImportCheckpointSession(
     fun close() {
         val checkpointStore = store ?: return
         if (!claimAcquired) return
-        val checkpointKey = requireNotNull(key)
+        val checkpointKey = key.requireNotNull("key")
         try {
             runCatching {
                 val current = checkpointStore.load(checkpointKey)

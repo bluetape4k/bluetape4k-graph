@@ -831,7 +831,7 @@ graph-io-okio의 공개 API는 다음 예외 계층을 따른다.
 - [ ] **`GraphImportProgress` / `GraphExportProgress` data class** 를 `graph-io/core` 의 `io.bluetape4k.graph.io.contract` 패키지에 추가 (§3.5.2 참조).
 - [ ] `OkioGraphImportSource` / `OkioGraphExportSink` sealed interface 구현 (3 variants × 2 = 6 case).
 - [ ] `GraphIoOkioPaths` 헬퍼 함수 구현 (open, 압축 체이닝, 단축형). **암호화 함수는 후속 버전 대상.**
-- [ ] OkIO ↔ java.io 브리지 함수 (`toInputStream`, `toOutputStream`, `asClosingOutputStream`, `toReader`, `toWriter`, `writeAsOutputStream`, `readAsInputStream`).
+- [ ] OkIO ↔ java.io 브리지 함수 (`openInputStream`, `openOutputStream`, `asClosingOutputStream`, `toReader`, `toWriter`, `writeAsOutputStream`, `readAsInputStream`).
 - [ ] **Sync API**: `OkioGraphBulkImporter` / `OkioGraphBulkExporter` — `GraphBulkImporter<OkioGraphImportSource>` / `GraphBulkExporter<OkioGraphExportSink>` 구현 (기존 graph-io 관례 준수).
 - [ ] 기존 4개 포맷 모듈에 OkIO 확장 함수 (CSV, Jackson2/3, GraphML) — 명명: `importGraph` / `exportGraph` (기존 API와 일치). 암호화 변형(`importGraphGzipEncrypted` 등)은 후속 버전.
 - [ ] VirtualThread 변형 (`VirtualThreadGraphIoOkioBulkAdapter`).
