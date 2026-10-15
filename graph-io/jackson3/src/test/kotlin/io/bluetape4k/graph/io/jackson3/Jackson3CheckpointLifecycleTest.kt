@@ -2,18 +2,22 @@ package io.bluetape4k.graph.io.jackson3
 
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.graph.io.checkpoint.GraphImportCheckpointPhase
+import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.graph.io.checkpoint.GraphImportCheckpointConflictException
+import io.bluetape4k.graph.io.checkpoint.GraphImportCheckpointPhase
 import io.bluetape4k.graph.io.checkpoint.InMemoryGraphImportCheckpointStore
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.options.NdJsonReadOptions
 import io.bluetape4k.graph.io.options.copyWithCheckpointSourceIdentity
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.source.GraphImportSource
+import io.bluetape4k.graph.io.source.asSource
+import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
-import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.CancellationException
@@ -24,30 +28,43 @@ import java.nio.file.Path
 
 class Jackson3CheckpointLifecycleTest {
 
+    private companion object: KLogging() {
+        const val KEY = "jackson3-checkpoint"
+        const val SOURCE_ID = "jackson3-source-v1"
+    }
+
     @Test
     fun `sync resume skips committed edges without duplicating graph state`(@TempDir dir: Path) {
         val input = dir.resolve("graph.ndjson")
         Files.writeString(input, fixture("missing"))
+
         val store = InMemoryGraphImportCheckpointStore()
         val options = options(store)
         val graph = TinkerGraphOperations()
 
-        Jackson3NdJsonBulkImporter().importGraph(GraphImportSource.PathSource(input), graph, options).status
-            .shouldBeEqualTo(GraphIoStatus.FAILED)
+        val importReport = Jackson3NdJsonBulkImporter.Default.importGraph(
+            input.asSource(),
+            graph,
+            options
+        )
+        log.debug { "importReport: $importReport" }
+        importReport.status.shouldBeEqualTo(GraphIoStatus.FAILED)
+
         store.load(KEY)?.phase.shouldBeEqualTo(GraphImportCheckpointPhase.FAILED)
         store.load(KEY)?.edgesProcessed.shouldBeEqualTo(1L)
 
         Files.writeString(input, fixture("v2"))
-        val resumed = Jackson3NdJsonBulkImporter().importGraph(
+        val resumed = Jackson3NdJsonBulkImporter.Default.importGraph(
             GraphImportSource.PathSource(input),
             graph,
             options.copyWithCheckpointSourceIdentity(resumeFromCheckpoint = true),
         )
 
-        resumed.status.shouldBeEqualTo(GraphIoStatus.COMPLETED)
-        resumed.verticesCreated.shouldBeEqualTo(0L)
-        resumed.edgesCreated.shouldBeEqualTo(1L)
-        store.load(KEY).shouldBeEqualTo(null)
+        log.debug { "resumed=$resumed" }
+        resumed.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        resumed.verticesCreated shouldBeEqualTo 0L
+        resumed.edgesCreated shouldBeEqualTo 1L
+        store.load(KEY).shouldBeNull()
     }
 
     @Test
@@ -58,22 +75,25 @@ class Jackson3CheckpointLifecycleTest {
         val options = options(store)
         val graph = TinkerGraphSuspendOperations()
 
-        SuspendJackson3NdJsonBulkImporter().importGraphSuspending(
-            GraphImportSource.PathSource(input), graph, options,
-        ).status.shouldBeEqualTo(GraphIoStatus.FAILED)
-        store.load(KEY)?.edgesProcessed.shouldBeEqualTo(1L)
+        val importReport = SuspendJackson3NdJsonBulkImporter.Default.importGraphSuspending(
+            input.asSource(), graph, options,
+        )
+        log.debug { "importReport: $importReport" }
+        importReport.status.shouldBeEqualTo(GraphIoStatus.FAILED)
+        store.load(KEY)?.edgesProcessed shouldBeEqualTo 1L
 
         Files.writeString(input, fixture("v2"))
-        val resumed = SuspendJackson3NdJsonBulkImporter().importGraphSuspending(
-            GraphImportSource.PathSource(input),
+        val resumed = SuspendJackson3NdJsonBulkImporter.Default.importGraphSuspending(
+            input.asSource(),
             graph,
             options.copyWithCheckpointSourceIdentity(resumeFromCheckpoint = true),
         )
 
-        resumed.status.shouldBeEqualTo(GraphIoStatus.COMPLETED)
-        resumed.verticesCreated.shouldBeEqualTo(0L)
-        resumed.edgesCreated.shouldBeEqualTo(1L)
-        store.load(KEY).shouldBeEqualTo(null)
+        log.debug { "resumed=$resumed" }
+        resumed.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        resumed.verticesCreated shouldBeEqualTo 0L
+        resumed.edgesCreated shouldBeEqualTo 1L
+        store.load(KEY).shouldBeNull()
     }
 
     @Test
@@ -83,18 +103,20 @@ class Jackson3CheckpointLifecycleTest {
         val store = InMemoryGraphImportCheckpointStore()
         val options = options(store)
         val cancellation = CancellationException("jackson3-import-cancelled")
+
         val operations = mockk<GraphSuspendOperations>()
         coEvery { operations.createVertices("Person", any()) } throws cancellation
 
         val thrown = assertFailsWith<CancellationException> {
-            SuspendJackson3NdJsonBulkImporter().importGraphSuspending(
-                GraphImportSource.PathSource(input), operations, options,
+            SuspendJackson3NdJsonBulkImporter.Default.importGraphSuspending(
+                input.asSource(), operations, options,
             )
         }
 
-        thrown.message.shouldBeEqualTo(cancellation.message)
-        store.load(KEY)?.phase.shouldBeEqualTo(GraphImportCheckpointPhase.DISCOVERED)
-        store.load(KEY)?.failureBoundary.shouldBeEqualTo(null)
+        log.debug { "thrown=$thrown" }
+        thrown.message shouldBeEqualTo cancellation.message
+        store.load(KEY)?.phase shouldBeEqualTo GraphImportCheckpointPhase.DISCOVERED
+        store.load(KEY)?.failureBoundary.shouldBeNull()
     }
 
     @Test
@@ -104,21 +126,25 @@ class Jackson3CheckpointLifecycleTest {
         val store = InMemoryGraphImportCheckpointStore()
         val options = options(store)
         val graph = TinkerGraphOperations()
-        val importer = Jackson3NdJsonVirtualThreadBulkImporter()
 
-        importer.importGraphAsync(GraphImportSource.PathSource(input), graph, options).join()
-            .status.shouldBeEqualTo(GraphIoStatus.FAILED)
+        val importer = Jackson3NdJsonVirtualThreadBulkImporter.Default
+
+        val report = importer.importGraphAsync(input.asSource(), graph, options).join()
+        log.debug { "report=$report" }
+        report.status.shouldBeEqualTo(GraphIoStatus.FAILED)
+
         Files.writeString(input, fixture("v2"))
         val resumed = importer.importGraphAsync(
-            GraphImportSource.PathSource(input),
+            input.asSource(),
             graph,
             options.copyWithCheckpointSourceIdentity(resumeFromCheckpoint = true),
         ).join()
 
+        log.debug { "resumed=$resumed" }
         resumed.status.shouldBeEqualTo(GraphIoStatus.COMPLETED)
         resumed.verticesCreated.shouldBeEqualTo(0L)
         resumed.edgesCreated.shouldBeEqualTo(1L)
-        store.load(KEY).shouldBeEqualTo(null)
+        store.load(KEY).shouldBeNull()
     }
 
     @Test
@@ -128,15 +154,17 @@ class Jackson3CheckpointLifecycleTest {
         val store = InMemoryGraphImportCheckpointStore()
         val options = options(store)
 
-        Jackson3NdJsonBulkImporter(NdJsonReadOptions(maxLineChars = 1_024))
-            .importGraph(GraphImportSource.PathSource(input), TinkerGraphOperations(), options)
-            .status.shouldBeEqualTo(GraphIoStatus.FAILED)
+        val report = Jackson3NdJsonBulkImporter(NdJsonReadOptions(maxLineChars = 1_024))
+            .importGraph(input.asSource(), TinkerGraphOperations(), options)
+
+        log.debug { "report=$report" }
+        report.status.shouldBeEqualTo(GraphIoStatus.FAILED)
 
         Files.writeString(input, fixture("v2"))
         assertFailsWith<GraphImportCheckpointConflictException> {
             SuspendJackson3NdJsonBulkImporter(NdJsonReadOptions(maxLineChars = 2_048))
                 .importGraphSuspending(
-                    GraphImportSource.PathSource(input),
+                    input.asSource(),
                     TinkerGraphSuspendOperations(),
                     options.copyWithCheckpointSourceIdentity(resumeFromCheckpoint = true),
                 )
@@ -155,10 +183,5 @@ class Jackson3CheckpointLifecycleTest {
         appendLine("""{"type":"vertex","id":"v2","label":"Person","properties":{}}""")
         appendLine("""{"type":"edge","id":"e1","label":"KNOWS","from":"v1","to":"v2","properties":{}}""")
         appendLine("""{"type":"edge","id":"e2","label":"KNOWS","from":"v1","to":"$endpoint","properties":{}}""")
-    }
-
-    private companion object {
-        const val KEY = "jackson3-checkpoint"
-        const val SOURCE_ID = "jackson3-source-v1"
     }
 }

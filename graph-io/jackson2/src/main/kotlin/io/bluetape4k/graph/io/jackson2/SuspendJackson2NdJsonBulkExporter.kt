@@ -82,21 +82,26 @@ class SuspendJackson2NdJsonBulkExporter: GraphSuspendBulkExporter<GraphExportSin
         GraphIoPaths.openWriter(sink).use { writer ->
             for (label in vertexLabels) {
                 operations.findVerticesByLabelChunked(label, chunkSize = options.exportChunkSize).collect { chunk ->
-                    for (v in chunk) {
-                        val rec = GraphIoVertexRecord(v.id.value, v.label, v.properties)
-                        writer.write(codec.writeVertex(rec))
-                        writer.newLine()
-                        vWritten++
+                    withContext(Dispatchers.IO) {
+                        for (v in chunk) {
+                            val rec = GraphIoVertexRecord(v.id.value, v.label, v.properties)
+                            writer.write(codec.writeVertex(rec))
+                            writer.newLine()
+                            vWritten++
+                        }
                     }
                 }
             }
             for (label in edgeLabels) {
                 operations.findEdgesByLabelChunked(label, chunkSize = options.exportChunkSize).collect { chunk ->
-                    for (e in chunk) {
-                        val rec = GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties)
-                        writer.write(codec.writeEdge(rec))
-                        writer.newLine()
-                        eWritten++
+                    withContext(Dispatchers.IO) {
+                        for (e in chunk) {
+                            val rec =
+                                GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties)
+                            writer.write(codec.writeEdge(rec))
+                            writer.newLine()
+                            eWritten++
+                        }
                     }
                 }
             }

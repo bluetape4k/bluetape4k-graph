@@ -1,12 +1,14 @@
 package io.bluetape4k.graph.io.jackson3
 
-import io.bluetape4k.graph.io.options.GraphImportOptions
-import io.bluetape4k.graph.io.report.GraphIoStatus
-import io.bluetape4k.graph.io.source.GraphImportSource
-import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeGreaterThan
 import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.graph.io.options.GraphImportOptions
+import io.bluetape4k.graph.io.report.GraphIoStatus
+import io.bluetape4k.graph.io.source.asSource
+import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Files
@@ -14,9 +16,12 @@ import java.nio.file.Path
 
 class Jackson3EdgeBufferOverflowTest {
 
+    companion object: KLogging()
+
     @Test
     fun `edge buffer overflow causes FAILED status`(@TempDir dir: Path) {
         val ndjson = dir.resolve("graph.ndjson")
+
         Files.writeString(ndjson, buildString {
             appendLine("""{"type":"vertex","id":"v1","label":"Person","properties":{}}""")
             appendLine("""{"type":"edge","id":"e1","label":"KNOWS","from":"v1","to":"v2","properties":{}}""")
@@ -26,11 +31,14 @@ class Jackson3EdgeBufferOverflowTest {
 
         val target = TinkerGraphOperations()
         val importer = Jackson3NdJsonBulkImporter()
+
         val report = importer.importGraph(
-            GraphImportSource.PathSource(ndjson),
+            ndjson.asSource(),
             target,
             GraphImportOptions(maxEdgeBufferSize = 2),
         )
+
+        log.debug { "report=$report" }
         report.status shouldBeEqualTo GraphIoStatus.FAILED
         report.failures.isNotEmpty().shouldBeTrue()
         report.failures.any { "maxEdgeBufferSize" in it.message }.shouldBeTrue()

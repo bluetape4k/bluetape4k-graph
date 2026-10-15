@@ -1,14 +1,16 @@
 package io.bluetape4k.graph.io.jackson3
 
+import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.graph.io.jackson2.Jackson2NdJsonBulkExporter
 import io.bluetape4k.graph.io.jackson2.Jackson2NdJsonBulkImporter
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphIoStatus
-import io.bluetape4k.graph.io.source.GraphExportSink
-import io.bluetape4k.graph.io.source.GraphImportSource
+import io.bluetape4k.graph.io.source.asSink
+import io.bluetape4k.graph.io.source.asSource
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
-import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
@@ -23,6 +25,8 @@ import java.nio.file.Paths
  */
 class NdJsonCompatibilityTest {
 
+    companion object: KLogging()
+
     private val fixture: Path = Paths.get(
         NdJsonCompatibilityTest::class.java.getResource("/fixtures/ndjson/graph.jsonl")!!.toURI()
     )
@@ -30,11 +34,14 @@ class NdJsonCompatibilityTest {
     @Test
     fun `jackson3 importer reads shared fixture`() {
         val target = TinkerGraphOperations()
-        val report = Jackson3NdJsonBulkImporter().importGraph(
-            GraphImportSource.PathSource(fixture),
-            target,
-            GraphImportOptions(preserveExternalIdProperty = null),
-        )
+        val report = Jackson3NdJsonBulkImporter.Default
+            .importGraph(
+                fixture.asSource(),
+                target,
+                GraphImportOptions(preserveExternalIdProperty = null),
+            )
+
+        log.debug { "report=$report" }
         report.status shouldBeEqualTo GraphIoStatus.COMPLETED
         report.verticesCreated shouldBeEqualTo 2L
         report.edgesCreated shouldBeEqualTo 1L
@@ -44,27 +51,29 @@ class NdJsonCompatibilityTest {
     fun `jackson2 export then jackson3 import gives same logical records`(@TempDir dir: Path) {
         // Step 1: fixture를 Jackson2로 읽어서 TinkerGraph에 로드
         val srcGraph = TinkerGraphOperations()
-        Jackson2NdJsonBulkImporter().importGraph(
-            GraphImportSource.PathSource(fixture),
+        Jackson2NdJsonBulkImporter.Default.importGraph(
+            fixture.asSource(),
             srcGraph,
             GraphImportOptions(preserveExternalIdProperty = null),
         ).status shouldBeEqualTo GraphIoStatus.COMPLETED
 
         // Step 2: Jackson2로 export → 임시 파일에 저장
         val exportedFile = dir.resolve("exported-by-jackson2.ndjson")
-        Jackson2NdJsonBulkExporter().exportGraph(
-            GraphExportSink.PathSink(exportedFile),
+        Jackson2NdJsonBulkExporter.Default.exportGraph(
+            exportedFile.asSink(),
             srcGraph,
             GraphExportOptions(vertexLabels = setOf("Person"), edgeLabels = setOf("KNOWS")),
         ).status shouldBeEqualTo GraphIoStatus.COMPLETED
 
         // Step 3: Jackson3 임포터로 Jackson2 export 파일을 읽어 동일한 레코드 수 검증
         val targetGraph = TinkerGraphOperations()
-        val report = Jackson3NdJsonBulkImporter().importGraph(
-            GraphImportSource.PathSource(exportedFile),
+        val report = Jackson3NdJsonBulkImporter.Default.importGraph(
+            exportedFile.asSource(),
             targetGraph,
             GraphImportOptions(preserveExternalIdProperty = null),
         )
+
+        log.debug { "report=$report" }
         report.status shouldBeEqualTo GraphIoStatus.COMPLETED
         report.verticesCreated shouldBeEqualTo 2L
         report.edgesCreated shouldBeEqualTo 1L
@@ -74,27 +83,28 @@ class NdJsonCompatibilityTest {
     fun `jackson3 export then jackson2 import gives same logical records`(@TempDir dir: Path) {
         // Step 1: fixture를 Jackson3로 읽어서 TinkerGraph에 로드
         val srcGraph = TinkerGraphOperations()
-        Jackson3NdJsonBulkImporter().importGraph(
-            GraphImportSource.PathSource(fixture),
+        Jackson3NdJsonBulkImporter.Default.importGraph(
+            fixture.asSource(),
             srcGraph,
             GraphImportOptions(preserveExternalIdProperty = null),
         ).status shouldBeEqualTo GraphIoStatus.COMPLETED
 
         // Step 2: Jackson3로 export → 임시 파일에 저장
         val exportedFile = dir.resolve("exported-by-jackson3.ndjson")
-        Jackson3NdJsonBulkExporter().exportGraph(
-            GraphExportSink.PathSink(exportedFile),
+        Jackson3NdJsonBulkExporter.Default.exportGraph(
+            exportedFile.asSink(),
             srcGraph,
             GraphExportOptions(vertexLabels = setOf("Person"), edgeLabels = setOf("KNOWS")),
         ).status shouldBeEqualTo GraphIoStatus.COMPLETED
 
         // Step 3: Jackson2 임포터로 Jackson3 export 파일을 읽어 동일한 레코드 수 검증 (역방향)
         val targetGraph = TinkerGraphOperations()
-        val report = Jackson2NdJsonBulkImporter().importGraph(
-            GraphImportSource.PathSource(exportedFile),
+        val report = Jackson2NdJsonBulkImporter.Default.importGraph(
+            exportedFile.asSource(),
             targetGraph,
             GraphImportOptions(preserveExternalIdProperty = null),
         )
+        log.debug { "report=$report" }
         report.status shouldBeEqualTo GraphIoStatus.COMPLETED
         report.verticesCreated shouldBeEqualTo 2L
         report.edgesCreated shouldBeEqualTo 1L

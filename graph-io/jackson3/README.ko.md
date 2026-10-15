@@ -6,7 +6,8 @@ Bluetape4k 그래프 연산을 위한 Jackson 3.x 기반 NDJSON 벌크 임포터
 
 ## 개요
 
-이 모듈은 **Jackson 3.x** (`tools.jackson` 패키지 네임스페이스)를 사용하여 고성능의 유연한 NDJSON(newline-delimited JSON) 벌크 임포트/익스포트 기능을 제공합니다. 다양한 동시성 패턴에 맞춘 세 가지 실행 모델을 지원합니다: 동기, 코루틴 기반 suspend, 그리고 Java Virtual Thread 기반 방식.
+이 모듈은 **Jackson
+3.x** (`tools.jackson` 패키지 네임스페이스)를 사용하여 고성능의 유연한 NDJSON (newline-delimited JSON) 벌크 임포트/익스포트 기능을 제공합니다. 다양한 동시성 패턴에 맞춘 세 가지 실행 모델을 지원합니다: 동기, 코루틴 기반 suspend, 그리고 Java Virtual Thread 기반 방식.
 
 ## 아키텍처
 
@@ -27,19 +28,19 @@ Jackson3는 mapper 구현을 `tools.jackson`으로 전환하면서도 Jackson2 �
 모듈은 서로 다른 런타임 환경과 동시성 요구사항에 맞춘 세 가지 실행 모델을 제공합니다:
 
 1. **동기** (`Jackson3NdJsonBulkImporter`, `Jackson3NdJsonBulkExporter`)
-   - 블로킹 I/O 연산
-   - 전통적인 블로킹 프레임워크에 적합
-   - 요청당 스레드 구조
+    - 블로킹 I/O 연산
+    - 전통적인 블로킹 프레임워크에 적합
+    - 요청당 스레드 구조
 
 2. **코루틴 Suspend** (`SuspendJackson3NdJsonBulkImporter`, `SuspendJackson3NdJsonBulkExporter`)
-   - 논블로킹, async/await 스타일
-   - Kotlin 코루틴 기반
-   - 높은 동시성, 저자원 시나리오에 최적
+    - 논블로킹, async/await 스타일
+    - Kotlin 코루틴 기반
+    - 높은 동시성, 저자원 시나리오에 최적
 
 3. **Virtual Thread** (`Jackson3NdJsonVirtualThreadBulkImporter`, `Jackson3NdJsonVirtualThreadBulkExporter`)
-   - Java 21+ Virtual Thread 지원
-   - 경량 스레딩 모델
-   - 최소 오버헤드로 블로킹 의미론 제공
+    - Java 21+ Virtual Thread 지원
+    - 경량 스레딩 모델
+    - 최소 오버헤드로 블로킹 의미론 제공
 
 ### NDJSON 봉투 형식
 
@@ -172,16 +173,34 @@ val report = future.join()
 ### 정점 줄
 
 ```json
-{"type":"vertex","id":"person_1","label":"Person","properties":{"name":"Alice","age":30}}
+{
+  "type": "vertex",
+  "id": "person_1",
+  "label": "Person",
+  "properties": {
+    "name": "Alice",
+    "age": 30
+  }
+}
 ```
 
 ### 간선 줄
 
 ```json
-{"type":"edge","id":"edge_1","label":"KNOWS","from":"person_1","to":"person_2","properties":{"since":2020}}
+{
+  "type": "edge",
+  "id": "edge_1",
+  "label": "KNOWS",
+  "from": "person_1",
+  "to": "person_2",
+  "properties": {
+    "since": 2020
+  }
+}
 ```
 
 **필드:**
+
 - `type`: `vertex` 또는 `edge`
 - `id`: 고유 외부 식별자
 - `label`: 정점 또는 간선 라벨/타입
@@ -202,13 +221,10 @@ val report = future.join()
 
 ### NdJsonReadOptions
 
-- `maxLineChars: Int` - Jackson 파싱 전 NDJSON 한 줄에 허용할 최대 UTF-16 code unit 수
-  (기본 `Int.MAX_VALUE`)
+- `maxLineChars: Int` - Jackson 파싱 전 NDJSON 한 줄에 허용할 최대 UTF-16 code unit 수 (기본 `Int.MAX_VALUE`)
 
 sync, suspend, Virtual Thread, Flow reader constructor에
-`NdJsonReadOptions(maxLineChars = 1_048_576)`를 전달합니다. LF, CRLF, CR, 종결 문자가 없는
-마지막 줄에 같은 경계를 적용합니다. 제한 초과 오류는 payload나 source path 없이 phase,
-line, file role만 노출하고, 설정한 상한은 checkpoint 호환성에도 포함됩니다.
+`NdJsonReadOptions(maxLineChars = 1_048_576)`를 전달합니다. LF, CRLF, CR, 종결 문자가 없는 마지막 줄에 같은 경계를 적용합니다. 제한 초과 오류는 payload나 source path 없이 phase, line, file role만 노출하고, 설정한 상한은 checkpoint 호환성에도 포함됩니다.
 
 ### GraphExportOptions
 
@@ -217,10 +233,7 @@ line, file role만 노출하고, 설정한 상한은 checkpoint 호환성에도 
 - `includeEmptyProperties: Boolean` - 속성이 비어있어도 레코드 방출 (기본 `true`)
 - `exportChunkSize: Int` - streaming-capable exporter가 repository에서 한 번에 읽는 최대 레코드 수 (기본 `1_000`)
 
-Jackson3 export는 `findVerticesByLabelChunked`, `findEdgesByLabelChunked`를
-소비합니다. 이 repository 메서드를 override하지 않은 백엔드는 호환 가능한
-list/Flow fallback을 사용하고, cursor-aware 백엔드는 bounded chunk를 NDJSON
-writer로 바로 흘릴 수 있습니다.
+Jackson3 export는 `findVerticesByLabelChunked`, `findEdgesByLabelChunked`를 소비합니다. 이 repository 메서드를 override하지 않은 백엔드는 호환 가능한 list/Flow fallback을 사용하고, cursor-aware 백엔드는 bounded chunk를 NDJSON writer로 바로 흘릴 수 있습니다.
 
 ## 의존성
 
@@ -259,6 +272,7 @@ data class GraphImportReport(
 ### 실패 상세정보
 
 각 실패는 다음을 포함합니다:
+
 - `phase`: READ_VERTEX, READ_EDGE, WRITE_VERTEX, WRITE_EDGE
 - `severity`: ERROR, WARN
 - `message`: 인간이 읽을 수 있는 에러 설명
@@ -270,9 +284,9 @@ data class GraphImportReport(
 - **메모리**: 간선 레코드 버퍼링 (설정 가능 제한)
 - **I/O**: 줄 단위 스트리밍으로 일정한 메모리 사용
 - **동시성**: 모델 의존적
-  - 동기: 단일 스레드
-  - Suspend: 협력적 멀티태스킹
-  - Virtual Thread: 경량 병렬성
+    - 동기: 단일 스레드
+    - Suspend: 협력적 멀티태스킹
+    - Virtual Thread: 경량 병렬성
 
 ## 호환성
 
@@ -298,5 +312,4 @@ Module: graph-io/jackson3
 ## 스트리밍 reader 계약
 
 `Jackson3NdJsonRecordFlowReader`는 cold `Flow`를 통해 NDJSON 레코드를 한 건씩 방출하고 입력 순서를 유지합니다.
-`GraphImportOptions.batchSize`는 백엔드 쓰기 플러시 설정이며 간선 staging은 `maxEdgeBufferSize`로 제한됩니다.
-Path와 소유권을 넘긴 source는 라이브러리가 닫고 호출자 소유 source는 collect 후에도 열린 상태로 둡니다.
+`GraphImportOptions.batchSize`는 백엔드 쓰기 플러시 설정이며 간선 staging은 `maxEdgeBufferSize`로 제한됩니다. Path와 소유권을 넘긴 source는 라이브러리가 닫고 호출자 소유 source는 collect 후에도 열린 상태로 둡니다.
