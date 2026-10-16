@@ -317,7 +317,7 @@ class GraphIoProgressReporterTest {
             reporters.map { reporter ->
                 executor.submit {
                     reporter.run(
-                        block = { Thread.yield(); Unit },
+                        block = { Thread.yield() },
                         onCompleted = { reporter.completed(status = GraphIoStatus.COMPLETED) },
                     )
                 }

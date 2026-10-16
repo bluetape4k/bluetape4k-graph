@@ -8,6 +8,7 @@ import io.bluetape4k.graph.model.toGraphElementId
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
+@Suppress("DEPRECATION")
 @Disabled("use GraphVisitorTest")
 class BfsDfsRunnerTest {
 

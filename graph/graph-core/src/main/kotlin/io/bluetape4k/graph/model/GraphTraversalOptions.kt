@@ -166,6 +166,8 @@ data class BfsDfsOptions(
 
     companion object {
         private const val serialVersionUID: Long = 1L
+
+        @Suppress("DEPRECATION")
         val Default = BfsDfsOptions()
     }
 
