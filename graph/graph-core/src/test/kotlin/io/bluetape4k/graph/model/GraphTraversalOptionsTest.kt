@@ -156,6 +156,7 @@ class GraphTraversalOptionsTest: AbstractGraphTest() {
         }
     }
 
+    @Suppress("DEPRECATION")
     @Nested
     inner class BfsDfsOptionsTest {
 

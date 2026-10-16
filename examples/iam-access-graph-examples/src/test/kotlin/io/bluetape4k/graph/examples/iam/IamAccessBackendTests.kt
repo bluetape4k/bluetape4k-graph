@@ -8,7 +8,6 @@ import io.bluetape4k.graph.age.AgeGraphOperations
 import io.bluetape4k.graph.age.AgeGraphSuspendOperations
 import io.bluetape4k.graph.falkordb.FalkorDBGraphOperations
 import io.bluetape4k.graph.falkordb.FalkorDBGraphSuspendOperations
-import io.bluetape4k.graph.falkordb.FalkorDBServer
 import io.bluetape4k.graph.memgraph.MemgraphGraphOperations
 import io.bluetape4k.graph.memgraph.MemgraphGraphSuspendOperations
 import io.bluetape4k.graph.neo4j.Neo4jGraphOperations
@@ -17,6 +16,7 @@ import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.warn
+import io.bluetape4k.testcontainers.graphdb.FalkorDBServer
 import io.bluetape4k.testcontainers.graphdb.MemgraphServer
 import io.bluetape4k.testcontainers.graphdb.Neo4jServer
 import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
