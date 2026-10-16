@@ -2,131 +2,203 @@ package io.bluetape4k.graph.io.okio.extension
 
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.concurrent.get
+import io.bluetape4k.coroutines.flow.extensions.log
 import io.bluetape4k.graph.io.csv.CsvGraphBulkExporter
 import io.bluetape4k.graph.io.csv.CsvGraphBulkImporter
+import io.bluetape4k.graph.io.okio.AbstractOkioTest
 import io.bluetape4k.graph.io.okio.OkioGraphExportSink
 import io.bluetape4k.graph.io.okio.OkioGraphImportSource
-import io.bluetape4k.graph.io.options.GraphExportOptions
+import io.bluetape4k.graph.io.okio.asOkioSink
+import io.bluetape4k.graph.io.okio.asOkioSource
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import kotlinx.coroutines.flow.toList
 import okio.FileSystem
 import okio.Path.Companion.toPath
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * CSV OkIO extension function tests.
  *
  * Uses @TempDir (real filesystem) because CSV requires FileSystem.SYSTEM.
  */
-class CsvOkioExtensionsTest {
+class CsvOkioExtensionsTest: AbstractOkioTest() {
+
+    companion object: KLogging()
 
     @TempDir
     lateinit var tempDir: Path
 
-    private val exporter = CsvGraphBulkExporter()
-    private val importer = CsvGraphBulkImporter()
-
-    private fun buildSourceGraph(): TinkerGraphOperations {
-        val ops = TinkerGraphOperations()
-        val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
-        val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
-        ops.createEdge(alice.id, bob.id, "KNOWS", emptyMap())
-        return ops
-    }
-
-    private val exportOptions = GraphExportOptions(
-        vertexLabels = setOf("Person"),
-        edgeLabels = setOf("KNOWS"),
-    )
+    private val exporter = CsvGraphBulkExporter.Default
+    private val importer = CsvGraphBulkImporter.Default
 
     private fun csvSink(): OkioGraphExportSink.PathSink =
-        OkioGraphExportSink.PathSink(
-            tempDir.resolve("graph.csv").toString().toPath(),
-            FileSystem.SYSTEM,
-        )
+        tempDir.resolve("graph.csv").toString().toPath().asOkioSink(FileSystem.SYSTEM)
 
     private fun csvSource(): OkioGraphImportSource.PathSource =
-        OkioGraphImportSource.PathSource(
-            tempDir.resolve("graph.csv").toString().toPath(),
-            FileSystem.SYSTEM,
-        )
+        tempDir.resolve("graph.csv").toString().toPath().asOkioSource(FileSystem.SYSTEM)
 
     @Test
     fun `CSV sync round trip`() {
-        exporter.exportGraph(csvSink(), buildSourceGraph(), exportOptions)
-            .status shouldBeEqualTo GraphIoStatus.COMPLETED
-
-        val report = importer.importGraph(csvSource(), TinkerGraphOperations(), GraphImportOptions())
-        report.verticesCreated shouldBeEqualTo 2L
-        report.edgesCreated shouldBeEqualTo 1L
-    }
-
-    @Test
-    fun `CSV gzip round trip`() {
-        val gzSink = OkioGraphExportSink.PathSink(
-            tempDir.resolve("graph.csv.gz").toString().toPath(),
-            FileSystem.SYSTEM,
+        val exportReport = exporter.exportGraph(
+            csvSink(),
+            buildSourceGraph(),
+            exportOptions
         )
-        val exportReport = exporter.exportGraphGzip(gzSink, buildSourceGraph(), exportOptions)
+        log.debug { "export report=$exportReport" }
         exportReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
         exportReport.verticesWritten shouldBeEqualTo 2L
         exportReport.edgesWritten shouldBeEqualTo 1L
 
-        val gzSource = OkioGraphImportSource.PathSource(
-            tempDir.resolve("graph.csv.gz").toString().toPath(),
-            FileSystem.SYSTEM,
+        val importReport = importer.importGraph(
+            csvSource(),
+            TinkerGraphOperations(),
+            GraphImportOptions()
         )
-        val report = importer.importGraphGzip(gzSource, TinkerGraphOperations(), GraphImportOptions())
-        report.verticesCreated shouldBeEqualTo 2L
-        report.edgesCreated shouldBeEqualTo 1L
+        log.debug { "import report=$importReport" }
+        importReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        importReport.verticesCreated shouldBeEqualTo 2L
+        importReport.edgesCreated shouldBeEqualTo 1L
+    }
+
+    @Test
+    fun `CSV gzip round trip`() {
+        val path = tempDir.resolve("graph.csv.gz").toString().toPath()
+        val gzSink = path.asOkioSink(FileSystem.SYSTEM)
+
+        val exportReport = exporter.exportGraphGzip(
+            gzSink,
+            buildSourceGraph(),
+            exportOptions
+        )
+        log.debug { "export report=$exportReport" }
+        exportReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        exportReport.verticesWritten shouldBeEqualTo 2L
+        exportReport.edgesWritten shouldBeEqualTo 1L
+
+        val gzSource = path.asOkioSource(FileSystem.SYSTEM)
+
+        val importSource = importer.importGraphGzip(
+            gzSource,
+            TinkerGraphOperations(),
+            GraphImportOptions.Default
+        )
+        log.debug { "import source=$importSource" }
+        importSource.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        importSource.verticesCreated shouldBeEqualTo 2L
+        importSource.edgesCreated shouldBeEqualTo 1L
     }
 
     @Test
     fun `CSV exportGraphAsync completes via VirtualThread`() {
-        val future = exporter.exportGraphAsync(csvSink(), buildSourceGraph(), exportOptions)
-        future.get().status shouldBeEqualTo GraphIoStatus.COMPLETED
+        val future = exporter.exportGraphAsync(
+            csvSink(),
+            buildSourceGraph(),
+            exportOptions
+        )
+
+        val exportReport = future.get(3.seconds)
+        log.debug { "export report=$exportReport" }
+        exportReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        exportReport.verticesWritten shouldBeEqualTo 2L
+        exportReport.edgesWritten shouldBeEqualTo 1L
     }
 
     @Test
     fun `CSV importGraphAsync completes via VirtualThread`() {
-        exporter.exportGraph(csvSink(), buildSourceGraph(), exportOptions)
-        val future = importer.importGraphAsync(csvSource(), TinkerGraphOperations(), GraphImportOptions())
-        val report = future.get()
-        report.verticesCreated shouldBeEqualTo 2L
-        report.edgesCreated shouldBeEqualTo 1L
+        exporter.exportGraph(
+            csvSink(),
+            buildSourceGraph(),
+            exportOptions
+        ).status shouldBeEqualTo GraphIoStatus.COMPLETED
+
+
+        val importFuture = importer.importGraphAsync(
+            csvSource(),
+            TinkerGraphOperations(),
+            GraphImportOptions()
+        )
+
+        val importReport = importFuture.get(3.seconds)
+        log.debug { "import report=$importReport" }
+        importReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        importReport.verticesCreated shouldBeEqualTo 2L
+        importReport.edgesCreated shouldBeEqualTo 1L
     }
 
     // ─── Suspend ─────────────────────────────────────────────────────────────
 
     @Test
     fun `CSV exportGraphAwait completes via coroutine`() = runSuspendIO {
-        val report = exporter.exportGraphAwait(csvSink(), buildSourceGraph(), exportOptions)
-        report.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        val exportReport = exporter.exportGraphAwait(
+            csvSink(),
+            buildSourceGraph(),
+            exportOptions
+        )
+        log.debug { "export report=$exportReport" }
+        exportReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        exportReport.verticesWritten shouldBeEqualTo 2L
+        exportReport.edgesWritten shouldBeEqualTo 1L
     }
 
     @Test
     fun `CSV importGraphAwait completes via coroutine`() = runSuspendIO {
-        exporter.exportGraph(csvSink(), buildSourceGraph(), exportOptions)
-        val report = importer.importGraphAwait(csvSource(), TinkerGraphOperations(), GraphImportOptions())
-        report.verticesCreated shouldBeEqualTo 2L
-        report.edgesCreated shouldBeEqualTo 1L
+        exporter.exportGraph(
+            csvSink(),
+            buildSourceGraph(),
+            exportOptions
+        ).status shouldBeEqualTo GraphIoStatus.COMPLETED
+
+        val importReport = importer.importGraphAwait(
+            csvSource(),
+            TinkerGraphOperations(),
+            GraphImportOptions()
+        )
+        log.debug { "import report=$importReport" }
+        importReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        importReport.verticesCreated shouldBeEqualTo 2L
+        importReport.edgesCreated shouldBeEqualTo 1L
     }
 
     @Test
     fun `CSV exportGraphFlow emits progress`() = runSuspendIO {
-        val events = exporter.exportGraphFlow(csvSink(), buildSourceGraph(), exportOptions).toList()
+        val events = exporter
+            .exportGraphFlow(
+                csvSink(),
+                buildSourceGraph(),
+                exportOptions
+            )
+            .log("Export")
+            .toList()
+
         events shouldHaveSize 2
     }
 
     @Test
     fun `CSV importGraphFlow emits progress`() = runSuspendIO {
-        exporter.exportGraph(csvSink(), buildSourceGraph(), exportOptions)
-        val events = importer.importGraphFlow(csvSource(), TinkerGraphOperations(), GraphImportOptions()).toList()
+        exporter.exportGraph(
+            csvSink(),
+            buildSourceGraph(),
+            exportOptions
+        ).status shouldBeEqualTo GraphIoStatus.COMPLETED
+
+        val events = importer
+            .importGraphFlow(
+                csvSource(),
+                TinkerGraphOperations(),
+                GraphImportOptions()
+            )
+            .log("Import")
+            .toList()
+
         events shouldHaveSize 2
     }
 }

@@ -12,12 +12,13 @@ import io.bluetape4k.graph.io.model.GraphIoEdgeRecord
 import io.bluetape4k.graph.io.model.GraphIoVertexRecord
 import io.bluetape4k.graph.io.report.GraphIoFormat
 import io.bluetape4k.graph.io.source.GraphImportSource
-import io.bluetape4k.graph.io.okio.bridge.toInputStream
+import io.bluetape4k.graph.io.source.GraphImportSource.InputStreamSource
+import io.bluetape4k.graph.io.source.asSource
+import io.bluetape4k.io.toInputStream
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import okio.Path.Companion.toPath
-import java.io.ByteArrayInputStream
 
 /**
  * OkIO source를 공통 [GraphRecordFlowReader] 계약으로 연결하는 cold reader.
@@ -32,12 +33,12 @@ import java.io.ByteArrayInputStream
  */
 class OkioGraphRecordFlowReader(
     private val format: GraphIoFormat,
-    private val csvOptions: CsvGraphIoOptions = CsvGraphIoOptions(),
-    private val graphMlOptions: GraphMlImportOptions = GraphMlImportOptions(),
-) : GraphRecordFlowReader<OkioGraphImportSource> {
+    csvOptions: CsvGraphIoOptions = CsvGraphIoOptions.Default,
+    graphMlOptions: GraphMlImportOptions = GraphMlImportOptions.Default,
+): GraphRecordFlowReader<OkioGraphImportSource> {
 
-    private val jackson2Reader = Jackson2NdJsonRecordFlowReader()
-    private val jackson3Reader = Jackson3NdJsonRecordFlowReader()
+    private val jackson2Reader = Jackson2NdJsonRecordFlowReader.Default
+    private val jackson3Reader = Jackson3NdJsonRecordFlowReader.Default
     private val graphMlReader = GraphMlRecordFlowReader(graphMlOptions)
     private val csvReader = CsvGraphRecordFlowReader(csvOptions)
 
@@ -59,15 +60,8 @@ class OkioGraphRecordFlowReader(
         source: OkioGraphImportSource,
         crossinline read: (GraphImportSource) -> Flow<T>,
     ): Flow<T> = flow {
-        GraphIoOkioPaths.openSource(source).use { bufferedSource ->
-            emitAll(
-                read(
-                    GraphImportSource.InputStreamSource(
-                        input = bufferedSource.toInputStream(),
-                        closeInput = false,
-                    ),
-                ),
-            )
+        source.openSource().use { bufferedSource ->
+            emitAll(read(bufferedSource.asSource(closeInput = false)))
         }
     }
 
@@ -78,23 +72,16 @@ class OkioGraphRecordFlowReader(
         val pathSource = source as? OkioGraphImportSource.PathSource
             ?: throw UnsupportedOperationException(
                 "CSV requires two files for vertices and edges, so " +
-                    "OkioGraphRecordFlowReader supports only PathSource. " +
-                    "Use CsvGraphRecordFlowReader directly for stream-backed sources.",
+                        "OkioGraphRecordFlowReader supports only PathSource. " +
+                        "Use CsvGraphRecordFlowReader directly for stream-backed sources.",
             )
         val stem = pathSource.path.toString().removeSuffix(".csv")
         val path = "${stem}_${if (vertices) "vertices" else "edges"}.csv".toPath()
+
         return flow {
-            GraphIoOkioPaths.openSource(
-                OkioGraphImportSource.PathSource(path, pathSource.fileSystem),
-            ).use { bufferedSource ->
-                val inputSource = GraphImportSource.InputStreamSource(
-                    input = bufferedSource.toInputStream(),
-                    closeInput = false,
-                )
-                val emptySource = GraphImportSource.InputStreamSource(
-                    input = ByteArrayInputStream(ByteArray(0)),
-                    closeInput = false,
-                )
+            path.asOkioSource(pathSource.fileSystem).openSource().use { bufferedSource ->
+                val inputSource: InputStreamSource = bufferedSource.asSource(false)
+                val emptySource: InputStreamSource = ByteArray(0).toInputStream().asSource(closeInput = false)
                 val csvSource = if (vertices) {
                     CsvGraphImportSource(vertices = inputSource, edges = emptySource)
                 } else {

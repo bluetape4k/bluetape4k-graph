@@ -56,6 +56,10 @@ import io.bluetape4k.logging.warn
  */
 class GraphMlBulkImporter: GraphBulkImporter<GraphImportSource> {
 
+    companion object: KLogging() {
+        val Default = GraphMlBulkImporter()
+    }
+
     private val reader = StaxGraphMlReader()
 
     override fun importGraph(
@@ -291,5 +295,4 @@ class GraphMlBulkImporter: GraphBulkImporter<GraphImportSource> {
 
     private class StopImport: RuntimeException()
 
-    companion object: KLogging()
 }

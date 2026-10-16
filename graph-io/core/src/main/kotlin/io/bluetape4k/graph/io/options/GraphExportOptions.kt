@@ -31,6 +31,8 @@ data class GraphExportOptions(
     }
 
     companion object: KLogging() {
+        val Default = GraphExportOptions()
+
         private const val serialVersionUID: Long = 1L
     }
 }

@@ -4,12 +4,15 @@ package io.bluetape4k.graph.io.okio.extension
 
 import io.bluetape4k.graph.io.graphml.GraphMlBulkExporter
 import io.bluetape4k.graph.io.graphml.GraphMlBulkImporter
-import io.bluetape4k.graph.io.okio.GraphIoOkioPaths
 import io.bluetape4k.graph.io.okio.OkioGraphExportSink
 import io.bluetape4k.graph.io.okio.OkioGraphImportSource
+import io.bluetape4k.graph.io.okio.asSource
 import io.bluetape4k.graph.io.okio.bridge.asClosingOutputStream
-import io.bluetape4k.graph.io.okio.bridge.toInputStream
 import io.bluetape4k.graph.io.okio.coroutines.SuspendGraphIoOkioBulkAdapter
+import io.bluetape4k.graph.io.okio.openGzipSink
+import io.bluetape4k.graph.io.okio.openGzipSource
+import io.bluetape4k.graph.io.okio.openSink
+import io.bluetape4k.graph.io.okio.openSource
 import io.bluetape4k.graph.io.okio.virtualthread.VirtualThreadGraphIoOkioBulkAdapter
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.options.GraphImportOptions
@@ -19,14 +22,13 @@ import io.bluetape4k.graph.io.report.GraphImportProgress
 import io.bluetape4k.graph.io.report.GraphImportReport
 import io.bluetape4k.graph.io.report.GraphIoFormat
 import io.bluetape4k.graph.io.report.GraphIoProgressListener
-import io.bluetape4k.graph.io.source.GraphExportSink
-import io.bluetape4k.graph.io.source.GraphImportSource
+import io.bluetape4k.graph.io.source.asSink
 import io.bluetape4k.graph.repository.GraphOperations
 import kotlinx.coroutines.flow.Flow
 import java.util.concurrent.CompletableFuture
 
-private val graphmlVtAdapter = VirtualThreadGraphIoOkioBulkAdapter()
-private val graphmlSuspendAdapter = SuspendGraphIoOkioBulkAdapter()
+private val graphmlVtAdapter = VirtualThreadGraphIoOkioBulkAdapter.Default
+private val graphmlSuspendAdapter = SuspendGraphIoOkioBulkAdapter.Default
 
 // ─── Sync ─────────────────────────────────────────────────────────────────────
 
@@ -45,10 +47,8 @@ fun GraphMlBulkImporter.importGraph(
     operations: GraphOperations,
     options: GraphImportOptions = GraphImportOptions(),
 ): GraphImportReport {
-    return GraphIoOkioPaths.openSource(source).use { bs ->
-        bs.toInputStream().use { is_ ->
-            this.importGraph(GraphImportSource.InputStreamSource(is_, closeInput = false), operations, options)
-        }
+    return source.openSource().use { bs ->
+        this.importGraph(bs.asSource(true), operations, options)
     }
 }
 
@@ -58,15 +58,8 @@ fun GraphMlBulkImporter.importGraph(
     options: GraphImportOptions = GraphImportOptions(),
     listener: GraphIoProgressListener,
 ): GraphImportReport {
-    return GraphIoOkioPaths.openSource(source).use { bs ->
-        bs.toInputStream().use { is_ ->
-            this.importGraph(
-                GraphImportSource.InputStreamSource(is_, closeInput = false),
-                operations,
-                options,
-                listener,
-            )
-        }
+    return source.openSource().use { bs ->
+        this.importGraph(bs.asSource(closeInput = true), operations, options, listener)
     }
 }
 
@@ -78,10 +71,8 @@ fun GraphMlBulkImporter.importGraphGzip(
     operations: GraphOperations,
     options: GraphImportOptions = GraphImportOptions(),
 ): GraphImportReport {
-    return GraphIoOkioPaths.openGzipSource(source).use { bs ->
-        bs.toInputStream().use { is_ ->
-            this.importGraph(GraphImportSource.InputStreamSource(is_, closeInput = false), operations, options)
-        }
+    return source.openGzipSource().use { bs ->
+        this.importGraph(bs.asSource(true), operations, options)
     }
 }
 
@@ -91,17 +82,16 @@ fun GraphMlBulkImporter.importGraphGzip(
     options: GraphImportOptions = GraphImportOptions(),
     listener: GraphIoProgressListener,
 ): GraphImportReport {
-    return GraphIoOkioPaths.openGzipSource(source).use { bs ->
-        bs.toInputStream().use { is_ ->
-            this.importGraph(
-                GraphImportSource.InputStreamSource(is_, closeInput = false),
-                operations,
-                options,
-                listener,
-            )
-        }
+    return source.openGzipSource().use { bs ->
+        this.importGraph(
+            bs.asSource(true),
+            operations,
+            options,
+            listener,
+        )
     }
 }
+
 
 /**
  * 그래프를 GraphML 포맷으로 OkIO 싱크에 익스포트한다.
@@ -114,9 +104,9 @@ fun GraphMlBulkExporter.exportGraph(
     operations: GraphOperations,
     options: GraphExportOptions = GraphExportOptions(),
 ): GraphExportReport {
-    return GraphIoOkioPaths.openSink(sink).use { bs ->
+    return sink.openSink().use { bs ->
         bs.asClosingOutputStream().use { os ->
-            this.exportGraph(GraphExportSink.OutputStreamSink(os, closeOutput = false), operations, options)
+            this.exportGraph(os.asSink(false), operations, options)
         }
     }
 }
@@ -127,10 +117,10 @@ fun GraphMlBulkExporter.exportGraph(
     options: GraphExportOptions = GraphExportOptions(),
     listener: GraphIoProgressListener,
 ): GraphExportReport {
-    return GraphIoOkioPaths.openSink(sink).use { bs ->
+    return sink.openSink().use { bs ->
         bs.asClosingOutputStream().use { os ->
             this.exportGraph(
-                GraphExportSink.OutputStreamSink(os, closeOutput = false),
+                os.asSink(false),
                 operations,
                 options,
                 listener,
@@ -147,9 +137,9 @@ fun GraphMlBulkExporter.exportGraphGzip(
     operations: GraphOperations,
     options: GraphExportOptions = GraphExportOptions(),
 ): GraphExportReport {
-    return GraphIoOkioPaths.openGzipSink(sink).use { bs ->
+    return sink.openGzipSink().use { bs ->
         bs.asClosingOutputStream().use { os ->
-            this.exportGraph(GraphExportSink.OutputStreamSink(os, closeOutput = false), operations, options)
+            this.exportGraph(os.asSink(false), operations, options)
         }
     }
 }
@@ -160,10 +150,10 @@ fun GraphMlBulkExporter.exportGraphGzip(
     options: GraphExportOptions = GraphExportOptions(),
     listener: GraphIoProgressListener,
 ): GraphExportReport {
-    return GraphIoOkioPaths.openGzipSink(sink).use { bs ->
+    return sink.openGzipSink().use { bs ->
         bs.asClosingOutputStream().use { os ->
             this.exportGraph(
-                GraphExportSink.OutputStreamSink(os, closeOutput = false),
+                os.asSink(false),
                 operations,
                 options,
                 listener,
@@ -175,6 +165,7 @@ fun GraphMlBulkExporter.exportGraphGzip(
 // ─── VirtualThread ────────────────────────────────────────────────────────────
 
 /** GraphML OkIO Virtual Thread 비동기 임포트 */
+@Suppress("UnusedReceiverParameter")
 fun GraphMlBulkImporter.importGraphAsync(
     source: OkioGraphImportSource,
     operations: GraphOperations,
@@ -182,6 +173,7 @@ fun GraphMlBulkImporter.importGraphAsync(
 ): CompletableFuture<GraphImportReport> =
     graphmlVtAdapter.importGraphAsync(source, GraphIoFormat.GRAPHML, operations, options)
 
+@Suppress("UnusedReceiverParameter")
 fun GraphMlBulkImporter.importGraphAsync(
     source: OkioGraphImportSource,
     operations: GraphOperations,
@@ -191,6 +183,7 @@ fun GraphMlBulkImporter.importGraphAsync(
     graphmlVtAdapter.importGraphAsync(source, GraphIoFormat.GRAPHML, operations, options, listener)
 
 /** GraphML OkIO Virtual Thread 비동기 익스포트 */
+@Suppress("UnusedReceiverParameter")
 fun GraphMlBulkExporter.exportGraphAsync(
     sink: OkioGraphExportSink,
     operations: GraphOperations,
@@ -198,6 +191,7 @@ fun GraphMlBulkExporter.exportGraphAsync(
 ): CompletableFuture<GraphExportReport> =
     graphmlVtAdapter.exportGraphAsync(sink, GraphIoFormat.GRAPHML, operations, options)
 
+@Suppress("UnusedReceiverParameter")
 fun GraphMlBulkExporter.exportGraphAsync(
     sink: OkioGraphExportSink,
     operations: GraphOperations,
@@ -209,6 +203,7 @@ fun GraphMlBulkExporter.exportGraphAsync(
 // ─── Suspend ─────────────────────────────────────────────────────────────────
 
 /** GraphML OkIO 코루틴 진행 상태 Flow 임포트 */
+@Suppress("UnusedReceiverParameter")
 fun GraphMlBulkImporter.importGraphFlow(
     source: OkioGraphImportSource,
     operations: GraphOperations,
@@ -216,6 +211,7 @@ fun GraphMlBulkImporter.importGraphFlow(
 ): Flow<GraphImportProgress> =
     graphmlSuspendAdapter.importGraph(source, GraphIoFormat.GRAPHML, operations, options)
 
+@Suppress("UnusedReceiverParameter")
 fun GraphMlBulkImporter.importGraphFlow(
     source: OkioGraphImportSource,
     operations: GraphOperations,
@@ -225,6 +221,7 @@ fun GraphMlBulkImporter.importGraphFlow(
     graphmlSuspendAdapter.importGraph(source, GraphIoFormat.GRAPHML, operations, options, listener)
 
 /** GraphML OkIO 코루틴 await 임포트 (완료 보고서) */
+@Suppress("UnusedReceiverParameter")
 suspend fun GraphMlBulkImporter.importGraphAwait(
     source: OkioGraphImportSource,
     operations: GraphOperations,
@@ -232,6 +229,7 @@ suspend fun GraphMlBulkImporter.importGraphAwait(
 ): GraphImportReport =
     graphmlSuspendAdapter.importGraphAwait(source, GraphIoFormat.GRAPHML, operations, options)
 
+@Suppress("UnusedReceiverParameter")
 suspend fun GraphMlBulkImporter.importGraphAwait(
     source: OkioGraphImportSource,
     operations: GraphOperations,
@@ -241,6 +239,7 @@ suspend fun GraphMlBulkImporter.importGraphAwait(
     graphmlSuspendAdapter.importGraphAwait(source, GraphIoFormat.GRAPHML, operations, options, listener)
 
 /** GraphML OkIO 코루틴 진행 상태 Flow 익스포트 */
+@Suppress("UnusedReceiverParameter")
 fun GraphMlBulkExporter.exportGraphFlow(
     sink: OkioGraphExportSink,
     operations: GraphOperations,
@@ -248,6 +247,7 @@ fun GraphMlBulkExporter.exportGraphFlow(
 ): Flow<GraphExportProgress> =
     graphmlSuspendAdapter.exportGraph(sink, GraphIoFormat.GRAPHML, operations, options)
 
+@Suppress("UnusedReceiverParameter")
 fun GraphMlBulkExporter.exportGraphFlow(
     sink: OkioGraphExportSink,
     operations: GraphOperations,
@@ -257,6 +257,7 @@ fun GraphMlBulkExporter.exportGraphFlow(
     graphmlSuspendAdapter.exportGraph(sink, GraphIoFormat.GRAPHML, operations, options, listener)
 
 /** GraphML OkIO 코루틴 await 익스포트 (완료 보고서) */
+@Suppress("UnusedReceiverParameter")
 suspend fun GraphMlBulkExporter.exportGraphAwait(
     sink: OkioGraphExportSink,
     operations: GraphOperations,
@@ -264,6 +265,7 @@ suspend fun GraphMlBulkExporter.exportGraphAwait(
 ): GraphExportReport =
     graphmlSuspendAdapter.exportGraphAwait(sink, GraphIoFormat.GRAPHML, operations, options)
 
+@Suppress("UnusedReceiverParameter")
 suspend fun GraphMlBulkExporter.exportGraphAwait(
     sink: OkioGraphExportSink,
     operations: GraphOperations,

@@ -49,6 +49,10 @@ import io.bluetape4k.logging.debug
  */
 class GraphMlBulkExporter: GraphBulkExporter<GraphExportSink> {
 
+    companion object: KLogging() {
+        val Default = GraphMlBulkExporter()
+    }
+
     private val writer = StaxGraphMlWriter()
 
     override fun exportGraph(
@@ -151,6 +155,4 @@ class GraphMlBulkExporter: GraphBulkExporter<GraphExportSink> {
             spool.closeSuppressing(primaryFailure)
         }
     }
-
-    companion object: KLogging()
 }

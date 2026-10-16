@@ -48,6 +48,10 @@ import io.bluetape4k.logging.warn
  */
 class CsvGraphBulkImporter: GraphBulkImporter<CsvGraphImportSource> {
 
+    companion object: KLogging() {
+        val Default = CsvGraphBulkImporter()
+    }
+
     override fun importGraph(
         source: CsvGraphImportSource,
         operations: GraphOperations,
@@ -294,7 +298,17 @@ class CsvGraphBulkImporter: GraphBulkImporter<CsvGraphImportSource> {
         ec: Long,
         sv: Long,
         se: Long,
-    ) = GraphImportReport(status, GraphIoFormat.CSV, vr, vc, er, ec, sv, se, watch.elapsed(), failures.toList())
-
-    companion object: KLogging()
+    ): GraphImportReport =
+        GraphImportReport(
+            status,
+            GraphIoFormat.CSV,
+            vr,
+            vc,
+            er,
+            ec,
+            sv,
+            se,
+            watch.elapsed(),
+            failures.toList()
+        )
 }

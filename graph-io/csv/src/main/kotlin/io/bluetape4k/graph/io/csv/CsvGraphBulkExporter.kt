@@ -43,6 +43,10 @@ import io.bluetape4k.logging.debug
  */
 class CsvGraphBulkExporter: GraphBulkExporter<CsvGraphExportSink> {
 
+    companion object: KLogging() {
+        val Default = CsvGraphBulkExporter()
+    }
+
     override fun exportGraph(
         sink: CsvGraphExportSink,
         operations: GraphOperations,
@@ -184,6 +188,4 @@ class CsvGraphBulkExporter: GraphBulkExporter<CsvGraphExportSink> {
             spool.closeSuppressing(primaryFailure)
         }
     }
-
-    companion object: KLogging()
 }

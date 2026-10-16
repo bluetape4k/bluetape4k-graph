@@ -25,11 +25,13 @@ enum class Compressor(
         requiredClassName = null,
         installHint = "",
     ),
+
     /** JDK 내장 Deflate 압축. 항상 사용 가능. */
     DEFLATE(
         requiredClassName = null,
         installHint = "",
     ),
+
     /**
      * LZ4 고속 압축. `lz4-java` 의존성 필요.
      *
@@ -45,6 +47,7 @@ enum class Compressor(
               implementation("at.yawk.lz4:lz4-java:<version>")
         """.trimIndent(),
     ),
+
     /**
      * Snappy 고속 압축. `snappy-java` 의존성 필요.
      *
@@ -60,6 +63,7 @@ enum class Compressor(
               implementation("org.xerial.snappy:snappy-java:<version>")
         """.trimIndent(),
     ),
+
     /**
      * Zstd 고압축률 압축. `zstd-jni` 의존성 필요.
      *
@@ -75,6 +79,7 @@ enum class Compressor(
               implementation("com.github.luben:zstd-jni:<version>")
         """.trimIndent(),
     ),
+
     /**
      * BZip2 압축. `commons-compress` 의존성 필요.
      *

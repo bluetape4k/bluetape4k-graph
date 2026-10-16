@@ -19,22 +19,22 @@ OkIO 기반 그래프 I/O 레이어. 기존 `graph-io-csv`, `graph-io-jackson2`,
 
 ## OkIO를 선택하는 이유
 
-| java.io 방식 | OkIO 방식 |
-|-------------|----------|
-| 전체 파일을 Heap에 로드 | 64 KB 세그먼트 단위 스트리밍 — Heap 절약 |
-| 압축 시 별도 스트림 래핑 필요 | `Compressors.Streaming.*` 체이닝으로 선언적 압축 |
-| 파일 경로만 지원 | PathSource, BufferedSource, InputStream 3가지 진입점 |
-| 원자적 쓰기 없음 | `PathSink(atomicWrite=true)` 기본으로 부분 쓰기 방지 |
-| FakeFileSystem 없음 | `okio-fakefilesystem`으로 테스트 단순화 |
+| java.io 방식                  | OkIO 방식                                            |
+|-------------------------------|------------------------------------------------------|
+| 전체 파일을 Heap에 로드       | 64 KB 세그먼트 단위 스트리밍 — Heap 절약             |
+| 압축 시 별도 스트림 래핑 필요 | `Compressors.Streaming.*` 체이닝으로 선언적 압축     |
+| 파일 경로만 지원              | PathSource, BufferedSource, InputStream 3가지 진입점 |
+| 원자적 쓰기 없음              | `PathSink(atomicWrite=true)` 기본으로 부분 쓰기 방지 |
+| FakeFileSystem 없음           | `okio-fakefilesystem`으로 테스트 단순화              |
 
 ## 지원 포맷
 
-| 포맷 | `GraphIoFormat` | 설명 |
-|------|----------------|------|
-| CSV | `CSV` | 정점/간선 파일 분리 (`{stem}_vertices.csv` + `{stem}_edges.csv`) |
-| NDJSON (Jackson 2) | `NDJSON_JACKSON2` | Newline-delimited JSON, Jackson 2.x |
-| NDJSON (Jackson 3) | `NDJSON_JACKSON3` | Newline-delimited JSON, Jackson 3.x |
-| GraphML | `GRAPHML` | XML/StAX 기반 그래프 교환 포맷 |
+| 포맷               | `GraphIoFormat`   | 설명                                                             |
+|--------------------|-------------------|------------------------------------------------------------------|
+| CSV                | `CSV`             | 정점/간선 파일 분리 (`{stem}_vertices.csv` + `{stem}_edges.csv`) |
+| NDJSON (Jackson 2) | `NDJSON_JACKSON2` | Newline-delimited JSON, Jackson 2.x                              |
+| NDJSON (Jackson 3) | `NDJSON_JACKSON3` | Newline-delimited JSON, Jackson 3.x                              |
+| GraphML            | `GRAPHML`         | XML/StAX 기반 그래프 교환 포맷                                   |
 
 ## 주요 타입
 
@@ -65,12 +65,12 @@ sealed interface OkioGraphExportSink {
 
 ### 소유권 정책
 
-| 변형 | 기본 소유권 | 의미 |
-|------|-----------|------|
-| `PathSource` / `PathSink` | **라이브러리** | 라이브러리가 파일을 열고 닫는다 |
-| `SourceBased(ownsSource=false)` | **호출자** | import 종료 후 Source가 닫히지 않는다 |
-| `SinkBased(ownsSink=false)` | **호출자** | export 종료 후 Sink가 닫히지 않는다 |
-| `SourceBased(ownsSource=true)` | **라이브러리** | 라이브러리가 Source를 대신 닫는다 |
+| 변형                            | 기본 소유권    | 의미                                  |
+|---------------------------------|----------------|---------------------------------------|
+| `PathSource` / `PathSink`       | **라이브러리** | 라이브러리가 파일을 열고 닫는다       |
+| `SourceBased(ownsSource=false)` | **호출자**     | import 종료 후 Source가 닫히지 않는다 |
+| `SinkBased(ownsSink=false)`     | **호출자**     | export 종료 후 Sink가 닫히지 않는다   |
+| `SourceBased(ownsSource=true)`  | **라이브러리** | 라이브러리가 Source를 대신 닫는다     |
 
 `ownsXxx=false`가 기본값이므로, 외부에서 전달한 Source/Sink/Stream은 호출자가 직접 관리한다.
 
@@ -80,14 +80,14 @@ sealed interface OkioGraphExportSink {
 enum class Compressor { GZIP, DEFLATE, LZ4, SNAPPY, ZSTD, BZIP2 }
 ```
 
-| 압축기 | 의존성 | 항상 사용 가능 |
-|-------|--------|:----------:|
-| `GZIP` | JDK 내장 | ✅ |
-| `DEFLATE` | JDK 내장 | ✅ |
-| `LZ4` | `at.yawk.lz4:lz4-java` | 선택적 |
-| `SNAPPY` | `org.xerial.snappy:snappy-java` | 선택적 |
-| `ZSTD` | `com.github.luben:zstd-jni` | 선택적 |
-| `BZIP2` | `org.apache.commons:commons-compress` | 선택적 |
+| 압축기    | 의존성                                | 항상 사용 가능 |
+|-----------|---------------------------------------|:--------------:|
+| `GZIP`    | JDK 내장                              |       ✅       |
+| `DEFLATE` | JDK 내장                              |       ✅       |
+| `LZ4`     | `at.yawk.lz4:lz4-java`                |     선택적     |
+| `SNAPPY`  | `org.xerial.snappy:snappy-java`       |     선택적     |
+| `ZSTD`    | `com.github.luben:zstd-jni`           |     선택적     |
+| `BZIP2`   | `org.apache.commons:commons-compress` |     선택적     |
 
 선택적 의존성 없이 LZ4/Snappy/Zstd/Bzip2를 사용하면 `IllegalStateException`과 함께 `build.gradle.kts` 추가 방법이 안내된다.
 
@@ -205,8 +205,7 @@ GraphIoOkioPaths.openDecompressedSource(rawSource, Compressor.ZSTD, maxDecompres
 
 ### DAEAD 청크 암호화
 
-`graph-okio`는 `bluetape4k-okio`의 deterministic DAEAD 청크 암호화를 단일 스트림 포맷에 체이닝할 수 있다.
-NDJSON 또는 GraphML payload를 OkIO 스트리밍 경로로 흘리면서 인증/암호화해야 할 때 사용한다.
+`graph-okio`는 `bluetape4k-okio`의 deterministic DAEAD 청크 암호화를 단일 스트림 포맷에 체이닝할 수 있다. NDJSON 또는 GraphML payload를 OkIO 스트리밍 경로로 흘리면서 인증/암호화해야 할 때 사용한다.
 
 ```kotlin
 val daead = TinkDaeads.AES256_SIV
@@ -236,13 +235,13 @@ exporter.exportGraphGzipDaead(sink, GraphIoFormat.NDJSON_JACKSON3, daead, graphO
 importer.importGraphDaeadGzip(source, GraphIoFormat.NDJSON_JACKSON3, daead, graphOperations)
 ```
 
-CSV는 정점/간선 파일이 분리되는 paired-file 포맷이므로 high-level 암호화 편의 함수는 `GraphIoFormat.CSV`를
-거부한다. 커스텀 CSV 파일 쌍을 암호화하려면 `GraphIoOkioPaths.openDaeadEncryptedSink()`와
+CSV는 정점/간선 파일이 분리되는 paired-file 포맷이므로 high-level 암호화 편의 함수는 `GraphIoFormat.CSV`를 거부한다. 커스텀 CSV 파일 쌍을 암호화하려면 `GraphIoOkioPaths.openDaeadEncryptedSink()`와
 `openDaeadDecryptedSource()`를 직접 조합한다.
 
 ### 원자적 쓰기
 
 `PathSink(atomicWrite = true)` (기본값)이면:
+
 1. `{target}.tmp.{UUID}` 임시 파일에 쓰기
 2. 성공 시 → `atomicMove(tmp, target)`
 3. 실패 시 → 임시 파일 삭제, 대상 파일 손상 없음
@@ -284,40 +283,41 @@ class MyGraphIoTest {
 
 > `./gradlew :graph-io-benchmark:benchmark` 으로 실행한다.
 > 환경: Java 25, Apple M3 Pro, 1 warmup / 3 iterations / 2 s each (빠른 측정용).
-> 프로덕션 기준 측정은 기본값(3 warmup / 5 iterations / 3 s)으로 재실행한다.
+> 프로덕션 기준 측정은 기본값 (3 warmup / 5 iterations / 3 s)으로 재실행한다.
 
 ### NDJSON (Jackson3) — Export (AverageTime, ms/op, 낮을수록 좋음)
 
-| 시나리오 | small | medium |
-|---------|------:|-------:|
-| `jackson3JavaIoExport` (baseline) | 1.23 | 18.06 |
-| `jackson3OkioExport` | 1.53 | 19.69 |
-| `jackson3OkioGzipExport` | 3.09 | 39.87 |
-| `jackson3VtOkioExport` (VirtualThread) | 1.47 | 19.34 |
+| 시나리오                               | small | medium |
+|----------------------------------------|------:|-------:|
+| `jackson3JavaIoExport` (baseline)      |  1.23 |  18.06 |
+| `jackson3OkioExport`                   |  1.53 |  19.69 |
+| `jackson3OkioGzipExport`               |  3.09 |  39.87 |
+| `jackson3VtOkioExport` (VirtualThread) |  1.47 |  19.34 |
 
 ### NDJSON (Jackson3) — Import / RoundTrip
 
-| 시나리오 | small | medium |
-|---------|------:|-------:|
-| `jackson3JavaIoImport` (baseline) | 17.26 | 183.93 |
-| `jackson3OkioImport` | 17.40 | 184.61 |
-| `jackson3OkioGzipImport` | 20.06 | 226.40 |
-| `jackson3OkioRoundTrip` | 17.34 | 192.44 |
-| `jackson3OkioGzipRoundTrip` | 20.04 | 212.96 |
+| 시나리오                               | small | medium |
+|----------------------------------------|------:|-------:|
+| `jackson3JavaIoImport` (baseline)      | 17.26 | 183.93 |
+| `jackson3OkioImport`                   | 17.40 | 184.61 |
+| `jackson3OkioGzipImport`               | 20.06 | 226.40 |
+| `jackson3OkioRoundTrip`                | 17.34 | 192.44 |
+| `jackson3OkioGzipRoundTrip`            | 20.04 | 212.96 |
 | `jackson3VtOkioImport` (VirtualThread) | 16.99 | 184.68 |
-| `jackson3VtOkioRoundTrip` | 17.27 | 191.34 |
+| `jackson3VtOkioRoundTrip`              | 17.27 | 191.34 |
 
 ### GraphML (StAX) — Export / Import / RoundTrip
 
-| 시나리오 | small | medium |
-|---------|------:|-------:|
-| `graphMlJavaIoExport` (baseline) | 2.37 | 33.88 |
-| `graphMlOkioExport` | 3.70 | 39.36 |
+| 시나리오                         | small | medium |
+|----------------------------------|------:|-------:|
+| `graphMlJavaIoExport` (baseline) |  2.37 |  33.88 |
+| `graphMlOkioExport`              |  3.70 |  39.36 |
 | `graphMlJavaIoImport` (baseline) | 18.74 | 215.44 |
-| `graphMlOkioImport` | 19.93 | 220.84 |
-| `graphMlOkioRoundTrip` | 20.75 | 215.05 |
+| `graphMlOkioImport`              | 19.93 | 220.84 |
+| `graphMlOkioRoundTrip`           | 20.75 | 215.05 |
 
 **관찰:**
+
 - NDJSON OkIO는 java.io 대비 Export +25% (small), +9% (medium), Import는 동일 수준
 - VirtualThread 오버헤드는 사실상 없음 (sync OkIO와 동일)
 - GZIP Export는 plain 대비 2× 느리지만 Import는 +15% 수준
@@ -327,11 +327,10 @@ class MyGraphIoTest {
 
 - **XXE 방지**: GraphML StAX 파서에 `SUPPORT_DTD=false`, `IS_SUPPORTING_EXTERNAL_ENTITIES=false` 적용 (기존 구현 위임)
 - **Decompression bomb 방지**: `BombGuardSource`가 해제 바이트를 추적하여 `maxDecompressedBytes` 초과 시 `IOException` 발생
-  - 기본 한계: 512 MiB (`DEFAULT_MAX_DECOMPRESSED_BYTES`)
-  - 커스텀 한계: `openDecompressedSource(source, compressor, maxDecompressedBytes = 1L * 1024 * 1024 * 1024)` (1 GiB)
-- **DAEAD deterministic encryption**: 같은 키와 associated data로 같은 평문 청크를 암호화하면 같은 암호문
-  청크가 생성된다. associated data는 테넌트/용도/스키마 버전처럼 의도적인 경계값으로 정하고, 키 생성/보관/회전은
-  이 모듈 밖에서 관리한다.
+    - 기본 한계: 512 MiB (`DEFAULT_MAX_DECOMPRESSED_BYTES`)
+    - 커스텀 한계: `openDecompressedSource(source, compressor, maxDecompressedBytes = 1L * 1024 * 1024 * 1024)` (1 GiB)
+- **DAEAD deterministic
+  encryption**: 같은 키와 associated data로 같은 평문 청크를 암호화하면 같은 암호문 청크가 생성된다. associated data는 테넌트/용도/스키마 버전처럼 의도적인 경계값으로 정하고, 키 생성/보관/회전은 이 모듈 밖에서 관리한다.
 - **CSV Gzip 스트리밍**: `importGraphGzip` / `exportGraphGzip` 모두 단일 패스 스트리밍 — 중간 버퍼링 없음
 
 ## Gradle 의존성
@@ -357,9 +356,7 @@ dependencies {
 
 `OkioGraphRecordFlowReader(format)`는 포맷별 reader에 위임하여 cold·순서 보존 `Flow`를 방출합니다.
 `GraphImportOptions.batchSize`는 백엔드 쓰기 플러시 축이며 reader 버퍼링이나 source 소유권을 바꾸지 않습니다.
-`PathSource`와 `ownsSource`/`ownsStream=true` source는 라이브러리가 닫고 호출자 소유 source는 열린 상태로 둡니다.
-CSV reader dispatch는 `{stem}_vertices.csv`와 `{stem}_edges.csv` 파일 쌍이 필요하므로 stream-backed CSV는 명시적으로
-지원하지 않습니다.
+`PathSource`와 `ownsSource`/`ownsStream=true` source는 라이브러리가 닫고 호출자 소유 source는 열린 상태로 둡니다. CSV reader dispatch는 `{stem}_vertices.csv`와 `{stem}_edges.csv` 파일 쌍이 필요하므로 stream-backed CSV는 명시적으로 지원하지 않습니다.
 
 ## Stream bridge의 소유권
 

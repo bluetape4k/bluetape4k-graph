@@ -2,13 +2,14 @@
 
 package io.bluetape4k.graph.io.okio
 
-import io.bluetape4k.graph.io.okio.bridge.asClosingOutputStream
+import io.bluetape4k.graph.GraphUnsupportedOperationException
 import io.bluetape4k.graph.io.contract.GraphBulkExporter
 import io.bluetape4k.graph.io.csv.CsvGraphBulkExporter
 import io.bluetape4k.graph.io.csv.CsvGraphExportSink
 import io.bluetape4k.graph.io.graphml.GraphMlBulkExporter
 import io.bluetape4k.graph.io.jackson2.Jackson2NdJsonBulkExporter
 import io.bluetape4k.graph.io.jackson3.Jackson3NdJsonBulkExporter
+import io.bluetape4k.graph.io.okio.bridge.asClosingOutputStream
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.report.GraphExportReport
 import io.bluetape4k.graph.io.report.GraphIoFormat
@@ -36,13 +37,15 @@ import java.io.IOException
  * 스트림 기반 싱크는 [UnsupportedOperationException]을 던진다.
  */
 class OkioGraphBulkExporter(
-    private val csvExporter: CsvGraphBulkExporter = CsvGraphBulkExporter(),
-    private val jackson2Exporter: Jackson2NdJsonBulkExporter = Jackson2NdJsonBulkExporter(),
-    private val jackson3Exporter: Jackson3NdJsonBulkExporter = Jackson3NdJsonBulkExporter(),
-    private val graphmlExporter: GraphMlBulkExporter = GraphMlBulkExporter(),
-) : GraphBulkExporter<OkioGraphExportSink> {
+    private val csvExporter: CsvGraphBulkExporter = CsvGraphBulkExporter.Default,
+    private val jackson2Exporter: Jackson2NdJsonBulkExporter = Jackson2NdJsonBulkExporter.Default,
+    private val jackson3Exporter: Jackson3NdJsonBulkExporter = Jackson3NdJsonBulkExporter.Default,
+    private val graphmlExporter: GraphMlBulkExporter = GraphMlBulkExporter.Default,
+): GraphBulkExporter<OkioGraphExportSink> {
 
-    companion object : KLogging()
+    companion object: KLogging() {
+        val Default = OkioGraphBulkExporter()
+    }
 
     /**
      * 그래프를 OkIO 싱크에 [GraphIoFormat.NDJSON_JACKSON3] 포맷으로 익스포트한다.
@@ -78,13 +81,25 @@ class OkioGraphBulkExporter(
         return when (format) {
             GraphIoFormat.CSV -> exportCsv(sink, operations, options)
             GraphIoFormat.NDJSON_JACKSON2 -> exportSingleStream(sink) { os ->
-                jackson2Exporter.exportGraph(GraphExportSink.OutputStreamSink(os, closeOutput = false), operations, options)
+                jackson2Exporter.exportGraph(
+                    GraphExportSink.OutputStreamSink(os, closeOutput = false),
+                    operations,
+                    options
+                )
             }
             GraphIoFormat.NDJSON_JACKSON3 -> exportSingleStream(sink) { os ->
-                jackson3Exporter.exportGraph(GraphExportSink.OutputStreamSink(os, closeOutput = false), operations, options)
+                jackson3Exporter.exportGraph(
+                    GraphExportSink.OutputStreamSink(os, closeOutput = false),
+                    operations,
+                    options
+                )
             }
             GraphIoFormat.GRAPHML -> exportSingleStream(sink) { os ->
-                graphmlExporter.exportGraph(GraphExportSink.OutputStreamSink(os, closeOutput = false), operations, options)
+                graphmlExporter.exportGraph(
+                    GraphExportSink.OutputStreamSink(os, closeOutput = false),
+                    operations,
+                    options
+                )
             }
         }
     }
@@ -102,8 +117,8 @@ class OkioGraphBulkExporter(
             format = format,
             listener = listener,
             bytesProvider = {
-                if (format == GraphIoFormat.CSV) GraphIoOkioPaths.sizeOfCsv(sink)
-                else GraphIoOkioPaths.sizeOf(sink)
+                if (format == GraphIoFormat.CSV) sink.sizeOfCsv()
+                else sink.sizeOf()
             },
         )
         return reporter.run(
@@ -152,7 +167,7 @@ class OkioGraphBulkExporter(
             operation = GraphIoOperation.EXPORT,
             format = format,
             listener = listener,
-            bytesProvider = { GraphIoOkioPaths.sizeOf(sink) },
+            bytesProvider = { sink.sizeOf() },
         )
         return reporter.run(
             block = {
@@ -198,7 +213,7 @@ class OkioGraphBulkExporter(
             operation = GraphIoOperation.EXPORT,
             format = format,
             listener = listener,
-            bytesProvider = { GraphIoOkioPaths.sizeOf(sink) },
+            bytesProvider = { sink.sizeOf() },
         )
         return reporter.run(
             block = {
@@ -229,11 +244,23 @@ class OkioGraphBulkExporter(
         sink.asClosingOutputStream().use { os ->
             when (format) {
                 GraphIoFormat.NDJSON_JACKSON2 ->
-                    jackson2Exporter.exportGraph(GraphExportSink.OutputStreamSink(os, closeOutput = false), operations, options)
+                    jackson2Exporter.exportGraph(
+                        GraphExportSink.OutputStreamSink(os, closeOutput = false),
+                        operations,
+                        options
+                    )
                 GraphIoFormat.NDJSON_JACKSON3 ->
-                    jackson3Exporter.exportGraph(GraphExportSink.OutputStreamSink(os, closeOutput = false), operations, options)
+                    jackson3Exporter.exportGraph(
+                        GraphExportSink.OutputStreamSink(os, closeOutput = false),
+                        operations,
+                        options
+                    )
                 GraphIoFormat.GRAPHML ->
-                    graphmlExporter.exportGraph(GraphExportSink.OutputStreamSink(os, closeOutput = false), operations, options)
+                    graphmlExporter.exportGraph(
+                        GraphExportSink.OutputStreamSink(os, closeOutput = false),
+                        operations,
+                        options
+                    )
                 GraphIoFormat.CSV -> unsupportedCsvEncrypted()
             }
         }
@@ -252,8 +279,8 @@ class OkioGraphBulkExporter(
             is OkioGraphExportSink.PathSink -> {
                 require(sink.fileSystem == FileSystem.SYSTEM) {
                     "CSV export supports only FileSystem.SYSTEM. " +
-                        "Use CsvGraphBulkExporter directly for custom FileSystem instances. " +
-                        "Provided FileSystem: ${sink.fileSystem}"
+                            "Use CsvGraphBulkExporter directly for custom FileSystem instances. " +
+                            "Provided FileSystem: ${sink.fileSystem}"
                 }
                 val stem = sink.path.toString().removeSuffix(".csv")
                 val verticesSink = GraphExportSink.PathSink(java.nio.file.Paths.get("${stem}_vertices.csv"))
@@ -262,7 +289,7 @@ class OkioGraphBulkExporter(
             }
             else -> throw UnsupportedOperationException(
                 "CSV requires two files for vertices and edges, so OkioGraphBulkExporter supports only PathSink. " +
-                    "Use CsvGraphBulkExporter directly for stream-backed sinks."
+                        "Use CsvGraphBulkExporter directly for stream-backed sinks."
             )
         }
     }
@@ -280,7 +307,7 @@ class OkioGraphBulkExporter(
     }
 
     private fun unsupportedCsvEncrypted(): Nothing =
-        throw UnsupportedOperationException(
+        throw GraphUnsupportedOperationException(
             "CSV is a paired-file format. Use low-level DAEAD helpers directly for custom CSV file pairs."
         )
 }

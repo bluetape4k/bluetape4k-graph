@@ -1,3 +1,7 @@
+configurations {
+    testImplementation.get().extendsFrom(compileOnly.get(), runtimeOnly.get())
+}
+
 dependencies {
     api(project(":bluetape4k-graph-io-core"))
     api(bt4k.bluetape4k.okio)
@@ -24,9 +28,4 @@ dependencies {
     testImplementation(bt4k.okio.fakefilesystem)
     testImplementation(project(":bluetape4k-graph-tinkerpop"))
 
-    // 통합 테스트에서 압축 알고리즘 실제 사용
-    testImplementation(bt4k.snappy.java)
-    testImplementation(bt4k.at.yawk.lz4.java)
-    testImplementation(bt4k.zstd.jni)
-    testImplementation(bt4k.commons.compress)
 }
