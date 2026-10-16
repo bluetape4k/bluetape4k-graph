@@ -2,9 +2,10 @@ package io.bluetape4k.graph.spring.boot.autoconfigure
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBe
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeNull
-import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.graph.age.AgeGraphOperations
 import io.bluetape4k.graph.age.AgeGraphSuspendOperations
@@ -13,17 +14,18 @@ import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
 import io.bluetape4k.graph.spring.boot.properties.AgeGraphProperties
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
-import io.bluetape4k.assertions.assertFailsWith
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import org.jetbrains.exposed.v1.jdbc.Database
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
+import org.springframework.beans.factory.getBean
 import org.springframework.boot.autoconfigure.AutoConfigurations
 import org.springframework.boot.test.context.runner.ApplicationContextRunner
-import org.jetbrains.exposed.v1.jdbc.Database
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.sql.Connection
@@ -33,12 +35,12 @@ import javax.sql.DataSource
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class GraphAgeAutoConfigurationTest {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     @Configuration(proxyBeanMethods = false)
     class DataSourceConfig {
         @Bean(destroyMethod = "close")
-        fun dataSource(): DataSource {
+        fun dataSource(): HikariDataSource {
             val cfg = HikariConfig().apply {
                 jdbcUrl = PostgreSQLAgeServer.Launcher.postgresqlAge.jdbcUrl
                 username = PostgreSQLAgeServer.Launcher.postgresqlAge.username
@@ -84,9 +86,9 @@ class GraphAgeAutoConfigurationTest {
     fun `backend=age 이면 GraphOperations 빈 등록`() {
         runner.withPropertyValues(*ageProperties)
             .run { ctx ->
-                ctx.getBean(GraphOperations::class.java).shouldNotBeNull()
-                ctx.getBean(GraphSuspendOperations::class.java).shouldNotBeNull()
-                ctx.getBean(GraphVirtualThreadOperations::class.java).shouldNotBeNull()
+                ctx.getBean<GraphOperations>().shouldNotBeNull()
+                ctx.getBean<GraphSuspendOperations>().shouldNotBeNull()
+                ctx.getBean<GraphVirtualThreadOperations>().shouldNotBeNull()
             }
     }
 
@@ -97,7 +99,7 @@ class GraphAgeAutoConfigurationTest {
             "bluetape4k.graph.age.register-suspend=false",
         ).run { ctx ->
             assertFailsWith<NoSuchBeanDefinitionException> {
-                ctx.getBean(GraphSuspendOperations::class.java)
+                ctx.getBean<GraphSuspendOperations>().shouldNotBeNull()
             }
         }
     }
@@ -109,7 +111,7 @@ class GraphAgeAutoConfigurationTest {
             "bluetape4k.graph.age.register-virtual-thread=false",
         ).run { ctx ->
             assertFailsWith<NoSuchBeanDefinitionException> {
-                ctx.getBean(GraphVirtualThreadOperations::class.java)
+                ctx.getBean<GraphVirtualThreadOperations>().shouldNotBeNull()
             }
         }
     }
@@ -121,8 +123,8 @@ class GraphAgeAutoConfigurationTest {
             "bluetape4k.graph.age.auto-create-graph=false",
         ).run { ctx ->
             ctx.startupFailure.shouldBeNull()
-            ctx.getBean("ageExposedDatabase", Database::class.java).shouldNotBeNull()
-            ctx.getBean(GraphOperations::class.java).shouldNotBeNull()
+            ctx.getBean<Database>("ageExposedDatabase").shouldNotBeNull()
+            ctx.getBean<GraphOperations>().shouldNotBeNull()
         }
     }
 
@@ -132,29 +134,29 @@ class GraphAgeAutoConfigurationTest {
         val applicationDatabase = Database.connect(mockk<DataSource>(relaxed = true))
 
         namedDataSourceRunner
-            .withBean("ageExposedDatabase", Database::class.java, java.util.function.Supplier { ageDatabase })
-            .withBean("applicationDatabase", Database::class.java, java.util.function.Supplier { applicationDatabase })
+            .withBean("ageExposedDatabase", Database::class.java, { ageDatabase })
+            .withBean("applicationDatabase", Database::class.java, { applicationDatabase })
             .withPropertyValues(
                 *ageProperties,
                 "bluetape4k.graph.age.auto-create-graph=false",
             ).run { ctx ->
                 ctx.startupFailure.shouldBeNull()
-                (databaseOf(ctx.getBean(AgeGraphOperations::class.java)) === ageDatabase).shouldBeTrue()
-                (databaseOf(ctx.getBean(AgeGraphSuspendOperations::class.java)) === ageDatabase).shouldBeTrue()
+                databaseOf(ctx.getBean<AgeGraphOperations>()) shouldBe ageDatabase
+                databaseOf(ctx.getBean<AgeGraphSuspendOperations>()) shouldBe ageDatabase
             }
     }
 
     @Test
     fun `initializer rethrows generic failure even when message resembles duplicate`() {
-        val operations = mockk<io.bluetape4k.graph.age.AgeGraphOperations>()
-        every { operations.createGraph("test_graph") } throws
-            IllegalStateException("graph already exists but the connection failed")
+        val operations = mockk<AgeGraphOperations>()
+        every {
+            operations.createGraph("test_graph")
+        } throws IllegalStateException("graph already exists but the connection failed")
 
-        val initializer = GraphAgeAutoConfiguration()
-            .ageGraphInitializer(
-                operations,
-                AgeGraphProperties("test_graph"),
-            )
+        val initializer = GraphAgeAutoConfiguration().ageGraphInitializer(
+            operations,
+            AgeGraphProperties("test_graph"),
+        )
 
         assertFailsWith<IllegalStateException> {
             initializer.afterPropertiesSet()
@@ -177,8 +179,10 @@ class GraphAgeAutoConfigurationTest {
             .health()
             .shouldNotBeNull()
 
+        log.debug { "health=$health" }
         health.status.code shouldBeEqualTo "UP"
         health.details["backend"] shouldBeEqualTo "age"
+
         verify {
             statement.execute("SELECT 1")
             connection.close()
@@ -196,6 +200,7 @@ class GraphAgeAutoConfigurationTest {
             .health()
             .shouldNotBeNull()
 
+        log.debug { "health=$health" }
         health.status.code shouldBeEqualTo "DOWN"
     }
 

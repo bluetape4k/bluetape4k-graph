@@ -2,6 +2,8 @@ package io.bluetape4k.graph.spring.boot.autoconfigure
 
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import io.bluetape4k.testcontainers.PropertyExportingServer
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
@@ -16,6 +18,8 @@ import java.util.function.Supplier
  */
 class GraphTestcontainersDynamicPropertySourceTest {
 
+    companion object: KLogging()
+
     @AfterEach
     fun clearSystemProperties() {
         graphBackendDynamicPropertyMappings.values
@@ -26,6 +30,8 @@ class GraphTestcontainersDynamicPropertySourceTest {
 
     @Test
     fun `모든 그래프 backend가 기존 설정 key alias를 선언한다`() {
+        log.debug { "graphBackendDynamicPropertyMappings: $graphBackendDynamicPropertyMappings" }
+        
         graphBackendDynamicPropertyMappings shouldBeEqualTo mapOf(
             "neo4j" to GraphDynamicPropertyMapping(
                 propertyNamespace = "neo4j",
@@ -103,8 +109,8 @@ class GraphTestcontainersDynamicPropertySourceTest {
             registry.value("bluetape4k.graph.falkordb.host")
         }
 
-        error.message shouldBeEqualTo
-            "PropertyExportingServer 'falkordb' did not provide property 'host'"
+        log.debug { "error=$error" }
+        error.message shouldBeEqualTo "PropertyExportingServer 'falkordb' did not provide property 'host'"
     }
 
     @Test
@@ -126,6 +132,7 @@ class GraphTestcontainersDynamicPropertySourceTest {
             registry.value("bluetape4k.graph.falkordb.host")
         }
 
+        log.debug { "error=$error" }
         error.message shouldBeEqualTo "server is stopped"
     }
 
@@ -155,6 +162,7 @@ class GraphTestcontainersDynamicPropertySourceTest {
         )
         val registry = RecordingRegistry()
         val mapping = graphBackendDynamicPropertyMappings.getValue("falkordb")
+        log.debug { "mapping=$mapping" }
 
         server.registerGraphDynamicProperties(registry, mapping)
         server.registerGraphDynamicProperties(registry, mapping)

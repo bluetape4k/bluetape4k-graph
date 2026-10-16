@@ -3,9 +3,9 @@ package io.bluetape4k.graph.spring.boot.autoconfigure
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
+import io.bluetape4k.graph.spring.boot.properties.TinkerGraphGraphProperties
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
-import io.bluetape4k.graph.spring.boot.properties.TinkerGraphGraphProperties
 import io.bluetape4k.graph.vt.asVirtualThread
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.info
@@ -15,6 +15,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.boot.health.contributor.Health
+import org.springframework.boot.health.contributor.HealthIndicator
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
@@ -51,7 +53,7 @@ import org.springframework.context.annotation.Configuration
 @EnableConfigurationProperties(TinkerGraphGraphProperties::class)
 class GraphTinkerGraphAutoConfiguration {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     /**
      * Application이 자체 graph operations bean을 제공하지 않았을 때 in-memory TinkerGraph operations를 등록한다.
@@ -104,14 +106,14 @@ class GraphTinkerGraphAutoConfiguration {
     @ConditionalOnClass(name = ["org.springframework.boot.health.contributor.HealthIndicator"])
     class HealthConfig {
 
-        companion object : KLogging()
+        companion object: KLogging()
 
         @Bean
         @ConditionalOnMissingBean
-        fun tinkerGraphHealthIndicator(): org.springframework.boot.health.contributor.HealthIndicator =
-            org.springframework.boot.health.contributor.HealthIndicator {
-                org.springframework.boot.health.contributor.Health.up()
-                    .withDetail("backend", "tinkergraph").build()
-            }
+        fun tinkerGraphHealthIndicator(): HealthIndicator = HealthIndicator {
+            Health.up()
+                .withDetail("backend", "tinkergraph")
+                .build()
+        }
     }
 }

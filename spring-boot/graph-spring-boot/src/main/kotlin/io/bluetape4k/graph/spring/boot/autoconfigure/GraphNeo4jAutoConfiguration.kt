@@ -19,6 +19,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.boot.health.contributor.Health
+import org.springframework.boot.health.contributor.HealthIndicator
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.util.concurrent.TimeUnit
@@ -57,7 +59,7 @@ import java.util.concurrent.TimeUnit
 @EnableConfigurationProperties(Neo4jGraphProperties::class)
 class GraphNeo4jAutoConfiguration {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     /**
      * Application이 `neo4jDriver`를 제공하지 않을 때 새 [Driver]를 생성한다.
@@ -66,9 +68,10 @@ class GraphNeo4jAutoConfiguration {
     @ConditionalOnMissingBean(name = ["neo4jDriver"])
     fun neo4jDriver(props: Neo4jGraphProperties): Driver {
         val auth = if (props.username.isBlank() || props.password.isBlank()) AuthTokens.none()
-                   else AuthTokens.basic(props.username, props.password)
+        else AuthTokens.basic(props.username, props.password)
         val safeUri = props.uri.replace(Regex("//[^@]+@"), "//***@")
         log.info { "Creating Neo4j Driver: uri=$safeUri, database=${props.database}" }
+
         val config = Config.builder()
             .withConnectionTimeout(props.connectionTimeoutMillis, TimeUnit.MILLISECONDS)
             .withMaxConnectionLifetime(props.maxConnectionLifetimeMillis, TimeUnit.MILLISECONDS)
@@ -125,20 +128,19 @@ class GraphNeo4jAutoConfiguration {
     @ConditionalOnClass(name = ["org.springframework.boot.health.contributor.HealthIndicator"])
     class HealthConfig {
 
-        companion object : KLogging()
+        companion object: KLogging()
 
         @Bean
         @ConditionalOnMissingBean
         fun neo4jHealthIndicator(
             @Qualifier("neo4jDriver") driver: Driver,
-        ): org.springframework.boot.health.contributor.HealthIndicator =
-            org.springframework.boot.health.contributor.HealthIndicator {
-                try {
-                    driver.verifyConnectivity()
-                    org.springframework.boot.health.contributor.Health.up().withDetail("backend", "neo4j").build()
-                } catch (e: Exception) {
-                    org.springframework.boot.health.contributor.Health.down(e).build()
-                }
+        ): HealthIndicator = HealthIndicator {
+            try {
+                driver.verifyConnectivity()
+                Health.up().withDetail("backend", "neo4j").build()
+            } catch (e: Exception) {
+                Health.down(e).build()
             }
+        }
     }
 }

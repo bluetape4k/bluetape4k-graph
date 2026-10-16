@@ -61,7 +61,7 @@ import javax.sql.DataSource
 @EnableConfigurationProperties(AgeGraphProperties::class)
 class GraphAgeAutoConfiguration {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     /**
      * 선택된 AGE [DataSource]에 Exposed [Database]를 연결한다. bean 이름은 제한하지 않는다.
@@ -160,7 +160,7 @@ class GraphAgeAutoConfiguration {
     @ConditionalOnClass(name = ["org.springframework.boot.health.contributor.HealthIndicator"])
     class HealthConfig {
 
-        companion object : KLogging()
+        companion object: KLogging()
 
         @Bean
         @ConditionalOnMissingBean

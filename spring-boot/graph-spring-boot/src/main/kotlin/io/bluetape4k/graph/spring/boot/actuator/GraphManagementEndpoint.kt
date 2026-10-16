@@ -8,13 +8,14 @@ import io.bluetape4k.graph.spring.boot.properties.FalkorDBGraphProperties
 import io.bluetape4k.graph.spring.boot.properties.GraphProperties
 import io.bluetape4k.graph.spring.boot.properties.MemgraphGraphProperties
 import io.bluetape4k.graph.spring.boot.properties.Neo4jGraphProperties
+import io.bluetape4k.logging.KLogging
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.actuate.endpoint.annotation.Endpoint
 import org.springframework.boot.actuate.endpoint.annotation.ReadOperation
-import org.springframework.core.ResolvableType
 import org.springframework.context.ApplicationContext
+import org.springframework.core.ResolvableType
 import org.springframework.util.ClassUtils
-import java.util.Locale
+import java.util.*
 
 private const val GRAPH_IO_IMPORTER_CLASS = "io.bluetape4k.graph.io.contract.GraphBulkImporter"
 private const val GRAPH_IO_EXPORTER_CLASS = "io.bluetape4k.graph.io.contract.GraphBulkExporter"
@@ -50,7 +51,7 @@ class GraphManagementEndpoint(
         falkordbProperties: ObjectProvider<FalkorDBGraphProperties>?,
         applicationContext: ApplicationContext?,
         classLoader: ClassLoader?,
-    ) : this(
+    ): this(
         graphProperties = graphProperties,
         operations = operations,
     ) {
@@ -62,7 +63,7 @@ class GraphManagementEndpoint(
         this.classLoader = classLoader
     }
 
-    companion object {
+    companion object: KLogging() {
         /** Spring auto-configuration이 optional backend state를 연결하는 내부 factory. */
         @JvmSynthetic
         internal fun configured(
@@ -150,7 +151,7 @@ class GraphManagementEndpoint(
 
     private fun graphIoOnClasspath(): Boolean =
         ClassUtils.isPresent(GRAPH_IO_IMPORTER_CLASS, classLoader) &&
-            ClassUtils.isPresent(GRAPH_IO_EXPORTER_CLASS, classLoader)
+                ClassUtils.isPresent(GRAPH_IO_EXPORTER_CLASS, classLoader)
 }
 
 data class GraphManagementSnapshot(

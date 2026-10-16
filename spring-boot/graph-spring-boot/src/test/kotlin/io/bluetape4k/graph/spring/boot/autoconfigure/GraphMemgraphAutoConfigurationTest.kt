@@ -1,27 +1,38 @@
 package io.bluetape4k.graph.spring.boot.autoconfigure
 
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import io.bluetape4k.testcontainers.graphdb.MemgraphServer
-import io.bluetape4k.assertions.assertFailsWith
+import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.neo4j.driver.Driver
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.neo4j.driver.Driver
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
+import org.springframework.beans.factory.getBean
 import org.springframework.boot.autoconfigure.AutoConfigurations
 import org.springframework.boot.test.context.runner.ApplicationContextRunner
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class GraphMemgraphAutoConfigurationTest {
 
-    companion object : KLogging()
+    companion object: KLogging()
+
+    private val driver = mockk<Driver>(relaxed = true)
+
+    @BeforeEach
+    fun beforeEach() {
+        clearMocks(driver)
+    }
 
     private val runner = ApplicationContextRunner()
         .withConfiguration(
@@ -50,9 +61,9 @@ class GraphMemgraphAutoConfigurationTest {
     fun `backend=memgraph 이면 GraphOperations 빈 등록`() {
         runner.withPropertyValues(*memgraphProperties)
             .run { ctx ->
-                ctx.getBean(GraphOperations::class.java).shouldNotBeNull()
-                ctx.getBean(GraphSuspendOperations::class.java).shouldNotBeNull()
-                ctx.getBean(GraphVirtualThreadOperations::class.java).shouldNotBeNull()
+                ctx.getBean<GraphOperations>().shouldNotBeNull()
+                ctx.getBean<GraphSuspendOperations>().shouldNotBeNull()
+                ctx.getBean<GraphVirtualThreadOperations>().shouldNotBeNull()
             }
     }
 
@@ -62,10 +73,10 @@ class GraphMemgraphAutoConfigurationTest {
             .withBean("neo4jDriver", Driver::class.java, { mockk(relaxed = true) })
             .withPropertyValues(*localMemgraphProperties)
             .run { ctx ->
-                ctx.getBean("neo4jDriver", Driver::class.java).shouldNotBeNull()
-                ctx.getBean("memgraphDriver", Driver::class.java).shouldNotBeNull()
-                ctx.getBean(GraphOperations::class.java).shouldNotBeNull()
-                ctx.getBean(GraphSuspendOperations::class.java).shouldNotBeNull()
+                ctx.getBean<Driver>("neo4jDriver").shouldNotBeNull()
+                ctx.getBean<Driver>("memgraphDriver").shouldNotBeNull()
+                ctx.getBean<GraphOperations>().shouldNotBeNull()
+                ctx.getBean<GraphSuspendOperations>().shouldNotBeNull()
             }
     }
 
@@ -76,7 +87,7 @@ class GraphMemgraphAutoConfigurationTest {
             "bluetape4k.graph.memgraph.register-suspend=false",
         ).run { ctx ->
             assertFailsWith<NoSuchBeanDefinitionException> {
-                ctx.getBean(GraphSuspendOperations::class.java)
+                ctx.getBean<GraphSuspendOperations>()
             }
         }
     }
@@ -88,15 +99,13 @@ class GraphMemgraphAutoConfigurationTest {
             "bluetape4k.graph.memgraph.register-virtual-thread=false",
         ).run { ctx ->
             assertFailsWith<NoSuchBeanDefinitionException> {
-                ctx.getBean(GraphVirtualThreadOperations::class.java)
+                ctx.getBean<GraphVirtualThreadOperations>()
             }
         }
     }
 
     @Test
     fun `Memgraph health indicator reports UP when connectivity succeeds`() {
-        val driver = mockk<Driver>()
-
         every { driver.verifyConnectivity() } returns Unit
 
         val health = GraphMemgraphAutoConfiguration.HealthConfig()
@@ -104,6 +113,7 @@ class GraphMemgraphAutoConfigurationTest {
             .health()
             .shouldNotBeNull()
 
+        log.debug { "health=$health" }
         health.status.code shouldBeEqualTo "UP"
         health.details["backend"] shouldBeEqualTo "memgraph"
         verify { driver.verifyConnectivity() }
@@ -111,8 +121,6 @@ class GraphMemgraphAutoConfigurationTest {
 
     @Test
     fun `Memgraph health indicator reports DOWN when connectivity fails`() {
-        val driver = mockk<Driver>()
-
         every { driver.verifyConnectivity() } throws IllegalStateException("memgraph is unavailable")
 
         val health = GraphMemgraphAutoConfiguration.HealthConfig()
@@ -120,6 +128,7 @@ class GraphMemgraphAutoConfigurationTest {
             .health()
             .shouldNotBeNull()
 
+        log.debug { "health=$health" }
         health.status.code shouldBeEqualTo "DOWN"
         verify { driver.verifyConnectivity() }
     }

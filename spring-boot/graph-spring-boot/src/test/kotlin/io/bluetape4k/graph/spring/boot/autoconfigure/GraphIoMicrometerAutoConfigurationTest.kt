@@ -6,16 +6,21 @@ import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.graph.io.micrometer.GraphIoMicrometerProgressListener
 import io.bluetape4k.graph.io.report.GraphIoProgressListener
+import io.bluetape4k.logging.KLogging
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.getBean
+import org.springframework.beans.factory.getBeanProvider
 import org.springframework.boot.autoconfigure.AutoConfigurations
 import org.springframework.boot.test.context.FilteredClassLoader
 import org.springframework.boot.test.context.runner.ApplicationContextRunner
 import org.springframework.context.annotation.Configuration
 
 class GraphIoMicrometerAutoConfigurationTest {
+
+    companion object: KLogging()
 
     private val runner = ApplicationContextRunner()
         .withConfiguration(AutoConfigurations.of(GraphIoMicrometerAutoConfiguration::class.java))
@@ -27,11 +32,9 @@ class GraphIoMicrometerAutoConfigurationTest {
             .withPropertyValues("bluetape4k.graph.io.metrics.enabled=true")
             .run { context ->
                 context.containsBean(GraphIoMicrometerAutoConfiguration.BEAN_NAME).shouldBeTrue()
-                context.getBean(
-                    GraphIoMicrometerAutoConfiguration.BEAN_NAME,
-                    GraphIoMicrometerProgressListener::class.java,
-                ).shouldNotBeNull()
-                context.getBeanProvider(GraphIoMicrometerProgressListener::class.java)
+                context.getBean<GraphIoMicrometerProgressListener>(GraphIoMicrometerAutoConfiguration.BEAN_NAME)
+                    .shouldNotBeNull()
+                context.getBeanProvider<GraphIoMicrometerProgressListener>()
                     .getIfAvailable()
                     .shouldNotBeNull()
             }
@@ -53,7 +56,7 @@ class GraphIoMicrometerAutoConfigurationTest {
             .withUserConfiguration(GenericListenerConsumer::class.java)
             .withPropertyValues("bluetape4k.graph.io.metrics.enabled=true")
             .run { context ->
-                context.getBean(GenericListenerConsumer::class.java).listener.shouldBeNull()
+                context.getBean<GenericListenerConsumer>().listener.shouldBeNull()
             }
     }
 
