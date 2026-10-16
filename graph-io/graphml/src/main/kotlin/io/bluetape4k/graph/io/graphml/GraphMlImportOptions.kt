@@ -32,5 +32,7 @@ data class GraphMlImportOptions(
 ): Serializable {
     companion object {
         private const val serialVersionUID = 1L
+
+        val Default = GraphMlImportOptions()
     }
 }

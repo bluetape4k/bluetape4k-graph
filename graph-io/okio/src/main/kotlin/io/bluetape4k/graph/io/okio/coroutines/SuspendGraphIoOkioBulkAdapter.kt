@@ -41,11 +41,13 @@ import java.io.IOException
  * 관리하는 리소스를 직접 참조하지 않는다. 각 import/export 호출이 자체 리소스를 열고 닫는다.
  */
 class SuspendGraphIoOkioBulkAdapter(
-    private val importer: OkioGraphBulkImporter = OkioGraphBulkImporter(),
-    private val exporter: OkioGraphBulkExporter = OkioGraphBulkExporter(),
+    private val importer: OkioGraphBulkImporter = OkioGraphBulkImporter.Default,
+    private val exporter: OkioGraphBulkExporter = OkioGraphBulkExporter.Default,
 ) {
 
-    companion object : KLogging()
+    companion object: KLogging() {
+        val Default = SuspendGraphIoOkioBulkAdapter()
+    }
 
     // ─── Flow (진행 상태 스트림) ────────────────────────────────────────────────
 
@@ -64,10 +66,11 @@ class SuspendGraphIoOkioBulkAdapter(
         source: OkioGraphImportSource,
         format: GraphIoFormat,
         operations: GraphOperations,
-        options: GraphImportOptions = GraphImportOptions(),
+        options: GraphImportOptions = GraphImportOptions.Default,
     ): Flow<GraphImportProgress> = flow {
         emit(GraphImportProgress(processed = 0))
         val report = importGraphInternal(source, format, operations, options)
+
         emit(
             GraphImportProgress(
                 processed = report.verticesRead + report.edgesRead,
@@ -80,7 +83,7 @@ class SuspendGraphIoOkioBulkAdapter(
         source: OkioGraphImportSource,
         format: GraphIoFormat,
         operations: GraphOperations,
-        options: GraphImportOptions = GraphImportOptions(),
+        options: GraphImportOptions = GraphImportOptions.Default,
         listener: GraphIoProgressListener,
     ): Flow<GraphImportProgress> = flow {
         emit(GraphImportProgress(processed = 0))
@@ -107,7 +110,7 @@ class SuspendGraphIoOkioBulkAdapter(
         sink: OkioGraphExportSink,
         format: GraphIoFormat,
         operations: GraphOperations,
-        options: GraphExportOptions = GraphExportOptions(),
+        options: GraphExportOptions = GraphExportOptions.Default,
     ): Flow<GraphExportProgress> = flow {
         emit(GraphExportProgress(exported = 0))
         val report = exportGraphInternal(sink, format, operations, options)
@@ -123,7 +126,7 @@ class SuspendGraphIoOkioBulkAdapter(
         sink: OkioGraphExportSink,
         format: GraphIoFormat,
         operations: GraphOperations,
-        options: GraphExportOptions = GraphExportOptions(),
+        options: GraphExportOptions = GraphExportOptions.Default,
         listener: GraphIoProgressListener,
     ): Flow<GraphExportProgress> = flow {
         emit(GraphExportProgress(exported = 0))
@@ -150,14 +153,14 @@ class SuspendGraphIoOkioBulkAdapter(
         source: OkioGraphImportSource,
         format: GraphIoFormat,
         operations: GraphOperations,
-        options: GraphImportOptions = GraphImportOptions(),
+        options: GraphImportOptions = GraphImportOptions.Default,
     ): GraphImportReport = importGraphInternal(source, format, operations, options)
 
     suspend fun importGraphAwait(
         source: OkioGraphImportSource,
         format: GraphIoFormat,
         operations: GraphOperations,
-        options: GraphImportOptions = GraphImportOptions(),
+        options: GraphImportOptions = GraphImportOptions.Default,
         listener: GraphIoProgressListener,
     ): GraphImportReport = importGraphInternal(source, format, operations, options, listener)
 
@@ -170,14 +173,14 @@ class SuspendGraphIoOkioBulkAdapter(
         sink: OkioGraphExportSink,
         format: GraphIoFormat,
         operations: GraphOperations,
-        options: GraphExportOptions = GraphExportOptions(),
+        options: GraphExportOptions = GraphExportOptions.Default,
     ): GraphExportReport = exportGraphInternal(sink, format, operations, options)
 
     suspend fun exportGraphAwait(
         sink: OkioGraphExportSink,
         format: GraphIoFormat,
         operations: GraphOperations,
-        options: GraphExportOptions = GraphExportOptions(),
+        options: GraphExportOptions = GraphExportOptions.Default,
         listener: GraphIoProgressListener,
     ): GraphExportReport = exportGraphInternal(sink, format, operations, options, listener)
 
@@ -208,7 +211,8 @@ class SuspendGraphIoOkioBulkAdapter(
     ): GraphExportReport {
         log.debug { "Starting OkIO export (suspend): format=$format" }
         return runInterruptible(Dispatchers.IO) {
-            listener?.let { exporter.exportGraph(sink, format, operations, options, it) }
+            listener
+                ?.let { exporter.exportGraph(sink, format, operations, options, it) }
                 ?: exporter.exportGraph(sink, format, operations, options)
         }
     }

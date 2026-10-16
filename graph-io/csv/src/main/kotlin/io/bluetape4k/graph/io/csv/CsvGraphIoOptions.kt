@@ -21,5 +21,7 @@ data class CsvGraphIoOptions(
 ): Serializable {
     companion object {
         private const val serialVersionUID: Long = 1L
+
+        val Default = CsvGraphIoOptions()
     }
 }

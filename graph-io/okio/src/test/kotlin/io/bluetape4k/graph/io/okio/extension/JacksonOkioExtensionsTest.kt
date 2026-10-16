@@ -2,46 +2,26 @@ package io.bluetape4k.graph.io.okio.extension
 
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.concurrent.get
+import io.bluetape4k.coroutines.flow.extensions.log
 import io.bluetape4k.graph.io.jackson2.Jackson2NdJsonBulkExporter
 import io.bluetape4k.graph.io.jackson2.Jackson2NdJsonBulkImporter
 import io.bluetape4k.graph.io.jackson3.Jackson3NdJsonBulkExporter
 import io.bluetape4k.graph.io.jackson3.Jackson3NdJsonBulkImporter
-import io.bluetape4k.graph.io.okio.OkioGraphExportSink
-import io.bluetape4k.graph.io.okio.OkioGraphImportSource
-import io.bluetape4k.graph.io.options.GraphExportOptions
+import io.bluetape4k.graph.io.okio.AbstractOkioTest
+import io.bluetape4k.graph.io.okio.asOkioSink
+import io.bluetape4k.graph.io.okio.asOkioSource
 import io.bluetape4k.graph.io.options.GraphImportOptions
-import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.report.GraphIoProgressEventType
-import io.bluetape4k.graph.io.report.GraphIoProgressListener
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.logging.debug
 import kotlinx.coroutines.flow.toList
 import okio.Path.Companion.toPath
-import okio.fakefilesystem.FakeFileSystem
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import kotlin.time.Duration.Companion.seconds
 
-class JacksonOkioExtensionsTest {
-
-    private val fakeFs = FakeFileSystem()
-
-    @AfterEach
-    fun cleanup() {
-        fakeFs.checkNoOpenFiles()
-    }
-
-    private fun buildSourceGraph(): TinkerGraphOperations {
-        val ops = TinkerGraphOperations()
-        val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
-        val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
-        ops.createEdge(alice.id, bob.id, "KNOWS", emptyMap())
-        return ops
-    }
-
-    private val exportOptions = GraphExportOptions(
-        vertexLabels = setOf("Person"),
-        edgeLabels = setOf("KNOWS"),
-    )
+class JacksonOkioExtensionsTest: AbstractOkioTest() {
 
     // ─── Jackson 2 ────────────────────────────────────────────────────────────
 
@@ -51,20 +31,26 @@ class JacksonOkioExtensionsTest {
         val src = buildSourceGraph()
         val events = mutableListOf<GraphIoProgressEventType>()
 
-        Jackson2NdJsonBulkExporter().exportGraph(
-            OkioGraphExportSink.PathSink(path, fakeFs),
-            src, exportOptions,
-            listener = GraphIoProgressListener { events += it.type },
-        ).status shouldBeEqualTo GraphIoStatus.COMPLETED
+        val exportReport = Jackson2NdJsonBulkExporter.Default
+            .exportGraph(
+                path.asOkioSink(fakeFs),
+                src, exportOptions,
+                listener = { events += it.type },
+            )
+        log.debug { "export report=$exportReport" }
+        exportReport.assertSuccessful()
+
         events.first() shouldBeEqualTo GraphIoProgressEventType.STARTED
         events.last() shouldBeEqualTo GraphIoProgressEventType.COMPLETED
 
-        val report = Jackson2NdJsonBulkImporter().importGraph(
-            OkioGraphImportSource.PathSource(path, fakeFs),
-            TinkerGraphOperations(), GraphImportOptions(),
-        )
-        report.verticesCreated shouldBeEqualTo 2L
-        report.edgesCreated shouldBeEqualTo 1L
+        val importReport = Jackson2NdJsonBulkImporter.Default
+            .importGraph(
+                path.asOkioSource(fakeFs),
+                TinkerGraphOperations(),
+                GraphImportOptions(),
+            )
+        log.debug { "import report=$importReport" }
+        importReport.assertSuccessful()
     }
 
     @Test
@@ -72,17 +58,23 @@ class JacksonOkioExtensionsTest {
         val path = "/j2.ndjson.gz".toPath()
         val src = buildSourceGraph()
 
-        Jackson2NdJsonBulkExporter().exportGraphGzip(
-            OkioGraphExportSink.PathSink(path, fakeFs),
-            src, exportOptions,
-        ).status shouldBeEqualTo GraphIoStatus.COMPLETED
+        val exportReport = Jackson2NdJsonBulkExporter()
+            .exportGraphGzip(
+                path.asOkioSink(fakeFs),
+                src,
+                exportOptions,
+            )
+        log.debug { "export report=$exportReport" }
+        exportReport.assertSuccessful()
 
-        val report = Jackson2NdJsonBulkImporter().importGraphGzip(
-            OkioGraphImportSource.PathSource(path, fakeFs),
-            TinkerGraphOperations(), GraphImportOptions(),
-        )
-        report.verticesCreated shouldBeEqualTo 2L
-        report.edgesCreated shouldBeEqualTo 1L
+        val importReport = Jackson2NdJsonBulkImporter.Default
+            .importGraphGzip(
+                path.asOkioSource(fakeFs),
+                TinkerGraphOperations(),
+                GraphImportOptions(),
+            )
+        log.debug { "import report=$importReport" }
+        importReport.assertSuccessful()
     }
 
     // ─── Jackson 3 ────────────────────────────────────────────────────────────
@@ -92,17 +84,22 @@ class JacksonOkioExtensionsTest {
         val path = "/j3.ndjson".toPath()
         val src = buildSourceGraph()
 
-        Jackson3NdJsonBulkExporter().exportGraph(
-            OkioGraphExportSink.PathSink(path, fakeFs),
-            src, exportOptions,
-        ).status shouldBeEqualTo GraphIoStatus.COMPLETED
-
-        val report = Jackson3NdJsonBulkImporter().importGraph(
-            OkioGraphImportSource.PathSource(path, fakeFs),
-            TinkerGraphOperations(), GraphImportOptions(),
+        val exportReport = Jackson3NdJsonBulkExporter.Default.exportGraph(
+            path.asOkioSink(fakeFs),
+            src,
+            exportOptions,
         )
-        report.verticesCreated shouldBeEqualTo 2L
-        report.edgesCreated shouldBeEqualTo 1L
+        log.debug { "export report=$exportReport" }
+        exportReport.assertSuccessful()
+
+        val importReport = Jackson3NdJsonBulkImporter.Default
+            .importGraph(
+                path.asOkioSource(fakeFs),
+                TinkerGraphOperations(),
+                GraphImportOptions(),
+            )
+        log.debug { "import report=$importReport" }
+        importReport.assertSuccessful()
     }
 
     @Test
@@ -110,17 +107,23 @@ class JacksonOkioExtensionsTest {
         val path = "/j3.ndjson.gz".toPath()
         val src = buildSourceGraph()
 
-        Jackson3NdJsonBulkExporter().exportGraphGzip(
-            OkioGraphExportSink.PathSink(path, fakeFs),
-            src, exportOptions,
-        ).status shouldBeEqualTo GraphIoStatus.COMPLETED
+        val exportReport = Jackson3NdJsonBulkExporter.Default
+            .exportGraphGzip(
+                path.asOkioSink(fakeFs),
+                src,
+                exportOptions,
+            )
+        log.debug { "export report=$exportReport" }
+        exportReport.assertSuccessful()
 
-        val report = Jackson3NdJsonBulkImporter().importGraphGzip(
-            OkioGraphImportSource.PathSource(path, fakeFs),
-            TinkerGraphOperations(), GraphImportOptions(),
-        )
-        report.verticesCreated shouldBeEqualTo 2L
-        report.edgesCreated shouldBeEqualTo 1L
+        val importReport = Jackson3NdJsonBulkImporter.Default
+            .importGraphGzip(
+                path.asOkioSource(fakeFs),
+                TinkerGraphOperations(),
+                GraphImportOptions(),
+            )
+        log.debug { "import report=$importReport" }
+        importReport.assertSuccessful()
     }
 
     // ─── VirtualThread ────────────────────────────────────────────────────────
@@ -128,36 +131,54 @@ class JacksonOkioExtensionsTest {
     @Test
     fun `Jackson3 exportGraphAsync returns completed report`() {
         val path = "/j3-vt.ndjson".toPath()
-        val report = Jackson3NdJsonBulkExporter().exportGraphAsync(
-            OkioGraphExportSink.PathSink(path, fakeFs),
-            buildSourceGraph(), exportOptions,
-        ).get()
-        report.status shouldBeEqualTo GraphIoStatus.COMPLETED
-        report.verticesWritten shouldBeEqualTo 2L
+        val exportReport = Jackson3NdJsonBulkExporter.Default
+            .exportGraphAsync(
+                path.asOkioSink(fakeFs),
+                buildSourceGraph(),
+                exportOptions,
+            ).get(3.seconds)
+
+        log.debug { "export report=$exportReport" }
+        exportReport.assertSuccessful()
     }
 
     @Test
     fun `Jackson3 importGraphAsync returns completed report`() {
         val path = "/j3-vt-import.ndjson".toPath()
-        Jackson3NdJsonBulkExporter().exportGraph(
-            OkioGraphExportSink.PathSink(path, fakeFs), buildSourceGraph(), exportOptions,
-        )
-        val report = Jackson3NdJsonBulkImporter().importGraphAsync(
-            OkioGraphImportSource.PathSource(path, fakeFs),
-            TinkerGraphOperations(), GraphImportOptions(),
-        ).get()
-        report.verticesCreated shouldBeEqualTo 2L
-        report.edgesCreated shouldBeEqualTo 1L
+        val exportReport = Jackson3NdJsonBulkExporter.Default
+            .exportGraph(
+                path.asOkioSink(fakeFs),
+                buildSourceGraph(),
+                exportOptions,
+            )
+        log.debug { "export report=$exportReport" }
+        exportReport.assertSuccessful()
+
+        val importReport = Jackson3NdJsonBulkImporter.Default
+            .importGraphAsync(
+                path.asOkioSource(fakeFs),
+                TinkerGraphOperations(),
+                GraphImportOptions(),
+            )
+            .get(3.seconds)
+
+        log.debug { "import report=$importReport" }
+        importReport.assertSuccessful()
     }
 
     @Test
     fun `Jackson2 exportGraphAsync returns completed report`() {
         val path = "/j2-vt.ndjson".toPath()
-        val report = Jackson2NdJsonBulkExporter().exportGraphAsync(
-            OkioGraphExportSink.PathSink(path, fakeFs),
-            buildSourceGraph(), exportOptions,
-        ).get()
-        report.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        val exportReport = Jackson2NdJsonBulkExporter.Default
+            .exportGraphAsync(
+                path.asOkioSink(fakeFs),
+                buildSourceGraph(),
+                exportOptions,
+            )
+            .get(3.seconds)
+
+        log.debug { "export report=$exportReport" }
+        exportReport.assertSuccessful()
     }
 
     // ─── Suspend ─────────────────────────────────────────────────────────────
@@ -165,38 +186,58 @@ class JacksonOkioExtensionsTest {
     @Test
     fun `Jackson3 exportGraphAwait returns completed report`() = runSuspendIO {
         val path = "/j3-await.ndjson".toPath()
-        val report = Jackson3NdJsonBulkExporter().exportGraphAwait(
-            OkioGraphExportSink.PathSink(path, fakeFs), buildSourceGraph(), exportOptions,
-        )
-        report.status shouldBeEqualTo GraphIoStatus.COMPLETED
-        report.verticesWritten shouldBeEqualTo 2L
+        val exportReport = Jackson3NdJsonBulkExporter.Default
+            .exportGraphAwait(
+                path.asOkioSink(fakeFs),
+                buildSourceGraph(),
+                exportOptions,
+            )
+        log.debug { "export report= $exportReport" }
+        exportReport.assertSuccessful()
     }
 
     @Test
     fun `Jackson3 importGraphFlow emits progress`() = runSuspendIO {
         val path = "/j3-flow.ndjson".toPath()
-        Jackson3NdJsonBulkExporter().exportGraph(
-            OkioGraphExportSink.PathSink(path, fakeFs), buildSourceGraph(), exportOptions,
+        val exportReport = Jackson3NdJsonBulkExporter.Default.exportGraph(
+            path.asOkioSink(fakeFs),
+            buildSourceGraph(),
+            exportOptions,
         )
-        val events = Jackson3NdJsonBulkImporter().importGraphFlow(
-            OkioGraphImportSource.PathSource(path, fakeFs),
-            TinkerGraphOperations(), GraphImportOptions(),
-        ).toList()
+        exportReport.assertSuccessful()
+
+        val events = Jackson3NdJsonBulkImporter.Default
+            .importGraphFlow(
+                path.asOkioSource(fakeFs),
+                TinkerGraphOperations(),
+                GraphImportOptions(),
+            )
+            .log("Event")
+            .toList()
+
         events shouldHaveSize 2
     }
 
     @Test
     fun `Jackson3 importGraphAwait returns completed report`() = runSuspendIO {
         val path = "/j3-await-import.ndjson".toPath()
-        Jackson3NdJsonBulkExporter().exportGraph(
-            OkioGraphExportSink.PathSink(path, fakeFs), buildSourceGraph(), exportOptions,
-        )
-        val report = Jackson3NdJsonBulkImporter().importGraphAwait(
-            OkioGraphImportSource.PathSource(path, fakeFs),
-            TinkerGraphOperations(), GraphImportOptions(),
-        )
-        report.verticesCreated shouldBeEqualTo 2L
-        report.edgesCreated shouldBeEqualTo 1L
+        val exportReport = Jackson3NdJsonBulkExporter.Default
+            .exportGraph(
+                path.asOkioSink(fakeFs),
+                buildSourceGraph(),
+                exportOptions,
+            )
+        log.debug { "export report=$exportReport" }
+        exportReport.assertSuccessful()
+
+        val importReport = Jackson3NdJsonBulkImporter.Default
+            .importGraphAwait(
+                path.asOkioSource(fakeFs),
+                TinkerGraphOperations(),
+                GraphImportOptions(),
+            )
+        log.debug { "import report=$importReport" }
+        importReport.assertSuccessful()
     }
 
     // ─── Jackson 2 Suspend / Flow ─────────────────────────────────────────────
@@ -204,68 +245,109 @@ class JacksonOkioExtensionsTest {
     @Test
     fun `Jackson2 exportGraphAwait returns completed report`() = runSuspendIO {
         val path = "/j2-await.ndjson".toPath()
-        val report = Jackson2NdJsonBulkExporter().exportGraphAwait(
-            OkioGraphExportSink.PathSink(path, fakeFs), buildSourceGraph(), exportOptions,
-        )
-        report.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        val exportReport = Jackson2NdJsonBulkExporter.Default
+            .exportGraphAwait(
+                path.asOkioSink(fakeFs),
+                buildSourceGraph(),
+                exportOptions,
+            )
+        log.debug { "export report=$exportReport" }
+        exportReport.assertSuccessful()
     }
 
     @Test
     fun `Jackson2 importGraphAwait returns completed report`() = runSuspendIO {
         val path = "/j2-await-import.ndjson".toPath()
-        Jackson2NdJsonBulkExporter().exportGraph(
-            OkioGraphExportSink.PathSink(path, fakeFs), buildSourceGraph(), exportOptions,
-        )
-        val report = Jackson2NdJsonBulkImporter().importGraphAwait(
-            OkioGraphImportSource.PathSource(path, fakeFs),
-            TinkerGraphOperations(), GraphImportOptions(),
-        )
-        report.verticesCreated shouldBeEqualTo 2L
-        report.edgesCreated shouldBeEqualTo 1L
+        val exportReport = Jackson2NdJsonBulkExporter.Default
+            .exportGraph(
+                path.asOkioSink(fakeFs),
+                buildSourceGraph(),
+                exportOptions,
+            )
+        exportReport.assertSuccessful()
+
+        val importReport = Jackson2NdJsonBulkImporter.Default
+            .importGraphAwait(
+                path.asOkioSource(fakeFs),
+                TinkerGraphOperations(),
+                GraphImportOptions(),
+            )
+        importReport.assertSuccessful()
     }
 
     @Test
     fun `Jackson2 exportGraphFlow emits progress`() = runSuspendIO {
         val path = "/j2-flow-export.ndjson".toPath()
-        val events = Jackson2NdJsonBulkExporter().exportGraphFlow(
-            OkioGraphExportSink.PathSink(path, fakeFs), buildSourceGraph(), exportOptions,
-        ).toList()
+
+        val events = Jackson2NdJsonBulkExporter.Default
+            .exportGraphFlow(
+                path.asOkioSink(fakeFs),
+                buildSourceGraph(),
+                exportOptions,
+            )
+            .log("Event")
+            .toList()
+
         events shouldHaveSize 2
     }
 
     @Test
     fun `Jackson2 importGraphFlow emits progress`() = runSuspendIO {
         val path = "/j2-flow-import.ndjson".toPath()
-        Jackson2NdJsonBulkExporter().exportGraph(
-            OkioGraphExportSink.PathSink(path, fakeFs), buildSourceGraph(), exportOptions,
-        )
-        val events = Jackson2NdJsonBulkImporter().importGraphFlow(
-            OkioGraphImportSource.PathSource(path, fakeFs),
-            TinkerGraphOperations(), GraphImportOptions(),
-        ).toList()
+        val exportReport = Jackson2NdJsonBulkExporter.Default
+            .exportGraph(
+                path.asOkioSink(fakeFs),
+                buildSourceGraph(),
+                exportOptions,
+            )
+        exportReport.assertSuccessful()
+
+        val events = Jackson2NdJsonBulkImporter.Default
+            .importGraphFlow(
+                path.asOkioSource(fakeFs),
+                TinkerGraphOperations(),
+                GraphImportOptions(),
+            )
+            .log("Event")
+            .toList()
+
         events shouldHaveSize 2
     }
 
     @Test
     fun `Jackson2 importGraphAsync returns completed report`() {
         val path = "/j2-vt-import.ndjson".toPath()
-        Jackson2NdJsonBulkExporter().exportGraph(
-            OkioGraphExportSink.PathSink(path, fakeFs), buildSourceGraph(), exportOptions,
-        )
-        val report = Jackson2NdJsonBulkImporter().importGraphAsync(
-            OkioGraphImportSource.PathSource(path, fakeFs),
-            TinkerGraphOperations(), GraphImportOptions(),
-        ).get()
-        report.verticesCreated shouldBeEqualTo 2L
-        report.edgesCreated shouldBeEqualTo 1L
+
+        val exportReport = Jackson2NdJsonBulkExporter.Default
+            .exportGraph(
+                path.asOkioSink(fakeFs),
+                buildSourceGraph(),
+                exportOptions,
+            )
+        exportReport.assertSuccessful()
+
+        val importReport = Jackson2NdJsonBulkImporter.Default
+            .importGraphAsync(
+                path.asOkioSource(fakeFs),
+                TinkerGraphOperations(),
+                GraphImportOptions(),
+            )
+            .get(3.seconds)
+        importReport.assertSuccessful()
     }
 
     @Test
     fun `Jackson3 exportGraphFlow emits progress`() = runSuspendIO {
         val path = "/j3-flow-export.ndjson".toPath()
-        val events = Jackson3NdJsonBulkExporter().exportGraphFlow(
-            OkioGraphExportSink.PathSink(path, fakeFs), buildSourceGraph(), exportOptions,
-        ).toList()
+        val events = Jackson3NdJsonBulkExporter.Default
+            .exportGraphFlow(
+                path.asOkioSink(fakeFs),
+                buildSourceGraph(),
+                exportOptions,
+            )
+            .log("Event")
+            .toList()
+        
         events shouldHaveSize 2
     }
 }

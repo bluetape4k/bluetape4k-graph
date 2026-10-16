@@ -1,8 +1,9 @@
 package io.bluetape4k.graph.io.okio.bridge
 
-import io.bluetape4k.graph.io.okio.GraphIoOkioPaths
 import io.bluetape4k.graph.io.okio.OkioGraphExportSink
 import io.bluetape4k.graph.io.okio.OkioGraphImportSource
+import io.bluetape4k.graph.io.okio.openSink
+import io.bluetape4k.graph.io.okio.openSource
 import okio.BufferedSink
 import okio.BufferedSource
 import java.io.FilterInputStream
@@ -18,7 +19,7 @@ import java.nio.charset.Charset
  *
  * 하위 [BufferedSource]는 닫지 않는다 (호출자 소유).
  */
-fun BufferedSource.toInputStream(): InputStream = object : FilterInputStream(inputStream()) {
+fun BufferedSource.toInputStream(): InputStream = object: FilterInputStream(inputStream()) {
     override fun close() = Unit
 }
 
@@ -27,7 +28,7 @@ fun BufferedSource.toInputStream(): InputStream = object : FilterInputStream(inp
  *
  * 반환된 스트림을 닫으면 버퍼를 flush하지만 하위 [BufferedSink]는 닫지 않는다 (호출자 소유).
  */
-fun BufferedSink.toOutputStream(): OutputStream = object : FilterOutputStream(outputStream()) {
+fun BufferedSink.toOutputStream(): OutputStream = object: FilterOutputStream(outputStream()) {
     override fun write(bytes: ByteArray, offset: Int, length: Int) = out.write(bytes, offset, length)
     override fun close() = flush()
 }
@@ -42,9 +43,15 @@ fun BufferedSink.toOutputStream(): OutputStream = object : FilterOutputStream(ou
  * - [toOutputStream]: 하위 sink 미닫힘 (호출자 소유)
  * - [asClosingOutputStream]: 하위 sink까지 닫힘 (라이브러리 소유)
  */
-fun BufferedSink.asClosingOutputStream(): OutputStream = object : OutputStream() {
-    override fun write(b: Int) { this@asClosingOutputStream.writeByte(b) }
-    override fun write(b: ByteArray, off: Int, len: Int) { this@asClosingOutputStream.write(b, off, len) }
+fun BufferedSink.asClosingOutputStream(): OutputStream = object: OutputStream() {
+    override fun write(b: Int) {
+        this@asClosingOutputStream.writeByte(b)
+    }
+
+    override fun write(b: ByteArray, off: Int, len: Int) {
+        this@asClosingOutputStream.write(b, off, len)
+    }
+
     override fun flush() = this@asClosingOutputStream.flush()
     override fun close() = this@asClosingOutputStream.close()
 }
@@ -74,7 +81,7 @@ fun BufferedSink.toWriter(charset: Charset = Charsets.UTF_8): Writer =
  * `asClosingOutputStream()`을 경유하므로 Jackson/StAX close 체인이 자동으로 sink까지 전파된다.
  */
 inline fun writeAsOutputStream(sink: OkioGraphExportSink, block: (OutputStream) -> Unit) {
-    GraphIoOkioPaths.openSink(sink).use { bs ->
+    sink.openSink().use { bs ->
         bs.asClosingOutputStream().use { os ->
             block(os)
         }
@@ -87,7 +94,7 @@ inline fun writeAsOutputStream(sink: OkioGraphExportSink, block: (OutputStream) 
  * [block]이 완료되면 [InputStream]과 하위 [BufferedSource] 모두 닫힌다.
  */
 inline fun readAsInputStream(source: OkioGraphImportSource, block: (InputStream) -> Unit) {
-    GraphIoOkioPaths.openSource(source).use { bs ->
+    source.openSource().use { bs ->
         bs.toInputStream().use { is_ ->
             block(is_)
         }
@@ -101,7 +108,7 @@ inline fun readAsInputStream(source: OkioGraphImportSource, block: (InputStream)
  * [block]은 [BufferedSink]와 [OutputStream]을 모두 받아 어느 쪽으로든 쓸 수 있다.
  */
 inline fun okioWriteTo(sink: OkioGraphExportSink, block: (BufferedSink, OutputStream) -> Unit) {
-    GraphIoOkioPaths.openSink(sink).use { bs ->
+    sink.openSink().use { bs ->
         bs.asClosingOutputStream().use { os ->
             block(bs, os)
         }
@@ -114,7 +121,7 @@ inline fun okioWriteTo(sink: OkioGraphExportSink, block: (BufferedSink, OutputSt
  * T9의 포맷 확장 함수들이 공통으로 재사용하는 close-chain 패턴 추출 (DRY).
  */
 inline fun okioReadFrom(source: OkioGraphImportSource, block: (BufferedSource, InputStream) -> Unit) {
-    GraphIoOkioPaths.openSource(source).use { bs ->
+    source.openSource().use { bs ->
         bs.toInputStream().use { is_ ->
             block(bs, is_)
         }

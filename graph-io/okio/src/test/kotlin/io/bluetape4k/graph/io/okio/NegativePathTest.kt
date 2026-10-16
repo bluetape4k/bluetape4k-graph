@@ -1,10 +1,15 @@
 package io.bluetape4k.graph.io.okio
 
-import io.bluetape4k.graph.io.okio.Compressor
+import io.bluetape4k.assertions.assertFails
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphIoFormat
+import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import okio.Buffer
 import okio.FileSystem
 import okio.ForwardingFileSystem
@@ -12,12 +17,9 @@ import okio.ForwardingSink
 import okio.Path
 import okio.Path.Companion.toPath
 import okio.Sink
-import okio.fakefilesystem.FakeFileSystem
-import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldNotBe
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import java.io.IOException
+import kotlin.test.assertFailsWith
 
 /**
  * Negative-path tests: T11 스펙 §4.2.2 요구사항.
@@ -28,16 +30,13 @@ import java.io.IOException
  * - ownsSource=false → underlying source가 닫히지 않음
  * - atomicWrite → 성공 후 tmp 파일 없음
  */
-class NegativePathTest {
+class NegativePathTest: AbstractOkioTest() {
 
-    private val fakeFs = FakeFileSystem()
-    private val importer = OkioGraphBulkImporter()
-    private val exporter = OkioGraphBulkExporter()
+    companion object: KLogging()
 
-    @AfterEach
-    fun cleanup() {
-        fakeFs.checkNoOpenFiles()
-    }
+    private val importer = OkioGraphBulkImporter.Default
+    private val exporter = OkioGraphBulkExporter.Default
+
 
     // ─── Empty source ──────────────────────────────────────────────────────────
 
@@ -47,12 +46,13 @@ class NegativePathTest {
         fakeFs.write(path) { /* write nothing — 0 bytes */ }
 
         val report = importer.importGraph(
-            OkioGraphImportSource.PathSource(path, fakeFs),
+            path.asOkioSource(fakeFs),
             GraphIoFormat.NDJSON_JACKSON3,
             TinkerGraphOperations(),
             GraphImportOptions(),
         )
 
+        log.debug { "report=$report" }
         report.verticesCreated shouldBeEqualTo 0L
         report.edgesCreated shouldBeEqualTo 0L
     }
@@ -60,23 +60,25 @@ class NegativePathTest {
     @Test
     fun `empty GraphML source returns 0 vertices and 0 edges`() {
         val path = "/empty.graphml".toPath()
+
         // Minimal valid GraphML with no elements
         fakeFs.write(path) {
             writeUtf8(
                 """<?xml version="1.0" encoding="UTF-8"?>
-<graphml xmlns="http://graphml.graphdrawing.org/graphml">
-  <graph id="G" edgedefault="directed"/>
-</graphml>"""
+                <graphml xmlns="http://graphml.graphdrawing.org/graphml">
+                  <graph id="G" edgedefault="directed"/>
+                </graphml>""".trimIndent()
             )
         }
 
         val report = importer.importGraph(
-            OkioGraphImportSource.PathSource(path, fakeFs),
+            path.asOkioSource(fakeFs),
             GraphIoFormat.GRAPHML,
             TinkerGraphOperations(),
             GraphImportOptions(),
         )
 
+        log.debug { "report=$report" }
         report.verticesCreated shouldBeEqualTo 0L
         report.edgesCreated shouldBeEqualTo 0L
     }
@@ -91,7 +93,7 @@ class NegativePathTest {
         }
         // Write a valid gzip file
         exporter.exportGraph(
-            OkioGraphExportSink.PathSink(validPath, fakeFs),
+            validPath.asOkioSink(fakeFs),
             GraphIoFormat.NDJSON_JACKSON3,
             ops,
             GraphExportOptions(vertexLabels = setOf("Person"), edgeLabels = emptySet()),
@@ -106,18 +108,14 @@ class NegativePathTest {
 
         // Read truncated through gzip decompressor — must throw IOException or subclass (e.g. EOFException)
         // Manually manage the file source to ensure it's always closed even when the gzip chain throws.
-        var caught: Exception? = null
-        val fileSource = GraphIoOkioPaths.openSource(OkioGraphImportSource.PathSource(truncatedPath, fakeFs))
-        try {
+        val fileSource = truncatedPath.asOkioSource(fakeFs).openSource()
+        assertFails {
             fileSource.use { fs ->
-                GraphIoOkioPaths.openDecompressedSource(fs, Compressor.GZIP).use { gzipSrc ->
+                fs.openDecompressedSource(Compressor.GZIP).use { gzipSrc ->
                     gzipSrc.readUtf8()
                 }
             }
-        } catch (e: Exception) {
-            caught = e
         }
-        (caught != null) shouldBeEqualTo true
     }
 
     // ─── XXE in GraphML ────────────────────────────────────────────────────────
@@ -130,12 +128,13 @@ class NegativePathTest {
     @Test
     fun `XXE payload in GraphML does not access external entities`() {
         val xxePayload = """<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
-<graphml xmlns="http://graphml.graphdrawing.org/graphml">
-  <graph id="G" edgedefault="directed">
-    <node id="n1"><data key="label">Person</data><data key="name">&xxe;</data></node>
-  </graph>
-</graphml>"""
+            <!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+            <graphml xmlns="http://graphml.graphdrawing.org/graphml">
+              <graph id="G" edgedefault="directed">
+                <node id="n1"><data key="label">Person</data><data key="name">&xxe;</data></node>
+              </graph>
+            </graphml>"""
+            .trimIndent()
 
         val path = "/xxe.graphml".toPath()
         fakeFs.write(path) { writeUtf8(xxePayload) }
@@ -146,11 +145,13 @@ class NegativePathTest {
         // We don't assert on the specific exception type — just verify no external file IO.
         try {
             val report = importer.importGraph(
-                OkioGraphImportSource.PathSource(path, fakeFs),
+                path.asOkioSource(fakeFs),
                 GraphIoFormat.GRAPHML,
                 TinkerGraphOperations(),
                 GraphImportOptions(),
             )
+            log.debug { "report=$report" }
+            report.status shouldBeEqualTo GraphIoStatus.FAILED
             // If parsing succeeded (entity unexpanded), vertex count may be 0 or 1 with literal "&xxe;"
             // Either way — no external access occurred.
         } catch (_: Exception) {
@@ -166,11 +167,11 @@ class NegativePathTest {
         // First export a graph to a buffer
         val buf = Buffer()
         val ops = TinkerGraphOperations().also {
-            it.createVertex("Person", mapOf("name" to "Alice"))
-            it.createVertex("Person", mapOf("name" to "Bob"))
+            it.createVertex("Person", "name" to "Alice")
+            it.createVertex("Person", "name" to "Bob")
         }
         exporter.exportGraph(
-            OkioGraphExportSink.SinkBased(buf, ownsSink = true),
+            buf.asOkioSink(ownsSink = true),
             GraphIoFormat.NDJSON_JACKSON3,
             ops,
             GraphExportOptions(vertexLabels = setOf("Person"), edgeLabels = emptySet()),
@@ -180,13 +181,16 @@ class NegativePathTest {
         val sourceBuffer = Buffer().also { it.write(exportedBytes) }
 
         // Import using SourceBased with ownsSource=false
-        val source = OkioGraphImportSource.SourceBased(sourceBuffer, ownsSource = false)
-        importer.importGraph(
+        val source = sourceBuffer.asOkioSource(ownsSource = false)
+        val result = importer.importGraph(
             source,
             GraphIoFormat.NDJSON_JACKSON3,
             TinkerGraphOperations(),
             GraphImportOptions(),
         )
+        log.debug { "result=$result" }
+        result.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        result.verticesRead shouldBeEqualTo ops.countVertices("Person")
 
         // sourceBuffer should still be accessible (not closed) — ownsSource=false means
         // library does not close the underlying source
@@ -204,17 +208,17 @@ class NegativePathTest {
         val targetPath = "/out/graph.ndjson".toPath()
 
         val ops = TinkerGraphOperations().also {
-            it.createVertex("Person", mapOf("name" to "Alice"))
+            it.createVertex("Person", "name" to "Alice")
         }
         exporter.exportGraph(
-            OkioGraphExportSink.PathSink(targetPath, fakeFs, atomicWrite = true),
+            targetPath.asOkioSink(fakeFs, atomicWrite = true),
             GraphIoFormat.NDJSON_JACKSON3,
             ops,
             GraphExportOptions(vertexLabels = setOf("Person"), edgeLabels = emptySet()),
         )
 
         // Target exists after successful export
-        fakeFs.exists(targetPath) shouldBeEqualTo true
+        fakeFs.exists(targetPath).shouldBeTrue()
 
         // No tmp files remain in /out
         val outFiles = fakeFs.list("/out".toPath())
@@ -229,21 +233,19 @@ class NegativePathTest {
         fakeFs.write(target) { writeUtf8("ORIGINAL") }
 
         val failingFs = FailOnWriteFileSystem(fakeFs)
-        var caught: Exception? = null
-        try {
+
+        assertFailsWith<IOException> {
             exporter.exportGraph(
-                OkioGraphExportSink.PathSink(target, failingFs, atomicWrite = true),
+                target.asOkioSink(failingFs, atomicWrite = true),
                 GraphIoFormat.NDJSON_JACKSON3,
-                TinkerGraphOperations().also { it.createVertex("Person", mapOf("name" to "Alice")) },
+                TinkerGraphOperations().also { it.createVertex("Person", "name" to "Alice") },
                 GraphExportOptions(vertexLabels = setOf("Person"), edgeLabels = emptySet()),
             )
-        } catch (e: Exception) {
-            caught = e
         }
 
-        caught shouldNotBe null
         // Target must still contain original content — tmp write failure must not corrupt it
         fakeFs.read(target) { readUtf8() } shouldBeEqualTo "ORIGINAL"
+
         // No tmp files must remain — AtomicMoveSink must clean up on failure
         val files = fakeFs.list("/atomic-fail".toPath())
         files.size shouldBeEqualTo 1
@@ -255,10 +257,10 @@ class NegativePathTest {
  * FileSystem wrapper that injects an [IOException] on every [sink] write operation.
  * Used to simulate write failures for atomicWrite cleanup testing.
  */
-private class FailOnWriteFileSystem(delegate: FileSystem) : ForwardingFileSystem(delegate) {
+private class FailOnWriteFileSystem(delegate: FileSystem): ForwardingFileSystem(delegate) {
     override fun sink(file: Path, mustCreate: Boolean): Sink {
         val delegateSink = super.sink(file, mustCreate)
-        return object : ForwardingSink(delegateSink) {
+        return object: ForwardingSink(delegateSink) {
             override fun write(source: Buffer, byteCount: Long) {
                 throw IOException("Injected write failure for test")
             }

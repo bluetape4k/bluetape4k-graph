@@ -1,66 +1,64 @@
 package io.bluetape4k.graph.io.okio
 
-import io.bluetape4k.graph.io.options.GraphExportOptions
+import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.graph.GraphUnsupportedOperationException
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphIoFormat
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
-import io.bluetape4k.assertions.assertFailsWith
-import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import io.bluetape4k.tink.daead.TinkDaeads
 import okio.Path.Companion.toPath
-import okio.fakefilesystem.FakeFileSystem
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 
-class OkioRoundTripTest {
+class OkioRoundTripTest: AbstractOkioTest() {
 
-    private val fakeFs = FakeFileSystem()
-    private val importer = OkioGraphBulkImporter()
-    private val exporter = OkioGraphBulkExporter()
+    companion object: KLogging()
 
-    @AfterEach
-    fun cleanup() {
-        fakeFs.checkNoOpenFiles()
-    }
+    private val importer = OkioGraphBulkImporter.Default
+    private val exporter = OkioGraphBulkExporter.Default
 
-    private fun buildSourceGraph(): TinkerGraphOperations {
+    override fun buildSourceGraph(): TinkerGraphOperations {
         val ops = TinkerGraphOperations()
-        val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
-        val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
-        val charlie = ops.createVertex("Person", mapOf("name" to "Charlie"))
-        ops.createEdge(alice.id, bob.id, "KNOWS", mapOf("since" to "2020"))
-        ops.createEdge(bob.id, charlie.id, "KNOWS", mapOf("since" to "2022"))
+        val alice = ops.createVertex("Person", "name" to "Alice")
+        val bob = ops.createVertex("Person", "name" to "Bob")
+        val charlie = ops.createVertex("Person", "name" to "Charlie")
+
+        ops.createEdge(alice.id, bob.id, "KNOWS", "since" to "2020")
+        ops.createEdge(bob.id, charlie.id, "KNOWS", "since" to "2022")
+
         return ops
     }
-
-    private val exportOptions = GraphExportOptions(
-        vertexLabels = setOf("Person"),
-        edgeLabels = setOf("KNOWS"),
-    )
 
     @Test
     fun `NDJSON Jackson2 round trip`() {
         val path = "/graph.ndjson".toPath()
         val src = buildSourceGraph()
 
-        exporter.exportGraph(
-            OkioGraphExportSink.PathSink(path, fakeFs),
+        val exportReport = exporter.exportGraph(
+            path.asOkioSink(fakeFs),
             GraphIoFormat.NDJSON_JACKSON2,
             src,
             exportOptions,
-        ).status shouldBeEqualTo GraphIoStatus.COMPLETED
+        )
+        log.debug { "export report=$exportReport" }
+        exportReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        exportReport.verticesWritten shouldBeEqualTo 3L
+        exportReport.edgesWritten shouldBeEqualTo 2L
 
         val target = TinkerGraphOperations()
-        val report = importer.importGraph(
-            OkioGraphImportSource.PathSource(path, fakeFs),
+        val importResult = importer.importGraph(
+            path.asOkioSource(fakeFs),
             GraphIoFormat.NDJSON_JACKSON2,
             target,
             GraphImportOptions(),
         )
-        report.status shouldBeEqualTo GraphIoStatus.COMPLETED
-        report.verticesCreated shouldBeEqualTo 3L
-        report.edgesCreated shouldBeEqualTo 2L
+        log.debug { "import report=$importResult" }
+        importResult.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        importResult.verticesCreated shouldBeEqualTo 3L
+        importResult.edgesCreated shouldBeEqualTo 2L
     }
 
     @Test
@@ -68,23 +66,28 @@ class OkioRoundTripTest {
         val path = "/graph.ndjson".toPath()
         val src = buildSourceGraph()
 
-        exporter.exportGraph(
-            OkioGraphExportSink.PathSink(path, fakeFs),
+        val exportReport = exporter.exportGraph(
+            path.asOkioSink(fakeFs),
             GraphIoFormat.NDJSON_JACKSON3,
             src,
             exportOptions,
-        ).status shouldBeEqualTo GraphIoStatus.COMPLETED
+        )
+        log.debug { "export report=$exportReport" }
+        exportReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        exportReport.verticesWritten shouldBeEqualTo 3L
+        exportReport.edgesWritten shouldBeEqualTo 2L
 
         val target = TinkerGraphOperations()
-        val report = importer.importGraph(
-            OkioGraphImportSource.PathSource(path, fakeFs),
+        val importReport = importer.importGraph(
+            path.asOkioSource(fakeFs),
             GraphIoFormat.NDJSON_JACKSON3,
             target,
             GraphImportOptions(),
         )
-        report.status shouldBeEqualTo GraphIoStatus.COMPLETED
-        report.verticesCreated shouldBeEqualTo 3L
-        report.edgesCreated shouldBeEqualTo 2L
+        log.debug { "import report=$importReport" }
+        importReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        importReport.verticesCreated shouldBeEqualTo 3L
+        importReport.edgesCreated shouldBeEqualTo 2L
     }
 
     @Test
@@ -92,23 +95,28 @@ class OkioRoundTripTest {
         val path = "/graph.graphml".toPath()
         val src = buildSourceGraph()
 
-        exporter.exportGraph(
-            OkioGraphExportSink.PathSink(path, fakeFs),
+        val exportReport = exporter.exportGraph(
+            path.asOkioSink(fakeFs),
             GraphIoFormat.GRAPHML,
             src,
             exportOptions,
-        ).status shouldBeEqualTo GraphIoStatus.COMPLETED
+        )
+        log.debug { "export report=$exportReport" }
+        exportReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        exportReport.verticesWritten shouldBeEqualTo 3L
+        exportReport.edgesWritten shouldBeEqualTo 2L
 
         val target = TinkerGraphOperations()
-        val report = importer.importGraph(
-            OkioGraphImportSource.PathSource(path, fakeFs),
+        val importReport = importer.importGraph(
+            path.asOkioSource(fakeFs),
             GraphIoFormat.GRAPHML,
             target,
             GraphImportOptions(),
         )
-        report.status shouldBeEqualTo GraphIoStatus.COMPLETED
-        report.verticesCreated shouldBeEqualTo 3L
-        report.edgesCreated shouldBeEqualTo 2L
+        log.debug { "import report=$importReport" }
+        importReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        importReport.verticesCreated shouldBeEqualTo 3L
+        importReport.edgesCreated shouldBeEqualTo 2L
     }
 
     @Test
@@ -116,27 +124,25 @@ class OkioRoundTripTest {
         val path = "/graph.ndjson.gz".toPath()
         val src = buildSourceGraph()
 
-        GraphIoOkioPaths.openGzipSink(
-            OkioGraphExportSink.PathSink(path, fakeFs)
-        ).use { bs ->
-            // write using exporter via OutputStreamBased
-            val os = bs.outputStream()
-            val osSink = OkioGraphExportSink.OutputStreamBased(os, ownsStream = false)
+        val exportResult = path.asOkioSink(fakeFs).openGzipSink().use { bs ->
+            val osSink = bs.outputStream().asOkioSink(ownsStream = false)
             exporter.exportGraph(osSink, GraphIoFormat.NDJSON_JACKSON3, src, exportOptions)
         }
+        log.debug { "export result=$exportResult" }
+        exportResult.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        exportResult.verticesWritten shouldBeEqualTo 3L
+        exportResult.edgesWritten shouldBeEqualTo 2L
 
         val target = TinkerGraphOperations()
-        val report = GraphIoOkioPaths.openGzipSource(
-            OkioGraphImportSource.PathSource(path, fakeFs)
-        ).use { bs ->
-            val is_ = bs.inputStream()
-            val isSource = OkioGraphImportSource.InputStreamBased(is_, ownsStream = false)
-            importer.importGraph(isSource, GraphIoFormat.NDJSON_JACKSON3, target, GraphImportOptions())
+        val importReport = path.asOkioSource(fakeFs).openGzipSource().use { bs ->
+            val isSource = bs.inputStream().asOkioSource(ownsStream = false)
+            importer.importGraph(isSource, GraphIoFormat.NDJSON_JACKSON3, target, GraphImportOptions.Default)
         }
 
-        report.status shouldBeEqualTo GraphIoStatus.COMPLETED
-        report.verticesCreated shouldBeEqualTo 3L
-        report.edgesCreated shouldBeEqualTo 2L
+        log.debug { "import report=$importReport" }
+        importReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        importReport.verticesCreated shouldBeEqualTo 3L
+        importReport.edgesCreated shouldBeEqualTo 2L
     }
 
     @Test
@@ -145,18 +151,23 @@ class OkioRoundTripTest {
         val associatedData = "graph-okio-daead".encodeToByteArray()
         val src = buildSourceGraph()
 
-        exporter.exportGraphDaead(
-            sink = OkioGraphExportSink.PathSink(path, fakeFs),
+        val exportReport = exporter.exportGraphDaead(
+            sink = path.asOkioSink(fakeFs),
             format = GraphIoFormat.NDJSON_JACKSON3,
             daead = TinkDaeads.AES256_SIV,
             operations = src,
             options = exportOptions,
             associatedData = associatedData,
-        ).status shouldBeEqualTo GraphIoStatus.COMPLETED
+        )
+        log.debug { "export result=$exportReport" }
+        exportReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        exportReport.verticesWritten shouldBeEqualTo 3L
+        exportReport.edgesWritten shouldBeEqualTo 2L
 
         val target = TinkerGraphOperations()
-        val report = importer.importGraphDaead(
-            source = OkioGraphImportSource.PathSource(path, fakeFs),
+
+        val importReport = importer.importGraphDaead(
+            source = path.asOkioSource(fakeFs),
             format = GraphIoFormat.NDJSON_JACKSON3,
             daead = TinkDaeads.AES256_SIV,
             operations = target,
@@ -164,9 +175,10 @@ class OkioRoundTripTest {
             associatedData = associatedData,
         )
 
-        report.status shouldBeEqualTo GraphIoStatus.COMPLETED
-        report.verticesCreated shouldBeEqualTo 3L
-        report.edgesCreated shouldBeEqualTo 2L
+        log.debug { "import report=$importReport" }
+        importReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        importReport.verticesCreated shouldBeEqualTo 3L
+        importReport.edgesCreated shouldBeEqualTo 2L
     }
 
     @Test
@@ -175,33 +187,38 @@ class OkioRoundTripTest {
         val associatedData = "graph-okio-gzip-daead".encodeToByteArray()
         val src = buildSourceGraph()
 
-        exporter.exportGraphGzipDaead(
-            sink = OkioGraphExportSink.PathSink(path, fakeFs),
+        val exportReport = exporter.exportGraphGzipDaead(
+            sink = path.asOkioSink(fakeFs),
             format = GraphIoFormat.NDJSON_JACKSON3,
             daead = TinkDaeads.AES256_SIV,
             operations = src,
             options = exportOptions,
             associatedData = associatedData,
-        ).status shouldBeEqualTo GraphIoStatus.COMPLETED
+        )
+        log.debug { "export result=$exportReport" }
+        exportReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        exportReport.verticesWritten shouldBeEqualTo 3L
+        exportReport.edgesWritten shouldBeEqualTo 2L
 
         val target = TinkerGraphOperations()
-        val report = importer.importGraphDaeadGzip(
-            source = OkioGraphImportSource.PathSource(path, fakeFs),
+
+        val importReport = importer.importGraphDaeadGzip(
+            source = path.asOkioSource(fakeFs),
             format = GraphIoFormat.NDJSON_JACKSON3,
             daead = TinkDaeads.AES256_SIV,
             operations = target,
             options = GraphImportOptions(),
             associatedData = associatedData,
         )
-
-        report.status shouldBeEqualTo GraphIoStatus.COMPLETED
-        report.verticesCreated shouldBeEqualTo 3L
-        report.edgesCreated shouldBeEqualTo 2L
+        log.debug { "import report=$importReport" }
+        importReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        importReport.verticesCreated shouldBeEqualTo 3L
+        importReport.edgesCreated shouldBeEqualTo 2L
     }
 
     @Test
     fun `DAEAD export rejects CSV paired format`() {
-        assertFailsWith<UnsupportedOperationException> {
+        assertFailsWith<GraphUnsupportedOperationException> {
             exporter.exportGraphDaead(
                 sink = OkioGraphExportSink.PathSink("/graph.enc".toPath(), fakeFs),
                 format = GraphIoFormat.CSV,
@@ -213,7 +230,7 @@ class OkioRoundTripTest {
 
     @Test
     fun `gzip DAEAD export rejects CSV paired format`() {
-        assertFailsWith<UnsupportedOperationException> {
+        assertFailsWith<GraphUnsupportedOperationException> {
             exporter.exportGraphGzipDaead(
                 sink = OkioGraphExportSink.PathSink("/graph.gz.enc".toPath(), fakeFs),
                 format = GraphIoFormat.CSV,
@@ -225,7 +242,7 @@ class OkioRoundTripTest {
 
     @Test
     fun `DAEAD import rejects CSV paired format`() {
-        assertFailsWith<UnsupportedOperationException> {
+        assertFailsWith<GraphUnsupportedOperationException> {
             importer.importGraphDaead(
                 source = OkioGraphImportSource.PathSource("/graph.enc".toPath(), fakeFs),
                 format = GraphIoFormat.CSV,
@@ -237,7 +254,7 @@ class OkioRoundTripTest {
 
     @Test
     fun `gzip DAEAD import rejects CSV paired format`() {
-        assertFailsWith<UnsupportedOperationException> {
+        assertFailsWith<GraphUnsupportedOperationException> {
             importer.importGraphDaeadGzip(
                 source = OkioGraphImportSource.PathSource("/graph.gz.enc".toPath(), fakeFs),
                 format = GraphIoFormat.CSV,

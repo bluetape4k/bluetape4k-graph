@@ -31,6 +31,9 @@ data class GraphImportOptions(
 ): Serializable {
 
     companion object: KLogging() {
+
+        val Default = GraphImportOptions()
+
         private const val serialVersionUID: Long = 1L
         private const val MAX_CHECKPOINT_SOURCE_IDENTITY_LENGTH: Int = 4_096
         const val BATCH_SIZE: Int = 1_000

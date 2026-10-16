@@ -94,6 +94,7 @@ class TinkerGraphOperations:
 
     companion object: KLogging() {
         private const val DEFAULT_GRAPH_NAME = "default"
+        val Default = TinkerGraphOperations()
     }
 
     private val currentGraphName = AtomicReference(DEFAULT_GRAPH_NAME)

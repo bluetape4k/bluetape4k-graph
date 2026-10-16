@@ -7,6 +7,7 @@ import io.bluetape4k.okio.tink.DEFAULT_DAEAD_CHUNK_SIZE
 import io.bluetape4k.okio.tink.DEFAULT_DAEAD_MAX_CIPHERTEXT_LENGTH
 import io.bluetape4k.okio.tink.asDaeadChunkDecryptSource
 import io.bluetape4k.okio.tink.asDaeadChunkEncryptSink
+import io.bluetape4k.support.emptyByteArray
 import io.bluetape4k.support.requirePositiveNumber
 import io.bluetape4k.tink.daead.TinkDeterministicAead
 import okio.Buffer
@@ -23,7 +24,7 @@ import okio.buffer
 import okio.sink
 import okio.source
 import java.io.IOException
-import java.util.UUID
+import java.util.*
 
 /**
  * OkIO 그래프 임포트 소스와 익스포트 싱크를 연다.
@@ -50,7 +51,7 @@ import java.util.UUID
  * 암호화 포맷은 deterministic이다. 같은 key와 associated data로 반복 plaintext chunk를 암호화하면 반복 ciphertext
  * chunk가 생성된다.
  */
-object GraphIoOkioPaths : KLogging() {
+object GraphIoOkioPaths: KLogging() {
 
     /** 기본 압축 해제 budget: 512 MiB. */
     const val DEFAULT_MAX_DECOMPRESSED_BYTES: Long = 512L * 1024 * 1024
@@ -60,7 +61,7 @@ object GraphIoOkioPaths : KLogging() {
         is OkioGraphImportSource.PathSource -> safeSize(source.fileSystem, source.path)
         is OkioGraphImportSource.SourceBased,
         is OkioGraphImportSource.InputStreamBased,
-        -> null
+            -> null
     }
 
     /** 경로 기반 sink의 현재 파일 크기를 반환한다. 스트림 sink는 `null`이다. */
@@ -68,7 +69,7 @@ object GraphIoOkioPaths : KLogging() {
         is OkioGraphExportSink.PathSink -> safeSize(sink.fileSystem, sink.path)
         is OkioGraphExportSink.SinkBased,
         is OkioGraphExportSink.OutputStreamBased,
-        -> null
+            -> null
     }
 
     /** CSV paired-file source의 정점/간선 파일 크기를 합산한다. */
@@ -82,7 +83,7 @@ object GraphIoOkioPaths : KLogging() {
         }
         is OkioGraphImportSource.SourceBased,
         is OkioGraphImportSource.InputStreamBased,
-        -> null
+            -> null
     }
 
     /** CSV paired-file sink의 정점/간선 파일 크기를 합산한다. */
@@ -96,7 +97,7 @@ object GraphIoOkioPaths : KLogging() {
         }
         is OkioGraphExportSink.SinkBased,
         is OkioGraphExportSink.OutputStreamBased,
-        -> null
+            -> null
     }
 
     private fun safeSize(fileSystem: FileSystem, path: Path): Long? = try {
@@ -229,7 +230,7 @@ object GraphIoOkioPaths : KLogging() {
         sink: BufferedSink,
         daead: TinkDeterministicAead,
         chunkSize: Int = DEFAULT_DAEAD_CHUNK_SIZE,
-        associatedData: ByteArray = ByteArray(0),
+        associatedData: ByteArray = emptyByteArray,
     ): BufferedSink =
         sink.asDaeadChunkEncryptSink(daead, chunkSize, associatedData).buffer()
 
@@ -249,7 +250,7 @@ object GraphIoOkioPaths : KLogging() {
     fun openDaeadDecryptedSource(
         source: BufferedSource,
         daead: TinkDeterministicAead,
-        associatedData: ByteArray = ByteArray(0),
+        associatedData: ByteArray = emptyByteArray,
         maxCiphertextLength: Long = DEFAULT_DAEAD_MAX_CIPHERTEXT_LENGTH,
     ): BufferedSource =
         source.asDaeadChunkDecryptSource(daead, associatedData, maxCiphertextLength).buffer()
@@ -267,7 +268,11 @@ object GraphIoOkioPaths : KLogging() {
             openCompressedSink(bs, Compressor.GZIP)
         } catch (e: Throwable) {
             opened.abort()
-            try { bs.close() } catch (ce: Throwable) { log.warn(ce) { "Failed to close sink after gzip init failure" } }
+            try {
+                bs.close()
+            } catch (ce: Throwable) {
+                log.warn(ce) { "Failed to close sink after gzip init failure" }
+            }
             throw e
         }
     }
@@ -282,7 +287,7 @@ object GraphIoOkioPaths : KLogging() {
         sink: OkioGraphExportSink,
         daead: TinkDeterministicAead,
         chunkSize: Int = DEFAULT_DAEAD_CHUNK_SIZE,
-        associatedData: ByteArray = ByteArray(0),
+        associatedData: ByteArray = emptyByteArray,
     ): BufferedSink {
         val opened = openSinkHandle(sink)
         val bs = opened.sink
@@ -290,7 +295,11 @@ object GraphIoOkioPaths : KLogging() {
             openDaeadEncryptedSink(bs, daead, chunkSize, associatedData)
         } catch (e: Throwable) {
             opened.abort()
-            try { bs.close() } catch (ce: Throwable) { log.warn(ce) { "Failed to close sink after DAEAD init failure" } }
+            try {
+                bs.close()
+            } catch (ce: Throwable) {
+                log.warn(ce) { "Failed to close sink after DAEAD init failure" }
+            }
             throw e
         }
     }
@@ -305,7 +314,7 @@ object GraphIoOkioPaths : KLogging() {
         sink: OkioGraphExportSink,
         daead: TinkDeterministicAead,
         chunkSize: Int = DEFAULT_DAEAD_CHUNK_SIZE,
-        associatedData: ByteArray = ByteArray(0),
+        associatedData: ByteArray = emptyByteArray,
     ): BufferedSink {
         val opened = openSinkHandle(sink)
         val bs = opened.sink
@@ -314,7 +323,11 @@ object GraphIoOkioPaths : KLogging() {
             openCompressedSink(encrypted, Compressor.GZIP)
         } catch (e: Throwable) {
             opened.abort()
-            try { bs.close() } catch (ce: Throwable) { log.warn(ce) { "Failed to close sink after gzip+DAEAD init failure" } }
+            try {
+                bs.close()
+            } catch (ce: Throwable) {
+                log.warn(ce) { "Failed to close sink after gzip+DAEAD init failure" }
+            }
             throw e
         }
     }
@@ -335,7 +348,11 @@ object GraphIoOkioPaths : KLogging() {
         return try {
             openDecompressedSource(bs, Compressor.GZIP, maxDecompressedBytes)
         } catch (e: Throwable) {
-            try { bs.close() } catch (ce: Throwable) { log.warn(ce) { "Failed to close source after gzip init failure" } }
+            try {
+                bs.close()
+            } catch (ce: Throwable) {
+                log.warn(ce) { "Failed to close source after gzip init failure" }
+            }
             throw e
         }
     }
@@ -347,14 +364,18 @@ object GraphIoOkioPaths : KLogging() {
     fun openDaeadDecryptedSource(
         source: OkioGraphImportSource,
         daead: TinkDeterministicAead,
-        associatedData: ByteArray = ByteArray(0),
+        associatedData: ByteArray = emptyByteArray,
         maxCiphertextLength: Long = DEFAULT_DAEAD_MAX_CIPHERTEXT_LENGTH,
     ): BufferedSource {
         val bs = openSource(source)
         return try {
             openDaeadDecryptedSource(bs, daead, associatedData, maxCiphertextLength)
         } catch (e: Throwable) {
-            try { bs.close() } catch (ce: Throwable) { log.warn(ce) { "Failed to close source after DAEAD init failure" } }
+            try {
+                bs.close()
+            } catch (ce: Throwable) {
+                log.warn(ce) { "Failed to close source after DAEAD init failure" }
+            }
             throw e
         }
     }
@@ -368,7 +389,7 @@ object GraphIoOkioPaths : KLogging() {
     fun openDaeadDecryptedGzipSource(
         source: OkioGraphImportSource,
         daead: TinkDeterministicAead,
-        associatedData: ByteArray = ByteArray(0),
+        associatedData: ByteArray = emptyByteArray,
         maxCiphertextLength: Long = DEFAULT_DAEAD_MAX_CIPHERTEXT_LENGTH,
         maxDecompressedBytes: Long = DEFAULT_MAX_DECOMPRESSED_BYTES,
     ): BufferedSource {
@@ -377,7 +398,11 @@ object GraphIoOkioPaths : KLogging() {
             val decrypted = openDaeadDecryptedSource(bs, daead, associatedData, maxCiphertextLength)
             openDecompressedSource(decrypted, Compressor.GZIP, maxDecompressedBytes)
         } catch (e: Throwable) {
-            try { bs.close() } catch (ce: Throwable) { log.warn(ce) { "Failed to close source after DAEAD+gzip init failure" } }
+            try {
+                bs.close()
+            } catch (ce: Throwable) {
+                log.warn(ce) { "Failed to close source after DAEAD+gzip init failure" }
+            }
             throw e
         }
     }
@@ -418,13 +443,15 @@ object GraphIoOkioPaths : KLogging() {
     }
 
     /** 호출자가 소유한 하위 source를 닫지 않는 wrapper. */
-    private fun nonClosingSource(delegate: Source): Source = object : ForwardingSource(delegate) {
-        override fun close() { /* 호출자가 source를 소유하므로 닫지 않는다 */ }
+    private fun nonClosingSource(delegate: Source): Source = object: ForwardingSource(delegate) {
+        override fun close() { /* 호출자가 source를 소유하므로 닫지 않는다 */
+        }
     }
 
     /** 호출자가 소유한 하위 sink를 닫지 않는 wrapper. */
-    private fun nonClosingSink(delegate: Sink): Sink = object : ForwardingSink(delegate) {
-        override fun close() { /* 호출자가 sink를 소유하므로 닫지 않는다 */ }
+    private fun nonClosingSink(delegate: Sink): Sink = object: ForwardingSink(delegate) {
+        override fun close() { /* 호출자가 sink를 소유하므로 닫지 않는다 */
+        }
     }
 
     /**
@@ -435,7 +462,7 @@ object GraphIoOkioPaths : KLogging() {
     private class BombGuardSource(
         delegate: Source,
         private val maxBytes: Long,
-    ) : ForwardingSource(delegate) {
+    ): ForwardingSource(delegate) {
         @Volatile
         private var totalRead: Long = 0L
 
@@ -470,7 +497,7 @@ object GraphIoOkioPaths : KLogging() {
         private val tmpPath: Path,
         private val targetPath: Path,
         private val fs: FileSystem,
-    ) : ForwardingSink(delegate) {
+    ): ForwardingSink(delegate) {
         @Volatile
         private var failed = false
 
@@ -491,7 +518,9 @@ object GraphIoOkioPaths : KLogging() {
             try {
                 super.close()
                 if (failed) {
-                    try { fs.delete(tmpPath) } catch (e: IOException) {
+                    try {
+                        fs.delete(tmpPath)
+                    } catch (e: IOException) {
                         GraphIoOkioPaths.log.warn(e) { "Failed to delete temp file after write failure: $tmpPath" }
                     }
                 } else {
@@ -499,7 +528,9 @@ object GraphIoOkioPaths : KLogging() {
                 }
             } catch (e: Exception) {
                 failed = true
-                try { fs.delete(tmpPath) } catch (de: IOException) {
+                try {
+                    fs.delete(tmpPath)
+                } catch (de: IOException) {
                     GraphIoOkioPaths.log.warn(de) { "Failed to delete temp file after close failure: $tmpPath" }
                 }
                 throw e

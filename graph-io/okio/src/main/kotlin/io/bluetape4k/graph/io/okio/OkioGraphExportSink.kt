@@ -1,9 +1,20 @@
 package io.bluetape4k.graph.io.okio
 
+import io.bluetape4k.graph.io.okio.OkioGraphExportSink.OutputStreamBased
+import io.bluetape4k.graph.io.okio.OkioGraphExportSink.PathSink
+import io.bluetape4k.graph.io.okio.OkioGraphExportSink.SinkBased
+import io.bluetape4k.graph.io.okio.bridge.toOutputStream
+import io.bluetape4k.graph.io.source.GraphExportSink.OutputStreamSink
+import io.bluetape4k.graph.io.source.asSink
+import io.bluetape4k.okio.tink.DEFAULT_DAEAD_CHUNK_SIZE
+import io.bluetape4k.support.emptyByteArray
+import io.bluetape4k.tink.daead.TinkDeterministicAead
+import okio.BufferedSink
 import okio.FileSystem
 import okio.Path
 import okio.Sink
 import java.io.OutputStream
+import java.nio.charset.Charset
 
 /**
  * OkIO 기반 그래프 익스포트 싱크.
@@ -38,7 +49,7 @@ sealed interface OkioGraphExportSink {
         val mustExist: Boolean = false,
         val createParentDirectories: Boolean = true,
         val atomicWrite: Boolean = true,
-    ) : OkioGraphExportSink {
+    ): OkioGraphExportSink {
         companion object {
             /**
              * [PathSink]를 생성하는 팩토리 함수.
@@ -71,7 +82,7 @@ sealed interface OkioGraphExportSink {
     data class SinkBased(
         val sink: Sink,
         val ownsSink: Boolean = false,
-    ) : OkioGraphExportSink {
+    ): OkioGraphExportSink {
         companion object {
             /**
              * [SinkBased]를 생성하는 팩토리 함수.
@@ -94,7 +105,7 @@ sealed interface OkioGraphExportSink {
     data class OutputStreamBased(
         val outputStream: OutputStream,
         val ownsStream: Boolean = false,
-    ) : OkioGraphExportSink {
+    ): OkioGraphExportSink {
         companion object {
             /**
              * [OutputStreamBased]를 생성하는 팩토리 함수.
@@ -108,3 +119,55 @@ sealed interface OkioGraphExportSink {
         }
     }
 }
+
+fun Path.asOkioSink(
+    fileSystem: FileSystem = FileSystem.SYSTEM,
+    mustCreate: Boolean = false,
+    mustExist: Boolean = false,
+    createParentDirectories: Boolean = true,
+    atomicWrite: Boolean = true,
+): PathSink =
+    OkioGraphExportSink.PathSink(this, fileSystem, mustCreate, mustExist, createParentDirectories, atomicWrite)
+
+fun Sink.asOkioSink(ownsSink: Boolean = false): SinkBased =
+    OkioGraphExportSink.SinkBased(this, ownsSink)
+
+fun OutputStream.asOkioSink(ownsStream: Boolean = false): OutputStreamBased =
+    OkioGraphExportSink.OutputStreamBased(this, ownsStream)
+
+fun OkioGraphExportSink.openSink(): BufferedSink =
+    GraphIoOkioPaths.openSink(this)
+
+fun OkioGraphExportSink.openCompressedSink(
+    compressor: Compressor = Compressor.GZIP,
+): BufferedSink =
+    GraphIoOkioPaths.openCompressedSink(this.openSink(), compressor)
+
+fun OkioGraphExportSink.openDaeadEncryptedSink(
+    daead: TinkDeterministicAead,
+    chunkSize: Int = DEFAULT_DAEAD_CHUNK_SIZE,
+    associatedData: ByteArray = emptyByteArray,
+): BufferedSink =
+    GraphIoOkioPaths.openDaeadEncryptedSink(this, daead, chunkSize, associatedData)
+
+fun OkioGraphExportSink.openGzipDaeadEncryptedSink(
+    daead: TinkDeterministicAead,
+    chunkSize: Int = DEFAULT_DAEAD_CHUNK_SIZE,
+    associatedData: ByteArray = emptyByteArray,
+): BufferedSink =
+    GraphIoOkioPaths.openGzipDaeadEncryptedSink(this, daead, chunkSize, associatedData)
+
+fun BufferedSink.openCompressedSink(compressor: Compressor): BufferedSink =
+    GraphIoOkioPaths.openCompressedSink(this, compressor)
+
+fun OkioGraphExportSink.openGzipSink(): BufferedSink =
+    GraphIoOkioPaths.openGzipSink(this)
+
+fun BufferedSink.asSink(
+    closeOutput: Boolean = false,
+    charset: Charset = Charsets.UTF_8,
+): OutputStreamSink =
+    toOutputStream().asSink(closeOutput, charset)
+
+fun OkioGraphExportSink.sizeOf(): Long? = GraphIoOkioPaths.sizeOf(this)
+fun OkioGraphExportSink.sizeOfCsv(): Long? = GraphIoOkioPaths.sizeOfCsv(this)

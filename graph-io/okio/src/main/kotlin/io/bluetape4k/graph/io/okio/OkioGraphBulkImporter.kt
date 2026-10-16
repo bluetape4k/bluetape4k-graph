@@ -2,13 +2,14 @@
 
 package io.bluetape4k.graph.io.okio
 
-import io.bluetape4k.graph.io.okio.bridge.toInputStream
+import io.bluetape4k.graph.GraphUnsupportedOperationException
 import io.bluetape4k.graph.io.contract.GraphBulkImporter
 import io.bluetape4k.graph.io.csv.CsvGraphBulkImporter
 import io.bluetape4k.graph.io.csv.CsvGraphImportSource
 import io.bluetape4k.graph.io.graphml.GraphMlBulkImporter
 import io.bluetape4k.graph.io.jackson2.Jackson2NdJsonBulkImporter
 import io.bluetape4k.graph.io.jackson3.Jackson3NdJsonBulkImporter
+import io.bluetape4k.graph.io.okio.bridge.toInputStream
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphImportReport
 import io.bluetape4k.graph.io.report.GraphIoFormat
@@ -41,13 +42,15 @@ import java.io.IOException
  * 압축 체이닝과 [okio.FileSystem] 지원 같은 OkIO 전용 동작은 [GraphIoOkioPaths]가 담당한다.
  */
 class OkioGraphBulkImporter(
-    private val csvImporter: CsvGraphBulkImporter = CsvGraphBulkImporter(),
-    private val jackson2Importer: Jackson2NdJsonBulkImporter = Jackson2NdJsonBulkImporter(),
-    private val jackson3Importer: Jackson3NdJsonBulkImporter = Jackson3NdJsonBulkImporter(),
-    private val graphmlImporter: GraphMlBulkImporter = GraphMlBulkImporter(),
-) : GraphBulkImporter<OkioGraphImportSource> {
+    private val csvImporter: CsvGraphBulkImporter = CsvGraphBulkImporter.Default,
+    private val jackson2Importer: Jackson2NdJsonBulkImporter = Jackson2NdJsonBulkImporter.Default,
+    private val jackson3Importer: Jackson3NdJsonBulkImporter = Jackson3NdJsonBulkImporter.Default,
+    private val graphmlImporter: GraphMlBulkImporter = GraphMlBulkImporter.Default,
+): GraphBulkImporter<OkioGraphImportSource> {
 
-    companion object : KLogging()
+    companion object: KLogging() {
+        val Default = OkioGraphBulkImporter()
+    }
 
     /**
      * OkIO 소스에서 [GraphIoFormat.NDJSON_JACKSON3] 포맷으로 그래프를 임포트한다.
@@ -87,13 +90,25 @@ class OkioGraphBulkImporter(
         return when (format) {
             GraphIoFormat.CSV -> importCsv(source, operations, options)
             GraphIoFormat.NDJSON_JACKSON2 -> importSingleStream(source) { is_ ->
-                jackson2Importer.importGraph(GraphImportSource.InputStreamSource(is_, closeInput = false), operations, options)
+                jackson2Importer.importGraph(
+                    GraphImportSource.InputStreamSource(is_, closeInput = false),
+                    operations,
+                    options
+                )
             }
             GraphIoFormat.NDJSON_JACKSON3 -> importSingleStream(source) { is_ ->
-                jackson3Importer.importGraph(GraphImportSource.InputStreamSource(is_, closeInput = false), operations, options)
+                jackson3Importer.importGraph(
+                    GraphImportSource.InputStreamSource(is_, closeInput = false),
+                    operations,
+                    options
+                )
             }
             GraphIoFormat.GRAPHML -> importSingleStream(source) { is_ ->
-                graphmlImporter.importGraph(GraphImportSource.InputStreamSource(is_, closeInput = false), operations, options)
+                graphmlImporter.importGraph(
+                    GraphImportSource.InputStreamSource(is_, closeInput = false),
+                    operations,
+                    options
+                )
             }
         }
     }
@@ -111,8 +126,8 @@ class OkioGraphBulkImporter(
             format = format,
             listener = listener,
             bytesProvider = {
-                if (format == GraphIoFormat.CSV) GraphIoOkioPaths.sizeOfCsv(source)
-                else GraphIoOkioPaths.sizeOf(source)
+                if (format == GraphIoFormat.CSV) source.sizeOfCsv()
+                else source.sizeOf()
             },
         )
         return reporter.run(
@@ -158,7 +173,7 @@ class OkioGraphBulkImporter(
             operation = GraphIoOperation.IMPORT,
             format = format,
             listener = listener,
-            bytesProvider = { GraphIoOkioPaths.sizeOf(source) },
+            bytesProvider = { source.sizeOf() },
         )
         return reporter.run(
             block = {
@@ -220,7 +235,7 @@ class OkioGraphBulkImporter(
             operation = GraphIoOperation.IMPORT,
             format = format,
             listener = listener,
-            bytesProvider = { GraphIoOkioPaths.sizeOf(source) },
+            bytesProvider = { source.sizeOf() },
         )
         return reporter.run(
             block = {
@@ -260,11 +275,23 @@ class OkioGraphBulkImporter(
         source.toInputStream().use { is_ ->
             when (format) {
                 GraphIoFormat.NDJSON_JACKSON2 ->
-                    jackson2Importer.importGraph(GraphImportSource.InputStreamSource(is_, closeInput = false), operations, options)
+                    jackson2Importer.importGraph(
+                        GraphImportSource.InputStreamSource(is_, closeInput = false),
+                        operations,
+                        options
+                    )
                 GraphIoFormat.NDJSON_JACKSON3 ->
-                    jackson3Importer.importGraph(GraphImportSource.InputStreamSource(is_, closeInput = false), operations, options)
+                    jackson3Importer.importGraph(
+                        GraphImportSource.InputStreamSource(is_, closeInput = false),
+                        operations,
+                        options
+                    )
                 GraphIoFormat.GRAPHML ->
-                    graphmlImporter.importGraph(GraphImportSource.InputStreamSource(is_, closeInput = false), operations, options)
+                    graphmlImporter.importGraph(
+                        GraphImportSource.InputStreamSource(is_, closeInput = false),
+                        operations,
+                        options
+                    )
                 GraphIoFormat.CSV -> unsupportedCsvEncrypted()
             }
         }
@@ -283,8 +310,8 @@ class OkioGraphBulkImporter(
             is OkioGraphImportSource.PathSource -> {
                 require(source.fileSystem == FileSystem.SYSTEM) {
                     "CSV import supports only FileSystem.SYSTEM. " +
-                        "Use CsvGraphBulkImporter directly for custom FileSystem instances. " +
-                        "Provided FileSystem: ${source.fileSystem}"
+                            "Use CsvGraphBulkImporter directly for custom FileSystem instances. " +
+                            "Provided FileSystem: ${source.fileSystem}"
                 }
                 val stem = source.path.toString().removeSuffix(".csv")
                 val verticesPath = "${stem}_vertices.csv".toPath()
@@ -297,7 +324,7 @@ class OkioGraphBulkImporter(
             }
             else -> throw UnsupportedOperationException(
                 "CSV requires two files for vertices and edges, so OkioGraphBulkImporter supports only PathSource. " +
-                    "Use CsvGraphBulkImporter directly for stream-backed sources."
+                        "Use CsvGraphBulkImporter directly for stream-backed sources."
             )
         }
     }
@@ -315,7 +342,7 @@ class OkioGraphBulkImporter(
     }
 
     private fun unsupportedCsvEncrypted(): Nothing =
-        throw UnsupportedOperationException(
+        throw GraphUnsupportedOperationException(
             "CSV is a paired-file format. Use low-level DAEAD helpers directly for custom CSV file pairs."
         )
 }

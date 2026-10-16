@@ -3,66 +3,57 @@ package io.bluetape4k.graph.io.okio.coroutines
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldHaveSize
-import io.bluetape4k.graph.io.okio.OkioGraphBulkExporter
-import io.bluetape4k.graph.io.okio.OkioGraphBulkImporter
-import io.bluetape4k.graph.io.okio.OkioGraphExportSink
-import io.bluetape4k.graph.io.okio.OkioGraphImportSource
-import io.bluetape4k.graph.io.options.GraphExportOptions
+import io.bluetape4k.coroutines.flow.extensions.log
+import io.bluetape4k.graph.io.okio.AbstractOkioTest
+import io.bluetape4k.graph.io.okio.asOkioSink
+import io.bluetape4k.graph.io.okio.asOkioSource
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphIoFormat
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withContext
 import okio.Path.Companion.toPath
-import okio.fakefilesystem.FakeFileSystem
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import kotlin.coroutines.cancellation.CancellationException
 
-class SuspendAdapterTest {
+class SuspendAdapterTest: AbstractOkioTest() {
 
-    private val fakeFs = FakeFileSystem()
-    private val adapter = SuspendGraphIoOkioBulkAdapter(
-        importer = OkioGraphBulkImporter(),
-        exporter = OkioGraphBulkExporter(),
-    )
+    companion object: KLogging()
 
-    @AfterEach
-    fun cleanup() {
-        fakeFs.checkNoOpenFiles()
-    }
-
-    private fun buildSourceGraph(): TinkerGraphOperations {
-        val ops = TinkerGraphOperations()
-        val alice = ops.createVertex("Person", mapOf("name" to "Alice"))
-        val bob = ops.createVertex("Person", mapOf("name" to "Bob"))
-        ops.createEdge(alice.id, bob.id, "KNOWS", emptyMap())
-        return ops
-    }
-
-    private val exportOptions = GraphExportOptions(
-        vertexLabels = setOf("Person"),
-        edgeLabels = setOf("KNOWS"),
-    )
+    private val adapter = SuspendGraphIoOkioBulkAdapter.Default
 
     @Test
     fun `importGraphAwait returns completed report`() = runSuspendIO {
         val path = "/await.ndjson".toPath()
         val src = buildSourceGraph()
-        val sink = OkioGraphExportSink.PathSink(path, fakeFs)
-        adapter.exportGraphAwait(sink, GraphIoFormat.NDJSON_JACKSON3, src, exportOptions)
+        val sink = path.asOkioSink(fakeFs)
 
-        val report = adapter.importGraphAwait(
-            OkioGraphImportSource.PathSource(path, fakeFs),
+        val exportReport = adapter.exportGraphAwait(
+            sink,
+            GraphIoFormat.NDJSON_JACKSON3,
+            src,
+            exportOptions
+        )
+        log.debug { "export report=$exportReport" }
+        exportReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        exportReport.verticesWritten shouldBeEqualTo 2L
+        exportReport.edgesWritten shouldBeEqualTo 1L
+
+        val importReport = adapter.importGraphAwait(
+            path.asOkioSource(fakeFs),
             GraphIoFormat.NDJSON_JACKSON3,
             TinkerGraphOperations(),
             GraphImportOptions(),
         )
-        report.status shouldBeEqualTo GraphIoStatus.COMPLETED
-        report.verticesCreated shouldBeEqualTo 2L
-        report.edgesCreated shouldBeEqualTo 1L
+        log.debug { "import report=$importReport" }
+        importReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        importReport.verticesCreated shouldBeEqualTo 2L
+        importReport.edgesCreated shouldBeEqualTo 1L
     }
 
     @Test
@@ -70,33 +61,42 @@ class SuspendAdapterTest {
         val path = "/await-export.ndjson".toPath()
         val src = buildSourceGraph()
 
-        val report = adapter.exportGraphAwait(
-            OkioGraphExportSink.PathSink(path, fakeFs),
+        val exportReport = adapter.exportGraphAwait(
+            path.asOkioSink(fakeFs),
             GraphIoFormat.NDJSON_JACKSON3,
             src,
             exportOptions,
         )
-        report.status shouldBeEqualTo GraphIoStatus.COMPLETED
-        report.verticesWritten shouldBeEqualTo 2L
-        report.edgesWritten shouldBeEqualTo 1L
+
+        log.debug { "export report=$exportReport" }
+        exportReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        exportReport.verticesWritten shouldBeEqualTo 2L
+        exportReport.edgesWritten shouldBeEqualTo 1L
     }
 
     @Test
     fun `importGraph Flow emits start and completion progress`() = runSuspendIO {
         val path = "/flow.ndjson".toPath()
         val src = buildSourceGraph()
-        adapter.exportGraphAwait(
-            OkioGraphExportSink.PathSink(path, fakeFs),
+
+        val exportReport = adapter.exportGraphAwait(
+            path.asOkioSink(fakeFs),
             GraphIoFormat.NDJSON_JACKSON3,
             src, exportOptions,
         )
+        log.debug { "export report=$exportReport" }
+        exportReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        exportReport.verticesWritten shouldBeEqualTo 2L
+        exportReport.edgesWritten shouldBeEqualTo 1L
 
         val events = adapter.importGraph(
-            OkioGraphImportSource.PathSource(path, fakeFs),
+            path.asOkioSource(fakeFs),
             GraphIoFormat.NDJSON_JACKSON3,
             TinkerGraphOperations(),
             GraphImportOptions(),
-        ).toList()
+        )
+            .log("IMPORT")
+            .toList()
 
         events shouldHaveSize 2
         events.first().processed shouldBeEqualTo 0L
@@ -109,10 +109,12 @@ class SuspendAdapterTest {
         val src = buildSourceGraph()
 
         val events = adapter.exportGraph(
-            OkioGraphExportSink.PathSink(path, fakeFs),
+            path.asOkioSink(fakeFs),
             GraphIoFormat.NDJSON_JACKSON3,
             src, exportOptions,
-        ).toList()
+        )
+            .log("EXPORT")
+            .toList()
 
         events shouldHaveSize 2
         events.first().exported shouldBeEqualTo 0L
@@ -125,34 +127,56 @@ class SuspendAdapterTest {
     fun `importGraphAwait with NDJSON_JACKSON2 format returns correct counts`() = runSuspendIO {
         val path = "/await-j2.ndjson".toPath()
         val src = buildSourceGraph()
-        adapter.exportGraphAwait(OkioGraphExportSink.PathSink(path, fakeFs), GraphIoFormat.NDJSON_JACKSON2, src, exportOptions)
 
-        val report = adapter.importGraphAwait(
-            OkioGraphImportSource.PathSource(path, fakeFs),
+        val exportReport = adapter.exportGraphAwait(
+            path.asOkioSink(fakeFs),
+            GraphIoFormat.NDJSON_JACKSON2,
+            src,
+            exportOptions
+        )
+        log.debug { "export report=$exportReport" }
+        exportReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        exportReport.verticesWritten shouldBeEqualTo 2L
+        exportReport.edgesWritten shouldBeEqualTo 1L
+
+        val importReport = adapter.importGraphAwait(
+            path.asOkioSource(fakeFs),
             GraphIoFormat.NDJSON_JACKSON2,
             TinkerGraphOperations(),
             GraphImportOptions(),
         )
-        report.status shouldBeEqualTo GraphIoStatus.COMPLETED
-        report.verticesCreated shouldBeEqualTo 2L
-        report.edgesCreated shouldBeEqualTo 1L
+        log.debug { "import report=$importReport" }
+        importReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        importReport.verticesCreated shouldBeEqualTo 2L
+        importReport.edgesCreated shouldBeEqualTo 1L
     }
 
     @Test
     fun `importGraphAwait with GRAPHML format returns correct counts`() = runSuspendIO {
         val path = "/await-graphml.xml".toPath()
         val src = buildSourceGraph()
-        adapter.exportGraphAwait(OkioGraphExportSink.PathSink(path, fakeFs), GraphIoFormat.GRAPHML, src, exportOptions)
 
-        val report = adapter.importGraphAwait(
-            OkioGraphImportSource.PathSource(path, fakeFs),
+        val exportReport = adapter.exportGraphAwait(
+            path.asOkioSink(fakeFs),
+            GraphIoFormat.GRAPHML,
+            src,
+            exportOptions
+        )
+        log.debug { "export report=$exportReport" }
+        exportReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        exportReport.verticesWritten shouldBeEqualTo 2L
+        exportReport.edgesWritten shouldBeEqualTo 1L
+
+        val importReport = adapter.importGraphAwait(
+            path.asOkioSource(fakeFs),
             GraphIoFormat.GRAPHML,
             TinkerGraphOperations(),
             GraphImportOptions(),
         )
-        report.status shouldBeEqualTo GraphIoStatus.COMPLETED
-        report.verticesCreated shouldBeEqualTo 2L
-        report.edgesCreated shouldBeEqualTo 1L
+        log.debug { "import report=$importReport" }
+        importReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        importReport.verticesCreated shouldBeEqualTo 2L
+        importReport.edgesCreated shouldBeEqualTo 1L
     }
 
     @Test
@@ -160,15 +184,17 @@ class SuspendAdapterTest {
         val path = "/await-export-graphml.xml".toPath()
         val src = buildSourceGraph()
 
-        val report = adapter.exportGraphAwait(
-            OkioGraphExportSink.PathSink(path, fakeFs),
+        val exportReport = adapter.exportGraphAwait(
+            path.asOkioSink(fakeFs),
             GraphIoFormat.GRAPHML,
             src,
             exportOptions,
         )
-        report.status shouldBeEqualTo GraphIoStatus.COMPLETED
-        report.verticesWritten shouldBeEqualTo 2L
-        report.edgesWritten shouldBeEqualTo 1L
+
+        log.debug { "export report=$exportReport" }
+        exportReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        exportReport.verticesWritten shouldBeEqualTo 2L
+        exportReport.edgesWritten shouldBeEqualTo 1L
     }
 
     // ─── 취소 전파 ────────────────────────────────────────────────────────────
@@ -177,10 +203,10 @@ class SuspendAdapterTest {
     fun `exportGraphAwait throws CancellationException when coroutine is pre-cancelled`() = runSuspendIO {
         val cancelledJob = Job().apply { cancel() }
 
-        assertFailsWith<kotlinx.coroutines.CancellationException> {
+        assertFailsWith<CancellationException> {
             withContext(cancelledJob) {
                 adapter.exportGraphAwait(
-                    OkioGraphExportSink.PathSink("/nope-export.ndjson".toPath(), fakeFs),
+                    "/nope-export.ndjson".toPath().asOkioSink(fakeFs),
                     GraphIoFormat.NDJSON_JACKSON3,
                     buildSourceGraph(),
                     exportOptions,
@@ -193,19 +219,24 @@ class SuspendAdapterTest {
     @Test
     fun `importGraphAwait throws CancellationException when coroutine is pre-cancelled`() = runSuspendIO {
         val path = "/cancel-import.ndjson".toPath()
-        adapter.exportGraphAwait(
-            OkioGraphExportSink.PathSink(path, fakeFs),
+
+        val exportReport = adapter.exportGraphAwait(
+            path.asOkioSink(fakeFs),
             GraphIoFormat.NDJSON_JACKSON3,
             buildSourceGraph(),
             exportOptions,
         )
+        log.debug { "export report=$exportReport" }
+        exportReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
+        exportReport.verticesWritten shouldBeEqualTo 2L
+        exportReport.edgesWritten shouldBeEqualTo 1L
 
         val cancelledJob = Job().apply { cancel() }
 
-        assertFailsWith<kotlinx.coroutines.CancellationException> {
+        assertFailsWith<CancellationException> {
             withContext(cancelledJob) {
                 adapter.importGraphAwait(
-                    OkioGraphImportSource.PathSource(path, fakeFs),
+                    path.asOkioSource(fakeFs),
                     GraphIoFormat.NDJSON_JACKSON3,
                     TinkerGraphOperations(),
                     GraphImportOptions(),
