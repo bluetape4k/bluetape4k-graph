@@ -31,8 +31,7 @@
 
 ## 의존성
 
-`graph-ktor`와 실제 application에서 사용할 backend module을 함께 선언합니다.
-공통 application resource registry는 `bluetape4k-ktor-core` transitive dependency로 제공됩니다.
+`graph-ktor`와 실제 application에서 사용할 backend module을 함께 선언합니다. 공통 application resource registry는 `bluetape4k-ktor-core` transitive dependency로 제공됩니다.
 
 ```kotlin
 dependencies {
@@ -96,8 +95,7 @@ fun Application.module() {
 }
 ```
 
-같은 managed-driver pattern은 `memgraph { ... }`, `falkorDB { ... }`에서도 사용할 수 있습니다.
-Application은 여전히 실제 사용할 backend module dependency를 직접 선언해야 합니다.
+같은 managed-driver pattern은 `memgraph { ... }`, `falkorDB { ... }`에서도 사용할 수 있습니다. Application은 여전히 실제 사용할 backend module dependency를 직접 선언해야 합니다.
 
 ### Managed Apache AGE DataSource
 
@@ -116,23 +114,21 @@ fun Application.module() {
 ```
 
 `ageDataSource { ... }`는 Hikari 기반 pool을 생성하고 Exposed
-`Database.connect(dataSource)`를 호출한 뒤, application stop 시 plugin이 생성한 pool만 닫습니다.
-외부 DI container가 Exposed `Database`, `DataSource`, transaction manager lifecycle을 이미 소유한다면
-기존 `age(graphName)` helper를 사용합니다.
+`Database.connect(dataSource)`를 호출한 뒤, application stop 시 plugin이 생성한 pool만 닫습니다. 외부 DI container가 Exposed `Database`, `DataSource`, transaction manager lifecycle을 이미 소유한다면 기존 `age(graphName)` helper를 사용합니다.
 
 ## Backend 참고
 
-| Backend | Helper | Lifecycle |
-|---|---|---|
-| TinkerGraph | `tinkerGraph()` | Plugin이 in-memory graph delegate를 생성하고 닫습니다. |
-| Neo4j | `neo4j(driver, database)` | Driver는 caller-owned이며 plugin이 닫지 않습니다. |
-| Neo4j | `neo4j { uri; username; password; database }` | Plugin이 driver를 생성하고 닫습니다. |
-| Memgraph | `memgraph(driver, database)` | Driver는 caller-owned이며 plugin이 닫지 않습니다. |
-| Memgraph | `memgraph { uri; username; password; database }` | Plugin이 driver를 생성하고 닫습니다. |
-| Apache AGE | `age(graphName)` | Graph 사용 전에 caller가 Exposed `Database.connect(...)`를 호출해야 합니다. |
-| Apache AGE | `ageDataSource { jdbcUrl; username; password; graphName; connectionInitSql }` | Plugin이 Hikari pool을 생성하고 Exposed를 연결한 뒤 생성한 pool만 닫습니다. |
-| FalkorDB | `falkorDB(driver, graphName)` | Driver는 caller-owned이며 plugin이 닫지 않습니다. |
-| FalkorDB | `falkorDB { host; port; username; password; graphName }` | Plugin이 driver를 생성하고 닫습니다. |
+| Backend     | Helper                                                                        | Lifecycle                                                                   |
+|-------------|-------------------------------------------------------------------------------|-----------------------------------------------------------------------------|
+| TinkerGraph | `tinkerGraph()`                                                               | Plugin이 in-memory graph delegate를 생성하고 닫습니다.                      |
+| Neo4j       | `neo4j(driver, database)`                                                     | Driver는 caller-owned이며 plugin이 닫지 않습니다.                           |
+| Neo4j       | `neo4j { uri; username; password; database }`                                 | Plugin이 driver를 생성하고 닫습니다.                                        |
+| Memgraph    | `memgraph(driver, database)`                                                  | Driver는 caller-owned이며 plugin이 닫지 않습니다.                           |
+| Memgraph    | `memgraph { uri; username; password; database }`                              | Plugin이 driver를 생성하고 닫습니다.                                        |
+| Apache AGE  | `age(graphName)`                                                              | Graph 사용 전에 caller가 Exposed `Database.connect(...)`를 호출해야 합니다. |
+| Apache AGE  | `ageDataSource { jdbcUrl; username; password; graphName; connectionInitSql }` | Plugin이 Hikari pool을 생성하고 Exposed를 연결한 뒤 생성한 pool만 닫습니다. |
+| FalkorDB    | `falkorDB(driver, graphName)`                                                 | Driver는 caller-owned이며 plugin이 닫지 않습니다.                           |
+| FalkorDB    | `falkorDB { host; port; username; password; graphName }`                      | Plugin이 driver를 생성하고 닫습니다.                                        |
 
 ## 테스트
 
@@ -140,5 +136,4 @@ fun Application.module() {
 ./gradlew :graph-ktor:test
 ```
 
-테스트에는 Ktor `testApplication` 검증과 Neo4j, Memgraph, Apache AGE, FalkorDB helper wiring을
-확인하는 작은 Testcontainers smoke가 포함됩니다. 이 backend runtime 검증에는 Docker가 필요합니다.
+테스트에는 Ktor `testApplication` 검증과 Neo4j, Memgraph, Apache AGE, FalkorDB helper wiring을 확인하는 작은 Testcontainers smoke가 포함됩니다. 이 backend runtime 검증에는 Docker가 필요합니다.

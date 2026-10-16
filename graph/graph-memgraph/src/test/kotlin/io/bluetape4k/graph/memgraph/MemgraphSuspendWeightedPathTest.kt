@@ -3,34 +3,30 @@ package io.bluetape4k.graph.memgraph
 import io.bluetape4k.assertions.shouldBeNear
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.graph.conformance.WeightedPathDepthConformance
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.MissingWeightPolicy
 import io.bluetape4k.graph.model.PathOptions
-import io.bluetape4k.graph.conformance.WeightedPathDepthConformance
 import io.bluetape4k.junit5.coroutines.runSuspendIO
-import io.bluetape4k.logging.KLogging
-import io.bluetape4k.testcontainers.graphdb.MemgraphServer
+import io.bluetape4k.logging.coroutines.KLoggingChannel
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.neo4j.driver.AuthTokens
 import org.neo4j.driver.Driver
-import org.neo4j.driver.GraphDatabase
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class MemgraphSuspendWeightedPathTest {
+class MemgraphSuspendWeightedPathTest: AbstractMemgraphTest() {
 
-    companion object : KLogging()
+    companion object: KLoggingChannel()
 
-    private lateinit var driver: Driver
-    private lateinit var ops: MemgraphGraphSuspendOperations
+    private val driver: Driver = getMemgraphDriver()
+    private val ops: MemgraphGraphSuspendOperations = MemgraphGraphSuspendOperations(driver)
 
-    @BeforeAll
-    fun setup() {
-        driver = GraphDatabase.driver(MemgraphServer.Launcher.memgraph.boltUrl, AuthTokens.none())
-        ops = MemgraphGraphSuspendOperations(driver)
+    @BeforeEach
+    fun clearGraph() = runSuspendIO {
+        ops.dropGraph("default")
     }
 
     @AfterAll
@@ -38,10 +34,6 @@ class MemgraphSuspendWeightedPathTest {
         driver.close()
     }
 
-    @BeforeEach
-    fun clearGraph() = runSuspendIO {
-        ops.dropGraph("default")
-    }
 
     @Test
     fun `Dijkstra 최단 경로 A에서 C까지는 A-B-C이다`() = runSuspendIO {
@@ -53,7 +45,7 @@ class MemgraphSuspendWeightedPathTest {
             PathOptions(weightProperty = "cost", edgeLabel = "ROAD"),
         ).shouldNotBeNull()
 
-        path.totalWeight.shouldBeNear(3.0, 0.001)
+        path.totalWeight.shouldBeNear(3.0)
     }
 
     @Test
@@ -66,6 +58,7 @@ class MemgraphSuspendWeightedPathTest {
         val a = ops.createVertex("City", mapOf("name" to "A"))
         val b = ops.createVertex("City", mapOf("name" to "B"))
         val c = ops.createVertex("City", mapOf("name" to "C"))
+
         ops.createEdge(a.id, b.id, "ROAD")
         ops.createEdge(b.id, c.id, "ROAD", mapOf("cost" to 2.0))
 
@@ -102,18 +95,25 @@ class MemgraphSuspendWeightedPathTest {
             PathOptions(weightProperty = "cost", edgeLabel = "ROAD"),
         ) { _ -> 0.0 }.shouldNotBeNull()
 
-        path.totalWeight.shouldBeNear(3.0, 0.001)
+        log.debug { "path=$path" }
+        path.totalWeight.shouldBeNear(3.0)
     }
 
     private suspend fun createWeightedRoadGraph(): WeightedRoadGraph {
         val a = ops.createVertex("City", mapOf("name" to "A"))
         val b = ops.createVertex("City", mapOf("name" to "B"))
         val c = ops.createVertex("City", mapOf("name" to "C"))
+
         ops.createEdge(a.id, b.id, "ROAD", mapOf("cost" to 1.0))
         ops.createEdge(b.id, c.id, "ROAD", mapOf("cost" to 2.0))
         ops.createEdge(a.id, c.id, "ROAD", mapOf("cost" to 5.0))
+
         return WeightedRoadGraph(a, b, c)
     }
 
-    private data class WeightedRoadGraph(val a: GraphVertex, val b: GraphVertex, val c: GraphVertex)
+    private data class WeightedRoadGraph(
+        val a: GraphVertex,
+        val b: GraphVertex,
+        val c: GraphVertex,
+    )
 }

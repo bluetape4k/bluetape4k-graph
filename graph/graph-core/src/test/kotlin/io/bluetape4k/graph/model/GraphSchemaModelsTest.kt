@@ -3,15 +3,22 @@ package io.bluetape4k.graph.model
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeInstanceOf
 import io.bluetape4k.assertions.shouldBeNull
+import io.bluetape4k.graph.AbstractGraphTest
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
+import java.io.Serializable
 
-class GraphSchemaModelsTest {
+class GraphSchemaModelsTest: AbstractGraphTest() {
+
+    companion object: KLogging()
 
     @Test
     fun `GraphSchemaEntityType은 vertex edge unknown을 가진다`() {
         GraphSchemaEntityType.entries shouldBeEqualTo listOf(
             GraphSchemaEntityType.VERTEX,
             GraphSchemaEntityType.EDGE,
+            GraphSchemaEntityType.COMPOSITE,
             GraphSchemaEntityType.UNKNOWN,
         )
     }
@@ -29,6 +36,7 @@ class GraphSchemaModelsTest {
     fun `GraphIndex 기본 entityType은 vertex이며 unique는 false이다`() {
         val index = GraphIndex(name = "bt4k_idx_Person_email", label = "Person", property = "email")
 
+        log.debug { "index=$index" }
         index.name shouldBeEqualTo "bt4k_idx_Person_email"
         index.label shouldBeEqualTo "Person"
         index.property shouldBeEqualTo "email"
@@ -46,6 +54,7 @@ class GraphSchemaModelsTest {
             unique = true,
         )
 
+        log.debug { "index=$index" }
         index.property.shouldBeNull()
         index.entityType shouldBeEqualTo GraphSchemaEntityType.EDGE
         index.unique shouldBeEqualTo true
@@ -56,6 +65,7 @@ class GraphSchemaModelsTest {
         val base = GraphIndex(name = "bt4k_idx_Person_email", label = "Person", property = "email")
         val updated = base.copy(name = "bt4k_idx_Account_email", label = "Account")
 
+        log.debug { "updated=$updated" }
         updated.name shouldBeEqualTo "bt4k_idx_Account_email"
         updated.label shouldBeEqualTo "Account"
         updated.property shouldBeEqualTo "email"
@@ -72,6 +82,7 @@ class GraphSchemaModelsTest {
             type = GraphConstraintType.UNIQUE,
         )
 
+        log.debug { "constraint=$constraint" }
         constraint.name shouldBeEqualTo "bt4k_uc_Person_email"
         constraint.label shouldBeEqualTo "Person"
         constraint.property shouldBeEqualTo "email"
@@ -89,6 +100,7 @@ class GraphSchemaModelsTest {
             entityType = GraphSchemaEntityType.EDGE,
         )
 
+        log.debug { "constraint=$constraint" }
         constraint.type shouldBeEqualTo GraphConstraintType.EXISTS
         constraint.entityType shouldBeEqualTo GraphSchemaEntityType.EDGE
     }
@@ -103,6 +115,7 @@ class GraphSchemaModelsTest {
         )
         val updated = base.copy(type = GraphConstraintType.EXISTS)
 
+        log.debug { "updated=$updated" }
         updated.name shouldBeEqualTo "bt4k_constraint_unknown"
         updated.label shouldBeEqualTo "Account"
         updated.property shouldBeEqualTo "risk"
@@ -111,19 +124,19 @@ class GraphSchemaModelsTest {
 
     @Test
     fun `schema metadata model들은 Serializable이다`() {
-        val index: java.io.Serializable = GraphIndex(
+        val index: Serializable = GraphIndex(
             name = "bt4k_idx_Person_email",
             label = "Person",
             property = "email",
         )
-        val constraint: java.io.Serializable = GraphConstraint(
+        val constraint: Serializable = GraphConstraint(
             name = "bt4k_uc_Person_email",
             label = "Person",
             property = "email",
             type = GraphConstraintType.UNIQUE,
         )
 
-        index shouldBeInstanceOf java.io.Serializable::class
-        constraint shouldBeInstanceOf java.io.Serializable::class
+        index shouldBeInstanceOf Serializable::class
+        constraint shouldBeInstanceOf Serializable::class
     }
 }

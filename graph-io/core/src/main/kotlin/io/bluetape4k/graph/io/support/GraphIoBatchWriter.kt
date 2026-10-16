@@ -4,6 +4,8 @@ import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.support.requirePositiveNumber
 import kotlinx.coroutines.CancellationException
 
@@ -19,6 +21,9 @@ class GraphIoBatchWriter(
     private val batchSize: Int,
     private val onFailure: (boundary: String, cause: Throwable) -> Unit = { _, _ -> },
 ) {
+
+    companion object: KLogging()
+
     init {
         batchSize.requirePositiveNumber("batchSize")
     }
@@ -29,7 +34,7 @@ class GraphIoBatchWriter(
     fun addVertex(
         externalId: String,
         label: String,
-        properties: Map<String, Any?>,
+        properties: Map<String, Any?> = emptyMap(),
         idMap: GraphIoExternalIdMap,
     ): Int {
         val buffer = vertexBuffers.getOrPut(label) { ArrayList(batchSize) }
@@ -44,12 +49,19 @@ class GraphIoBatchWriter(
         label: String,
         fromId: GraphElementId,
         toId: GraphElementId,
-        properties: Map<String, Any?>,
+        properties: Map<String, Any?> = emptyMap(),
     ): Int {
         val buffer = edgeBuffers.getOrPut(label) { ArrayList(batchSize) }
         buffer += BatchEdge(fromId, toId, properties)
         return if (buffer.size >= batchSize) flushEdges(label) else 0
     }
+
+    fun addEdge(
+        label: String,
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        vararg params: Pair<String, Any?>,
+    ): Int = addEdge(label, fromId, toId, params.toMap())
 
     fun flushEdges(): Int =
         edgeBuffers.keys.toList().sumOf { flushEdges(it) }
@@ -96,8 +108,9 @@ class GraphIoBatchWriter(
     }
 
     private fun notifyFailure(boundary: String, cause: Throwable) {
-        runCatching { onFailure(boundary, cause) }
-            .onFailure(cause::addSuppressed)
+        runCatching {
+            onFailure(boundary, cause)
+        }.onFailure(cause::addSuppressed)
     }
 
     private data class PendingVertex(
@@ -115,6 +128,9 @@ class SuspendGraphIoBatchWriter(
     private val batchSize: Int,
     private val onFailure: (boundary: String, cause: Throwable) -> Unit = { _, _ -> },
 ) {
+
+    companion object: KLoggingChannel()
+
     init {
         batchSize.requirePositiveNumber("batchSize")
     }
@@ -145,12 +161,19 @@ class SuspendGraphIoBatchWriter(
         label: String,
         fromId: GraphElementId,
         toId: GraphElementId,
-        properties: Map<String, Any?>,
+        properties: Map<String, Any?> = emptyMap(),
     ): Int {
         val buffer = edgeBuffers.getOrPut(label) { ArrayList(batchSize) }
         buffer += BatchEdge(fromId, toId, properties)
         return if (buffer.size >= batchSize) flushEdges(label) else 0
     }
+
+    suspend fun addEdge(
+        label: String,
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        vararg params: Pair<String, Any?>,
+    ): Int = addEdge(label, fromId, toId, params.toMap())
 
     suspend fun flushEdges(): Int {
         var created = 0
@@ -206,8 +229,9 @@ class SuspendGraphIoBatchWriter(
     }
 
     private fun notifyFailure(boundary: String, cause: Throwable) {
-        runCatching { onFailure(boundary, cause) }
-            .onFailure(cause::addSuppressed)
+        runCatching {
+            onFailure(boundary, cause)
+        }.onFailure(cause::addSuppressed)
     }
 
     private data class PendingVertex(

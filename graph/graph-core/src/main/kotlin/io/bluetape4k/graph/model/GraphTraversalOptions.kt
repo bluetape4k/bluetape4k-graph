@@ -69,6 +69,7 @@ data class NeighborOptions(
         val Default = NeighborOptions()
     }
 
+    // TODO: Java BuiltIn Serializer 에서만 호출된다. Kryo, Fory 에서는 무시된다 -> 사용하지 말자 
     private fun readObject(input: ObjectInputStream) {
         input.defaultReadObject()
         validateDeserializedOption(maxDepth >= 0, "maxDepth must be >= 0, was $maxDepth")
@@ -118,11 +119,13 @@ data class PathOptions(
         maxDepth.requireZeroOrPositiveNumber("maxDepth")
         maxVisited.requirePositiveNumber("maxVisited")
     }
+
     companion object {
         private const val serialVersionUID: Long = 1L
         val Default = PathOptions()
     }
 
+    // TODO: Java BuiltIn Serializer 에서만 호출된다. Kryo, Fory 에서는 무시된다 -> 사용하지 말자 
     private fun readObject(input: ObjectInputStream) {
         input.defaultReadObject()
         validateDeserializedOption(maxDepth >= 0, "maxDepth must be >= 0, was $maxDepth")
@@ -149,6 +152,7 @@ data class PathOptions(
  * @param maxVertices 반환할 정점 수의 양수 상한. 기본값은 `10_000`이다.
  * @throws IllegalArgumentException [maxDepth]가 음수이거나 [maxVertices]가 양수가 아니면 발생한다.
  */
+@Deprecated("use TreeTraversalOptions", ReplaceWith("TreeTraversalOptions"))
 data class BfsDfsOptions(
     val edgeLabel: String? = null,
     val direction: Direction = Direction.OUTGOING,
@@ -159,11 +163,58 @@ data class BfsDfsOptions(
         maxDepth.requireZeroOrPositiveNumber("maxDepth")
         maxVertices.requirePositiveNumber("maxVertices")
     }
+
     companion object {
         private const val serialVersionUID: Long = 1L
+
+        @Suppress("DEPRECATION")
         val Default = BfsDfsOptions()
     }
 
+    // TODO: Java BuiltIn Serializer 에서만 호출된다. Kryo, Fory 에서는 무시된다 -> 사용하지 말자 
+    private fun readObject(input: ObjectInputStream) {
+        input.defaultReadObject()
+        validateDeserializedOption(maxDepth >= 0, "maxDepth must be >= 0, was $maxDepth")
+        validateDeserializedOption(maxVertices > 0, "maxVertices must be > 0, was $maxVertices")
+        validateDeserializedOptionNotNull(direction, "direction")
+    }
+}
+
+
+/**
+ * Options for `GraphTraversalRepository.bfs` and `GraphTraversalRepository.dfs`.
+ *
+ * ### Usage
+ * ```kotlin
+ * val opts = TreeTraversalOptions(edgeLabel = "KNOWS", maxDepth = 3, maxVertices = 1_000)
+ * val visits = ops.bfs(alice.id, opts)
+ * ```
+ *
+ * `maxDepth`가 `0`이면 시작 정점만 반환한다.
+ *
+ * @param edgeLabel 순회할 간선 레이블. `null`이면 모든 레이블을 순회한다.
+ * @param direction 순회 방향: `OUTGOING`, `INCOMING`, `BOTH`.
+ * @param maxDepth 최대 순회 깊이. 0이면 시작 정점만 반환한다.
+ * @param maxVertices 반환할 정점 수의 양수 상한. 기본값은 `10_000`이다.
+ * @throws IllegalArgumentException [maxDepth]가 음수이거나 [maxVertices]가 양수가 아니면 발생한다.
+ */
+data class TreeTraversalOptions(
+    val edgeLabel: String? = null,
+    val direction: Direction = Direction.OUTGOING,
+    override val maxDepth: Int = 5,
+    val maxVertices: Int = 10_000,
+): GraphTraversalOptions() {
+    init {
+        maxDepth.requireZeroOrPositiveNumber("maxDepth")
+        maxVertices.requirePositiveNumber("maxVertices")
+    }
+
+    companion object {
+        private const val serialVersionUID: Long = 1L
+        val Default = TreeTraversalOptions()
+    }
+
+    // TODO: Java BuiltIn Serializer 에서만 호출된다. Kryo, Fory 에서는 무시된다 -> 사용하지 말자
     private fun readObject(input: ObjectInputStream) {
         input.defaultReadObject()
         validateDeserializedOption(maxDepth >= 0, "maxDepth must be >= 0, was $maxDepth")
@@ -191,11 +242,13 @@ data class CycleOptions(
         maxDepth.requirePositiveNumber("maxDepth")
         maxCycles.requirePositiveNumber("maxCycles")
     }
+
     companion object {
         private const val serialVersionUID: Long = 1L
         val Default = CycleOptions()
     }
 
+    // TODO: Java BuiltIn Serializer 에서만 호출된다. Kryo, Fory 에서는 무시된다 -> 사용하지 말자 
     private fun readObject(input: ObjectInputStream) {
         input.defaultReadObject()
         validateDeserializedOption(maxDepth > 0, "maxDepth must be > 0, was $maxDepth")

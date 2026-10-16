@@ -18,8 +18,10 @@ import java.io.Serializable
  */
 data class CsvGraphIoOptions(
     val propertyMode: CsvPropertyMode = CsvPropertyMode.PrefixedColumns(),
-) : Serializable {
+): Serializable {
     companion object {
         private const val serialVersionUID: Long = 1L
+
+        val Default = CsvGraphIoOptions()
     }
 }

@@ -47,7 +47,11 @@ import io.bluetape4k.logging.debug
  * check(report.verticesWritten >= 0)
  * ```
  */
-class GraphMlBulkExporter : GraphBulkExporter<GraphExportSink> {
+class GraphMlBulkExporter: GraphBulkExporter<GraphExportSink> {
+
+    companion object: KLogging() {
+        val Default = GraphMlBulkExporter()
+    }
 
     private val writer = StaxGraphMlWriter()
 
@@ -92,6 +96,8 @@ class GraphMlBulkExporter : GraphBulkExporter<GraphExportSink> {
     ): GraphExportReport {
         log.debug { "Starting GRAPHML export: vertexLabels=${options.vertexLabels}, edgeLabels=${options.edgeLabels}" }
         val watch = GraphIoStopwatch()
+
+        // TODO: failures 를 아무데서도 사용하지 않는데???
         val failures = mutableListOf<GraphIoFailure>()
         val (vertexLabels, edgeLabels) = options.resolveLabels(operations)
         val spool = GraphIoRecordSpool()
@@ -139,7 +145,7 @@ class GraphMlBulkExporter : GraphBulkExporter<GraphExportSink> {
             ).also {
                 log.debug {
                     "Export completed: vertices=${writeResult.verticesWritten}, " +
-                        "edges=${writeResult.edgesWritten}, elapsed=${watch.elapsed()}"
+                            "edges=${writeResult.edgesWritten}, elapsed=${watch.elapsed()}"
                 }
             }
         } catch (failure: Throwable) {
@@ -149,6 +155,4 @@ class GraphMlBulkExporter : GraphBulkExporter<GraphExportSink> {
             spool.closeSuppressing(primaryFailure)
         }
     }
-
-    companion object : KLogging()
 }

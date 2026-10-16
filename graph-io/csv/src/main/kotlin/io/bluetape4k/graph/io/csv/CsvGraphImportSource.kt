@@ -8,7 +8,7 @@ import java.io.Serializable
 data class CsvGraphImportSource(
     val vertices: GraphImportSource,
     val edges: GraphImportSource,
-) : Serializable {
+): Serializable {
     companion object {
         private const val serialVersionUID: Long = 1L
     }
@@ -18,7 +18,7 @@ data class CsvGraphImportSource(
 data class CsvGraphExportSink(
     val vertices: GraphExportSink,
     val edges: GraphExportSink,
-) : Serializable {
+): Serializable {
     companion object {
         private const val serialVersionUID: Long = 1L
     }

@@ -3,56 +3,62 @@ package io.bluetape4k.graph.io.okio
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
+import io.bluetape4k.assertions.shouldBeLessOrEqualTo
+import io.bluetape4k.assertions.shouldBeLessThan
 import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldNotContain
+import io.bluetape4k.coroutines.flow.extensions.log
 import io.bluetape4k.graph.io.report.GraphIoFormat
 import io.bluetape4k.graph.io.report.GraphIoReadException
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.logging.KLogging
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import okio.Buffer
 import okio.Path.Companion.toPath
-import okio.fakefilesystem.FakeFileSystem
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
 import java.io.IOException
+import kotlin.time.Duration.Companion.milliseconds
 
-class OkioStreamingReaderContractTest {
+class OkioStreamingReaderContractTest: AbstractOkioTest() {
 
-    private val fakeFileSystem = FakeFileSystem()
-
-    @AfterEach
-    fun cleanup() {
-        fakeFileSystem.checkNoOpenFiles()
+    private companion object: KLogging() {
+        // BufferedReader observed 276 records; StAX observed 64 records.
+        const val MAX_NDJSON_READ_AHEAD_RECORDS = 512
+        const val MAX_GRAPHML_READ_AHEAD_RECORDS = 96
     }
 
     @Test
     fun `Jackson3 reader delegates stream records in order`() = runSuspendIO {
         val input = TrackingInputStream(ndJsonVertices().toByteArray())
-        val source = OkioGraphImportSource.InputStreamBased(
-            input,
-            ownsStream = false,
-        )
+        val source = input.asOkioSource(ownsStream = false)
 
         val vertices = OkioGraphRecordFlowReader(GraphIoFormat.NDJSON_JACKSON3)
             .readVertices(source)
+            .log("V")
             .toList()
 
         vertices.map { it.externalId } shouldBeEqualTo listOf("v1", "v2")
-        input.closed.shouldBeFalse()
+
+        input.closed.shouldBeFalse() // ownsStream = false
     }
 
     @Test
     fun `owned stream is closed exactly once after collection`() = runSuspendIO {
         val input = TrackingInputStream(ndJsonVertices().toByteArray())
-        val source = OkioGraphImportSource.InputStreamBased(input, ownsStream = true)
+        val source = input.asOkioSource(ownsStream = true)
 
-        OkioGraphRecordFlowReader(GraphIoFormat.NDJSON_JACKSON3)
+        val vertices = OkioGraphRecordFlowReader(GraphIoFormat.NDJSON_JACKSON3)
             .readVertices(source)
+            .log("V")
             .toList()
+
+        vertices.map { it.externalId } shouldBeEqualTo listOf("v1", "v2")
 
         input.closed.shouldBeTrue()
         input.closeCount shouldBeEqualTo 1
@@ -65,15 +71,16 @@ class OkioStreamingReaderContractTest {
 
         val first = OkioGraphRecordFlowReader(GraphIoFormat.NDJSON_JACKSON3)
             .readVertices(
-                OkioGraphImportSource.InputStreamBased(input, ownsStream = true),
+                input.asOkioSource(ownsStream = true)
             )
-            .onEach { delay(25) }
+            .log("V")
+            .onEach { delay(25.milliseconds) }
             .take(1)
             .toList()
 
         first.single().externalId shouldBeEqualTo "v1"
-        (input.markerCount <= MAX_NDJSON_READ_AHEAD_RECORDS).shouldBeTrue()
-        (input.bytesRead < payload.toByteArray().size).shouldBeTrue()
+        input.markerCount shouldBeLessOrEqualTo MAX_NDJSON_READ_AHEAD_RECORDS
+        input.bytesRead shouldBeLessThan payload.toByteArray().size
         input.closeCount shouldBeEqualTo 1
     }
 
@@ -84,15 +91,16 @@ class OkioStreamingReaderContractTest {
 
         val first = OkioGraphRecordFlowReader(GraphIoFormat.GRAPHML)
             .readVertices(
-                OkioGraphImportSource.InputStreamBased(input, ownsStream = true),
+                input.asOkioSource(ownsStream = true),
             )
-            .onEach { delay(25) }
+            .log("V")
+            .onEach { delay(25.milliseconds) }
             .take(1)
             .toList()
 
         first.single().externalId shouldBeEqualTo "v1"
-        (input.markerCount <= MAX_GRAPHML_READ_AHEAD_RECORDS).shouldBeTrue()
-        (input.bytesRead < payload.toByteArray().size).shouldBeTrue()
+        input.markerCount shouldBeLessOrEqualTo MAX_GRAPHML_READ_AHEAD_RECORDS
+        input.bytesRead shouldBeLessThan payload.toByteArray().size
         input.closeCount shouldBeEqualTo 1
     }
 
@@ -104,11 +112,12 @@ class OkioStreamingReaderContractTest {
 
         val error = assertFailsWith<GraphIoReadException> {
             OkioGraphRecordFlowReader(GraphIoFormat.NDJSON_JACKSON3)
-                .readVertices(OkioGraphImportSource.InputStreamBased(input, ownsStream = true))
+                .readVertices(input.asOkioSource(ownsStream = true))
+                .log("V")
                 .toList()
         }
 
-        error.message.orEmpty() shouldNotContain "secret-record"
+        error.message shouldNotContain "secret-record"
         error.suppressed.map { it.message } shouldBeEqualTo listOf("close-failure")
         input.closeCount shouldBeEqualTo 1
     }
@@ -118,7 +127,8 @@ class OkioStreamingReaderContractTest {
         val xml = graphMl((1..10_000).joinToString("\n") { "<node id=\"v$it\"/>" })
         val input = TrackingInputStream(xml.toByteArray())
         val first = OkioGraphRecordFlowReader(GraphIoFormat.GRAPHML)
-            .readVertices(OkioGraphImportSource.InputStreamBased(input))
+            .readVertices(input.asOkioSource())
+            .log("V")
             .take(1)
             .toList()
 
@@ -128,13 +138,13 @@ class OkioStreamingReaderContractTest {
 
     @Test
     fun `CSV reader reads paired files from PathSource`() = runSuspendIO {
-        fakeFileSystem.write("/graph_vertices.csv".toPath()) {
+        fakeFs.write("/graph_vertices.csv".toPath()) {
             writeUtf8("id,label\nv1,Person\nv2,Person\n")
         }
-        fakeFileSystem.write("/graph_edges.csv".toPath()) {
+        fakeFs.write("/graph_edges.csv".toPath()) {
             writeUtf8("id,label,from,to\ne1,KNOWS,v1,v2\n")
         }
-        val source = OkioGraphImportSource.PathSource("/graph.csv".toPath(), fakeFileSystem)
+        val source = OkioGraphImportSource.PathSource("/graph.csv".toPath(), fakeFs)
         val reader = OkioGraphRecordFlowReader(GraphIoFormat.CSV)
 
         reader.readVertices(source).toList().map { it.externalId } shouldBeEqualTo listOf("v1", "v2")
@@ -142,19 +152,20 @@ class OkioStreamingReaderContractTest {
     }
 
     @Test
-    fun `CSV stream source fails explicitly because paired paths are required`() {
+    fun `CSV stream source fails explicitly because paired paths are required`() = runSuspendIO {
         val error = assertFailsWith<UnsupportedOperationException> {
             OkioGraphRecordFlowReader(GraphIoFormat.CSV)
-                .readVertices(OkioGraphImportSource.SourceBased(Buffer()))
+                .readVertices(Buffer().asOkioSource(ownsSource = true))
+                .collect()
         }
 
-        error.message.orEmpty().contains("PathSource").shouldBeTrue()
+        error.message shouldContain "PathSource"
     }
 
     private fun ndJsonVertices(): String = """
         {"type":"vertex","id":"v1","label":"Person","properties":{}}
         {"type":"vertex","id":"v2","label":"Person","properties":{}}
-    """.trimIndent()
+        """.trimIndent()
 
     private fun generatedNdJsonVertices(): String = buildString {
         repeat(10_000) {
@@ -170,9 +181,9 @@ class OkioStreamingReaderContractTest {
         |    $body
         |  </graph>
         |</graphml>
-    """.trimMargin()
+        """.trimMargin()
 
-    private class TrackingInputStream(content: ByteArray) : ByteArrayInputStream(content) {
+    private class TrackingInputStream(content: ByteArray): ByteArrayInputStream(content) {
         var closed: Boolean = false
             private set
         var closeCount: Int = 0
@@ -185,7 +196,7 @@ class OkioStreamingReaderContractTest {
         }
     }
 
-    private class FailingCloseInputStream(content: ByteArray) : ByteArrayInputStream(content) {
+    private class FailingCloseInputStream(content: ByteArray): ByteArrayInputStream(content) {
         var closeCount: Int = 0
             private set
 
@@ -198,7 +209,7 @@ class OkioStreamingReaderContractTest {
     private class ReadAheadInputStream(
         private val content: ByteArray,
         private val marker: String,
-    ) : ByteArrayInputStream(content) {
+    ): ByteArrayInputStream(content) {
         var bytesRead: Int = 0
             private set
         var closeCount: Int = 0
@@ -222,11 +233,5 @@ class OkioStreamingReaderContractTest {
             closeCount++
             super.close()
         }
-    }
-
-    private companion object {
-        // BufferedReader observed 276 records; StAX observed 64 records.
-        const val MAX_NDJSON_READ_AHEAD_RECORDS = 512
-        const val MAX_GRAPHML_READ_AHEAD_RECORDS = 96
     }
 }

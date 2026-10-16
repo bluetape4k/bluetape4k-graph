@@ -15,12 +15,12 @@ data class GraphIoFailure(
     val columnName: String? = null,
     val elementName: String? = null,
     val message: String,
-) : Serializable {
+): Serializable {
     init {
         message.requireNotBlank("message")
     }
 
-    companion object : KLogging() {
+    companion object: KLogging() {
         private const val serialVersionUID: Long = 1L
     }
 }

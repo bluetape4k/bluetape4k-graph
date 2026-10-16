@@ -5,12 +5,10 @@ import com.falkordb.Record
 import com.falkordb.ResultSet
 import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.algo.ShortestPathFallback
-import io.bluetape4k.graph.algo.internal.BfsDfsRunner
 import io.bluetape4k.graph.algo.internal.CycleDetector
 import io.bluetape4k.graph.algo.internal.PageRankCalculator
+import io.bluetape4k.graph.algo.internal.TreeTraverser
 import io.bluetape4k.graph.algo.internal.UnionFind
-import io.bluetape4k.graph.support.requireSafeIdentifier
-import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
@@ -29,6 +27,10 @@ import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.TraversalVisit
+import io.bluetape4k.graph.model.TreeTraversalOptions
+import io.bluetape4k.graph.model.edgeOf
+import io.bluetape4k.graph.model.toGraphElementId
+import io.bluetape4k.graph.model.vertexOf
 import io.bluetape4k.graph.repository.GraphBatchValidation
 import io.bluetape4k.graph.repository.GraphMergeOperations
 import io.bluetape4k.graph.repository.GraphMergeProperties
@@ -36,10 +38,15 @@ import io.bluetape4k.graph.repository.GraphMergeValidation
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.schema.GraphSchemaManagementOperations
 import io.bluetape4k.graph.schema.GraphSchemaManager
+import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.info
+import io.bluetape4k.logging.trace
 import io.bluetape4k.logging.warn
+import io.bluetape4k.support.EMPTY_STRING
+import io.bluetape4k.support.asInt
+import io.bluetape4k.support.asLong
 import io.bluetape4k.support.requireNotBlank
 
 /**
@@ -89,7 +96,7 @@ class FalkorDBGraphOperations(
      *
      * @param block 실행할 블록 — `com.falkordb.Graph`를 받아 [ResultSet]을 반환합니다.
      */
-    private fun withGraph(block: (com.falkordb.Graph) -> ResultSet): ResultSet =
+    private inline fun withGraph(block: (com.falkordb.Graph) -> ResultSet): ResultSet =
         driver.graph(graphName).use(block)
 
     /**
@@ -106,10 +113,21 @@ class FalkorDBGraphOperations(
         mapper: (Record) -> T,
     ): List<T> {
         cypher.requireNotBlank("cypher")
+        log.trace { "cypher=$cypher, params=$params" }
+
         val rs = withGraph { g ->
             g.query(cypher, params as Map<String, Any>)
         }
         return rs.map(mapper)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T> queryList(
+        cypher: String,
+        vararg params: Pair<String, Any?>,
+        mapper: (Record) -> T,
+    ): List<T> {
+        return queryList(cypher, params.toMap(), mapper)
     }
 
     // -- GraphSession --
@@ -144,7 +162,8 @@ class FalkorDBGraphOperations(
         }
     }
 
-    override fun close() { /* driver는 외부 소유 */ }
+    override fun close() { /* driver는 외부 소유 */
+    }
 
     // -- GraphVertexRepository --
 
@@ -152,10 +171,12 @@ class FalkorDBGraphOperations(
         label.requireNotBlank("label").requireSafeIdentifier("label")
 
         // FalkorDB는 $props map 파라미터 확장을 지원하지 않으므로 각 속성을 개별 파라미터로 전달한다.
-        val propsClause = if (properties.isEmpty()) "" else
+        val propsClause = if (properties.isEmpty()) EMPTY_STRING
+        else
             " {" + properties.keys.joinToString(", ") { key ->
-                "${key.requireSafeIdentifier("property key")}: \$$key"
+                $$"$${key.requireSafeIdentifier("property key")}: $$$key"
             } + "}"
+
         val cypher = "CREATE (n:$label$propsClause) RETURN n"
 
         return queryList(cypher, properties) {
@@ -199,7 +220,7 @@ class FalkorDBGraphOperations(
 
     override fun findVertexById(id: GraphElementId): GraphVertex? =
         queryList(
-            "MATCH (n) WHERE id(n) = toInteger(\$id) RETURN n",
+            $$"MATCH (n) WHERE id(n) = toInteger($id) RETURN n",
             mapOf("id" to id.value),
         ) {
             it.toVertex()
@@ -210,7 +231,7 @@ class FalkorDBGraphOperations(
         val whereClause =
             if (filter.isEmpty()) ""
             else " WHERE " + filter.keys.joinToString(" AND ") { key ->
-                "n.${key.requireSafeIdentifier("property key")} = \$$key"
+                $$"n.$${key.requireSafeIdentifier("property key")} = $$$key"
             }
 
         return queryList(
@@ -227,30 +248,26 @@ class FalkorDBGraphOperations(
         properties: Map<String, Any?>,
     ): GraphVertex? {
         label.requireNotBlank("label").requireSafeIdentifier("label")
+
         if (properties.isEmpty()) return findVertexById(label, id)
 
         val setClause = properties.keys.joinToString(", ") { key ->
-            "n.${key.requireSafeIdentifier("property key")} = \$$key"
+            $$"n.$${key.requireSafeIdentifier("property key")} = $$$key"
         }
+        val cypher = $$"MATCH (n:$$label) WHERE id(n) = toInteger($id) SET $$setClause RETURN n"
         val params = properties + mapOf("id" to id.value)
 
-        return queryList(
-            $$"MATCH (n:$$label) WHERE id(n) = toInteger($id) SET $$setClause RETURN n",
-            params,
-        ) {
-            it.toVertex()
-        }.firstOrNull()
+        return queryList(cypher, params) { it.toVertex() }.firstOrNull()
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun deleteVertex(label: String, id: GraphElementId): Boolean {
         label.requireNotBlank("label").requireSafeIdentifier("label")
 
-        @Suppress("UNCHECKED_CAST")
+        val cypher = $$"MATCH (n:$$label) WHERE id(n) = toInteger($id) DETACH DELETE n"
+
         val rs = withGraph { g ->
-            g.query(
-                $$"MATCH (n:$$label) WHERE id(n) = toInteger($id) DETACH DELETE n",
-                mapOf("id" to id.value as Any),
-            )
+            g.query(cypher, mapOf("id" to id.value as Any))
         }
         return rs.statistics.nodesDeleted() > 0
     }
@@ -258,13 +275,13 @@ class FalkorDBGraphOperations(
     override fun countVertices(label: String): Long {
         label.requireNotBlank("label").requireSafeIdentifier("label")
 
+        val cypher = $$"MATCH (n:$$label) RETURN count(n) AS cnt"
         val rs = withGraph { g ->
-            g.query($$"MATCH (n:$$label) RETURN count(n) AS cnt", emptyMap<String, Any>())
+            g.query(cypher, emptyMap<String, Any>())
         }
-        val rec = rs.iterator().takeIf { it.hasNext() }?.next()
-            ?: return 0L
-        val v = rec.getValue<Any>("cnt")
-        return (v as Number).toLong()
+
+        val rec = rs.iterator().takeIf { it.hasNext() }?.next() ?: return 0L
+        return rec.getValue<Any>("cnt").asLong()
     }
 
     // -- GraphMergeOperations --
@@ -278,10 +295,9 @@ class FalkorDBGraphOperations(
         val matchClause = mergePropertyMap("match", properties.matchProperties)
         val setClause = mergeSetClause("n", properties)
 
-        return queryList(
-            $$"MERGE (n:$$label$$matchClause)$$setClause RETURN n",
-            mergeParams(properties),
-        ) {
+        val cypher = $$"MERGE (n:$$label$$matchClause)$$setClause RETURN n"
+
+        return queryList(cypher, mergeParams(properties)) {
             it.toVertex()
         }.firstOrNull() ?: throw GraphQueryException("Failed to merge vertex: $label")
     }
@@ -296,13 +312,12 @@ class FalkorDBGraphOperations(
         val properties = GraphMergeValidation.validateEdge(fromId, toId, label, matchProperties, setProperties)
         val matchClause = mergePropertyMap("match", properties.matchProperties)
         val setClause = mergeSetClause("r", properties)
+
+        val cypher = $$"MATCH (a), (b) WHERE id(a) = toInteger($fromId) AND id(b) = toInteger($toId) " +
+                $$"MERGE (a)-[r:$$label$$matchClause]->(b)$$setClause RETURN r"
         val params = mergeParams(properties) + mapOf("fromId" to fromId.value, "toId" to toId.value)
 
-        return queryList(
-            "MATCH (a), (b) WHERE id(a) = toInteger(\$fromId) AND id(b) = toInteger(\$toId) " +
-                    $$"MERGE (a)-[r:$$label$$matchClause]->(b)$$setClause RETURN r",
-            params,
-        ) {
+        return queryList(cypher, params) {
             it.toEdge()
         }.firstOrNull() ?: throw GraphQueryException("Failed to merge edge: $label")
     }
@@ -320,19 +335,19 @@ class FalkorDBGraphOperations(
         // FalkorDB는 $props map 파라미터 확장을 지원하지 않으므로 각 속성을 개별 파라미터로 전달한다.
         val propsClause = if (properties.isEmpty()) "" else
             " {" + properties.keys.joinToString(", ") { key ->
-                "${key.requireSafeIdentifier("property key")}: \$$key"
+                $$"$${key.requireSafeIdentifier("property key")}: $$$key"
             } + "}"
+
+        val cypher = $$"MATCH (a), (b) WHERE id(a) = toInteger($fromId) AND id(b) = toInteger($toId) " +
+                "CREATE (a)-[r:$label$propsClause]->(b) RETURN r"
+
         val params = mutableMapOf<String, Any?>(
             "fromId" to fromId.value,
             "toId" to toId.value,
         )
         params.putAll(properties)
 
-        return queryList(
-            "MATCH (a), (b) WHERE id(a) = toInteger(\$fromId) AND id(b) = toInteger(\$toId) " +
-                "CREATE (a)-[r:$label$propsClause]->(b) RETURN r",
-            params,
-        ) {
+        return queryList(cypher, params) {
             it.toEdge()
         }.firstOrNull() ?: throw GraphQueryException("Failed to create edge: $label")
     }
@@ -343,21 +358,20 @@ class FalkorDBGraphOperations(
 
         val rows = edgeBatchRowsLiteral(edges)
 
-        val created = queryList(
-            "WITH ${rows.literal} AS rows, size(${rows.literal}) AS expected " +
-                    "UNWIND rows AS row " +
-                    "MATCH (source), (target) " +
-                    "WHERE id(source) = toInteger(row.fromId) AND id(target) = toInteger(row.toId) " +
-                    "WITH collect({index: row.index, properties: row.properties, source: source, target: target}) AS matched, expected " +
-                    "WHERE size(matched) = expected " +
-                    "UNWIND matched AS row " +
-                    "WITH row.index AS index, row.properties AS properties, row.source AS source, row.target AS target " +
-                    "CREATE (source)-[r:$label]->(target) " +
-                    "SET r += properties " +
-                    "RETURN index, r " +
-                    "ORDER BY index",
-            rows.params,
-        ) {
+        val cypher = "WITH ${rows.literal} AS rows, size(${rows.literal}) AS expected " +
+                "UNWIND rows AS row " +
+                "MATCH (source), (target) " +
+                "WHERE id(source) = toInteger(row.fromId) AND id(target) = toInteger(row.toId) " +
+                "WITH collect({index: row.index, properties: row.properties, source: source, target: target}) AS matched, expected " +
+                "WHERE size(matched) = expected " +
+                "UNWIND matched AS row " +
+                "WITH row.index AS index, row.properties AS properties, row.source AS source, row.target AS target " +
+                "CREATE (source)-[r:$label]->(target) " +
+                "SET r += properties " +
+                "RETURN index, r " +
+                "ORDER BY index"
+
+        val created = queryList(cypher, rows.params) {
             it.toEdge()
         }
 
@@ -376,10 +390,9 @@ class FalkorDBGraphOperations(
                 "r.${key.requireSafeIdentifier("property key")} = \$$key"
             }
 
-        return queryList(
-            $$"MATCH ()-[r:$$label]->()$$whereClause RETURN r",
-            filter,
-        ) {
+        val cypher = $$"MATCH ()-[r:$$label]->()$$whereClause RETURN r"
+
+        return queryList(cypher, filter) {
             it.toEdge()
         }
     }
@@ -388,10 +401,9 @@ class FalkorDBGraphOperations(
         edgeLabel?.requireNotBlank("edgeLabel")
         val edgePattern = edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
 
-        return queryList(
-            "MATCH (a)-[r$edgePattern]->(b) WHERE id(a) = toInteger(\$startId) RETURN r",
-            mapOf("startId" to startId.value),
-        ) {
+        val cypher = $$"MATCH (a)-[r$$edgePattern]->(b) WHERE id(a) = toInteger($startId) RETURN r"
+
+        return queryList(cypher, mapOf("startId" to startId.value)) {
             it.toEdge()
         }
     }
@@ -400,23 +412,21 @@ class FalkorDBGraphOperations(
         edgeLabel?.requireNotBlank("edgeLabel")
         val edgePattern = edgeLabel?.let { ":${it.requireSafeIdentifier("edgeLabel")}" } ?: ""
 
-        return queryList(
-            "MATCH (a)-[r$edgePattern]->(b) WHERE id(b) = toInteger(\$endId) RETURN r",
-            mapOf("endId" to endId.value),
-        ) {
+        val cypher = $$"MATCH (a)-[r$$edgePattern]->(b) WHERE id(b) = toInteger($endId) RETURN r"
+        return queryList(cypher, mapOf("endId" to endId.value)) {
             it.toEdge()
         }
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun deleteEdge(label: String, id: GraphElementId): Boolean {
         label.requireNotBlank("label").requireSafeIdentifier("label")
 
-        @Suppress("UNCHECKED_CAST")
+        val query = $$"MATCH ()-[r:$$label]->() WHERE id(r) = toInteger($id) DELETE r"
+        val params = mapOf("id" to id.value)
+        
         val rs = withGraph { g ->
-            g.query(
-                $$"MATCH ()-[r:$$label]->() WHERE id(r) = toInteger($id) DELETE r",
-                mapOf("id" to id.value as Any),
-            )
+            g.query(query, params)
         }
         return rs.statistics.relationshipsDeleted() > 0
     }
@@ -428,7 +438,7 @@ class FalkorDBGraphOperations(
     private fun mergeSetClause(variable: String, properties: GraphMergeProperties): String {
         if (properties.setProperties.isEmpty()) return ""
         val assignments = properties.setProperties.keys.joinToString(", ") { key ->
-            "$variable.$key = \$set_$key"
+            $$"$$variable.$$key = $set_$$key"
         }
         return " ON CREATE SET $assignments ON MATCH SET $assignments"
     }
@@ -459,7 +469,7 @@ class FalkorDBGraphOperations(
             val toParam = "${prefix}_toId"
             params[fromParam] = edge.fromId.value
             params[toParam] = edge.toId.value
-            "{index: $index, fromId: \$$fromParam, toId: \$$toParam, properties: " +
+            $$"{index: $$index, fromId: $$$fromParam, toId: $$$toParam, properties: " +
                     "${propertyMapLiteral(prefix, edge.properties, params)}}"
         }
         return BatchRowsLiteral(rows.joinToString(prefix = "[", postfix = "]"), params)
@@ -476,7 +486,7 @@ class FalkorDBGraphOperations(
             val propertyKey = key.requireSafeIdentifier("property key")
             val paramName = "${prefix}_p_$index"
             params[paramName] = value
-            "$propertyKey: \$$paramName"
+            $$"$$propertyKey: $$$paramName"
         }.joinToString(prefix = "{", postfix = "}")
     }
 
@@ -495,12 +505,12 @@ class FalkorDBGraphOperations(
         val pattern = when (options.direction) {
             Direction.OUTGOING -> $$"(start)-[$$edgePart]->(neighbor)"
             Direction.INCOMING -> $$"(start)<-[$$edgePart]-(neighbor)"
-            Direction.BOTH     -> $$"(start)-[$$edgePart]-(neighbor)"
+            Direction.BOTH -> $$"(start)-[$$edgePart]-(neighbor)"
         }
-        return queryList(
-            $$"MATCH $$pattern WHERE id(start) = toInteger($startId) RETURN DISTINCT neighbor",
-            mapOf("startId" to startId.value),
-        ) {
+
+        val cypher = $$"MATCH $$pattern WHERE id(start) = toInteger($startId) RETURN DISTINCT neighbor"
+
+        return queryList(cypher, "startId" to startId.value) {
             it.toVertex("neighbor")
         }
     }
@@ -524,11 +534,13 @@ class FalkorDBGraphOperations(
             if (edgeLabel != null) ":" + edgeLabel + "*1.." + options.maxDepth
             else "*1.." + options.maxDepth
 
-        return queryList(
-            "MATCH p = (a)-[$relPattern]-(b) " +
+        val cypher = "MATCH p = (a)-[$relPattern]-(b) " +
                 "WHERE id(a) = toInteger(\$fromId) AND id(b) = toInteger(\$toId) " +
-                "RETURN p ORDER BY length(p) LIMIT 1",
-            mapOf("fromId" to fromId.value, "toId" to toId.value),
+                "RETURN p ORDER BY length(p) LIMIT 1"
+
+        return queryList(
+            cypher,
+            "fromId" to fromId.value, "toId" to toId.value
         ) {
             it.toPath()
         }.firstOrNull()
@@ -564,10 +576,11 @@ class FalkorDBGraphOperations(
             if (edgeLabel != null) $$":$${edgeLabel}*1..$${options.maxDepth}"
             else $$"*1..$${options.maxDepth}"
 
+        val cypher = $$"MATCH p = (a)-[$$relPattern]-(b) " +
+                $$"WHERE id(a) = toInteger($fromId) AND id(b) = toInteger($toId) RETURN p"
         return queryList(
-            $$"MATCH p = (a)-[$$relPattern]-(b) " +
-                $$"WHERE id(a) = toInteger($fromId) AND id(b) = toInteger($toId) RETURN p",
-            mapOf("fromId" to fromId.value, "toId" to toId.value),
+            cypher,
+            "fromId" to fromId.value, "toId" to toId.value,
         ) {
             it.toPath()
         }
@@ -586,11 +599,11 @@ class FalkorDBGraphOperations(
         vertexId.value.toLongOrNull()
             ?: throw GraphQueryException("FalkorDB requires numeric ID, got: $vertexId")
 
-        val cypher = """
-            MATCH (n) WHERE id(n) = toInteger(${'$'}id)
-            OPTIONAL MATCH (n)-[r_out$edgePattern]->()
+        val cypher = $$"""
+            MATCH (n) WHERE id(n) = toInteger($id)
+            OPTIONAL MATCH (n)-[r_out$$edgePattern]->()
             WITH n, count(r_out) AS outDeg
-            OPTIONAL MATCH ()-[r_in$edgePattern]->(n)
+            OPTIONAL MATCH ()-[r_in$$edgePattern]->(n)
             RETURN outDeg, count(r_in) AS inDeg
         """.trimIndent()
 
@@ -600,36 +613,38 @@ class FalkorDBGraphOperations(
         }
         val rec = rs.iterator().takeIf { it.hasNext() }?.next()
             ?: return DegreeResult(vertexId, 0, 0)
-        val out = (rec.getValue<Any>("outDeg") as Number).toInt()
-        val inn = (rec.getValue<Any>("inDeg") as Number).toInt()
+        val out = rec.getValue<Any>("outDeg").asInt()
+        val inn = rec.getValue<Any>("inDeg").asInt()
         return when (options.direction) {
             Direction.OUTGOING -> DegreeResult(vertexId, 0, out)
             Direction.INCOMING -> DegreeResult(vertexId, inn, 0)
-            Direction.BOTH     -> DegreeResult(vertexId, inn, out)
+            Direction.BOTH -> DegreeResult(vertexId, inn, out)
         }
     }
 
-    override fun bfs(startId: GraphElementId, options: BfsDfsOptions): List<TraversalVisit> {
+    override fun bfs(startId: GraphElementId, options: TreeTraversalOptions): List<TraversalVisit> {
         options.edgeLabel?.requireNotBlank("edgeLabel")
         val (adjacency, vertexById) = loadAdjacency(options.edgeLabel, options.direction)
-        return BfsDfsRunner.bfs(
+
+        return TreeTraverser.bfs(
             startId = startId,
             adjacency = adjacency,
             maxDepth = options.maxDepth,
             maxVertices = options.maxVertices,
-            vertexResolver = { vertexById[it] ?: GraphVertex(it, "", emptyMap()) },
+            vertexResolver = { vertexById[it] ?: vertexOf(it, "") },
         )
     }
 
-    override fun dfs(startId: GraphElementId, options: BfsDfsOptions): List<TraversalVisit> {
+    override fun dfs(startId: GraphElementId, options: TreeTraversalOptions): List<TraversalVisit> {
         options.edgeLabel?.requireNotBlank("edgeLabel")
         val (adjacency, vertexById) = loadAdjacency(options.edgeLabel, options.direction)
-        return BfsDfsRunner.dfs(
+
+        return TreeTraverser.dfs(
             startId = startId,
             adjacency = adjacency,
             maxDepth = options.maxDepth,
             maxVertices = options.maxVertices,
-            vertexResolver = { vertexById[it] ?: GraphVertex(it, "", emptyMap()) },
+            vertexResolver = { vertexById[it] ?: vertexOf(it, "") },
         )
     }
 
@@ -673,13 +688,12 @@ class FalkorDBGraphOperations(
         val vertexById = vertices.associateBy { it.id }
         val ids = vertexById.keys
 
-        val edges = queryList(
-            "MATCH (a$labelClause)-[r$edgePattern]->(b$labelClause) " +
-                "RETURN id(a) AS sa, id(b) AS sb",
-        ) { rec ->
-            val sa = (rec.getValue<Any>("sa") as Number).toLong()
-            val sb = (rec.getValue<Any>("sb") as Number).toLong()
-            GraphElementId.of(sa.toString()) to GraphElementId.of(sb.toString())
+        val cypher = "MATCH (a$labelClause)-[r$edgePattern]->(b$labelClause) " +
+                "RETURN id(a) AS sa, id(b) AS sb"
+        val edges = queryList(cypher) { rec ->
+            val sa = rec.getValue<Any>("sa").asLong()
+            val sb = rec.getValue<Any>("sb").asLong()
+            sa.toGraphElementId() to sb.toGraphElementId()
         }
 
         val uf = UnionFind(ids)
@@ -710,16 +724,13 @@ class FalkorDBGraphOperations(
         val ids = vertexById.keys
 
         val outAdjacency = HashMap<GraphElementId, MutableList<GraphElementId>>()
-        queryList(
-            "MATCH (a$labelClause)-[r$edgePattern]->(b$labelClause) " +
-                "RETURN id(a) AS sa, id(b) AS sb",
-        ) { rec ->
-            val sa = (rec.getValue<Any>("sa") as Number).toLong()
-            val sb = (rec.getValue<Any>("sb") as Number).toLong()
-            val s = GraphElementId.of(sa.toString())
-            val e = GraphElementId.of(sb.toString())
+        val cypher = "MATCH (a$labelClause)-[r$edgePattern]->(b$labelClause) RETURN id(a) AS sa, id(b) AS sb"
+        queryList(cypher) { rec ->
+            val sa = (rec.getValue<Any>("sa").asLong())
+            val sb = (rec.getValue<Any>("sb").asLong())
+            val s = sa.toGraphElementId()
+            val e = sb.toGraphElementId()
             outAdjacency.getOrPut(s) { ArrayList() }.add(e)
-            Unit
         }
 
         val scores = PageRankCalculator.compute(
@@ -729,8 +740,11 @@ class FalkorDBGraphOperations(
             dampingFactor = options.dampingFactor,
             tolerance = options.tolerance,
         )
-        val sorted = scores.entries.sortedByDescending { it.value }
-            .mapNotNull { e -> vertexById[e.key]?.let { PageRankScore(it, e.value) } }
+        val sorted = scores.entries
+            .sortedByDescending { it.value }
+            .mapNotNull { e ->
+                vertexById[e.key]?.let { PageRankScore(it, e.value) }
+            }
         return if (options.topK == Int.MAX_VALUE) sorted else sorted.take(options.topK)
     }
 
@@ -755,7 +769,7 @@ class FalkorDBGraphOperations(
             when (direction) {
                 Direction.OUTGOING -> adjacency.getOrPut(av.id) { ArrayList() }.add(bv.id)
                 Direction.INCOMING -> adjacency.getOrPut(bv.id) { ArrayList() }.add(av.id)
-                Direction.BOTH     -> {
+                Direction.BOTH -> {
                     adjacency.getOrPut(av.id) { ArrayList() }.add(bv.id)
                     adjacency.getOrPut(bv.id) { ArrayList() }.add(av.id)
                 }
@@ -776,28 +790,28 @@ class FalkorDBGraphOperations(
         }
         val vertexById = vertices.associateBy { it.id }
         val adjacency = HashMap<GraphElementId, MutableList<GraphElementId>>()
-        queryList(
-            "MATCH (a$labelClause)-[r$edgePattern]->(b$labelClause) " +
-                "RETURN id(a) AS sa, id(b) AS sb",
-        ) { rec ->
-            val sa = (rec.getValue<Any>("sa") as Number).toLong()
-            val sb = (rec.getValue<Any>("sb") as Number).toLong()
-            val s = GraphElementId.of(sa.toString())
-            val e = GraphElementId.of(sb.toString())
+        val cypher = "MATCH (a$labelClause)-[r$edgePattern]->(b$labelClause) RETURN id(a) AS sa, id(b) AS sb"
+
+        queryList(cypher) { rec ->
+            val sa = rec.getValue<Any>("sa").asLong()
+            val sb = rec.getValue<Any>("sb").asLong()
+            val s = sa.toGraphElementId()
+            val e = sb.toGraphElementId()
             adjacency.getOrPut(s) { ArrayList() }.add(e)
-            Unit
         }
+
         val cycles = CycleDetector.findCycles(adjacency, options.maxDepth, options.maxCycles)
+
         return cycles.map { ids ->
             val steps = ArrayList<PathStep>(ids.size * 2)
             ids.forEachIndexed { i, vid ->
-                val gv = vertexById[vid] ?: GraphVertex(vid, "", emptyMap())
+                val gv = vertexById[vid] ?: vertexOf(vid, EMPTY_STRING)
                 steps.add(PathStep.VertexStep(gv))
                 if (i < ids.size - 1) {
                     steps.add(
                         PathStep.EdgeStep(
-                            GraphEdge(
-                                id = GraphElementId.of("${vid.value}->${ids[i + 1].value}"),
+                            edgeOf(
+                                id = "${vid.value}->${ids[i + 1].value}".toGraphElementId(),
                                 label = options.edgeLabel ?: "",
                                 startId = vid,
                                 endId = ids[i + 1],

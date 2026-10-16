@@ -5,6 +5,9 @@ import io.bluetape4k.graph.model.MissingWeightException
 import io.bluetape4k.graph.model.MissingWeightPolicy
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
+import io.bluetape4k.support.requireFinite
+import io.bluetape4k.support.requireGt
+import io.bluetape4k.support.requireLe
 
 /**
  * edge property에서 `Double` weight를 추출한다.
@@ -25,20 +28,18 @@ class WeightExtractor(
     private val weightProperty: String,
     private val policy: MissingWeightPolicy,
 ) {
-    companion object : KLogging()
+    companion object: KLogging()
 
     /**
      * [edge]에서 weight를 추출한다.
-	*
+     *
      * @return weight value. [MissingWeightPolicy.Skip]이 active이고 property가 없으면 `null`.
      * @throws MissingWeightException [MissingWeightPolicy.Fail]이 active이고 property가 없을 때.
      * @throws IllegalArgumentException 추출한 value가 invalid(`NaN`, infinity, <= 0)일 때.
      */
     fun extract(edge: GraphEdge): Double? {
         val raw = edge.properties[weightProperty]
-
-        if (raw == null) {
-            return when (policy) {
+            ?: return when (policy) {
                 is MissingWeightPolicy.Fail -> throw MissingWeightException(edge.id, weightProperty)
                 is MissingWeightPolicy.Skip -> {
                     log.debug { "Skipping edge ${edge.id}: missing weight property '$weightProperty'" }
@@ -46,7 +47,6 @@ class WeightExtractor(
                 }
                 is MissingWeightPolicy.UseDefault -> policy.value
             }
-        }
 
         return toValidWeight(raw, edge)
     }
@@ -60,16 +60,16 @@ class WeightExtractor(
             is Short -> raw.toDouble()
             is Byte -> raw.toDouble()
             is java.math.BigDecimal -> {
-                require(raw <= java.math.BigDecimal.valueOf(Double.MAX_VALUE)) {
+                raw.requireLe(Double.MAX_VALUE.toBigDecimal()) {
                     "edge ${edge.id} weight overflows Double.MAX_VALUE: $raw"
                 }
                 val d = raw.toDouble()
-                require(d.isFinite()) { "edge ${edge.id} weight overflows Double: $raw" }
+                d.requireFinite("row") { "edge ${edge.id} weight overflows Double: $raw" }
                 d
             }
             is Number -> {
                 val d = raw.toDouble()
-                require(d.isFinite()) { "edge ${edge.id} weight overflows Double: $raw" }
+                d.requireFinite("row") { "edge ${edge.id} weight overflows Double: $raw" }
                 d
             }
             is String -> raw.toDoubleOrNull()
@@ -81,8 +81,9 @@ class WeightExtractor(
             )
         }
 
-        require(value.isFinite()) { "edge ${edge.id} weight must be finite, was $value" }
-        require(value > 0.0) { "edge ${edge.id} weight must be > 0.0, was $value" }
+        value.requireFinite("value") { "edge ${edge.id} weight must be finite, was $value" }
+        value.requireGt(0.0) { "edge ${edge.id} weight must be > 0.0, was $value" }
+
         return value
     }
 }

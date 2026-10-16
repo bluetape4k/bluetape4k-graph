@@ -40,7 +40,6 @@ dependencies {
     testImplementation(project(":bluetape4k-graph-memgraph"))
     testImplementation(project(":bluetape4k-graph-age"))
     testImplementation(project(":bluetape4k-graph-falkordb"))
-    testImplementation(testFixtures(project(":bluetape4k-graph-falkordb")))
 
     testImplementation(bt4k.bluetape4k.testcontainers)
     testImplementation(libs.testcontainers.core)

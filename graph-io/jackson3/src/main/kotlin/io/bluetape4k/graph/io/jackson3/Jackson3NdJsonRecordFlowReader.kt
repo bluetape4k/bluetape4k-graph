@@ -13,6 +13,7 @@ import io.bluetape4k.graph.io.report.GraphIoFileRole
 import io.bluetape4k.graph.io.report.GraphIoPhase
 import io.bluetape4k.graph.io.report.GraphIoReadException
 import io.bluetape4k.graph.io.source.GraphImportSource
+import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.support.requireNotBlank
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
@@ -31,15 +32,19 @@ import kotlinx.coroutines.flow.map
 class Jackson3NdJsonRecordFlowReader(
     private val defaultVertexLabel: String = "Vertex",
     private val defaultEdgeLabel: String = "Edge",
-) : GraphRecordFlowReader<GraphImportSource> {
+): GraphRecordFlowReader<GraphImportSource> {
+
+    companion object: KLoggingChannel() {
+        val Default = Jackson3NdJsonRecordFlowReader()
+    }
 
     init {
         defaultVertexLabel.requireNotBlank("defaultVertexLabel")
         defaultEdgeLabel.requireNotBlank("defaultEdgeLabel")
     }
 
-    private var parser = Jackson3RecordParser()
-    private val codec = Jackson3EnvelopeCodec()
+    private var parser = Jackson3RecordParser.Default
+    private val codec = Jackson3EnvelopeCodec.Default
 
     /** 기존 label constructor ABI를 유지하면서 NDJSON 줄 길이 옵션을 적용한다. */
     @JvmOverloads
@@ -47,7 +52,7 @@ class Jackson3NdJsonRecordFlowReader(
         readOptions: NdJsonReadOptions,
         defaultVertexLabel: String = "Vertex",
         defaultEdgeLabel: String = "Edge",
-    ) : this(defaultVertexLabel, defaultEdgeLabel) {
+    ): this(defaultVertexLabel, defaultEdgeLabel) {
         parser = Jackson3RecordParser(readOptions = readOptions)
     }
 
@@ -61,33 +66,35 @@ class Jackson3NdJsonRecordFlowReader(
             .filter { it.envelope.type == NdJsonEnvelope.TYPE_EDGE }
             .map(::toEdge)
 
-    private fun toVertex(parsed: Jackson3ParsedRecord): GraphIoVertexRecord = try {
-        codec.toVertex(parsed.envelope, defaultVertexLabel)
-    } catch (_: IllegalArgumentException) {
-        throw GraphIoReadException(
-            GraphIoFailure(
-                phase = GraphIoPhase.READ_VERTEX,
-                fileRole = GraphIoFileRole.UNIFIED,
-                location = "line:${parsed.lineNumber}",
-                message = if (parsed.envelope.id == null) {
-                    "Invalid vertex envelope: missing id"
-                } else {
-                    "Invalid vertex envelope"
-                },
-            ),
-        )
-    }
+    private fun toVertex(parsed: Jackson3ParsedRecord): GraphIoVertexRecord =
+        try {
+            codec.toVertex(parsed.envelope, defaultVertexLabel)
+        } catch (_: IllegalArgumentException) {
+            throw GraphIoReadException(
+                GraphIoFailure(
+                    phase = GraphIoPhase.READ_VERTEX,
+                    fileRole = GraphIoFileRole.UNIFIED,
+                    location = "line:${parsed.lineNumber}",
+                    message = if (parsed.envelope.id == null) {
+                        "Invalid vertex envelope: missing id"
+                    } else {
+                        "Invalid vertex envelope"
+                    },
+                ),
+            )
+        }
 
-    private fun toEdge(parsed: Jackson3ParsedRecord): GraphIoEdgeRecord = try {
-        codec.toEdge(parsed.envelope, defaultEdgeLabel)
-    } catch (_: IllegalArgumentException) {
-        throw GraphIoReadException(
-            GraphIoFailure(
-                phase = GraphIoPhase.READ_EDGE,
-                fileRole = GraphIoFileRole.UNIFIED,
-                location = "line:${parsed.lineNumber}",
-                message = "Invalid edge envelope",
-            ),
-        )
-    }
+    private fun toEdge(parsed: Jackson3ParsedRecord): GraphIoEdgeRecord =
+        try {
+            codec.toEdge(parsed.envelope, defaultEdgeLabel)
+        } catch (_: IllegalArgumentException) {
+            throw GraphIoReadException(
+                GraphIoFailure(
+                    phase = GraphIoPhase.READ_EDGE,
+                    fileRole = GraphIoFileRole.UNIFIED,
+                    location = "line:${parsed.lineNumber}",
+                    message = "Invalid edge envelope",
+                ),
+            )
+        }
 }

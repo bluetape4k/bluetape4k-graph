@@ -20,10 +20,10 @@ import java.io.Serializable
  * ### Usage
  * ```kotlin
  * val edge = GraphEdge(
- *     id = GraphElementId.of("e-1"),
+ *     id = "e-1".toGraphElementId(),
  *     label = "KNOWS",
- *     startId = GraphElementId.of("v-1"),
- *     endId = GraphElementId.of("v-2"),
+ *     startId = "v-1".toGraphElementId(),
+ *     endId = "v-2".toGraphElementId(),
  *     properties = mapOf("since" to 2023)
  * )
  * ```
@@ -39,3 +39,76 @@ data class GraphEdge(
         private const val serialVersionUID: Long = 1L
     }
 }
+
+fun graphEdgeOf(
+    id: GraphElementId,
+    label: String,
+    startId: GraphElementId,
+    endId: GraphElementId,
+    properties: Map<String, Any?> = emptyMap(),
+): GraphEdge =
+    GraphEdge(id, label, startId, endId, properties)
+
+fun graphEdgeOf(
+    id: Any,
+    label: String,
+    startId: Any,
+    endId: Any,
+    properties: Map<String, Any?> = emptyMap(),
+): GraphEdge =
+    GraphEdge(
+        id.toGraphElementId(),
+        label,
+        startId.toGraphElementId(),
+        endId.toGraphElementId(),
+        properties
+    )
+
+fun edgeOf(
+    id: GraphElementId,
+    label: String,
+    startId: GraphElementId,
+    endId: GraphElementId,
+    properties: Map<String, Any?> = emptyMap(),
+): GraphEdge =
+    GraphEdge(id, label, startId, endId, properties)
+
+fun edgeOf(
+    id: GraphElementId,
+    label: String,
+    startId: GraphElementId,
+    endId: GraphElementId,
+    vararg params: Pair<String, Any?>,
+): GraphEdge =
+    GraphEdge(id, label, startId, endId, params.toMap())
+
+
+fun edgeOf(
+    id: Any,
+    label: String,
+    startId: Any,
+    endId: Any,
+    properties: Map<String, Any?> = emptyMap(),
+): GraphEdge =
+    GraphEdge(
+        id.toGraphElementId(),
+        label,
+        startId.toGraphElementId(),
+        endId.toGraphElementId(),
+        properties
+    )
+
+fun edgeOf(
+    id: Any,
+    label: String,
+    startId: Any,
+    endId: Any,
+    vararg params: Pair<String, Any?>,
+): GraphEdge =
+    GraphEdge(
+        id.toGraphElementId(),
+        label,
+        startId.toGraphElementId(),
+        endId.toGraphElementId(),
+        params.toMap()
+    )

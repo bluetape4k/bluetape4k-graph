@@ -2,7 +2,7 @@ package io.bluetape4k.graph.tinkerpop
 
 import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.algo.ShortestPathFallback
-import io.bluetape4k.graph.model.BfsDfsOptions
+import io.bluetape4k.graph.algo.internal.TreeTraverser
 import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
@@ -21,13 +21,17 @@ import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.model.PathStep
 import io.bluetape4k.graph.model.TraversalVisit
+import io.bluetape4k.graph.model.TreeTraversalOptions
+import io.bluetape4k.graph.model.elementIdOf
+import io.bluetape4k.graph.model.toGraphElementId
+import io.bluetape4k.graph.model.vertexOf
+import io.bluetape4k.graph.repository.DEFAULT_GRAPH_EXPORT_CHUNK_SIZE
 import io.bluetape4k.graph.repository.GraphAlgorithmRepository
 import io.bluetape4k.graph.repository.GraphBatchValidation
-import io.bluetape4k.graph.repository.GraphEdgeRepository
-import io.bluetape4k.graph.repository.DEFAULT_GRAPH_EXPORT_CHUNK_SIZE
 import io.bluetape4k.graph.repository.GraphBoundedChunkOperations
-import io.bluetape4k.graph.repository.GraphMergeOperations
+import io.bluetape4k.graph.repository.GraphEdgeRepository
 import io.bluetape4k.graph.repository.GraphLabelDiscovery
+import io.bluetape4k.graph.repository.GraphMergeOperations
 import io.bluetape4k.graph.repository.GraphMergeValidation
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphTransactionScope
@@ -37,11 +41,11 @@ import io.bluetape4k.graph.schema.GraphSchemaManagementOperations
 import io.bluetape4k.graph.schema.GraphSchemaManager
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
-import io.bluetape4k.logging.warn
+import io.bluetape4k.support.EMPTY_STRING
+import io.bluetape4k.support.closeSafe
 import io.bluetape4k.support.requireNotBlank
 import io.bluetape4k.support.requirePositiveNumber
 import kotlinx.coroutines.asContextElement
-import kotlinx.atomicfu.atomic
 import org.apache.tinkerpop.gremlin.process.traversal.P
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
@@ -79,8 +83,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__ as AnonymousT
  * ops.close()
  * ```
  */
-@Suppress("LargeClass", "TooManyFunctions")
-class TinkerGraphOperations :
+class TinkerGraphOperations:
     GraphOperations,
     GraphAlgorithmRepository,
     GraphTransactionalOperations,
@@ -89,8 +92,9 @@ class TinkerGraphOperations :
     GraphLabelDiscovery,
     GraphBoundedChunkOperations {
 
-    companion object : KLogging() {
+    companion object: KLogging() {
         private const val DEFAULT_GRAPH_NAME = "default"
+        val Default = TinkerGraphOperations()
     }
 
     private val currentGraphName = AtomicReference(DEFAULT_GRAPH_NAME)
@@ -99,7 +103,7 @@ class TinkerGraphOperations :
 
     private val transactionGate = Semaphore(1)
     private val writeLock = ReentrantLock()
-    private val activeTransaction = atomic<TransactionToken?>(null)
+    private val activeTransaction = AtomicReference<TransactionToken?>(null)
     private val transactionContext = ThreadLocal<TransactionToken?>()
 
     override fun listVertexLabels(): Set<String> =
@@ -108,11 +112,15 @@ class TinkerGraphOperations :
     override fun listEdgeLabels(): Set<String> =
         graph.edges().asSequence().map { it.label() }.toSet()
 
-    private val schemaManager = TinkerGraphSchemaManager().also {
-        it.mutationLock = { action -> withMutationLock(action) }
-    }
+    private val schemaManager = TinkerGraphSchemaManager()
+        .also {
+            it.mutationLock = { action: () -> Unit -> withMutationLock(action) }
+        }
 
-    override fun close() = withMutationLock { graph.close() }
+    override fun close() {
+        log.debug { "Closing TinkerGraph: $graph" }
+        withMutationLock { graph.closeSafe() }
+    }
 
     override fun schemaManager(): GraphSchemaManager =
         schemaManager
@@ -134,7 +142,7 @@ class TinkerGraphOperations :
             if (name != current) {
                 throw GraphQueryException(
                     "TinkerGraph cannot drop graph '$name': current graph is '$current'. " +
-                        "Call createGraph('$name') before dropping it."
+                            "Call createGraph('$name') before dropping it."
                 )
             }
             g.V().drop().iterate()
@@ -201,20 +209,21 @@ class TinkerGraphOperations :
 
     internal fun endTransaction() {
         writeLock.withLock {
-            activeTransaction.value = null
+            activeTransaction.set(null)
         }
     }
 
     internal fun isTransactionContext(): Boolean = inTransactionContext()
 
     internal fun transactionContextElement(): kotlin.coroutines.CoroutineContext =
-        transactionContext.asContextElement(activeTransaction.value)
+        transactionContext.asContextElement(activeTransaction.get())
 
     internal fun transactionScope(): GraphTransactionScope =
         TinkerGraphTransactionScope(this)
 
     private fun <T> withTransactionGate(block: () -> T): T {
         if (inTransactionContext()) return block()
+
         transactionGate.acquire()
         try {
             return block()
@@ -224,26 +233,25 @@ class TinkerGraphOperations :
     }
 
     private fun inTransactionContext(): Boolean {
-        val active = activeTransaction.value ?: return false
+        val active = activeTransaction.get() ?: return false
         return transactionContext.get() === active
     }
 
     private fun <T> withTransactionContext(block: () -> T): T {
         val previous = transactionContext.get()
-        transactionContext.set(activeTransaction.value)
+        transactionContext.set(activeTransaction.get())
         return try {
             block()
         } finally {
-            if (previous == null) transactionContext.remove() else transactionContext.set(previous)
+            if (previous == null) transactionContext.remove()
+            else transactionContext.set(previous)
         }
     }
 
     private fun ensureMutationAllowed() {
-        val active = activeTransaction.value
+        val active = activeTransaction.get()
         if (active != null && transactionContext.get() !== active) {
-            throw IllegalStateException(
-                "TinkerGraph does not allow external mutations while a transaction is active."
-            )
+            error("TinkerGraph does not allow external mutations while a transaction is active.")
         }
     }
 
@@ -259,7 +267,6 @@ class TinkerGraphOperations :
 
     override fun createVertex(label: String, properties: Map<String, Any?>): GraphVertex {
         label.requireNotBlank("label")
-
         return withMutationLock { addVertex(label, properties) }
     }
 
@@ -296,13 +303,13 @@ class TinkerGraphOperations :
     override fun findVertexById(label: String, id: GraphElementId): GraphVertex? {
         label.requireNotBlank("label")
 
-        val idValue = requireNumericId(id)
+        val idValue = id.requireNumericId()
         val optional = g.V(idValue).hasLabel(label).tryNext()
         return if (optional.isPresent) GremlinRecordMapper.vertexToGraphVertex(optional.get()) else null
     }
 
     override fun findVertexById(id: GraphElementId): GraphVertex? {
-        val idValue = requireNumericId(id)
+        val idValue = id.requireNumericId()
         val optional = g.V(idValue).tryNext()
         return if (optional.isPresent) GremlinRecordMapper.vertexToGraphVertex(optional.get()) else null
     }
@@ -328,7 +335,7 @@ class TinkerGraphOperations :
      * 일반 repository interface의 [Sequence] 반환 계약은 유지하므로, `take` 후에는
      * 이 cursor를 `use`하거나 `close()`해야 traversal 수명이 끝난다.
      */
-    public fun findVerticesByLabelChunkedCursor(
+    fun findVerticesByLabelChunkedCursor(
         label: String,
         filter: Map<String, Any?> = emptyMap(),
         chunkSize: Int = DEFAULT_GRAPH_EXPORT_CHUNK_SIZE,
@@ -349,9 +356,9 @@ class TinkerGraphOperations :
         label.requireNotBlank("label")
 
         return withMutationLock {
-            val idValue = requireNumericId(id)
+            val idValue = id.requireNumericId()
             val optional = g.V(idValue).hasLabel(label).tryNext()
-            if (!optional.isPresent) return@withMutationLock null
+            if (optional.isEmpty) return@withMutationLock null
             if (properties.isEmpty()) return@withMutationLock GremlinRecordMapper.vertexToGraphVertex(optional.get())
 
             val traversal = g.V(idValue).hasLabel(label)
@@ -367,9 +374,9 @@ class TinkerGraphOperations :
         label.requireNotBlank("label")
 
         return withMutationLock {
-            val idValue = requireNumericId(id)
+            val idValue = id.requireNumericId()
             val optional = g.V(idValue).hasLabel(label).tryNext()
-            if (!optional.isPresent) return@withMutationLock false
+            if (optional.isEmpty) return@withMutationLock false
             g.V(idValue).drop().iterate()
             true
         }
@@ -419,8 +426,8 @@ class TinkerGraphOperations :
         properties: Map<String, Any?>,
     ): GraphEdge {
         label.requireNotBlank("label")
-        val fromIdValue = requireNumericId(fromId)
-        val toIdValue = requireNumericId(toId)
+        val fromIdValue = fromId.requireNumericId()
+        val toIdValue = toId.requireNumericId()
 
         return withMutationLock { addEdge(fromIdValue, toIdValue, label, properties) }
     }
@@ -431,13 +438,13 @@ class TinkerGraphOperations :
 
         return withMutationLock {
             val endpoints = validatedEdges.map { edge ->
-                val fromIdValue = requireNumericId(edge.fromId)
-                val toIdValue = requireNumericId(edge.toId)
+                val fromIdValue = edge.fromId.requireNumericId()
+                val toIdValue = edge.toId.requireNumericId()
 
-                if (!g.V(fromIdValue).tryNext().isPresent) {
+                if (g.V(fromIdValue).tryNext().isEmpty) {
                     throw GraphQueryException("Start vertex not found: ${edge.fromId.value}")
                 }
-                if (!g.V(toIdValue).tryNext().isPresent) {
+                if (g.V(toIdValue).tryNext().isEmpty) {
                     throw GraphQueryException("End vertex not found: ${edge.toId.value}")
                 }
 
@@ -490,7 +497,7 @@ class TinkerGraphOperations :
     ): Sequence<List<GraphEdge>> = findEdgesByLabelChunkedCursor(label, filter, chunkSize)
 
     /** 조기 소비 수명을 명시할 수 있는 TinkerGraph 전용 edge chunk cursor API다. */
-    public fun findEdgesByLabelChunkedCursor(
+    fun findEdgesByLabelChunkedCursor(
         label: String,
         filter: Map<String, Any?> = emptyMap(),
         chunkSize: Int = DEFAULT_GRAPH_EXPORT_CHUNK_SIZE,
@@ -509,14 +516,14 @@ class TinkerGraphOperations :
 
     override fun findEdgesByStartId(startId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
         edgeLabel?.requireNotBlank("edgeLabel")
-        val idValue = requireNumericId(startId)
+        val idValue = startId.requireNumericId()
         val traversal = if (edgeLabel != null) g.V(idValue).outE(edgeLabel) else g.V(idValue).outE()
         return traversal.toList().map { GremlinRecordMapper.edgeToGraphEdge(it) }
     }
 
     override fun findEdgesByEndId(endId: GraphElementId, edgeLabel: String?): List<GraphEdge> {
         edgeLabel?.requireNotBlank("edgeLabel")
-        val idValue = requireNumericId(endId)
+        val idValue = endId.requireNumericId()
         val traversal = if (edgeLabel != null) g.V(idValue).inE(edgeLabel) else g.V(idValue).inE()
         return traversal.toList().map { GremlinRecordMapper.edgeToGraphEdge(it) }
     }
@@ -524,9 +531,9 @@ class TinkerGraphOperations :
     override fun deleteEdge(label: String, id: GraphElementId): Boolean {
         label.requireNotBlank("label")
         return withMutationLock {
-            val idValue = requireNumericId(id)
+            val idValue = id.requireNumericId()
             val optional = g.E(idValue).hasLabel(label).tryNext()
-            if (!optional.isPresent) return@withMutationLock false
+            if (optional.isEmpty) return@withMutationLock false
             g.E(idValue).drop().iterate()
             true
         }
@@ -541,11 +548,12 @@ class TinkerGraphOperations :
     ): GraphEdge =
         withMutationLock {
             val properties = GraphMergeValidation.validateEdge(fromId, toId, label, matchProperties, setProperties)
-            val fromIdValue = requireNumericId(fromId)
-            val toIdValue = requireNumericId(toId)
+            val fromIdValue = fromId.requireNumericId()
+            val toIdValue = toId.requireNumericId()
 
             val traversal = g.V(fromIdValue).outE(label)
                 .where(AnonymousTraversal.inV().hasId(toIdValue))
+
             properties.matchProperties.forEach { (key, value) ->
                 traversal.has(key, value)
             }
@@ -574,13 +582,25 @@ class TinkerGraphOperations :
         options: NeighborOptions,
     ): List<GraphVertex> {
         options.edgeLabel?.requireNotBlank("edgeLabel")
-        val idValue = requireNumericId(startId)
+        val idValue = startId.requireNumericId()
 
         if (options.maxDepth == 1) {
             val traversal = when (options.direction) {
-                Direction.OUTGOING -> if (options.edgeLabel != null) g.V(idValue).out(options.edgeLabel) else g.V(idValue).out()
-                Direction.INCOMING -> if (options.edgeLabel != null) g.V(idValue).`in`(options.edgeLabel) else g.V(idValue).`in`()
-                Direction.BOTH -> if (options.edgeLabel != null) g.V(idValue).both(options.edgeLabel) else g.V(idValue).both()
+                Direction.OUTGOING -> if (options.edgeLabel != null) {
+                    g.V(idValue).out(options.edgeLabel)
+                } else {
+                    g.V(idValue).out()
+                }
+                Direction.INCOMING -> if (options.edgeLabel != null) {
+                    g.V(idValue).`in`(options.edgeLabel)
+                } else {
+                    g.V(idValue).`in`()
+                }
+                Direction.BOTH -> if (options.edgeLabel != null) {
+                    g.V(idValue).both(options.edgeLabel)
+                } else {
+                    g.V(idValue).both()
+                }
             }
             return traversal.dedup().toList().map { GremlinRecordMapper.vertexToGraphVertex(it) }
         }
@@ -592,6 +612,7 @@ class TinkerGraphOperations :
             Direction.INCOMING -> if (options.edgeLabel != null) AnonymousTraversal.`in`(options.edgeLabel) else AnonymousTraversal.`in`()
             Direction.BOTH -> if (options.edgeLabel != null) AnonymousTraversal.both(options.edgeLabel) else AnonymousTraversal.both()
         } as Traversal<*, Vertex>
+
         return g.V(idValue)
             .repeat(step)
             .times(options.maxDepth)
@@ -606,18 +627,19 @@ class TinkerGraphOperations :
         toId: GraphElementId,
         options: PathOptions,
     ): GraphPath? {
-        requireNumericId(fromId)
-        requireNumericId(toId)
+        fromId.requireNumericId()
+        toId.requireNumericId()
         if (options.weightProperty != null) {
             return ShortestPathFallback.dijkstra(this, fromId, toId, options)
         }
 
-        val fromIdValue = requireNumericId(fromId)
-        val toIdValue = requireNumericId(toId)
+        val fromIdValue = fromId.requireNumericId()
+        val toIdValue = toId.requireNumericId()
 
         @Suppress("UNCHECKED_CAST")
-        val step = (if (options.edgeLabel != null) AnonymousTraversal.both(options.edgeLabel) else AnonymousTraversal.both())
-            .simplePath() as Traversal<*, Vertex>
+        val step =
+            (if (options.edgeLabel != null) AnonymousTraversal.both(options.edgeLabel) else AnonymousTraversal.both())
+                .simplePath() as Traversal<*, Vertex>
 
         val paths = try {
             g.V(fromIdValue)
@@ -625,7 +647,7 @@ class TinkerGraphOperations :
                 .until(
                     AnonymousTraversal.or<Any>(
                         AnonymousTraversal.hasId<Any>(toIdValue),
-                        AnonymousTraversal.loops<Any>().`is`(P.gte<Int>(options.maxDepth)),
+                        AnonymousTraversal.loops<Any>().`is`(P.gte(options.maxDepth)),
                     )
                 )
                 .hasId(toIdValue)
@@ -637,7 +659,8 @@ class TinkerGraphOperations :
         }
 
         // Post-process: vertex-only paths from both() need edges inserted between consecutive vertices.
-        return paths.firstOrNull()?.let { buildGraphPathWithEdges(it, options.edgeLabel) }
+        return paths.firstOrNull()
+            ?.let { buildGraphPathWithEdges(it, options.edgeLabel) }
     }
 
     override fun aStarPath(
@@ -646,8 +669,8 @@ class TinkerGraphOperations :
         options: PathOptions,
         heuristic: (GraphVertex) -> Double,
     ): GraphPath? {
-        requireNumericId(fromId)
-        requireNumericId(toId)
+        fromId.requireNumericId()
+        toId.requireNumericId()
         return ShortestPathFallback.aStar(this, fromId, toId, options, heuristic)
     }
 
@@ -656,12 +679,13 @@ class TinkerGraphOperations :
         toId: GraphElementId,
         options: PathOptions,
     ): List<GraphPath> {
-        val fromIdValue = requireNumericId(fromId)
-        val toIdValue = requireNumericId(toId)
+        val fromIdValue = fromId.requireNumericId()
+        val toIdValue = toId.requireNumericId()
 
         @Suppress("UNCHECKED_CAST")
-        val step = (if (options.edgeLabel != null) AnonymousTraversal.both(options.edgeLabel) else AnonymousTraversal.both())
-            .simplePath() as Traversal<*, Vertex>
+        val step =
+            (if (options.edgeLabel != null) AnonymousTraversal.both(options.edgeLabel)
+            else AnonymousTraversal.both()).simplePath() as Traversal<*, Vertex>
 
         val paths = try {
             g.V(fromIdValue)
@@ -669,7 +693,7 @@ class TinkerGraphOperations :
                 .until(
                     AnonymousTraversal.or<Any>(
                         AnonymousTraversal.hasId<Any>(toIdValue),
-                        AnonymousTraversal.loops<Any>().`is`(P.gte<Int>(options.maxDepth)),
+                        AnonymousTraversal.loops<Any>().`is`(P.gte(options.maxDepth)),
                     )
                 )
                 .hasId(toIdValue)
@@ -684,7 +708,7 @@ class TinkerGraphOperations :
     }
 
     /**
-     * Builds a [GraphPath] from a Gremlin [Path] that contains only vertices (as returned by `both()`).
+     * Builds a [GraphPath] from a Gremlin [org.apache.tinkerpop.gremlin.process.traversal.Path] that contains only vertices (as returned by `both()`).
      * Looks up the connecting edge between each consecutive vertex pair so that
      * [GraphPath.length] (edge count) correctly reflects the hop count.
      */
@@ -735,8 +759,8 @@ class TinkerGraphOperations :
         val outAdjacency = HashMap<GraphElementId, MutableList<GraphElementId>>()
         vertexIds.forEach { outAdjacency[it] = mutableListOf() }
         gEdges.forEach { e ->
-            val src = GraphElementId.of(e.outVertex().id().toString())
-            val dst = GraphElementId.of(e.inVertex().id().toString())
+            val src = elementIdOf(e.outVertex().id().toString())
+            val dst = elementIdOf(e.inVertex().id().toString())
             if (src in vertexIds && dst in vertexIds) {
                 outAdjacency.getOrPut(src) { mutableListOf() }.add(dst)
             }
@@ -762,12 +786,12 @@ class TinkerGraphOperations :
         options: DegreeOptions,
     ): DegreeResult {
         options.edgeLabel?.requireNotBlank("edgeLabel")
-        val idValue = requireNumericId(vertexId)
+        val idValue = vertexId.requireNumericId()
 
         val inE = if (options.edgeLabel != null) g.V(idValue).inE(options.edgeLabel).count().next()
-                  else g.V(idValue).inE().count().next()
+        else g.V(idValue).inE().count().next()
         val outE = if (options.edgeLabel != null) g.V(idValue).outE(options.edgeLabel).count().next()
-                   else g.V(idValue).outE().count().next()
+        else g.V(idValue).outE().count().next()
 
         return when (options.direction) {
             Direction.OUTGOING -> DegreeResult(vertexId, 0, outE.toInt())
@@ -791,8 +815,8 @@ class TinkerGraphOperations :
         val uf = io.bluetape4k.graph.algo.internal.UnionFind(ids)
         val edges = (if (options.edgeLabel != null) g.E().hasLabel(options.edgeLabel) else g.E()).toList()
         edges.forEach { e ->
-            val src = GraphElementId.of(e.outVertex().id().toString())
-            val dst = GraphElementId.of(e.inVertex().id().toString())
+            val src = elementIdOf(e.outVertex().id().toString())
+            val dst = elementIdOf(e.inVertex().id().toString())
             if (src in ids && dst in ids) {
                 uf.union(src, dst)
             }
@@ -812,16 +836,16 @@ class TinkerGraphOperations :
             }
     }
 
-    override fun bfs(startId: GraphElementId, options: BfsDfsOptions): List<TraversalVisit> {
-        options.edgeLabel?.requireNotBlank("edgeLabel")
-        val idValue = requireNumericId(startId)
+    override fun bfs(startId: GraphElementId, options: TreeTraversalOptions): List<TraversalVisit> {
+        options.edgeLabel?.requireNotBlank("options.edgeLabel")
+        val idValue = startId.requireNumericId()
 
         val adjacency = HashMap<GraphElementId, MutableList<GraphElementId>>()
         val collectedVertices = HashMap<GraphElementId, GraphVertex>()
         val edgesQuery = if (options.edgeLabel != null) g.E().hasLabel(options.edgeLabel) else g.E()
         edgesQuery.toList().forEach { e ->
-            val src = GraphElementId.of(e.outVertex().id().toString())
-            val dst = GraphElementId.of(e.inVertex().id().toString())
+            val src = e.outVertex().id().toGraphElementId()
+            val dst = e.inVertex().id().toGraphElementId()
             collectedVertices[src] = GremlinRecordMapper.vertexToGraphVertex(e.outVertex())
             collectedVertices[dst] = GremlinRecordMapper.vertexToGraphVertex(e.inVertex())
             when (options.direction) {
@@ -836,25 +860,25 @@ class TinkerGraphOperations :
         // ensure start vertex resolved
         g.V(idValue).tryNext().ifPresent { collectedVertices[startId] = GremlinRecordMapper.vertexToGraphVertex(it) }
 
-        return io.bluetape4k.graph.algo.internal.BfsDfsRunner.bfs(
+        return TreeTraverser.bfs(
             startId = startId,
             adjacency = adjacency,
             maxDepth = options.maxDepth,
             maxVertices = options.maxVertices,
-            vertexResolver = { collectedVertices[it] ?: GraphVertex(it, "", emptyMap()) },
+            vertexResolver = { collectedVertices[it] ?: vertexOf(it, EMPTY_STRING) },
         )
     }
 
-    override fun dfs(startId: GraphElementId, options: BfsDfsOptions): List<TraversalVisit> {
-        options.edgeLabel?.requireNotBlank("edgeLabel")
-        val idValue = requireNumericId(startId)
+    override fun dfs(startId: GraphElementId, options: TreeTraversalOptions): List<TraversalVisit> {
+        options.edgeLabel?.requireNotBlank("options.edgeLabel")
+        val idValue = startId.requireNumericId()
 
         val adjacency = HashMap<GraphElementId, MutableList<GraphElementId>>()
         val collectedVertices = HashMap<GraphElementId, GraphVertex>()
         val edgesQuery = if (options.edgeLabel != null) g.E().hasLabel(options.edgeLabel) else g.E()
         edgesQuery.toList().forEach { e ->
-            val src = GraphElementId.of(e.outVertex().id().toString())
-            val dst = GraphElementId.of(e.inVertex().id().toString())
+            val src = e.outVertex().id().toGraphElementId()
+            val dst = e.inVertex().id().toString().toGraphElementId()
             collectedVertices[src] = GremlinRecordMapper.vertexToGraphVertex(e.outVertex())
             collectedVertices[dst] = GremlinRecordMapper.vertexToGraphVertex(e.inVertex())
             when (options.direction) {
@@ -868,18 +892,18 @@ class TinkerGraphOperations :
         }
         g.V(idValue).tryNext().ifPresent { collectedVertices[startId] = GremlinRecordMapper.vertexToGraphVertex(it) }
 
-        return io.bluetape4k.graph.algo.internal.BfsDfsRunner.dfs(
+        return TreeTraverser.dfs(
             startId = startId,
             adjacency = adjacency,
             maxDepth = options.maxDepth,
             maxVertices = options.maxVertices,
-            vertexResolver = { collectedVertices[it] ?: GraphVertex(it, "", emptyMap()) },
+            vertexResolver = { collectedVertices[it] ?: vertexOf(it, EMPTY_STRING) },
         )
     }
 
     override fun detectCycles(options: CycleOptions): List<GraphCycle> {
-        options.vertexLabel?.requireNotBlank("vertexLabel")
-        options.edgeLabel?.requireNotBlank("edgeLabel")
+        options.vertexLabel?.requireNotBlank("options.vertexLabel")
+        options.edgeLabel?.requireNotBlank("options.edgeLabel")
 
         val vertexQuery = if (options.vertexLabel != null) g.V().hasLabel(options.vertexLabel) else g.V()
         val verticesById = vertexQuery.toList().associate {
@@ -890,8 +914,8 @@ class TinkerGraphOperations :
         val edgesById = HashMap<Pair<GraphElementId, GraphElementId>, GraphEdge>()
         val edgeQuery = if (options.edgeLabel != null) g.E().hasLabel(options.edgeLabel) else g.E()
         edgeQuery.toList().forEach { e ->
-            val src = GraphElementId.of(e.outVertex().id().toString())
-            val dst = GraphElementId.of(e.inVertex().id().toString())
+            val src = elementIdOf(e.outVertex().id().toString())
+            val dst = elementIdOf(e.inVertex().id().toString())
             if (src in verticesById && dst in verticesById) {
                 adjacency.getOrPut(src) { ArrayList() }.add(dst)
                 edgesById[src to dst] = GremlinRecordMapper.edgeToGraphEdge(e)
@@ -906,7 +930,7 @@ class TinkerGraphOperations :
         return cycles.map { ids ->
             val steps = ArrayList<PathStep>(ids.size * 2)
             for (i in ids.indices) {
-                val v = verticesById[ids[i]] ?: GraphVertex(ids[i], "", emptyMap())
+                val v = verticesById[ids[i]] ?: vertexOf(ids[i], EMPTY_STRING)
                 steps.add(PathStep.VertexStep(v))
                 if (i < ids.size - 1) {
                     val edge = edgesById[ids[i] to ids[i + 1]]
@@ -917,9 +941,13 @@ class TinkerGraphOperations :
         }
     }
 
-    private fun requireNumericId(id: GraphElementId): Long =
-        id.value.toLongOrNull()
-            ?: throw GraphQueryException("TinkerGraph requires numeric ID, got: ${id.value}")
+//    private fun requireNumericId(id: GraphElementId): Long =
+//        id.value.toLongOrNull()
+//            ?: throw GraphQueryException("TinkerGraph requires numeric ID, got: ${id.value}")
+
+    private fun GraphElementId.requireNumericId(): Long =
+        value.toLongOrNull()
+            ?: throw GraphQueryException("TinkerGraph requires numeric ID, got: $value")
 
     private fun snapshot(): TinkerGraphSnapshot {
         val vertices = g.V().toList().map { vertex ->
@@ -967,8 +995,8 @@ class TinkerGraphOperations :
     private class TinkerGraphTransactionScope(
         private val delegate: TinkerGraphOperations,
     ): GraphTransactionScope,
-        GraphVertexRepository by delegate,
-        GraphEdgeRepository by delegate
+       GraphVertexRepository by delegate,
+       GraphEdgeRepository by delegate
 
     private data class TinkerGraphSnapshot(
         val vertices: List<TinkerGraphVertexSnapshot>,

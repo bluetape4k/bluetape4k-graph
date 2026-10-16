@@ -6,8 +6,7 @@
 
 ## Overview
 
-[Memgraph](https://memgraph.com/) is an in-memory graph database that is fully compatible with the Neo4j Bolt protocol and openCypher.
-It can be connected to with `neo4j-java-driver` as-is.
+[Memgraph](https://memgraph.com/) is an in-memory graph database that is fully compatible with the Neo4j Bolt protocol and openCypher. It can be connected to with `neo4j-java-driver` as-is.
 
 ## Architecture Diagram
 
@@ -16,17 +15,16 @@ It can be connected to with `neo4j-java-driver` as-is.
 `graph-memgraph` keeps the `graph-core` repository contracts and maps them to Memgraph through the Neo4j Java Driver, Memgraph Cypher syntax, numeric `id()` values, schema DDL, and JVM algorithm fallbacks.
 
 The module uses the driver API directly and does not expose the `graph-neo4j`
-implementation module transitively. Its Caffeine cache is declared as a direct
-implementation dependency.
+implementation module transitively. Its Caffeine cache is declared as a direct implementation dependency.
 
 ## Key Classes
 
-| Class | Description |
-|-------|-------------|
-| `MemgraphGraphOperations` | Synchronous (blocking) graph operations |
-| `MemgraphGraphSuspendOperations` | Coroutine (suspend/Flow) graph operations |
+| Class                            | Description                                                                |
+|----------------------------------|----------------------------------------------------------------------------|
+| `MemgraphGraphOperations`        | Synchronous (blocking) graph operations                                    |
+| `MemgraphGraphSuspendOperations` | Coroutine (suspend/Flow) graph operations                                  |
 | `CachingMemgraphGraphOperations` | Caffeine bounded/expiring caching decorator over `MemgraphGraphOperations` |
-| `MemgraphGraphSchemaManager` | Schema/index manager for Memgraph indexes and unique constraints |
+| `MemgraphGraphSchemaManager`     | Schema/index manager for Memgraph indexes and unique constraints           |
 
 ## Usage
 
@@ -64,8 +62,7 @@ Memgraph uses `CREATE INDEX ON :Label(property)`, `SHOW INDEX INFO`,
 
 ## Merge / Upsert and Transaction DSL
 
-Memgraph supports `GraphMergeOperations` through Cypher `MERGE` and the repository-style `Transaction DSL`.
-Use `matchProperties` as stable vertex identity keys and keep mutable values in `setProperties`.
+Memgraph supports `GraphMergeOperations` through Cypher `MERGE` and the repository-style `Transaction DSL`. Use `matchProperties` as stable vertex identity keys and keep mutable values in `setProperties`.
 
 ```kotlin
 import io.bluetape4k.graph.repository.mergeVertex
@@ -85,12 +82,12 @@ val edge = ops.transaction {
 
 ## Differences from Neo4j
 
-| Item | Neo4j | Memgraph |
-|------|-------|----------|
-| Default database parameter | `"neo4j"` | `"memgraph"` |
-| `elementId()` support | Yes (5.x) | Yes (2.x+) |
-| `shortestPath` | Yes | Yes |
-| Authentication | Basic auth | None by default (`AuthTokens.none()`) |
+| Item                       | Neo4j      | Memgraph                              |
+|----------------------------|------------|---------------------------------------|
+| Default database parameter | `"neo4j"`  | `"memgraph"`                          |
+| `elementId()` support      | Yes (5.x)  | Yes (2.x+)                            |
+| `shortestPath`             | Yes        | Yes                                   |
+| Authentication             | Basic auth | None by default (`AuthTokens.none()`) |
 
 ## Graph Algorithms
 
@@ -98,20 +95,16 @@ Memgraph shares the same Cypher-based algorithm implementations as `graph-neo4j`
 
 ### Algorithm Support Matrix
 
-| Algorithm | Implementation | Notes |
-|-----------|---------------|-------|
-| `degreeCentrality` | Cypher native (`OPTIONAL MATCH ... count`) | |
-| `bfs` / `dfs` | JVM fallback (`BfsDfsRunner`) | |
-| `detectCycles` | Cypher native (variable-length path) | |
-| `connectedComponents` | JVM fallback (`UnionFind`) | |
-| `pageRank` | JVM fallback (`PageRankCalculator`) | Memgraph MAGE optional module planned |
+| Algorithm             | Implementation                             | Notes                                 |
+|-----------------------|--------------------------------------------|---------------------------------------|
+| `degreeCentrality`    | Cypher native (`OPTIONAL MATCH ... count`) |                                       |
+| `bfs` / `dfs`         | JVM fallback (`BfsDfsRunner`)              |                                       |
+| `detectCycles`        | Cypher native (variable-length path)       |                                       |
+| `connectedComponents` | JVM fallback (`UnionFind`)                 |                                       |
+| `pageRank`            | JVM fallback (`PageRankCalculator`)        | Memgraph MAGE optional module planned |
 
 The current PageRank fallback is observable through
-`GraphAlgorithmExecutionObservable.lastAlgorithmExecution`, which reports
-provider `jvm-fallback`, path `JVM_FALLBACK`, and reason `NO_PROVIDER`. An
-optional MAGE module can use the dependency-free `graph-core` provider SPI;
-the base Memgraph module does not install MAGE or silently replace a failed
-native result with a JVM result.
+`GraphAlgorithmExecutionObservable.lastAlgorithmExecution`, which reports provider `jvm-fallback`, path `JVM_FALLBACK`, and reason `NO_PROVIDER`. An optional MAGE module can use the dependency-free `graph-core` provider SPI; the base Memgraph module does not install MAGE or silently replace a failed native result with a JVM result.
 
 ### Usage Example
 
@@ -130,14 +123,14 @@ val top10  = ops.pageRank(PageRankOptions(vertexLabel = "Person", topK = 10))
 
 ### Cache Behaviour
 
-| Operation | Effect |
-|-----------|--------|
-| `findVertexById`, `findVerticesByLabel`, `neighbors`, `shortestPath`, `allPaths`, `findEdgesByLabel` | Results cached on first call; subsequent calls return the cached value without hitting the DB |
-| `maxSize`, `expireAfterWrite` | Applied to every read cache; both values must be positive |
-| `createVertex`, `createEdge` | Every call delegates to the underlying operation, even with identical arguments. Read caches are invalidated after the write |
-| `updateVertex`, `deleteVertex`, `deleteEdge` | All read caches invalidated |
-| `dropGraph` | Delegates first and invalidates all read caches after a successful graph deletion |
-| `transaction { ... }` | Forwards the backend transaction capability; commit invalidates all read caches, while rollback keeps the existing cache |
+| Operation                                                                                            | Effect                                                                                                                       |
+|------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
+| `findVertexById`, `findVerticesByLabel`, `neighbors`, `shortestPath`, `allPaths`, `findEdgesByLabel` | Results cached on first call; subsequent calls return the cached value without hitting the DB                                |
+| `maxSize`, `expireAfterWrite`                                                                        | Applied to every read cache; both values must be positive                                                                    |
+| `createVertex`, `createEdge`                                                                         | Every call delegates to the underlying operation, even with identical arguments. Read caches are invalidated after the write |
+| `updateVertex`, `deleteVertex`, `deleteEdge`                                                         | All read caches invalidated                                                                                                  |
+| `dropGraph`                                                                                          | Delegates first and invalidates all read caches after a successful graph deletion                                            |
+| `transaction { ... }`                                                                                | Forwards the backend transaction capability; commit invalidates all read caches, while rollback keeps the existing cache     |
 
 Each cache miss captures a generation before the delegate read. If a wrapper-visible write, `dropGraph`, or committed transaction advances that generation while the read is in flight, the returned value is not reinserted into the cache. The in-flight call may still return the value it read before the write; writes performed through another delegate instance remain outside this wrapper's invalidation boundary.
 

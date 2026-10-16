@@ -16,7 +16,7 @@ import java.io.Serializable
  * ### Usage
  * ```kotlin
  * val person = GraphVertex(
- *     id = GraphElementId.of("v-1"),
+ *     id = "v-1".toGraphElementId(),
  *     label = "Person",
  *     properties = mapOf("name" to "Alice", "age" to 30)
  * )
@@ -37,7 +37,7 @@ data class GraphVertex(
  * Creates a vertex from a [GraphElementId] and label.
  *
  * ```kotlin
- * val v = graphVertexOf(GraphElementId.of("v-1"), "Person", mapOf("name" to "Alice"))
+ * val v = graphVertexOf("v-1".toGraphElementId(), "Person", mapOf("name" to "Alice"))
  * ```
  *
  * @param id Vertex ID.
@@ -46,6 +46,9 @@ data class GraphVertex(
  */
 fun graphVertexOf(id: GraphElementId, label: String, properties: Map<String, Any?> = emptyMap()) =
     GraphVertex(id, label, properties)
+
+fun graphVertexOf(id: GraphElementId, label: String, vararg params: Pair<String, Any?>) =
+    GraphVertex(id, label, params.toMap())
 
 /**
  * Creates a vertex from an ID value of any type.
@@ -62,4 +65,44 @@ fun graphVertexOf(id: GraphElementId, label: String, properties: Map<String, Any
  * @param properties Vertex property map. Defaults to an empty map.
  */
 fun graphVertexOf(id: Any, label: String, properties: Map<String, Any?> = emptyMap()): GraphVertex =
-    graphVertexOf(graphElementIdOf(id), label, properties)
+    GraphVertex(id.toGraphElementId(), label, properties)
+
+fun graphVertexOf(id: Any, label: String, vararg params: Pair<String, Any?>): GraphVertex =
+    GraphVertex(id.toGraphElementId(), label, params.toMap())
+
+/**
+ * Creates a vertex from a [GraphElementId] and label.
+ *
+ * ```kotlin
+ * val v = graphVertexOf("v-1".toGraphElementId(), "Person", mapOf("name" to "Alice"))
+ * ```
+ *
+ * @param id Vertex ID.
+ * @param label Vertex label.
+ * @param properties Vertex property map. Defaults to an empty map.
+ */
+fun vertexOf(id: GraphElementId, label: String, properties: Map<String, Any?> = emptyMap()) =
+    GraphVertex(id, label, properties)
+
+fun vertexOf(id: GraphElementId, label: String, vararg params: Pair<String, Any?>) =
+    GraphVertex(id, label, params.toMap())
+
+/**
+ * Creates a vertex from an ID value of any type.
+ *
+ * Uses [graphElementIdOf] for ID conversion, so passing a [GraphElementId] does not convert it again.
+ *
+ * ```kotlin
+ * val v = vertexOf("v-1", "Person")
+ * val v2 = vertexOf(42L, "Item", mapOf("name" to "Foo"))
+ * ```
+ *
+ * @param id Vertex ID. Accepts [GraphElementId], [Long], or any type whose `toString()` result is used.
+ * @param label Vertex label.
+ * @param properties Vertex property map. Defaults to an empty map.
+ */
+fun vertexOf(id: Any, label: String, properties: Map<String, Any?> = emptyMap()): GraphVertex =
+    GraphVertex(id.toGraphElementId(), label, properties)
+
+fun vertexOf(id: Any, label: String, vararg params: Pair<String, Any?>): GraphVertex =
+    GraphVertex(id.toGraphElementId(), label, params.toMap())

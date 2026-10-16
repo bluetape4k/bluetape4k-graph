@@ -71,9 +71,10 @@ fun GraphVirtualThreadVertexRepository.requireEndpointAsync(
     expectedLabel: String,
     parameterName: String,
 ): CompletableFuture<GraphVertex> =
-    findVertexByIdAsync(id).thenApply { vertex ->
-        validateEndpoint(vertex, expectedLabel, parameterName)
-    }
+    findVertexByIdAsync(id)
+        .thenApply { vertex ->
+            validateEndpoint(vertex, expectedLabel, parameterName)
+        }
 
 private fun validateEndpoint(
     vertex: GraphVertex?,

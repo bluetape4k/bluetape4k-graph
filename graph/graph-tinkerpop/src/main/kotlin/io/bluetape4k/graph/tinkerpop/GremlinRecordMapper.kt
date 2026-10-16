@@ -1,10 +1,12 @@
 package io.bluetape4k.graph.tinkerpop
 
 import io.bluetape4k.graph.model.GraphEdge
-import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphPath
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.PathStep
+import io.bluetape4k.graph.model.edgeOf
+import io.bluetape4k.graph.model.toGraphElementId
+import io.bluetape4k.graph.model.vertexOf
 import io.bluetape4k.logging.KLogging
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Vertex
@@ -22,7 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Path as GremlinPath
  * println(vertex.properties["name"]) // "Alice"
  * ```
  */
-object GremlinRecordMapper : KLogging() {
+object GremlinRecordMapper: KLogging() {
 
     /**
      * Gremlin [Vertex]를 [GraphVertex]로 변환합니다.
@@ -39,13 +41,13 @@ object GremlinRecordMapper : KLogging() {
      * @return 변환된 [GraphVertex].
      */
     fun vertexToGraphVertex(v: Vertex): GraphVertex {
-        val id = GraphElementId(v.id().toString())
+        val id = v.id().toGraphElementId()
         val label = v.label()
         val properties = mutableMapOf<String, Any?>()
         v.properties<Any>().forEachRemaining { vp ->
             properties[vp.key()] = vp.value()
         }
-        return GraphVertex(id, label, properties)
+        return vertexOf(id, label, properties)
     }
 
     /**
@@ -63,14 +65,16 @@ object GremlinRecordMapper : KLogging() {
      * @return 변환된 [GraphEdge].
      */
     fun edgeToGraphEdge(e: Edge): GraphEdge {
-        val id = GraphElementId(e.id().toString())
-        val startId = GraphElementId(e.outVertex().id().toString())
-        val endId = GraphElementId(e.inVertex().id().toString())
+        val id = e.id().toGraphElementId()
+        val startId = e.outVertex().id().toGraphElementId()
+        val endId = e.inVertex().id().toGraphElementId()
+
         val properties = mutableMapOf<String, Any?>()
         e.properties<Any>().forEachRemaining { ep ->
             properties[ep.key()] = ep.value()
         }
-        return GraphEdge(id, e.label(), startId, endId, properties)
+
+        return edgeOf(id, e.label(), startId, endId, properties)
     }
 
     /**

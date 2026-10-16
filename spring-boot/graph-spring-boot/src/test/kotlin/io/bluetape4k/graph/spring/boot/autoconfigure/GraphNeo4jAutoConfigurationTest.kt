@@ -1,21 +1,24 @@
 package io.bluetape4k.graph.spring.boot.autoconfigure
 
 import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBe
 import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldNotBe
 import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import io.bluetape4k.testcontainers.graphdb.Neo4jServer
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.neo4j.driver.Driver
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.neo4j.driver.Driver
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
+import org.springframework.beans.factory.getBean
 import org.springframework.boot.autoconfigure.AutoConfigurations
 import org.springframework.boot.health.contributor.HealthIndicator
 import org.springframework.boot.test.context.runner.ApplicationContextRunner
@@ -23,7 +26,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class GraphNeo4jAutoConfigurationTest {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     private val runner = ApplicationContextRunner()
         .withConfiguration(
@@ -50,9 +53,9 @@ class GraphNeo4jAutoConfigurationTest {
     fun `backend=neo4j 이면 GraphOperations 빈 등록`() {
         runner.withPropertyValues(*neo4jProperties)
             .run { ctx ->
-                ctx.getBean(GraphOperations::class.java).shouldNotBeNull()
-                ctx.getBean(GraphSuspendOperations::class.java).shouldNotBeNull()
-                ctx.getBean(GraphVirtualThreadOperations::class.java).shouldNotBeNull()
+                ctx.getBean<GraphOperations>().shouldNotBeNull()
+                ctx.getBean<GraphSuspendOperations>().shouldNotBeNull()
+                ctx.getBean<GraphVirtualThreadOperations>().shouldNotBeNull()
             }
     }
 
@@ -63,7 +66,7 @@ class GraphNeo4jAutoConfigurationTest {
             "bluetape4k.graph.neo4j.register-suspend=false",
         ).run { ctx ->
             assertFailsWith<NoSuchBeanDefinitionException> {
-                ctx.getBean(GraphSuspendOperations::class.java)
+                ctx.getBean<GraphSuspendOperations>()
             }
         }
     }
@@ -76,10 +79,10 @@ class GraphNeo4jAutoConfigurationTest {
             .withBean("unrelatedDriver", Driver::class.java, { unrelatedDriver })
             .withPropertyValues(*localNeo4jProperties)
             .run { ctx ->
-                ctx.getBean("neo4jDriver", Driver::class.java).shouldNotBeNull()
-                (ctx.getBean("neo4jDriver", Driver::class.java) !== unrelatedDriver).shouldBeTrue()
-                ctx.getBean(GraphOperations::class.java).shouldNotBeNull()
-                ctx.getBean(GraphSuspendOperations::class.java).shouldNotBeNull()
+                ctx.getBean<Driver>("neo4jDriver").shouldNotBeNull()
+                ctx.getBean<Driver>("neo4jDriver") shouldNotBe unrelatedDriver
+                ctx.getBean<GraphOperations>().shouldNotBeNull()
+                ctx.getBean<GraphSuspendOperations>().shouldNotBeNull()
             }
     }
 
@@ -90,9 +93,9 @@ class GraphNeo4jAutoConfigurationTest {
             .withBean("secondUnrelatedDriver", Driver::class.java, { mockk<Driver>(relaxed = true) })
             .withPropertyValues(*localNeo4jProperties)
             .run { ctx ->
-                ctx.getBean("neo4jDriver", Driver::class.java).shouldNotBeNull()
-                ctx.getBean(GraphOperations::class.java).shouldNotBeNull()
-                ctx.getBean(GraphSuspendOperations::class.java).shouldNotBeNull()
+                ctx.getBean<Driver>("neo4jDriver").shouldNotBeNull()
+                ctx.getBean<GraphOperations>().shouldNotBeNull()
+                ctx.getBean<GraphSuspendOperations>().shouldNotBeNull()
             }
     }
 
@@ -106,11 +109,12 @@ class GraphNeo4jAutoConfigurationTest {
             .withBean("unrelatedDriver", Driver::class.java, { mockk<Driver>(relaxed = true) })
             .withPropertyValues(*localNeo4jProperties)
             .run { ctx ->
-                (ctx.getBean("neo4jDriver", Driver::class.java) === explicitDriver).shouldBeTrue()
-                (driverOf(ctx.getBean(GraphOperations::class.java)) === explicitDriver).shouldBeTrue()
-                (driverOf(ctx.getBean(GraphSuspendOperations::class.java)) === explicitDriver).shouldBeTrue()
+                ctx.getBean<Driver>("neo4jDriver") shouldBe explicitDriver
+                driverOf(ctx.getBean<GraphOperations>()) shouldBe explicitDriver
+                driverOf(ctx.getBean<GraphSuspendOperations>()) shouldBe explicitDriver
 
-                ctx.getBean("neo4jHealthIndicator", HealthIndicator::class.java).health()
+                ctx.getBean<HealthIndicator>("neo4jHealthIndicator").health()
+
                 verify { explicitDriver.verifyConnectivity() }
             }
     }
@@ -122,7 +126,7 @@ class GraphNeo4jAutoConfigurationTest {
             "bluetape4k.graph.neo4j.register-virtual-thread=false",
         ).run { ctx ->
             assertFailsWith<NoSuchBeanDefinitionException> {
-                ctx.getBean(GraphVirtualThreadOperations::class.java)
+                ctx.getBean<GraphVirtualThreadOperations>()
             }
         }
     }
@@ -138,6 +142,7 @@ class GraphNeo4jAutoConfigurationTest {
             .health()
             .shouldNotBeNull()
 
+        log.debug { "health=$health" }
         health.status.code shouldBeEqualTo "UP"
         health.details["backend"] shouldBeEqualTo "neo4j"
         verify { driver.verifyConnectivity() }
@@ -154,6 +159,7 @@ class GraphNeo4jAutoConfigurationTest {
             .health()
             .shouldNotBeNull()
 
+        log.debug { "health=$health" }
         health.status.code shouldBeEqualTo "DOWN"
         verify { driver.verifyConnectivity() }
     }

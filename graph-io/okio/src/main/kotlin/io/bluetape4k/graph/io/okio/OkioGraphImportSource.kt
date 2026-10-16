@@ -1,9 +1,21 @@
 package io.bluetape4k.graph.io.okio
 
+import io.bluetape4k.graph.io.okio.GraphIoOkioPaths.DEFAULT_MAX_DECOMPRESSED_BYTES
+import io.bluetape4k.graph.io.okio.OkioGraphImportSource.InputStreamBased
+import io.bluetape4k.graph.io.okio.OkioGraphImportSource.PathSource
+import io.bluetape4k.graph.io.okio.OkioGraphImportSource.SourceBased
+import io.bluetape4k.graph.io.okio.bridge.toInputStream
+import io.bluetape4k.graph.io.source.GraphImportSource.InputStreamSource
+import io.bluetape4k.graph.io.source.asSource
+import io.bluetape4k.okio.tink.DEFAULT_DAEAD_MAX_CIPHERTEXT_LENGTH
+import io.bluetape4k.support.emptyByteArray
+import io.bluetape4k.tink.daead.TinkDeterministicAead
+import okio.BufferedSource
 import okio.FileSystem
 import okio.Path
 import okio.Source
 import java.io.InputStream
+import java.nio.charset.Charset
 
 /**
  * OkIO 기반 그래프 임포트 소스.
@@ -27,7 +39,7 @@ sealed interface OkioGraphImportSource {
     data class PathSource(
         val path: Path,
         val fileSystem: FileSystem = FileSystem.SYSTEM,
-    ) : OkioGraphImportSource {
+    ): OkioGraphImportSource {
         companion object {
             fun from(path: Path, fileSystem: FileSystem = FileSystem.SYSTEM): PathSource =
                 PathSource(path, fileSystem)
@@ -43,7 +55,7 @@ sealed interface OkioGraphImportSource {
     data class SourceBased(
         val source: Source,
         val ownsSource: Boolean = false,
-    ) : OkioGraphImportSource {
+    ): OkioGraphImportSource {
         companion object {
             fun from(source: Source, ownsSource: Boolean = false): SourceBased =
                 SourceBased(source, ownsSource)
@@ -59,10 +71,60 @@ sealed interface OkioGraphImportSource {
     data class InputStreamBased(
         val inputStream: InputStream,
         val ownsStream: Boolean = false,
-    ) : OkioGraphImportSource {
+    ): OkioGraphImportSource {
         companion object {
             fun from(inputStream: InputStream, ownsStream: Boolean = false): InputStreamBased =
                 InputStreamBased(inputStream, ownsStream)
         }
     }
 }
+
+fun Path.asOkioSource(fileSystem: FileSystem = FileSystem.SYSTEM): PathSource =
+    OkioGraphImportSource.PathSource(this, fileSystem)
+
+fun Source.asOkioSource(ownsSource: Boolean = false): SourceBased =
+    OkioGraphImportSource.SourceBased(this, ownsSource)
+
+fun InputStream.asOkioSource(ownsStream: Boolean = false): InputStreamBased =
+    OkioGraphImportSource.InputStreamBased(this, ownsStream)
+
+fun OkioGraphImportSource.openSource(): BufferedSource = GraphIoOkioPaths.openSource(this)
+
+fun OkioGraphImportSource.openDecompressedSource(
+    compressor: Compressor = Compressor.GZIP,
+    maxDecompressedBytes: Long = DEFAULT_MAX_DECOMPRESSED_BYTES,
+): BufferedSource =
+    GraphIoOkioPaths.openDecompressedSource(this.openSource(), compressor, maxDecompressedBytes)
+
+fun OkioGraphImportSource.openDaeadDecryptedSource(
+    daead: TinkDeterministicAead,
+    associatedData: ByteArray = emptyByteArray,
+    maxCiphertextLength: Long = DEFAULT_DAEAD_MAX_CIPHERTEXT_LENGTH,
+): BufferedSource =
+    GraphIoOkioPaths.openDaeadDecryptedSource(this, daead, associatedData, maxCiphertextLength)
+
+fun OkioGraphImportSource.openDaeadDecryptedGzipSource(
+    daead: TinkDeterministicAead,
+    associatedData: ByteArray = emptyByteArray,
+    maxCiphertextLength: Long = DEFAULT_DAEAD_MAX_CIPHERTEXT_LENGTH,
+): BufferedSource =
+    GraphIoOkioPaths.openDaeadDecryptedGzipSource(this, daead, associatedData, maxCiphertextLength)
+
+fun BufferedSource.openDecompressedSource(
+    compressor: Compressor,
+    maxDecompressedBytes: Long = DEFAULT_MAX_DECOMPRESSED_BYTES,
+): BufferedSource =
+    GraphIoOkioPaths.openDecompressedSource(this, compressor, maxDecompressedBytes)
+
+fun OkioGraphImportSource.openGzipSource(maxDecompressedBytes: Long = DEFAULT_MAX_DECOMPRESSED_BYTES): BufferedSource =
+    GraphIoOkioPaths.openGzipSource(this, maxDecompressedBytes)
+
+fun BufferedSource.asSource(
+    closeInput: Boolean = false,
+    charset: Charset = Charsets.UTF_8,
+): InputStreamSource =
+    toInputStream().asSource(closeInput, charset)
+
+
+fun OkioGraphImportSource.sizeOf(): Long? = GraphIoOkioPaths.sizeOf(this)
+fun OkioGraphImportSource.sizeOfCsv(): Long? = GraphIoOkioPaths.sizeOfCsv(this)

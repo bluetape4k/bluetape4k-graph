@@ -34,7 +34,7 @@ import kotlinx.coroutines.flow.Flow
  * }
  * ```
  */
-interface GraphRecordFlowReader<S : Any> {
+interface GraphRecordFlowReader<S: Any> {
 
     /** [source]에서 정점 레코드를 순차적으로 방출하는 [Flow]를 반환한다. */
     fun readVertices(source: S): Flow<GraphIoVertexRecord>

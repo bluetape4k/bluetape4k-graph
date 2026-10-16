@@ -31,7 +31,7 @@ StAX 스트리밍 파서를 이용한 GraphML (XML) 대량 임포터 및 익스�
 - **StAX 기반 스트리밍**: 메모리 효율적인 파싱 및 직렬화
 - **GraphML subset 지원**: directed graph, node, edge, scalar data를 처리하고 미지원 construct를 명시적으로 리포팅
 - **세 가지 실행 모델**: 동기, 비동기, 가상 스레드 변형
-- **상세한 임포트 리포트**: 단계(phase)와 심각도(severity)를 포함한 종합 실패 리포팅
+- **상세한 임포트 리포트**: 단계 (phase)와 심각도 (severity)를 포함한 종합 실패 리포팅
 - **유연한 설정**: 속성 이름, 기본 레이블, 오류 처리 정책 커스터마이징 가능
 - **대량 연산 최적화**: 대규모 그래프 임포트/익스포트에 최적화됨
 
@@ -181,15 +181,15 @@ data class GraphMlImportOptions(
 
 ### Property-graph subset 이후의 compatibility contract
 
-| GraphML construct | 결정 | Import 동작 | 근거 |
-|---|---|---|---|
-| node, edge, scalar data, scalar key를 가진 directed graph | 구현됨 | Import/export 지원 | `GraphVertex`, directed `GraphEdge`, scalar property에 직접 대응됩니다. |
-| Graph-level `edgedefault="undirected"` | 보류 | `SKIP`은 `WARN` 기록, `FAIL`은 write 전 `FAILED` 반환 | `GraphEdge`는 directed입니다. reverse edge를 자동 생성하면 edge 수와 traversal 의미가 바뀝니다. |
-| Edge-level `directed="false"` | 보류 | `SKIP`은 `WARN` 기록 후 source-to-target projection 유지, `FAIL`은 write 전 `FAILED` 반환 | projection은 진단용 import에는 유용하지만 충실한 undirected-edge contract는 아닙니다. |
-| Nested `<graph>` | 이번 slice에서는 거부 | `SKIP`은 `WARN` 기록 후 nested content skip, `FAIL`은 write 전 `FAILED` 반환 | `GraphVertex`에는 child graph scope가 없습니다. Flattening에는 명시적 ownership mapping 설계가 필요합니다. |
-| `<hyperedge>` | 거부 | `SKIP`은 `WARN` 기록, `FAIL`은 write 전 `FAILED` 반환 | `GraphEdge`는 source 하나와 target 하나만 가집니다. Hyperedge 지원에는 reification node 정책이 필요합니다. |
-| `<port>` | 보류 | `SKIP`은 `WARN` 기록, `FAIL`은 write 전 `FAILED` 반환 | port는 endpoint metadata이지만 현재 backend-neutral endpoint는 vertex만 가리킵니다. |
-| yFiles graphics 같은 XML extension payload | 보류 | 지원 contract 밖 | 시각 metadata를 보존하려면 namespaced extension-property 정책이 먼저 필요합니다. |
+| GraphML construct                                         | 결정                  | Import 동작                                                                               | 근거                                                                                                       |
+|-----------------------------------------------------------|-----------------------|-------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
+| node, edge, scalar data, scalar key를 가진 directed graph | 구현됨                | Import/export 지원                                                                        | `GraphVertex`, directed `GraphEdge`, scalar property에 직접 대응됩니다.                                    |
+| Graph-level `edgedefault="undirected"`                    | 보류                  | `SKIP`은 `WARN` 기록, `FAIL`은 write 전 `FAILED` 반환                                     | `GraphEdge`는 directed입니다. reverse edge를 자동 생성하면 edge 수와 traversal 의미가 바뀝니다.            |
+| Edge-level `directed="false"`                             | 보류                  | `SKIP`은 `WARN` 기록 후 source-to-target projection 유지, `FAIL`은 write 전 `FAILED` 반환 | projection은 진단용 import에는 유용하지만 충실한 undirected-edge contract는 아닙니다.                      |
+| Nested `<graph>`                                          | 이번 slice에서는 거부 | `SKIP`은 `WARN` 기록 후 nested content skip, `FAIL`은 write 전 `FAILED` 반환              | `GraphVertex`에는 child graph scope가 없습니다. Flattening에는 명시적 ownership mapping 설계가 필요합니다. |
+| `<hyperedge>`                                             | 거부                  | `SKIP`은 `WARN` 기록, `FAIL`은 write 전 `FAILED` 반환                                     | `GraphEdge`는 source 하나와 target 하나만 가집니다. Hyperedge 지원에는 reification node 정책이 필요합니다. |
+| `<port>`                                                  | 보류                  | `SKIP`은 `WARN` 기록, `FAIL`은 write 전 `FAILED` 반환                                     | port는 endpoint metadata이지만 현재 backend-neutral endpoint는 vertex만 가리킵니다.                        |
+| yFiles graphics 같은 XML extension payload                | 보류                  | 지원 contract 밖                                                                          | 시각 metadata를 보존하려면 namespaced extension-property 정책이 먼저 필요합니다.                           |
 
 `src/test/resources/fixtures/graphml/`의 대표 fixture가 permissive/strict import policy 양쪽의 contract를 고정합니다.
 
@@ -206,19 +206,16 @@ data class GraphMlExportOptions(
 ) : Serializable
 ```
 
-Exporter는 node와 edge property의 `attr.type`을 서로 독립적으로 추론합니다.
-동일 key의 non-null 값이 `Int`, `Long`, `Float`, `Double`, `Boolean`, `String`
-중 한 타입으로 일관되면 JVM 타입을 유지해 round-trip합니다. Null 값은 타입 추론에서
-제외합니다. `GraphExportOptions.includeEmptyProperties=true`이면 기존 호환성을 위해
-빈 `<data>`를 기록하고, `false`이면 생략합니다. 그 밖의 단일 JVM 타입은
-`toString()` 값과 `attr.type="string"`을 사용합니다. 동일 property key에 서로 다른
-non-null JVM 타입이 섞이면 XML sink를 열기 전에 즉시 실패합니다.
+Exporter는 node와 edge property의 `attr.type`을 서로 독립적으로 추론합니다. 동일 key의 non-null 값이 `Int`, `Long`, `Float`, `Double`, `Boolean`, `String`
+중 한 타입으로 일관되면 JVM 타입을 유지해 round-trip합니다. Null 값은 타입 추론에서 제외합니다. `GraphExportOptions.includeEmptyProperties=true`이면 기존 호환성을 위해 빈 `<data>`를 기록하고, `false`이면 생략합니다. 그 밖의 단일 JVM 타입은
+`toString()` 값과 `attr.type="string"`을 사용합니다. 동일 property key에 서로 다른 non-null JVM 타입이 섞이면 XML sink를 열기 전에 즉시 실패합니다.
 
 ## 성능 참고 사항
 
 ### XMLFactory 캐싱 (중요)
 
-`XMLInputFactory`와 `XMLOutputFactory` 인스턴스는 생성 비용이 많이 듭니다. 모듈은 내부적으로 싱글톤 인스턴스를 유지하여 최적의 성능을 보장합니다. **각 연산마다 새로운 인스턴스를 생성하지 마세요.**
+`XMLInputFactory`와 `XMLOutputFactory` 인스턴스는 생성 비용이 많이 듭니다. 모듈은 내부적으로 싱글톤 인스턴스를 유지하여 최적의 성능을 보장합니다. **각 연산마다 새로운 인스턴스를
+생성하지 마세요.**
 
 `StaxGraphMlReader`와 `StaxGraphMlWriter` 클래스는 비용이 많이 드는 초기화 오버헤드를 피하기 위해 캐시된 팩토리를 사용합니다.
 
@@ -228,23 +225,14 @@ StAX 스트리밍 접근 방식은 XML을 증분적으로 처리하므로 DOM �
 
 GraphML export는 정점과 간선을 조회할 때 `GraphExportOptions.exportChunkSize`를 사용합니다. 백엔드가 chunk-aware repository API를 override하거나 cursor 기반 구현을 제공하면, 첫 번째 node 또는 edge보다 먼저 전역 `<key>` 정의를 쓸 수 있도록 각 bounded chunk를 공용 `GraphIoRecordSpool`에 한 번 저장하고 동일한 불변 기준 데이터를 key 탐색과 XML 쓰기에서 replay합니다. exporter 자체의 전체 record list materialization과 live backend 두 번째 조회는 없지만, 호환성 list/Flow fallback은 exporter에 전달되기 전에 라벨 전체를 materialize할 수 있습니다. active replay stream은 spool 정리 때 닫고, 정리 실패는 원래 source·sink·취소 예외의 suppressed exception으로 연결합니다. 임시 spool 파일은 정상 완료·실패·suspend 취소 시 정리됩니다.
 
-GraphML bounded-chunk TCK는 요청 chunk 크기, 선택한 label별 단일 조회, 첫 chunk
-이후 backend mutation이 발생해도 stage 시점 값이 유지되는지를 검증합니다. 첫
-chunk를 내보내기 전에 전체 label 조회가 실행될 수 있는 호환성 fallback의 source
-boundedness를 주장하지는 않습니다.
+GraphML bounded-chunk TCK는 요청 chunk 크기, 선택한 label별 단일 조회, 첫 chunk 이후 backend mutation이 발생해도 stage 시점 값이 유지되는지를 검증합니다. 첫 chunk를 내보내기 전에 전체 label 조회가 실행될 수 있는 호환성 fallback의 source boundedness를 주장하지는 않습니다.
 
 공용 spool은 레코드별 인코딩을 128 MiB까지 제한하면서 전체 레코드의 두 번째
-`toByteArray()` 복사본을 만들지 않습니다. constructor는 fail-clean 경계를 가지므로
-뒤의 임시 파일이나 output stream을 열지 못하면 그 전에 획득한 모든 resource를
-닫고 삭제합니다.
+`toByteArray()` 복사본을 만들지 않습니다. constructor는 fail-clean 경계를 가지므로 뒤의 임시 파일이나 output stream을 열지 못하면 그 전에 획득한 모든 resource를 닫고 삭제합니다.
 
-suspend GraphML replay는 다음 StAX write 전에 각 정점·간선 경계에서 coroutine
-context를 확인합니다. 이는 blocking StAX 호출 하나를 interrupt한다는 뜻이
-아니라 write 사이의 bounded checkpoint입니다. suspend session과 output은
+suspend GraphML replay는 다음 StAX write 전에 각 정점·간선 경계에서 coroutine context를 확인합니다. 이는 blocking StAX 호출 하나를 interrupt한다는 뜻이 아니라 write 사이의 bounded checkpoint입니다. suspend session과 output은
 `NonCancellable` cleanup scope에서 닫히며, 호출자 소유
-`OutputStreamSink(closeOutput = false)`는 flush 후 열어 두고 owned sink만 닫습니다.
-정리 실패는 원래 source·sink·cancellation failure의 suppressed exception으로
-연결합니다.
+`OutputStreamSink(closeOutput = false)`는 flush 후 열어 두고 owned sink만 닫습니다. 정리 실패는 원래 source·sink·cancellation failure의 suppressed exception으로 연결합니다.
 
 ## 오류 처리
 
@@ -252,10 +240,10 @@ context를 확인합니다. 이는 blocking StAX 호출 하나를 interrupt한�
 
 - **상태 (Status)**: COMPLETED, PARTIAL, 또는 FAILED
 - **실패 (Failures)**: 다음을 포함하는 `GraphIoFailure` 객체 목록:
-  - Phase: READ_GRAPH, CREATE_VERTEX, CREATE_EDGE, READ_EDGE
-  - Severity: INFO, WARN, ERROR
-  - Message: 설명적인 오류 메시지
-  - RecordId: 문제가 있는 레코드의 ID
+    - Phase: READ_GRAPH, CREATE_VERTEX, CREATE_EDGE, READ_EDGE
+    - Severity: INFO, WARN, ERROR
+    - Message: 설명적인 오류 메시지
+    - RecordId: 문제가 있는 레코드의 ID
 
 실패는 빠르게 중단하는 대신 수집되고 리포팅되어 부분 임포트가 완료될 수 있도록 합니다.
 
@@ -274,7 +262,4 @@ context를 확인합니다. 이는 blocking StAX 호출 하나를 interrupt한�
 
 ## 스트리밍 reader 계약
 
-`GraphMlRecordFlowReader`는 cold `Flow`를 통해 node와 edge를 소스 순서대로 파싱합니다. StAX event는 점진적으로
-전달되며 production import는 전체 vertex/edge list를 materialize하지 않고 간선 staging을 `maxEdgeBufferSize`로
-제한합니다. `GraphImportOptions.batchSize`는 백엔드 쓰기 플러시만 제어합니다. Path와 소유권을 넘긴 input은
-라이브러리가 닫고 호출자 소유 input은 열린 상태로 둡니다.
+`GraphMlRecordFlowReader`는 cold `Flow`를 통해 node와 edge를 소스 순서대로 파싱합니다. StAX event는 점진적으로 전달되며 production import는 전체 vertex/edge list를 materialize하지 않고 간선 staging을 `maxEdgeBufferSize`로 제한합니다. `GraphImportOptions.batchSize`는 백엔드 쓰기 플러시만 제어합니다. Path와 소유권을 넘긴 input은 라이브러리가 닫고 호출자 소유 input은 열린 상태로 둡니다.

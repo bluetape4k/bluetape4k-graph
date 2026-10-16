@@ -1,8 +1,11 @@
 package io.bluetape4k.graph.io.workflow
 
+import io.bluetape4k.logging.KLogging
+
 /** 기본 in-memory store와 retry harness에 공통 TCK를 적용한다. */
-class InMemoryGraphImportJobStateStoreContractTest :
-    AbstractGraphImportJobStateStoreRetryContractTest() {
+class InMemoryGraphImportJobStateStoreContractTest: AbstractGraphImportJobStateStoreRetryContractTest() {
+
+    companion object: KLogging()
 
     override fun createStore(): GraphImportJobStateStore = InMemoryGraphImportJobStateStore()
 
@@ -12,7 +15,7 @@ class InMemoryGraphImportJobStateStoreContractTest :
     override fun createRetryingStore(): GraphImportJobStateStoreRetryHarness =
         RetryingInMemoryGraphImportJobStateStore()
 
-    private class FailingInMemoryGraphImportJobStateStore : GraphImportJobStateStoreFailureHarness {
+    private class FailingInMemoryGraphImportJobStateStore: GraphImportJobStateStoreFailureHarness {
         private val delegate = InMemoryGraphImportJobStateStore()
         private var failNextSave = false
 
@@ -31,7 +34,7 @@ class InMemoryGraphImportJobStateStoreContractTest :
         }
     }
 
-    private class RetryingInMemoryGraphImportJobStateStore : GraphImportJobStateStoreRetryHarness {
+    private class RetryingInMemoryGraphImportJobStateStore: GraphImportJobStateStoreRetryHarness {
         private val delegate = InMemoryGraphImportJobStateStore()
         private var interveningReport: GraphImportWorkflowReport? = null
 

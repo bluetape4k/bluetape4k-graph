@@ -1,13 +1,15 @@
 package io.bluetape4k.graph.spring.boot.autoconfigure
 
-import io.bluetape4k.codec.Base58
 import com.falkordb.Driver
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldNotBeNull
-import io.bluetape4k.graph.falkordb.FalkorDBServer
+import io.bluetape4k.codec.Base58
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
+import io.bluetape4k.testcontainers.graphdb.FalkorDBServer
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -30,8 +32,8 @@ import org.springframework.test.context.DynamicPropertySource
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FalkorDBSpringBootIntegrationTest {
 
-    companion object {
-        private val server = FalkorDBServer.Launcher.falkordb
+    companion object: KLogging() {
+        private val server by lazy { FalkorDBServer.Launcher.falkordb }
         private val graphName = "spring_boot_${Base58.randomString(12)}"
 
         @JvmStatic
@@ -75,6 +77,7 @@ class FalkorDBSpringBootIntegrationTest {
 
         val vertex = graphOperations.createVertex("Issue126", mapOf("source" to "spring-boot"))
 
+        log.debug { "vertex=$vertex" }
         vertex.label shouldBeEqualTo "Issue126"
         vertex.properties["source"] shouldBeEqualTo "spring-boot"
         healthIndicator.health().shouldNotBeNull().status.code shouldBeEqualTo "UP"

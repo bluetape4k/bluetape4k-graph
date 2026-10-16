@@ -4,31 +4,19 @@ import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.coroutines.flow.extensions.log
 import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.model.BatchEdge
-import io.bluetape4k.graph.model.GraphElementId
+import io.bluetape4k.graph.model.toGraphElementId
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.info
 import kotlinx.coroutines.flow.toList
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class FalkorDBGraphBatchOperationsTest : AbstractFalkorDBTest() {
+class FalkorDBGraphBatchOperationsTest: AbstractFalkorDBTest() {
 
-    private lateinit var ops: FalkorDBGraphOperations
-    private lateinit var suspendOps: FalkorDBGraphSuspendOperations
-
-    @BeforeAll
-    override fun setupAll() {
-        super.setupAll()
-        ops = FalkorDBGraphOperations(driver, graphName)
-        suspendOps = FalkorDBGraphSuspendOperations(driver, graphName)
-    }
-
-    @BeforeEach
-    fun cleanup() {
-        ops.dropGraph(graphName)
-    }
+    companion object: KLogging()
 
     @Test
     fun `createVertices returns vertices in input order`() {
@@ -41,10 +29,10 @@ class FalkorDBGraphBatchOperationsTest : AbstractFalkorDBTest() {
             ),
         )
 
-        vertices.shouldHaveSize(3)
+        vertices shouldHaveSize 3
         vertices.map { it.properties["name"] } shouldBeEqualTo listOf("Alice", "Bob", "Carol")
         vertices.map { it.properties["rank"] } shouldBeEqualTo listOf(1L, 2L, 3L)
-        ops.findVerticesByLabel("Person").shouldHaveSize(3)
+        ops.findVerticesByLabel("Person") shouldHaveSize 3
     }
 
     @Test
@@ -58,8 +46,9 @@ class FalkorDBGraphBatchOperationsTest : AbstractFalkorDBTest() {
         vertices.single().properties["name"] shouldBeEqualTo "Solo"
         edge.startId shouldBeEqualTo vertices.single().id
         edge.endId shouldBeEqualTo vertices.single().id
-        ops.findVerticesByLabel("Person").shouldHaveSize(1)
-        ops.findEdgesByLabel("SELF").shouldHaveSize(1)
+
+        ops.findVerticesByLabel("Person") shouldHaveSize 1
+        ops.findEdgesByLabel("SELF") shouldHaveSize 1
     }
 
     @Test
@@ -71,10 +60,10 @@ class FalkorDBGraphBatchOperationsTest : AbstractFalkorDBTest() {
                 mapOf("name" to "Alice"),
                 mapOf("name" to "Bob", "city" to "Seoul"),
             ),
-        )
+        ).onEach { log.info { "vertex: $it" } }
 
         vertices.map { it.properties["name"] } shouldBeEqualTo listOf("Alice", "Alice", "Bob")
-        vertices.map { it.id }.toSet().shouldHaveSize(3)
+        vertices.map { it.id }.toSet() shouldHaveSize 3
         vertices[2].properties["city"] shouldBeEqualTo "Seoul"
     }
 
@@ -96,13 +85,14 @@ class FalkorDBGraphBatchOperationsTest : AbstractFalkorDBTest() {
                 BatchEdge(bob.id, carol.id, mapOf("rank" to 2L)),
                 BatchEdge(carol.id, alice.id, mapOf("rank" to 3L)),
             ),
-        )
+        ).onEach { log.info { "edge: $it" } }
 
-        edges.shouldHaveSize(3)
+        edges shouldHaveSize 3
         edges.map { it.startId } shouldBeEqualTo listOf(alice.id, bob.id, carol.id)
         edges.map { it.endId } shouldBeEqualTo listOf(bob.id, carol.id, alice.id)
         edges.map { it.properties["rank"] } shouldBeEqualTo listOf(1L, 2L, 3L)
-        ops.findEdgesByLabel("KNOWS").shouldHaveSize(3)
+
+        ops.findEdgesByLabel("KNOWS") shouldHaveSize 3
     }
 
     @Test
@@ -120,12 +110,12 @@ class FalkorDBGraphBatchOperationsTest : AbstractFalkorDBTest() {
                 "KNOWS",
                 listOf(
                     BatchEdge(alice.id, bob.id),
-                    BatchEdge(alice.id, GraphElementId.of("999999999")),
+                    BatchEdge(alice.id, 999_999_999.toGraphElementId()),
                 ),
             )
         }
 
-        ops.findEdgesByLabel("KNOWS").shouldHaveSize(0)
+        ops.findEdgesByLabel("KNOWS").shouldBeEmpty()
     }
 
     @Test
@@ -144,11 +134,15 @@ class FalkorDBGraphBatchOperationsTest : AbstractFalkorDBTest() {
                 BatchEdge(vertices[0].id, vertices[1].id, mapOf("rank" to 1L)),
                 BatchEdge(vertices[1].id, vertices[0].id, mapOf("rank" to 2L)),
             ),
-        )
+        ).onEach { log.info { "edge: $it" } }
 
         vertices.map { it.properties["name"] } shouldBeEqualTo listOf("Alice", "Bob")
+
         edges.map { it.startId } shouldBeEqualTo listOf(vertices[0].id, vertices[1].id)
         edges.map { it.properties["rank"] } shouldBeEqualTo listOf(1L, 2L)
-        suspendOps.findEdgesByLabel("KNOWS").toList().shouldHaveSize(2)
+
+        suspendOps.findEdgesByLabel("KNOWS")
+            .log("KNOWS")
+            .toList() shouldHaveSize 2
     }
 }

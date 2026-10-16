@@ -2,9 +2,9 @@
 
 package io.bluetape4k.graph.io.jackson3
 
-import io.bluetape4k.graph.io.contract.GraphSuspendBulkImporter
 import io.bluetape4k.graph.io.checkpoint.GraphImportCheckpointIdentity
 import io.bluetape4k.graph.io.checkpoint.GraphImportCheckpointSession
+import io.bluetape4k.graph.io.contract.GraphSuspendBulkImporter
 import io.bluetape4k.graph.io.jackson3.internal.Jackson3EnvelopeCodec
 import io.bluetape4k.graph.io.jackson3.internal.Jackson3RecordParser
 import io.bluetape4k.graph.io.jackson3.internal.NdJsonEnvelope
@@ -12,6 +12,7 @@ import io.bluetape4k.graph.io.model.GraphIoEdgeRecord
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.options.MissingEndpointPolicy
 import io.bluetape4k.graph.io.options.NdJsonReadOptions
+import io.bluetape4k.graph.io.report.GraphImportReport
 import io.bluetape4k.graph.io.report.GraphIoFailure
 import io.bluetape4k.graph.io.report.GraphIoFailureSeverity
 import io.bluetape4k.graph.io.report.GraphIoFileRole
@@ -22,7 +23,6 @@ import io.bluetape4k.graph.io.report.GraphIoProgressListener
 import io.bluetape4k.graph.io.report.GraphIoProgressReporter
 import io.bluetape4k.graph.io.report.GraphIoReadException
 import io.bluetape4k.graph.io.report.GraphIoStatus
-import io.bluetape4k.graph.io.report.GraphImportReport
 import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.graph.io.support.GraphIoExternalIdMap
 import io.bluetape4k.graph.io.support.GraphIoPaths
@@ -36,7 +36,6 @@ import io.bluetape4k.logging.warn
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.flow.collect
 
 /**
  * Jackson 3 기반 coroutine NDJSON bulk importer.
@@ -60,10 +59,14 @@ import kotlinx.coroutines.flow.collect
  * @param readOptions JSON codec 호출 전에 적용할 NDJSON 줄 길이 옵션
  */
 class SuspendJackson3NdJsonBulkImporter(
-    private val readOptions: NdJsonReadOptions = NdJsonReadOptions(),
-) : GraphSuspendBulkImporter<GraphImportSource> {
+    private val readOptions: NdJsonReadOptions = NdJsonReadOptions.Default,
+): GraphSuspendBulkImporter<GraphImportSource> {
 
-    private val codec: Jackson3EnvelopeCodec = Jackson3EnvelopeCodec()
+    companion object: KLoggingChannel() {
+        val Default = SuspendJackson3NdJsonBulkImporter()
+    }
+
+    private val codec: Jackson3EnvelopeCodec = Jackson3EnvelopeCodec.Default
 
     override suspend fun importGraphSuspending(
         source: GraphImportSource,
@@ -88,7 +91,9 @@ class SuspendJackson3NdJsonBulkImporter(
         operations: GraphSuspendOperations,
         options: GraphImportOptions,
     ): GraphImportReport {
-        log.debug { "Starting NDJSON_JACKSON3 import (suspend): defaultVertexLabel=${options.defaultVertexLabel}, defaultEdgeLabel=${options.defaultEdgeLabel}" }
+        log.debug {
+            "Starting NDJSON_JACKSON3 import (suspend): defaultVertexLabel=${options.defaultVertexLabel}, defaultEdgeLabel=${options.defaultEdgeLabel}"
+        }
         val watch = GraphIoStopwatch()
         val idMap = GraphIoExternalIdMap(options.onDuplicateVertexId)
         val checkpoint = GraphImportCheckpointSession(
@@ -105,107 +110,136 @@ class SuspendJackson3NdJsonBulkImporter(
             checkpoint.failed(boundary, error.message)
         }
         try {
-        val failures = mutableListOf<GraphIoFailure>()
-        val bufferedEdges = ArrayDeque<GraphIoEdgeRecord>()
-        val parser = Jackson3RecordParser(codec, readOptions)
-        var vr = 0L; var vc = 0L; var er = 0L; var ec = 0L; var sv = 0L; var se = 0L
-        var status = GraphIoStatus.COMPLETED
-        var failureBoundary = "VERTICES"
-        var drainedEdges = checkpoint.resumeEdgesProcessed
+            val failures = mutableListOf<GraphIoFailure>()
+            val bufferedEdges = ArrayDeque<GraphIoEdgeRecord>()
+            val parser = Jackson3RecordParser(codec, readOptions)
+            var vr = 0L
+            var vc = 0L
+            var er = 0L
+            var ec = 0L
+            var sv = 0L
+            var se = 0L
+            var status = GraphIoStatus.COMPLETED
+            var failureBoundary = "VERTICES"
+            var drainedEdges = checkpoint.resumeEdgesProcessed
 
-        val coroutineContext = currentCoroutineContext()
-        try {
-            parser.records(source).collect { parsed ->
-                coroutineContext.ensureActive()
-                if (status != GraphIoStatus.FAILED) {
-                    when (parsed.envelope.type) {
-                        NdJsonEnvelope.TYPE_VERTEX -> {
-                            vr++
-                            if (checkpoint.shouldSkipVertex(vr)) return@collect
+            val coroutineContext = currentCoroutineContext()
+            try {
+                parser.records(source).collect { parsed ->
+                    coroutineContext.ensureActive()
+                    if (status != GraphIoStatus.FAILED) {
+                        when (parsed.envelope.type) {
+                            NdJsonEnvelope.TYPE_VERTEX -> {
+                                vr++
+                                if (checkpoint.shouldSkipVertex(vr)) return@collect
+                            }
+                            NdJsonEnvelope.TYPE_EDGE -> {
+                                er++
+                                if (checkpoint.shouldSkipEdge(er)) return@collect
+                                failureBoundary = "EDGES"
+                            }
                         }
-                        NdJsonEnvelope.TYPE_EDGE -> {
-                            er++
-                            if (checkpoint.shouldSkipEdge(er)) return@collect
-                            failureBoundary = "EDGES"
+                        val previousVerticesCreated = vc
+                        status = importEnvelope(
+                            env = parsed.envelope,
+                            lineNo = parsed.lineNumber,
+                            currentStatus = status,
+                            options = options,
+                            idMap = idMap,
+                            batchWriter = batchWriter,
+                            failures = failures,
+                            bufferedEdges = bufferedEdges,
+                            verticesCreated = { vc },
+                            onVertexRead = {},
+                            onVertexCreated = { created -> vc += created },
+                            onVertexSkipped = { sv++ },
+                            onEdgeRead = {},
+                        )
+                        if (vc > previousVerticesCreated) {
+                            vc += batchWriter.flushVertices(idMap)
+                            checkpoint.verticesCommitted(vr)
                         }
+                        if (status == GraphIoStatus.FAILED) throw StopImport()
                     }
-                    val previousVerticesCreated = vc
-                    status = importEnvelope(
-                        env = parsed.envelope,
-                        lineNo = parsed.lineNumber,
-                        currentStatus = status,
-                        options = options,
-                        idMap = idMap,
-                        batchWriter = batchWriter,
-                        failures = failures,
-                        bufferedEdges = bufferedEdges,
-                        verticesCreated = { vc },
-                        onVertexRead = {},
-                        onVertexCreated = { created -> vc += created },
-                        onVertexSkipped = { sv++ },
-                        onEdgeRead = {},
-                    )
-                    if (vc > previousVerticesCreated) {
-                        vc += batchWriter.flushVertices(idMap)
-                        checkpoint.verticesCommitted(vr)
+                }
+            } catch (_: StopImport) {
+                // Stop at the first terminal import failure; parser closes the source.
+            } catch (error: GraphIoReadException) {
+                failures += error.failure
+                status = GraphIoStatus.FAILED
+                failureBoundary = if (error.failure.phase == GraphIoPhase.READ_EDGE) "EDGES" else "VERTICES"
+            }
+
+            vc += batchWriter.flushVertices(idMap)
+            checkpoint.verticesCommitted(vr)
+
+            if (status == GraphIoStatus.FAILED) {
+                checkpoint.failed(failureBoundary)
+                log.warn {
+                    "NDJSON_JACKSON3 import (suspend) failed: vertices=$vc/$vr, edges=$ec/$er, elapsed=${watch.elapsed()}"
+                }
+                return GraphImportReport(
+                    status,
+                    GraphIoFormat.NDJSON_JACKSON3,
+                    vr,
+                    vc,
+                    er,
+                    ec,
+                    sv,
+                    se,
+                    watch.elapsed(),
+                    failures
+                )
+            }
+
+            status = drainBufferedEdges(
+                bufferedEdges = bufferedEdges,
+                idMap = idMap,
+                options = options,
+                batchWriter = batchWriter,
+                failures = failures,
+                currentStatus = status,
+                onEdgesCreated = { created ->
+                    ec += created
+                    if (created > 0) {
+                        ec += batchWriter.flushEdges()
+                        true
+                    } else {
+                        false
                     }
-                    if (status == GraphIoStatus.FAILED) throw StopImport
+                },
+                onEdgeSkipped = { se++ },
+                onEdgeProgress = { progress ->
+                    drainedEdges = progress
+                    checkpoint.edgesCommitted(vr, drainedEdges)
+                },
+                startingEdgeProgress = checkpoint.resumeEdgesProcessed,
+            )
+
+            if (status != GraphIoStatus.FAILED) {
+                ec += batchWriter.flushEdges()
+                checkpoint.edgesCommitted(vr, er)
+                checkpoint.completed()
+            } else {
+                checkpoint.failed("EDGES")
+            }
+
+            return GraphImportReport(
+                status,
+                GraphIoFormat.NDJSON_JACKSON3,
+                vr,
+                vc,
+                er,
+                ec,
+                sv,
+                se,
+                watch.elapsed(),
+                failures
+            ).also {
+                log.debug {
+                    "NDJSON_JACKSON3 import (suspend) completed: vertices=$vc/$vr, edges=$ec/$er, skipped=$sv/$se, status=$status, elapsed=${watch.elapsed()}"
                 }
             }
-        } catch (_: StopImport) {
-            // Stop at the first terminal import failure; parser closes the source.
-        } catch (error: GraphIoReadException) {
-            failures += error.failure
-            status = GraphIoStatus.FAILED
-            failureBoundary = if (error.failure.phase == GraphIoPhase.READ_EDGE) "EDGES" else "VERTICES"
-        }
-
-        vc += batchWriter.flushVertices(idMap)
-        checkpoint.verticesCommitted(vr)
-
-        if (status == GraphIoStatus.FAILED) {
-            checkpoint.failed(failureBoundary)
-            log.warn { "NDJSON_JACKSON3 import (suspend) failed: vertices=$vc/$vr, edges=$ec/$er, elapsed=${watch.elapsed()}" }
-            return GraphImportReport(
-                status, GraphIoFormat.NDJSON_JACKSON3, vr, vc, er, ec, sv, se, watch.elapsed(), failures
-            )
-        }
-
-        status = drainBufferedEdges(
-            bufferedEdges = bufferedEdges,
-            idMap = idMap,
-            options = options,
-            batchWriter = batchWriter,
-            failures = failures,
-            currentStatus = status,
-            onEdgesCreated = { created ->
-                ec += created
-                if (created > 0) {
-                    ec += batchWriter.flushEdges()
-                    true
-                } else {
-                    false
-                }
-            },
-            onEdgeSkipped = { se++ },
-            onEdgeProgress = { progress ->
-                drainedEdges = progress
-                checkpoint.edgesCommitted(vr, drainedEdges)
-            },
-            startingEdgeProgress = checkpoint.resumeEdgesProcessed,
-        )
-
-        if (status != GraphIoStatus.FAILED) {
-            ec += batchWriter.flushEdges()
-            checkpoint.edgesCommitted(vr, er)
-            checkpoint.completed()
-        } else {
-            checkpoint.failed("EDGES")
-        }
-
-        return GraphImportReport(status, GraphIoFormat.NDJSON_JACKSON3, vr, vc, er, ec, sv, se, watch.elapsed(), failures).also {
-            log.debug { "NDJSON_JACKSON3 import (suspend) completed: vertices=$vc/$vr, edges=$ec/$er, skipped=$sv/$se, status=$status, elapsed=${watch.elapsed()}" }
-        }
         } catch (error: CancellationException) {
             checkpoint.cancelled()
             throw error
@@ -229,7 +263,8 @@ class SuspendJackson3NdJsonBulkImporter(
         var status = currentStatus
         var processedEdges = startingEdgeProgress
         var checkpointedEdges = startingEdgeProgress
-        for (edge in bufferedEdges) {
+
+        bufferedEdges.forEach { edge ->
             if (status != GraphIoStatus.FAILED) {
                 val result = drainBufferedEdge(
                     edge = edge,
@@ -383,8 +418,11 @@ class SuspendJackson3NdJsonBulkImporter(
     ): GraphIoStatus {
         val rec = toVertexRecord(env, lineNo, options, failures) ?: return GraphIoStatus.FAILED
         onVertexRead()
+
         val props = options.preserveExternalIdProperty
-            ?.let { key -> rec.properties + (key to rec.externalId) } ?: rec.properties
+            ?.let { key -> rec.properties + (key to rec.externalId) }
+            ?: rec.properties
+
         return when (idMap.putFirstOrFail(rec.externalId, GraphElementId(rec.externalId))) {
             GraphIoExternalIdMap.PutResult.CREATED -> {
                 onVertexCreated(batchWriter.addVertex(rec.externalId, rec.label, props, idMap))
@@ -410,6 +448,7 @@ class SuspendJackson3NdJsonBulkImporter(
         val rec = toEdgeRecord(env, lineNo, options, failures) ?: return GraphIoStatus.FAILED
         onEdgeRead()
         bufferedEdges += rec
+
         return if (bufferedEdges.size > options.maxEdgeBufferSize) {
             val maxSize = options.maxEdgeBufferSize
             failures += GraphIoFailure(
@@ -417,7 +456,7 @@ class SuspendJackson3NdJsonBulkImporter(
                 fileRole = GraphIoFileRole.UNIFIED,
                 location = "line:$lineNo",
                 message = "Edge buffer exceeded maxEdgeBufferSize=$maxSize; " +
-                    "verticesCreated=${verticesCreated()} remain in graph as partial state",
+                        "verticesCreated=${verticesCreated()} remain in graph as partial state",
             )
             GraphIoStatus.FAILED
         } else {
@@ -459,7 +498,5 @@ class SuspendJackson3NdJsonBulkImporter(
         null
     }
 
-    private object StopImport : RuntimeException()
-
-    companion object : KLoggingChannel()
+    private class StopImport: RuntimeException()
 }

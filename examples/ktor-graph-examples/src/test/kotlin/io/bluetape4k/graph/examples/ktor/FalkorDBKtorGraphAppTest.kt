@@ -2,12 +2,13 @@ package io.bluetape4k.graph.examples.ktor
 
 import com.falkordb.FalkorDB
 import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.graph.falkordb.FalkorDBServer
+import io.bluetape4k.graph.examples.ktor.FalkorDBKtorGraphAppTest.Companion.driver
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.ktor.core.HealthResponse
 import io.bluetape4k.ktor.testing.decodeJsonBody
 import io.bluetape4k.ktor.testing.shouldHaveStatus
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.testcontainers.graphdb.FalkorDBServer
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.statement.bodyAsText
@@ -35,7 +36,7 @@ import org.junit.jupiter.api.TestInstance
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FalkorDBKtorGraphAppTest {
 
-    companion object : KLogging() {
+    companion object: KLogging() {
         private val server = FalkorDBServer.Launcher.falkordb
         private val driverLazy = lazy { FalkorDB.driver(server.host, server.port) }
         private val driver by driverLazy

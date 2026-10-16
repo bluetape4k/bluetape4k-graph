@@ -1,29 +1,41 @@
 package io.bluetape4k.graph.io.graphml.internal
 
 import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBeEmpty
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeFalse
+import io.bluetape4k.assertions.shouldBeNull
+import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldContain
+import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.assertions.shouldNotContain
 import io.bluetape4k.graph.io.graphml.GraphMlAttrType
-import io.bluetape4k.graph.io.graphml.GraphMlExportOptions
 import io.bluetape4k.graph.io.graphml.GraphMlBulkImporter
+import io.bluetape4k.graph.io.graphml.GraphMlExportOptions
 import io.bluetape4k.graph.io.graphml.GraphMlImportOptions
 import io.bluetape4k.graph.io.graphml.UnsupportedGraphMlElementPolicy
 import io.bluetape4k.graph.io.model.GraphIoEdgeRecord
 import io.bluetape4k.graph.io.model.GraphIoVertexRecord
+import io.bluetape4k.graph.io.model.vertexRecordOf
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphIoFailureSeverity
 import io.bluetape4k.graph.io.report.GraphIoStatus
-import io.bluetape4k.graph.io.source.GraphImportSource
+import io.bluetape4k.graph.io.source.asSource
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
-import io.bluetape4k.assertions.shouldContain
-import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldBeTrue
-import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.io.toInputStream
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
+import io.bluetape4k.support.requireNotNull
+import io.bluetape4k.support.toUtf8Bytes
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
-import java.util.UUID
+import java.util.*
 
 class StaxGraphMlReaderWriterTest {
+
+    companion object: KLogging()
 
     private val writer = StaxGraphMlWriter()
     private val reader = StaxGraphMlReader()
@@ -32,10 +44,13 @@ class StaxGraphMlReaderWriterTest {
     fun `write and read empty graph`() {
         val out = ByteArrayOutputStream()
         writer.write(out, emptyList(), emptyList())
+
         val result = reader.read(ByteArrayInputStream(out.toByteArray()))
-        result.vertices shouldHaveSize 0
-        result.edges shouldHaveSize 0
-        result.failures shouldHaveSize 0
+
+        log.debug { "result=$result" }
+        result.vertices.shouldBeEmpty()
+        result.edges.shouldBeEmpty()
+        result.failures.shouldBeEmpty()
     }
 
     @Test
@@ -48,7 +63,9 @@ class StaxGraphMlReaderWriterTest {
         writer.write(out, vertices, emptyList())
 
         val result = reader.read(ByteArrayInputStream(out.toByteArray()))
-        result.failures shouldHaveSize 0
+
+        log.debug { "result=$result" }
+        result.failures.shouldBeEmpty()
         result.vertices shouldHaveSize 2
         result.vertices[0].externalId shouldBeEqualTo "n1"
         result.vertices[0].label shouldBeEqualTo "Person"
@@ -70,6 +87,8 @@ class StaxGraphMlReaderWriterTest {
         writer.write(out, vertices, edges)
 
         val result = reader.read(ByteArrayInputStream(out.toByteArray()))
+
+        log.debug { "result=$result" }
         result.failures shouldHaveSize 0
         result.vertices shouldHaveSize 2
         result.edges shouldHaveSize 1
@@ -115,6 +134,7 @@ class StaxGraphMlReaderWriterTest {
         result.failures shouldHaveSize 0
         result.vertices.single { it.externalId == "n1" }.properties shouldBeEqualTo vertices.first().properties
         result.edges.single().properties shouldBeEqualTo edges.single().properties
+
         GraphMlAttrType.entries.forEach { type ->
             xml shouldContain "attr.name=\"${type.xmlName}\" attr.type=\"${type.xmlName}\""
         }
@@ -149,7 +169,9 @@ class StaxGraphMlReaderWriterTest {
         val xml = out.toString(Charsets.UTF_8)
 
         xml shouldContain "<data key=\"d2\"></data>"
-        result.vertices.first().properties.containsKey("rank") shouldBeEqualTo false
+
+        log.debug { "result=$result" }
+        result.vertices.first().properties.containsKey("rank").shouldBeFalse()
         result.vertices.first().properties["note"] shouldBeEqualTo ""
         result.vertices.last().properties["rank"] shouldBeEqualTo 2
     }
@@ -162,8 +184,8 @@ class StaxGraphMlReaderWriterTest {
         writer.write(out, vertices, emptyList(), includeEmptyProperties = false)
         val result = reader.read(ByteArrayInputStream(out.toByteArray()))
 
-        out.toString(Charsets.UTF_8).contains("<data key=\"d1\">") shouldBeEqualTo false
-        result.vertices.single().properties.containsKey("rank") shouldBeEqualTo false
+        out.toString(Charsets.UTF_8) shouldNotContain "<data key=\"d1\">"
+        result.vertices.single().properties.containsKey("rank").shouldBeFalse()
     }
 
     @Test
@@ -192,22 +214,27 @@ class StaxGraphMlReaderWriterTest {
         writer.write(out, vertices, edges)
 
         val result = reader.read(ByteArrayInputStream(out.toByteArray()))
+
+        log.debug { "result=$result" }
         result.failures shouldHaveSize 0
         result.edges shouldHaveSize 1
         result.edges[0].fromExternalId shouldBeEqualTo "n1"
-        result.edges[0].externalId shouldBeEqualTo null
+        result.edges[0].externalId.shouldBeNull()
     }
 
     @Test
     fun `reader handles missing label using default`() {
         val xml = """<?xml version="1.0" encoding="UTF-8"?>
-<graphml xmlns="http://graphml.graphdrawing.org/graphml">
-  <graph id="G" edgedefault="directed">
-    <node id="n1"/>
-  </graph>
-</graphml>"""
+            <graphml xmlns="http://graphml.graphdrawing.org/graphml">
+                <graph id="G" edgedefault="directed">
+                    <node id="n1"/>
+                </graph>
+            </graphml>""".trimIndent()
         val options = GraphMlImportOptions(defaultVertexLabel = "DefaultVertex")
+
         val result = reader.read(ByteArrayInputStream(xml.toByteArray()), options)
+
+        log.debug { "result=$result" }
         result.failures shouldHaveSize 0
         result.vertices shouldHaveSize 1
         result.vertices[0].label shouldBeEqualTo "DefaultVertex"
@@ -217,6 +244,7 @@ class StaxGraphMlReaderWriterTest {
     fun `reader imports representative property graph fixture`() {
         val result = fixture("property-graph-basic.graphml").use { reader.read(it) }
 
+        log.debug { "result=$result" }
         result.failures shouldHaveSize 0
         result.vertices shouldHaveSize 2
         result.edges shouldHaveSize 1
@@ -232,31 +260,34 @@ class StaxGraphMlReaderWriterTest {
     @Test
     fun `reader records failure for edge missing source`() {
         val xml = """<?xml version="1.0" encoding="UTF-8"?>
-<graphml xmlns="http://graphml.graphdrawing.org/graphml">
-  <graph id="G" edgedefault="directed">
-    <node id="n1"/>
-    <edge id="e1" target="n1"/>
-  </graph>
-</graphml>"""
+            <graphml xmlns="http://graphml.graphdrawing.org/graphml">
+              <graph id="G" edgedefault="directed">
+                <node id="n1"/>
+                <edge id="e1" target="n1"/>
+              </graph>
+            </graphml>""".trimIndent()
+
         val result = reader.read(ByteArrayInputStream(xml.toByteArray()))
+        log.debug { "result=$result" }
         result.failures.isEmpty().not().shouldBeTrue()
     }
 
     @Test
     fun `reader records errors for invalid typed data values`() {
         val xml = """<?xml version="1.0" encoding="UTF-8"?>
-<graphml xmlns="http://graphml.graphdrawing.org/graphml">
-  <key id="age" for="node" attr.name="age" attr.type="int"/>
-  <key id="score" for="edge" attr.name="score" attr.type="double"/>
-  <graph id="G" edgedefault="directed">
-    <node id="n1"><data key="age">not-an-int</data></node>
-    <node id="n2"><data key="age">42</data></node>
-    <edge id="e1" source="n1" target="n2"><data key="score">not-a-double</data></edge>
-  </graph>
-</graphml>"""
+            <graphml xmlns="http://graphml.graphdrawing.org/graphml">
+              <key id="age" for="node" attr.name="age" attr.type="int"/>
+              <key id="score" for="edge" attr.name="score" attr.type="double"/>
+              <graph id="G" edgedefault="directed">
+                <node id="n1"><data key="age">not-an-int</data></node>
+                <node id="n2"><data key="age">42</data></node>
+                <edge id="e1" source="n1" target="n2"><data key="score">not-a-double</data></edge>
+              </graph>
+            </graphml>""".trimIndent()
 
         val result = reader.read(ByteArrayInputStream(xml.toByteArray()))
 
+        log.debug { "result=$result" }
         result.vertices shouldHaveSize 2
         result.edges shouldHaveSize 1
         result.failures shouldHaveSize 2
@@ -265,27 +296,28 @@ class StaxGraphMlReaderWriterTest {
         result.failures.map { it.columnName } shouldContain "score"
         result.failures.map { it.message } shouldContain "Invalid GraphML int value"
         result.failures.map { it.message } shouldContain "Invalid GraphML double value"
-        result.vertices[0].properties.containsKey("age") shouldBeEqualTo false
+        result.vertices[0].properties.containsKey("age").shouldBeFalse()
         result.vertices[1].properties["age"] shouldBeEqualTo 42
-        result.edges[0].properties.containsKey("score") shouldBeEqualTo false
+        result.edges[0].properties.containsKey("score").shouldBeFalse()
     }
 
     @Test
     fun `bulk importer fails before writes for invalid typed data values`() {
         val xml = """<?xml version="1.0" encoding="UTF-8"?>
-<graphml xmlns="http://graphml.graphdrawing.org/graphml">
-  <key id="age" for="node" attr.name="age" attr.type="int"/>
-  <graph id="G" edgedefault="directed">
-    <node id="n1"><data key="age">not-an-int</data></node>
-  </graph>
-</graphml>"""
+            <graphml xmlns="http://graphml.graphdrawing.org/graphml">
+              <key id="age" for="node" attr.name="age" attr.type="int"/>
+              <graph id="G" edgedefault="directed">
+                <node id="n1"><data key="age">not-an-int</data></node>
+              </graph>
+            </graphml>""".trimIndent()
 
         val report = GraphMlBulkImporter().importGraph(
-            GraphImportSource.InputStreamSource(ByteArrayInputStream(xml.toByteArray()), closeInput = true),
+            xml.toUtf8Bytes().toInputStream().asSource(closeInput = true),
             TinkerGraphOperations(),
             GraphImportOptions(),
         )
 
+        log.debug { "result=$report" }
         report.status shouldBeEqualTo GraphIoStatus.FAILED
         report.verticesRead shouldBeEqualTo 1L
         report.verticesCreated shouldBeEqualTo 0L
@@ -297,6 +329,7 @@ class StaxGraphMlReaderWriterTest {
     fun `reader records warnings for unsupported graphml fixture with SKIP policy`() {
         val result = fixture("unsupported-constructs.graphml").use { reader.read(it) }
 
+        log.debug { "result=$result" }
         result.vertices shouldHaveSize 1
         result.edges shouldHaveSize 1
         result.failures shouldHaveSize 5
@@ -317,47 +350,53 @@ class StaxGraphMlReaderWriterTest {
             )
         }
 
+        log.debug { "result=$result" }
         result.vertices shouldHaveSize 1
         result.edges shouldHaveSize 1
         result.failures shouldHaveSize 5
         result.failures.map { it.severity }.toSet() shouldBeEqualTo setOf(GraphIoFailureSeverity.ERROR)
-        result.failures.map { it.message } shouldContain "GraphML undirected graphs are not supported"
-        result.failures.map { it.message } shouldContain "Nested GraphML graphs are not supported"
-        result.failures.map { it.message } shouldContain "GraphML undirected edges are not supported"
+        result.failures.map { it.message }.also {
+            it shouldContain "GraphML undirected graphs are not supported"
+            it shouldContain "Nested GraphML graphs are not supported"
+            it shouldContain "GraphML undirected edges are not supported"
+        }
     }
 
     @Test
     fun `bulk importer fails before writes for strict unsupported graphml fixture`() {
         val report = GraphMlBulkImporter().importGraph(
-            GraphImportSource.InputStreamSource(fixture("unsupported-constructs.graphml"), closeInput = true),
+            fixture("unsupported-constructs.graphml").asSource(true),
             TinkerGraphOperations(),
             GraphImportOptions(),
             GraphMlImportOptions(unsupportedElementPolicy = UnsupportedGraphMlElementPolicy.FAIL),
         )
 
+        log.debug { "result=$report" }
         report.status shouldBeEqualTo GraphIoStatus.FAILED
         report.verticesRead shouldBeEqualTo 1L
         report.verticesCreated shouldBeEqualTo 0L
         report.edgesRead shouldBeEqualTo 1L
         report.edgesCreated shouldBeEqualTo 0L
         report.failures shouldHaveSize 5
-        report.failures.singleOrNull { it.message.contains("hyperedge") }?.severity shouldBeEqualTo
-            GraphIoFailureSeverity.ERROR
+        report.failures
+            .singleOrNull { it.message.contains("hyperedge") }?.severity shouldBeEqualTo GraphIoFailureSeverity.ERROR
     }
 
     @Test
     fun `reader records one error for undirected graph default`() {
         val xml = """<?xml version="1.0" encoding="UTF-8"?>
-<graphml xmlns="http://graphml.graphdrawing.org/graphml">
-  <graph id="G" edgedefault="undirected">
-    <node id="n1"/>
-  </graph>
-</graphml>"""
+            <graphml xmlns="http://graphml.graphdrawing.org/graphml">
+              <graph id="G" edgedefault="undirected">
+                <node id="n1"/>
+              </graph>
+            </graphml>""".trimIndent()
+
         val result = reader.read(
-            ByteArrayInputStream(xml.toByteArray()),
+            xml.toByteArray().toInputStream(),
             GraphMlImportOptions(unsupportedElementPolicy = UnsupportedGraphMlElementPolicy.FAIL),
         )
 
+        log.debug { "result=$result" }
         result.vertices shouldHaveSize 1
         result.failures shouldHaveSize 1
         result.failures.single().severity shouldBeEqualTo GraphIoFailureSeverity.ERROR
@@ -366,7 +405,7 @@ class StaxGraphMlReaderWriterTest {
 
     @Test
     fun `write and read custom export options`() {
-        val vertices = listOf(GraphIoVertexRecord("v1", "Item", mapOf("price" to 9.99)))
+        val vertices = listOf(vertexRecordOf("v1", "Item", "price" to 9.99))
         val exportOpts = GraphMlExportOptions(graphId = "MyGraph", labelAttrName = "type")
         val importOpts = GraphMlImportOptions(labelAttrName = "type")
 
@@ -374,12 +413,14 @@ class StaxGraphMlReaderWriterTest {
         writer.write(out, vertices, emptyList(), exportOpts)
 
         val result = reader.read(ByteArrayInputStream(out.toByteArray()), importOpts)
+
+        log.debug { "result=$result" }
         result.vertices shouldHaveSize 1
         result.vertices[0].label shouldBeEqualTo "Item"
     }
 
     private fun fixture(name: String): InputStream =
-        requireNotNull(javaClass.getResourceAsStream("/fixtures/graphml/$name")) {
+        javaClass.getResourceAsStream("/fixtures/graphml/$name").requireNotNull {
             "GraphML fixture not found: $name"
         }
 }

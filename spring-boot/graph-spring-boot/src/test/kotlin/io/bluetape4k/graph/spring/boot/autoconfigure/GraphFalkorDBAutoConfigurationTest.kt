@@ -1,16 +1,18 @@
 package io.bluetape4k.graph.spring.boot.autoconfigure
 
-import io.bluetape4k.graph.falkordb.FalkorDBServer
+import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
 import io.bluetape4k.logging.KLogging
-import io.bluetape4k.assertions.shouldNotBeNull
-import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.testcontainers.graphdb.FalkorDBServer
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
+import org.springframework.beans.factory.getBean
 import org.springframework.boot.autoconfigure.AutoConfigurations
+import org.springframework.boot.health.contributor.HealthIndicator
 import org.springframework.boot.test.context.runner.ApplicationContextRunner
 
 /**
@@ -21,7 +23,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class GraphFalkorDBAutoConfigurationTest {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     private val runner = ApplicationContextRunner()
         .withConfiguration(
@@ -42,9 +44,9 @@ class GraphFalkorDBAutoConfigurationTest {
     fun `backend=falkordb 이면 GraphOperations 빈 등록`() {
         runner.withPropertyValues(*falkordbProperties)
             .run { ctx ->
-                ctx.getBean(GraphOperations::class.java).shouldNotBeNull()
-                ctx.getBean(GraphSuspendOperations::class.java).shouldNotBeNull()
-                ctx.getBean(GraphVirtualThreadOperations::class.java).shouldNotBeNull()
+                ctx.getBean<GraphOperations>().shouldNotBeNull()
+                ctx.getBean<GraphSuspendOperations>().shouldNotBeNull()
+                ctx.getBean<GraphVirtualThreadOperations>().shouldNotBeNull()
             }
     }
 
@@ -55,7 +57,7 @@ class GraphFalkorDBAutoConfigurationTest {
             "bluetape4k.graph.falkordb.register-suspend=false",
         ).run { ctx ->
             assertFailsWith<NoSuchBeanDefinitionException> {
-                ctx.getBean(GraphSuspendOperations::class.java)
+                ctx.getBean<GraphSuspendOperations>()
             }
         }
     }
@@ -67,7 +69,7 @@ class GraphFalkorDBAutoConfigurationTest {
             "bluetape4k.graph.falkordb.register-virtual-thread=false",
         ).run { ctx ->
             assertFailsWith<NoSuchBeanDefinitionException> {
-                ctx.getBean(GraphVirtualThreadOperations::class.java)
+                ctx.getBean<GraphVirtualThreadOperations>()
             }
         }
     }
@@ -77,7 +79,7 @@ class GraphFalkorDBAutoConfigurationTest {
         runner.withPropertyValues("bluetape4k.graph.backend=neo4j")
             .run { ctx ->
                 assertFailsWith<NoSuchBeanDefinitionException> {
-                    ctx.getBean(GraphOperations::class.java)
+                    ctx.getBean<GraphOperations>()
                 }
             }
     }
@@ -86,7 +88,7 @@ class GraphFalkorDBAutoConfigurationTest {
     fun `backend=falkordb 이면 HealthIndicator 빈 등록`() {
         runner.withPropertyValues(*falkordbProperties)
             .run { ctx ->
-                ctx.getBean(org.springframework.boot.health.contributor.HealthIndicator::class.java).shouldNotBeNull()
+                ctx.getBean<HealthIndicator>().shouldNotBeNull()
             }
     }
 }

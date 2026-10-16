@@ -13,4 +13,4 @@ package io.bluetape4k.graph.repository
  * }
  * ```
  */
-interface GraphGenericRepository : GraphTraversalRepository, GraphAlgorithmRepository
+interface GraphGenericRepository: GraphTraversalRepository, GraphAlgorithmRepository

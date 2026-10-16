@@ -12,10 +12,11 @@ import java.io.Serializable
  * | [RawJsonColumn] | `id, label, properties` (JSON 문자열) |
  * | [None] | `id, label` (속성 없음) |
  */
-sealed interface CsvPropertyMode {
+sealed interface CsvPropertyMode: Serializable {
 
     /** 속성 컬럼을 아예 포함하지 않는다. `id, label` 컬럼만 생성된다. */
-    data object None : CsvPropertyMode, Serializable {
+    data object None: CsvPropertyMode {
+        private fun readResolve(): Any = None
         private const val serialVersionUID: Long = 1L
     }
 
@@ -23,7 +24,7 @@ sealed interface CsvPropertyMode {
      * `prefix + propertyKey` 형식의 컬럼명으로 속성을 저장한다.
      * 기본 prefix는 `"prop."`.
      */
-    data class PrefixedColumns(val prefix: String = "prop.") : CsvPropertyMode, Serializable {
+    data class PrefixedColumns(val prefix: String = "prop."): CsvPropertyMode {
         init {
             prefix.requireNotBlank("prefix")
         }
@@ -37,7 +38,7 @@ sealed interface CsvPropertyMode {
      * 모든 속성을 JSON 문자열로 직렬화하여 단일 컬럼에 저장한다.
      * 기본 컬럼명은 `"properties"`.
      */
-    data class RawJsonColumn(val columnName: String = "properties") : CsvPropertyMode, Serializable {
+    data class RawJsonColumn(val columnName: String = "properties"): CsvPropertyMode {
         init {
             columnName.requireNotBlank("columnName")
         }

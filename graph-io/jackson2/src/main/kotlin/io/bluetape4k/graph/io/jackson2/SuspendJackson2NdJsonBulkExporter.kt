@@ -41,9 +41,13 @@ import kotlinx.coroutines.withContext
  * )
  * ```
  */
-class SuspendJackson2NdJsonBulkExporter : GraphSuspendBulkExporter<GraphExportSink> {
+class SuspendJackson2NdJsonBulkExporter: GraphSuspendBulkExporter<GraphExportSink> {
 
-    private val codec: Jackson2EnvelopeCodec = Jackson2EnvelopeCodec()
+    companion object: KLoggingChannel() {
+        val Default = SuspendJackson2NdJsonBulkExporter()
+    }
+
+    private val codec: Jackson2EnvelopeCodec = Jackson2EnvelopeCodec.Default
 
     override suspend fun exportGraphSuspending(
         sink: GraphExportSink,
@@ -71,27 +75,33 @@ class SuspendJackson2NdJsonBulkExporter : GraphSuspendBulkExporter<GraphExportSi
         log.debug { "Starting NDJSON_JACKSON2 export (suspend): vertexLabels=${options.vertexLabels}, edgeLabels=${options.edgeLabels}" }
         val watch = GraphIoStopwatch()
         val failures = mutableListOf<GraphIoFailure>()
-        var vWritten = 0L; var eWritten = 0L
+        var vWritten = 0L;
+        var eWritten = 0L
         val (vertexLabels, edgeLabels) = options.resolveLabels(operations)
 
         GraphIoPaths.openWriter(sink).use { writer ->
             for (label in vertexLabels) {
                 operations.findVerticesByLabelChunked(label, chunkSize = options.exportChunkSize).collect { chunk ->
-                    for (v in chunk) {
-                        val rec = GraphIoVertexRecord(v.id.value, v.label, v.properties)
-                        writer.write(codec.writeVertex(rec))
-                        writer.newLine()
-                        vWritten++
+                    withContext(Dispatchers.IO) {
+                        for (v in chunk) {
+                            val rec = GraphIoVertexRecord(v.id.value, v.label, v.properties)
+                            writer.write(codec.writeVertex(rec))
+                            writer.newLine()
+                            vWritten++
+                        }
                     }
                 }
             }
             for (label in edgeLabels) {
                 operations.findEdgesByLabelChunked(label, chunkSize = options.exportChunkSize).collect { chunk ->
-                    for (e in chunk) {
-                        val rec = GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties)
-                        writer.write(codec.writeEdge(rec))
-                        writer.newLine()
-                        eWritten++
+                    withContext(Dispatchers.IO) {
+                        for (e in chunk) {
+                            val rec =
+                                GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties)
+                            writer.write(codec.writeEdge(rec))
+                            writer.newLine()
+                            eWritten++
+                        }
                     }
                 }
             }
@@ -109,6 +119,4 @@ class SuspendJackson2NdJsonBulkExporter : GraphSuspendBulkExporter<GraphExportSi
             log.debug { "NDJSON_JACKSON2 export (suspend) completed: verticesWritten=$vWritten, edgesWritten=$eWritten, status=$status, elapsed=${watch.elapsed()}" }
         }
     }
-
-    companion object : KLoggingChannel()
 }

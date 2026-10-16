@@ -2,17 +2,26 @@ plugins {
     id("java-test-fixtures")
 }
 
+configurations {
+    testImplementation.get().extendsFrom(compileOnly.get(), runtimeOnly.get())
+}
+
 dependencies {
     api(bt4k.bluetape4k.core)
     implementation(bt4k.bluetape4k.virtualthread.api)
     implementation(bt4k.bluetape4k.virtualthread.jdk25)
-    implementation(bt4k.bluetape4k.coroutines)
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${bt4k.versions.kotlinx.coroutines.get()}")
+    api(bt4k.bluetape4k.coroutines)
+    api(libs.kotlinx.coroutines.core.lib)
 
     testImplementation(bt4k.bluetape4k.junit5)
     testImplementation(bt4k.bluetape4k.testcontainers)
     testImplementation(libs.kotlinx.coroutines.test.lib)
     testImplementation(project(":bluetape4k-graph-tinkerpop"))
+
+    // Serialization
+    testImplementation(bt4k.bluetape4k.io)
+    testImplementation(bt4k.fory.kotlin)
+    testImplementation(bt4k.kryo)
 
     testFixturesApi(bt4k.bluetape4k.junit5)
 }

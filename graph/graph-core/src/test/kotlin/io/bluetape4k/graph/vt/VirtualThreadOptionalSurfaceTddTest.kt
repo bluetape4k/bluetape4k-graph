@@ -3,61 +3,65 @@ package io.bluetape4k.graph.vt
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
-import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldBeInstanceOf
+import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.concurrent.await
+import io.bluetape4k.graph.AbstractGraphTest
+import io.bluetape4k.graph.GraphUnsupportedOperationException
 import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphVertex
-import io.bluetape4k.graph.repository.GraphCapability
+import io.bluetape4k.graph.model.edgeOf
+import io.bluetape4k.graph.model.vertexOf
 import io.bluetape4k.graph.repository.GraphCapabilities
+import io.bluetape4k.graph.repository.GraphCapability
 import io.bluetape4k.graph.repository.GraphMergeOperations
 import io.bluetape4k.graph.repository.GraphOperations
-import io.bluetape4k.graph.repository.GraphTransactionScope
 import io.bluetape4k.graph.repository.GraphTransactionalOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
 import io.bluetape4k.graph.repository.capabilities
 import io.bluetape4k.graph.repository.createIndexAsync
 import io.bluetape4k.graph.repository.mergeVertexAsync
 import io.bluetape4k.graph.repository.transactionAsync
-import io.bluetape4k.graph.schema.schemaManager
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
-import java.time.Duration
-import java.util.concurrent.CompletableFuture
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
+import org.junit.jupiter.api.Test
 import java.util.concurrent.CompletionException
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
-import org.junit.jupiter.api.Test
+import kotlin.time.Duration.Companion.seconds
 
-class VirtualThreadOptionalSurfaceTddTest {
+class VirtualThreadOptionalSurfaceTddTest: AbstractGraphTest() {
+
+    companion object: KLogging()
 
     @Test
     fun `focused adapters advertise their own optional capability`() {
-        val delegate = TinkerGraphOperations()
-        try {
+        TinkerGraphOperations().use { delegate ->
             val merge = (delegate as GraphMergeOperations).asVirtualThreadMerge()
             val schema = delegate.schemaManager().asVirtualThreadSchema()
             val transaction = (delegate as GraphTransactionalOperations).asVirtualThreadTransactional()
             val chunked = delegate.asVirtualThreadChunked()
 
-            GraphCapabilities.from(merge)
-                .supports(GraphCapability.MERGE).shouldBeTrue()
-            GraphCapabilities.from(schema)
-                .supports(GraphCapability.SCHEMA).shouldBeTrue()
-            GraphCapabilities.from(transaction)
-                .supports(GraphCapability.TRANSACTION).shouldBeTrue()
+            GraphCapabilities.from(merge).supports(GraphCapability.MERGE).shouldBeTrue()
+            GraphCapabilities.from(schema).supports(GraphCapability.SCHEMA).shouldBeTrue()
+            GraphCapabilities.from(transaction).supports(GraphCapability.TRANSACTION).shouldBeTrue()
+
             val chunkCapabilities = GraphCapabilities.from(chunked)
+
+            log.debug { "chunkCapabilities: $chunkCapabilities" }
             chunkCapabilities.supports(GraphCapability.CHUNKED_READ).shouldBeTrue()
             chunkCapabilities.supports(GraphCapability.CHUNKED_EXPORT).shouldBeTrue()
-        } finally {
-            delegate.close()
         }
     }
 
     @Test
     fun `supported facade exposes optional capabilities and keeps transaction affinity`() {
-        val delegate = TinkerGraphOperations()
-        try {
+        TinkerGraphOperations().use { delegate ->
+
             val adapter = VirtualThreadOperationsAdapter(delegate)
             val capabilities = adapter.capabilities()
 
@@ -83,22 +87,24 @@ class VirtualThreadOptionalSurfaceTddTest {
 
             adapter.createIndexAsync("Person", "email").join()
             adapter.listIndexesAsync().join().single().label shouldBeEqualTo "Person"
+
             val chunks = adapter.findVerticesByLabelChunkedAsync("Person", chunkSize = 1).join()
+            log.debug { "chunks=$chunks" }
             chunks.map(List<GraphVertex>::size) shouldBeEqualTo listOf(1, 1)
+
             val edgeChunks = adapter.findEdgesByLabelChunkedAsync("KNOWS", chunkSize = 1).join()
+            edgeChunks.forEach { log.debug { "edges=$it" } }
+            edgeChunks shouldHaveSize 1
             edgeChunks.flatten().single().label shouldBeEqualTo "KNOWS"
 
-            val transactionThread = adapter.transactionAsync { Thread.currentThread() }.join()
-            transactionThread.isVirtual().shouldBeTrue()
-        } finally {
-            delegate.close()
+            val isVirtual = adapter.transactionAsync { Thread.currentThread().isVirtual }.join()
+            isVirtual.shouldBeTrue()
         }
     }
 
     @Test
     fun `unsupported delegate does not advertise optional backend capabilities`() {
-        val delegate = TinkerGraphOperations()
-        try {
+        TinkerGraphOperations().use { delegate ->
             val adapter = VirtualThreadOperationsAdapter(GraphOperationsDecorator(delegate))
             val capabilities = adapter.capabilities()
 
@@ -111,17 +117,18 @@ class VirtualThreadOptionalSurfaceTddTest {
             capabilities.supports(GraphCapability.BOUNDED_CHUNKED_EXPORT).shouldBeFalse()
 
             val facade: GraphVirtualThreadOperations = adapter
+
             assertFailsWith<CompletionException> {
                 facade.mergeVertexAsync("Person", mapOf("email" to "unsupported@example.com")).join()
-            }.cause shouldBeInstanceOf UnsupportedOperationException::class
+            }.cause.shouldBeInstanceOf<GraphUnsupportedOperationException>()
+
             assertFailsWith<CompletionException> {
                 facade.createIndexAsync("Person", "email").join()
-            }.cause shouldBeInstanceOf UnsupportedOperationException::class
+            }.cause.shouldBeInstanceOf<GraphUnsupportedOperationException>()
+
             assertFailsWith<CompletionException> {
-                facade.transactionAsync { Unit }.join()
-            }.cause shouldBeInstanceOf UnsupportedOperationException::class
-        } finally {
-            delegate.close()
+                facade.transactionAsync { }.join()
+            }.cause.shouldBeInstanceOf<GraphUnsupportedOperationException>()
         }
     }
 
@@ -143,8 +150,10 @@ class VirtualThreadOptionalSurfaceTddTest {
         val release = CountDownLatch(1)
         val adapter = VirtualThreadMergeAdapter(BlockingMerge(started, release))
 
-        val cancelled = adapter.mergeVertexAsync("Person", mapOf("email" to "cancel@example.com"))
-        started.await(2, TimeUnit.SECONDS).shouldBeTrue()
+        val cancelled = adapter
+            .mergeVertexAsync("Person", mapOf("email" to "cancel@example.com"))
+        started.await(2.seconds).shouldBeTrue()
+
         cancelled.cancel(true).shouldBeTrue()
         cancelled.isCancelled.shouldBeTrue()
 
@@ -153,10 +162,14 @@ class VirtualThreadOptionalSurfaceTddTest {
         val timeoutAdapter = VirtualThreadMergeAdapter(BlockingMerge(timeoutStarted, timeoutRelease))
         val timed = timeoutAdapter
             .mergeVertexAsync("Person", mapOf("email" to "timeout@example.com"))
-            .orTimeout(Duration.ofMillis(100).toMillis(), TimeUnit.MILLISECONDS)
-        timeoutStarted.await(2, TimeUnit.SECONDS).shouldBeTrue()
-        val timeoutFailure = assertFailsWith<CompletionException> { timed.join() }
-        timeoutFailure.cause shouldBeInstanceOf TimeoutException::class
+            .orTimeout(100L, TimeUnit.MILLISECONDS)
+
+        timeoutStarted.await(2.seconds).shouldBeTrue()
+
+        val timeoutFailure = assertFailsWith<CompletionException> {
+            timed.join()
+        }
+        timeoutFailure.cause.shouldBeInstanceOf<TimeoutException>()
 
         release.countDown()
         timeoutRelease.countDown()
@@ -164,11 +177,11 @@ class VirtualThreadOptionalSurfaceTddTest {
 
     private class GraphOperationsDecorator(
         delegate: GraphOperations,
-    ) : GraphOperations by delegate
+    ): GraphOperations by delegate
 
     private class FailingMerge(
         private val failure: Throwable,
-    ) : GraphMergeOperations {
+    ): GraphMergeOperations {
         override fun mergeVertex(
             label: String,
             matchProperties: Map<String, Any?>,
@@ -187,7 +200,7 @@ class VirtualThreadOptionalSurfaceTddTest {
     private class BlockingMerge(
         private val started: CountDownLatch,
         private val release: CountDownLatch,
-    ) : GraphMergeOperations {
+    ): GraphMergeOperations {
         override fun mergeVertex(
             label: String,
             matchProperties: Map<String, Any?>,
@@ -195,7 +208,7 @@ class VirtualThreadOptionalSurfaceTddTest {
         ): GraphVertex {
             started.countDown()
             release.await()
-            return GraphVertex(GraphElementId.of("v-1"), label, matchProperties + setProperties)
+            return vertexOf("v-1", label, matchProperties + setProperties)
         }
 
         override fun mergeEdge(
@@ -207,7 +220,7 @@ class VirtualThreadOptionalSurfaceTddTest {
         ): GraphEdge {
             started.countDown()
             release.await()
-            return GraphEdge(GraphElementId.of("e-1"), label, fromId, toId, matchProperties + setProperties)
+            return edgeOf("e-1", label, fromId, toId, matchProperties + setProperties)
         }
     }
 }

@@ -8,6 +8,7 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.warn
+import io.bluetape4k.support.requireNotNull
 import java.util.*
 
 /**
@@ -48,10 +49,13 @@ class DijkstraRunner(
     private val fetchEdges: (GraphElementId) -> List<GraphEdge>,
     private val fetchVertex: (GraphElementId) -> GraphVertex?,
 ) {
-    companion object : KLogging()
+    companion object: KLogging()
 
     /** PriorityQueue entry with deterministic tie-break and no Pair comparator dispatch. */
-    private data class DijkstraNode(val cost: Double, val state: WeightedPathState) : Comparable<DijkstraNode> {
+    private data class DijkstraNode(
+        val cost: Double,
+        val state: WeightedPathState,
+    ): Comparable<DijkstraNode> {
         override fun compareTo(other: DijkstraNode): Int {
             val cmp = cost.compareTo(other.cost)
             if (cmp != 0) return cmp
@@ -62,7 +66,7 @@ class DijkstraRunner(
 
     /**
      * Computes the shortest path from [fromId] to [toId] with Dijkstra's algorithm.
-	*
+     *
      * @param fromId source vertex ID.
      * @param toId target vertex ID.
      * @param options traversal options (`weightProperty`, `missingWeightPolicy`, `maxDepth`, `maxVisited`).
@@ -74,7 +78,7 @@ class DijkstraRunner(
         toId: GraphElementId,
         options: PathOptions,
     ): GraphPath? {
-        val weightProperty = requireNotNull(options.weightProperty) {
+        val weightProperty = options.weightProperty.requireNotNull {
             "PathOptions.weightProperty must be set for Dijkstra"
         }
         val extractor = WeightExtractor(weightProperty, options.missingWeightPolicy)
@@ -113,6 +117,8 @@ class DijkstraRunner(
                 log.warn { "Dijkstra: fetchVertex($currentId) returned null mid-traversal — skipping neighbors" }
                 continue@outer
             }
+            log.debug { "current vertex = $currentVertex" }
+
             val edges = fetchEdges(currentId)
 
             for (edge in edges) {

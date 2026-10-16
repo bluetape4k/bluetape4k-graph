@@ -3,20 +3,14 @@ package io.bluetape4k.graph.model
 import io.bluetape4k.assertions.shouldBe
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeInstanceOf
+import io.bluetape4k.graph.AbstractGraphTest
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 
-class GraphCycleTest {
+class GraphCycleTest: AbstractGraphTest() {
 
-    private fun vertex(id: String, label: String = "Person") =
-        GraphVertex(GraphElementId(id), label)
-
-    private fun edge(id: String, start: String, end: String, label: String = "KNOWS") =
-        GraphEdge(
-            GraphElementId(id),
-            label,
-            GraphElementId(start),
-            GraphElementId(end)
-        )
+    companion object: KLogging()
 
     @Test
     fun `GraphCycle은 경로를 래핑한다`() {
@@ -24,6 +18,7 @@ class GraphCycleTest {
         val v2 = vertex("2")
         val e1 = edge("e1", "1", "2")
         val e2 = edge("e2", "2", "1")
+
         val path = GraphPath(
             listOf(
                 PathStep.VertexStep(v1),
@@ -35,6 +30,8 @@ class GraphCycleTest {
         )
 
         val cycle = GraphCycle(path)
+
+        log.debug { "cycle=$cycle" }
         cycle.path shouldBe path
         cycle.length shouldBeEqualTo 2
     }
@@ -46,12 +43,15 @@ class GraphCycleTest {
         val path = GraphPath(listOf(PathStep.VertexStep(v1), PathStep.EdgeStep(e1), PathStep.VertexStep(v1)))
 
         val cycle = GraphCycle(path)
+        log.debug { "cycle=$cycle" }
         cycle.length shouldBeEqualTo 1
     }
 
     @Test
     fun `빈 경로로 만든 GraphCycle의 length는 0이다`() {
         val cycle = GraphCycle(GraphPath.EMPTY)
+
+        log.debug { "cycle=$cycle" }
         cycle.length shouldBeEqualTo 0
     }
 
@@ -73,6 +73,7 @@ class GraphCycleTest {
 
         val cycle = path.toCycle()
 
+        log.debug { "cycle=$cycle" }
         cycle shouldBeInstanceOf GraphCycle::class
         cycle.path shouldBe path
         cycle.length shouldBeEqualTo 2
@@ -81,6 +82,8 @@ class GraphCycleTest {
     @Test
     fun `GraphPath EMPTY에서 toCycle을 호출하면 length 0인 순환을 반환한다`() {
         val cycle = GraphPath.EMPTY.toCycle()
+
+        log.debug { "cycle=$cycle" }
         cycle.length shouldBeEqualTo 0
     }
 
@@ -89,6 +92,8 @@ class GraphCycleTest {
         val e = edge("e1", "1", "2")
         val path = GraphPath(listOf(PathStep.EdgeStep(e)))
         val cycle = path.toCycle()
+
+        log.debug { "cycle=$cycle" }
         cycle.length shouldBeEqualTo 1
     }
 

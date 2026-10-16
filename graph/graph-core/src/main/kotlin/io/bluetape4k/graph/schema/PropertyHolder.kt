@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.schema
 
+import java.io.Serializable
 import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.reflect.KClass
@@ -12,14 +13,15 @@ import kotlin.reflect.KClass
  * `object` subclasses are initialized safely by JVM class loading. Non-object instances keep
  * 독립적인 property list를 가진다.
  */
-abstract class PropertyHolder {
+abstract class PropertyHolder: Serializable {
+
     private val _properties = mutableListOf<PropertyDef<*>>()
 
     /**
      * 이 label에 정의된 모든 [PropertyDef] value의 immutable snapshot.
-	*
+     *
      * 접근할 때마다 copy를 반환하므로 외부 mutation이 source list에 영향을 주지 않는다.
-	 */
+     */
     val properties: List<PropertyDef<*>> get() = _properties.toList()
 
     /** Defines a string property. */
@@ -48,9 +50,17 @@ abstract class PropertyHolder {
 
     /**
      * enum property를 정의한다.
-	*
+     *
      * @param name property name.
      * @param type enum [KClass].
      */
-    fun <E : Enum<E>> enum(name: String, type: KClass<E>) = PropertyDef(name, type).also { _properties.add(it) }
+    fun <E: Enum<E>> enum(name: String, type: KClass<E>) = PropertyDef(name, type).also { _properties.add(it) }
+
+    /**
+     * enum property를 정의한다.
+     *
+     * @param name property name.
+     * @param type enum [KClass].
+     */
+    internal inline fun <reified E: Enum<E>> enum(name: String) = propertyDefOf<E>(name).also { _properties.add(it) }
 }

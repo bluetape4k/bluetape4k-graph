@@ -7,14 +7,14 @@ import io.bluetape4k.graph.spring.boot.properties.FalkorDBGraphProperties
 import io.bluetape4k.graph.spring.boot.properties.GraphProperties
 import io.bluetape4k.graph.spring.boot.properties.MemgraphGraphProperties
 import io.bluetape4k.graph.spring.boot.properties.Neo4jGraphProperties
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
-import org.springframework.context.annotation.Bean
 import org.springframework.context.ApplicationContext
-import org.springframework.beans.factory.ObjectProvider
+import org.springframework.context.annotation.Bean
 
 /**
  * Opt-in registration for the read-only `graph` Actuator endpoint.

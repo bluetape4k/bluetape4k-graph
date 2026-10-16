@@ -6,13 +6,13 @@ import java.nio.charset.Charset
 import java.nio.file.Path
 
 /** 그래프 임포트 데이터 소스. 파일 경로 또는 InputStream을 지원한다. */
-sealed interface GraphImportSource {
+sealed interface GraphImportSource: Serializable {
 
     /** 파일 경로 기반 임포트 소스 */
     data class PathSource(
         val path: Path,
         val charset: Charset = Charsets.UTF_8,
-    ) : GraphImportSource, Serializable {
+    ): GraphImportSource {
         companion object {
             private const val serialVersionUID: Long = 1L
         }
@@ -23,5 +23,18 @@ sealed interface GraphImportSource {
         val input: InputStream,
         val charset: Charset = Charsets.UTF_8,
         val closeInput: Boolean = false,
-    ) : GraphImportSource
+    ): GraphImportSource {
+        companion object {
+            private const val serialVersionUID: Long = 1L
+        }
+    }
 }
+
+fun Path.asSource(charset: Charset = Charsets.UTF_8): GraphImportSource.PathSource =
+    GraphImportSource.PathSource(this, charset)
+
+fun InputStream.asSource(
+    closeInput: Boolean = false,
+    charset: Charset = Charsets.UTF_8,
+): GraphImportSource.InputStreamSource =
+    GraphImportSource.InputStreamSource(this, charset, closeInput)

@@ -1,35 +1,24 @@
 package io.bluetape4k.graph.algo
 
-import io.bluetape4k.graph.model.BfsDfsOptions
-import io.bluetape4k.graph.model.PageRankOptions
-import io.bluetape4k.graph.model.graphElementIdOf
-import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
-import io.bluetape4k.logging.KLogging
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
+import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldNotBeEmpty
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeEach
+import io.bluetape4k.concurrent.get
+import io.bluetape4k.concurrent.sequence
+import io.bluetape4k.graph.model.PageRankOptions
+import io.bluetape4k.graph.model.TreeTraversalOptions
+import io.bluetape4k.graph.model.elementIdOf
+import io.bluetape4k.graph.repository.GraphAlgorithmRepository
+import io.bluetape4k.graph.tinkerpop.AbstractTinkerGraphTest
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
+import kotlin.time.Duration.Companion.seconds
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class VirtualThreadAlgorithmAdapterTest {
+class VirtualThreadAlgorithmAdapterTest: AbstractTinkerGraphTest() {
 
     companion object: KLogging()
-
-    private val ops = TinkerGraphOperations()
-    private val vtOps = ops.asVirtualThread()
-
-    @AfterAll
-    fun teardown() {
-        ops.close()
-    }
-
-    @BeforeEach
-    fun reset() {
-        ops.dropGraph("default")
-    }
 
     @Test
     fun `pageRankAsync returns CompletableFuture with descending scores`() {
@@ -38,7 +27,9 @@ class VirtualThreadAlgorithmAdapterTest {
             val leaf = ops.createVertex("Person", mapOf("name" to "L$i"))
             ops.createEdge(leaf.id, hub.id, "FOLLOWS")
         }
-        val scores = vtOps.pageRankAsync(PageRankOptions(vertexLabel = "Person", iterations = 30)).join()
+        val scores = vtOps.pageRankAsync(PageRankOptions(vertexLabel = "Person", iterations = 30)).get(1.seconds)
+
+        scores.forEach { log.debug { "score=$it" } }
         scores.shouldNotBeEmpty()
         scores.first().vertex.properties["name"] shouldBeEqualTo "Hub"
     }
@@ -48,7 +39,10 @@ class VirtualThreadAlgorithmAdapterTest {
         val a = ops.createVertex("Node", emptyMap())
         val b = ops.createVertex("Node", emptyMap())
         ops.createEdge(a.id, b.id, "E")
-        val visits = vtOps.bfsAsync(a.id, BfsDfsOptions(edgeLabel = "E", maxDepth = 2)).join()
+
+        val visits = vtOps.bfsAsync(a.id, TreeTraversalOptions(edgeLabel = "E", maxDepth = 2)).get(1.seconds)
+
+        visits.forEach { log.debug { "visit=$it" } }
         visits.size shouldBeGreaterOrEqualTo 2
     }
 
@@ -58,17 +52,22 @@ class VirtualThreadAlgorithmAdapterTest {
         val b = ops.createVertex("Node", emptyMap())
         ops.createEdge(a.id, b.id, "E")
 
-        val futures = (1..10).map { vtOps.bfsAsync(a.id, BfsDfsOptions(edgeLabel = "E", maxDepth = 2)) }
-        val results = futures.map { it.join() }
+        val futures = List(10) {
+            vtOps.bfsAsync(a.id, TreeTraversalOptions(edgeLabel = "E", maxDepth = 2))
+        }.sequence()
+        val results = futures.get(1.seconds)
+
+        results.forEach { log.debug { "result=$it" } }
         results.size shouldBeEqualTo 10
-        results.all { it.isNotEmpty() } shouldBeEqualTo true
+        results.all { it.isNotEmpty() }.shouldBeTrue()
     }
 
     @Test
     fun `GraphOperations as virtual thread returns adapter`() {
-        val opsAsAlgo: io.bluetape4k.graph.repository.GraphAlgorithmRepository = ops
+        val opsAsAlgo = ops as GraphAlgorithmRepository
         val vt = opsAsAlgo.asVirtualThread()
-        val future = vt.degreeCentralityAsync(graphElementIdOf("0"))
+
+        val future = vt.degreeCentralityAsync(elementIdOf("0"))
         future.join() // should not throw even when vertex absent — returns 0/0
     }
 }

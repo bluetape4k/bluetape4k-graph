@@ -4,7 +4,11 @@ import io.bluetape4k.graph.model.GraphEdge
 import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.support.requireSafeIdentifier
+import io.bluetape4k.logging.KLogging
 import io.bluetape4k.support.requireNotBlank
+import io.bluetape4k.support.requireNotEmpty
+import io.bluetape4k.support.requireNotNull
+import java.io.Serializable
 
 /**
  * Validated merge/upsert property bundle.
@@ -28,7 +32,7 @@ import io.bluetape4k.support.requireNotBlank
 data class GraphMergeProperties(
     val matchProperties: Map<String, Any?>,
     val setProperties: Map<String, Any?>,
-)
+): Serializable
 
 /**
  * Shared input validation rules for backend merge/upsert APIs.
@@ -50,7 +54,7 @@ data class GraphMergeProperties(
  * )
  * ```
  */
-object GraphMergeValidation {
+object GraphMergeValidation: KLogging() {
 
     /**
      * Validates vertex merge input.
@@ -64,9 +68,7 @@ object GraphMergeValidation {
         setProperties: Map<String, Any?>,
     ): GraphMergeProperties {
         validateLabel(label)
-        require(matchProperties.isNotEmpty()) {
-            "matchProperties must not be empty for mergeVertex."
-        }
+        matchProperties.requireNotEmpty { "matchProperties must not be empty for mergeVertex." }
         return validateProperties(matchProperties, setProperties)
     }
 
@@ -99,9 +101,7 @@ object GraphMergeValidation {
     ): GraphMergeProperties {
         matchProperties.forEach { (key, value) ->
             key.requireNotBlank("match property key").requireSafeIdentifier("match property key")
-            require(value != null) {
-                "matchProperties must not contain null values: $key"
-            }
+            value.requireNotNull { "matchProperties must not contain null values: $key" }
         }
         setProperties.keys.forEach { key ->
             key.requireNotBlank("set property key").requireSafeIdentifier("set property key")

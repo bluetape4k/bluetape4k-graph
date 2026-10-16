@@ -55,7 +55,7 @@ open class AgeBenchmarkState {
             maximumPoolSize = 4
         })
         database = Database.connect(dataSource)
-        val raw = AgeGraphOperations(GRAPH_NAME)
+        val raw = AgeGraphOperations(database, GRAPH_NAME)
         ops = BenchmarkSingleThreadedCachingAgeGraphOperations(raw)
 
         if (ops.graphExists(GRAPH_NAME)) {

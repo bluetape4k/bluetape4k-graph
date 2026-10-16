@@ -3,13 +3,19 @@ package io.bluetape4k.graph
 import io.bluetape4k.assertions.shouldBe
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeInstanceOf
+import io.bluetape4k.assertions.shouldBeNull
+import io.bluetape4k.exceptions.BluetapeException
+import io.bluetape4k.logging.KLogging
 import org.junit.jupiter.api.Test
 
 class GraphExceptionsTest {
 
+    companion object: KLogging()
+
     @Test
     fun `GraphException은 RuntimeException 하위 타입이다`() {
         val ex: Throwable = GraphException("boom")
+        ex shouldBeInstanceOf BluetapeException::class
         ex shouldBeInstanceOf RuntimeException::class
         ex.message shouldBeEqualTo "boom"
     }
@@ -50,9 +56,15 @@ class GraphExceptionsTest {
     }
 
     @Test
+    fun `GraphUnsupportedOperationException은 GraphException이다`() {
+        val ex = GraphUnsupportedOperationException("unsuppoerted operation")
+        ex shouldBeInstanceOf GraphException::class
+    }
+
+    @Test
     fun `GraphException - cause가 없으면 null이다`() {
         val ex = GraphException("no cause")
-        ex.cause shouldBe null
+        ex.cause.shouldBeNull()
     }
 
     @Test
@@ -73,13 +85,20 @@ class GraphExceptionsTest {
     fun `GraphQueryException - message가 보존된다`() {
         val ex = GraphQueryException("invalid cypher syntax")
         ex.message shouldBeEqualTo "invalid cypher syntax"
-        ex.cause shouldBe null
+        ex.cause.shouldBeNull()
     }
 
     @Test
     fun `GraphNotInitializedException - cause와 함께 생성할 수 있다`() {
         val cause = IllegalStateException("driver not ready")
         val ex = GraphNotInitializedException("not initialized", cause)
+        ex.cause shouldBe cause
+    }
+
+    @Test
+    fun `GraphUnsupportedOperationException - cause와 함께 생성할 수 있다`() {
+        val cause = IllegalStateException("driver not ready")
+        val ex = GraphUnsupportedOperationException("not initialized", cause)
         ex.cause shouldBe cause
     }
 
@@ -91,7 +110,9 @@ class GraphExceptionsTest {
             GraphAlreadyExistsException("e"),
             GraphQueryException("e"),
             GraphNotInitializedException("e"),
+            GraphUnsupportedOperationException("e"),
         ).forEach { ex ->
+            ex shouldBeInstanceOf BluetapeException::class
             ex shouldBeInstanceOf RuntimeException::class
         }
     }

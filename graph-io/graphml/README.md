@@ -29,7 +29,8 @@ All implementations use StAX (Streaming API for XML) for memory-efficient parsin
 ## Features
 
 - **StAX-based streaming**: Memory-efficient parsing and serialization
-- **GraphML subset support**: Directed graphs with nodes, edges, scalar data, and explicit reporting for unsupported constructs
+- **GraphML subset
+  support**: Directed graphs with nodes, edges, scalar data, and explicit reporting for unsupported constructs
 - **Three execution models**: Sync, async, and virtual thread variants
 - **Detailed import reports**: Comprehensive failure reporting with phase and severity tracking
 - **Flexible configuration**: Customizable attribute names, default labels, and error handling policies
@@ -181,15 +182,15 @@ Supported import subset:
 
 ### Compatibility Contract Beyond the Property-Graph Subset
 
-| GraphML construct | Decision | Import behavior | Rationale |
-|---|---|---|---|
-| Directed graph with nodes, edges, scalar data, and scalar keys | Implemented | Imported/exported | Directly maps to `GraphVertex`, directed `GraphEdge`, and scalar properties. |
-| Graph-level `edgedefault="undirected"` | Deferred | `SKIP` records `WARN`; `FAIL` returns `FAILED` before writes | `GraphEdge` is directed; auto-creating reverse edges would change edge counts and traversal semantics. |
-| Edge-level `directed="false"` | Deferred | `SKIP` records `WARN` and keeps the source-to-target projection; `FAIL` returns `FAILED` before writes | The projection is useful for diagnostic imports but is not a faithful undirected-edge contract. |
-| Nested `<graph>` | Rejected for this slice | `SKIP` records `WARN` and skips nested content; `FAIL` returns `FAILED` before writes | `GraphVertex` has no child graph scope. Flattening needs an explicit ownership mapping design. |
-| `<hyperedge>` | Rejected | `SKIP` records `WARN`; `FAIL` returns `FAILED` before writes | `GraphEdge` has exactly one source and one target. Hyperedge support needs a reification-node policy. |
-| `<port>` | Deferred | `SKIP` records `WARN`; `FAIL` returns `FAILED` before writes | Ports describe endpoint metadata, while current backend-neutral endpoints target vertices only. |
-| XML extension payloads such as yFiles graphics | Deferred | Outside the supported contract | Visual metadata needs a namespaced extension-property policy before preservation. |
+| GraphML construct                                              | Decision                | Import behavior                                                                                        | Rationale                                                                                              |
+|----------------------------------------------------------------|-------------------------|--------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------|
+| Directed graph with nodes, edges, scalar data, and scalar keys | Implemented             | Imported/exported                                                                                      | Directly maps to `GraphVertex`, directed `GraphEdge`, and scalar properties.                           |
+| Graph-level `edgedefault="undirected"`                         | Deferred                | `SKIP` records `WARN`; `FAIL` returns `FAILED` before writes                                           | `GraphEdge` is directed; auto-creating reverse edges would change edge counts and traversal semantics. |
+| Edge-level `directed="false"`                                  | Deferred                | `SKIP` records `WARN` and keeps the source-to-target projection; `FAIL` returns `FAILED` before writes | The projection is useful for diagnostic imports but is not a faithful undirected-edge contract.        |
+| Nested `<graph>`                                               | Rejected for this slice | `SKIP` records `WARN` and skips nested content; `FAIL` returns `FAILED` before writes                  | `GraphVertex` has no child graph scope. Flattening needs an explicit ownership mapping design.         |
+| `<hyperedge>`                                                  | Rejected                | `SKIP` records `WARN`; `FAIL` returns `FAILED` before writes                                           | `GraphEdge` has exactly one source and one target. Hyperedge support needs a reification-node policy.  |
+| `<port>`                                                       | Deferred                | `SKIP` records `WARN`; `FAIL` returns `FAILED` before writes                                           | Ports describe endpoint metadata, while current backend-neutral endpoints target vertices only.        |
+| XML extension payloads such as yFiles graphics                 | Deferred                | Outside the supported contract                                                                         | Visual metadata needs a namespaced extension-property policy before preservation.                      |
 
 Representative fixtures under `src/test/resources/fixtures/graphml/` lock this contract for both permissive and strict import policies.
 
@@ -206,20 +207,16 @@ data class GraphMlExportOptions(
 ) : Serializable
 ```
 
-The exporter infers `attr.type` independently for node and edge properties.
-Homogeneous non-null `Int`, `Long`, `Float`, `Double`, `Boolean`, and `String`
+The exporter infers `attr.type` independently for node and edge properties. Homogeneous non-null `Int`, `Long`, `Float`, `Double`, `Boolean`, and `String`
 values round-trip with their JVM type. Null values do not affect inference;
-`GraphExportOptions.includeEmptyProperties=true` emits empty `<data>` for
-backward compatibility, while `false` omits it. An unsupported homogeneous JVM
-type uses its `toString()` value with `attr.type="string"`. Mixing different
-non-null JVM types under the same property key fails fast before the XML sink
-is opened.
+`GraphExportOptions.includeEmptyProperties=true` emits empty `<data>` for backward compatibility, while `false` omits it. An unsupported homogeneous JVM type uses its `toString()` value with `attr.type="string"`. Mixing different non-null JVM types under the same property key fails fast before the XML sink is opened.
 
 ## Performance Notes
 
 ### XMLFactory Caching (Critical)
 
-`XMLInputFactory` and `XMLOutputFactory` instances are expensive to create. The module internally maintains singleton instances for optimal performance. **Do not create new instances for each operation.**
+`XMLInputFactory` and `XMLOutputFactory` instances are expensive to create. The module internally maintains singleton instances for optimal performance.
+**Do not create new instances for each operation.**
 
 The `StaxGraphMlReader` and `StaxGraphMlWriter` classes use cached factories to avoid expensive initialization overhead.
 
@@ -229,24 +226,12 @@ The StAX streaming approach processes XML incrementally, making it suitable for 
 
 GraphML export uses `GraphExportOptions.exportChunkSize` for both vertex and edge repository reads. When the backend overrides the chunk-aware repository API (or provides a cursor-backed implementation), the exporter stages each bounded chunk once in the shared `GraphIoRecordSpool`, then replays the immutable disk snapshot for key discovery and XML writing. It avoids exporter-side whole-list materialization and a live second backend pass; the compatibility list/Flow fallback may still materialize a label before the exporter receives it. Active replay streams are closed during spool cleanup, and cleanup failures are suppressed behind the original source, sink, or cancellation failure. Temporary spool files are cleaned up on success, failure, and suspend cancellation.
 
-The GraphML bounded-chunk TCK asserts the requested chunk size, one lookup per
-selected label, and preservation of stage-time values when the backend mutates
-after the first chunk. It does not claim bounded source execution for the
-compatibility fallback, whose full label lookup can occur before the first
-chunk is yielded.
+The GraphML bounded-chunk TCK asserts the requested chunk size, one lookup per selected label, and preservation of stage-time values when the backend mutates after the first chunk. It does not claim bounded source execution for the compatibility fallback, whose full label lookup can occur before the first chunk is yielded.
 
-The shared spool enforces a 128 MiB per-record encoding cap without creating a
-second full-record `toByteArray()` copy. Constructor setup is fail-clean: if a
-later temporary file or output stream cannot be opened, all resources acquired
-before the failure are closed and deleted.
+The shared spool enforces a 128 MiB per-record encoding cap without creating a second full-record `toByteArray()` copy. Constructor setup is fail-clean: if a later temporary file or output stream cannot be opened, all resources acquired before the failure are closed and deleted.
 
-Suspend GraphML replay checks the coroutine context at every vertex or edge
-boundary before the next StAX write. This is a bounded checkpoint between
-blocking writes, not an interrupt guarantee for a single StAX call. The suspend
-session and output are closed in a `NonCancellable` cleanup scope; caller-owned
-`OutputStreamSink(closeOutput = false)` streams are flushed but kept open, owned
-sinks are closed, and cleanup failures are suppressed behind the original
-source, sink, or cancellation failure.
+Suspend GraphML replay checks the coroutine context at every vertex or edge boundary before the next StAX write. This is a bounded checkpoint between blocking writes, not an interrupt guarantee for a single StAX call. The suspend session and output are closed in a `NonCancellable` cleanup scope; caller-owned
+`OutputStreamSink(closeOutput = false)` streams are flushed but kept open, owned sinks are closed, and cleanup failures are suppressed behind the original source, sink, or cancellation failure.
 
 ## Error Handling
 
@@ -254,10 +239,10 @@ Import operations return a detailed `GraphImportReport` containing:
 
 - **Status**: COMPLETED, PARTIAL, or FAILED
 - **Failures**: List of `GraphIoFailure` objects with:
-  - Phase: READ_GRAPH, CREATE_VERTEX, CREATE_EDGE, READ_EDGE
-  - Severity: INFO, WARN, ERROR
-  - Message: Descriptive error message
-  - RecordId: ID of the problematic record
+    - Phase: READ_GRAPH, CREATE_VERTEX, CREATE_EDGE, READ_EDGE
+    - Severity: INFO, WARN, ERROR
+    - Message: Descriptive error message
+    - RecordId: ID of the problematic record
 
 Failures are collected and reported rather than failing fast, allowing partial imports to complete.
 
@@ -276,7 +261,4 @@ Failures are collected and reported rather than failing fast, allowing partial i
 
 ## Streaming reader contract
 
-`GraphMlRecordFlowReader` parses nodes and edges through a cold `Flow` in source order. StAX events
-are handed off incrementally; production import does not materialize a full vertex/edge list and
-edge staging is bounded by `maxEdgeBufferSize`. `GraphImportOptions.batchSize` controls backend
-write flushing only. Path and owned inputs are closed by the library, while caller-owned inputs remain open.
+`GraphMlRecordFlowReader` parses nodes and edges through a cold `Flow` in source order. StAX events are handed off incrementally; production import does not materialize a full vertex/edge list and edge staging is bounded by `maxEdgeBufferSize`. `GraphImportOptions.batchSize` controls backend write flushing only. Path and owned inputs are closed by the library, while caller-owned inputs remain open.

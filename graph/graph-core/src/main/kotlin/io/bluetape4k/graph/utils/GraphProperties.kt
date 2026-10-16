@@ -29,7 +29,7 @@ object GraphProperties: KLogging() {
 
     /**
      * Converts a map to a Cypher property block, for example `{name: 'Alice', age: 30}`.
-	*
+     *
      * Returns an empty string when the input is empty.
      *
      * ```kotlin
@@ -42,14 +42,16 @@ object GraphProperties: KLogging() {
      */
     fun toCypherProps(properties: Map<String, Any?>): String {
         if (properties.isEmpty()) return ""
-        return properties.entries.joinToString(", ", "{", "}") { (key, value) ->
-            "$key: ${toCypherValue(value)}"
-        }
+
+        return properties.entries
+            .joinToString(", ", "{", "}") { (key, value) ->
+                "$key: ${toCypherValue(value)}"
+            }
     }
 
     /**
      * Converts a single value to a Cypher literal.
-	*
+     *
      * - Strings are single-quoted, with backslash, quote, newline, and tab escaped.
      * - `LocalDate` and `LocalDateTime` are converted to ISO-8601 string literals.
      * - `List` and `Map` values are converted recursively.
@@ -78,7 +80,7 @@ object GraphProperties: KLogging() {
 
     /**
      * Escapes special characters inside a Cypher string literal.
-	*
+     *
      * Backslashes must be processed first to avoid double-escaping later sequences.
      */
     private fun escapeString(raw: String): String = buildString(raw.length) {

@@ -1,9 +1,10 @@
 package io.bluetape4k.graph.io.contract
 
-import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.report.GraphExportReport
 import io.bluetape4k.graph.io.report.GraphIoProgressListener
+import io.bluetape4k.graph.repository.GraphOperations
+import io.bluetape4k.support.requireNotNull
 import java.util.concurrent.CompletableFuture
 
 /**
@@ -37,7 +38,7 @@ import java.util.concurrent.CompletableFuture
  * @see GraphBulkExporter 동기 변형
  * @see GraphSuspendBulkExporter 코루틴 suspend 변형
  */
-interface GraphVirtualThreadBulkExporter<T : Any> : AutoCloseable {
+interface GraphVirtualThreadBulkExporter<T: Any>: AutoCloseable {
 
     override fun close() {}
 
@@ -64,7 +65,7 @@ interface GraphVirtualThreadBulkExporter<T : Any> : AutoCloseable {
         options: GraphExportOptions = GraphExportOptions(),
         listener: GraphIoProgressListener,
     ): CompletableFuture<GraphExportReport> {
-        requireNotNull(listener) { "listener must not be null" }
+        listener.requireNotNull("listener")
         return exportGraphAsync(sink, operations, options)
     }
 }

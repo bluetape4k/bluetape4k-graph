@@ -15,6 +15,7 @@ import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.io.support.GraphIoPaths
 import io.bluetape4k.graph.io.support.GraphIoStopwatch
+import io.bluetape4k.graph.io.support.openWriter
 import io.bluetape4k.graph.io.support.resolveLabels
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.coroutines.KLoggingChannel
@@ -41,9 +42,13 @@ import kotlinx.coroutines.withContext
  * )
  * ```
  */
-class SuspendJackson3NdJsonBulkExporter : GraphSuspendBulkExporter<GraphExportSink> {
+class SuspendJackson3NdJsonBulkExporter: GraphSuspendBulkExporter<GraphExportSink> {
 
-    private val codec: Jackson3EnvelopeCodec = Jackson3EnvelopeCodec()
+    companion object: KLoggingChannel() {
+        val Default = SuspendJackson3NdJsonBulkExporter()
+    }
+
+    private val codec: Jackson3EnvelopeCodec = Jackson3EnvelopeCodec.Default
 
     override suspend fun exportGraphSuspending(
         sink: GraphExportSink,
@@ -68,36 +73,54 @@ class SuspendJackson3NdJsonBulkExporter : GraphSuspendBulkExporter<GraphExportSi
         operations: GraphSuspendOperations,
         options: GraphExportOptions,
     ): GraphExportReport = withContext(Dispatchers.IO) {
-        log.debug { "Starting NDJSON_JACKSON3 export (suspend): vertexLabels=${options.vertexLabels}, edgeLabels=${options.edgeLabels}" }
+        log.debug {
+            "Starting NDJSON_JACKSON3 export (suspend): vertexLabels=${options.vertexLabels}, edgeLabels=${options.edgeLabels}"
+        }
         val watch = GraphIoStopwatch()
         val failures = mutableListOf<GraphIoFailure>()
-        var vWritten = 0L; var eWritten = 0L
+        var vWritten = 0L
+        var eWritten = 0L
         val (vertexLabels, edgeLabels) = options.resolveLabels(operations)
 
-        GraphIoPaths.openWriter(sink).use { writer ->
+        sink.openWriter().use { writer ->
             for (label in vertexLabels) {
                 operations.findVerticesByLabelChunked(label, chunkSize = options.exportChunkSize).collect { chunk ->
-                    for (v in chunk) {
-                        val rec = GraphIoVertexRecord(v.id.value, v.label, v.properties)
-                        writer.write(codec.writeVertex(rec))
-                        writer.newLine()
-                        vWritten++
+                    withContext(Dispatchers.IO) {
+                        for (v in chunk) {
+                            val rec = GraphIoVertexRecord(
+                                v.id.value,
+                                v.label,
+                                v.properties
+                            )
+                            writer.write(codec.writeVertex(rec))
+                            writer.newLine()
+                            vWritten++
+                        }
                     }
                 }
             }
             for (label in edgeLabels) {
                 operations.findEdgesByLabelChunked(label, chunkSize = options.exportChunkSize).collect { chunk ->
-                    for (e in chunk) {
-                        val rec = GraphIoEdgeRecord(e.id.value, e.label, e.startId.value, e.endId.value, e.properties)
-                        writer.write(codec.writeEdge(rec))
-                        writer.newLine()
-                        eWritten++
+                    withContext(Dispatchers.IO) {
+                        for (e in chunk) {
+                            val rec = GraphIoEdgeRecord(
+                                e.id.value,
+                                e.label,
+                                e.startId.value,
+                                e.endId.value,
+                                e.properties
+                            )
+                            writer.write(codec.writeEdge(rec))
+                            writer.newLine()
+                            eWritten++
+                        }
                     }
                 }
             }
         }
 
         val status = if (failures.isEmpty()) GraphIoStatus.COMPLETED else GraphIoStatus.PARTIAL
+
         GraphExportReport(
             status = status,
             format = GraphIoFormat.NDJSON_JACKSON3,
@@ -106,9 +129,9 @@ class SuspendJackson3NdJsonBulkExporter : GraphSuspendBulkExporter<GraphExportSi
             elapsed = watch.elapsed(),
             failures = failures,
         ).also {
-            log.debug { "NDJSON_JACKSON3 export (suspend) completed: verticesWritten=$vWritten, edgesWritten=$eWritten, status=$status, elapsed=${watch.elapsed()}" }
+            log.debug {
+                "NDJSON_JACKSON3 export (suspend) completed: verticesWritten=$vWritten, edgesWritten=$eWritten, status=$status, elapsed=${watch.elapsed()}"
+            }
         }
     }
-
-    companion object : KLoggingChannel()
 }

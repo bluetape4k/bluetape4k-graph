@@ -1,7 +1,9 @@
 package io.bluetape4k.graph.schema
 
+import io.bluetape4k.graph.GraphUnsupportedOperationException
 import io.bluetape4k.graph.model.GraphConstraint
 import io.bluetape4k.graph.model.GraphIndex
+import io.bluetape4k.support.requireNotNull
 import java.io.Serializable
 
 /**
@@ -12,7 +14,7 @@ import java.io.Serializable
 data class GraphSchemaDefinition(
     val indexes: Set<GraphIndex> = emptySet(),
     val constraints: Set<GraphConstraint> = emptySet(),
-) : Serializable {
+): Serializable {
     companion object {
         private const val serialVersionUID: Long = 1L
     }
@@ -34,7 +36,7 @@ data class GraphSchemaPlanItem(
     val index: GraphIndex? = null,
     val constraint: GraphConstraint? = null,
     val reason: String,
-) : Serializable {
+): Serializable {
     init {
         require((index == null) xor (constraint == null)) {
             "Exactly one of index or constraint must be provided."
@@ -55,7 +57,7 @@ data class GraphSchemaPlanItem(
 data class GraphSchemaPlanOptions(
     val dryRun: Boolean = true,
     val allowDestructiveDrops: Boolean = false,
-) : Serializable {
+): Serializable {
     init {
         require(!allowDestructiveDrops || !dryRun) {
             "allowDestructiveDrops requires dryRun=false."
@@ -71,8 +73,10 @@ data class GraphSchemaPlanOptions(
 data class GraphSchemaPlan(
     val items: List<GraphSchemaPlanItem>,
     val options: GraphSchemaPlanOptions,
-) : Serializable {
-    val isNoop: Boolean get() = items.all { it.action == GraphSchemaPlanAction.SKIP }
+): Serializable {
+
+    val isNoop: Boolean
+        get() = items.all { it.action == GraphSchemaPlanAction.SKIP }
 
     /** 계획에 기록된 create/drop 작업을 명시적으로 적용한다. */
     fun apply(manager: GraphSchemaManager): GraphSchemaApplyReport {
@@ -104,34 +108,36 @@ data class GraphSchemaPlan(
             GraphSchemaPlanAction.DROP_INDEX -> dropIndex(manager, item)
             GraphSchemaPlanAction.DROP_CONSTRAINT,
             GraphSchemaPlanAction.UNSUPPORTED,
-            -> ApplyOutcome.Unsupported(item.reason)
+                -> ApplyOutcome.Unsupported(item.reason)
             GraphSchemaPlanAction.SKIP -> ApplyOutcome.SKIPPED
         }
 
     private fun createIndex(manager: GraphSchemaManager, item: GraphSchemaPlanItem): ApplyOutcome {
-        val index = requireNotNull(item.index)
+        val index = item.index.requireNotNull("item.index")
         return unsupportedAsOutcome {
             manager.createIndex(index.label, requireProperty(index.property))
         }
     }
 
     private fun createConstraint(manager: GraphSchemaManager, item: GraphSchemaPlanItem): ApplyOutcome {
-        val constraint = requireNotNull(item.constraint)
+        val constraint = item.constraint.requireNotNull("item.constraint")
         return unsupportedAsOutcome {
             manager.createUniqueConstraint(constraint.label, constraint.property)
         }
     }
 
     private fun dropIndex(manager: GraphSchemaManager, item: GraphSchemaPlanItem): ApplyOutcome {
-        val index = requireNotNull(item.index)
+        val index = item.index.requireNotNull("item.index")
         manager.dropIndex(index.label, requireProperty(index.property))
         return ApplyOutcome.APPLIED
     }
 
-    private fun unsupportedAsOutcome(action: () -> Unit): ApplyOutcome =
+    private inline fun unsupportedAsOutcome(action: () -> Unit): ApplyOutcome =
         try {
             action()
             ApplyOutcome.APPLIED
+        } catch (error: GraphUnsupportedOperationException) {
+            ApplyOutcome.Unsupported(error.message ?: "GraphSchemaManager does not support this operation.")
         } catch (error: UnsupportedOperationException) {
             ApplyOutcome.Unsupported(error.message ?: "GraphSchemaManager does not support this operation.")
         }
@@ -143,7 +149,7 @@ data class GraphSchemaPlan(
     }
 
     private fun requireProperty(property: String?): String =
-        requireNotNull(property) { "Schema mutation requires a property name." }
+        property.requireNotNull { "Schema mutation requires a property name." }
 
     companion object {
         private const val serialVersionUID: Long = 1L
@@ -155,7 +161,7 @@ data class GraphSchemaApplyReport(
     val applied: List<GraphSchemaPlanItem>,
     val skipped: List<GraphSchemaPlanItem>,
     val unsupported: List<GraphSchemaPlanItem>,
-) : Serializable {
+): Serializable {
     val isSuccessful: Boolean get() = unsupported.isEmpty()
 
     companion object {
@@ -190,24 +196,34 @@ private fun MutableList<GraphSchemaPlanItem>.addMissingIndexes(
     live: Collection<GraphIndex>,
     desired: Set<GraphIndex>,
 ) {
-    desired.filterNot { wanted -> live.any { it.sameSchema(wanted) } }.forEach {
-        add(GraphSchemaPlanItem(GraphSchemaPlanAction.CREATE_INDEX, index = it, reason = "desired index is missing"))
-    }
+    desired
+        .filterNot { wanted -> live.any { it.sameSchema(wanted) } }
+        .forEach {
+            add(
+                GraphSchemaPlanItem(
+                    GraphSchemaPlanAction.CREATE_INDEX,
+                    index = it,
+                    reason = "desired index is missing"
+                )
+            )
+        }
 }
 
 private fun MutableList<GraphSchemaPlanItem>.addMissingConstraints(
     live: Collection<GraphConstraint>,
     desired: Set<GraphConstraint>,
 ) {
-    desired.filterNot { wanted -> live.any { it.sameSchema(wanted) } }.forEach {
-        add(
-            GraphSchemaPlanItem(
-                GraphSchemaPlanAction.CREATE_CONSTRAINT,
-                constraint = it,
-                reason = "desired unique constraint is missing",
-            ),
-        )
-    }
+    desired
+        .filterNot { wanted -> live.any { it.sameSchema(wanted) } }
+        .forEach {
+            add(
+                GraphSchemaPlanItem(
+                    GraphSchemaPlanAction.CREATE_CONSTRAINT,
+                    constraint = it,
+                    reason = "desired unique constraint is missing",
+                ),
+            )
+        }
 }
 
 private fun MutableList<GraphSchemaPlanItem>.addExtraIndexes(
@@ -215,15 +231,17 @@ private fun MutableList<GraphSchemaPlanItem>.addExtraIndexes(
     desired: Set<GraphIndex>,
     options: GraphSchemaPlanOptions,
 ) {
-    live.filterNot { existing -> desired.any { it.sameSchema(existing) } }.forEach {
-        add(
-            GraphSchemaPlanItem(
-                action = options.dropAction(GraphSchemaPlanAction.DROP_INDEX),
-                index = it,
-                reason = options.dropReason("live index is extra"),
-            ),
-        )
-    }
+    live
+        .filterNot { existing -> desired.any { it.sameSchema(existing) } }
+        .forEach {
+            add(
+                GraphSchemaPlanItem(
+                    action = options.dropAction(GraphSchemaPlanAction.DROP_INDEX),
+                    index = it,
+                    reason = options.dropReason("live index is extra"),
+                ),
+            )
+        }
 }
 
 private fun MutableList<GraphSchemaPlanItem>.addExtraConstraints(
@@ -231,15 +249,17 @@ private fun MutableList<GraphSchemaPlanItem>.addExtraConstraints(
     desired: Set<GraphConstraint>,
     options: GraphSchemaPlanOptions,
 ) {
-    live.filterNot { existing -> desired.any { it.sameSchema(existing) } }.forEach {
-        add(
-            GraphSchemaPlanItem(
-                action = options.dropAction(GraphSchemaPlanAction.UNSUPPORTED),
-                constraint = it,
-                reason = options.dropReason("GraphSchemaManager does not expose constraint drop"),
-            ),
-        )
-    }
+    live
+        .filterNot { existing -> desired.any { it.sameSchema(existing) } }
+        .forEach {
+            add(
+                GraphSchemaPlanItem(
+                    action = options.dropAction(GraphSchemaPlanAction.UNSUPPORTED),
+                    constraint = it,
+                    reason = options.dropReason("GraphSchemaManager does not expose constraint drop"),
+                ),
+            )
+        }
 }
 
 private fun GraphSchemaPlanOptions.dropAction(destructiveAction: GraphSchemaPlanAction): GraphSchemaPlanAction =

@@ -20,7 +20,7 @@ import java.io.Serializable
 data class TraversalVisit(
     val vertex: GraphVertex,
     val depth: Int,
-    val parentId: GraphElementId?,
+    val parentId: GraphElementId? = null,
 ): Serializable {
     companion object {
         private const val serialVersionUID: Long = 1L

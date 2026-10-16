@@ -3,9 +3,9 @@ package io.bluetape4k.graph.io.jackson2
 import io.bluetape4k.graph.io.contract.GraphVirtualThreadBulkExporter
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.report.GraphExportReport
-import io.bluetape4k.graph.io.report.GraphIoProgressListener
 import io.bluetape4k.graph.io.report.GraphIoFormat
 import io.bluetape4k.graph.io.report.GraphIoOperation
+import io.bluetape4k.graph.io.report.GraphIoProgressListener
 import io.bluetape4k.graph.io.report.GraphIoProgressReporter
 import io.bluetape4k.graph.io.source.GraphExportSink
 import io.bluetape4k.graph.io.support.GraphIoPaths
@@ -34,9 +34,13 @@ import java.util.concurrent.CompletableFuture
  * val report = future.join()
  * ```
  */
-class Jackson2NdJsonVirtualThreadBulkExporter : GraphVirtualThreadBulkExporter<GraphExportSink> {
+class Jackson2NdJsonVirtualThreadBulkExporter: GraphVirtualThreadBulkExporter<GraphExportSink> {
 
-    private val sync: Jackson2NdJsonBulkExporter = Jackson2NdJsonBulkExporter()
+    companion object: KLogging() {
+        val Default = Jackson2NdJsonVirtualThreadBulkExporter()
+    }
+
+    private val sync: Jackson2NdJsonBulkExporter = Jackson2NdJsonBulkExporter.Default
 
     override fun exportGraphAsync(
         sink: GraphExportSink,
@@ -71,6 +75,4 @@ class Jackson2NdJsonVirtualThreadBulkExporter : GraphVirtualThreadBulkExporter<G
             onCompleted = { report -> reporter.completed(report) },
         )
     }
-
-    companion object : KLogging()
 }

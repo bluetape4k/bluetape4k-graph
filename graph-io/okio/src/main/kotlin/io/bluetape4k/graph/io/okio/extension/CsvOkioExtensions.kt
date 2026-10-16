@@ -4,11 +4,13 @@ import io.bluetape4k.graph.io.csv.CsvGraphBulkExporter
 import io.bluetape4k.graph.io.csv.CsvGraphBulkImporter
 import io.bluetape4k.graph.io.csv.CsvGraphExportSink
 import io.bluetape4k.graph.io.csv.CsvGraphImportSource
-import io.bluetape4k.graph.io.okio.GraphIoOkioPaths
 import io.bluetape4k.graph.io.okio.OkioGraphExportSink
 import io.bluetape4k.graph.io.okio.OkioGraphImportSource
-import io.bluetape4k.graph.io.okio.bridge.toInputStream
+import io.bluetape4k.graph.io.okio.asSink
+import io.bluetape4k.graph.io.okio.asSource
 import io.bluetape4k.graph.io.okio.coroutines.SuspendGraphIoOkioBulkAdapter
+import io.bluetape4k.graph.io.okio.openGzipSink
+import io.bluetape4k.graph.io.okio.openGzipSource
 import io.bluetape4k.graph.io.okio.virtualthread.VirtualThreadGraphIoOkioBulkAdapter
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.options.GraphImportOptions
@@ -18,11 +20,12 @@ import io.bluetape4k.graph.io.report.GraphImportProgress
 import io.bluetape4k.graph.io.report.GraphImportReport
 import io.bluetape4k.graph.io.report.GraphIoFormat
 import io.bluetape4k.graph.io.report.GraphIoProgressListener
-import io.bluetape4k.graph.io.source.GraphExportSink
-import io.bluetape4k.graph.io.source.GraphImportSource
+import io.bluetape4k.graph.io.source.asSink
+import io.bluetape4k.graph.io.source.asSource
 import io.bluetape4k.graph.repository.GraphOperations
 import kotlinx.coroutines.flow.Flow
 import okio.Path.Companion.toPath
+import java.nio.file.Paths
 import java.util.concurrent.CompletableFuture
 
 // ─── Sync ─────────────────────────────────────────────────────────────────────
@@ -43,7 +46,7 @@ fun CsvGraphBulkImporter.importGraph(
     operations: GraphOperations,
     options: GraphImportOptions = GraphImportOptions(),
 ): GraphImportReport {
-    val csvSource = source.toCsvImportSource()
+    val csvSource = source.asCsvImportSource()
     return this.importGraph(csvSource, operations, options)
 }
 
@@ -54,7 +57,7 @@ fun CsvGraphBulkImporter.importGraph(
     options: GraphImportOptions = GraphImportOptions(),
     listener: GraphIoProgressListener,
 ): GraphImportReport {
-    return this.importGraph(source.toCsvImportSource(), operations, options, listener)
+    return this.importGraph(source.asCsvImportSource(), operations, options, listener)
 }
 
 /**
@@ -79,11 +82,11 @@ fun CsvGraphBulkImporter.importGraphGzip(
     val stem = source.path.toString().removeSuffix(".csv.gz").removeSuffix(".csv")
     val verticesSource = OkioGraphImportSource.PathSource("${stem}_vertices.csv.gz".toPath(), source.fileSystem)
     val edgesSource = OkioGraphImportSource.PathSource("${stem}_edges.csv.gz".toPath(), source.fileSystem)
-    return GraphIoOkioPaths.openGzipSource(verticesSource).use { vbs ->
-        GraphIoOkioPaths.openGzipSource(edgesSource).use { ebs ->
+    return verticesSource.openGzipSource().use { vbs ->
+        edgesSource.openGzipSource().use { ebs ->
             val csvSource = CsvGraphImportSource(
-                vertices = GraphImportSource.InputStreamSource(vbs.toInputStream(), closeInput = false),
-                edges = GraphImportSource.InputStreamSource(ebs.toInputStream(), closeInput = false),
+                vertices = vbs.asSource(false),
+                edges = ebs.asSource(false)
             )
             this.importGraph(csvSource, operations, options)
         }
@@ -103,11 +106,11 @@ fun CsvGraphBulkImporter.importGraphGzip(
     val stem = source.path.toString().removeSuffix(".csv.gz").removeSuffix(".csv")
     val verticesSource = OkioGraphImportSource.PathSource("${stem}_vertices.csv.gz".toPath(), source.fileSystem)
     val edgesSource = OkioGraphImportSource.PathSource("${stem}_edges.csv.gz".toPath(), source.fileSystem)
-    return GraphIoOkioPaths.openGzipSource(verticesSource).use { vbs ->
-        GraphIoOkioPaths.openGzipSource(edgesSource).use { ebs ->
+    return verticesSource.openGzipSource().use { vbs ->
+        edgesSource.openGzipSource().use { ebs ->
             val csvSource = CsvGraphImportSource(
-                vertices = GraphImportSource.InputStreamSource(vbs.toInputStream(), closeInput = false),
-                edges = GraphImportSource.InputStreamSource(ebs.toInputStream(), closeInput = false),
+                vertices = vbs.asSource(false),
+                edges = ebs.asSource(false)
             )
             this.importGraph(csvSource, operations, options, listener)
         }
@@ -124,7 +127,7 @@ fun CsvGraphBulkExporter.exportGraph(
     operations: GraphOperations,
     options: GraphExportOptions = GraphExportOptions(),
 ): GraphExportReport {
-    val csvSink = sink.toCsvExportSink()
+    val csvSink = sink.asCsvExportSink()
     return this.exportGraph(csvSink, operations, options)
 }
 
@@ -135,7 +138,7 @@ fun CsvGraphBulkExporter.exportGraph(
     options: GraphExportOptions = GraphExportOptions(),
     listener: GraphIoProgressListener,
 ): GraphExportReport {
-    return this.exportGraph(sink.toCsvExportSink(), operations, options, listener)
+    return this.exportGraph(sink.asCsvExportSink(), operations, options, listener)
 }
 
 /**
@@ -160,11 +163,12 @@ fun CsvGraphBulkExporter.exportGraphGzip(
     val stem = sink.path.toString().removeSuffix(".csv.gz").removeSuffix(".csv")
     val verticesSink = OkioGraphExportSink.PathSink("${stem}_vertices.csv.gz".toPath(), sink.fileSystem)
     val edgesSink = OkioGraphExportSink.PathSink("${stem}_edges.csv.gz".toPath(), sink.fileSystem)
-    return GraphIoOkioPaths.openGzipSink(verticesSink).use { vbs ->
-        GraphIoOkioPaths.openGzipSink(edgesSink).use { ebs ->
+
+    return verticesSink.openGzipSink().use { vbs ->
+        edgesSink.openGzipSink().use { ebs ->
             val csvSink = CsvGraphExportSink(
-                vertices = GraphExportSink.OutputStreamSink(vbs.outputStream(), closeOutput = false),
-                edges = GraphExportSink.OutputStreamSink(ebs.outputStream(), closeOutput = false),
+                vertices = vbs.asSink(false),
+                edges = ebs.asSink(false)
             )
             exportGraph(csvSink, operations, options)
         }
@@ -184,11 +188,13 @@ fun CsvGraphBulkExporter.exportGraphGzip(
     val stem = sink.path.toString().removeSuffix(".csv.gz").removeSuffix(".csv")
     val verticesSink = OkioGraphExportSink.PathSink("${stem}_vertices.csv.gz".toPath(), sink.fileSystem)
     val edgesSink = OkioGraphExportSink.PathSink("${stem}_edges.csv.gz".toPath(), sink.fileSystem)
-    return GraphIoOkioPaths.openGzipSink(verticesSink).use { vbs ->
-        GraphIoOkioPaths.openGzipSink(edgesSink).use { ebs ->
+
+
+    return verticesSink.openGzipSink().use { vbs ->
+        edgesSink.openGzipSink().use { ebs ->
             val csvSink = CsvGraphExportSink(
-                vertices = GraphExportSink.OutputStreamSink(vbs.outputStream(), closeOutput = false),
-                edges = GraphExportSink.OutputStreamSink(ebs.outputStream(), closeOutput = false),
+                vertices = vbs.asSink(false),
+                edges = ebs.asSink(false),
             )
             exportGraph(csvSink, operations, options, listener)
         }
@@ -197,13 +203,14 @@ fun CsvGraphBulkExporter.exportGraphGzip(
 
 // ─── VirtualThread ────────────────────────────────────────────────────────────
 
-private val vtAdapter = VirtualThreadGraphIoOkioBulkAdapter()
+private val vtAdapter = VirtualThreadGraphIoOkioBulkAdapter.Default
 
 /**
  * CSV 포맷으로 그래프를 Virtual Thread 비동기 임포트한다.
  *
  * @see importGraph 동기 변형
  */
+@Suppress("UnusedReceiverParameter")
 fun CsvGraphBulkImporter.importGraphAsync(
     source: OkioGraphImportSource,
     operations: GraphOperations,
@@ -211,6 +218,7 @@ fun CsvGraphBulkImporter.importGraphAsync(
 ): CompletableFuture<GraphImportReport> =
     vtAdapter.importGraphAsync(source, GraphIoFormat.CSV, operations, options)
 
+@Suppress("UnusedReceiverParameter")
 fun CsvGraphBulkImporter.importGraphAsync(
     source: OkioGraphImportSource,
     operations: GraphOperations,
@@ -224,6 +232,7 @@ fun CsvGraphBulkImporter.importGraphAsync(
  *
  * @see exportGraph 동기 변형
  */
+@Suppress("UnusedReceiverParameter")
 fun CsvGraphBulkExporter.exportGraphAsync(
     sink: OkioGraphExportSink,
     operations: GraphOperations,
@@ -231,6 +240,7 @@ fun CsvGraphBulkExporter.exportGraphAsync(
 ): CompletableFuture<GraphExportReport> =
     vtAdapter.exportGraphAsync(sink, GraphIoFormat.CSV, operations, options)
 
+@Suppress("UnusedReceiverParameter")
 fun CsvGraphBulkExporter.exportGraphAsync(
     sink: OkioGraphExportSink,
     operations: GraphOperations,
@@ -248,6 +258,7 @@ private val suspendAdapter = SuspendGraphIoOkioBulkAdapter()
  *
  * @see importGraph 동기 변형
  */
+@Suppress("UnusedReceiverParameter")
 fun CsvGraphBulkImporter.importGraphFlow(
     source: OkioGraphImportSource,
     operations: GraphOperations,
@@ -255,6 +266,7 @@ fun CsvGraphBulkImporter.importGraphFlow(
 ): Flow<GraphImportProgress> =
     suspendAdapter.importGraph(source, GraphIoFormat.CSV, operations, options)
 
+@Suppress("UnusedReceiverParameter")
 fun CsvGraphBulkImporter.importGraphFlow(
     source: OkioGraphImportSource,
     operations: GraphOperations,
@@ -268,6 +280,7 @@ fun CsvGraphBulkImporter.importGraphFlow(
  *
  * @see importGraph 동기 변형
  */
+@Suppress("UnusedReceiverParameter")
 suspend fun CsvGraphBulkImporter.importGraphAwait(
     source: OkioGraphImportSource,
     operations: GraphOperations,
@@ -275,6 +288,7 @@ suspend fun CsvGraphBulkImporter.importGraphAwait(
 ): GraphImportReport =
     suspendAdapter.importGraphAwait(source, GraphIoFormat.CSV, operations, options)
 
+@Suppress("UnusedReceiverParameter")
 suspend fun CsvGraphBulkImporter.importGraphAwait(
     source: OkioGraphImportSource,
     operations: GraphOperations,
@@ -288,6 +302,7 @@ suspend fun CsvGraphBulkImporter.importGraphAwait(
  *
  * @see exportGraph 동기 변형
  */
+@Suppress("UnusedReceiverParameter")
 fun CsvGraphBulkExporter.exportGraphFlow(
     sink: OkioGraphExportSink,
     operations: GraphOperations,
@@ -295,6 +310,7 @@ fun CsvGraphBulkExporter.exportGraphFlow(
 ): Flow<GraphExportProgress> =
     suspendAdapter.exportGraph(sink, GraphIoFormat.CSV, operations, options)
 
+@Suppress("UnusedReceiverParameter")
 fun CsvGraphBulkExporter.exportGraphFlow(
     sink: OkioGraphExportSink,
     operations: GraphOperations,
@@ -308,6 +324,7 @@ fun CsvGraphBulkExporter.exportGraphFlow(
  *
  * @see exportGraph 동기 변형
  */
+@Suppress("UnusedReceiverParameter")
 suspend fun CsvGraphBulkExporter.exportGraphAwait(
     sink: OkioGraphExportSink,
     operations: GraphOperations,
@@ -315,6 +332,7 @@ suspend fun CsvGraphBulkExporter.exportGraphAwait(
 ): GraphExportReport =
     suspendAdapter.exportGraphAwait(sink, GraphIoFormat.CSV, operations, options)
 
+@Suppress("UnusedReceiverParameter")
 suspend fun CsvGraphBulkExporter.exportGraphAwait(
     sink: OkioGraphExportSink,
     operations: GraphOperations,
@@ -325,7 +343,7 @@ suspend fun CsvGraphBulkExporter.exportGraphAwait(
 
 // ─── 내부 헬퍼 ─────────────────────────────────────────────────────────────────
 
-private fun OkioGraphImportSource.toCsvImportSource(): CsvGraphImportSource {
+private fun OkioGraphImportSource.asCsvImportSource(): CsvGraphImportSource {
     require(this is OkioGraphImportSource.PathSource) {
         "CSV 포맷은 두 파일(vertices/edges)이 필요하므로 PathSource 만 지원합니다."
     }
@@ -334,12 +352,12 @@ private fun OkioGraphImportSource.toCsvImportSource(): CsvGraphImportSource {
     }
     val stem = path.toString().removeSuffix(".csv")
     return CsvGraphImportSource(
-        vertices = GraphImportSource.PathSource(java.nio.file.Paths.get("${stem}_vertices.csv")),
-        edges = GraphImportSource.PathSource(java.nio.file.Paths.get("${stem}_edges.csv")),
+        vertices = Paths.get("${stem}_vertices.csv").asSource(),
+        edges = Paths.get("${stem}_edges.csv").asSource(),
     )
 }
 
-private fun OkioGraphExportSink.toCsvExportSink(): CsvGraphExportSink {
+private fun OkioGraphExportSink.asCsvExportSink(): CsvGraphExportSink {
     require(this is OkioGraphExportSink.PathSink) {
         "CSV 포맷은 두 파일(vertices/edges)이 필요하므로 PathSink 만 지원합니다."
     }
@@ -348,7 +366,7 @@ private fun OkioGraphExportSink.toCsvExportSink(): CsvGraphExportSink {
     }
     val stem = path.toString().removeSuffix(".csv")
     return CsvGraphExportSink(
-        vertices = GraphExportSink.PathSink(java.nio.file.Paths.get("${stem}_vertices.csv")),
-        edges = GraphExportSink.PathSink(java.nio.file.Paths.get("${stem}_edges.csv")),
+        vertices = Paths.get("${stem}_vertices.csv").asSink(),
+        edges = Paths.get("${stem}_edges.csv").asSink(),
     )
 }

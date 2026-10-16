@@ -23,7 +23,7 @@ import io.bluetape4k.graph.model.PathOptions
 interface GraphTraversalRepository {
     /**
      * start vertex에서 인접 neighbor vertex를 찾는다.
-	*
+     *
      * [NeighborOptions.direction] selects outgoing, incoming, or bidirectional traversal.
      * [NeighborOptions.maxDepth] values of 2 or more include multi-hop neighbors.
      *
@@ -43,7 +43,7 @@ interface GraphTraversalRepository {
 
     /**
      * 두 vertex 사이의 shortest path를 찾는다.
-	*
+     *
      * traversal은 [PathOptions.maxDepth]로 제한된다. path가 없거나
      * shortest path가 maximum depth를 넘으면 `null`을 반환한다.
      *
@@ -65,7 +65,7 @@ interface GraphTraversalRepository {
 
     /**
      * 두 vertex 사이의 모든 path를 찾는다.
-	*
+     *
      * [PathOptions.maxDepth]까지의 모든 simple path를 반환한다. path가 없으면 empty list를 반환한다.
      *
      * ```kotlin
@@ -86,7 +86,7 @@ interface GraphTraversalRepository {
 
     /**
      * A* algorithm으로 weighted shortest path를 찾는다.
-	*
+     *
      * `options.weightProperty` must be set. [heuristic] must be an admissible synchronous
      * target vertex까지의 cost를 추정하는 function이다. suspend heuristic은 지원하지 않는다.
      *

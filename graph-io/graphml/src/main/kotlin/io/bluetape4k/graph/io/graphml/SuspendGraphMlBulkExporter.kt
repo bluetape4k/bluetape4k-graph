@@ -25,7 +25,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.withContext
 
 /**
@@ -50,7 +49,7 @@ import kotlinx.coroutines.withContext
  * )
  * ```
  */
-class SuspendGraphMlBulkExporter : GraphSuspendBulkExporter<GraphExportSink> {
+class SuspendGraphMlBulkExporter: GraphSuspendBulkExporter<GraphExportSink> {
 
     private val writer = StaxGraphMlWriter()
 
@@ -95,7 +94,10 @@ class SuspendGraphMlBulkExporter : GraphSuspendBulkExporter<GraphExportSink> {
     ): GraphExportReport {
         log.debug { "Starting GRAPHML suspend export" }
         val watch = GraphIoStopwatch()
+
+        // TODO: failures 를 입력되는 코드가 아예 없는데???
         val failures = mutableListOf<GraphIoFailure>()
+
         val (vertexLabels, edgeLabels) = options.resolveLabels(operations)
         val spool = GraphIoRecordSpool()
         val propertyTypes = GraphMlPropertyTypes()
@@ -172,7 +174,7 @@ class SuspendGraphMlBulkExporter : GraphSuspendBulkExporter<GraphExportSink> {
             ).also {
                 log.debug {
                     "Suspend export completed: vertices=${writeResult.verticesWritten}, " +
-                        "edges=${writeResult.edgesWritten}"
+                            "edges=${writeResult.edgesWritten}"
                 }
             }
         } catch (failure: Throwable) {
@@ -187,7 +189,7 @@ class SuspendGraphMlBulkExporter : GraphSuspendBulkExporter<GraphExportSink> {
         }
     }
 
-    companion object : KLoggingChannel()
+    companion object: KLoggingChannel()
 }
 
 @Suppress("TooGenericExceptionCaught")

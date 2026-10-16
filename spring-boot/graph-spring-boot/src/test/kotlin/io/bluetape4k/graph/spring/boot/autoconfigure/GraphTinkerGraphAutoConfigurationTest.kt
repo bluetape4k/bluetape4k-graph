@@ -1,24 +1,26 @@
 package io.bluetape4k.graph.spring.boot.autoconfigure
 
 import io.bluetape4k.assertions.assertFailsWith
-import io.bluetape4k.assertions.shouldBeFalse
+import io.bluetape4k.assertions.shouldBe
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeNull
-import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
+import org.springframework.beans.factory.getBean
 import org.springframework.boot.autoconfigure.AutoConfigurations
 import org.springframework.boot.test.context.runner.ApplicationContextRunner
 
 class GraphTinkerGraphAutoConfigurationTest {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     private val runner = ApplicationContextRunner()
         .withConfiguration(
@@ -32,16 +34,16 @@ class GraphTinkerGraphAutoConfigurationTest {
     fun `backend=tinkergraph 이면 GraphOperations 빈 등록`() {
         runner.withPropertyValues("bluetape4k.graph.backend=tinkergraph")
             .run { ctx ->
-                ctx.getBean(GraphOperations::class.java).shouldNotBeNull()
-                ctx.getBean(GraphSuspendOperations::class.java).shouldNotBeNull()
-                ctx.getBean(GraphVirtualThreadOperations::class.java).shouldNotBeNull()
+                ctx.getBean<GraphOperations>().shouldNotBeNull()
+                ctx.getBean<GraphSuspendOperations>().shouldNotBeNull()
+                ctx.getBean<GraphVirtualThreadOperations>().shouldNotBeNull()
             }
     }
 
     @Test
     fun `backend 미설정 시 tinkergraph matchIfMissing 으로 빈 등록`() {
         runner.run { ctx ->
-            ctx.getBean(GraphOperations::class.java).shouldNotBeNull()
+            ctx.getBean<GraphOperations>().shouldNotBeNull()
         }
     }
 
@@ -53,11 +55,11 @@ class GraphTinkerGraphAutoConfigurationTest {
             .withBean(GraphOperations::class.java, { customOperations })
             .run { ctx ->
                 ctx.startupFailure.shouldBeNull()
-                (ctx.getBean(GraphOperations::class.java) === customOperations).shouldBeTrue()
+                ctx.getBean<GraphOperations>() shouldBe customOperations
                 assertFailsWith<NoSuchBeanDefinitionException> {
-                    ctx.getBean(GraphSuspendOperations::class.java)
+                    ctx.getBean<GraphSuspendOperations>()
                 }
-                ctx.getBean(GraphVirtualThreadOperations::class.java).shouldNotBeNull()
+                ctx.getBean<GraphVirtualThreadOperations>().shouldNotBeNull()
             }
     }
 
@@ -71,9 +73,9 @@ class GraphTinkerGraphAutoConfigurationTest {
             .withBean(GraphSuspendOperations::class.java, { customSuspendOperations })
             .run { ctx ->
                 ctx.startupFailure.shouldBeNull()
-                (ctx.getBean(GraphOperations::class.java) === customOperations).shouldBeTrue()
-                (ctx.getBean(GraphSuspendOperations::class.java) === customSuspendOperations).shouldBeTrue()
-                ctx.getBean(GraphVirtualThreadOperations::class.java).shouldNotBeNull()
+                ctx.getBean<GraphOperations>() shouldBe customOperations
+                ctx.getBean<GraphSuspendOperations>() shouldBe customSuspendOperations
+                ctx.getBean<GraphVirtualThreadOperations>().shouldNotBeNull()
             }
     }
 
@@ -88,9 +90,9 @@ class GraphTinkerGraphAutoConfigurationTest {
             ).run { ctx ->
                 ctx.startupFailure.shouldBeNull()
                 assertFailsWith<NoSuchBeanDefinitionException> {
-                    ctx.getBean(GraphSuspendOperations::class.java)
+                    ctx.getBean<GraphSuspendOperations>()
                 }
-                ctx.getBean(GraphVirtualThreadOperations::class.java).shouldNotBeNull()
+                ctx.getBean<GraphVirtualThreadOperations>().shouldNotBeNull()
             }
     }
 
@@ -109,7 +111,7 @@ class GraphTinkerGraphAutoConfigurationTest {
             "bluetape4k.graph.tinkergraph.register-suspend=false",
         ).run { ctx ->
             assertFailsWith<NoSuchBeanDefinitionException> {
-                ctx.getBean(GraphSuspendOperations::class.java)
+                ctx.getBean<GraphSuspendOperations>()
             }
         }
     }
@@ -121,7 +123,7 @@ class GraphTinkerGraphAutoConfigurationTest {
             "bluetape4k.graph.tinkergraph.register-virtual-thread=false",
         ).run { ctx ->
             assertFailsWith<NoSuchBeanDefinitionException> {
-                ctx.getBean(GraphVirtualThreadOperations::class.java)
+                ctx.getBean<GraphVirtualThreadOperations>()
             }
         }
     }
@@ -133,6 +135,7 @@ class GraphTinkerGraphAutoConfigurationTest {
             .health()
             .shouldNotBeNull()
 
+        log.debug { "health=$health" }
         health.status.code shouldBeEqualTo "UP"
         health.details["backend"] shouldBeEqualTo "tinkergraph"
     }

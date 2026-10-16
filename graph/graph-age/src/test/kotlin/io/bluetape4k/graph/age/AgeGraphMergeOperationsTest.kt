@@ -1,40 +1,28 @@
 package io.bluetape4k.graph.age
 
-import com.zaxxer.hikari.HikariConfig
-import com.zaxxer.hikari.HikariDataSource
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.coroutines.flow.extensions.log
 import io.bluetape4k.junit5.coroutines.runSuspendIO
-import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import kotlinx.coroutines.flow.toList
-import org.jetbrains.exposed.v1.jdbc.Database
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class AgeGraphMergeOperationsTest {
+class AgeGraphMergeOperationsTest: AbstractAgeTest() {
 
-    private lateinit var dataSource: HikariDataSource
-    private lateinit var ops: AgeGraphOperations
-    private lateinit var suspendOps: AgeGraphSuspendOperations
+    companion object: KLogging() {
+        private const val TEST_GRAPH_NAME = "merge_test_graph"
+    }
 
-    private val graphName = "merge_test_graph"
-
-    @BeforeAll
-    fun setup() {
-        val server = PostgreSQLAgeServer.Launcher.postgresqlAge
-        dataSource = HikariDataSource(HikariConfig().apply {
-            jdbcUrl = server.jdbcUrl
-            username = server.username
-            password = server.password
-            driverClassName = "org.postgresql.Driver"
-            connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
-            maximumPoolSize = 5
-        })
-        Database.connect(dataSource)
-        ops = AgeGraphOperations(graphName)
-        suspendOps = AgeGraphSuspendOperations(graphName)
+    private val ops: AgeGraphOperations by lazy { createAgeGraphOperations(database, TEST_GRAPH_NAME) }
+    private val suspendOps: AgeGraphSuspendOperations by lazy {
+        createAgeGraphSuspendOperations(
+            database,
+            TEST_GRAPH_NAME
+        )
     }
 
     @AfterAll
@@ -44,10 +32,10 @@ class AgeGraphMergeOperationsTest {
 
     @BeforeEach
     fun resetGraph() {
-        if (ops.graphExists(graphName)) {
-            ops.dropGraph(graphName)
+        if (ops.graphExists(TEST_GRAPH_NAME)) {
+            ops.dropGraph(TEST_GRAPH_NAME)
         }
-        ops.createGraph(graphName)
+        ops.createGraph(TEST_GRAPH_NAME)
     }
 
     @Test
@@ -57,17 +45,21 @@ class AgeGraphMergeOperationsTest {
             matchProperties = mapOf("email" to "alice@example.com"),
             setProperties = mapOf("name" to "Alice", "age" to 30L),
         )
+        log.debug { "first=$first" }
+
         val second = ops.mergeVertex(
             label = "Person",
             matchProperties = mapOf("email" to "alice@example.com"),
             setProperties = mapOf("name" to "Alice A", "age" to 31L),
         )
+        log.debug { "second=$second" }
 
         second.id shouldBeEqualTo first.id
         second.properties["email"] shouldBeEqualTo "alice@example.com"
         second.properties["name"] shouldBeEqualTo "Alice A"
         second.properties["age"] shouldBeEqualTo 31L
-        ops.findVerticesByLabel("Person").shouldHaveSize(1)
+
+        ops.findVerticesByLabel("Person") shouldHaveSize 1
     }
 
     @Test
@@ -80,7 +72,7 @@ class AgeGraphMergeOperationsTest {
 
         second.id shouldBeEqualTo first.id
         second.properties["since"] shouldBeEqualTo 2025L
-        ops.findEdgesByLabel("KNOWS").shouldHaveSize(1)
+        ops.findEdgesByLabel("KNOWS") shouldHaveSize 1
     }
 
     @Test
@@ -98,7 +90,7 @@ class AgeGraphMergeOperationsTest {
 
         second.id shouldBeEqualTo first.id
         second.properties["name"] shouldBeEqualTo "Alice A"
-        suspendOps.findVerticesByLabel("Person").toList().shouldHaveSize(1)
+        suspendOps.findVerticesByLabel("Person").log("Vertex").toList() shouldHaveSize 1
 
         val bob = suspendOps.mergeVertex("Person", mapOf("email" to "bob@example.com"))
         val edge1 = suspendOps.mergeEdge(first.id, bob.id, "KNOWS", setProperties = mapOf("since" to 2024L))
@@ -106,6 +98,6 @@ class AgeGraphMergeOperationsTest {
 
         edge2.id shouldBeEqualTo edge1.id
         edge2.properties["since"] shouldBeEqualTo 2025L
-        suspendOps.findEdgesByLabel("KNOWS").toList().shouldHaveSize(1)
+        suspendOps.findEdgesByLabel("KNOWS").log("Edge").toList() shouldHaveSize 1
     }
 }

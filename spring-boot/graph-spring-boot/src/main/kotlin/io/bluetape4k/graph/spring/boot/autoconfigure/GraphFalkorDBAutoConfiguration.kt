@@ -53,7 +53,7 @@ import org.springframework.context.annotation.Configuration
 @EnableConfigurationProperties(FalkorDBGraphProperties::class)
 class GraphFalkorDBAutoConfiguration {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     /**
      * FalkorDB driver bean을 생성한다.
@@ -137,7 +137,7 @@ class GraphFalkorDBAutoConfiguration {
     @ConditionalOnClass(name = ["org.springframework.boot.health.contributor.HealthIndicator"])
     class HealthConfig {
 
-        companion object : KLogging()
+        companion object: KLogging()
 
         /**
          * FalkorDB health indicator bean을 생성한다.

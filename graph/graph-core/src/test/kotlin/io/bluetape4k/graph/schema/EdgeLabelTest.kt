@@ -4,16 +4,27 @@ import io.bluetape4k.assertions.shouldBe
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.graph.AbstractGraphTest
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-class EdgeLabelTest {
+class EdgeLabelTest: AbstractGraphTest() {
 
-    private object PersonLabel: VertexLabel("Person")
-    private object CompanyLabel: VertexLabel("Company")
+    companion object: KLogging()
+
+    private object PersonLabel: VertexLabel("Person") {
+        private fun readResolve(): Any = PersonLabel
+    }
+
+    private object CompanyLabel: VertexLabel("Company") {
+        private fun readResolve(): Any = CompanyLabel
+    }
 
     private object WorksAtLabel: EdgeLabel("WORKS_AT", PersonLabel, CompanyLabel) {
+        private fun readResolve(): Any = WorksAtLabel
         val role = string("role")
         val since = localDate("since")
         val updatedAt = localDateTime("updatedAt")
@@ -40,6 +51,8 @@ class EdgeLabelTest {
     @Test
     fun `선언한 프로퍼티가 순서대로 수집된다`() {
         val names = WorksAtLabel.properties.map { it.name }
+        log.debug { "names=$names" }
+
         names shouldBeEqualTo listOf(
             "role", "since", "updatedAt", "level", "tenure", "current",
             "tags", "meta", "status",
@@ -64,6 +77,9 @@ class EdgeLabelTest {
         val a = object: EdgeLabel("A", PersonLabel, PersonLabel) {}
         val b = object: EdgeLabel("B", PersonLabel, PersonLabel) {}
 
+        log.debug { "a=$a" }
+        log.debug { "b=$b" }
+
         a.label shouldBeEqualTo "A"
         b.label shouldBeEqualTo "B"
         a.from shouldBe PersonLabel
@@ -78,6 +94,8 @@ class EdgeLabelTest {
     @Test
     fun `프로퍼티가 없는 EdgeLabel도 허용된다`() {
         val empty = object: EdgeLabel("RELATED", PersonLabel, CompanyLabel) {}
+        log.debug { "empty=$empty" }
+
         empty.label shouldBeEqualTo "RELATED"
         empty.properties shouldHaveSize 0
     }
@@ -87,6 +105,7 @@ class EdgeLabelTest {
         val otherLabel = object: EdgeLabel("OTHER", PersonLabel, PersonLabel) {
             val score = integer("score")
         }
+        log.debug { "otherLabel=$otherLabel" }
         otherLabel.properties shouldHaveSize 1
         WorksAtLabel.properties shouldHaveSize 9
     }
@@ -94,6 +113,8 @@ class EdgeLabelTest {
     @Test
     fun `from과 to가 같은 정점 타입이어도 허용된다`() {
         val selfRelation = object: EdgeLabel("KNOWS", PersonLabel, PersonLabel) {}
+        log.debug { "selfRelation=$selfRelation" }
+
         selfRelation.from shouldBe PersonLabel
         selfRelation.to shouldBe PersonLabel
     }

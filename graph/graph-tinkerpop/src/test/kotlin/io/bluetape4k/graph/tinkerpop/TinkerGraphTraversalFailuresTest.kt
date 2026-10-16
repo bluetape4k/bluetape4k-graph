@@ -3,11 +3,15 @@ package io.bluetape4k.graph.tinkerpop
 import io.bluetape4k.assertions.shouldBeInstanceOf
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.graph.GraphQueryException
-import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.PathOptions
+import io.bluetape4k.graph.model.elementIdOf
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 
-class TinkerGraphTraversalFailuresTest {
+class TinkerGraphTraversalFailuresTest: AbstractTinkerGraphTest() {
+
+    companion object: KLogging()
 
     @Test
     fun `unexpected traversal failure is wrapped with backend context`() {
@@ -15,12 +19,13 @@ class TinkerGraphTraversalFailuresTest {
 
         val ex = tinkerGraphTraversalFailure(
             operation = "shortestPath",
-            fromId = GraphElementId.of("1"),
-            toId = GraphElementId.of("2"),
+            fromId = elementIdOf("1"),
+            toId = elementIdOf("2"),
             options = PathOptions(edgeLabel = "KNOWS"),
             cause = cause,
         )
 
+        log.debug { "ex=$ex" }
         ex.message shouldContain "TinkerGraph shortestPath traversal failed"
         ex.message shouldContain "from=1"
         ex.message shouldContain "to=2"
@@ -33,12 +38,13 @@ class TinkerGraphTraversalFailuresTest {
 
         val ex = tinkerGraphTraversalFailure(
             operation = "allPaths",
-            fromId = GraphElementId.of("1"),
-            toId = GraphElementId.of("2"),
+            fromId = elementIdOf("1"),
+            toId = elementIdOf("2"),
             options = PathOptions(),
             cause = original,
         )
 
+        log.debug { "ex=$ex" }
         ex.message shouldContain "already contextual"
     }
 }

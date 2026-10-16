@@ -32,8 +32,9 @@ dependencies {
     runtimeOnly(bt4k.logback)
 
     testImplementation(bt4k.bluetape4k.junit5)
+    testImplementation(bt4k.bluetape4k.testcontainers)
     testImplementation(bt4k.bluetape4k.ktor.testing)
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlinx.coroutines.test.lib)
-    testImplementation(testFixtures(project(":bluetape4k-graph-falkordb")))
+
 }

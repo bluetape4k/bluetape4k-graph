@@ -1,6 +1,7 @@
 package io.bluetape4k.graph.io.csv
 
 import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBe
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeTrue
@@ -17,9 +18,10 @@ import kotlinx.coroutines.withTimeout
 import org.junit.jupiter.api.Test
 import java.io.IOException
 import java.io.InputStream
-import java.util.concurrent.Executors
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.seconds
 
 class CsvGraphClasspathResourcesTest {
     @Test
@@ -76,7 +78,7 @@ class CsvGraphClasspathResourcesTest {
             val actual = assertFailsWith<SecurityException> {
                 withClasspathCsvGraphImportSource("vertices", "edges", fallback) { error("callback") }
             }
-            (actual === denied).shouldBeTrue()
+            actual shouldBe denied
         }
         fallback.requests.isEmpty().shouldBeTrue()
     }
@@ -91,7 +93,7 @@ class CsvGraphClasspathResourcesTest {
             val actual = assertFailsWith<IllegalStateException> {
                 withClasspathCsvGraphImportSource("vertices", "edges", null) { throw primary }
             }
-            (actual === primary).shouldBeTrue()
+            actual shouldBe primary
             actual.suppressed.toList() shouldBeEqualTo listOf(edgeClose, vertexClose)
         }
         fixture.closed shouldBeEqualTo listOf("edges", "vertices")
@@ -107,7 +109,7 @@ class CsvGraphClasspathResourcesTest {
             val actual = assertFailsWith<IOException> {
                 withClasspathCsvGraphImportSource("vertices", "edges", null) { error("callback") }
             }
-            (actual === primary).shouldBeTrue()
+            actual shouldBe primary
             actual.suppressed.toList() shouldBeEqualTo listOf(closeFailure)
         }
         fixture.closed shouldBeEqualTo listOf("vertices")
@@ -124,7 +126,7 @@ class CsvGraphClasspathResourcesTest {
                 callerThread.contextClassLoader = fixture.loader
                 try {
                     withClasspathCsvGraphImportSourceSuspending("vertices", "edges", null) {
-                        (Thread.currentThread() === callerThread).shouldBeTrue()
+                        Thread.currentThread() shouldBe callerThread
                         "done"
                     } shouldBeEqualTo "done"
                 } finally {
@@ -139,7 +141,7 @@ class CsvGraphClasspathResourcesTest {
 
     @Test
     fun `실제 취소는 두 stream을 한 번 닫고 close 실패를 취소에 보존한다`() = runSuspendIO {
-        withTimeout(5_000) {
+        withTimeout(5.seconds) {
             val entered = CompletableDeferred<Unit>()
             val terminal = CompletableDeferred<Throwable?>()
             val cancelled = CancellationException("cancel-import")
@@ -157,7 +159,7 @@ class CsvGraphClasspathResourcesTest {
             job.cancel(cancelled)
             job.cancelAndJoin()
             val failure = terminal.await()
-            (failure === cancelled).shouldBeTrue()
+            failure shouldBe cancelled
             failure?.suppressed?.toList() shouldBeEqualTo listOf(edgeClose, vertexClose)
             fixture.closed shouldBeEqualTo listOf("edges", "vertices")
             fixture.vertices.closeCount shouldBeEqualTo 1
@@ -176,14 +178,14 @@ class CsvGraphClasspathResourcesTest {
                 throw cancelled
             }
         }
-        (failure === cancelled).shouldBeTrue()
+        failure shouldBe cancelled
         failure.suppressed.toList() shouldBeEqualTo listOf(edgeClose, vertexClose)
         fixture.closed shouldBeEqualTo listOf("edges", "vertices")
     }
 
     @Test
     fun `callback 반환 후 close 중 취소도 닫기 실패를 잃지 않는다`() = runSuspendIO {
-        withTimeout(5_000) {
+        withTimeout(5.seconds) {
             val closing = CompletableDeferred<Unit>()
             val release = CountDownLatch(1)
             val terminal = CompletableDeferred<Throwable?>()
@@ -196,7 +198,7 @@ class CsvGraphClasspathResourcesTest {
                 check(release.await(5, TimeUnit.SECONDS))
             }
             val job = launch {
-                withClasspathCsvGraphImportSourceSuspending("vertices", "edges", fixture.loader) { "done" }
+                withClasspathCsvGraphImportSourceSuspending("vertices", "edges", fixture.loader) { }
             }
             job.invokeOnCompletion { terminal.complete(it) }
             try {
@@ -207,7 +209,7 @@ class CsvGraphClasspathResourcesTest {
             }
             job.join()
             val failure = terminal.await()
-            (failure === cancelled).shouldBeTrue()
+            failure shouldBe cancelled
             failure?.suppressed?.toList() shouldBeEqualTo listOf(edgeClose)
             edgeClose.suppressed.toList() shouldBeEqualTo listOf(vertexClose)
             fixture.closed shouldBeEqualTo listOf("edges", "vertices")
@@ -220,7 +222,11 @@ class CsvGraphClasspathResourcesTest {
         val thread = Thread.currentThread()
         val previous = thread.contextClassLoader
         thread.contextClassLoader = loader
-        return try { block() } finally { thread.contextClassLoader = previous }
+        return try {
+            block()
+        } finally {
+            thread.contextClassLoader = previous
+        }
     }
 
     private class Loader(private val resolve: (String) -> InputStream?): ClassLoader(null) {
@@ -238,7 +244,11 @@ class CsvGraphClasspathResourcesTest {
         val closeThreads = mutableListOf<Thread>()
         val vertices = Stream("vertices", closed, closeThreads, vertexFailure)
         val edges = Stream("edges", closed, closeThreads, edgeFailure)
-        val loader = Loader { name -> when (name) { "vertices" -> vertices; "edges" -> edges; else -> null } }
+        val loader = Loader { name ->
+            when (name) {
+                "vertices" -> vertices; "edges" -> edges; else -> null
+            }
+        }
     }
 
     private class Stream(
@@ -253,6 +263,7 @@ class CsvGraphClasspathResourcesTest {
             check(closeCount == 0) { "Stream closed" }
             return 65
         }
+
         override fun close() {
             beforeClose()
             closeCount++

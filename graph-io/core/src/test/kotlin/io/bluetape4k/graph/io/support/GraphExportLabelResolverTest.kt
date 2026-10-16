@@ -5,20 +5,22 @@ import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.testsupport.FakeGraphOperations
 import io.bluetape4k.graph.repository.GraphLabelDiscovery
+import io.bluetape4k.logging.KLogging
 import org.junit.jupiter.api.Test
 
 class GraphExportLabelResolverTest {
 
+    companion object: KLogging()
+
     @Test
     fun `empty labels use backend discovery`() {
-        val operations = object : FakeGraphOperations(), GraphLabelDiscovery {
+        val operations = object: FakeGraphOperations(), GraphLabelDiscovery {
             override fun listVertexLabels(): Set<String> = setOf("Person", "Company")
-
             override fun listEdgeLabels(): Set<String> = setOf("KNOWS")
         }
 
-        GraphExportOptions().resolveLabels(operations) shouldBeEqualTo
-            (setOf("Person", "Company") to setOf("KNOWS"))
+        GraphExportOptions()
+            .resolveLabels(operations) shouldBeEqualTo (setOf("Person", "Company") to setOf("KNOWS"))
     }
 
     @Test
@@ -34,7 +36,6 @@ class GraphExportLabelResolverTest {
         GraphExportOptions(
             vertexLabels = setOf("Person"),
             edgeLabels = setOf("KNOWS"),
-        ).resolveLabels(operations) shouldBeEqualTo
-            (setOf("Person") to setOf("KNOWS"))
+        ).resolveLabels(operations) shouldBeEqualTo (setOf("Person") to setOf("KNOWS"))
     }
 }

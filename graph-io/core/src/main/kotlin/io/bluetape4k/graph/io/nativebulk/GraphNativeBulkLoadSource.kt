@@ -9,8 +9,11 @@
 
 package io.bluetape4k.graph.io.nativebulk
 
+import io.bluetape4k.ToStringBuilder
+import io.bluetape4k.support.checkNotNull
+import okio.withLock
 import java.time.Duration
-import java.util.ArrayDeque
+import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.Condition
@@ -20,10 +23,7 @@ import java.util.concurrent.locks.ReentrantLock
 class GraphNativeBulkLoadCancellationToken internal constructor(
     val startedNanos: Long,
     val timeoutNanos: Long,
-    private val cancellationHook: (
-        GraphNativeBulkLoadCancellationReason,
-        GraphNativeBulkLoadDeadline,
-    ) -> GraphNativeBulkLoadException?,
+    private val cancellationHook: (GraphNativeBulkLoadCancellationReason, GraphNativeBulkLoadDeadline) -> GraphNativeBulkLoadException?,
 ) {
     private val deadlineNanos: Long = saturatingAdd(startedNanos, timeoutNanos)
     private val requestedReason = AtomicReference<GraphNativeBulkLoadCancellationReason?>(null)
@@ -35,6 +35,7 @@ class GraphNativeBulkLoadCancellationToken internal constructor(
 
     val isCancellationRequested: Boolean
         get() = requestedReason.get() != null
+
 
     fun remainingNanos(): Long {
         return saturatingSubtract(deadlineNanos, System.nanoTime()).coerceAtLeast(0L)
@@ -68,12 +69,24 @@ class GraphNativeBulkLoadCancellationToken internal constructor(
             throw GraphNativeBulkLoadCancellationException(reason)
         }
     }
+
+    override fun toString(): String =
+        ToStringBuilder(this)
+            .add("startedNanos", startedNanos)
+            .add("timeoutNanos", timeoutNanos)
+            .add("reason", reason)
+            .add("isCancellationRequested", isCancellationRequested)
+            .toString()
 }
 
 
 /** Validation으로 고정된 typed artifact를 한 번만 소비하고 닫는 handle이다. */
-abstract class GraphNativeBulkLoadValidatedSource<V : Any> : AutoCloseable {
-    private enum class State { OPEN, CLOSING, CLOSED }
+abstract class GraphNativeBulkLoadValidatedSource<V: Any>: AutoCloseable {
+    private enum class State {
+        OPEN,
+        CLOSING,
+        CLOSED
+    }
 
     private val lifecycleLock = ReentrantLock()
     private val lifecycleChanged: Condition = lifecycleLock.newCondition()
@@ -84,21 +97,19 @@ abstract class GraphNativeBulkLoadValidatedSource<V : Any> : AutoCloseable {
     private val closeStarted = AtomicBoolean(false)
 
     /** Validation 결과에 결합된 canonical/pinned artifact를 단 한 번만 소비한다. */
-    final fun take(): V {
-        lifecycleLock.lock()
-        try {
+    fun take(): V {
+        lifecycleLock.withLock {
             check(state == State.OPEN && !taken) { "validated source is not available" }
             taken = true
             takeInFlight = true
             takingThread = Thread.currentThread()
-        } finally {
-            lifecycleLock.unlock()
         }
         val takeDeadline = closeGraceDeadline()
         var value: V? = null
         var primaryFailure: Throwable? = null
         var interrupted = Thread.interrupted()
         var deferredCleanupOwner = false
+
         try {
             value = takeOnce(takeDeadline)
         } catch (failure: GraphNativeBulkLoadCancellationException) {
@@ -108,7 +119,7 @@ abstract class GraphNativeBulkLoadValidatedSource<V : Any> : AutoCloseable {
         } catch (_: InterruptedException) {
             interrupted = true
             primaryFailure = GraphNativeBulkLoadCancellationException(
-                lifecycleLock.runLocked {
+                lifecycleLock.withLock {
                     if (state == State.CLOSING) {
                         GraphNativeBulkLoadCancellationReason.CLOSE
                     } else {
@@ -119,16 +130,13 @@ abstract class GraphNativeBulkLoadValidatedSource<V : Any> : AutoCloseable {
         } catch (_: Throwable) {
             primaryFailure = GraphNativeBulkLoadException(GraphNativeBulkLoadFailureCode.UNKNOWN)
         } finally {
-            lifecycleLock.lock()
-            try {
+            lifecycleLock.withLock {
                 takeInFlight = false
                 takingThread = null
                 if (state == State.CLOSING && closeStarted.compareAndSet(false, true)) {
                     deferredCleanupOwner = true
                 }
                 lifecycleChanged.signalAll()
-            } finally {
-                lifecycleLock.unlock()
             }
         }
         if (deferredCleanupOwner) {
@@ -145,7 +153,8 @@ abstract class GraphNativeBulkLoadValidatedSource<V : Any> : AutoCloseable {
         if (Thread.interrupted()) interrupted = true
         if (interrupted) Thread.currentThread().interrupt()
         primaryFailure?.let { throw it }
-        checkNotNull(value) { "validated source did not produce an artifact" }
+        value.checkNotNull { "validated source did not produce an artifact" }
+
         return value
     }
 
@@ -158,15 +167,18 @@ abstract class GraphNativeBulkLoadValidatedSource<V : Any> : AutoCloseable {
 
     final override fun close() {
         val deadline = GraphNativeBulkLoadDeadline(
-            saturatingAdd(System.nanoTime(), GraphNativeBulkLoadRequest.DEFAULT_CLOSE_GRACE.toNanos()),
+            saturatingAdd(
+                System.nanoTime(),
+                GraphNativeBulkLoadRequest.DEFAULT_CLOSE_GRACE.toNanos()
+            ),
         )
         var interrupted = Thread.interrupted()
         var ownsClose = false
         var timedOut = false
         var threadToInterrupt: Thread? = null
         val currentThread = Thread.currentThread()
-        lifecycleLock.lock()
-        try {
+
+        lifecycleLock.withLock {
             if (takingThread === currentThread) {
                 if (interrupted) currentThread.interrupt()
                 throw IllegalStateException("close() cannot be re-entered from an active take()")
@@ -211,9 +223,8 @@ abstract class GraphNativeBulkLoadValidatedSource<V : Any> : AutoCloseable {
                 ownsClose = !timedOut && state != State.CLOSED
                 if (ownsClose) closeStarted.set(true)
             }
-        } finally {
-            lifecycleLock.unlock()
         }
+
         if (!ownsClose) {
             if (interrupted) Thread.currentThread().interrupt()
             if (timedOut) throw GraphNativeBulkLoadException(GraphNativeBulkLoadFailureCode.TIMEOUT)
@@ -223,11 +234,9 @@ abstract class GraphNativeBulkLoadValidatedSource<V : Any> : AutoCloseable {
         val cleanupCall = runBounded(deadline) { closeOnce(deadline) }
         if (cleanupCall.completed) publishClosed()
         else cleanupCall.onCompletion { publishClosed() }
-        lifecycleLock.lock()
-        try {
+
+        lifecycleLock.withLock {
             if (Thread.interrupted()) interrupted = true
-        } finally {
-            lifecycleLock.unlock()
         }
         if (interrupted) Thread.currentThread().interrupt()
         cleanupCall.failure?.let { throw it }
@@ -237,18 +246,15 @@ abstract class GraphNativeBulkLoadValidatedSource<V : Any> : AutoCloseable {
     protected abstract fun closeOnce(deadline: GraphNativeBulkLoadDeadline)
 
     private fun publishClosed() {
-        lifecycleLock.lock()
-        try {
+        lifecycleLock.withLock {
             state = State.CLOSED
             lifecycleChanged.signalAll()
-        } finally {
-            lifecycleLock.unlock()
-        }
+        } 
     }
 }
 
 /** Validator가 반환한 typed source와 실행 deadline을 native command에 전달한다. */
-class GraphNativeBulkLoadExecution<V : Any>(
+class GraphNativeBulkLoadExecution<V: Any>(
     val operationName: String,
     val timeout: Duration,
     val maxFailureDetails: Int,
@@ -263,11 +269,11 @@ class GraphNativeBulkLoadExecution<V : Any>(
 
     override fun toString(): String =
         "GraphNativeBulkLoadExecution(timeout=$timeout, " +
-            "maxFailureDetails=$maxFailureDetails, progressInterval=$progressInterval)"
+                "maxFailureDetails=$maxFailureDetails, progressInterval=$progressInterval)"
 }
 
 /** Raw request를 검증하고 typed validated source를 만드는 SPI다. */
-fun interface GraphNativeBulkLoadSourceValidator<R : Any, V : Any> {
+fun interface GraphNativeBulkLoadSourceValidator<R: Any, V: Any> {
     /** Native command 전에 source kind, trust policy와 실행 위치를 검증한다. */
     fun validate(
         request: GraphNativeBulkLoadRequest<R>,
@@ -287,28 +293,22 @@ class GraphNativeBulkLoadValidationContext {
 
     /** Validation 실패 시 역순으로 실행할 rollback action을 등록한다. */
     fun registerRollback(action: AutoCloseable) {
-        rollbackLock.lock()
-        try {
+        rollbackLock.withLock {
             check(!committed) { "validation rollback context is already committed" }
             rollbackActions.addFirst(action)
-        } finally {
-            rollbackLock.unlock()
-        }
+        } 
     }
 
     internal fun commit() {
-        rollbackLock.lock()
-        try {
+        rollbackLock.withLock {
             check(!committed) { "validation rollback context is already committed" }
             committed = true
             rollbackActions.clear()
-        } finally {
-            rollbackLock.unlock()
-        }
+        } 
     }
 
     internal fun rollback(deadline: GraphNativeBulkLoadDeadline): GraphNativeBulkLoadException? {
-        val actions = rollbackLock.runLocked {
+        val actions = rollbackLock.withLock {
             if (committed) return null
             committed = true
             val snapshot = rollbackActions.toList()
@@ -337,22 +337,13 @@ class GraphNativeBulkLoadValidationContext {
             }
         }
         if (!rollbackCall.completed) {
-            rollbackLock.runLocked { pendingRollbackCalls.add(rollbackCall) }
+            rollbackLock.withLock { pendingRollbackCalls.add(rollbackCall) }
             rollbackCall.onCompletion {
-                rollbackLock.runLocked { pendingRollbackCalls.remove(rollbackCall) }
+                rollbackLock.withLock { pendingRollbackCalls.remove(rollbackCall) }
             }
         }
         var failure = lateFailure.get()
         rollbackCall.failure?.let { failure = mergeRedactedFailure(failure, it) }
         return failure
-    }
-}
-
-private inline fun <T> ReentrantLock.runLocked(block: () -> T): T {
-    lock()
-    return try {
-        block()
-    } finally {
-        unlock()
     }
 }

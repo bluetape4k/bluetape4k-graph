@@ -1,23 +1,24 @@
 package io.bluetape4k.graph.io.csv.internal
 
+import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.graph.io.csv.CsvPropertyMode
 import io.bluetape4k.graph.io.model.GraphIoEdgeRecord
 import io.bluetape4k.graph.io.model.GraphIoVertexRecord
-import io.bluetape4k.assertions.assertFailsWith
-import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 
 class CsvRecordCodecTest {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     @Test
     fun `union header sorts property keys after reserved columns`() {
         val codec = CsvRecordCodec(CsvPropertyMode.PrefixedColumns())
         val recs = listOf(
-            GraphIoVertexRecord("v1", "Person", mapOf("name" to "Alice")),
-            GraphIoVertexRecord("v2", "Person", mapOf("age" to 30, "name" to "Bob")),
+            GraphIoVertexRecord("v1", "Person", "name" to "Alice"),
+            GraphIoVertexRecord("v2", "Person", "age" to 30, "name" to "Bob"),
         )
         codec.unionVertexHeader(recs) shouldBeEqualTo listOf("id", "label", "prop.age", "prop.name")
     }
@@ -27,10 +28,13 @@ class CsvRecordCodecTest {
         val codec = CsvRecordCodec(CsvPropertyMode.None)
         val properties = mapOf("id" to "secret-id", "name" to "secret-name")
 
-        codec.unionVertexHeader(listOf(GraphIoVertexRecord("v1", "L", properties))) shouldBeEqualTo
-            listOf("id", "label")
-        codec.unionEdgeHeader(listOf(GraphIoEdgeRecord("e1", "E", "v1", "v2", properties))) shouldBeEqualTo
-            listOf("id", "label", "from", "to")
+        codec.unionVertexHeader(
+            listOf(GraphIoVertexRecord("v1", "L", properties))
+        ) shouldBeEqualTo listOf("id", "label")
+        codec.unionEdgeHeader(
+            listOf(GraphIoEdgeRecord("e1", "E", "v1", "v2", properties))
+        ) shouldBeEqualTo listOf("id", "label", "from", "to")
+        
         codec.prepareForSpool(properties) shouldBeEqualTo emptyMap()
         codec.encodeProperty("name", properties) shouldBeEqualTo ""
     }
@@ -39,8 +43,9 @@ class CsvRecordCodecTest {
     fun `raw json column is present even when all properties are empty`() {
         val codec = CsvRecordCodec(CsvPropertyMode.RawJsonColumn("attributes"))
 
-        codec.unionVertexHeader(listOf(GraphIoVertexRecord("v1", "Person", emptyMap()))) shouldBeEqualTo
-            listOf("id", "label", "attributes")
+        codec.unionVertexHeader(
+            listOf(GraphIoVertexRecord("v1", "Person"))
+        ) shouldBeEqualTo listOf("id", "label", "attributes")
     }
 
     @Test
@@ -58,6 +63,7 @@ class CsvRecordCodecTest {
         )
 
         val encoded = codec.encodeProperty("attributes", expected)
+        log.debug { "encoded=$encoded" }
 
         codec.extractProperties(mapOf("attributes" to encoded)) shouldBeEqualTo expected
     }

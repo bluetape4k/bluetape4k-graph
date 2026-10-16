@@ -4,30 +4,47 @@ import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldContain
-import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.graph.AbstractGraphTest
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
+import io.bluetape4k.support.requireNotNull
+import org.junit.jupiter.api.Test
 import java.io.File
 import java.lang.reflect.InvocationTargetException
 import java.net.URLClassLoader
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.Locale
+import java.util.*
 import java.util.concurrent.CompletableFuture
 import javax.tools.DiagnosticCollector
 import javax.tools.JavaFileObject
 import javax.tools.ToolProvider
-import org.junit.jupiter.api.Test
 
-class VirtualFutureOwnerAbiMigrationTckTest {
+class VirtualFutureOwnerAbiMigrationTckTest: AbstractGraphTest() {
+
+    companion object: KLogging() {
+        private const val LEGACY_OWNER = "io.bluetape4k.concurrent.virtualthread.CompletableFutureNullableSupportKt"
+        private const val OFFICIAL_OWNER = "io.bluetape4k.concurrent.virtualthread.CompletableFutureSupportKt"
+        private const val LEGACY_CONSUMER = "io.bluetape4k.graph.vt.abi.LegacyVirtualFutureConsumer"
+        private const val MIGRATED_CONSUMER = "io.bluetape4k.graph.vt.abi.MigratedVirtualFutureConsumer"
+    }
 
     @Test
     fun `official owner is loaded from bluetape core artifact`() {
         val officialOwner = Class.forName(OFFICIAL_OWNER)
         officialOwner.name shouldBeEqualTo OFFICIAL_OWNER
 
-        val location = requireNotNull(officialOwner.protectionDomain.codeSource) {
+        val location = officialOwner.protectionDomain.codeSource.requireNotNull {
             "Official virtual future owner has no code source."
-        }.location.toURI().let(Path::of).toAbsolutePath().normalize()
+        }
+            .location
+            .toURI()
+            .let(Path::of)
+            .toAbsolutePath()
+            .normalize()
+
+        log.debug { "location=$location" }
         location.toString().lowercase(Locale.ROOT) shouldContain "bluetape4k-core"
     }
 
@@ -38,14 +55,14 @@ class VirtualFutureOwnerAbiMigrationTckTest {
                 root.resolve("legacy-owner"),
                 mapOf(
                     "io/bluetape4k/concurrent/virtualthread/CompletableFutureNullableSupportKt.java" to
-                        resource("/abi/virtual-future/legacy-owner/CompletableFutureNullableSupportKt.java"),
+                            resource("/abi/virtual-future/legacy-owner/CompletableFutureNullableSupportKt.java"),
                 ),
             )
             val legacyConsumer = compileFixture(
                 root.resolve("legacy-consumer"),
                 mapOf(
                     "io/bluetape4k/graph/vt/abi/LegacyVirtualFutureConsumer.java" to
-                        resource("/abi/virtual-future/legacy-consumer/LegacyVirtualFutureConsumer.java"),
+                            resource("/abi/virtual-future/legacy-consumer/LegacyVirtualFutureConsumer.java"),
                 ),
                 additionalClasspath = listOf(legacyOwner),
             )
@@ -63,11 +80,11 @@ class VirtualFutureOwnerAbiMigrationTckTest {
                 root.resolve("migrated-consumer"),
                 mapOf(
                     "io/bluetape4k/graph/vt/abi/MigratedVirtualFutureConsumer.java" to
-                        resource("/abi/virtual-future/migrated-consumer/MigratedVirtualFutureConsumer.java"),
+                            resource("/abi/virtual-future/migrated-consumer/MigratedVirtualFutureConsumer.java"),
                 ),
             )
             val result = invokeStatic(migratedConsumer, MIGRATED_CONSUMER) as CompletableFuture<*>
-            result.join().shouldBeNull()
+            result.get().shouldBeNull()
         }
     }
 
@@ -78,14 +95,14 @@ class VirtualFutureOwnerAbiMigrationTckTest {
                 root.resolve("legacy-owner"),
                 mapOf(
                     "io/bluetape4k/concurrent/virtualthread/CompletableFutureNullableSupportKt.java" to
-                        resource("/abi/virtual-future/legacy-owner/CompletableFutureNullableSupportKt.java"),
+                            resource("/abi/virtual-future/legacy-owner/CompletableFutureNullableSupportKt.java"),
                 ),
             )
             val legacyConsumer = compileFixture(
                 root.resolve("legacy-consumer"),
                 mapOf(
                     "io/bluetape4k/graph/vt/abi/LegacyVirtualFutureConsumer.java" to
-                        resource("/abi/virtual-future/legacy-consumer/LegacyVirtualFutureConsumer.java"),
+                            resource("/abi/virtual-future/legacy-consumer/LegacyVirtualFutureConsumer.java"),
                 ),
                 additionalClasspath = listOf(legacyOwner),
             )
@@ -93,7 +110,7 @@ class VirtualFutureOwnerAbiMigrationTckTest {
                 root.resolve("migrated-consumer"),
                 mapOf(
                     "io/bluetape4k/graph/vt/abi/MigratedVirtualFutureConsumer.java" to
-                        resource("/abi/virtual-future/migrated-consumer/MigratedVirtualFutureConsumer.java"),
+                            resource("/abi/virtual-future/migrated-consumer/MigratedVirtualFutureConsumer.java"),
                 ),
             )
 
@@ -111,17 +128,19 @@ class VirtualFutureOwnerAbiMigrationTckTest {
         val classes = root.resolve("classes")
         Files.createDirectories(sourceRoot)
         Files.createDirectories(classes)
+
         val sourceFiles = sources.map { (relativePath, source) ->
             sourceRoot.resolve(relativePath).also { path ->
                 Files.createDirectories(path.parent)
                 Files.writeString(path, source, StandardCharsets.UTF_8)
             }
         }
-        val compiler = requireNotNull(ToolProvider.getSystemJavaCompiler()) {
+        val compiler = ToolProvider.getSystemJavaCompiler().requireNotNull {
             "JDK compiler is required for the ABI migration fixture."
         }
+
         val diagnostics = DiagnosticCollector<JavaFileObject>()
-        compiler.getStandardFileManager(diagnostics, Locale.ROOT, StandardCharsets.UTF_8).use { fileManager ->
+        compiler.getStandardFileManager(diagnostics, Locale.ROOT, Charsets.UTF_8).use { fileManager ->
             val options = listOf(
                 "--release",
                 "25",
@@ -176,24 +195,7 @@ class VirtualFutureOwnerAbiMigrationTckTest {
 
     private fun resource(path: String): String =
         requireNotNull(javaClass.getResourceAsStream(path)) { "ABI fixture resource not found: $path" }
-            .bufferedReader(StandardCharsets.UTF_8)
+            .bufferedReader()
             .use { it.readText() }
 
-    private fun <T> withTemporaryDirectory(block: (Path) -> T): T {
-        val root = Files.createTempDirectory("graph-virtual-future-abi-")
-        return try {
-            block(root)
-        } finally {
-            root.toFile().deleteRecursively()
-        }
-    }
-
-    companion object {
-        private const val LEGACY_OWNER =
-            "io.bluetape4k.concurrent.virtualthread.CompletableFutureNullableSupportKt"
-        private const val OFFICIAL_OWNER =
-            "io.bluetape4k.concurrent.virtualthread.CompletableFutureSupportKt"
-        private const val LEGACY_CONSUMER = "io.bluetape4k.graph.vt.abi.LegacyVirtualFutureConsumer"
-        private const val MIGRATED_CONSUMER = "io.bluetape4k.graph.vt.abi.MigratedVirtualFutureConsumer"
-    }
 }

@@ -1,11 +1,11 @@
 package io.bluetape4k.graph.examples.code
 
-import io.bluetape4k.codec.Base58
 import com.falkordb.FalkorDB
+import io.bluetape4k.codec.Base58
 import io.bluetape4k.graph.falkordb.FalkorDBGraphSuspendOperations
-import io.bluetape4k.graph.falkordb.FalkorDBServer
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.warn
+import io.bluetape4k.testcontainers.graphdb.FalkorDBServer
 import kotlinx.coroutines.CancellationException
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll

@@ -6,14 +6,14 @@ import java.nio.charset.Charset
 import java.nio.file.Path
 
 /** 그래프 익스포트 데이터 싱크. 파일 경로 또는 OutputStream을 지원한다. */
-sealed interface GraphExportSink {
+sealed interface GraphExportSink: Serializable {
 
     /** 파일 경로 기반 익스포트 싱크 */
     data class PathSink(
         val path: Path,
         val charset: Charset = Charsets.UTF_8,
         val append: Boolean = false,
-    ) : GraphExportSink, Serializable {
+    ): GraphExportSink {
         companion object {
             private const val serialVersionUID: Long = 1L
         }
@@ -24,5 +24,21 @@ sealed interface GraphExportSink {
         val output: OutputStream,
         val charset: Charset = Charsets.UTF_8,
         val closeOutput: Boolean = false,
-    ) : GraphExportSink
+    ): GraphExportSink, Serializable {
+        companion object {
+            private const val serialVersionUID: Long = 1L
+        }
+    }
 }
+
+fun Path.asSink(
+    append: Boolean = false,
+    charset: Charset = Charsets.UTF_8,
+): GraphExportSink.PathSink =
+    GraphExportSink.PathSink(this, charset, append)
+
+fun OutputStream.asSink(
+    closeOutput: Boolean = false,
+    charset: Charset = Charsets.UTF_8,
+): GraphExportSink.OutputStreamSink =
+    GraphExportSink.OutputStreamSink(this, charset, closeOutput)

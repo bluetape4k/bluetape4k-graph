@@ -1,9 +1,12 @@
 package io.bluetape4k.graph.tinkerpop
 
+import io.bluetape4k.graph.GraphUnsupportedOperationException
 import io.bluetape4k.graph.model.GraphConstraint
 import io.bluetape4k.graph.model.GraphIndex
 import io.bluetape4k.graph.schema.GraphSchemaManager
 import io.bluetape4k.graph.schema.GraphSchemaNames
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -14,12 +17,16 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class TinkerGraphSchemaManager: GraphSchemaManager {
 
+    companion object: KLogging()
+
     internal var mutationLock: ((() -> Unit) -> Unit)? = null
 
     private val indexes = ConcurrentHashMap.newKeySet<GraphIndex>()
 
     override fun createIndex(label: String, property: String) {
         val (safeLabel, safeProperty) = GraphSchemaNames.validateLabelAndProperty(label, property)
+        log.debug { "Creating index: label=$safeLabel, property=$safeProperty" }
+
         mutate {
             indexes += GraphIndex(
                 name = GraphSchemaNames.indexName(safeLabel, safeProperty),
@@ -30,14 +37,16 @@ class TinkerGraphSchemaManager: GraphSchemaManager {
     }
 
     override fun createUniqueConstraint(label: String, property: String) {
+        log.debug { "Creating unique constraint: label=$label, property=$property" }
         GraphSchemaNames.validateLabelAndProperty(label, property)
         mutate {
-            throw UnsupportedOperationException("TinkerGraph does not enforce unique constraints.")
+            throw GraphUnsupportedOperationException("TinkerGraph does not enforce unique constraints.")
         }
     }
 
     override fun dropIndex(label: String, property: String) {
         val (safeLabel, safeProperty) = GraphSchemaNames.validateLabelAndProperty(label, property)
+        log.debug { "drop index... label=$safeLabel, property=$safeProperty" }
         mutate {
             indexes.removeIf { it.label == safeLabel && it.property == safeProperty }
         }

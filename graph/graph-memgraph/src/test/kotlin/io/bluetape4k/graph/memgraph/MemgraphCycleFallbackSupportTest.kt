@@ -4,10 +4,14 @@ import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeInstanceOf
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
+import io.bluetape4k.graph.GraphException
 import io.bluetape4k.graph.model.CycleOptions
+import io.bluetape4k.logging.KLogging
 import org.junit.jupiter.api.Test
 
-class MemgraphCycleFallbackSupportTest {
+class MemgraphCycleFallbackSupportTest: AbstractMemgraphTest() {
+
+    companion object: KLogging()
 
     @Test
     fun `known unsupported cycle query can use JVM fallback`() {
@@ -30,5 +34,12 @@ class MemgraphCycleFallbackSupportTest {
 
         ex.message shouldContain "Memgraph cycle detection query failed"
         ex.cause shouldBeInstanceOf IllegalStateException::class
+    }
+
+    @Test
+    fun `general graph exception - fallback 을 지원하지 않는다`() {
+        GraphException("invalid graph exception")
+            .supportsJvmCycleFallback()
+            .shouldBeFalse()
     }
 }

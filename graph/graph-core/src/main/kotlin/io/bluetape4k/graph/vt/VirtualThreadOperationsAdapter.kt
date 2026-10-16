@@ -4,22 +4,22 @@ import io.bluetape4k.graph.algo.VirtualThreadAlgorithmAdapter
 import io.bluetape4k.graph.algo.provider.GraphAlgorithmExecution
 import io.bluetape4k.graph.algo.provider.GraphAlgorithmExecutionObservable
 import io.bluetape4k.graph.repository.GraphBoundedChunkOperations
-import io.bluetape4k.graph.repository.GraphCapability
 import io.bluetape4k.graph.repository.GraphCapabilities
+import io.bluetape4k.graph.repository.GraphCapability
 import io.bluetape4k.graph.repository.GraphMergeOperations
 import io.bluetape4k.graph.repository.GraphOperations
-import io.bluetape4k.graph.repository.GraphVirtualThreadCapabilitiesOperations
+import io.bluetape4k.graph.repository.GraphTransactionalOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadAlgorithmRepository
+import io.bluetape4k.graph.repository.GraphVirtualThreadCapabilitiesOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadChunkedOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadEdgeRepository
 import io.bluetape4k.graph.repository.GraphVirtualThreadMergeOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadSchemaManagementOperations
 import io.bluetape4k.graph.repository.GraphVirtualThreadSession
-import io.bluetape4k.graph.repository.GraphVirtualThreadTraversalRepository
 import io.bluetape4k.graph.repository.GraphVirtualThreadTransactionalOperations
+import io.bluetape4k.graph.repository.GraphVirtualThreadTraversalRepository
 import io.bluetape4k.graph.repository.GraphVirtualThreadVertexRepository
-import io.bluetape4k.graph.repository.GraphTransactionalOperations
 import io.bluetape4k.graph.repository.capabilities
 import io.bluetape4k.graph.schema.GraphSchemaManagementOperations
 import io.bluetape4k.logging.KLogging
@@ -56,12 +56,8 @@ class VirtualThreadOperationsAdapter(
    GraphVirtualThreadTraversalRepository by VirtualThreadTraversalAdapter(delegate),
    GraphVirtualThreadAlgorithmRepository by VirtualThreadAlgorithmAdapter(delegate),
    GraphVirtualThreadMergeOperations by VirtualThreadMergeAdapter(delegate as? GraphMergeOperations),
-   GraphVirtualThreadSchemaManagementOperations by VirtualThreadSchemaAdapter(
-       (delegate as? GraphSchemaManagementOperations)?.schemaManager(),
-   ),
-   GraphVirtualThreadTransactionalOperations by VirtualThreadTransactionalAdapter(
-       delegate as? GraphTransactionalOperations,
-   ),
+   GraphVirtualThreadSchemaManagementOperations by VirtualThreadSchemaAdapter((delegate as? GraphSchemaManagementOperations)?.schemaManager()),
+   GraphVirtualThreadTransactionalOperations by VirtualThreadTransactionalAdapter(delegate as? GraphTransactionalOperations),
    GraphVirtualThreadChunkedOperations by VirtualThreadChunkedAdapter(delegate) {
 
     companion object: KLogging()

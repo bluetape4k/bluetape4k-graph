@@ -1,14 +1,16 @@
 package io.bluetape4k.graph.ktor
 
-import io.bluetape4k.codec.Base58
 import com.falkordb.FalkorDB
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.codec.Base58
 import io.bluetape4k.graph.age.AgeGraphOperations
-import io.bluetape4k.graph.falkordb.FalkorDBServer
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.ktor.testing.shouldHaveStatus
+import io.bluetape4k.logging.coroutines.KLoggingChannel
+import io.bluetape4k.support.requireNotNull
+import io.bluetape4k.testcontainers.graphdb.FalkorDBServer
 import io.bluetape4k.testcontainers.graphdb.MemgraphServer
 import io.bluetape4k.testcontainers.graphdb.Neo4jServer
 import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
@@ -29,6 +31,8 @@ import org.neo4j.driver.GraphDatabase
 
 class BackendGraphPluginRuntimeTest {
 
+    companion object: KLoggingChannel()
+
     @Test
     fun `managed Neo4j DSL 은 Ktor route 에서 sync suspend operations 를 연결한다`() = runSuspendIO {
         try {
@@ -39,7 +43,11 @@ class BackendGraphPluginRuntimeTest {
             }
         } finally {
             GraphDatabase.driver(Neo4jServer.Launcher.neo4j.boltUrl, AuthTokens.none()).use { driver ->
-                runCatching { driver.session().use { session -> session.run("MATCH (n) DETACH DELETE n").consume() } }
+                runCatching {
+                    driver.session().use { session ->
+                        session.run("MATCH (n) DETACH DELETE n").consume()
+                    }
+                }
             }
         }
     }
@@ -54,7 +62,11 @@ class BackendGraphPluginRuntimeTest {
             }
         } finally {
             GraphDatabase.driver(MemgraphServer.Launcher.memgraph.boltUrl, AuthTokens.none()).use { driver ->
-                runCatching { driver.session().use { session -> session.run("MATCH (n) DETACH DELETE n").consume() } }
+                runCatching {
+                    driver.session().use { session ->
+                        session.run("MATCH (n) DETACH DELETE n").consume()
+                    }
+                }
             }
         }
     }
@@ -63,8 +75,8 @@ class BackendGraphPluginRuntimeTest {
     fun `managed Apache AGE DataSource DSL 은 Ktor route 에서 sync suspend operations 를 연결한다`() = runSuspendIO {
         val graphName = randomGraphName("ktor_age")
         val server = PostgreSQLAgeServer.Launcher.postgresqlAge
-        val username = requireNotNull(server.username) { "PostgreSQL AGE username must be available" }
-        val password = requireNotNull(server.password) { "PostgreSQL AGE password must be available" }
+        val username = server.username.requireNotNull { "PostgreSQL AGE username must be available" }
+        val password = server.password.requireNotNull { "PostgreSQL AGE password must be available" }
 
         try {
             backendSmoke(graphName = graphName) {
@@ -86,9 +98,9 @@ class BackendGraphPluginRuntimeTest {
                 connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
                 maximumPoolSize = 1
             }).use { cleanupDataSource ->
-                Database.connect(cleanupDataSource)
+                val database = Database.connect(cleanupDataSource)
                 runCatching {
-                    val ops = AgeGraphOperations(graphName)
+                    val ops = AgeGraphOperations(database, graphName)
                     if (ops.graphExists(graphName)) {
                         ops.dropGraph(graphName)
                     }
@@ -101,8 +113,9 @@ class BackendGraphPluginRuntimeTest {
     fun `caller-owned Apache AGE helper 는 Ktor route 에서 sync suspend operations 를 연결한다`() = runSuspendIO {
         val graphName = randomGraphName("ktor_age")
         val server = PostgreSQLAgeServer.Launcher.postgresqlAge
-        val username = requireNotNull(server.username) { "PostgreSQL AGE username must be available" }
-        val password = requireNotNull(server.password) { "PostgreSQL AGE password must be available" }
+        val username = server.username.requireNotNull { "PostgreSQL AGE username must be available" }
+        val password = server.password.requireNotNull { "PostgreSQL AGE password must be available" }
+
         val dataSource = HikariDataSource(HikariConfig().apply {
             jdbcUrl = server.jdbcUrl
             this.username = username
@@ -112,14 +125,14 @@ class BackendGraphPluginRuntimeTest {
             maximumPoolSize = 2
         })
 
+        val database = Database.connect(dataSource)
         try {
-            Database.connect(dataSource)
             backendSmoke(graphName = graphName) {
-                age(graphName)
+                age(database, graphName)
             }
         } finally {
             runCatching {
-                val ops = AgeGraphOperations(graphName)
+                val ops = AgeGraphOperations(database, graphName)
                 if (ops.graphExists(graphName)) {
                     ops.dropGraph(graphName)
                 }
@@ -143,12 +156,16 @@ class BackendGraphPluginRuntimeTest {
             }
         } finally {
             FalkorDB.driver(server.host, server.port).use { driver ->
-                runCatching { driver.graph(graphName).use { graph -> graph.deleteGraph() } }
+                runCatching {
+                    driver.graph(graphName).use { graph ->
+                        graph.deleteGraph()
+                    }
+                }
             }
         }
     }
 
-    private suspend fun backendSmoke(
+    private fun backendSmoke(
         graphName: String,
         configureBackend: GraphPluginConfig.() -> Unit,
     ) {
@@ -166,8 +183,8 @@ class BackendGraphPluginRuntimeTest {
                             ops.dropGraph(graphName)
                         }
                         ops.createGraph(graphName)
-                        ops.createVertex(label, mapOf("name" to "Seoul"))
-                        ops.createVertex(label, mapOf("name" to "Busan"))
+                        ops.createVertex(label, "name" to "Seoul")
+                        ops.createVertex(label, "name" to "Busan")
                         call.respondText("created")
                     }
                     get("/vertices/count") {

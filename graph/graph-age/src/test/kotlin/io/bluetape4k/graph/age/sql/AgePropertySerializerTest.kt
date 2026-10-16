@@ -3,9 +3,13 @@ package io.bluetape4k.graph.age.sql
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldContain
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 
 class AgePropertySerializerTest {
+
+    companion object: KLogging()
 
     @Test
     fun `string values are escaped for AGE Cypher literals`() {
@@ -46,7 +50,7 @@ class AgePropertySerializerTest {
         val ex = assertFailsWith<IllegalArgumentException> {
             AgePropertySerializer.toCypherProps(mapOf("name) DELETE n" to "Alice"))
         }
-
+        log.debug { "ex=$ex" }
         ex.message shouldContain "valid identifier"
     }
 
@@ -55,7 +59,7 @@ class AgePropertySerializerTest {
         val ex = assertFailsWith<IllegalArgumentException> {
             AgePropertySerializer.toCypherValue(mapOf("profile" to mapOf("display-name" to "Alice")))
         }
-
+        log.debug { "ex=$ex" }
         ex.message shouldContain "valid identifier"
     }
 
@@ -64,7 +68,7 @@ class AgePropertySerializerTest {
         val ex = assertFailsWith<IllegalArgumentException> {
             AgePropertySerializer.toCypherValue(mapOf(1 to "one"))
         }
-
+        log.debug { "ex=$ex" }
         ex.message shouldContain "must be a String"
     }
 
@@ -76,6 +80,7 @@ class AgePropertySerializerTest {
         val ex = assertFailsWith<IllegalArgumentException> {
             AgePropertySerializer.toCypherAssignments("v) DELETE n", mapOf("name" to "Alice"))
         }
+        log.debug { "ex=$ex" }
         ex.message shouldContain "valid identifier"
     }
 }

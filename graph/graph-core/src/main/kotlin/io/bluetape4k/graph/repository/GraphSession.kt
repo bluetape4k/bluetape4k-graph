@@ -15,7 +15,7 @@ package io.bluetape4k.graph.repository
  * ops.graphExists("social")          // false
  * ```
  */
-interface GraphSession : AutoCloseable {
+interface GraphSession: AutoCloseable {
     /**
      * 주어진 name으로 graph를 생성한다.
      *

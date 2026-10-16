@@ -6,7 +6,9 @@ Jackson 3.x based NDJSON bulk importer and exporter for Bluetape4k graph operati
 
 ## Overview
 
-This module provides high-performance, flexible NDJSON (newline-delimited JSON) bulk import/export capabilities for graph data using **Jackson 3.x** (with `tools.jackson` package namespace). It supports multiple execution models to accommodate different concurrency patterns: synchronous, coroutine-based suspend, and Java Virtual Thread-based approaches.
+This module provides high-performance, flexible NDJSON (newline-delimited JSON) bulk import/export capabilities for graph data using
+**Jackson
+3.x** (with `tools.jackson` package namespace). It supports multiple execution models to accommodate different concurrency patterns: synchronous, coroutine-based suspend, and Java Virtual Thread-based approaches.
 
 ## Architecture
 
@@ -27,19 +29,19 @@ Jackson3 uses the same NDJSON envelope contract as the Jackson2 module while swi
 The module offers three distinct execution models to fit different runtime environments and concurrency requirements:
 
 1. **Synchronous** (`Jackson3NdJsonBulkImporter`, `Jackson3NdJsonBulkExporter`)
-   - Blocking I/O operations
-   - Suitable for traditional blocking frameworks
-   - Thread-per-request architecture
+    - Blocking I/O operations
+    - Suitable for traditional blocking frameworks
+    - Thread-per-request architecture
 
 2. **Coroutine Suspend** (`SuspendJackson3NdJsonBulkImporter`, `SuspendJackson3NdJsonBulkExporter`)
-   - Non-blocking, async/await style
-   - Kotlin coroutines based
-   - Optimal for high-concurrency, low-resource scenarios
+    - Non-blocking, async/await style
+    - Kotlin coroutines based
+    - Optimal for high-concurrency, low-resource scenarios
 
 3. **Virtual Thread** (`Jackson3NdJsonVirtualThreadBulkImporter`, `Jackson3NdJsonVirtualThreadBulkExporter`)
-   - Java 21+ Virtual Thread support
-   - Lightweight threading model
-   - Provides blocking semantics with minimal overhead
+    - Java 21+ Virtual Thread support
+    - Lightweight threading model
+    - Provides blocking semantics with minimal overhead
 
 ### NDJSON Envelope Format
 
@@ -182,6 +184,7 @@ val report = future.join()
 ```
 
 **Fields:**
+
 - `type`: `vertex` or `edge`
 - `id`: Unique external identifier
 - `label`: Vertex or edge label/type
@@ -202,13 +205,9 @@ val report = future.join()
 
 ### NdJsonReadOptions
 
-- `maxLineChars: Int` - Maximum UTF-16 code units in one NDJSON line before Jackson parsing
-  (default `Int.MAX_VALUE`)
+- `maxLineChars: Int` - Maximum UTF-16 code units in one NDJSON line before Jackson parsing (default `Int.MAX_VALUE`)
 
-Pass `NdJsonReadOptions(maxLineChars = 1_048_576)` to the synchronous, suspend,
-virtual-thread, or Flow reader constructor. LF, CRLF, CR, and an unterminated final line use the
-same boundary. A limit failure exposes phase, line, and file role without including the payload or
-source path, and the configured limit participates in checkpoint compatibility.
+Pass `NdJsonReadOptions(maxLineChars = 1_048_576)` to the synchronous, suspend, virtual-thread, or Flow reader constructor. LF, CRLF, CR, and an unterminated final line use the same boundary. A limit failure exposes phase, line, and file role without including the payload or source path, and the configured limit participates in checkpoint compatibility.
 
 ### GraphExportOptions
 
@@ -218,9 +217,7 @@ source path, and the configured limit participates in checkpoint compatibility.
 - `exportChunkSize: Int` - Maximum records per repository export chunk for streaming-capable exporters (default `1_000`)
 
 Jackson3 export consumes `findVerticesByLabelChunked` and
-`findEdgesByLabelChunked`. Backends that do not override those repository
-methods use the compatible list/Flow fallback, while cursor-aware backends can
-stream bounded chunks to the NDJSON writer.
+`findEdgesByLabelChunked`. Backends that do not override those repository methods use the compatible list/Flow fallback, while cursor-aware backends can stream bounded chunks to the NDJSON writer.
 
 ## Dependencies
 
@@ -259,6 +256,7 @@ data class GraphImportReport(
 ### Failure Details
 
 Each failure includes:
+
 - `phase`: READ_VERTEX, READ_EDGE, WRITE_VERTEX, WRITE_EDGE
 - `severity`: ERROR, WARN
 - `message`: Human-readable error description
@@ -270,9 +268,9 @@ Each failure includes:
 - **Memory**: Edge records buffered in memory (configurable limit)
 - **I/O**: Streaming line-by-line for constant memory usage
 - **Concurrency**: Model-dependent
-  - Synchronous: Single thread
-  - Suspend: Cooperative multitasking
-  - Virtual Thread: Lightweight parallelism
+    - Synchronous: Single thread
+    - Suspend: Cooperative multitasking
+    - Virtual Thread: Lightweight parallelism
 
 ## Compatibility
 
@@ -297,7 +295,4 @@ Module: graph-io/jackson3
 
 ## Streaming reader contract
 
-`Jackson3NdJsonRecordFlowReader` emits NDJSON records one at a time through a cold `Flow` and keeps
-input order. `GraphImportOptions.batchSize` is only the backend write-flush setting, while edge
-staging is bounded by `maxEdgeBufferSize`. Path and owned sources are closed by the library; a
-caller-owned source remains open after collection.
+`Jackson3NdJsonRecordFlowReader` emits NDJSON records one at a time through a cold `Flow` and keeps input order. `GraphImportOptions.batchSize` is only the backend write-flush setting, while edge staging is bounded by `maxEdgeBufferSize`. Path and owned sources are closed by the library; a caller-owned source remains open after collection.

@@ -3,13 +3,16 @@ package io.bluetape4k.graph.conformance
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeNull
-import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldNotBeEmpty
+import io.bluetape4k.graph.GraphUnsupportedOperationException
 import io.bluetape4k.graph.repository.GraphCapability
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.capabilities
 import io.bluetape4k.graph.repository.mergeVertex
 import io.bluetape4k.graph.repository.transaction
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -25,6 +28,8 @@ import org.junit.jupiter.api.TestInstance
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AbstractGraphCapabilityConformanceTest {
+
+    companion object: KLogging()
 
     protected abstract val operations: GraphOperations
     protected abstract val graphName: String
@@ -59,22 +64,21 @@ abstract class AbstractGraphCapabilityConformanceTest {
         }
 
         val bounded = GraphCapability.BOUNDED_CHUNKED_READ in expectedCapabilities
-        capabilities.supports(GraphCapability.BOUNDED_CHUNKED_READ).shouldBeEqualTo(bounded)
-        capabilities.supports(GraphCapability.BOUNDED_CHUNKED_EXPORT).shouldBeEqualTo(bounded)
-        capabilities.constraints(GraphCapability.CHUNKED_READ).contains("api-chunking-only").shouldBeTrue()
-        capabilities.constraints(GraphCapability.CHUNKED_EXPORT).contains("api-chunking-only").shouldBeTrue()
+        capabilities.supports(GraphCapability.BOUNDED_CHUNKED_READ) shouldBeEqualTo bounded
+        capabilities.supports(GraphCapability.BOUNDED_CHUNKED_EXPORT) shouldBeEqualTo bounded
+        capabilities.constraints(GraphCapability.CHUNKED_READ) shouldContain "api-chunking-only"
+        capabilities.constraints(GraphCapability.CHUNKED_EXPORT) shouldContain "api-chunking-only"
+
         if (bounded) {
-            capabilities.constraints(GraphCapability.BOUNDED_CHUNKED_READ)
-                .contains("native-traversal-bounded").shouldBeTrue()
-            capabilities.constraints(GraphCapability.BOUNDED_CHUNKED_EXPORT)
-                .contains("native-traversal-bounded").shouldBeTrue()
+            capabilities.constraints(GraphCapability.BOUNDED_CHUNKED_READ) shouldContain "native-traversal-bounded"
+            capabilities.constraints(GraphCapability.BOUNDED_CHUNKED_EXPORT) shouldContain "native-traversal-bounded"
         }
     }
 
     @Test
     fun `batch insert and chunked export preserve the record contract`() {
-        expectedCapabilities.contains(GraphCapability.BATCH_INSERT).shouldBeTrue()
-        expectedCapabilities.contains(GraphCapability.CHUNKED_EXPORT).shouldBeTrue()
+        expectedCapabilities shouldContain GraphCapability.BATCH_INSERT
+        expectedCapabilities shouldContain GraphCapability.CHUNKED_EXPORT
 
         val vertices = operations.createVertices(
             label = "Person",
@@ -87,9 +91,10 @@ abstract class AbstractGraphCapabilityConformanceTest {
         vertices.size shouldBeEqualTo 3
 
         val chunks = operations.findVerticesByLabelChunked("Person", chunkSize = 2).toList()
+
+        chunks.forEach { log.debug { "chunk=$it" } }
         chunks.map { it.size } shouldBeEqualTo listOf(2, 1)
-        chunks.flatten().map { it.properties["name"] }.toSet() shouldBeEqualTo
-            setOf("Alice", "Bob", "Carol")
+        chunks.flatten().map { it.properties["name"] }.toSet() shouldBeEqualTo setOf("Alice", "Bob", "Carol")
     }
 
     @Test
@@ -120,7 +125,7 @@ abstract class AbstractGraphCapabilityConformanceTest {
     @Test
     fun `transaction capability commits and rolls back explicitly`() {
         if (GraphCapability.TRANSACTION !in expectedCapabilities) {
-            assertFailsWith<UnsupportedOperationException> {
+            assertFailsWith<GraphUnsupportedOperationException> {
                 operations.transaction { createVertex("Person", mapOf("name" to "unsupported")) }
             }
             return
@@ -136,8 +141,7 @@ abstract class AbstractGraphCapabilityConformanceTest {
             }
         }
 
-        operations.findVerticesByLabel("Person").map { it.properties["name"] } shouldBeEqualTo
-            listOf("committed")
+        operations.findVerticesByLabel("Person").map { it.properties["name"] } shouldBeEqualTo listOf("committed")
     }
 
     /** backend별로 공유하는 capability 집합을 생성한다. */

@@ -1,17 +1,6 @@
 package io.bluetape4k.graph.age
 
-import com.zaxxer.hikari.HikariConfig
-import com.zaxxer.hikari.HikariDataSource
 import io.bluetape4k.assertions.assertFailsWith
-import io.bluetape4k.graph.GraphQueryException
-import io.bluetape4k.graph.model.Direction
-import io.bluetape4k.graph.model.GraphElementId
-import io.bluetape4k.graph.model.NeighborOptions
-import io.bluetape4k.graph.model.PathOptions
-import io.bluetape4k.graph.repository.transaction
-import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
-import io.bluetape4k.junit5.coroutines.runSuspendIO
-import io.bluetape4k.logging.KLogging
 import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
@@ -20,10 +9,16 @@ import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.graph.GraphQueryException
+import io.bluetape4k.graph.model.Direction
+import io.bluetape4k.graph.model.NeighborOptions
+import io.bluetape4k.graph.model.PathOptions
+import io.bluetape4k.graph.model.toGraphElementId
+import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.logging.KLogging
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
@@ -31,30 +26,13 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
-class AgeGraphOperationsTest {
+class AgeGraphOperationsTest: AbstractAgeTest() {
 
-    companion object: KLogging()
-
-    private lateinit var dataSource: HikariDataSource
-    private lateinit var database: Database
-    private lateinit var ops: AgeGraphOperations
-
-    private val graphName = "test_graph"
-
-    @BeforeAll
-    fun setup() {
-        val server = PostgreSQLAgeServer.Launcher.postgresqlAge
-        dataSource = HikariDataSource(HikariConfig().apply {
-            jdbcUrl = server.jdbcUrl
-            username = server.username
-            password = server.password
-            driverClassName = "org.postgresql.Driver"
-            connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
-            maximumPoolSize = 5
-        })
-        database = Database.connect(dataSource)
-        ops = AgeGraphOperations(graphName)
+    companion object: KLogging() {
+        private const val TEST_GRAPH_NAME = "operations_graph"
     }
+
+    private val ops: AgeGraphOperations by lazy { createAgeGraphOperations(database, TEST_GRAPH_NAME) }
 
     @AfterAll
     fun teardown() {
@@ -63,10 +41,10 @@ class AgeGraphOperationsTest {
 
     @BeforeEach
     fun resetGraph() = runSuspendIO {
-        if (ops.graphExists(graphName)) {
-            ops.dropGraph(graphName)
+        if (ops.graphExists(TEST_GRAPH_NAME)) {
+            ops.dropGraph(TEST_GRAPH_NAME)
         }
-        ops.createGraph(graphName)
+        ops.createGraph(TEST_GRAPH_NAME)
     }
 
     // ───────────────────────── 그래프 생성/삭제/존재 여부 ─────────────────────────
@@ -74,14 +52,14 @@ class AgeGraphOperationsTest {
     @Test
     @Order(10)
     fun `그래프를 생성하면 존재 여부가 true 반환`() = runSuspendIO {
-        ops.graphExists(graphName).shouldBeTrue()
+        ops.graphExists(TEST_GRAPH_NAME).shouldBeTrue()
     }
 
     @Test
     @Order(11)
     fun `그래프를 삭제하면 존재 여부가 false 반환`() = runSuspendIO {
-        ops.dropGraph(graphName)
-        ops.graphExists(graphName).shouldBeFalse()
+        ops.dropGraph(TEST_GRAPH_NAME)
+        ops.graphExists(TEST_GRAPH_NAME).shouldBeFalse()
     }
 
     @Test
@@ -152,7 +130,7 @@ class AgeGraphOperationsTest {
     @Test
     @Order(23)
     fun `존재하지 않는 id로 조회하면 null 반환`() = runSuspendIO {
-        val fakeId = GraphElementId.of(999999999L)
+        val fakeId = 999_999_999L.toGraphElementId()
         val found = ops.findVertexById("Person", fakeId)
         found.shouldBeNull()
     }

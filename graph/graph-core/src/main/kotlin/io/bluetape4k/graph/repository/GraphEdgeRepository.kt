@@ -34,11 +34,19 @@ interface GraphEdgeRepository {
         properties: Map<String, Any?> = emptyMap(),
     ): GraphEdge
 
+    fun createEdge(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        label: String,
+        vararg params: Pair<String, Any?>,
+    ): GraphEdge =
+        createEdge(fromId, toId, label, params.toMap())
+
     /**
      * Creates multiple edges with the same label and returns them in input order.
-	*
+     *
      * ## Contract
-	*
+     *
      * - Empty input returns `emptyList()` without calling the backend.
      * - The default implementation is a compatibility fallback that calls [createEdge] sequentially.
      * - If the default implementation fails mid-batch, previously created edges may remain.
@@ -61,7 +69,9 @@ interface GraphEdgeRepository {
     ): List<GraphEdge> {
         GraphBatchValidation.validateEdgeBatch(label, edges)
         if (edges.isEmpty()) return emptyList()
-        return edges.map { edge -> createEdge(edge.fromId, edge.toId, label, edge.properties) }
+        return edges.map { edge ->
+            createEdge(edge.fromId, edge.toId, label, edge.properties)
+        }
     }
 
     /**
@@ -77,6 +87,9 @@ interface GraphEdgeRepository {
      * @return matching [GraphEdge] values.
      */
     fun findEdgesByLabel(label: String, filter: Map<String, Any?> = emptyMap()): List<GraphEdge>
+
+    fun findEdgesByLabel(label: String, vararg params: Pair<String, Any?>): List<GraphEdge> =
+        findEdgesByLabel(label, params.toMap())
 
     /**
      * label과 property filter로 간선을 API chunk 단위로 조회한다.
@@ -106,9 +119,16 @@ interface GraphEdgeRepository {
     ): Sequence<List<GraphEdge>> =
         findEdgesByLabel(label, filter).asGraphExportChunks(chunkSize)
 
+    fun findEdgesByLabelChunked(
+        label: String,
+        vararg params: Pair<String, Any?>,
+        chunkSize: Int = DEFAULT_GRAPH_EXPORT_CHUNK_SIZE,
+    ): Sequence<List<GraphEdge>> =
+        findEdgesByLabelChunked(label, params.toMap(), chunkSize)
+
     /**
      * Finds edges that start at a specific vertex.
-	*
+     *
      * Used to collect adjacent edges for Dijkstra/A* algorithms.
      *
      * ```kotlin
@@ -124,7 +144,7 @@ interface GraphEdgeRepository {
 
     /**
      * Finds edges that end at a specific vertex.
-	*
+     *
      * Used for `Direction.INCOMING` and `Direction.BOTH` traversal.
      *
      * ```kotlin

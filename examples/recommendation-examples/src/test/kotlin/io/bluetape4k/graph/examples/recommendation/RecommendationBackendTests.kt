@@ -1,14 +1,13 @@
 package io.bluetape4k.graph.examples.recommendation
 
-import io.bluetape4k.codec.Base58
 import com.falkordb.FalkorDB
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import io.bluetape4k.codec.Base58
 import io.bluetape4k.graph.age.AgeGraphOperations
 import io.bluetape4k.graph.age.AgeGraphSuspendOperations
 import io.bluetape4k.graph.falkordb.FalkorDBGraphOperations
 import io.bluetape4k.graph.falkordb.FalkorDBGraphSuspendOperations
-import io.bluetape4k.graph.falkordb.FalkorDBServer
 import io.bluetape4k.graph.memgraph.MemgraphGraphOperations
 import io.bluetape4k.graph.memgraph.MemgraphGraphSuspendOperations
 import io.bluetape4k.graph.neo4j.Neo4jGraphOperations
@@ -17,6 +16,7 @@ import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.warn
+import io.bluetape4k.testcontainers.graphdb.FalkorDBServer
 import io.bluetape4k.testcontainers.graphdb.MemgraphServer
 import io.bluetape4k.testcontainers.graphdb.Neo4jServer
 import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
@@ -28,17 +28,17 @@ import org.neo4j.driver.AuthTokens
 import org.neo4j.driver.Driver
 import org.neo4j.driver.GraphDatabase
 
-class TinkerGraphRecommendationTest : AbstractRecommendationTest() {
+class TinkerGraphRecommendationTest: AbstractRecommendationTest() {
     override val ops = TinkerGraphOperations()
     override val graphName = "default"
 }
 
-class TinkerGraphRecommendationSuspendTest : AbstractRecommendationSuspendTest() {
+class TinkerGraphRecommendationSuspendTest: AbstractRecommendationSuspendTest() {
     override val ops = TinkerGraphSuspendOperations()
     override val graphName = "default"
 }
 
-class Neo4jRecommendationTest : AbstractRecommendationTest() {
+class Neo4jRecommendationTest: AbstractRecommendationTest() {
     private val driver: Driver = GraphDatabase.driver(Neo4jServer.Launcher.neo4j.boltUrl, AuthTokens.none())
     override val ops = Neo4jGraphOperations(driver)
 
@@ -48,7 +48,7 @@ class Neo4jRecommendationTest : AbstractRecommendationTest() {
     }
 }
 
-class Neo4jRecommendationSuspendTest : AbstractRecommendationSuspendTest() {
+class Neo4jRecommendationSuspendTest: AbstractRecommendationSuspendTest() {
     private val driver: Driver = GraphDatabase.driver(Neo4jServer.Launcher.neo4j.boltUrl, AuthTokens.none())
     override val ops = Neo4jGraphSuspendOperations(driver)
 
@@ -58,7 +58,7 @@ class Neo4jRecommendationSuspendTest : AbstractRecommendationSuspendTest() {
     }
 }
 
-class MemgraphRecommendationTest : AbstractRecommendationTest() {
+class MemgraphRecommendationTest: AbstractRecommendationTest() {
     private lateinit var driver: Driver
     override lateinit var ops: MemgraphGraphOperations
 
@@ -74,7 +74,7 @@ class MemgraphRecommendationTest : AbstractRecommendationTest() {
     }
 }
 
-class MemgraphRecommendationSuspendTest : AbstractRecommendationSuspendTest() {
+class MemgraphRecommendationSuspendTest: AbstractRecommendationSuspendTest() {
     private lateinit var driver: Driver
     override lateinit var ops: MemgraphGraphSuspendOperations
 
@@ -90,7 +90,7 @@ class MemgraphRecommendationSuspendTest : AbstractRecommendationSuspendTest() {
     }
 }
 
-class AgeRecommendationTest : AbstractRecommendationTest() {
+class AgeRecommendationTest: AbstractRecommendationTest() {
     override val graphName = "recommendation_test"
     private lateinit var dataSource: HikariDataSource
     override lateinit var ops: AgeGraphOperations
@@ -106,8 +106,8 @@ class AgeRecommendationTest : AbstractRecommendationTest() {
             connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
             maximumPoolSize = 5
         })
-        Database.connect(dataSource)
-        ops = AgeGraphOperations(graphName)
+        val database = Database.connect(dataSource)
+        ops = AgeGraphOperations(database, graphName)
     }
 
     @AfterAll
@@ -116,7 +116,7 @@ class AgeRecommendationTest : AbstractRecommendationTest() {
     }
 }
 
-class AgeRecommendationSuspendTest : AbstractRecommendationSuspendTest() {
+class AgeRecommendationSuspendTest: AbstractRecommendationSuspendTest() {
     override val graphName = "recommendation_suspend_test"
     private lateinit var dataSource: HikariDataSource
     override lateinit var ops: AgeGraphSuspendOperations
@@ -132,8 +132,8 @@ class AgeRecommendationSuspendTest : AbstractRecommendationSuspendTest() {
             connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
             maximumPoolSize = 5
         })
-        Database.connect(dataSource)
-        ops = AgeGraphSuspendOperations(graphName)
+        val database = Database.connect(dataSource)
+        ops = AgeGraphSuspendOperations(database, graphName)
     }
 
     @AfterAll
@@ -142,7 +142,7 @@ class AgeRecommendationSuspendTest : AbstractRecommendationSuspendTest() {
     }
 }
 
-class FalkorDBRecommendationTest : AbstractRecommendationTest() {
+class FalkorDBRecommendationTest: AbstractRecommendationTest() {
     private lateinit var driver: com.falkordb.Driver
     override lateinit var ops: FalkorDBGraphOperations
     override val graphName: String = "recommendation_${Base58.randomString(8)}"
@@ -161,7 +161,7 @@ class FalkorDBRecommendationTest : AbstractRecommendationTest() {
     }
 }
 
-class FalkorDBRecommendationSuspendTest : AbstractRecommendationSuspendTest() {
+class FalkorDBRecommendationSuspendTest: AbstractRecommendationSuspendTest() {
     private lateinit var driver: com.falkordb.Driver
     override lateinit var ops: FalkorDBGraphSuspendOperations
     override val graphName: String = "recommendation_${Base58.randomString(8)}"

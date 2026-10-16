@@ -5,10 +5,10 @@ import io.bluetape4k.graph.model.GraphElementId
 import io.bluetape4k.graph.model.GraphPath
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.PathStep
-import io.bluetape4k.logging.KotlinLogging
+import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.warn
 
-private val log = KotlinLogging.logger {}
+private object PathReconstLogger: KLogging()
 
 /** Weighted traversal state. Depth is part of the state because a cheaper deep path
  * must not hide a more expensive shallow path that can still reach the target. */
@@ -47,7 +47,7 @@ internal fun reconstructPath(
     while (true) {
         val entry = cameFrom[current] ?: break
         val currentVertex = vertexLookup(current.id) ?: run {
-            log.warn { "PathReconstructor: vertex ${current.id} not found during reconstruction (target=${target.id})" }
+            PathReconstLogger.log.warn { "PathReconstructor: vertex ${current.id} not found during reconstruction (target=${target.id})" }
             return null
         }
         steps.add(PathStep.VertexStep(currentVertex))
@@ -57,7 +57,7 @@ internal fun reconstructPath(
 
     // Add the source vertex.
     val startVertex = vertexLookup(current.id) ?: run {
-        log.warn { "PathReconstructor: start vertex ${current.id} not found during reconstruction" }
+        PathReconstLogger.log.warn { "PathReconstructor: start vertex ${current.id} not found during reconstruction" }
         return null
     }
     steps.add(PathStep.VertexStep(startVertex))

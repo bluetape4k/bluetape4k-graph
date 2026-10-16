@@ -1,60 +1,31 @@
 package io.bluetape4k.graph.age
 
-import com.zaxxer.hikari.HikariConfig
-import com.zaxxer.hikari.HikariDataSource
 import io.bluetape4k.assertions.shouldBeNear
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.graph.conformance.WeightedPathDepthConformance
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.MissingWeightPolicy
 import io.bluetape4k.graph.model.PathOptions
-import io.bluetape4k.graph.conformance.WeightedPathDepthConformance
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.KLogging
-import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
-import org.jetbrains.exposed.v1.jdbc.Database
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class AgeSuspendWeightedPathTest {
+class AgeSuspendWeightedPathTest: AbstractAgeTest() {
 
-    companion object : KLogging()
-
-    private lateinit var dataSource: HikariDataSource
-    private lateinit var database: Database
-    private lateinit var ops: AgeGraphSuspendOperations
-    private val graphName = "weighted_suspend_test"
-
-    @BeforeAll
-    fun setup() {
-        val server = PostgreSQLAgeServer.Launcher.postgresqlAge
-        dataSource = HikariDataSource(HikariConfig().apply {
-            jdbcUrl = server.jdbcUrl
-            username = server.username
-            password = server.password
-            driverClassName = "org.postgresql.Driver"
-            connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
-            maximumPoolSize = 5
-        })
-        database = Database.connect(dataSource)
-        ops = AgeGraphSuspendOperations(graphName)
+    companion object: KLogging() {
+        private const val TEST_GRAPH_NAME = "weighted_suspend_test"
     }
 
-    @AfterAll
-    fun teardown() {
-        dataSource.close()
-    }
+    private val ops: AgeGraphSuspendOperations by lazy { AgeGraphSuspendOperations(database, TEST_GRAPH_NAME) }
 
     @BeforeEach
     fun resetGraph() = runSuspendIO {
-        if (ops.graphExists(graphName)) {
-            ops.dropGraph(graphName)
+        if (ops.graphExists(TEST_GRAPH_NAME)) {
+            ops.dropGraph(TEST_GRAPH_NAME)
         }
-        ops.createGraph(graphName)
+        ops.createGraph(TEST_GRAPH_NAME)
     }
 
     @Test
@@ -116,18 +87,23 @@ class AgeSuspendWeightedPathTest {
             PathOptions(weightProperty = "cost", edgeLabel = "ROAD"),
         ) { _ -> 0.0 }.shouldNotBeNull()
 
-        path.totalWeight.shouldBeNear(3.0, 0.001)
+        path.totalWeight.shouldBeNear(3.0)
     }
 
     private suspend fun createWeightedRoadGraph(): WeightedRoadGraph {
         val a = ops.createVertex("City", mapOf("name" to "A"))
         val b = ops.createVertex("City", mapOf("name" to "B"))
         val c = ops.createVertex("City", mapOf("name" to "C"))
+
         ops.createEdge(a.id, b.id, "ROAD", mapOf("cost" to 1.0))
         ops.createEdge(b.id, c.id, "ROAD", mapOf("cost" to 2.0))
         ops.createEdge(a.id, c.id, "ROAD", mapOf("cost" to 5.0))
         return WeightedRoadGraph(a, b, c)
     }
 
-    private data class WeightedRoadGraph(val a: GraphVertex, val b: GraphVertex, val c: GraphVertex)
+    private data class WeightedRoadGraph(
+        val a: GraphVertex,
+        val b: GraphVertex,
+        val c: GraphVertex,
+    )
 }

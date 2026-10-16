@@ -3,13 +3,14 @@ package io.bluetape4k.graph.io.graphml
 import io.bluetape4k.graph.io.contract.GraphVirtualThreadBulkImporter
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphImportReport
-import io.bluetape4k.graph.io.report.GraphIoProgressListener
 import io.bluetape4k.graph.io.report.GraphIoFormat
 import io.bluetape4k.graph.io.report.GraphIoOperation
+import io.bluetape4k.graph.io.report.GraphIoProgressListener
 import io.bluetape4k.graph.io.report.GraphIoProgressReporter
 import io.bluetape4k.graph.io.source.GraphImportSource
 import io.bluetape4k.graph.io.support.GraphIoPaths
-import io.bluetape4k.graph.io.support.VirtualThreadGraphBulkAdapter
+import io.bluetape4k.graph.io.support.asVirtualThreadImporter
+import io.bluetape4k.graph.io.support.cancellableVirtualFuture
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
 import java.util.concurrent.CompletableFuture
@@ -37,14 +38,16 @@ import java.util.concurrent.CompletableFuture
  */
 class GraphMlVirtualThreadBulkImporter(
     private val sync: GraphMlBulkImporter = GraphMlBulkImporter(),
-) : GraphVirtualThreadBulkImporter<GraphImportSource> {
+): GraphVirtualThreadBulkImporter<GraphImportSource> {
+
+    companion object: KLogging()
 
     override fun importGraphAsync(
         source: GraphImportSource,
         operations: GraphOperations,
         options: GraphImportOptions,
     ): CompletableFuture<GraphImportReport> =
-        VirtualThreadGraphBulkAdapter.wrapImporter(sync).importGraphAsync(source, operations, options)
+        sync.asVirtualThreadImporter().importGraphAsync(source, operations, options)
 
     override fun importGraphAsync(
         source: GraphImportSource,
@@ -66,7 +69,7 @@ class GraphMlVirtualThreadBulkImporter(
             listener = listener,
             bytesProvider = { GraphIoPaths.sizeOf(source) },
         )
-        return VirtualThreadGraphBulkAdapter.cancellableVirtualFuture(
+        return cancellableVirtualFuture(
             reporter = reporter,
             block = { sync.importGraph(source, operations, options) },
             onCompleted = { report -> reporter.completed(report) },
@@ -79,7 +82,7 @@ class GraphMlVirtualThreadBulkImporter(
         options: GraphImportOptions = GraphImportOptions(),
         graphMlOptions: GraphMlImportOptions = GraphMlImportOptions(),
     ): CompletableFuture<GraphImportReport> =
-        VirtualThreadGraphBulkAdapter.cancellableVirtualFuture {
+        cancellableVirtualFuture {
             sync.importGraph(source, operations, options, graphMlOptions)
         }
 
@@ -96,12 +99,10 @@ class GraphMlVirtualThreadBulkImporter(
             listener = listener,
             bytesProvider = { GraphIoPaths.sizeOf(source) },
         )
-        return VirtualThreadGraphBulkAdapter.cancellableVirtualFuture(
+        return cancellableVirtualFuture(
             reporter = reporter,
             block = { sync.importGraph(source, operations, options, graphMlOptions) },
             onCompleted = { report -> reporter.completed(report) },
         )
     }
-
-    companion object : KLogging()
 }

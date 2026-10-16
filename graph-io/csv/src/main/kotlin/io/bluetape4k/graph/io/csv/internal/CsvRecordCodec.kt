@@ -1,14 +1,15 @@
 package io.bluetape4k.graph.io.csv.internal
 
-import com.fasterxml.jackson.core.JacksonException
-import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.core.type.TypeReference
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.JsonNode
 import io.bluetape4k.graph.io.csv.CsvPropertyMode
 import io.bluetape4k.graph.io.model.GraphIoEdgeRecord
 import io.bluetape4k.graph.io.model.GraphIoVertexRecord
-import io.bluetape4k.jackson.Jackson
+import io.bluetape4k.jackson3.Jackson
+import io.bluetape4k.logging.KLogging
+import tools.jackson.core.JacksonException
+import tools.jackson.core.json.JsonReadFeature
+import tools.jackson.core.type.TypeReference
+import tools.jackson.databind.DeserializationFeature
+import tools.jackson.databind.JsonNode
 
 /** CSV 컬럼 이름 생성 및 속성 추출을 담당하는 내부 헬퍼. */
 internal class CsvRecordCodec(private val mode: CsvPropertyMode) {
@@ -93,13 +94,13 @@ internal class CsvRecordCodec(private val mode: CsvPropertyMode) {
         }
     }
 
-    companion object {
+    companion object: KLogging() {
         private const val RAW_JSON_SPOOL_KEY = "\u0000bluetape4k.csv.rawJson"
         private val jsonMapper = Jackson.defaultJsonMapper
         private val strictJsonReader = jsonMapper.readerFor(JsonNode::class.java)
             .with(DeserializationFeature.FAIL_ON_TRAILING_TOKENS)
-            .without(JsonParser.Feature.ALLOW_TRAILING_COMMA)
-        private val PROPERTY_MAP_TYPE = object : TypeReference<Map<String, Any?>>() {}
+            .without(JsonReadFeature.ALLOW_TRAILING_COMMA)
+        private val PROPERTY_MAP_TYPE = object: TypeReference<Map<String, Any?>>() {}
         internal val RESERVED_VERTEX = listOf("id", "label")
         internal val RESERVED_EDGE = listOf("id", "label", "from", "to")
         internal val RESERVED_ALL = (RESERVED_VERTEX + RESERVED_EDGE).toSet()

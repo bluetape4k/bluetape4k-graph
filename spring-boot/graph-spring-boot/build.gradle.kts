@@ -1,9 +1,14 @@
 plugins {
     kotlin("jvm")
+    kotlin("kapt")
     kotlin("plugin.spring")
     kotlin("plugin.serialization")
     alias(bt4k.plugins.spring.boot4) apply false
     id("io.spring.dependency-management")
+}
+
+configurations {
+    testImplementation.get().extendsFrom(compileOnly.get(), runtimeOnly.get())
 }
 
 dependencies {
@@ -40,7 +45,6 @@ dependencies {
     testImplementation(project(":bluetape4k-graph-memgraph"))
     testImplementation(project(":bluetape4k-graph-age"))
     testImplementation(project(":bluetape4k-graph-falkordb"))
-    testImplementation(testFixtures(project(":bluetape4k-graph-falkordb")))
     testImplementation(bt4k.bluetape4k.testcontainers)
     testImplementation(bt4k.bluetape4k.testcontainers.spring)
     testImplementation(libs.testcontainers.neo4j)

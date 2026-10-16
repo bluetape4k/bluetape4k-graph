@@ -1,33 +1,7 @@
 package io.bluetape4k.graph.age
 
-import com.zaxxer.hikari.HikariConfig
-import com.zaxxer.hikari.HikariDataSource
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEmpty
-import io.bluetape4k.graph.GraphQueryException
-import io.bluetape4k.graph.model.BfsDfsOptions
-import io.bluetape4k.graph.model.ComponentOptions
-import io.bluetape4k.graph.model.CycleOptions
-import io.bluetape4k.graph.model.DegreeOptions
-import io.bluetape4k.graph.model.Direction
-import io.bluetape4k.graph.model.GraphElementId
-import io.bluetape4k.graph.model.NeighborOptions
-import io.bluetape4k.graph.model.PageRankOptions
-import io.bluetape4k.graph.model.PathOptions
-import io.bluetape4k.graph.repository.suspendTransaction
-import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
-import io.bluetape4k.junit5.coroutines.runSuspendIO
-import io.bluetape4k.logging.KLogging
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.withTimeout
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeGreaterThan
@@ -36,11 +10,31 @@ import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.graph.GraphException
+import io.bluetape4k.graph.GraphQueryException
+import io.bluetape4k.graph.model.ComponentOptions
+import io.bluetape4k.graph.model.CycleOptions
+import io.bluetape4k.graph.model.DegreeOptions
+import io.bluetape4k.graph.model.Direction
+import io.bluetape4k.graph.model.NeighborOptions
+import io.bluetape4k.graph.model.PageRankOptions
+import io.bluetape4k.graph.model.PathOptions
+import io.bluetape4k.graph.model.TreeTraversalOptions
+import io.bluetape4k.graph.model.toGraphElementId
+import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.logging.coroutines.KLoggingChannel
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.withTimeout
 import org.jetbrains.exposed.v1.core.DatabaseConfig
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation
 import org.junit.jupiter.api.Order
@@ -58,49 +52,25 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import javax.sql.DataSource
+import kotlin.time.Duration.Companion.seconds
 
 @TestMethodOrder(OrderAnnotation::class)
-class AgeGraphSuspendOperationsTest {
+class AgeGraphSuspendOperationsTest: AbstractAgeTest() {
 
-    companion object: KLogging()
-
-    private lateinit var dataSource: HikariDataSource
-    private lateinit var database: Database
-    private lateinit var ops: AgeGraphSuspendOperations
-
-    private val graphName = "test_graph"
-
-    @BeforeAll
-    fun setup() {
-        val server = PostgreSQLAgeServer.Launcher.postgresqlAge
-        dataSource = HikariDataSource(HikariConfig().apply {
-            jdbcUrl = server.jdbcUrl
-            username = server.username
-            password = server.password
-            driverClassName = "org.postgresql.Driver"
-            connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
-            maximumPoolSize = 5
-        })
-        database = Database.connect(
-            dataSource,
-            databaseConfig = DatabaseConfig {
-                defaultFetchSize = 8
-            }
-        )
-        ops = AgeGraphSuspendOperations(database, graphName)
+    companion object: KLoggingChannel() {
+        private const val TEST_GRAPH_NAME = "suspend_operations_graph"
     }
 
-    @AfterAll
-    fun teardown() {
-        dataSource.close()
+    private val ops: AgeGraphSuspendOperations by lazy {
+        AgeGraphSuspendOperations(database, TEST_GRAPH_NAME)
     }
 
     @BeforeEach
     fun resetGraph() = runSuspendIO {
-        if (ops.graphExists(graphName)) {
-            ops.dropGraph(graphName)
+        if (ops.graphExists(TEST_GRAPH_NAME)) {
+            ops.dropGraph(TEST_GRAPH_NAME)
         }
-        ops.createGraph(graphName)
+        ops.createGraph(TEST_GRAPH_NAME)
     }
 
     // ───────────────────────── 그래프 생성/삭제/존재 여부 ─────────────────────────
@@ -108,22 +78,21 @@ class AgeGraphSuspendOperationsTest {
     @Test
     @Order(10)
     fun `그래프를 생성하면 존재 여부가 true 반환`() = runSuspendIO {
-        ops.graphExists(graphName).shouldBeTrue()
+        ops.graphExists(TEST_GRAPH_NAME).shouldBeTrue()
     }
 
     @Test
     @Order(11)
     fun `이미 존재하는 그래프 생성은 호환성 duplicate로 허용한다`() = runSuspendIO {
-        ops.createGraph(graphName)
-
-        ops.graphExists(graphName).shouldBeTrue()
+        ops.createGraph(TEST_GRAPH_NAME)
+        ops.graphExists(TEST_GRAPH_NAME).shouldBeTrue()
     }
 
     @Test
     @Order(12)
     fun `그래프를 삭제하면 존재 여부가 false 반환`() = runSuspendIO {
-        ops.dropGraph(graphName)
-        ops.graphExists(graphName).shouldBeFalse()
+        ops.dropGraph(TEST_GRAPH_NAME)
+        ops.graphExists(TEST_GRAPH_NAME).shouldBeFalse()
     }
 
     @Test
@@ -143,7 +112,7 @@ class AgeGraphSuspendOperationsTest {
 
     @Test
     @Order(20)
-    fun `정점을 생성하면 id가 부여된다`() = runSuspendIO {
+    fun `Vertx을 생성하면 id가 부여된다`() = runSuspendIO {
         val vertex = ops.createVertex("Person")
         vertex.id.shouldNotBeNull()
         vertex.id.value.shouldNotBeNull()
@@ -172,7 +141,7 @@ class AgeGraphSuspendOperationsTest {
     @Test
     @Order(23)
     fun `존재하지 않는 id로 조회하면 null 반환`() = runSuspendIO {
-        val fakeId = GraphElementId.of(999999999L)
+        val fakeId = 999_999_999L.toGraphElementId()
         val found = ops.findVertexById("Person", fakeId)
         found.shouldBeNull()
     }
@@ -306,7 +275,7 @@ class AgeGraphSuspendOperationsTest {
     @Test
     @Order(330)
     fun `suspendTransaction은 nested Flow 반환을 명시적으로 거부한다`() = runSuspendIO {
-        val ex = assertFailsWith<IllegalArgumentException> {
+        val ex = assertFailsWith<GraphException> {
             ops.suspendTransaction<Pair<String, Flow<*>>> {
                 createVertex("Person", mapOf("name" to "Alice"))
                 "Person" to findVerticesByLabel("Person")
@@ -327,7 +296,7 @@ class AgeGraphSuspendOperationsTest {
             }
         }
 
-        withTimeout(5_000) {
+        withTimeout(5.seconds) {
             repeat(8) {
                 ops.findVerticesByLabel("Person").first()
             }
@@ -482,7 +451,7 @@ class AgeGraphSuspendOperationsTest {
             }
         )
         return try {
-            block(AgeGraphSuspendOperations(probedDatabase, graphName))
+            block(AgeGraphSuspendOperations(probedDatabase, TEST_GRAPH_NAME))
         } finally {
             TransactionManager.closeAndUnregister(probedDatabase)
         }
@@ -646,11 +615,11 @@ class AgeGraphSuspendOperationsTest {
         degree.outDegree shouldBeEqualTo 1
         degree.inDegree shouldBeEqualTo 1
 
-        val bfs = ops.bfs(a.id, BfsDfsOptions(edgeLabel = "E", maxDepth = 3)).toList()
+        val bfs = ops.bfs(a.id, TreeTraversalOptions(edgeLabel = "E", maxDepth = 3)).toList()
         bfs.first().vertex.id shouldBeEqualTo a.id
         bfs.size shouldBeGreaterThan 2
 
-        val dfs = ops.dfs(a.id, BfsDfsOptions(edgeLabel = "E", maxDepth = 3)).toList()
+        val dfs = ops.dfs(a.id, TreeTraversalOptions(edgeLabel = "E", maxDepth = 3)).toList()
         dfs.first().vertex.id shouldBeEqualTo a.id
         dfs.size shouldBeGreaterThan 2
 
