@@ -1,9 +1,8 @@
 package io.bluetape4k.graph.ktor
 
+import io.bluetape4k.ktor.core.installApplicationResourceLifecycle
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.info
-import io.bluetape4k.ktor.core.installApplicationResourceLifecycle
-import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationStarted
 import io.ktor.server.application.ApplicationStopped
 import io.ktor.server.application.createApplicationPlugin
