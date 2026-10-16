@@ -1,11 +1,13 @@
 package io.bluetape4k.graph.spring.boot.webflux
 
-import io.bluetape4k.graph.repository.GraphSuspendOperations
-import io.bluetape4k.graph.spring.boot.autoconfigure.GraphAutoConfiguration
-import io.bluetape4k.logging.KLogging
-import kotlinx.coroutines.runBlocking
+import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.graph.repository.GraphSuspendOperations
+import io.bluetape4k.graph.spring.boot.autoconfigure.GraphAutoConfiguration
+import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.logging.coroutines.KLoggingChannel
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.SpringBootConfiguration
@@ -15,6 +17,7 @@ import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTest
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.test.web.reactive.server.expectBody
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -29,15 +32,17 @@ import org.springframework.web.bind.annotation.RestController
 @ActiveProfiles("tinkergraph")
 class TinkerGraphWebFluxTest {
 
-    companion object : KLogging()
+    companion object: KLoggingChannel()
 
     @Autowired
     lateinit var webClient: WebTestClient
 
     @SpringBootConfiguration
-    @EnableAutoConfiguration(excludeName = [
-        "org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration",
-    ])
+    @EnableAutoConfiguration(
+        excludeName = [
+            "org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration",
+        ]
+    )
     @Import(GraphAutoConfiguration::class)
     class TestApp {
 
@@ -47,21 +52,23 @@ class TinkerGraphWebFluxTest {
 
             @PostMapping("/vertices/{label}")
             suspend fun create(@PathVariable label: String): Map<String, String> {
-                val v = ops.createVertex(label, mapOf("async" to "true"))
+                val v = ops.createVertex(label, "async" to "true")
                 return mapOf("id" to v.id.value, "label" to v.label)
             }
         }
     }
 
     @Test
-    fun `suspend 컨트롤러로 vertex 생성`() = runBlocking<Unit> {
+    fun `suspend 컨트롤러로 vertex 생성`() = runSuspendIO {
         webClient.post().uri("/test/suspend/vertices/User")
             .exchange()
             .expectStatus().is2xxSuccessful
-            .expectBody(Map::class.java)
+            .expectBody<Map<String, Any?>>()
             .consumeWith { r ->
                 val body = r.responseBody.shouldNotBeNull()
+                log.debug { "response body=$body" }
                 body.containsKey("id").shouldBeTrue()
+                body["label"] shouldBeEqualTo "User"
             }
     }
 }

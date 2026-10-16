@@ -39,5 +39,5 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 )
 @EnableConfigurationProperties(GraphProperties::class)
 class GraphAutoConfiguration {
-    companion object : KLogging()
+    companion object: KLogging()
 }

@@ -1,6 +1,7 @@
 package io.bluetape4k.graph.spring.boot.autoconfigure
 
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.logging.KLogging
 import io.bluetape4k.testcontainers.graphdb.FalkorDBServer
 import io.bluetape4k.testcontainers.graphdb.MemgraphServer
 import io.bluetape4k.testcontainers.graphdb.Neo4jServer
@@ -13,6 +14,8 @@ import java.nio.file.Path
  * 중앙 Testcontainers launcher의 기본 이미지가 그래프 저장소 manifest와 일치하는지 검증합니다.
  */
 class TestcontainersImageLauncherContractTest {
+
+    companion object: KLogging()
 
     @Test
     fun `공유 launcher 기본 이미지가 graph manifest와 일치한다`() {
@@ -28,6 +31,7 @@ class TestcontainersImageLauncherContractTest {
     private fun manifestImages(): List<String> {
         val manifest = repositoryRoot()
             .resolve(".github/testcontainers-images.txt")
+
         return Files.readAllLines(manifest)
             .map(String::trim)
             .filter { it.isNotEmpty() && !it.startsWith("#") }

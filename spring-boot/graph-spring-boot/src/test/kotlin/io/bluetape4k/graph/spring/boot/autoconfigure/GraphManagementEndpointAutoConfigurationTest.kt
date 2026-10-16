@@ -1,17 +1,22 @@
 package io.bluetape4k.graph.spring.boot.autoconfigure
 
 import com.falkordb.Driver
-import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.graph.spring.boot.actuator.GraphManagementEndpoint
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.getBean
 import org.springframework.boot.autoconfigure.AutoConfigurations
 import org.springframework.boot.test.context.FilteredClassLoader
 import org.springframework.boot.test.context.runner.ApplicationContextRunner
 
 class GraphManagementEndpointAutoConfigurationTest {
+
+    companion object: KLogging()
 
     private val runner = ApplicationContextRunner()
         .withConfiguration(
@@ -43,9 +48,10 @@ class GraphManagementEndpointAutoConfigurationTest {
         runner
             .withPropertyValues("bluetape4k.graph.management.endpoint.enabled=true")
             .run { context ->
-                val endpoint = context.getBean(GraphManagementEndpoint::class.java)
+                val endpoint = context.getBean<GraphManagementEndpoint>()
                 val snapshot = endpoint.graph()
 
+                log.debug { "snapshot=$snapshot" }
                 snapshot.backend shouldBeEqualTo "tinkergraph"
                 snapshot.graph shouldBeEqualTo "default"
                 snapshot.database shouldBeEqualTo "default"
@@ -62,10 +68,9 @@ class GraphManagementEndpointAutoConfigurationTest {
             .withClassLoader(FilteredClassLoader("io.bluetape4k.graph.io.contract"))
             .withPropertyValues("bluetape4k.graph.management.endpoint.enabled=true")
             .run { context ->
-                context.getBean(GraphManagementEndpoint::class.java)
+                context.getBean<GraphManagementEndpoint>()
                     .graph()
-                    .capabilities["graphIo"]
-                    .shouldBeFalse()
+                    .capabilities["graphIo"].shouldBeFalse()
             }
     }
 
@@ -78,7 +83,7 @@ class GraphManagementEndpointAutoConfigurationTest {
                 "bluetape4k.graph.management.endpoint.enabled=true",
             )
             .run { context ->
-                val snapshot = context.getBean(GraphManagementEndpoint::class.java).graph()
+                val snapshot = context.getBean<GraphManagementEndpoint>().graph()
 
                 snapshot.backend shouldBeEqualTo "neo4j"
                 snapshot.database shouldBeEqualTo "analytics"
@@ -97,7 +102,7 @@ class GraphManagementEndpointAutoConfigurationTest {
                 "bluetape4k.graph.management.endpoint.enabled=true",
             )
             .run { context ->
-                val snapshot = context.getBean(GraphManagementEndpoint::class.java).graph()
+                val snapshot = context.getBean<GraphManagementEndpoint>().graph()
 
                 snapshot.backend shouldBeEqualTo "falkordb"
                 snapshot.graph shouldBeEqualTo "recommendations"

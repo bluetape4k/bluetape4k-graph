@@ -2,6 +2,7 @@ package io.bluetape4k.graph.spring.boot.autoconfigure
 
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeNull
+import io.bluetape4k.logging.KLogging
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.springframework.boot.autoconfigure.AutoConfigurations
@@ -10,6 +11,8 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class GraphAutoConfigurationClasspathTest {
+
+    companion object: KLogging()
 
     private val runner = ApplicationContextRunner()
         .withConfiguration(

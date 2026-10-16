@@ -1,18 +1,20 @@
 package io.bluetape4k.graph.spring.boot.webmvc
 
-import io.bluetape4k.graph.repository.GraphOperations
-import io.bluetape4k.graph.spring.boot.autoconfigure.GraphAutoConfiguration
-import io.bluetape4k.logging.KLogging
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.graph.repository.GraphOperations
+import io.bluetape4k.graph.spring.boot.autoconfigure.GraphAutoConfiguration
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.SpringBootConfiguration
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.resttestclient.TestRestTemplate
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate
+import org.springframework.boot.resttestclient.postForEntity
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.web.bind.annotation.PathVariable
@@ -28,15 +30,17 @@ import org.springframework.web.bind.annotation.RestController
 @ActiveProfiles("tinkergraph")
 class TinkerGraphWebMvcTest {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     @Autowired
     lateinit var restTemplate: TestRestTemplate
 
     @SpringBootConfiguration
-    @EnableAutoConfiguration(excludeName = [
-        "org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration",
-    ])
+    @EnableAutoConfiguration(
+        excludeName = [
+            "org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration",
+        ]
+    )
     @Import(GraphAutoConfiguration::class)
     class TestApp {
 
@@ -50,6 +54,7 @@ class TinkerGraphWebMvcTest {
                 return mapOf(
                     "id" to v.id.value,
                     "virtual" to Thread.currentThread().isVirtual.toString(),
+                    "label" to label
                 )
             }
         }
@@ -57,13 +62,17 @@ class TinkerGraphWebMvcTest {
 
     @Test
     fun `vertex 생성 + Virtual Thread 실행 확인`() {
-        val resp = restTemplate.postForEntity(
-            "/test/graph/vertices/Person", null, Map::class.java,
+        val resp = restTemplate.postForEntity<Map<String, String>>(
+            "/test/graph/vertices/Person",
+            null,
         )
+        log.debug { "resp=$resp" }
         resp.statusCode.is2xxSuccessful.shouldBeTrue()
-        @Suppress("UNCHECKED_CAST")
-        val body = (resp.body.shouldNotBeNull()) as Map<String, String>
-        body["virtual"].shouldBeEqualTo("true")
+        val body = resp.body.shouldNotBeNull()
+
+        log.debug { "response body=$body" }
         body["id"].shouldNotBeNull()
+        body["virtual"] shouldBeEqualTo "true"
+        body["label"] shouldBeEqualTo "Person"
     }
 }
