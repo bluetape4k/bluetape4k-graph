@@ -2,8 +2,8 @@ package io.bluetape4k.graph.ktor
 
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
-import java.util.IdentityHashMap
 import kotlinx.atomicfu.atomic
+import java.util.*
 
 /**
  * [GraphPlugin] 설정 class.
@@ -146,7 +146,7 @@ internal class GraphPluginCloseAction(
 /**
  * 생성된 resource와 plugin 종료 시 사용할 close action을 함께 보관한다.
  */
-internal class ManagedGraphPluginResource<T : AutoCloseable>(
+internal class ManagedGraphPluginResource<T: AutoCloseable>(
     val value: T,
     val closeAction: GraphPluginCloseAction,
 )
@@ -158,7 +158,7 @@ internal class ManagedGraphPluginResources {
     private val resources = mutableListOf<GraphPluginCloseAction>()
     private var committed = false
 
-    fun <T : AutoCloseable> own(name: String, resource: T): ManagedGraphPluginResource<T> {
+    fun <T: AutoCloseable> own(name: String, resource: T): ManagedGraphPluginResource<T> {
         val closeAction = register(name) { resource.close() }
         return ManagedGraphPluginResource(resource, closeAction)
     }

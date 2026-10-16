@@ -30,8 +30,7 @@ Ktor 3.x plugin integration for `bluetape4k-graph`. It exposes `GraphOperations`
 
 ## Dependencies
 
-Use `graph-ktor` with the backend module your application actually runs.
-The module brings in `bluetape4k-ktor-core` for the shared application resource registry.
+Use `graph-ktor` with the backend module your application actually runs. The module brings in `bluetape4k-ktor-core` for the shared application resource registry.
 
 ```kotlin
 dependencies {
@@ -115,23 +114,21 @@ fun Application.module() {
 ```
 
 `ageDataSource { ... }` creates a Hikari-backed pool, calls Exposed
-`Database.connect(dataSource)`, and closes only that plugin-owned pool on
-application stop. Use `age(graphName)` when an external DI container already owns
-the Exposed `Database`, `DataSource`, or transaction-manager lifecycle.
+`Database.connect(dataSource)`, and closes only that plugin-owned pool on application stop. Use `age(graphName)` when an external DI container already owns the Exposed `Database`, `DataSource`, or transaction-manager lifecycle.
 
 ## Backend Notes
 
-| Backend | Helper | Lifecycle |
-|---|---|---|
-| TinkerGraph | `tinkerGraph()` | Plugin creates and closes the in-memory graph delegate. |
-| Neo4j | `neo4j(driver, database)` | Driver is caller-owned and is not closed by the plugin. |
-| Neo4j | `neo4j { uri; username; password; database }` | Plugin creates and closes the driver. |
-| Memgraph | `memgraph(driver, database)` | Driver is caller-owned and is not closed by the plugin. |
-| Memgraph | `memgraph { uri; username; password; database }` | Plugin creates and closes the driver. |
-| Apache AGE | `age(graphName)` | Caller must call Exposed `Database.connect(...)` before graph use. |
-| Apache AGE | `ageDataSource { jdbcUrl; username; password; graphName; connectionInitSql }` | Plugin creates the Hikari pool, connects Exposed, and closes only the pool it created. |
-| FalkorDB | `falkorDB(driver, graphName)` | Driver is caller-owned and is not closed by the plugin. |
-| FalkorDB | `falkorDB { host; port; username; password; graphName }` | Plugin creates and closes the driver. |
+| Backend     | Helper                                                                        | Lifecycle                                                                              |
+|-------------|-------------------------------------------------------------------------------|----------------------------------------------------------------------------------------|
+| TinkerGraph | `tinkerGraph()`                                                               | Plugin creates and closes the in-memory graph delegate.                                |
+| Neo4j       | `neo4j(driver, database)`                                                     | Driver is caller-owned and is not closed by the plugin.                                |
+| Neo4j       | `neo4j { uri; username; password; database }`                                 | Plugin creates and closes the driver.                                                  |
+| Memgraph    | `memgraph(driver, database)`                                                  | Driver is caller-owned and is not closed by the plugin.                                |
+| Memgraph    | `memgraph { uri; username; password; database }`                              | Plugin creates and closes the driver.                                                  |
+| Apache AGE  | `age(graphName)`                                                              | Caller must call Exposed `Database.connect(...)` before graph use.                     |
+| Apache AGE  | `ageDataSource { jdbcUrl; username; password; graphName; connectionInitSql }` | Plugin creates the Hikari pool, connects Exposed, and closes only the pool it created. |
+| FalkorDB    | `falkorDB(driver, graphName)`                                                 | Driver is caller-owned and is not closed by the plugin.                                |
+| FalkorDB    | `falkorDB { host; port; username; password; graphName }`                      | Plugin creates and closes the driver.                                                  |
 
 ## Testing
 
@@ -139,6 +136,4 @@ the Exposed `Database`, `DataSource`, or transaction-manager lifecycle.
 ./gradlew :graph-ktor:test
 ```
 
-The test suite includes Ktor `testApplication` checks plus small Testcontainers smoke tests for
-Neo4j, Memgraph, Apache AGE, and FalkorDB helper wiring. Docker is required for those backend
-runtime checks.
+The test suite includes Ktor `testApplication` checks plus small Testcontainers smoke tests for Neo4j, Memgraph, Apache AGE, and FalkorDB helper wiring. Docker is required for those backend runtime checks.

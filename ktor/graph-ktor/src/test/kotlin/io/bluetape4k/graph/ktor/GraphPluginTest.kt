@@ -5,17 +5,21 @@ import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.concurrent.await
+import io.bluetape4k.concurrent.get
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
-import io.bluetape4k.ktor.core.ApplicationResourceCloseReport
 import io.bluetape4k.ktor.core.ApplicationResourceClosePhase
+import io.bluetape4k.ktor.core.ApplicationResourceCloseReport
 import io.bluetape4k.ktor.core.ApplicationResourceRegistry
 import io.bluetape4k.ktor.core.ApplicationResourceRegistryState
 import io.bluetape4k.ktor.core.installApplicationResourceLifecycle
 import io.bluetape4k.ktor.testing.shouldHaveStatus
+import io.bluetape4k.logging.coroutines.KLoggingChannel
+import io.bluetape4k.logging.debug
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
@@ -28,11 +32,13 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Test
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.time.Duration.Companion.seconds
 
 class GraphPluginTest {
+
+    companion object: KLoggingChannel()
 
     @Test
     fun `backend 미선택 시 install 시점에 IllegalArgumentException 이 발생한다`() = runSuspendIO {
@@ -127,6 +133,8 @@ class GraphPluginTest {
 
         syncClosed.get().shouldBeTrue()
         suspendClosed.get().shouldBeTrue()
+
+        log.debug { "registry.closeReport=${registry.closeReport}" }
         registry.closeReport.state shouldBeEqualTo ApplicationResourceRegistryState.CLOSED
         registry.closeReport.attempted shouldBeEqualTo 1
         registry.closeReport.closed shouldBeEqualTo 0
@@ -154,6 +162,8 @@ class GraphPluginTest {
 
         laterActionClosed.get().shouldBeTrue()
         marker.cause.shouldBeNull()
+
+        log.debug { "registry.closeReport=${registry.closeReport}" }
         registry.closeReport.failures.single().fatal.shouldBeTrue()
     }
 
@@ -179,6 +189,8 @@ class GraphPluginTest {
         }
 
         closeCount.get() shouldBeEqualTo 2
+
+        log.debug { "registry.closeReport=${registry.closeReport}" }
         registry.closeReport shouldBeEqualTo ApplicationResourceCloseReport(
             state = ApplicationResourceRegistryState.CLOSED,
             attempted = 1,
@@ -212,6 +224,8 @@ class GraphPluginTest {
 
         closeCount.get() shouldBeEqualTo 0
         suspendClosed.get().shouldBeFalse()
+
+        log.debug { "registry.closeReport=${registry.closeReport}" }
         registry.closeReport shouldBeEqualTo ApplicationResourceCloseReport(
             state = ApplicationResourceRegistryState.CLOSED,
             attempted = 0,
@@ -240,6 +254,8 @@ class GraphPluginTest {
         state.registerCloseActions(registry)
 
         closed shouldBeEqualTo listOf("first", "second")
+
+        log.debug { "registry.closeReport=${registry.closeReport}" }
         registry.closeReport shouldBeEqualTo ApplicationResourceCloseReport(
             state = ApplicationResourceRegistryState.CLOSED,
             attempted = 1,
@@ -329,7 +345,7 @@ class GraphPluginTest {
             try {
                 if (attempt == 1) {
                     entered.countDown()
-                    release.await(5, TimeUnit.SECONDS).shouldBeTrue()
+                    release.await(5.seconds).shouldBeTrue()
                     throw IllegalStateException("first close failure")
                 }
             } finally {
@@ -341,7 +357,7 @@ class GraphPluginTest {
             val first = executor.submit<Throwable?> {
                 runCatching { closeAction.close() }.exceptionOrNull()
             }
-            entered.await(5, TimeUnit.SECONDS).shouldBeTrue()
+            entered.await(5.seconds).shouldBeTrue()
             val concurrent = executor.submit<Throwable?> {
                 runCatching { closeAction.close() }.exceptionOrNull()
             }
@@ -369,7 +385,7 @@ class GraphPluginTest {
             closeActions = listOf(
                 GraphPluginCloseAction("first resource") {
                     firstActionEntered.countDown()
-                    releaseFirstAction.await(5, TimeUnit.SECONDS).shouldBeTrue()
+                    releaseFirstAction.await(5.seconds).shouldBeTrue()
                 },
                 GraphPluginCloseAction("second resource") {
                     secondActionCount.incrementAndGet()
@@ -379,13 +395,13 @@ class GraphPluginTest {
 
         Executors.newVirtualThreadPerTaskExecutor().use { executor ->
             val first = executor.submit { state.close() }
-            firstActionEntered.await(5, TimeUnit.SECONDS).shouldBeTrue()
+            firstActionEntered.await(5.seconds).shouldBeTrue()
             val concurrent = executor.submit { state.close() }
 
-            concurrent.get(5, TimeUnit.SECONDS)
+            concurrent.get(5.seconds)
             val countBeforeRelease = secondActionCount.get()
             releaseFirstAction.countDown()
-            first.get(5, TimeUnit.SECONDS)
+            first.get(5.seconds)
 
             countBeforeRelease shouldBeEqualTo 0
         }

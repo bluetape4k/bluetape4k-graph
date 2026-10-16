@@ -2,9 +2,9 @@ package io.bluetape4k.graph.ktor
 
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
+import io.bluetape4k.ktor.core.ApplicationResourceRegistry
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.warn
-import io.bluetape4k.ktor.core.ApplicationResourceRegistry
 import kotlinx.atomicfu.atomic
 
 /**
