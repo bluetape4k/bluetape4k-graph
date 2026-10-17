@@ -6,24 +6,22 @@ import io.bluetape4k.graph.falkordb.FalkorDBGraphOperations
 import io.bluetape4k.logging.warn
 import io.bluetape4k.testcontainers.graphdb.FalkorDBServer
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 
-class FalkorDBCodeGraphTest : AbstractCodeGraphTest() {
+class FalkorDBCodeGraphTest: AbstractCodeGraphTest() {
 
-    private lateinit var driver: com.falkordb.Driver
-    override lateinit var ops: FalkorDBGraphOperations
+    private val falkordb by lazy { FalkorDBServer.Launcher.falkordb }
+    private val driver: com.falkordb.Driver = FalkorDB.driver(falkordb.host, falkordb.port)
+
     override val graphName: String = "code_${Base58.randomString(8)}"
-
-    @BeforeAll
-    fun startServer() {
-        driver = FalkorDB.driver(FalkorDBServer.Launcher.falkordb.host, FalkorDBServer.Launcher.falkordb.port)
-        ops = FalkorDBGraphOperations(driver, graphName)
-    }
+    override val ops: FalkorDBGraphOperations = FalkorDBGraphOperations(driver, graphName)
 
     @AfterAll
     fun stopServer() {
-        runCatching { ops.dropGraph(graphName) }
-            .onFailure { log.warn(it) { "Failed to drop graph $graphName" } }
+        runCatching {
+            ops.dropGraph(graphName)
+        }.onFailure {
+            log.warn(it) { "Failed to drop graph $graphName" }
+        }
         driver.close()
     }
 }

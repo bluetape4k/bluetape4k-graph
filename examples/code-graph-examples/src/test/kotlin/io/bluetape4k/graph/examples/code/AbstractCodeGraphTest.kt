@@ -1,13 +1,13 @@
 package io.bluetape4k.graph.examples.code
 
-import io.bluetape4k.graph.examples.code.service.CodeGraphService
-import io.bluetape4k.graph.repository.GraphOperations
-import io.bluetape4k.logging.KLogging
-import io.bluetape4k.logging.debug
 import io.bluetape4k.assertions.shouldBeGreaterThan
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.graph.examples.code.service.CodeGraphService
+import io.bluetape4k.graph.repository.GraphOperations
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -15,7 +15,7 @@ import org.junit.jupiter.api.TestInstance
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AbstractCodeGraphTest {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     protected abstract val ops: GraphOperations
     protected open val graphName: String = "code_graph"
@@ -37,11 +37,12 @@ abstract class AbstractCodeGraphTest {
         service.addDependency(app.id, middle.id, "compile")
 
         val middleDeps = service.getDependencies(middle.id)
+            .onEach { log.debug { "▶️ middle vertex=$it" } }
         middleDeps.shouldNotBeEmpty()
 
         val appDeps = service.getTransitiveDependencies(app.id, maxDepth = 3)
+            .onEach { log.debug { "▶️appDeps vertex=$it" } }
         appDeps.shouldNotBeEmpty()
-        appDeps.forEach { log.debug { "vertex=$it" } }
     }
 
     @Test
@@ -54,6 +55,7 @@ abstract class AbstractCodeGraphTest {
         service.addDependency(top.id, mid.id)
 
         val path = service.findDependencyPath(top.id, core.id)
+        log.debug { "path=$path" }
         path.shouldNotBeNull()
         path.vertices.size shouldBeGreaterThan 1
         path.vertices.forEach { log.debug { "vertex=$it" } }
@@ -69,8 +71,8 @@ abstract class AbstractCodeGraphTest {
         service.addDependency(moduleB.id, core.id)
 
         val impacted = service.getImpactedModules(core.id, depth = 1)
+            .onEach { log.debug { "▶️impacted=$it" } }
         impacted.shouldNotBeEmpty()
-        impacted.forEach { log.debug { "vertex=$it" } }
     }
 
     @Test
@@ -83,8 +85,8 @@ abstract class AbstractCodeGraphTest {
         service.addExtends(leafClass.id, midClass.id)
 
         val chain = service.getInheritanceChain(leafClass.id, depth = 3)
+            .onEach { log.debug { "▶️chain=$it" } }
         chain.shouldNotBeEmpty()
-        chain.forEach { log.debug { "vertex=$it" } }
     }
 
     @Test
@@ -98,8 +100,9 @@ abstract class AbstractCodeGraphTest {
         service.addCall(funcB.id, funcC.id, callCount = 2)
 
         val callChain = service.getCallChain(funcA.id, maxDepth = 3)
+            .onEach { log.debug { "▶️callChain=$it" } }
+
         callChain.shouldNotBeEmpty()
-        callChain.forEach { log.debug { "vertex=$it" } }
     }
 
     @Test

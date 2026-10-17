@@ -8,19 +8,14 @@ import io.bluetape4k.logging.warn
 import io.bluetape4k.testcontainers.graphdb.FalkorDBServer
 import kotlinx.coroutines.CancellationException
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 
-class FalkorDBCodeGraphSuspendTest : AbstractCodeGraphSuspendTest() {
+class FalkorDBCodeGraphSuspendTest: AbstractCodeGraphSuspendTest() {
 
-    private lateinit var driver: com.falkordb.Driver
-    override lateinit var ops: FalkorDBGraphSuspendOperations
+    private val falkordb by lazy { FalkorDBServer.Launcher.falkordb }
+    private val driver: com.falkordb.Driver = FalkorDB.driver(falkordb.host, falkordb.port)
+
     override val graphName: String = "code_${Base58.randomString(8)}"
-
-    @BeforeAll
-    fun startServer() {
-        driver = FalkorDB.driver(FalkorDBServer.Launcher.falkordb.host, FalkorDBServer.Launcher.falkordb.port)
-        ops = FalkorDBGraphSuspendOperations(driver, graphName)
-    }
+    override val ops = FalkorDBGraphSuspendOperations(driver, graphName)
 
     @AfterAll
     fun stopServer() {
