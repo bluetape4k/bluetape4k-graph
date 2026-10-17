@@ -1,3 +1,7 @@
+configurations {
+    testImplementation.get().extendsFrom(compileOnly.get(), runtimeOnly.get())
+}
+
 dependencies {
     implementation(project(":bluetape4k-graph-core"))
     implementation(project(":bluetape4k-graph-age"))
@@ -18,5 +22,4 @@ dependencies {
     testRuntimeOnly(bt4k.postgresql)           // bluetape4k-testcontainers는 compileOnly로 선언
     testImplementation(bt4k.hikaricp)
     testImplementation(libs.kotlinx.coroutines.test.lib)
-    testImplementation(project(":bluetape4k-graph-falkordb"))
 }

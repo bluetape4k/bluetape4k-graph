@@ -1,7 +1,9 @@
 package io.bluetape4k.graph.examples.iam
 
-import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeEmpty
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeFalse
+import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.graph.examples.iam.service.IamAccessExplanation
 import io.bluetape4k.graph.examples.iam.service.IamAccessGraphService
@@ -9,12 +11,16 @@ import io.bluetape4k.graph.examples.iam.service.IamAccessGraphSuspendService
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
 
 class IamAccessExpiryTest {
+
+    companion object: KLogging()
 
     @Test
     fun `sync temporary grant is available before expiry and denied at or after expiry`() {
@@ -66,8 +72,7 @@ class IamAccessExpiryTest {
         evaluatedAt: Instant,
         explicitDeny: Boolean = false,
     ): IamAccessExplanation {
-        val ops = TinkerGraphOperations()
-        return try {
+        return TinkerGraphOperations().use { ops ->
             val service = IamAccessGraphService(
                 ops = ops,
                 graphName = "iam_expiry_sync_test",
@@ -75,8 +80,6 @@ class IamAccessExpiryTest {
             )
             seedSyncScenario(service, expiresAt, explicitDeny)
             service.explainAccess("carol", "prod-db", "read")
-        } finally {
-            ops.close()
         }
     }
 
@@ -91,8 +94,7 @@ class IamAccessExpiryTest {
         evaluatedAt: Instant,
         explicitDeny: Boolean = false,
     ): IamAccessExplanation {
-        val ops = TinkerGraphSuspendOperations()
-        return try {
+        return TinkerGraphSuspendOperations().use { ops ->
             val service = IamAccessGraphSuspendService(
                 ops = ops,
                 graphName = "iam_expiry_suspend_test",
@@ -100,9 +102,7 @@ class IamAccessExpiryTest {
             )
             seedSuspendScenario(service, expiresAt, explicitDeny)
             service.explainAccess("carol", "prod-db", "read")
-        } finally {
-            ops.close()
-        }
+        } 
     }
 
     private fun seedSyncScenario(service: IamAccessGraphService, expiresAt: String, explicitDeny: Boolean) {
@@ -156,19 +156,22 @@ class IamAccessExpiryTest {
     }
 
     private fun IamAccessExplanation.assertGranted() {
-        allowed shouldBeEqualTo true
+        log.debug { "explanation=$this" }
+        allowed.shouldBeTrue()
         path shouldContain "grant:break-glass-1001"
         reason shouldBeEqualTo "Granted by reachable IAM path"
     }
 
     private fun IamAccessExplanation.assertExpired() {
-        allowed shouldBeEqualTo false
+        log.debug { "explanation=$this" }
+        allowed.shouldBeFalse()
         path.shouldBeEmpty()
         reason shouldBeEqualTo "No matching grant path"
     }
 
     private fun IamAccessExplanation.assertDeniedByPolicy() {
-        allowed shouldBeEqualTo false
+        log.debug { "explanation=$this" }
+        allowed.shouldBeFalse()
         path shouldContain "policy:deny-prod-read"
         reason shouldBeEqualTo "Denied by explicit policy path"
     }

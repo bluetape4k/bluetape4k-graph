@@ -22,6 +22,7 @@ import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.info
 import io.bluetape4k.support.requireNotBlank
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.toList
 import java.time.Clock
 import java.time.Instant
@@ -53,11 +54,9 @@ class IamAccessGraphSuspendService @JvmOverloads constructor(
         department.requireNotBlank("department")
         return ops.createVertex(
             IamUserLabel.label,
-            mapOf(
-                IamUserLabel.userId.name to userId,
-                IamUserLabel.displayName.name to displayName,
-                IamUserLabel.department.name to department,
-            )
+            IamUserLabel.userId.name to userId,
+            IamUserLabel.displayName.name to displayName,
+            IamUserLabel.department.name to department,
         )
     }
 
@@ -67,11 +66,9 @@ class IamAccessGraphSuspendService @JvmOverloads constructor(
         riskTier.requireNotBlank("riskTier")
         return ops.createVertex(
             IamGroupLabel.label,
-            mapOf(
-                IamGroupLabel.groupId.name to groupId,
-                IamGroupLabel.name.name to name,
-                IamGroupLabel.riskTier.name to riskTier,
-            )
+            IamGroupLabel.groupId.name to groupId,
+            IamGroupLabel.name.name to name,
+            IamGroupLabel.riskTier.name to riskTier,
         )
     }
 
@@ -81,11 +78,9 @@ class IamAccessGraphSuspendService @JvmOverloads constructor(
         privilege.requireNotBlank("privilege")
         return ops.createVertex(
             IamRoleLabel.label,
-            mapOf(
-                IamRoleLabel.roleId.name to roleId,
-                IamRoleLabel.name.name to name,
-                IamRoleLabel.privilege.name to privilege,
-            )
+            IamRoleLabel.roleId.name to roleId,
+            IamRoleLabel.name.name to name,
+            IamRoleLabel.privilege.name to privilege,
         )
     }
 
@@ -95,11 +90,9 @@ class IamAccessGraphSuspendService @JvmOverloads constructor(
         effect.requireNotBlank("effect")
         return ops.createVertex(
             IamPolicyLabel.label,
-            mapOf(
-                IamPolicyLabel.policyId.name to policyId,
-                IamPolicyLabel.name.name to name,
-                IamPolicyLabel.effect.name to effect.lowercase(),
-            )
+            IamPolicyLabel.policyId.name to policyId,
+            IamPolicyLabel.name.name to name,
+            IamPolicyLabel.effect.name to effect.lowercase(),
         )
     }
 
@@ -108,10 +101,8 @@ class IamAccessGraphSuspendService @JvmOverloads constructor(
         action.requireNotBlank("action")
         return ops.createVertex(
             IamPermissionLabel.label,
-            mapOf(
-                IamPermissionLabel.permissionId.name to permissionId,
-                IamPermissionLabel.action.name to action,
-            )
+            IamPermissionLabel.permissionId.name to permissionId,
+            IamPermissionLabel.action.name to action,
         )
     }
 
@@ -127,12 +118,10 @@ class IamAccessGraphSuspendService @JvmOverloads constructor(
         classification.requireNotBlank("classification")
         return ops.createVertex(
             IamResourceLabel.label,
-            mapOf(
-                IamResourceLabel.resourceId.name to resourceId,
-                IamResourceLabel.name.name to name,
-                IamResourceLabel.resourceType.name to resourceType,
-                IamResourceLabel.classification.name to classification,
-            )
+            IamResourceLabel.resourceId.name to resourceId,
+            IamResourceLabel.name.name to name,
+            IamResourceLabel.resourceType.name to resourceType,
+            IamResourceLabel.classification.name to classification,
         )
     }
 
@@ -142,27 +131,25 @@ class IamAccessGraphSuspendService @JvmOverloads constructor(
         expiresAt.requireNotBlank("expiresAt")
         return ops.createVertex(
             IamSessionGrantLabel.label,
-            mapOf(
-                IamSessionGrantLabel.grantId.name to grantId,
-                IamSessionGrantLabel.reason.name to reason,
-                IamSessionGrantLabel.expiresAt.name to expiresAt,
-            )
+            IamSessionGrantLabel.grantId.name to grantId,
+            IamSessionGrantLabel.reason.name to reason,
+            IamSessionGrantLabel.expiresAt.name to expiresAt,
         )
     }
 
     suspend fun addMembership(principalId: GraphElementId, groupId: GraphElementId, kind: String = "standing") {
         kind.requireNotBlank("kind")
-        ops.createEdge(principalId, groupId, MemberOfLabel.label, mapOf(MemberOfLabel.kind.name to kind))
+        ops.createEdge(principalId, groupId, MemberOfLabel.label, MemberOfLabel.kind.name to kind)
     }
 
     suspend fun assignRole(principalId: GraphElementId, roleId: GraphElementId, source: String = "rbac") {
         source.requireNotBlank("source")
-        ops.createEdge(principalId, roleId, HasRoleLabel.label, mapOf(HasRoleLabel.source.name to source))
+        ops.createEdge(principalId, roleId, HasRoleLabel.label, HasRoleLabel.source.name to source)
     }
 
     suspend fun attachPolicy(roleId: GraphElementId, policyId: GraphElementId, scope: String = "account") {
         scope.requireNotBlank("scope")
-        ops.createEdge(roleId, policyId, AttachedPolicyLabel.label, mapOf(AttachedPolicyLabel.scope.name to scope))
+        ops.createEdge(roleId, policyId, AttachedPolicyLabel.label, AttachedPolicyLabel.scope.name to scope)
     }
 
     suspend fun grantPermission(policyId: GraphElementId, permissionId: GraphElementId, condition: String = "none") {
@@ -171,22 +158,31 @@ class IamAccessGraphSuspendService @JvmOverloads constructor(
             policyId,
             permissionId,
             GrantsPermissionLabel.label,
-            mapOf(GrantsPermissionLabel.condition.name to condition)
+            GrantsPermissionLabel.condition.name to condition
         )
     }
 
     suspend fun applyPermission(permissionId: GraphElementId, resourceId: GraphElementId, scope: String = "resource") {
         scope.requireNotBlank("scope")
-        ops.createEdge(permissionId, resourceId, AppliesToLabel.label, mapOf(AppliesToLabel.scope.name to scope))
+        ops.createEdge(permissionId, resourceId, AppliesToLabel.label, AppliesToLabel.scope.name to scope)
     }
 
-    suspend fun grantTemporaryPermission(userId: GraphElementId, grantId: GraphElementId, permissionId: GraphElementId) {
-        ops.createEdge(userId, grantId, HasTempGrantLabel.label, mapOf(HasTempGrantLabel.state.name to "active"))
+    suspend fun grantTemporaryPermission(
+        userId: GraphElementId,
+        grantId: GraphElementId,
+        permissionId: GraphElementId,
+    ) {
+        ops.createEdge(
+            userId,
+            grantId,
+            HasTempGrantLabel.label,
+            HasTempGrantLabel.state.name to "active"
+        )
         ops.createEdge(
             grantId,
             permissionId,
             TemporaryPermissionLabel.label,
-            mapOf(TemporaryPermissionLabel.source.name to "break-glass")
+            TemporaryPermissionLabel.source.name to "break-glass"
         )
     }
 
@@ -290,12 +286,13 @@ class IamAccessGraphSuspendService @JvmOverloads constructor(
         action: String?,
     ): List<List<GraphVertex>> {
         val paths = mutableListOf<List<GraphVertex>>()
-        for (principalPath in principalPaths(user)) {
-            for (role in outgoing(principalPath.vertex, HasRoleLabel.label, IamRoleLabel.label)) {
-                for (policy in outgoing(role, AttachedPolicyLabel.label, IamPolicyLabel.label)) {
-                    if (policy.properties[IamPolicyLabel.effect.name] != effect) continue
-                    for (permission in outgoing(policy, GrantsPermissionLabel.label, IamPermissionLabel.label)) {
-                        if (action != null && permission.properties[IamPermissionLabel.action.name] != action) continue
+
+        principalPaths(user).forEach { principalPath ->
+            outgoing(principalPath.vertex, HasRoleLabel.label, IamRoleLabel.label).forEach { role ->
+                outgoing(role, AttachedPolicyLabel.label, IamPolicyLabel.label).forEach { policy ->
+                    if (policy.properties[IamPolicyLabel.effect.name] != effect) return@forEach
+                    outgoing(policy, GrantsPermissionLabel.label, IamPermissionLabel.label).forEach { permission ->
+                        if (action != null && permission.properties[IamPermissionLabel.action.name] != action) return@forEach
                         matchingResources(permission, resourceId).forEach { resource ->
                             paths += principalPath.vertices + role + policy + permission + resource
                         }
@@ -317,9 +314,10 @@ class IamAccessGraphSuspendService @JvmOverloads constructor(
             .filter { grant ->
                 isTemporaryGrantActive(grant.properties[IamSessionGrantLabel.expiresAt.name], evaluatedAt)
             }
-        for (grant in activeGrants) {
-            for (permission in outgoing(grant, TemporaryPermissionLabel.label, IamPermissionLabel.label)) {
-                if (action != null && permission.properties[IamPermissionLabel.action.name] != action) continue
+
+        activeGrants.forEach { grant ->
+            outgoing(grant, TemporaryPermissionLabel.label, IamPermissionLabel.label).forEach { permission ->
+                if (action != null && permission.properties[IamPermissionLabel.action.name] != action) return@forEach
                 matchingResources(permission, resourceId).forEach { resource ->
                     paths += listOf(user, grant, permission, resource)
                 }
@@ -350,28 +348,37 @@ class IamAccessGraphSuspendService @JvmOverloads constructor(
     }
 
     private suspend fun matchingResources(permission: GraphVertex, resourceId: String?): List<GraphVertex> =
-        outgoing(permission, AppliesToLabel.label, IamResourceLabel.label)
-            .filter { resource -> resourceId == null || resource.properties[IamResourceLabel.resourceId.name] == resourceId }
+        outgoing(
+            permission,
+            AppliesToLabel.label,
+            IamResourceLabel.label
+        )
+            .filter { resource ->
+                resourceId == null || resource.properties[IamResourceLabel.resourceId.name] == resourceId
+            }
 
     private suspend fun outgoing(vertex: GraphVertex, edgeLabel: String, vertexLabel: String): List<GraphVertex> =
-        ops.neighbors(
-            vertex.id,
-            NeighborOptions(edgeLabel = edgeLabel, direction = Direction.OUTGOING, maxDepth = 1)
-        ).toList().filter { it.label == vertexLabel }
+        ops
+            .neighbors(
+                vertex.id,
+                NeighborOptions(edgeLabel = edgeLabel, direction = Direction.OUTGOING, maxDepth = 1)
+            )
+            .filter { it.label == vertexLabel }
+            .toList()
 
     private suspend fun userById(userId: String): GraphVertex? =
         ops.findVerticesByLabel(IamUserLabel.label, mapOf(IamUserLabel.userId.name to userId)).toList().firstOrNull()
 
     private fun displayId(vertex: GraphVertex): String =
         when (vertex.label) {
-            IamUserLabel.label         -> "user:${vertex.properties[IamUserLabel.userId.name]}"
-            IamGroupLabel.label        -> "group:${vertex.properties[IamGroupLabel.groupId.name]}"
-            IamRoleLabel.label         -> "role:${vertex.properties[IamRoleLabel.roleId.name]}"
-            IamPolicyLabel.label       -> "policy:${vertex.properties[IamPolicyLabel.policyId.name]}"
-            IamPermissionLabel.label   -> "permission:${vertex.properties[IamPermissionLabel.action.name]}"
-            IamResourceLabel.label     -> "resource:${vertex.properties[IamResourceLabel.resourceId.name]}"
+            IamUserLabel.label -> "user:${vertex.properties[IamUserLabel.userId.name]}"
+            IamGroupLabel.label -> "group:${vertex.properties[IamGroupLabel.groupId.name]}"
+            IamRoleLabel.label -> "role:${vertex.properties[IamRoleLabel.roleId.name]}"
+            IamPolicyLabel.label -> "policy:${vertex.properties[IamPolicyLabel.policyId.name]}"
+            IamPermissionLabel.label -> "permission:${vertex.properties[IamPermissionLabel.action.name]}"
+            IamResourceLabel.label -> "resource:${vertex.properties[IamResourceLabel.resourceId.name]}"
             IamSessionGrantLabel.label -> "grant:${vertex.properties[IamSessionGrantLabel.grantId.name]}"
-            else                       -> "${vertex.label}:${vertex.id.value}"
+            else -> "${vertex.label}:${vertex.id.value}"
         }
 
     private fun denied(userId: String, resourceId: String, action: String, reason: String): IamAccessExplanation =
