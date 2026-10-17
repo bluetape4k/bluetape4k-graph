@@ -7,6 +7,7 @@ import io.bluetape4k.graph.schema.VertexLabel
  * Dataset vertex는 관련 physical table을 묶는다.
  */
 object DatasetLabel: VertexLabel("Dataset") {
+    private fun readResolve(): Any = DatasetLabel
     val datasetId = string("datasetId")
     val name = string("name")
     val domain = string("domain")
@@ -17,6 +18,7 @@ object DatasetLabel: VertexLabel("Dataset") {
  * Table vertex는 source, curated, mart asset을 표현한다.
  */
 object TableLabel: VertexLabel("Table") {
+    private fun readResolve(): Any = TableLabel
     val tableId = string("tableId")
     val name = string("name")
     val domain = string("domain")
@@ -27,6 +29,7 @@ object TableLabel: VertexLabel("Table") {
  * Column vertex는 column-level impact example을 가능하게 한다.
  */
 object ColumnLabel: VertexLabel("Column") {
+    private fun readResolve(): Any = ColumnLabel
     val columnId = string("columnId")
     val name = string("name")
     val dataType = string("dataType")
@@ -37,6 +40,7 @@ object ColumnLabel: VertexLabel("Column") {
  * Pipeline job vertex는 upstream table을 downstream asset으로 변환한다.
  */
 object PipelineJobLabel: VertexLabel("PipelineJob") {
+    private fun readResolve(): Any = PipelineJobLabel
     val jobId = string("jobId")
     val name = string("name")
     val schedule = string("schedule")
@@ -47,6 +51,7 @@ object PipelineJobLabel: VertexLabel("PipelineJob") {
  * Dashboard vertex는 business-facing metric을 표현한다.
  */
 object DashboardLabel: VertexLabel("Dashboard") {
+    private fun readResolve(): Any = DashboardLabel
     val dashboardId = string("dashboardId")
     val name = string("name")
     val metric = string("metric")
@@ -57,6 +62,7 @@ object DashboardLabel: VertexLabel("Dashboard") {
  * Owner vertex는 asset과 job에 책임지는 team을 표현한다.
  */
 object OwnerLabel: VertexLabel("Owner") {
+    private fun readResolve(): Any = OwnerLabel
     val ownerId = string("ownerId")
     val name = string("name")
     val team = string("team")
@@ -67,6 +73,7 @@ object OwnerLabel: VertexLabel("Owner") {
  * Data quality check vertex는 실패한 control을 모델링한다.
  */
 object QualityCheckLabel: VertexLabel("QualityCheck") {
+    private fun readResolve(): Any = QualityCheckLabel
     val checkId = string("checkId")
     val name = string("name")
     val severity = string("severity")
@@ -77,6 +84,7 @@ object QualityCheckLabel: VertexLabel("QualityCheck") {
  * Dataset에서 table로 이어지는 containment edge이다.
  */
 object ContainsTableLabel: EdgeLabel("CONTAINS_TABLE", DatasetLabel, TableLabel) {
+    private fun readResolve(): Any = ContainsTableLabel
     val kind = string("kind")
 }
 
@@ -84,6 +92,7 @@ object ContainsTableLabel: EdgeLabel("CONTAINS_TABLE", DatasetLabel, TableLabel)
  * Table에서 column으로 이어지는 containment edge이다.
  */
 object ContainsColumnLabel: EdgeLabel("CONTAINS_COLUMN", TableLabel, ColumnLabel) {
+    private fun readResolve(): Any = ContainsColumnLabel
     val kind = string("kind")
 }
 
@@ -91,6 +100,7 @@ object ContainsColumnLabel: EdgeLabel("CONTAINS_COLUMN", TableLabel, ColumnLabel
  * Pipeline job으로 들어가는 table input edge이다.
  */
 object TableInputToJobLabel: EdgeLabel("INPUT_TO_JOB", TableLabel, PipelineJobLabel) {
+    private fun readResolve(): Any = TableInputToJobLabel
     val kind = string("kind")
 }
 
@@ -98,6 +108,7 @@ object TableInputToJobLabel: EdgeLabel("INPUT_TO_JOB", TableLabel, PipelineJobLa
  * Pipeline job으로 들어가는 column input edge이다.
  */
 object ColumnInputToJobLabel: EdgeLabel("COLUMN_INPUT_TO_JOB", ColumnLabel, PipelineJobLabel) {
+    private fun readResolve(): Any = ColumnInputToJobLabel
     val kind = string("kind")
 }
 
@@ -105,6 +116,7 @@ object ColumnInputToJobLabel: EdgeLabel("COLUMN_INPUT_TO_JOB", ColumnLabel, Pipe
  * Downstream table로 이어지는 pipeline output edge이다.
  */
 object JobOutputsTableLabel: EdgeLabel("OUTPUTS_TABLE", PipelineJobLabel, TableLabel) {
+    private fun readResolve(): Any = JobOutputsTableLabel
     val kind = string("kind")
 }
 
@@ -112,6 +124,7 @@ object JobOutputsTableLabel: EdgeLabel("OUTPUTS_TABLE", PipelineJobLabel, TableL
  * Table에서 dashboard로 이어지는 metric dependency edge이다.
  */
 object FeedsDashboardLabel: EdgeLabel("FEEDS_DASHBOARD", TableLabel, DashboardLabel) {
+    private fun readResolve(): Any = FeedsDashboardLabel
     val kind = string("kind")
 }
 
@@ -119,6 +132,7 @@ object FeedsDashboardLabel: EdgeLabel("FEEDS_DASHBOARD", TableLabel, DashboardLa
  * Owner에서 job으로 이어지는 accountability edge이다.
  */
 object OwnsJobLabel: EdgeLabel("OWNS_JOB", OwnerLabel, PipelineJobLabel) {
+    private fun readResolve(): Any = OwnsJobLabel
     val kind = string("kind")
 }
 
@@ -126,6 +140,7 @@ object OwnsJobLabel: EdgeLabel("OWNS_JOB", OwnerLabel, PipelineJobLabel) {
  * Owner에서 dashboard로 이어지는 accountability edge이다.
  */
 object OwnsDashboardLabel: EdgeLabel("OWNS_DASHBOARD", OwnerLabel, DashboardLabel) {
+    private fun readResolve(): Any = OwnsDashboardLabel
     val kind = string("kind")
 }
 
@@ -133,5 +148,6 @@ object OwnsDashboardLabel: EdgeLabel("OWNS_DASHBOARD", OwnerLabel, DashboardLabe
  * Data quality check에서 column으로 이어지는 validation edge이다.
  */
 object ValidatesColumnLabel: EdgeLabel("VALIDATES_COLUMN", QualityCheckLabel, ColumnLabel) {
+    private fun readResolve(): Any = ValidatesColumnLabel
     val kind = string("kind")
 }
