@@ -14,6 +14,7 @@ import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.info
 import io.bluetape4k.support.requireNotBlank
+import io.bluetape4k.support.requirePositiveNumber
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -31,7 +32,7 @@ class FraudDetectionSuspendService(
     private val ops: GraphSuspendOperations,
     private val graphName: String = "fraud_detection",
 ) {
-    companion object : KLoggingChannel()
+    companion object: KLoggingChannel()
 
     /**
      * Backing graph가 아직 없으면 생성한다.
@@ -55,11 +56,9 @@ class FraudDetectionSuspendService(
         ownerName.requireNotBlank("ownerName")
         return ops.createVertex(
             AccountLabel.label,
-            mapOf(
-                AccountLabel.accountId.name to accountId,
-                AccountLabel.ownerName.name to ownerName,
-                AccountLabel.riskTier.name to riskTier,
-            )
+            AccountLabel.accountId.name to accountId,
+            AccountLabel.ownerName.name to ownerName,
+            AccountLabel.riskTier.name to riskTier,
         )
     }
 
@@ -72,12 +71,14 @@ class FraudDetectionSuspendService(
         amount: Long,
         occurredAt: String = "",
     ) {
-        require(amount > 0) { "amount must be > 0, was $amount" }
+        amount.requirePositiveNumber("amount")
+        
         ops.createEdge(
             fromAccountId,
             toAccountId,
             TransferredToLabel.label,
-            mapOf(TransferredToLabel.amount.name to amount, TransferredToLabel.occurredAt.name to occurredAt)
+            TransferredToLabel.amount.name to amount,
+            TransferredToLabel.occurredAt.name to occurredAt
         )
     }
 
@@ -110,7 +111,8 @@ class FraudDetectionSuspendService(
      * Transfer graph의 centrality 기준으로 account 순위를 매긴다.
      */
     fun rankHighRiskAccounts(limit: Int = 10): Flow<PageRankScore> {
-        require(limit > 0) { "limit must be > 0, was $limit" }
+        limit.requirePositiveNumber("limit")
+
         return ops.pageRank(
             PageRankOptions(
                 vertexLabel = AccountLabel.label,

@@ -5,6 +5,7 @@ import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldNotBeEmpty
+import io.bluetape4k.coroutines.flow.extensions.log
 import io.bluetape4k.graph.examples.fraud.service.FraudDetectionSuspendService
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.KLogging
@@ -17,7 +18,7 @@ import org.junit.jupiter.api.TestInstance
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AbstractFraudDetectionSuspendTest {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     protected abstract val ops: GraphSuspendOperations
     protected open val graphName: String = "fraud_detection_suspend_test"
@@ -38,7 +39,7 @@ abstract class AbstractFraudDetectionSuspendTest {
 
         service.recordTransfer(alice.id, bob.id, amount = 100)
 
-        val scores = service.rankHighRiskAccounts(limit = 10).toList()
+        val scores = service.rankHighRiskAccounts(limit = 10).log("Score").toList()
         scores.shouldNotBeEmpty()
         scores.map { it.vertex.properties["accountId"] } shouldContain "acct-bob"
     }
@@ -53,7 +54,7 @@ abstract class AbstractFraudDetectionSuspendTest {
         service.recordTransfer(b.id, c.id, amount = 75)
         service.recordTransfer(c.id, a.id, amount = 50)
 
-        val cycles = service.detectCircularTransfers(maxDepth = 5).toList()
+        val cycles = service.detectCircularTransfers(maxDepth = 5).log("Cycle").toList()
         cycles.shouldNotBeEmpty()
         cycles.first().path.vertices.first().id shouldBeEqualTo cycles.first().path.vertices.last().id
     }
@@ -67,10 +68,13 @@ abstract class AbstractFraudDetectionSuspendTest {
         service.recordTransfer(a.id, b.id, amount = 100)
         service.recordTransfer(b.id, c.id, amount = 100)
 
-        val clusters = service.detectSuspiciousClusters(minSize = 3).toList()
+        val clusters = service.detectSuspiciousClusters(minSize = 3).log("Component").toList()
         clusters.shouldNotBeEmpty()
         clusters.any { component ->
-            component.size >= 3 && component.vertices.map { it.properties["accountId"] }.containsAll(listOf("acct-a", "acct-b", "acct-c"))
+            component.size >= 3 &&
+                    component.vertices
+                        .map { it.properties["accountId"] }
+                        .containsAll(listOf("acct-a", "acct-b", "acct-c"))
         }.shouldBeTrue()
     }
 
@@ -82,7 +86,10 @@ abstract class AbstractFraudDetectionSuspendTest {
             service.recordTransfer(source.id, sink.id, amount = 100L + index)
         }
 
-        val accountIds = service.rankHighRiskAccounts(limit = 10).toList().map { it.vertex.properties["accountId"] }
+        val accountIds = service.rankHighRiskAccounts(limit = 10).log("Vertex")
+            .toList()
+            .map { it.vertex.properties["accountId"] }
+
         accountIds.size shouldBeGreaterOrEqualTo 1
         accountIds shouldContain "acct-sink"
     }

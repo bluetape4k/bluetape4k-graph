@@ -33,7 +33,8 @@ class FraudDetectionSampleDatasetLoaderTest {
         report.status shouldBeEqualTo GraphIoStatus.COMPLETED
         report.verticesCreated shouldBeEqualTo 3L
         report.edgesCreated shouldBeEqualTo 3L
-        ops.findVerticesByLabel(AccountLabel.label).map { it.properties[AccountLabel.accountId.name] } shouldContain "acct-a"
+        ops.findVerticesByLabel(AccountLabel.label)
+            .map { it.properties[AccountLabel.accountId.name] } shouldContain "acct-a"
         service.detectCircularTransfers(maxDepth = 5).shouldNotBeEmpty()
         service.detectSuspiciousClusters(minSize = 3).shouldNotBeEmpty()
         service.rankHighRiskAccounts(limit = 3).shouldNotBeEmpty()
@@ -57,7 +58,7 @@ class FraudDetectionSampleDatasetLoaderTest {
 
     @Test
     fun `imports default resources when context class loader cannot see examples`() {
-        withContextClassLoader(object : ClassLoader(null) {}) {
+        withContextClassLoader(object: ClassLoader(null) {}) {
             val ops = TinkerGraphOperations()
             FraudDetectionService(ops).initialize()
 

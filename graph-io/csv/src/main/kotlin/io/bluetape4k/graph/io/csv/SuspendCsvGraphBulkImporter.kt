@@ -48,7 +48,9 @@ import kotlinx.coroutines.CancellationException
  */
 class SuspendCsvGraphBulkImporter: GraphSuspendBulkImporter<CsvGraphImportSource> {
 
-    companion object: KLoggingChannel()
+    companion object: KLoggingChannel() {
+        val Default = SuspendCsvGraphBulkImporter()
+    }
 
     override suspend fun importGraphSuspending(
         source: CsvGraphImportSource,
