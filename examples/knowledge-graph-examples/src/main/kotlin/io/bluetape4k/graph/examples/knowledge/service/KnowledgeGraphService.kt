@@ -15,7 +15,9 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.info
+import io.bluetape4k.support.requireInRange
 import io.bluetape4k.support.requireNotBlank
+import io.bluetape4k.support.requirePositiveNumber
 
 /**
  * [GraphOperations] 위에 구성한 knowledge graph service이다.
@@ -35,7 +37,7 @@ class KnowledgeGraphService(
     private val ops: GraphOperations,
     private val graphName: String = "knowledge_graph",
 ) {
-    companion object : KLogging()
+    companion object: KLogging()
 
     /**
      * Backing graph가 아직 없으면 생성한다.
@@ -54,9 +56,12 @@ class KnowledgeGraphService(
         entityId.requireNotBlank("entityId")
         name.requireNotBlank("name")
         entityType.requireNotBlank("entityType")
+
         return ops.createVertex(
             EntityLabel.label,
-            mapOf(EntityLabel.entityId.name to entityId, EntityLabel.name.name to name, EntityLabel.entityType.name to entityType)
+            EntityLabel.entityId.name to entityId,
+            EntityLabel.name.name to name,
+            EntityLabel.entityType.name to entityType
         )
     }
 
@@ -68,7 +73,9 @@ class KnowledgeGraphService(
         name.requireNotBlank("name")
         return ops.createVertex(
             ConceptLabel.label,
-            mapOf(ConceptLabel.conceptId.name to conceptId, ConceptLabel.name.name to name, ConceptLabel.domain.name to domain)
+            ConceptLabel.conceptId.name to conceptId,
+            ConceptLabel.name.name to name,
+            ConceptLabel.domain.name to domain
         )
     }
 
@@ -80,7 +87,9 @@ class KnowledgeGraphService(
         title.requireNotBlank("title")
         return ops.createVertex(
             DocumentLabel.label,
-            mapOf(DocumentLabel.documentId.name to documentId, DocumentLabel.title.name to title, DocumentLabel.source.name to source)
+            DocumentLabel.documentId.name to documentId,
+            DocumentLabel.title.name to title,
+            DocumentLabel.source.name to source
         )
     }
 
@@ -88,8 +97,13 @@ class KnowledgeGraphService(
      * Document를 그 안에서 mention한 entity에 연결한다.
      */
     fun mention(documentId: GraphElementId, entityId: GraphElementId, confidence: Int = 100) {
-        require(confidence in 0..100) { "confidence must be in 0..100, was $confidence" }
-        ops.createEdge(documentId, entityId, MentionsLabel.label, mapOf(MentionsLabel.confidence.name to confidence))
+        confidence.requireInRange(0, 100, "confidence")
+        ops.createEdge(
+            documentId,
+            entityId,
+            MentionsLabel.label,
+            MentionsLabel.confidence.name to confidence
+        )
     }
 
     /**
@@ -109,20 +123,26 @@ class KnowledgeGraphService(
      * Entity를 concept 아래로 classify한다.
      */
     fun classify(entityId: GraphElementId, conceptId: GraphElementId) {
-        ops.createEdge(entityId, conceptId, IsALabel.label, emptyMap())
+        ops.createEdge(entityId, conceptId, IsALabel.label)
     }
 
     /**
      * Document가 mention한 entity를 찾는다.
      */
     fun findMentionedEntities(documentId: GraphElementId): List<GraphVertex> =
-        ops.neighbors(documentId, NeighborOptions(edgeLabel = MentionsLabel.label, direction = Direction.OUTGOING, maxDepth = 1))
+        ops.neighbors(
+            documentId,
+            NeighborOptions(edgeLabel = MentionsLabel.label, direction = Direction.OUTGOING, maxDepth = 1)
+        )
 
     /**
      * Source entity와 related된 entity를 찾는다.
      */
     fun findRelatedEntities(entityId: GraphElementId, depth: Int = 1): List<GraphVertex> =
-        ops.neighbors(entityId, NeighborOptions(edgeLabel = RelatedToLabel.label, direction = Direction.OUTGOING, maxDepth = depth))
+        ops.neighbors(
+            entityId,
+            NeighborOptions(edgeLabel = RelatedToLabel.label, direction = Direction.OUTGOING, maxDepth = depth)
+        )
 
     /**
      * 두 entity 사이의 relationship path를 찾고 service-side result bound를 적용한다.
@@ -133,11 +153,14 @@ class KnowledgeGraphService(
         maxDepth: Int = 3,
         maxPaths: Int = 10,
     ): List<GraphPath> {
-        require(maxPaths > 0) { "maxPaths must be > 0, was $maxPaths" }
-        return ops.allPaths(
-            fromEntityId,
-            toEntityId,
-            PathOptions(edgeLabel = RelatedToLabel.label, maxDepth = maxDepth)
-        ).take(maxPaths)
+        maxPaths.requirePositiveNumber("maxPaths")
+
+        return ops
+            .allPaths(
+                fromEntityId,
+                toEntityId,
+                PathOptions(edgeLabel = RelatedToLabel.label, maxDepth = maxDepth)
+            )
+            .take(maxPaths)
     }
 }

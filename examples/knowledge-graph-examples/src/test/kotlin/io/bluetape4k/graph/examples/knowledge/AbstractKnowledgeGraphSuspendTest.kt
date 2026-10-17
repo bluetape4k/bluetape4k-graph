@@ -3,11 +3,13 @@ package io.bluetape4k.graph.examples.knowledge
 import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldNotBeEmpty
+import io.bluetape4k.coroutines.flow.extensions.log
 import io.bluetape4k.graph.examples.knowledge.service.KnowledgeGraphSuspendService
 import io.bluetape4k.graph.model.Direction
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.KLogging
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
@@ -17,7 +19,7 @@ import org.junit.jupiter.api.TestInstance
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AbstractKnowledgeGraphSuspendTest {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     protected abstract val ops: GraphSuspendOperations
     protected open val graphName: String = "knowledge_graph_suspend_test"
@@ -40,7 +42,11 @@ abstract class AbstractKnowledgeGraphSuspendTest {
         service.mention(document.id, kotlin.id, confidence = 95)
         service.mention(document.id, neo4j.id, confidence = 90)
 
-        val entityIds = service.findMentionedEntities(document.id).toList().map { it.properties["entityId"] }
+        val entityIds = service.findMentionedEntities(document.id)
+            .log("Entity")
+            .map { it.properties["entityId"] }
+            .toList()
+
         entityIds shouldContain "entity-kotlin"
         entityIds shouldContain "entity-neo4j"
     }
@@ -52,7 +58,10 @@ abstract class AbstractKnowledgeGraphSuspendTest {
 
         service.relateEntities(kotlin.id, coroutines.id, relationType = "has-feature")
 
-        val related = service.findRelatedEntities(kotlin.id).toList()
+        val related = service.findRelatedEntities(kotlin.id)
+            .log("Vertex")
+            .toList()
+
         related.shouldNotBeEmpty()
         related.map { it.properties["entityId"] } shouldContain "entity-coroutines"
     }
@@ -66,7 +75,10 @@ abstract class AbstractKnowledgeGraphSuspendTest {
         service.relateEntities(kotlin.id, coroutines.id, relationType = "has-feature")
         service.relateEntities(coroutines.id, spring.id, relationType = "integrates-with")
 
-        val paths = service.inferRelationshipPaths(kotlin.id, spring.id, maxDepth = 3, maxPaths = 2).toList()
+        val paths = service.inferRelationshipPaths(kotlin.id, spring.id, maxDepth = 3, maxPaths = 2)
+            .log("Path")
+            .toList()
+
         paths.shouldNotBeEmpty()
         paths.size shouldBeGreaterOrEqualTo 1
         paths.first().vertices.map { it.properties["entityId"] } shouldContain "entity-kotlin"
@@ -80,10 +92,14 @@ abstract class AbstractKnowledgeGraphSuspendTest {
 
         service.classify(kotlin.id, language.id)
 
-        val concepts = ops.neighbors(
-            kotlin.id,
-            NeighborOptions(edgeLabel = "IS_A", direction = Direction.OUTGOING, maxDepth = 1)
-        ).toList()
+        val concepts = ops
+            .neighbors(
+                kotlin.id,
+                NeighborOptions(edgeLabel = "IS_A", direction = Direction.OUTGOING, maxDepth = 1)
+            )
+            .log("Concept")
+            .toList()
+
         concepts.shouldNotBeEmpty()
         concepts.map { it.properties["conceptId"] } shouldContain "concept-language"
     }

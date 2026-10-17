@@ -6,23 +6,21 @@
 
 ## 예제 시나리오
 
-문서가 Kotlin 및 Spring 관련 엔티티를 언급한다. 이 예제는 문서와 엔티티를 연결하고, 엔티티를 개념 아래로 분류하며,
-두 엔티티가 어떤 중간 fact를 통해 연결되는지 제한된 path로 설명한다.
+문서가 Kotlin 및 Spring 관련 엔티티를 언급한다. 이 예제는 문서와 엔티티를 연결하고, 엔티티를 개념 아래로 분류하며, 두 엔티티가 어떤 중간 fact를 통해 연결되는지 제한된 path로 설명한다.
 
 ## 무엇을 배우나?
 
-| 주제 | 의미 |
-|---|---|
-| 지식 그래프 모델링 | 문서, 엔티티, 개념을 연결된 사실로 표현합니다. |
-| mention 조회 | 문서가 언급하는 엔티티를 `MENTIONS` edge로 찾습니다. |
-| 관련 엔티티 탐색 | 도메인 관계를 중첩 레코드가 아니라 path로 표현합니다. |
-| 개념 분류 | `IS_A` 링크로 구체 엔티티를 정규화된 개념에 연결합니다. |
-| 제한된 경로 추론 | `allPaths`로 안전한 깊이와 결과 수 안에서 관계 설명을 얻습니다. |
+| 주제               | 의미                                                            |
+|--------------------|-----------------------------------------------------------------|
+| 지식 그래프 모델링 | 문서, 엔티티, 개념을 연결된 사실로 표현합니다.                  |
+| mention 조회       | 문서가 언급하는 엔티티를 `MENTIONS` edge로 찾습니다.            |
+| 관련 엔티티 탐색   | 도메인 관계를 중첩 레코드가 아니라 path로 표현합니다.           |
+| 개념 분류          | `IS_A` 링크로 구체 엔티티를 정규화된 개념에 연결합니다.         |
+| 제한된 경로 추론   | `allPaths`로 안전한 깊이와 결과 수 안에서 관계 설명을 얻습니다. |
 
 ## 왜 Graph DB가 좋은가?
 
-지식 그래프의 가치는 사실 사이의 연결에 있습니다. 문서 저장소는 문서 본문을 저장할 수 있고, 관계형 DB는 엔티티 테이블을
-저장할 수 있습니다. 하지만 "Kotlin이 어떤 중간 개념을 통해 Spring과 연결되는가?"는 자연스럽게 path 질문입니다.
+지식 그래프의 가치는 사실 사이의 연결에 있습니다. 문서 저장소는 문서 본문을 저장할 수 있고, 관계형 DB는 엔티티 테이블을 저장할 수 있습니다. 하지만 "Kotlin이 어떤 중간 개념을 통해 Spring과 연결되는가?"는 자연스럽게 path 질문입니다.
 
 Graph DB를 사용하면 다음을 직접 표현할 수 있습니다.
 
@@ -47,12 +45,12 @@ Graph DB를 사용하면 다음을 직접 표현할 수 있습니다.
 
 ## 주요 기능
 
-| 기능 | Graph API |
-|---|---|
-| mention 조회 | `MENTIONS` 간선의 `neighbors` 탐색 |
-| 관련 엔티티 탐색 | `RELATED_TO` 간선의 `neighbors` 탐색 |
-| 관계 경로 추론 | service-side `maxPaths`가 적용된 `allPaths(PathOptions)` |
-| 코루틴 지원 | `KnowledgeGraphSuspendService`와 `Flow` 결과 |
+| 기능             | Graph API                                                |
+|------------------|----------------------------------------------------------|
+| mention 조회     | `MENTIONS` 간선의 `neighbors` 탐색                       |
+| 관련 엔티티 탐색 | `RELATED_TO` 간선의 `neighbors` 탐색                     |
+| 관계 경로 추론   | service-side `maxPaths`가 적용된 `allPaths(PathOptions)` |
+| 코루틴 지원      | `KnowledgeGraphSuspendService`와 `Flow` 결과             |
 
 ## 사용 예
 
@@ -73,8 +71,7 @@ val paths = service.inferRelationshipPaths(kotlin.id, coroutines.id)
 
 ## 샘플 데이터셋 Import
 
-`KnowledgeGraphSampleDatasetLoader`는 번들된 graph-io CSV fixture를 임의의 `GraphOperations` 구현체로 import합니다.
-fixture에는 바로 조회할 수 있는 문서, 엔티티, 개념, mention, 관련 엔티티 edge, 분류 edge가 포함되어 있습니다.
+`KnowledgeGraphSampleDatasetLoader`는 번들된 graph-io CSV fixture를 임의의 `GraphOperations` 구현체로 import합니다. fixture에는 바로 조회할 수 있는 문서, 엔티티, 개념, mention, 관련 엔티티 edge, 분류 edge가 포함되어 있습니다.
 
 ```kotlin
 val service = KnowledgeGraphService(ops)
@@ -87,18 +84,16 @@ check(report.status == GraphIoStatus.COMPLETED)
 val mentioned = service.findMentionedEntities(document.id)
 ```
 
-TinkerGraph smoke test는 컨테이너 비용 없이 graph-io import 계약을 검증합니다. 기존 backend 도메인 테스트는 Neo4j,
-Memgraph, Apache AGE, FalkorDB에서 traversal 동작을 계속 검증합니다.
+TinkerGraph smoke test는 컨테이너 비용 없이 graph-io import 계약을 검증합니다. 기존 backend 도메인 테스트는 Neo4j, Memgraph, Apache AGE, FalkorDB에서 traversal 동작을 계속 검증합니다.
 
 ## 테스트 읽는 법
 
-Abstract test는 작은 지식 그래프를 만들고, mention 조회, 관련 엔티티 탐색, 개념 분류, 제한된 관계 경로 추론을 한 흐름으로
-보여줍니다.
+Abstract test는 작은 지식 그래프를 만들고, mention 조회, 관련 엔티티 탐색, 개념 분류, 제한된 관계 경로 추론을 한 흐름으로 보여줍니다.
 
-| 테스트 종류 | 목적 |
-|---|---|
-| Abstract tests | 지식 그래프 동작을 한 번만 설명합니다. |
-| TinkerGraph tests | 빠른 메모리 기반 smoke test입니다. |
+| 테스트 종류                       | 목적                                                              |
+|-----------------------------------|-------------------------------------------------------------------|
+| Abstract tests                    | 지식 그래프 동작을 한 번만 설명합니다.                            |
+| TinkerGraph tests                 | 빠른 메모리 기반 smoke test입니다.                                |
 | Neo4j/Memgraph/AGE/FalkorDB tests | 실제 backend에서도 같은 path/lookup 동작이 유지되는지 검증합니다. |
 
 ## 테스트 실행
@@ -112,12 +107,12 @@ TinkerGraph 테스트는 메모리에서 실행됩니다. Neo4j, Memgraph, Apach
 
 ## Expected Output
 
-| 시나리오 | 예상 결과 |
-|---|---|
-| Mention lookup | 문서가 언급한 entity를 반환한다. |
-| Related entity traversal | `RELATED_TO` traversal로 인접 fact를 찾는다. |
-| Concept classification | entity를 정규화된 concept에 연결한다. |
-| Path inference | 제한된 `allPaths`로 두 entity의 연결을 설명한다. |
+| 시나리오                 | 예상 결과                                        |
+|--------------------------|--------------------------------------------------|
+| Mention lookup           | 문서가 언급한 entity를 반환한다.                 |
+| Related entity traversal | `RELATED_TO` traversal로 인접 fact를 찾는다.     |
+| Concept classification   | entity를 정규화된 concept에 연결한다.            |
+| Path inference           | 제한된 `allPaths`로 두 entity의 연결을 설명한다. |
 
 ## 의존성
 
