@@ -1,7 +1,6 @@
 package io.bluetape4k.graph.examples.knowledge
 
 import com.falkordb.FalkorDB
-import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.bluetape4k.codec.Base58
 import io.bluetape4k.graph.age.AgeGraphOperations
@@ -16,6 +15,7 @@ import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.warn
+import io.bluetape4k.testcontainers.database.getDataSource
 import io.bluetape4k.testcontainers.graphdb.FalkorDBServer
 import io.bluetape4k.testcontainers.graphdb.MemgraphServer
 import io.bluetape4k.testcontainers.graphdb.Neo4jServer
@@ -23,22 +23,21 @@ import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
 import kotlinx.coroutines.CancellationException
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.neo4j.driver.AuthTokens
 import org.neo4j.driver.Driver
 import org.neo4j.driver.GraphDatabase
 
-class TinkerGraphKnowledgeGraphTest : AbstractKnowledgeGraphTest() {
+class TinkerGraphKnowledgeGraphTest: AbstractKnowledgeGraphTest() {
     override val ops = TinkerGraphOperations()
     override val graphName = "default"
 }
 
-class TinkerGraphKnowledgeGraphSuspendTest : AbstractKnowledgeGraphSuspendTest() {
+class TinkerGraphKnowledgeGraphSuspendTest: AbstractKnowledgeGraphSuspendTest() {
     override val ops = TinkerGraphSuspendOperations()
     override val graphName = "default"
 }
 
-class Neo4jKnowledgeGraphTest : AbstractKnowledgeGraphTest() {
+class Neo4jKnowledgeGraphTest: AbstractKnowledgeGraphTest() {
     private val driver: Driver = GraphDatabase.driver(Neo4jServer.Launcher.neo4j.boltUrl, AuthTokens.none())
     override val ops = Neo4jGraphOperations(driver)
 
@@ -48,7 +47,7 @@ class Neo4jKnowledgeGraphTest : AbstractKnowledgeGraphTest() {
     }
 }
 
-class Neo4jKnowledgeGraphSuspendTest : AbstractKnowledgeGraphSuspendTest() {
+class Neo4jKnowledgeGraphSuspendTest: AbstractKnowledgeGraphSuspendTest() {
     private val driver: Driver = GraphDatabase.driver(Neo4jServer.Launcher.neo4j.boltUrl, AuthTokens.none())
     override val ops = Neo4jGraphSuspendOperations(driver)
 
@@ -58,15 +57,9 @@ class Neo4jKnowledgeGraphSuspendTest : AbstractKnowledgeGraphSuspendTest() {
     }
 }
 
-class MemgraphKnowledgeGraphTest : AbstractKnowledgeGraphTest() {
-    private lateinit var driver: Driver
-    override lateinit var ops: MemgraphGraphOperations
-
-    @BeforeAll
-    fun startServer() {
-        driver = GraphDatabase.driver(MemgraphServer.Launcher.memgraph.boltUrl, AuthTokens.none())
-        ops = MemgraphGraphOperations(driver)
-    }
+class MemgraphKnowledgeGraphTest: AbstractKnowledgeGraphTest() {
+    private val driver: Driver = GraphDatabase.driver(MemgraphServer.Launcher.memgraph.boltUrl, AuthTokens.none())
+    override val ops: MemgraphGraphOperations = MemgraphGraphOperations(driver)
 
     @AfterAll
     fun stopServer() {
@@ -74,15 +67,9 @@ class MemgraphKnowledgeGraphTest : AbstractKnowledgeGraphTest() {
     }
 }
 
-class MemgraphKnowledgeGraphSuspendTest : AbstractKnowledgeGraphSuspendTest() {
-    private lateinit var driver: Driver
-    override lateinit var ops: MemgraphGraphSuspendOperations
-
-    @BeforeAll
-    fun startServer() {
-        driver = GraphDatabase.driver(MemgraphServer.Launcher.memgraph.boltUrl, AuthTokens.none())
-        ops = MemgraphGraphSuspendOperations(driver)
-    }
+class MemgraphKnowledgeGraphSuspendTest: AbstractKnowledgeGraphSuspendTest() {
+    private val driver: Driver = GraphDatabase.driver(MemgraphServer.Launcher.memgraph.boltUrl, AuthTokens.none())
+    override val ops: MemgraphGraphSuspendOperations = MemgraphGraphSuspendOperations(driver)
 
     @AfterAll
     fun stopServer() {
@@ -90,25 +77,15 @@ class MemgraphKnowledgeGraphSuspendTest : AbstractKnowledgeGraphSuspendTest() {
     }
 }
 
-class AgeKnowledgeGraphTest : AbstractKnowledgeGraphTest() {
+class AgeKnowledgeGraphTest: AbstractKnowledgeGraphTest() {
+    private val server = PostgreSQLAgeServer.Launcher.postgresqlAge
+    private val dataSource: HikariDataSource = server.getDataSource {
+        connectionInitSql = $$"LOAD 'age'; SET search_path = ag_catalog, \"$user\", public;"
+        maximumPoolSize = 5
+    }
+    private val database = Database.connect(dataSource)
     override val graphName = "knowledge_graph_test"
-    private lateinit var dataSource: HikariDataSource
-    override lateinit var ops: AgeGraphOperations
-
-    @BeforeAll
-    fun startServer() {
-        val server = PostgreSQLAgeServer.Launcher.postgresqlAge
-        dataSource = HikariDataSource(HikariConfig().apply {
-            jdbcUrl = server.jdbcUrl
-            username = server.username
-            password = server.password
-            driverClassName = "org.postgresql.Driver"
-            connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
-            maximumPoolSize = 5
-        })
-        val database = Database.connect(dataSource)
-        ops = AgeGraphOperations(database, graphName)
-    }
+    override val ops: AgeGraphOperations = AgeGraphOperations(database, graphName)
 
     @AfterAll
     fun stopServer() {
@@ -116,25 +93,15 @@ class AgeKnowledgeGraphTest : AbstractKnowledgeGraphTest() {
     }
 }
 
-class AgeKnowledgeGraphSuspendTest : AbstractKnowledgeGraphSuspendTest() {
+class AgeKnowledgeGraphSuspendTest: AbstractKnowledgeGraphSuspendTest() {
+    private val server = PostgreSQLAgeServer.Launcher.postgresqlAge
+    private val dataSource: HikariDataSource = server.getDataSource {
+        connectionInitSql = $$"LOAD 'age'; SET search_path = ag_catalog, \"$user\", public;"
+        maximumPoolSize = 5
+    }
+    private val database = Database.connect(dataSource)
     override val graphName = "knowledge_graph_suspend_test"
-    private lateinit var dataSource: HikariDataSource
-    override lateinit var ops: AgeGraphSuspendOperations
-
-    @BeforeAll
-    fun startServer() {
-        val server = PostgreSQLAgeServer.Launcher.postgresqlAge
-        dataSource = HikariDataSource(HikariConfig().apply {
-            jdbcUrl = server.jdbcUrl
-            username = server.username
-            password = server.password
-            driverClassName = "org.postgresql.Driver"
-            connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
-            maximumPoolSize = 5
-        })
-        val database = Database.connect(dataSource)
-        ops = AgeGraphSuspendOperations(database, graphName)
-    }
+    override val ops: AgeGraphSuspendOperations = AgeGraphSuspendOperations(database, graphName)
 
     @AfterAll
     fun stopServer() {
@@ -142,16 +109,11 @@ class AgeKnowledgeGraphSuspendTest : AbstractKnowledgeGraphSuspendTest() {
     }
 }
 
-class FalkorDBKnowledgeGraphTest : AbstractKnowledgeGraphTest() {
-    private lateinit var driver: com.falkordb.Driver
-    override lateinit var ops: FalkorDBGraphOperations
+class FalkorDBKnowledgeGraphTest: AbstractKnowledgeGraphTest() {
+    private val falkordb = FalkorDBServer.Launcher.falkordb
+    private val driver: com.falkordb.Driver = FalkorDB.driver(falkordb.host, falkordb.port)
     override val graphName: String = "knowledge_${Base58.randomString(8)}"
-
-    @BeforeAll
-    fun startServer() {
-        driver = FalkorDB.driver(FalkorDBServer.Launcher.falkordb.host, FalkorDBServer.Launcher.falkordb.port)
-        ops = FalkorDBGraphOperations(driver, graphName)
-    }
+    override val ops: FalkorDBGraphOperations = FalkorDBGraphOperations(driver, graphName)
 
     @AfterAll
     fun stopServer() {
@@ -161,16 +123,11 @@ class FalkorDBKnowledgeGraphTest : AbstractKnowledgeGraphTest() {
     }
 }
 
-class FalkorDBKnowledgeGraphSuspendTest : AbstractKnowledgeGraphSuspendTest() {
-    private lateinit var driver: com.falkordb.Driver
-    override lateinit var ops: FalkorDBGraphSuspendOperations
+class FalkorDBKnowledgeGraphSuspendTest: AbstractKnowledgeGraphSuspendTest() {
+    private val falkordb = FalkorDBServer.Launcher.falkordb
+    private val driver: com.falkordb.Driver = FalkorDB.driver(falkordb.host, falkordb.port)
     override val graphName: String = "knowledge_${Base58.randomString(8)}"
-
-    @BeforeAll
-    fun startServer() {
-        driver = FalkorDB.driver(FalkorDBServer.Launcher.falkordb.host, FalkorDBServer.Launcher.falkordb.port)
-        ops = FalkorDBGraphSuspendOperations(driver, graphName)
-    }
+    override val ops: FalkorDBGraphSuspendOperations = FalkorDBGraphSuspendOperations(driver, graphName)
 
     @AfterAll
     fun stopServer() {

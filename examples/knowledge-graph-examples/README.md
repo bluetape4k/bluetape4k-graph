@@ -2,28 +2,25 @@
 
 > 🇰🇷 [한국어 문서](README.ko.md)
 
-This example teaches how to model documents, entities, and concepts as a knowledge graph and infer bounded relationship
-paths between entities.
+This example teaches how to model documents, entities, and concepts as a knowledge graph and infer bounded relationship paths between entities.
 
 ## Scenario
 
-A document mentions Kotlin and Spring-related entities. The example links documents to entities, classifies entities
-under concepts, and infers bounded paths that explain how two entities are connected through intermediate facts.
+A document mentions Kotlin and Spring-related entities. The example links documents to entities, classifies entities under concepts, and infers bounded paths that explain how two entities are connected through intermediate facts.
 
 ## What You Learn
 
-| Topic | Why it matters |
-|---|---|
-| Knowledge graph modeling | Documents, entities, and concepts become connected facts. |
-| Mention lookup | A document can reveal the entities it discusses through `MENTIONS` edges. |
-| Related entity traversal | Domain relationships are represented as paths, not nested records. |
-| Concept classification | `IS_A` links connect concrete entities to normalized concepts. |
-| Bounded path inference | `allPaths` explains how two entities are connected within a safe depth and result limit. |
+| Topic                    | Why it matters                                                                           |
+|--------------------------|------------------------------------------------------------------------------------------|
+| Knowledge graph modeling | Documents, entities, and concepts become connected facts.                                |
+| Mention lookup           | A document can reveal the entities it discusses through `MENTIONS` edges.                |
+| Related entity traversal | Domain relationships are represented as paths, not nested records.                       |
+| Concept classification   | `IS_A` links connect concrete entities to normalized concepts.                           |
+| Bounded path inference   | `allPaths` explains how two entities are connected within a safe depth and result limit. |
 
 ## Why Use a Graph Database?
 
-Knowledge graphs are useful when the value is in the connection between facts. A document store can keep document text,
-and a relational database can store entity tables, but "how is Kotlin connected to Spring through intermediate concepts?"
+Knowledge graphs are useful when the value is in the connection between facts. A document store can keep document text, and a relational database can store entity tables, but "how is Kotlin connected to Spring through intermediate concepts?"
 is naturally a path question.
 
 With a graph database:
@@ -49,12 +46,12 @@ This example focuses on small, explainable graphs so learners can see why the pa
 
 ## Core Features
 
-| Feature | Graph API |
-|---|---|
-| Mention lookup | `neighbors` over `MENTIONS` |
-| Related entity traversal | `neighbors` over `RELATED_TO` |
+| Feature                     | Graph API                                            |
+|-----------------------------|------------------------------------------------------|
+| Mention lookup              | `neighbors` over `MENTIONS`                          |
+| Related entity traversal    | `neighbors` over `RELATED_TO`                        |
 | Relationship path inference | `allPaths(PathOptions)` with service-side `maxPaths` |
-| Coroutine support | `KnowledgeGraphSuspendService` with `Flow` results |
+| Coroutine support           | `KnowledgeGraphSuspendService` with `Flow` results   |
 
 ## Usage
 
@@ -76,8 +73,7 @@ val paths = service.inferRelationshipPaths(kotlin.id, coroutines.id)
 ## Sample Dataset Import
 
 `KnowledgeGraphSampleDatasetLoader` imports the bundled graph-io CSV fixture into any `GraphOperations`
-implementation. The fixture contains documents, entities, concepts, mentions, related-entity edges, and classifications
-that can be queried immediately.
+implementation. The fixture contains documents, entities, concepts, mentions, related-entity edges, and classifications that can be queried immediately.
 
 ```kotlin
 val service = KnowledgeGraphService(ops)
@@ -90,18 +86,16 @@ check(report.status == GraphIoStatus.COMPLETED)
 val mentioned = service.findMentionedEntities(document.id)
 ```
 
-The TinkerGraph smoke test covers the graph-io import contract without adding container cost. Existing backend domain
-tests continue to prove traversal behavior on Neo4j, Memgraph, Apache AGE, and FalkorDB.
+The TinkerGraph smoke test covers the graph-io import contract without adding container cost. Existing backend domain tests continue to prove traversal behavior on Neo4j, Memgraph, Apache AGE, and FalkorDB.
 
 ## How to Read the Tests
 
-The abstract tests show the complete story: load a small knowledge graph, query mentioned entities, traverse related
-entities, classify an entity under a concept, and infer relationship paths with a fixed bound.
+The abstract tests show the complete story: load a small knowledge graph, query mentioned entities, traverse related entities, classify an entity under a concept, and infer relationship paths with a fixed bound.
 
-| Test class type | Purpose |
-|---|---|
-| Abstract tests | Explain knowledge graph behavior once. |
-| TinkerGraph tests | Fast in-memory smoke path. |
+| Test class type                   | Purpose                                                   |
+|-----------------------------------|-----------------------------------------------------------|
+| Abstract tests                    | Explain knowledge graph behavior once.                    |
+| TinkerGraph tests                 | Fast in-memory smoke path.                                |
 | Neo4j/Memgraph/AGE/FalkorDB tests | Prove the same path and lookup behavior on real backends. |
 
 ## Running Tests
@@ -115,12 +109,12 @@ TinkerGraph tests run in memory. Neo4j, Memgraph, Apache AGE, and FalkorDB tests
 
 ## Expected Output
 
-| Scenario | Expected result |
-|---|---|
-| Mention lookup | A document returns the entities it mentions. |
-| Related entity traversal | `RELATED_TO` traversal finds neighboring facts. |
-| Concept classification | An entity can be connected to a normalized concept. |
-| Path inference | Bounded `allPaths` explains how two entities are connected. |
+| Scenario                 | Expected result                                             |
+|--------------------------|-------------------------------------------------------------|
+| Mention lookup           | A document returns the entities it mentions.                |
+| Related entity traversal | `RELATED_TO` traversal finds neighboring facts.             |
+| Concept classification   | An entity can be connected to a normalized concept.         |
+| Path inference           | Bounded `allPaths` explains how two entities are connected. |
 
 ## Dependencies
 

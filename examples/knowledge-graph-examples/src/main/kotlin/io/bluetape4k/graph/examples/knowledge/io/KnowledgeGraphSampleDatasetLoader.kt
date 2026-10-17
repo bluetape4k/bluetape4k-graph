@@ -9,6 +9,7 @@ import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphImportReport
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.repository.GraphSuspendOperations
+import io.bluetape4k.logging.KLogging
 
 /**
  * graph-io로 knowledge graph sample CSV dataset을 import한다.
@@ -24,7 +25,7 @@ import io.bluetape4k.graph.repository.GraphSuspendOperations
  * - Caller가 override하지 않으면 [GraphImportOptions]와 [CsvGraphIoOptions]는 graph-io default를 따른다.
  * - Loader는 graph를 create하거나 clear하지 않는다. Caller는 import 전에 target operations를 initialize해야 한다.
  */
-object KnowledgeGraphSampleDatasetLoader {
+object KnowledgeGraphSampleDatasetLoader: KLogging() {
 
     const val DEFAULT_VERTICES_RESOURCE: String = "sample-data/knowledge/vertices.csv"
     const val DEFAULT_EDGES_RESOURCE: String = "sample-data/knowledge/edges.csv"
@@ -42,7 +43,7 @@ object KnowledgeGraphSampleDatasetLoader {
             fallbackClassLoader = KnowledgeGraphSampleDatasetLoader::class.java.classLoader,
             missingResourceMessage = { "Sample dataset resource not found: $it" },
         ) { source ->
-            CsvGraphBulkImporter().importGraph(source, operations, options, csvOptions)
+            CsvGraphBulkImporter.Default.importGraph(source, operations, options, csvOptions)
         }
 
     suspend fun importCsvSuspending(
@@ -58,6 +59,6 @@ object KnowledgeGraphSampleDatasetLoader {
             fallbackClassLoader = KnowledgeGraphSampleDatasetLoader::class.java.classLoader,
             missingResourceMessage = { "Sample dataset resource not found: $it" },
         ) { source ->
-            SuspendCsvGraphBulkImporter().importGraphSuspending(source, operations, options, csvOptions)
+            SuspendCsvGraphBulkImporter.Default.importGraphSuspending(source, operations, options, csvOptions)
         }
 }

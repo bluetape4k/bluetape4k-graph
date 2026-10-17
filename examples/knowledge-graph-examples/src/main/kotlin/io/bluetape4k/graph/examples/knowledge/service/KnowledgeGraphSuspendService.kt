@@ -16,6 +16,7 @@ import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.info
 import io.bluetape4k.support.requireNotBlank
+import io.bluetape4k.support.requirePositiveNumber
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.take
 
@@ -26,7 +27,7 @@ class KnowledgeGraphSuspendService(
     private val ops: GraphSuspendOperations,
     private val graphName: String = "knowledge_graph",
 ) {
-    companion object : KLoggingChannel()
+    companion object: KLoggingChannel()
 
     /**
      * Backing graph가 아직 없으면 생성한다.
@@ -45,9 +46,12 @@ class KnowledgeGraphSuspendService(
         entityId.requireNotBlank("entityId")
         name.requireNotBlank("name")
         entityType.requireNotBlank("entityType")
+
         return ops.createVertex(
             EntityLabel.label,
-            mapOf(EntityLabel.entityId.name to entityId, EntityLabel.name.name to name, EntityLabel.entityType.name to entityType)
+            EntityLabel.entityId.name to entityId,
+            EntityLabel.name.name to name,
+            EntityLabel.entityType.name to entityType
         )
     }
 
@@ -59,7 +63,9 @@ class KnowledgeGraphSuspendService(
         name.requireNotBlank("name")
         return ops.createVertex(
             ConceptLabel.label,
-            mapOf(ConceptLabel.conceptId.name to conceptId, ConceptLabel.name.name to name, ConceptLabel.domain.name to domain)
+            ConceptLabel.conceptId.name to conceptId,
+            ConceptLabel.name.name to name,
+            ConceptLabel.domain.name to domain
         )
     }
 
@@ -71,7 +77,9 @@ class KnowledgeGraphSuspendService(
         title.requireNotBlank("title")
         return ops.createVertex(
             DocumentLabel.label,
-            mapOf(DocumentLabel.documentId.name to documentId, DocumentLabel.title.name to title, DocumentLabel.source.name to source)
+            DocumentLabel.documentId.name to documentId,
+            DocumentLabel.title.name to title,
+            DocumentLabel.source.name to source
         )
     }
 
@@ -86,13 +94,17 @@ class KnowledgeGraphSuspendService(
     /**
      * 두 entity를 typed relationship으로 연결한다.
      */
-    suspend fun relateEntities(fromEntityId: GraphElementId, toEntityId: GraphElementId, relationType: String = "related") {
+    suspend fun relateEntities(
+        fromEntityId: GraphElementId,
+        toEntityId: GraphElementId,
+        relationType: String = "related",
+    ) {
         relationType.requireNotBlank("relationType")
         ops.createEdge(
             fromEntityId,
             toEntityId,
             RelatedToLabel.label,
-            mapOf(RelatedToLabel.relationType.name to relationType)
+            RelatedToLabel.relationType.name to relationType
         )
     }
 
@@ -100,20 +112,26 @@ class KnowledgeGraphSuspendService(
      * Entity를 concept 아래로 classify한다.
      */
     suspend fun classify(entityId: GraphElementId, conceptId: GraphElementId) {
-        ops.createEdge(entityId, conceptId, IsALabel.label, emptyMap())
+        ops.createEdge(entityId, conceptId, IsALabel.label)
     }
 
     /**
      * Document가 mention한 entity를 찾는다.
      */
     fun findMentionedEntities(documentId: GraphElementId): Flow<GraphVertex> =
-        ops.neighbors(documentId, NeighborOptions(edgeLabel = MentionsLabel.label, direction = Direction.OUTGOING, maxDepth = 1))
+        ops.neighbors(
+            documentId,
+            NeighborOptions(edgeLabel = MentionsLabel.label, direction = Direction.OUTGOING, maxDepth = 1)
+        )
 
     /**
      * Source entity와 related된 entity를 찾는다.
      */
     fun findRelatedEntities(entityId: GraphElementId, depth: Int = 1): Flow<GraphVertex> =
-        ops.neighbors(entityId, NeighborOptions(edgeLabel = RelatedToLabel.label, direction = Direction.OUTGOING, maxDepth = depth))
+        ops.neighbors(
+            entityId,
+            NeighborOptions(edgeLabel = RelatedToLabel.label, direction = Direction.OUTGOING, maxDepth = depth)
+        )
 
     /**
      * 두 entity 사이의 relationship path를 찾고 service-side result bound를 적용한다.
@@ -124,11 +142,13 @@ class KnowledgeGraphSuspendService(
         maxDepth: Int = 3,
         maxPaths: Int = 10,
     ): Flow<GraphPath> {
-        require(maxPaths > 0) { "maxPaths must be > 0, was $maxPaths" }
-        return ops.allPaths(
-            fromEntityId,
-            toEntityId,
-            PathOptions(edgeLabel = RelatedToLabel.label, maxDepth = maxDepth)
-        ).take(maxPaths)
+        maxPaths.requirePositiveNumber("maxPaths")
+        return ops
+            .allPaths(
+                fromEntityId,
+                toEntityId,
+                PathOptions(edgeLabel = RelatedToLabel.label, maxDepth = maxDepth)
+            )
+            .take(maxPaths)
     }
 }
