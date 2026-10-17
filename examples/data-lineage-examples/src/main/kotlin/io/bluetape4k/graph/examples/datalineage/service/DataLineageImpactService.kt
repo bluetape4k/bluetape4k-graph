@@ -65,6 +65,7 @@ class DataLineageImpactService(
     fun impactedDashboardsByColumn(columnId: String): List<GraphVertex> {
         columnId.requireNotBlank("columnId")
         val column = columnById(columnId) ?: return emptyList()
+
         return outgoing(column, ColumnInputToJobLabel.label, PipelineJobLabel.label)
             .flatMap { job -> outgoing(job, JobOutputsTableLabel.label, TableLabel.label) }
             .flatMap(::dashboardsDownstreamFromTable)
@@ -152,7 +153,7 @@ class DataLineageImpactService(
             .flatMap { job -> outgoing(job, JobOutputsTableLabel.label, TableLabel.label) }
 
         return (directDashboards + firstHopTables.flatMap(::dashboardsDownstreamFromTableDirect) +
-            secondHopTables.flatMap(::dashboardsDownstreamFromTableDirect))
+                secondHopTables.flatMap(::dashboardsDownstreamFromTableDirect))
             .distinctBy { it.id }
     }
 
@@ -160,9 +161,12 @@ class DataLineageImpactService(
         outgoing(table, FeedsDashboardLabel.label, DashboardLabel.label)
 
     private fun lineageOutgoing(vertex: GraphVertex): List<GraphVertex> = when (vertex.label) {
-        TableLabel.label -> outgoing(vertex, TableInputToJobLabel.label, PipelineJobLabel.label) +
-            outgoing(vertex, FeedsDashboardLabel.label, DashboardLabel.label)
+        TableLabel.label ->
+            outgoing(vertex, TableInputToJobLabel.label, PipelineJobLabel.label) +
+                    outgoing(vertex, FeedsDashboardLabel.label, DashboardLabel.label)
+
         ColumnLabel.label -> outgoing(vertex, ColumnInputToJobLabel.label, PipelineJobLabel.label)
+
         PipelineJobLabel.label -> outgoing(vertex, JobOutputsTableLabel.label, TableLabel.label)
         else -> emptyList()
     }
@@ -180,20 +184,21 @@ class DataLineageImpactService(
         ).filter { it.label == vertexLabel }
 
     private fun tableById(tableId: String): GraphVertex? =
-        ops.findVerticesByLabel(TableLabel.label, mapOf(TableLabel.tableId.name to tableId)).firstOrNull()
+        ops.findVerticesByLabel(TableLabel.label, TableLabel.tableId.name to tableId).firstOrNull()
 
     private fun columnById(columnId: String): GraphVertex? =
-        ops.findVerticesByLabel(ColumnLabel.label, mapOf(ColumnLabel.columnId.name to columnId)).firstOrNull()
+        ops.findVerticesByLabel(ColumnLabel.label, ColumnLabel.columnId.name to columnId).firstOrNull()
 
     private fun jobById(jobId: String): GraphVertex? =
-        ops.findVerticesByLabel(PipelineJobLabel.label, mapOf(PipelineJobLabel.jobId.name to jobId)).firstOrNull()
+        ops.findVerticesByLabel(PipelineJobLabel.label, PipelineJobLabel.jobId.name to jobId).firstOrNull()
 
     private fun dashboardById(dashboardId: String): GraphVertex? =
-        ops.findVerticesByLabel(DashboardLabel.label, mapOf(DashboardLabel.dashboardId.name to dashboardId))
+        ops.findVerticesByLabel(DashboardLabel.label, DashboardLabel.dashboardId.name to dashboardId)
             .firstOrNull()
 
     private fun qualityCheckById(checkId: String): GraphVertex? =
-        ops.findVerticesByLabel(QualityCheckLabel.label, mapOf(QualityCheckLabel.checkId.name to checkId)).firstOrNull()
+        ops.findVerticesByLabel(QualityCheckLabel.label, QualityCheckLabel.checkId.name to checkId)
+            .firstOrNull()
 
     private fun columnId(column: GraphVertex): String =
         column.properties[ColumnLabel.columnId.name].toString()

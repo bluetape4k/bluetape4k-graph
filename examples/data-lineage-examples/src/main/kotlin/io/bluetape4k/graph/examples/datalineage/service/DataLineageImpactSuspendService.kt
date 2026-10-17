@@ -20,6 +20,8 @@ import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.info
 import io.bluetape4k.support.requireNotBlank
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
 
 /**
@@ -127,14 +129,21 @@ class DataLineageImpactSuspendService(
 
     private suspend fun dashboardsDownstreamFromTable(table: GraphVertex): List<GraphVertex> {
         val directDashboards = outgoing(table, FeedsDashboardLabel.label, DashboardLabel.label)
+
         val firstHopTables = outgoing(table, TableInputToJobLabel.label, PipelineJobLabel.label)
-            .flatMap { job -> outgoing(job, JobOutputsTableLabel.label, TableLabel.label) }
+            .flatMap { job ->
+                outgoing(job, JobOutputsTableLabel.label, TableLabel.label)
+            }
         val secondHopTables = firstHopTables
-            .flatMap { downstream -> outgoing(downstream, TableInputToJobLabel.label, PipelineJobLabel.label) }
-            .flatMap { job -> outgoing(job, JobOutputsTableLabel.label, TableLabel.label) }
+            .flatMap { downstream ->
+                outgoing(downstream, TableInputToJobLabel.label, PipelineJobLabel.label)
+            }
+            .flatMap { job ->
+                outgoing(job, JobOutputsTableLabel.label, TableLabel.label)
+            }
 
         return (directDashboards + firstHopTables.flatMap { dashboardsDownstreamFromTableDirect(it) } +
-            secondHopTables.flatMap { dashboardsDownstreamFromTableDirect(it) })
+                secondHopTables.flatMap { dashboardsDownstreamFromTableDirect(it) })
             .distinctBy { it.id }
     }
 
@@ -142,48 +151,54 @@ class DataLineageImpactSuspendService(
         outgoing(table, FeedsDashboardLabel.label, DashboardLabel.label)
 
     private suspend fun lineageOutgoing(vertex: GraphVertex): List<GraphVertex> = when (vertex.label) {
-        TableLabel.label -> outgoing(vertex, TableInputToJobLabel.label, PipelineJobLabel.label) +
-            outgoing(vertex, FeedsDashboardLabel.label, DashboardLabel.label)
+        TableLabel.label ->
+            outgoing(vertex, TableInputToJobLabel.label, PipelineJobLabel.label) +
+                    outgoing(vertex, FeedsDashboardLabel.label, DashboardLabel.label)
+
         ColumnLabel.label -> outgoing(vertex, ColumnInputToJobLabel.label, PipelineJobLabel.label)
+
         PipelineJobLabel.label -> outgoing(vertex, JobOutputsTableLabel.label, TableLabel.label)
         else -> emptyList()
     }
 
     private suspend fun outgoing(vertex: GraphVertex, edgeLabel: String, vertexLabel: String): List<GraphVertex> =
-        ops.neighbors(
-            vertex.id,
-            NeighborOptions(edgeLabel = edgeLabel, direction = Direction.OUTGOING, maxDepth = 1)
-        ).toList().filter { it.label == vertexLabel }
+        ops
+            .neighbors(
+                vertex.id,
+                NeighborOptions(edgeLabel = edgeLabel, direction = Direction.OUTGOING, maxDepth = 1)
+
+            )
+            .filter { it.label == vertexLabel }
+            .toList()
 
     private suspend fun incoming(vertex: GraphVertex, edgeLabel: String, vertexLabel: String): List<GraphVertex> =
-        ops.neighbors(
-            vertex.id,
-            NeighborOptions(edgeLabel = edgeLabel, direction = Direction.INCOMING, maxDepth = 1)
-        ).toList().filter { it.label == vertexLabel }
+        ops
+            .neighbors(
+                vertex.id,
+                NeighborOptions(edgeLabel = edgeLabel, direction = Direction.INCOMING, maxDepth = 1)
+            )
+            .filter { it.label == vertexLabel }
+            .toList()
 
     private suspend fun tableById(tableId: String): GraphVertex? =
-        ops.findVerticesByLabel(TableLabel.label, mapOf(TableLabel.tableId.name to tableId))
-            .toList()
+        ops
+            .findVerticesByLabel(TableLabel.label, TableLabel.tableId.name to tableId)
             .firstOrNull()
 
     private suspend fun columnById(columnId: String): GraphVertex? =
-        ops.findVerticesByLabel(ColumnLabel.label, mapOf(ColumnLabel.columnId.name to columnId))
-            .toList()
+        ops.findVerticesByLabel(ColumnLabel.label, ColumnLabel.columnId.name to columnId)
             .firstOrNull()
 
     private suspend fun jobById(jobId: String): GraphVertex? =
-        ops.findVerticesByLabel(PipelineJobLabel.label, mapOf(PipelineJobLabel.jobId.name to jobId))
-            .toList()
+        ops.findVerticesByLabel(PipelineJobLabel.label, PipelineJobLabel.jobId.name to jobId)
             .firstOrNull()
 
     private suspend fun dashboardById(dashboardId: String): GraphVertex? =
-        ops.findVerticesByLabel(DashboardLabel.label, mapOf(DashboardLabel.dashboardId.name to dashboardId))
-            .toList()
+        ops.findVerticesByLabel(DashboardLabel.label, DashboardLabel.dashboardId.name to dashboardId)
             .firstOrNull()
 
     private suspend fun qualityCheckById(checkId: String): GraphVertex? =
-        ops.findVerticesByLabel(QualityCheckLabel.label, mapOf(QualityCheckLabel.checkId.name to checkId))
-            .toList()
+        ops.findVerticesByLabel(QualityCheckLabel.label, QualityCheckLabel.checkId.name to checkId)
             .firstOrNull()
 
     private fun columnId(column: GraphVertex): String =

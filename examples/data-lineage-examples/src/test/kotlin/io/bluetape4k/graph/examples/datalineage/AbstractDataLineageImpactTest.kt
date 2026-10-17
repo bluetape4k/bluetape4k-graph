@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.examples.datalineage
 
+import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.graph.examples.datalineage.io.DataLineageSampleDatasetLoader
@@ -10,6 +11,7 @@ import io.bluetape4k.graph.examples.datalineage.service.DataLineageImpactService
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -29,15 +31,22 @@ abstract class AbstractDataLineageImpactTest {
             ops.dropGraph(graphName)
         }
         service.initialize()
-        DataLineageSampleDatasetLoader.importCsv(ops).status shouldBeEqualTo GraphIoStatus.COMPLETED
+
+        val importReport = DataLineageSampleDatasetLoader.importCsv(ops)
+        log.debug { "import report=$importReport" }
+        importReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
     }
 
     @Test
     fun `finds downstream dashboard impact for source table and column`() {
-        val tableImpact = service.impactedDashboardsBySourceTable("raw.orders")
+        val tableImpact = service
+            .impactedDashboardsBySourceTable("raw.orders")
             .map { it.properties[DashboardLabel.dashboardId.name] }
+            .onEach { log.debug { "table=$it" } }
+
         val columnImpact = service.impactedDashboardsByColumn("raw.orders.customer_id")
             .map { it.properties[DashboardLabel.dashboardId.name] }
+            .onEach { log.debug { "column=$it" } }
 
         tableImpact shouldContain "exec-revenue"
         tableImpact shouldContain "ops-quality"
@@ -49,6 +58,7 @@ abstract class AbstractDataLineageImpactTest {
     fun `finds upstream tables for a dashboard metric`() {
         val tableIds = service.upstreamTablesForDashboard("exec-revenue")
             .map { it.properties[TableLabel.tableId.name] }
+            .onEach { log.debug { "tableIds=$it" } }
 
         tableIds shouldContain "mart.revenue_daily"
         tableIds shouldContain "curated.orders_enriched"
@@ -60,8 +70,10 @@ abstract class AbstractDataLineageImpactTest {
     fun `finds owners for broken jobs and quality failures`() {
         val ownerIds = service.ownersForBrokenJob("build-revenue-mart")
             .map { it.properties[OwnerLabel.ownerId.name] }
+            .onEach { log.debug { "ownerIds=$it" } }
         val affectedDashboards = service.dashboardsAffectedByQualityCheck("check-orders-customer")
             .map { it.properties[DashboardLabel.dashboardId.name] }
+            .onEach { log.debug { "affectedDashboards=$it" } }
 
         ownerIds shouldContain "finance-analytics"
         affectedDashboards shouldContain "exec-revenue"
@@ -72,9 +84,10 @@ abstract class AbstractDataLineageImpactTest {
     fun `explains bounded lineage path and returns empty when missing`() {
         val paths = service.explainLineagePath("raw.orders", "exec-revenue")
             .map { it.nodeIds }
-        val missing = service.explainLineagePath("raw.payments", "ops-quality")
+            .onEach { log.debug { "paths=$it" } }
+            .flatten()
 
-        paths shouldContain listOf(
+        paths shouldBeEqualTo listOf(
             "raw.orders",
             "ingest-orders",
             "curated.orders_enriched",
@@ -82,6 +95,8 @@ abstract class AbstractDataLineageImpactTest {
             "mart.revenue_daily",
             "exec-revenue",
         )
-        missing shouldBeEqualTo emptyList()
+
+        val missing = service.explainLineagePath("raw.payments", "ops-quality")
+        missing.shouldBeEmpty()
     }
 }

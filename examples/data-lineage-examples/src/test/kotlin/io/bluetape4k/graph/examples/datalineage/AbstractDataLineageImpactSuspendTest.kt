@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.examples.datalineage
 
+import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.graph.examples.datalineage.io.DataLineageSampleDatasetLoader
@@ -10,6 +11,7 @@ import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.coroutines.KLoggingChannel
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -29,13 +31,17 @@ abstract class AbstractDataLineageImpactSuspendTest {
             ops.dropGraph(graphName)
         }
         service.initialize()
-        DataLineageSampleDatasetLoader.importCsvSuspending(ops).status shouldBeEqualTo GraphIoStatus.COMPLETED
+
+        val importReport = DataLineageSampleDatasetLoader.importCsvSuspending(ops)
+        log.debug { "import report=$importReport" }
+        importReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
     }
 
     @Test
     fun `finds suspend downstream dashboard impact`() = runSuspendIO {
         val dashboardIds = service.impactedDashboardsBySourceTable("raw.orders")
             .map { it.properties[DashboardLabel.dashboardId.name] }
+            .onEach { log.debug { "dashboardId=$it" } }
 
         dashboardIds shouldContain "exec-revenue"
         dashboardIds shouldContain "ops-quality"
@@ -45,9 +51,11 @@ abstract class AbstractDataLineageImpactSuspendTest {
     fun `finds suspend owner and missing path cases`() = runSuspendIO {
         val ownerIds = service.ownersForBrokenJob("build-revenue-mart")
             .map { it.properties[OwnerLabel.ownerId.name] }
-        val missing = service.explainLineagePath("raw.payments", "ops-quality")
+            .onEach { log.debug { "ownerId=$it" } }
 
         ownerIds shouldContain "finance-analytics"
-        missing shouldBeEqualTo emptyList()
+
+        val missing = service.explainLineagePath("raw.payments", "ops-quality")
+        missing.shouldBeEmpty()
     }
 }
