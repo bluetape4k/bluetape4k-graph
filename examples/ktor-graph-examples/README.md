@@ -2,15 +2,13 @@
 
 > 🇰🇷 [한국어 문서](README.ko.md)
 
-Runnable Ktor example for `graph-ktor`. It uses TinkerGraph so the application can run without Docker or an external graph database.
-The application also reuses `bluetape4k-ktor-core` for standard health/readiness routes and JSON defaults.
+Runnable Ktor example for `graph-ktor`. It uses TinkerGraph so the application can run without Docker or an external graph database. The application also reuses `bluetape4k-ktor-core` for standard health/readiness routes and JSON defaults.
 
 ## Scenario
 
 The application installs `GraphPlugin`, exposes a small city graph over HTTP, and uses route handlers to access
 `GraphOperations` and `GraphSuspendOperations`. `POST /demo/reset` recreates `Seoul -> Daejeon -> Busan`, while
-`GET /cities/count` and `GET /cities/path` read the graph back through the plugin facade. A separate FalkorDB module
-shows the same route surface with a caller-owned driver.
+`GET /cities/count` and `GET /cities/path` read the graph back through the plugin facade. A separate FalkorDB module shows the same route surface with a caller-owned driver.
 
 ## Architecture Diagram
 
@@ -26,13 +24,13 @@ shows the same route surface with a caller-owned driver.
 
 ## Routes
 
-| Route | Method | Description |
-|---|---|---|
-| `/health` | GET | Returns the standard bluetape4k health JSON body. |
-| `/readyz` | GET | Returns the standard bluetape4k readiness JSON body. |
-| `/demo/reset` | POST | Recreates the demo city graph. |
-| `/cities/count` | GET | Returns the number of `City` vertices. |
-| `/cities/path` | GET | Returns the shortest path from Seoul to Busan. |
+| Route           | Method | Description                                          |
+|-----------------|--------|------------------------------------------------------|
+| `/health`       | GET    | Returns the standard bluetape4k health JSON body.    |
+| `/readyz`       | GET    | Returns the standard bluetape4k readiness JSON body. |
+| `/demo/reset`   | POST   | Recreates the demo city graph.                       |
+| `/cities/count` | GET    | Returns the number of `City` vertices.               |
+| `/cities/path`  | GET    | Returns the shortest path from Seoul to Busan.       |
 
 ## Run
 
@@ -50,13 +48,13 @@ curl http://localhost:8080/cities/path
 
 ## Expected Output
 
-| Request | Expected response |
-|---|---|
-| `GET /health` | `{"status":"UP","details":{}}` |
-| `GET /readyz` | `{"status":"UP","details":{}}` |
-| `POST /demo/reset` | `reset` |
-| `GET /cities/count` | `3` |
-| `GET /cities/path` | `Seoul -> Daejeon -> Busan` |
+| Request             | Expected response              |
+|---------------------|--------------------------------|
+| `GET /health`       | `{"status":"UP","details":{}}` |
+| `GET /readyz`       | `{"status":"UP","details":{}}` |
+| `POST /demo/reset`  | `reset`                        |
+| `GET /cities/count` | `3`                            |
+| `GET /cities/path`  | `Seoul -> Daejeon -> Busan`    |
 
 ## Test
 

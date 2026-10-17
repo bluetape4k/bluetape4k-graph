@@ -139,13 +139,14 @@ class FalkorDBGraphOperations(
     }
 
     override fun dropGraph(name: String) {
+        log.debug { "FalkorDB graph session destroyed for graph: $name" }
         name.requireNotBlank("name").requireSafeIdentifier("name")
         try {
             driver.graph(name).use { it.deleteGraph() }
             log.info { "FalkorDB graph dropped: $name" }
         } catch (e: Exception) {
             if (e.isMissingFalkorGraph()) {
-                log.debug(e) { "FalkorDB graph was already absent: $name" }
+                log.warn { "FalkorDB graph was already dropped: $name" }
                 return
             }
             log.warn(e) { "FalkorDB dropGraph failed: graph=$name" }
@@ -424,7 +425,7 @@ class FalkorDBGraphOperations(
 
         val query = $$"MATCH ()-[r:$$label]->() WHERE id(r) = toInteger($id) DELETE r"
         val params = mapOf("id" to id.value)
-        
+
         val rs = withGraph { g ->
             g.query(query, params)
         }

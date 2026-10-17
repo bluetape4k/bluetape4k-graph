@@ -5,6 +5,8 @@ import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.ktor.core.HealthResponse
 import io.bluetape4k.ktor.testing.decodeJsonBody
 import io.bluetape4k.ktor.testing.shouldHaveStatus
+import io.bluetape4k.logging.coroutines.KLoggingChannel
+import io.bluetape4k.logging.debug
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.statement.bodyAsText
@@ -13,6 +15,8 @@ import io.ktor.server.testing.testApplication
 import org.junit.jupiter.api.Test
 
 class KtorGraphAppTest {
+
+    companion object: KLoggingChannel()
 
     @Test
     fun `shared health route 는 UP 을 반환한다`() = runSuspendIO {
@@ -23,6 +27,7 @@ class KtorGraphAppTest {
             startApplication()
 
             val response = client.get("/health")
+            log.debug { "response=$response" }
             response shouldHaveStatus HttpStatusCode.OK
             response.decodeJsonBody<HealthResponse>().status shouldBeEqualTo HealthResponse.UP
         }
@@ -37,6 +42,7 @@ class KtorGraphAppTest {
             startApplication()
 
             val response = client.get("/readyz")
+            log.debug { "response=$response" }
             response shouldHaveStatus HttpStatusCode.OK
             response.decodeJsonBody<HealthResponse>().status shouldBeEqualTo HealthResponse.UP
         }
@@ -51,14 +57,17 @@ class KtorGraphAppTest {
             startApplication()
 
             val resetResponse = client.post("/demo/reset")
+            log.debug { "resetResponse=$resetResponse" }
             resetResponse shouldHaveStatus HttpStatusCode.OK
             resetResponse.bodyAsText() shouldBeEqualTo "reset"
 
             val countResponse = client.get("/cities/count")
+            log.debug { "countResponse=$countResponse" }
             countResponse shouldHaveStatus HttpStatusCode.OK
             countResponse.bodyAsText() shouldBeEqualTo "3"
 
             val pathResponse = client.get("/cities/path")
+            log.debug { "pathResponse=$pathResponse" }
             pathResponse shouldHaveStatus HttpStatusCode.OK
             pathResponse.bodyAsText() shouldBeEqualTo "Seoul -> Daejeon -> Busan"
         }
