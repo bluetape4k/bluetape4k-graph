@@ -1,7 +1,6 @@
 package io.bluetape4k.graph.examples.iam
 
 import com.falkordb.FalkorDB
-import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.bluetape4k.codec.Base58
 import io.bluetape4k.graph.age.AgeGraphOperations
@@ -16,6 +15,7 @@ import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.warn
+import io.bluetape4k.testcontainers.database.getDataSource
 import io.bluetape4k.testcontainers.graphdb.FalkorDBServer
 import io.bluetape4k.testcontainers.graphdb.MemgraphServer
 import io.bluetape4k.testcontainers.graphdb.Neo4jServer
@@ -23,7 +23,6 @@ import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
 import kotlinx.coroutines.CancellationException
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.neo4j.driver.AuthTokens
 import org.neo4j.driver.Driver
 import org.neo4j.driver.GraphDatabase
@@ -59,14 +58,8 @@ class Neo4jIamAccessGraphSuspendTest: AbstractIamAccessGraphSuspendTest() {
 }
 
 class MemgraphIamAccessGraphTest: AbstractIamAccessGraphTest() {
-    private lateinit var driver: Driver
-    override lateinit var ops: MemgraphGraphOperations
-
-    @BeforeAll
-    fun startServer() {
-        driver = GraphDatabase.driver(MemgraphServer.Launcher.memgraph.boltUrl, AuthTokens.none())
-        ops = MemgraphGraphOperations(driver)
-    }
+    private val driver = GraphDatabase.driver(MemgraphServer.Launcher.memgraph.boltUrl, AuthTokens.none())
+    override val ops = MemgraphGraphOperations(driver)
 
     @AfterAll
     fun stopServer() {
@@ -75,14 +68,8 @@ class MemgraphIamAccessGraphTest: AbstractIamAccessGraphTest() {
 }
 
 class MemgraphIamAccessGraphSuspendTest: AbstractIamAccessGraphSuspendTest() {
-    private lateinit var driver: Driver
-    override lateinit var ops: MemgraphGraphSuspendOperations
-
-    @BeforeAll
-    fun startServer() {
-        driver = GraphDatabase.driver(MemgraphServer.Launcher.memgraph.boltUrl, AuthTokens.none())
-        ops = MemgraphGraphSuspendOperations(driver)
-    }
+    private val driver: Driver = GraphDatabase.driver(MemgraphServer.Launcher.memgraph.boltUrl, AuthTokens.none())
+    override val ops = MemgraphGraphSuspendOperations(driver)
 
     @AfterAll
     fun stopServer() {
@@ -91,24 +78,16 @@ class MemgraphIamAccessGraphSuspendTest: AbstractIamAccessGraphSuspendTest() {
 }
 
 class AgeIamAccessGraphTest: AbstractIamAccessGraphTest() {
-    override val graphName = "iam_access_test"
-    private lateinit var dataSource: HikariDataSource
-    override lateinit var ops: AgeGraphOperations
+    private val server = PostgreSQLAgeServer.Launcher.postgresqlAge
 
-    @BeforeAll
-    fun startServer() {
-        val server = PostgreSQLAgeServer.Launcher.postgresqlAge
-        dataSource = HikariDataSource(HikariConfig().apply {
-            jdbcUrl = server.jdbcUrl
-            username = server.username
-            password = server.password
-            driverClassName = "org.postgresql.Driver"
-            connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
-            maximumPoolSize = 5
-        })
-        val database = Database.connect(dataSource)
-        ops = AgeGraphOperations(database, graphName)
+    private val dataSource: HikariDataSource = server.getDataSource {
+        connectionInitSql = $$"LOAD 'age'; SET search_path = ag_catalog, \"$user\", public;"
+        maximumPoolSize = 5
     }
+    private val database = Database.connect(dataSource)
+
+    override val graphName = "iam_access_test"
+    override val ops: AgeGraphOperations = AgeGraphOperations(database, graphName)
 
     @AfterAll
     fun stopServer() {
@@ -117,24 +96,17 @@ class AgeIamAccessGraphTest: AbstractIamAccessGraphTest() {
 }
 
 class AgeIamAccessGraphSuspendTest: AbstractIamAccessGraphSuspendTest() {
-    override val graphName = "iam_access_suspend_test"
-    private lateinit var dataSource: HikariDataSource
-    override lateinit var ops: AgeGraphSuspendOperations
+    private val server = PostgreSQLAgeServer.Launcher.postgresqlAge
 
-    @BeforeAll
-    fun startServer() {
-        val server = PostgreSQLAgeServer.Launcher.postgresqlAge
-        dataSource = HikariDataSource(HikariConfig().apply {
-            jdbcUrl = server.jdbcUrl
-            username = server.username
-            password = server.password
-            driverClassName = "org.postgresql.Driver"
-            connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
-            maximumPoolSize = 5
-        })
-        val database = Database.connect(dataSource)
-        ops = AgeGraphSuspendOperations(database, graphName)
+    private val dataSource: HikariDataSource = server.getDataSource {
+        connectionInitSql = $$"LOAD 'age'; SET search_path = ag_catalog, \"$user\", public;"
+        maximumPoolSize = 5
     }
+    private val database = Database.connect(dataSource)
+
+
+    override val graphName = "iam_access_suspend_test"
+    override val ops: AgeGraphSuspendOperations = AgeGraphSuspendOperations(database, graphName)
 
     @AfterAll
     fun stopServer() {
@@ -143,15 +115,11 @@ class AgeIamAccessGraphSuspendTest: AbstractIamAccessGraphSuspendTest() {
 }
 
 class FalkorDBIamAccessGraphTest: AbstractIamAccessGraphTest() {
-    private lateinit var driver: com.falkordb.Driver
-    override lateinit var ops: FalkorDBGraphOperations
-    override val graphName: String = "iam_access_${Base58.randomString(8)}"
+    private val falkordb = FalkorDBServer.Launcher.falkordb
+    private val driver: com.falkordb.Driver = FalkorDB.driver(falkordb.host, falkordb.port)
 
-    @BeforeAll
-    fun startServer() {
-        driver = FalkorDB.driver(FalkorDBServer.Launcher.falkordb.host, FalkorDBServer.Launcher.falkordb.port)
-        ops = FalkorDBGraphOperations(driver, graphName)
-    }
+    override val graphName: String = "iam_access_${Base58.randomString(8)}"
+    override val ops: FalkorDBGraphOperations = FalkorDBGraphOperations(driver, graphName)
 
     @AfterAll
     fun stopServer() {
@@ -162,15 +130,11 @@ class FalkorDBIamAccessGraphTest: AbstractIamAccessGraphTest() {
 }
 
 class FalkorDBIamAccessGraphSuspendTest: AbstractIamAccessGraphSuspendTest() {
-    private lateinit var driver: com.falkordb.Driver
-    override lateinit var ops: FalkorDBGraphSuspendOperations
-    override val graphName: String = "iam_access_${Base58.randomString(8)}"
+    private val falkordb = FalkorDBServer.Launcher.falkordb
+    private val driver: com.falkordb.Driver = FalkorDB.driver(falkordb.host, falkordb.port)
 
-    @BeforeAll
-    fun startServer() {
-        driver = FalkorDB.driver(FalkorDBServer.Launcher.falkordb.host, FalkorDBServer.Launcher.falkordb.port)
-        ops = FalkorDBGraphSuspendOperations(driver, graphName)
-    }
+    override val graphName: String = "iam_access_${Base58.randomString(8)}"
+    override val ops: FalkorDBGraphSuspendOperations = FalkorDBGraphSuspendOperations(driver, graphName)
 
     @AfterAll
     fun stopServer() {

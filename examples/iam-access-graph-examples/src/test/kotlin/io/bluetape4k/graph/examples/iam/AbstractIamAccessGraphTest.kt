@@ -2,12 +2,15 @@ package io.bluetape4k.graph.examples.iam
 
 import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeFalse
+import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.graph.examples.iam.service.IamAccessGraphService
 import io.bluetape4k.graph.examples.iam.service.IamAccessSampleGraph
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -23,6 +26,7 @@ abstract class AbstractIamAccessGraphTest {
     protected abstract val ops: GraphOperations
     protected open val graphName: String = "iam_access_test"
     protected open val clock: Clock = Clock.fixed(Instant.parse("2026-06-01T00:00:00Z"), ZoneOffset.UTC)
+
     protected val service: IamAccessGraphService by lazy {
         IamAccessGraphService(ops = ops, graphName = graphName, clock = clock)
     }
@@ -40,7 +44,8 @@ abstract class AbstractIamAccessGraphTest {
     fun `explains direct role grant`() {
         val explanation = service.explainAccess("bob", "audit-dashboard", "read")
 
-        explanation.allowed shouldBeEqualTo true
+        log.debug { "explanation: $explanation" }
+        explanation.allowed.shouldBeTrue()
         explanation.path shouldContain "user:bob"
         explanation.path shouldContain "role:readonly-role"
         explanation.path shouldContain "resource:audit-dashboard"
@@ -50,7 +55,8 @@ abstract class AbstractIamAccessGraphTest {
     fun `explains inherited group grant`() {
         val explanation = service.explainAccess("alice", "staging-service", "deploy")
 
-        explanation.allowed shouldBeEqualTo true
+        log.debug { "explanation: $explanation" }
+        explanation.allowed.shouldBeTrue()
         explanation.path shouldContain "group:engineering"
         explanation.path shouldContain "role:deployer-role"
         explanation.path shouldContain "resource:staging-service"
@@ -61,11 +67,13 @@ abstract class AbstractIamAccessGraphTest {
         val denied = service.explainAccess("eve", "prod-db", "delete")
         val absent = service.explainAccess("bob", "prod-db", "delete")
 
-        denied.allowed shouldBeEqualTo false
+        log.debug { "denied: $denied" }
+        denied.allowed.shouldBeFalse()
         denied.reason shouldBeEqualTo "Denied by explicit policy path"
         denied.path shouldContain "policy:deny-prod-delete-policy"
 
-        absent.allowed shouldBeEqualTo false
+        log.debug { "absent: $absent" }
+        absent.allowed.shouldBeFalse()
         absent.path.shouldBeEmpty()
         absent.reason shouldBeEqualTo "No matching grant path"
     }
@@ -73,6 +81,7 @@ abstract class AbstractIamAccessGraphTest {
     @Test
     fun `detects risky admin access through nested groups`() {
         val chains = service.riskyPrivilegeChains("alice")
+            .onEach { log.debug { "chain: $it" } }
 
         chains.shouldNotBeEmpty()
         chains.single().roleId shouldBeEqualTo "prod-admin-role"
@@ -98,7 +107,8 @@ abstract class AbstractIamAccessGraphTest {
     fun `explains temporary break glass grant`() {
         val explanation = service.explainAccess("carol", "prod-db", "read")
 
-        explanation.allowed shouldBeEqualTo true
+        log.debug { "explanation: $explanation" }
+        explanation.allowed.shouldBeTrue()
         explanation.path shouldContain "grant:break-glass-1001"
         explanation.path shouldContain "permission:read"
     }

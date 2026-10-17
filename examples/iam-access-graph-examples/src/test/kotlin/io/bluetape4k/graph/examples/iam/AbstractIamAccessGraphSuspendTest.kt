@@ -1,6 +1,7 @@
 package io.bluetape4k.graph.examples.iam
 
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.graph.examples.iam.service.IamAccessGraphSuspendService
@@ -8,6 +9,7 @@ import io.bluetape4k.graph.examples.iam.service.IamAccessSuspendSampleGraph
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.coroutines.KLoggingChannel
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -23,6 +25,7 @@ abstract class AbstractIamAccessGraphSuspendTest {
     protected abstract val ops: GraphSuspendOperations
     protected open val graphName: String = "iam_access_suspend_test"
     protected open val clock: Clock = Clock.fixed(Instant.parse("2026-06-01T00:00:00Z"), ZoneOffset.UTC)
+
     protected val service: IamAccessGraphSuspendService by lazy {
         IamAccessGraphSuspendService(ops = ops, graphName = graphName, clock = clock)
     }
@@ -40,7 +43,8 @@ abstract class AbstractIamAccessGraphSuspendTest {
     fun `explains suspend inherited group grant`() = runSuspendIO {
         val explanation = service.explainAccess("alice", "staging-service", "deploy")
 
-        explanation.allowed shouldBeEqualTo true
+        log.debug { "explanation: $explanation" }
+        explanation.allowed.shouldBeTrue()
         explanation.path shouldContain "group:engineering"
         explanation.path shouldContain "role:deployer-role"
     }
@@ -49,13 +53,15 @@ abstract class AbstractIamAccessGraphSuspendTest {
     fun `explains suspend temporary break glass grant`() = runSuspendIO {
         val explanation = service.explainAccess("carol", "prod-db", "read")
 
-        explanation.allowed shouldBeEqualTo true
+        log.debug { "explanation: $explanation" }
+        explanation.allowed.shouldBeTrue()
         explanation.path shouldContain "grant:break-glass-1001"
     }
 
     @Test
     fun `detects suspend risky admin chain`() = runSuspendIO {
         val chains = service.riskyPrivilegeChains("alice")
+            .onEach { log.debug { "chain=$it" } }
 
         chains.shouldNotBeEmpty()
         chains.single().roleId shouldBeEqualTo "prod-admin-role"
