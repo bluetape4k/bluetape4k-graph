@@ -7,7 +7,8 @@ import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.ktor.core.HealthResponse
 import io.bluetape4k.ktor.testing.decodeJsonBody
 import io.bluetape4k.ktor.testing.shouldHaveStatus
-import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.coroutines.KLoggingChannel
+import io.bluetape4k.logging.debug
 import io.bluetape4k.testcontainers.graphdb.FalkorDBServer
 import io.ktor.client.request.get
 import io.ktor.client.request.post
@@ -36,8 +37,8 @@ import org.junit.jupiter.api.TestInstance
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FalkorDBKtorGraphAppTest {
 
-    companion object: KLogging() {
-        private val server = FalkorDBServer.Launcher.falkordb
+    companion object: KLoggingChannel() {
+        private val server by lazy { FalkorDBServer.Launcher.falkordb }
         private val driverLazy = lazy { FalkorDB.driver(server.host, server.port) }
         private val driver by driverLazy
     }
@@ -58,6 +59,7 @@ class FalkorDBKtorGraphAppTest {
             startApplication()
 
             val response = client.get("/health")
+            log.debug { "response=$response" }
             response shouldHaveStatus HttpStatusCode.OK
             response.decodeJsonBody<HealthResponse>().status shouldBeEqualTo HealthResponse.UP
         }
@@ -72,6 +74,7 @@ class FalkorDBKtorGraphAppTest {
             startApplication()
 
             val response = client.get("/readyz")
+            log.debug { "response=$response" }
             response shouldHaveStatus HttpStatusCode.OK
             response.decodeJsonBody<HealthResponse>().status shouldBeEqualTo HealthResponse.UP
         }
@@ -86,14 +89,17 @@ class FalkorDBKtorGraphAppTest {
             startApplication()
 
             val resetResponse = client.post("/demo/reset")
+            log.debug { "resetResponse=$resetResponse" }
             resetResponse shouldHaveStatus HttpStatusCode.OK
             resetResponse.bodyAsText() shouldBeEqualTo "reset"
 
             val countResponse = client.get("/cities/count")
+            log.debug { "countResponse=$countResponse" }
             countResponse shouldHaveStatus HttpStatusCode.OK
             countResponse.bodyAsText() shouldBeEqualTo "3"
 
             val pathResponse = client.get("/cities/path")
+            log.debug { "pathResponse=$pathResponse" }
             pathResponse shouldHaveStatus HttpStatusCode.OK
             pathResponse.bodyAsText() shouldBeEqualTo "Seoul -> Daejeon -> Busan"
         }
