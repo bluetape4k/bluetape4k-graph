@@ -10,7 +10,8 @@ import io.bluetape4k.graph.schema.VertexLabel
  * val account = ops.createVertex(AccountLabel.label, mapOf(AccountLabel.accountId.name to "acct-1"))
  * ```
  */
-object AccountLabel : VertexLabel("Account") {
+object AccountLabel: VertexLabel("Account") {
+    private fun readResolve(): Any = AccountLabel
     val accountId = string("accountId")
     val ownerName = string("ownerName")
     val riskTier = string("riskTier")
@@ -23,7 +24,8 @@ object AccountLabel : VertexLabel("Account") {
  * ops.createEdge(source.id, target.id, TransferredToLabel.label, mapOf(TransferredToLabel.amount.name to 100))
  * ```
  */
-object TransferredToLabel : EdgeLabel("TRANSFERRED_TO", AccountLabel, AccountLabel) {
+object TransferredToLabel: EdgeLabel("TRANSFERRED_TO", AccountLabel, AccountLabel) {
+    private fun readResolve(): Any = TransferredToLabel
     val amount = long("amount")
     val occurredAt = string("occurredAt")
 }

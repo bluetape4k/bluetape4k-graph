@@ -14,6 +14,7 @@ import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.info
 import io.bluetape4k.support.requireNotBlank
+import io.bluetape4k.support.requirePositiveNumber
 
 /**
  * [GraphOperations] 위에 구성한 fraud detection graph service이다.
@@ -34,7 +35,7 @@ class FraudDetectionService(
     private val ops: GraphOperations,
     private val graphName: String = "fraud_detection",
 ) {
-    companion object : KLogging()
+    companion object: KLogging()
 
     /**
      * Backing graph가 아직 없으면 생성한다.
@@ -56,6 +57,7 @@ class FraudDetectionService(
     ): GraphVertex {
         accountId.requireNotBlank("accountId")
         ownerName.requireNotBlank("ownerName")
+
         return ops.createVertex(
             AccountLabel.label,
             mapOf(
@@ -75,12 +77,13 @@ class FraudDetectionService(
         amount: Long,
         occurredAt: String = "",
     ) {
-        require(amount > 0) { "amount must be > 0, was $amount" }
+        amount.requirePositiveNumber("amount")
+        
         ops.createEdge(
             fromAccountId,
             toAccountId,
             TransferredToLabel.label,
-            mapOf(TransferredToLabel.amount.name to amount, TransferredToLabel.occurredAt.name to occurredAt)
+            TransferredToLabel.amount.name to amount, TransferredToLabel.occurredAt.name to occurredAt
         )
     }
 
@@ -113,7 +116,8 @@ class FraudDetectionService(
      * Transfer graph의 centrality 기준으로 account 순위를 매긴다.
      */
     fun rankHighRiskAccounts(limit: Int = 10): List<PageRankScore> {
-        require(limit > 0) { "limit must be > 0, was $limit" }
+        limit.requirePositiveNumber("limit")
+        
         return ops.pageRank(
             PageRankOptions(
                 vertexLabel = AccountLabel.label,

@@ -8,6 +8,7 @@ import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.graph.examples.fraud.service.FraudDetectionService
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.info
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -15,7 +16,7 @@ import org.junit.jupiter.api.TestInstance
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AbstractFraudDetectionTest {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     protected abstract val ops: GraphOperations
     protected open val graphName: String = "fraud_detection_test"
@@ -37,6 +38,8 @@ abstract class AbstractFraudDetectionTest {
         service.recordTransfer(alice.id, bob.id, amount = 100)
 
         val scores = service.rankHighRiskAccounts(limit = 10)
+            .onEach { log.info { "score: $it" } }
+
         scores.shouldNotBeEmpty()
         scores.map { it.vertex.properties["accountId"] } shouldContain "acct-bob"
     }
@@ -51,7 +54,7 @@ abstract class AbstractFraudDetectionTest {
         service.recordTransfer(b.id, c.id, amount = 75)
         service.recordTransfer(c.id, a.id, amount = 50)
 
-        val cycles = service.detectCircularTransfers(maxDepth = 5)
+        val cycles = service.detectCircularTransfers(maxDepth = 5).onEach { log.info { "cycle: $it" } }
         cycles.shouldNotBeEmpty()
         cycles.first().path.vertices.first().id shouldBeEqualTo cycles.first().path.vertices.last().id
     }
@@ -65,10 +68,11 @@ abstract class AbstractFraudDetectionTest {
         service.recordTransfer(a.id, b.id, amount = 100)
         service.recordTransfer(b.id, c.id, amount = 100)
 
-        val clusters = service.detectSuspiciousClusters(minSize = 3)
+        val clusters = service.detectSuspiciousClusters(minSize = 3).onEach { log.info { "component: $it" } }
         clusters.shouldNotBeEmpty()
         clusters.any { component ->
-            component.size >= 3 && component.vertices.map { it.properties["accountId"] }.containsAll(listOf("acct-a", "acct-b", "acct-c"))
+            component.size >= 3 && component.vertices.map { it.properties["accountId"] }
+                .containsAll(listOf("acct-a", "acct-b", "acct-c"))
         }.shouldBeTrue()
     }
 
@@ -80,7 +84,10 @@ abstract class AbstractFraudDetectionTest {
             service.recordTransfer(source.id, sink.id, amount = 100L + index)
         }
 
-        val accountIds = service.rankHighRiskAccounts(limit = 10).map { it.vertex.properties["accountId"] }
+        val accountIds = service.rankHighRiskAccounts(limit = 10)
+            .map { it.vertex.properties["accountId"] }
+            .onEach { log.info { "accountId: $it" } }
+        
         accountIds.size shouldBeGreaterOrEqualTo 1
         accountIds shouldContain "acct-sink"
     }

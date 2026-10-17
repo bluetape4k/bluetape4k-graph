@@ -2,30 +2,25 @@
 
 > 🇰🇷 [한국어 문서](README.ko.md)
 
-This example teaches how to model money transfers as a graph and run fraud-oriented analytics through the
-backend-independent bluetape4k-graph API.
+This example teaches how to model money transfers as a graph and run fraud-oriented analytics through the backend-independent bluetape4k-graph API.
 
 ## Scenario
 
-Three accounts transfer money in a cycle: Alice sends to Bob, Bob sends to Carol, and Carol sends back to Alice. The
-example uses that small graph to detect circular transfers, suspicious connected clusters, and accounts that rank highly
-in the transfer network.
+Three accounts transfer money in a cycle: Alice sends to Bob, Bob sends to Carol, and Carol sends back to Alice. The example uses that small graph to detect circular transfers, suspicious connected clusters, and accounts that rank highly in the transfer network.
 
 ## What You Learn
 
-| Topic | Why it matters |
-|---|---|
-| Transfer graph modeling | Money movement is naturally a directed relationship between accounts. |
-| Cycle detection | Circular transfer chains can indicate layering or wash activity. |
-| Connected components | Dense account groups can reveal suspicious clusters. |
-| PageRank | Accounts receiving many important flows can be ranked for review. |
-| Backend portability | The same service runs on TinkerGraph, Neo4j, Memgraph, Apache AGE, and FalkorDB. |
+| Topic                   | Why it matters                                                                   |
+|-------------------------|----------------------------------------------------------------------------------|
+| Transfer graph modeling | Money movement is naturally a directed relationship between accounts.            |
+| Cycle detection         | Circular transfer chains can indicate layering or wash activity.                 |
+| Connected components    | Dense account groups can reveal suspicious clusters.                             |
+| PageRank                | Accounts receiving many important flows can be ranked for review.                |
+| Backend portability     | The same service runs on TinkerGraph, Neo4j, Memgraph, Apache AGE, and FalkorDB. |
 
 ## Why Use a Graph Database?
 
-Fraud signals are often relationship signals, not single-row signals. A relational table can store transfers, but
-questions such as "which accounts form a loop?", "which accounts belong to the same suspicious cluster?", or "which
-receiver is central in this transfer network?" require repeated self-joins and custom traversal logic.
+Fraud signals are often relationship signals, not single-row signals. A relational table can store transfers, but questions such as "which accounts form a loop?", "which accounts belong to the same suspicious cluster?", or "which receiver is central in this transfer network?" require repeated self-joins and custom traversal logic.
 
 A graph database makes these questions explicit:
 
@@ -33,8 +28,7 @@ A graph database makes these questions explicit:
 - transfers are directed edges,
 - suspicious behavior is expressed as paths, cycles, components, and centrality.
 
-That keeps the domain language close to the query language and lets the same analytics contract run across multiple
-graph backends.
+That keeps the domain language close to the query language and lets the same analytics contract run across multiple graph backends.
 
 ## Architecture Diagram
 
@@ -50,12 +44,12 @@ graph backends.
 
 ## Core Features
 
-| Feature | Graph API |
-|---|---|
-| Circular transfer detection | `detectCycles(CycleOptions)` |
-| Suspicious cluster detection | `connectedComponents(ComponentOptions)` |
-| High-risk account ranking | `pageRank(PageRankOptions)` |
-| Coroutine support | `FraudDetectionSuspendService` with `Flow` results |
+| Feature                      | Graph API                                          |
+|------------------------------|----------------------------------------------------|
+| Circular transfer detection  | `detectCycles(CycleOptions)`                       |
+| Suspicious cluster detection | `connectedComponents(ComponentOptions)`            |
+| High-risk account ranking    | `pageRank(PageRankOptions)`                        |
+| Coroutine support            | `FraudDetectionSuspendService` with `Flow` results |
 
 ## Usage
 
@@ -79,8 +73,7 @@ val ranked = service.rankHighRiskAccounts(limit = 10)
 ## Sample Dataset Import
 
 `FraudDetectionSampleDatasetLoader` imports the bundled graph-io CSV fixture into any `GraphOperations`
-implementation. The fixture contains three accounts and a circular transfer chain, so it is immediately usable with the
-analysis methods above.
+implementation. The fixture contains three accounts and a circular transfer chain, so it is immediately usable with the analysis methods above.
 
 ```kotlin
 val service = FraudDetectionService(ops)
@@ -97,13 +90,12 @@ The TinkerGraph smoke test covers this import flow because the loader exercises 
 
 ## How to Read the Tests
 
-Start with `AbstractFraudDetectionTest` and `AbstractFraudDetectionSuspendTest`. They contain the learning scenarios.
-Concrete backend classes only provide the backend-specific `GraphOperations` implementation.
+Start with `AbstractFraudDetectionTest` and `AbstractFraudDetectionSuspendTest`. They contain the learning scenarios. Concrete backend classes only provide the backend-specific `GraphOperations` implementation.
 
-| Test class type | Purpose |
-|---|---|
-| Abstract tests | Explain the fraud detection behavior once. |
-| TinkerGraph tests | Fast in-memory smoke path. |
+| Test class type                   | Purpose                                                     |
+|-----------------------------------|-------------------------------------------------------------|
+| Abstract tests                    | Explain the fraud detection behavior once.                  |
+| TinkerGraph tests                 | Fast in-memory smoke path.                                  |
 | Neo4j/Memgraph/AGE/FalkorDB tests | Prove the same domain behavior works against real backends. |
 
 ## Running Tests
@@ -117,12 +109,12 @@ TinkerGraph tests run in memory. Neo4j, Memgraph, Apache AGE, and FalkorDB tests
 
 ## Expected Output
 
-| Scenario | Expected result |
-|---|---|
-| Circular transfer detection | The Alice, Bob, Carol transfer loop is found. |
-| Suspicious cluster detection | The three connected accounts form a cluster. |
-| High-risk ranking | Transfer receivers can be ranked for review. |
-| CSV import | The bundled fixture imports 3 accounts and 3 transfers. |
+| Scenario                     | Expected result                                         |
+|------------------------------|---------------------------------------------------------|
+| Circular transfer detection  | The Alice, Bob, Carol transfer loop is found.           |
+| Suspicious cluster detection | The three connected accounts form a cluster.            |
+| High-risk ranking            | Transfer receivers can be ranked for review.            |
+| CSV import                   | The bundled fixture imports 3 accounts and 3 transfers. |
 
 ## Dependencies
 
