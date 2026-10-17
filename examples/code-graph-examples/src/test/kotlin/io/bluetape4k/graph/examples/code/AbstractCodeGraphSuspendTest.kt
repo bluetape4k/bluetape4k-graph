@@ -4,10 +4,11 @@ import io.bluetape4k.assertions.shouldBeGreaterThan
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.coroutines.flow.extensions.log
 import io.bluetape4k.graph.examples.code.service.CodeGraphSuspendService
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
-import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
 import kotlinx.coroutines.flow.toList
 import org.junit.jupiter.api.BeforeEach
@@ -17,7 +18,7 @@ import org.junit.jupiter.api.TestInstance
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AbstractCodeGraphSuspendTest {
 
-    companion object : KLogging()
+    companion object: KLoggingChannel()
 
     protected abstract val ops: GraphSuspendOperations
     protected open val graphName: String = "code_graph"
@@ -38,12 +39,13 @@ abstract class AbstractCodeGraphSuspendTest {
         service.addDependency(middle.id, core.id, "compile")
         service.addDependency(app.id, middle.id, "compile")
 
-        val middleDeps = service.getDependencies(middle.id).toList()
+        val middleDeps = service.getDependencies(middle.id).log("middle").toList()
+        log.debug { "middleDeps: $middleDeps" }
         middleDeps.shouldNotBeEmpty()
 
-        val appDeps = service.getTransitiveDependencies(app.id, maxDepth = 3).toList()
+        val appDeps = service.getTransitiveDependencies(app.id, maxDepth = 3).log("app").toList()
+        log.debug { "appDeps: $appDeps" }
         appDeps.shouldNotBeEmpty()
-        appDeps.forEach { log.debug { "vertex=$it" } }
     }
 
     @Test
@@ -56,6 +58,8 @@ abstract class AbstractCodeGraphSuspendTest {
         service.addDependency(top.id, mid.id)
 
         val path = service.findDependencyPath(top.id, core.id)
+
+        log.debug { "path=$path" }
         path.shouldNotBeNull()
         path.vertices.size shouldBeGreaterThan 1
         path.vertices.forEach { log.debug { "vertex=$it" } }
@@ -70,9 +74,8 @@ abstract class AbstractCodeGraphSuspendTest {
         service.addDependency(moduleA.id, core.id)
         service.addDependency(moduleB.id, core.id)
 
-        val impacted = service.getImpactedModules(core.id, depth = 1).toList()
+        val impacted = service.getImpactedModules(core.id, depth = 1).log("impacted").toList()
         impacted.shouldNotBeEmpty()
-        impacted.forEach { log.debug { "vertex=$it" } }
     }
 
     @Test
@@ -84,9 +87,8 @@ abstract class AbstractCodeGraphSuspendTest {
         service.addExtends(midClass.id, baseClass.id)
         service.addExtends(leafClass.id, midClass.id)
 
-        val chain = service.getInheritanceChain(leafClass.id, depth = 3).toList()
+        val chain = service.getInheritanceChain(leafClass.id, depth = 3).log("chain").toList()
         chain.shouldNotBeEmpty()
-        chain.forEach { log.debug { "vertex=$it" } }
     }
 
     @Test
@@ -99,9 +101,8 @@ abstract class AbstractCodeGraphSuspendTest {
         service.addCall(funcA.id, funcC.id, callCount = 1)
         service.addCall(funcB.id, funcC.id, callCount = 2)
 
-        val callChain = service.getCallChain(funcA.id, maxDepth = 3).toList()
+        val callChain = service.getCallChain(funcA.id, maxDepth = 3).log("call").toList()
         callChain.shouldNotBeEmpty()
-        callChain.forEach { log.debug { "vertex=$it" } }
     }
 
     @Test

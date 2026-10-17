@@ -10,14 +10,11 @@ bluetape4k-graph의 백엔드 독립 API를 사용해 모듈, 클래스, 함수�
 
 - **공통 로직**: `CodeGraphService` / `CodeGraphSuspendService`가 그래프 연산을 담고 있음
 - **추상 테스트**: `AbstractCodeGraphTest` / `AbstractCodeGraphSuspendTest`가 공유 테스트 시나리오를 캡슐화
-- **구체 테스트**: 각 백엔드(Neo4j, Memgraph, AGE, TinkerGraph)는 `GraphOperations` 팩토리만 제공
+- **구체 테스트**: 각 백엔드 (Neo4j, Memgraph, AGE, TinkerGraph)는 `GraphOperations` 팩토리만 제공
 
 ## 예제 시나리오
 
-샘플 코드베이스는 작은 module stack을 가진다. `app` module은 `middle`에 의존하고, `middle`은 `core`에 의존한다.
-같은 그래프에는 class inheritance(`Dog -> Mammal -> Animal`)와 function call
-(`processOrder -> validateOrder -> saveOrder`)도 포함된다. 이 예제는 그 그래프에서 dependency path, impact radius,
-inheritance chain, call chain 질문을 해결한다.
+샘플 코드베이스는 작은 module stack을 가진다. `app` module은 `middle`에 의존하고, `middle`은 `core`에 의존한다. 같은 그래프에는 class inheritance (`Dog -> Mammal -> Animal`)와 function call (`processOrder -> validateOrder -> saveOrder`)도 포함된다. 이 예제는 그 그래프에서 dependency path, impact radius, inheritance chain, call chain 질문을 해결한다.
 
 ## Architecture Diagram
 
@@ -35,22 +32,22 @@ inheritance chain, call chain 질문을 해결한다.
 
 ### 정점 라벨
 
-| 라벨 | 설명 | 주요 속성 |
-|------|------|-----------|
-| `Module` | 빌드 모듈 / 패키지 | `name`, `path`, `version`, `language` |
-| `Class` | 클래스 또는 인터페이스 | `name`, `qualifiedName`, `module`, `isAbstract`, `isInterface` |
-| `Function` | 함수 또는 메서드 | `name`, `signature`, `className`, `module`, `lineCount` |
+| 라벨       | 설명                   | 주요 속성                                                      |
+|------------|------------------------|----------------------------------------------------------------|
+| `Module`   | 빌드 모듈 / 패키지     | `name`, `path`, `version`, `language`                          |
+| `Class`    | 클래스 또는 인터페이스 | `name`, `qualifiedName`, `module`, `isAbstract`, `isInterface` |
+| `Function` | 함수 또는 메서드       | `name`, `signature`, `className`, `module`, `lineCount`        |
 
 ### 간선 라벨
 
-| 라벨 | From → To | 설명 |
-|------|-----------|------|
-| `DEPENDS_ON` | `Module → Module` | 모듈 의존성 (compile / runtime / test) |
-| `IMPORTS` | `Class → Class` | 클래스 import 관계 |
-| `EXTENDS` | `Class → Class` | 클래스 상속 |
-| `IMPLEMENTS` | `Class → Class` | 인터페이스 구현 |
-| `CALLS` | `Function → Function` | 함수 호출 (호출 횟수, 재귀 플래그) |
-| `BELONGS_TO` | `Class → Module` | 클래스 → 모듈 소속 |
+| 라벨         | From → To             | 설명                                   |
+|--------------|-----------------------|----------------------------------------|
+| `DEPENDS_ON` | `Module → Module`     | 모듈 의존성 (compile / runtime / test) |
+| `IMPORTS`    | `Class → Class`       | 클래스 import 관계                     |
+| `EXTENDS`    | `Class → Class`       | 클래스 상속                            |
+| `IMPLEMENTS` | `Class → Class`       | 인터페이스 구현                        |
+| `CALLS`      | `Function → Function` | 함수 호출 (호출 횟수, 재귀 플래그)     |
+| `BELONGS_TO` | `Class → Module`      | 클래스 → 모듈 소속                     |
 
 ## 추상 테스트 클래스 패턴
 
@@ -74,9 +71,9 @@ class Neo4jCodeGraphTest : AbstractCodeGraphTest() {
 // Memgraph / Apache AGE / TinkerGraph 테스트 클래스도 동일한 패턴
 ```
 
-| 추상 클래스 | 구체 클래스 |
-|------------|------------|
-| `AbstractCodeGraphTest` | `Neo4jCodeGraphTest`, `MemgraphCodeGraphTest`, `AgeCodeGraphTest`, `TinkerGraphCodeGraphTest` |
+| 추상 클래스                    | 구체 클래스                                                                                                               |
+|--------------------------------|---------------------------------------------------------------------------------------------------------------------------|
+| `AbstractCodeGraphTest`        | `Neo4jCodeGraphTest`, `MemgraphCodeGraphTest`, `AgeCodeGraphTest`, `TinkerGraphCodeGraphTest`                             |
 | `AbstractCodeGraphSuspendTest` | `Neo4jCodeGraphSuspendTest`, `MemgraphCodeGraphSuspendTest`, `AgeCodeGraphSuspendTest`, `TinkerGraphCodeGraphSuspendTest` |
 
 ## 테스트 실행
@@ -90,15 +87,15 @@ class Neo4jCodeGraphTest : AbstractCodeGraphTest() {
 ./gradlew :code-graph-examples:test --tests "io.bluetape4k.graph.examples.code.AgeCodeGraphSuspendTest"
 ```
 
-통합 테스트에는 Docker가 필요하다(Neo4j, Memgraph, Apache AGE). TinkerGraph는 인메모리로 실행된다.
+통합 테스트에는 Docker가 필요하다 (Neo4j, Memgraph, Apache AGE). TinkerGraph는 인메모리로 실행된다.
 
 ## Expected Output
 
-| 시나리오 | 예상 결과 |
-|---|---|
-| Dependency path | `top -> middle -> core` 형태의 path를 찾는다. |
-| Impact radius | 역방향 dependency traversal로 `core`에 의존하는 module을 찾는다. |
-| Inheritance chain | `Dog`가 `Mammal`, `Animal`로 이어지는 parent chain을 찾는다. |
+| 시나리오            | 예상 결과                                                         |
+|---------------------|-------------------------------------------------------------------|
+| Dependency path     | `top -> middle -> core` 형태의 path를 찾는다.                     |
+| Impact radius       | 역방향 dependency traversal로 `core`에 의존하는 module을 찾는다.  |
+| Inheritance chain   | `Dog`가 `Mammal`, `Animal`로 이어지는 parent chain을 찾는다.      |
 | Function call chain | `processOrder`에서 validation, persistence function으로 도달한다. |
 
 ## 모듈 참고 사항

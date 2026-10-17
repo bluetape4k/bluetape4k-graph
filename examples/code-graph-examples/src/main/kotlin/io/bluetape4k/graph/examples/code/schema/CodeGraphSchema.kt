@@ -12,7 +12,8 @@ import io.bluetape4k.graph.schema.VertexLabel
  *           ModuleLabel.language.name to "kotlin"))
  * ```
  */
-object ModuleLabel : VertexLabel("Module") {
+object ModuleLabel: VertexLabel("Module") {
+    private fun readResolve(): Any = ModuleLabel
     val name = string("name")
     val path = string("path")         // 파일시스템 경로
     val version = string("version")
@@ -28,7 +29,8 @@ object ModuleLabel : VertexLabel("Module") {
  *           ClassLabel.isInterface.name to true))
  * ```
  */
-object ClassLabel : VertexLabel("Class") {
+object ClassLabel: VertexLabel("Class") {
+    private fun readResolve(): Any = ClassLabel
     val name = string("name")
     val qualifiedName = string("qualifiedName")
     val module = string("module")
@@ -45,7 +47,8 @@ object ClassLabel : VertexLabel("Class") {
  *           FunctionLabel.lineCount.name to 10))
  * ```
  */
-object FunctionLabel : VertexLabel("Function") {
+object FunctionLabel: VertexLabel("Function") {
+    private fun readResolve(): Any = FunctionLabel
     val name = string("name")
     val signature = string("signature")
     val className = string("className")
@@ -61,7 +64,8 @@ object FunctionLabel : VertexLabel("Function") {
  *     mapOf(DependsOnLabel.dependencyType.name to "compile"))
  * ```
  */
-object DependsOnLabel : EdgeLabel("DEPENDS_ON", ModuleLabel, ModuleLabel) {
+object DependsOnLabel: EdgeLabel("DEPENDS_ON", ModuleLabel, ModuleLabel) {
+    private fun readResolve(): Any = DependsOnLabel
     val dependencyType = string("dependencyType")  // "compile", "runtime", "test"
     val version = string("version")
 }
@@ -73,7 +77,9 @@ object DependsOnLabel : EdgeLabel("DEPENDS_ON", ModuleLabel, ModuleLabel) {
  * ops.createEdge(classA.id, classB.id, ImportsLabel.label)
  * ```
  */
-object ImportsLabel : EdgeLabel("IMPORTS", ClassLabel, ClassLabel)
+object ImportsLabel: EdgeLabel("IMPORTS", ClassLabel, ClassLabel) {
+    private fun readResolve(): Any = ImportsLabel
+}
 
 /**
  * 클래스 상속 관계 간선 레이블. `A EXTENDS B`는 A가 B를 상속함을 의미한다.
@@ -82,7 +88,9 @@ object ImportsLabel : EdgeLabel("IMPORTS", ClassLabel, ClassLabel)
  * ops.createEdge(child.id, parent.id, ExtendsLabel.label)
  * ```
  */
-object ExtendsLabel : EdgeLabel("EXTENDS", ClassLabel, ClassLabel)
+object ExtendsLabel: EdgeLabel("EXTENDS", ClassLabel, ClassLabel) {
+    private fun readResolve(): Any = ExtendsLabel
+}
 
 /**
  * 인터페이스 구현 관계 간선 레이블.
@@ -91,7 +99,9 @@ object ExtendsLabel : EdgeLabel("EXTENDS", ClassLabel, ClassLabel)
  * ops.createEdge(impl.id, iface.id, ImplementsLabel.label)
  * ```
  */
-object ImplementsLabel : EdgeLabel("IMPLEMENTS", ClassLabel, ClassLabel)
+object ImplementsLabel: EdgeLabel("IMPLEMENTS", ClassLabel, ClassLabel) {
+    private fun readResolve(): Any = ImplementsLabel
+}
 
 /**
  * 함수 호출 관계 간선 레이블.
@@ -101,7 +111,8 @@ object ImplementsLabel : EdgeLabel("IMPLEMENTS", ClassLabel, ClassLabel)
  *     mapOf(CallsLabel.callCount.name to 5, CallsLabel.isRecursive.name to false))
  * ```
  */
-object CallsLabel : EdgeLabel("CALLS", FunctionLabel, FunctionLabel) {
+object CallsLabel: EdgeLabel("CALLS", FunctionLabel, FunctionLabel) {
+    private fun readResolve(): Any = CallsLabel
     val callCount = integer("callCount")   // 호출 횟수
     val isRecursive = boolean("isRecursive")
 }
@@ -113,4 +124,7 @@ object CallsLabel : EdgeLabel("CALLS", FunctionLabel, FunctionLabel) {
  * ops.createEdge(cls.id, module.id, BelongsToLabel.label)
  * ```
  */
-object BelongsToLabel : EdgeLabel("BELONGS_TO", ClassLabel, ModuleLabel)  // Class/Function에서 Module로 이어진다.
+object BelongsToLabel: EdgeLabel("BELONGS_TO", ClassLabel, ModuleLabel)  // Class/Function에서 Module로 이어진다.
+{
+    private fun readResolve(): Any = BelongsToLabel
+}

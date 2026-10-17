@@ -32,7 +32,7 @@ class CodeGraphService(
     private val ops: GraphOperations,
     private val graphName: String = "code_graph",
 ) {
-    companion object : KLogging()
+    companion object: KLogging()
 
     /**
      * 그래프 초기화. 존재하지 않으면 생성한다.
@@ -70,7 +70,7 @@ class CodeGraphService(
         name.requireNotBlank("name")
         return ops.createVertex(
             "Module",
-            mapOf("name" to name, "path" to path, "version" to version, "language" to language)
+            "name" to name, "path" to path, "version" to version, "language" to language
         )
     }
 
@@ -90,15 +90,14 @@ class CodeGraphService(
     ): GraphVertex {
         name.requireNotBlank("name")
         qualifiedName.requireNotBlank("qualifiedName")
+
         return ops.createVertex(
             "Class",
-            mapOf(
-                "name" to name,
-                "qualifiedName" to qualifiedName,
-                "module" to module,
-                "isAbstract" to isAbstract,
-                "isInterface" to isInterface,
-            )
+            "name" to name,
+            "qualifiedName" to qualifiedName,
+            "module" to module,
+            "isAbstract" to isAbstract,
+            "isInterface" to isInterface,
         )
     }
 
@@ -118,15 +117,14 @@ class CodeGraphService(
     ): GraphVertex {
         name.requireNotBlank("name")
         signature.requireNotBlank("signature")
+
         return ops.createVertex(
             "Function",
-            mapOf(
-                "name" to name,
-                "signature" to signature,
-                "className" to className,
-                "module" to module,
-                "lineCount" to lineCount,
-            )
+            "name" to name,
+            "signature" to signature,
+            "className" to className,
+            "module" to module,
+            "lineCount" to lineCount,
         )
     }
 
@@ -150,7 +148,7 @@ class CodeGraphService(
     ) {
         ops.createEdge(
             fromModuleId, toModuleId, "DEPENDS_ON",
-            mapOf("dependencyType" to dependencyType, "version" to version)
+            "dependencyType" to dependencyType, "version" to version
         )
     }
 
@@ -162,7 +160,7 @@ class CodeGraphService(
      * ```
      */
     fun addExtends(childId: GraphElementId, parentId: GraphElementId) {
-        ops.createEdge(childId, parentId, "EXTENDS", emptyMap())
+        ops.createEdge(childId, parentId, "EXTENDS")
     }
 
     /**
@@ -173,7 +171,7 @@ class CodeGraphService(
      * ```
      */
     fun addImplements(classId: GraphElementId, interfaceId: GraphElementId) {
-        ops.createEdge(classId, interfaceId, "IMPLEMENTS", emptyMap())
+        ops.createEdge(classId, interfaceId, "IMPLEMENTS")
     }
 
     /**
@@ -191,7 +189,7 @@ class CodeGraphService(
     ) {
         ops.createEdge(
             callerFunctionId, calleeFunctionId, "CALLS",
-            mapOf("callCount" to callCount, "isRecursive" to isRecursive)
+            "callCount" to callCount, "isRecursive" to isRecursive
         )
     }
 
@@ -238,7 +236,10 @@ class CodeGraphService(
      * @return 전이 의존 [GraphVertex] 목록.
      */
     fun getTransitiveDependencies(moduleId: GraphElementId, maxDepth: Int = 5): List<GraphVertex> =
-        ops.neighbors(moduleId, NeighborOptions(edgeLabel = "DEPENDS_ON", direction = Direction.OUTGOING, maxDepth = maxDepth))
+        ops.neighbors(
+            moduleId,
+            NeighborOptions(edgeLabel = "DEPENDS_ON", direction = Direction.OUTGOING, maxDepth = maxDepth)
+        )
 
     /**
      * 두 모듈 간 최단 의존성 경로를 탐색한다.
@@ -286,7 +287,10 @@ class CodeGraphService(
      * ```
      */
     fun getCallChain(functionId: GraphElementId, maxDepth: Int = 5): List<GraphVertex> =
-        ops.neighbors(functionId, NeighborOptions(edgeLabel = "CALLS", direction = Direction.OUTGOING, maxDepth = maxDepth))
+        ops.neighbors(
+            functionId,
+            NeighborOptions(edgeLabel = "CALLS", direction = Direction.OUTGOING, maxDepth = maxDepth)
+        )
 
     /**
      * 이 모듈이 변경될 때 영향받는 모듈 목록을 반환한다.
@@ -296,7 +300,10 @@ class CodeGraphService(
      * ```
      */
     fun getImpactedModules(moduleId: GraphElementId, depth: Int = 3): List<GraphVertex> =
-        ops.neighbors(moduleId, NeighborOptions(edgeLabel = "DEPENDS_ON", direction = Direction.INCOMING, maxDepth = depth))
+        ops.neighbors(
+            moduleId,
+            NeighborOptions(edgeLabel = "DEPENDS_ON", direction = Direction.INCOMING, maxDepth = depth)
+        )
 
     /**
      * 모듈 이름으로 검색한다.
@@ -307,7 +314,7 @@ class CodeGraphService(
      */
     fun findModuleByName(name: String): List<GraphVertex> {
         name.requireNotBlank("name")
-        return ops.findVerticesByLabel("Module", mapOf("name" to name))
+        return ops.findVerticesByLabel("Module", "name" to name)
     }
 
     /**
@@ -319,6 +326,6 @@ class CodeGraphService(
      */
     fun findClassByName(name: String): List<GraphVertex> {
         name.requireNotBlank("name")
-        return ops.findVerticesByLabel("Class", mapOf("name" to name))
+        return ops.findVerticesByLabel("Class", "name" to name)
     }
 }

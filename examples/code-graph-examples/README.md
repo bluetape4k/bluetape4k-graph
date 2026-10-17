@@ -14,10 +14,7 @@ This example models a software codebase as a property graph and verifies that th
 
 ## Scenario
 
-The sample codebase has a small module stack: an `app` module depends on `middle`, and `middle` depends on `core`.
-The same graph also contains class inheritance (`Dog -> Mammal -> Animal`) and function calls
-(`processOrder -> validateOrder -> saveOrder`). The example answers dependency-path, impact-radius, inheritance-chain,
-and call-chain questions from that graph.
+The sample codebase has a small module stack: an `app` module depends on `middle`, and `middle` depends on `core`. The same graph also contains class inheritance (`Dog -> Mammal -> Animal`) and function calls (`processOrder -> validateOrder -> saveOrder`). The example answers dependency-path, impact-radius, inheritance-chain, and call-chain questions from that graph.
 
 ## Architecture Diagram
 
@@ -35,22 +32,22 @@ and call-chain questions from that graph.
 
 ### Vertex Labels
 
-| Label | Description | Key Properties |
-|-------|-------------|----------------|
-| `Module` | Build module / package | `name`, `path`, `version`, `language` |
-| `Class` | Class or interface | `name`, `qualifiedName`, `module`, `isAbstract`, `isInterface` |
-| `Function` | Function or method | `name`, `signature`, `className`, `module`, `lineCount` |
+| Label      | Description            | Key Properties                                                 |
+|------------|------------------------|----------------------------------------------------------------|
+| `Module`   | Build module / package | `name`, `path`, `version`, `language`                          |
+| `Class`    | Class or interface     | `name`, `qualifiedName`, `module`, `isAbstract`, `isInterface` |
+| `Function` | Function or method     | `name`, `signature`, `className`, `module`, `lineCount`        |
 
 ### Edge Labels
 
-| Label | From → To | Description |
-|-------|-----------|-------------|
-| `DEPENDS_ON` | `Module → Module` | Module dependency (compile / runtime / test) |
-| `IMPORTS` | `Class → Class` | Class import relationship |
-| `EXTENDS` | `Class → Class` | Class inheritance |
-| `IMPLEMENTS` | `Class → Class` | Interface implementation |
-| `CALLS` | `Function → Function` | Function call (with count, recursive flag) |
-| `BELONGS_TO` | `Class → Module` | Class-to-module containment |
+| Label        | From → To             | Description                                  |
+|--------------|-----------------------|----------------------------------------------|
+| `DEPENDS_ON` | `Module → Module`     | Module dependency (compile / runtime / test) |
+| `IMPORTS`    | `Class → Class`       | Class import relationship                    |
+| `EXTENDS`    | `Class → Class`       | Class inheritance                            |
+| `IMPLEMENTS` | `Class → Class`       | Interface implementation                     |
+| `CALLS`      | `Function → Function` | Function call (with count, recursive flag)   |
+| `BELONGS_TO` | `Class → Module`      | Class-to-module containment                  |
 
 ## Abstract Test Class Pattern
 
@@ -74,9 +71,9 @@ class Neo4jCodeGraphTest : AbstractCodeGraphTest() {
 // Memgraph / Apache AGE / TinkerGraph test classes follow the same pattern
 ```
 
-| Abstract Class | Concrete Classes |
-|----------------|------------------|
-| `AbstractCodeGraphTest` | `Neo4jCodeGraphTest`, `MemgraphCodeGraphTest`, `AgeCodeGraphTest`, `TinkerGraphCodeGraphTest` |
+| Abstract Class                 | Concrete Classes                                                                                                          |
+|--------------------------------|---------------------------------------------------------------------------------------------------------------------------|
+| `AbstractCodeGraphTest`        | `Neo4jCodeGraphTest`, `MemgraphCodeGraphTest`, `AgeCodeGraphTest`, `TinkerGraphCodeGraphTest`                             |
 | `AbstractCodeGraphSuspendTest` | `Neo4jCodeGraphSuspendTest`, `MemgraphCodeGraphSuspendTest`, `AgeCodeGraphSuspendTest`, `TinkerGraphCodeGraphSuspendTest` |
 
 ## Running Tests
@@ -94,12 +91,12 @@ Docker is required for integration tests (Neo4j, Memgraph, Apache AGE). TinkerGr
 
 ## Expected Output
 
-| Scenario | Expected result |
-|---|---|
-| Dependency path | `top -> middle -> core` style path is found. |
-| Impact radius | Reverse dependency traversal finds modules that depend on `core`. |
-| Inheritance chain | `Dog` resolves its parent chain through `Mammal` and `Animal`. |
-| Function call chain | `processOrder` reaches validation and persistence functions. |
+| Scenario            | Expected result                                                   |
+|---------------------|-------------------------------------------------------------------|
+| Dependency path     | `top -> middle -> core` style path is found.                      |
+| Impact radius       | Reverse dependency traversal finds modules that depend on `core`. |
+| Inheritance chain   | `Dog` resolves its parent chain through `Mammal` and `Animal`.    |
+| Function call chain | `processOrder` reaches validation and persistence functions.      |
 
 ## Module Notes
 

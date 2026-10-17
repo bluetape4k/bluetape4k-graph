@@ -1,8 +1,11 @@
 package io.bluetape4k.graph.schema
 
 import java.io.Serializable
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
+import java.util.*
 import kotlin.reflect.KClass
 
 /**
@@ -33,6 +36,15 @@ abstract class PropertyHolder: Serializable {
     /** Defines a Long property. */
     fun long(name: String) = PropertyDef<Long>(name).also { _properties.add(it) }
 
+    /** Defines a Double property. */
+    fun double(name: String) = PropertyDef<Double>(name).also { _properties.add(it) }
+
+    /** Defines a BigDecimal property. */
+    fun bigdecimal(name: String) = PropertyDef<BigDecimal>(name).also { _properties.add(it) }
+
+    /** Defines a UUID property. */
+    fun uuid(name: String) = PropertyDef<UUID>(name).also { _properties.add(it) }
+
     /** Defines a Boolean property. */
     fun boolean(name: String) = PropertyDef<Boolean>(name).also { _properties.add(it) }
 
@@ -44,6 +56,9 @@ abstract class PropertyHolder: Serializable {
 
     /** Defines a LocalDate property. */
     fun localDate(name: String) = PropertyDef<LocalDate>(name).also { _properties.add(it) }
+
+    /** Defines a LocalTime property. */
+    fun localTime(name: String) = PropertyDef<LocalTime>(name).also { _properties.add(it) }
 
     /** Defines a LocalDateTime property. */
     fun localDateTime(name: String) = PropertyDef<LocalDateTime>(name).also { _properties.add(it) }
