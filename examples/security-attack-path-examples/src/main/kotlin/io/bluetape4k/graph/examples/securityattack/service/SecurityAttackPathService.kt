@@ -19,6 +19,7 @@ import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.info
+import io.bluetape4k.support.asInt
 import io.bluetape4k.support.requireNotBlank
 import java.io.Serializable
 
@@ -165,7 +166,7 @@ class SecurityAttackPathService(
         return crownJewelHosts()
             .filter { target ->
                 shortestPath(source, target) != null &&
-                    shortestPath(source, target, blockedEdgeIds = setOf(blockedEdgeId)) == null
+                        shortestPath(source, target, blockedEdgeIds = setOf(blockedEdgeId)) == null
             }
             .distinctBy { it.id }
     }
@@ -206,11 +207,12 @@ class SecurityAttackPathService(
         labels: List<String> = attackEdgeLabels,
         blockedEdgeIds: Set<String> = emptySet(),
     ): List<GraphVertex> =
-        labels.flatMap { label -> ops.findEdgesByLabel(label).filter { it.startId == vertex.id } }
+        labels.asSequence()
+            .flatMap { label -> ops.findEdgesByLabel(label).filter { it.startId == vertex.id } }
             .filter { edge -> edge.properties["status"] == "active" && edge.edgeBusinessId() !in blockedEdgeIds }
             .mapNotNull { edge -> ops.findVertexById(edge.endId) }
             .filter { it.properties["status"] == "active" }
-            .distinctBy { it.id }
+            .distinctBy { it.id }.toList()
 
     private fun List<GraphVertex>.toAttackPath(reason: String): SecurityAttackPath =
         SecurityAttackPath(
@@ -221,9 +223,9 @@ class SecurityAttackPathService(
 
     private fun hasPrivilege(vertex: GraphVertex, targetPrivilege: String): Boolean =
         when (vertex.label) {
-            PrincipalLabel.label   -> vertex.properties[PrincipalLabel.privilege.name] == targetPrivilege
-            PermissionLabel.label  -> vertex.properties[PermissionLabel.privilege.name] == targetPrivilege
-            else                   -> false
+            PrincipalLabel.label -> vertex.properties[PrincipalLabel.privilege.name] == targetPrivilege
+            PermissionLabel.label -> vertex.properties[PermissionLabel.privilege.name] == targetPrivilege
+            else -> false
         }
 
     private fun crownJewelHosts(): List<GraphVertex> =
@@ -237,27 +239,26 @@ class SecurityAttackPathService(
         ops.findVerticesByLabel(HostLabel.label, mapOf(HostLabel.hostId.name to hostId)).firstOrNull()
 
     private fun principalById(principalId: String): GraphVertex? =
-        ops.findVerticesByLabel(PrincipalLabel.label, mapOf(PrincipalLabel.principalId.name to principalId)).firstOrNull()
+        ops.findVerticesByLabel(PrincipalLabel.label, mapOf(PrincipalLabel.principalId.name to principalId))
+            .firstOrNull()
 
-    private fun businessId(vertex: GraphVertex): String =
-        when (vertex.label) {
-            EntryAssetLabel.label    -> vertex.properties[EntryAssetLabel.assetId.name].toString()
-            HostLabel.label          -> vertex.properties[HostLabel.hostId.name].toString()
-            PrincipalLabel.label     -> vertex.properties[PrincipalLabel.principalId.name].toString()
-            CredentialLabel.label    -> vertex.properties[CredentialLabel.credentialId.name].toString()
-            VulnerabilityLabel.label -> vertex.properties[VulnerabilityLabel.vulnerabilityId.name].toString()
-            PermissionLabel.label    -> vertex.properties[PermissionLabel.permissionId.name].toString()
-            else                     -> vertex.id.value
-        }
+    private fun businessId(vertex: GraphVertex): String = when (vertex.label) {
+        EntryAssetLabel.label -> vertex.properties[EntryAssetLabel.assetId.name].toString()
+        HostLabel.label -> vertex.properties[HostLabel.hostId.name].toString()
+        PrincipalLabel.label -> vertex.properties[PrincipalLabel.principalId.name].toString()
+        CredentialLabel.label -> vertex.properties[CredentialLabel.credentialId.name].toString()
+        VulnerabilityLabel.label -> vertex.properties[VulnerabilityLabel.vulnerabilityId.name].toString()
+        PermissionLabel.label -> vertex.properties[PermissionLabel.permissionId.name].toString()
+        else -> vertex.id.value
+    }
 
-    private fun riskContribution(vertex: GraphVertex): Int =
-        when (vertex.label) {
-            VulnerabilityLabel.label -> vertex.properties[VulnerabilityLabel.severity.name].toString().toIntOrNull() ?: 0
-            HostLabel.label          -> if (vertex.properties[HostLabel.criticality.name] == "crown_jewel") 5 else 1
-            PrincipalLabel.label     -> if (vertex.properties[PrincipalLabel.privilege.name] == "admin") 4 else 1
-            PermissionLabel.label    -> if (vertex.properties[PermissionLabel.privilege.name] == "admin") 3 else 1
-            else                     -> 1
-        }
+    private fun riskContribution(vertex: GraphVertex): Int = when (vertex.label) {
+        VulnerabilityLabel.label -> vertex.properties[VulnerabilityLabel.severity.name].toString().asInt()
+        HostLabel.label -> if (vertex.properties[HostLabel.criticality.name] == "crown_jewel") 5 else 1
+        PrincipalLabel.label -> if (vertex.properties[PrincipalLabel.privilege.name] == "admin") 4 else 1
+        PermissionLabel.label -> if (vertex.properties[PermissionLabel.privilege.name] == "admin") 3 else 1
+        else -> 1
+    }
 
     private fun GraphEdge.edgeBusinessId(): String =
         properties["edgeId"]?.toString() ?: id.value

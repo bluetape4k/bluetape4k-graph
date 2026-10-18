@@ -9,6 +9,7 @@ import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.coroutines.KLoggingChannel
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -30,13 +31,18 @@ abstract class AbstractSecurityAttackPathSuspendTest {
             ops.dropGraph(graphName)
         }
         service.initialize()
-        SecurityAttackPathSampleDatasetLoader.importCsvSuspending(ops).status shouldBeEqualTo GraphIoStatus.COMPLETED
+
+        val importReport = SecurityAttackPathSampleDatasetLoader.importCsvSuspending(ops)
+        log.debug { "Imported $importReport" }
+        importReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
     }
 
     @Test
     fun `finds suspend attack path and privilege escalation`() = runSuspendIO {
         val path = service.shortestAttackPath("internet", "customer-db")
-        val escalation = service.privilegeEscalationPaths("web-service")
+        val escalation = service
+            .privilegeEscalationPaths("web-service")
+            .onEach { log.debug { "security attach path=$it" } }
             .map { it.nodeIds }
 
         path?.nodeIds shouldBeEqualTo listOf(
@@ -55,8 +61,11 @@ abstract class AbstractSecurityAttackPathSuspendTest {
     @Test
     fun `finds suspend remediation impact and unreachable crown jewel`() = runSuspendIO {
         val blockedTargets = service.remediationImpact("edge-credential-admin")
+            .onEach { log.debug { "remidiation vertex=$it" } }
             .map { it.properties[HostLabel.hostId.name] }
+
         val unreachable = service.unreachableCrownJewels("internet")
+            .onEach { log.debug { "unreachable vertex=$it" } }
             .map { it.properties[HostLabel.hostId.name] }
 
         blockedTargets shouldBeEqualTo listOf("customer-db")
