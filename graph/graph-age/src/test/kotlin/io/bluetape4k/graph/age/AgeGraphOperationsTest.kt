@@ -1,5 +1,9 @@
 package io.bluetape4k.graph.age
 
+import ch.qos.logback.classic.Level
+import ch.qos.logback.classic.Logger
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.read.ListAppender
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
@@ -24,6 +28,7 @@ import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
+import org.slf4j.LoggerFactory
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 class AgeGraphOperationsTest: AbstractAgeTest() {
@@ -72,6 +77,31 @@ class AgeGraphOperationsTest: AbstractAgeTest() {
         }
         assertFailsWith<IllegalArgumentException> {
             ops.createVertex(unsafe)
+        }
+    }
+
+    @Test
+    @Order(14)
+    fun `이미 존재하는 그래프 생성은 예외 상세를 노출하지 않고 DEBUG로 기록한다`() = runSuspendIO {
+        val logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as Logger
+        val previousLevel = logger.level
+        val appender = ListAppender<ILoggingEvent>().apply { start() }
+        logger.level = Level.DEBUG
+        logger.addAppender(appender)
+
+        try {
+            ops.createGraph(TEST_GRAPH_NAME)
+
+            val duplicateEvents = appender.list.filter {
+                it.formattedMessage.contains("Duplicate AGE graph creation ignored")
+            }
+            duplicateEvents.single().level shouldBeEqualTo Level.DEBUG
+            duplicateEvents.single().formattedMessage shouldBeEqualTo
+                "Duplicate AGE graph creation ignored"
+        } finally {
+            logger.detachAppender(appender)
+            logger.level = previousLevel
+            appender.stop()
         }
     }
 
