@@ -7,12 +7,16 @@ import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.Test
 import java.util.concurrent.Executors
 
 class NetworkTopologySampleDatasetLoaderTest {
+
+    companion object: KLogging()
 
     @Test
     fun `imports packaged resources with null context class loader and restores it`() {
@@ -25,6 +29,8 @@ class NetworkTopologySampleDatasetLoaderTest {
         }
 
         thread.contextClassLoader shouldBeEqualTo previous
+
+        log.debug { "report=$report" }
         report.status shouldBeEqualTo GraphIoStatus.COMPLETED
         report.verticesRead shouldBeGreaterThan 0L
         report.verticesCreated shouldBeGreaterThan 0L
@@ -45,6 +51,8 @@ class NetworkTopologySampleDatasetLoaderTest {
                 }
 
                 thread.contextClassLoader shouldBeEqualTo previous
+
+                log.debug { "report=$report" }
                 report.status shouldBeEqualTo GraphIoStatus.COMPLETED
                 report.verticesRead shouldBeGreaterThan 0L
                 report.verticesCreated shouldBeGreaterThan 0L

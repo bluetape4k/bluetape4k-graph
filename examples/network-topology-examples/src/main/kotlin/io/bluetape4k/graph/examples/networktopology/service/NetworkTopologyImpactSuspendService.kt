@@ -14,6 +14,7 @@ import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.info
 import io.bluetape4k.support.requireNotBlank
+import io.bluetape4k.support.requirePositiveNumber
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
 
@@ -43,6 +44,7 @@ class NetworkTopologyImpactSuspendService(
         targetDeviceId.requireNotBlank("targetDeviceId")
         val source = deviceById(sourceDeviceId) ?: return null
         val target = deviceById(targetDeviceId) ?: return null
+
         return shortestDevicePath(source, target, failedDeviceIds, failedLinkIds)
             ?.let { NetworkRoute(it.map(::deviceId), "shortest active path") }
     }
@@ -82,6 +84,7 @@ class NetworkTopologyImpactSuspendService(
     suspend fun isolatedSegments(sourceDeviceId: String = "router-core"): List<GraphVertex> {
         sourceDeviceId.requireNotBlank("sourceDeviceId")
         val source = deviceById(sourceDeviceId) ?: return emptyList()
+
         return ops.findVerticesByLabel(SegmentLabel.label)
             .toList()
             .filter { segment ->
@@ -98,7 +101,7 @@ class NetworkTopologyImpactSuspendService(
     ): List<NetworkRoute> {
         sourceDeviceId.requireNotBlank("sourceDeviceId")
         targetDeviceId.requireNotBlank("targetDeviceId")
-        require(maxDepth > 0) { "maxDepth must be > 0, was $maxDepth" }
+        maxDepth.requirePositiveNumber("maxDepth")
 
         val source = deviceById(sourceDeviceId) ?: return emptyList()
         val target = deviceById(targetDeviceId) ?: return emptyList()
@@ -135,12 +138,13 @@ class NetworkTopologyImpactSuspendService(
         failedLinkIds: Set<String> = emptySet(),
     ): List<GraphVertex> {
         val source = deviceById(sourceDeviceId) ?: return emptyList()
+
         return ops.findVerticesByLabel(ServiceLabel.label)
             .toList()
             .filter { service ->
                 val host = serviceHost(service) ?: return@filter false
                 shortestDevicePath(source, host) != null &&
-                    shortestDevicePath(source, host, failedDeviceIds, failedLinkIds) == null
+                        shortestDevicePath(source, host, failedDeviceIds, failedLinkIds) == null
             }
             .distinctBy { it.id }
     }
@@ -194,10 +198,10 @@ class NetworkTopologyImpactSuspendService(
         failedLinkIds: Set<String> = emptySet(),
     ): List<GraphEdge> =
         (ops.findEdgesByStartId(device.id, ConnectedToLabel.label).toList() +
-            ops.findEdgesByEndId(device.id, ConnectedToLabel.label).toList())
+                ops.findEdgesByEndId(device.id, ConnectedToLabel.label).toList())
             .filter { edge ->
                 edge.properties[ConnectedToLabel.status.name] == "active" &&
-                    edge.properties[ConnectedToLabel.linkId.name] !in failedLinkIds
+                        edge.properties[ConnectedToLabel.linkId.name] !in failedLinkIds
             }
             .distinctBy { it.id }
 
@@ -214,12 +218,12 @@ class NetworkTopologyImpactSuspendService(
         ).toList().filter { it.label == DeviceLabel.label }
 
     private suspend fun deviceById(deviceId: String): GraphVertex? =
-        ops.findVerticesByLabel(DeviceLabel.label, mapOf(DeviceLabel.deviceId.name to deviceId))
+        ops.findVerticesByLabel(DeviceLabel.label, DeviceLabel.deviceId.name to deviceId)
             .toList()
             .firstOrNull()
 
     private suspend fun serviceById(serviceId: String): GraphVertex? =
-        ops.findVerticesByLabel(ServiceLabel.label, mapOf(ServiceLabel.serviceId.name to serviceId))
+        ops.findVerticesByLabel(ServiceLabel.label, ServiceLabel.serviceId.name to serviceId)
             .toList()
             .firstOrNull()
 
@@ -231,5 +235,5 @@ class NetworkTopologyImpactSuspendService(
 
     private fun isActiveDevice(device: GraphVertex): Boolean =
         device.label == DeviceLabel.label &&
-            device.properties[DeviceLabel.status.name] == "active"
+                device.properties[DeviceLabel.status.name] == "active"
 }

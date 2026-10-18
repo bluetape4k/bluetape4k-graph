@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.examples.networktopology
 
+import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.graph.examples.networktopology.io.NetworkTopologySampleDatasetLoader
@@ -9,6 +10,7 @@ import io.bluetape4k.graph.examples.networktopology.service.NetworkTopologyImpac
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -28,15 +30,22 @@ abstract class AbstractNetworkTopologyImpactTest {
             ops.dropGraph(graphName)
         }
         service.initialize()
-        NetworkTopologySampleDatasetLoader.importCsv(ops).status shouldBeEqualTo GraphIoStatus.COMPLETED
+
+        val importReport = NetworkTopologySampleDatasetLoader.importCsv(ops)
+        log.debug { "importReport=$importReport" }
+        importReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
     }
 
     @Test
     fun `finds shortest device and service paths`() {
         val devicePath = service.shortestDevicePath("router-core", "switch-access-a")
+
+        log.debug { "devicePath=$devicePath" }
+        devicePath?.deviceIds shouldBeEqualTo listOf("router-core", "router-edge-a", "switch-access-a")
+
         val servicePath = service.shortestPathToService("svc-checkout")
 
-        devicePath?.deviceIds shouldBeEqualTo listOf("router-core", "router-edge-a", "switch-access-a")
+        log.debug { "servicePath=$servicePath" }
         servicePath?.deviceIds shouldBeEqualTo listOf(
             "router-core",
             "router-edge-a",
@@ -49,14 +58,18 @@ abstract class AbstractNetworkTopologyImpactTest {
     fun `finds service impact from failed device and link`() {
         val failedDeviceServices = service.impactedServicesByFailedDevice("switch-iot")
             .map { it.properties[ServiceLabel.serviceId.name] }
+        log.debug { "failedDeviceServices=$failedDeviceServices" }
+        failedDeviceServices shouldContain "svc-cameras"
+
         val failedLinkServices = service.impactedServicesByFailedLink("link-b-iot")
             .map { it.properties[ServiceLabel.serviceId.name] }
+        log.debug { "failedLinkServices=$failedLinkServices" }
+        failedLinkServices shouldContain "svc-cameras"
+
         val redundantLinkServices = service.impactedServicesByFailedLink("link-edge-a-access-a")
             .map { it.properties[ServiceLabel.serviceId.name] }
-
-        failedDeviceServices shouldContain "svc-cameras"
-        failedLinkServices shouldContain "svc-cameras"
-        redundantLinkServices shouldBeEqualTo emptyList()
+        log.debug { "redundantLinkServices=$redundantLinkServices" }
+        redundantLinkServices.shouldBeEmpty()
     }
 
     @Test

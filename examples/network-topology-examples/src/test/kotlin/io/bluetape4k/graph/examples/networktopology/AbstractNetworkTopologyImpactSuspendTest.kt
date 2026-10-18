@@ -9,6 +9,7 @@ import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.coroutines.KLoggingChannel
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -30,13 +31,17 @@ abstract class AbstractNetworkTopologyImpactSuspendTest {
             ops.dropGraph(graphName)
         }
         service.initialize()
-        NetworkTopologySampleDatasetLoader.importCsvSuspending(ops).status shouldBeEqualTo GraphIoStatus.COMPLETED
+
+        val importReport = NetworkTopologySampleDatasetLoader.importCsvSuspending(ops)
+        log.debug { "import report=$importReport" }
+        importReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
     }
 
     @Test
     fun `finds suspend service path`() = runSuspendIO {
         val path = service.shortestPathToService("svc-checkout")
 
+        log.debug { "path=$path" }
         path?.deviceIds shouldBeEqualTo listOf("router-core", "router-edge-a", "switch-access-a", "svc-checkout")
     }
 
@@ -44,10 +49,14 @@ abstract class AbstractNetworkTopologyImpactSuspendTest {
     fun `finds suspend impact and redundant routes`() = runSuspendIO {
         val impactedServices = service.impactedServicesByFailedLink("link-b-iot")
             .map { it.properties[ServiceLabel.serviceId.name] }
+
+        log.debug { "impactedServices=$impactedServices" }
+        impactedServices shouldContain "svc-cameras"
+
         val redundantPaths = service.redundantDevicePaths("router-core", "switch-access-a")
             .map { it.deviceIds }
 
-        impactedServices shouldContain "svc-cameras"
+        log.debug { "redundantPaths=$redundantPaths" }
         redundantPaths shouldContain listOf(
             "router-core",
             "router-edge-b",
