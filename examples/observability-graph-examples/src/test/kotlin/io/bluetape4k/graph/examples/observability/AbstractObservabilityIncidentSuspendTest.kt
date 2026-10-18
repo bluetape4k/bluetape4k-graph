@@ -7,6 +7,7 @@ import io.bluetape4k.graph.examples.observability.service.ObservabilityIncidentS
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.coroutines.KLoggingChannel
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -18,7 +19,9 @@ abstract class AbstractObservabilityIncidentSuspendTest {
 
     protected abstract val ops: GraphSuspendOperations
     protected open val graphName: String = "observability_incident_suspend_test"
-    protected val service: ObservabilityIncidentSuspendService by lazy { ObservabilityIncidentSuspendService(ops, graphName) }
+    protected val service: ObservabilityIncidentSuspendService by lazy {
+        ObservabilityIncidentSuspendService(ops, graphName)
+    }
 
     @BeforeEach
     fun cleanGraph() = runSuspendIO {
@@ -32,7 +35,9 @@ abstract class AbstractObservabilityIncidentSuspendTest {
     fun `finds suspend downstream dependency blast radius`() = runSuspendIO {
         seedIncidentGraph()
 
-        val serviceIds = service.downstreamDependencies("checkout-service", maxDepth = 2)
+        val serviceIds = service
+            .downstreamDependencies("checkout-service", maxDepth = 2)
+            .onEach { log.debug { "service=$it" } }
             .map { it.properties[ServiceLabel.serviceId.name] }
 
         serviceIds shouldContain "payment-service"
@@ -43,7 +48,9 @@ abstract class AbstractObservabilityIncidentSuspendTest {
     fun `finds suspend affected public APIs`() = runSuspendIO {
         seedIncidentGraph()
 
-        val affectedApis = service.affectedApis("payment-service", maxDepth = 5)
+        val affectedApis = service
+            .affectedApis("payment-service", maxDepth = 5)
+            .onEach { log.debug { "affectedApis=$it" } }
             .map { it.properties[ApiLabel.apiId.name] }
 
         affectedApis shouldContain "checkout-api"

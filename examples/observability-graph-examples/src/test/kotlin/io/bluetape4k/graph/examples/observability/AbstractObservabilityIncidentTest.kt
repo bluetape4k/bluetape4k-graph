@@ -9,6 +9,7 @@ import io.bluetape4k.graph.examples.observability.schema.TeamLabel
 import io.bluetape4k.graph.examples.observability.service.ObservabilityIncidentService
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -34,7 +35,9 @@ abstract class AbstractObservabilityIncidentTest {
     fun `finds downstream dependency blast radius`() {
         seedIncidentGraph()
 
-        val serviceIds = service.downstreamDependencies("checkout-service", maxDepth = 2)
+        val serviceIds = service
+            .downstreamDependencies("checkout-service", maxDepth = 2)
+            .onEach { log.debug { "dependency=$it" } }
             .map { it.properties[ServiceLabel.serviceId.name] }
 
         serviceIds shouldContain "payment-service"
@@ -46,8 +49,11 @@ abstract class AbstractObservabilityIncidentTest {
         seedIncidentGraph()
 
         val upstreamServices = service.upstreamImpactedServices("payment-service", maxDepth = 3)
+            .onEach { log.debug { "upstream services=$it" } }
             .map { it.properties[ServiceLabel.serviceId.name] }
+
         val affectedApis = service.affectedApis("payment-service", maxDepth = 5)
+            .onEach { log.debug { "affectedApi=$it" } }
             .map { it.properties[ApiLabel.apiId.name] }
 
         upstreamServices shouldContain "checkout-service"
@@ -61,6 +67,7 @@ abstract class AbstractObservabilityIncidentTest {
         seedIncidentGraph()
 
         val boundary = service.alertBoundary(listOf("payment-latency", "checkout-errors"), maxDepth = 1)
+            .onEach { log.debug { "boundary=$it" } }
             .map { it.properties[ServiceLabel.serviceId.name] }
 
         boundary shouldContain "payment-service"
@@ -73,6 +80,7 @@ abstract class AbstractObservabilityIncidentTest {
         seedIncidentGraph()
 
         val teams = service.owningTeams("payment-service")
+            .onEach { log.debug { "team=$it" } }
             .map { it.properties[TeamLabel.teamId.name] }
 
         teams shouldContain "payments-team"

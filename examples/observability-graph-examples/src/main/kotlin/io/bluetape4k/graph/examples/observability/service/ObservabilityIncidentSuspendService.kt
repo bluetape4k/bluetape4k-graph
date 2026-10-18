@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.examples.observability.service
 
+import io.bluetape4k.coroutines.flow.extensions.concatWith
 import io.bluetape4k.graph.examples.observability.schema.AlertLabel
 import io.bluetape4k.graph.examples.observability.schema.AlertsOnLabel
 import io.bluetape4k.graph.examples.observability.schema.ApiLabel
@@ -17,6 +18,11 @@ import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.info
 import io.bluetape4k.support.requireNotBlank
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapMerge
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 
 /**
@@ -44,12 +50,10 @@ class ObservabilityIncidentSuspendService(
         tier.requireNotBlank("tier")
         return ops.createVertex(
             ServiceLabel.label,
-            mapOf(
-                ServiceLabel.serviceId.name to serviceId,
-                ServiceLabel.name.name to name,
-                ServiceLabel.tier.name to tier,
-                ServiceLabel.status.name to status,
-            )
+            ServiceLabel.serviceId.name to serviceId,
+            ServiceLabel.name.name to name,
+            ServiceLabel.tier.name to tier,
+            ServiceLabel.status.name to status,
         )
     }
 
@@ -58,12 +62,10 @@ class ObservabilityIncidentSuspendService(
         name.requireNotBlank("name")
         return ops.createVertex(
             ApiLabel.label,
-            mapOf(
-                ApiLabel.apiId.name to apiId,
-                ApiLabel.name.name to name,
-                ApiLabel.tier.name to "public",
-                ApiLabel.status.name to status,
-            )
+            ApiLabel.apiId.name to apiId,
+            ApiLabel.name.name to name,
+            ApiLabel.tier.name to "public",
+            ApiLabel.status.name to status,
         )
     }
 
@@ -72,11 +74,9 @@ class ObservabilityIncidentSuspendService(
         name.requireNotBlank("name")
         return ops.createVertex(
             TeamLabel.label,
-            mapOf(
-                TeamLabel.teamId.name to teamId,
-                TeamLabel.name.name to name,
-                TeamLabel.status.name to "active",
-            )
+            TeamLabel.teamId.name to teamId,
+            TeamLabel.name.name to name,
+            TeamLabel.status.name to "active",
         )
     }
 
@@ -86,12 +86,10 @@ class ObservabilityIncidentSuspendService(
         severity.requireNotBlank("severity")
         return ops.createVertex(
             AlertLabel.label,
-            mapOf(
-                AlertLabel.alertId.name to alertId,
-                AlertLabel.name.name to name,
-                AlertLabel.severity.name to severity,
-                AlertLabel.status.name to "open",
-            )
+            AlertLabel.alertId.name to alertId,
+            AlertLabel.name.name to name,
+            AlertLabel.severity.name to severity,
+            AlertLabel.status.name to "open",
         )
     }
 
@@ -101,33 +99,31 @@ class ObservabilityIncidentSuspendService(
         severity.requireNotBlank("severity")
         return ops.createVertex(
             IncidentLabel.label,
-            mapOf(
-                IncidentLabel.incidentId.name to incidentId,
-                IncidentLabel.name.name to name,
-                IncidentLabel.severity.name to severity,
-                IncidentLabel.status.name to "open",
-            )
+            IncidentLabel.incidentId.name to incidentId,
+            IncidentLabel.name.name to name,
+            IncidentLabel.severity.name to severity,
+            IncidentLabel.status.name to "open",
         )
     }
 
     suspend fun connectDependency(fromId: GraphElementId, toId: GraphElementId, kind: String = "runtime") {
         kind.requireNotBlank("kind")
-        ops.createEdge(fromId, toId, DependsOnLabel.label, mapOf(DependsOnLabel.kind.name to kind))
+        ops.createEdge(fromId, toId, DependsOnLabel.label, DependsOnLabel.kind.name to kind)
     }
 
     suspend fun assignOwner(serviceId: GraphElementId, teamId: GraphElementId, kind: String = "oncall") {
         kind.requireNotBlank("kind")
-        ops.createEdge(serviceId, teamId, OwnedByLabel.label, mapOf(OwnedByLabel.kind.name to kind))
+        ops.createEdge(serviceId, teamId, OwnedByLabel.label, OwnedByLabel.kind.name to kind)
     }
 
     suspend fun attachAlert(alertId: GraphElementId, serviceId: GraphElementId, kind: String = "metric") {
         kind.requireNotBlank("kind")
-        ops.createEdge(alertId, serviceId, AlertsOnLabel.label, mapOf(AlertsOnLabel.kind.name to kind))
+        ops.createEdge(alertId, serviceId, AlertsOnLabel.label, AlertsOnLabel.kind.name to kind)
     }
 
     suspend fun markRootCause(incidentId: GraphElementId, serviceId: GraphElementId, kind: String = "investigation") {
         kind.requireNotBlank("kind")
-        ops.createEdge(incidentId, serviceId, RootCauseLabel.label, mapOf(RootCauseLabel.kind.name to kind))
+        ops.createEdge(incidentId, serviceId, RootCauseLabel.label, RootCauseLabel.kind.name to kind)
     }
 
     suspend fun downstreamDependencies(serviceId: String, maxDepth: Int = 3): List<GraphVertex> =
@@ -150,48 +146,56 @@ class ObservabilityIncidentSuspendService(
     }
 
     suspend fun alertBoundary(alertIds: Collection<String>, maxDepth: Int = 1): List<GraphVertex> {
-        val directServices = alertIds
+        val directServices = alertIds.asFlow()
             .mapNotNull { alertById(it) }
-            .flatMap { alert ->
+            .flatMapMerge { alert ->
                 ops.neighbors(
                     alert.id,
                     NeighborOptions(edgeLabel = AlertsOnLabel.label, direction = Direction.OUTGOING, maxDepth = 1)
-                ).toList()
+                )
             }
             .filter { it.label == ServiceLabel.label }
 
-        val boundary = directServices + directServices.flatMap { service ->
-            ops.neighbors(
-                service.id,
-                NeighborOptions(edgeLabel = DependsOnLabel.label, direction = Direction.BOTH, maxDepth = maxDepth)
-            ).toList().filter { it.label == ServiceLabel.label }
-        }
 
-        return boundary.distinctBy { it.id }
+        val subBoundary = directServices.flatMapMerge { service ->
+            ops
+                .neighbors(
+                    service.id,
+                    NeighborOptions(
+                        edgeLabel = DependsOnLabel.label,
+                        direction = Direction.BOTH,
+                        maxDepth = maxDepth
+                    )
+                )
+                .filter { it.label == ServiceLabel.label }
+        }
+        val boundary = directServices.concatWith(subBoundary)
+
+        return boundary.toList().distinctBy { it.id }
     }
 
     private suspend fun dependencyNeighbors(serviceId: String, direction: Direction, maxDepth: Int): List<GraphVertex> {
         require(maxDepth >= 0) { "maxDepth must be >= 0, was $maxDepth" }
         val service = serviceById(serviceId) ?: return emptyList()
-        return ops.neighbors(
-            service.id,
-            NeighborOptions(edgeLabel = DependsOnLabel.label, direction = direction, maxDepth = maxDepth)
-        ).toList()
+        return ops
+            .neighbors(
+                service.id,
+                NeighborOptions(edgeLabel = DependsOnLabel.label, direction = direction, maxDepth = maxDepth)
+            )
+            .toList()
     }
 
     private suspend fun serviceById(serviceId: String): GraphVertex? {
         serviceId.requireNotBlank("serviceId")
-        return ops.findVerticesByLabel(
-            ServiceLabel.label,
-            mapOf(ServiceLabel.serviceId.name to serviceId),
-        ).toList().firstOrNull()
+        return ops
+            .findVerticesByLabel(ServiceLabel.label, ServiceLabel.serviceId.name to serviceId)
+            .firstOrNull()
     }
 
     private suspend fun alertById(alertId: String): GraphVertex? {
         alertId.requireNotBlank("alertId")
-        return ops.findVerticesByLabel(
-            AlertLabel.label,
-            mapOf(AlertLabel.alertId.name to alertId),
-        ).toList().firstOrNull()
+        return ops
+            .findVerticesByLabel(AlertLabel.label, AlertLabel.alertId.name to alertId)
+            .firstOrNull()
     }
 }
