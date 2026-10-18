@@ -1,6 +1,7 @@
 package io.bluetape4k.graph.examples.securityattack
 
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.graph.examples.securityattack.io.SecurityAttackPathSampleDatasetLoader
 import io.bluetape4k.graph.examples.securityattack.schema.HostLabel
@@ -8,6 +9,7 @@ import io.bluetape4k.graph.examples.securityattack.service.SecurityAttackPathSer
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -27,14 +29,16 @@ abstract class AbstractSecurityAttackPathTest {
             ops.dropGraph(graphName)
         }
         service.initialize()
-        SecurityAttackPathSampleDatasetLoader.importCsv(ops).status shouldBeEqualTo GraphIoStatus.COMPLETED
+
+        val importReport = SecurityAttackPathSampleDatasetLoader.importCsv(ops)
+        log.debug { "Imported $importReport" }
+        importReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
     }
 
     fun `finds reachable and unreachable crown jewel attack paths`() {
         val path = service.shortestAttackPath("internet", "customer-db")
-        val unreachable = service.unreachableCrownJewels("internet")
-            .map { it.properties[HostLabel.hostId.name] }
 
+        log.debug { "Found path=$path" }
         path?.nodeIds shouldBeEqualTo listOf(
             "internet",
             "web-edge",
@@ -45,12 +49,18 @@ abstract class AbstractSecurityAttackPathTest {
             "db-admin",
             "customer-db",
         )
+
+        val unreachable = service.unreachableCrownJewels("internet")
+            .onEach { log.debug { "unreachable vertex=$it" } }
+            .map { it.properties[HostLabel.hostId.name] }
+
         unreachable shouldBeEqualTo listOf("backup-vault")
     }
 
     @Test
     fun `ranks attack paths by risk signals`() {
         val paths = service.rankedAttackPaths("internet", "customer-db")
+            .onEach { log.debug { "attach path=$it" } }
             .map { it.nodeIds }
 
         paths shouldContain listOf(
@@ -78,6 +88,7 @@ abstract class AbstractSecurityAttackPathTest {
     @Test
     fun `finds credential based privilege escalation path`() {
         val paths = service.privilegeEscalationPaths("web-service")
+            .onEach { log.debug { "attach path=$it" } }
             .map { it.nodeIds }
 
         paths shouldContain listOf("web-service", "ci-admin-token", "domain-admin")
@@ -86,14 +97,15 @@ abstract class AbstractSecurityAttackPathTest {
     @Test
     fun `explains remediation impact by cutting one edge`() {
         val blockedTargets = service.remediationImpact("edge-credential-admin")
+            .onEach { log.debug { "remediation impact vertex=$it" } }
             .map { it.properties[HostLabel.hostId.name] }
+        blockedTargets shouldBeEqualTo listOf("customer-db")
+
         val blockedPath = service.shortestAttackPath(
             sourceAssetId = "internet",
             targetHostId = "customer-db",
             blockedEdgeIds = setOf("edge-credential-admin"),
         )
-
-        blockedTargets shouldBeEqualTo listOf("customer-db")
-        blockedPath shouldBeEqualTo null
+        blockedPath.shouldBeNull()
     }
 }

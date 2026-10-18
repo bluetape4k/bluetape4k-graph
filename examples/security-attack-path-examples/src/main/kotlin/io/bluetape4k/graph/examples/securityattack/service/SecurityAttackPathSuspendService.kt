@@ -19,7 +19,13 @@ import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.info
+import io.bluetape4k.support.asInt
 import io.bluetape4k.support.requireNotBlank
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 
 /**
@@ -146,7 +152,7 @@ class SecurityAttackPathSuspendService(
         return crownJewelHosts()
             .filter { target ->
                 shortestPath(source, target) != null &&
-                    shortestPath(source, target, blockedEdgeIds = setOf(blockedEdgeId)) == null
+                        shortestPath(source, target, blockedEdgeIds = setOf(blockedEdgeId)) == null
             }
             .distinctBy { it.id }
     }
@@ -186,12 +192,15 @@ class SecurityAttackPathSuspendService(
         vertex: GraphVertex,
         labels: List<String> = attackEdgeLabels,
         blockedEdgeIds: Set<String> = emptySet(),
-    ): List<GraphVertex> =
-        labels.flatMap { label -> ops.findEdgesByLabel(label).toList().filter { it.startId == vertex.id } }
+    ): List<GraphVertex> {
+        return labels.asFlow()
+            .flatMapConcat { label -> ops.findEdgesByLabel(label).filter { it.startId == vertex.id } }
             .filter { edge -> edge.properties["status"] == "active" && edge.edgeBusinessId() !in blockedEdgeIds }
             .mapNotNull { edge -> ops.findVertexById(edge.endId) }
             .filter { it.properties["status"] == "active" }
+            .toList()
             .distinctBy { it.id }
+    }
 
     private fun List<GraphVertex>.toAttackPath(reason: String): SecurityAttackPath =
         SecurityAttackPath(
@@ -200,52 +209,46 @@ class SecurityAttackPathSuspendService(
             reason = reason,
         )
 
-    private fun hasPrivilege(vertex: GraphVertex, targetPrivilege: String): Boolean =
-        when (vertex.label) {
-            PrincipalLabel.label  -> vertex.properties[PrincipalLabel.privilege.name] == targetPrivilege
-            PermissionLabel.label -> vertex.properties[PermissionLabel.privilege.name] == targetPrivilege
-            else                  -> false
-        }
+    private fun hasPrivilege(vertex: GraphVertex, targetPrivilege: String): Boolean = when (vertex.label) {
+        PrincipalLabel.label -> vertex.properties[PrincipalLabel.privilege.name] == targetPrivilege
+        PermissionLabel.label -> vertex.properties[PermissionLabel.privilege.name] == targetPrivilege
+        else -> false
+    }
 
     private suspend fun crownJewelHosts(): List<GraphVertex> =
         ops.findVerticesByLabel(HostLabel.label)
-            .toList()
             .filter { it.properties[HostLabel.criticality.name] == "crown_jewel" }
+            .toList()
 
     private suspend fun entryAssetById(assetId: String): GraphVertex? =
-        ops.findVerticesByLabel(EntryAssetLabel.label, mapOf(EntryAssetLabel.assetId.name to assetId))
-            .toList()
+        ops.findVerticesByLabel(EntryAssetLabel.label, EntryAssetLabel.assetId.name to assetId)
             .firstOrNull()
 
     private suspend fun hostById(hostId: String): GraphVertex? =
-        ops.findVerticesByLabel(HostLabel.label, mapOf(HostLabel.hostId.name to hostId))
-            .toList()
+        ops.findVerticesByLabel(HostLabel.label, HostLabel.hostId.name to hostId)
             .firstOrNull()
 
     private suspend fun principalById(principalId: String): GraphVertex? =
         ops.findVerticesByLabel(PrincipalLabel.label, mapOf(PrincipalLabel.principalId.name to principalId))
-            .toList()
             .firstOrNull()
 
-    private fun businessId(vertex: GraphVertex): String =
-        when (vertex.label) {
-            EntryAssetLabel.label    -> vertex.properties[EntryAssetLabel.assetId.name].toString()
-            HostLabel.label          -> vertex.properties[HostLabel.hostId.name].toString()
-            PrincipalLabel.label     -> vertex.properties[PrincipalLabel.principalId.name].toString()
-            CredentialLabel.label    -> vertex.properties[CredentialLabel.credentialId.name].toString()
-            VulnerabilityLabel.label -> vertex.properties[VulnerabilityLabel.vulnerabilityId.name].toString()
-            PermissionLabel.label    -> vertex.properties[PermissionLabel.permissionId.name].toString()
-            else                     -> vertex.id.value
-        }
+    private fun businessId(vertex: GraphVertex): String = when (vertex.label) {
+        EntryAssetLabel.label -> vertex.properties[EntryAssetLabel.assetId.name].toString()
+        HostLabel.label -> vertex.properties[HostLabel.hostId.name].toString()
+        PrincipalLabel.label -> vertex.properties[PrincipalLabel.principalId.name].toString()
+        CredentialLabel.label -> vertex.properties[CredentialLabel.credentialId.name].toString()
+        VulnerabilityLabel.label -> vertex.properties[VulnerabilityLabel.vulnerabilityId.name].toString()
+        PermissionLabel.label -> vertex.properties[PermissionLabel.permissionId.name].toString()
+        else -> vertex.id.value
+    }
 
-    private fun riskContribution(vertex: GraphVertex): Int =
-        when (vertex.label) {
-            VulnerabilityLabel.label -> vertex.properties[VulnerabilityLabel.severity.name].toString().toIntOrNull() ?: 0
-            HostLabel.label          -> if (vertex.properties[HostLabel.criticality.name] == "crown_jewel") 5 else 1
-            PrincipalLabel.label     -> if (vertex.properties[PrincipalLabel.privilege.name] == "admin") 4 else 1
-            PermissionLabel.label    -> if (vertex.properties[PermissionLabel.privilege.name] == "admin") 3 else 1
-            else                     -> 1
-        }
+    private fun riskContribution(vertex: GraphVertex): Int = when (vertex.label) {
+        VulnerabilityLabel.label -> vertex.properties[VulnerabilityLabel.severity.name].toString().asInt(0)
+        HostLabel.label -> if (vertex.properties[HostLabel.criticality.name] == "crown_jewel") 5 else 1
+        PrincipalLabel.label -> if (vertex.properties[PrincipalLabel.privilege.name] == "admin") 4 else 1
+        PermissionLabel.label -> if (vertex.properties[PermissionLabel.privilege.name] == "admin") 3 else 1
+        else -> 1
+    }
 
     private fun GraphEdge.edgeBusinessId(): String =
         properties["edgeId"]?.toString() ?: id.value
