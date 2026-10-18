@@ -6,24 +6,21 @@ This example teaches how to build product and social recommendations with graph 
 
 ## Scenario
 
-Alice buys a camera. Bob buys the same camera and also buys a tripod. The example uses shared purchases to recommend
-products to Alice, uses two-hop social paths to recommend follows, and ranks popular products with PageRank.
+Alice buys a camera. Bob buys the same camera and also buys a tripod. The example uses shared purchases to recommend products to Alice, uses two-hop social paths to recommend follows, and ranks popular products with PageRank.
 
 ## What You Learn
 
-| Topic | Why it matters |
-|---|---|
-| Purchase graph modeling | A purchase is a relationship from a user to a product. |
-| Collaborative filtering by traversal | Similar users can be found through shared purchased products. |
-| Follow recommendations | Two-hop social paths suggest people a user may want to follow. |
-| Product popularity ranking | PageRank ranks products by their position in the purchase graph. |
-| Backend portability | The same recommendation service runs across all supported graph backends. |
+| Topic                                | Why it matters                                                            |
+|--------------------------------------|---------------------------------------------------------------------------|
+| Purchase graph modeling              | A purchase is a relationship from a user to a product.                    |
+| Collaborative filtering by traversal | Similar users can be found through shared purchased products.             |
+| Follow recommendations               | Two-hop social paths suggest people a user may want to follow.            |
+| Product popularity ranking           | PageRank ranks products by their position in the purchase graph.          |
+| Backend portability                  | The same recommendation service runs across all supported graph backends. |
 
 ## Why Use a Graph Database?
 
-Recommendations are relationship problems. The interesting question is not only "what did Alice buy?", but "who bought
-the same thing as Alice, and what else did they buy?" or "who is followed by people Alice already follows?" These are
-multi-hop traversals.
+Recommendations are relationship problems. The interesting question is not only "what did Alice buy?", but "who bought the same thing as Alice, and what else did they buy?" or "who is followed by people Alice already follows?" These are multi-hop traversals.
 
 With a graph database:
 
@@ -48,12 +45,12 @@ This makes the example close to real recommendation systems while keeping the im
 
 ## Core Features
 
-| Feature | Graph API |
-|---|---|
-| Product recommendations | paired `neighbors` traversal over `PURCHASED` |
-| Follow recommendations | two-hop `neighbors` traversal over `FOLLOWS` |
-| Popular product ranking | `pageRank(PageRankOptions)` |
-| Coroutine support | `RecommendationSuspendService` with `Flow` results |
+| Feature                 | Graph API                                          |
+|-------------------------|----------------------------------------------------|
+| Product recommendations | paired `neighbors` traversal over `PURCHASED`      |
+| Follow recommendations  | two-hop `neighbors` traversal over `FOLLOWS`       |
+| Popular product ranking | `pageRank(PageRankOptions)`                        |
+| Coroutine support       | `RecommendationSuspendService` with `Flow` results |
 
 ## Usage
 
@@ -77,8 +74,7 @@ val popular = service.rankPopularProducts(limit = 10)
 ## Sample Dataset Import
 
 `RecommendationSampleDatasetLoader` imports the bundled graph-io CSV fixture into any `GraphOperations`
-implementation. The fixture contains users, products, purchase edges, and follow edges that produce stable product and
-follow recommendations.
+implementation. The fixture contains users, products, purchase edges, and follow edges that produce stable product and follow recommendations.
 
 ```kotlin
 val service = RecommendationService(ops)
@@ -97,14 +93,13 @@ The TinkerGraph smoke test is sufficient for the loader path because graph-io wr
 
 ## How to Read the Tests
 
-The abstract tests are the tutorial. They build a tiny graph, run a recommendation, and assert stable membership rather
-than exact score values or backend-specific ordering.
+The abstract tests are the tutorial. They build a tiny graph, run a recommendation, and assert stable membership rather than exact score values or backend-specific ordering.
 
-| Test class type | Purpose |
-|---|---|
-| Abstract tests | Explain product, follow, and ranking behavior once. |
-| TinkerGraph tests | Fast in-memory smoke path. |
-| Neo4j/Memgraph/AGE/FalkorDB tests | Prove backend-independent recommendation behavior. |
+| Test class type                   | Purpose                                             |
+|-----------------------------------|-----------------------------------------------------|
+| Abstract tests                    | Explain product, follow, and ranking behavior once. |
+| TinkerGraph tests                 | Fast in-memory smoke path.                          |
+| Neo4j/Memgraph/AGE/FalkorDB tests | Prove backend-independent recommendation behavior.  |
 
 ## Running Tests
 
@@ -117,12 +112,12 @@ TinkerGraph tests run in memory. Neo4j, Memgraph, Apache AGE, and FalkorDB tests
 
 ## Expected Output
 
-| Scenario | Expected result |
-|---|---|
-| Product recommendation | Alice can receive `p-tripod` through Bob's shared purchase path. |
-| Follow recommendation | Two-hop `FOLLOWS` traversal proposes a follow candidate. |
-| Popular product ranking | PageRank includes popular purchased products. |
-| CSV import | The bundled fixture imports users, products, purchases, and follows. |
+| Scenario                | Expected result                                                      |
+|-------------------------|----------------------------------------------------------------------|
+| Product recommendation  | Alice can receive `p-tripod` through Bob's shared purchase path.     |
+| Follow recommendation   | Two-hop `FOLLOWS` traversal proposes a follow candidate.             |
+| Popular product ranking | PageRank includes popular purchased products.                        |
+| CSV import              | The bundled fixture imports users, products, purchases, and follows. |
 
 ## Dependencies
 

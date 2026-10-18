@@ -25,7 +25,7 @@ class RecommendationSuspendService(
     private val ops: GraphSuspendOperations,
     private val graphName: String = "recommendation",
 ) {
-    companion object : KLoggingChannel()
+    companion object: KLoggingChannel()
 
     /**
      * Backing graph가 아직 없으면 생성한다.
@@ -45,7 +45,11 @@ class RecommendationSuspendService(
         displayName.requireNotBlank("displayName")
         return ops.createVertex(
             UserLabel.label,
-            mapOf(UserLabel.userId.name to userId, UserLabel.displayName.name to displayName, UserLabel.segment.name to segment)
+            mapOf(
+                UserLabel.userId.name to userId,
+                UserLabel.displayName.name to displayName,
+                UserLabel.segment.name to segment
+            )
         )
     }
 
@@ -57,14 +61,23 @@ class RecommendationSuspendService(
         name.requireNotBlank("name")
         return ops.createVertex(
             ProductLabel.label,
-            mapOf(ProductLabel.productId.name to productId, ProductLabel.name.name to name, ProductLabel.category.name to category)
+            mapOf(
+                ProductLabel.productId.name to productId,
+                ProductLabel.name.name to name,
+                ProductLabel.category.name to category
+            )
         )
     }
 
     /**
      * User에서 product로 이어지는 purchase edge를 기록한다.
      */
-    suspend fun recordPurchase(userId: GraphElementId, productId: GraphElementId, quantity: Int = 1, purchasedAt: String = "") {
+    suspend fun recordPurchase(
+        userId: GraphElementId,
+        productId: GraphElementId,
+        quantity: Int = 1,
+        purchasedAt: String = "",
+    ) {
         require(quantity > 0) { "quantity must be > 0, was $quantity" }
         ops.createEdge(
             userId,
