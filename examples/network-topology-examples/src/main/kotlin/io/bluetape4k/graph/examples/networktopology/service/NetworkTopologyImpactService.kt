@@ -77,7 +77,9 @@ class NetworkTopologyImpactService(
         val source = deviceById(sourceDeviceId) ?: return null
 
         return shortestDevicePath(source, host, failedDeviceIds, failedLinkIds)
-            ?.let { path -> NetworkRoute(path.map(::deviceId) + serviceId(service), "service is reachable") }
+            ?.let { path ->
+                NetworkRoute(path.map(::deviceId) + serviceId(service), "service is reachable")
+            }
     }
 
     fun impactedServicesByFailedDevice(
@@ -99,6 +101,7 @@ class NetworkTopologyImpactService(
     fun isolatedSegments(sourceDeviceId: String = "router-core"): List<GraphVertex> {
         sourceDeviceId.requireNotBlank("sourceDeviceId")
         val source = deviceById(sourceDeviceId) ?: return emptyList()
+
         return ops.findVerticesByLabel(SegmentLabel.label)
             .filter { segment ->
                 devicesInSegment(segment)
@@ -142,7 +145,12 @@ class NetworkTopologyImpactService(
 
         return paths
             .distinctBy { path -> path.map { it.id } }
-            .map { NetworkRoute(it.map(::deviceId), "redundant active path candidate") }
+            .map {
+                NetworkRoute(
+                    it.map(::deviceId),
+                    "redundant active path candidate"
+                )
+            }
     }
 
     private fun servicesUnreachableFrom(
@@ -155,7 +163,7 @@ class NetworkTopologyImpactService(
             .filter { service ->
                 val host = serviceHost(service) ?: return@filter false
                 shortestDevicePath(source, host) != null &&
-                    shortestDevicePath(source, host, failedDeviceIds, failedLinkIds) == null
+                        shortestDevicePath(source, host, failedDeviceIds, failedLinkIds) == null
             }
             .distinctBy { it.id }
     }
@@ -207,32 +215,39 @@ class NetworkTopologyImpactService(
     private fun activeConnectedEdges(
         device: GraphVertex,
         failedLinkIds: Set<String> = emptySet(),
-    ): List<GraphEdge> =
-        (ops.findEdgesByStartId(device.id, ConnectedToLabel.label) +
-            ops.findEdgesByEndId(device.id, ConnectedToLabel.label))
+    ): List<GraphEdge> {
+        val edges = ops.findEdgesByStartId(device.id, ConnectedToLabel.label) +
+                ops.findEdgesByEndId(device.id, ConnectedToLabel.label)
+
+        return edges
             .filter { edge ->
                 edge.properties[ConnectedToLabel.status.name] == "active" &&
-                    edge.properties[ConnectedToLabel.linkId.name] !in failedLinkIds
+                        edge.properties[ConnectedToLabel.linkId.name] !in failedLinkIds
             }
             .distinctBy { it.id }
+    }
 
     private fun serviceHost(service: GraphVertex): GraphVertex? =
-        ops.neighbors(
-            service.id,
-            NeighborOptions(edgeLabel = HostsServiceLabel.label, direction = Direction.INCOMING, maxDepth = 1)
-        ).firstOrNull { it.label == DeviceLabel.label }
+        ops
+            .neighbors(
+                service.id,
+                NeighborOptions(edgeLabel = HostsServiceLabel.label, direction = Direction.INCOMING, maxDepth = 1)
+            )
+            .firstOrNull { it.label == DeviceLabel.label }
 
     private fun devicesInSegment(segment: GraphVertex): List<GraphVertex> =
-        ops.neighbors(
-            segment.id,
-            NeighborOptions(edgeLabel = MemberOfSegmentLabel.label, direction = Direction.INCOMING, maxDepth = 1)
-        ).filter { it.label == DeviceLabel.label }
+        ops
+            .neighbors(
+                segment.id,
+                NeighborOptions(edgeLabel = MemberOfSegmentLabel.label, direction = Direction.INCOMING, maxDepth = 1)
+            )
+            .filter { it.label == DeviceLabel.label }
 
     private fun deviceById(deviceId: String): GraphVertex? =
-        ops.findVerticesByLabel(DeviceLabel.label, mapOf(DeviceLabel.deviceId.name to deviceId)).firstOrNull()
+        ops.findVerticesByLabel(DeviceLabel.label, DeviceLabel.deviceId.name to deviceId).firstOrNull()
 
     private fun serviceById(serviceId: String): GraphVertex? =
-        ops.findVerticesByLabel(ServiceLabel.label, mapOf(ServiceLabel.serviceId.name to serviceId)).firstOrNull()
+        ops.findVerticesByLabel(ServiceLabel.label, ServiceLabel.serviceId.name to serviceId).firstOrNull()
 
     private fun deviceId(device: GraphVertex): String =
         device.properties[DeviceLabel.deviceId.name].toString()
@@ -242,5 +257,5 @@ class NetworkTopologyImpactService(
 
     private fun isActiveDevice(device: GraphVertex): Boolean =
         device.label == DeviceLabel.label &&
-            device.properties[DeviceLabel.status.name] == "active"
+                device.properties[DeviceLabel.status.name] == "active"
 }

@@ -13,29 +13,37 @@ import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.logging.KLogging
 import org.junit.jupiter.api.Test
 
 class NetworkTopologyActivePathRegressionTest {
 
+    private companion object: KLogging() {
+        const val INACTIVE_SOURCE = "inactive-source"
+        const val ACTIVE_SOURCE = "active-source"
+        const val ACTIVE_MIDDLE = "active-middle"
+        const val FAILED_MIDDLE = "failed-middle"
+        const val ACTIVE_TARGET = "active-target"
+        const val INACTIVE_TARGET = "inactive-target"
+        const val TARGET_SERVICE = "target-service"
+        const val INACTIVE_TARGET_SERVICE = "inactive-target-service"
+    }
+
     @Test
     fun `sync는 비활성 시작 장치에서 활성 target으로 경로를 반환하지 않는다`() {
-        val ops = TinkerGraphOperations()
-        try {
+        TinkerGraphOperations().use { ops ->
             createSyncFixture(ops)
             val service = NetworkTopologyImpactService(ops)
 
             service.shortestDevicePath(INACTIVE_SOURCE, ACTIVE_TARGET).shouldBeNull()
             service.shortestPathToService(TARGET_SERVICE, INACTIVE_SOURCE).shouldBeNull()
             service.redundantDevicePaths(INACTIVE_SOURCE, ACTIVE_TARGET).shouldBeEmpty()
-        } finally {
-            ops.close()
         }
     }
 
     @Test
     fun `sync는 비활성 source와 destination 및 failed device를 경로에서 제외한다`() {
-        val ops = TinkerGraphOperations()
-        try {
+        TinkerGraphOperations().use { ops ->
             createSyncFixture(ops)
             val service = NetworkTopologyImpactService(ops)
 
@@ -51,45 +59,36 @@ class NetworkTopologyActivePathRegressionTest {
                 ACTIVE_TARGET,
                 failedDeviceIds = setOf(ACTIVE_SOURCE, ACTIVE_TARGET),
             ).shouldBeNull()
-        } finally {
-            ops.close()
         }
     }
 
     @Test
     fun `sync는 비활성 destination을 service와 redundant 경로에서 제외한다`() {
-        val ops = TinkerGraphOperations()
-        try {
+        TinkerGraphOperations().use { ops ->
             createSyncFixture(ops)
             val service = NetworkTopologyImpactService(ops)
 
             service.shortestPathToService(INACTIVE_TARGET_SERVICE, ACTIVE_SOURCE).shouldBeNull()
             service.redundantDevicePaths(ACTIVE_SOURCE, INACTIVE_TARGET).shouldBeEmpty()
             service.redundantDevicePaths(INACTIVE_SOURCE, INACTIVE_SOURCE).shouldBeEmpty()
-        } finally {
-            ops.close()
         }
     }
 
     @Test
     fun `suspend는 비활성 시작 장치에서 활성 target으로 경로를 반환하지 않는다`() = runSuspendIO {
-        val ops = TinkerGraphSuspendOperations()
-        try {
+        TinkerGraphSuspendOperations().use { ops ->
             createSuspendFixture(ops)
             val service = NetworkTopologyImpactSuspendService(ops)
 
             service.shortestDevicePath(INACTIVE_SOURCE, ACTIVE_TARGET).shouldBeNull()
             service.shortestPathToService(TARGET_SERVICE, INACTIVE_SOURCE).shouldBeNull()
             service.redundantDevicePaths(INACTIVE_SOURCE, ACTIVE_TARGET).shouldBeEmpty()
-        } finally {
-            ops.close()
         }
     }
 
     @Test
     fun `suspend는 비활성 source와 destination 및 failed device를 경로에서 제외한다`() = runSuspendIO {
-        val ops = TinkerGraphSuspendOperations()
-        try {
+        TinkerGraphSuspendOperations().use { ops ->
             createSuspendFixture(ops)
             val service = NetworkTopologyImpactSuspendService(ops)
 
@@ -100,28 +99,24 @@ class NetworkTopologyActivePathRegressionTest {
                 ACTIVE_TARGET,
                 failedDeviceIds = setOf(FAILED_MIDDLE),
             ).shouldBeNull()
+
             service.shortestDevicePath(
                 ACTIVE_SOURCE,
                 ACTIVE_TARGET,
                 failedDeviceIds = setOf(ACTIVE_SOURCE, ACTIVE_TARGET),
             ).shouldBeNull()
-        } finally {
-            ops.close()
         }
     }
 
     @Test
     fun `suspend는 비활성 destination을 service와 redundant 경로에서 제외한다`() = runSuspendIO {
-        val ops = TinkerGraphSuspendOperations()
-        try {
+        TinkerGraphSuspendOperations().use { ops ->
             createSuspendFixture(ops)
             val service = NetworkTopologyImpactSuspendService(ops)
 
             service.shortestPathToService(INACTIVE_TARGET_SERVICE, ACTIVE_SOURCE).shouldBeNull()
             service.redundantDevicePaths(ACTIVE_SOURCE, INACTIVE_TARGET).shouldBeEmpty()
             service.redundantDevicePaths(INACTIVE_SOURCE, INACTIVE_SOURCE).shouldBeEmpty()
-        } finally {
-            ops.close()
         }
     }
 
@@ -237,16 +232,5 @@ class NetworkTopologyActivePathRegressionTest {
             inactiveTargetService.id,
             HostsServiceLabel.label,
         )
-    }
-
-    private companion object {
-        const val INACTIVE_SOURCE = "inactive-source"
-        const val ACTIVE_SOURCE = "active-source"
-        const val ACTIVE_MIDDLE = "active-middle"
-        const val FAILED_MIDDLE = "failed-middle"
-        const val ACTIVE_TARGET = "active-target"
-        const val INACTIVE_TARGET = "inactive-target"
-        const val TARGET_SERVICE = "target-service"
-        const val INACTIVE_TARGET_SERVICE = "inactive-target-service"
     }
 }
