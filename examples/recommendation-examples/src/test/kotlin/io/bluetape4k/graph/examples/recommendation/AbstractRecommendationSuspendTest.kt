@@ -3,9 +3,11 @@ package io.bluetape4k.graph.examples.recommendation
 import io.bluetape4k.assertions.shouldBeGreaterOrEqualTo
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldNotBeEmpty
+import io.bluetape4k.coroutines.flow.extensions.log
 import io.bluetape4k.graph.examples.recommendation.service.RecommendationSuspendService
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.KLogging
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
@@ -15,7 +17,7 @@ import org.junit.jupiter.api.TestInstance
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AbstractRecommendationSuspendTest {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     protected abstract val ops: GraphSuspendOperations
     protected open val graphName: String = "recommendation_suspend_test"
@@ -40,7 +42,9 @@ abstract class AbstractRecommendationSuspendTest {
         service.recordPurchase(bob.id, camera.id)
         service.recordPurchase(bob.id, tripod.id)
 
-        val recommendations = service.recommendProducts(alice.id).toList()
+        val recommendations = service.recommendProducts(alice.id)
+            .log("Product")
+            .toList()
         recommendations.shouldNotBeEmpty()
         recommendations.map { it.properties["productId"] } shouldContain "p-tripod"
     }
@@ -54,7 +58,7 @@ abstract class AbstractRecommendationSuspendTest {
         service.follow(alice.id, bob.id)
         service.follow(bob.id, carol.id)
 
-        val followTargets = service.recommendFollows(alice.id).toList()
+        val followTargets = service.recommendFollows(alice.id).log("Follow").toList()
         followTargets.shouldNotBeEmpty()
         followTargets.map { it.properties["userId"] } shouldContain "u-carol"
     }
@@ -69,7 +73,10 @@ abstract class AbstractRecommendationSuspendTest {
         val tripod = service.addProduct("p-tripod", "Tripod")
         service.recordPurchase(service.addUser("u-extra", "Extra").id, tripod.id)
 
-        val productIds = service.rankPopularProducts(limit = 10).toList().map { it.vertex.properties["productId"] }
+        val productIds = service.rankPopularProducts(limit = 10)
+            .log("Product")
+            .map { it.vertex.properties["productId"] }
+            .toList()
         productIds.size shouldBeGreaterOrEqualTo 1
         productIds shouldContain "p-camera"
     }

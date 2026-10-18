@@ -6,6 +6,7 @@ import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.graph.examples.recommendation.service.RecommendationService
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.info
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -13,7 +14,7 @@ import org.junit.jupiter.api.TestInstance
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AbstractRecommendationTest {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     protected abstract val ops: GraphOperations
     protected open val graphName: String = "recommendation_test"
@@ -39,6 +40,7 @@ abstract class AbstractRecommendationTest {
         service.recordPurchase(bob.id, tripod.id)
 
         val recommendations = service.recommendProducts(alice.id)
+            .onEach { log.info { "recommend=$it" } }
         recommendations.shouldNotBeEmpty()
         recommendations.map { it.properties["productId"] } shouldContain "p-tripod"
     }
@@ -52,7 +54,7 @@ abstract class AbstractRecommendationTest {
         service.follow(alice.id, bob.id)
         service.follow(bob.id, carol.id)
 
-        val followTargets = service.recommendFollows(alice.id)
+        val followTargets = service.recommendFollows(alice.id).onEach { log.info { "follow=$it" } }
         followTargets.shouldNotBeEmpty()
         followTargets.map { it.properties["userId"] } shouldContain "u-carol"
     }
@@ -67,7 +69,9 @@ abstract class AbstractRecommendationTest {
         val tripod = service.addProduct("p-tripod", "Tripod")
         service.recordPurchase(service.addUser("u-extra", "Extra").id, tripod.id)
 
-        val productIds = service.rankPopularProducts(limit = 10).map { it.vertex.properties["productId"] }
+        val productIds = service.rankPopularProducts(limit = 10)
+            .onEach { log.info { "rankPopularProducts=$it" } }
+            .map { it.vertex.properties["productId"] }
         productIds.size shouldBeGreaterOrEqualTo 1
         productIds shouldContain "p-camera"
     }

@@ -14,6 +14,7 @@ import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.info
 import io.bluetape4k.support.requireNotBlank
+import io.bluetape4k.support.requirePositiveNumber
 
 /**
  * [GraphOperations] 위에 구성한 recommendation graph service이다.
@@ -33,7 +34,7 @@ class RecommendationService(
     private val ops: GraphOperations,
     private val graphName: String = "recommendation",
 ) {
-    companion object : KLogging()
+    companion object: KLogging()
 
     /**
      * Backing graph가 아직 없으면 생성한다.
@@ -51,9 +52,12 @@ class RecommendationService(
     fun addUser(userId: String, displayName: String, segment: String = ""): GraphVertex {
         userId.requireNotBlank("userId")
         displayName.requireNotBlank("displayName")
+
         return ops.createVertex(
             UserLabel.label,
-            mapOf(UserLabel.userId.name to userId, UserLabel.displayName.name to displayName, UserLabel.segment.name to segment)
+            UserLabel.userId.name to userId,
+            UserLabel.displayName.name to displayName,
+            UserLabel.segment.name to segment
         )
     }
 
@@ -65,7 +69,9 @@ class RecommendationService(
         name.requireNotBlank("name")
         return ops.createVertex(
             ProductLabel.label,
-            mapOf(ProductLabel.productId.name to productId, ProductLabel.name.name to name, ProductLabel.category.name to category)
+            ProductLabel.productId.name to productId,
+            ProductLabel.name.name to name,
+            ProductLabel.category.name to category
         )
     }
 
@@ -78,7 +84,7 @@ class RecommendationService(
             userId,
             productId,
             PurchasedLabel.label,
-            mapOf(PurchasedLabel.quantity.name to quantity, PurchasedLabel.purchasedAt.name to purchasedAt)
+            PurchasedLabel.quantity.name to quantity, PurchasedLabel.purchasedAt.name to purchasedAt
         )
     }
 
@@ -102,6 +108,7 @@ class RecommendationService(
         val ownedProductIds = ownedProducts.mapTo(mutableSetOf()) { it.id }
 
         return ownedProducts
+            .asSequence()
             .flatMap { product ->
                 ops.neighbors(
                     product.id,
@@ -119,6 +126,7 @@ class RecommendationService(
             .filterNot { it.id in ownedProductIds }
             .distinctBy { it.id }
             .take(limit)
+            .toList()
     }
 
     /**
@@ -134,6 +142,7 @@ class RecommendationService(
         val excludedIds = directFollows.mapTo(mutableSetOf(userId)) { it.id }
 
         return directFollows
+            .asSequence()
             .flatMap { direct ->
                 ops.neighbors(
                     direct.id,
@@ -143,13 +152,15 @@ class RecommendationService(
             .filterNot { it.id in excludedIds }
             .distinctBy { it.id }
             .take(limit)
+            .toList()
     }
 
     /**
      * Purchase graph PageRank 기준으로 product 순위를 매긴다.
      */
     fun rankPopularProducts(limit: Int = 10): List<PageRankScore> {
-        require(limit > 0) { "limit must be > 0, was $limit" }
+        limit.requirePositiveNumber("limit")
+
         return ops.pageRank(
             PageRankOptions(vertexLabel = ProductLabel.label, edgeLabel = PurchasedLabel.label, topK = limit)
         )

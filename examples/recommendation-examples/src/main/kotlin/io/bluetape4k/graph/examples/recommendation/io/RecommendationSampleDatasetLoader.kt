@@ -42,7 +42,7 @@ object RecommendationSampleDatasetLoader {
             fallbackClassLoader = RecommendationSampleDatasetLoader::class.java.classLoader,
             missingResourceMessage = { "Sample dataset resource not found: $it" },
         ) { source ->
-            CsvGraphBulkImporter().importGraph(source, operations, options, csvOptions)
+            CsvGraphBulkImporter.Default.importGraph(source, operations, options, csvOptions)
         }
 
     suspend fun importCsvSuspending(
@@ -58,6 +58,6 @@ object RecommendationSampleDatasetLoader {
             fallbackClassLoader = RecommendationSampleDatasetLoader::class.java.classLoader,
             missingResourceMessage = { "Sample dataset resource not found: $it" },
         ) { source ->
-            SuspendCsvGraphBulkImporter().importGraphSuspending(source, operations, options, csvOptions)
+            SuspendCsvGraphBulkImporter.Default.importGraphSuspending(source, operations, options, csvOptions)
         }
 }

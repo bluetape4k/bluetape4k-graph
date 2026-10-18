@@ -22,7 +22,6 @@ import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
 import kotlinx.coroutines.CancellationException
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.neo4j.driver.AuthTokens
 import org.neo4j.driver.Driver
 import org.neo4j.driver.GraphDatabase
@@ -38,7 +37,8 @@ class TinkerGraphObservabilityIncidentSuspendTest: AbstractObservabilityIncident
 }
 
 class Neo4jObservabilityIncidentTest: AbstractObservabilityIncidentTest() {
-    private val driver: Driver = GraphDatabase.driver(Neo4jServer.Launcher.neo4j.boltUrl, AuthTokens.none())
+    private val neo4j = Neo4jServer.Launcher.neo4j
+    private val driver: Driver = GraphDatabase.driver(neo4j.boltUrl, AuthTokens.none())
     override val ops = Neo4jGraphOperations(driver)
 
     @AfterAll
@@ -48,7 +48,8 @@ class Neo4jObservabilityIncidentTest: AbstractObservabilityIncidentTest() {
 }
 
 class Neo4jObservabilityIncidentSuspendTest: AbstractObservabilityIncidentSuspendTest() {
-    private val driver: Driver = GraphDatabase.driver(Neo4jServer.Launcher.neo4j.boltUrl, AuthTokens.none())
+    private val neo4j = Neo4jServer.Launcher.neo4j
+    private val driver: Driver = GraphDatabase.driver(neo4j.boltUrl, AuthTokens.none())
     override val ops = Neo4jGraphSuspendOperations(driver)
 
     @AfterAll
@@ -58,14 +59,10 @@ class Neo4jObservabilityIncidentSuspendTest: AbstractObservabilityIncidentSuspen
 }
 
 class MemgraphObservabilityIncidentTest: AbstractObservabilityIncidentTest() {
-    private lateinit var driver: Driver
-    override lateinit var ops: MemgraphGraphOperations
+    private val memgraph = MemgraphServer.Launcher.memgraph
+    private val driver: Driver = GraphDatabase.driver(memgraph.boltUrl, AuthTokens.none())
+    override val ops: MemgraphGraphOperations = MemgraphGraphOperations(driver)
 
-    @BeforeAll
-    fun startServer() {
-        driver = GraphDatabase.driver(MemgraphServer.Launcher.memgraph.boltUrl, AuthTokens.none())
-        ops = MemgraphGraphOperations(driver)
-    }
 
     @AfterAll
     fun stopServer() {
@@ -74,14 +71,9 @@ class MemgraphObservabilityIncidentTest: AbstractObservabilityIncidentTest() {
 }
 
 class MemgraphObservabilityIncidentSuspendTest: AbstractObservabilityIncidentSuspendTest() {
-    private lateinit var driver: Driver
-    override lateinit var ops: MemgraphGraphSuspendOperations
-
-    @BeforeAll
-    fun startServer() {
-        driver = GraphDatabase.driver(MemgraphServer.Launcher.memgraph.boltUrl, AuthTokens.none())
-        ops = MemgraphGraphSuspendOperations(driver)
-    }
+    private val memgraph = MemgraphServer.Launcher.memgraph
+    private val driver: Driver = GraphDatabase.driver(memgraph.boltUrl, AuthTokens.none())
+    override val ops: MemgraphGraphSuspendOperations = MemgraphGraphSuspendOperations(driver)
 
     @AfterAll
     fun stopServer() {
