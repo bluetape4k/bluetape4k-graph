@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.repository
 
+import io.bluetape4k.graph.model.BfsDfsOptions
 import io.bluetape4k.graph.model.ComponentOptions
 import io.bluetape4k.graph.model.CycleOptions
 import io.bluetape4k.graph.model.DegreeOptions
@@ -11,6 +12,7 @@ import io.bluetape4k.graph.model.PageRankOptions
 import io.bluetape4k.graph.model.PageRankScore
 import io.bluetape4k.graph.model.TraversalVisit
 import io.bluetape4k.graph.model.TreeTraversalOptions
+import io.bluetape4k.graph.model.toTreeTraversalOptions
 
 /**
  * Graph analytics algorithm repository for the blocking API.
@@ -29,7 +31,7 @@ import io.bluetape4k.graph.model.TreeTraversalOptions
  * val ops: GraphOperations = TinkerGraphOperations()
  * val top10 = ops.pageRank(PageRankOptions(topK = 10))
  * val components = ops.connectedComponents()
- * val visits = ops.bfs(start.id, BfsDfsOptions(maxDepth = 3))
+ * val visits = ops.bfs(start.id, TreeTraversalOptions(maxDepth = 3, maxVertices = 1_000))
  * ```
  *
  * @see GraphSuspendAlgorithmRepository coroutine API
@@ -75,10 +77,29 @@ interface GraphAlgorithmRepository {
      * @param options BFS options.
      * @return list of [TraversalVisit] values in visit order.
      */
+    @Deprecated(
+        message = "Use bfs(startId, TreeTraversalOptions(...))",
+        ReplaceWith("bfs(startId, options.toTreeTraversalOptions())"),
+    )
     fun bfs(
         startId: GraphElementId,
-        options: TreeTraversalOptions = TreeTraversalOptions.Default,
-    ): List<TraversalVisit>
+        options: BfsDfsOptions = BfsDfsOptions.Default,
+    ): List<TraversalVisit> = bfs(startId, options.toTreeTraversalOptions())
+
+    /** Runs BFS traversal with the replacement [TreeTraversalOptions] contract. */
+    @Suppress("DEPRECATION")
+    fun bfs(
+        startId: GraphElementId,
+        options: TreeTraversalOptions,
+    ): List<TraversalVisit> = bfs(
+        startId,
+        BfsDfsOptions(
+            edgeLabel = options.edgeLabel,
+            direction = options.direction,
+            maxDepth = options.maxDepth,
+            maxVertices = options.maxVertices,
+        ),
+    )
 
     /**
      * Runs DFS traversal.
@@ -87,10 +108,29 @@ interface GraphAlgorithmRepository {
      * @param options DFS options.
      * @return list of [TraversalVisit] values in visit order.
      */
+    @Deprecated(
+        message = "Use dfs(startId, TreeTraversalOptions(...))",
+        ReplaceWith("dfs(startId, options.toTreeTraversalOptions())"),
+    )
     fun dfs(
         startId: GraphElementId,
-        options: TreeTraversalOptions = TreeTraversalOptions.Default,
-    ): List<TraversalVisit>
+        options: BfsDfsOptions = BfsDfsOptions.Default,
+    ): List<TraversalVisit> = dfs(startId, options.toTreeTraversalOptions())
+
+    /** Runs DFS traversal with the replacement [TreeTraversalOptions] contract. */
+    @Suppress("DEPRECATION")
+    fun dfs(
+        startId: GraphElementId,
+        options: TreeTraversalOptions,
+    ): List<TraversalVisit> = dfs(
+        startId,
+        BfsDfsOptions(
+            edgeLabel = options.edgeLabel,
+            direction = options.direction,
+            maxDepth = options.maxDepth,
+            maxVertices = options.maxVertices,
+        ),
+    )
 
     /**
      * Detects cycles.

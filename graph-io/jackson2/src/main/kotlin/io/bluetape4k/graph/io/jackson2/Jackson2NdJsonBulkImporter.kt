@@ -91,7 +91,8 @@ class Jackson2NdJsonBulkImporter(
         options: GraphImportOptions,
     ): GraphImportReport {
         log.debug {
-            "Starting NDJSON_JACKSON2 import: defaultVertexLabel=${options.defaultVertexLabel}, defaultEdgeLabel=${options.defaultEdgeLabel}"
+            "Starting NDJSON_JACKSON2 import: " +
+                    "defaultVertexLabel=${options.defaultVertexLabel}, defaultEdgeLabel=${options.defaultEdgeLabel}"
         }
         val watch = GraphIoStopwatch()
         val idMap = GraphIoExternalIdMap(options.onDuplicateVertexId)
@@ -175,7 +176,8 @@ class Jackson2NdJsonBulkImporter(
                                         phase = GraphIoPhase.READ_EDGE,
                                         fileRole = GraphIoFileRole.UNIFIED,
                                         location = "line:$lineNo",
-                                        message = "Edge buffer exceeded maxEdgeBufferSize=${options.maxEdgeBufferSize}; " +
+                                        message =
+                                            "Edge buffer exceeded maxEdgeBufferSize=${options.maxEdgeBufferSize}; " +
                                                 "verticesCreated=$vc remain in graph as partial state",
                                     )
                                     status = GraphIoStatus.FAILED
@@ -205,7 +207,10 @@ class Jackson2NdJsonBulkImporter(
 
             if (status == GraphIoStatus.FAILED) {
                 checkpoint.failed(failureBoundary)
-                log.warn { "NDJSON_JACKSON2 import failed: vertices=$vc/$vr, edges=$ec/$er, elapsed=${watch.elapsed()}" }
+                log.warn {
+                    "NDJSON_JACKSON2 import failed: vertices=$vc/$vr, " +
+                            "edges=$ec/$er, elapsed=${watch.elapsed()}"
+                }
                 return GraphImportReport(
                     status,
                     GraphIoFormat.NDJSON_JACKSON2,
@@ -285,7 +290,8 @@ class Jackson2NdJsonBulkImporter(
                 failures
             ).also {
                 log.debug {
-                    "NDJSON_JACKSON2 import completed: vertices=$vc/$vr, edges=$ec/$er, skipped=$sv/$se, status=$status, elapsed=${watch.elapsed()}"
+                    "NDJSON_JACKSON2 import completed: vertices=$vc/$vr, edges=$ec/$er, " +
+                            "skipped=$sv/$se, status=$status, elapsed=${watch.elapsed()}"
                 }
             }
         } finally {

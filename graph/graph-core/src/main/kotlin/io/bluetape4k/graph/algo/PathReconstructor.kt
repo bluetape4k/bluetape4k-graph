@@ -47,7 +47,10 @@ internal fun reconstructPath(
     while (true) {
         val entry = cameFrom[current] ?: break
         val currentVertex = vertexLookup(current.id) ?: run {
-            PathReconstLogger.log.warn { "PathReconstructor: vertex ${current.id} not found during reconstruction (target=${target.id})" }
+            PathReconstLogger.log.warn {
+                "PathReconstructor: vertex ${current.id} not found during " +
+                    "reconstruction (target=${target.id})"
+            }
             return null
         }
         steps.add(PathStep.VertexStep(currentVertex))
@@ -57,7 +60,10 @@ internal fun reconstructPath(
 
     // Add the source vertex.
     val startVertex = vertexLookup(current.id) ?: run {
-        PathReconstLogger.log.warn { "PathReconstructor: start vertex ${current.id} not found during reconstruction" }
+        PathReconstLogger.log.warn {
+            "PathReconstructor: start vertex ${current.id} not found during " +
+                "reconstruction"
+        }
         return null
     }
     steps.add(PathStep.VertexStep(startVertex))

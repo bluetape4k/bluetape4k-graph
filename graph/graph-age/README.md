@@ -240,7 +240,7 @@ val degree = ops.degreeCentrality(alice.id, DegreeOptions(edgeLabel = "KNOWS"))
 println("in=${degree.inDegree} out=${degree.outDegree}")
 
 // BFS (JVM fallback)
-val visits = ops.bfs(alice.id, BfsDfsOptions(edgeLabel = "KNOWS", maxDepth = 3))
+val visits = ops.bfs(alice.id, TreeTraversalOptions(edgeLabel = "KNOWS", maxDepth = 3))
 
 // PageRank (JVM fallback)
 val top10 = ops.pageRank(PageRankOptions(vertexLabel = "Person", topK = 10))

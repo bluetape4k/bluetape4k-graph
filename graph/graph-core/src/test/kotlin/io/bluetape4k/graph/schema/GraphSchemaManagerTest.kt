@@ -156,6 +156,8 @@ class GraphSchemaManagerTest: AbstractGraphTest() {
         override fun detectCycles(options: CycleOptions): List<GraphCycle> = unsupported()
 
         private fun unsupported(): Nothing =
-            throw GraphUnsupportedOperationException("schemaManager extension should fail before repository methods are called")
+            throw GraphUnsupportedOperationException(
+                "schemaManager extension should fail before repository methods are called",
+            )
     }
 }

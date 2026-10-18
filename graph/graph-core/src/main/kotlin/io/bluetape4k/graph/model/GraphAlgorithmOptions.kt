@@ -79,7 +79,7 @@ data class PageRankOptions(
         val Default = PageRankOptions()
     }
 
-    // TODO: 이건 Java Built In Serialization 에서만 호출되고, Kryo, Fory 등에서는 사용 안함. 굳이 필요 없을 듯
+    // Java built-in serialization만 이 hook을 호출하며 Kryo와 Fory는 무시한다.
     private fun readObject(input: ObjectInputStream) {
         input.defaultReadObject()
         validateDeserializedAlgorithmOption(iterations > 0, "iterations must be > 0, was $iterations")
@@ -117,7 +117,7 @@ data class DegreeOptions(
         val Default = DegreeOptions()
     }
 
-    // TODO: 이건 Java Built In Serialization 에서만 호출되고, Kryo, Fory 등에서는 사용 안함. 굳이 필요 없을 듯
+    // Java built-in serialization만 이 hook을 호출하며 Kryo와 Fory는 무시한다.
     private fun readObject(input: ObjectInputStream) {
         input.defaultReadObject()
         validateDeserializedAlgorithmOptionNotNull(direction, "direction")
@@ -154,7 +154,7 @@ data class ComponentOptions(
         val Default = ComponentOptions()
     }
 
-    // TODO: 이건 Java Built In Serialization 에서만 호출되고, Kryo, Fory 등에서는 사용 안함. 굳이 필요 없을 듯
+    // Java built-in serialization만 이 hook을 호출하며 Kryo와 Fory는 무시한다.
     private fun readObject(input: ObjectInputStream) {
         input.defaultReadObject()
         validateDeserializedAlgorithmOption(minSize > 0, "minSize must be > 0, was $minSize")

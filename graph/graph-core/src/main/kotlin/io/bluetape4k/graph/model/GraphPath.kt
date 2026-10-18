@@ -173,12 +173,23 @@ fun graphPathOf(vararg vertices: GraphVertex): GraphPath = GraphPath(*vertices)
 /**
  * Creates a vertex-only path from a vertex list, with no edges.
  *
+ * This overload preserves the original JVM descriptor for callers compiled against
+ * the list-based API.
+ */
+@JvmName("graphPathOfGraphVertexList")
+fun graphPathOf(vertices: List<GraphVertex>): GraphPath =
+    GraphPath(vertices.map { PathStep.VertexStep(it) })
+
+/**
+ * Creates a vertex-only path from a vertex list, with no edges.
+ *
  * ```kotlin
  * val path = graphPathOf(listOf(v1, v2, v3))
  * ```
  */
 @JvmName("graphPathOfGraphVertexList")
-fun graphPathOf(vertices: Iterable<GraphVertex>): GraphPath = GraphPath(vertices)
+fun graphPathOf(vertices: Iterable<GraphVertex>): GraphPath =
+    GraphPath(vertices.map { PathStep.VertexStep(it) })
 
 /**
  * Creates an edge-only path from edges, with no vertices.
@@ -190,6 +201,15 @@ fun graphPathOf(vertices: Iterable<GraphVertex>): GraphPath = GraphPath(vertices
  */
 @JvmName("graphPathOfGraphEdges")
 fun graphPathOf(vararg edges: GraphEdge): GraphPath = GraphPath(edges.map { PathStep.EdgeStep(it) })
+
+/**
+ * Creates an edge-only path from an edge list, with no vertices.
+ *
+ * This overload preserves the original JVM descriptor for callers compiled against
+ * the list-based API.
+ */
+@JvmName("graphPathOfGraphEdgeList")
+fun graphPathOf(edges: List<GraphEdge>): GraphPath = GraphPath(edges.map { PathStep.EdgeStep(it) })
 
 /**
  * Creates an edge-only path from an edge list, with no vertices.

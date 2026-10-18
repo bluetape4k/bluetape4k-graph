@@ -45,6 +45,7 @@
 
 ### 버그 수정
 
+- `GraphPath` List factory, `BfsDfsOptions` traversal overload, `MissingWeightException` 계층과 생성자 호환성을 복원했다. graph-io record 길이 검증과 reader 자원 정리·예외 보존을 보강하고, Jackson2/3 Okio facade와 AGE·FalkorDB·Neo4j·TinkerPop 실행 경계를 바로잡았다 ([PR #656](https://github.com/bluetape4k/bluetape4k-graph/pull/656)).
 - AGE 자동 설정이 임의 이름의 DataSource를 받고, AGE 전용 Exposed Database를 명시적으로 주입하도록 수정한다.
   ([#632](https://github.com/bluetape4k/bluetape4k-graph/issues/632)).
 - FalkorDB traversal의 edgeLabel을 query 실행 전에 검증하여 sync/suspend의 식별자 우회 경로를 차단한다.

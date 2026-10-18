@@ -9,7 +9,6 @@ import io.bluetape4k.graph.model.GraphSchemaEntityType
 import io.bluetape4k.graph.schema.GraphSchemaManager
 import io.bluetape4k.graph.schema.GraphSchemaNames
 import io.bluetape4k.logging.KLogging
-import io.bluetape4k.logging.trace
 import kotlinx.coroutines.CancellationException
 
 /**
@@ -33,8 +32,6 @@ class FalkorDBGraphSchemaManager(
         val (safeLabel, safeProperty) = GraphSchemaNames.validateLabelAndProperty(label, property)
         ignoreAlreadyExists {
             withGraph { graph ->
-                val query = "CREATE INDEX FOR (n:$safeLabel) ON (n.$safeProperty)"
-                log.trace { "Create Index. query=$query" }
                 graph.query("CREATE INDEX FOR (n:$safeLabel) ON (n.$safeProperty)")
             }
         }
@@ -52,7 +49,6 @@ class FalkorDBGraphSchemaManager(
         ignoreMissing {
             withGraph { graph ->
                 val query = "DROP INDEX ON :$safeLabel($safeProperty)"
-                log.trace { "Drop Index. `  query=$query" }
                 graph.query(query)
             }
         }

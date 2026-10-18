@@ -74,7 +74,8 @@ class Jackson3NdJsonBulkExporter: GraphBulkExporter<GraphExportSink> {
         options: GraphExportOptions,
     ): GraphExportReport {
         log.debug {
-            "Starting NDJSON_JACKSON3 export: vertexLabels=${options.vertexLabels}, edgeLabels=${options.edgeLabels}"
+            "Starting NDJSON_JACKSON3 export: vertexLabels=${options.vertexLabels}, " +
+                "edgeLabels=${options.edgeLabels}"
         }
         val watch = GraphIoStopwatch()
         val failures = mutableListOf<GraphIoFailure>()
@@ -127,7 +128,8 @@ class Jackson3NdJsonBulkExporter: GraphBulkExporter<GraphExportSink> {
             failures = failures,
         ).also {
             log.debug {
-                "NDJSON_JACKSON3 export completed: verticesWritten=$vWritten, edgesWritten=$eWritten, status=$status, elapsed=${watch.elapsed()}"
+                "NDJSON_JACKSON3 export completed: verticesWritten=$vWritten, " +
+                    "edgesWritten=$eWritten, status=$status, elapsed=${watch.elapsed()}"
             }
         }
     }

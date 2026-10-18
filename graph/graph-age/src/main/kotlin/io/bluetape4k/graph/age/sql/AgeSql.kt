@@ -2,7 +2,6 @@ package io.bluetape4k.graph.age.sql
 
 import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.KLogging
-import io.bluetape4k.logging.trace
 import io.bluetape4k.support.EMPTY_STRING
 import io.bluetape4k.support.requireNotEmpty
 
@@ -25,6 +24,7 @@ import io.bluetape4k.support.requireNotEmpty
  * val pathSql = AgeSql.shortestPath("social", 1L, 2L, edgeLabel = "KNOWS", maxDepth = 5)
  * ```
  */
+@Suppress("TooManyFunctions")
 object AgeSql: KLogging() {
 
     data class BatchVertexRow(
@@ -77,7 +77,6 @@ object AgeSql: KLogging() {
     fun createGraph(graphName: String): String {
         val safeGraphName = graphName.requireSafeIdentifier("graphName")
         return "SELECT create_graph('$safeGraphName')"
-            .apply { log.trace { this } }
     }
 
     /**
@@ -94,7 +93,6 @@ object AgeSql: KLogging() {
     fun dropGraph(graphName: String, cascade: Boolean = true): String {
         val safeGraphName = graphName.requireSafeIdentifier("graphName")
         return "SELECT drop_graph('$safeGraphName', $cascade)"
-            .apply { log.trace { this } }
     }
 
     /**
@@ -108,7 +106,6 @@ object AgeSql: KLogging() {
     fun graphExists(graphName: String): String {
         val safeGraphName = graphName.requireSafeIdentifier("graphName")
         return "SELECT count(*) FROM ag_catalog.ag_graph WHERE name = '$safeGraphName'"
-            .apply { log.trace { this } }
     }
 
     /**
@@ -150,7 +147,6 @@ object AgeSql: KLogging() {
         val queryLiteral = dollarQuote(cypherQuery)
 
         return "SELECT * FROM ag_catalog.cypher('$safeGraphName', $queryLiteral) AS ($colDef)"
-            .apply { log.trace { this } }
     }
 
     /**

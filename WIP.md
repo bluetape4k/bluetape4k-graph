@@ -1,12 +1,22 @@
 # WIP - bluetape4k-graph
 
-- 기준일: 2026-09-07 KST
+- 기준일: 2026-10-19 KST
 - 최신 안정 버전: `1.0.0`
 - 안정 tag commit: `a405300799b36d4d6edb7267ad07ff34d4ad3afe`
 - 현재 개발선: `1.1.0-SNAPSHOT`
 - 현재 milestone: `1.1.0`
 
 ## 현재 상태
+
+### PR #656 코드 정리 및 리팩토링
+
+기존 PR #656은 `develop` (`667a8c93bee7136269a70b26aa91d33567ad7d91`)을 대상으로 열린 상태다. `fix/pr-656-review-findings` worktree에서 공개 JVM 서명 호환성, graph-io 입력·자원 경계, 백엔드 실행 경계를 보완했다.
+
+- graph-core와 graph-io, TinkerPop, AGE, FalkorDB, Neo4j, Memgraph의 대상 테스트와 Detekt가 로컬에서 통과했다.
+- 검토 대상 core API와 graph-io report/options/facade의 기존 descriptor를 `develop` 기준 산출물과 비교했다.
+- 독립 리뷰 lane은 usage limit으로 판정을 내지 못해 workflow receipt에 실패를 기록했다. 대체 인라인 리뷰는 P0/P1 미해결 없이 완료했으며 독립 attestation이 아님을 명시했다 (`docs/review/2026-10-19-pr-656-inline-fallback.md`).
+- graph-core 432개(6 skip), graph-io-core 191개 테스트와 Detekt, 전체 `build -x test`가 통과했다. graph-io 포맷·백엔드 테스트도 앞선 직렬 실행에서 통과했다.
+- 다음 단계는 기존 PR 브랜치에 커밋을 push하고 새 exact-head CI 및 리뷰/thread 상태를 read-back하는 것이다. 병합은 별도 승인 전까지 보류한다.
 
 ### #641 후속 #632
 

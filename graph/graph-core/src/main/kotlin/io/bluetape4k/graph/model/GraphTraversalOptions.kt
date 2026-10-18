@@ -69,7 +69,7 @@ data class NeighborOptions(
         val Default = NeighborOptions()
     }
 
-    // TODO: Java BuiltIn Serializer 에서만 호출된다. Kryo, Fory 에서는 무시된다 -> 사용하지 말자 
+    // Java built-in serialization만 이 hook을 호출하며 Kryo와 Fory는 무시한다.
     private fun readObject(input: ObjectInputStream) {
         input.defaultReadObject()
         validateDeserializedOption(maxDepth >= 0, "maxDepth must be >= 0, was $maxDepth")
@@ -125,7 +125,7 @@ data class PathOptions(
         val Default = PathOptions()
     }
 
-    // TODO: Java BuiltIn Serializer 에서만 호출된다. Kryo, Fory 에서는 무시된다 -> 사용하지 말자 
+    // Java built-in serialization만 이 hook을 호출하며 Kryo와 Fory는 무시한다.
     private fun readObject(input: ObjectInputStream) {
         input.defaultReadObject()
         validateDeserializedOption(maxDepth >= 0, "maxDepth must be >= 0, was $maxDepth")
@@ -140,9 +140,13 @@ data class PathOptions(
  *
  * ### Usage
  * ```kotlin
- * val opts = BfsDfsOptions(edgeLabel = "KNOWS", maxDepth = 3, maxVertices = 1_000)
+ * val opts = TreeTraversalOptions(edgeLabel = "KNOWS", maxDepth = 3, maxVertices = 1_000)
  * val visits = ops.bfs(alice.id, opts)
  * ```
+ *
+ * 이 타입은 source와 binary compatibility를 위해 유지한다. 기존
+ * `BfsDfsOptions(...)` 호출은 `TreeTraversalOptions(...)`로 옮기면 되며,
+ * `edgeLabel`, `direction`, `maxDepth`, `maxVertices` 필드의 의미는 같다.
  *
  * `maxDepth`가 `0`이면 시작 정점만 반환한다.
  *
@@ -152,7 +156,7 @@ data class PathOptions(
  * @param maxVertices 반환할 정점 수의 양수 상한. 기본값은 `10_000`이다.
  * @throws IllegalArgumentException [maxDepth]가 음수이거나 [maxVertices]가 양수가 아니면 발생한다.
  */
-@Deprecated("use TreeTraversalOptions", ReplaceWith("TreeTraversalOptions"))
+@Deprecated("Use TreeTraversalOptions for new BFS/DFS calls.")
 data class BfsDfsOptions(
     val edgeLabel: String? = null,
     val direction: Direction = Direction.OUTGOING,
@@ -171,7 +175,7 @@ data class BfsDfsOptions(
         val Default = BfsDfsOptions()
     }
 
-    // TODO: Java BuiltIn Serializer 에서만 호출된다. Kryo, Fory 에서는 무시된다 -> 사용하지 말자 
+    // Java built-in serialization만 이 hook을 호출하며 Kryo와 Fory는 무시한다.
     private fun readObject(input: ObjectInputStream) {
         input.defaultReadObject()
         validateDeserializedOption(maxDepth >= 0, "maxDepth must be >= 0, was $maxDepth")
@@ -179,6 +183,15 @@ data class BfsDfsOptions(
         validateDeserializedOptionNotNull(direction, "direction")
     }
 }
+
+
+/** Deprecated BFS/DFS 옵션을 replacement traversal 옵션으로 변환한다. */
+fun BfsDfsOptions.toTreeTraversalOptions(): TreeTraversalOptions = TreeTraversalOptions(
+    edgeLabel = edgeLabel,
+    direction = direction,
+    maxDepth = maxDepth,
+    maxVertices = maxVertices,
+)
 
 
 /**
@@ -214,7 +227,7 @@ data class TreeTraversalOptions(
         val Default = TreeTraversalOptions()
     }
 
-    // TODO: Java BuiltIn Serializer 에서만 호출된다. Kryo, Fory 에서는 무시된다 -> 사용하지 말자
+    // Java built-in serialization만 이 hook을 호출하며 Kryo와 Fory는 무시한다.
     private fun readObject(input: ObjectInputStream) {
         input.defaultReadObject()
         validateDeserializedOption(maxDepth >= 0, "maxDepth must be >= 0, was $maxDepth")
@@ -248,7 +261,7 @@ data class CycleOptions(
         val Default = CycleOptions()
     }
 
-    // TODO: Java BuiltIn Serializer 에서만 호출된다. Kryo, Fory 에서는 무시된다 -> 사용하지 말자 
+    // Java built-in serialization만 이 hook을 호출하며 Kryo와 Fory는 무시한다.
     private fun readObject(input: ObjectInputStream) {
         input.defaultReadObject()
         validateDeserializedOption(maxDepth > 0, "maxDepth must be > 0, was $maxDepth")

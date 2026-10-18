@@ -99,5 +99,9 @@ class TinkerGraphSuspendWeightedPathTest: AbstractTinkerGraphTest() {
         val a: GraphVertex,
         val b: GraphVertex,
         val c: GraphVertex,
-    ): Serializable
+    ): Serializable {
+        private companion object {
+            private const val serialVersionUID: Long = 1L
+        }
+    }
 }

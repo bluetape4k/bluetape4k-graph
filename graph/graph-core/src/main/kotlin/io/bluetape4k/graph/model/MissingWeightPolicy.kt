@@ -68,7 +68,7 @@ sealed class MissingWeightPolicy: Serializable {
             }
         }
 
-        // TODO: Java BuiltIn Serializer 에서만 호출된다. Kryo, Fory 에서는 무시된다 -> 사용하지 말자
+        // Java built-in serialization만 이 hook을 호출하며 Kryo와 Fory는 무시한다.
         private fun readObject(input: ObjectInputStream) {
             input.defaultReadObject()
             if (value <= 0.0 || !value.isFinite()) {
@@ -85,13 +85,17 @@ sealed class MissingWeightPolicy: Serializable {
 /**
  * Exception thrown for an edge without a weight when [MissingWeightPolicy.Fail] is used.
  *
- * Subtype of [IllegalStateException] for log aggregation and monitoring alerts.
+ * Subtype of [IllegalStateException] for compatibility with callers that catch
+ * the established missing-weight failure type.
+ * The legacy two-argument JVM constructor `(edgeId, key)` is retained for
+ * already-compiled callers; the optional cause is available through the
+ * three-argument constructor.
  *
  * @param edgeId ID of the edge without a weight.
  * @param key Weight property key that was queried.
  */
-class MissingWeightException(
+class MissingWeightException @JvmOverloads constructor(
     val edgeId: GraphElementId,
     val key: String,
     cause: Throwable? = null,
-): GraphException("edge $edgeId missing weight property '$key'", cause)
+): IllegalStateException("edge $edgeId missing weight property '$key'", cause)

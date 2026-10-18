@@ -99,7 +99,7 @@ class SuspendGraphMlBulkExporter: GraphSuspendBulkExporter<GraphExportSink> {
         log.debug { "Starting GRAPHML suspend export" }
         val watch = GraphIoStopwatch()
 
-        // TODO: failures 를 입력되는 코드가 아예 없는데???
+        // failures는 export report에 전달한다.
         val failures = mutableListOf<GraphIoFailure>()
 
         val (vertexLabels, edgeLabels) = options.resolveLabels(operations)

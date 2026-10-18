@@ -6,6 +6,7 @@ import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeInstanceOf
 import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldNotContain
 import io.bluetape4k.concurrent.await
 import io.bluetape4k.io.serializer.BinarySerializers
@@ -76,6 +77,15 @@ class GraphNativeBulkLoadModelsTest {
                     .toSet(),
             )
         }
+    }
+
+    @Test
+    fun `URI origin validation names the scheme field`() {
+        val error = assertFailsWith<IllegalArgumentException> {
+            GraphNativeBulkLoadUriOrigin("HTTPS", "example.com")
+        }
+
+        error.message shouldContain "scheme"
     }
 
     @Test
@@ -230,7 +240,8 @@ class GraphNativeBulkLoadModelsTest {
         done.await(5.seconds).shouldBeTrue()
 
         val error = failure.get()
-        error.shouldBeInstanceOf<GraphNativeBulkLoadException>().code shouldBeEqualTo GraphNativeBulkLoadFailureCode.CANCELLED
+        error.shouldBeInstanceOf<GraphNativeBulkLoadException>().code shouldBeEqualTo
+            GraphNativeBulkLoadFailureCode.CANCELLED
 
         source.closeCount.get() shouldBeEqualTo 1
         source.observedDeadline.shouldBeTrue()

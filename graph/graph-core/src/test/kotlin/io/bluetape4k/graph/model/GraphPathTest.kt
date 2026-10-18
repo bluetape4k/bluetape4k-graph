@@ -237,6 +237,26 @@ class GraphPathTest: AbstractGraphTest() {
     }
 
     @Test
+    fun `graphPathOf GraphVertex Iterable로 경로를 만든다`() {
+        val vertices = listOf(vertex("1"), vertex("2"))
+        val path = graphPathOf(vertices.asIterable())
+
+        log.debug { "path=$path" }
+        path.vertices shouldContainSame vertices
+        path.edges.shouldBeEmpty()
+    }
+
+    @Test
+    fun `graphPathOf GraphVertex List JVM descriptor를 보존한다`() {
+        val methods = Class.forName("io.bluetape4k.graph.model.GraphPathKt")
+            .declaredMethods
+            .filter { it.name == "graphPathOfGraphVertexList" }
+
+        methods.map { it.parameterTypes.single() }.toSet() shouldContainSame
+            setOf(List::class.java, Iterable::class.java)
+    }
+
+    @Test
     fun `graphPathOf GraphEdge vararg로 간선만 있는 경로를 만든다`() {
         val e1 = edge("e1", "1", "2")
         val e2 = edge("e2", "2", "3")
@@ -256,6 +276,16 @@ class GraphPathTest: AbstractGraphTest() {
         log.debug { "path=$path" }
         path.edges shouldContainSame edges
         path.vertices.shouldBeEmpty()
+    }
+
+    @Test
+    fun `graphPathOf GraphEdge List JVM descriptor를 보존한다`() {
+        val methods = Class.forName("io.bluetape4k.graph.model.GraphPathKt")
+            .declaredMethods
+            .filter { it.name == "graphPathOfGraphEdgeList" }
+
+        methods.map { it.parameterTypes.single() }.toSet() shouldContainSame
+            setOf(List::class.java, Iterable::class.java)
     }
 
     @Test

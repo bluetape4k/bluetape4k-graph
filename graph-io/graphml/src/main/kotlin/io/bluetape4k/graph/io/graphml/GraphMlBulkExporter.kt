@@ -25,8 +25,8 @@ import io.bluetape4k.logging.debug
 /**
  * Blocking bulk exporter for GraphML.
  *
- * exporter는 bounded repository chunk를 immutable disk spool에 한 번 기록한 뒤,
- * 같은 snapshot에서 property key와 payload를 읽어 하나의 XML 문서에 기록한다.
+ * exporter는 repository에서 크기가 제한된 chunk를 변경할 수 없는 disk spool에 한 번 기록한 뒤,
+ * 같은 spool 데이터에서 property key와 payload를 읽어 하나의 XML 문서에 기록한다.
  *
  * 예제:
  *
@@ -97,7 +97,7 @@ class GraphMlBulkExporter: GraphBulkExporter<GraphExportSink> {
         log.debug { "Starting GRAPHML export: vertexLabels=${options.vertexLabels}, edgeLabels=${options.edgeLabels}" }
         val watch = GraphIoStopwatch()
 
-        // TODO: failures 를 아무데서도 사용하지 않는데???
+        // failures는 export report에 전달한다.
         val failures = mutableListOf<GraphIoFailure>()
         val (vertexLabels, edgeLabels) = options.resolveLabels(operations)
         val spool = GraphIoRecordSpool()

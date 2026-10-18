@@ -92,7 +92,8 @@ class SuspendJackson3NdJsonBulkImporter(
         options: GraphImportOptions,
     ): GraphImportReport {
         log.debug {
-            "Starting NDJSON_JACKSON3 import (suspend): defaultVertexLabel=${options.defaultVertexLabel}, defaultEdgeLabel=${options.defaultEdgeLabel}"
+            "Starting NDJSON_JACKSON3 import (suspend): defaultVertexLabel=${options.defaultVertexLabel}, " +
+                "defaultEdgeLabel=${options.defaultEdgeLabel}"
         }
         val watch = GraphIoStopwatch()
         val idMap = GraphIoExternalIdMap(options.onDuplicateVertexId)
@@ -176,7 +177,8 @@ class SuspendJackson3NdJsonBulkImporter(
             if (status == GraphIoStatus.FAILED) {
                 checkpoint.failed(failureBoundary)
                 log.warn {
-                    "NDJSON_JACKSON3 import (suspend) failed: vertices=$vc/$vr, edges=$ec/$er, elapsed=${watch.elapsed()}"
+                    "NDJSON_JACKSON3 import (suspend) failed: vertices=$vc/$vr, " +
+                        "edges=$ec/$er, elapsed=${watch.elapsed()}"
                 }
                 return GraphImportReport(
                     status,
@@ -237,7 +239,8 @@ class SuspendJackson3NdJsonBulkImporter(
                 failures
             ).also {
                 log.debug {
-                    "NDJSON_JACKSON3 import (suspend) completed: vertices=$vc/$vr, edges=$ec/$er, skipped=$sv/$se, status=$status, elapsed=${watch.elapsed()}"
+                    "NDJSON_JACKSON3 import (suspend) completed: vertices=$vc/$vr, " +
+                        "edges=$ec/$er, skipped=$sv/$se, status=$status, elapsed=${watch.elapsed()}"
                 }
             }
         } catch (error: CancellationException) {

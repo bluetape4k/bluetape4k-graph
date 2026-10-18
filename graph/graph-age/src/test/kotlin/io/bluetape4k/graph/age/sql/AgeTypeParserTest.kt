@@ -1,5 +1,6 @@
 package io.bluetape4k.graph.age.sql
 
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
@@ -92,6 +93,34 @@ class AgeTypeParserTest {
         vertex.properties.shouldBeEmpty()
     }
 
+    @Test
+    fun `parseVertex - 필수 id와 label이 없으면 실패한다`() {
+        val missingId = assertFailsWith<IllegalArgumentException> {
+            AgeTypeParser.parseVertex("""{"label": "Person", "properties": {}}::vertex""")
+        }
+        missingId.message shouldContain "id"
+
+        val missingLabel = assertFailsWith<IllegalArgumentException> {
+            AgeTypeParser.parseVertex("""{"id": 1, "properties": {}}::vertex""")
+        }
+        missingLabel.message shouldContain "label"
+    }
+
+    @Test
+    fun `parseVertex - id가 정수가 아니거나 Long 범위를 벗어나면 실패한다`() {
+        val fractional = assertFailsWith<IllegalArgumentException> {
+            AgeTypeParser.parseVertex("""{"id": 1.5, "label": "Person", "properties": {}}::vertex""")
+        }
+        fractional.message shouldContain "integer"
+
+        val outOfRange = assertFailsWith<IllegalArgumentException> {
+            AgeTypeParser.parseVertex(
+                """{"id": 9223372036854775808, "label": "Person", "properties": {}}::vertex""",
+            )
+        }
+        outOfRange.message shouldContain "integer"
+    }
+
     // ── parseEdge ─────────────────────────────────────────────────────────
 
     @Test
@@ -116,6 +145,16 @@ class AgeTypeParserTest {
         edge.startId.value shouldBeEqualTo "10"
         edge.endId.value shouldBeEqualTo "20"
         edge.properties.shouldBeEmpty()
+    }
+
+    @Test
+    fun `parseEdge - 필수 식별자가 없으면 실패한다`() {
+        val missingStartId = assertFailsWith<IllegalArgumentException> {
+            AgeTypeParser.parseEdge(
+                """{"id": 2, "label": "KNOWS", "end_id": 3, "properties": {}}::edge""",
+            )
+        }
+        missingStartId.message shouldContain "start_id"
     }
 
     // ── parsePath ─────────────────────────────────────────────────────────

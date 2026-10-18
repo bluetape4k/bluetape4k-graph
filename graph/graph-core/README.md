@@ -133,7 +133,7 @@ The normal CI backend jobs are triggered by `graph-core` changes. The complete c
 - `pageRank(PageRankOptions)` returns `PageRankScore` results sorted by score descending.
 - `degreeCentrality(vertexId, DegreeOptions)` returns a `DegreeResult` with in/out/total degree.
 - `connectedComponents(ComponentOptions)` returns `GraphComponent` groups.
-- `bfs(startId, BfsDfsOptions)` and `dfs(startId, BfsDfsOptions)` return ordered `TraversalVisit` events.
+- `bfs(startId, TreeTraversalOptions)` and `dfs(startId, TreeTraversalOptions)` return ordered `TraversalVisit` events.
 - `detectCycles(CycleOptions)` returns `GraphCycle` paths.
 
 ### Optional Native Algorithm Provider SPI
@@ -456,7 +456,7 @@ data class GraphPath(
 
 ## Graph Algorithms
 
-`graph-core` defines the `GraphAlgorithmRepository` / `GraphSuspendAlgorithmRepository` interfaces and ships JVM fallback implementations (`UnionFind`, `BfsDfsRunner`, `CycleDetector`, `PageRankCalculator`) used by backends that do not have a native query for a given algorithm.
+`graph-core` defines the `GraphAlgorithmRepository` / `GraphSuspendAlgorithmRepository` interfaces and ships JVM fallback implementations (`UnionFind`, `TreeTraverser`, `CycleDetector`, `PageRankCalculator`) used by backends that do not have a native query for a given algorithm.
 
 ### Algorithm Support Matrix
 
@@ -467,14 +467,25 @@ data class GraphPath(
 | PageRank             | `pageRank(options)`                       | `PageRankOptions`  | `List<PageRankScore>`  |
 | Degree Centrality    | `degreeCentrality(vertexId, options)`     | `DegreeOptions`    | `DegreeResult`         |
 | Connected Components | `connectedComponents(options)`            | `ComponentOptions` | `List<GraphComponent>` |
-| BFS                  | `bfs(startId, options)`                   | `BfsDfsOptions`    | `List<TraversalVisit>` |
-| DFS                  | `dfs(startId, options)`                   | `BfsDfsOptions`    | `List<TraversalVisit>` |
+| BFS                  | `bfs(startId, options)`                   | `TreeTraversalOptions` | `List<TraversalVisit>` |
+| DFS                  | `dfs(startId, options)`                   | `TreeTraversalOptions` | `List<TraversalVisit>` |
 | Cycle Detection      | `detectCycles(options)`                   | `CycleOptions`     | `List<GraphCycle>`     |
+
+`BfsDfsOptions` remains available as a deprecated compatibility type. Its `bfs` and `dfs` overloads delegate to `TreeTraversalOptions`; new code should use the replacement directly. The `edgeLabel`, `direction`, `maxDepth`, and `maxVertices` fields map one-to-one.
+
+### Migrating from `BfsDfsOptions`
+
+Replace the option type while keeping its field values:
+
+```kotlin
+val options = TreeTraversalOptions(edgeLabel = "KNOWS", maxDepth = 3)
+val visits = ops.bfs(alice.id, options)
+```
 
 All traversal and algorithm options validate their public constructor inputs.
 `NeighborOptions.maxDepth` may be zero (no neighbor expansion),
 `PathOptions.maxDepth` may be zero (only a vertex-only path), and
-`BfsDfsOptions.maxDepth` may be zero (only the start vertex); cycle depth and all visit, iteration, result, cycle, and component limits must be positive.
+`TreeTraversalOptions.maxDepth` may be zero (only the start vertex); cycle depth and all visit, iteration, result, cycle, and component limits must be positive.
 `PageRankOptions.tolerance` must be positive and finite, and `dampingFactor`
 must be finite in the inclusive range `[0.0, 1.0]`. Invalid values throw
 `IllegalArgumentException` before a backend query is built.
@@ -508,7 +519,7 @@ val degree = ops.degreeCentrality(alice.id, DegreeOptions(edgeLabel = "KNOWS"))
 println("in=${degree.inDegree} out=${degree.outDegree}")
 
 // BFS
-val visits = ops.bfs(alice.id, BfsDfsOptions(edgeLabel = "KNOWS", maxDepth = 3))
+val visits = ops.bfs(alice.id, TreeTraversalOptions(edgeLabel = "KNOWS", maxDepth = 3))
 
 // Cycle detection
 val cycles = ops.detectCycles(CycleOptions(edgeLabel = "KNOWS", maxDepth = 5))

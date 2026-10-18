@@ -72,7 +72,10 @@ class SuspendJackson2NdJsonBulkExporter: GraphSuspendBulkExporter<GraphExportSin
         operations: GraphSuspendOperations,
         options: GraphExportOptions,
     ): GraphExportReport = withContext(Dispatchers.IO) {
-        log.debug { "Starting NDJSON_JACKSON2 export (suspend): vertexLabels=${options.vertexLabels}, edgeLabels=${options.edgeLabels}" }
+        log.debug {
+            "Starting NDJSON_JACKSON2 export (suspend): " +
+                    "vertexLabels=${options.vertexLabels}, edgeLabels=${options.edgeLabels}"
+        }
         val watch = GraphIoStopwatch()
         val failures = mutableListOf<GraphIoFailure>()
         var vWritten = 0L;
@@ -116,7 +119,10 @@ class SuspendJackson2NdJsonBulkExporter: GraphSuspendBulkExporter<GraphExportSin
             elapsed = watch.elapsed(),
             failures = failures,
         ).also {
-            log.debug { "NDJSON_JACKSON2 export (suspend) completed: verticesWritten=$vWritten, edgesWritten=$eWritten, status=$status, elapsed=${watch.elapsed()}" }
+            log.debug {
+                "NDJSON_JACKSON2 export (suspend) completed: verticesWritten=$vWritten, " +
+                        "edgesWritten=$eWritten, status=$status, elapsed=${watch.elapsed()}"
+            }
         }
     }
 }

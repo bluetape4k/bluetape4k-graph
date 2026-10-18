@@ -157,7 +157,7 @@ class GraphIoRecordSpool private constructor(
     private val edgeKeys = linkedSetOf<String>()
     private var finished = false
     private var closed = false
-    private val replayInputs = Collections.synchronizedSet(mutableSetOf<DataInputStream>())
+    private val replayInputs = mutableSetOf<DataInputStream>()
     private val lock = ReentrantLock()
 
     /** 입력 정점에서 관찰된 속성 키를 발견 순서대로 반환한다. */
@@ -171,7 +171,7 @@ class GraphIoRecordSpool private constructor(
     /** 정점 레코드를 spool에 추가한다. 호출 시점에 속성 값을 문자열로 고정한다. */
     fun appendVertices(records: Iterable<GraphIoVertexRecord>) {
         ensureWritable()
-        val output = vertexOutput.requireNotNull("vertxOutput")
+        val output = vertexOutput.requireNotNull("vertexOutput")
         records.forEach { record ->
             val normalized = normalize(record.properties, vertexKeys)
             writeRecord(output) {
@@ -329,7 +329,7 @@ class GraphIoRecordSpool private constructor(
                 }
             }
         } finally {
-            replayInputs.remove(input)
+            lock.withLock { replayInputs.remove(input) }
         }
     }
 
@@ -392,13 +392,16 @@ class GraphIoRecordSpool private constructor(
 
     private fun DataInputStream.readString(): String {
         val length = readInt()
-        length.requirePositiveNumber { "A required spool string cannot be null" }
+        length.requireInRange(0, maxRecordBytes) { "A required spool string cannot be null" }
         return readStringBytes(length)
     }
 
     private fun DataInputStream.readNullableString(): String? {
         val length = readInt()
-        return if (length < 0) null else readStringBytes(length)
+        length.requireInRange(-1, maxRecordBytes) {
+            "Invalid nullable spool string length: $length"
+        }
+        return if (length == -1) null else readStringBytes(length)
     }
 
     private fun DataInputStream.readStringBytes(length: Int): String {

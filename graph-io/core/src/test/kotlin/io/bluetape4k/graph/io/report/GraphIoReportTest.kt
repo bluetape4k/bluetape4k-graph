@@ -3,6 +3,7 @@ package io.bluetape4k.graph.io.report
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.javatimes.millis
 import io.bluetape4k.javatimes.seconds
 import io.bluetape4k.logging.KLogging
@@ -105,6 +106,40 @@ class GraphIoReportTest {
                 elapsed = Duration.ZERO,
             )
         }
+    }
+
+    @Test
+    fun `GraphImportReport validation names the rejected field`() {
+        assertRejectedField("verticesCreated", verticesCreated = -1L)
+        assertRejectedField("edgesRead", edgesRead = -1L)
+        assertRejectedField("edgesCreated", edgesCreated = -1L)
+        assertRejectedField("skippedVertices", skippedVertices = -1L)
+        assertRejectedField("skippedEdges", skippedEdges = -1L)
+    }
+
+    private fun assertRejectedField(
+        field: String,
+        verticesRead: Long = 0L,
+        verticesCreated: Long = 0L,
+        edgesRead: Long = 0L,
+        edgesCreated: Long = 0L,
+        skippedVertices: Long = 0L,
+        skippedEdges: Long = 0L,
+    ) {
+        val error = assertFailsWith<IllegalArgumentException> {
+            GraphImportReport(
+                GraphIoStatus.COMPLETED,
+                GraphIoFormat.CSV,
+                verticesRead = verticesRead,
+                verticesCreated = verticesCreated,
+                edgesRead = edgesRead,
+                edgesCreated = edgesCreated,
+                skippedVertices = skippedVertices,
+                skippedEdges = skippedEdges,
+                elapsed = Duration.ZERO,
+            )
+        }
+        error.message shouldContain field
     }
 
     @Test

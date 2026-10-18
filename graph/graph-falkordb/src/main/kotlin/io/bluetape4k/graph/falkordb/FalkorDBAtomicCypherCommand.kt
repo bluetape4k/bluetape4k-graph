@@ -4,7 +4,6 @@ import com.falkordb.Driver
 import com.falkordb.Record
 import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.KLogging
-import io.bluetape4k.logging.trace
 import io.bluetape4k.support.requireNotBlank
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -53,7 +52,6 @@ class FalkorDBAtomicCypherCommandExecutor(
     @Suppress("UNCHECKED_CAST")
     fun execute(command: FalkorDBAtomicCypherCommand): List<Record> {
         return driver.graph(graphName).use { graph ->
-            log.trace { "Execute query. query=${command.cypher}, params=${command.parameters}" }
             graph.query(command.cypher, command.parameters as Map<String, Any>).toList()
         }
     }

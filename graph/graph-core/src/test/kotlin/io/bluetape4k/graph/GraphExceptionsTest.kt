@@ -56,9 +56,9 @@ class GraphExceptionsTest {
     }
 
     @Test
-    fun `GraphUnsupportedOperationException은 GraphException이다`() {
-        val ex = GraphUnsupportedOperationException("unsuppoerted operation")
-        ex shouldBeInstanceOf GraphException::class
+    fun `GraphUnsupportedOperationException은 UnsupportedOperationException이다`() {
+        val ex = GraphUnsupportedOperationException("unsupported operation")
+        ex shouldBeInstanceOf UnsupportedOperationException::class
     }
 
     @Test
@@ -110,10 +110,11 @@ class GraphExceptionsTest {
             GraphAlreadyExistsException("e"),
             GraphQueryException("e"),
             GraphNotInitializedException("e"),
-            GraphUnsupportedOperationException("e"),
         ).forEach { ex ->
             ex shouldBeInstanceOf BluetapeException::class
             ex shouldBeInstanceOf RuntimeException::class
         }
+
+        GraphUnsupportedOperationException("e") shouldBeInstanceOf RuntimeException::class
     }
 }

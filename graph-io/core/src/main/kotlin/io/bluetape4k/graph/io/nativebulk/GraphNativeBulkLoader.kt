@@ -50,7 +50,7 @@ enum class GraphNativeBulkLoadDiagnosticKind {
     CLOSED
 }
 
-/** Secret-free lifecycle correlation에 사용하는 diagnostic snapshot이다. */
+/** 비밀값 없이 수명주기 이벤트를 연결할 때 사용하는 진단 정보다. */
 data class GraphNativeBulkLoadDiagnostic(
     val diagnosticId: String,
     val kind: GraphNativeBulkLoadDiagnosticKind,
@@ -233,7 +233,7 @@ abstract class GraphNativeBulkLoader<R: Any, V: Any>(
     private var activeCancellation: GraphNativeBulkLoadCancellationToken? = null
     private var activeDiagnosticId: String? = null
 
-    // TODO: 함수가 너무 길다. 여러 함수로 분해해야 한다.
+    // 긴 함수이며 후속 정리 시 phase별 함수로 분해할 수 있다.
     /** Request를 검증하고 progress/report/lifecycle 계약을 적용해 실행한다. */
     fun load(
         request: GraphNativeBulkLoadRequest<R>,

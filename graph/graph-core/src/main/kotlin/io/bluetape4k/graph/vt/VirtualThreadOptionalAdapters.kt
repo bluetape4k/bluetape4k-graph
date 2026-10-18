@@ -140,10 +140,31 @@ class VirtualThreadChunkedAdapter internal constructor(
             collectChunks(delegate.findEdgesByLabelChunked(label, filter, chunkSize))
         }
 
-    private fun <T> collectChunks(sequence: Sequence<List<T>>): List<List<T>> =
-        sequence.toList().apply {
-            (sequence as? AutoCloseable)?.close()
+    @Suppress("ThrowingExceptionFromFinally", "TooGenericExceptionCaught")
+    private fun <T> collectChunks(sequence: Sequence<List<T>>): List<List<T>> {
+        var iterationFailure: Throwable? = null
+        try {
+            return sequence.toList()
+        } catch (error: Throwable) {
+            iterationFailure = error
+            throw error
+        } finally {
+            val closeable = sequence as? AutoCloseable
+            if (closeable != null) {
+                try {
+                    closeable.close()
+                } catch (closeFailure: Throwable) {
+                    val primaryFailure = iterationFailure
+                    if (primaryFailure == null) {
+                        throw closeFailure
+                    }
+                    if (closeFailure !== primaryFailure) {
+                        primaryFailure.addSuppressed(closeFailure)
+                    }
+                }
+            }
         }
+    }
 }
 
 /** Wraps a synchronous merge capability in a Virtual Thread adapter. */

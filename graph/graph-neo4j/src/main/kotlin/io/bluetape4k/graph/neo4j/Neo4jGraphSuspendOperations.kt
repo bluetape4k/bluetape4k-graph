@@ -34,7 +34,6 @@ import io.bluetape4k.graph.schema.asSuspendSchemaManager
 import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
-import io.bluetape4k.logging.trace
 import io.bluetape4k.logging.warn
 import io.bluetape4k.support.requireNotBlank
 import kotlinx.coroutines.CancellationException
@@ -647,7 +646,6 @@ private class Neo4jReactiveGraphSuspendTransactionScope(
     companion object: KLoggingChannel()
 
     private suspend inline fun txQuery(query: Query): ReactiveResult {
-        log.trace { "Query: $query" }
         return tx.run(query).awaitSingle()
     }
 

@@ -42,7 +42,6 @@ import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.info
-import io.bluetape4k.logging.trace
 import io.bluetape4k.logging.warn
 import io.bluetape4k.support.EMPTY_STRING
 import io.bluetape4k.support.asInt
@@ -113,8 +112,6 @@ class FalkorDBGraphOperations(
         mapper: (Record) -> T,
     ): List<T> {
         cypher.requireNotBlank("cypher")
-        log.trace { "cypher=$cypher, params=$params" }
-
         val rs = withGraph { g ->
             g.query(cypher, params as Map<String, Any>)
         }

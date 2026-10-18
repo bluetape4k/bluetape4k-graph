@@ -15,6 +15,7 @@ import io.bluetape4k.graph.model.GraphVertex
  * val count  = ops.countVertices("Person") // 0L (deleted)
  * ```
  */
+@Suppress("TooManyFunctions")
 interface GraphVertexRepository {
     /**
      * Creates and returns a new vertex.
