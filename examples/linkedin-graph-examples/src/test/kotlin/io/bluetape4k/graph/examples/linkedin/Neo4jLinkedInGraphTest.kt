@@ -8,7 +8,9 @@ import org.neo4j.driver.Driver
 import org.neo4j.driver.GraphDatabase
 
 class Neo4jLinkedInGraphTest: AbstractLinkedInGraphTest() {
-    private val driver: Driver = GraphDatabase.driver(Neo4jServer.Launcher.neo4j.boltUrl, AuthTokens.none())
+
+    private val neo4j = Neo4jServer.Launcher.neo4j
+    private val driver: Driver = GraphDatabase.driver(neo4j.boltUrl, AuthTokens.none())
     override val ops = Neo4jGraphOperations(driver)
 
     @AfterAll

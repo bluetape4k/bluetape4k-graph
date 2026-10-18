@@ -6,19 +6,13 @@ import io.bluetape4k.graph.falkordb.FalkorDBGraphOperations
 import io.bluetape4k.logging.warn
 import io.bluetape4k.testcontainers.graphdb.FalkorDBServer
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 
-class FalkorDBLinkedInGraphTest : AbstractLinkedInGraphTest() {
+class FalkorDBLinkedInGraphTest: AbstractLinkedInGraphTest() {
+    private val falkordb = FalkorDBServer.Launcher.falkordb
+    private val driver: com.falkordb.Driver = FalkorDB.driver(falkordb.host, falkordb.port)
 
-    private lateinit var driver: com.falkordb.Driver
-    override lateinit var ops: FalkorDBGraphOperations
     override val graphName: String = "linkedin_${Base58.randomString(8)}"
-
-    @BeforeAll
-    fun startServer() {
-        driver = FalkorDB.driver(FalkorDBServer.Launcher.falkordb.host, FalkorDBServer.Launcher.falkordb.port)
-        ops = FalkorDBGraphOperations(driver, graphName)
-    }
+    override val ops: FalkorDBGraphOperations = FalkorDBGraphOperations(driver, graphName)
 
     @AfterAll
     fun stopServer() {

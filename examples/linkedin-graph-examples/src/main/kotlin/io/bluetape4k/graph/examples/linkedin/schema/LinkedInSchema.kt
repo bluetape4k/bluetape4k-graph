@@ -12,7 +12,8 @@ import io.bluetape4k.graph.schema.VertexLabel
  *           PersonLabel.title.name to "Engineer"))
  * ```
  */
-object PersonLabel : VertexLabel("Person") {
+object PersonLabel: VertexLabel("Person") {
+    private fun readResolve(): Any = PersonLabel
     val name = string("name")
     val title = string("title")
     val company = string("company")
@@ -30,7 +31,8 @@ object PersonLabel : VertexLabel("Person") {
  *           CompanyLabel.industry.name to "Software"))
  * ```
  */
-object CompanyLabel : VertexLabel("Company") {
+object CompanyLabel: VertexLabel("Company") {
+    private fun readResolve(): Any = CompanyLabel
     val name = string("name")
     val industry = string("industry")
     val size = string("size")   // "startup", "small", "medium", "large", "enterprise"
@@ -46,7 +48,8 @@ object CompanyLabel : VertexLabel("Company") {
  *           SkillLabel.category.name to "programming"))
  * ```
  */
-object SkillLabel : VertexLabel("Skill") {
+object SkillLabel: VertexLabel("Skill") {
+    private fun readResolve(): Any = SkillLabel
     val name = string("name")
     val category = string("category")   // "programming", "management", "design", etc.
 }
@@ -59,7 +62,8 @@ object SkillLabel : VertexLabel("Skill") {
  *     mapOf(KnowsLabel.since.name to "2020-01-01", KnowsLabel.strength.name to 8))
  * ```
  */
-object KnowsLabel : EdgeLabel("KNOWS", PersonLabel, PersonLabel) {
+object KnowsLabel: EdgeLabel("KNOWS", PersonLabel, PersonLabel) {
+    private fun readResolve(): Any = KnowsLabel
     val since = string("since")         // ISO date 문자열이다.
     val strength = integer("strength")  // 1-10
 }
@@ -72,7 +76,8 @@ object KnowsLabel : EdgeLabel("KNOWS", PersonLabel, PersonLabel) {
  *     mapOf(WorksAtLabel.role.name to "Engineer", WorksAtLabel.isCurrent.name to true))
  * ```
  */
-object WorksAtLabel : EdgeLabel("WORKS_AT", PersonLabel, CompanyLabel) {
+object WorksAtLabel: EdgeLabel("WORKS_AT", PersonLabel, CompanyLabel) {
+    private fun readResolve(): Any = WorksAtLabel
     val role = string("role")
     val startDate = string("startDate")
     val isCurrent = boolean("isCurrent")
@@ -85,7 +90,9 @@ object WorksAtLabel : EdgeLabel("WORKS_AT", PersonLabel, CompanyLabel) {
  * ops.createEdge(alice.id, bob.id, FollowsLabel.label)
  * ```
  */
-object FollowsLabel : EdgeLabel("FOLLOWS", PersonLabel, PersonLabel)
+object FollowsLabel: EdgeLabel("FOLLOWS", PersonLabel, PersonLabel) {
+    private fun readResolve(): Any = FollowsLabel
+}
 
 /**
  * 스킬 보유 간선 레이블.
@@ -95,7 +102,8 @@ object FollowsLabel : EdgeLabel("FOLLOWS", PersonLabel, PersonLabel)
  *     mapOf(HasSkillLabel.level.name to "expert"))
  * ```
  */
-object HasSkillLabel : EdgeLabel("HAS_SKILL", PersonLabel, SkillLabel) {
+object HasSkillLabel: EdgeLabel("HAS_SKILL", PersonLabel, SkillLabel) {
+    private fun readResolve(): Any = HasSkillLabel
     val level = string("level")  // "beginner", "intermediate", "expert"
 }
 
@@ -107,6 +115,7 @@ object HasSkillLabel : EdgeLabel("HAS_SKILL", PersonLabel, SkillLabel) {
  *     mapOf(EndorsesLabel.skillName.name to "Kotlin"))
  * ```
  */
-object EndorsesLabel : EdgeLabel("ENDORSES", PersonLabel, PersonLabel) {
+object EndorsesLabel: EdgeLabel("ENDORSES", PersonLabel, PersonLabel) {
+    private fun readResolve(): Any = EndorsesLabel
     val skillName = string("skillName")
 }

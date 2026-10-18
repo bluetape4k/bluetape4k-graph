@@ -14,9 +14,7 @@ This example models a LinkedIn-like social network as a property graph and verif
 
 ## Scenario
 
-The sample network contains people such as Alice, Bob, Carol, and Dave, plus a company such as TechCorp. The graph
-creates mutual `KNOWS` edges, one-way `FOLLOWS` edges, and `WORKS_AT` employment edges. The example answers direct
-connection, second-degree connection, shortest path, follower lookup, and employee lookup questions.
+The sample network contains people such as Alice, Bob, Carol, and Dave, plus a company such as TechCorp. The graph creates mutual `KNOWS` edges, one-way `FOLLOWS` edges, and `WORKS_AT` employment edges. The example answers direct connection, second-degree connection, shortest path, follower lookup, and employee lookup questions.
 
 ## Architecture Diagram
 
@@ -34,21 +32,21 @@ connection, second-degree connection, shortest path, follower lookup, and employ
 
 ### Vertex Labels
 
-| Label | Description | Key Properties |
-|-------|-------------|----------------|
-| `Person` | User profile | `name`, `title`, `company`, `location`, `skills`, `connectionCount` |
-| `Company` | Employer | `name`, `industry`, `size`, `location` |
-| `Skill` | Professional skill | `name`, `category` |
+| Label     | Description        | Key Properties                                                      |
+|-----------|--------------------|---------------------------------------------------------------------|
+| `Person`  | User profile       | `name`, `title`, `company`, `location`, `skills`, `connectionCount` |
+| `Company` | Employer           | `name`, `industry`, `size`, `location`                              |
+| `Skill`   | Professional skill | `name`, `category`                                                  |
 
 ### Edge Labels
 
-| Label | From → To | Description |
-|-------|-----------|-------------|
-| `KNOWS` | `Person → Person` | Mutual connection (`since`, `strength`) |
-| `WORKS_AT` | `Person → Company` | Employment (`role`, `startDate`, `isCurrent`) |
-| `FOLLOWS` | `Person → Person` | Follow relationship (non-mutual) |
-| `HAS_SKILL` | `Person → Skill` | Skill ownership (`level`: beginner / intermediate / expert) |
-| `ENDORSES` | `Person → Person` | Skill endorsement (`skillName`) |
+| Label       | From → To          | Description                                                 |
+|-------------|--------------------|-------------------------------------------------------------|
+| `KNOWS`     | `Person → Person`  | Mutual connection (`since`, `strength`)                     |
+| `WORKS_AT`  | `Person → Company` | Employment (`role`, `startDate`, `isCurrent`)               |
+| `FOLLOWS`   | `Person → Person`  | Follow relationship (non-mutual)                            |
+| `HAS_SKILL` | `Person → Skill`   | Skill ownership (`level`: beginner / intermediate / expert) |
+| `ENDORSES`  | `Person → Person`  | Skill endorsement (`skillName`)                             |
 
 ## Abstract Test Class Pattern
 
@@ -70,9 +68,9 @@ class Neo4jLinkedInGraphTest : AbstractLinkedInGraphTest() {
 }
 ```
 
-| Abstract Class | Concrete Classes |
-|----------------|------------------|
-| `AbstractLinkedInGraphTest` | `Neo4jLinkedInGraphTest`, `MemgraphLinkedInGraphTest`, `AgeLinkedInGraphTest`, `TinkerGraphLinkedInGraphTest` |
+| Abstract Class                     | Concrete Classes                                                                                                                          |
+|------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| `AbstractLinkedInGraphTest`        | `Neo4jLinkedInGraphTest`, `MemgraphLinkedInGraphTest`, `AgeLinkedInGraphTest`, `TinkerGraphLinkedInGraphTest`                             |
 | `AbstractLinkedInGraphSuspendTest` | `Neo4jLinkedInGraphSuspendTest`, `MemgraphLinkedInGraphSuspendTest`, `AgeLinkedInGraphSuspendTest`, `TinkerGraphLinkedInGraphSuspendTest` |
 
 ## Sample Queries
@@ -97,13 +95,13 @@ Docker is required for integration tests (Neo4j, Memgraph, Apache AGE). TinkerGr
 
 ## Expected Output
 
-| Scenario | Expected result |
-|---|---|
-| Direct connections | Alice returns Bob after a mutual `KNOWS` edge is created. |
-| Six-degree path | Alice reaches Dave through Bob and Carol. |
-| Second-degree network | Alice reaches Carol through Bob. |
-| Company lookup | TechCorp returns its current employees. |
-| Followers | Incoming `FOLLOWS` traversal finds followers of a profile. |
+| Scenario              | Expected result                                            |
+|-----------------------|------------------------------------------------------------|
+| Direct connections    | Alice returns Bob after a mutual `KNOWS` edge is created.  |
+| Six-degree path       | Alice reaches Dave through Bob and Carol.                  |
+| Second-degree network | Alice reaches Carol through Bob.                           |
+| Company lookup        | TechCorp returns its current employees.                    |
+| Followers             | Incoming `FOLLOWS` traversal finds followers of a profile. |
 
 ## Module Notes
 
