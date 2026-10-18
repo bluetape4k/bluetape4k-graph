@@ -37,10 +37,12 @@ import java.util.concurrent.CompletableFuture
  * ```
  */
 class GraphMlVirtualThreadBulkImporter(
-    private val sync: GraphMlBulkImporter = GraphMlBulkImporter(),
+    private val sync: GraphMlBulkImporter = GraphMlBulkImporter.Default,
 ): GraphVirtualThreadBulkImporter<GraphImportSource> {
 
-    companion object: KLogging()
+    companion object: KLogging() {
+        val Default = GraphMlVirtualThreadBulkImporter()
+    }
 
     override fun importGraphAsync(
         source: GraphImportSource,

@@ -1,12 +1,17 @@
 package io.bluetape4k.graph.benchmark.abuser
 
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
+import io.bluetape4k.support.requireNotNull
 import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AbuserDetectionEngineSmokeTest {
+
+    companion object: KLogging()
 
     @Test
     fun `AGE Exposed detects smoke fixture`() {
@@ -43,8 +48,8 @@ class AbuserDetectionEngineSmokeTest {
         val dataSource = AutoCloseableDataSource(
             PostgreSqlAbuserDetectionSupport.createDataSource(
                 jdbcUrl = server.jdbcUrl,
-                username = requireNotNull(server.username) { "PostgreSQL AGE username is not available" },
-                password = requireNotNull(server.password) { "PostgreSQL AGE password is not available" },
+                username = server.username.requireNotNull { "PostgreSQL AGE username is not available" },
+                password = server.password.requireNotNull { "PostgreSQL AGE password is not available" },
                 poolName = poolName,
                 loadAge = loadAge,
             ),
@@ -57,6 +62,7 @@ class AbuserDetectionEngineSmokeTest {
 
                 val result = engine.detect()
 
+                log.debug { "result=$result" }
                 result.predictedAbusiveAccountIds shouldBeEqualTo fixture.expectedAbusiveAccountIds
                 result.metrics.falsePositives shouldBeEqualTo 0
                 result.metrics.falseNegatives shouldBeEqualTo 0
@@ -65,6 +71,7 @@ class AbuserDetectionEngineSmokeTest {
         }
     }
 
+    @Suppress("JavaDefaultMethodsNotOverriddenByDelegation")
     private class AutoCloseableDataSource(
         private val delegate: com.zaxxer.hikari.HikariDataSource,
     ): javax.sql.DataSource by delegate, AutoCloseable {

@@ -35,7 +35,9 @@ class CsvGraphVirtualThreadBulkImporter(
     private val sync: CsvGraphBulkImporter = CsvGraphBulkImporter(),
 ): GraphVirtualThreadBulkImporter<CsvGraphImportSource> {
 
-    companion object: KLogging()
+    companion object: KLogging() {
+        val Default = CsvGraphVirtualThreadBulkImporter()
+    }
 
     override fun importGraphAsync(
         source: CsvGraphImportSource,

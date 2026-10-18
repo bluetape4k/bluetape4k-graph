@@ -9,7 +9,6 @@ import shutil
 import subprocess
 from pathlib import Path
 
-
 MODEL_COLORS = {
     "sync": "#4A90D9",
     "virtual-thread": "#5ABF6B",

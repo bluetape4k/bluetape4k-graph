@@ -9,7 +9,6 @@ import shutil
 import subprocess
 from pathlib import Path
 
-
 BACKEND_COLORS = {
     "tinkergraph": "#4A90D9",
     "neo4j": "#5ABF6B",

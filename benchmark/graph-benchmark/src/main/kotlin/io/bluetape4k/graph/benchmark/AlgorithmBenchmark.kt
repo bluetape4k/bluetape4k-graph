@@ -22,7 +22,7 @@ import kotlinx.benchmark.Warmup
 @OutputTimeUnit(BenchmarkTimeUnit.MICROSECONDS)
 @Warmup(iterations = 3, time = 2)
 @Measurement(iterations = 5, time = 3)
-open class AlgorithmBenchmark : GraphBenchmarkState() {
+open class AlgorithmBenchmark: GraphBenchmarkState() {
 
     private val tinkerOps get() = syncOps as TinkerGraphOperations
     private val vtAlgoOps get() = VirtualThreadAlgorithmAdapter(tinkerOps)

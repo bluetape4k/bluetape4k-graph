@@ -81,8 +81,8 @@ internal object AbuserAccountsTable: Table("abuser_accounts") {
 
 internal object AbuserEdgesTable: Table("abuser_edges") {
     val id = long("id").autoIncrement()
-    val fromAccountId = varchar("from_account_id", 32).references(AbuserAccountsTable.accountId)
-    val toAccountId = varchar("to_account_id", 32).references(AbuserAccountsTable.accountId)
+    val fromAccountId = varchar("from_account_id", 32) references AbuserAccountsTable.accountId
+    val toAccountId = varchar("to_account_id", 32) references AbuserAccountsTable.accountId
     val kind = varchar("kind", 32)
     val weight = double("weight")
     val amount = double("amount")

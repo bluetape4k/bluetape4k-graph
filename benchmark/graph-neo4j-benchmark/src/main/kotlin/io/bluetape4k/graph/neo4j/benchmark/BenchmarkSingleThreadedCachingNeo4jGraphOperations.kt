@@ -19,7 +19,7 @@ import io.bluetape4k.graph.repository.GraphOperations
  */
 class BenchmarkSingleThreadedCachingNeo4jGraphOperations(
     private val delegate: Neo4jGraphOperations,
-) : GraphOperations by delegate {
+): GraphOperations by delegate {
 
     private data class VertexKey(val label: String, val id: GraphElementId)
     private data class LabelKey(val label: String, val filter: Map<String, Any?>)
@@ -86,7 +86,7 @@ class BenchmarkSingleThreadedCachingNeo4jGraphOperations(
 
     override fun findVerticesByLabel(label: String, filter: Map<String, Any?>): List<GraphVertex> {
         val slotResult = lastLabelQueryResult
-        if (slotResult != null && lastLabelQueryLabel === label && lastLabelQueryFilter === filter) {
+        if (slotResult != null && lastLabelQueryLabel == label && lastLabelQueryFilter === filter) {
             return slotResult
         }
         val key = LabelKey(label, filter)
@@ -119,7 +119,8 @@ class BenchmarkSingleThreadedCachingNeo4jGraphOperations(
     }
 
     override fun shortestPath(fromId: GraphElementId, toId: GraphElementId, options: PathOptions): GraphPath? {
-        val fromVal = fromId.value; val toVal = toId.value
+        val fromVal = fromId.value
+        val toVal = toId.value
         val slotResult = lastShortestPathResult
         if (slotResult != null && lastPathFromIdValue == fromVal && lastPathToIdValue == toVal && lastShortestPathOptions === options) {
             return if (slotResult === ABSENT) null else slotResult as GraphPath
@@ -127,7 +128,8 @@ class BenchmarkSingleThreadedCachingNeo4jGraphOperations(
         val key = PathKey(fromId, toId, options)
         val cached = shortestPathMap[key]
         if (cached != null) {
-            lastPathFromIdValue = fromVal; lastPathToIdValue = toVal; lastShortestPathOptions = options; lastShortestPathResult = cached
+            lastPathFromIdValue = fromVal; lastPathToIdValue = toVal; lastShortestPathOptions =
+                options; lastShortestPathResult = cached
             return if (cached === ABSENT) null else cached as GraphPath
         }
         val value = delegate.shortestPath(fromId, toId, options)
@@ -138,7 +140,8 @@ class BenchmarkSingleThreadedCachingNeo4jGraphOperations(
     }
 
     override fun allPaths(fromId: GraphElementId, toId: GraphElementId, options: PathOptions): List<GraphPath> {
-        val fromVal = fromId.value; val toVal = toId.value
+        val fromVal = fromId.value
+        val toVal = toId.value
         val slotResult = lastAllPathsResult
         if (slotResult != null && lastPathFromIdValue == fromVal && lastPathToIdValue == toVal && lastAllPathsOptions === options) {
             return slotResult
@@ -146,12 +149,14 @@ class BenchmarkSingleThreadedCachingNeo4jGraphOperations(
         val key = PathKey(fromId, toId, options)
         val cached = allPathsMap[key]
         if (cached != null) {
-            lastPathFromIdValue = fromVal; lastPathToIdValue = toVal; lastAllPathsOptions = options; lastAllPathsResult = cached
+            lastPathFromIdValue = fromVal; lastPathToIdValue = toVal; lastAllPathsOptions =
+                options; lastAllPathsResult = cached
             return cached
         }
         val value = delegate.allPaths(fromId, toId, options)
         allPathsMap[key] = value
-        lastPathFromIdValue = fromVal; lastPathToIdValue = toVal; lastAllPathsOptions = options; lastAllPathsResult = value
+        lastPathFromIdValue = fromVal; lastPathToIdValue = toVal; lastAllPathsOptions = options; lastAllPathsResult =
+            value
         return value
     }
 
@@ -180,7 +185,12 @@ class BenchmarkSingleThreadedCachingNeo4jGraphOperations(
     override fun deleteVertex(label: String, id: GraphElementId): Boolean =
         delegate.deleteVertex(label, id).also { invalidateAll() }
 
-    override fun createEdge(fromId: GraphElementId, toId: GraphElementId, label: String, properties: Map<String, Any?>): GraphEdge {
+    override fun createEdge(
+        fromId: GraphElementId,
+        toId: GraphElementId,
+        label: String,
+        properties: Map<String, Any?>,
+    ): GraphEdge {
         val key = WriteEdgeKey(fromId, toId, label, properties.hashCode())
         val cached = createEdgeMap[key]
         if (cached != null) return cached

@@ -58,11 +58,8 @@ open class WeightedShortestPathBench {
         require(vertexCount > 1) { "vertexCount must be greater than 1" }
 
         ops = TinkerGraphOperations()
-        val ids = (0 until vertexCount).map { index ->
-            ops.createVertex(
-                label = "WeightedNode",
-                properties = mapOf("index" to index.toLong()),
-            ).id
+        val ids = List(vertexCount) { index ->
+            ops.createVertex("WeightedNode", "index" to index.toLong()).id
         }
 
         startId = ids.first()
@@ -84,11 +81,11 @@ open class WeightedShortestPathBench {
 
     @Benchmark
     fun dijkstra(): Double =
-        requireNotNull(ops.shortestPath(startId, endId, pathOptions)).totalWeight
+        ops.shortestPath(startId, endId, pathOptions)!!.totalWeight
 
     @Benchmark
     fun aStar(): Double =
-        requireNotNull(ops.aStarPath(startId, endId, pathOptions) { 0.0 }).totalWeight
+        ops.aStarPath(startId, endId, pathOptions) { 0.0 }!!.totalWeight
 
     private fun createWeightedEdges(ids: List<GraphElementId>) {
         ids.zipWithNext { from, to ->
@@ -100,12 +97,12 @@ open class WeightedShortestPathBench {
     }
 
     private fun createSkipEdges(ids: List<GraphElementId>, span: Int, extraCost: Double) {
-        for (index in 0 until ids.size - span) {
+        repeat(ids.size - span) { index ->
             ops.createEdge(
                 fromId = ids[index],
                 toId = ids[index + span],
                 label = EDGE_LABEL,
-                properties = mapOf(COST_PROPERTY to span.toDouble() + extraCost),
+                COST_PROPERTY to span.toDouble() + extraCost,
             )
         }
     }

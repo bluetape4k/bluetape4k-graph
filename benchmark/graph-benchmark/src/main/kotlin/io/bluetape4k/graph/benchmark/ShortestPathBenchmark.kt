@@ -79,9 +79,13 @@ open class ShortestPathBenchmark {
 
     @Benchmark
     fun syncShortestPath100Pairs(): Int =
-        pairs.count { (from, to) -> syncOps.shortestPath(from, to, pathOptions) != null }
+        pairs.count { (from, to) ->
+            syncOps.shortestPath(from, to, pathOptions) != null
+        }
 
     @Benchmark
     fun vtShortestPath100Pairs(): Int =
-        pairs.count { (from, to) -> vtOps.shortestPathAsync(from, to, pathOptions).join() != null }
+        pairs.count { (from, to) ->
+            vtOps.shortestPathAsync(from, to, pathOptions).join() != null
+        }
 }

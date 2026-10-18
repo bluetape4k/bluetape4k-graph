@@ -38,7 +38,7 @@ import org.openjdk.jmh.annotations.TearDown
 import org.openjdk.jmh.annotations.Warmup
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.Random
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 /**
@@ -96,14 +96,14 @@ open class GraphIoComparisonState {
         }
 
         val vertices = (0 until vertexCount).map { index ->
-            ops.createVertex("Person", mapOf("name" to "Person-$index", "rank" to index.toLong()))
+            ops.createVertex("Person", "name" to "Person-$index", "rank" to index.toLong())
         }
 
         val random = Random(42)
         repeat(edgeCount) { index ->
             val from = vertices[random.nextInt(vertices.size)].id
             val to = vertices[random.nextInt(vertices.size)].id
-            ops.createEdge(from, to, "KNOWS", mapOf("rank" to index.toLong()))
+            ops.createEdge(from, to, "KNOWS", "rank" to index.toLong())
         }
     }
 

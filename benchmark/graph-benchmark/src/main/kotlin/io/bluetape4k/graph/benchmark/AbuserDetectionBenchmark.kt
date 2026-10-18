@@ -10,6 +10,7 @@ import io.bluetape4k.graph.benchmark.abuser.ExposedAbuserDetectionEngine
 import io.bluetape4k.graph.benchmark.abuser.JpaAbuserDetectionEngine
 import io.bluetape4k.graph.benchmark.abuser.PostgreSqlAbuserDetectionSupport
 import io.bluetape4k.graph.benchmark.abuser.SqlTraversalMode
+import io.bluetape4k.support.requireNotNull
 import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
 import kotlinx.benchmark.Benchmark
 import kotlinx.benchmark.BenchmarkMode
@@ -58,8 +59,8 @@ open class AbuserDetectionBenchmark {
         val loadAge = backend == "age-cypher"
         val pool = PostgreSqlAbuserDetectionSupport.createDataSource(
             jdbcUrl = server.jdbcUrl,
-            username = requireNotNull(server.username) { "PostgreSQL AGE username is not available" },
-            password = requireNotNull(server.password) { "PostgreSQL AGE password is not available" },
+            username = server.username.requireNotNull { "PostgreSQL AGE username is not available" },
+            password = server.password.requireNotNull { "PostgreSQL AGE password is not available" },
             poolName = "abuser-detection-$backend-$sizeName-$scenarioName",
             loadAge = loadAge,
         )

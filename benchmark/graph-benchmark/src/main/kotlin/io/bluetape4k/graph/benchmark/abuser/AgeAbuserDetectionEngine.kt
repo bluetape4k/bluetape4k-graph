@@ -46,7 +46,10 @@ class AgeAbuserDetectionEngine(
                 )
             },
         )
-        val vertexIds = fixture.accounts.zip(vertices).associate { (account, vertex) -> account.accountId to vertex.id }
+        val vertexIds = fixture.accounts.zip(vertices)
+            .associate { (account, vertex) ->
+                account.accountId to vertex.id
+            }
 
         ops.createEdges(
             EDGE_LABEL,
@@ -54,12 +57,10 @@ class AgeAbuserDetectionEngine(
                 BatchEdge(
                     fromId = vertexIds.getValue(edge.fromAccountId),
                     toId = vertexIds.getValue(edge.toAccountId),
-                    properties = mapOf(
-                        "kind" to edge.kind.name,
-                        "weight" to edge.weight,
-                        "amount" to edge.amount,
-                        "createdAtMinute" to edge.createdAtMinute,
-                    ),
+                    "kind" to edge.kind.name,
+                    "weight" to edge.weight,
+                    "amount" to edge.amount,
+                    "createdAtMinute" to edge.createdAtMinute,
                 )
             },
         )
@@ -98,7 +99,7 @@ class AgeAbuserDetectionEngine(
         val candidateAlias = "n$depth"
         val edgeFilters = (1..depth).joinToString("\n              AND ") { index ->
             "e$index.kind = 'TRANSFER' AND e$index.createdAtMinute >= ${scenario.windowStartMinute} " +
-                "AND e$index.weight >= ${scenario.riskThreshold}"
+                    "AND e$index.weight >= ${scenario.riskThreshold}"
         }
 
         return AgeSql.cypher(

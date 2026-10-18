@@ -35,7 +35,9 @@ class CsvGraphVirtualThreadBulkExporter(
     private val sync: CsvGraphBulkExporter = CsvGraphBulkExporter(),
 ): GraphVirtualThreadBulkExporter<CsvGraphExportSink> {
 
-    companion object: KLogging()
+    companion object: KLogging() {
+        val Default = CsvGraphVirtualThreadBulkExporter()
+    }
 
     override fun exportGraphAsync(
         sink: CsvGraphExportSink,

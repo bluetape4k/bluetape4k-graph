@@ -109,23 +109,23 @@ Smoke task는 `sizeName=smoke`, `scenarioName=shared`를 실행합니다. Compar
 
 PageRank throughput은 `ops/s`이며 높을수록 좋습니다.
 
-| API model | Score | Error | Allocation |
-|---|---:|---:|---:|
-| Sync | **138,943.484 ops/s** | ±40,362.146 | 28,451 B/op |
-| Virtual Thread | 40,283.460 ops/s | ±9,678.720 | 29,456 B/op |
-| Coroutine Flow | 36,879.554 ops/s | ±85,084.781 | 29,516 B/op |
+| API model      |                 Score |       Error |  Allocation |
+|----------------|----------------------:|------------:|------------:|
+| Sync           | **138,943.484 ops/s** | ±40,362.146 | 28,451 B/op |
+| Virtual Thread |      40,283.460 ops/s |  ±9,678.720 | 29,456 B/op |
+| Coroutine Flow |      36,879.554 ops/s | ±85,084.781 | 29,516 B/op |
 
 BFS와 launch/create 행은 `us/op`이며 낮을수록 좋습니다.
 
-| Scenario | API model | Score | Error | Allocation |
-|---|---|---:|---:|---:|
-| BFS depth=5 | Sync | **4.724 us/op** | ±3.022 | 21,990 B/op |
-| BFS depth=5 | Virtual Thread | 18.668 us/op | ±8.229 | 23,152 B/op |
-| BFS depth=5 | Coroutine Flow | 20.244 us/op | ±11.268 | 23,455 B/op |
-| BFS 100-way | Virtual Thread | **240.903 us/op** | ±167.502 | 2,318,801 B/op |
-| BFS 100-way | Coroutine async | 279.828 us/op | ±329.942 | 2,367,754 B/op |
-| 100-way launch/create | Virtual Thread | 51.042 us/op | ±173.745 | 61,464 B/op |
-| 100-way launch/create | Coroutine async | **5.916 us/op** | ±3.127 | 28,373 B/op |
+| Scenario              | API model       |             Score |    Error |     Allocation |
+|-----------------------|-----------------|------------------:|---------:|---------------:|
+| BFS depth=5           | Sync            |   **4.724 us/op** |   ±3.022 |    21,990 B/op |
+| BFS depth=5           | Virtual Thread  |      18.668 us/op |   ±8.229 |    23,152 B/op |
+| BFS depth=5           | Coroutine Flow  |      20.244 us/op |  ±11.268 |    23,455 B/op |
+| BFS 100-way           | Virtual Thread  | **240.903 us/op** | ±167.502 | 2,318,801 B/op |
+| BFS 100-way           | Coroutine async |     279.828 us/op | ±329.942 | 2,367,754 B/op |
+| 100-way launch/create | Virtual Thread  |      51.042 us/op | ±173.745 |    61,464 B/op |
+| 100-way launch/create | Coroutine async |   **5.916 us/op** |   ±3.127 |    28,373 B/op |
 
 결과 산출물:
 
@@ -139,12 +139,12 @@ BFS와 launch/create 행은 `us/op`이며 낮을수록 좋습니다.
 
 실행 조건: macOS arm64, GraalVM JDK 25.0.3, kotlinx-benchmark/JMH 1.37, fork 1회, warmup 5회, 3초 measurement 10회, TinkerGraph fixture, 2026-05-21. 모든 값은 `us/op`이며 낮을수록 좋습니다.
 
-| Scenario | 동시성 10 | 동시성 100 | 동시성 1,000 |
-|---|---:|---:|---:|
-| BFS with Virtual Threads | **31.151** | **142.730** | **921.873** |
-| BFS with Coroutines | 38.795 | 157.676 | 1151.154 |
-| Virtual Thread creation | 8.867 | 28.225 | 200.810 |
-| Coroutine launch | **0.586** | **4.826** | **47.657** |
+| Scenario                 |  동시성 10 |  동시성 100 | 동시성 1,000 |
+|--------------------------|-----------:|------------:|-------------:|
+| BFS with Virtual Threads | **31.151** | **142.730** |  **921.873** |
+| BFS with Coroutines      |     38.795 |     157.676 |     1151.154 |
+| Virtual Thread creation  |      8.867 |      28.225 |      200.810 |
+| Coroutine launch         |  **0.586** |   **4.826** |   **47.657** |
 
 해석: 이 fixture의 blocking-style concurrent graph work에서는 Virtual Thread가 낮은 latency를 보입니다. Coroutine은 launch overhead가 훨씬 낮으므로, 주변 application이 coroutine-native이거나 graph call을 다른 suspend 작업과 합성할 때 선택합니다.
 
@@ -161,23 +161,23 @@ BFS와 launch/create 행은 `us/op`이며 낮을수록 좋습니다.
 
 Scenario matrix:
 
-| Scenario | Shape |
-|---|---|
-| `shallow` | 짧은 user/group/role/resource inheritance path |
-| `deep-inheritance` | cycle edge가 포함된 더 깊은 inheritance chain |
-| `deny-heavy` | deny grant edge가 많고 deny-overrides-allow 의미론이 강한 fixture |
-| `wide-groups` | group membership fan-out이 넓은 fixture |
-| `long-chain` | 강제 target chain이 있는 10-hop traversal |
-| `deep-wide` | fan-out과 cycle이 더 큰 12-hop traversal |
+| Scenario           | Shape                                                             |
+|--------------------|-------------------------------------------------------------------|
+| `shallow`          | 짧은 user/group/role/resource inheritance path                    |
+| `deep-inheritance` | cycle edge가 포함된 더 깊은 inheritance chain                     |
+| `deny-heavy`       | deny grant edge가 많고 deny-overrides-allow 의미론이 강한 fixture |
+| `wide-groups`      | group membership fan-out이 넓은 fixture                           |
+| `long-chain`       | 강제 target chain이 있는 10-hop traversal                         |
+| `deep-wide`        | fan-out과 cycle이 더 큰 12-hop traversal                          |
 
 Medium fixture `resolveResources` latency:
 
-| Scenario | AGE/Cypher | PostgreSQL CTE | PostgreSQL iterative | Winner |
-|---|---:|---:|---:|---|
-| `shallow` | 57.382 | 12.085 | **1.056** | PostgreSQL iterative |
-| `deep-inheritance` | 604.833 | 9.385 | **2.102** | PostgreSQL iterative |
-| `deny-heavy` | 448.263 | 9.450 | **4.310** | PostgreSQL iterative |
-| `wide-groups` | 250.083 | **1.521** | 3.658 | PostgreSQL CTE |
+| Scenario           | AGE/Cypher | PostgreSQL CTE | PostgreSQL iterative | Winner               |
+|--------------------|-----------:|---------------:|---------------------:|----------------------|
+| `shallow`          |     57.382 |         12.085 |            **1.056** | PostgreSQL iterative |
+| `deep-inheritance` |    604.833 |          9.385 |            **2.102** | PostgreSQL iterative |
+| `deny-heavy`       |    448.263 |          9.450 |            **4.310** | PostgreSQL iterative |
+| `wide-groups`      |    250.083 |      **1.521** |                3.658 | PostgreSQL CTE       |
 
 해석: 이 PostgreSQL AGE fixture에서는 AGE/Cypher가 latency에서 이기지 못했습니다. 측정된 authorization-inheritance matrix 전체에서 PostgreSQL recursive CTE와 iterative batched traversal이 더 빨랐습니다. 이 결과는 얕은/중간 규모의 negative baseline이며, 더 강한 GraphDB 도입 판단은 새 adoption task의 `large` 데이터와 10-12 hop path 기준으로 다시 봐야 합니다.
 
@@ -187,10 +187,10 @@ Large fixture adoption-scope `resolveResources` latency:
 
 ![Authorization inheritance adoption latency](../../docs/images/readme-charts/authz-inheritance-adoption-latency-chart-01.png)
 
-| Scenario | Neo4j Cypher | Memgraph Cypher | AGE/Cypher | PostgreSQL CTE | PostgreSQL iterative | Winner |
-|---|---:|---:|---:|---:|---:|---|
-| `long-chain` | **12.731** | load failure | timeout >75s | 55.364 | 47.568 | Neo4j Cypher |
-| `deep-wide` | 56.467 | load failure | timeout >75s | **11.596** | 27.836 | PostgreSQL CTE |
+| Scenario     | Neo4j Cypher | Memgraph Cypher |   AGE/Cypher | PostgreSQL CTE | PostgreSQL iterative | Winner         |
+|--------------|-------------:|----------------:|-------------:|---------------:|---------------------:|----------------|
+| `long-chain` |   **12.731** |    load failure | timeout >75s |         55.364 |               47.568 | Neo4j Cypher   |
+| `deep-wide`  |       56.467 |    load failure | timeout >75s |     **11.596** |               27.836 | PostgreSQL CTE |
 
 실행 조건: macOS arm64, GraalVM JDK 25.0.3, kotlinx-benchmark/JMH 1.37, fork 1회, warmup 없음, 1초 measurement 1회, Testcontainers, 2026-05-28. 모든 latency 값은 `ms/op`이며 낮을수록 좋습니다. 이 결과는 adoption 방향성 probe이며 release-grade benchmark는 아닙니다.
 
@@ -222,15 +222,15 @@ Adoption probe 해석:
 
 실행 조건: macOS arm64, GraalVM JDK 25.0.3, kotlinx-benchmark/JMH 1.37, fork 1회, warmup 2회, 2초 measurement 4회, 실제 Neo4j/Memgraph Testcontainers와 in-memory TinkerGraph, 2026-05-21. 모든 값은 `ms/op`이며 낮을수록 좋습니다.
 
-| Workload | TinkerGraph | Neo4j | Memgraph |
-|---|---:|---:|---:|
-| Code dependency traversal | **0.009** | 0.530 | 0.306 |
-| Code reverse dependency lookup | **0.006** | 0.579 | 0.348 |
-| Fraud high-degree neighborhood | **0.038** | 1.119 | 0.620 |
-| Fraud suspicious path exists | 1.000 | 0.509 | **0.405** |
-| IAM permission reachability | **0.033** | 0.508 | 0.300 |
-| Social high fan-out expansion | **0.030** | 0.991 | 0.549 |
-| Social two-hop candidate lookup | **0.164** | 2.756 | 1.755 |
+| Workload                        | TinkerGraph | Neo4j |  Memgraph |
+|---------------------------------|------------:|------:|----------:|
+| Code dependency traversal       |   **0.009** | 0.530 |     0.306 |
+| Code reverse dependency lookup  |   **0.006** | 0.579 |     0.348 |
+| Fraud high-degree neighborhood  |   **0.038** | 1.119 |     0.620 |
+| Fraud suspicious path exists    |       1.000 | 0.509 | **0.405** |
+| IAM permission reachability     |   **0.033** | 0.508 |     0.300 |
+| Social high fan-out expansion   |   **0.030** | 0.991 |     0.549 |
+| Social two-hop candidate lookup |   **0.164** | 2.756 |     1.755 |
 
 해석: TinkerGraph는 in-memory domain fixture의 local analysis engine으로 여전히 가장 빠릅니다. Persistent backend 중에서는 Memgraph가 이 local domain matrix에서 Neo4j보다 일관되게 빠르지만, ecosystem, operations, query tooling이 중요하면 Neo4j가 더 안전한 기본값입니다.
 
@@ -247,16 +247,16 @@ Adoption probe 해석:
 
 모든 값은 `ms/op`이며 낮을수록 좋습니다. 굵은 값은 이번 실행에서 가장 빠른 backend입니다.
 
-| Scenario | Batch | TinkerGraph | Neo4j | Memgraph | AGE | FalkorDB |
-|---|---:|---:|---:|---:|---:|---:|
-| Vertex-only batch insert | 100 | 2.606 | 2.740 | **0.965** | 1.347 | 1.467 |
-| Vertex-only batch insert | 1,000 | 11.902 | 8.499 | **5.429** | 9.100 | 6.210 |
-| Edge-only batch insert | 100 | 3.298 | 3.788 | **1.190** | 9.436 | 32.347 |
-| Edge-only batch insert | 1,000 | 18.971 | 13.762 | **7.572** | 260.430 | 3026.397 |
-| Mixed vertex+edge insert | 100 | 7.102 | 7.352 | **2.199** | 27.426 | 51.437 |
-| Mixed vertex+edge insert | 1,000 | 30.819 | 23.510 | **13.336** | 279.704 | 3354.140 |
-| Repeated mixed batches (5x) | 100 | 32.221 | 35.181 | **11.456** | 149.935 | 263.976 |
-| Repeated mixed batches (5x) | 1,000 | 154.891 | 113.940 | **66.612** | 1428.239 | 17285.768 |
+| Scenario                    | Batch | TinkerGraph |   Neo4j |   Memgraph |      AGE |  FalkorDB |
+|-----------------------------|------:|------------:|--------:|-----------:|---------:|----------:|
+| Vertex-only batch insert    |   100 |       2.606 |   2.740 |  **0.965** |    1.347 |     1.467 |
+| Vertex-only batch insert    | 1,000 |      11.902 |   8.499 |  **5.429** |    9.100 |     6.210 |
+| Edge-only batch insert      |   100 |       3.298 |   3.788 |  **1.190** |    9.436 |    32.347 |
+| Edge-only batch insert      | 1,000 |      18.971 |  13.762 |  **7.572** |  260.430 |  3026.397 |
+| Mixed vertex+edge insert    |   100 |       7.102 |   7.352 |  **2.199** |   27.426 |    51.437 |
+| Mixed vertex+edge insert    | 1,000 |      30.819 |  23.510 | **13.336** |  279.704 |  3354.140 |
+| Repeated mixed batches (5x) |   100 |      32.221 |  35.181 | **11.456** |  149.935 |   263.976 |
+| Repeated mixed batches (5x) | 1,000 |     154.891 | 113.940 | **66.612** | 1428.239 | 17285.768 |
 
 해석: Memgraph는 모든 latency row에서 가장 빠른 persistent backend입니다. Neo4j는 raw ingestion latency보다 운영 성숙도가 더 중요할 때 낮은 risk의 production 기본값으로 유지합니다. FalkorDB는 vertex-only insert에서는 경쟁력이 있지만, edge-heavy와 repeated mixed write profile은 이 공통 contract benchmark에서 너무 느립니다. FalkorDB가 1,000-row repeated mixed profile에서 이미 17.286 s/op까지 올라갔으므로 전체 10k matrix는 [#201](https://github.com/bluetape4k/bluetape4k-graph/issues/201)에서 별도로 추적합니다.
 
@@ -272,12 +272,12 @@ Adoption probe 해석:
 
 실행 조건: macOS arm64, GraalVM JDK 25.0.3, kotlinx-benchmark/JMH 1.37, fork 1회, warmup 1회, 1초 measurement 3회, 10,000-row write batch, 실제 Neo4j/Memgraph Testcontainers와 in-memory TinkerGraph, 2026-05-21. 모든 값은 `ms/op`이며 낮을수록 좋습니다. AGE와 FalkorDB는 1,000-row repeated mixed profile에서 이미 multi-second latency가 나왔고, 유용한 local window를 가장 빠른 운영 후보 3개에 집중하기 위해 이번 selective 10k run에서 제외했습니다.
 
-| Scenario | TinkerGraph | Neo4j | Memgraph |
-|---|---:|---:|---:|
-| Vertex-only batch insert | 71.152 | 67.135 | **53.518** |
-| Edge-only batch insert | 161.907 | 108.949 | **76.105** |
-| Mixed vertex+edge insert | 272.236 | 203.669 | **134.994** |
-| Repeated mixed batches (5x) | 1243.229 | 919.678 | **647.574** |
+| Scenario                    | TinkerGraph |   Neo4j |    Memgraph |
+|-----------------------------|------------:|--------:|------------:|
+| Vertex-only batch insert    |      71.152 |  67.135 |  **53.518** |
+| Edge-only batch insert      |     161.907 | 108.949 |  **76.105** |
+| Mixed vertex+edge insert    |     272.236 | 203.669 | **134.994** |
+| Repeated mixed batches (5x) |    1243.229 | 919.678 | **647.574** |
 
 해석: 대규모 sustained ingestion에서도 Memgraph가 latency 기준 1순위 후보입니다. Neo4j는 느리지만, 운영 성숙도가 peak ingestion speed보다 중요할 때 여전히 유효합니다.
 
@@ -292,12 +292,12 @@ Adoption probe 해석:
 
 실행 조건: macOS arm64, GraalVM JDK 25.0.3, JMH 1.37, fork 1회, warmup 3회, 3초 measurement 5회, `medium` dataset, 2026-05-21. FalkorDB는 기본 `jfalkordb` timeout이 이 fixture에서 실패해서 benchmark driver에 60초 Jedis read timeout을 적용해 재측정했습니다.
 
-| Operation | TinkerGraph | Neo4j | Memgraph | AGE | FalkorDB |
-|---|---:|---:|---:|---:|---:|
-| `batchInsertCycle` | 44.967 | 15.690 | **11.364** | 309.090 | 1929.180 |
-| `countPersons` | 0.308 | 0.528 | 1.341 | 2.176 | **0.197** |
-| `oneHopNeighbors` | **0.003** | 0.665 | 0.308 | 10.175 | 1.046 |
-| `shortestPath` | **0.019** | 0.700 | 0.386 | 12.420 | 0.512 |
+| Operation          | TinkerGraph |  Neo4j |   Memgraph |     AGE |  FalkorDB |
+|--------------------|------------:|-------:|-----------:|--------:|----------:|
+| `batchInsertCycle` |      44.967 | 15.690 | **11.364** | 309.090 |  1929.180 |
+| `countPersons`     |       0.308 |  0.528 |      1.341 |   2.176 | **0.197** |
+| `oneHopNeighbors`  |   **0.003** |  0.665 |      0.308 |  10.175 |     1.046 |
+| `shortestPath`     |   **0.019** |  0.700 |      0.386 |  12.420 |     0.512 |
 
 모든 값은 `ms/op`이며 낮을수록 좋습니다. 굵은 값은 이번 실행에서 가장 빠른 backend입니다.
 
@@ -314,12 +314,12 @@ Adoption probe 해석:
 
 실행 조건: macOS arm64, GraalVM JDK 25.0.3, JMH 1.37, fork 1회, warmup 1회, 1초 measurement 3회, `small` dataset, 2026-05-21.
 
-| Operation | TinkerGraph | Neo4j | Memgraph | AGE | FalkorDB |
-|---|---:|---:|---:|---:|---:|
-| `batchInsertCycle` | 5.704 | 6.903 | **1.954** | 21.580 | 38.670 |
-| `countPersons` | **0.030** | 0.779 | 0.394 | 0.645 | 0.195 |
-| `oneHopNeighbors` | **0.004** | 0.807 | 0.346 | 0.941 | 0.639 |
-| `shortestPath` | **0.022** | 0.795 | 0.344 | 1.279 | 0.290 |
+| Operation          | TinkerGraph | Neo4j |  Memgraph |    AGE | FalkorDB |
+|--------------------|------------:|------:|----------:|-------:|---------:|
+| `batchInsertCycle` |       5.704 | 6.903 | **1.954** | 21.580 |   38.670 |
+| `countPersons`     |   **0.030** | 0.779 |     0.394 |  0.645 |    0.195 |
+| `oneHopNeighbors`  |   **0.004** | 0.807 |     0.346 |  0.941 |    0.639 |
+| `shortestPath`     |   **0.022** | 0.795 |     0.344 |  1.279 |    0.290 |
 
 모든 값은 `ms/op`이며 낮을수록 좋습니다. 굵은 값은 이번 실행에서 가장 빠른 backend입니다.
 

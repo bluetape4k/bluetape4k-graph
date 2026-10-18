@@ -47,7 +47,9 @@ import java.io.BufferedWriter
  */
 class SuspendCsvGraphBulkExporter: GraphSuspendBulkExporter<CsvGraphExportSink> {
 
-    companion object: KLoggingChannel()
+    companion object: KLoggingChannel() {
+        val Default = SuspendCsvGraphBulkExporter()
+    }
 
     override suspend fun exportGraphSuspending(
         sink: CsvGraphExportSink,

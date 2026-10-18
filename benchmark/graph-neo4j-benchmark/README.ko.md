@@ -36,16 +36,14 @@
 
 ## 최신 Cross-Backend 결과
 
-공유 `graph-benchmark` Testcontainers 실행은 다른 backend와 같은 `GraphOperations` 계약으로 Neo4j도 측정합니다.
-실행 조건: macOS arm64, GraalVM JDK 25.0.3, JMH 1.37, fork 1회, warmup 1회, 1초 measurement 3회, `small` dataset, 2026-05-21.
-모든 값은 `ms/op`이며 낮을수록 좋습니다.
+공유 `graph-benchmark` Testcontainers 실행은 다른 backend와 같은 `GraphOperations` 계약으로 Neo4j도 측정합니다. 실행 조건: macOS arm64, GraalVM JDK 25.0.3, JMH 1.37, fork 1회, warmup 1회, 1초 measurement 3회, `small` dataset, 2026-05-21. 모든 값은 `ms/op`이며 낮을수록 좋습니다.
 
-| Operation | Neo4j | 같은 실행에서 가장 빠른 backend |
-|---|---:|---|
-| `batchInsertCycle` | 6.217 | Memgraph, 1.969 |
-| `countPersons` | 0.809 | TinkerGraph, 0.032 |
-| `oneHopNeighbors` | 0.811 | TinkerGraph, 0.003 |
-| `shortestPath` | 0.806 | TinkerGraph, 0.018 |
+| Operation          | Neo4j | 같은 실행에서 가장 빠른 backend |
+|--------------------|------:|---------------------------------|
+| `batchInsertCycle` | 6.217 | Memgraph, 1.969                 |
+| `countPersons`     | 0.809 | TinkerGraph, 0.032              |
+| `oneHopNeighbors`  | 0.811 | TinkerGraph, 0.003              |
+| `shortestPath`     | 0.806 | TinkerGraph, 0.018              |
 
 ![Graph DB Testcontainers benchmark](../../docs/images/readme-charts/graph-db-testcontainers-latency-chart-01.png)
 
