@@ -38,7 +38,10 @@ class AgeAuthzInheritanceEngine(
                 )
             },
         )
-        val vertexIds = fixture.nodes.zip(vertices).associate { (node, vertex) -> node.nodeId to vertex.id }
+        val vertexIds = fixture.nodes.zip(vertices)
+            .associate { (node, vertex) ->
+                node.nodeId to vertex.id
+            }
         ops.createEdges(
             EDGE_LABEL,
             fixture.edges.map { edge ->

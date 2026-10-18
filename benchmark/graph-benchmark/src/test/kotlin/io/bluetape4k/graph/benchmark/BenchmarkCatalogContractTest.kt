@@ -4,6 +4,7 @@ import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldNotContain
+import io.bluetape4k.logging.KLogging
 import org.junit.jupiter.api.Test
 import java.nio.file.Files
 import java.nio.file.Path
@@ -12,14 +13,18 @@ import kotlin.io.path.readText
 
 class BenchmarkCatalogContractTest {
 
+    companion object: KLogging()
+
     @Test
     fun `catalog matches every registered benchmark module`() {
         val root = repoRoot()
         val catalog = root.resolve("benchmark/benchmark-modules.json").readText()
+
         val catalogProjects = Regex("\\\"project\\\"\\s*:\\s*\\\"([^\\\"]+)\\\"")
             .findAll(catalog)
             .map { it.groupValues[1] }
             .toList()
+
         val registeredProjects = Files.list(root.resolve("benchmark")).use { paths ->
             paths.filter { Files.isDirectory(it) && Files.exists(it.resolve("build.gradle.kts")) }
                 .map { it.fileName.toString() }

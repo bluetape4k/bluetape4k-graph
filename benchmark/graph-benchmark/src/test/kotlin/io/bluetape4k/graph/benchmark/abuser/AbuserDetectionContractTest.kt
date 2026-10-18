@@ -1,18 +1,24 @@
 package io.bluetape4k.graph.benchmark.abuser
 
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeGreaterThan
 import io.bluetape4k.assertions.shouldNotBeEmpty
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AbuserDetectionContractTest {
 
+    companion object: KLogging()
+
     @Test
     fun `fixture is deterministic for the same size`() {
         val first = AbuserDetectionFixtureFactory.create(AbuserDetectionSize.SMOKE, AbuserDetectionScenario.SHARED)
         val second = AbuserDetectionFixtureFactory.create(AbuserDetectionSize.SMOKE, AbuserDetectionScenario.SHARED)
 
+        log.debug { "first=$first" }
         first shouldBeEqualTo second
         first.accounts.size shouldBeEqualTo AbuserDetectionSize.SMOKE.accountCount
         first.edges.shouldNotBeEmpty()
@@ -25,8 +31,11 @@ class AbuserDetectionContractTest {
         val shared = AbuserDetectionFixtureFactory.create(AbuserDetectionSize.SMOKE, AbuserDetectionScenario.SHARED)
         val dense = AbuserDetectionFixtureFactory.create(AbuserDetectionSize.SMOKE, AbuserDetectionScenario.NOISY_DENSE)
 
-        (dense.edges.size > shared.edges.size) shouldBeEqualTo true
-        (dense.expectedAbusiveAccountIds.size > shared.expectedAbusiveAccountIds.size) shouldBeEqualTo true
+        log.debug { "shared=$shared" }
+        log.debug { "dense=$dense" }
+
+        dense.edges.size shouldBeGreaterThan shared.edges.size
+        dense.expectedAbusiveAccountIds.size shouldBeGreaterThan shared.expectedAbusiveAccountIds.size
     }
 
     @Test
@@ -36,6 +45,7 @@ class AbuserDetectionContractTest {
             predicted = setOf("a", "b", "x"),
         )
 
+        log.debug { "metrics=$metrics" }
         metrics.truePositives shouldBeEqualTo 2
         metrics.falsePositives shouldBeEqualTo 1
         metrics.falseNegatives shouldBeEqualTo 1

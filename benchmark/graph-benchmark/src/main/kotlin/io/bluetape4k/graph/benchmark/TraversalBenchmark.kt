@@ -16,7 +16,7 @@ import kotlinx.benchmark.Warmup
 @OutputTimeUnit(BenchmarkTimeUnit.MICROSECONDS)
 @Warmup(iterations = 3, time = 2)
 @Measurement(iterations = 5, time = 3)
-open class TraversalBenchmark : GraphBenchmarkState() {
+open class TraversalBenchmark: GraphBenchmarkState() {
 
     private val pathOptions = PathOptions(maxDepth = 4)
 

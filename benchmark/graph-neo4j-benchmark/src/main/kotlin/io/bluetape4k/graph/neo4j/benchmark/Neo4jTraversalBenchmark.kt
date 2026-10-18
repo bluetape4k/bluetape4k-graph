@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit
 @Fork(1)
 @Warmup(iterations = 3, time = 2)
 @Measurement(iterations = 5, time = 3)
-open class Neo4jTraversalBenchmark: Neo4jBenchmarkState() {
+class Neo4jTraversalBenchmark: Neo4jBenchmarkState() {
 
     private val pathOptions = PathOptions(edgeLabel = KNOWS_LABEL, maxDepth = 4)
 

@@ -55,6 +55,10 @@ import kotlinx.coroutines.ensureActive
  */
 class SuspendGraphMlBulkImporter: GraphSuspendBulkImporter<GraphImportSource> {
 
+    companion object: KLoggingChannel() {
+        val Default = SuspendGraphMlBulkImporter()
+    }
+
     private val reader = StaxGraphMlReader()
 
     override suspend fun importGraphSuspending(
@@ -275,5 +279,4 @@ class SuspendGraphMlBulkImporter: GraphSuspendBulkImporter<GraphImportSource> {
 
     private class StopImport: RuntimeException()
 
-    companion object: KLoggingChannel()
 }

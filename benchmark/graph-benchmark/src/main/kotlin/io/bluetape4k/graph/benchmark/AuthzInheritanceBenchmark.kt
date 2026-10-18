@@ -11,6 +11,7 @@ import io.bluetape4k.graph.benchmark.authz.AuthzInheritanceScenario
 import io.bluetape4k.graph.benchmark.authz.AuthzInheritanceSize
 import io.bluetape4k.graph.benchmark.authz.NativeCypherAuthzInheritanceEngine
 import io.bluetape4k.graph.benchmark.authz.SqlAuthzInheritanceEngine
+import io.bluetape4k.support.requireNotNull
 import io.bluetape4k.testcontainers.graphdb.MemgraphServer
 import io.bluetape4k.testcontainers.graphdb.Neo4jServer
 import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
@@ -98,8 +99,8 @@ open class AuthzInheritanceBenchmark {
         PostgreSQLAgeServer.Launcher.postgresqlAge.let { server ->
             PostgreSqlAbuserDetectionSupport.createDataSource(
                 jdbcUrl = server.jdbcUrl,
-                username = requireNotNull(server.username) { "PostgreSQL AGE username is not available" },
-                password = requireNotNull(server.password) { "PostgreSQL AGE password is not available" },
+                username = server.username.requireNotNull { "PostgreSQL AGE username is not available" },
+                password = server.password.requireNotNull { "PostgreSQL AGE password is not available" },
                 poolName = "authz-inheritance-$backend-$sizeName-$scenarioName",
                 loadAge = loadAge,
             )

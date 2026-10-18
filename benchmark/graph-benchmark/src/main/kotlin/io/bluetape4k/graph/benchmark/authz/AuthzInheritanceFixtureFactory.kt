@@ -9,7 +9,13 @@ object AuthzInheritanceFixtureFactory {
         val users = (0 until size.userCount).map { AuthzNode(userId(it), AuthzNodeKind.USER, publicApi = false) }
         val groups = (0 until size.groupCount).map { AuthzNode(groupId(it), AuthzNodeKind.GROUP, publicApi = false) }
         val roles = (0 until size.roleCount).map { AuthzNode(roleId(it), AuthzNodeKind.ROLE, publicApi = false) }
-        val resources = (0 until size.resourceCount).map { AuthzNode(resourceId(it), AuthzNodeKind.RESOURCE, publicApi = it % 3 != 0) }
+        val resources = (0 until size.resourceCount).map {
+            AuthzNode(
+                resourceId(it),
+                AuthzNodeKind.RESOURCE,
+                publicApi = it % 3 != 0
+            )
+        }
         val nodes = users + groups + roles + resources
         val edges = buildEdges(size, scenario)
 

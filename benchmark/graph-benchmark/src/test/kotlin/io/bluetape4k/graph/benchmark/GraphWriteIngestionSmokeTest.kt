@@ -1,9 +1,12 @@
 package io.bluetape4k.graph.benchmark
 
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.logging.KLogging
 import org.junit.jupiter.api.Test
 
 class GraphWriteIngestionSmokeTest {
+
+    companion object: KLogging()
 
     @Test
     fun `TinkerGraph write ingestion benchmark methods insert expected row counts`() {

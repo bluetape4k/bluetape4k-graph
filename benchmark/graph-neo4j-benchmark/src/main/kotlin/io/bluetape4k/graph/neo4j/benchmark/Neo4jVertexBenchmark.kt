@@ -19,11 +19,11 @@ import java.util.concurrent.TimeUnit
 @Fork(1)
 @Warmup(iterations = 3, time = 2)
 @Measurement(iterations = 5, time = 3)
-open class Neo4jVertexBenchmark: Neo4jBenchmarkState() {
+class Neo4jVertexBenchmark: Neo4jBenchmarkState() {
 
     @Benchmark
     fun createVertex(): Boolean {
-        val v = ops.createVertex(PERSON_LABEL, mapOf("name" to "Tmp"))
+        val v = ops.createVertex(PERSON_LABEL, "name" to "Tmp")
         return v.id.value.isNotEmpty()
     }
 
@@ -41,9 +41,9 @@ open class Neo4jVertexBenchmark: Neo4jBenchmarkState() {
 
     @Benchmark
     fun createEdge(): Boolean {
-        val from = ops.createVertex(PERSON_LABEL, mapOf("name" to "Src"))
-        val to = ops.createVertex(PERSON_LABEL, mapOf("name" to "Dst"))
-        val edge = ops.createEdge(from.id, to.id, KNOWS_LABEL, mapOf("since" to 2024L))
+        val from = ops.createVertex(PERSON_LABEL, "name" to "Src")
+        val to = ops.createVertex(PERSON_LABEL, "name" to "Dst")
+        val edge = ops.createEdge(from.id, to.id, KNOWS_LABEL, "since" to 2024L)
         return edge.id.value.isNotEmpty()
     }
 
@@ -80,7 +80,7 @@ open class Neo4jVertexBenchmark: Neo4jBenchmarkState() {
     }
 
     private fun batchVertexRows(): List<Map<String, Any?>> =
-        (0 until 10_000).map { index ->
+        List(10_000) { index ->
             mapOf("name" to "Person-$index", "rank" to index.toLong())
         }
 
@@ -89,7 +89,7 @@ open class Neo4jVertexBenchmark: Neo4jBenchmarkState() {
             BatchEdge(
                 fromId = vertices[index].id,
                 toId = vertices[(index + 1) % vertices.size].id,
-                properties = mapOf("rank" to index.toLong()),
+                "rank" to index.toLong(),
             )
         }
 }

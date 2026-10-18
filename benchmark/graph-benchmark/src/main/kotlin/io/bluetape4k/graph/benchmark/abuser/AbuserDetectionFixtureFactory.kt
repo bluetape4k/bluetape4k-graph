@@ -122,8 +122,8 @@ object AbuserDetectionFixtureFactory {
                     bySource[accountId].orEmpty()
                         .filter { edge ->
                             edge.kind == AbuseSignalKind.TRANSFER &&
-                                edge.createdAtMinute >= scenario.windowStartMinute &&
-                                edge.weight >= scenario.riskThreshold
+                                    edge.createdAtMinute >= scenario.windowStartMinute &&
+                                    edge.weight >= scenario.riskThreshold
                         }
                         .forEach { edge ->
                             upstreamByDestination.getOrPut(edge.toAccountId) { linkedSetOf() } += sourceId

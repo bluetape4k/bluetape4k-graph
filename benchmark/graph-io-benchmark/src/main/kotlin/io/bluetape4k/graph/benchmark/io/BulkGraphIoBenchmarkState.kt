@@ -11,7 +11,7 @@ import org.openjdk.jmh.annotations.State
 import org.openjdk.jmh.annotations.TearDown
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.Random
+import java.util.*
 
 @State(Scope.Benchmark)
 open class BulkGraphIoBenchmarkState {
@@ -35,15 +35,15 @@ open class BulkGraphIoBenchmarkState {
         }
 
         val vertexIds = ArrayList<GraphElementId>(vCount)
-        for (i in 0 until vCount) {
-            vertexIds += ops.createVertex("Person", mapOf("i" to i, "name" to "n$i")).id
+        repeat(vCount) { i ->
+            vertexIds += ops.createVertex("Person", "i" to i, "name" to "n$i").id
         }
 
         val rng = Random(42)
-        for (i in 0 until eCount) {
+        repeat(eCount) {
             val a = vertexIds[rng.nextInt(vCount)]
             val b = vertexIds[rng.nextInt(vCount)]
-            ops.createEdge(a, b, "KNOWS", mapOf("since" to (2000 + rng.nextInt(25))))
+            ops.createEdge(a, b, "KNOWS", "since" to (2000 + rng.nextInt(25)))
         }
     }
 

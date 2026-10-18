@@ -158,7 +158,7 @@ open class GraphDomainWorkloadState {
     private fun seedSocialGraph() {
         val users = ops.createVertices(
             SOCIAL_LABEL,
-            (0 until 1_200).map { index ->
+            List(1_200) { index ->
                 mapOf(
                     "name" to "social-user-$index",
                     "tier" to (index % 5).toLong(),
@@ -168,12 +168,12 @@ open class GraphDomainWorkloadState {
         socialAnchorId = users.first().id
 
         val firstHop = (1..240).map { index ->
-            BatchEdge(socialAnchorId, users[index].id, mapOf("rank" to index.toLong()))
+            BatchEdge(socialAnchorId, users[index].id, "rank" to index.toLong())
         }
         val secondHop = (1..240).flatMap { firstHopIndex ->
-            (1..4).map { offset ->
-                val targetIndex = 241 + ((firstHopIndex - 1) * 4 + offset - 1) % (users.size - 241)
-                BatchEdge(users[firstHopIndex].id, users[targetIndex].id, mapOf("rank" to targetIndex.toLong()))
+            List(4) { offset ->
+                val targetIndex = 241 + ((firstHopIndex - 1) * 4 + offset) % (users.size - 241)
+                BatchEdge(users[firstHopIndex].id, users[targetIndex].id, "rank" to targetIndex.toLong())
             }
         }
         ops.createEdges(SOCIAL_EDGE_LABEL, firstHop + secondHop)
@@ -189,15 +189,15 @@ open class GraphDomainWorkloadState {
         iamPermissionId = permissions[17].id
 
         val membershipEdges = users.mapIndexed { index, user ->
-            BatchEdge(user.id, groups[index % groups.size].id, mapOf("rank" to index.toLong()))
+            BatchEdge(user.id, groups[index % groups.size].id, "rank" to index.toLong())
         }
         val inheritanceEdges = groups.mapIndexed { index, group ->
-            BatchEdge(group.id, roles[index % roles.size].id, mapOf("rank" to index.toLong()))
+            BatchEdge(group.id, roles[index % roles.size].id, "rank" to index.toLong())
         }
         val permissionEdges = roles.flatMapIndexed { roleIndex, role ->
             (0 until 4).map { offset ->
                 val permission = permissions[(roleIndex * 4 + offset) % permissions.size]
-                BatchEdge(role.id, permission.id, mapOf("rank" to (roleIndex * 4L + offset)))
+                BatchEdge(role.id, permission.id, "rank" to (roleIndex * 4L + offset))
             }
         }
         ops.createEdges(IAM_EDGE_LABEL, membershipEdges + inheritanceEdges + permissionEdges)
@@ -210,16 +210,16 @@ open class GraphDomainWorkloadState {
         fraudTargetId = accounts[450].id
 
         val hubEdges = (1..320).map { index ->
-            BatchEdge(fraudHubId, accounts[index].id, mapOf("amount" to (10_000L + index)))
+            BatchEdge(fraudHubId, accounts[index].id, "amount" to (10_000L + index))
         }
         val pathEdges = listOf(
-            BatchEdge(fraudSourceId, accounts[321].id, mapOf("amount" to 8_000L)),
-            BatchEdge(accounts[321].id, accounts[322].id, mapOf("amount" to 8_500L)),
-            BatchEdge(accounts[322].id, accounts[323].id, mapOf("amount" to 9_000L)),
-            BatchEdge(accounts[323].id, fraudTargetId, mapOf("amount" to 9_500L)),
+            BatchEdge(fraudSourceId, accounts[321].id, "amount" to 8_000L),
+            BatchEdge(accounts[321].id, accounts[322].id, "amount" to 8_500L),
+            BatchEdge(accounts[322].id, accounts[323].id, "amount" to 9_000L),
+            BatchEdge(accounts[323].id, fraudTargetId, "amount" to 9_500L),
         )
         val backgroundEdges = (451 until accounts.size).map { index ->
-            BatchEdge(accounts[index].id, accounts[1 + (index % 320)].id, mapOf("amount" to (1_000L + index)))
+            BatchEdge(accounts[index].id, accounts[1 + (index % 320)].id, "amount" to (1_000L + index))
         }
         ops.createEdges(FRAUD_EDGE_LABEL, hubEdges + pathEdges + backgroundEdges)
     }
@@ -230,19 +230,19 @@ open class GraphDomainWorkloadState {
         codeCoreId = components.first().id
 
         val directDependencies = (1 until components.size).map { index ->
-            BatchEdge(components[index].id, components[index % 12].id, mapOf("rank" to index.toLong()))
+            BatchEdge(components[index].id, components[index % 12].id, "rank" to index.toLong())
         }
         val layeredDependencies = (120 until 220).flatMap { index ->
             listOf(
-                BatchEdge(components[index].id, components[20 + (index % 40)].id, mapOf("rank" to index.toLong())),
-                BatchEdge(components[20 + (index % 40)].id, components[index % 12].id, mapOf("rank" to index.toLong())),
+                BatchEdge(components[index].id, components[20 + (index % 40)].id, "rank" to index.toLong()),
+                BatchEdge(components[20 + (index % 40)].id, components[index % 12].id, "rank" to index.toLong()),
             )
         }
         ops.createEdges(CODE_EDGE_LABEL, directDependencies + layeredDependencies)
     }
 
     private fun rows(prefix: String, count: Int): List<Map<String, Any?>> =
-        (0 until count).map { index ->
+        List(count) { index ->
             mapOf(
                 "name" to "$prefix-$index",
                 "rank" to index.toLong(),

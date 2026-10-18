@@ -36,16 +36,14 @@ The benchmark starts a local containerized Neo4j instance. Keep this module out 
 
 ## Latest Cross-Backend Result
 
-The shared `graph-benchmark` Testcontainers run also measures Neo4j with the same `GraphOperations` contract used by other backends.
-Run conditions: macOS arm64, GraalVM JDK 25.0.3, JMH 1.37, one fork, one warmup iteration, three one-second measurement iterations, `small` dataset, May 21, 2026.
-All values are `ms/op`; lower is better.
+The shared `graph-benchmark` Testcontainers run also measures Neo4j with the same `GraphOperations` contract used by other backends. Run conditions: macOS arm64, GraalVM JDK 25.0.3, JMH 1.37, one fork, one warmup iteration, three one-second measurement iterations, `small` dataset, May 21, 2026. All values are `ms/op`; lower is better.
 
-| Operation | Neo4j | Fastest backend in the same run |
-|---|---:|---|
-| `batchInsertCycle` | 6.217 | Memgraph, 1.969 |
-| `countPersons` | 0.809 | TinkerGraph, 0.032 |
-| `oneHopNeighbors` | 0.811 | TinkerGraph, 0.003 |
-| `shortestPath` | 0.806 | TinkerGraph, 0.018 |
+| Operation          | Neo4j | Fastest backend in the same run |
+|--------------------|------:|---------------------------------|
+| `batchInsertCycle` | 6.217 | Memgraph, 1.969                 |
+| `countPersons`     | 0.809 | TinkerGraph, 0.032              |
+| `oneHopNeighbors`  | 0.811 | TinkerGraph, 0.003              |
+| `shortestPath`     | 0.806 | TinkerGraph, 0.018              |
 
 ![Graph DB Testcontainers benchmark](../../docs/images/readme-charts/graph-db-testcontainers-latency-chart-01.png)
 

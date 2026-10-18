@@ -3,8 +3,7 @@ package io.bluetape4k.graph.benchmark
 import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.repository.GraphOperations
-import kotlin.math.roundToLong
-import kotlin.system.measureNanoTime
+import kotlin.system.measureTimeMillis
 
 data class BatchInsertSmokeResult(
     val backend: String,
@@ -19,8 +18,8 @@ data class BatchInsertSmokeResult(
 
     fun toSummaryLine(): String =
         "batch-smoke backend=$backend rows=$rows vertexLoopMs=$vertexLoopMs vertexBatchMs=$vertexBatchMs " +
-            "vertexSpeedup=${vertexSpeedup.format1()} edgeLoopMs=$edgeLoopMs edgeBatchMs=$edgeBatchMs " +
-            "edgeSpeedup=${edgeSpeedup.format1()}"
+                "vertexSpeedup=${vertexSpeedup.format1()} edgeLoopMs=$edgeLoopMs edgeBatchMs=$edgeBatchMs " +
+                "edgeSpeedup=${edgeSpeedup.format1()}"
 }
 
 fun runBatchInsertSmoke(
@@ -28,12 +27,12 @@ fun runBatchInsertSmoke(
     rows: Int = 10_000,
     createOperations: () -> GraphOperations,
 ): BatchInsertSmokeResult {
-    val vertexRows = (0 until rows).map { index ->
+    val vertexRows = List(rows) { index ->
         mapOf("name" to "Person-$index", "rank" to index.toLong())
     }
 
     val vertexLoopMs = createOperations().use { ops ->
-        measureMs {
+        measureTimeMillis {
             vertexRows.forEach { props ->
                 ops.createVertex("Person", props)
             }
@@ -41,7 +40,7 @@ fun runBatchInsertSmoke(
     }
 
     val vertexBatchMs = createOperations().use { ops ->
-        measureMs {
+        measureTimeMillis {
             ops.createVertices("Person", vertexRows)
         }
     }
@@ -49,7 +48,7 @@ fun runBatchInsertSmoke(
     val edgeLoopMs = createOperations().use { ops ->
         val vertices = ops.createVertices("Person", vertexRows)
         val edges = cycleEdges(vertices)
-        measureMs {
+        measureTimeMillis {
             edges.forEach { edge ->
                 ops.createEdge(edge.fromId, edge.toId, "KNOWS", edge.properties)
             }
@@ -59,7 +58,7 @@ fun runBatchInsertSmoke(
     val edgeBatchMs = createOperations().use { ops ->
         val vertices = ops.createVertices("Person", vertexRows)
         val edges = cycleEdges(vertices)
-        measureMs {
+        measureTimeMillis {
             ops.createEdges("KNOWS", edges)
         }
     }
@@ -79,12 +78,9 @@ private fun cycleEdges(vertices: List<GraphVertex>): List<BatchEdge> =
         BatchEdge(
             fromId = vertices[index].id,
             toId = vertices[(index + 1) % vertices.size].id,
-            properties = mapOf("rank" to index.toLong()),
+            "rank" to index.toLong(),
         )
     }
-
-private fun measureMs(block: () -> Unit): Long =
-    (measureNanoTime(block) / 1_000_000.0).roundToLong()
 
 private fun Double.format1(): String =
     "%.1f".format(this)

@@ -29,20 +29,20 @@ open class GraphBenchmarkState {
         syncOps = TinkerGraphOperations()
         vtOps = VirtualThreadOperationsAdapter(syncOps)
 
-        val alice = syncOps.createVertex("Person", mapOf("name" to "Alice", "age" to 30L))
-        val bob = syncOps.createVertex("Person", mapOf("name" to "Bob", "age" to 25L))
-        val charlie = syncOps.createVertex("Person", mapOf("name" to "Charlie", "age" to 28L))
-        val dave = syncOps.createVertex("Person", mapOf("name" to "Dave", "age" to 35L))
+        val alice = syncOps.createVertex("Person", "name" to "Alice", "age" to 30L)
+        val bob = syncOps.createVertex("Person", "name" to "Bob", "age" to 25L)
+        val charlie = syncOps.createVertex("Person", "name" to "Charlie", "age" to 28L)
+        val dave = syncOps.createVertex("Person", "name" to "Dave", "age" to 35L)
 
         aliceId = alice.id
         bobId = bob.id
         charlieId = charlie.id
         daveId = dave.id
 
-        syncOps.createEdge(aliceId, bobId, "KNOWS", mapOf("since" to 2020L))
-        syncOps.createEdge(bobId, charlieId, "KNOWS", mapOf("since" to 2021L))
-        syncOps.createEdge(charlieId, daveId, "KNOWS", mapOf("since" to 2022L))
-        syncOps.createEdge(aliceId, charlieId, "FOLLOWS", mapOf("since" to 2019L))
+        syncOps.createEdge(aliceId, bobId, "KNOWS", "since" to 2020L)
+        syncOps.createEdge(bobId, charlieId, "KNOWS", "since" to 2021L)
+        syncOps.createEdge(charlieId, daveId, "KNOWS", "since" to 2022L)
+        syncOps.createEdge(aliceId, charlieId, "FOLLOWS", "since" to 2019L)
     }
 
     @TearDown

@@ -3,6 +3,8 @@ package io.bluetape4k.graph.benchmark
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
@@ -11,6 +13,8 @@ import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
 class BenchmarkSvgRendererTest {
+
+    companion object: KLogging()
 
     @Test
     fun `renderer writes grouped svg from benchmark json`(@TempDir dir: Path) {
@@ -31,9 +35,14 @@ class BenchmarkSvgRendererTest {
             )
         }
 
-        val process = ProcessBuilder("python3", repoRoot().resolve("benchmark/scripts/render_benchmark_svg.py").toString(), input.toString())
+        val process = ProcessBuilder(
+            "python3",
+            repoRoot().resolve("benchmark/scripts/render_benchmark_svg.py").toString(),
+            input.toString()
+        )
             .directory(dir.toFile())
             .start()
+
         val stdout = process.inputStream.bufferedReader().readText().trim()
         val stderr = process.errorStream.bufferedReader().readText().trim()
 
@@ -43,7 +52,9 @@ class BenchmarkSvgRendererTest {
 
         val svg = dir.resolve("docs/benchmark-results/SampleBenchmark.svg")
         svg.exists().shouldBeTrue()
+
         val content = svg.readText()
+        log.debug { "content=$content" }
         content shouldContain "SampleBenchmark"
         content shouldContain "syncRead"
         content shouldContain "virtualThreadRead"

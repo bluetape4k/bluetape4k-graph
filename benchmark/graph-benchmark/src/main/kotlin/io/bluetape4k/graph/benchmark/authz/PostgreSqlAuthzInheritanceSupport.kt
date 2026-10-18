@@ -13,7 +13,12 @@ internal object PostgreSqlAuthzInheritanceSupport {
         mode: SqlTraversalMode,
     ): Set<String> =
         when (mode) {
-            SqlTraversalMode.RECURSIVE_CTE -> resolveWithRecursiveCte(dataSource, nodesTableName, edgesTableName, fixture)
+            SqlTraversalMode.RECURSIVE_CTE -> resolveWithRecursiveCte(
+                dataSource,
+                nodesTableName,
+                edgesTableName,
+                fixture
+            )
             SqlTraversalMode.ITERATIVE -> resolveIteratively(dataSource, nodesTableName, edgesTableName, fixture)
         }
 

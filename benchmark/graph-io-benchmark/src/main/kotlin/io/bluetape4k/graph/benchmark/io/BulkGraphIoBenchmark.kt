@@ -63,7 +63,7 @@ open class BulkGraphIoBenchmark {
             GraphExportSink.PathSink(s.tempDir.resolve("v.csv")),
             GraphExportSink.PathSink(s.tempDir.resolve("e.csv")),
         )
-        CsvGraphBulkExporter().exportGraph(sink, s.ops, exportOpts)
+        CsvGraphBulkExporter.Default.exportGraph(sink, s.ops, exportOpts)
     }
 
     @Benchmark
@@ -73,7 +73,7 @@ open class BulkGraphIoBenchmark {
             GraphImportSource.PathSource(s.tempDir.resolve("v.csv")),
             GraphImportSource.PathSource(s.tempDir.resolve("e.csv")),
         )
-        CsvGraphBulkImporter().importGraph(source, TinkerGraphOperations(), importOpts)
+        CsvGraphBulkImporter.Default.importGraph(source, TinkerGraphOperations(), importOpts)
     }
 
     @Benchmark
@@ -85,7 +85,7 @@ open class BulkGraphIoBenchmark {
             GraphExportSink.PathSink(s.tempDir.resolve("vvt.csv")),
             GraphExportSink.PathSink(s.tempDir.resolve("evt.csv")),
         )
-        CsvGraphVirtualThreadBulkExporter().exportGraphAsync(sink, s.ops, exportOpts).get()
+        CsvGraphVirtualThreadBulkExporter.Default.exportGraphAsync(sink, s.ops, exportOpts).get()
     }
 
     @Benchmark
@@ -95,7 +95,7 @@ open class BulkGraphIoBenchmark {
             GraphImportSource.PathSource(s.tempDir.resolve("vvt.csv")),
             GraphImportSource.PathSource(s.tempDir.resolve("evt.csv")),
         )
-        CsvGraphVirtualThreadBulkImporter().importGraphAsync(source, TinkerGraphOperations(), importOpts).get()
+        CsvGraphVirtualThreadBulkImporter.Default.importGraphAsync(source, TinkerGraphOperations(), importOpts).get()
     }
 
     @Benchmark
@@ -107,7 +107,11 @@ open class BulkGraphIoBenchmark {
             GraphExportSink.PathSink(s.tempDir.resolve("vco.csv")),
             GraphExportSink.PathSink(s.tempDir.resolve("eco.csv")),
         )
-        SuspendCsvGraphBulkExporter().exportGraphSuspending(sink, TinkerGraphSuspendOperations(s.ops as TinkerGraphOperations), exportOpts)
+        SuspendCsvGraphBulkExporter.Default.exportGraphSuspending(
+            sink,
+            TinkerGraphSuspendOperations(s.ops as TinkerGraphOperations),
+            exportOpts
+        )
     }
 
     @Benchmark
@@ -117,7 +121,7 @@ open class BulkGraphIoBenchmark {
             GraphImportSource.PathSource(s.tempDir.resolve("vco.csv")),
             GraphImportSource.PathSource(s.tempDir.resolve("eco.csv")),
         )
-        SuspendCsvGraphBulkImporter().importGraphSuspending(source, TinkerGraphSuspendOperations(), importOpts)
+        SuspendCsvGraphBulkImporter.Default.importGraphSuspending(source, TinkerGraphSuspendOperations(), importOpts)
     }
 
     @Benchmark
@@ -127,7 +131,7 @@ open class BulkGraphIoBenchmark {
 
     @Benchmark
     fun jackson2SyncExport(s: BulkGraphIoBenchmarkState) {
-        Jackson2NdJsonBulkExporter().exportGraph(
+        Jackson2NdJsonBulkExporter.Default.exportGraph(
             GraphExportSink.PathSink(s.tempDir.resolve("g2.ndjson")), s.ops, exportOpts
         )
     }
@@ -135,7 +139,7 @@ open class BulkGraphIoBenchmark {
     @Benchmark
     fun jackson2SyncImport(s: BulkGraphIoBenchmarkState) {
         jackson2SyncExport(s)
-        Jackson2NdJsonBulkImporter().importGraph(
+        Jackson2NdJsonBulkImporter.Default.importGraph(
             GraphImportSource.PathSource(s.tempDir.resolve("g2.ndjson")), TinkerGraphOperations(), importOpts
         )
     }
@@ -145,7 +149,7 @@ open class BulkGraphIoBenchmark {
 
     @Benchmark
     fun jackson2VtExport(s: BulkGraphIoBenchmarkState) {
-        Jackson2NdJsonVirtualThreadBulkExporter().exportGraphAsync(
+        Jackson2NdJsonVirtualThreadBulkExporter.Default.exportGraphAsync(
             GraphExportSink.PathSink(s.tempDir.resolve("g2vt.ndjson")), s.ops, exportOpts
         ).get()
     }
@@ -153,7 +157,7 @@ open class BulkGraphIoBenchmark {
     @Benchmark
     fun jackson2VtImport(s: BulkGraphIoBenchmarkState) {
         jackson2VtExport(s)
-        Jackson2NdJsonVirtualThreadBulkImporter().importGraphAsync(
+        Jackson2NdJsonVirtualThreadBulkImporter.Default.importGraphAsync(
             GraphImportSource.PathSource(s.tempDir.resolve("g2vt.ndjson")), TinkerGraphOperations(), importOpts
         ).get()
     }
@@ -163,7 +167,7 @@ open class BulkGraphIoBenchmark {
 
     @Benchmark
     fun jackson2SuspendExport(s: BulkGraphIoBenchmarkState) = runBlocking {
-        SuspendJackson2NdJsonBulkExporter().exportGraphSuspending(
+        SuspendJackson2NdJsonBulkExporter.Default.exportGraphSuspending(
             GraphExportSink.PathSink(s.tempDir.resolve("g2co.ndjson")),
             TinkerGraphSuspendOperations(s.ops as TinkerGraphOperations), exportOpts
         )
@@ -172,7 +176,7 @@ open class BulkGraphIoBenchmark {
     @Benchmark
     fun jackson2SuspendImport(s: BulkGraphIoBenchmarkState) = runBlocking {
         jackson2SuspendExport(s)
-        SuspendJackson2NdJsonBulkImporter().importGraphSuspending(
+        SuspendJackson2NdJsonBulkImporter.Default.importGraphSuspending(
             GraphImportSource.PathSource(s.tempDir.resolve("g2co.ndjson")),
             TinkerGraphSuspendOperations(), importOpts
         )
@@ -185,7 +189,7 @@ open class BulkGraphIoBenchmark {
 
     @Benchmark
     fun jackson3SyncExport(s: BulkGraphIoBenchmarkState) {
-        Jackson3NdJsonBulkExporter().exportGraph(
+        Jackson3NdJsonBulkExporter.Default.exportGraph(
             GraphExportSink.PathSink(s.tempDir.resolve("g3.ndjson")), s.ops, exportOpts
         )
     }
@@ -193,7 +197,7 @@ open class BulkGraphIoBenchmark {
     @Benchmark
     fun jackson3SyncImport(s: BulkGraphIoBenchmarkState) {
         jackson3SyncExport(s)
-        Jackson3NdJsonBulkImporter().importGraph(
+        Jackson3NdJsonBulkImporter.Default.importGraph(
             GraphImportSource.PathSource(s.tempDir.resolve("g3.ndjson")), TinkerGraphOperations(), importOpts
         )
     }
@@ -203,7 +207,7 @@ open class BulkGraphIoBenchmark {
 
     @Benchmark
     fun jackson3VtExport(s: BulkGraphIoBenchmarkState) {
-        Jackson3NdJsonVirtualThreadBulkExporter().exportGraphAsync(
+        Jackson3NdJsonVirtualThreadBulkExporter.Default.exportGraphAsync(
             GraphExportSink.PathSink(s.tempDir.resolve("g3vt.ndjson")), s.ops, exportOpts
         ).get()
     }
@@ -211,7 +215,7 @@ open class BulkGraphIoBenchmark {
     @Benchmark
     fun jackson3VtImport(s: BulkGraphIoBenchmarkState) {
         jackson3VtExport(s)
-        Jackson3NdJsonVirtualThreadBulkImporter().importGraphAsync(
+        Jackson3NdJsonVirtualThreadBulkImporter.Default.importGraphAsync(
             GraphImportSource.PathSource(s.tempDir.resolve("g3vt.ndjson")), TinkerGraphOperations(), importOpts
         ).get()
     }
@@ -221,7 +225,7 @@ open class BulkGraphIoBenchmark {
 
     @Benchmark
     fun jackson3SuspendExport(s: BulkGraphIoBenchmarkState) = runBlocking {
-        SuspendJackson3NdJsonBulkExporter().exportGraphSuspending(
+        SuspendJackson3NdJsonBulkExporter.Default.exportGraphSuspending(
             GraphExportSink.PathSink(s.tempDir.resolve("g3co.ndjson")),
             TinkerGraphSuspendOperations(s.ops as TinkerGraphOperations), exportOpts
         )
@@ -230,7 +234,7 @@ open class BulkGraphIoBenchmark {
     @Benchmark
     fun jackson3SuspendImport(s: BulkGraphIoBenchmarkState) = runBlocking {
         jackson3SuspendExport(s)
-        SuspendJackson3NdJsonBulkImporter().importGraphSuspending(
+        SuspendJackson3NdJsonBulkImporter.Default.importGraphSuspending(
             GraphImportSource.PathSource(s.tempDir.resolve("g3co.ndjson")),
             TinkerGraphSuspendOperations(), importOpts
         )
@@ -243,7 +247,7 @@ open class BulkGraphIoBenchmark {
 
     @Benchmark
     fun graphMlSyncExport(s: BulkGraphIoBenchmarkState) {
-        GraphMlBulkExporter().exportGraph(
+        GraphMlBulkExporter.Default.exportGraph(
             GraphExportSink.PathSink(s.tempDir.resolve("g.graphml")), s.ops, exportOpts
         )
     }
@@ -251,7 +255,7 @@ open class BulkGraphIoBenchmark {
     @Benchmark
     fun graphMlSyncImport(s: BulkGraphIoBenchmarkState) {
         graphMlSyncExport(s)
-        GraphMlBulkImporter().importGraph(
+        GraphMlBulkImporter.Default.importGraph(
             GraphImportSource.PathSource(s.tempDir.resolve("g.graphml")), TinkerGraphOperations(), importOpts
         )
     }
@@ -261,7 +265,7 @@ open class BulkGraphIoBenchmark {
 
     @Benchmark
     fun graphMlVtExport(s: BulkGraphIoBenchmarkState) {
-        GraphMlVirtualThreadBulkExporter().exportGraphAsync(
+        GraphMlVirtualThreadBulkExporter.Default.exportGraphAsync(
             GraphExportSink.PathSink(s.tempDir.resolve("gvt.graphml")), s.ops, exportOpts
         ).get()
     }
@@ -269,7 +273,7 @@ open class BulkGraphIoBenchmark {
     @Benchmark
     fun graphMlVtImport(s: BulkGraphIoBenchmarkState) {
         graphMlVtExport(s)
-        GraphMlVirtualThreadBulkImporter().importGraphAsync(
+        GraphMlVirtualThreadBulkImporter.Default.importGraphAsync(
             GraphImportSource.PathSource(s.tempDir.resolve("gvt.graphml")), TinkerGraphOperations(), importOpts
         ).get()
     }
@@ -279,7 +283,7 @@ open class BulkGraphIoBenchmark {
 
     @Benchmark
     fun graphMlSuspendExport(s: BulkGraphIoBenchmarkState) = runBlocking {
-        SuspendGraphMlBulkExporter().exportGraphSuspending(
+        SuspendGraphMlBulkExporter.Default.exportGraphSuspending(
             GraphExportSink.PathSink(s.tempDir.resolve("gco.graphml")),
             TinkerGraphSuspendOperations(s.ops as TinkerGraphOperations), exportOpts
         )
@@ -288,7 +292,7 @@ open class BulkGraphIoBenchmark {
     @Benchmark
     fun graphMlSuspendImport(s: BulkGraphIoBenchmarkState) = runBlocking {
         graphMlSuspendExport(s)
-        SuspendGraphMlBulkImporter().importGraphSuspending(
+        SuspendGraphMlBulkImporter.Default.importGraphSuspending(
             GraphImportSource.PathSource(s.tempDir.resolve("gco.graphml")),
             TinkerGraphSuspendOperations(), importOpts
         )

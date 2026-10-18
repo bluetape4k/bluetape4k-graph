@@ -1,10 +1,13 @@
 package io.bluetape4k.graph.benchmark.io
 
 import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.logging.KLogging
 import org.junit.jupiter.api.Test
 import kotlin.io.path.exists
 
 class GraphIoBenchmarkSmokeTest {
+
+    companion object: KLogging()
 
     @Test
     fun `smoke size exercises representative graph io benchmark methods`() {

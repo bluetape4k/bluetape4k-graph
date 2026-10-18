@@ -6,18 +6,16 @@ import io.bluetape4k.graph.io.jackson3.Jackson3NdJsonBulkExporter
 import io.bluetape4k.graph.io.jackson3.Jackson3NdJsonBulkImporter
 import io.bluetape4k.graph.io.okio.OkioGraphBulkExporter
 import io.bluetape4k.graph.io.okio.OkioGraphBulkImporter
-import io.bluetape4k.graph.io.okio.OkioGraphExportSink
-import io.bluetape4k.graph.io.okio.OkioGraphImportSource
-import io.bluetape4k.graph.io.okio.extension.exportGraph
+import io.bluetape4k.graph.io.okio.asOkioSink
+import io.bluetape4k.graph.io.okio.asOkioSource
 import io.bluetape4k.graph.io.okio.extension.exportGraphGzip
-import io.bluetape4k.graph.io.okio.extension.importGraph
 import io.bluetape4k.graph.io.okio.extension.importGraphGzip
 import io.bluetape4k.graph.io.okio.virtualthread.VirtualThreadGraphIoOkioBulkAdapter
 import io.bluetape4k.graph.io.options.GraphExportOptions
 import io.bluetape4k.graph.io.options.GraphImportOptions
 import io.bluetape4k.graph.io.report.GraphIoFormat
-import io.bluetape4k.graph.io.source.GraphExportSink
-import io.bluetape4k.graph.io.source.GraphImportSource
+import io.bluetape4k.graph.io.source.asSink
+import io.bluetape4k.graph.io.source.asSource
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import okio.FileSystem
 import okio.Path.Companion.toPath
@@ -54,30 +52,34 @@ open class OkioGraphIoBenchmark {
     private val exportOpts = GraphExportOptions(vertexLabels = setOf("Person"), edgeLabels = setOf("KNOWS"))
     private val importOpts = GraphImportOptions(preserveExternalIdProperty = null)
 
-    private val okioExporter = OkioGraphBulkExporter()
-    private val okioImporter = OkioGraphBulkImporter()
+    private val okioExporter = OkioGraphBulkExporter.Default
+    private val okioImporter = OkioGraphBulkImporter.Default
     private val vtAdapter = VirtualThreadGraphIoOkioBulkAdapter(okioImporter, okioExporter)
 
     private fun pathSink(dir: java.nio.file.Path, name: String) =
-        OkioGraphExportSink.PathSink(dir.resolve(name).toString().toPath(), FileSystem.SYSTEM)
+        dir.resolve(name).toString().toPath().asOkioSink(FileSystem.SYSTEM)
 
     private fun pathSource(dir: java.nio.file.Path, name: String) =
-        OkioGraphImportSource.PathSource(dir.resolve(name).toString().toPath(), FileSystem.SYSTEM)
+        dir.resolve(name).toString().toPath().asOkioSource(FileSystem.SYSTEM)
 
     // ─── Jackson3 java.io baseline ───────────────────────────────────────────────
 
     @Benchmark
     fun jackson3JavaIoExport(s: BulkGraphIoBenchmarkState) {
-        Jackson3NdJsonBulkExporter().exportGraph(
-            GraphExportSink.PathSink(s.tempDir.resolve("g3jio.ndjson")), s.ops, exportOpts
+        Jackson3NdJsonBulkExporter.Default.exportGraph(
+            s.tempDir.resolve("g3jio.ndjson").asSink(),
+            s.ops,
+            exportOpts
         )
     }
 
     @Benchmark
     fun jackson3JavaIoImport(s: BulkGraphIoBenchmarkState) {
         jackson3JavaIoExport(s)
-        Jackson3NdJsonBulkImporter().importGraph(
-            GraphImportSource.PathSource(s.tempDir.resolve("g3jio.ndjson")), TinkerGraphOperations(), importOpts
+        Jackson3NdJsonBulkImporter.Default.importGraph(
+            s.tempDir.resolve("g3jio.ndjson").asSource(),
+            TinkerGraphOperations(),
+            importOpts
         )
     }
 
@@ -85,13 +87,23 @@ open class OkioGraphIoBenchmark {
 
     @Benchmark
     fun jackson3OkioExport(s: BulkGraphIoBenchmarkState) {
-        okioExporter.exportGraph(pathSink(s.tempDir, "g3ok.ndjson"), GraphIoFormat.NDJSON_JACKSON3, s.ops, exportOpts)
+        okioExporter.exportGraph(
+            pathSink(s.tempDir, "g3ok.ndjson"),
+            GraphIoFormat.NDJSON_JACKSON3,
+            s.ops,
+            exportOpts
+        )
     }
 
     @Benchmark
     fun jackson3OkioImport(s: BulkGraphIoBenchmarkState) {
         jackson3OkioExport(s)
-        okioImporter.importGraph(pathSource(s.tempDir, "g3ok.ndjson"), GraphIoFormat.NDJSON_JACKSON3, TinkerGraphOperations(), importOpts)
+        okioImporter.importGraph(
+            pathSource(s.tempDir, "g3ok.ndjson"),
+            GraphIoFormat.NDJSON_JACKSON3,
+            TinkerGraphOperations(),
+            importOpts
+        )
     }
 
     @Benchmark
@@ -101,13 +113,21 @@ open class OkioGraphIoBenchmark {
 
     @Benchmark
     fun jackson3OkioGzipExport(s: BulkGraphIoBenchmarkState) {
-        Jackson3NdJsonBulkExporter().exportGraphGzip(pathSink(s.tempDir, "g3ok.ndjson.gz"), s.ops, exportOpts)
+        Jackson3NdJsonBulkExporter.Default.exportGraphGzip(
+            pathSink(s.tempDir, "g3ok.ndjson.gz"),
+            s.ops,
+            exportOpts
+        )
     }
 
     @Benchmark
     fun jackson3OkioGzipImport(s: BulkGraphIoBenchmarkState) {
         jackson3OkioGzipExport(s)
-        Jackson3NdJsonBulkImporter().importGraphGzip(pathSource(s.tempDir, "g3ok.ndjson.gz"), TinkerGraphOperations(), importOpts)
+        Jackson3NdJsonBulkImporter.Default.importGraphGzip(
+            pathSource(s.tempDir, "g3ok.ndjson.gz"),
+            TinkerGraphOperations(),
+            importOpts
+        )
     }
 
     @Benchmark
@@ -117,16 +137,20 @@ open class OkioGraphIoBenchmark {
 
     @Benchmark
     fun graphMlJavaIoExport(s: BulkGraphIoBenchmarkState) {
-        GraphMlBulkExporter().exportGraph(
-            GraphExportSink.PathSink(s.tempDir.resolve("gjio.graphml")), s.ops, exportOpts
+        GraphMlBulkExporter.Default.exportGraph(
+            s.tempDir.resolve("gjio.graphml").asSink(),
+            s.ops,
+            exportOpts
         )
     }
 
     @Benchmark
     fun graphMlJavaIoImport(s: BulkGraphIoBenchmarkState) {
         graphMlJavaIoExport(s)
-        GraphMlBulkImporter().importGraph(
-            GraphImportSource.PathSource(s.tempDir.resolve("gjio.graphml")), TinkerGraphOperations(), importOpts
+        GraphMlBulkImporter.Default.importGraph(
+            s.tempDir.resolve("gjio.graphml").asSource(),
+            TinkerGraphOperations(),
+            importOpts
         )
     }
 
@@ -134,13 +158,23 @@ open class OkioGraphIoBenchmark {
 
     @Benchmark
     fun graphMlOkioExport(s: BulkGraphIoBenchmarkState) {
-        okioExporter.exportGraph(pathSink(s.tempDir, "gok.graphml"), GraphIoFormat.GRAPHML, s.ops, exportOpts)
+        okioExporter.exportGraph(
+            pathSink(s.tempDir, "gok.graphml"),
+            GraphIoFormat.GRAPHML,
+            s.ops,
+            exportOpts
+        )
     }
 
     @Benchmark
     fun graphMlOkioImport(s: BulkGraphIoBenchmarkState) {
         graphMlOkioExport(s)
-        okioImporter.importGraph(pathSource(s.tempDir, "gok.graphml"), GraphIoFormat.GRAPHML, TinkerGraphOperations(), importOpts)
+        okioImporter.importGraph(
+            pathSource(s.tempDir, "gok.graphml"),
+            GraphIoFormat.GRAPHML,
+            TinkerGraphOperations(),
+            importOpts
+        )
     }
 
     @Benchmark
@@ -150,13 +184,23 @@ open class OkioGraphIoBenchmark {
 
     @Benchmark
     fun jackson3VtOkioExport(s: BulkGraphIoBenchmarkState) {
-        vtAdapter.exportGraphAsync(pathSink(s.tempDir, "g3vt.ndjson"), GraphIoFormat.NDJSON_JACKSON3, s.ops, exportOpts).get()
+        vtAdapter.exportGraphAsync(
+            pathSink(s.tempDir, "g3vt.ndjson"),
+            GraphIoFormat.NDJSON_JACKSON3,
+            s.ops,
+            exportOpts
+        ).get()
     }
 
     @Benchmark
     fun jackson3VtOkioImport(s: BulkGraphIoBenchmarkState) {
         jackson3VtOkioExport(s)
-        vtAdapter.importGraphAsync(pathSource(s.tempDir, "g3vt.ndjson"), GraphIoFormat.NDJSON_JACKSON3, TinkerGraphOperations(), importOpts).get()
+        vtAdapter.importGraphAsync(
+            pathSource(s.tempDir, "g3vt.ndjson"),
+            GraphIoFormat.NDJSON_JACKSON3,
+            TinkerGraphOperations(),
+            importOpts
+        ).get()
     }
 
     @Benchmark

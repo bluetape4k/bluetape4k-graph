@@ -1,7 +1,6 @@
 package io.bluetape4k.graph.benchmark
 
 import com.falkordb.impl.api.DriverImpl
-import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.bluetape4k.graph.age.AgeGraphOperations
 import io.bluetape4k.graph.falkordb.FalkorDBGraphOperations
@@ -13,6 +12,7 @@ import io.bluetape4k.graph.model.PathOptions
 import io.bluetape4k.graph.neo4j.Neo4jGraphOperations
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
+import io.bluetape4k.testcontainers.database.getDataSource
 import io.bluetape4k.testcontainers.graphdb.FalkorDBServer
 import io.bluetape4k.testcontainers.graphdb.MemgraphServer
 import io.bluetape4k.testcontainers.graphdb.Neo4jServer
@@ -68,7 +68,7 @@ open class GraphDbComparisonBenchmark {
             BatchEdge(
                 fromId = vertices[index].id,
                 toId = vertices[(index + 1) % vertices.size].id,
-                properties = mapOf("rank" to index.toLong()),
+                "rank" to index.toLong(),
             )
         }
 
@@ -122,15 +122,10 @@ open class GraphDbComparisonState {
             }
             "age" -> {
                 val server = PostgreSQLAgeServer.Launcher.postgresqlAge
-                val config = HikariConfig().apply {
-                    jdbcUrl = server.jdbcUrl
-                    username = server.username
-                    password = server.password
-                    driverClassName = "org.postgresql.Driver"
+                val dataSource = server.getDataSource {
                     connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
                     maximumPoolSize = 4
                 }
-                dataSource = HikariDataSource(config)
                 val database = Database.connect(dataSource!!)
                 AgeGraphOperations(database, GRAPH_NAME)
             }

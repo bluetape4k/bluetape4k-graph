@@ -4,6 +4,8 @@ import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeGreaterThan
 import io.bluetape4k.graph.benchmark.abuser.PostgreSqlAbuserDetectionSupport
 import io.bluetape4k.graph.benchmark.abuser.SqlTraversalMode
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import io.bluetape4k.testcontainers.graphdb.MemgraphServer
 import io.bluetape4k.testcontainers.graphdb.Neo4jServer
 import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
@@ -16,6 +18,8 @@ import javax.sql.DataSource
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AuthzInheritanceEngineSmokeTest {
 
+    companion object: KLogging()
+
     @Test
     fun `long chain fixture reaches resources only through deep traversal`() {
         val fixture = AuthzInheritanceFixtureFactory.create(
@@ -23,6 +27,7 @@ class AuthzInheritanceEngineSmokeTest {
             AuthzInheritanceScenario.LONG_CHAIN,
         )
 
+        log.debug { "fixture=$fixture" }
         fixture.scenario.hopLimit shouldBeEqualTo 10
         fixture.expectedResourceIds.size shouldBeGreaterThan 0
     }
@@ -61,6 +66,7 @@ class AuthzInheritanceEngineSmokeTest {
 
                 val result = engine.resolve()
 
+                log.debug { "result=$result" }
                 result.resourceIds shouldBeEqualTo fixture.expectedResourceIds
                 result.metrics.falsePositives shouldBeEqualTo 0
                 result.metrics.falseNegatives shouldBeEqualTo 0
@@ -96,6 +102,7 @@ class AuthzInheritanceEngineSmokeTest {
 
                 val result = engine.resolve()
 
+                log.debug { "result=$result" }
                 result.resourceIds shouldBeEqualTo fixture.expectedResourceIds
                 result.metrics.falsePositives shouldBeEqualTo 0
                 result.metrics.falseNegatives shouldBeEqualTo 0
@@ -104,6 +111,7 @@ class AuthzInheritanceEngineSmokeTest {
         }
     }
 
+    @Suppress("JavaDefaultMethodsNotOverriddenByDelegation")
     private class AutoCloseableDataSource(
         private val delegate: com.zaxxer.hikari.HikariDataSource,
     ): DataSource by delegate, AutoCloseable {

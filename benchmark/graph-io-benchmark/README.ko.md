@@ -38,45 +38,42 @@ graph bulk import/export format과 I/O adapter를 측정하는 JMH 벤치마크 
 ./gradlew :graph-io-benchmark:smokeBenchmark
 ```
 
-smoke 구성은 `sizeName=smoke`로 CSV, Jackson 3 OkIO, GraphML OkIO round-trip 대표 경로를 비교합니다.
-이는 benchmark method와 report 생성이 동작한다는 CI 근거이며, 성능 수치로 해석하지 않습니다.
-생성된 JSON report는 `benchmark/graph-io-benchmark/build/reports/benchmarks/smoke/*/main.json` 아래에 있습니다.
+smoke 구성은 `sizeName=smoke`로 CSV, Jackson 3 OkIO, GraphML OkIO round-trip 대표 경로를 비교합니다. 이는 benchmark method와 report 생성이 동작한다는 CI 근거이며, 성능 수치로 해석하지 않습니다. 생성된 JSON report는 `benchmark/graph-io-benchmark/build/reports/benchmarks/smoke/*/main.json` 아래에 있습니다.
 
 ## 최신 결과
 
-최신 공개 `small` dataset 결과는 `docs/benchmark/2026-04-18-graph-io-bulk-results.md`에 있습니다.
-모든 값은 `ms/op`이며 낮을수록 좋습니다.
+최신 공개 `small` dataset 결과는 `docs/benchmark/2026-04-18-graph-io-bulk-results.md`에 있습니다. 모든 값은 `ms/op`이며 낮을수록 좋습니다.
 
 ### Export
 
-| Format | Sync | VirtualThread | Suspend |
-|---|---:|---:|---:|
-| CSV | **1.017** | 1.185 | 1.477 |
-| Jackson2 NDJSON | **1.194** | 1.221 | 1.318 |
-| Jackson3 NDJSON | **1.275** | 1.300 | 1.329 |
-| GraphML | 2.582 | 4.192 | **2.455** |
+| Format          |      Sync | VirtualThread |   Suspend |
+|-----------------|----------:|--------------:|----------:|
+| CSV             | **1.017** |         1.185 |     1.477 |
+| Jackson2 NDJSON | **1.194** |         1.221 |     1.318 |
+| Jackson3 NDJSON | **1.275** |         1.300 |     1.329 |
+| GraphML         |     2.582 |         4.192 | **2.455** |
 
 ![Graph-IO export latency chart](../../docs/images/readme-charts/graph-io-export-latency-chart-01.png)
 
 ### Import
 
-| Format | Sync | VirtualThread | Suspend |
-|---|---:|---:|---:|
-| CSV | 17.854 | **17.624** | 23.393 |
-| Jackson2 NDJSON | 18.831 | **18.120** | 151.415 |
-| Jackson3 NDJSON | 19.852 | **19.302** | 155.279 |
-| GraphML | 21.111 | **21.095** | 22.380 |
+| Format          |   Sync | VirtualThread | Suspend |
+|-----------------|-------:|--------------:|--------:|
+| CSV             | 17.854 |    **17.624** |  23.393 |
+| Jackson2 NDJSON | 18.831 |    **18.120** | 151.415 |
+| Jackson3 NDJSON | 19.852 |    **19.302** | 155.279 |
+| GraphML         | 21.111 |    **21.095** |  22.380 |
 
 ![Graph-IO import latency chart](../../docs/images/readme-charts/graph-io-import-latency-chart-01.png)
 
 ### Round Trip
 
-| Format | Sync | VirtualThread | Suspend |
-|---|---:|---:|---:|
-| CSV | 19.752 | **17.629** | 18.512 |
-| Jackson2 NDJSON | 18.880 | **18.677** | 151.615 |
-| Jackson3 NDJSON | 19.142 | **18.956** | 164.172 |
-| GraphML | 21.707 | 21.450 | **21.236** |
+| Format          |   Sync | VirtualThread |    Suspend |
+|-----------------|-------:|--------------:|-----------:|
+| CSV             | 19.752 |    **17.629** |     18.512 |
+| Jackson2 NDJSON | 18.880 |    **18.677** |    151.615 |
+| Jackson3 NDJSON | 19.142 |    **18.956** |    164.172 |
+| GraphML         | 21.707 |        21.450 | **21.236** |
 
 ![Graph-IO round-trip latency chart](../../docs/images/readme-charts/graph-io-roundtrip-latency-chart-01.png)
 

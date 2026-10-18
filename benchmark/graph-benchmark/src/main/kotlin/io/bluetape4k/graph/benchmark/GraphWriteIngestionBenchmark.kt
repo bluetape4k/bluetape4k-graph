@@ -1,7 +1,6 @@
 package io.bluetape4k.graph.benchmark
 
 import com.falkordb.impl.api.DriverImpl
-import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.bluetape4k.graph.age.AgeGraphOperations
 import io.bluetape4k.graph.falkordb.FalkorDBGraphOperations
@@ -11,6 +10,7 @@ import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.neo4j.Neo4jGraphOperations
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
+import io.bluetape4k.testcontainers.database.getDataSource
 import io.bluetape4k.testcontainers.graphdb.FalkorDBServer
 import io.bluetape4k.testcontainers.graphdb.MemgraphServer
 import io.bluetape4k.testcontainers.graphdb.Neo4jServer
@@ -154,14 +154,10 @@ open class GraphWriteIngestionState {
             }
             "age" -> {
                 val server = PostgreSQLAgeServer.Launcher.postgresqlAge
-                val source = HikariDataSource(HikariConfig().apply {
-                    jdbcUrl = server.jdbcUrl
-                    username = server.username
-                    password = server.password
-                    driverClassName = "org.postgresql.Driver"
-                    connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
+                val source = server.getDataSource {
+                    connectionInitSql = $$"LOAD 'age'; SET search_path = ag_catalog, \"$user\", public;"
                     maximumPoolSize = 4
-                })
+                }
                 dataSource = source
                 val database = Database.connect(source)
                 AgeGraphOperations(database, GRAPH_NAME)
@@ -210,7 +206,7 @@ open class GraphWriteIngestionState {
         batchSequence.getAndIncrement()
 
     fun vertexRows(batchIndex: Long, count: Int): List<Map<String, Any?>> =
-        (0 until count).map { index ->
+        List(count) { index ->
             val absoluteIndex = batchIndex * count + index
             mapOf(
                 "name" to "Write-$batchIndex-$index",
@@ -232,10 +228,8 @@ open class GraphWriteIngestionState {
             BatchEdge(
                 fromId = vertices[index].id,
                 toId = vertices[(index + 1) % vertices.size].id,
-                properties = mapOf(
-                    "batch" to batchIndex,
-                    "rank" to index.toLong(),
-                ),
+                "batch" to batchIndex,
+                "rank" to index.toLong(),
             )
         }
 }

@@ -51,6 +51,10 @@ import kotlinx.coroutines.withContext
  */
 class SuspendGraphMlBulkExporter: GraphSuspendBulkExporter<GraphExportSink> {
 
+    companion object: KLoggingChannel() {
+        val Default = SuspendGraphMlBulkExporter()
+    }
+
     private val writer = StaxGraphMlWriter()
 
     override suspend fun exportGraphSuspending(
@@ -188,8 +192,6 @@ class SuspendGraphMlBulkExporter: GraphSuspendBulkExporter<GraphExportSink> {
             }
         }
     }
-
-    companion object: KLoggingChannel()
 }
 
 @Suppress("TooGenericExceptionCaught")

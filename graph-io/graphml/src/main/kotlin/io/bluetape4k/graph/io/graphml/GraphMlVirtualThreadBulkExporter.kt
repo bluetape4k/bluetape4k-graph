@@ -37,10 +37,12 @@ import java.util.concurrent.CompletableFuture
  * ```
  */
 class GraphMlVirtualThreadBulkExporter(
-    private val sync: GraphMlBulkExporter = GraphMlBulkExporter(),
+    private val sync: GraphMlBulkExporter = GraphMlBulkExporter.Default,
 ): GraphVirtualThreadBulkExporter<GraphExportSink> {
 
-    companion object: KLogging()
+    companion object: KLogging() {
+        val Default = GraphMlVirtualThreadBulkExporter()
+    }
 
     override fun exportGraphAsync(
         sink: GraphExportSink,

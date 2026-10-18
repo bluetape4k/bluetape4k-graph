@@ -1,8 +1,8 @@
 package io.bluetape4k.graph.benchmark
 
 import io.bluetape4k.graph.model.BatchEdge
-import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.model.GraphVertex
+import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import kotlinx.benchmark.Benchmark
 import kotlinx.benchmark.BenchmarkMode
@@ -24,7 +24,7 @@ import kotlinx.benchmark.Warmup
 @OutputTimeUnit(BenchmarkTimeUnit.MICROSECONDS)
 @Warmup(iterations = 3, time = 2)
 @Measurement(iterations = 5, time = 3)
-open class VertexOperationsBenchmark : GraphBenchmarkState() {
+open class VertexOperationsBenchmark: GraphBenchmarkState() {
 
     @Benchmark
     fun syncFindVerticesByLabel(): Int =
@@ -52,54 +52,42 @@ open class VertexOperationsBenchmark : GraphBenchmarkState() {
 
     @Benchmark
     fun createVertices10kLoop(): Int {
-        val ops = TinkerGraphOperations()
-        try {
+        TinkerGraphOperations().use { ops ->
             batchVertexRows().forEach { props ->
                 ops.createVertex("Person", props)
             }
             return ops.countVertices("Person").toInt()
-        } finally {
-            ops.close()
         }
     }
 
     @Benchmark
     fun createVertices10kBatch(): Int {
-        val ops = TinkerGraphOperations()
-        try {
-            return ops.createVertices("Person", batchVertexRows()).size
-        } finally {
-            ops.close()
+        return TinkerGraphOperations().use { ops ->
+            ops.createVertices("Person", batchVertexRows()).size
         }
     }
 
     @Benchmark
     fun createEdges10kLoop(): Int {
-        val ops = TinkerGraphOperations()
-        try {
+        return TinkerGraphOperations().use { ops ->
             val vertices = ops.createVertices("Person", batchVertexRows())
             cycleEdges(vertices).forEach { edge ->
                 ops.createEdge(edge.fromId, edge.toId, "KNOWS", edge.properties)
             }
-            return ops.findEdgesByLabel("KNOWS").size
-        } finally {
-            ops.close()
+            ops.findEdgesByLabel("KNOWS").size
         }
     }
 
     @Benchmark
     fun createEdges10kBatch(): Int {
-        val ops = TinkerGraphOperations()
-        try {
+        TinkerGraphOperations().use { ops ->
             val vertices = ops.createVertices("Person", batchVertexRows())
             return ops.createEdges("KNOWS", cycleEdges(vertices)).size
-        } finally {
-            ops.close()
         }
     }
 
     private fun batchVertexRows(): List<Map<String, Any?>> =
-        (0 until 10_000).map { index ->
+        List(10_000) { index ->
             mapOf("name" to "Person-$index", "rank" to index.toLong())
         }
 

@@ -35,7 +35,7 @@ import kotlinx.benchmark.Warmup
 open class BatchInsertBenchmark {
 
     private fun vertexRows(): List<Map<String, Any?>> =
-        (0 until 10_000).map { i -> mapOf("name" to "Person-$i", "rank" to i.toLong()) }
+        List(10_000) { i -> mapOf("name" to "Person-$i", "rank" to i.toLong()) }
 
     private fun cycleEdges(vertices: List<GraphVertex>): List<BatchEdge> =
         vertices.indices.map { i ->
@@ -48,47 +48,35 @@ open class BatchInsertBenchmark {
 
     @Benchmark
     fun vertexLoopInsert(): Int {
-        val ops = TinkerGraphOperations()
-        return try {
+        return TinkerGraphOperations().use { ops ->
             vertexRows().forEach { props -> ops.createVertex("Person", props) }
             ops.countVertices("Person").toInt()
-        } finally {
-            ops.close()
         }
     }
 
     @Benchmark
     fun vertexBatchInsert(): Int {
-        val ops = TinkerGraphOperations()
-        return try {
+        return TinkerGraphOperations().use { ops ->
             ops.createVertices("Person", vertexRows()).size
-        } finally {
-            ops.close()
         }
     }
 
     @Benchmark
     fun edgeLoopInsert(): Int {
-        val ops = TinkerGraphOperations()
-        return try {
+        return TinkerGraphOperations().use { ops ->
             val vertices = ops.createVertices("Person", vertexRows())
             cycleEdges(vertices).forEach { e ->
                 ops.createEdge(e.fromId, e.toId, "KNOWS", e.properties)
             }
             ops.findEdgesByLabel("KNOWS").size
-        } finally {
-            ops.close()
         }
     }
 
     @Benchmark
     fun edgeBatchInsert(): Int {
-        val ops = TinkerGraphOperations()
-        return try {
+        return TinkerGraphOperations().use { ops ->
             val vertices = ops.createVertices("Person", vertexRows())
             ops.createEdges("KNOWS", cycleEdges(vertices)).size
-        } finally {
-            ops.close()
         }
     }
 }

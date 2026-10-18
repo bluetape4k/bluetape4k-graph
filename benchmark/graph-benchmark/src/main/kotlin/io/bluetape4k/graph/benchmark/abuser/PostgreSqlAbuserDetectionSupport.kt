@@ -28,7 +28,7 @@ internal object PostgreSqlAbuserDetectionSupport {
             maximumPoolSize = 4
             this.poolName = poolName
             if (loadAge) {
-                connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
+                connectionInitSql = $$"LOAD 'age'; SET search_path = ag_catalog, \"$user\", public;"
             }
         })
 
