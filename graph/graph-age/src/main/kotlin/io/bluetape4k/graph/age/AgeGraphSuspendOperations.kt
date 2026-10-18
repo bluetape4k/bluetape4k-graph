@@ -272,7 +272,7 @@ class AgeGraphSuspendOperations(
                 throw e
             } catch (e: Exception) {
                 if (e.isDuplicateGraphFailure()) {
-                    log.debug("Graph '$name' already exists: ${e.message}")
+                    log.debug("Duplicate AGE graph creation ignored")
                 } else {
                     throw e.asCreateGraphFailure(name)
                 }

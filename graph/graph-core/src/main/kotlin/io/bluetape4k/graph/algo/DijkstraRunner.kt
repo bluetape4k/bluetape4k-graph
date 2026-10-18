@@ -113,11 +113,11 @@ class DijkstraRunner(
 
             if (currentState.depth >= options.maxDepth) continue
 
-            val currentVertex = fetchVertex(currentId) ?: run {
+            fetchVertex(currentId) ?: run {
                 log.warn { "Dijkstra: fetchVertex($currentId) returned null mid-traversal — skipping neighbors" }
                 continue@outer
             }
-            log.debug { "current vertex = $currentVertex" }
+            log.debug { "current vertex loaded" }
 
             val edges = fetchEdges(currentId)
 

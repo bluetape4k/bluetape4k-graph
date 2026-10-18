@@ -1,5 +1,9 @@
 package io.bluetape4k.graph.age
 
+import ch.qos.logback.classic.Level
+import ch.qos.logback.classic.Logger
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.read.ListAppender
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
@@ -10,6 +14,7 @@ import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.assertions.shouldNotContain
 import io.bluetape4k.graph.GraphException
 import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.model.ComponentOptions
@@ -52,6 +57,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import javax.sql.DataSource
+import org.slf4j.LoggerFactory
 import kotlin.time.Duration.Companion.seconds
 
 @TestMethodOrder(OrderAnnotation::class)
@@ -86,6 +92,34 @@ class AgeGraphSuspendOperationsTest: AbstractAgeTest() {
     fun `이미 존재하는 그래프 생성은 호환성 duplicate로 허용한다`() = runSuspendIO {
         ops.createGraph(TEST_GRAPH_NAME)
         ops.graphExists(TEST_GRAPH_NAME).shouldBeTrue()
+    }
+
+    @Test
+    @Order(14)
+    fun `suspend duplicate 그래프 생성은 예외 상세와 이름을 노출하지 않고 DEBUG로 기록한다`() = runSuspendIO {
+        val logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as Logger
+        val previousLevel = logger.level
+        val appender = ListAppender<ILoggingEvent>().apply { start() }
+        logger.level = Level.DEBUG
+        logger.addAppender(appender)
+
+        try {
+            ops.createGraph(TEST_GRAPH_NAME)
+
+            val duplicateEvents = appender.list.filter {
+                it.formattedMessage == "Duplicate AGE graph creation ignored" ||
+                    it.formattedMessage.contains("already exists")
+            }
+            val duplicateEvent = duplicateEvents.single()
+            duplicateEvent.level shouldBeEqualTo Level.DEBUG
+            duplicateEvent.formattedMessage shouldBeEqualTo "Duplicate AGE graph creation ignored"
+            duplicateEvent.formattedMessage shouldNotContain TEST_GRAPH_NAME
+            duplicateEvent.formattedMessage shouldNotContain "already exists"
+        } finally {
+            logger.detachAppender(appender)
+            logger.level = previousLevel
+            appender.stop()
+        }
     }
 
     @Test

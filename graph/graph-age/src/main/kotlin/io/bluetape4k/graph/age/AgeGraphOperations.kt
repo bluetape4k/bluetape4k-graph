@@ -42,6 +42,7 @@ import io.bluetape4k.graph.schema.GraphSchemaManagementOperations
 import io.bluetape4k.graph.schema.GraphSchemaManager
 import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.warn
 import io.bluetape4k.support.asLong
 import io.bluetape4k.support.requireNotBlank
@@ -129,7 +130,7 @@ class AgeGraphOperations(
                 exec(AgeSql.createGraph(name))
             } catch (e: Exception) {
                 if (e.isDuplicateGraphFailure()) {
-                    log.warn { "Graph '$name' already exists: ${e.message}" }
+                    log.debug { "Duplicate AGE graph creation ignored" }
                 } else {
                     throw e.asCreateGraphFailure(name)
                 }
