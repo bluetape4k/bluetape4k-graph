@@ -91,7 +91,8 @@ class Jackson3NdJsonBulkImporter(
         options: GraphImportOptions,
     ): GraphImportReport {
         log.debug {
-            "Starting NDJSON_JACKSON3 import: defaultVertexLabel=${options.defaultVertexLabel}, defaultEdgeLabel=${options.defaultEdgeLabel}"
+            "Starting NDJSON_JACKSON3 import: defaultVertexLabel=${options.defaultVertexLabel}, " +
+                "defaultEdgeLabel=${options.defaultEdgeLabel}"
         }
         val watch = GraphIoStopwatch()
         val idMap = GraphIoExternalIdMap(options.onDuplicateVertexId)
@@ -177,7 +178,8 @@ class Jackson3NdJsonBulkImporter(
                                         phase = GraphIoPhase.READ_EDGE,
                                         fileRole = GraphIoFileRole.UNIFIED,
                                         location = "line:$lineNo",
-                                        message = "Edge buffer exceeded maxEdgeBufferSize=${options.maxEdgeBufferSize}; " +
+                                        message =
+                                            "Edge buffer exceeded maxEdgeBufferSize=${options.maxEdgeBufferSize}; " +
                                                 "verticesCreated=$vc remain in graph as partial state",
                                     )
                                     status = GraphIoStatus.FAILED

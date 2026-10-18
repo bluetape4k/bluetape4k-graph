@@ -11,6 +11,7 @@ import io.bluetape4k.graph.io.model.GraphIoVertexRecord
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
+import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
 import java.io.IOException
 import java.io.OutputStream
@@ -43,6 +44,18 @@ class GraphIoRecordSpoolTest {
             spool.edgeRecords().toList() shouldBeEqualTo listOf(
                 GraphIoEdgeRecord("e-1", "KNOWS", "v-1", "v-2", "since" to "2024"),
             )
+        }
+    }
+
+    @Test
+    fun `spool replays properties with an empty key`() {
+        GraphIoRecordSpool().use { spool ->
+            spool.appendVertices(
+                GraphIoVertexRecord("v-1", "Person", "" to "value"),
+            )
+            spool.finish()
+
+            spool.vertexRecords().single().properties shouldBeEqualTo mapOf("" to "value")
         }
     }
 
@@ -123,6 +136,41 @@ class GraphIoRecordSpoolTest {
             ex.message shouldContain "limit"
             spool.finish()
             spool.vertexRecords().toList().shouldBeEmpty()
+        }
+    }
+
+    @Test
+    fun `spool rejects an invalid nullable string length`() {
+        val createdFiles = mutableListOf<Path>()
+        GraphIoRecordSpool(
+            maxRecordBytes = 256,
+            createTempFile = { prefix, suffix ->
+                Files.createTempFile(prefix, suffix).also(createdFiles::add)
+            },
+            openOutput = { DataOutputStream(Files.newOutputStream(it)) },
+        ).use { spool ->
+            spool.finish()
+
+            val payload = ByteArrayOutputStream()
+            DataOutputStream(payload).use { output ->
+                output.writeInt(-2)
+                output.writeInt(4)
+                output.writeBytes("Edge")
+                output.writeInt(2)
+                output.writeBytes("v1")
+                output.writeInt(2)
+                output.writeBytes("v2")
+                output.writeInt(0)
+            }
+            DataOutputStream(Files.newOutputStream(createdFiles[1])).use { output ->
+                output.writeInt(payload.size())
+                payload.writeTo(output)
+            }
+
+            val error = assertFailsWith<IllegalArgumentException> {
+                spool.edgeRecords().toList()
+            }
+            error.message shouldContain "nullable spool string length"
         }
     }
 

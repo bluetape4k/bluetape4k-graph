@@ -9,9 +9,7 @@ import io.bluetape4k.graph.model.graphPathOf
 import io.bluetape4k.graph.model.toGraphElementId
 import io.bluetape4k.graph.model.vertexOf
 import io.bluetape4k.logging.KLogging
-import io.bluetape4k.logging.trace
-import io.bluetape4k.support.asLong
-import io.bluetape4k.support.asString
+import java.math.BigDecimal
 
 /**
  * Apache AGE의 agtype 결과를 파싱하여 Graph 모델로 변환합니다.
@@ -38,12 +36,14 @@ object AgeTypeParser: KLogging() {
      */
     @Suppress("UNCHECKED_CAST")
     fun parseVertex(agtype: String): GraphVertex {
-        log.trace { "Parse vertex: $agtype" }
-
         val json = agtype.removeSuffix("::vertex").trim()
         val map = parseJsonObject(json)
-        val id = map["id"].asLong().toGraphElementId()
-        val label = map["label"].asString()
+        val id = requireNotNull(map["id"] as? Number) {
+            "AGE agtype field 'id' must be a number"
+        }.toAgeLong("id").toGraphElementId()
+        val label = requireNotNull(map["label"] as? String) {
+            "AGE agtype field 'label' must be a string"
+        }
         val properties = (map["properties"] as? Map<String, Any?>) ?: emptyMap()
 
         return vertexOf(id, label, properties)
@@ -62,14 +62,20 @@ object AgeTypeParser: KLogging() {
      */
     @Suppress("UNCHECKED_CAST")
     fun parseEdge(agtype: String): GraphEdge {
-        log.trace { "Parse edge: $agtype" }
-
         val json = agtype.removeSuffix("::edge").trim()
         val map = parseJsonObject(json)
-        val id = map["id"].asLong().toGraphElementId()
-        val label = map["label"].asString()
-        val startId = map["start_id"].asLong().toGraphElementId()
-        val endId = map["end_id"].asLong().toGraphElementId()
+        val id = requireNotNull(map["id"] as? Number) {
+            "AGE agtype field 'id' must be a number"
+        }.toAgeLong("id").toGraphElementId()
+        val label = requireNotNull(map["label"] as? String) {
+            "AGE agtype field 'label' must be a string"
+        }
+        val startId = requireNotNull(map["start_id"] as? Number) {
+            "AGE agtype field 'start_id' must be a number"
+        }.toAgeLong("start_id").toGraphElementId()
+        val endId = requireNotNull(map["end_id"] as? Number) {
+            "AGE agtype field 'end_id' must be a number"
+        }.toAgeLong("end_id").toGraphElementId()
         val properties = (map["properties"] as? Map<String, Any?>) ?: emptyMap()
 
         return edgeOf(id, label, startId, endId, properties)
@@ -90,8 +96,6 @@ object AgeTypeParser: KLogging() {
      * @return 파싱된 [GraphPath].
      */
     fun parsePath(agtype: String): GraphPath {
-        log.trace { "Parse GraphPath: $agtype" }
-
         val json = agtype.removeSuffix("::path").trim()
         // path는 [{...}::vertex, {...}::edge, ...] 형태의 agtype 배열
         val content = json.trim().removePrefix("[").removeSuffix("]").trim()
@@ -176,8 +180,6 @@ object AgeTypeParser: KLogging() {
      *
      */
     fun parseJsonObject(json: String): Map<String, Any?> {
-        log.trace { "Parse JSON: $json" }
-
         val content = json.trim().removePrefix("{").removeSuffix("}").trim()
         if (content.isEmpty()) return emptyMap()
 
@@ -248,8 +250,6 @@ object AgeTypeParser: KLogging() {
      * @return 파싱된 불변 [List].
      */
     fun parseJsonArray(json: String): List<Any?> {
-        log.trace { "Parse JsonArray: $json" }
-
         val content = json.trim().removePrefix("[").removeSuffix("]").trim()
         if (content.isEmpty()) return emptyList()
         val result = mutableListOf<Any?>()
@@ -277,3 +277,12 @@ object AgeTypeParser: KLogging() {
         return content.length - 1
     }
 }
+
+private fun Number.toAgeLong(fieldName: String): Long =
+    try {
+        BigDecimal(toString()).longValueExact()
+    } catch (e: ArithmeticException) {
+        throw IllegalArgumentException("AGE agtype field '$fieldName' must be an integer Long", e)
+    } catch (e: NumberFormatException) {
+        throw IllegalArgumentException("AGE agtype field '$fieldName' must be an integer Long", e)
+    }

@@ -24,14 +24,20 @@ fun GraphOperations.resolveEdgeLabels(requested: Set<String>): Set<String> =
 suspend fun GraphSuspendOperations.resolveVertexLabels(requested: Set<String>): Set<String> =
     requested.ifEmpty {
         (this as? GraphSuspendLabelDiscovery)?.listVertexLabels()
-            ?: error("vertexLabels is empty; backend must implement GraphSuspendLabelDiscovery or receive explicit labels")
+            ?: error(
+                "vertexLabels is empty; backend must implement " +
+                        "GraphSuspendLabelDiscovery or receive explicit labels",
+            )
     }
 
 /** Coroutine variant of [resolveEdgeLabels]. */
 suspend fun GraphSuspendOperations.resolveEdgeLabels(requested: Set<String>): Set<String> =
     requested.ifEmpty {
         (this as? GraphSuspendLabelDiscovery)?.listEdgeLabels()
-            ?: error("edgeLabels is empty; backend must implement GraphSuspendLabelDiscovery or receive explicit labels")
+            ?: error(
+                "edgeLabels is empty; backend must implement " +
+                        "GraphSuspendLabelDiscovery or receive explicit labels",
+            )
     }
 
 /** Resolves both label sets once so sync and coroutine paths share the same contract. */

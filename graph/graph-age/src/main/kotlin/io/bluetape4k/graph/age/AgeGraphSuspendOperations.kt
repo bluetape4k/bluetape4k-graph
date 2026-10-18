@@ -41,7 +41,6 @@ import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
@@ -58,7 +57,6 @@ import java.sql.ResultSet
 import java.sql.SQLException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.coroutines.CoroutineContext
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction as exposedSuspendTransaction
 
 /**
@@ -124,7 +122,6 @@ class AgeGraphSuspendOperations(
     private val delegate = AgeGraphOperations(database, graphName)
 
     private suspend fun <T> newSuspendedTransaction(
-        context: CoroutineContext = Dispatchers.IO,
         maxAttemps: Int? = null,
         statement: suspend JdbcTransaction.() -> T,
     ): T = withContext(Dispatchers.IO) {
@@ -229,7 +226,7 @@ class AgeGraphSuspendOperations(
         mapper: (ResultSet) -> T,
     ): Flow<T> = channelFlow {
         val output = this@channelFlow
-        newSuspendedTransaction(Dispatchers.IO, maxAttemps = 1) {
+        newSuspendedTransaction(maxAttemps = 1) {
             execStreaming(statement) { resultSet ->
                 while (resultSet.next()) {
                     output.trySendBlocking(mapper(resultSet)).getOrThrow()
@@ -242,7 +239,7 @@ class AgeGraphSuspendOperations(
         AgeGraphSchemaManager().asSuspendSchemaManager()
 
     override suspend fun <T> suspendTransaction(block: suspend GraphSuspendTransactionScope.() -> T): T =
-        newSuspendedTransaction(Dispatchers.IO) {
+        newSuspendedTransaction {
             val result = AgeGraphSuspendTransactionScope(graphName).block()
             materializeSuspendTransactionResult(result)
         }
@@ -573,23 +570,33 @@ class AgeGraphSuspendOperations(
     override fun bfs(
         startId: GraphElementId,
         options: TreeTraversalOptions,
-    ): Flow<TraversalVisit> =
-        syncDelegate.bfs(startId, options).asFlow()
+    ): Flow<TraversalVisit> = flow {
+        val visits = withContext(Dispatchers.IO) { syncDelegate.bfs(startId, options) }
+        visits.forEach { emit(it) }
+    }
 
     override fun dfs(
         startId: GraphElementId,
         options: TreeTraversalOptions,
-    ): Flow<TraversalVisit> =
-        syncDelegate.dfs(startId, options).asFlow()
+    ): Flow<TraversalVisit> = flow {
+        val visits = withContext(Dispatchers.IO) { syncDelegate.dfs(startId, options) }
+        visits.forEach { emit(it) }
+    }
 
-    override fun detectCycles(options: CycleOptions): Flow<GraphCycle> =
-        syncDelegate.detectCycles(options).asFlow()
+    override fun detectCycles(options: CycleOptions): Flow<GraphCycle> = flow {
+        val cycles = withContext(Dispatchers.IO) { syncDelegate.detectCycles(options) }
+        cycles.forEach { emit(it) }
+    }
 
-    override fun connectedComponents(options: ComponentOptions): Flow<GraphComponent> =
-        syncDelegate.connectedComponents(options).asFlow()
+    override fun connectedComponents(options: ComponentOptions): Flow<GraphComponent> = flow {
+        val components = withContext(Dispatchers.IO) { syncDelegate.connectedComponents(options) }
+        components.forEach { emit(it) }
+    }
 
-    override fun pageRank(options: PageRankOptions): Flow<PageRankScore> =
-        syncDelegate.pageRank(options).asFlow()
+    override fun pageRank(options: PageRankOptions): Flow<PageRankScore> = flow {
+        val scores = withContext(Dispatchers.IO) { syncDelegate.pageRank(options) }
+        scores.forEach { emit(it) }
+    }
 }
 
 @Suppress("TooManyFunctions")

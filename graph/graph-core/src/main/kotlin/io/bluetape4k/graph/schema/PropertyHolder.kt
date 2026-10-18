@@ -16,7 +16,12 @@ import kotlin.reflect.KClass
  * `object` subclasses are initialized safely by JVM class loading. Non-object instances keep
  * 독립적인 property list를 가진다.
  */
+@Suppress("TooManyFunctions")
 abstract class PropertyHolder: Serializable {
+
+    companion object {
+        private const val serialVersionUID: Long = 1L
+    }
 
     private val _properties = mutableListOf<PropertyDef<*>>()
 

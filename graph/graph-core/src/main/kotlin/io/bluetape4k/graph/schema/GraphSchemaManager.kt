@@ -214,7 +214,9 @@ class UnsupportedGraphSchemaManager(
     override fun listConstraints(): List<GraphConstraint> = emptyList()
 
     private fun unsupported(operation: String): GraphUnsupportedOperationException =
-        GraphUnsupportedOperationException("$backendName does not support $operation through GraphSchemaManager: $reason")
+        GraphUnsupportedOperationException(
+            "$backendName does not support $operation through GraphSchemaManager: $reason",
+        )
 }
 
 /**

@@ -118,7 +118,7 @@ fun <T: Any> GraphBulkExporter<T>.asVirtualThreadExporter(): GraphVirtualThreadB
     VirtualThreadGraphBulkAdapter.wrapExporter(this)
 
 
-// TODO: 이건 bluetape4k-core 로 이동하는게 낫겠다.
+// bluetape4k-core로 이동할 수 있는 공통 취소 어댑터다.
 internal class CancellableVirtualFuture<T>(
     private val block: () -> T,
     private val onCancel: (Boolean, Boolean) -> Unit,

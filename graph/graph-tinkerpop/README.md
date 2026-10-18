@@ -126,7 +126,7 @@ val ops = TinkerGraphOperations()
 val degree = ops.degreeCentrality(alice.id, DegreeOptions(edgeLabel = "KNOWS"))
 println("in=${degree.inDegree} out=${degree.outDegree}")
 
-val visits = ops.bfs(alice.id, BfsDfsOptions(edgeLabel = "KNOWS", maxDepth = 3))
+val visits = ops.bfs(alice.id, TreeTraversalOptions(edgeLabel = "KNOWS", maxDepth = 3))
 println("BFS visited ${visits.size} nodes")
 
 val components = ops.connectedComponents(ComponentOptions(edgeLabel = "KNOWS"))

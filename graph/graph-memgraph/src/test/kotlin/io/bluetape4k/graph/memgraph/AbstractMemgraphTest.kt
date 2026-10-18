@@ -13,6 +13,7 @@ import org.junit.jupiter.api.TestInstance
 import org.neo4j.driver.Driver
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Suppress("UtilityClassWithPublicConstructor")
 abstract class AbstractMemgraphTest {
 
     companion object: KLogging() {

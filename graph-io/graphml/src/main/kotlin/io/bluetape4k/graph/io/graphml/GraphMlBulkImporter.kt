@@ -286,7 +286,10 @@ class GraphMlBulkImporter: GraphBulkImporter<GraphImportSource> {
                 elapsed = watch.elapsed(),
                 failures = failures
             ).also {
-                log.debug { "Import completed: vertices=$vc/$vr, edges=$ec/$er, skipped=$sv/$se, status=$status, elapsed=${watch.elapsed()}" }
+                log.debug {
+                    "Import completed: vertices=$vc/$vr, edges=$ec/$er, " +
+                            "skipped=$sv/$se, status=$status, elapsed=${watch.elapsed()}"
+                }
             }
         } finally {
             checkpoint.close()

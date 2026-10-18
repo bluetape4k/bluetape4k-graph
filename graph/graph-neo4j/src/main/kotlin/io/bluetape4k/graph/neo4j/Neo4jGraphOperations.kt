@@ -45,7 +45,6 @@ import io.bluetape4k.graph.schema.GraphSchemaManager
 import io.bluetape4k.graph.support.requireSafeIdentifier
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.info
-import io.bluetape4k.logging.trace
 import io.bluetape4k.logging.warn
 import io.bluetape4k.support.EMPTY_STRING
 import io.bluetape4k.support.requireNotBlank
@@ -135,7 +134,6 @@ class Neo4jGraphOperations(
     }
 
     private fun <T> runQuery(query: Query, mapper: (Record) -> T): List<T> {
-        log.trace { "Query=$query" }
         return withSession { session ->
             session.run(query).list(mapper)
         }
@@ -256,7 +254,8 @@ class Neo4jGraphOperations(
         }
 
         val query = queryOf(
-            $$"UNWIND $rows AS row CREATE (n:$$label) SET n += row.properties RETURN row.index AS index, n ORDER BY index",
+            $$"UNWIND $rows AS row CREATE (n:$$label) SET n += row.properties " +
+                "RETURN row.index AS index, n ORDER BY index",
             "rows" to rows
         )
 
@@ -701,7 +700,10 @@ class Neo4jGraphOperations(
         val ids = vertexById.keys
 
         val query =
-            queryOf("MATCH (a$labelClause)-[r$edgePattern]->(b$labelClause) RETURN elementId(a) AS sa, elementId(b) AS sb")
+            queryOf(
+                "MATCH (a$labelClause)-[r$edgePattern]->(b$labelClause) " +
+                    "RETURN elementId(a) AS sa, elementId(b) AS sb",
+            )
 
         val edges = runQuery(query) { rec ->
             rec["sa"].asString().toGraphElementId() to rec["sb"].asString().toGraphElementId()
@@ -737,7 +739,10 @@ class Neo4jGraphOperations(
 
         val outAdjacency = HashMap<GraphElementId, MutableList<GraphElementId>>()
         val query =
-            queryOf("MATCH (a$labelClause)-[r$edgePattern]->(b$labelClause) RETURN elementId(a) AS sa, elementId(b) AS sb")
+            queryOf(
+                "MATCH (a$labelClause)-[r$edgePattern]->(b$labelClause) " +
+                    "RETURN elementId(a) AS sa, elementId(b) AS sb",
+            )
 
         runQuery(query) { rec ->
             val s = rec["sa"].asString().toGraphElementId()
@@ -798,7 +803,10 @@ class Neo4jGraphOperations(
         val adjacency = HashMap<GraphElementId, MutableList<GraphElementId>>()
 
         val query =
-            queryOf("MATCH (a$labelClause)-[r$edgePattern]->(b$labelClause) RETURN elementId(a) AS sa, elementId(b) AS sb")
+            queryOf(
+                "MATCH (a$labelClause)-[r$edgePattern]->(b$labelClause) " +
+                    "RETURN elementId(a) AS sa, elementId(b) AS sb",
+            )
 
         runQuery(query) { rec ->
             val s = rec["sa"].asString().toGraphElementId()
@@ -837,7 +845,6 @@ private class Neo4jGraphTransactionScope(
     companion object: KLogging()
 
     private fun txQuery(query: Query): Result {
-        log.trace { "Query: $query" }
         return tx.run(query)
     }
 

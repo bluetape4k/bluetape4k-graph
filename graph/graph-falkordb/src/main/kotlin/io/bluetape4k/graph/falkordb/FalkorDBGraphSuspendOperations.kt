@@ -2,7 +2,6 @@ package io.bluetape4k.graph.falkordb
 
 import com.falkordb.Driver
 import com.falkordb.Record
-import com.falkordb.ResultSet
 import io.bluetape4k.graph.GraphQueryException
 import io.bluetape4k.graph.algo.ShortestPathFallback
 import io.bluetape4k.graph.algo.internal.CycleDetector
@@ -123,10 +122,12 @@ class FalkorDBGraphSuspendOperations(
      *
      * 모든 IO 작업은 [Dispatchers.IO]로 격리됩니다.
      *
-     * @param block 실행할 블록 — `com.falkordb.Graph`를 받아 [ResultSet]을 반환합니다.
+     * @param block 실행할 블록 — `com.falkordb.Graph`를 받아 IO 안에서 결과를 계산합니다.
      */
-    private inline fun withGraphIO(block: (com.falkordb.Graph) -> ResultSet): ResultSet =
-        driver.graph(graphName).use(block)
+    private suspend fun <T> withGraphIO(block: (com.falkordb.Graph) -> T): T =
+        withContext(Dispatchers.IO) {
+            driver.graph(graphName).use(block)
+        }
 
     /**
      * Cypher 쿼리를 [Dispatchers.IO]에서 실행하고 결과를 [mapper]로 변환한 리스트를 반환합니다.
@@ -315,10 +316,9 @@ class FalkorDBGraphSuspendOperations(
         label.requireNotBlank("label").requireSafeIdentifier("label")
 
         val cypher = $$"MATCH (n:$$label) WHERE id(n) = toInteger($id) DETACH DELETE n"
-        val rs = withGraphIO { g ->
-            g.query(cypher, mapOf("id" to id.value))
+        return withGraphIO { g ->
+            g.query(cypher, mapOf("id" to id.value)).statistics.nodesDeleted() > 0
         }
-        return rs.statistics.nodesDeleted() > 0
     }
 
     override suspend fun countVertices(label: String): Long {
@@ -404,10 +404,9 @@ class FalkorDBGraphSuspendOperations(
         label.requireNotBlank("label").requireSafeIdentifier("label")
         val cypher = $$"MATCH ()-[r:$$label]->() WHERE id(r) = toInteger($id) DELETE r"
 
-        val rs = withGraphIO { g ->
-            g.query(cypher, mapOf("id" to id.value as Any))
+        return withGraphIO { g ->
+            g.query(cypher, mapOf("id" to id.value as Any)).statistics.relationshipsDeleted() > 0
         }
-        return rs.statistics.relationshipsDeleted() > 0
     }
 
 // -- GraphSuspendTraversalRepository --
@@ -531,21 +530,19 @@ class FalkorDBGraphSuspendOperations(
             RETURN outDeg, count(r_in) AS inDeg
         """.trimIndent()
 
-        val rs = withGraphIO { g ->
-            @Suppress("UNCHECKED_CAST")
-            g.query(cypher, mapOf<String, Any>("id" to vertexId.value))
-        }
+        return withGraphIO { g ->
+            val resultSet = g.query(cypher, mapOf<String, Any>("id" to vertexId.value))
+            val rec = resultSet.iterator().takeIf { it.hasNext() }?.next()
+                ?: return@withGraphIO DegreeResult(vertexId, 0, 0)
 
-        val rec = rs.iterator().takeIf { it.hasNext() }?.next()
-            ?: return DegreeResult(vertexId, 0, 0)
+            val out = rec.getValue<Any>("outDeg").asInt()
+            val inn = rec.getValue<Any>("inDeg").asInt()
 
-        val out = rec.getValue<Any>("outDeg").asInt()
-        val inn = rec.getValue<Any>("inDeg").asInt()
-
-        return when (options.direction) {
-            Direction.OUTGOING -> DegreeResult(vertexId, 0, out)
-            Direction.INCOMING -> DegreeResult(vertexId, inn, 0)
-            Direction.BOTH -> DegreeResult(vertexId, inn, out)
+            when (options.direction) {
+                Direction.OUTGOING -> DegreeResult(vertexId, 0, out)
+                Direction.INCOMING -> DegreeResult(vertexId, inn, 0)
+                Direction.BOTH -> DegreeResult(vertexId, inn, out)
+            }
         }
     }
 

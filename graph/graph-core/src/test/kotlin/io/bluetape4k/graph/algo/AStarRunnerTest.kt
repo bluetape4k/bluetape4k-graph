@@ -33,7 +33,11 @@ class AStarRunnerTest: AbstractGraphTest() {
 
     companion object: KLogging()
 
-    data class Coord(val x: Double, val y: Double): Serializable
+    data class Coord(val x: Double, val y: Double): Serializable {
+        companion object {
+            private const val serialVersionUID: Long = 1L
+        }
+    }
 
     private val coords = mapOf(
         "A" to Coord(0.0, 0.0),

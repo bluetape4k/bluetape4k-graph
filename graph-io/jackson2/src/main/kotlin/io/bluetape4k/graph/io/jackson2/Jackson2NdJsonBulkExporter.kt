@@ -118,7 +118,8 @@ class Jackson2NdJsonBulkExporter: GraphBulkExporter<GraphExportSink> {
             failures = failures,
         ).also {
             log.debug {
-                "NDJSON_JACKSON2 export completed: verticesWritten=$vWritten, edgesWritten=$eWritten, status=$status, elapsed=${watch.elapsed()}"
+                "NDJSON_JACKSON2 export completed: verticesWritten=$vWritten, " +
+                        "edgesWritten=$eWritten, status=$status, elapsed=${watch.elapsed()}"
             }
         }
     }

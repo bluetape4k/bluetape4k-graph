@@ -3,6 +3,8 @@ package io.bluetape4k.graph.algo
 import io.bluetape4k.assertions.DOUBLE_EPSILON
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeNear
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeInstanceOf
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.graph.AbstractGraphTest
@@ -35,6 +37,19 @@ class WeightExtractorTest: AbstractGraphTest() {
         assertFailsWith<MissingWeightException> {
             extractor.extract(edge())
         }
+    }
+
+    @Test
+    fun `MissingWeightException은 기존 edgeId-key JVM 생성자를 보존한다`() {
+        val constructor = MissingWeightException::class.java
+            .getDeclaredConstructor(String::class.java, String::class.java)
+        constructor.isAccessible = true
+
+        val exception = constructor.newInstance("e1", "cost") as MissingWeightException
+        constructor.parameterTypes.toList() shouldBeEqualTo listOf(String::class.java, String::class.java)
+        exception.edgeId.value shouldBeEqualTo "e1"
+        exception.key shouldBeEqualTo "cost"
+        exception shouldBeInstanceOf IllegalStateException::class
     }
 
     @Test

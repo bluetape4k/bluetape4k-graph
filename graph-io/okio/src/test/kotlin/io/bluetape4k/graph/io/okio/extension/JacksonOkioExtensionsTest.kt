@@ -1,6 +1,7 @@
 package io.bluetape4k.graph.io.okio.extension
 
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.concurrent.get
 import io.bluetape4k.coroutines.flow.extensions.log
@@ -22,6 +23,31 @@ import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.seconds
 
 class JacksonOkioExtensionsTest: AbstractOkioTest() {
+
+    @Test
+    fun `Jackson Okio extensions keep the legacy JVM facade`() {
+        val facade = Class.forName("io.bluetape4k.graph.io.okio.extension.JacksonOkioExtensionsKt")
+
+        facade.declaredMethods.any { it.name == "importGraph" }.shouldBeTrue()
+        facade.declaredMethods.any { it.name == "exportGraph" }.shouldBeTrue()
+
+        val overloadCounts = facade.declaredMethods
+            .filterNot { it.isSynthetic }
+            .groupingBy { it.name }
+            .eachCount()
+        overloadCounts shouldBeEqualTo mapOf(
+            "importGraph" to 4,
+            "importGraphGzip" to 4,
+            "exportGraph" to 4,
+            "exportGraphGzip" to 4,
+            "importGraphAsync" to 4,
+            "exportGraphAsync" to 4,
+            "importGraphFlow" to 4,
+            "importGraphAwait" to 4,
+            "exportGraphFlow" to 4,
+            "exportGraphAwait" to 4,
+        )
+    }
 
     // ─── Jackson 2 ────────────────────────────────────────────────────────────
 

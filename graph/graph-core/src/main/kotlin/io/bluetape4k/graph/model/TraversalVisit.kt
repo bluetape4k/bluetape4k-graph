@@ -13,7 +13,7 @@ import java.io.Serializable
  *
  * ### Usage
  * ```kotlin
- * val visits = ops.bfs(start.id, BfsDfsOptions(maxDepth = 3))
+ * val visits = ops.bfs(start.id, TreeTraversalOptions(maxDepth = 3))
  * visits.forEach { println("d=${it.depth} v=${it.vertex.label}") }
  * ```
  */

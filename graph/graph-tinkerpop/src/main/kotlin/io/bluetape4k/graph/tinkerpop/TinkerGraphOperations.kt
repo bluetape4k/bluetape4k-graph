@@ -83,6 +83,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__ as AnonymousT
  * ops.close()
  * ```
  */
+@Suppress("LargeClass", "TooManyFunctions")
 class TinkerGraphOperations:
     GraphOperations,
     GraphAlgorithmRepository,
@@ -708,7 +709,8 @@ class TinkerGraphOperations:
     }
 
     /**
-     * Builds a [GraphPath] from a Gremlin [org.apache.tinkerpop.gremlin.process.traversal.Path] that contains only vertices (as returned by `both()`).
+     * Builds a [GraphPath] from a Gremlin
+     * [org.apache.tinkerpop.gremlin.process.traversal.Path] that contains only vertices (as returned by `both()`).
      * Looks up the connecting edge between each consecutive vertex pair so that
      * [GraphPath.length] (edge count) correctly reflects the hop count.
      */

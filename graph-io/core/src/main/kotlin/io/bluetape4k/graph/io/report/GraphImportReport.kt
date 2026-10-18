@@ -40,9 +40,9 @@ data class GraphImportReport(
 ): Serializable {
     init {
         verticesRead.requireGe(0, "verticesRead")
-        verticesCreated.requireGe(0, "verticesWritten")
-        edgesRead.requireGe(0, "edgesWritten")
-        edgesCreated.requireGe(0, "skippedVertices")
+        verticesCreated.requireGe(0, "verticesCreated")
+        edgesRead.requireGe(0, "edgesRead")
+        edgesCreated.requireGe(0, "edgesCreated")
         skippedVertices.requireGe(0, "skippedVertices")
         skippedEdges.requireGe(0, "skippedEdges")
         require(verticesCreated <= verticesRead) {

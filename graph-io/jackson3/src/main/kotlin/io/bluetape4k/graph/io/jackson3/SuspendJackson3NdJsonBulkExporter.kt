@@ -68,13 +68,15 @@ class SuspendJackson3NdJsonBulkExporter: GraphSuspendBulkExporter<GraphExportSin
         )
     }
 
+    @Suppress("LongMethod")
     override suspend fun exportGraphSuspending(
         sink: GraphExportSink,
         operations: GraphSuspendOperations,
         options: GraphExportOptions,
     ): GraphExportReport = withContext(Dispatchers.IO) {
         log.debug {
-            "Starting NDJSON_JACKSON3 export (suspend): vertexLabels=${options.vertexLabels}, edgeLabels=${options.edgeLabels}"
+            "Starting NDJSON_JACKSON3 export (suspend): vertexLabels=${options.vertexLabels}, " +
+                "edgeLabels=${options.edgeLabels}"
         }
         val watch = GraphIoStopwatch()
         val failures = mutableListOf<GraphIoFailure>()
@@ -130,7 +132,8 @@ class SuspendJackson3NdJsonBulkExporter: GraphSuspendBulkExporter<GraphExportSin
             failures = failures,
         ).also {
             log.debug {
-                "NDJSON_JACKSON3 export (suspend) completed: verticesWritten=$vWritten, edgesWritten=$eWritten, status=$status, elapsed=${watch.elapsed()}"
+                "NDJSON_JACKSON3 export (suspend) completed: verticesWritten=$vWritten, " +
+                    "edgesWritten=$eWritten, status=$status, elapsed=${watch.elapsed()}"
             }
         }
     }

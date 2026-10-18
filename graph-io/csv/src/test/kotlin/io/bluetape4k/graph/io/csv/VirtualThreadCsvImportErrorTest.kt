@@ -127,6 +127,6 @@ class VirtualThreadCsvImportErrorTest {
         report.verticesCreated shouldBeEqualTo 3L
         report.edgesRead shouldBeEqualTo 2L
         report.edgesCreated shouldBeEqualTo 2L
-        report.elapsed.toMillis() shouldBeGreaterThan 0L
+        report.elapsed.toNanos() shouldBeGreaterThan 0L
     }
 }

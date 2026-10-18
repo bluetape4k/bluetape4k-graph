@@ -37,6 +37,7 @@ class CloseableChunkSequence<T> private constructor(
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     override fun close() {
         log.debug { "Closing CloseableChunkSequence" }
         val iterators: List<TrackedCloseableChunkIterator> = lock.withLock {
@@ -61,6 +62,7 @@ class CloseableChunkSequence<T> private constructor(
         log.debug { "Closed CloseableChunkSequence" }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private inner class TrackedCloseableChunkIterator(
         private val delegate: CloseableChunkIterator<T>,
     ): CloseableChunkIterator<T> {
@@ -174,6 +176,7 @@ internal class TraversalChunkIterator<E, R>(
         traversal.close()
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private fun closeAfterFailure(error: Throwable) {
         try {
             close()

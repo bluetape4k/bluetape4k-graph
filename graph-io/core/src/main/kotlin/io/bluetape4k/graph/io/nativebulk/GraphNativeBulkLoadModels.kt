@@ -278,7 +278,7 @@ data class GraphNativeBulkLoadUriOrigin(
     val port: Int? = null,
 ): Serializable {
     init {
-        scheme.requireMatches(Regex("[a-z][a-z0-9+.-]{0,31}"), "schme") {
+        scheme.requireMatches(Regex("[a-z][a-z0-9+.-]{0,31}"), "scheme") {
             "URI scheme must be normalized lowercase bounded identifier"
         }
         require(host.length in 1..253 && host == host.lowercase()) {

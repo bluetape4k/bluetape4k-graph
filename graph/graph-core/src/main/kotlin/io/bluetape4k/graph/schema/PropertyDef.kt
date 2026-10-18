@@ -24,6 +24,10 @@ data class PropertyDef<T: Any>(
     val name: String,
     val type: KClass<out T>,
 ): Serializable {
+    companion object {
+        private const val serialVersionUID: Long = 1L
+    }
+
     init {
         name.requireNotEmpty("name")
     }

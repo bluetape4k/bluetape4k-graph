@@ -23,7 +23,8 @@ import java.util.concurrent.locks.ReentrantLock
 class GraphNativeBulkLoadCancellationToken internal constructor(
     val startedNanos: Long,
     val timeoutNanos: Long,
-    private val cancellationHook: (GraphNativeBulkLoadCancellationReason, GraphNativeBulkLoadDeadline) -> GraphNativeBulkLoadException?,
+    private val cancellationHook:
+        (GraphNativeBulkLoadCancellationReason, GraphNativeBulkLoadDeadline) -> GraphNativeBulkLoadException?,
 ) {
     private val deadlineNanos: Long = saturatingAdd(startedNanos, timeoutNanos)
     private val requestedReason = AtomicReference<GraphNativeBulkLoadCancellationReason?>(null)

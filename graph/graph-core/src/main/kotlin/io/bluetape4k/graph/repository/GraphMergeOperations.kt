@@ -32,7 +32,11 @@ import java.io.Serializable
 data class GraphMergeProperties(
     val matchProperties: Map<String, Any?>,
     val setProperties: Map<String, Any?>,
-): Serializable
+): Serializable {
+    companion object {
+        private const val serialVersionUID: Long = 1L
+    }
+}
 
 /**
  * Shared input validation rules for backend merge/upsert APIs.

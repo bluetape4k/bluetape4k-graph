@@ -172,7 +172,9 @@ object GraphAlgorithmProviderSelector: KLogging() {
                     } else {
                         "no provider supports $algorithm"
                     }
-                    throw GraphAlgorithmProviderUnavailableException("Native provider is required for $algorithm, but $reason")
+                    throw GraphAlgorithmProviderUnavailableException(
+                        "Native provider is required for $algorithm, but $reason",
+                    )
                 }
 
                 else -> fallback(

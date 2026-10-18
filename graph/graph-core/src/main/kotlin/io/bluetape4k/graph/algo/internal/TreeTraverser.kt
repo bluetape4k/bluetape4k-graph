@@ -48,7 +48,7 @@ object TreeTraverser: KLogging() {
         while (queue.isNotEmpty() && result.size < maxVertices) {
             val (id, depth, parentId) = queue.poll()
             val visitElement = TraversalVisit(vertexResolver(id), depth, parentId)
-            log.debug { "visit $visitElement" }
+            log.debug { "visit depth=$depth index=${result.size + 1}" }
             result.add(visitElement)
 
             if (depth >= maxDepth) {
@@ -86,17 +86,19 @@ object TreeTraverser: KLogging() {
             if (!visited.add(id)) continue
 
             val visitElement = TraversalVisit(vertexResolver(id), depth, parentId)
-            log.debug { "visit $visitElement" }
+            log.debug { "visit depth=$depth index=${result.size + 1}" }
             result.add(visitElement)
 
             if (depth >= maxDepth) {
-                log.debug { "depth[$depth] 가 maxDepth[$maxDepth] 와 같거나 이상입니다. 다음 depth 탐색은 중단합니다." }
-                continue
-            }
-
-            // push in reverse so first neighbor is popped first
-            adjacency[id].orEmpty().asReversed().forEach { next ->
-                if (next !in visited) stack.push(Triple(next, depth + 1, id))
+                log.debug {
+                    "depth[$depth] 가 maxDepth[$maxDepth] 와 같거나 이상입니다. " +
+                        "다음 depth 탐색은 중단합니다."
+                }
+            } else {
+                // push in reverse so first neighbor is popped first
+                adjacency[id].orEmpty().asReversed().forEach { next ->
+                    if (next !in visited) stack.push(Triple(next, depth + 1, id))
+                }
             }
         }
         return result

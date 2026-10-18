@@ -28,6 +28,7 @@ import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
+import java.util.NoSuchElementException
 import java.util.concurrent.CompletionException
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -133,6 +134,27 @@ class VirtualThreadOptionalSurfaceTddTest: AbstractGraphTest() {
     }
 
     @Test
+    fun `chunked adapter closes source when iteration fails and preserves iteration failure`() {
+        val iterationFailure = IllegalStateException("chunk iteration failed")
+        val closeFailure = IllegalArgumentException("chunk close failed")
+        val sequence = ThrowingCloseableSequence(iterationFailure, closeFailure)
+
+        TinkerGraphOperations().use { delegate ->
+            val adapter = VirtualThreadChunkedAdapter(
+                ThrowingChunkedGraphOperations(delegate, sequence),
+            )
+
+            val failure = assertFailsWith<CompletionException> {
+                adapter.findVerticesByLabelChunkedAsync("Person", chunkSize = 1).join()
+            }
+
+            failure.cause shouldBeEqualTo iterationFailure
+            iterationFailure.suppressed.single() shouldBeEqualTo closeFailure
+            sequence.closed.shouldBeTrue()
+        }
+    }
+
+    @Test
     fun `exception from synchronous delegate is preserved by future`() {
         val expected = IllegalStateException("merge failed")
         val adapter = VirtualThreadMergeAdapter(FailingMerge(expected))
@@ -178,6 +200,42 @@ class VirtualThreadOptionalSurfaceTddTest: AbstractGraphTest() {
     private class GraphOperationsDecorator(
         delegate: GraphOperations,
     ): GraphOperations by delegate
+
+    private class ThrowingChunkedGraphOperations(
+        delegate: GraphOperations,
+        private val sequence: Sequence<List<GraphVertex>>,
+    ): GraphOperations by delegate {
+        override fun findVerticesByLabelChunked(
+            label: String,
+            filter: Map<String, Any?>,
+            chunkSize: Int,
+        ): Sequence<List<GraphVertex>> = sequence
+    }
+
+    private class ThrowingCloseableSequence(
+        private val iterationFailure: Throwable,
+        private val closeFailure: Throwable,
+    ): Sequence<List<GraphVertex>>, AutoCloseable {
+        var closed: Boolean = false
+            private set
+
+        override fun iterator(): Iterator<List<GraphVertex>> = object : Iterator<List<GraphVertex>> {
+            private var hasNextValue = true
+
+            override fun hasNext(): Boolean = hasNextValue
+
+            override fun next(): List<GraphVertex> {
+                if (!hasNextValue) throw NoSuchElementException()
+                hasNextValue = false
+                throw iterationFailure
+            }
+        }
+
+        override fun close() {
+            closed = true
+            throw closeFailure
+        }
+    }
 
     private class FailingMerge(
         private val failure: Throwable,

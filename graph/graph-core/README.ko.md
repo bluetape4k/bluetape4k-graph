@@ -100,7 +100,7 @@ CORE-2 conformance slice는 `MERGE`, `SCHEMA`, `TRANSACTION`, `BATCH_INSERT`,
 - `pageRank(PageRankOptions)`: 점수 내림차순 `PageRankScore` 목록을 반환한다.
 - `degreeCentrality(vertexId, DegreeOptions)`: in/out/total degree를 담은 `DegreeResult`를 반환한다.
 - `connectedComponents(ComponentOptions)`: 연결 컴포넌트별 `GraphComponent` 목록을 반환한다.
-- `bfs(startId, BfsDfsOptions)` / `dfs(startId, BfsDfsOptions)`: 방문 순서를 담은 `TraversalVisit` 목록을 반환한다.
+- `bfs(startId, TreeTraversalOptions)` / `dfs(startId, TreeTraversalOptions)`: 방문 순서를 담은 `TraversalVisit` 목록을 반환한다.
 - `detectCycles(CycleOptions)`: 순환 경로를 담은 `GraphCycle` 목록을 반환한다.
 
 ### 선택적 Native Algorithm Provider SPI
@@ -1159,12 +1159,23 @@ val edge = ops.mergeEdge(
 | PageRank             | `pageRank(options)`                   | `PageRankOptions`  | `List<PageRankScore>`  |
 | Degree Centrality    | `degreeCentrality(vertexId, options)` | `DegreeOptions`    | `DegreeResult`         |
 | Connected Components | `connectedComponents(options)`        | `ComponentOptions` | `List<GraphComponent>` |
-| BFS                  | `bfs(startId, options)`               | `BfsDfsOptions`    | `List<TraversalVisit>` |
-| DFS                  | `dfs(startId, options)`               | `BfsDfsOptions`    | `List<TraversalVisit>` |
+| BFS                  | `bfs(startId, options)`               | `TreeTraversalOptions` | `List<TraversalVisit>` |
+| DFS                  | `dfs(startId, options)`               | `TreeTraversalOptions` | `List<TraversalVisit>` |
 | Cycle Detection      | `detectCycles(options)`               | `CycleOptions`     | `List<GraphCycle>`     |
 
+`BfsDfsOptions`는 기존 호출을 위한 deprecated 호환 타입으로 보존한다. 이 타입을 받는 `bfs`와 `dfs` overload는 `TreeTraversalOptions`로 위임하므로 새 코드는 새 타입을 사용한다. `edgeLabel`, `direction`, `maxDepth`, `maxVertices` 값은 그대로 옮긴다.
+
+### `BfsDfsOptions`에서 이전하기
+
+옵션 타입만 교체하면 된다.
+
+```kotlin
+val options = TreeTraversalOptions(edgeLabel = "KNOWS", maxDepth = 3)
+val visits = ops.bfs(alice.id, options)
+```
+
 모든 순회·알고리즘 option은 public constructor에서 입력을 검증한다.
-`NeighborOptions.maxDepth`와 `PathOptions.maxDepth`는 각각 이웃 확장 없음·vertex-only path 의미의 0을 허용하고, `BfsDfsOptions.maxDepth`도 0을 허용해 시작 정점만 반환한다.
+`NeighborOptions.maxDepth`와 `PathOptions.maxDepth`는 각각 이웃 확장 없음·vertex-only path 의미의 0을 허용하고, `TreeTraversalOptions.maxDepth`도 0을 허용해 시작 정점만 반환한다.
 `CycleOptions.maxDepth`와 방문·반복·결과·사이클·컴포넌트 한도는 양수여야 한다.
 `PageRankOptions.tolerance`는 양의 유한값이어야 하고 `dampingFactor`는 유한한
 `[0.0, 1.0]` 범위여야 한다. 잘못된 값은 backend query를 만들기 전에
@@ -1199,7 +1210,7 @@ val degree = ops.degreeCentrality(alice.id, DegreeOptions(edgeLabel = "KNOWS"))
 println("in=${degree.inDegree} out=${degree.outDegree}")
 
 // BFS 탐색
-val visits = ops.bfs(alice.id, BfsDfsOptions(edgeLabel = "KNOWS", maxDepth = 3))
+val visits = ops.bfs(alice.id, TreeTraversalOptions(edgeLabel = "KNOWS", maxDepth = 3))
 
 // 사이클 탐지
 val cycles = ops.detectCycles(CycleOptions(edgeLabel = "KNOWS", maxDepth = 5))

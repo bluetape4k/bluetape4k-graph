@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.Flow
  *
  * @see GraphVertexRepository synchronous blocking variant
  */
+@Suppress("TooManyFunctions")
 interface GraphSuspendVertexRepository {
     /**
      * Creates and returns a new vertex.

@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package io.bluetape4k.graph.io.okio
 
 import io.bluetape4k.graph.io.okio.OkioGraphExportSink.OutputStreamBased

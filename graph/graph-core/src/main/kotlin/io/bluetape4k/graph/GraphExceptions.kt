@@ -79,13 +79,16 @@ class GraphNotInitializedException: GraphException {
 }
 
 /**
- * Thrown when run unsupported graph operations
+ * Thrown when a graph operation is not supported by the current backend.
+ *
+ * This extends the JDK exception directly so callers that already catch
+ * [UnsupportedOperationException] retain the established compatibility contract.
  *
  * ```kotlin
  * throw GraphUnsupportedOperationException("GraphXxxOperations does not support suspend graph transactions.")
  * ```
  */
-class GraphUnsupportedOperationException: GraphException {
+class GraphUnsupportedOperationException: UnsupportedOperationException {
     constructor(): super()
     constructor(message: String): super(message)
     constructor(message: String, cause: Throwable?): super(message, cause)

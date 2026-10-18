@@ -68,7 +68,9 @@ class GraphImportCheckpointSession(
                         )
                     }
                     if (existing.verticesProcessed > 0 && idMap.size == 0) {
-                        throw GraphImportCheckpointConflictException("checkpoint external ID mapping is empty for committed vertices")
+                        throw GraphImportCheckpointConflictException(
+                            "checkpoint external ID mapping is empty for committed vertices",
+                        )
                     }
                     store.save(
                         checkpointKey,

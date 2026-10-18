@@ -1,3 +1,7 @@
+@file:JvmName("JacksonOkioExtensionsKt")
+@file:JvmMultifileClass
+@file:Suppress("TooManyFunctions")
+
 package io.bluetape4k.graph.io.okio.extension
 
 import io.bluetape4k.graph.io.jackson2.Jackson2NdJsonBulkExporter

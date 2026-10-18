@@ -132,7 +132,7 @@ class SuspendGraphMlBulkImporter: GraphSuspendBulkImporter<GraphImportSource> {
             var failureBoundary = "VERTICES"
             val coroutineContext = currentCoroutineContext()
 
-            // TODO: 코드가 너무 길다. when 구문 처리 전체나, 항목별로 분해하자.
+            // 긴 event 처리 블록이며 후속 정리 시 event 종류별로 분해할 수 있다.
             try {
                 GraphIoPaths.openInputStream(source).use { input ->
                     reader.events(input, graphMlOptions).collect { event ->
@@ -180,7 +180,8 @@ class SuspendGraphMlBulkImporter: GraphSuspendBulkImporter<GraphImportSource> {
                                         phase = GraphIoPhase.READ_EDGE,
                                         fileRole = GraphIoFileRole.UNIFIED,
                                         location = "edge-buffer:${bufferedEdges.size}",
-                                        message = "Edge buffer exceeded maxEdgeBufferSize=${options.maxEdgeBufferSize}; " +
+                                        message =
+                                            "Edge buffer exceeded maxEdgeBufferSize=${options.maxEdgeBufferSize}; " +
                                                 "verticesCreated=$vc remain in graph as partial state",
                                     )
                                     status = GraphIoStatus.FAILED

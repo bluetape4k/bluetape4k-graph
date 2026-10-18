@@ -56,8 +56,10 @@ class VirtualThreadOperationsAdapter(
    GraphVirtualThreadTraversalRepository by VirtualThreadTraversalAdapter(delegate),
    GraphVirtualThreadAlgorithmRepository by VirtualThreadAlgorithmAdapter(delegate),
    GraphVirtualThreadMergeOperations by VirtualThreadMergeAdapter(delegate as? GraphMergeOperations),
-   GraphVirtualThreadSchemaManagementOperations by VirtualThreadSchemaAdapter((delegate as? GraphSchemaManagementOperations)?.schemaManager()),
-   GraphVirtualThreadTransactionalOperations by VirtualThreadTransactionalAdapter(delegate as? GraphTransactionalOperations),
+   GraphVirtualThreadSchemaManagementOperations by
+       VirtualThreadSchemaAdapter((delegate as? GraphSchemaManagementOperations)?.schemaManager()),
+   GraphVirtualThreadTransactionalOperations by
+       VirtualThreadTransactionalAdapter(delegate as? GraphTransactionalOperations),
    GraphVirtualThreadChunkedOperations by VirtualThreadChunkedAdapter(delegate) {
 
     companion object: KLogging()

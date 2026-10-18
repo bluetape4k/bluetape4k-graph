@@ -611,7 +611,11 @@ class GraphIoProgressReporter(
         require(next.failures >= snapshot.failures) { "failures must be monotonic" }
         val previousBytesProcessed = snapshot.bytesProcessed
         val previousBytesTotal = snapshot.bytesTotal
-        require(next.bytesProcessed == null || previousBytesProcessed == null || next.bytesProcessed >= previousBytesProcessed) {
+        require(
+            next.bytesProcessed == null ||
+                    previousBytesProcessed == null ||
+                    next.bytesProcessed >= previousBytesProcessed,
+        ) {
             "bytesProcessed must be monotonic"
         }
         require(next.bytesTotal == null || previousBytesTotal == null || next.bytesTotal >= previousBytesTotal) {

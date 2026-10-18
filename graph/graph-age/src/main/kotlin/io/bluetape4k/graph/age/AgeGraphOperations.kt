@@ -79,6 +79,7 @@ import org.jetbrains.exposed.v1.jdbc.transactions.transaction
  * @param database 이 facade가 사용할 Exposed 데이터베이스
  * @param graphName AGE 그래프 이름
  */
+@Suppress("LargeClass")
 class AgeGraphOperations(
     private val database: Database,
     private val graphName: String,
