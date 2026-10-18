@@ -29,6 +29,14 @@ data class BatchEdge(
 ): Serializable {
     companion object {
         private const val serialVersionUID: Long = 1L
+
+        operator fun invoke(
+            fromId: GraphElementId,
+            toId: GraphElementId,
+            vararg params: Pair<String, Any?>,
+        ): BatchEdge {
+            return BatchEdge(fromId, toId, params.toMap())
+        }
     }
 }
 
