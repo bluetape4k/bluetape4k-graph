@@ -15,6 +15,8 @@ import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
@@ -22,6 +24,8 @@ import org.junit.jupiter.api.Test
 import java.util.concurrent.Executors
 
 class ObservabilitySampleDatasetLoaderTest {
+
+    companion object: KLogging()
 
     @Test
     fun `imports graph-io CSV sample dataset into TinkerGraph`() {
@@ -31,14 +35,26 @@ class ObservabilitySampleDatasetLoaderTest {
 
         val report = ObservabilitySampleDatasetLoader.importCsv(ops)
 
+        log.debug { "report=$report" }
         report.status shouldBeEqualTo GraphIoStatus.COMPLETED
         report.verticesCreated shouldBeEqualTo 10L
         report.edgesCreated shouldBeEqualTo 10L
-        ops.findVerticesByLabel(ServiceLabel.label).map { it.properties[ServiceLabel.serviceId.name] } shouldContain
-            "payment-service"
-        service.affectedApis("payment-service").map { it.properties[ApiLabel.apiId.name] } shouldContain "checkout-api"
-        service.owningTeams("payment-service").map { it.properties[TeamLabel.teamId.name] } shouldContain "payments-team"
-        service.alertBoundary(listOf("payment-latency", "checkout-errors")).shouldNotBeEmpty()
+
+        ops.findVerticesByLabel(ServiceLabel.label)
+            .onEach { log.debug { "vertex=$it" } }
+            .map { it.properties[ServiceLabel.serviceId.name] } shouldContain "payment-service"
+
+        service.affectedApis("payment-service")
+            .onEach { log.debug { "affected api=$it" } }
+            .map { it.properties[ApiLabel.apiId.name] } shouldContain "checkout-api"
+
+        service.owningTeams("payment-service")
+            .onEach { log.debug { "owning-team=$it" } }
+            .map { it.properties[TeamLabel.teamId.name] } shouldContain "payments-team"
+
+        service.alertBoundary(listOf("payment-latency", "checkout-errors"))
+            .onEach { log.debug { "alert-boundary=$it" } }
+            .shouldNotBeEmpty()
     }
 
     @Test
@@ -49,23 +65,33 @@ class ObservabilitySampleDatasetLoaderTest {
 
         val report = ObservabilitySampleDatasetLoader.importCsvSuspending(ops)
 
+        log.debug { "report=$report" }
         report.status shouldBeEqualTo GraphIoStatus.COMPLETED
         report.verticesCreated shouldBeEqualTo 10L
         report.edgesCreated shouldBeEqualTo 10L
-        service.affectedApis("payment-service").map { it.properties[ApiLabel.apiId.name] } shouldContain
-            "mobile-checkout-api"
-        service.owningTeams("payment-service").map { it.properties[TeamLabel.teamId.name] } shouldContain "payments-team"
-        service.alertBoundary(listOf("payment-latency", "checkout-errors")).shouldNotBeEmpty()
+
+        service.affectedApis("payment-service")
+            .onEach { log.debug { "vertex=$it" } }
+            .map { it.properties[ApiLabel.apiId.name] } shouldContain "mobile-checkout-api"
+
+        service.owningTeams("payment-service")
+            .onEach { log.debug { "affected api=$it" } }
+            .map { it.properties[TeamLabel.teamId.name] } shouldContain "payments-team"
+
+        service.alertBoundary(listOf("payment-latency", "checkout-errors"))
+            .onEach { log.debug { "alert-boundary=$it" } }
+            .shouldNotBeEmpty()
     }
 
     @Test
     fun `imports default resources when context class loader cannot see examples`() {
-        withContextClassLoader(object : ClassLoader(null) {}) {
+        withContextClassLoader(object: ClassLoader(null) {}) {
             val ops = TinkerGraphOperations()
             ObservabilityIncidentService(ops).initialize()
 
             val report = ObservabilitySampleDatasetLoader.importCsv(ops)
 
+            log.debug { "report=$report" }
             report.status shouldBeEqualTo GraphIoStatus.COMPLETED
             report.verticesCreated shouldBeEqualTo 10L
             report.edgesCreated shouldBeEqualTo 10L
@@ -83,6 +109,8 @@ class ObservabilitySampleDatasetLoaderTest {
         }
 
         thread.contextClassLoader shouldBeEqualTo previous
+
+        log.debug { "report=$report" }
         report.status shouldBeEqualTo GraphIoStatus.COMPLETED
         report.verticesRead shouldBeGreaterThan 0L
         report.verticesCreated shouldBeGreaterThan 0L
@@ -103,6 +131,7 @@ class ObservabilitySampleDatasetLoaderTest {
                 }
 
                 thread.contextClassLoader shouldBeEqualTo previous
+                log.debug { "report=$report" }
                 report.status shouldBeEqualTo GraphIoStatus.COMPLETED
                 report.verticesRead shouldBeGreaterThan 0L
                 report.verticesCreated shouldBeGreaterThan 0L

@@ -1,8 +1,6 @@
 package io.bluetape4k.graph.examples.observability
 
 import com.falkordb.FalkorDB
-import com.zaxxer.hikari.HikariConfig
-import com.zaxxer.hikari.HikariDataSource
 import io.bluetape4k.codec.Base58
 import io.bluetape4k.graph.age.AgeGraphOperations
 import io.bluetape4k.graph.age.AgeGraphSuspendOperations
@@ -16,6 +14,7 @@ import io.bluetape4k.graph.tinkerpop.TinkerGraphOperations
 import io.bluetape4k.graph.tinkerpop.TinkerGraphSuspendOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.warn
+import io.bluetape4k.testcontainers.database.getDataSource
 import io.bluetape4k.testcontainers.graphdb.FalkorDBServer
 import io.bluetape4k.testcontainers.graphdb.MemgraphServer
 import io.bluetape4k.testcontainers.graphdb.Neo4jServer
@@ -91,24 +90,15 @@ class MemgraphObservabilityIncidentSuspendTest: AbstractObservabilityIncidentSus
 }
 
 class AgeObservabilityIncidentTest: AbstractObservabilityIncidentTest() {
-    override val graphName = "observability_incident_test"
-    private lateinit var dataSource: HikariDataSource
-    override lateinit var ops: AgeGraphOperations
-
-    @BeforeAll
-    fun startServer() {
-        val server = PostgreSQLAgeServer.Launcher.postgresqlAge
-        dataSource = HikariDataSource(HikariConfig().apply {
-            jdbcUrl = server.jdbcUrl
-            username = server.username
-            password = server.password
-            driverClassName = "org.postgresql.Driver"
-            connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
-            maximumPoolSize = 5
-        })
-        val database = Database.connect(dataSource)
-        ops = AgeGraphOperations(database, graphName)
+    private val server = PostgreSQLAgeServer.Launcher.postgresqlAge
+    private val dataSource = server.getDataSource {
+        connectionInitSql = $$"LOAD 'age'; SET search_path = ag_catalog, \"$user\", public;"
+        maximumPoolSize = 5
     }
+    private val database = Database.connect(dataSource)
+
+    override val graphName = "observability_incident_test"
+    override val ops: AgeGraphOperations = AgeGraphOperations(database, graphName)
 
     @AfterAll
     fun stopServer() {
@@ -117,24 +107,15 @@ class AgeObservabilityIncidentTest: AbstractObservabilityIncidentTest() {
 }
 
 class AgeObservabilityIncidentSuspendTest: AbstractObservabilityIncidentSuspendTest() {
-    override val graphName = "observability_incident_suspend_test"
-    private lateinit var dataSource: HikariDataSource
-    override lateinit var ops: AgeGraphSuspendOperations
-
-    @BeforeAll
-    fun startServer() {
-        val server = PostgreSQLAgeServer.Launcher.postgresqlAge
-        dataSource = HikariDataSource(HikariConfig().apply {
-            jdbcUrl = server.jdbcUrl
-            username = server.username
-            password = server.password
-            driverClassName = "org.postgresql.Driver"
-            connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
-            maximumPoolSize = 5
-        })
-        val database = Database.connect(dataSource)
-        ops = AgeGraphSuspendOperations(database, graphName)
+    private val server = PostgreSQLAgeServer.Launcher.postgresqlAge
+    private val dataSource = server.getDataSource {
+        connectionInitSql = $$"LOAD 'age'; SET search_path = ag_catalog, \"$user\", public;"
+        maximumPoolSize = 5
     }
+    private val database = Database.connect(dataSource)
+
+    override val graphName = "observability_incident_suspend_test"
+    override val ops: AgeGraphSuspendOperations = AgeGraphSuspendOperations(database, graphName)
 
     @AfterAll
     fun stopServer() {
@@ -143,34 +124,29 @@ class AgeObservabilityIncidentSuspendTest: AbstractObservabilityIncidentSuspendT
 }
 
 class FalkorDBObservabilityIncidentTest: AbstractObservabilityIncidentTest() {
-    private lateinit var driver: com.falkordb.Driver
-    override lateinit var ops: FalkorDBGraphOperations
-    override val graphName: String = "observability_${Base58.randomString(8)}"
+    private val falkordb = FalkorDBServer.Launcher.falkordb
+    private val driver: com.falkordb.Driver = FalkorDB.driver(falkordb.host, falkordb.port)
 
-    @BeforeAll
-    fun startServer() {
-        driver = FalkorDB.driver(FalkorDBServer.Launcher.falkordb.host, FalkorDBServer.Launcher.falkordb.port)
-        ops = FalkorDBGraphOperations(driver, graphName)
-    }
+    override val graphName: String = "observability_${Base58.randomString(8)}"
+    override val ops: FalkorDBGraphOperations = FalkorDBGraphOperations(driver, graphName)
 
     @AfterAll
     fun stopServer() {
-        runCatching { ops.dropGraph(graphName) }
-            .onFailure { log.warn(it) { "Failed to drop graph $graphName" } }
+        runCatching {
+            ops.dropGraph(graphName)
+        }.onFailure {
+            log.warn(it) { "Failed to drop graph $graphName" }
+        }
         driver.close()
     }
 }
 
 class FalkorDBObservabilityIncidentSuspendTest: AbstractObservabilityIncidentSuspendTest() {
-    private lateinit var driver: com.falkordb.Driver
-    override lateinit var ops: FalkorDBGraphSuspendOperations
-    override val graphName: String = "observability_${Base58.randomString(8)}"
+    private val falkordb = FalkorDBServer.Launcher.falkordb
+    private val driver: com.falkordb.Driver = FalkorDB.driver(falkordb.host, falkordb.port)
 
-    @BeforeAll
-    fun startServer() {
-        driver = FalkorDB.driver(FalkorDBServer.Launcher.falkordb.host, FalkorDBServer.Launcher.falkordb.port)
-        ops = FalkorDBGraphSuspendOperations(driver, graphName)
-    }
+    override val graphName: String = "observability_${Base58.randomString(8)}"
+    override val ops: FalkorDBGraphSuspendOperations = FalkorDBGraphSuspendOperations(driver, graphName)
 
     @AfterAll
     fun stopServer() {

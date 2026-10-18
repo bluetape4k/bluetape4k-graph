@@ -46,12 +46,10 @@ class ObservabilityIncidentService(
         tier.requireNotBlank("tier")
         return ops.createVertex(
             ServiceLabel.label,
-            mapOf(
-                ServiceLabel.serviceId.name to serviceId,
-                ServiceLabel.name.name to name,
-                ServiceLabel.tier.name to tier,
-                ServiceLabel.status.name to status,
-            )
+            ServiceLabel.serviceId.name to serviceId,
+            ServiceLabel.name.name to name,
+            ServiceLabel.tier.name to tier,
+            ServiceLabel.status.name to status,
         )
     }
 
@@ -60,12 +58,10 @@ class ObservabilityIncidentService(
         name.requireNotBlank("name")
         return ops.createVertex(
             ApiLabel.label,
-            mapOf(
-                ApiLabel.apiId.name to apiId,
-                ApiLabel.name.name to name,
-                ApiLabel.tier.name to "public",
-                ApiLabel.status.name to status,
-            )
+            ApiLabel.apiId.name to apiId,
+            ApiLabel.name.name to name,
+            ApiLabel.tier.name to "public",
+            ApiLabel.status.name to status,
         )
     }
 
@@ -74,11 +70,9 @@ class ObservabilityIncidentService(
         name.requireNotBlank("name")
         return ops.createVertex(
             TeamLabel.label,
-            mapOf(
-                TeamLabel.teamId.name to teamId,
-                TeamLabel.name.name to name,
-                TeamLabel.status.name to "active",
-            )
+            TeamLabel.teamId.name to teamId,
+            TeamLabel.name.name to name,
+            TeamLabel.status.name to "active",
         )
     }
 
@@ -88,12 +82,10 @@ class ObservabilityIncidentService(
         severity.requireNotBlank("severity")
         return ops.createVertex(
             AlertLabel.label,
-            mapOf(
-                AlertLabel.alertId.name to alertId,
-                AlertLabel.name.name to name,
-                AlertLabel.severity.name to severity,
-                AlertLabel.status.name to "open",
-            )
+            AlertLabel.alertId.name to alertId,
+            AlertLabel.name.name to name,
+            AlertLabel.severity.name to severity,
+            AlertLabel.status.name to "open",
         )
     }
 
@@ -103,33 +95,31 @@ class ObservabilityIncidentService(
         severity.requireNotBlank("severity")
         return ops.createVertex(
             IncidentLabel.label,
-            mapOf(
-                IncidentLabel.incidentId.name to incidentId,
-                IncidentLabel.name.name to name,
-                IncidentLabel.severity.name to severity,
-                IncidentLabel.status.name to "open",
-            )
+            IncidentLabel.incidentId.name to incidentId,
+            IncidentLabel.name.name to name,
+            IncidentLabel.severity.name to severity,
+            IncidentLabel.status.name to "open",
         )
     }
 
     fun connectDependency(fromId: GraphElementId, toId: GraphElementId, kind: String = "runtime") {
         kind.requireNotBlank("kind")
-        ops.createEdge(fromId, toId, DependsOnLabel.label, mapOf(DependsOnLabel.kind.name to kind))
+        ops.createEdge(fromId, toId, DependsOnLabel.label, DependsOnLabel.kind.name to kind)
     }
 
     fun assignOwner(serviceId: GraphElementId, teamId: GraphElementId, kind: String = "oncall") {
         kind.requireNotBlank("kind")
-        ops.createEdge(serviceId, teamId, OwnedByLabel.label, mapOf(OwnedByLabel.kind.name to kind))
+        ops.createEdge(serviceId, teamId, OwnedByLabel.label, OwnedByLabel.kind.name to kind)
     }
 
     fun attachAlert(alertId: GraphElementId, serviceId: GraphElementId, kind: String = "metric") {
         kind.requireNotBlank("kind")
-        ops.createEdge(alertId, serviceId, AlertsOnLabel.label, mapOf(AlertsOnLabel.kind.name to kind))
+        ops.createEdge(alertId, serviceId, AlertsOnLabel.label, AlertsOnLabel.kind.name to kind)
     }
 
     fun markRootCause(incidentId: GraphElementId, serviceId: GraphElementId, kind: String = "investigation") {
         kind.requireNotBlank("kind")
-        ops.createEdge(incidentId, serviceId, RootCauseLabel.label, mapOf(RootCauseLabel.kind.name to kind))
+        ops.createEdge(incidentId, serviceId, RootCauseLabel.label, RootCauseLabel.kind.name to kind)
     }
 
     fun downstreamDependencies(serviceId: String, maxDepth: Int = 3): List<GraphVertex> =
@@ -183,17 +173,15 @@ class ObservabilityIncidentService(
 
     private fun serviceById(serviceId: String): GraphVertex? {
         serviceId.requireNotBlank("serviceId")
-        return ops.findVerticesByLabel(
-            ServiceLabel.label,
-            mapOf(ServiceLabel.serviceId.name to serviceId),
-        ).firstOrNull()
+        return ops
+            .findVerticesByLabel(ServiceLabel.label, ServiceLabel.serviceId.name to serviceId)
+            .firstOrNull()
     }
 
     private fun alertById(alertId: String): GraphVertex? {
         alertId.requireNotBlank("alertId")
-        return ops.findVerticesByLabel(
-            AlertLabel.label,
-            mapOf(AlertLabel.alertId.name to alertId),
-        ).firstOrNull()
+        return ops
+            .findVerticesByLabel(AlertLabel.label, AlertLabel.alertId.name to alertId)
+            .firstOrNull()
     }
 }
