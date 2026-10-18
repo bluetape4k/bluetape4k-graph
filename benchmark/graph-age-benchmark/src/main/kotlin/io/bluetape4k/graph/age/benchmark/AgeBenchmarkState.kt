@@ -63,20 +63,20 @@ open class AgeBenchmarkState {
         }
         ops.createGraph(GRAPH_NAME)
 
-        val alice = ops.createVertex(PERSON_LABEL, mapOf("name" to "Alice", "age" to 30L))
-        val bob = ops.createVertex(PERSON_LABEL, mapOf("name" to "Bob", "age" to 25L))
-        val charlie = ops.createVertex(PERSON_LABEL, mapOf("name" to "Charlie", "age" to 28L))
-        val dave = ops.createVertex(PERSON_LABEL, mapOf("name" to "Dave", "age" to 35L))
+        val alice = ops.createVertex(PERSON_LABEL, "name" to "Alice", "age" to 30L)
+        val bob = ops.createVertex(PERSON_LABEL, "name" to "Bob", "age" to 25L)
+        val charlie = ops.createVertex(PERSON_LABEL, "name" to "Charlie", "age" to 28L)
+        val dave = ops.createVertex(PERSON_LABEL, "name" to "Dave", "age" to 35L)
 
         aliceId = alice.id
         bobId = bob.id
         charlieId = charlie.id
         daveId = dave.id
 
-        ops.createEdge(aliceId, bobId, KNOWS_LABEL, mapOf("since" to 2020L))
-        ops.createEdge(bobId, charlieId, KNOWS_LABEL, mapOf("since" to 2021L))
-        ops.createEdge(charlieId, daveId, KNOWS_LABEL, mapOf("since" to 2022L))
-        ops.createEdge(aliceId, charlieId, FOLLOWS_LABEL, mapOf("since" to 2019L))
+        ops.createEdge(aliceId, bobId, KNOWS_LABEL, "since" to 2020L)
+        ops.createEdge(bobId, charlieId, KNOWS_LABEL, "since" to 2021L)
+        ops.createEdge(charlieId, daveId, KNOWS_LABEL, "since" to 2022L)
+        ops.createEdge(aliceId, charlieId, FOLLOWS_LABEL, "since" to 2019L)
     }
 
     @TearDown

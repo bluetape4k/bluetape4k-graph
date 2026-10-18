@@ -1,12 +1,13 @@
 package io.bluetape4k.graph.age.benchmark
 
-import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.graph.age.AgeGraphOperations
 import io.bluetape4k.graph.model.BatchEdge
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.repository.GraphOperations
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.testcontainers.database.getDataSource
 import io.bluetape4k.testcontainers.graphdb.PostgreSQLAgeServer
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.junit.jupiter.api.Test
@@ -15,17 +16,18 @@ import kotlin.system.measureNanoTime
 
 class AgeBatchInsertSmokeTest {
 
+    companion object: KLogging() {
+        private val ageServer by lazy { PostgreSQLAgeServer.Launcher.postgresqlAge }
+    }
+
+    fun getDataSource(): HikariDataSource = ageServer.getDataSource {
+        connectionInitSql = $$"LOAD 'age'; SET search_path = ag_catalog, \"$user\", public;"
+        maximumPoolSize = 4
+    }
+
     @Test
     fun `10k loop and batch insert smoke`() {
-        val server = PostgreSQLAgeServer.Launcher.postgresqlAge
-        HikariDataSource(HikariConfig().apply {
-            jdbcUrl = server.jdbcUrl
-            username = server.username
-            password = server.password
-            driverClassName = "org.postgresql.Driver"
-            connectionInitSql = "LOAD 'age'; SET search_path = ag_catalog, \"\$user\", public;"
-            maximumPoolSize = 4
-        }).use { dataSource ->
+        getDataSource().use { dataSource ->
             val database = Database.connect(dataSource)
             val graphName = "batch_smoke_graph"
             val result = runSmoke("age") {
@@ -47,29 +49,37 @@ class AgeBatchInsertSmokeTest {
         rows: Int = 10_000,
         createOperations: () -> GraphOperations,
     ): SmokeResult {
-        val vertexRows = (0 until rows).map { index ->
+        val vertexRows = List(rows) { index ->
             mapOf("name" to "Person-$index", "rank" to index.toLong())
         }
 
         val vertexLoopMs = createOperations().let { ops ->
             measureMs {
-                vertexRows.forEach { props -> ops.createVertex("Person", props) }
+                vertexRows.forEach { props ->
+                    ops.createVertex("Person", props)
+                }
             }
         }
         val vertexBatchMs = createOperations().let { ops ->
-            measureMs { ops.createVertices("Person", vertexRows) }
+            measureMs {
+                ops.createVertices("Person", vertexRows)
+            }
         }
         val edgeLoopMs = createOperations().let { ops ->
             val vertices = ops.createVertices("Person", vertexRows)
             val edges = cycleEdges(vertices)
             measureMs {
-                edges.forEach { edge -> ops.createEdge(edge.fromId, edge.toId, "KNOWS", edge.properties) }
+                edges.forEach { edge ->
+                    ops.createEdge(edge.fromId, edge.toId, "KNOWS", edge.properties)
+                }
             }
         }
         val edgeBatchMs = createOperations().let { ops ->
             val vertices = ops.createVertices("Person", vertexRows)
             val edges = cycleEdges(vertices)
-            measureMs { ops.createEdges("KNOWS", edges) }
+            measureMs {
+                ops.createEdges("KNOWS", edges)
+            }
         }
 
         return SmokeResult(backend, rows, vertexLoopMs, vertexBatchMs, edgeLoopMs, edgeBatchMs)
@@ -80,7 +90,7 @@ class AgeBatchInsertSmokeTest {
             BatchEdge(
                 fromId = vertices[index].id,
                 toId = vertices[(index + 1) % vertices.size].id,
-                properties = mapOf("rank" to index.toLong()),
+                "rank" to index.toLong(),
             )
         }
 
@@ -97,8 +107,8 @@ class AgeBatchInsertSmokeTest {
     ) {
         fun toSummaryLine(): String =
             "batch-smoke backend=$backend rows=$rows vertexLoopMs=$vertexLoopMs vertexBatchMs=$vertexBatchMs " +
-                "vertexSpeedup=${formatSpeedup(vertexLoopMs, vertexBatchMs)} edgeLoopMs=$edgeLoopMs " +
-                "edgeBatchMs=$edgeBatchMs edgeSpeedup=${formatSpeedup(edgeLoopMs, edgeBatchMs)}"
+                    "vertexSpeedup=${formatSpeedup(vertexLoopMs, vertexBatchMs)} edgeLoopMs=$edgeLoopMs " +
+                    "edgeBatchMs=$edgeBatchMs edgeSpeedup=${formatSpeedup(edgeLoopMs, edgeBatchMs)}"
 
         private fun formatSpeedup(loopMs: Long, batchMs: Long): String =
             "%.1f".format(loopMs.toDouble() / batchMs.coerceAtLeast(1))

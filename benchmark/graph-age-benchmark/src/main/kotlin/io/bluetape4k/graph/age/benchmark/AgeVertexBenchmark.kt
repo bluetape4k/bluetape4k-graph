@@ -23,7 +23,7 @@ open class AgeVertexBenchmark: AgeBenchmarkState() {
 
     @Benchmark
     fun createVertex(): Boolean {
-        val v = ops.createVertex(PERSON_LABEL, mapOf("name" to "Tmp"))
+        val v = ops.createVertex(PERSON_LABEL, "name" to "Tmp")
         return v.id.value.isNotEmpty()
     }
 
@@ -41,9 +41,9 @@ open class AgeVertexBenchmark: AgeBenchmarkState() {
 
     @Benchmark
     fun createEdge(): Boolean {
-        val from = ops.createVertex(PERSON_LABEL, mapOf("name" to "Src"))
-        val to = ops.createVertex(PERSON_LABEL, mapOf("name" to "Dst"))
-        val edge = ops.createEdge(from.id, to.id, KNOWS_LABEL, mapOf("since" to 2024L))
+        val from = ops.createVertex(PERSON_LABEL, "name" to "Src")
+        val to = ops.createVertex(PERSON_LABEL, "name" to "Dst")
+        val edge = ops.createEdge(from.id, to.id, KNOWS_LABEL, "since" to 2024L)
         return edge.id.value.isNotEmpty()
     }
 
@@ -87,7 +87,7 @@ open class AgeVertexBenchmark: AgeBenchmarkState() {
     }
 
     private fun batchVertexRows(): List<Map<String, Any?>> =
-        (0 until 10_000).map { index ->
+        List(10_000) { index ->
             mapOf("name" to "Person-$index", "rank" to index.toLong())
         }
 
@@ -96,7 +96,7 @@ open class AgeVertexBenchmark: AgeBenchmarkState() {
             BatchEdge(
                 fromId = vertices[index].id,
                 toId = vertices[(index + 1) % vertices.size].id,
-                properties = mapOf("rank" to index.toLong()),
+                "rank" to index.toLong(),
             )
         }
 }
