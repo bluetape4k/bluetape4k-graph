@@ -34,7 +34,7 @@ class LinkedInGraphSuspendService(
     private val ops: GraphSuspendOperations,
     private val graphName: String = "linkedin",
 ) {
-    companion object : KLoggingChannel()
+    companion object: KLoggingChannel()
 
     /**
      * 그래프 초기화. 존재하지 않으면 생성한다.
@@ -68,7 +68,7 @@ class LinkedInGraphSuspendService(
         name.requireNotBlank("name")
         return ops.createVertex(
             "Person",
-            mapOf("name" to name, "title" to title, "company" to company, "location" to location)
+            "name" to name, "title" to title, "company" to company, "location" to location
         )
     }
 
@@ -87,7 +87,7 @@ class LinkedInGraphSuspendService(
         name.requireNotBlank("name")
         return ops.createVertex(
             "Company",
-            mapOf("name" to name, "industry" to industry, "location" to location)
+            "name" to name, "industry" to industry, "location" to location
         )
     }
 
@@ -104,8 +104,8 @@ class LinkedInGraphSuspendService(
         since: String = "",
         strength: Int = 5,
     ) {
-        ops.createEdge(personId1, personId2, "KNOWS", mapOf("since" to since, "strength" to strength))
-        ops.createEdge(personId2, personId1, "KNOWS", mapOf("since" to since, "strength" to strength))
+        ops.createEdge(personId1, personId2, "KNOWS", "since" to since, "strength" to strength)
+        ops.createEdge(personId2, personId1, "KNOWS", "since" to since, "strength" to strength)
     }
 
     /**
@@ -121,7 +121,7 @@ class LinkedInGraphSuspendService(
         role: String,
         isCurrent: Boolean = false,
     ) {
-        ops.createEdge(personId, companyId, "WORKS_AT", mapOf("role" to role, "isCurrent" to isCurrent))
+        ops.createEdge(personId, companyId, "WORKS_AT", "role" to role, "isCurrent" to isCurrent)
     }
 
     /**
@@ -197,6 +197,6 @@ class LinkedInGraphSuspendService(
      */
     fun findPersonByName(name: String): Flow<GraphVertex> {
         name.requireNotBlank("name")
-        return ops.findVerticesByLabel("Person", mapOf("name" to name))
+        return ops.findVerticesByLabel("Person", "name" to name)
     }
 }

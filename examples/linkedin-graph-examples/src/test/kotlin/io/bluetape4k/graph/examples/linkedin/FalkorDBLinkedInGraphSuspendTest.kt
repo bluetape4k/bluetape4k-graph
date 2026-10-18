@@ -8,19 +8,13 @@ import io.bluetape4k.logging.warn
 import io.bluetape4k.testcontainers.graphdb.FalkorDBServer
 import kotlinx.coroutines.CancellationException
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 
-class FalkorDBLinkedInGraphSuspendTest : AbstractLinkedInGraphSuspendTest() {
+class FalkorDBLinkedInGraphSuspendTest: AbstractLinkedInGraphSuspendTest() {
+    private val falkordb = FalkorDBServer.Launcher.falkordb
+    private val driver: com.falkordb.Driver = FalkorDB.driver(falkordb.host, falkordb.port)
 
-    private lateinit var driver: com.falkordb.Driver
-    override lateinit var ops: FalkorDBGraphSuspendOperations
     override val graphName: String = "linkedin_${Base58.randomString(8)}"
-
-    @BeforeAll
-    fun startServer() {
-        driver = FalkorDB.driver(FalkorDBServer.Launcher.falkordb.host, FalkorDBServer.Launcher.falkordb.port)
-        ops = FalkorDBGraphSuspendOperations(driver, graphName)
-    }
+    override val ops: FalkorDBGraphSuspendOperations = FalkorDBGraphSuspendOperations(driver, graphName)
 
     @AfterAll
     fun stopServer() {

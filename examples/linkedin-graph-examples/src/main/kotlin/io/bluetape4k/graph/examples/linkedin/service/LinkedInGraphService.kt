@@ -31,7 +31,7 @@ class LinkedInGraphService(
     private val ops: GraphOperations,
     private val graphName: String = "linkedin",
 ) {
-    companion object : KLogging()
+    companion object: KLogging()
 
     /**
      * 그래프 초기화. 존재하지 않으면 생성한다.
@@ -69,7 +69,7 @@ class LinkedInGraphService(
         name.requireNotBlank("name")
         return ops.createVertex(
             "Person",
-            mapOf("name" to name, "title" to title, "company" to company, "location" to location)
+            "name" to name, "title" to title, "company" to company, "location" to location
         )
     }
 
@@ -88,7 +88,7 @@ class LinkedInGraphService(
         name.requireNotBlank("name")
         return ops.createVertex(
             "Company",
-            mapOf("name" to name, "industry" to industry, "location" to location)
+            "name" to name, "industry" to industry, "location" to location
         )
     }
 
@@ -110,8 +110,8 @@ class LinkedInGraphService(
         since: String = "",
         strength: Int = 5,
     ) {
-        ops.createEdge(personId1, personId2, "KNOWS", mapOf("since" to since, "strength" to strength))
-        ops.createEdge(personId2, personId1, "KNOWS", mapOf("since" to since, "strength" to strength))
+        ops.createEdge(personId1, personId2, "KNOWS", "since" to since, "strength" to strength)
+        ops.createEdge(personId2, personId1, "KNOWS", "since" to since, "strength" to strength)
     }
 
     /**
@@ -127,7 +127,7 @@ class LinkedInGraphService(
         role: String,
         isCurrent: Boolean = false,
     ) {
-        ops.createEdge(personId, companyId, "WORKS_AT", mapOf("role" to role, "isCurrent" to isCurrent))
+        ops.createEdge(personId, companyId, "WORKS_AT", "role" to role, "isCurrent" to isCurrent)
     }
 
     /**
@@ -215,6 +215,6 @@ class LinkedInGraphService(
      */
     fun findPersonByName(name: String): List<GraphVertex> {
         name.requireNotBlank("name")
-        return ops.findVerticesByLabel("Person", mapOf("name" to name))
+        return ops.findVerticesByLabel("Person", "name" to name)
     }
 }

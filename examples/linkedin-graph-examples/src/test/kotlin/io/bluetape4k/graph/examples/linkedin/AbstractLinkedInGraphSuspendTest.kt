@@ -1,5 +1,9 @@
 package io.bluetape4k.graph.examples.linkedin
 
+import io.bluetape4k.assertions.shouldBeGreaterThan
+import io.bluetape4k.assertions.shouldNotBeEmpty
+import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.coroutines.flow.extensions.log
 import io.bluetape4k.graph.examples.linkedin.service.LinkedInGraphSuspendService
 import io.bluetape4k.graph.model.Direction
 import io.bluetape4k.graph.model.NeighborOptions
@@ -8,9 +12,6 @@ import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
 import kotlinx.coroutines.flow.toList
-import io.bluetape4k.assertions.shouldBeGreaterThan
-import io.bluetape4k.assertions.shouldNotBeEmpty
-import io.bluetape4k.assertions.shouldNotBeNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -18,7 +19,7 @@ import org.junit.jupiter.api.TestInstance
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AbstractLinkedInGraphSuspendTest {
 
-    companion object : KLoggingChannel()
+    companion object: KLoggingChannel()
 
     protected abstract val ops: GraphSuspendOperations
     protected open val graphName: String = "linkedin_test"
@@ -26,7 +27,9 @@ abstract class AbstractLinkedInGraphSuspendTest {
 
     @BeforeEach
     fun setup() = runSuspendIO {
-        if (ops.graphExists(graphName)) ops.dropGraph(graphName)
+        if (ops.graphExists(graphName)) {
+            ops.dropGraph(graphName)
+        }
         service.initialize()
     }
 
@@ -40,9 +43,8 @@ abstract class AbstractLinkedInGraphSuspendTest {
 
         service.connect(alice.id, bob.id, since = "2023-01-01", strength = 8)
 
-        val connections = service.getDirectConnections(alice.id).toList()
+        val connections = service.getDirectConnections(alice.id).log("1촌").toList()
         connections.shouldNotBeEmpty()
-        connections.forEach { log.debug { "vertex=$it" } }
     }
 
     @Test
@@ -57,6 +59,7 @@ abstract class AbstractLinkedInGraphSuspendTest {
         service.connect(carol.id, dave.id)
 
         val path = service.findConnectionPath(alice.id, dave.id)
+        log.debug { "path=$path" }
         path.shouldNotBeNull()
         path.vertices.size shouldBeGreaterThan 1
         path.vertices.forEach { log.debug { "vertex=$it" } }
@@ -71,9 +74,8 @@ abstract class AbstractLinkedInGraphSuspendTest {
         service.connect(alice.id, bob.id)
         service.connect(bob.id, carol.id)
 
-        val secondDegree = service.getConnectionsWithinDegree(alice.id, degree = 2).toList()
+        val secondDegree = service.getConnectionsWithinDegree(alice.id, degree = 2).log("2촌").toList()
         secondDegree.shouldNotBeEmpty()
-        secondDegree.forEach { log.debug { "vertex=$it" } }
     }
 
     @Test
@@ -85,9 +87,8 @@ abstract class AbstractLinkedInGraphSuspendTest {
         service.addWorkExperience(alice.id, techCorp.id, "Software Engineer", isCurrent = true)
         service.addWorkExperience(bob.id, techCorp.id, "Designer", isCurrent = true)
 
-        val employees = service.findEmployees(techCorp.id).toList()
+        val employees = service.findEmployees(techCorp.id).log("회사소속").toList()
         employees.shouldNotBeEmpty()
-        employees.forEach { log.debug { "vertex=$it" } }
     }
 
     @Test
@@ -97,11 +98,13 @@ abstract class AbstractLinkedInGraphSuspendTest {
 
         service.follow(bob.id, alice.id)
 
-        val followers = ops.neighbors(
-            alice.id,
-            NeighborOptions(edgeLabel = "FOLLOWS", direction = Direction.INCOMING, maxDepth = 1)
-        ).toList()
+        val followers = ops
+            .neighbors(
+                alice.id,
+                NeighborOptions(edgeLabel = "FOLLOWS", direction = Direction.INCOMING, maxDepth = 1)
+            )
+            .log("Follower")
+            .toList()
         followers.shouldNotBeEmpty()
-        followers.forEach { log.debug { "vertex=$it" } }
     }
 }

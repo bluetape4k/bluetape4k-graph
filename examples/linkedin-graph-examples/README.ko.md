@@ -10,13 +10,11 @@ bluetape4k-graph의 백엔드 독립 API를 사용해 사람, 회사, 스킬 및
 
 - **공통 로직**: `LinkedInGraphService` / `LinkedInGraphSuspendService`가 그래프 연산을 담고 있음
 - **추상 테스트**: `AbstractLinkedInGraphTest` / `AbstractLinkedInGraphSuspendTest`가 공유 테스트 시나리오를 캡슐화
-- **구체 테스트**: 각 백엔드(Neo4j, Memgraph, AGE, TinkerGraph)는 `GraphOperations` 팩토리만 제공
+- **구체 테스트**: 각 백엔드 (Neo4j, Memgraph, AGE, TinkerGraph)는 `GraphOperations` 팩토리만 제공
 
 ## 예제 시나리오
 
-샘플 네트워크에는 Alice, Bob, Carol, Dave 같은 사람과 TechCorp 같은 회사가 있다. 그래프는 양방향 `KNOWS` edge,
-단방향 `FOLLOWS` edge, `WORKS_AT` employment edge를 만든다. 이 예제는 direct connection, 2촌 connection,
-shortest path, follower lookup, employee lookup 질문을 해결한다.
+샘플 네트워크에는 Alice, Bob, Carol, Dave 같은 사람과 TechCorp 같은 회사가 있다. 그래프는 양방향 `KNOWS` edge, 단방향 `FOLLOWS` edge, `WORKS_AT` employment edge를 만든다. 이 예제는 direct connection, 2촌 connection, shortest path, follower lookup, employee lookup 질문을 해결한다.
 
 ## Architecture Diagram
 
@@ -34,21 +32,21 @@ shortest path, follower lookup, employee lookup 질문을 해결한다.
 
 ### 정점 라벨
 
-| 라벨 | 설명 | 주요 속성 |
-|------|------|-----------|
-| `Person` | 사용자 프로필 | `name`, `title`, `company`, `location`, `skills`, `connectionCount` |
-| `Company` | 회사 | `name`, `industry`, `size`, `location` |
-| `Skill` | 전문 스킬 | `name`, `category` |
+| 라벨      | 설명          | 주요 속성                                                           |
+|-----------|---------------|---------------------------------------------------------------------|
+| `Person`  | 사용자 프로필 | `name`, `title`, `company`, `location`, `skills`, `connectionCount` |
+| `Company` | 회사          | `name`, `industry`, `size`, `location`                              |
+| `Skill`   | 전문 스킬     | `name`, `category`                                                  |
 
 ### 간선 라벨
 
-| 라벨 | From → To | 설명 |
-|------|-----------|------|
-| `KNOWS` | `Person → Person` | 상호 연결 (`since`, `strength`) |
-| `WORKS_AT` | `Person → Company` | 재직 (`role`, `startDate`, `isCurrent`) |
-| `FOLLOWS` | `Person → Person` | 팔로우 관계 (비상호) |
-| `HAS_SKILL` | `Person → Skill` | 스킬 보유 (`level`: beginner / intermediate / expert) |
-| `ENDORSES` | `Person → Person` | 스킬 추천 (`skillName`) |
+| 라벨        | From → To          | 설명                                                  |
+|-------------|--------------------|-------------------------------------------------------|
+| `KNOWS`     | `Person → Person`  | 상호 연결 (`since`, `strength`)                       |
+| `WORKS_AT`  | `Person → Company` | 재직 (`role`, `startDate`, `isCurrent`)               |
+| `FOLLOWS`   | `Person → Person`  | 팔로우 관계 (비상호)                                  |
+| `HAS_SKILL` | `Person → Skill`   | 스킬 보유 (`level`: beginner / intermediate / expert) |
+| `ENDORSES`  | `Person → Person`  | 스킬 추천 (`skillName`)                               |
 
 ## 추상 테스트 클래스 패턴
 
@@ -70,9 +68,9 @@ class Neo4jLinkedInGraphTest : AbstractLinkedInGraphTest() {
 }
 ```
 
-| 추상 클래스 | 구체 클래스 |
-|------------|------------|
-| `AbstractLinkedInGraphTest` | `Neo4jLinkedInGraphTest`, `MemgraphLinkedInGraphTest`, `AgeLinkedInGraphTest`, `TinkerGraphLinkedInGraphTest` |
+| 추상 클래스                        | 구체 클래스                                                                                                                               |
+|------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| `AbstractLinkedInGraphTest`        | `Neo4jLinkedInGraphTest`, `MemgraphLinkedInGraphTest`, `AgeLinkedInGraphTest`, `TinkerGraphLinkedInGraphTest`                             |
 | `AbstractLinkedInGraphSuspendTest` | `Neo4jLinkedInGraphSuspendTest`, `MemgraphLinkedInGraphSuspendTest`, `AgeLinkedInGraphSuspendTest`, `TinkerGraphLinkedInGraphSuspendTest` |
 
 ## 샘플 쿼리
@@ -93,17 +91,17 @@ class Neo4jLinkedInGraphTest : AbstractLinkedInGraphTest() {
 ./gradlew :linkedin-graph-examples:test --tests "io.bluetape4k.graph.examples.linkedin.AgeLinkedInGraphSuspendTest"
 ```
 
-통합 테스트에는 Docker가 필요하다(Neo4j, Memgraph, Apache AGE). TinkerGraph는 인메모리로 실행된다.
+통합 테스트에는 Docker가 필요하다 (Neo4j, Memgraph, Apache AGE). TinkerGraph는 인메모리로 실행된다.
 
 ## Expected Output
 
-| 시나리오 | 예상 결과 |
-|---|---|
-| Direct connections | 양방향 `KNOWS` edge 생성 후 Alice가 Bob을 반환한다. |
-| Six-degree path | Alice가 Bob, Carol을 거쳐 Dave에 도달한다. |
-| Second-degree network | Alice가 Bob을 거쳐 Carol에 도달한다. |
-| Company lookup | TechCorp가 현재 재직자를 반환한다. |
-| Followers | incoming `FOLLOWS` traversal로 profile follower를 찾는다. |
+| 시나리오              | 예상 결과                                                 |
+|-----------------------|-----------------------------------------------------------|
+| Direct connections    | 양방향 `KNOWS` edge 생성 후 Alice가 Bob을 반환한다.       |
+| Six-degree path       | Alice가 Bob, Carol을 거쳐 Dave에 도달한다.                |
+| Second-degree network | Alice가 Bob을 거쳐 Carol에 도달한다.                      |
+| Company lookup        | TechCorp가 현재 재직자를 반환한다.                        |
+| Followers             | incoming `FOLLOWS` traversal로 profile follower를 찾는다. |
 
 ## 모듈 참고 사항
 

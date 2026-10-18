@@ -1,14 +1,14 @@
 package io.bluetape4k.graph.examples.linkedin
 
+import io.bluetape4k.assertions.shouldBeGreaterThan
+import io.bluetape4k.assertions.shouldNotBeEmpty
+import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.graph.examples.linkedin.service.LinkedInGraphService
 import io.bluetape4k.graph.model.Direction
 import io.bluetape4k.graph.model.NeighborOptions
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
-import io.bluetape4k.assertions.shouldBeGreaterThan
-import io.bluetape4k.assertions.shouldNotBeEmpty
-import io.bluetape4k.assertions.shouldNotBeNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -16,7 +16,7 @@ import org.junit.jupiter.api.TestInstance
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AbstractLinkedInGraphTest {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     protected abstract val ops: GraphOperations
     protected open val graphName: String = "linkedin_test"
@@ -24,7 +24,9 @@ abstract class AbstractLinkedInGraphTest {
 
     @BeforeEach
     open fun setup() {
-        if (ops.graphExists(graphName)) ops.dropGraph(graphName)
+        if (ops.graphExists(graphName)) {
+            ops.dropGraph(graphName)
+        }
         service.initialize()
     }
 
@@ -39,8 +41,8 @@ abstract class AbstractLinkedInGraphTest {
         service.connect(alice.id, bob.id, since = "2023-01-01", strength = 8)
 
         val connections = service.getDirectConnections(alice.id)
+            .onEach { log.debug { "▶️1촌=$it" } }
         connections.shouldNotBeEmpty()
-        connections.forEach { log.debug { "vertex=$it" } }
     }
 
     @Test
@@ -55,9 +57,9 @@ abstract class AbstractLinkedInGraphTest {
         service.connect(carol.id, dave.id)
 
         val path = service.findConnectionPath(alice.id, dave.id)
+        log.debug { "path=$path" }
         path.shouldNotBeNull()
         path.vertices.size shouldBeGreaterThan 1
-        path.vertices.forEach { log.debug { "vertex=$it" } }
     }
 
     @Test
@@ -70,8 +72,8 @@ abstract class AbstractLinkedInGraphTest {
         service.connect(bob.id, carol.id)
 
         val secondDegree = service.getConnectionsWithinDegree(alice.id, degree = 2)
+            .onEach { log.debug { "▶️2촌=$it" } }
         secondDegree.shouldNotBeEmpty()
-        secondDegree.forEach { log.debug { "vertex=$it" } }
     }
 
     @Test
@@ -84,8 +86,8 @@ abstract class AbstractLinkedInGraphTest {
         service.addWorkExperience(bob.id, techCorp.id, "Designer", isCurrent = true)
 
         val employees = service.findEmployees(techCorp.id)
+            .onEach { log.debug { "▶️Employee=$it" } }
         employees.shouldNotBeEmpty()
-        employees.forEach { log.debug { "vertex=$it" } }
     }
 
     @Test
@@ -99,7 +101,7 @@ abstract class AbstractLinkedInGraphTest {
             alice.id,
             NeighborOptions(edgeLabel = "FOLLOWS", direction = Direction.INCOMING, maxDepth = 1)
         )
+            .onEach { log.debug { "▶️Follow=$it" } }
         followers.shouldNotBeEmpty()
-        followers.forEach { log.debug { "vertex=$it" } }
     }
 }
