@@ -15,6 +15,13 @@ import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.info
 import io.bluetape4k.support.requireNotBlank
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.any
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.count
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.toList
 
 /**
@@ -37,7 +44,8 @@ class SupplyChainImpactSuspendService(
         supplierId.requireNotBlank("supplierId")
         val supplier = supplierById(supplierId) ?: return emptyList()
         return outgoing(supplier, SuppliesLabel.label, PartLabel.label)
-            .flatMap { part -> ordersForPart(part) }
+            .flatMapConcat { part -> ordersForPart(part).asFlow() }
+            .toList()
             .distinctBy { it.id }
     }
 
@@ -51,6 +59,7 @@ class SupplyChainImpactSuspendService(
         routeId.requireNotBlank("routeId")
         val route = routeById(routeId) ?: return emptyList()
         return outgoing(route, DeliversToLabel.label, CustomerOrderLabel.label)
+            .toList()
             .distinctBy { it.id }
     }
 
@@ -64,8 +73,8 @@ class SupplyChainImpactSuspendService(
         return routes
             .filter { route ->
                 route.properties[RouteLabel.routeId.name] != failedRouteId &&
-                    route.properties[RouteLabel.region.name] == orderRegion &&
-                    route.properties[RouteLabel.status.name] == "active"
+                        route.properties[RouteLabel.region.name] == orderRegion &&
+                        route.properties[RouteLabel.status.name] == "active"
             }
             .filter { route ->
                 outgoing(route, DeliversToLabel.label, CustomerOrderLabel.label).any { it.id == order.id }
@@ -74,60 +83,63 @@ class SupplyChainImpactSuspendService(
     }
 
     suspend fun bottleneckParts(): List<GraphVertex> =
-        ops.findVerticesByLabel(PartLabel.label).toList()
+        ops.findVerticesByLabel(PartLabel.label)
             .filter { part ->
-                incoming(part, SuppliesLabel.label, SupplierLabel.label).size == 1 &&
-                    outgoing(part, RequiredByLabel.label, CustomerOrderLabel.label).size >= 2
+                incoming(part, SuppliesLabel.label, SupplierLabel.label).count() == 1 &&
+                        outgoing(part, RequiredByLabel.label, CustomerOrderLabel.label).count() >= 2
             }
+            .toList()
             .distinctBy { it.id }
 
     suspend fun partSubstitutionCycles(): List<List<String>> {
         val cycles = mutableSetOf<List<String>>()
-        ops.findVerticesByLabel(PartLabel.label).toList().forEach { start ->
-            outgoing(start, AlternatePartLabel.label, PartLabel.label).forEach { next ->
-                val returns = outgoing(next, AlternatePartLabel.label, PartLabel.label).any { it.id == start.id }
-                if (returns) {
-                    cycles += listOf(partId(start), partId(next)).sorted()
+        ops.findVerticesByLabel(PartLabel.label).collect { start ->
+            outgoing(start, AlternatePartLabel.label, PartLabel.label)
+                .collect { next ->
+                    val returns = outgoing(next, AlternatePartLabel.label, PartLabel.label).any { it.id == start.id }
+                    if (returns) {
+                        cycles += listOf(partId(start), partId(next)).sorted()
+                    }
                 }
-            }
         }
         return cycles.toList()
     }
 
     private suspend fun ordersForPart(part: GraphVertex): List<GraphVertex> =
         outgoing(part, RequiredByLabel.label, CustomerOrderLabel.label)
+            .toList()
             .distinctBy { it.id }
 
-    private suspend fun outgoing(vertex: GraphVertex, edgeLabel: String, vertexLabel: String): List<GraphVertex> =
-        ops.neighbors(
-            vertex.id,
-            NeighborOptions(edgeLabel = edgeLabel, direction = Direction.OUTGOING, maxDepth = 1)
-        ).toList().filter { it.label == vertexLabel }
+    private fun outgoing(vertex: GraphVertex, edgeLabel: String, vertexLabel: String): Flow<GraphVertex> =
+        ops
+            .neighbors(
+                vertex.id,
+                NeighborOptions(edgeLabel = edgeLabel, direction = Direction.OUTGOING, maxDepth = 1)
+            )
+            .filter { it.label == vertexLabel }
 
-    private suspend fun incoming(vertex: GraphVertex, edgeLabel: String, vertexLabel: String): List<GraphVertex> =
-        ops.neighbors(
-            vertex.id,
-            NeighborOptions(edgeLabel = edgeLabel, direction = Direction.INCOMING, maxDepth = 1)
-        ).toList().filter { it.label == vertexLabel }
+    private fun incoming(vertex: GraphVertex, edgeLabel: String, vertexLabel: String): Flow<GraphVertex> =
+        ops
+            .neighbors(
+                vertex.id,
+                NeighborOptions(edgeLabel = edgeLabel, direction = Direction.INCOMING, maxDepth = 1)
+            )
+            .filter { it.label == vertexLabel }
 
     private suspend fun supplierById(supplierId: String): GraphVertex? =
         ops.findVerticesByLabel(SupplierLabel.label, mapOf(SupplierLabel.supplierId.name to supplierId))
-            .toList()
             .firstOrNull()
 
     private suspend fun partById(partId: String): GraphVertex? =
         ops.findVerticesByLabel(PartLabel.label, mapOf(PartLabel.partId.name to partId))
-            .toList()
             .firstOrNull()
 
     private suspend fun routeById(routeId: String): GraphVertex? =
         ops.findVerticesByLabel(RouteLabel.label, mapOf(RouteLabel.routeId.name to routeId))
-            .toList()
             .firstOrNull()
 
     private suspend fun orderById(orderId: String): GraphVertex? =
         ops.findVerticesByLabel(CustomerOrderLabel.label, mapOf(CustomerOrderLabel.orderId.name to orderId))
-            .toList()
             .firstOrNull()
 
     private fun partId(part: GraphVertex): String =

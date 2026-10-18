@@ -10,6 +10,7 @@ import io.bluetape4k.graph.examples.supplychain.service.SupplyChainImpactService
 import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.repository.GraphOperations
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -29,12 +30,15 @@ abstract class AbstractSupplyChainImpactTest {
             ops.dropGraph(graphName)
         }
         service.initialize()
-        SupplyChainSampleDatasetLoader.importCsv(ops).status shouldBeEqualTo GraphIoStatus.COMPLETED
+        val importReport = SupplyChainSampleDatasetLoader.importCsv(ops)
+        log.debug { "importReport=$importReport" }
+        importReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
     }
 
     @Test
     fun `finds supplier impact to customer orders`() {
         val orderIds = service.impactedOrdersBySupplier("supplier-alpha")
+            .onEach { log.debug { "impacted order=$it" } }
             .map { it.properties[CustomerOrderLabel.orderId.name] }
 
         orderIds shouldContain "order-1001"
@@ -43,6 +47,7 @@ abstract class AbstractSupplyChainImpactTest {
     @Test
     fun `finds part impact across multiple orders`() {
         val orderIds = service.impactedOrdersByPart("gps-module")
+            .onEach { log.debug { "impacted order=$it" } }
             .map { it.properties[CustomerOrderLabel.orderId.name] }
 
         orderIds shouldContain "order-1001"
@@ -52,8 +57,11 @@ abstract class AbstractSupplyChainImpactTest {
     @Test
     fun `finds route impact and alternate route candidates`() {
         val impacted = service.impactedOrdersByRoute("route-pacific")
+            .onEach { log.debug { "impacted order=$it" } }
             .map { it.properties[CustomerOrderLabel.orderId.name] }
+
         val alternates = service.alternateRoutesForOrder("order-1001", failedRouteId = "route-pacific")
+            .onEach { log.debug { "alternate routes=$it" } }
             .map { it.properties[RouteLabel.routeId.name] }
 
         impacted shouldContain "order-1001"
@@ -63,8 +71,11 @@ abstract class AbstractSupplyChainImpactTest {
     @Test
     fun `detects bottleneck parts and substitution cycles`() {
         val bottlenecks = service.bottleneckParts()
+            .onEach { log.debug { "bottleneck part=$it" } }
             .map { it.properties[PartLabel.partId.name] }
+
         val cycles = service.partSubstitutionCycles()
+            .onEach { log.debug { "part substitution=$it" } }
 
         bottlenecks shouldContain "gps-module"
         cycles shouldContain listOf("battery-cell", "battery-module")

@@ -10,6 +10,7 @@ import io.bluetape4k.graph.io.report.GraphIoStatus
 import io.bluetape4k.graph.repository.GraphSuspendOperations
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.coroutines.KLoggingChannel
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -29,12 +30,15 @@ abstract class AbstractSupplyChainImpactSuspendTest {
             ops.dropGraph(graphName)
         }
         service.initialize()
-        SupplyChainSampleDatasetLoader.importCsvSuspending(ops).status shouldBeEqualTo GraphIoStatus.COMPLETED
+        val importReport = SupplyChainSampleDatasetLoader.importCsvSuspending(ops)
+        log.debug { "Imported $importReport" }
+        importReport.status shouldBeEqualTo GraphIoStatus.COMPLETED
     }
 
     @Test
     fun `finds suspend supplier impact`() = runSuspendIO {
         val orderIds = service.impactedOrdersBySupplier("supplier-alpha")
+            .onEach { log.debug { "order=$it" } }
             .map { it.properties[CustomerOrderLabel.orderId.name] }
 
         orderIds shouldContain "order-1001"
@@ -43,6 +47,7 @@ abstract class AbstractSupplyChainImpactSuspendTest {
     @Test
     fun `finds suspend alternate route candidate`() = runSuspendIO {
         val alternates = service.alternateRoutesForOrder("order-1001", failedRouteId = "route-pacific")
+            .onEach { log.debug { "alternate=$it" } }
             .map { it.properties[RouteLabel.routeId.name] }
 
         alternates shouldContain "route-air-express"

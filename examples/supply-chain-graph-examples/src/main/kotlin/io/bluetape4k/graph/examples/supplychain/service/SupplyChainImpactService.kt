@@ -6,10 +6,8 @@ import io.bluetape4k.graph.examples.supplychain.schema.DeliversToLabel
 import io.bluetape4k.graph.examples.supplychain.schema.PartLabel
 import io.bluetape4k.graph.examples.supplychain.schema.RequiredByLabel
 import io.bluetape4k.graph.examples.supplychain.schema.RouteLabel
-import io.bluetape4k.graph.examples.supplychain.schema.StockedAtLabel
 import io.bluetape4k.graph.examples.supplychain.schema.SupplierLabel
 import io.bluetape4k.graph.examples.supplychain.schema.SuppliesLabel
-import io.bluetape4k.graph.examples.supplychain.schema.UsesRouteLabel
 import io.bluetape4k.graph.model.Direction
 import io.bluetape4k.graph.model.GraphVertex
 import io.bluetape4k.graph.model.NeighborOptions
@@ -70,8 +68,8 @@ class SupplyChainImpactService(
         return ops.findVerticesByLabel(RouteLabel.label)
             .filter { route ->
                 route.properties[RouteLabel.routeId.name] != failedRouteId &&
-                    route.properties[RouteLabel.region.name] == orderRegion &&
-                    route.properties[RouteLabel.status.name] == "active"
+                        route.properties[RouteLabel.region.name] == orderRegion &&
+                        route.properties[RouteLabel.status.name] == "active"
             }
             .filter { route ->
                 outgoing(route, DeliversToLabel.label, CustomerOrderLabel.label).any { it.id == order.id }
@@ -83,7 +81,7 @@ class SupplyChainImpactService(
         ops.findVerticesByLabel(PartLabel.label)
             .filter { part ->
                 incoming(part, SuppliesLabel.label, SupplierLabel.label).size == 1 &&
-                    outgoing(part, RequiredByLabel.label, CustomerOrderLabel.label).size >= 2
+                        outgoing(part, RequiredByLabel.label, CustomerOrderLabel.label).size >= 2
             }
             .distinctBy { it.id }
 
@@ -126,7 +124,8 @@ class SupplyChainImpactService(
         ops.findVerticesByLabel(RouteLabel.label, mapOf(RouteLabel.routeId.name to routeId)).firstOrNull()
 
     private fun orderById(orderId: String): GraphVertex? =
-        ops.findVerticesByLabel(CustomerOrderLabel.label, mapOf(CustomerOrderLabel.orderId.name to orderId)).firstOrNull()
+        ops.findVerticesByLabel(CustomerOrderLabel.label, mapOf(CustomerOrderLabel.orderId.name to orderId))
+            .firstOrNull()
 
     private fun partId(part: GraphVertex): String =
         part.properties[PartLabel.partId.name].toString()
