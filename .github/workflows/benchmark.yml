@@ -64,11 +64,11 @@ jobs:
 
       - name: Verify benchmark contracts
         if: matrix.project == 'graph-benchmark'
-        run: >-
-          ./gradlew :graph-benchmark:test
-          --tests 'io.bluetape4k.graph.benchmark.BenchmarkCatalogContractTest'
-          --tests 'io.bluetape4k.graph.benchmark.BenchmarkContainerLifecycleContractTest'
-          --no-daemon --no-configuration-cache
+        run: |
+          python3 .github/scripts/test_benchmark_contract.py
+          ./gradlew :graph-benchmark:test \
+            --tests 'io.bluetape4k.graph.benchmark.BenchmarkContainerLifecycleContractTest' \
+            --no-daemon --no-configuration-cache
 
       - name: Run JMH benchmarks
         run: ./gradlew ":${{ matrix.project }}:benchmark" --no-daemon --no-configuration-cache
