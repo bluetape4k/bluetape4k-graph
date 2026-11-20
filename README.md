@@ -93,9 +93,9 @@ Contract hardening in this release includes:
 
 | Database | Module | Query model | Local testing | Best fit |
 |----------|--------|-------------|---------------|----------|
-| Neo4j | `graph-neo4j` | Cypher through Neo4j Java Driver 6.2.1 | Testcontainers `neo4j:5.26.29` | Production graph database with mature tooling, indexes, transactions, and Cypher support |
-| Memgraph | `graph-memgraph` | Cypher through Neo4j Java Driver 6.2.1-compatible protocol | Testcontainers `memgraph/memgraph:3.12.0` | Low-latency graph workloads and Neo4j-like development with Memgraph runtime behavior |
-| Apache AGE | `graph-age` | Cypher-over-SQL through PostgreSQL/JDBC 42.7.13 | Testcontainers `apache/age:release_PG18_1.7.0` | PostgreSQL-centered deployments that need graph modeling without running a separate graph server |
+| Neo4j | `graph-neo4j` | Cypher through Neo4j Java Driver 6.3.0 | Testcontainers `neo4j:5.26.29` | Production graph database with mature tooling, indexes, transactions, and Cypher support |
+| Memgraph | `graph-memgraph` | Cypher through Neo4j Java Driver 6.3.0-compatible protocol | Testcontainers `memgraph/memgraph:3.12.0` | Low-latency graph workloads and Neo4j-like development with Memgraph runtime behavior |
+| Apache AGE | `graph-age` | Cypher-over-SQL through PostgreSQL/JDBC 42.7.14 | Testcontainers `apache/age:release_PG18_1.7.0` | PostgreSQL-centered deployments that need graph modeling without running a separate graph server |
 | TinkerPop / TinkerGraph | `graph-tinkerpop` | Gremlin | In-memory JVM graph, no external service | Fast tests, examples, local demos, and Gremlin-style graph traversal |
 | FalkorDB | `graph-falkordb` | openCypher subset over Redis module | Testcontainers `falkordb/falkordb:v4.20.2` | Redis-backed graph workloads and lightweight graph service deployment |
 
@@ -425,7 +425,7 @@ driver.close()
 |------|-----------|-------------|----------------|-----------------|----------------|
 | Query Language | Cypher-over-SQL | Cypher | Cypher | Gremlin | openCypher (subset) |
 | Infrastructure | PostgreSQL + AGE | Neo4j | Memgraph | JVM in-memory | Redis module |
-| Driver | PostgreSQL JDBC 42.7.13 + Exposed | Neo4j Java Driver 6.2.1 | Neo4j Java Driver 6.2.1 (compatible) | TinkerPop | jfalkordb 0.8.0 |
+| Driver | PostgreSQL JDBC 42.7.14 + Exposed | Neo4j Java Driver 6.3.0 | Neo4j Java Driver 6.3.0 (compatible) | TinkerPop | jfalkordb 0.8.0 |
 | Test Container | `apache/age:release_PG18_1.7.0` | `neo4j:5.26.29` | `memgraph/memgraph:3.12.0` | not required | `falkordb/falkordb:v4.20.2` |
 | Strongest local role | PostgreSQL-native graph | Mature graph server | Low-latency Cypher server | Unit/integration tests | Redis-backed graph service |
 
@@ -511,14 +511,14 @@ Concrete classes only need to implement `ops` (`GraphOperations` or `GraphSuspen
 ## Requirements
 
 - Java 25 (with preview features enabled)
-- Kotlin 2.4.20 (language/API 2.4)
+- Kotlin 2.4.21 (language/API 2.4)
 - Docker (for integration tests)
 
 ## Tech Stack
 
 - **Development line** 1.1.0-SNAPSHOT (Kotlin 2.4 / Java 25)
-- **Kotlin** 2.4.20 (language/API 2.4) + Coroutines 1.11.0
-- **Neo4j Java Driver** 6.2.1
+- **Kotlin** 2.4.21 (language/API 2.4) + Coroutines 1.11.0
+- **Neo4j Java Driver** 6.3.0
 - **JetBrains Exposed** (JDBC for Apache AGE)
 - **Apache TinkerPop** (Gremlin)
 - **Ktor** 3.x (ApplicationPlugin integration)
