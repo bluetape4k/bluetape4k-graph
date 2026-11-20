@@ -93,9 +93,9 @@ bluetape4k 생태계의 그래프 데이터베이스 통합 라이브러리. Apa
 
 | Database | Module | Query model | Local testing | 적합한 용도 |
 |----------|--------|-------------|---------------|-------------|
-| Neo4j | `graph-neo4j` | Neo4j Java Driver 6.2.1 기반 Cypher | Testcontainers `neo4j:5.26.29` | 성숙한 도구, index, transaction, Cypher 지원이 필요한 production graph database |
-| Memgraph | `graph-memgraph` | Neo4j Java Driver 6.2.1 호환 protocol 기반 Cypher | Testcontainers `memgraph/memgraph:3.12.0` | 낮은 지연 시간의 graph workload와 Neo4j 유사 개발 경험 |
-| Apache AGE | `graph-age` | PostgreSQL/JDBC 42.7.13 기반 Cypher-over-SQL | Testcontainers `apache/age:release_PG18_1.7.0` | 별도 graph server 없이 PostgreSQL 중심 배포에서 graph modeling이 필요할 때 |
+| Neo4j | `graph-neo4j` | Neo4j Java Driver 6.3.0 기반 Cypher | Testcontainers `neo4j:5.26.29` | 성숙한 도구, index, transaction, Cypher 지원이 필요한 production graph database |
+| Memgraph | `graph-memgraph` | Neo4j Java Driver 6.3.0 호환 protocol 기반 Cypher | Testcontainers `memgraph/memgraph:3.12.0` | 낮은 지연 시간의 graph workload와 Neo4j 유사 개발 경험 |
+| Apache AGE | `graph-age` | PostgreSQL/JDBC 42.7.14 기반 Cypher-over-SQL | Testcontainers `apache/age:release_PG18_1.7.0` | 별도 graph server 없이 PostgreSQL 중심 배포에서 graph modeling이 필요할 때 |
 | TinkerPop / TinkerGraph | `graph-tinkerpop` | Gremlin | JVM in-memory graph, 외부 서비스 불필요 | 빠른 테스트, 예제, 로컬 데모, Gremlin traversal |
 | FalkorDB | `graph-falkordb` | Redis module 위 openCypher subset | Testcontainers `falkordb/falkordb:v4.20.2` | Redis 기반 graph workload와 가벼운 graph service 배포 |
 
@@ -419,7 +419,7 @@ driver.close()
 |------|-----------|-------------|----------------|-----------------|----------------|
 | 쿼리 언어 | Cypher-over-SQL | Cypher | Cypher | Gremlin | openCypher (부분집합) |
 | 인프라 | PostgreSQL + AGE | Neo4j | Memgraph | JVM 인메모리 | Redis 모듈 |
-| 드라이버 | PostgreSQL JDBC 42.7.13 + Exposed | Neo4j Java Driver 6.2.1 | Neo4j Java Driver 6.2.1 (호환) | TinkerPop | jfalkordb 0.8.0 |
+| 드라이버 | PostgreSQL JDBC 42.7.14 + Exposed | Neo4j Java Driver 6.3.0 | Neo4j Java Driver 6.3.0 (호환) | TinkerPop | jfalkordb 0.8.0 |
 | 테스트 컨테이너 | `apache/age:release_PG18_1.7.0` | `neo4j:5.26.29` | `memgraph/memgraph:3.12.0` | 불필요 | `falkordb/falkordb:v4.20.2` |
 | 가장 강한 로컬 역할 | PostgreSQL-native graph | 성숙한 graph server | low-latency Cypher server | unit/integration tests | Redis-backed graph service |
 
@@ -505,14 +505,14 @@ retry가 진단 자료를 남길 수는 있어도 `release_gate=true`를 설정�
 ## 요구 사항
 
 - Java 25 (preview 기능 활성화)
-- Kotlin 2.4.20 (language/API 2.4)
+- Kotlin 2.4.21 (language/API 2.4)
 - Docker (통합 테스트용)
 
 ## 기술 스택
 
 - **개발 라인** 1.1.0-SNAPSHOT (Kotlin 2.4 / Java 25)
-- **Kotlin** 2.4.20 (language/API 2.4) + Coroutines 1.11.0
-- **Neo4j Java Driver** 6.2.1
+- **Kotlin** 2.4.21 (language/API 2.4) + Coroutines 1.11.0
+- **Neo4j Java Driver** 6.3.0
 - **JetBrains Exposed** (Apache AGE용 JDBC)
 - **Apache TinkerPop** (Gremlin)
 - **Ktor** 3.x (ApplicationPlugin integration)

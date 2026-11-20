@@ -22,7 +22,7 @@ Ktor 3 integration, Spring Boot 4 auto-configuration, examples, benchmarks,
 and a BOM.
 
 - Base version: 1.0.0
-- Kotlin: 2.4.20 (language/API 2.4)
+- Kotlin: 2.4.21 (language/API 2.4)
 - Java: 25 with preview enabled
 - Dependency versions: `gradle/libs.versions.toml`
 
@@ -123,9 +123,9 @@ Schema DSL uses Exposed Table-style declarations through `VertexLabel` and
 
 | Module | Driver | Query language | Local verification |
 |---|---|---|---|
-| `bluetape4k-graph-neo4j` | Neo4j Java Driver 6.2.1 | Cypher | Testcontainers `neo4j:5.26.29` |
-| `bluetape4k-graph-memgraph` | Neo4j Java Driver 6.2.1 compatible | Cypher | Testcontainers `memgraph/memgraph:3.12.0` |
-| `bluetape4k-graph-age` | PostgreSQL JDBC 42.7.13 + Exposed | Cypher-over-SQL | Testcontainers `apache/age:release_PG18_1.7.0` |
+| `bluetape4k-graph-neo4j` | Neo4j Java Driver 6.3.0 | Cypher | Testcontainers `neo4j:5.26.29` |
+| `bluetape4k-graph-memgraph` | Neo4j Java Driver 6.3.0 compatible | Cypher | Testcontainers `memgraph/memgraph:3.12.0` |
+| `bluetape4k-graph-age` | PostgreSQL JDBC 42.7.14 + Exposed | Cypher-over-SQL | Testcontainers `apache/age:release_PG18_1.7.0` |
 | `bluetape4k-graph-tinkerpop` | TinkerGraph | Gremlin | In-memory JVM graph |
 | `bluetape4k-graph-falkordb` | jfalkordb 0.8.0, Jedis-based | openCypher subset | Testcontainers `falkordb/falkordb:v4.20.2` |
 
