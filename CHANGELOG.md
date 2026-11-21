@@ -87,6 +87,18 @@
   importer의 checkpoint는 취소 시 `FAILED`로 기록하지 않고 현재 안전 경계를
   보존한다 ([#612](https://github.com/bluetape4k/bluetape4k-graph/issues/612)).
 
+## [1.1.0] - 2026-11-21
+
+### 추가
+
+- CSV 입력 ownership helper와 NDJSON line-limit 옵션을 추가하고 관련 loader와
+  Flow/checkpoint 경로에 동일한 계약을 적용했습니다.
+
+### 변경
+
+- graph resource lifecycle, catalog 보안 정합성, 테스트 helper 및 최신 외부
+  dependency line을 정리했습니다.
+
 ## [1.0.0] - 2026-09-02
 
 ### 추가
