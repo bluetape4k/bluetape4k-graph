@@ -2,15 +2,15 @@
 
 English | [한국어](README.ko.md)
 
-Current stable version: `1.0.0`
+Current stable version: `1.1.0`
 
-Current development line: `1.1.0-SNAPSHOT` on `develop`
+Current development line: `1.2.0-SNAPSHOT` on `develop`
 
 `develop` is also the default, pull-request, release, and SNAPSHOT source.
 `main` is a frozen legacy-history anchor and does not accept new changes. See
 the [branch governance policy](docs/governance/branch-policy.md).
 
-Development builds consume `bluetape4k-bom:2.1.0-SNAPSHOT` through the
+Development builds consume `bluetape4k-bom:2.2.0-SNAPSHOT` through the
 immutable catalog commit pinned by this repository.
 
 [![CI](https://github.com/bluetape4k/bluetape4k-graph/actions/workflows/ci.yml/badge.svg)](https://github.com/bluetape4k/bluetape4k-graph/actions/workflows/ci.yml)
@@ -516,7 +516,7 @@ Concrete classes only need to implement `ops` (`GraphOperations` or `GraphSuspen
 
 ## Tech Stack
 
-- **Development line** 1.1.0-SNAPSHOT (Kotlin 2.4 / Java 25)
+- **Development line** 1.2.0-SNAPSHOT (Kotlin 2.4 / Java 25)
 - **Kotlin** 2.4.21 (language/API 2.4) + Coroutines 1.11.0
 - **Neo4j Java Driver** 6.3.0
 - **JetBrains Exposed** (JDBC for Apache AGE)
