@@ -2,16 +2,16 @@
 
 [English](README.md) | 한국어
 
-현재 안정 버전: `1.0.0`
+현재 안정 버전: `1.1.0`
 
-현재 개발선: `develop`의 `1.1.0-SNAPSHOT`
+현재 개발선: `develop`의 `1.2.0-SNAPSHOT`
 
 `develop`은 default, pull request, release, SNAPSHOT 기준 branch이기도 합니다.
 `main`은 신규 변경을 받지 않는 동결 legacy-history 기준점입니다. 자세한 내용은
 [branch governance 정책](docs/governance/branch-policy.md)을 참고하십시오.
 
 개발 빌드는 이 저장소가 고정한 immutable catalog commit을 통해
-`bluetape4k-bom:2.1.0-SNAPSHOT`을 사용합니다.
+`bluetape4k-bom:2.2.0-SNAPSHOT`을 사용합니다.
 
 [![CI](https://github.com/bluetape4k/bluetape4k-graph/actions/workflows/ci.yml/badge.svg)](https://github.com/bluetape4k/bluetape4k-graph/actions/workflows/ci.yml)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.4-7F52FF?logo=kotlin)](https://kotlinlang.org)
@@ -510,7 +510,7 @@ retry가 진단 자료를 남길 수는 있어도 `release_gate=true`를 설정�
 
 ## 기술 스택
 
-- **개발 라인** 1.1.0-SNAPSHOT (Kotlin 2.4 / Java 25)
+- **개발 라인** 1.2.0-SNAPSHOT (Kotlin 2.4 / Java 25)
 - **Kotlin** 2.4.21 (language/API 2.4) + Coroutines 1.11.0
 - **Neo4j Java Driver** 6.3.0
 - **JetBrains Exposed** (Apache AGE용 JDBC)

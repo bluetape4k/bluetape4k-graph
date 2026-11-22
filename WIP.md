@@ -1,12 +1,15 @@
 # WIP - bluetape4k-graph
 
 - 기준일: 2026-10-19 KST
-- 최신 안정 버전: `1.0.0`
-- 안정 tag commit: `a405300799b36d4d6edb7267ad07ff34d4ad3afe`
-- 현재 개발선: `1.1.0-SNAPSHOT`
-- 현재 milestone: `1.1.0`
+- 최신 안정 버전: `1.1.0`
+- 안정 tag commit: `5527bdc21aa366602b7212191ddb6d87849c8b7a`
+- 현재 개발선: `1.2.0-SNAPSHOT`
+- 현재 milestone: `1.2.0`
 
 ## 현재 상태
+
+`1.1.0` artifact와 GitHub Release 배포를 완료했다. `develop`은 `1.2.0` minor
+개발선을 사용한다. 공개 Graph manual은 `1.1.0` tag source로 갱신한다.
 
 ### PR #656 코드 정리 및 리팩토링
 
